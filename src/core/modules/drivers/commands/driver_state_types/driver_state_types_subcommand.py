@@ -8,9 +8,10 @@ from core.modules.drivers.support.agent_state_listing import AgentStateListing, 
 
 
 class DriverStateTypesSubcommand(ReadSubcommand[list[StateType] | list[DefaultStateEntry]]):
-    """`journal driver state-types`: every kind of state the installed modules register, with the module that adds
-    it, its shape, tier, drivers and role, the rules it gates with their hooks, and its deferred rules and substates;
-    with --defaults, the states each suite gives its agents by default, by role, driver and helper type."""
+    """`journal driver state-types`: every kind of state the installed modules register, with the module
+    that adds it, its shape, tier, drivers and role, the rules it gates with their hooks, and its deferred
+    rules and substates; with --defaults, the states each suite gives its agents by default, by role,
+    driver and helper type."""
 
     cli_name = "driver"
     name = "state-types"

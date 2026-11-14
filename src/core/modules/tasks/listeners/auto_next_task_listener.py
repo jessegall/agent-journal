@@ -16,9 +16,9 @@ from core.modules.tasks.support.suite_task_assigners import SuiteTaskAssigners
 
 
 class AutoNextTaskListener(CommitListener[Moved[Task]]):
-    """While the suite's task assigner hands out tasks by itself, a task the main agent closes or cancels is followed
-    at once by the next task, started for that agent; with other tasks in its hands, only an urgent task is started.
-    A blocked or released task is not: the agent asks for its next one."""
+    """While the suite's task assigner hands out tasks by itself, a task the main agent closes or cancels
+    is followed at once by the next task, started for that agent; with other tasks in its hands, only an
+    urgent task is started. A blocked or released task is not: the agent asks for its next one."""
 
     name = "tasks.auto-next-task"
     moves = (TaskLifecycle.close, TaskLifecycle.cancel)

@@ -11,8 +11,8 @@ from engine.time.timestamp import Timestamp
 
 @dataclass(frozen=True)
 class AgentHook:
-    """A hook event with its agent, the agent's driver, the time it was taken, the layer it is asked for, and the row the
-    agent's default states stand on with the defaults it carries."""
+    """A hook event with its agent, the agent's driver, the time it was taken, the layer it is asked for,
+    and the row the agent's default states stand on with the defaults it carries."""
 
     event: HookEvent
     agent_id: int

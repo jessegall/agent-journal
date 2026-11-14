@@ -14,9 +14,10 @@ Signature = tuple[int, str, bool, tuple[tuple[str, int, int], ...]]
 
 
 class KeptPluginChecks:
-    """Whether each plugin may run, kept across hooks while nothing it was decided from changed: the plugin's row,
-    its upgrade, and the size and change time of the files its manifest names, the same files its digest covers,
-    so a hook looks at a few files' metadata and never walks the plugin's folder. A notice that a plugin's files changed is never kept, since it is recorded once."""
+    """Whether each plugin may run, kept across hooks while nothing it was decided from changed: the
+    plugin's row, its upgrade, and the size and change time of the files its manifest names, the same files
+    its digest covers, so a hook looks at a few files' metadata and never walks the plugin's folder. A
+    notice that a plugin's files changed is never kept, since it is recorded once."""
 
     def __init__(self) -> None:
         self.kept: dict[int, tuple[Signature, PluginRunCheck]] = {}

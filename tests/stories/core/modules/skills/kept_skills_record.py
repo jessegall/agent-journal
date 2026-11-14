@@ -8,7 +8,8 @@ from tests.stories.core.modules.skills.kept_after_compaction import CompactingCl
 
 
 class Reads:
-    """How often the read-first rule went to the transcript for the skills the program put back, counted while hooks run."""
+    """How often the read-first rule went to the transcript for the skills the program put back, counted
+    while hooks run."""
 
     def __init__(self, monkeypatch) -> None:
         self.count = 0

@@ -37,8 +37,8 @@ class BuilderStarted(StoryFixture):
 
 
 class CodingEnvironmentWithoutPlainWords(StoryFixture):
-    """Environment main runs the coding suite with the plain code words skill not required at a start, so a story about
-    other skills sees only the skills it names."""
+    """Environment main runs the coding suite with the plain code words skill not required at a start, so a
+    story about other skills sees only the skills it names."""
 
     parent = CodingEnvironment
 

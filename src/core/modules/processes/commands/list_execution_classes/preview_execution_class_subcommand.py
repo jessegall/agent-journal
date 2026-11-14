@@ -23,7 +23,8 @@ class ClassPreview:
 
 
 class PreviewExecutionClassSubcommand(ReadSubcommand[ClassPreview]):
-    """`journal queue-class preview --pattern <pattern> | --plugin <name>`: the five newest lines a class would have matched."""
+    """`journal queue-class preview --pattern <pattern> | --plugin <name>`: the five newest lines a class
+    would have matched."""
 
     cli_name = "queue-class"
     name = "preview"

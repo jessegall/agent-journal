@@ -7,12 +7,13 @@ from core.modules.usage.support.session_cost import SessionCost
 
 @dataclass(frozen=True)
 class AgentFacts:
-    """What an agent's card says beyond its row: its model and effort, context in use, what its session cost
-    so far (none when its program reports no cost), the task it works on, the tasks given to it or held by
-    it, whether it waits, is blocked or is at its program's usage limit until its plan allowance starts
-    again, the plan allowance windows its program reports to it, and the profile, given name and
-    instruction its dispatch gave it, and plan_counts, for each plan one of its tasks belongs to, the tasks of that plan by state. session_costs holds what each session of its history cost, with its
-    program, and the sum of those that reported a cost is the agent's total."""
+    """What an agent's card says beyond its row: its model and effort, context in use, what its session
+    cost so far (none when its program reports no cost), the task it works on, the tasks given to it or
+    held by it, whether it waits, is blocked or is at its program's usage limit until its plan allowance
+    starts again, the plan allowance windows its program reports to it, and the profile, given name and
+    instruction its dispatch gave it, and plan_counts, for each plan one of its tasks belongs to, the tasks
+    of that plan by state. session_costs holds what each session of its history cost, with its program, and
+    the sum of those that reported a cost is the agent's total."""
 
     agent_id: int
     model: str

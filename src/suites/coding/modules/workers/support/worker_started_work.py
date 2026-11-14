@@ -23,9 +23,10 @@ STOPPED_WORKERS_REASON = "every stopped worker, and every line that resumed it, 
 
 
 class WorkerStartedWork:
-    """The stopped workers that hold started work or an open assigned task they can go on with and have no job
-    waiting, which nothing else resumes: not one whose tests wait or whose own run still goes (its end wakes it),
-    not one a user or another agent stopped, and not one told to go on as often as the resume limit allows."""
+    """The stopped workers that hold started work or an open assigned task they can go on with and have no
+    job waiting, which nothing else resumes: not one whose tests wait or whose own run still goes (its end
+    wakes it), not one a user or another agent stopped, and not one told to go on as often as the resume
+    limit allows."""
 
     def __init__(self, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop, bus: Bus, guidance: WorkerGuidance, settings: SettingValues, tasks: TaskQuery) -> None:
         self.guidance, self.settings, self.tasks = guidance, settings, tasks

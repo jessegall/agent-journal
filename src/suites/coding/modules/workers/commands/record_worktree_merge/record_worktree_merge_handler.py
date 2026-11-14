@@ -31,10 +31,11 @@ CONFLICT_SHORTFALL = "the merge clashed on {files}: settle them and prove it aga
 
 
 class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
-    """Closes the worker's delivered tasks that have a proof of their own in the worktree once git has merged it, and
-    names the others it leaves open, or restarts its task with the
-    files that clashed. The proofs of the worktree go short when it clashes, as for a failed test. A task of a started plan is closed with the checkpoint its tests run at. The worker's
-    ask that waited for this merge is merged with it."""
+    """Closes the worker's delivered tasks that have a proof of their own in the worktree once git has
+    merged it, and names the others it leaves open, or restarts its task with the files that clashed. The
+    proofs of the worktree go short when it clashes, as for a failed test. A task of a started plan is
+    closed with the checkpoint its tests run at. The worker's ask that waited for this merge is merged with
+    it."""
 
     command = RecordWorktreeMerge
     runs_once = True

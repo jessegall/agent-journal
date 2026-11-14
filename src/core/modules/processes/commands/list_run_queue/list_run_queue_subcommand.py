@@ -31,10 +31,10 @@ RECENT_RUNS = 20
 
 
 class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
-    """Reads the short and long lanes, what runs and waits in each and the waits of the last hour, with the queue
-    controls and ordered inspector lists the queue page reads; with an agent, only that agent's runs, and with a
-    class or a starter, only the lines of that class or starter. JSON: the inspector fields, page, size, total, rows,
-    and lanes, the lines as text."""
+    """Reads the short and long lanes, what runs and waits in each and the waits of the last hour, with the
+    queue controls and ordered inspector lists the queue page reads; with an agent, only that agent's runs,
+    and with a class or a starter, only the lines of that class or starter. JSON: the inspector fields,
+    page, size, total, rows, and lanes, the lines as text."""
 
     cli_name = "queue"
     name = "list"

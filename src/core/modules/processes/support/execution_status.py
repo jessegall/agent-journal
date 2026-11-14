@@ -13,9 +13,9 @@ from core.modules.processes.support.stored_execution_classes import StoredExecut
 
 
 class ExecutionStatus:
-    """The instant, short and long lanes as a person reads them: each lane's load against its capacity, what runs,
-    what waits and why, and the waits of the last hour; the instant lane as the server holds it and the others from
-    the process rows, so reading it takes no write turn."""
+    """The instant, short and long lanes as a person reads them: each lane's load against its capacity,
+    what runs, what waits and why, and the waits of the last hour; the instant lane as the server holds it
+    and the others from the process rows, so reading it takes no write turn."""
 
     def __init__(self, slots: RunSlots, tickets: ExecutionTickets, classes: StoredExecutionClasses, halt: RunQueueHalt, clock: Clock, waits: PriorityWaits, home: JournalHome) -> None:
         self.slots, self.tickets, self.classes, self.halt, self.clock, self.waits, self.home = slots, tickets, classes, halt, clock, waits, home

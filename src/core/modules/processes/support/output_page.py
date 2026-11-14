@@ -9,9 +9,9 @@ NEWLINE = b"\n"
 
 @dataclass(frozen=True)
 class OutputPage:
-    """Some lines of an output and where they stand in it, in bytes, so the next read goes on from there; total is
-    the output's size, and cut_bytes the bytes the runner has dropped from it, which grows with each cut. The lines
-    are kept as the run wrote them, colour codes included, for a terminal to show."""
+    """Some lines of an output and where they stand in it, in bytes, so the next read goes on from there;
+    total is the output's size, and cut_bytes the bytes the runner has dropped from it, which grows with
+    each cut. The lines are kept as the run wrote them, colour codes included, for a terminal to show."""
 
     written_lines: Sequence[str]
     first_byte: int

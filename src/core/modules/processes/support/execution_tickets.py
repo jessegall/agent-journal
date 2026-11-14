@@ -22,9 +22,9 @@ from core.modules.processes.support.run_admission import RunAdmission
 
 
 class ExecutionTickets:
-    """Turns process rows into the tickets of one lane: a row keeps its class, priorities and raise time, a row of
-    no class is matched again, a plugin's kind takes its own class, and a run whose reader request is open waits
-    for its reader."""
+    """Turns process rows into the tickets of one lane: a row keeps its class, priorities and raise time, a
+    row of no class is matched again, a plugin's kind takes its own class, and a run whose reader request
+    is open waits for its reader."""
 
     def __init__(self, classes: ExecutionClasses, category_limits: ProcessTypeLimits, admission: RunAdmission, rows: EventRows, clock: Clock) -> None:
         self.classes, self.kind_limits, self.admission, self.rows, self.clock = classes, category_limits, admission, rows, clock

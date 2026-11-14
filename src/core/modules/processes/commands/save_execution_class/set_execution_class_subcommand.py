@@ -10,8 +10,8 @@ from core.modules.processes.support.stored_execution_classes import StoredExecut
 
 
 class SetExecutionClassSubcommand(Subcommand[SaveExecutionClass, str]):
-    """`journal queue-class set <name> --lane --cost --priority --limit`: changes a built-in class or one of your own;
-    the next line it holds takes the change."""
+    """`journal queue-class set <name> --lane --cost --priority --limit`: changes a built-in class or one
+    of your own; the next line it holds takes the change."""
 
     cli_name = "queue-class"
     name = "set"

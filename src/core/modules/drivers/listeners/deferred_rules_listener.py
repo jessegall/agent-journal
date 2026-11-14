@@ -25,11 +25,11 @@ DEFERRED_RULE_COMMAND_RUNS = "deferred rules only run commands"
 
 
 class DeferredRulesListener(CommitListener[Created[HookCall]]):
-    """Runs the deferred rules of an agent's open deferred states once the hook's answer is stored, from the stored hook
-    call: each command a rule answers is dispatched on its own. The agent never waits for it, the next hook reads what
-    the commands wrote, and the listener cursor is the queue, so after a restart each stored call runs once. A rule
-    that answers anything but commands is reported and passed by, nothing of it reaches the agent; a rule that raises is
-    reported and the other rules still run."""
+    """Runs the deferred rules of an agent's open deferred states once the hook's answer is stored, from
+    the stored hook call: each command a rule answers is dispatched on its own. The agent never waits for
+    it, the next hook reads what the commands wrote, and the listener cursor is the queue, so after a
+    restart each stored call runs once. A rule that answers anything but commands is reported and passed
+    by, nothing of it reaches the agent; a rule that raises is reported and the other rules still run."""
 
     name = "drivers.deferred-rules"
     run_order = 900

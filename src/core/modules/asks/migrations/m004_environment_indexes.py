@@ -2,7 +2,8 @@ from engine.database.migration import Migration
 
 
 class AsksEnvironmentIndexesMigration(Migration):
-    """Indexes asks, their steps and the ask stacks by environment, so the list of one environment reads no other row."""
+    """Indexes asks, their steps and the ask stacks by environment, so the list of one environment reads no
+    other row."""
 
     number = 4
     statements = [

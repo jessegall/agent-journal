@@ -7,8 +7,9 @@ from engine.time.timestamp import Timestamp
 
 
 class RefusalSkips:
-    """The skips agents earn after a refusal: one that waits for a rule, one that silences a rule for a window, and the check of a skipped guard; with no
-    module keeping skips, nothing waits and a skipped guard is simply skipped."""
+    """The skips agents earn after a refusal: one that waits for a rule, one that silences a rule for a
+    window, and the check of a skipped guard; with no module keeping skips, nothing waits and a skipped
+    guard is simply skipped."""
 
     def waiting(self, agent_id: int, rule: str) -> Command[object] | None:
         return None

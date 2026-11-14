@@ -10,8 +10,9 @@ from server.execution.execution_queue import ExecutionQueue
 
 
 class ViewerTickets:
-    """A viewer request's ticket of the instant lane, at its window's priority: the first window at once, the rest
-    in the lane's order. A request that waits past its limit runs all the same, as a viewer request always has."""
+    """A viewer request's ticket of the instant lane, at its window's priority: the first window at once,
+    the rest in the lane's order. A request that waits past its limit runs all the same, as a viewer
+    request always has."""
 
     def __init__(self, queue: ExecutionQueue, priorities: ExecutionPriorities, clock: Clock, wait_limit_seconds: float) -> None:
         self.queue, self.priorities, self.clock, self.wait_limit_seconds = queue, priorities, clock, wait_limit_seconds

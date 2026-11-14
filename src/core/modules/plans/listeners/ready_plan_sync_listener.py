@@ -12,8 +12,9 @@ from core.modules.plans.models.plan import Plan
 
 
 class ReadyPlanSyncListener(CommitListener[RegistrySynced]):
-    """As the modules sync, the approval an older version asked for a ready plan is closed: a user approves a ready
-    plan on its card. The card itself comes with the plan's ready move, so a card the user dismissed stays gone."""
+    """As the modules sync, the approval an older version asked for a ready plan is closed: a user approves
+    a ready plan on its card. The card itself comes with the plan's ready move, so a card the user
+    dismissed stays gone."""
 
     name = "plans.ready-sync"
     disabled_scopes = [ActorScope, EnvironmentScope]

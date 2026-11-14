@@ -7,9 +7,9 @@ from server.execution.execution_queue import ExecutionQueue
 
 
 class RoundTickets:
-    """The instant lane tickets of the server's background work: one for each tick handler run and one for each
-    event a listener round handles, at background, so hooks, commands and viewer requests go first and at most a
-    few background tickets run at once."""
+    """The instant lane tickets of the server's background work: one for each tick handler run and one for
+    each event a listener round handles, at background, so hooks, commands and viewer requests go first and
+    at most a few background tickets run at once."""
 
     def __init__(self, queue: ExecutionQueue, priorities: ExecutionPriorities, clock: Clock) -> None:
         self.queue, self.priorities, self.clock = queue, priorities, clock

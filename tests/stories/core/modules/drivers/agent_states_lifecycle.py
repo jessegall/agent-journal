@@ -12,7 +12,8 @@ from tests.stories.core.support.coding_fixtures import CodingEnvironmentWithoutP
 
 
 class SkillsDueAgent(StoryFixture):
-    """The coding environment with skills required, and a main agent that has just started, so its first skills are due."""
+    """The coding environment with skills required, and a main agent that has just started, so its first
+    skills are due."""
 
     parent = CodingEnvironmentWithoutPlainWords
 

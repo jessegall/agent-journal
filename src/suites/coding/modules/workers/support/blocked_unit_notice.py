@@ -11,8 +11,9 @@ UNIT_TASKS_REASON = "the tasks left in a worker's unit are looked at for one tha
 
 
 class BlockedUnitNotice:
-    """Tells the main agent, once the tests of a commit ended and passed, that every task a worker has left is blocked: the
-    committed tasks wait for a merge ask nobody will make, so it can ask for them with --up-to or take them in early."""
+    """Tells the main agent, once the tests of a commit ended and passed, that every task a worker has left
+    is blocked: the committed tasks wait for a merge ask nobody will make, so it can ask for them with
+    --up-to or take them in early."""
 
     def __init__(self, tasks: TaskQuery, main_agent_line: MergerInbox, numbers: RowNumbers) -> None:
         self.tasks, self.main_agent_line, self.numbers = tasks, main_agent_line, numbers

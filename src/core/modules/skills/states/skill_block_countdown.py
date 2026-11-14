@@ -6,9 +6,9 @@ from engine.driver.states.countdown_state import CountdownState
 
 
 class SkillBlockCountdown(CountdownState):
-    """The hold on an agent that has not read a skill it needs: three tool uses count down, then its tools are refused
-    until the skill is loaded. Its refusal is worded for the skill, so a rule hands the rendered refusal to start. The
-    state is open while the hold is; it gates no rule."""
+    """The hold on an agent that has not read a skill it needs: three tool uses count down, then its tools
+    are refused until the skill is loaded. Its refusal is worded for the skill, so a rule hands the
+    rendered refusal to start. The state is open while the hold is; it gates no rule."""
 
     name = "skills.skill-block"
     span = ToolUseSpan(SKILL_TOOL_USES)

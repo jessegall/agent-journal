@@ -62,9 +62,9 @@ ADMIN_ENTRANCE_KEY = "admin"
 
 
 class AdminEntrance(Entrance):
-    """The way in of the person who runs the coding suite: the windows of the coding module and the core modules it
-    depends on, the default layout of each page and the presets of the home and agent pages. Its suite modules add
-    their own windows in entrances of their own under the same key."""
+    """The way in of the person who runs the coding suite: the windows of the coding module and the core
+    modules it depends on, the default layout of each page and the presets of the home and agent pages. Its
+    suite modules add their own windows in entrances of their own under the same key."""
 
     key = ADMIN_ENTRANCE_KEY
     windows = [ChatWindow, AvatarWindow, WaitingWindow, QuestionsWindow, TasksWindow, TaskCountsWindow, PlansWindow, AgentsWindow, HelpersWindow, JobsWindow, MemoriesWindow, RulesWindow, TranscriptWindow, HookCallsWindow, FileFeedWindow, FileEditsWindow, FilesWindow, GitWindow, AttachmentsWindow, TerminalWindow, OutputsWindow, OutputWindow, SearchWindow, DumpsWindow, SecretsWindow, SkillsWindow, IntegrationsWindow, ProfilesWindow, TranscriptionsWindow, RemindersWindow, SharesWindow, TeamsWindow, TunnelWindow, UpdatesWindow, NumbersWindow, HookRequestsWindow, SystemLogsWindow, NudgesWindow, DocumentsWindow, PageWindow, SequencesWindow, TemplatesWindow, PluginsWindow, SettingsWindow, ProjectHooksWindow, ToolsWindow, TriggersWindow, LoadWindow, UsageWindow, CostWindow, ContextWindow, WorkModeWindow]

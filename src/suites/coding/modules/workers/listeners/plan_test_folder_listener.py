@@ -9,7 +9,8 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 
 class PlanTestFolderListener(CommitListener[Moved[Plan]]):
-    """A plan that is completed or cancelled has no more checkpoint runs, so the checkout its runs tested in is removed."""
+    """A plan that is completed or cancelled has no more checkpoint runs, so the checkout its runs tested
+    in is removed."""
 
     name = "workers.plan-test-folder"
     moves = [PlanLifecycle.close, PlanLifecycle.cancel]

@@ -10,9 +10,9 @@ from suites.coding.modules.workers.rules.compaction_wake_rule import CompactionW
 
 
 class ContextChangeWakeListener(CommitListener[SessionStarted]):
-    """A typed /clear leaves the agent at its prompt with no turn running, so it is woken as soon as its new session is
-    recorded; a compaction is left to the compaction wake rule, which waits ten seconds to see whether the agent is
-    already working again."""
+    """A typed /clear leaves the agent at its prompt with no turn running, so it is woken as soon as its
+    new session is recorded; a compaction is left to the compaction wake rule, which waits ten seconds to
+    see whether the agent is already working again."""
 
     name = "workers.context-change-wake"
     disabled_scopes = [ActorScope]

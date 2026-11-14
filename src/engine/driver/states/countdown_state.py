@@ -13,9 +13,9 @@ from engine.driver.states.block_state import BlockState
 
 
 class CountdownState(BlockState):
-    """An abstract shape: a block state whose block counts a span down before it holds. The state's rule starts the
-    block with start, which builds the block exactly as RuleAnswer.blocking_after does; the state is open while that
-    block is, and its key is the refusal's."""
+    """An abstract shape: a block state whose block counts a span down before it holds. The state's rule
+    starts the block with start, which builds the block exactly as RuleAnswer.blocking_after does; the
+    state is open while that block is, and its key is the refusal's."""
 
     span: ClassVar[Span]
     refusal: ClassVar[NudgeDeclaration]

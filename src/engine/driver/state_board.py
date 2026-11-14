@@ -19,9 +19,9 @@ FAILED_OPENER_TABLE = "failed-opener"
 
 
 class StateBoard:
-    """Which agent states are open for one hook's agent, worked out only when asked and once per opener: a state of
-    another driver or a role it does not apply to is closed, and a state whose opener raises is reported once and
-    counts as open, so a fault never silences the rules it gates."""
+    """Which agent states are open for one hook's agent, worked out only when asked and once per opener: a
+    state of another driver or a role it does not apply to is closed, and a state whose opener raises is
+    reported once and counts as open, so a fault never silences the rules it gates."""
 
     def __init__(self, registry: Registry, container: Container, errors: ErrorLog, system_log: SystemLogWriter, hook: AgentHook,
                  elapsed: Callable[[], float] = perf_counter) -> None:

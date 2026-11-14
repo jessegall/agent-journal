@@ -34,9 +34,10 @@ UNUSED_VARIANT_SECONDS = 24 * 3600
 
 class TemplateDatabases:
     """Migrated databases shared by test processes and kept for later runs: a template is built the first
-    time a story uses it and saved as a numbered variant; a changed file its build ran (see TouchedCode) makes
-    the next story build a new variant beside it, so a runner copying from the old one is never disturbed. A story runs on a working journal of its template that rolls back at
-    its end, so only a runner's first story of a template copies it."""
+    time a story uses it and saved as a numbered variant; a changed file its build ran (see TouchedCode)
+    makes the next story build a new variant beside it, so a runner copying from the old one is never
+    disturbed. A story runs on a working journal of its template that rolls back at its end, so only a
+    runner's first story of a template copies it."""
 
     def __init__(self, folder: Path) -> None:
         self.folder = folder

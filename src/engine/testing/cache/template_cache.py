@@ -19,11 +19,12 @@ HASH_CHARACTERS = 16
 
 
 class TemplateCache:
-    """Shares complete story templates between every checkout of a project, in a folder keyed on the python sources
-    and the stories' support folders, since a template holds the registry its modules declared and module
-    declarations live in many files. When a new folder is made it removes the ones unused for a day and then the least recently used until
-    the cache is under its size limit, never one a running suite holds (each process leaves a lease named
-    for its process number); a cache already pruned within the hour is left alone."""
+    """Shares complete story templates between every checkout of a project, in a folder keyed on the python
+    sources and the stories' support folders, since a template holds the registry its modules declared and
+    module declarations live in many files. When a new folder is made it removes the ones unused for a day
+    and then the least recently used until the cache is under its size limit, never one a running suite
+    holds (each process leaves a lease named for its process number); a cache already pruned within the
+    hour is left alone."""
 
     def __init__(self, root: Path = CACHE_FOLDER, limit_bytes: int = CACHE_LIMIT_BYTES) -> None:
         self.root, self.limit_bytes = root, limit_bytes

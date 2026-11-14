@@ -12,7 +12,8 @@ ANSWER_TEXT = "the main agent sent you its answer"
 
 
 class AskAnsweredListener(SaveListener[Created[Message]]):
-    """A message to a worker from someone else answers the questions of that worker that went to the main agent, which end as answered."""
+    """A message to a worker from someone else answers the questions of that worker that went to the main
+    agent, which end as answered."""
 
     name = "workers.ask-answered"
     disabled_scopes = [ActorScope]

@@ -9,8 +9,8 @@ HOOK_TABLE = "hook"
 
 
 class HookTriggeredState(AgentState):
-    """An abstract shape: a state that is open for one hook when the agent's shell line runs one of the journal commands
-    it names. It reads no row: the line is the whole of what opens it."""
+    """An abstract shape: a state that is open for one hook when the agent's shell line runs one of the
+    journal commands it names. It reads no row: the line is the whole of what opens it."""
 
     commands: ClassVar[Sequence[str]] = []
 

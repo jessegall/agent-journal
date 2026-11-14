@@ -20,9 +20,9 @@ PERCENT = 100
 
 
 class StoredExecutionClasses(PersonClasses):
-    """The classes the person added or changed, kept in the database, and the lane limits the settings give: the
-    default table of limits stays in the engine, the settings change only each lane's capacity and the share of
-    it one starter may hold."""
+    """The classes the person added or changed, kept in the database, and the lane limits the settings
+    give: the default table of limits stays in the engine, the settings change only each lane's capacity
+    and the share of it one starter may hold."""
 
     def __init__(self, queries: Queries, settings: ProcessSettings, kept: KeptRows, plugins: InstalledPlugins) -> None:
         self.queries, self.settings, self.kept, self.plugins = queries, settings, kept, plugins

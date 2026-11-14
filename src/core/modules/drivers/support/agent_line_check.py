@@ -10,9 +10,9 @@ from core.modules.drivers.support.type_command_check import TypeCommandCheck
 
 
 class AgentLineCheck(CallerLineCheck):
-    """Refuses at the server a journal line the calling agent's type does not list, so a line that never passed the
-    hook is judged by the same list; a person, the main agent and a plugin's script run every line, and the main agent is known from the owner the round already
-    holds, so its row is not read again."""
+    """Refuses at the server a journal line the calling agent's type does not list, so a line that never
+    passed the hook is judged by the same list; a person, the main agent and a plugin's script run every
+    line, and the main agent is known from the owner the round already holds, so its row is not read again."""
 
     def __init__(self, agents: AgentRows, commands: TypeCommandCheck, actors: ActorTable) -> None:
         self.agents, self.commands, self.actors = agents, commands, actors

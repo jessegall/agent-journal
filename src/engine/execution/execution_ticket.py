@@ -8,8 +8,9 @@ from engine.time.timestamp import Timestamp
 
 @dataclass(frozen=True)
 class ExecutionTicket:
-    """An execution's place in its lane: its class and priorities, who started it, its line and times, the ticket
-    that waits for it, whether a reader request for it is open, and the run it stands for, 0 before it has one."""
+    """An execution's place in its lane: its class and priorities, who started it, its line and times, the
+    ticket that waits for it, whether a reader request for it is open, and the run it stands for, 0 before
+    it has one."""
 
     execution_class: ExecutionClass
     first_priority: ExecutionPriority

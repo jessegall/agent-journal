@@ -4,8 +4,9 @@ from dataclasses import dataclass, field
 
 @dataclass(frozen=True)
 class LaneEntry:
-    """One execution of a lane as a person reads it: its line, class, priority and starter, how long it has run or
-    waited, why it waits, the priority it was raised from, and the line of the execution it is a waited child of."""
+    """One execution of a lane as a person reads it: its line, class, priority and starter, how long it has
+    run or waited, why it waits, the priority it was raised from, and the line of the execution it is a
+    waited child of."""
 
     line: str
     class_name: str

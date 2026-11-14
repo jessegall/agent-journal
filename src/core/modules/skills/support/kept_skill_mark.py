@@ -8,9 +8,9 @@ KEPT_RECORDED = "kept_recorded"
 
 
 class KeptSkillMark:
-    """Tells one session and compaction of an agent apart, and keeps on the agent which of them has had its kept skills
-    recorded: the program writes what it put back only at a session start or a compaction, so a new mark needs a new
-    record."""
+    """Tells one session and compaction of an agent apart, and keeps on the agent which of them has had its
+    kept skills recorded: the program writes what it put back only at a session start or a compaction, so a
+    new mark needs a new record."""
 
     @staticmethod
     def of(agent: Agent) -> str:

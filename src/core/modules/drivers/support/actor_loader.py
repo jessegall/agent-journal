@@ -8,9 +8,9 @@ from engine.registry.registry import Registry
 
 
 class ActorLoader:
-    """Loads an agent once for a hook: its suite and driver as both hook paths choose them, the row its default
-    states stand on, its launch, else its process start, else its creation, and the default states its suite gives an
-    agent of its role, driver and helper type, without one switched off."""
+    """Loads an agent once for a hook: its suite and driver as both hook paths choose them, the row its
+    default states stand on, its launch, else its process start, else its creation, and the default states
+    its suite gives an agent of its role, driver and helper type, without one switched off."""
 
     def __init__(self, choice: SuiteChoice, registry: Registry, switches: GuardSwitches) -> None:
         self.choice, self.registry, self.switches = choice, registry, switches

@@ -18,9 +18,10 @@ KEPT_SECONDS = 5
 
 
 class SkillCatalogue:
-    """Lists module skills and skills installed in the project's program folders. One request reads the skill files
-    once, and again only when a program folder changes. The skills of the program folders are kept across requests for
-    a few seconds, so a hook checks each skill file at most once in that time; a file edited in place shows after it."""
+    """Lists module skills and skills installed in the project's program folders. One request reads the
+    skill files once, and again only when a program folder changes. The skills of the program folders are
+    kept across requests for a few seconds, so a hook checks each skill file at most once in that time; a
+    file edited in place shows after it."""
 
     def __init__(self, registry: Registry, home: JournalHome, providers: Providers, request_values: RequestValues, clock: Clock) -> None:
         self.registry, self.home, self.providers, self.request_values, self.clock = registry, home, providers, request_values, clock

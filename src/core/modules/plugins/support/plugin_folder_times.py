@@ -5,8 +5,8 @@ from engine.file.file_access import FileAccess
 
 class PluginFolderTimes:
     """The change time each plugin's queue folder had at the last look, and whether that look left a card
-    unclaimed, so a tick reads a folder again only when something in it changed. Kept across rounds on purpose:
-    it is no RoundState and a round never resets it."""
+    unclaimed, so a tick reads a folder again only when something in it changed. Kept across rounds on
+    purpose: it is no RoundState and a round never resets it."""
 
     def __init__(self) -> None:
         self.times: dict[str, int] = {}

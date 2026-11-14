@@ -22,8 +22,8 @@ POINTS_PER_GROWN_RUN = 5
 
 class OutputReading:
     """Every second each running output that grew goes through its reader, which writes its lines to their
-    file and what it found on the output row; repeated costly reads are reported every fifth tick. Each grown run
-    needs its process and output rows, so the limit grows by their cost per run read."""
+    file and what it found on the output row; repeated costly reads are reported every fifth tick. Each
+    grown run needs its process and output rows, so the limit grows by their cost per run read."""
 
     def __init__(self) -> None:
         self.last_warned_points = 0

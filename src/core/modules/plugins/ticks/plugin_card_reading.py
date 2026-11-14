@@ -13,9 +13,9 @@ from core.modules.plugins.support.plugin_folder_times import PluginFolderTimes
 
 
 class PluginCardReading:
-    """Claims the cards in every plugin's queue whose folder changed since the last look, so a mark shows as soon
-    as its answer is written; the line for the agent stays queued for the agent's next hook, the only moment it
-    can arrive."""
+    """Claims the cards in every plugin's queue whose folder changed since the last look, so a mark shows
+    as soon as its answer is written; the line for the agent stays queued for the agent's next hook, the
+    only moment it can arrive."""
 
     def __call__(self, container: Container) -> bool:
         queries, bus, times = container.get(Queries), container.get(Bus), container.get(PluginFolderTimes)

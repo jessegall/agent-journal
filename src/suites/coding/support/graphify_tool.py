@@ -56,10 +56,10 @@ GRAPHIFY = ToolDefinition("graphify", "Graphify", "Keeps a graph of the project'
 
 
 class GraphifyTool(ToolRunner):
-    """Graphify as the journal runs it: installed with its install command, and refreshing one folder's graph
-    in the background with its incremental update, a run of the Graphify class that waits in the long lane, so one
-    update runs at a time across the project. A tick updates the main checkout's graph only; a worktree takes that
-    graph by copy."""
+    """Graphify as the journal runs it: installed with its install command, and refreshing one folder's
+    graph in the background with its incremental update, a run of the Graphify class that waits in the long
+    lane, so one update runs at a time across the project. A tick updates the main checkout's graph only; a
+    worktree takes that graph by copy."""
 
     def __init__(self, settings: SettingValues, clock: Clock, home: JournalHome, executor: ProcessExecutor, bus: Bus, agents: AgentRows, launch: QueuedProcessLaunch,
                  queries: Queries) -> None:

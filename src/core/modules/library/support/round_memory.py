@@ -8,9 +8,10 @@ from core.modules.library.support.state_entry import StateEntry
 
 @dataclass
 class RoundMemory:
-    """What a series of sync rounds keeps between them: the last list of the server with its tag, and the versions
-    of an item that failed a local check, which are not tried again, and the versions of the copy, its row and its
-    server entry when the copy was last found in step with them, so a copy that none of them changed is not compared again."""
+    """What a series of sync rounds keeps between them: the last list of the server with its tag, and the
+    versions of an item that failed a local check, which are not tried again, and the versions of the copy,
+    its row and its server entry when the copy was last found in step with them, so a copy that none of
+    them changed is not compared again."""
 
     state: ServerState | None = None
     skipped: set[tuple[int, int]] = field(default_factory=set[tuple[int, int]])

@@ -19,9 +19,10 @@ if TYPE_CHECKING:
 
 
 class ContractClashes:
-    """Settles a clash of the engine's pinned contract and its version, which every change of the engine rewrites: the
-    higher version stands and the snapshot is written again by the contract script on the merged tree, so such a clash
-    is never sent back to the worker. A clash on any other file is left as it is."""
+    """Settles a clash of the engine's pinned contract and its version, which every change of the engine
+    rewrites: the higher version stands and the snapshot is written again by the contract script on the
+    merged tree, so such a clash is never sent back to the worker. A clash on any other file is left as it
+    is."""
 
     def __init__(self, git: "WorktreeGit") -> None:
         self.git = git

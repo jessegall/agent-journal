@@ -10,9 +10,9 @@ KEPT_SECONDS = 2.0
 
 
 class KeptProcessRows:
-    """The process table kept for a moment and shared by every request of the process, so a burst of commands runs
-    ps once instead of once each. The table is read again when it is older than KEPT_SECONDS, when the asking pid or
-    a parent on its chain is not in it, or when the table's way of reading changed."""
+    """The process table kept for a moment and shared by every request of the process, so a burst of
+    commands runs ps once instead of once each. The table is read again when it is older than KEPT_SECONDS,
+    when the asking pid or a parent on its chain is not in it, or when the table's way of reading changed."""
 
     def __init__(self, clock: Clock) -> None:
         self.clock = clock

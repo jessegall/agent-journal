@@ -7,8 +7,9 @@ from core.modules.tasks.models.task import Task
 
 
 class StartedTaskRelease:
-    """A task the sender holds started, such as one the journal started for the main agent after it was filed, is
-    released when the sender sends it to a worker, so the worker gets it; with takes, any started task is, whoever holds it."""
+    """A task the sender holds started, such as one the journal started for the main agent after it was
+    filed, is released when the sender sends it to a worker, so the worker gets it; with takes, any started
+    task is, whoever holds it."""
 
     def __init__(self, queries: Queries, bus: Bus) -> None:
         self.queries, self.bus = queries, bus

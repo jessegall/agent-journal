@@ -11,8 +11,8 @@ LANE_SETTINGS = (ProcessSetting.LANE_CAPACITY_INSTANT, ProcessSetting.LANE_CAPAC
 
 
 class ListExecutionClassesSubcommand(ReadSubcommand[ExecutionClassTable]):
-    """`journal queue-class list`: every class, its lane, cost, priority and class limit, built-in, changed or your own,
-    and in its JSON the lane capacities and the starter's share beside them."""
+    """`journal queue-class list`: every class, its lane, cost, priority and class limit, built-in, changed
+    or your own, and in its JSON the lane capacities and the starter's share beside them."""
 
     cli_name = "queue-class"
     name = "list"

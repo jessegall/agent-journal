@@ -57,8 +57,9 @@ class StateType:
 
 
 class AgentStateListing:
-    """Lists the states an agent is in and the kinds of state the journal knows, read from the registry and the agent's
-    state board, so a tier a later phase fills is listed from the registry and never from a fixed list."""
+    """Lists the states an agent is in and the kinds of state the journal knows, read from the registry and
+    the agent's state board, so a tier a later phase fills is listed from the registry and never from a
+    fixed list."""
 
     def __init__(self, registry: Registry, boards: StateBoards, loader: ActorLoader) -> None:
         self.registry, self.boards, self.loader = registry, boards, loader

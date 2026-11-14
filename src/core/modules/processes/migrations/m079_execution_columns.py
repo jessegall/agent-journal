@@ -2,10 +2,10 @@ from engine.database.migration import Migration
 
 
 class ExecutionColumnsMigration(Migration):
-    """Keeps a run's place in its lane across a restart: the class it was given, the priority it first had and when
-    it was last raised; the lane follows from the class. A request run keeps when it entered and started, so the
-    wait shows. An older run gets no class and agent as its first priority, which its next classifying run
-    overwrites."""
+    """Keeps a run's place in its lane across a restart: the class it was given, the priority it first had
+    and when it was last raised; the lane follows from the class. A request run keeps when it entered and
+    started, so the wait shows. An older run gets no class and agent as its first priority, which its next
+    classifying run overwrites."""
 
     number = 79
     statements = ["ALTER TABLE processes ADD COLUMN execution_class TEXT NOT NULL DEFAULT ''",

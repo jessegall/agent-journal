@@ -8,8 +8,9 @@ READ_COMMAND = "journal output read %"
 
 
 class StaleOutputBlocksMigration(Migration):
-    """Closes the open blocks that wait for a title or a read of an output whose run ended, is gone or was read since:
-    from now a block of that kind closes itself. A database whose blocks table is not made yet has none."""
+    """Closes the open blocks that wait for a title or a read of an output whose run ended, is gone or was
+    read since: from now a block of that kind closes itself. A database whose blocks table is not made yet
+    has none."""
 
     number = 83
     statements = [

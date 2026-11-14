@@ -13,8 +13,9 @@ OPEN_DEPENDENCIES_REASON = "every open wait of the tasks of one unit, and of the
 
 
 class OutsideWaits:
-    """Finds the task outside a unit of tasks that holds the whole unit back: every task of the unit waits on it, directly
-    or through other tasks of the unit, and it is open or blocked with no worker, assigned to the main agent or a person."""
+    """Finds the task outside a unit of tasks that holds the whole unit back: every task of the unit waits
+    on it, directly or through other tasks of the unit, and it is open or blocked with no worker, assigned
+    to the main agent or a person."""
 
     def __init__(self, queries: Queries, assigned_worker_tasks: AssignedWorkerTasks, labels: AssigneeLabel, kept: KeptRows) -> None:
         self.queries, self.assigned_worker_tasks, self.labels, self.kept = queries, assigned_worker_tasks, labels, kept
