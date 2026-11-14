@@ -156,6 +156,7 @@ class ModuleSync:
             bindings={DottedPath.class_path(interface).text: DottedPath.class_path(implementation) for module in modules for interface, implementation in module.bindings.items()},
             overlays=self.entries.overlays(modules),
             agent_states=self.entries.agent_states(modules),
+            deferred_rule_entries=self.entries.deferred_rules(modules),
             rules=rules,
             suites=self.entries.suites(modules, self.finder.default_modules(), suites),
             drivers=self.entries.drivers(modules),

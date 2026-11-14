@@ -5,6 +5,8 @@ import pytest
 from engine.dotted_path.dotted_path import DottedPath
 from engine.driver.agent_state import AgentState
 from engine.enums.state_tier import StateTier
+from engine.driver.deferred_rule import DeferredRule
+from engine.registry.deferred_rule_entry import DeferredRuleEntry
 from engine.driver.driver_rule import DriverRule
 from engine.driver.rule_answer import RuleAnswer
 from engine.enums.hook_event_name import HookEventName
@@ -111,3 +113,72 @@ def test_a_substate_also_listed_as_a_state_of_its_own_is_refused():
 def test_a_substate_entry_names_its_parent_and_its_parents_owner():
     entries = {entry.name: entry for entry in DriverEntries().agent_states([module(agent_states=[ParentState])])}
     assert (entries["samples.child"].parent, entries["samples.child"].owner) == ("samples.parent", "samples")
+
+
+class SampleDeferred(DeferredRule):
+    name = "samples.deferred"
+    hook = HookEventName.STOP
+    drivers = ["coding.main"]
+
+    def after(self, call):
+        return []
+
+
+class RefusingDeferred(SampleDeferred):
+    name = "samples.refusing-deferred"
+    single_action_refusal = "refuses after the answer"
+
+
+class DeferredState(AgentState):
+    name = "samples.deferred-state"
+    tier = StateTier.DEFERRED
+    deferred = [SampleDeferred]
+
+
+class DeferredInStackState(AgentState):
+    name = "samples.stack-with-deferred"
+    deferred = [SampleDeferred]
+
+
+class DeferredGatingState(AgentState):
+    name = "samples.deferred-gating"
+    tier = StateTier.DEFERRED
+    rules = [FirstRule]
+    deferred = [SampleDeferred]
+
+
+class RefusingState(AgentState):
+    name = "samples.refusing-state"
+    tier = StateTier.DEFERRED
+    deferred = [RefusingDeferred]
+
+
+def deferred_refusal(state) -> str:
+    with pytest.raises(ModuleError) as refused:
+        DriverEntries().deferred_rules([module(agent_states=[state])])
+    return str(refused.value)
+
+
+def test_a_deferred_state_records_its_deferred_rules_under_it_with_their_hook_and_drivers():
+    entries = DriverEntries().deferred_rules([module(agent_states=[DeferredState])])
+    assert [(entry.name, entry.state, entry.hook, tuple(entry.drivers)) for entry in entries] == [("samples.deferred", "samples.deferred-state", "stop", ("coding.main",))]
+
+
+def test_a_deferred_rule_in_a_state_that_is_not_deferred_is_refused():
+    assert deferred_refusal(DeferredInStackState) == "the agent state samples.stack-with-deferred has deferred rules but is not a deferred state"
+
+
+def test_a_deferred_state_that_gates_rules_is_refused():
+    assert deferred_refusal(DeferredGatingState) == "the deferred state samples.deferred-gating gates rules: a deferred state holds only deferred rules"
+
+
+def test_a_deferred_rule_that_declares_a_refusal_is_refused():
+    assert "samples.refusing-deferred declares a refusal" in deferred_refusal(RefusingState)
+
+
+def test_the_registry_keeps_its_deferred_rule_entries_and_returns_a_states_rules_for_a_hook():
+    entry = DeferredRuleEntry("samples.deferred", DottedPath("tests.samples.SampleDeferred"), "samples.deferred-state", "stop", ("coding.main",))
+    registry = Registry("states", {}, {}, {}, (), (), deferred_rule_entries=tuple([entry]))
+    restored = Registry.parsed("states", registry.entries_text())
+    assert restored.deferred_rule_entries == (entry,)
+    assert restored.deferred_rules("samples.deferred-state", "stop") == [entry] and restored.deferred_rules("samples.deferred-state", "pre_tool_use") == []

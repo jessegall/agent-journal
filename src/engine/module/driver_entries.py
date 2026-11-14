@@ -9,6 +9,8 @@ from engine.registry.driver_entry import DriverEntry
 from engine.registry.driver_rule_entry import DriverRuleEntry
 from engine.registry.overlay_entry import OverlayEntry
 from engine.registry.agent_state_entry import AgentStateEntry
+from engine.registry.deferred_rule_entry import DeferredRuleEntry
+from engine.enums.state_tier import StateTier
 from engine.driver.agent_state import AgentState
 from engine.registry.suite_entry import SuiteEntry
 from engine.module.errors.module_error import ModuleError
@@ -60,6 +62,28 @@ class DriverEntries:
                         for position, (owner, state, parent) in enumerate(declared, 1))
         self.check_states(entries, {rule.name for module in modules for rule in module.driver_rules})
         return entries
+
+    # the deferred rules of every state, recorded under it; a deferred rule that declares a refusal, one in a state that is
+    # not deferred, and a deferred state that gates rules are refused, since nothing can refuse after the answer
+    def deferred_rules(self, modules: Sequence[type[Module]]) -> tuple[DeferredRuleEntry, ...]:
+        declared = [(state, owner) for owner, state in [(module.name, state) for module in modules for state in module.agent_states]
+                    + [(driver.name, state) for module in modules for driver in module.drivers for state in driver.agent_states]]
+        entries: list[DeferredRuleEntry] = []
+        for root, _ in declared:
+            for state in self.state_tree([root]):
+                self.check_deferred(state)
+                entries += [DeferredRuleEntry(rule.name, DottedPath.class_path(rule), state.name, str(rule.hook), tuple(rule.drivers), rule.role_group) for rule in state.deferred]
+        return tuple(entries)
+
+    @staticmethod
+    def check_deferred(state: type[AgentState]) -> None:
+        if state.deferred and state.tier is not StateTier.DEFERRED:
+            raise ModuleError(f"the agent state {state.name} has deferred rules but is not a deferred state")
+        if state.tier is StateTier.DEFERRED and state.rules:
+            raise ModuleError(f"the deferred state {state.name} gates rules: a deferred state holds only deferred rules")
+        refusing = next((rule for rule in state.deferred if getattr(rule, "single_action_refusal", "")), None)
+        if refusing is not None:
+            raise ModuleError(f"the deferred rule {refusing.name} declares a refusal, and a rule that runs after the answer cannot refuse")
 
     # a substate lives inside one parent only: named by a second parent, or listed as a state of its own too, it is refused
     @staticmethod
