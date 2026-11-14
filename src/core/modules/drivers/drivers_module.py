@@ -202,6 +202,7 @@ from core.modules.drivers.support.agent_line_check import AgentLineCheck
 from engine.cli.caller_line_check import CallerLineCheck
 from core.modules.drivers.rules.native_subagent_rule import NativeSubagentRule
 from core.modules.drivers.rules.private_corpus_rule import PrivateCorpusRule
+from core.modules.drivers.rules.database_file_rule import DatabaseFileRule
 from core.modules.drivers.rules.panic_file_rule import PanicFileRule
 from core.modules.drivers.ticks.panic_watch import PanicWatch
 from core.modules.drivers.ticks.released_session_wake import ReleasedSessionWake
@@ -264,7 +265,7 @@ class DriversModule(Module):
                      TickHandler(TickInterval(seconds=60 * 60), HookPruning(), "hook pruning"), TickHandler(TickInterval(seconds=60), RowPruning(), "row pruning"),
                      TickHandler(TickInterval(seconds=5), EventPruning(), "event pruning")]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed]
-    driver_rules = [RepeatedFileReadRule, SafeguardsStopRule, PanicFileRule, BlockStopRule, LongOutputRule, ForeignHooksRule, CompactionDueStopRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, ContinuedSessionRule, AgentBlockRule, TakeoverRule, AccessRule, TypeCommandsRule, NativeSubagentRule, PrivateCorpusRule]
+    driver_rules = [RepeatedFileReadRule, SafeguardsStopRule, PanicFileRule, BlockStopRule, LongOutputRule, ForeignHooksRule, CompactionDueStopRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, ContinuedSessionRule, AgentBlockRule, TakeoverRule, AccessRule, TypeCommandsRule, NativeSubagentRule, PrivateCorpusRule, DatabaseFileRule]
     bindings = {OpenBlocks: AgentOpenBlocks, CallerLineCheck: AgentLineCheck, ContextChangeRequests: RecordedContextChangeRequests, Nudger: AgentLineNudger, OverviewReads: TableOverviewReads, RefusalSkips: TableRefusalSkips, ManagedHookHistoryReader: ManagedHookHistoryQuery, TranscriptAuthors: LineTranscriptAuthors, HookHistory: TableHookHistory, AgentStateOpenness: BoardStateOpenness,HookRoute: AgentHookRoute, ChangeFilter: DriverChangeFilter,
                 EssentialAllowances: SettingEssentialAllowances}
     windows = DRIVERS_WINDOWS
