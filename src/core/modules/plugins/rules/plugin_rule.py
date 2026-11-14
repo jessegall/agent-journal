@@ -63,7 +63,7 @@ class PluginRule(DriverRule):
             plugin, manifest = runnable.plugin, runnable.manifest
             if hook.event.accepts_lines:
                 self.queued(hook, plugin, lines, commands)
-            reached = [event for event in events if event.name in manifest.event_names and self.reaches(hook, manifest, event.name) and self.is_wanted(plugin, manifest.heard(event.name), event)]
+            reached = [event for event in events if event.name in manifest.event_names and self.reaches(hook, manifest, event.name) and self.is_wanted(plugin, manifest.received(event.name), event)]
             for event in reached:
                 commit = manifest.declared_event(event.name, EventForm.COMMIT)
                 if event.name not in manifest.window_names() or commit is not None:
