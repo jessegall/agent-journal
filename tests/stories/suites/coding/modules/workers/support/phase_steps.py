@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 from tests.stories.core.modules.processes.support.roomy_fixtures import RoomyOrchestratorWithPerson
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
@@ -183,7 +184,7 @@ def agent_lines(story: Story, agent: Actor) -> tuple[str, ...]:
 
 def dispatched_story_worker(story: Story, dispatch: str, monkeypatch) -> StoryWorker:
     install_runner(story)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     worker = dispatched_worker(story, dispatch)
     repository = story_repository(story)
     return StoryWorker(story, repository, worker, worker_session(story, worker), started, len(agent_lines(story, story.agent)))

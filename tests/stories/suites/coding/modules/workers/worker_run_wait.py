@@ -16,7 +16,6 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import disp
 from tests.stories.server.support.server_client import server_story
 from tests.stories.support.story_checks import expect_value, expect_value_with, expect_value_without
 
-REAL_START_WAITED = WorkerTestLaunch.start_waited
 DISPATCH = "worker dispatch --model sonnet 1 --test-command python=pytest"
 TEST_RUN = "worker test python tests/cart.py"
 BUILD_LINE = "make build"
@@ -42,7 +41,7 @@ def worker(new_story, monkeypatch):
 def launches(worker, monkeypatch):
     """What the real launch of a worker's named test would start."""
     starts = []
-    monkeypatch.setattr(WorkerTestLaunch, "start_waited", REAL_START_WAITED)
+    worker.story.unbind(WorkerTestLaunch)
     monkeypatch.setattr(RunnerBinary, "is_installed", lambda _runner: True)
     monkeypatch.setattr(subprocess, "Popen", lambda command, **options: starts.append(command))
     return starts

@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
@@ -33,7 +34,7 @@ def read_merger(story):
 def merger_delivery(story, monkeypatch):
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     repository = repository_environment(story)
-    recording_launch(monkeypatch)
+    recorded_test_launches(story)
     worker = dispatched_worker(story)
     repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
     story.expect_success(PROOF, actor=worker)

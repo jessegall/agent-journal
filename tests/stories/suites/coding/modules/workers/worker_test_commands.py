@@ -16,7 +16,6 @@ from suites.coding.modules.workers.support.worker_test_launch import WorkerTestL
 
 
 
-REAL_WORKER_TEST_START_WAITED = WorkerTestLaunch.start_waited
 PYTHON = "--test-command python=pytest"
 VITE = '--test-command "vite=npx vitest run"'
 GOLANG = '--test-command "go-journal=go -C tools/journal test -count=1"'
@@ -46,7 +45,7 @@ def worker_with_commands(task_story, monkeypatch):
 def runner_starts(worker_with_commands, monkeypatch):
     """Every start of the real runner, by the real launch that a dispatched story worker otherwise has faked."""
     starts = []
-    monkeypatch.setattr(WorkerTestLaunch, "start_waited", REAL_WORKER_TEST_START_WAITED)
+    worker_with_commands.story.unbind(WorkerTestLaunch)
     monkeypatch.setattr(RunnerBinary, "is_installed", lambda _runner: True)
     monkeypatch.setattr(subprocess, "Popen", lambda command, **options: starts.append((command, options)))
     return starts

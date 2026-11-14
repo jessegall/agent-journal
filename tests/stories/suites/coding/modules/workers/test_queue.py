@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 from tests.stories.core.support.agent_labels import agent_number
 from suites.coding.modules.workers.models.merger_line import MergerLine
@@ -42,7 +43,7 @@ def recording_launch(monkeypatch) -> list[int]:
 
 def queued_story(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story)
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
@@ -60,7 +61,7 @@ def ended(story, process_id: int, code: int) -> None:
 
 def test_a_proof_refuses_a_test_with_a_pipe_or_a_redirect(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
-    recording_launch(monkeypatch)
+    recorded_test_launches(story)
     repository_environment(story)
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     story.expect_refusal(PIPED_PROOF, "without a pipe, a redirect or a reading flag", actor=worker)
@@ -128,7 +129,7 @@ def test_an_orphaned_proof_returns_to_the_worker_and_runs_again_at_delivery(new_
 
 def mixed_proof_story(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story)
     story.expect_success('task edit 1 --brief "- the total\n- the tax"', actor=story.agent)
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
@@ -162,7 +163,7 @@ def test_a_task_with_an_unchecked_proof_stays_in_testing_after_its_tests_pass(ne
 
 def test_a_proof_with_no_test_still_waits_for_the_main_agents_check(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story)
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
@@ -175,7 +176,7 @@ def test_a_proof_with_no_test_still_waits_for_the_main_agents_check(new_story, m
 
 def test_picked_tests_run_after_proof_tests_on_the_rebased_worktree(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story)
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("pick.py", "import sys\nfrom pathlib import Path\nassert 'cart.py' in sys.argv\nassert Path('base.txt').read_text() == 'rebased\\n'\nprint('tests/other test.py')\n", "Picker")
@@ -210,7 +211,7 @@ def run_test_process(story, process_id):
 
 def affected_test_story(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story)
     story.expect_success(f'setting set {AFFECTED_TESTS_COMMAND} "python3 pick.py" --environment main')
     story.expect_success(f'setting set {PROJECT_TEST_COMMAND} "python3 -m pytest -q" --environment main')
@@ -263,7 +264,7 @@ def test_an_empty_picker_result_finishes_without_an_extra_test(new_story, monkey
 
 def test_picked_tests_run_when_the_proof_has_no_test_command(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story)
     story.expect_success(f'setting set {AFFECTED_TESTS_COMMAND} "python3 pick.py" --environment main')
     story.expect_success(f'setting set {PROJECT_TEST_COMMAND} "python3 -m pytest" --environment main')
@@ -281,9 +282,9 @@ def test_picked_tests_run_when_the_proof_has_no_test_command(new_story, monkeypa
 
 
 @pytest.mark.parametrize("setting", ("affected-tests-command", "project-test-command"))
-def test_a_single_setting_does_not_run_the_picker(new_story, monkeypatch, setting):
+def test_a_single_setting_does_not_run_the_picker(new_story, setting):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story)
     story.expect_success(f'setting set journal.suites.coding.workers.{setting} "python3 command.py" --environment main')
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
@@ -419,7 +420,7 @@ def test_a_running_proof_whose_process_is_gone_leaves_running_as_lost(unrecorded
 @pytest.mark.real_git
 def test_the_picked_tests_run_on_the_work_merged_into_a_base_that_moved_after_the_hand_in_and_a_failure_returns_the_work(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story, real_git=True)
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("pick.py", "print('tests/other.py')\n", "Picker")
@@ -455,7 +456,7 @@ def test_a_release_of_the_worker_ends_the_proof_test_that_waited_or_ran_for_its_
 
 def test_a_worker_whose_commit_passed_with_every_other_task_of_its_unit_blocked_is_told_to_the_main_agent(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story)
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     second = story.new_row_id('task make "Later work" --brief "Waits on the main agent" --environment main', actor=story.agent)

@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
@@ -8,7 +9,7 @@ from tests.stories.suites.coding.modules.workers.test_queue import recording_lau
 
 def test_a_worker_between_runs_with_work_left_counts_as_a_helper(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
-    recording_launch(monkeypatch)
+    recorded_test_launches(story)
     repository_environment(story)
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     story.expect_text("usage bars --environment main", "1 helpers", actor=story.user)

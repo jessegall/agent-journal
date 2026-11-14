@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 from tests.stories.core.support.agent_labels import agent_number
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 from core.modules.messages.models.message import Message
@@ -133,12 +134,12 @@ def test_a_retry_that_fails_again_does_not_repeat_the_line_once_the_main_agent_h
 
 
 @pytest.mark.parametrize("merger_enabled", [True, False])
-def test_delivery_with_only_checked_proofs_reaches_the_merger_or_main_agent(new_story, monkeypatch, merger_enabled):
+def test_delivery_with_only_checked_proofs_reaches_the_merger_or_main_agent(new_story, merger_enabled):
     story = new_story(fixture=OpenTaskOrchestrator)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success(f"setting set {MERGER_ENABLED} {str(merger_enabled).lower()} --project", actor=story.user)
     repository = repository_environment(story)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     worker = dispatched_worker(story)
     repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
     story.expect_success(PROOF, actor=worker)

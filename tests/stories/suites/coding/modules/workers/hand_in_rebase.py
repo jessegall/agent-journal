@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 import json
 from concurrent.futures import ThreadPoolExecutor
@@ -66,7 +67,7 @@ def test_a_clash_stops_the_hand_in_and_leaves_the_markers_until_the_worker_settl
 
 def test_a_proof_runs_on_the_rebased_code(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
-    launches = recording_launch(monkeypatch)
+    launches = recorded_test_launches(story)
     repository = repository_environment(story)
     worker = moved_base_worker(story, repository)
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story" --test "python tests/cart.py"', actor=worker)

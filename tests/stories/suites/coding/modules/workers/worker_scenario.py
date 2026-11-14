@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 from tests.stories.core.support.agent_labels import agent_number
 import subprocess
@@ -28,7 +29,7 @@ def proved(story, repository, worker, point_file: str, text: str, task: int = 1)
 
 def test_a_worker_that_started_a_task_beside_the_one_whose_tests_run_stays_on_it_and_the_tested_task_closes(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story)
     story.expect_success('task make "Add the tax" --brief "Add the tax" --environment main', actor=story.agent)
     story.expect_success('task make "Print the receipt" --brief "Print the receipt" --environment main', actor=story.agent)
@@ -45,7 +46,7 @@ def test_a_worker_that_started_a_task_beside_the_one_whose_tests_run_stays_on_it
 
 def test_a_worker_whose_current_task_is_blocked_goes_on_to_its_next_open_task(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
-    recording_launch(monkeypatch)
+    recorded_test_launches(story)
     repository_environment(story)
     story.expect_success('task make "Add the tax" --brief "Add the tax" --environment main', actor=story.agent)
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
@@ -57,7 +58,7 @@ def test_a_worker_whose_current_task_is_blocked_goes_on_to_its_next_open_task(ne
 
 def test_a_worker_starts_a_task_that_depends_on_the_one_it_commits(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story)
     story.expect_success('task make "Add the tax" --brief "Add the tax" --environment main', actor=story.agent)
     story.expect_success("task depend 2 --on 1", actor=story.agent)
@@ -72,7 +73,7 @@ def test_a_worker_starts_a_task_that_depends_on_the_one_it_commits(new_story, mo
 
 def test_a_proof_with_no_test_leaves_a_task_to_close_when_its_tests_pass(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story)
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
@@ -85,7 +86,7 @@ def test_a_proof_with_no_test_leaves_a_task_to_close_when_its_tests_pass(new_sto
 
 def test_a_proof_test_whose_end_the_server_missed_still_completes_its_task(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story)
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
@@ -103,7 +104,7 @@ def test_a_proof_test_whose_end_the_server_missed_still_completes_its_task(new_s
 
 def test_a_worker_commits_three_tasks_one_after_the_other_each_tested_and_is_merged(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story)
     story.expect_success('task make "Add the tax" --brief "Add the tax" --environment main', actor=story.agent)
     story.expect_success('task make "Print the receipt" --brief "Print the receipt" --environment main', actor=story.agent)
@@ -166,7 +167,7 @@ def test_a_worker_commits_three_tasks_one_after_the_other_each_tested_and_is_mer
 
 def test_a_worker_with_queued_tasks_is_not_reported_while_its_own_tests_run(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
-    recording_launch(monkeypatch)
+    recorded_test_launches(story)
     repository = repository_environment(story)
     story.expect_success('task make "Add the tax" --brief "Add the tax" --environment main', actor=story.agent)
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2", actor=story.agent), ActorType.AGENT)

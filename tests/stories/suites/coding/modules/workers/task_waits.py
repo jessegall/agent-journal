@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
@@ -84,7 +85,7 @@ def test_a_failed_test_keeps_the_task_waiting_for_the_workers_correction(new_sto
 def test_a_worker_ending_while_its_tests_run_with_a_task_it_has_not_started_keeps_the_wait_blocked(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
-    processes = recording_launch(monkeypatch)
+    processes = recorded_test_launches(story)
     second_id = story.new_row_id('task make "Second job" --brief "Finish the second job" --environment main', actor=story.agent)
     worker = dispatched_worker(story, f"worker dispatch --test-command python=pytest --model sonnet 1 {second_id}")
     task_id = waiting_task(story, worker)

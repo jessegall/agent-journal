@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.server.support.browser_story import expect_browser
@@ -9,7 +10,7 @@ from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLE
 
 def test_a_delegated_plan_shows_its_agent_on_the_plan_bar_the_plan_page_the_tasks_and_the_agent_card(new_story, monkeypatch):
     story = planned_story(new_story)
-    recording_launch(monkeypatch)
+    recorded_test_launches(story)
     worker = Actor(story.new_row_id('worker dispatch --test-command python=pytest --model sonnet --plan 1 --phase 1 --name "Lady Lovelace"', actor=story.agent), ActorType.AGENT)
     story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
     with server_story(story) as server:
