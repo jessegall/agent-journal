@@ -1,3 +1,4 @@
+from tests.unit.support.plain_executor import OpenAdmission
 from pathlib import Path
 
 import pytest
@@ -51,7 +52,7 @@ class OpenGate(ExecutionGate):
 
 def executor() -> tuple[ProcessExecutor, CountedPlacement]:
     placement = CountedPlacement()
-    return ProcessExecutor(placement, RunnerProgram(), OpenGate(), NotedErrors()), placement
+    return ProcessExecutor(placement, RunnerProgram(), OpenGate(), NotedErrors(), OpenAdmission()), placement
 
 
 def test_a_run_goes_through_the_queue_and_its_end_is_recorded_with_its_row(tmp_path: Path):
@@ -100,14 +101,14 @@ class BrokenPlacement(CountedPlacement):
 
 def test_a_row_that_cannot_be_written_is_recorded_as_an_exception_and_the_answer_of_the_run_still_returns(tmp_path: Path):
     errors = NotedErrors()
-    door = ProcessExecutor(BrokenPlacement(), RunnerProgram(), OpenGate(), errors)
+    door = ProcessExecutor(BrokenPlacement(), RunnerProgram(), OpenGate(), errors, OpenAdmission())
     execution = door.execute(ExecutionRequest(["echo", "done"], tmp_path, ProcessType.SHELL, 5))
     assert (execution.stdout, execution.process_id, [(argv, str(error)) for argv, error in errors.noted]) == ("done\n", None, [(["record-run", "echo done"], "the row cannot be written")])
 
 
 def test_a_row_that_cannot_be_written_after_a_run_past_its_limit_does_not_hide_the_limit_error(tmp_path: Path):
     errors = NotedErrors()
-    door = ProcessExecutor(BrokenPlacement(), RunnerProgram(), OpenGate(), errors)
+    door = ProcessExecutor(BrokenPlacement(), RunnerProgram(), OpenGate(), errors, OpenAdmission())
     with pytest.raises(RunTimeLimitError, match="sleep 5 ran past its limit"):
         door.execute(ExecutionRequest(["sleep", "5"], tmp_path, ProcessType.SHELL, 0.2))
     assert [argv for argv, _ in errors.noted] == [["record-run", "sleep 5"]]
@@ -115,7 +116,7 @@ def test_a_row_that_cannot_be_written_after_a_run_past_its_limit_does_not_hide_t
 
 def test_a_row_that_cannot_be_written_after_a_program_that_does_not_start_does_not_hide_the_os_error(tmp_path: Path):
     errors = NotedErrors()
-    door = ProcessExecutor(BrokenPlacement(), RunnerProgram(), OpenGate(), errors)
+    door = ProcessExecutor(BrokenPlacement(), RunnerProgram(), OpenGate(), errors, OpenAdmission())
     with pytest.raises(FileNotFoundError):
         door.execute(ExecutionRequest(["no-such-program-here"], tmp_path, ProcessType.QUICK, 5))
     assert [argv for argv, _ in errors.noted] == [["record-run", "no-such-program-here"]]

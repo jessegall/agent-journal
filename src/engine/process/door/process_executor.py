@@ -1,3 +1,4 @@
+from engine.process.door.execution_admission import ExecutionAdmission
 from dataclasses import replace
 
 from engine.errors.refusal import Refusal
@@ -15,17 +16,17 @@ TIME_LIMIT_EXIT_CODE = 124
 
 class ProcessExecutor:
     """The one door every program the journal runs goes through: the queue admits it as its row, the gate holds
-    it while the server starts or updates and refuses it for a paused agent, the runner runs it, and its end
-    is recorded, also when it fails or passes its time limit."""
+    it while the server starts or updates and refuses it for a paused agent, the run takes its ticket, the runner
+    runs it, and its end is recorded, also when it fails or passes its time limit."""
 
-    def __init__(self, placement: RunPlacement, runner: RunnerProgram, gate: ExecutionGate, errors: ErrorLog) -> None:
-        self.placement, self.runner, self.gate, self.errors = placement, runner, gate, errors
+    def __init__(self, placement: RunPlacement, runner: RunnerProgram, gate: ExecutionGate, errors: ErrorLog, admission: ExecutionAdmission) -> None:
+        self.placement, self.runner, self.gate, self.errors, self.admission = placement, runner, gate, errors, admission
 
     def execute(self, request: ExecutionRequest) -> Execution:
         placed = self.placement.placed(request)
         try:
             self.gate.opened(placed)
-            with self.placement.admitted(placed):
+            with self.placement.admitted(placed), self.admission.admitted(placed):
                 execution = self.runner.run(placed)
         except RunTimeLimitError as error:
             self.recorded(placed, placed.failed(TIME_LIMIT_EXIT_CODE, str(error)))

@@ -31,6 +31,8 @@ from engine.module.code_fingerprint import CodeFingerprint
 from engine.module.module_finder import ModuleFinder
 from engine.database.reported_findings import ReportedFindings
 from server.execution.session_starters import SessionStarters
+from server.execution.ticket_admission import TicketAdmission
+from engine.process.door.lane_door import LaneDoor
 from server.execution.execution_priorities import ExecutionPriorities
 from server.execution.round_tickets import RoundTickets
 from server.work.booting_work import BootingWork
@@ -152,6 +154,7 @@ def main(argv: list[str]) -> int:
     hook_database = HookDatabase(home, turns)
     urgent_kept, listener_kept, plugin_kept, stop_kept = (KeptRoundContainer(home, turns) for _ in range(4))
     round_tickets = RoundTickets(hook_database.executions, ExecutionPriorities(SessionStarters.shared(home)), clock)
+    LaneDoor.shared(home).install(TicketAdmission(hook_database.executions, ExecutionPriorities(SessionStarters.shared(home)), clock).admitted)
     urgent_round = JournalRound(home, "urgent listener thread", UrgentListenerWork(), urgent_kept, hook_database.queue, round_tickets)
     listener_round = JournalRound(home, "listener thread", OrdinaryListenerWork(), listener_kept, hook_database.queue, round_tickets)
     plugin_round = JournalRound(home, "plugin listener thread", PluginListenerWork(), plugin_kept, hook_database.queue, round_tickets)
@@ -257,6 +260,7 @@ def main(argv: list[str]) -> int:
         server.context.request_trace.close()
         hook_database.close()
         SessionStarters.shared(home).close()
+        LaneDoor.shared(home).remove()
         if not server.is_handing_over:
             files.remove_server_files()
         server.server_close()

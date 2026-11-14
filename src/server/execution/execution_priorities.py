@@ -47,6 +47,9 @@ class ExecutionPriorities:
     def event_ticket(self, event_name: str, entered_at: Timestamp) -> ExecutionTicket:
         return self.ticket(ExecutionSubject(ExecutionSource.LISTENER_EVENT, JOURNAL, line=event_name), entered_at)
 
+    def journal_run_ticket(self, line: str, entered_at: Timestamp) -> ExecutionTicket:
+        return self.ticket(ExecutionSubject(ExecutionSource.JOURNAL_RUN, JOURNAL, line=line), entered_at)
+
     def release_ticket(self, kind: str, entered_at: Timestamp) -> ExecutionTicket:
         return self.ticket(ExecutionSubject(ExecutionSource.RELEASE_WORK, JOURNAL, line=kind), entered_at)
 

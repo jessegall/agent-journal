@@ -9,8 +9,12 @@ class HeldWriteTurn(threading.local):
 
     count = 0
 
+    @property
+    def is_held(self) -> bool:
+        return self.count > 0
+
     def refuse_wait(self, subject: str) -> None:
-        if self.count:
+        if self.is_held:
             raise WaitInWriteTurnError(subject)
 
 

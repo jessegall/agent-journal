@@ -1,9 +1,21 @@
+from engine.process.door.execution_admission import ExecutionAdmission
+from contextlib import nullcontext
 from engine.log.error_log import ErrorLog
 from engine.process.door.execution_gate import ExecutionGate
 from engine.process.door.placed_run import PlacedRun
 from engine.process.door.process_executor import ProcessExecutor
 from engine.process.door.run_placement import RunPlacement
 from engine.process.door.runner_program import RunnerProgram
+
+
+class OpenAdmission(ExecutionAdmission):
+    """An admission with no server lanes: every run starts at once."""
+
+    def __init__(self) -> None:
+        pass
+
+    def admitted(self, run):
+        return nullcontext()
 
 
 class OpenGate(ExecutionGate):
@@ -27,4 +39,4 @@ class SilentErrors(ErrorLog):
 
 
 def plain_executor() -> ProcessExecutor:
-    return ProcessExecutor(RunPlacement(), RunnerProgram(), OpenGate(), SilentErrors())
+    return ProcessExecutor(RunPlacement(), RunnerProgram(), OpenGate(), SilentErrors(), OpenAdmission())
