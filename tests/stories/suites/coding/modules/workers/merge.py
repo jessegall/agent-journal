@@ -146,14 +146,14 @@ def test_a_resume_that_never_came_back_is_started_again_by_the_next_job_after_tw
     story.run_listeners()
     story.run(f'worker send --wait {agent_number(story, worker.id)} "And the receipt"', actor=story.agent)
     story.run_listeners()
-    story.expect_rows(len(worker_starts(launcher, worker)) == 1)
+    story.expect_rows(len(worker_starts(launcher, worker)) == 1, detail=f"first: {worker_starts(launcher, worker)}")
     story.advance(timedelta(minutes=3))
     story.use_processes()
     story.tick(MAIN_SESSION)
     story.run(f'worker send --wait {agent_number(story, worker.id)} "And the total"', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
-    story.expect_rows(len(worker_starts(launcher, worker)) == 2)
+    story.expect_rows(len(worker_starts(launcher, worker)) == 2, detail=f"second: {worker_starts(launcher, worker)}")
     expect_command_requests_launcher_line(launcher, "And the receipt")
 
 
