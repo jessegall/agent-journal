@@ -7,6 +7,7 @@ from engine.driver.agent_hook import AgentHook
 from engine.enums.command_category import CommandCategory
 from engine.enums.process_type import ProcessType
 from engine.driver.shell_line import ShellLine
+from engine.text.pytest_line import PytestLine
 from core.modules.processes.support.part_spec import PartSpec
 from engine.enums.execution_priority import ExecutionPriority
 from core.modules.processes.models.process import Process
@@ -38,6 +39,12 @@ class StartProcess(Command[Process]):
     @property
     def is_journal_merge(self) -> bool:
         return self.run_name == ProcessType.MERGE.value
+
+    # a run of the whole suite waits as one, whoever starts it: a hook marks its own, and a test line the journal starts,
+    # such as a checkpoint's, reaches the whole suite when it names no target but the tests folder
+    @property
+    def reaches_full_suite(self) -> bool:
+        return self.is_full_test_run or (self.category is CommandCategory.TEST_RUN and PytestLine(self.line).is_full_run())
 
     # a Graphify update the journal starts: it waits in the long lane on the Graphify class
     @property

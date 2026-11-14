@@ -73,11 +73,11 @@ def expect_running_2(page, expected) -> None:
     assert actual == expected, actual
 
 
-def test_the_lanes_name_each_run_s_slots_kind_and_run_the_halt_of_the_long_lane_and_the_lane_of_a_finished_run(played):
-    story = install_runner(played(UserBuilder))
+def test_the_lanes_name_each_run_s_slots_kind_and_run_the_halt_of_the_long_lane_and_the_lane_of_a_finished_run(new_story):
+    story = install_runner(new_story(fixture=UserBuilder))
+    story.expect_success(f"setting set {ProcessSetting.READERS_FORCED.key} false --environment main", actor=story.user)
     story.expect_success(f"setting set {ProcessSetting.LANE_CAPACITY_LONG.key} 4 --environment main", actor=story.user)
     story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main", actor=story.user)
-    story.expect_success(f"setting set {ProcessSetting.READERS_FORCED.key} false --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start lanes-worker claude worker --environment main"), ActorType.AGENT)
     end_run(story, start_process(story, "make old", category=CommandCategory.BUILD), "built\n")
     build = start_process(story, "make package", category=CommandCategory.BUILD)
@@ -91,3 +91,21 @@ def test_the_lanes_name_each_run_s_slots_kind_and_run_the_halt_of_the_long_lane_
                       (long_lane["halted"], long_lane["halt_type"], long_lane["halt_reason"]) == (True, "command", "Machine maintenance"),
                       (short_lane["halted"], short_lane["halt_type"], short_lane["halt_reason"]) == (False, "", ""),
                       [(row["line"], row["lane"]) for row in page["recent"]] == [("make old", "long")])
+
+
+FULL_SUITE_LINE = ".venv/bin/python -m pytest -q --tb=short -rf -n 4 tests"
+
+
+def test_a_test_line_that_reaches_the_whole_suite_waits_as_a_full_run_and_runs_alone_in_the_long_lane(new_story):
+    story = install_runner(new_story(fixture=UserBuilder))
+    story.expect_success(f"setting set {ProcessSetting.STARTER_CAP_PERCENT.key} 100 --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.READERS_FORCED.key} false --environment main", actor=story.user)
+    story.agent = Actor(story.new_row_id("agent start suite-worker claude worker --environment main"), ActorType.AGENT)
+    build = start_process(story, "make package", category=CommandCategory.BUILD)
+    full = start_process(story, FULL_SUITE_LINE, category=CommandCategory.TEST_RUN)
+    waiting = {entry["run_id"]: entry for entry in {lane["lane"]: lane for lane in queue_page(story)["execution"]["lanes"]}["long"]["waiting"]}
+    story.expect_rows(waiting[full.id]["class"] == "full test run", waiting[full.id]["slot_cost"] == 8, waiting[full.id]["reason"] == "waits for room", detail=str(waiting))
+    end_run(story, build, "built\n")
+    later = start_process(story, "pytest tests/unit/cart.py", category=CommandCategory.TEST_RUN)
+    long_lane = {lane["lane"]: lane for lane in queue_page(story)["execution"]["lanes"]}["long"]
+    story.expect_rows([entry["run_id"] for entry in long_lane["running"]] == [full.id], [entry["run_id"] for entry in long_lane["waiting"]] == [later.id], detail=str(long_lane))
