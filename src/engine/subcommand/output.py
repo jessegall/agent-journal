@@ -61,8 +61,11 @@ class Output:
             hidden = type(record).hidden_fields
             return {column: self.json_value(getattr(record, column)) for column in self.tables.table(type(record)).columns if column not in hidden}
         if is_dataclass(record) and not isinstance(record, type):
-            return {record_field.name: self.json_value(getattr(record, record_field.name)) for record_field in fields(record)}
+            return self.dataclass_values(record)
         return {"value": self.json_value(record)}
+
+    def dataclass_values(self, record: object) -> dict[str, object]:
+        return {record_field.name: self.json_value(getattr(record, record_field.name)) for record_field in fields(record)}
 
     def properties(self, record: object) -> dict[str, object]:
         return {name: self.json_value(getattr(record, name)) for name in type(record).shown_properties} if isinstance(record, Model) else {}
@@ -81,7 +84,10 @@ class Output:
             return {str(key): self.json_value(item) for key, item in value.items()}
         if is_tuple(value) or is_list(value):
             return [self.json_value(item) for item in value]
-        return stored(value)
+        kept = stored(value)
+        if kept is value and is_dataclass(value) and not isinstance(value, type):
+            return self.dataclass_values(value)
+        return kept
 
     def write(self, text: str, data: object) -> None:
         self.stream.write((json.dumps(data, sort_keys=True) if self.json_output else text) + "\n")
