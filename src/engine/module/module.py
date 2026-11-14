@@ -92,7 +92,7 @@ class Module:
     inspectors: ClassVar[list[InspectorDeclaration]] = []
     added_states: ClassVar[Sequence[StateAddition]] = ()
     helper_types: ClassVar[list[type[HelperType]]] = []
-    agent_groups: ClassVar[list[AgentGroup]] = []
+    agent_groups: ClassVar[list[AgentGroup | type[AgentGroup]]] = []
     profiles: ClassVar[list[AgentProfile]] = []
     providers: ClassVar[list[type[Provider]]] = []
     settings: ClassVar[Sequence[SettingNode]] = []
@@ -125,6 +125,11 @@ class Module:
     @classmethod
     def skill_declarations(cls) -> list[SkillDeclaration]:
         return [skill.declared() if isinstance(skill, type) else skill for skill in cls.skills]
+
+    # a group written as a class gives its declaration; an inline group is its own
+    @classmethod
+    def group_declarations(cls) -> list[AgentGroup]:
+        return [group.declared() if isinstance(group, type) else group for group in cls.agent_groups]
 
     @classmethod
     def declared_buttons(cls) -> list[ButtonDeclaration]:

@@ -1,3 +1,4 @@
+from suites.coding.agent_groups.coding_agent_groups import CODING_AGENT_GROUPS
 from suites.coding.skills.declarations.coding_skills import CODING_SKILLS
 from suites.coding.windows.extensions.coding_window_extensions import CODING_WINDOW_EXTENSIONS
 from suites.coding.migrations.m006_main_starts_helpers_key import MainStartsHelpersKeyMigration
@@ -11,7 +12,6 @@ from suites.coding.support.coding_nudges import CODING_NUDGES
 from suites.coding.support.coding_templates import CODING_TEMPLATES
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
-from engine.agent.groups.agent_group import AgentGroup
 from suites.coding.models.file_edit import FileEdit
 from suites.coding.upgrade.file_edits_move import FileEditsMove
 from suites.coding.upgrade.viewer_layouts_move import ViewerLayoutsMove
@@ -64,8 +64,7 @@ class CodingModule(Module):
 
     name = "journal.suites.coding"
     profiles = HELPER_PROFILES
-    agent_groups = [AgentGroup("workers", "Workers", "worker"), AgentGroup("merger", "Merger", "merger"),
-                    AgentGroup("designer", "Designer", "helper", tuple(["journal-designer"])), AgentGroup("helpers", "Helpers", "helper")]
+    agent_groups = CODING_AGENT_GROUPS
     templates = CODING_TEMPLATES
     nudges = [*CODING_NUDGES, TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN, *TOOL_NUDGES]
     seeders = [CodingSeeder]

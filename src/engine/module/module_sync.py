@@ -170,7 +170,7 @@ class ModuleSync:
             inspector_slots=tuple(sorted(InspectorSlots(modules).owners)),
             state_additions=tuple(StateAdditionEntry.declared(module.name, addition, module not in self.finder.default_modules()) for module in modules for addition in module.added_states),
             helper_types=tuple(HelperTypeEntry.declared(module.name, declaration) for module in modules for declaration in suites.helper_types(module)),
-            agent_groups=tuple(AgentGroupEntry.declared(module.name, group) for module in modules for group in module.agent_groups),
+            agent_groups=tuple(AgentGroupEntry.declared(module.name, group) for module in modules for group in module.group_declarations()),
             profiles=self.profile_entries(modules),
             providers=self.providers.providers(modules),
             settings=tuple(entry for module in modules for entry in SettingTree().entries(module.name, module.settings)),
