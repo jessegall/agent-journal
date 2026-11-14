@@ -1,0 +1,61 @@
+/* Round sixteen: the agent inspector's section bars, its Family tree tab, and the secret delete confirmation. Every colour is a viewer token. */
+
+/* ---------- a section bar: one left-aligned line, chevron, icon, label, count right (AgentFold.vue values) ---------- */
+.r16-section { display: flex; flex-direction: column; flex: none; }
+.r16-bar { display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 7px; width: 100%; height: 28px; margin: 0; padding: 0 var(--inset);
+  border: 0; border-bottom: 1px solid var(--border-inner); border-radius: 0; background: var(--side); color: var(--text-2); font: inherit; font-size: 11.5px; font-weight: 500;
+  letter-spacing: .03em; line-height: 1; text-align: left; white-space: nowrap; cursor: pointer; }
+.r16-bar:hover { color: var(--text); }
+.r16-bar:focus-visible { outline: 0; box-shadow: inset 0 0 0 1px var(--accent); }
+.r16-bar > i, .r16-bar > b, .r16-bar > em { flex: none; margin: 0; font-style: normal; font-weight: inherit; }
+.r16-bar .ico { display: inline-flex; margin: 0; }
+.r16-chev, .r16-icon { display: inline-flex; color: var(--text-3); }
+.r16-chev { transition: transform 160ms; }
+.r16-bar[aria-expanded="false"] .r16-chev { transform: rotate(-90deg); }
+.r16-label { flex: 0 1 auto !important; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.r16-count { margin-left: auto !important; color: var(--text-3); font-size: 11px; font-style: normal; font-variant-numeric: tabular-nums; }
+.r16-body { border-bottom: 1px solid var(--border-inner); }
+.r16-body > .r8-now, .r16-body > .r8-plan { border-bottom: 0; }
+.r16-body > .r8-plan { padding-top: 0; }
+.r8-move.r16-two { grid-template-columns: minmax(0, 1fr) auto; }
+.r16-fields { padding: 6px var(--inset) 10px; }
+.r16-none { margin: 0; padding: 8px var(--inset); color: var(--text-4); font-size: 12px; }
+
+/* ---------- the Family tree tab ---------- */
+.r16-tree { flex: 1; min-height: 0; overflow-y: auto; padding: 12px var(--inset) 16px; }
+.r16-tree ul { position: relative; margin: 0; padding: 0; list-style: none; }
+.r16-tree ul ul { margin-left: 8px; padding-left: 17px; border-left: 1px solid var(--border-2); }
+.r16-tree li { position: relative; }
+/* the tick from the line to each row, and the line cut after the last row */
+.r16-tree ul ul > li::before { content: ""; position: absolute; left: -17px; top: 15px; width: 13px; border-top: 1px solid var(--border-2); }
+.r16-tree ul ul > li:last-child::after { content: ""; position: absolute; left: -18px; top: 16px; bottom: 0; width: 1px; background: var(--bg); }
+.r16-line { display: flex; align-items: center; gap: 2px; min-width: 0; }
+.r16-twist { display: grid; place-items: center; flex: none; width: 16px; height: 16px; padding: 0; border: 0; border-radius: 4px; background: none; color: var(--text-3); }
+button.r16-twist:hover { background: var(--hover); color: var(--text); }
+button.r16-twist .ico { transition: transform 160ms; }
+button.r16-twist[aria-expanded="false"] .ico { transform: rotate(-90deg); }
+.r16-node { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; height: 30px; padding: 0 8px; border: 0; border-radius: var(--r-sm); background: none;
+  color: var(--text); font: inherit; font-size: 12.5px; text-align: left; }
+button.r16-node { cursor: pointer; }
+button.r16-node:hover { background: var(--hover); }
+button.r16-node:focus-visible { outline: 0; box-shadow: inset 0 0 0 1px var(--accent); }
+.r16-node.self { background: var(--sel); font-weight: 500; }
+.r16-node.person { color: var(--text-2); }
+.r16-person { display: inline-flex; color: var(--text-3); }
+.r16-name { flex: none; }
+.r16-sub { min-width: 0; overflow: hidden; color: var(--text-3); font-size: 12px; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
+.r16-when { margin-left: auto; flex: none; color: var(--text-4); font-size: 11.5px; font-weight: 400; }
+.r16-here { flex: none; color: var(--text-3); font-size: 11px; font-weight: 400; }
+.r16-node .r16-count { margin-left: 4px !important; }
+.r16-tree li.retired > .r16-line .r16-node { color: var(--text-3); }
+.r16-line .r16-none { padding: 6px 8px; }
+.r16-skel { height: 14px; margin: 8px 0; width: 46%; border-radius: 4px; background: var(--chip); animation: r16-pulse 1.1s ease-in-out infinite; }
+@keyframes r16-pulse { 50% { opacity: .5; } }
+
+/* ---------- secret delete: erased for good ---------- */
+.r16-erase { display: flex; flex-direction: column; gap: 8px; }
+.r16-erase-lead { display: flex; align-items: flex-start; gap: 8px; margin: 0; color: var(--text); font-size: 13px; font-weight: 500; line-height: 1.45; }
+.r16-erase-lead .ico { flex: none; margin-top: 2px; color: var(--danger); }
+.r16-erase-line { margin: 0 0 0 22px; color: var(--text-3); font-size: 12.5px; line-height: 1.5; }
+
+@media (prefers-reduced-motion: reduce) { .r16-chev, button.r16-twist .ico { transition: none; } .r16-skel { animation: none; } }

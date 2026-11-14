@@ -1,0 +1,72 @@
+/* Round five (messages 120222, 120226, 120239). Loaded last: the badge radius, the plan focus, the profiles page and editor, the task inspector's command rows. */
+
+/* ---------- badges: squarish, a small corner radius, never a pill (message 120239) ---------- */
+:root { --r-badge: 4px; }
+.badge, .chip, .pl-state, .tk-tag, .count, .bell-count, .tab .count, .nav .count, .fchip, .fchip-main, .pf-src { border-radius: var(--r-badge); }
+.fchip-x { border-radius: 0 var(--r-badge) var(--r-badge) 0; }
+.badge { padding-inline: 6px; }
+
+/* ---------- plan focus (message 120222) ---------- */
+.now-focus { display: inline-flex; flex: none; align-items: center; gap: 6px; height: 24px; padding: 0 6px; margin-left: -2px; border: 0; border-radius: 6px; background: none; color: var(--text-3); font-size: 11px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.now-focus:hover, .now-focus.on { background: var(--hover); color: var(--text); }
+.now-focus .ico { color: var(--accent-text); }
+.now-focus .word { color: var(--text-4); }
+.now-focus b { font-weight: 400; color: var(--text-2); }
+.now-focus.default .ico { color: var(--text-3); }
+.focus-bar { display: inline-flex; width: 48px; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.focus-bar i { display: block; height: 100%; background: var(--text-3); }
+.focus-bar i.testing { background: var(--text-4); }
+.focus-row { display: grid; grid-template-columns: 14px auto 5ch minmax(0, 1fr) 48px 44px; column-gap: 8px; align-items: center; width: 100%; height: 30px; padding: 0 10px; border: 0; border-radius: 6px; background: none; color: var(--text-2); font-size: 12px; text-align: left; white-space: nowrap; }
+.focus-row > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.focus-row:hover:not(:disabled) { background: var(--hover); color: var(--text); }
+.focus-row:disabled { color: var(--text-4); cursor: default; }
+.focus-row .n { text-align: right; font-variant-numeric: tabular-nums; }
+.focus-row .num { text-align: right; color: var(--text-3); font-variant-numeric: tabular-nums; }
+.focus-row .tick { color: var(--accent-text); }
+.pl-card.focus { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); box-shadow: inset 2px 0 0 var(--accent); }
+.pl-focus { display: inline-flex; align-items: center; gap: 4px; color: var(--accent-text); font-size: 11px; white-space: nowrap; overflow: hidden; }
+.pl-focus.default { color: var(--text-3); }
+.pl-make { justify-self: start; display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 5px; color: var(--text-4); opacity: 0; }
+.pl-card:hover .pl-make, .pl-make:focus-visible { opacity: 1; }
+.pl-make:hover { background: var(--sel); color: var(--text); }
+
+/* ---------- task inspector: a command row as icon, kind and number, the command, its state ---------- */
+.link-row.cmd { grid-template-columns: 16px auto minmax(0, 1fr) 84px; }
+.link-row.cmd .mono { font-size: 12px; color: var(--text-2); }
+
+/* ---------- profiles page and editor (message 120226) ---------- */
+.pf { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
+.pf-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; align-items: start; padding: 16px var(--inset) 12px; border-bottom: 1px solid var(--border); }
+.pf-meta { display: flex; align-items: center; gap: 8px; min-width: 0; color: var(--text-3); font-size: 12px; white-space: nowrap; overflow: hidden; }
+.pf-meta > * { flex: none; }
+.pf-meta .path { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--text-4); }
+.pf-head h2 { margin: 6px 0 2px; font-size: 18px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pf-head p { margin: 0; color: var(--text-3); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pf-src { display: inline-flex; align-items: center; gap: 5px; height: 20px; padding: 0 7px; border: 1px solid var(--border-2); color: var(--text-2); font-size: 11px; }
+.pf-src.project { border-color: color-mix(in srgb, var(--accent) 40%, var(--border-2)); color: var(--accent-text); }
+.pf-src.changed { border-style: dashed; }
+.pf-src.problem { border-color: color-mix(in srgb, var(--warn) 50%, var(--border-2)); color: var(--warn); }
+.pf-body { flex: 1; min-height: 0; display: flex; }
+.pf-body .sl { flex: 1; min-width: 0; }
+.tab .pf-dot { display: inline-block; width: 6px; height: 6px; margin-left: 6px; border-radius: 50%; background: var(--accent-text); vertical-align: middle; }
+.pf-inherit { color: var(--text-4); font-size: 11px; white-space: nowrap; }
+.pf-list-meta { display: inline-flex; gap: 4px; flex: none; }
+.pf-skill, .pf-rule { display: grid; grid-template-columns: minmax(0, 1fr) 64px 64px; column-gap: 12px; align-items: center; height: 34px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.pf-skill > *, .pf-rule > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.pf-skill .nm { display: grid; grid-template-columns: minmax(0, 18ch) minmax(0, 1fr); column-gap: 10px; }
+.pf-skill .nm b { font-weight: 400; color: var(--text); font-family: var(--mono); font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
+.pf-skill .nm span { color: var(--text-3); font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
+.pf-skill .sw, .pf-cols .h { justify-self: center; }
+.pf-cols { display: grid; grid-template-columns: minmax(0, 1fr) 64px 64px; column-gap: 12px; height: 24px; align-items: end; color: var(--text-4); font-size: 10.5px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.pf-rule { grid-template-columns: 6ch minmax(0, 1fr) 84px; }
+.pf-rule .n { color: var(--accent-text); text-align: right; font-variant-numeric: tabular-nums; font-size: 12px; }
+.pf-rule .t { color: var(--text-2); font-size: 12.5px; }
+.pf-add { display: flex; gap: 6px; margin-top: 10px; }
+.pf-add input { flex: 1; min-width: 0; height: 28px; }
+.pf-text { width: 100%; min-height: 320px; padding: 10px 12px; border: 1px solid var(--border-2); border-radius: var(--r-sm); background: var(--bg-2); color: var(--text); font: 12.5px/1.6 var(--mono); resize: vertical; }
+.pf-text:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.pf-count { display: flex; gap: 8px; margin-top: 6px; color: var(--text-4); font-size: 11.5px; white-space: nowrap; }
+.pf-preview { margin: 0; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--r); background: var(--term); color: var(--text-2); font: 12px/1.6 var(--mono); white-space: pre-wrap; max-height: 360px; overflow: auto; }
+.pf-preview .from { color: var(--text-4); }
+.pf-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.pf-new { display: inline-flex; align-items: center; gap: 6px; }
