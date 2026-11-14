@@ -7,7 +7,7 @@ import DocumentSettle from "./DocumentSettle.vue";
 import {documentRead} from "./documentRead.js";
 import {documentMenu} from "./documentItems.js";
 import {grouped, searched, sorted} from "./libraryGroups.js";
-import {useLibrary} from "./useLibrary.js";
+import {useLibrary} from "./DocumentLibrary.vue";
 
 // the documents and the reports as a list and a reader: a switch between documents and reports and one between the open and the closed, rows grouped by when each was last written,
 // and the text, revisions and links of the chosen one at the right. A row has its number and its title, with no word for what it is
