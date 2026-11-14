@@ -31,11 +31,13 @@ class PluginStaging:
         return self.home.folder / STAGING_FOLDER / hashlib.sha256(source.encode()).hexdigest()
 
     def fetched(self, source: str) -> Path:
-        folder = self.folder(source)
         if FileAccess.is_dir(Path(source)):
-            return folder
+            return self.folder(source)
+        return self.fetched_tag(source, self.releases.newest_tag(source))
+
+    def fetched_tag(self, source: str, tag: str | None) -> Path:
+        folder = self.folder(source)
         self.cleared(source)
-        tag = self.releases.newest_tag(source)
         branch = ["--branch", tag] if tag else []
         command = ["git", "clone", "--quiet", "--depth", "1", *branch, self.releases.address(source), str(folder)]
         try:

@@ -8,6 +8,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.file.file_access import FileAccess
 from engine.errors.refusal import Refusal
+from engine.version.version_numbers import VersionNumbers
 from engine.repository.repository import Repository
 from core.modules.plugins.commands.upgrade_plugin.upgrade_plugin import UpgradePlugin
 from core.modules.plugins.queries.plugin_query import PluginQuery
@@ -16,6 +17,7 @@ from core.modules.plugins.support.plugin_digest import PluginDigest
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_install_steps import PluginInstallSteps
 from core.modules.plugins.support.plugin_manifest import PluginManifest
+from core.modules.plugins.support.plugin_releases import PluginReleases
 from core.modules.plugins.support.plugin_skill_files import PluginSkillFiles
 from core.modules.plugins.support.plugin_staging import EXCLUDED_NAMES, PluginStaging
 from core.modules.plugins.support.plugin_upgrade import PluginUpgrade
@@ -33,8 +35,9 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
     command = UpgradePlugin
     runs_once = True
 
-    def __init__(self, plugins: PluginQuery, folders: PluginFolders, staging: PluginStaging, steps: PluginInstallSteps, repository: Repository, skill_files: PluginSkillFiles, code_diff: PluginCodeDiff, scripts: PluginScriptProcesses) -> None:
+    def __init__(self, plugins: PluginQuery, folders: PluginFolders, staging: PluginStaging, steps: PluginInstallSteps, repository: Repository, skill_files: PluginSkillFiles, code_diff: PluginCodeDiff, scripts: PluginScriptProcesses, releases: PluginReleases) -> None:
         self.plugins, self.folders, self.staging, self.steps, self.repository, self.skill_files, self.code_diff, self.scripts = plugins, folders, staging, steps, repository, skill_files, code_diff, scripts
+        self.releases = releases
 
     def prepare(self, command: UpgradePlugin, actor: Actor) -> None:
         if actor.is_agent():
@@ -53,10 +56,31 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
         FileAccess.update_timestamp(mark)
         self.scripts.stop(plugin.name)
         try:
-            self.replaced(manifest, source, self.folders.code(plugin.name))
+            skipped = self.replaced_with_fallback(plugin.release, origin, manifest, source, self.folders.code(plugin.name))
         except Exception:
             FileAccess.unlink(mark, missing_ok=True)
             raise
+        FileAccess.write(mark, "\n".join(skipped))
+
+    # The newest release first; when its setup fails, the newest earlier release newer than the installed one whose
+    # setup succeeds, such as a tag whose release files are not published yet. Each release passed over is named.
+    def replaced_with_fallback(self, installed: str, origin: str, manifest: PluginManifest, source: Path, code: Path) -> list[str]:
+        older = [] if FileAccess.is_dir(Path(origin)) else self.earlier_releases(installed, origin, manifest.version)
+        skipped: list[str] = []
+        while True:
+            try:
+                self.replaced(manifest, source, code)
+                return skipped
+            except Refusal as failure:
+                if not older:
+                    raise
+                skipped.append(f"skipped {manifest.version}: {failure.reason}")
+            source = self.staging.fetched_tag(origin, older.pop(0))
+            manifest = PluginManifest.read(source)
+
+    def earlier_releases(self, installed: str, origin: str, newest: str) -> list[str]:
+        floor, top = VersionNumbers.parsed(installed), VersionNumbers.parsed(newest)
+        return [tag for tag in self.releases.release_tags(origin) if floor < VersionNumbers.parsed(tag) < top]
 
     @staticmethod
     def origin(source: str, command: UpgradePlugin) -> str:
@@ -92,8 +116,10 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
         manifest = PluginManifest.read(code)
         self.skill_files.publish(code, manifest)
         self.repository.save(plugin.changed(release=manifest.version, files_digest=PluginDigest.digest(code, manifest)), context)
-        FileAccess.unlink(self.folders.upgrade_mark(plugin.name), missing_ok=True)
-        return PluginUpgrade(plugin.name, plugin.release, manifest.version, [], True)
+        mark = self.folders.upgrade_mark(plugin.name)
+        skipped = FileAccess.current(mark).splitlines() if FileAccess.exists(mark) else []
+        FileAccess.unlink(mark, missing_ok=True)
+        return PluginUpgrade(plugin.name, plugin.release, manifest.version, [], True, skipped=skipped)
 
     @staticmethod
     def changes(old: PluginManifest, offered: PluginManifest) -> list[str]:
