@@ -20,6 +20,10 @@ class RunSize:
     def is_full_suite(self) -> bool:
         return all(target.rstrip("/") == FULL_SUITE for target in self.targets)
 
+    # A run of the whole suite names no part of it: no path but the tests folder, and no filter on names, marks or last failures.
+    def is_full_run(self, name_filter: str, mark_filter: str, deselected: Iterable[str], only_last_failed: bool) -> bool:
+        return self.is_full_suite() and not (name_filter or mark_filter or tuple(deselected) or only_last_failed)
+
     def reaches_stories(self) -> bool:
         return not self.targets or any(UNIT_FOLDER not in Path(target).parts for target in self.targets)
 

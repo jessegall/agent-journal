@@ -197,7 +197,8 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
         process_output[STORY_CHECKS_KEY] = {name: sorted(checks) for name, checks in overlap.story_checks.items()}
         process_output[CPU_SECONDS_KEY] = session.config.stash[RUN_CPU].seconds
         return
-    if RunSize(session.config.args, 1).is_full_suite() and not session.config.option.collectonly:
+    option = session.config.option
+    if RunSize(session.config.args, 1).is_full_run(option.keyword, option.markexpr, option.deselect or (), bool(getattr(option, "lf", False))) and not option.collectonly:
         record = FullRunRecord(session.testscollected, session.testsfailed, time.monotonic() - session.config.stash[RUN_START], session.config.stash[RUN_CPU].seconds)
         session.config.stash[FULL_RUN] = record
         FullRunRecords.add(record)

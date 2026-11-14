@@ -1,3 +1,4 @@
+from engine.enums.process_type import ProcessType
 from engine.query.condition_join import ConditionJoin
 from engine.query.conditions.conjunction import Conjunction
 from engine.query.conditions.among import Among
@@ -24,7 +25,7 @@ RUNNING_STATES = ("running", "background")
 MAIN_RUN_CATEGORIES = ("test run", "build")
 MAIN_ROLE = Equal("agents.role", "main")
 
-PROCESS_ROWS_SELECT = Select("processes").selecting(*(Column(name) for name in ("id", "environment_id", "session_agent_id", "line", "state"))).matching(Equal("plugin", "")).view_sql()
+PROCESS_ROWS_SELECT = Select("processes").selecting(*(Column(name) for name in ("id", "environment_id", "session_agent_id", "line", "state"))).matching(Equal("plugin", "")).matching(Among("run_name", [ProcessType.MERGE_HOOK.value], negated=True)).view_sql()
 
 RUN_TASK = ScalarSubselect(
     Select("tasks").selecting(Column("tasks.id"))
