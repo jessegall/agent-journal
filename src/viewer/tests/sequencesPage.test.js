@@ -135,3 +135,14 @@ test("test_menu_items: a right click on a sequence has Open, Start, its own acti
     await settle();
     expect(element.querySelector("[data-sequence-reader]")).not.toBeNull();
 });
+
+test("the list has a search with the State and Trigger chips, and the search keeps the sequences holding the words", async () => {
+    const {element} = await drawn();
+    expect(element.querySelector("[data-filter-bar]")).not.toBeNull();
+    const chips = [...element.querySelectorAll("[data-filter-chip]")].map((chip) => chip.dataset.filterChip);
+    expect(chips).toEqual(expect.arrayContaining(["state", "trigger"]));
+    typeInto(element.querySelector("[data-filter-bar] input"), "Review");
+    await settle();
+    expect(element.querySelector('[data-row="1"]')).toBeNull();
+    expect(rowOf(element, 2)).not.toBeNull();
+});
