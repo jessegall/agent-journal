@@ -60,7 +60,7 @@ def test_a_new_task_that_meets_a_rule_is_given_at_once_with_the_rule_on_the_assi
     decision, given = task_decision(story, task_id), task_assignments(story, task_id)
     story.expect_rows(decision.outcome == "assigned", decision.rule_id == COMPLEXITY_RULE, f"rule {COMPLEXITY_RULE} applied: given to the main agent" in decision.reason,
                       [row.actor_id for row in given] == [story.agent.id], given[0].rule_id == COMPLEXITY_RULE,
-                      given[0]["creator_id"] != story.user.id, detail=str((decision, given)))
+                      given[0].creator_id != story.user.id, detail=str((decision, given)))
 
 
 def test_the_first_rule_wins_and_the_decision_names_the_others_that_matched(new_story):

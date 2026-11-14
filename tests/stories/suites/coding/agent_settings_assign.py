@@ -231,8 +231,8 @@ def test_apply_in_the_tab_lists_the_tasks_and_gives_them_once_confirmed(new_stor
     story.run(f"assign-rule enable {rule_id} --environment main", actor=story.user)
     with assign_tab(story) as tab:
         listed = tab.change("assign-rule", "apply", str(rule_id))
-        confirmed = tab.change("assign-rule", "apply", str(rule_id), "--confirm")
-    story.expect_rows(listed.code == 0, [row["task_id"] for row in listed.value["tasks"]] == [task_id], not listed.value["confirmed"], confirmed.value["confirmed"], detail=listed.text)
+        confirmed = tab.change("assign-rule", "apply", str(rule_id), "--change")
+    story.expect_rows(listed.code == 0, [row["task_id"] for row in listed.value["tasks"]] == [1, task_id], not listed.value["confirmed"], confirmed.value["confirmed"], detail=listed.text)
     story.expect_text(f"task info {task_id} --environment main", f"assigned to: agent {story.agent.id}", actor=story.user)
 
 

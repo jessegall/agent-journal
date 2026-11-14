@@ -1,9 +1,7 @@
-import json
-
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.assign_rules.support.given_row import GivenRow
-from tests.stories.core.modules.assign_rules.support.rule_steps import condition_values, ENVIRONMENT, rule_line, task_assignments, task_decision
+from tests.stories.core.modules.assign_rules.support.rule_steps import condition_values, ENVIRONMENT, recorded_decision, rule_line, task_assignments, task_decision
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenBuilderWithPerson, OrchestratorWithPerson
 
@@ -112,7 +110,7 @@ def test_a_cancelled_task_is_never_given_and_reopening_it_gives_it_to_nobody(new
     story = new_story(fixture=OrchestratorWithPerson)
     story.expect_success(f'task cancel {TASK_ID} --reason "not needed" {ENVIRONMENT}', actor=story.user)
     story.run(rule_line("any"), actor=story.user)
-    cancelled = json.loads(story.run(f"assign-decision record {TASK_ID} --json {ENVIRONMENT}", actor=story.user).output_text.splitlines()[0])
+    cancelled = recorded_decision(story, TASK_ID)
     story.expect_success(f"task reopen {TASK_ID} {ENVIRONMENT}", actor=story.user)
     story.expect_rows(cancelled.outcome == "skipped", cancelled.reason == "the task is cancelled", task_assignments(story, TASK_ID) == [],
                       detail=str((cancelled, task_assignments(story, TASK_ID))))

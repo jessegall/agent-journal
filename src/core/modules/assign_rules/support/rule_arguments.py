@@ -4,6 +4,7 @@ from engine.cli.agent_number import AgentNumber
 from core.modules.assign_rules.models.enums.rule_target import RuleTarget
 from core.modules.assign_rules.support.condition_line import ConditionLine
 
+CHANGE_HELP = "change the listed tasks; without it the command only lists them"
 REVISION_HELP = "the revision of the rules the change was made from; a change from an older one is refused"
 CONDITION_HELP = "a condition as <field> <operator> <value>, such as 'complexity minimum 4' or 'any'; repeat it for more"
 
@@ -30,6 +31,7 @@ class RuleArguments:
     def add_revised_rule(parser: ArgumentParser) -> None:
         parser.add_argument("rule_id", type=int)
         RuleArguments.add_revision(parser)
+        parser.add_argument("--change", dest="is_confirmed", action="store_true", help=CHANGE_HELP)
 
     @staticmethod
     def conditions(arguments: Namespace) -> tuple[ConditionLine, ...]:

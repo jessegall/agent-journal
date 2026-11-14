@@ -18,6 +18,7 @@ from core.modules.assign_rules.support.assign_rules_mode import AssignRulesMode
 from core.modules.assign_rules.support.assign_rules_nudges import RULE_NUDGE_SOURCE, RULE_TASK_NUDGE
 from core.modules.assign_rules.support.decision_note import DecisionNote
 from core.modules.assign_rules.support.enabled_rules import EnabledRules
+from core.modules.assign_rules.support.environment_rules import EnvironmentRules
 from core.modules.assign_rules.support.rule_conditions import RuleConditions
 from core.modules.assign_rules.support.rule_mark import RuleMark
 from core.modules.assign_rules.support.targets.decision_batch import DecisionBatch
@@ -28,7 +29,7 @@ from core.modules.assignments.support.assignments import Assignments
 from core.modules.tasks.models.enums.task_state import UNSTARTED_STATES
 from core.modules.tasks.models.task import Task
 
-RULES_REASON = "a task is judged against every enabled rule of its environment"
+RULES_REASON = "a task is judged against the rules of its environment, and a save checks the revision of all of them"
 DECISIONS_REASON = "the decisions about the tasks judged together are read in one query"
 
 
@@ -172,13 +173,16 @@ class AssignRules:
         return self.enabled_rules().matching(facts)
 
     def enabled_rules(self) -> EnabledRules:
-        rules = self.queries.query(AssignRule).filter(enabled=True)
-        conditions = self.queries.query(AssignRuleCondition).where_in("rule_id", self.queries.query(AssignRule).filter(enabled=True).select_columns("id"))
-        return self.kept.read_spanning([rules, conditions], lambda: self.loaded_rules(rules), name="assign_rules.enabled")
+        return self.environment_rules().enabled()
 
-    def loaded_rules(self, rules: Query[AssignRule]) -> EnabledRules:
+    def environment_rules(self) -> EnvironmentRules:
+        rules = self.queries.query(AssignRule)
+        conditions = self.queries.query(AssignRuleCondition).where_in("rule_id", self.queries.query(AssignRule).select_columns("id"))
+        return self.kept.read_spanning([rules, conditions], lambda: self.loaded_rules(rules), name="assign_rules.environment")
+
+    def loaded_rules(self, rules: Query[AssignRule]) -> EnvironmentRules:
         ordered = tuple(sorted(rules.every_row(RULES_REASON), key=lambda rule: rule.position))
-        return EnabledRules(ordered, self.conditions.rule_lines(ordered))
+        return EnvironmentRules(ordered, self.conditions.rule_lines(ordered))
 
     def record_failure(self, task: Task, reason: str, context: Context) -> AssignDecision:
         return self.record(task, self.stored_decision(task), DecisionOutcome.FAILED, None, None, reason, context)

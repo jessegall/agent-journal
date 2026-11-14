@@ -88,7 +88,7 @@ def test_apply_lists_the_free_tasks_first_and_gives_them_once_confirmed(new_stor
     story = new_story(fixture=DisabledRuleTasks)
     listed = listed_task_ids(story, "assign-rule apply 1")
     unchanged = [assignees(story, SHELF_TASK), assignees(story, RACK_TASK)]
-    story.expect_text(f"assign-rule apply 1 --confirm {ENVIRONMENT}", "rule 1: 3 tasks changed", actor=story.user)
+    story.expect_text(f"assign-rule apply 1 --change {ENVIRONMENT}", "rule 1: 3 tasks changed", actor=story.user)
     decisions = [task_decision(story, SHELF_TASK), task_decision(story, RACK_TASK)]
     story.expect_rows(listed == [FIXTURE_TASK, SHELF_TASK, RACK_TASK], unchanged == [[], []], [decision.outcome for decision in decisions] == ["assigned", "assigned"],
                       [assignees(story, SHELF_TASK), assignees(story, RACK_TASK)] == [[story.agent.id], [story.agent.id]], detail=str(decisions))
@@ -103,7 +103,7 @@ def test_a_rule_turned_on_again_gives_nothing_made_while_it_was_off_until_applie
 def test_reassign_moves_only_the_waiting_tasks_the_rule_gave(new_story):
     story = new_story(fixture=RuleTasksStartedAndHandGiven)
     listed = listed_task_ids(story, f"assign-rule reassign {COMPLEXITY_RULE}")
-    story.expect_success(f"assign-rule reassign {COMPLEXITY_RULE} --confirm {ENVIRONMENT}", actor=story.user)
+    story.expect_success(f"assign-rule reassign {COMPLEXITY_RULE} --change {ENVIRONMENT}", actor=story.user)
     moved = task_decision(story, LAMP_TASK)
     story.expect_rows(listed == [LAMP_TASK], [assignees(story, task_id) for task_id in (LAMP_TASK, CLOCK_TASK, DOOR_TASK)] == [[story.helper.id], [story.agent.id], [story.agent.id]],
                       task_assignments(story, LAMP_TASK)[0].rule_id == COMPLEXITY_RULE, moved.actor_id == story.helper.id, detail=str(moved))
@@ -124,7 +124,7 @@ def test_a_deleted_rule_leaves_its_tasks_and_gives_back_the_waiting_ones_each_on
     story.run(f"assign-rule delete {CART_RULE} {ENVIRONMENT}", actor=story.user)
     story.expect_text(f"task info {CART_TASK} {ENVIRONMENT}", f"by rule {CART_RULE} (deleted)", actor=story.agent)
     listed = listed_task_ids(story, f"assign-rule give-back {CART_RULE}")
-    story.expect_success(f"assign-rule give-back {CART_RULE} --confirm {ENVIRONMENT}", actor=story.user)
+    story.expect_success(f"assign-rule give-back {CART_RULE} --change {ENVIRONMENT}", actor=story.user)
     story.expect_rows(listed == [CART_TASK, second], assignees(story, CART_TASK) == [], assignees(story, second) == [], task_decision(story, CART_TASK).outcome == "assigned", detail=listed)
 
 
@@ -159,5 +159,5 @@ def test_a_free_task_edited_so_it_matches_is_given_now(new_story):
 def test_only_a_person_applies_moves_or_gives_back_a_rule_s_tasks(new_story):
     story = new_story(fixture=CartRule)
     for subcommand_name in ("apply", "reassign", "give-back"):
-        story.expect_refusal(f"assign-rule {subcommand_name} {CART_RULE} --confirm {ENVIRONMENT}", "only a person writes rules", actor=story.agent)
+        story.expect_refusal(f"assign-rule {subcommand_name} {CART_RULE} --change {ENVIRONMENT}", "only a person writes rules", actor=story.agent)
     story.expect_rows(assignees(story, CART_TASK) == [story.agent.id], detail=assignees(story, CART_TASK))

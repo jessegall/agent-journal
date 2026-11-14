@@ -90,8 +90,9 @@ def test_no_rule_leaves_the_task_free_and_says_so(rule_story):
     rule_story.expect_rows(decision.outcome == "unmatched", decision.rule_id is None, decision.actor_id is None)
 
 
-def test_a_rule_that_does_not_match_is_passed_over(rule_story):
+def test_a_rule_that_does_not_match_and_a_disabled_rule_are_passed_over(rule_story):
     insert_rule(rule_story, 1, field=ConditionField.TITLE, operator=ConditionOperator.HAS_WORD, value="migration")
+    insert_rule(rule_story, 2, enabled=0)
     rule_story.expect_rows(decide(rule_story).outcome == "unmatched")
 
 
@@ -100,11 +101,6 @@ def test_the_first_matching_rule_by_position_gives_the_task_to_its_target(rule_s
     first = insert_rule(rule_story, 1)
     decision = decide(rule_story)
     rule_story.expect_rows(decision.outcome == "assigned", decision.rule_id == first, [given.actor_id for given in task_assignments(rule_story, TASK_ID)] == [rule_story.agent.id])
-
-
-def test_a_disabled_rule_is_not_used(rule_story):
-    insert_rule(rule_story, 1, enabled=0)
-    rule_story.expect_rows(decide(rule_story).outcome == "unmatched")
 
 
 def test_a_second_judgement_updates_the_one_decision(rule_story):

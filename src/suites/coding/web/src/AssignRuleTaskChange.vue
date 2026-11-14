@@ -16,7 +16,7 @@ const CHANGES = [
 ];
 
 async function ask(verb, confirmed) {
-    const words = ["assign-rule", verb, String(props.rule.id), ...(confirmed ? ["--confirm"] : []), "--revision", props.revision, "--environment", view.environment];
+    const words = ["assign-rule", verb, String(props.rule.id), ...(confirmed ? ["--change"] : []), "--revision", props.revision, "--environment", view.environment];
     const answer = await view.run(words);
     if (!answer.ok) emit("failed", answer.error);
     return answer;

@@ -17,7 +17,7 @@ class RuleTaskList:
     def heading(self) -> str:
         if self.is_confirmed:
             return f"rule {self.rule_id}: {len(self.tasks)} tasks changed"
-        return f"rule {self.rule_id}: {len(self.tasks)} tasks; nothing changed yet, run it again with --confirm to change them"
+        return f"rule {self.rule_id}: {len(self.tasks)} tasks; nothing changed yet, run it again with --change to change them"
 
     def lines(self) -> Sequence[str]:
         return [self.heading, *(task.line for task in self.tasks)]

@@ -61,7 +61,7 @@ def test_a_person_edits_a_rule_target_and_conditions(new_story):
     story = new_story(fixture=TwoPersonRules)
     story.expect_success(f'assign-rule edit {COMPLEXITY_RULE} --condition "complexity minimum 2" --condition "complexity maximum 4" {ENVIRONMENT}', actor=story.user)
     story.expect_rows(condition_values(story, COMPLEXITY_RULE) == ["2", "4"], detail=str(condition_values(story, COMPLEXITY_RULE)))
-    story.expect_refusal(f"assign-rule edit {COMPLEXITY_RULE} --target agent {ENVIRONMENT}", "names the agent", actor=story.user)
+    story.expect_refusal(f"assign-rule edit {COMPLEXITY_RULE} --target agent {ENVIRONMENT}", "needs the agent", actor=story.user)
 
 
 def test_a_person_moves_a_rule_and_the_places_stay_without_gaps(new_story):
