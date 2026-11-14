@@ -112,3 +112,29 @@ def test_the_merge_commit_of_a_unit_names_every_task_it_brings_in(new_story, mon
     merge(worker)
     title = worker.repository.history.tip(ENVIRONMENT_BRANCH).message.splitlines()[0]
     worker.story.expect_rows(title.startswith("tasks 1, 2, 3: "), detail=title)
+
+
+def test_a_task_released_from_the_unit_stays_open_when_the_unit_merges(new_story, monkeypatch):
+    worker = unplanned_group_worker(new_story, monkeypatch)
+    commit_tasks_singly(worker, (1, 2))
+    worker.story.run("task start 3", actor=worker.worker)
+    worker.story.expect_success('task release 3 --reason "another worker takes the receipts"', actor=worker.worker)
+    merge(worker)
+    worker.story.expect_text("task show 1", "state: completed", actor=worker.story.agent)
+    worker.story.expect_no_text("task show 3", "state: completed", actor=worker.story.agent)
+
+
+def test_a_task_in_testing_with_no_proof_of_its_own_is_left_open_and_named_by_the_merge(new_story, monkeypatch):
+    worker = unplanned_group_worker(new_story, monkeypatch)
+    commit_tasks_singly(worker, (1, 2))
+    worker.story.run("task start 3", actor=worker.worker)
+    worker.story.run("task test 3", actor=worker.worker)
+    number = agent_number(worker.story, worker.worker.id)
+    worker.repository.checkout(ENVIRONMENT_BRANCH)
+    for _ in range(3):
+        worker.end_all_tests()
+        worker.story.run_listeners()
+    worker.story.run('worker ask-merge "the committed work of the unit"', actor=worker.worker)
+    worker.story.run(f"worker logs {number}", actor=worker.story.agent)
+    worker.story.expect_text(f"worker merge --wait {number}", "left open, with no proof of their own in the worktree: tasks 3", actor=worker.story.agent)
+    worker.story.expect_text("task show 3", "state: testing", actor=worker.story.agent)

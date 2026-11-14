@@ -75,9 +75,9 @@
   "worker": "refused"
  },
  "agent exited": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
  },
  "agent fold-mains": {
   "helper": "refused",
@@ -1267,7 +1267,7 @@
  "helper start": {
   "helper": "refused",
   "merger": "refused",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "helper stop": {
   "helper": "refused",
@@ -1740,7 +1740,7 @@
   "worker": "refused"
  },
  "merger next": {
-  "helper": "refused",
+  "helper": "allowed",
   "merger": "allowed",
   "worker": "refused"
  },
@@ -3102,7 +3102,7 @@
  "review request": {
   "helper": "refused",
   "merger": "refused",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "review show": {
   "helper": "allowed",
@@ -4415,7 +4415,7 @@
   "worker": "allowed"
  },
  "worker logs": {
-  "helper": "refused",
+  "helper": "allowed",
   "merger": "allowed",
   "worker": "allowed"
  },

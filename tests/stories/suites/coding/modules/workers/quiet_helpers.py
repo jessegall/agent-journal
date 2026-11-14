@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.merger import Merger
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
@@ -48,7 +49,7 @@ def line_count(story, line: str) -> int:
 def merger_change(story, agent_id: int) -> None:
     database = story.container.get(Database)
     with database.transaction():
-        database.connection.execute("UPDATE agents SET profile = ? WHERE id = ?", (MERGER_PROFILE, agent_id))
+        database.connection.execute("UPDATE agents SET profile = ?, role = ? WHERE id = ?", (MERGER_PROFILE, Merger.key, agent_id))
 
 
 class BuilderMerger(StoryFixture):
