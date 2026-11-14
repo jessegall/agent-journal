@@ -17,7 +17,7 @@ from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.skills.models.agent_skill import AgentSkill
 from core.modules.skills.models.enums.agent_skill_state import AgentSkillState
-from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE, installed_story
+from tests.integration.core.modules.plugins.test_hooks import LISTING_SAMPLE, installed_story
 from tests.stories.core.modules.plugins.support.notices import expect_plugin_notice
 from tests.stories.core.modules.skills.due import expect_countdown
 from tests.stories.core.modules.plugins.support.event_stories import SECOND_JOB, TASK_CREATED, EventPluginStarted, event_folder, event_plugin_story, plugin_row, script_calls

@@ -176,7 +176,10 @@ def new_story(templates: "TemplateDatabases", tmp_path: Path, request: pytest.Fi
     item: pytest.Item = getattr(request, "node")
     created = item.stash[STORY_RUNS]
 
-    def started(*modules: str, fixture: type[StoryFixture] | None = None, environment: str | None = None) -> "Story":
+    def started(*arguments: str | type[StoryFixture], fixture: type[StoryFixture] | None = None, environment: str | None = None) -> "Story":
+        # a helper written for the played journal hands its fixture as a plain argument, as played() takes it
+        modules = tuple(argument for argument in arguments if isinstance(argument, str))
+        fixture = fixture if fixture is not None else next((argument for argument in arguments if isinstance(argument, type)), None)
         story = templates.story(tmp_path / "journal", modules, fixture)
         story.environment = environment
         story.use_fixture_environment(fixture.line_environment() if fixture else None)

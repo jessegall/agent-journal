@@ -17,7 +17,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story import Story
-from tests.stories.core.modules.processes.hang_watch import ActiveBuild, started_tree, watch_tick
+from tests.integration.core.modules.processes.test_hang_watch import ActiveBuild, started_tree, watch_tick
 from tests.stories.core.modules.processes.support.process_samples import end_run
 from core.modules.processes.support.process_nudges import SILENT_RUN_BLOCKED
 from engine.testing.expectations.expected_nudge import expected_nudge

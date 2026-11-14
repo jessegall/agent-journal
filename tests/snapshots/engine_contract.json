@@ -1315,8 +1315,6 @@
         "report_cut(self, sql: str, limit: int) -> None",
         "report_unscoped_read(self, table_name: str) -> None",
         "query_plan(self, statement: Statement) -> tuple[str, ...]",
-        "schema_text(self, sql: str) -> str",
-        "schema_version(self) -> int",
         "is_partial_index(self, name: str) -> bool",
         "defer_checkpoints(self) -> None",
         "file_integrity(path: Path) -> str",
@@ -1580,11 +1578,11 @@
     "database.query_plans.QueryPlans": {
       "bases": [],
       "fields": [
-        "plans: ClassVar[dict[tuple[str, str], tuple[str, ...]]]"
+        "plans: ClassVar[dict[str, tuple[str, ...]]]"
       ],
       "methods": [
-        "plan(cls, database: Database, schema: str, statement: Statement) -> tuple[str, ...]",
-        "schema(database: Database) -> str"
+        "plan(cls, database: Database, statement: Statement) -> tuple[str, ...]",
+        "forget(cls) -> None"
       ]
     },
     "database.rebuild_migration.RebuildMigration": {
@@ -1672,7 +1670,6 @@
         "is_allowed_read() -> bool",
         "is_bulk_seed(frame: FrameType | None) -> bool",
         "check_scan(self, database: Database, statement: Statement) -> None",
-        "schema_of(self, database: Database) -> str",
         "has_page_bounds(page: re.Match[str], statement: Statement) -> bool",
         "page_bound(value: str | None, parameters: Iterator[object]) -> object",
         "is_logical_scan(table: str, plans: Sequence[str]) -> bool",

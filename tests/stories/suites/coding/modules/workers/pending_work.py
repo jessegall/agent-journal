@@ -23,7 +23,7 @@ from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, delivered_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from tests.stories.suites.coding.modules.workers.test_queue import PROOF, ended, recording_launch
+from tests.integration.suites.coding.modules.workers.test_test_queue import PROOF, ended, recording_launch
 from tests.stories.core.support.agent_labels import agent_label
 from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
 from engine.testing.expectations.expected_nudge import expected_nudge
