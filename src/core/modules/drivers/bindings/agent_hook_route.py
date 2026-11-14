@@ -38,6 +38,7 @@ from engine.setting.setting_values import SettingValues
 
 MAIN_HOOK_SECONDS = 5
 AGENT_HOOK_SECONDS = 40
+STORED_ANSWER_REASON = "a repeated hook is found by its firing, which is unique in every environment"
 
 
 def hook_row_line(event: HookEvent) -> str:
@@ -72,7 +73,7 @@ class AgentHookRoute(HookRoute):
         lockdown = self.lockdown.lockdown(event.program)
         if lockdown.stops(event.event) and not self.passes_lockdown(event):
             return self.halted(event, lockdown)
-        stored_call = self.queries.query(HookCall).filter(firing=event.firing).first()
+        stored_call = self.queries.query(HookCall).every_environment(STORED_ANSWER_REASON).filter(firing=event.firing).first()
         if stored_call is not None:
             return HookReply.stored(stored_call)
         agent = self.agent(event)
