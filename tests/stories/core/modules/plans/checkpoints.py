@@ -4,6 +4,9 @@ import json
 import pytest
 
 from engine.actor.actor import Actor
+from engine.command.bus import Bus
+from engine.environment.environment_names import EnvironmentNames
+from core.modules.tasks.commands.close_task.close_task import CloseTask
 from engine.query.queries import Queries
 from engine.testing.examples.hook_samples import HookSamples
 from core.modules.agents.models.agent import Agent
@@ -369,3 +372,30 @@ def test_two_checkpoint_reviews_get_sessions_of_their_own(new_story):
 def test_a_checkpoint_with_the_review_off_starts_no_reviewer(new_story):
     story = new_story(fixture=PassedCheckpoint)
     story.expect_rows(rows(story, REVIEWS) == [], detail=str(rows(story, REVIEWS)))
+
+
+def started_checkpoint_plan(story: Story, plan_id: int, environment: str) -> int:
+    """Makes plan plan_id in the environment, with one checkpoint phase holding one task, starts it and returns the task."""
+    story.expect_success(f'plan make "Plan {plan_id}" --environment {environment}', actor=story.user)
+    story.expect_success(f'phase make --plan {plan_id} "Check" --checkpoint --environment {environment}', actor=story.user)
+    task_id = story.new_row_id(f'task make "Task {plan_id}" --environment {environment}', actor=story.user)
+    story.expect_success(f"phase place {task_id} --phase {plan_id} --environment {environment}", actor=story.user)
+    story.expect_success(f'task waits-on-nothing {task_id} --why "the order does not matter in this story" --environment {environment}', actor=story.user)
+    story.run(f"plan ready {plan_id} --environment {environment}", story.user)
+    story.run(f'plan ready {plan_id} --environment {environment} --skip-guard plans.one-task-phase --skip-reason "one task is enough in this story"', story.user)
+    for move in ("approve", "start"):
+        story.expect_success(f"plan {move} {plan_id} --environment {environment}", actor=story.user)
+    return task_id
+
+
+def test_tasks_closed_in_two_environments_in_one_round_reach_the_checkpoints_of_both(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success("environment make other /work/other", actor=story.user)
+    tasks = {"main": started_checkpoint_plan(story, 1, "main"), "other": started_checkpoint_plan(story, 2, "other")}
+    for environment, task_id in tasks.items():
+        story.expect_success(f"task start {task_id} --environment {environment}", actor=story.user)
+    for environment, task_id in tasks.items():
+        story.container.get(Bus).run(CloseTask(task_id, "done"), story.user, environment_id=story.container.get(EnvironmentNames).environment_id(environment))
+    story.run_listeners()
+    for environment in tasks:
+        story.expect_text(f"checkpoint-reach list --json --oldest --environment {environment}", '"state"', actor=story.user)

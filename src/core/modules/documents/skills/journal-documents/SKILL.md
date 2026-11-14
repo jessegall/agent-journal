@@ -42,4 +42,6 @@ journal-researcher, journal-code-reviewer, journal-plan-reviewer) file reports o
 - `journal doc revisions <n>` lists its revisions and `journal doc revision <n> <k>` reads one whole.
 - `journal doc settle <n> --why "<reason>"` marks it as needing no action; `journal report close` takes the same reason.
 - `journal doc comments <n>` reads what the user wrote on it; answer in the text.
+- A report a helper files for you starts the sequence Handling a helper's report: read it, act on it, then
+  `journal report comment <n> "<what came of it>"`, so every report keeps a log of what followed from it.
 - `journal doc list` and `journal report list` name the newest 50; `--page 2` names the 50 before them.

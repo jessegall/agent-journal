@@ -30,6 +30,7 @@ class SequenceTrigger:
     tool: str = ""
     end_events: str = ""
     link_source: str = ""
+    main_agent: str = ""
 
     @classmethod
     def parsed(cls, values: Mapping[object, object]) -> Self:
@@ -43,13 +44,18 @@ class SequenceTrigger:
         missing = [name for name in REQUIRED_FIELDS[category] if not getattr(self, name).strip()]
         if missing:
             raise Refusal(f"a {category} trigger needs its {', '.join(missing)}")
-        if (self.end_events or self.link_source) and category != ROW_TRIGGER:
-            raise Refusal(f"a {category} trigger cannot name end events or a link source", "only a row trigger takes end_events and link_source")
+        if (self.end_events or self.link_source or self.main_agent) and category != ROW_TRIGGER:
+            raise Refusal(f"a {category} trigger cannot name end events, a link source or the main agent", "only a row trigger takes end_events, link_source and main_agent")
         if category in PATTERN_TRIGGERS and self.pattern:
             try:
                 re.compile(self.pattern)
             except re.error as error:
                 raise Refusal(f"the pattern {self.pattern} does not read: {error}") from error
+
+    # the sequence starts for the environment's main agent when another agent, such as a helper, wrote the row
+    @property
+    def is_for_main_agent(self) -> bool:
+        return bool(self.main_agent)
 
     @property
     def row_model(self) -> str:

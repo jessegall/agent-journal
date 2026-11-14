@@ -99,6 +99,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
             raise Refusal(f"{AgentLabel.labelled(worker).text} has no worktree", "journal worker dispatch <task> starts a new one")
 
     def prepare(self, command: SendWorker, actor: Actor) -> None:
+        self.conflicts, self.is_gone, self.task_ids = (), False, ()
         worker = self.rows.required(Agent, command.worker_id)
         self.check_job(command, worker)
         self.check_session(worker)

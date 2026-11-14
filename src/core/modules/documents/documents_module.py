@@ -1,3 +1,4 @@
+from core.modules.documents.step_conditions.report_commented import ReportCommented
 from core.modules.agents.support.agent_report_reads import AgentReportReads
 from core.modules.documents.support.row_agent_report_reads import RowAgentReportReads
 from core.modules.documents.migrations.m008_message_link_paths import MessageLinkPathsMigration
@@ -138,6 +139,7 @@ class DocumentsModule(Module):
                                  runs=["doc comment", "report comment", "doc close", "doc edit", "report edit"], events=["doc.*", "report.*", "question.*"])]
     inspectors = [DOC_INSPECTOR, REPORT_INSPECTOR]
     views = [DocumentRow]
+    step_conditions = [ReportCommented]
     handlers = [ApprovePlanHandler, OpenDocHandler, RecordSubjectLinkHandler, CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler, RemoveLinkHandler, ReadPlanContextHandler]
     listeners = [CloseEndedDocumentListener, PlanDocumentLinkListener, ReplyLinkListener, WorkSourceLinkListener, DocMentionListener, ReportMentionListener, PlanMentionListener, TaskMentionListener, MessageMentionListener, PhaseMentionListener, TaskLogMentionListener, DeletedRowLinkListener, NewDocDockListener, NewReportDockListener, TextReadMarkListener, LinkCorrectionResetListener]
     marks = TEXT_MARKS

@@ -1,4 +1,5 @@
 import re
+from collections.abc import Sequence
 
 from engine.enums.actor_type import ActorType
 from engine.event.logged_event import LoggedEvent
@@ -47,6 +48,9 @@ class ProcessMarkListener(CommitListener[E]):
         self.rows = rows
         self.marks = marks
         self.outputs = outputs
+
+    def keep_parts_of(self, events: Sequence[LoggedEvent]) -> None:
+        self.visibility.keep_parts(tuple(dict.fromkeys(event.row_id for event in events)))
 
     def show(self, process: Process, logged: LoggedEvent) -> None:
         if process.plugin:
