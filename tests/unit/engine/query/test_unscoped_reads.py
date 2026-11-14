@@ -17,7 +17,7 @@ def shelves(database):
 
 
 def test_a_read_of_scoped_rows_with_no_environment_set_fails_naming_the_model(shelves):
-    with pytest.raises(UnscopedReadError, match="a read of shelf rows has no environment set"):
+    with pytest.raises(UnscopedReadError, match="a read of the shelves table has no environment set"):
         shelves.first()
 
 

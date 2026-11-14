@@ -366,10 +366,15 @@ class Query(Generic[M]):
 
     def scoped(self, select: Select) -> Select:
         owner = self.database.row_owner
+        if issubclass(self.model, EnvironmentScoped) and (owner is None or owner.environment_id is None) and not self.database.environment_scope_passed and not self.reads_every_environment:
+            self.database.report_unscoped_read(self.table.name)
+        return self.scope_conditions(select)
+
+    # the conditions the scope in force adds to a select, for a read or for a key that names the read
+    def scope_conditions(self, select: Select) -> Select:
+        owner = self.database.row_owner
         if issubclass(self.model, Removable) and not self.shows_removed:
             select = select.matching(IsNull(REMOVED_COLUMN))
-        if issubclass(self.model, EnvironmentScoped) and (owner is None or owner.environment_id is None) and not self.database.environment_scope_passed and not self.reads_every_environment:
-            self.database.report_unscoped_read(self.model.model_name)
         if owner is not None and issubclass(self.model, EnvironmentScoped):
             select = self.environment_rows(select, owner)
         if issubclass(self.model, AgentScoped):

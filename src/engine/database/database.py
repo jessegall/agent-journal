@@ -203,10 +203,10 @@ class Database:
             if reports is not None and all(str(recognized) != str(report) for recognized in reports):
                 reports.append(report)
 
-    def report_unscoped_read(self, model_name: str) -> None:
+    def report_unscoped_read(self, table_name: str) -> None:
         if self.unscoped_reads_raise:
-            raise UnscopedReadError.read(model_name)
-        UnscopedReads.record(model_name)
+            raise UnscopedReadError.read(table_name)
+        UnscopedReads.record(table_name)
 
     def query_plan(self, statement: Statement) -> tuple[str, ...]:
         return tuple(row[3] for row in self.connection.execute(f"EXPLAIN QUERY PLAN {statement.sql}", statement.parameters))
