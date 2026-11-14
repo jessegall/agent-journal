@@ -493,6 +493,7 @@ class WorktreeGit:
     def unstash(self, worktree: Worktree, stash: str) -> None:
         if self.unmerged_files(worktree.folder):
             return
+        self.remove_rewritten_copies(worktree.folder, stash)
         if self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "apply", stash).returncode == 0:
             self.drop_stash(worktree, stash)
             return
@@ -502,6 +503,22 @@ class WorktreeGit:
         if not self.head_contains(worktree.folder, stash):
             raise Refusal("git stash apply failed for the uncommitted changes of the worker", AskTopic.CONFLICT.hint(f"they stay in its stash {stash}: apply them with git stash apply {stash}"))
         self.drop_stash(worktree, stash)
+
+    # git refuses to put back an untracked file of a stash that the folder holds again. A copy with the same content, or
+    # an instruction file the journal wrote again while the stash was away, is taken out, and the stash puts its file back;
+    # the journal writes its instruction files again at its next refresh
+    def remove_rewritten_copies(self, folder: str, stash: str) -> None:
+        untracked = f"{stash}^3"
+        if self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", untracked).returncode != 0:
+            return
+        records = [record.partition("\t") for record in self.checked(folder, GIT_LIMIT_SECONDS, "ls-tree", "-r", "-z", untracked).stdout.split(NAME_SEPARATOR) if record]
+        present = [(meta.split()[2], path) for meta, _tab, path in records if FileAccess.is_file(Path(folder, path))]
+        if not present:
+            return
+        found = self.checked(folder, GIT_LIMIT_SECONDS, "hash-object", "--", *(path for _blob, path in present)).stdout.split()
+        for (blob, path), copy in zip(present, found):
+            if blob == copy or path in INSTRUCTION_FILES:
+                FileAccess.unlink(Path(folder, path))
 
     def unmerged_files(self, folder: str) -> tuple[str, ...]:
         return tuple(self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.splitlines())

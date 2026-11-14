@@ -64,13 +64,28 @@ const SNAPSHOT = {
             section: "recent",
             state: "finished",
             line: "make previous",
+            lane: "long",
             ended_at: "2026-11-03T10:01:10Z",
            
         },
     ],
 };
+const LANE_ENTRY = {class: "test, build or check", priority: "agent", starter: "worker 21", reason: "", raised_from: "", parent_line: ""};
+SNAPSHOT.execution = {
+    lanes: [
+        {lane: "instant", used: 0, capacity: 24, over_capacity: false, halted: false, halt_type: "", halt_reason: "", running: [], waiting: []},
+        {lane: "short", used: 0, capacity: 12, over_capacity: false, halted: false, halt_type: "", halt_reason: "", running: [], waiting: []},
+        {lane: "long", used: 4, capacity: 8, over_capacity: false, halted: false, halt_type: "", halt_reason: "",
+         running: [{...LANE_ENTRY, line: "make package", seconds: 5, slot_cost: 4, kind: "build", run_id: 70}],
+         waiting: [{...LANE_ENTRY, line: "make checks", seconds: 3, slot_cost: 4, kind: "check", run_id: 71, reason: "waits for room"},
+                   {...LANE_ENTRY, line: "make site", seconds: 2, slot_cost: 4, kind: "build", run_id: 72, reason: "waits for room"}]},
+    ],
+    waits: [],
+};
+const longLane = (changes) => ({...SNAPSHOT.execution, lanes: [...SNAPSHOT.execution.lanes.slice(0, 2), {...SNAPSHOT.execution.lanes[2], ...changes}]});
+const TABLE = {classes: [], settings: [{key: "journal.core.processes.lane-capacity-long", title: "Long lane capacity", description: "Slots of long runs.", value: 8}]};
 const OUTPUT_LINES = ["compiling package", "linking package"];
-const reader = async (line) => (line[0] === "output" ? {ok: true, value: {lines: OUTPUT_LINES, first_byte: 0, last_byte: 20, total: 20, cut_bytes: 0}} : {ok: true, value: SNAPSHOT});
+const reader = async (line) => (line[0] === "output" ? {ok: true, value: {lines: OUTPUT_LINES, first_byte: 0, last_byte: 20, total: 20, cut_bytes: 0}} : line[0] === "queue-class" ? {ok: true, value: TABLE} : {ok: true, value: SNAPSHOT});
 const rowsOf = (section) => [...document.body.querySelectorAll(`[data-queue-row="${section}"]`)];
 let app = null;
 let subscriptions = null;
@@ -100,7 +115,7 @@ test("queue arrivals and departures keep their Vue transition classes", async ()
     const frame = vi.spyOn(window, "requestAnimationFrame").mockImplementation(() => 0);
     try {
         let queue = SNAPSHOT;
-        await panel(async () => ({ok: true, value: queue}));
+        await panel(async () => ({ok: true, value: queue}), 41);
         queue = {...SNAPSHOT, running: [RUN, {...SNAPSHOT.waiting[0], section: "running"}], waiting: []};
         subscriptions.dispatch({event: "process.update", row_id: 71});
         await settle();
@@ -121,17 +136,26 @@ test("queue motion styles include reordering and respect reduced motion", () => 
     expect(run).toMatch(/prefers-reduced-motion: reduce[\s\S]*transition:\s*none/);
 });
 
-test("the process queue reads its counts and ordered lists together", async () => {
+test("the process queue reads its lanes and its finished runs together: three lane tiles, the lane blocks, then Finished lately with each run's lane", async () => {
     const read = vi.fn(reader);
     await panel(read);
     expect(read.mock.calls.filter(([line]) => line[0] === "queue")).toEqual([[["queue", "list"]]]);
-    expect(document.body.querySelector("[data-queue-spots]").textContent).toBe("1 of 2");
-    expect(document.body.querySelector("[data-queue-waiting]").textContent).toBe("2");
-    expect([...document.body.querySelectorAll("[data-queue-heading]")].map((item) => item.textContent)).toEqual([
-        "Running1",
-        "Waiting2",
-        "Finished1",
-    ]);
+    expect([...document.body.querySelectorAll("[data-queue-tile]")].map((tile) => tile.dataset.queueTile)).toEqual(["instant", "short", "long"]);
+    expect(document.body.querySelector('[data-queue-tile="long"] [data-queue-tile-use]').textContent).toBe("4 of 8");
+    expect(document.body.querySelector('[data-queue-tile="long"] [data-queue-tile-waiting]').textContent).toBe("2 waiting");
+    expect(document.body.querySelector('[data-queue-tile="short"] [data-queue-tile-waiting]').textContent).toBe("Nothing waits");
+    expect([...document.body.querySelectorAll('[data-lane="long"] [data-lane-entry="waiting"] .text')].map((item) => item.textContent)).toEqual(["make checks", "make site"]);
+    expect([...document.body.querySelectorAll("[data-queue-heading]")].map((item) => item.textContent)).toEqual(["Finished lately1"]);
+    expect(rowsOf("running")).toHaveLength(0);
+    expect(rowsOf("waiting")).toHaveLength(0);
+    expect(rowsOf("recent")[0].querySelector("[data-queue-lane]").textContent).toBe("Long lane");
+    expect(rowsOf("recent")[0].querySelector("[data-queue-time]").textContent).toBe("1 m 5 s");
+    expect(rowsOf("recent")[0].querySelector(".dot").title).toBe("Passed");
+});
+
+test("an agent's Processes tab lists its running and waiting runs in their sticky sections", async () => {
+    await panel(vi.fn(reader), 41);
+    expect([...document.body.querySelectorAll("[data-queue-heading]")].map((item) => item.textContent)).toEqual(["Running1", "Waiting2", "Finished1"]);
     expect([...document.body.querySelectorAll("[data-queue-heading]")].every((item) => item.classList.contains("sticky-band"))).toBe(true);
     expect(rowsOf("running")[0].textContent).toContain("make package");
     expect(rowsOf("running")[0].textContent).toContain("Agent 21");
@@ -139,13 +163,11 @@ test("the process queue reads its counts and ordered lists together", async () =
     expect(rowsOf("running")[0].querySelector("[data-queue-type]").textContent).toBe("Build");
     expect(rowsOf("waiting").map((row) => row.querySelector(".command").textContent)).toEqual(["make checks", "make site"]);
     expect(rowsOf("waiting").map((row) => row.querySelector("[data-queue-position]").textContent)).toEqual(["1", "2"]);
-    expect(rowsOf("recent")[0].querySelector("[data-queue-time]").textContent).toBe("1 m 5 s");
-    expect(rowsOf("recent")[0].querySelector(".dot").title).toBe("Passed");
 });
 
 test("a plugin's run shows under the plugin's name", async () => {
     const plugin_run = {...RUN, id: 74, category: "unknown", plugin: "judge", owner_agent_id: null, task_id: null, line: "sh ./check.sh"};
-    await panel(async () => ({ok: true, value: {...SNAPSHOT, running: [plugin_run]}}));
+    await panel(async () => ({ok: true, value: {...SNAPSHOT, running: [plugin_run]}}), 41);
     expect(rowsOf("running")[0].querySelector("[data-queue-type]").textContent).toBe("Plugin judge");
 });
 
@@ -175,10 +197,17 @@ test("output opens under a process and collapses again", async () => {
     expect(row.querySelector(".drop").classList.contains("open")).toBe(false);
 });
 
-test("a limit a suite names shows beside the commands at once and saves its setting", async () => {
+async function settingsTab() {
+    [...document.body.querySelectorAll("[data-queue-tabs] button")].find((button) => button.textContent.trim() === "Settings").click();
+    await settle();
+}
+
+test("the Settings tab holds a limit a suite names and saves its setting", async () => {
     const limit = {key: "journal.suites.coding.workers.worker-run-most-tests", title: "Test limit per worker command", description: "Stop worker commands above this test count.", value: 0};
-    const read = vi.fn(async () => ({ok: true, value: {...SNAPSHOT, suite_limits: [limit]}}));
+    const read = vi.fn(async (line) => (line[0] === "queue-class" ? {ok: true, value: TABLE} : {ok: true, value: {...SNAPSHOT, suite_limits: [limit]}}));
     await panel(read);
+    expect(document.body.querySelector("[data-queue-suite-limit]")).toBeNull();
+    await settingsTab();
     const input = document.body.querySelector("[data-queue-suite-limit]");
     expect(document.body.textContent).toContain("Test limit per worker command");
     input.value = "500";
@@ -187,63 +216,46 @@ test("a limit a suite names shows beside the commands at once and saves its sett
     expect(read).toHaveBeenCalledWith(["setting", "set", limit.key, "500"]);
 });
 
-test("the stepper saves its declared setting and refreshes the queue", async () => {
-    let queue = {...SNAPSHOT};
-    const read = vi.fn(async (line) => {
-        if (line[0] === "setting") {
-            queue = {...queue, parallel_limit: Number(line[3])};
-        }
-        return {ok: true, value: queue};
-    });
-    await panel(read);
-    document.body.querySelector('[aria-label="One slot unit more"]').click();
-    await settle();
-    expect(read).toHaveBeenCalledWith(["setting", "set", SNAPSHOT.limit_setting, "3"]);
-    expect(document.body.querySelector("[data-queue-limit]").textContent).toBe("3");
-    document.body.querySelector('[aria-label="One slot unit fewer"]').click();
-    await settle();
-    expect(document.body.querySelector("[data-queue-limit]").textContent).toBe("2");
+test("the Settings tab has one stepper per lane, and the Queue tab none", async () => {
+    await panel(vi.fn(reader));
+    expect(document.body.querySelector("[data-lane-setting]")).toBeNull();
+    await settingsTab();
+    expect(document.body.querySelector('[data-lane-setting="journal.core.processes.lane-capacity-long"]').textContent).toBe("8");
+    expect(document.body.querySelector("[data-execution-lanes]")).toBeNull();
 });
 
-test("the minimum limit disables decrease and a refused setting stays unchanged", async () => {
-    await panel(async (line) =>
-        line[0] === "setting" ? {ok: false, error: "Read only"} : {ok: true, value: {...SNAPSHOT, parallel_limit: 1}}
-    );
-    expect(document.body.querySelector('[aria-label="One slot unit fewer"]').disabled).toBe(true);
-    document.body.querySelector('[aria-label="One slot unit more"]').click();
-    await settle();
-    expect(document.body.querySelector('[role="alert"]').textContent).toBe("Read only");
-    expect(document.body.querySelector("[data-queue-limit]").textContent).toBe("1");
-});
-
-test("a held empty queue shows the reason and empty messages", async () => {
+test("a paused empty queue shows the reason on the long lane and its lanes one line each", async () => {
     await panel(async () => ({
         ok: true,
-        value: {
-            ...SNAPSHOT,
-            running: [],
-            waiting: [],
-            recent: [],
-            used_slots: 0,
-            waiting_count: 0,
-            halted: true,
-            halt_reason: "Machine maintenance",
-        },
+        value: {...SNAPSHOT, running: [], waiting: [], recent: [], halted: true, halt_reason: "Machine maintenance",
+                execution: longLane({used: 0, running: [], waiting: [], halted: true, halt_type: "command", halt_reason: "Machine maintenance"})},
     }));
-    expect(document.body.querySelector("[data-queue-held]").textContent).toContain("Machine maintenance");
-    expect(document.body.querySelector('[data-queue-empty="waiting"]').textContent).toBe("None");
+    expect(document.body.querySelector('[data-lane="long"] [data-lane-note]').textContent).toContain("Paused · Machine maintenance");
+    expect(document.body.querySelector('[data-queue-tile="long"]').textContent).toContain("Paused");
+    expect(document.body.querySelectorAll("[data-lane-empty]")).toHaveLength(3);
+    expect(document.body.querySelector('[data-queue-empty="recent"]').textContent).toBe("None");
     expect(document.body.textContent).not.toContain("Process queue");
 });
 
-test("a queue held by an update says the update waits for the running commands and the others keep their order", async () => {
+test("a queue held by an update says on the long lane that the update waits for the running commands and the waiting keep their place", async () => {
     await panel(async () => ({
         ok: true,
-        value: {...SNAPSHOT, halted: true, halt_cause: "update", halt_reason: "An update waits for the running commands to end"},
+        value: {...SNAPSHOT, halted: true, halt_cause: "update", execution: longLane({halted: true, halt_type: "update", halt_reason: "An update waits for the running commands to end"})},
     }));
-    const note = document.body.querySelector("[data-queue-update-waits]").textContent;
-    expect(note).toContain("An update waits for the running commands to end.");
-    expect(note).toContain("gets a slot once the update is done");
-    expect(document.body.querySelector("[data-queue-held]")).toBeNull();
+    const note = document.body.querySelector('[data-lane="long"] [data-lane-note]').textContent;
+    expect(note).toContain("The update waits for the running commands to end.");
+    expect(note).toContain("the 2 waiting keep their place");
+    expect(document.body.querySelector('[data-queue-tile="long"]').textContent).toContain("Held");
+    expect(document.body.querySelector("[data-lane-resume]")).toBeNull();
+});
+
+test("Resume on the paused long lane resumes the queue and reads it again", async () => {
+    const read = vi.fn(async (line) => (line[0] === "queue" && line[1] === "list" ? {ok: true, value: {...SNAPSHOT, execution: longLane({halted: true, halt_type: "command", halt_reason: "Machine maintenance"})}} : {ok: true, value: {}}));
+    await panel(read);
+    document.body.querySelector("[data-lane-resume]").click();
+    await settle();
+    expect(read).toHaveBeenCalledWith(["queue", "resume"]);
+    expect(read.mock.calls.filter(([line]) => line.join(" ") === "queue list")).toHaveLength(2);
 });
 
 test("a failed queue read shows its error", async () => {
@@ -255,7 +267,7 @@ test("process events refresh the queue and output events refresh only an open ou
     let queue = SNAPSHOT;
     let output = ["building package"];
     const read = vi.fn(async (line) => line[0] === "output" ? {ok: true, value: {lines: output, first_byte: 0, last_byte: 20, total: 20, cut_bytes: 0}} : {ok: true, value: queue});
-    await panel(read);
+    await panel(read, 41);
     subscriptions.dispatch({event: "task.update", row_id: 11});
     await settle();
     expect(read.mock.calls.filter(([line]) => line[0] === "queue")).toHaveLength(1);

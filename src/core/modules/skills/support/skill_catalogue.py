@@ -34,7 +34,13 @@ class SkillCatalogue:
     def contains(self, folder: str) -> bool:
         return any(skill.folder == folder for skill in self.skills())
 
+    # a hook checks the program folders once: it never writes a skill, so they cannot change while it is answered
     def folder_versions(self) -> tuple[FileVersion | None, ...]:
+        if CurrentExecution.read().is_hook:
+            return self.request_values.read("skills.folder_versions", lambda: HOOK_PERIOD, self.read_folder_versions)
+        return self.read_folder_versions()
+
+    def read_folder_versions(self) -> tuple[FileVersion | None, ...]:
         return tuple(self.folder_version(self.home.project_folder / program_folder) for program_folder in self.providers.skill_folders())
 
     @staticmethod
@@ -53,7 +59,7 @@ class SkillCatalogue:
         # shortcut: a hook reuses the skills read for these folder versions and never checks each skill file, so a
         # SKILL.md edited in place reaches hooks once a skill is added or removed; a tick-driven refresh would close that
         period = HOOK_PERIOD if CurrentExecution.read().is_hook else int(self.clock.timestamp().value.timestamp() // CATALOGUE_CHECK_SECONDS)
-        return list(SkillCatalogue.kept_plugin_skills(folders, tuple(self.folder_version(folder) for folder in folders), period))
+        return list(SkillCatalogue.kept_plugin_skills(folders, tuple(reversed(self.folder_versions())), period))
 
     @staticmethod
     @lru_cache(maxsize=8)

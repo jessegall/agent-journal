@@ -1,5 +1,6 @@
 from core.modules.plans.models.phase import Phase
 import json
+from datetime import timedelta
 
 import pytest
 
@@ -10,6 +11,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.plans.commands.start_checkpoint_run.start_checkpoint_run_handler import StartCheckpointRunHandler
+from core.modules.plans.ticks.plan_state_sweep import PlanStateSweep
 from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.testing.stories.story_fixture import StoryFixture
@@ -404,3 +406,22 @@ def test_tasks_closed_in_two_environments_in_one_round_reach_the_checkpoints_of_
     story.run_listeners()
     for environment in tasks:
         story.expect_text(f"checkpoint-reach list --json --oldest --environment {environment}", '"state"', actor=story.user)
+
+
+def test_a_plan_whose_tasks_all_ended_while_its_last_run_went_and_failed_gets_one_new_run_and_closes_on_its_pass(played):
+    story = played(UserJoined)
+    plan_of_phases(story, ("Ship", True, 2))
+    close(story, 1, 2)
+    story.advance(timedelta(minutes=1))
+    story.expect_success("task reopen 2", actor=story.user)
+    close(story, 2)
+    story.expect_success("checkpoint-reach failed 1 --failed-task-ids 1", actor=Actor.core())
+    story.run_listeners()
+    stuck = [row["state"] for row in rows(story, REACHES)]
+    PlanStateSweep()(story.container)
+    story.run_listeners()
+    PlanStateSweep()(story.container)
+    story.run_listeners()
+    story.expect_rows(stuck == ["failed"], [row["state"] for row in rows(story, REACHES)] == ["failed", "running"], detail=str(rows(story, REACHES)))
+    pass_reach(story, 2)
+    story.expect_text("plan show 1 --environment main", "state: completed", actor=story.user)

@@ -42,8 +42,10 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
 
     def handle(self, command: StartWorkerTests, context: Context) -> None:
         # a worktree removed without its merge has no folder to test in, so its proofs never hold the others back
-        worktrees = {worktree.id: worktree for worktree in self.worktrees.all_worktrees() if worktree.merged_at is not None or worktree.removed_at is None}
-        proofs = [proof for proof in self.proofs.test_rows() if proof.worktree_id in worktrees]
+        test_rows, first_answers = self.proofs.test_rows(), self.affected.queued()
+        named = self.worktrees.worktrees_among([*(proof.worktree_id for proof in test_rows), *(first_answer.worktree_id for first_answer in first_answers)])
+        worktrees = {worktree.id: worktree for worktree in named if worktree.merged_at is not None or worktree.removed_at is None}
+        proofs = [proof for proof in test_rows if proof.worktree_id in worktrees]
         running = {proof.worktree_id for proof in proofs if proof.state is ProofState.RUNNING}
         queued = [proof for proof in proofs if proof.state is ProofState.QUEUED]
         ready = {worktree_id for worktree_id in {proof.worktree_id for proof in queued} if self.is_ready(worktrees[worktree_id], running)}
@@ -51,7 +53,7 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
         for proof in (proof for proof in queued if proof.worktree_id in ready):
             self.start(proof, worktrees[proof.worktree_id], folders[proof.worktree_id], context)
             running.add(proof.worktree_id)
-        for first_answer in self.affected.queued():
+        for first_answer in first_answers:
             if first_answer.worktree_id not in worktrees or first_answer.worktree_id in running:
                 continue
             if any(proof.worktree_id == first_answer.worktree_id for proof in proofs):

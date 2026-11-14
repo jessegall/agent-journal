@@ -28,7 +28,7 @@ function save() {
             <label>Line pattern<input v-model="draft.pattern" placeholder="for example ^npm run e2e" :disabled="Boolean(draft.plugin)" data-class-pattern /></label>
             <label>Or plugin<input v-model.trim="draft.plugin" :disabled="Boolean(draft.pattern)" data-class-plugin /></label>
             <label>Lane<select v-model="draft.lane"><template v-for="lane in CLASS_LANES" :key="lane"><option :value="lane">{{ lane }}</option></template></select></label>
-            <label>Slot units<input v-model.number="draft.cost" type="number" min="0" /></label>
+            <label>Slots<input v-model.number="draft.cost" type="number" min="0" /></label>
             <label>Priority<select v-model="draft.priority"><template v-for="priority in CLASS_PRIORITIES" :key="priority"><option :value="priority">{{ priority }}</option></template></select></label>
             <label>At once<input v-model.number="draft.limit" type="number" min="0" title="0 for no limit" /></label>
         </div>

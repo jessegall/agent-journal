@@ -21,7 +21,7 @@ function save() {
         <th scope="row">{{ entry.name }}<template v-if="entry.pattern || entry.plugin"><small>{{ entry.pattern || `plugin ${entry.plugin}` }}</small></template></th>
         <template v-if="editing">
             <td><select v-model="draft.lane" aria-label="Lane" data-class-lane><template v-for="lane in CLASS_LANES" :key="lane"><option :value="lane">{{ lane }}</option></template></select></td>
-            <td><input v-model.number="draft.cost" type="number" min="0" aria-label="Slot units" data-class-cost /></td>
+            <td><input v-model.number="draft.cost" type="number" min="0" aria-label="Slots" data-class-cost /></td>
             <td><select v-model="draft.priority" aria-label="Priority" data-class-priority><template v-for="priority in CLASS_PRIORITIES" :key="priority"><option :value="priority">{{ priority }}</option></template></select></td>
             <td><input v-model.number="draft.limit" type="number" min="0" aria-label="At once, 0 for no limit" data-class-limit /></td>
             <td class="actions"><button type="button" :disabled="saving" data-class-save @click="save">Save</button><button type="button" :disabled="saving" @click="editing = false">Cancel</button></td>

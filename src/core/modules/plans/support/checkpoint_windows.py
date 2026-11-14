@@ -42,6 +42,13 @@ class CheckpointWindows:
     def is_reached(self, checkpoint: Phase) -> bool:
         return all(place.state in FINISHED_STATES for place in self.window(checkpoint))
 
+    # a reached window whose newest run failed before its tasks last ended holds a failure no task will end again:
+    # every task the failure named was finished since, or never reopened
+    def is_failed_before_end(self, checkpoint: Phase, newest: CheckpointReach) -> bool:
+        ended = [place.closed_at.value for place in self.window(checkpoint) if place.closed_at is not None]
+        return (newest.state is CheckpointState.FAILED and self.is_reached(checkpoint) and bool(ended)
+                and newest.creation_timestamp().value < max(ended))
+
     def completed_ids(self, checkpoint: Phase) -> tuple[int, ...]:
         return tuple(place.task_id for place in self.window(checkpoint) if place.state is TaskState.COMPLETED)
 

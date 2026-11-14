@@ -31,6 +31,8 @@ BUILTIN_CLASSES: tuple[BuiltinClass, ...] = (
     BuiltinClass(ExecutionClass("tick handler", INSTANT, 1, BACKGROUND), ExecutionSource.TICK_HANDLER),
     BuiltinClass(ExecutionClass("listener event", INSTANT, 1, BACKGROUND), ExecutionSource.LISTENER_EVENT),
     BuiltinClass(ExecutionClass("merge", LONG, 1, AGENT, class_limit=1), ExecutionSource.SHELL_LINE, process_types=frozenset({ProcessType.MERGE})),
+    # a run of the whole suite starts every test runner the machine has, so it takes the whole long lane and runs alone
+    BuiltinClass(ExecutionClass("full test run", LONG, 8, AGENT, class_limit=1), ExecutionSource.SHELL_LINE, process_types=frozenset({ProcessType.FULL_TEST_RUN})),
     BuiltinClass(ExecutionClass("main agent short line", SHORT, 1, IMMEDIATE), ExecutionSource.SHELL_LINE, FIRST_HAND, SHORT_CATEGORIES),
     BuiltinClass(ExecutionClass("agent short line", SHORT, 1, AGENT), ExecutionSource.SHELL_LINE, HELPERS, SHORT_CATEGORIES),
     BuiltinClass(ExecutionClass("journal short line", SHORT, 1, NORMAL), ExecutionSource.SHELL_LINE, categories=SHORT_CATEGORIES),

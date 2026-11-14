@@ -39,13 +39,13 @@ class ProcessSetting(Enum):
     SPARSE_SECONDS = SettingValue("sparse-seconds", "Seconds between lines of a sparse run",
                                   "Average seconds between prints, over the last five, from which a run counts as printing too little.", SettingType.NUMBER, default=30,
                                   rule=NumberRule(1))
-    LANE_CAPACITY_INSTANT = SettingValue("lane-capacity-instant", "Instant lane capacity", "Slot units of hooks, journal commands and viewer requests that run at once.",
+    LANE_CAPACITY_INSTANT = SettingValue("lane-capacity-instant", "Instant lane capacity", "Slots of hooks, journal commands and viewer requests that run at once.",
                                          SettingType.NUMBER, default=24, rule=NumberRule(1))
-    LANE_CAPACITY_SHORT = SettingValue("lane-capacity-short", "Short lane capacity", "Slot units of short shell lines, such as reads, searches and edits, that run at once.",
+    LANE_CAPACITY_SHORT = SettingValue("lane-capacity-short", "Short lane capacity", "Slots of short shell lines, such as reads, searches and edits, that run at once.",
                                        SettingType.NUMBER, default=12, rule=NumberRule(1))
-    LANE_CAPACITY_LONG = SettingValue("lane-capacity-long", "Long lane capacity", "Slot units of long runs that go at once; a test run costs 4, so 8 runs two tests.",
+    LANE_CAPACITY_LONG = SettingValue("lane-capacity-long", "Long lane capacity", "Slots of long runs that go at once; a test run costs 4, so 8 runs two tests.",
                                       SettingType.NUMBER, default=8, rule=NumberRule(1))
-    STARTER_CAP_PERCENT = SettingValue("starter-cap-percent", "Share of a lane one starter may hold", "Percent of a lane's slot units the runs of one agent may hold at once.",
+    STARTER_CAP_PERCENT = SettingValue("starter-cap-percent", "Share of a lane one starter may hold", "Percent of a lane's slots the runs of one agent may hold at once.",
                                        SettingType.NUMBER, default=50, rule=NumberRule(1))
     TICK_WORKERS = SettingValue("tick-workers", "Timed work at once", "How many timed jobs, such as reading outputs, run at once; the others wait. Read when the journal starts.",
                                 SettingType.NUMBER, default=3, rule=NumberRule(1), scope=SettingScope.PROJECT)

@@ -2,13 +2,15 @@
 import {computed, onMounted, ref} from "vue";
 import {useResourceEvents} from "./resourceEvents.js";
 import Skeleton from "../kit/Skeleton.vue";
+import Segmented from "../kit/Segmented.vue";
 import ProcessQueueControls from "./ProcessQueueControls.vue";
 import ProcessQueueRun from "./ProcessQueueRun.vue";
 import ProcessQueueBand from "./ProcessQueueBand.vue";
+import ProcessQueueSettings from "./ProcessQueueSettings.vue";
 import ExecutionLanes from "./ExecutionLanes.vue";
-import ExecutionClasses from "./ExecutionClasses.vue";
 
 const RECENT_PAGE = 20;
+const TABS = [{key: "queue", label: "Queue"}, {key: "settings", label: "Settings"}];
 
 const props = defineProps({read: {type: Function, required: true}, agent: {type: Number, default: 0}});
 const agentArguments = computed(() => (props.agent ? ["--agent", `row:${props.agent}`] : []));
@@ -16,15 +18,18 @@ const queue = ref(null);
 const failure = ref("");
 const open = ref([]);
 const recentCount = ref(RECENT_PAGE);
+const tab = ref("queue");
 const hasOlder = computed(() => (queue.value?.recent_total ?? 0) > (queue.value?.recent.length ?? 0));
 let reading = 0;
+// the queue's lanes carry what runs and waits; an agent's Processes tab, which shows no lanes, lists them itself
 const items = computed(() => {
     if (!queue.value) return [];
-    const sections = [
+    const finished = {type: "recent", heading: props.agent ? "Finished" : "Finished lately", icon: "check", rows: queue.value.recent, empty: "None"};
+    const sections = props.agent ? [
         {type: "running", heading: "Running", icon: "start", rows: queue.value.running, empty: "None"},
         {type: "waiting", heading: "Waiting", icon: "clock", rows: queue.value.waiting, empty: "None"},
-        {type: "recent", heading: "Finished", icon: "check", rows: queue.value.recent, empty: "None"},
-    ];
+        finished,
+    ] : [finished];
     return sections.flatMap((section) => [
         {key: `band:${section.type}`, section},
         ...(section.rows.length ? section.rows.map((run, index) => ({key: `run:${run.id}`, run, position: index + 1})) : [{key: `none:${section.type}`, section, empty: true}]),
@@ -40,6 +45,12 @@ async function load() {
     failure.value = answer.ok ? "" : answer.error;
     if (answer.ok) queue.value = answer.value;
 }
+// only the long lane pauses: a pause halts the run queue with its reason, a resume lifts it
+async function send(line) {
+    const answer = await props.read(line);
+    failure.value = answer.ok ? "" : answer.error;
+    if (answer.ok) load();
+}
 function showOlder() {
     recentCount.value += RECENT_PAGE;
     load();
@@ -54,8 +65,11 @@ onMounted(load);
         <div class="scroll">
             <template v-if="failure"><p class="failure" role="alert" data-resource-failure>{{ failure }}</p></template>
             <template v-if="queue">
-                <template v-if="!agent"><ProcessQueueControls :queue="queue" :read="read" @saved="load" /></template>
-                <template v-if="queue.execution && !agent"><ExecutionLanes :execution="queue.execution" /></template>
+                <template v-if="!agent"><div class="tabs"><Segmented :options="TABS" :value="tab" data-queue-tabs @pick="tab = $event" /></div></template>
+                <template v-if="!agent && tab === 'settings'"><ProcessQueueSettings :queue="queue" :read="read" @saved="load" /></template>
+                <template v-else>
+                <template v-if="!agent"><ProcessQueueControls :lanes="queue.execution.lanes" /></template>
+                <template v-if="!agent"><ExecutionLanes :execution="queue.execution" :environment="queue.environment_name" pausable @pause="send(['queue', 'halt', $event])" @resume="send(['queue', 'resume'])" /></template>
                 <TransitionGroup name="queue" tag="div" class="queue-list">
                     <template v-for="item in items" :key="item.key">
                         <template v-if="item.run"><ProcessQueueRun :run="item.run" :environment="queue.environment_name" :position="item.position" :read="read" :expanded="open.includes(item.run.id)" @toggle="toggle(item.run.id)" /></template>
@@ -64,7 +78,7 @@ onMounted(load);
                     </template>
                 </TransitionGroup>
                 <template v-if="hasOlder"><button type="button" class="older" data-queue-older @click="showOlder">Show older commands</button></template>
-                <template v-if="!agent"><ExecutionClasses :read="read" /></template>
+                </template>
             </template>
             <template v-else-if="!failure"><Skeleton /></template>
         </div>
@@ -77,6 +91,7 @@ onMounted(load);
 h1 { margin: 0; color: var(--text); font-size: 11.5px; font-weight: 600; letter-spacing: .03em; }
 .environment { flex: 1; font-size: 11px; }
 .lead { margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text-3); font-size: 12px; line-height: 1.5; }
+.tabs { padding: 8px 14px; border-bottom: 1px solid var(--border); }
 .scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
 .queue-list { position: relative; border-top: 1px solid var(--border); }
 .sticky-band { position: sticky; top: 0; z-index: 1; }

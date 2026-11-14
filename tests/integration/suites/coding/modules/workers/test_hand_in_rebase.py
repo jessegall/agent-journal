@@ -219,3 +219,36 @@ def test_a_commit_on_a_head_a_cut_rebase_left_detached_lands_on_the_branch(playe
     story.container.get(WorktreeGit).commit(worktree, "The cart", "Task: 1")
     branch = repository.git("symbolic-ref", "--short", "HEAD", folder=folder).stdout.strip()
     story.expect_rows(branch == worktree.branch, not (git_folder / "rebase-merge").exists(), repository.tip(worktree.branch) == repository.git("rev-parse", "HEAD", folder=folder).stdout.strip(), detail=branch)
+
+
+JOURNAL_INSTRUCTIONS = "The journal's briefing for this worker.\n"
+
+
+def test_an_update_keeps_every_edit_when_the_journal_writes_its_files_again_while_they_are_stashed(played, monkeypatch):
+    story = played(OpenTaskOrchestrator)
+    repository = repository_environment(story)
+    worker = moved_base_worker(story, repository)
+    folder = repository.worktree_folder(worker.id)
+    repository.committed("rate.py", "RATE = 3\n", "Another rate")
+    repository.changed(worker.id, "tax.py", WORKER_TAX)
+    repository.changed(worker.id, "notes.py", "NOTE = 1\n")
+    for name in ("CLAUDE.md", "AGENTS.md"):
+        (folder / name).write_text(JOURNAL_INSTRUCTIONS)
+    pushed_stash = WorktreeGit.checked
+
+    # the journal writes its instruction files and a copy of the new file again while the stash holds the worker's edits
+    def checked_with_rewritten_files(git, stashed_folder, limit, *arguments):
+        finished = pushed_stash(git, stashed_folder, limit, *arguments)
+        if arguments[:2] == ("stash", "push") and stashed_folder == str(folder):
+            for name in ("CLAUDE.md", "AGENTS.md"):
+                (folder / name).write_text(JOURNAL_INSTRUCTIONS)
+            (folder / "notes.py").write_text("NOTE = 1\n")
+        return finished
+
+    monkeypatch.setattr(WorktreeGit, "checked", checked_with_rewritten_files)
+    story.expect_success("worker update --wait", actor=worker)
+
+    story.expect_rows((folder / "tax.py").read_text() == WORKER_TAX, (folder / "notes.py").read_text() == "NOTE = 1\n",
+                      (folder / "rate.py").read_text() == "RATE = 3\n",
+                      all((folder / name).read_text() == JOURNAL_INSTRUCTIONS for name in ("CLAUDE.md", "AGENTS.md")))
+    repository.expect_no_stash()
