@@ -1,6 +1,6 @@
-if (!document.getElementById("window-styles-0b4ecba2d0cc")) { const style = document.createElement("style"); style.id = "window-styles-0b4ecba2d0cc"; style.textContent = ".inspector[data-v-7f374e1d]{display:flex;flex-direction:column;min-height:0;height:100%;overflow-y:auto;background:var(--bg)}header[data-v-7f374e1d]{display:flex;align-items:center;gap:8px;padding:14px;border-bottom:1px solid var(--border)}header h1[data-v-7f374e1d]{flex:1;margin:0;font-size:14px}.empty[data-v-7f374e1d]{margin:0;padding:14px;color:var(--text-3);font-size:12px}.detail-head[data-v-360e14b0]{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;font-size:12px;color:var(--text-3)}.detail-head h2[data-v-360e14b0]{margin:0;color:var(--text);font-size:14px}.slow[data-v-360e14b0]{color:#c58b35}.refused[data-v-360e14b0]{color:#d76b6b}.heading[data-v-360e14b0]{margin:0 0 8px;font-size:12px}pre[data-v-360e14b0]{margin:0 0 24px;padding:12px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px;line-height:1.6}.note[data-v-360e14b0]{margin:0;color:var(--text-3);font-size:12px}.message[data-v-360e14b0]{padding:16px;line-height:1.6}.toolbar[data-v-c0c54f64]{display:flex;justify-content:space-between;padding:8px 12px}.queue-veil[data-v-c0c54f64]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:flex-end;background:#0005;z-index:3}.queue-veil[data-v-c0c54f64]>*{width:min(560px,100%);box-shadow:0 0 24px #0003}.requests[data-v-c0c54f64]{position:relative;display:grid;grid-template-columns:minmax(360px,46%) 1px minmax(0,1fr);height:100%;min-height:0;overflow:hidden}.list[data-v-c0c54f64]{display:flex;flex-direction:column;min-height:0;min-width:0}.note[data-v-c0c54f64]{margin:0;color:var(--text-3);font-size:12px}.detail[data-v-c0c54f64]{padding:20px;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain}.divider[data-v-c0c54f64]{background:var(--border)}.message[data-v-c0c54f64]{padding:16px;line-height:1.6}.detail-head[data-v-c0c54f64]{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;font-size:12px;color:var(--text-3)}.detail-head h2[data-v-c0c54f64]{margin:0;color:var(--text);font-size:14px}.heading[data-v-c0c54f64]{margin:0 0 8px;font-size:12px}pre[data-v-c0c54f64]{margin:0 0 24px;padding:12px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px;line-height:1.6}@media(max-width:760px){.queue-button[data-v-c0c54f64]{align-self:flex-end;margin:8px 12px}.queue-veil[data-v-c0c54f64]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:flex-end;background:#0005;z-index:3}.queue-veil[data-v-c0c54f64]>*{width:min(560px,100%);box-shadow:0 0 24px #0003}.requests[data-v-c0c54f64]{position:relative;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(140px,45%) 1px minmax(0,1fr)}}.numbers-tools[data-v-23ad5fa1]{display:flex;gap:8px;margin-bottom:10px}.numbers-note[data-v-23ad5fa1]{margin:0;color:var(--text-3);font-size:12.5px}.logs[data-v-25c9b82f]{display:flex;flex-direction:column;height:100%;min-height:0}.toolbar[data-v-25c9b82f],nav[data-v-25c9b82f]{display:flex;align-items:center;gap:12px;padding:10px 12px;flex:none}.toolbar[data-v-25c9b82f]{border-bottom:1px solid var(--border)}.toolbar label[data-v-25c9b82f]{display:flex;align-items:center;gap:6px}.toolbar button[data-v-25c9b82f]{margin-left:auto}.scroll[data-v-25c9b82f]{flex:1;min-height:0}nav[data-v-25c9b82f]{justify-content:center;border-top:1px solid var(--border)}\n"; document.head.appendChild(style); }
-import { openBlock as l, createElementBlock as c, createElementVNode as r, createVNode as d, unref as n, toDisplayString as m, Fragment as S, createCommentVNode as q, normalizeClass as Z, ref as g, computed as $, watch as B, createBlock as _, withCtx as v, createTextVNode as f, renderList as E, withModifiers as ee } from "vue";
-import { useWindow as J, usePoll as V, Icon as te, CloseButton as se, ExecutionLanes as ne, wordLabel as oe, highlight as le, WindowRoom as ae, Btn as L, MenuPanel as ue, MenuLabel as N, MenuItem as b, TableLayout as re, toggleFilter as ie } from "@journal/window-kit";
+if (!document.getElementById("window-styles-d55d5452be22")) { const style = document.createElement("style"); style.id = "window-styles-d55d5452be22"; style.textContent = ".inspector[data-v-7f374e1d]{display:flex;flex-direction:column;min-height:0;height:100%;overflow-y:auto;background:var(--bg)}header[data-v-7f374e1d]{display:flex;align-items:center;gap:8px;padding:14px;border-bottom:1px solid var(--border)}header h1[data-v-7f374e1d]{flex:1;margin:0;font-size:14px}.empty[data-v-7f374e1d]{margin:0;padding:14px;color:var(--text-3);font-size:12px}.detail-head[data-v-360e14b0]{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;font-size:12px;color:var(--text-3)}.detail-head h2[data-v-360e14b0]{margin:0;color:var(--text);font-size:14px}.slow[data-v-360e14b0]{color:#c58b35}.refused[data-v-360e14b0]{color:#d76b6b}.heading[data-v-360e14b0]{margin:0 0 8px;font-size:12px}pre[data-v-360e14b0]{margin:0 0 24px;padding:12px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px;line-height:1.6}.note[data-v-360e14b0]{margin:0;color:var(--text-3);font-size:12px}.message[data-v-360e14b0]{padding:16px;line-height:1.6}.toolbar[data-v-cd8cfab4]{display:flex;justify-content:space-between;padding:8px 12px}.queue-veil[data-v-cd8cfab4]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:flex-end;background:#0005;z-index:3}.queue-veil[data-v-cd8cfab4]>*{width:min(560px,100%);box-shadow:0 0 24px #0003}.requests[data-v-cd8cfab4]{position:relative;display:grid;grid-template-columns:minmax(360px,46%) 1px minmax(0,1fr);height:100%;min-height:0;overflow:hidden}.list[data-v-cd8cfab4]{display:flex;flex-direction:column;min-height:0;min-width:0}.note[data-v-cd8cfab4]{margin:0;color:var(--text-3);font-size:12px}.detail[data-v-cd8cfab4]{padding:20px;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain}.divider[data-v-cd8cfab4]{background:var(--border)}.message[data-v-cd8cfab4]{padding:16px;line-height:1.6}.detail-head[data-v-cd8cfab4]{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;font-size:12px;color:var(--text-3)}.detail-head h2[data-v-cd8cfab4]{margin:0;color:var(--text);font-size:14px}.heading[data-v-cd8cfab4]{margin:0 0 8px;font-size:12px}pre[data-v-cd8cfab4]{margin:0 0 24px;padding:12px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px;line-height:1.6}@media(max-width:760px){.queue-button[data-v-cd8cfab4]{align-self:flex-end;margin:8px 12px}.queue-veil[data-v-cd8cfab4]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:flex-end;background:#0005;z-index:3}.queue-veil[data-v-cd8cfab4]>*{width:min(560px,100%);box-shadow:0 0 24px #0003}.requests[data-v-cd8cfab4]{position:relative;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(140px,45%) 1px minmax(0,1fr)}}.numbers-tools[data-v-c16f7101]{display:flex;gap:8px;margin-bottom:10px}.numbers-note[data-v-c16f7101]{margin:0;color:var(--text-3);font-size:12.5px}.logs[data-v-25c9b82f]{display:flex;flex-direction:column;height:100%;min-height:0}.toolbar[data-v-25c9b82f],nav[data-v-25c9b82f]{display:flex;align-items:center;gap:12px;padding:10px 12px;flex:none}.toolbar[data-v-25c9b82f]{border-bottom:1px solid var(--border)}.toolbar label[data-v-25c9b82f]{display:flex;align-items:center;gap:6px}.toolbar button[data-v-25c9b82f]{margin-left:auto}.scroll[data-v-25c9b82f]{flex:1;min-height:0}nav[data-v-25c9b82f]{justify-content:center;border-top:1px solid var(--border)}\n"; document.head.appendChild(style); }
+import { openBlock as a, createElementBlock as c, createElementVNode as r, createVNode as d, unref as n, toDisplayString as m, Fragment as S, createCommentVNode as q, normalizeClass as Z, ref as g, computed as C, watch as B, createBlock as _, withCtx as v, createTextVNode as f, renderList as E, withModifiers as ee } from "vue";
+import { useWindow as J, usePoll as V, Icon as te, CloseButton as se, ExecutionLanes as ne, wordLabel as oe, highlight as ae, WindowRoom as le, Btn as L, MenuPanel as ue, MenuLabel as N, MenuItem as $, TableLayout as re, toggleFilter as ie } from "@journal/window-kit";
 import { _ as I } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 import { u as de, t as ce } from "./usePausedProp-C5dSctRP.js";
 const me = {
@@ -18,8 +18,8 @@ const me = {
   __name: "ExecutionsInspector",
   emits: ["close"],
   setup(u, { emit: h }) {
-    const y = h, o = J(), { data: i, failure: a } = o.props.queue;
-    return V(() => o.reload("queue"), () => o.visible.value), (k, p) => (l(), c("aside", me, [
+    const y = h, o = J(), { data: i, failure: l } = o.props.queue;
+    return V(() => o.reload("queue"), () => o.visible.value), (k, p) => (a(), c("aside", me, [
       r("header", null, [
         d(n(te), {
           name: "terminal",
@@ -31,8 +31,8 @@ const me = {
           onClick: p[0] || (p[0] = (w) => y("close"))
         })
       ]),
-      n(a) ? (l(), c("p", ve, m(n(a)), 1)) : n(i) ? (l(), c(S, { key: 1 }, [
-        n(i).halted ? (l(), c("p", fe, "The long lane is halted: " + m(n(i).halt_reason), 1)) : q("", !0),
+      n(l) ? (a(), c("p", ve, m(n(l)), 1)) : n(i) ? (a(), c(S, { key: 1 }, [
+        n(i).halted ? (a(), c("p", fe, "The long lane is halted: " + m(n(i).halt_reason), 1)) : q("", !0),
         d(n(ne), {
           execution: n(i).execution
         }, null, 8, ["execution"])
@@ -42,16 +42,16 @@ const me = {
 }, he = /* @__PURE__ */ I(ke, [["__scopeId", "data-v-7f374e1d"]]), pe = { allowed: "Allowed", refused: "Refused" }, qe = (u) => pe[u] ?? oe(u), ye = {
   key: 0,
   "data-hook-request-detail": ""
-}, ge = { class: "detail-head" }, _e = ["innerHTML"], xe = ["innerHTML"], Ce = {
+}, ge = { class: "detail-head" }, _e = ["innerHTML"], be = ["innerHTML"], xe = {
   key: 1,
   class: "note message"
-}, $e = {
+}, Ce = {
   __name: "RequestDetails",
   props: { request: { type: Object, default: null } },
   setup(u) {
-    const h = (a) => le(JSON.stringify(a, null, 2), "json").join(`
-`), y = (a) => a.outcome === "refused", o = (a) => !y(a) && a.duration_ms >= 500, i = (a) => `${Math.round(a.duration_ms)} ms`;
-    return (a, k) => u.request ? (l(), c("div", ye, [
+    const h = (l) => ae(JSON.stringify(l, null, 2), "json").join(`
+`), y = (l) => l.outcome === "refused", o = (l) => !y(l) && l.duration_ms >= 500, i = (l) => `${Math.round(l.duration_ms)} ms`;
+    return (l, k) => u.request ? (a(), c("div", ye, [
       r("div", ge, [
         r("h2", null, m(u.request.event), 1),
         r("span", {
@@ -67,10 +67,10 @@ const me = {
       r("pre", {
         "data-hook-request-body": "",
         innerHTML: h(u.request.body)
-      }, null, 8, xe)
-    ])) : (l(), c("p", Ce, "Select a request to see its headers and body."));
+      }, null, 8, be)
+    ])) : (a(), c("p", xe, "Select a request to see its headers and body."));
   }
-}, be = /* @__PURE__ */ I($e, [["__scopeId", "data-v-360e14b0"]]), Se = {
+}, $e = /* @__PURE__ */ I(Ce, [["__scopeId", "data-v-360e14b0"]]), Se = {
   class: "requests",
   "data-hook-requests": ""
 }, we = {
@@ -101,17 +101,17 @@ const me = {
         return h();
       }
     }
-    const o = g(y()), i = g(!1), a = g({ family: ["process bookkeeping"], sender: [] }), k = $(() => Object.values(o.value).reduce((e, t) => e + t.length, 0)), p = J(), { data: w, failure: P, loaded: A, reload: M } = de(p, "requests", i), U = { category: "categories", family: "families", sender: "senders" };
+    const o = g(y()), i = g(!1), l = g({ family: ["process bookkeeping"], sender: [] }), k = C(() => Object.values(o.value).reduce((e, t) => e + t.length, 0)), p = J(), { data: w, failure: P, loaded: A, reload: M } = de(p, "requests", i), U = { category: "categories", family: "families", sender: "senders" };
     function F(e) {
       for (const [t, s] of Object.entries(e)) p.state[`requests.${U[t]}`] = JSON.stringify(s);
     }
     F(o.value);
-    const O = $(() => {
+    const O = C(() => {
       var e;
       return ((e = w.value) == null ? void 0 : e.rows) ?? [];
     });
     B(w, (e) => {
-      a.value.family = [.../* @__PURE__ */ new Set(["process bookkeeping", ...e.families || [], ...o.value.family])].sort(), a.value.sender = [.../* @__PURE__ */ new Set([...e.senders || [], ...o.value.sender])].sort();
+      l.value.family = [.../* @__PURE__ */ new Set(["process bookkeeping", ...e.families || [], ...o.value.family])].sort(), l.value.sender = [.../* @__PURE__ */ new Set([...e.senders || [], ...o.value.sender])].sort();
     }), B(o, (e) => {
       try {
         localStorage.setItem(D, JSON.stringify(e));
@@ -122,11 +122,11 @@ const me = {
     function R(e, t) {
       o.value = ie(o.value, e, t);
     }
-    const x = g(null), T = g(0), C = g(!1), z = $(() => O.value.find((e) => e.id === T.value)), Q = (e) => T.value = Number(e), H = (e) => e.outcome === "refused", W = (e) => !H(e) && e.duration_ms >= 500, G = (e) => `${Math.round(e.duration_ms)} ms`, K = ["Event", "Tool", "Parts", "Time", "Sender", "Queued", "Duration"].map((e) => ({ key: e.toLowerCase(), label: e })), X = $(() => O.value.map((e) => ({ mark: e.id, event: e.event, tool: e.tool || "—", parts: e.part_count || "", time: e.time, sender: e.sender, queued: `${Math.round(e.queued_ms)} ms`, duration: G(e), tone: H(e) ? "danger" : W(e) ? "warn" : "" })));
+    const b = g(null), T = g(0), x = g(!1), z = C(() => O.value.find((e) => e.id === T.value)), Q = (e) => T.value = Number(e), H = (e) => e.outcome === "refused", W = (e) => !H(e) && e.duration_ms >= 500, G = (e) => `${Math.round(e.duration_ms)} ms`, K = ["Event", "Tool", "Parts", "Time", "Sender", "Queued", "Duration"].map((e) => ({ key: e.toLowerCase(), label: e })), X = C(() => O.value.map((e) => ({ mark: e.id, event: e.event, tool: e.tool || "—", parts: e.part_count || "", time: e.time, sender: e.sender, queued: `${Math.round(e.queued_ms)} ms`, duration: G(e), tone: H(e) ? "danger" : W(e) ? "warn" : "" })));
     function Y() {
       ce(i, M);
     }
-    return V(() => A.value && M(), () => !i.value && p.visible.value), (e, t) => (l(), _(n(ae), { padding: "0" }, {
+    return V(() => A.value && M(), () => !i.value && p.visible.value), (e, t) => (a(), _(n(le), { padding: "0" }, {
       default: v(() => [
         r("div", Se, [
           r("section", we, [
@@ -134,11 +134,11 @@ const me = {
               d(n(L), {
                 small: "",
                 "data-filter-open": "",
-                onClick: t[0] || (t[0] = (s) => x.value = s.currentTarget)
+                onClick: t[0] || (t[0] = (s) => b.value = s.currentTarget)
               }, {
                 default: v(() => [
                   t[6] || (t[6] = f("Filters", -1)),
-                  k.value ? (l(), c("span", Oe, " (" + m(k.value) + ")", 1)) : q("", !0)
+                  k.value ? (a(), c("span", Oe, " (" + m(k.value) + ")", 1)) : q("", !0)
                 ]),
                 _: 1
               }),
@@ -156,20 +156,20 @@ const me = {
               d(n(L), {
                 small: "",
                 "data-executions-open": "",
-                onClick: t[1] || (t[1] = (s) => C.value = !0)
+                onClick: t[1] || (t[1] = (s) => x.value = !0)
               }, {
                 default: v(() => [...t[7] || (t[7] = [
                   f("Executions", -1)
                 ])]),
                 _: 1
               }),
-              x.value ? (l(), _(n(ue), {
+              b.value ? (a(), _(n(ue), {
                 key: 0,
-                anchor: x.value,
+                anchor: b.value,
                 align: "start",
                 "min-width": 220,
                 "max-width": 320,
-                onClose: t[3] || (t[3] = (s) => x.value = null)
+                onClose: t[3] || (t[3] = (s) => b.value = null)
               }, {
                 default: v(() => [
                   d(n(N), null, {
@@ -178,7 +178,7 @@ const me = {
                     ])]),
                     _: 1
                   }),
-                  (l(), c(S, null, E(["hook", "viewer", "command line"], (s) => d(n(b), {
+                  (a(), c(S, null, E(["hook", "viewer", "command line"], (s) => d(n($), {
                     key: s,
                     "data-filter-category": s,
                     role: "menuitemcheckbox",
@@ -197,7 +197,7 @@ const me = {
                     ])]),
                     _: 1
                   }),
-                  (l(!0), c(S, null, E(a.value.family, (s) => (l(), _(n(b), {
+                  (a(!0), c(S, null, E(l.value.family, (s) => (a(), _(n($), {
                     key: s,
                     "data-filter-family": s,
                     role: "menuitemcheckbox",
@@ -216,7 +216,7 @@ const me = {
                     ])]),
                     _: 1
                   }),
-                  (l(!0), c(S, null, E(a.value.sender, (s) => (l(), _(n(b), {
+                  (a(!0), c(S, null, E(l.value.sender, (s) => (a(), _(n($), {
                     key: s,
                     role: "menuitemcheckbox",
                     checked: o.value.sender.includes(s),
@@ -228,7 +228,7 @@ const me = {
                     ]),
                     _: 2
                   }, 1032, ["checked", "aria-checked", "onClick"]))), 128)),
-                  k.value ? (l(), _(n(b), {
+                  k.value ? (a(), _(n($), {
                     key: 0,
                     "data-filter-clear": "",
                     onClick: t[2] || (t[2] = (s) => o.value = h())
@@ -242,7 +242,7 @@ const me = {
                 _: 1
               }, 8, ["anchor"])) : q("", !0)
             ]),
-            n(P) ? (l(), c("p", Re, m(n(P)), 1)) : O.value.length ? q("", !0) : (l(), c("p", Te, "Nothing recorded yet. Record agent calls in the developer settings turns the log on.")),
+            n(P) ? (a(), c("p", Re, m(n(P)), 1)) : O.value.length ? q("", !0) : (a(), c("p", Te, "Nothing recorded yet. Record agent calls in the developer settings turns the log on.")),
             d(n(re), {
               columns: n(K),
               rows: X.value,
@@ -259,15 +259,15 @@ const me = {
             "aria-orientation": "vertical"
           }, null, -1)),
           r("section", Ee, [
-            d(be, { request: z.value }, null, 8, ["request"])
+            d($e, { request: z.value }, null, 8, ["request"])
           ]),
-          C.value ? (l(), c("div", {
+          x.value ? (a(), c("div", {
             key: 0,
             class: "queue-veil",
-            onClick: t[5] || (t[5] = ee((s) => C.value = !1, ["self"]))
+            onClick: t[5] || (t[5] = ee((s) => x.value = !1, ["self"]))
           }, [
             d(he, {
-              onClose: t[4] || (t[4] = (s) => C.value = !1)
+              onClose: t[4] || (t[4] = (s) => x.value = !1)
             })
           ])) : q("", !0)
         ])
@@ -275,7 +275,7 @@ const me = {
       _: 1
     }));
   }
-}, He = /* @__PURE__ */ I(Le, [["__scopeId", "data-v-c0c54f64"]]);
+}, He = /* @__PURE__ */ I(Le, [["__scopeId", "data-v-cd8cfab4"]]);
 export {
   He as default
 };

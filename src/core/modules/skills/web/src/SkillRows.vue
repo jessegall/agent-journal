@@ -26,27 +26,35 @@ watch(opened, () => (draft.value = null));
 </script>
 
 <template>
-    <SkillText v-if="marked" :skill="text" :failure="openFailure" :back="false" />
-    <ListReaderLayout v-else v-model:chosen="chosen" :items="items" :list-width="LIST_WIDTH" :place="place" empty-title="No skills are installed" pick-line="Choose a skill to read what it says" data-skills-catalogue>
-        <template #top>
-            <PageHeader title="Skills" :count="skills.length" />
-            <FilterBar v-model="filter" v-model:words="words" :fields="skillFilters" :rows="skills" :shown="shown.length" placeholder="Find a skill" />
-            <template v-if="requirements.environment_overrides"><p class="note" role="status">This environment uses separate skill lists. Changes here apply to the whole project. The environment lists still take priority.</p></template>
-            <template v-if="failure"><p class="note failure" role="alert" data-skills-failure>{{ failure }}</p></template>
-        </template>
-        <template #empty>
-            <template v-if="!answered"><Skeleton shape="rows" /></template>
-            <template v-else-if="!skills.length">Add a folder with a SKILL.md file under .agents/skills in this project.</template>
-            <template v-else>No skill matches. Try other words or filters.</template>
-        </template>
-        <template #meta="{item}">
-            <span v-if="requiredWords(item.row)" class="badge-quiet" data-skill-required>{{ requiredWords(item.row) }}</span>
-        </template>
-        <template #reader="{item}">
-            <SkillReader v-if="selected" :skill="selected" :text="text" :failure="openFailure" :triggers="selectedTriggers" :skills="skills" :profiles="profiles" :agent="mainAgent" :draft="draft" :busy="busy.includes(item.id)"
-                @require="(agents, again) => requireSkill(item.id, agents, again)" @read="readNow" @add="add" @edit="edit" @run="run" @saved="saved" @cancel="draft = null" />
-        </template>
-    </ListReaderLayout>
+    <template v-if="marked">
+      <SkillText :skill="text" :failure="openFailure" :back="false" />
+    </template>
+    <template v-else>
+      <ListReaderLayout v-model:chosen="chosen" :items="items" :list-width="LIST_WIDTH" :place="place" empty-title="No skills are installed" pick-line="Choose a skill to read what it says" data-skills-catalogue>
+          <template #top>
+              <PageHeader title="Skills" :count="skills.length" />
+              <FilterBar v-model="filter" v-model:words="words" :fields="skillFilters" :rows="skills" :shown="shown.length" placeholder="Find a skill" />
+              <template v-if="requirements.environment_overrides"><p class="note" role="status">This environment uses separate skill lists. Changes here apply to the whole project. The environment lists still take priority.</p></template>
+              <template v-if="failure"><p class="note failure" role="alert" data-skills-failure>{{ failure }}</p></template>
+          </template>
+          <template #empty>
+              <template v-if="!answered"><Skeleton shape="rows" /></template>
+              <template v-else-if="!skills.length">Add a folder with a SKILL.md file under .agents/skills in this project.</template>
+              <template v-else>No skill matches. Try other words or filters.</template>
+          </template>
+          <template #meta="{item}">
+              <template v-if="requiredWords(item.row)">
+                <span class="badge-quiet" data-skill-required>{{ requiredWords(item.row) }}</span>
+              </template>
+          </template>
+          <template #reader="{item}">
+              <template v-if="selected">
+                <SkillReader :skill="selected" :text="text" :failure="openFailure" :triggers="selectedTriggers" :skills="skills" :profiles="profiles" :agent="mainAgent" :draft="draft" :busy="busy.includes(item.id)"
+                    @require="(agents, again) => requireSkill(item.id, agents, again)" @read="readNow" @add="add" @edit="edit" @run="run" @saved="saved" @cancel="draft = null" />
+              </template>
+          </template>
+      </ListReaderLayout>
+    </template>
 </template>
 
 <style scoped>

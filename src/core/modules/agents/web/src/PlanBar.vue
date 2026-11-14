@@ -12,14 +12,16 @@ const words = computed(() => {
 </script>
 
 <template>
-    <span v-if="counts.total" class="plan-bar" data-plan-bar :title="words">
-        <span class="track" role="img" :aria-label="words" data-plan-track>
-            <span class="part completed" data-plan-completed :style="{width: share(counts.completed)}" />
-            <span class="part testing" data-plan-testing :style="{width: share(counts.testing)}" />
-            <span class="part started" data-plan-started :style="{width: share(counts.started)}" />
-        </span>
-        <span class="count" data-plan-count><b>{{ counts.completed }}</b> of {{ counts.total }}</span>
-    </span>
+    <template v-if="counts.total">
+      <span class="plan-bar" data-plan-bar :title="words">
+          <span class="track" role="img" :aria-label="words" data-plan-track>
+              <span class="part completed" data-plan-completed :style="{width: share(counts.completed)}" />
+              <span class="part testing" data-plan-testing :style="{width: share(counts.testing)}" />
+              <span class="part started" data-plan-started :style="{width: share(counts.started)}" />
+          </span>
+          <span class="count" data-plan-count><b>{{ counts.completed }}</b> of {{ counts.total }}</span>
+      </span>
+    </template>
 </template>
 
 <style scoped>

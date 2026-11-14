@@ -18,27 +18,43 @@ const seconds = (value) => (value < 60 ? `${value} s` : `${Math.round(value / 60
 <template>
     <section class="lanes" data-execution-lanes>
         <div class="filters">
-            <label>Class <select v-model="className" data-lanes-class><option value="">Every class</option><option v-for="name in classes" :key="name" :value="name">{{ name }}</option></select></label>
-            <label>Started by <select v-model="starter" data-lanes-starter><option value="">Anyone</option><option v-for="name in starters" :key="name" :value="name">{{ name }}</option></select></label>
+            <label>Class <select v-model="className" data-lanes-class><option value="">Every class</option><template v-for="name in classes" :key="name">
+  <option :value="name">{{ name }}</option>
+</template></select></label>
+            <label>Started by <select v-model="starter" data-lanes-starter><option value="">Anyone</option><template v-for="name in starters" :key="name">
+  <option :value="name">{{ name }}</option>
+</template></select></label>
         </div>
-        <div v-for="lane in lanes" :key="lane.lane" class="lane" :data-lane="lane.lane">
-            <h2>{{ titled(lane) }} <span class="room" :class="{over: lane.over_capacity}">{{ lane.used }} of {{ lane.capacity }} in use<template v-if="lane.over_capacity">, over capacity</template><template v-if="lane.halted">, halted</template></span></h2>
-            <p v-if="!lane.running.length && !lane.waiting.length" class="empty">Nothing runs or waits here.</p>
-            <ul>
-                <li v-for="(entry, index) in lane.running" :key="`run:${index}`" :class="{child: entry.parent_line}" data-lane-entry="running">
-                    <span class="line">{{ entry.line }}</span>
-                    <span class="facts">{{ entry.class }}, {{ entry.priority }}, {{ entry.starter }}, running {{ seconds(entry.seconds) }}<template v-if="entry.parent_line">, for {{ entry.parent_line }}</template></span>
-                </li>
-                <li v-for="(entry, index) in lane.waiting" :key="`wait:${index}`" class="waiting" data-lane-entry="waiting">
-                    <span class="line">{{ entry.line }}</span>
-                    <span class="facts">{{ entry.class }}, {{ entry.priority }}, {{ entry.starter }}, waiting {{ seconds(entry.seconds) }}: {{ entry.reason }}<template v-if="entry.raised_from">. Raised from {{ entry.raised_from }}</template></span>
-                </li>
-            </ul>
-        </div>
+        <template v-for="lane in lanes" :key="lane.lane">
+          <div class="lane" :data-lane="lane.lane">
+              <h2>{{ titled(lane) }} <span class="room" :class="{over: lane.over_capacity}">{{ lane.used }} of {{ lane.capacity }} in use<template v-if="lane.over_capacity">, over capacity</template><template v-if="lane.halted">, halted</template></span></h2>
+              <template v-if="!lane.running.length && !lane.waiting.length">
+                <p class="empty">Nothing runs or waits here.</p>
+              </template>
+              <ul>
+                  <template v-for="(entry, index) in lane.running" :key="`run:${index}`">
+                    <li :class="{child: entry.parent_line}" data-lane-entry="running">
+                        <span class="line">{{ entry.line }}</span>
+                        <span class="facts">{{ entry.class }}, {{ entry.priority }}, {{ entry.starter }}, running {{ seconds(entry.seconds) }}<template v-if="entry.parent_line">, for {{ entry.parent_line }}</template></span>
+                    </li>
+                  </template>
+                  <template v-for="(entry, index) in lane.waiting" :key="`wait:${index}`">
+                    <li class="waiting" data-lane-entry="waiting">
+                        <span class="line">{{ entry.line }}</span>
+                        <span class="facts">{{ entry.class }}, {{ entry.priority }}, {{ entry.starter }}, waiting {{ seconds(entry.seconds) }}: {{ entry.reason }}<template v-if="entry.raised_from">. Raised from {{ entry.raised_from }}</template></span>
+                    </li>
+                  </template>
+              </ul>
+          </div>
+        </template>
         <div class="waits" data-lanes-waits>
             <h2>Waits over the last hour</h2>
-            <p v-if="!waits.length" class="empty">No run started in the last hour.</p>
-            <p v-for="wait in waits" :key="wait.priority" class="wait">{{ wait.priority }}: {{ wait.runs }} started, longest wait {{ seconds(wait.longest_seconds) }}, average {{ seconds(wait.average_seconds) }}</p>
+            <template v-if="!waits.length">
+              <p class="empty">No run started in the last hour.</p>
+            </template>
+            <template v-for="wait in waits" :key="wait.priority">
+              <p class="wait">{{ wait.priority }}: {{ wait.runs }} started, longest wait {{ seconds(wait.longest_seconds) }}, average {{ seconds(wait.average_seconds) }}</p>
+            </template>
         </div>
     </section>
 </template>

@@ -20,5 +20,7 @@ function open(event) {
 
 <template>
     <Btn small aria-haspopup="menu" :aria-expanded="Boolean(menu)" data-actions-menu @click="open">{{ label }}<Icon name="chevronRight" :size="11" facing="down" /></Btn>
-    <ContextMenu v-if="menu" v-bind="menu" @close="close" />
+    <template v-if="menu">
+      <ContextMenu v-bind="menu" @close="close" />
+    </template>
 </template>

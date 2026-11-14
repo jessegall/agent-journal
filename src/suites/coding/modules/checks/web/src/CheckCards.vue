@@ -51,9 +51,15 @@ const place = (item) => ({head: item.title, items: menuOf(item)});
 <template>
     <CardPage title="Checks" :items="items" :fields="fields" :place="place" empty-title="No checks yet" data-checks>
         <template #empty>
-            <Skeleton v-if="!loaded" shape="cards" />
-            <p v-else-if="failure" class="note" role="alert">{{ failure }}</p>
-            <p v-else class="note">A check runs a command and says if it passed.</p>
+            <template v-if="!loaded">
+              <Skeleton shape="cards" />
+            </template>
+            <template v-else-if="failure">
+              <p class="note" role="alert">{{ failure }}</p>
+            </template>
+            <template v-else>
+              <p class="note">A check runs a command and says if it passed.</p>
+            </template>
         </template>
         <template #corner="{item}">
             <span class="rhythm" data-check-rhythm>{{ rhythm(item.row) }}</span>
@@ -63,8 +69,12 @@ const place = (item) => ({head: item.title, items: menuOf(item)});
             <template v-if="refusal"><p class="note" role="alert" data-check-refusal>{{ refusal }}</p></template>
         </template>
         <template #foot="{item}">
-            <Btn v-if="!item.row.stopped" small bordered data-check-card-run :disabled="runningIds.has(item.id)" @click="run(item.row)">{{ runningIds.has(item.id) ? "Running" : "Run" }}</Btn>
-            <Btn v-else small bordered data-check-card-start @click="start(item.row)">Start</Btn>
+            <template v-if="!item.row.stopped">
+              <Btn small bordered data-check-card-run :disabled="runningIds.has(item.id)" @click="run(item.row)">{{ runningIds.has(item.id) ? "Running" : "Run" }}</Btn>
+            </template>
+            <template v-else>
+              <Btn small bordered data-check-card-start @click="start(item.row)">Start</Btn>
+            </template>
         </template>
         <template #card-actions="{item}">
             <ActionsMenu :items="menuOf(item)" :head="item.title" />

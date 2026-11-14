@@ -1,4 +1,4 @@
-if (!document.getElementById("window-styles-0995981a853b")) { const style = document.createElement("style"); style.id = "window-styles-0995981a853b"; style.textContent = "textarea[data-v-e2362fec]{box-sizing:border-box;width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface, none);color:inherit;font:inherit}.form[data-v-d58695ed]{display:flex;flex-direction:column;gap:8px;padding:0 var(--inset)}.note[data-v-d58695ed]{margin:0;padding:4px var(--inset);color:var(--text-3);font-size:12px}.failed[data-v-d58695ed]{color:var(--danger)}input[data-v-d58695ed],textarea[data-v-d58695ed]{box-sizing:border-box;width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface, none);color:inherit;font:inherit}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-8baf681e1231")) { const style = document.createElement("style"); style.id = "window-styles-8baf681e1231"; style.textContent = "textarea[data-v-e2362fec]{box-sizing:border-box;width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface, none);color:inherit;font:inherit}.form[data-v-4a53e8f0]{display:flex;flex-direction:column;gap:8px;padding:0 var(--inset)}.note[data-v-4a53e8f0]{margin:0;padding:4px var(--inset);color:var(--text-3);font-size:12px}.failed[data-v-4a53e8f0]{color:var(--danger)}input[data-v-4a53e8f0],textarea[data-v-4a53e8f0]{box-sizing:border-box;width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface, none);color:inherit;font:inherit}\n"; document.head.appendChild(style); }
 import { ref as v, openBlock as o, createBlock as x, unref as n, withCtx as s, withDirectives as N, createElementBlock as m, vModelText as R, createVNode as T, createTextVNode as D, computed as C, Fragment as _, renderList as z, toDisplayString as h, createCommentVNode as L, withModifiers as A, createElementVNode as B } from "vue";
 import { useWindow as M, Reader as K, ResourceLinks as Y, Btn as V, peekRef as G, defaultFilter as J, applyFilter as Q, ListReaderLayout as X, Skeleton as Z, PageHeader as tt, FilterBar as et, copying as I } from "@journal/window-kit";
 const P = (c, f) => {
@@ -210,7 +210,7 @@ const P = (c, f) => {
       _: 1
     }, 8, ["chosen", "items"]));
   }
-}, ct = /* @__PURE__ */ P(st, [["__scopeId", "data-v-d58695ed"]]);
+}, ct = /* @__PURE__ */ P(st, [["__scopeId", "data-v-4a53e8f0"]]);
 export {
   ct as default
 };

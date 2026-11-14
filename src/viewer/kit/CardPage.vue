@@ -38,12 +38,16 @@ const clear = () => {
         <div class="card-page-body">
             <template v-if="!shown.length">
                 <EmptyState :title="items.length ? 'No match' : emptyTitle">
-                    <Btn v-if="items.length" small @click="clear">Clear</Btn>
+                    <template v-if="items.length">
+                      <Btn small @click="clear">Clear</Btn>
+                    </template>
                     <slot v-else name="empty" />
                 </EmptyState>
             </template>
             <template v-for="group in groups" :key="group">
-                <p v-if="group" class="card-page-group">{{ group }}</p>
+                <template v-if="group">
+                  <p class="card-page-group">{{ group }}</p>
+                </template>
                 <div class="card-page-grid">
                     <template v-for="item in inGroup(group)" :key="item.id">
                         <PageCard v-context="place ? () => place(item) : null" :title="item.title" :icon="item.icon" :state="item.state" :line="item.line" :fault="item.fault" :data-row="item.id">

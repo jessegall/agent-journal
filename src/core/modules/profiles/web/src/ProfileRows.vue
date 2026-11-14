@@ -77,18 +77,30 @@ const place = (item) => ({head: item.title, items: menuOf(item)});
                 <template #primary><Btn small variant="primary" data-profile-new @click="make">New profile</Btn></template>
             </PageHeader>
             <FilterBar v-model="filter" v-model:words="words" :fields="fields" :rows="listed" :shown="shown.length" placeholder="Search profiles" data-profile-find />
-            <p v-if="notice" class="note" data-profile-notice>{{ notice }}</p>
-            <p v-if="actionFailure" class="note failed" role="alert" data-profile-failure>{{ actionFailure }}</p>
-            <p v-if="failure" class="note failed" role="alert">{{ failure }}</p>
+            <template v-if="notice">
+              <p class="note" data-profile-notice>{{ notice }}</p>
+            </template>
+            <template v-if="actionFailure">
+              <p class="note failed" role="alert" data-profile-failure>{{ actionFailure }}</p>
+            </template>
+            <template v-if="failure">
+              <p class="note failed" role="alert">{{ failure }}</p>
+            </template>
         </template>
         <template #empty>
             <template v-if="!loaded"><Skeleton shape="rows" /></template>
             <template v-else>A profile gives an agent its instructions, type and model. The journal includes standard profiles.</template>
         </template>
         <template #meta="{item}">
-            <span v-if="item.id === NEW_ID" class="faint">New</span>
-            <span v-else-if="item.p.is_base" class="faint" title="Other profiles extend this one; it is never started by itself" data-profile-base>Base</span>
-            <span v-else-if="item.p.changed.length" class="faint">Changed</span>
+            <template v-if="item.id === NEW_ID">
+              <span class="faint">New</span>
+            </template>
+            <template v-else-if="item.p.is_base">
+              <span class="faint" title="Other profiles extend this one; it is never started by itself" data-profile-base>Base</span>
+            </template>
+            <template v-else-if="item.p.changed.length">
+              <span class="faint">Changed</span>
+            </template>
         </template>
         <template #reader="{item}">
             <ProfilePanel :key="`${item.id}-${draftNumber}`" :notice="notice" :failure="actionFailure" :programs="programs" :types="types" :profile="item.p" :used="usedWords(item.p)" @close="drop" @save="save" @reset="reset">

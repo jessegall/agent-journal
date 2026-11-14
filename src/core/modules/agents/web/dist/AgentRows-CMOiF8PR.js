@@ -748,7 +748,7 @@ const Rt = { class: "action-buttons" }, It = {
       ])
     ], 8, Ea)) : y("", !0);
   }
-}, Da = /* @__PURE__ */ K(Ha, [["__scopeId", "data-v-61d1569f"]]), Wa = { started: { words: "started" }, testing: { words: "being tested" }, blocked: { words: "blocked" } }, qa = (e) => e.filter((l) => l.state !== "cancelled"), He = (e, l) => e.filter((t) => t.state === l).length, Fa = 5, Pa = (e, l) => e || l.split(/\s+/).slice(0, Fa).join(" ");
+}, Da = /* @__PURE__ */ K(Ha, [["__scopeId", "data-v-52c3b6c0"]]), Wa = { started: { words: "started" }, testing: { words: "being tested" }, blocked: { words: "blocked" } }, qa = (e) => e.filter((l) => l.state !== "cancelled"), He = (e, l) => e.filter((t) => t.state === l).length, Fa = 5, Pa = (e, l) => e || l.split(/\s+/).slice(0, Fa).join(" ");
 function Ua({ tasks: e, inHand: l, perHour: t }) {
   const o = qa(e), i = He(o, "completed"), n = Wa[l == null ? void 0 : l.state], u = o.filter((I) => I.state === "started").map((I) => ({ number: I.id, title: I.title })), $ = Math.max(u.length, l && l.state !== "completed" ? 1 : 0), O = o.length - i - $, T = i === o.length;
   return {
@@ -949,7 +949,7 @@ const Ga = {
       })
     ], 64)) : y("", !0);
   }
-}, tn = /* @__PURE__ */ K(en, [["__scopeId", "data-v-c1849d03"]]), an = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.6s5 1.8 5 4.6"/>', nn = ["data-icon", "stroke-width", "innerHTML"], oe = {
+}, tn = /* @__PURE__ */ K(en, [["__scopeId", "data-v-e5158129"]]), an = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.6s5 1.8 5 4.6"/>', nn = ["data-icon", "stroke-width", "innerHTML"], oe = {
   __name: "Icon",
   props: {
     name: { type: String, default: "dot" },

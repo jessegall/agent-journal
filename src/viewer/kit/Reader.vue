@@ -31,7 +31,9 @@ const counts = computed(() => Object.fromEntries(props.tabs.filter((tab) => tab.
     <article class="reader" data-reader>
         <header class="reader-head" data-reader-head>
             <div class="reader-meta">
-                <span v-if="number" class="reader-number" data-reader-number>{{ number }}</span>
+                <template v-if="number">
+                  <span class="reader-number" data-reader-number>{{ number }}</span>
+                </template>
                 <slot name="agent" />
             </div>
             <div class="reader-title-line">

@@ -35,12 +35,18 @@ const plan = computed(() => (line.value?.plan ? props.planCounts[line.value.plan
                 <HoverTip as="button" class="task" data-agent-task :data-peek="`tasks:${line.number}`" :aria-label="`Task ${line.number}: ${line.title}`" @click.stop="peekRef(`tasks:${line.number}`)">Task {{ line.number }}<template #tip><b>{{ line.title }}</b><span>{{ line.taskTip }}</span></template></HoverTip>
             </template>
             <template v-if="line.rate"><span class="rate" data-agent-rate>{{ line.rate }}</span></template>
-            <PlanBar v-if="plan" :plan="line.plan" :counts="plan" />
-            <HoverTip v-else class="count" tabindex="0" place="right" data-agent-count>{{ line.count }}<template #tip><b>{{ line.countTip }}</b><template v-if="line.paceTip">
-  <span>{{ line.paceTip }}</span>
-</template></template></HoverTip>
+            <template v-if="plan">
+              <PlanBar :plan="line.plan" :counts="plan" />
+            </template>
+            <template v-else>
+              <HoverTip class="count" tabindex="0" place="right" data-agent-count>{{ line.count }}<template #tip><b>{{ line.countTip }}</b><template v-if="line.paceTip">
+    <span>{{ line.paceTip }}</span>
+  </template></template></HoverTip>
+            </template>
         </span>
-        <TaskBar v-if="!plan" class="bar" data-agent-bar aria-hidden="true" :total="line.bar.total" :done="line.bar.done" :testing="line.bar.testing" :started="line.bar.started" />
+        <template v-if="!plan">
+          <TaskBar class="bar" data-agent-bar aria-hidden="true" :total="line.bar.total" :done="line.bar.done" :testing="line.bar.testing" :started="line.bar.started" />
+        </template>
     </template>
     <template v-else-if="countsEmpty">
         <span class="task-line" data-agent-task-line><span class="task" data-agent-no-task>No task</span><span class="count" data-agent-count>0 of 0</span></span>

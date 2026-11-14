@@ -2,6 +2,7 @@
 import {computed, inject} from "vue";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
+import InspectorBack from "./InspectorBack.vue";
 import {copying} from "../domain/contextItems.js";
 import {inspectorWidth} from "../domain/inspectorWidths.js";
 import {INSPECTOR_HOST} from "../windows/windowContext.js";
@@ -26,7 +27,7 @@ const copyPath = () => copying(props.path, "the path", (text) => (said.value = t
         <header class="file-inspector-head">
             <div class="file-inspector-band">
                 <template v-if="backed">
-                    <Btn variant="icon" title="Back" aria-label="Back" data-resource-back @click="emit('back')"><Icon name="back" :size="13" /></Btn>
+                    <InspectorBack @back="emit('back')" />
                 </template>
                 <p class="file-inspector-kind">File</p>
                 <a class="btn primary small" :href="filesPage" data-file-inspector-open>Open the Files page</a>

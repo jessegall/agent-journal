@@ -22,16 +22,24 @@ const place = (item) => ({head: item.title, items: menuOf(item)});
             <Btn small variant="primary" data-secret-new @click="isMaking = true"><Icon name="plus" :size="12" />New secret</Btn>
         </template>
         <template #empty>
-            <p v-if="failure" class="failure" role="alert">{{ failure }}</p>
-            <p v-else class="lead">{{ loaded ? "Add a key or login to get started. Only its name will appear here." : "Loading" }}</p>
+            <template v-if="failure">
+              <p class="failure" role="alert">{{ failure }}</p>
+            </template>
+            <template v-else>
+              <p class="lead">{{ loaded ? "Add a key or login to get started. Only its name will appear here." : "Loading" }}</p>
+            </template>
         </template>
         <template #card="{item}">
             <p class="meta" data-secret-programs :title="item.programs">Programs: {{ item.programs }}</p>
             <p class="meta" data-secret-helpers-line>Helpers: {{ item.row.helpers ? "can use it" : "cannot use it" }}</p>
         </template>
         <template #foot="{item}">
-            <Btn v-if="item.row.waiting" small variant="primary" :data-secret-ask="item.id" @click="openId = item.id">Add credentials</Btn>
-            <Btn v-else small bordered data-secret-update @click="openId = item.id">Edit secret</Btn>
+            <template v-if="item.row.waiting">
+              <Btn small variant="primary" :data-secret-ask="item.id" @click="openId = item.id">Add credentials</Btn>
+            </template>
+            <template v-else>
+              <Btn small bordered data-secret-update @click="openId = item.id">Edit secret</Btn>
+            </template>
         </template>
         <template #card-actions="{item}">
             <ActionsMenu :items="menuOf(item)" :head="item.title" />

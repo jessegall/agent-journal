@@ -7,7 +7,7 @@ const costliestFirst = ref(false);
 const {data: numbers, failure} = view.props.numbers;
 const load = () => view.reload("numbers");
 const rows = computed(() => numbers.value?.rows ?? []);
-const COLUMNS = [{key: "hook", label: "Hook, reader or route"}, {key: "count", label: "Count"}, {key: "average_points", label: "Average points"}, {key: "most_points", label: "Most points"}];
+const COLUMNS = [{key: "hook", label: "Name"}, {key: "count", label: "Count"}, {key: "average_points", label: "Average points"}, {key: "most_points", label: "Most points"}];
 
 function sortByCost() {
     costliestFirst.value = !costliestFirst.value;

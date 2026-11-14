@@ -87,8 +87,12 @@ const place = (item) => ({head: item.title, items: menuOf(item, () => (chosen.va
             <template v-else>Shared documents, sequences and checks appear here.</template>
         </template>
         <template #meta="{item}">
-            <span v-if="item.state === 'update'" class="badge-update" data-team-badge>{{ STATE_WORDS.update }}</span>
-            <span v-else class="quiet" data-team-state>{{ STATE_WORDS[item.state] }}</span>
+            <template v-if="item.state === 'update'">
+              <span class="badge-update" data-team-badge>{{ STATE_WORDS.update }}</span>
+            </template>
+            <template v-else>
+              <span class="quiet" data-team-state>{{ STATE_WORDS[item.state] }}</span>
+            </template>
         </template>
         <template #reader="{item}">
             <TeamReader v-model:tab="tab" :item="item" :items="menuOf(item)" :can-write="canWrite" @act="act(item, $event)" />

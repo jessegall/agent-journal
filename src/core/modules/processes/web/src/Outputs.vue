@@ -10,7 +10,7 @@ const {rows, failure, loaded} = context.props.runs;
 const marks = context.props.marks.rows;
 const standingMarks = computed(() => (marks.value ?? []).filter((mark) => !mark.lifted_at));
 const isRunning = (row) => row.state === "running" || row.state === "background";
-const COLUMNS = [{key: "id", label: "Output"}, {key: "line", label: "Command"}, {key: "agent", label: "Agent"}, {key: "task", label: "Task"}, {key: "state", label: "State"}, {key: "took", label: "Took"}, {key: "when", label: "When"}];
+const COLUMNS = [{key: "id", label: "Output"}, {key: "line", label: "Command"}, {key: "agent", label: "Agent"}, {key: "task", label: "Task"}, {key: "state", label: "State"}, {key: "took", label: "Duration"}, {key: "when", label: "When"}];
 const took = (row) => {
     if (!row.started_at) return "";
     const seconds = Math.max(0, Math.floor(((row.ended_at ? new Date(row.ended_at) : new Date()) - new Date(row.started_at)) / 1000));

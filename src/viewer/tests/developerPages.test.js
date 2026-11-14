@@ -19,7 +19,7 @@ test("test_numbers_on_table: the numbers are rows of the table layout with the s
     const element = await mounted(HookNumbers, window);
     await settle();
     expect(element.querySelector("[data-table-layout]")).not.toBeNull();
-    expect(headOf(element)).toEqual(["Hook, reader or route", "Count", "Average points", "Most points"]);
+    expect(headOf(element)).toEqual(["Name", "Count", "Average points", "Most points"]);
     expect(cellsOf(rowsOf(element)[0])).toEqual(["stop", "2", "5", "30"]);
     expect(element.querySelector("[data-numbers-sort]")).not.toBeNull();
 });

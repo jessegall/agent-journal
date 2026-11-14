@@ -2,6 +2,7 @@
 import {computed} from "vue";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
+import InspectorBack from "./InspectorBack.vue";
 import ResourceHeading from "./ResourceHeading.vue";
 import {peekRef, shareAddress} from "../route.js";
 
@@ -29,7 +30,7 @@ const closing = computed(() => (props.backed ? "Close all rows" : "Close"));
         <div class="inspector-icons">
             <span class="inspector-icons-start">
                 <template v-if="backed">
-                    <Btn variant="icon" title="Back" aria-label="Back" data-resource-back @click="emit('back')"><Icon name="back" :size="13" /></Btn>
+                    <InspectorBack @back="emit('back')" />
                 </template>
                 <template v-if="stepped">
                     <Btn variant="icon" title="Previous" aria-label="Previous" data-inspector-step="previous" @click="emit('step', -1)"><Icon name="up" :size="13" /></Btn>

@@ -37,23 +37,26 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     <Teleport to="body">
         <Transition name="side" appear @before-enter="fullyOpen = false" @after-enter="fullyOpen = true">
             <div v-if="opened" :class="['veil', {fades: term === 'test-queue'}]" @click.self="close">
-                <FileInspector v-if="isFile" :path="opened.id" :environment="environment" :backed="route.stack.length > 1" @close="close" @back="unpeek" />
-                <InspectorPanel
-                    v-else
-                    ref="panel"
-                    :term="term"
-                    :id="opened.id"
-                    :table="opened.table"
-                    :read="read"
-                    :catalogue="catalogue"
-                    :environment="environment"
-                    :read-only="readOnly"
-                    :backed="route.stack.length > 1"
-                    :opening="!fullyOpen"
-                    @close="close"
-                    @back="unpeek"
-                    @open="(row) => peek(row.table, row.id)"
-                />
+                <template v-if="isFile">
+                  <FileInspector :path="opened.id" :environment="environment" :backed="route.stack.length > 1" @close="close" @back="unpeek" />
+                </template>
+                <template v-else>
+                  <InspectorPanel
+                      ref="panel"
+                      :term="term"
+                      :id="opened.id"
+                      :table="opened.table"
+                      :read="read"
+                      :catalogue="catalogue"
+                      :environment="environment"
+                      :read-only="readOnly"
+                      :backed="route.stack.length > 1"
+                      :opening="!fullyOpen"
+                      @close="close"
+                      @back="unpeek"
+                      @open="(row) => peek(row.table, row.id)"
+                  />
+                </template>
             </div>
         </Transition>
     </Teleport>

@@ -18,16 +18,24 @@ const done = computed(() => rows.value.filter((row) => !isOpen(row)));
 <template>
     <WindowRoom padding="0">
         <div class="questions" data-questions>
-            <p v-if="failure" class="note failure" role="alert">{{ failure }}</p>
-            <Skeleton v-if="!loaded" shape="rows" />
+            <template v-if="failure">
+              <p class="note failure" role="alert">{{ failure }}</p>
+            </template>
+            <template v-if="!loaded">
+              <Skeleton shape="rows" />
+            </template>
             <template v-else>
                 <QuestionSection title="Open">
                     <template v-for="row in open" :key="row.id"><QuestionCard window :row="row" @changed="load" /></template>
-                    <p v-if="!open.length" class="note" data-questions-none>None</p>
+                    <template v-if="!open.length">
+                      <p class="note" data-questions-none>None</p>
+                    </template>
                 </QuestionSection>
-                <QuestionSection v-if="done.length" title="Done" :count="done.length">
-                    <template v-for="row in done" :key="row.id"><QuestionCard window :row="row" /></template>
-                </QuestionSection>
+                <template v-if="done.length">
+                  <QuestionSection title="Done" :count="done.length">
+                      <template v-for="row in done" :key="row.id"><QuestionCard window :row="row" /></template>
+                  </QuestionSection>
+                </template>
             </template>
         </div>
     </WindowRoom>

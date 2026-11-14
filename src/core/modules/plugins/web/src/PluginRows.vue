@@ -204,9 +204,15 @@ const place = (item) => ({head: item.title, items: menuOf(item)});
                 <Btn small variant="primary" data-plugin-make @click="(making = true), (asked = false)"><Icon name="plus" :size="12" />Create a plugin</Btn>
             </template>
             <template #empty>
-                <Skeleton v-if="!loaded" shape="cards" />
-                <p v-else-if="failure" class="plugin-fault">{{ failure }}</p>
-                <p v-else class="none" data-plugin-none><strong>No plugin is installed</strong> Paste a repository above to see what it would run.</p>
+                <template v-if="!loaded">
+                  <Skeleton shape="cards" />
+                </template>
+                <template v-else-if="failure">
+                  <p class="plugin-fault">{{ failure }}</p>
+                </template>
+                <template v-else>
+                  <p class="none" data-plugin-none><strong>No plugin is installed</strong> Paste a repository above to see what it would run.</p>
+                </template>
             </template>
             <template #corner="{item}">
                 <Switch :on="item.row.enabled" :title="item.row.enabled ? 'Turn it off' : 'Turn it on'" @change="switchOver(item.row)" />
@@ -215,7 +221,9 @@ const place = (item) => ({head: item.title, items: menuOf(item)});
                 <PluginServices :plugin="item.row.name" :services="servicesOf(item.row)" />
                 <template v-if="latest[item.row.name]">
                     <span class="plugin-note" data-plugin-latest-line>{{ latest[item.row.name].line }}</span>
-                    <Btn v-if="latest[item.row.name].is_newer" small variant="primary" data-plugin-upgrade @click="showUpgrade(item.row)">See what changes</Btn>
+                    <template v-if="latest[item.row.name].is_newer">
+                      <Btn small variant="primary" data-plugin-upgrade @click="showUpgrade(item.row)">See what changes</Btn>
+                    </template>
                 </template>
             </template>
             <template #foot="{item}">

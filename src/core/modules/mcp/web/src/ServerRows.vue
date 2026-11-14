@@ -53,24 +53,42 @@ const place = (item) => (item.group === INSTALLED ? {head: item.title, items: me
             <Btn small variant="primary" data-mcp-new @click="isMaking = true"><Icon name="plus" :size="12" />New</Btn>
         </template>
         <template #actions>
-            <span v-if="checkedAt" class="checked" data-mcp-checked>Checked <TimeAgo :at="checkedAt" /></span>
+            <template v-if="checkedAt">
+              <span class="checked" data-mcp-checked>Checked <TimeAgo :at="checkedAt" /></span>
+            </template>
             <Btn small data-mcp-refresh @click="refresh">Refresh</Btn>
         </template>
         <template #empty>
-            <Skeleton v-if="!installed.loaded.value" shape="cards" />
-            <p v-else class="note">Install one of the suggested servers, or add your own.</p>
+            <template v-if="!installed.loaded.value">
+              <Skeleton shape="cards" />
+            </template>
+            <template v-else>
+              <p class="note">Install one of the suggested servers, or add your own.</p>
+            </template>
         </template>
         <template #card="{item}">
-            <template v-if="item.group === INSTALLED && notice"><p v-if="item.row.auth === 'oauth'" class="note" data-mcp-notice>{{ notice }}</p></template>
-            <p v-if="failure && item.group === INSTALLED" class="note" role="alert">{{ failure }}</p>
+            <template v-if="item.group === INSTALLED && notice"><template v-if="item.row.auth === 'oauth'">
+  <p class="note" data-mcp-notice>{{ notice }}</p>
+</template></template>
+            <template v-if="failure && item.group === INSTALLED">
+              <p class="note" role="alert">{{ failure }}</p>
+            </template>
         </template>
         <template #foot="{item}">
-            <Btn v-if="item.group === SUGGESTED" small bordered data-mcp-install @click="install(item.row)">Install</Btn>
-            <Btn v-else-if="item.fault" small bordered data-mcp-check @click="refresh">Check</Btn>
-            <Btn v-else-if="item.row.auth === 'oauth'" small bordered data-mcp-sign-in @click="signIn(item.row)">Sign in</Btn>
+            <template v-if="item.group === SUGGESTED">
+              <Btn small bordered data-mcp-install @click="install(item.row)">Install</Btn>
+            </template>
+            <template v-else-if="item.fault">
+              <Btn small bordered data-mcp-check @click="refresh">Check</Btn>
+            </template>
+            <template v-else-if="item.row.auth === 'oauth'">
+              <Btn small bordered data-mcp-sign-in @click="signIn(item.row)">Sign in</Btn>
+            </template>
         </template>
         <template #card-actions="{item}">
-            <ActionsMenu v-if="item.group === INSTALLED" :items="menuOf(item)" :head="item.title" />
+            <template v-if="item.group === INSTALLED">
+              <ActionsMenu :items="menuOf(item)" :head="item.title" />
+            </template>
         </template>
     </CardPage>
     <template v-if="isMaking"><NewServer @close="isMaking = false" /></template>
