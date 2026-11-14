@@ -22,6 +22,7 @@ class ChecksWindow(Window):
     group = "project"
     icon = WindowIcon.CHECK
     reads = ["check list", "check runs"]
+    count = "check list"
     runs = ["check run", "check start"]
     events = ["check.*"]
     keys = [ChecksKey, RunsKey]

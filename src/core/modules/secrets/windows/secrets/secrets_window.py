@@ -18,6 +18,7 @@ class SecretsWindow(Window):
     group = "project"
     icon = WindowIcon.HASH
     reads = ["secret list", "secret show"]
+    count = "secret list"
     runs = ["secret fill", "secret allow", "secret make", "secret update", "secret delete"]
     events = ["secret.*"]
     keys = [SecretsKey]

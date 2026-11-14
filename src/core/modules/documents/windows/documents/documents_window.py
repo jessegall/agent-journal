@@ -21,6 +21,7 @@ class DocumentsWindow(Window):
     group = "project"
     icon = WindowIcon.DOCUMENT
     reads = ["document library", "doc list", "report list"]
+    count = "doc list"
     runs = ["doc make", "report make"]
     events = ["doc.*", "report.*"]
     keys = [LibraryKey]
