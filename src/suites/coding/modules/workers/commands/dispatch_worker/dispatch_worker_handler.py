@@ -52,6 +52,7 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.assignable_tasks import AssignableTasks
 from suites.coding.modules.workers.support.main_reserved_tasks import MainReservedTasks
 from suites.coding.modules.workers.support.assigned_worker_tasks import AssignedWorkerTasks
+from suites.coding.modules.workers.support.outside_waits import OutsideWaits
 from suites.coding.modules.workers.support.started_task_release import StartedTaskRelease
 from core.modules.agents.support.agent_label import AgentLabel
 
@@ -62,8 +63,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     command = DispatchWorker
 
     def __init__(self, queries: Queries, bus: Bus, settings: SettingValues, git: WorktreeGit, worker_command: WorkerCommand, worktrees: WorktreeQuery,
-                 providers: Providers, models: AllowedModels, routing: WorkerRouting, environments: EnvironmentRows, rows: EventRows, types: HelperTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, admission: AgentAdmission, release: StartedTaskRelease, reservations: MainReservedTasks, presets: WorkerTestPresets, complexity: ModelComplexityPolicy, assigned_worker_tasks: AssignedWorkerTasks) -> None:
-        self.assigned_worker_tasks = assigned_worker_tasks
+                 providers: Providers, models: AllowedModels, routing: WorkerRouting, environments: EnvironmentRows, rows: EventRows, types: HelperTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, admission: AgentAdmission, release: StartedTaskRelease, reservations: MainReservedTasks, presets: WorkerTestPresets, complexity: ModelComplexityPolicy, assigned_worker_tasks: AssignedWorkerTasks, outside_waits: OutsideWaits) -> None:
+        self.assigned_worker_tasks, self.outside_waits = assigned_worker_tasks, outside_waits
         self.complexity = complexity
         self.release, self.reservations, self.presets = release, reservations, presets
         self.places, self.copies, self.available_workers, self.admission = places, copies, available_workers, admission
@@ -79,6 +80,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         else:
             self.reservations.check([command.task_id, *command.delegated_ids])
             self.assigned_worker_tasks.check(read)
+            self.outside_waits.check(read)
             tasks = AssignableTasks.checked(self.release.released(read, context.actor, context.environment_id))
         with self.scopes.row_scope(tasks[0]):
             return self.dispatched(command, tasks, replace(context, environment_id=tasks[0].environment_id))
