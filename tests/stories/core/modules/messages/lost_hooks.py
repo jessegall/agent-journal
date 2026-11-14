@@ -113,17 +113,12 @@ def test_a_line_held_after_a_reply_is_shown_whole_when_a_tool_comes(reply_story)
     expect_chat_count(reply_story, "Fixing the cart next.", 1)
 
 
-def test_a_restarted_server_that_reads_the_file_again_records_nothing_twice(builder, tmp_path):
+def test_a_restarted_server_that_reads_the_file_again_and_the_same_words_written_again_later_are_shown_once(builder, tmp_path):
     path = transcript(tmp_path, agent_row(builder, AGENT_TEXT))
     run_hook(builder, path)
     builder.replace(TranscriptEntries, TranscriptEntries())
     run_hook(builder, path, TOOL_FINISHED)
     expect_chat_count(builder, AGENT_TEXT, 1)
-
-
-def test_the_same_words_written_again_later_are_not_shown_twice(builder, tmp_path):
-    path = transcript(tmp_path, agent_row(builder, AGENT_TEXT))
-    run_hook(builder, path)
     builder.advance(timedelta(minutes=5))
     run_hook(builder, transcript(tmp_path, agent_row(builder, AGENT_TEXT)), TOOL_FINISHED)
     expect_chat_count(builder, AGENT_TEXT, 1)

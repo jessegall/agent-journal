@@ -524,30 +524,15 @@ class RefusingThenTyping(KeptTyping):
         super().send_line(agent_id, line)
 
 
-def test_a_line_that_could_not_be_typed_is_typed_at_a_later_tick_and_then_never_again(new_story):
+def test_a_line_that_could_not_be_typed_is_asked_again_after_ten_seconds_typed_once_at_a_later_tick_and_never_again(new_story):
     story = stopped_lead_story(new_story)
     typing = RefusingThenTyping()
     story.replace(TerminalTyping, typing)
     agent = story.agent
     post_message(story, "Are you there")
+    for number in range(2):
+        story.run(f'message send "Message {number}" --environment main', actor=story.user)
     expect_row(typing, typed=[])
-    typing.working = True
-    story.advance(timedelta(seconds=11))
-    story.tick("s-1")
-    story.run_listeners()
-    expect_row(typing, typed=[(agent.id, f"[journal] {NEW_MESSAGE.nudge(message=1).text}")])
-    for _ in range(3):
-        story.advance(timedelta(seconds=11))
-        story.tick("s-1")
-        story.run_listeners()
-    expect_row(typing, typed=[(agent.id, f"[journal] {NEW_MESSAGE.nudge(message=1).text}")])
-
-
-def test_a_failed_typing_is_asked_again_only_after_ten_seconds(new_story):
-    story = stopped_lead_story(new_story)
-    typing = RefusingThenTyping()
-    story.replace(TerminalTyping, typing)
-    post_message(story, "Are you there")
     for _ in range(5):
         story.advance(timedelta(seconds=1))
         story.tick("s-1")
@@ -557,15 +542,11 @@ def test_a_failed_typing_is_asked_again_only_after_ten_seconds(new_story):
     story.tick("s-1")
     story.run_listeners()
     expect_row(typing, asked=2)
-
-
-def test_one_line_is_typed_to_an_idle_agent_however_many_messages_wait_and_ticks_pass(new_story):
-    story = stopped_lead_story(new_story)
-    typing = KeptTyping()
-    story.replace(TerminalTyping, typing)
-    agent = story.agent
-    for number in range(3):
-        story.run(f'message send "Message {number}" --environment main', actor=story.user)
+    typing.working = True
+    story.advance(timedelta(seconds=11))
+    story.tick("s-1")
+    story.run_listeners()
+    expect_row(typing, typed=[(agent.id, f"[journal] {NEW_MESSAGE.nudge(message=1).text}")])
     for _ in range(3):
         story.advance(timedelta(seconds=11))
         story.tick("s-1")
@@ -746,7 +727,10 @@ def test_a_message_is_typed_at_once_to_an_agent_back_from_a_compaction_a_person_
     story.replace(TerminalTyping, typing)
     story.hook("s-1", HookSamples.sample("compact").with_fields(accepts_lines=False).with_raw({"trigger": "manual"}))
     story.hook("s-1", HookSamples.session_start().with_raw({"source": "compact"}))
-    story.advance(timedelta(seconds=11))
+    story.advance(timedelta(seconds=5))
+    story.tick("s-1")
+    expect_terminal_lines(typing, [])
+    story.advance(timedelta(seconds=6))
     story.tick("s-1")
     post_message(story, "Are you back")
     story.run_listeners()
@@ -766,25 +750,6 @@ def test_an_agent_that_runs_a_tool_within_ten_seconds_of_its_compaction_is_not_t
     story.tick("s-1")
     story.run_listeners()
     expect_terminal_lines(typing, [])
-
-
-def test_an_idle_agent_is_told_once_after_ten_seconds_and_not_before(new_story):
-    story = delivery_story(new_story)
-    typing = KeptTyping()
-    story.replace(TerminalTyping, typing)
-    story.hook("s-1", HookSamples.edit("src/shop.py"))
-    story.hook("s-1", HookSamples.sample("compact").with_fields(accepts_lines=False).with_raw({"trigger": "manual"}))
-    story.hook("s-1", HookSamples.session_start().with_raw({"source": "compact"}))
-    story.advance(timedelta(seconds=5))
-    story.tick("s-1")
-    story.run_listeners()
-    expect_terminal_lines(typing, [])
-    story.advance(timedelta(seconds=6))
-    story.tick("s-1")
-    story.advance(timedelta(seconds=6))
-    story.tick("s-1")
-    story.run_listeners()
-    expect_terminal_lines(typing, [TERMINAL_PREFIX + AGENT_COMPACTED.nudge().text])
 
 
 def test_after_an_automatic_compaction_the_turn_goes_on_and_no_line_is_typed(new_story):

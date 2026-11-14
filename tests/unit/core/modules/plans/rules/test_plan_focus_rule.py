@@ -2,18 +2,21 @@ import itertools
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
+from engine.time.timestamp import Timestamp
 from types import SimpleNamespace
 
 import pytest
 
 from core.modules.plans.models.enums.focus_source import FocusSource
 from core.modules.plans.rules.plan_focus_rule import PlanFocusRule
+from core.modules.plans.support.focus.new_focus_places import NewFocusPlaces
 from core.modules.plans.support.unblockers.unblocker import Unblocker
 from core.modules.plans.support.unblockers.unblockers import Unblockers
 from core.modules.plans.support.plan_nudges import FOCUS_SUGGESTED
 from core.modules.plans.support.plan_nudges import UNFOCUSED_TASK
 
 AGENT_ID = 4
+PLACED_AT = Timestamp.parsed("2026-11-14T07:00:00+00:00")
 PLACES = {11: 1, 12: 2, 13: 2}
 
 
@@ -34,7 +37,7 @@ class PlaceRows:
         return SimpleNamespace(id=agent_id)
 
     def get(self):
-        return [SimpleNamespace(task_id=task_id, plan_id=PLACES[task_id]) for task_id in self.task_ids if task_id in PLACES]
+        return [SimpleNamespace(id=task_id, task_id=task_id, plan_id=PLACES[task_id], creation_timestamp=lambda: PLACED_AT) for task_id in self.task_ids if task_id in PLACES]
 
 
 HOMES = itertools.count()
@@ -42,7 +45,7 @@ HOMES = itertools.count()
 
 def hook(line_numbers=()):
     shell = SimpleNamespace(journal_command_numbers=lambda *commands: tuple(line_numbers))
-    return SimpleNamespace(agent_id=AGENT_ID, event=SimpleNamespace(tool=SimpleNamespace(shell=shell)))
+    return SimpleNamespace(agent_id=AGENT_ID, timestamp=PLACED_AT, event=SimpleNamespace(tool=SimpleNamespace(shell=shell)))
 
 
 def rule(started=(), answered_at=None, explicit_id=None, focus_id=1, source=FocusSource.DEFAULT, plan_ids=(1, 2), waited=(), home=None):
@@ -52,7 +55,8 @@ def rule(started=(), answered_at=None, explicit_id=None, focus_id=1, source=Focu
     overview = SimpleNamespace(current=current, started=works, focus_work=next((work for work in works if work.plan.id == focus_id), None))
     focus = SimpleNamespace(explicit_plan_id=lambda agent: explicit_id, overview=lambda agent: overview)
     history = SimpleNamespace(last_answer=lambda name, hook: answered_at)
-    return PlanFocusRule(SimpleNamespace(query=lambda model: PlaceRows(plan_count=len(plan_ids))), tasks, focus, history, home or JournalHome(Path(f"/journals/{next(HOMES)}")))
+    queries = SimpleNamespace(query=lambda model: PlaceRows(plan_count=len(plan_ids)))
+    return PlanFocusRule(queries, focus, NewFocusPlaces(queries, tasks, history), home or JournalHome(Path(f"/journals/{next(HOMES)}")))
 
 
 def texts(answer):

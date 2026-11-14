@@ -2,7 +2,6 @@ from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from engine.query.conditions.greater import Greater
 from core.modules.messages.queries.message_query import MessageQuery
 from engine.driver.interval import Interval
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
@@ -24,7 +23,7 @@ class UnreadMessageWriteRule(DriverRule):
         self.messages = messages
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        waiting = self.messages.unread(hook.agent_id).matching(Greater("delivered_at", "")).oldest()
+        waiting = self.messages.delivered_unread(hook.agent_id)
         delivered = waiting.take(MESSAGE_COUNT_SHOWN)
         if not delivered:
             return RuleAnswer.allowed()
