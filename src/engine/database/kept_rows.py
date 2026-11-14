@@ -71,11 +71,13 @@ class KeptRows:
         self.kept[cache_key] = KeptValue(signature, change_mark, loaded)
         return loaded
 
-    # Changes a kept read of the query in place, after a write the caller knows the outcome of.
+    # Changes a kept read of the query in place, after a write the caller knows the outcome of. A read another connection
+    # committed over since it was kept is not changed but dropped: the caller's change on top of it would stamp the stale
+    # rows with the current signature.
     def update(self, source: KeptSource, updater: Callable[[T], T], *, name: str) -> None:
         self.check_rollback()
         previous = self.kept.pop(self.query_key(source, name), None)
-        if previous is None:
+        if previous is None or previous.change_mark[0] != self.database.change_mark()[0]:
             return
         self.read(source, lambda: updater(cast(T, previous.value)), name=name)
 
