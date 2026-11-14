@@ -2,7 +2,7 @@
 import {computed} from "vue";
 import {Skeleton, WindowRoom, useWindow} from "@journal/window-kit";
 import QuestionSection from "./QuestionSection.vue";
-import QuestionWindowCard from "./QuestionWindowCard.vue";
+import QuestionCard from "./QuestionCard.vue";
 import {isOpen} from "./questionWords.js";
 
 // the Questions window: two bars, Open (no count: the pane tab counts the open questions) and Done (answered and closed, with its count), both starting open
@@ -22,11 +22,11 @@ const done = computed(() => rows.value.filter((row) => !isOpen(row)));
             <Skeleton v-if="!loaded" shape="rows" />
             <template v-else>
                 <QuestionSection title="Open">
-                    <template v-for="row in open" :key="row.id"><QuestionWindowCard :row="row" @changed="load" /></template>
+                    <template v-for="row in open" :key="row.id"><QuestionCard window :row="row" @changed="load" /></template>
                     <p v-if="!open.length" class="note" data-questions-none>None</p>
                 </QuestionSection>
                 <QuestionSection v-if="done.length" title="Done" :count="done.length">
-                    <template v-for="row in done" :key="row.id"><QuestionWindowCard :row="row" /></template>
+                    <template v-for="row in done" :key="row.id"><QuestionCard window :row="row" /></template>
                 </QuestionSection>
             </template>
         </div>
