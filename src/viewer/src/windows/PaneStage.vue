@@ -1,4 +1,5 @@
 <script setup>
+import {useProjectName} from "../composables/projectName.js";
 import {computed, nextTick, onMounted, onUnmounted, provide, ref, watch, watchEffect} from "vue";
 import {INSPECTOR_HOST, OPEN_VIEW, PANE_PAGE, WINDOW_CONTEXT, windowContext} from "./windowContext.js";
 import {moveToPage} from "../shownPage.js";
@@ -130,10 +131,7 @@ function stepSidebar() {
     else sideMini.value = true;
 }
 const sidebarShown = computed(() => Boolean(props.shellRead) && !phone.value && width.value >= SIDEBAR_FROM_WIDTH && !sideHidden.value);
-// the project's name as this browser last knew it, so it does not change when the server answers
-const lastProject = rememberedRef("last-project", "");
-const project = computed(() => environments.value?.find?.((row) => row.name === props.environment)?.folder?.split("/").pop() || lastProject.value);
-watchEffect(() => (lastProject.value = project.value));
+const project = useProjectName(environments, props.environment);
 watchEffect(() => (document.title = pageTitle(props.environment, project.value)));
 const EVENT_READ_GAP_MS = 5000;
 watch(activityOpen, (open) => {
