@@ -143,7 +143,7 @@ class WorkerResume:
             self.bus.run(BlockUntil(worker.id, TASK_BRIEF_FIRST.nudge(task=worktree.task_id), TaskBriefRead(worktree.task_id)),
                          worker_actor, environment_id=worktree.environment_id)
         job = self.queries.query(AgentLine).find(job.id)
-        if job.state is AgentLineState.WAITING and self.queries.query(Agent).find(worker.id).pid is not None:
+        if job.state is AgentLineState.WAITING and self.rows.required(Agent, worker.id).pid is not None:
             self.bus.run(EnterAgentLine(job.id), actor, environment_id=worktree.environment_id)
         return answer
 

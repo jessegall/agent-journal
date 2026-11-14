@@ -152,6 +152,7 @@ def test_a_resume_that_never_came_back_is_started_again_by_the_next_job_after_tw
     story.advance(timedelta(minutes=3))
     story.use_processes()
     story.tick(MAIN_SESSION)
+    story.use_processes(ProcessRow(701, 1, story.clock.timestamp()))
     after_tick = len(worker_starts(launcher, worker))
     story.run(f'worker send --wait {agent_number(story, worker.id)} "And the total"', actor=story.agent)
     story.run_listeners()
