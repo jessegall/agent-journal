@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import re
 from collections.abc import Sequence
 from pathlib import Path
@@ -38,7 +39,7 @@ class ContractClashes:
 
     def keep_higher_version(self, folder: str, base_branch: str) -> None:
         mine, theirs = self.version(self.git.file_text(folder, "HEAD", VERSION_FILE)), self.version(self.git.file_text(folder, base_branch, VERSION_FILE))
-        Path(folder, VERSION_FILE).write_text(self.git.file_text(folder, "HEAD" if mine >= theirs else base_branch, VERSION_FILE))
+        FileAccess.write(Path(folder, VERSION_FILE), self.git.file_text(folder, "HEAD" if mine >= theirs else base_branch, VERSION_FILE))
 
     @staticmethod
     def version(text: str) -> tuple[int, ...]:
