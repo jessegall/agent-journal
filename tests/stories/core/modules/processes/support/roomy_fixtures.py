@@ -1,7 +1,7 @@
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from core.modules.processes.models.enums.process_setting import ProcessSetting
-from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
+from tests.stories.core.support.coding_fixtures import BuilderStarted, OrchestratorWithPerson, UserBuilder
 
 ROOMY_LONG_LANE = 1000
 
@@ -25,6 +25,16 @@ class RoomyUserBuilder(StoryFixture):
     """UserBuilder with a long lane that holds every run of a story at once, from any one agent."""
 
     parent = UserBuilder
+
+    def steps(self, story: Story) -> None:
+        roomy_long_lane(story)
+
+
+class RoomyOrchestratorWithPerson(StoryFixture):
+    """OrchestratorWithPerson with a long lane that holds every run of a story at once, from any one agent: for
+    stories about a plan's checkpoints rather than how long their runs wait."""
+
+    parent = OrchestratorWithPerson
 
     def steps(self, story: Story) -> None:
         roomy_long_lane(story)
