@@ -8,7 +8,8 @@ import TextInput from "../src/kit/TextInput.vue";
 
 // the form behind a New button, on Dialog: fields (kind text, area, select, password or number; a field may show only when another has a value),
 // the journal command it will run as the values stand, a check before it runs, and a refusal from the check or from the run shown in place.
-// fields: [{key, label, kind, options: [[value, label]], help, required, placeholder, value, when(values)}]
+// fields: [{key, label, kind, options: [[value, label]], help, required, placeholder, value, when(values)}]; a field of kind slot is drawn by the slot of its key,
+// which is given its value and a set(next) that changes it (a list of steps, say)
 const props = defineProps({
     title: {type: String, required: true},
     fields: {type: Array, required: true},
@@ -53,6 +54,9 @@ async function send() {
                         <select :id="`create-${field.key}`" v-model="values[field.key]" :data-field="field.key">
                             <template v-for="[option, label] in field.options" :key="option"><option :value="option">{{ label }}</option></template>
                         </select>
+                    </template>
+                    <template v-else-if="field.kind === 'slot'">
+                        <slot :name="field.key" :value="values[field.key]" :values="values" :set="(next) => (values[field.key] = next)" />
                     </template>
                     <template v-else-if="field.kind === 'area'">
                         <TextArea :id="`create-${field.key}`" :value="values[field.key]" :placeholder="field.placeholder" :data-field="field.key" @input="values[field.key] = $event.target.value" />

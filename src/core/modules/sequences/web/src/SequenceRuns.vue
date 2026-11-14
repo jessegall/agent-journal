@@ -1,76 +1,84 @@
 <script setup>
-defineProps({runs: {type: Array, required: true}});
+import {AgentBadge} from "@journal/window-kit";
+import {canAbandon, progress} from "./sequenceWords.js";
+
+// the runs of a sequence that are going now: the agent, a bar of the steps done and the step it is on; the run that can be given up has its button
+const props = defineProps({runs: {type: Array, required: true}, all: {type: Array, required: true}});
+const emit = defineEmits(["abandon"]);
+const stepWords = (run) => `Step ${run.step_number} of ${progress(run).total}${run.step_started ? "" : ", not started yet"}`;
 </script>
 
 <template>
-    <template v-if="runs.length">
-        <section class="runs" data-sequence-runs>
-            <h3 class="runs-title">Running now</h3>
-            <template v-for="run in runs" :key="run.id">
-                <div class="run">
-                    <div class="run-head">
-                        <span>Agent {{ run.session_agent_id }}</span>
-                        <span class="run-count">{{ run.step_started ? `Step ${run.step_number} of ${JSON.parse(run.steps).length}` : `Step ${run.step_number} of ${JSON.parse(run.steps).length}, not started yet` }}</span>
-                    </div>
-                    <ol class="run-steps">
-                        <template v-for="(step, index) in JSON.parse(run.steps)" :key="index">
-                            <li :class="{done: index + 1 < run.step_number, current: index + 1 === run.step_number}">{{ step }}</li>
-                        </template>
-                    </ol>
-                </div>
-            </template>
-        </section>
-    </template>
+    <section class="sequence-runs" data-sequence-runs>
+        <template v-if="!runs.length">
+            <p class="none" data-runs-none>No run is going now</p>
+        </template>
+        <template v-for="run in runs" :key="run.id">
+            <div class="run" data-run>
+                <span class="run-number">{{ run.id }}</span>
+                <AgentBadge :name="`Agent ${run.session_agent_id}`" />
+                <span class="bar" role="progressbar" :aria-valuenow="progress(run).done" aria-valuemin="0" :aria-valuemax="progress(run).total"><i :style="{width: `${(progress(run).done / progress(run).total) * 100}%`}" /></span>
+                <span class="run-words">{{ stepWords(run) }}</span>
+                <template v-if="canAbandon(run, all)">
+                    <button type="button" class="abandon" data-run-abandon @click="emit('abandon', run)">Abandon</button>
+                </template>
+            </div>
+        </template>
+    </section>
 </template>
 
 <style scoped>
-.runs {
-    margin-top: 20px;
+.run {
+    display: flex;
+    align-items: center;
+    gap: var(--s3);
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-inner);
+    font-size: 12.5px;
 }
 
-.runs-title {
-    margin: 0 0 8px;
+.run-number {
+    flex: none;
+    width: 30px;
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+}
+
+.bar {
+    flex: 1;
+    min-width: 40px;
+    height: 4px;
+    overflow: hidden;
+    border-radius: 2px;
+    background: var(--border-2);
+}
+
+.bar i {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+}
+
+.run-words {
+    flex: none;
     color: var(--text-3);
     font-size: 12px;
-    font-weight: 600;
+    white-space: nowrap;
 }
 
-.run {
-    margin-bottom: 10px;
-    padding: 12px 14px;
-    border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border-2));
-    border-radius: 9px;
-    background: var(--raised);
-}
-
-.run-head {
-    display: flex;
-    justify-content: space-between;
+.abandon {
+    flex: none;
+    border: 0;
+    background: none;
     color: var(--text-2);
-    font-size: 12.5px;
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
 }
 
-.run-count {
-    color: var(--text-3);
-    font-size: 11.5px;
-}
-
-.run-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin: 10px 0 0;
-    padding-left: 20px;
+.none {
+    margin: 0;
     color: var(--text-3);
     font-size: 12.5px;
-}
-
-.run-steps .done {
-    text-decoration: line-through;
-}
-
-.run-steps .current {
-    color: var(--text);
-    font-weight: 500;
 }
 </style>
