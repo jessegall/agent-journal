@@ -1,0 +1,74 @@
+/* Round eighteen: one context menu for the right mouse button, and tabs that keep room for their close cross (user 121555).
+   Only the viewer's tokens from styles.css; the menu panel looks like PaneMenu's MenuPanel.
+   Round twenty (question 138): a right-clicked tab or row gets no ring; only keyboard focus draws one. */
+.r18 { display: grid; grid-template-columns: minmax(0, 1fr) 340px; height: 100%; }
+.r18-main { overflow: auto; padding: var(--s6) var(--s8); display: flex; flex-direction: column; gap: var(--s8); }
+.r18-side { border-left: 1px solid var(--border); background: var(--bg-2); overflow: auto; padding: var(--s5) var(--s4); font-size: 12px; color: var(--text-2); }
+.r18-side h3 { margin: var(--s4) 0 var(--s2); font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .04em; }
+.r18-side h3:first-child { margin-top: 0; }
+.r18-side kbd, .r18-menu kbd { font: 11px var(--mono); color: var(--text-4); }
+.r18-side li { margin: 2px 0; }
+.r18-side ul { margin: 0; padding-left: 16px; }
+.r18 h2 { margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+.r18 .r18-lead { margin: 0 0 var(--s3); color: var(--text-3); font-size: 12px; max-width: 70ch; }
+.r18-frame { border: 1px solid var(--border); border-radius: var(--r); background: var(--bg); overflow: hidden; }
+
+/* ---------- tabs: every tab keeps a 16 px slot for its cross; the cross shows on the active tab and on hover ---------- */
+.r18-tabs { display: flex; align-items: stretch; height: 34px; background: var(--bg-2); border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+.r18-tab { position: relative; display: flex; align-items: center; gap: 6px; padding: 0 6px 0 12px; min-width: 0; max-width: 220px; border-right: 1px solid var(--border); color: var(--text-3); font-size: 12px; cursor: pointer; user-select: none; outline: none; }
+.r18-tab .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.r18-tab .ico { flex: none; width: 14px; text-align: center; color: var(--text-4); font-size: 11px; }
+.r18-tab:hover { background: var(--hover); color: var(--text-2); }
+.r18-tab.on { background: var(--bg); color: var(--text); box-shadow: inset 0 -2px 0 var(--accent); }
+.r18-tab:focus-visible { box-shadow: inset 0 0 0 1px var(--accent-text); }
+.r18-x { flex: none; display: grid; place-items: center; width: 16px; height: 16px; padding: 0; border: 0; border-radius: 4px; background: none; color: var(--text-4); font-size: 11px; line-height: 1; visibility: hidden; }
+.r18-tab.on .r18-x, .r18-tab:hover .r18-x, .r18-tab:focus-visible .r18-x, .r18-tab.target .r18-x { visibility: visible; }
+.r18-x:hover { background: var(--chip); color: var(--text); }
+/* compact (labels of inactive tabs left out, PaneTabs.vue .compact): the cross takes the icon's place on hover, so the tab never widens */
+.r18-tabs.compact .r18-tab:not(.on) .lbl { display: none; }
+.r18-tabs.compact .r18-tab:not(.on) { padding: 0 8px; }
+.r18-tabs.compact .r18-tab:not(.on) .r18-x { display: none; }
+.r18-tabs.compact .r18-tab:not(.on):hover .ico { display: none; }
+.r18-tabs.compact .r18-tab:not(.on):hover .r18-x { display: grid; }
+.r18-tab .gs { font: 10px var(--mono); }
+
+/* ---------- the body under the tabs ---------- */
+.r18-ide { display: grid; grid-template-columns: 220px minmax(0, 1fr); height: 230px; }
+.r18-tree { border-right: 1px solid var(--border); padding: 6px 0; overflow: auto; background: var(--bg-2); }
+.r18-row { display: flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; color: var(--text-2); font-size: 12px; cursor: pointer; outline: none; user-select: none; }
+.r18-row:hover { background: var(--hover); }
+.r18-row.on { background: var(--sel); color: var(--text); }
+.r18-row:focus-visible { box-shadow: inset 0 0 0 1px var(--accent-text); }
+.r18-row.flash { animation: r18flash 1.2s ease; }
+@keyframes r18flash { 0%, 40% { background: var(--accent-dim); } 100% { background: transparent; } }
+.r18-code { padding: 10px 16px; font: 12px/1.6 var(--mono); color: var(--text-2); overflow: auto; white-space: pre; }
+.r18-empty { display: grid; place-items: center; height: 100%; color: var(--text-4); font-size: 12px; }
+.r18-pane { height: 150px; padding: 14px 16px; color: var(--text-3); font-size: 12px; }
+.r18-panes { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); }
+.r18-panes > * { background: var(--bg); min-width: 0; }
+
+/* ---------- list rows ---------- */
+.r18-lists { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--s4); }
+.r18-list h4 { margin: 0; padding: 8px 12px; font-size: 12px; font-weight: 600; border-bottom: 1px solid var(--border); background: var(--bg-2); }
+.r18-list .r18-row { height: 30px; padding: 0 12px; }
+.r18-list .r18-row .meta { margin-left: auto; color: var(--text-4); font-size: 11px; }
+.r18-list .r18-row.off .name { color: var(--text-4); }
+
+/* ---------- the one context menu ---------- */
+.r18-menu { position: fixed; z-index: 50; min-width: 220px; max-width: 300px; padding: 4px; border: 1px solid var(--border-2); border-radius: var(--r); background: var(--raised); box-shadow: var(--shadow); font-size: 12.5px; outline: none; animation: r18in .09s ease-out; }
+@keyframes r18in { from { opacity: 0; transform: scale(.98); } }
+.r18-menu .head { padding: 4px 8px 6px; font-size: 11px; color: var(--text-4); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.r18-mi { display: flex; align-items: center; gap: 8px; width: 100%; height: 26px; padding: 0 8px; border: 0; border-radius: 5px; background: none; color: var(--text-2); text-align: left; }
+.r18-mi .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.r18-mi.active { background: var(--hover); color: var(--text); }
+.r18-mi[aria-disabled="true"] { color: var(--text-4); cursor: default; }
+.r18-mi[aria-disabled="true"].active { background: none; }
+.r18-mi.danger { color: var(--danger); }
+.r18-mi.danger.armed { background: var(--del-bg); color: var(--danger); }
+.r18-mi .why { font-size: 11px; color: var(--text-4); }
+.r18-mi .sub { color: var(--text-4); }
+.r18-sep { height: 1px; margin: 4px 6px; background: var(--border); }
+
+.r18-toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); padding: 8px 14px; border: 1px solid var(--border-2); border-radius: var(--r); background: var(--raised); box-shadow: var(--shadow); font-size: 12px; z-index: 60; display: flex; gap: 12px; align-items: center; }
+.r18-toast button { border: 0; background: none; color: var(--accent-text); padding: 0; }
+.r18-switch { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; color: var(--text-3); }

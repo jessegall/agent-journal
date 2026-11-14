@@ -38,6 +38,7 @@ try {
     await page.locator("[data-agent-column] [data-who]").nth(4).waitFor();
     const ended = page.locator("[data-agent-column] [data-who]").filter({hasText: "ended"}).first();
     await ended.click();
+    await page.waitForTimeout(1500); console.error("PANE", JSON.stringify(await page.locator("[data-memory-browser]").innerText()), await ended.innerText());
     await page.locator("[data-ended-note]").waitFor();
     assert.match(await page.locator("[data-ended-note]").innerText(), /reach no agent while it is ended/);
     await shoot(page, "ended-agent");

@@ -21,7 +21,7 @@ const chosenCount = computed(() => (isAgent(who.value) ? "" : counts[who.value])
 async function readAgent() {
     if (!isAgent(who.value)) return void (agent.value = null);
     const id = agentIdOf(who.value);
-    context.state["selected.id"] = String(id);
+    context.state["selected.id"] = `row:${id}`;
     await context.reload("selected");
     if (agentIdOf(who.value) !== id) return;
     const selected = context.props.selected;
