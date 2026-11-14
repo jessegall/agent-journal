@@ -640,6 +640,13 @@ class WorktreeGit:
         fields = (record.strip().split(NAME_SEPARATOR, 1) for record in log.stdout.split(COMMIT_SEPARATOR) if record.strip())
         return tuple(TaskBranchCommit.parsed(short_id, message) for short_id, message in fields)
 
+    # a protected path a worker changed goes back to its last commit, and a new file there is removed
+    def undo_path(self, folder: str, path: str) -> None:
+        if self.git(folder, GIT_LIMIT_SECONDS, "ls-files", "--error-unmatch", "--", path).returncode == 0:
+            self.checked(folder, GIT_LIMIT_SECONDS, "restore", "--staged", "--worktree", "--source=HEAD", "--", path)
+            return
+        FileAccess.unlink(Path(folder, path), missing_ok=True)
+
     def uncommitted_files(self, folder: str) -> tuple[str, ...]:
         listing = self.checked(folder, GIT_LIMIT_SECONDS, "status", "--porcelain", "--untracked-files=all").stdout
         return tuple(line[3:].split(" -> ")[-1] for line in listing.splitlines())
