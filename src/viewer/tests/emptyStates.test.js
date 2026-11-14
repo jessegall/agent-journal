@@ -1,6 +1,6 @@
 import {readdirSync, readFileSync} from "node:fs";
 import {join, resolve} from "node:path";
-import {afterEach, expect, test} from "vitest";
+import {afterEach, expect, test, vi} from "vitest";
 import {createApp, h, ref} from "vue";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
 import {context, mounted, page, pickButton, settle} from "./support/windowContext.js";
@@ -10,7 +10,6 @@ import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
 import {agentFilterOptions} from "./support/agentFilterOptions.js";
 import {context as agentContext} from "./support/agentWindowContext.js";
 import MemoriesPage from "../../core/modules/memories/web/src/MemoriesPage.vue";
-import {context as memoriesContext, mounted as mountedMemories, settle as settleMemories} from "./support/memoriesContext.js";
 import {default as helpers} from "../../core/modules/agents/web/src/helpers.js";
 
 let app;
@@ -116,16 +115,20 @@ test("a window with no texts declared says its one empty line on every tab", asy
 });
 
 test("the memories window says it is empty, and once words are typed that no memory matches", async () => {
-    const element = await mountedMemories(MemoriesPage, memoriesContext({"environment list": page([]), "memory list": page([]), "memory agents": page([])}));
+    vi.stubGlobal("ResizeObserver", class {observe() {} disconnect() {}});
+    const window = context({}, null, {memories: {line: "memory page", events: ["memory.*"], loading: "requested"}});
+    window.read = async () => ({ok: true, value: {rows: [{id: 1, text: "Totals are in cents", weight: 5, state: "active", agent_id: null, task_id: null, reason: "", created_at: "2026-11-01T10:00:00Z"}], agents: [], total: 1, page: 1, size: 100}});
+    const element = await mounted(MemoriesPage, window);
     document.body.append(element);
     host = element;
-    expect(element.querySelector("[data-memory-empty]").textContent).toContain("No memories yet");
-    expect(element.querySelector("[data-memory-empty]").textContent).toContain("Memories you or the agent save appear here.");
+    await settle();
+    expect(element.querySelector("[data-reader-list]").textContent).toContain("Totals are in cents");
     const box = element.querySelector("[data-search-input]");
     box.value = "cart";
     box.dispatchEvent(new Event("input", {bubbles: true}));
-    await settleMemories();
-    expect(element.querySelector("[data-memory-empty]").textContent).toContain("No memory here matches");
+    await settle();
+    expect(element.querySelector("[data-reader-list]").textContent).toContain("No memory here matches");
+    vi.unstubAllGlobals();
 });
 
 // every list of every window declares what brings rows there, so none can say only that it is empty

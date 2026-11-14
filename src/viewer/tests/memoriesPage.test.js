@@ -1,265 +1,129 @@
-import {expect, test} from "vitest";
-import {agentsLine, context, memoryLine, mounted, namesLine, page, pickButton, settle, typeInto} from "./support/memoriesContext.js";
+import {afterEach, beforeEach, expect, test, vi} from "vitest";
+import {PAGE_TOASTS} from "../kit/useToast.js";
+import {applyFilter, defaultFilter} from "../kit/toggleFilter.js";
+import {placeUnder} from "../kit/vContext.js";
+import {makeToasts} from "../src/composables/toasts.js";
+import {menuEntries} from "../src/composables/contextMenu.js";
+import {context, mounted, page, settle, typeInto, unmountAll} from "./support/windowContext.js";
 import MemoriesPage from "../../core/modules/memories/web/src/MemoriesPage.vue";
+import AgentMemories from "../../core/modules/memories/web/src/AgentMemories.vue";
+import {memoryItems} from "../../core/modules/memories/web/src/memoryItems.js";
+import {memoryFilters} from "../../core/modules/memories/web/src/memoryWords.js";
 
-const ENVIRONMENTS = page([{id: 1, name: "main"}, {id: 2, name: "docs"}]);
-const MAIN_MEMORY = {id: 1, text: "Totals are in cents", weight: 5, state: "active", agent_id: null, environment_id: 1, task_id: 6700, reason: ""};
-const WORKER_MEMORY = {id: 2, text: "My worktree is clean", weight: 7, state: "active", agent_id: 646, environment_id: 1, task_id: null, reason: ""};
-const WORKER = {agent_id: 646, environment_id: 1, role: "worker", name: "Worker 646", started_at: "2026-11-05T10:00:00+00:00", ended_at: null, active_memories: 1, removed_memories: 0};
-const ENDED = {agent_id: 638, environment_id: 1, role: "helper", name: "Ada Yonath", started_at: "2026-10-01T10:00:00+00:00", ended_at: "2026-10-02T10:00:00+00:00", active_memories: 0, removed_memories: 2};
-const FAILED = {ok: false, failure: "refused", error: "the journal did not answer"};
+const memory = (id, extra = {}) => ({id, text: `Memory words ${id}`, weight: 5, state: "active", agent_id: null, task_id: null, reason: "", created_at: "2026-11-01T10:00:00Z", ...extra});
+const ROWS = [memory(1, {text: "Totals are in cents", task_id: 6700}), memory(2, {text: "My worktree is clean", weight: 7, agent_id: 646}), memory(3, {text: "An old fact", weight: 1, state: "removed", reason: "faded to weight 0"})];
+const AGENTS = [{agent_id: 646, name: "Worker 646", role: "worker", ended_at: null}];
+let toasts = null;
 
-// a window whose reads are answered by the first answer whose line starts the read: the given ones come before the usual ones
-function answered(extra = {}, usual = USUAL) {
-    return {...context({"environment list": ENVIRONMENTS, ...extra, ...Object.fromEntries(Object.entries(usual).filter(([line]) => !(line in extra)))})};
-}
-
-const USUAL = {
-    "memory list --main-agent --environment main": page([MAIN_MEMORY]),
-    "memory list --other-agents": page([WORKER_MEMORY]),
-    "memory list --environment main": page([MAIN_MEMORY, WORKER_MEMORY]),
-    "memory list --agent 646": page([WORKER_MEMORY]),
-    "memory list --agent 638": page([{...WORKER_MEMORY, id: 3, agent_id: 638, text: "Ended note"}]),
-    "memory agents --environment main --working": page([WORKER]),
-    "memory agents --environment main --ended": page([ENDED]),
-    "memory agents --agents": page([WORKER]),
-    "agent show 646": {ok: true, value: {number: 646, role: "worker", ended_at: null}},
-    "agent show 638": {ok: true, value: {number: 638, role: "helper", ended_at: "2026-10-02T10:00:00+00:00"}},
-};
-
-const rowTexts = (element) => [...element.querySelectorAll("[data-memory]")].map((row) => row.querySelector(".memory-text").textContent);
-const clickByText = async (element, selector, text) => {
-    [...element.querySelectorAll(selector)].find((found) => found.textContent.includes(text)).click();
-    await settle();
-};
-const readsWith = (window_, start) => window_.reads.filter((line) => line.startsWith(start));
-
-test("the page opens on the main agent of its own environment and has no tab for another environment", async () => {
-    const window_ = answered();
-    const element = await mounted(MemoriesPage, window_);
-    await settle();
-    expect(element.querySelector("[data-memory-tabs]")).toBeNull();
-    expect(element.querySelector("[data-pane-title]").textContent.trim()).toBe("Main agent");
-    expect(rowTexts(element)).toEqual(["Totals are in cents"]);
-    expect(window_.reads.filter((line) => line.includes("--environment")).every((line) => line.includes("--environment main"))).toBe(true);
+beforeEach(() => {
+    vi.stubGlobal("ResizeObserver", class {observe() {} disconnect() {}});
+    location.hash = "";
+    toasts = makeToasts(async () => ({ok: true}));
+    globalThis[PAGE_TOASTS] = toasts;
+});
+afterEach(() => {
+    unmountAll();
+    document.body.innerHTML = "";
+    delete globalThis[PAGE_TOASTS];
+    vi.unstubAllGlobals();
 });
 
-test("the column puts the main agent first with its count, then every other agent as one list, then every agent", async () => {
-    const element = await mounted(MemoriesPage, answered());
-    await settle();
-    const names = [...element.querySelectorAll("[data-agent-column] .pinned [data-who-name]")].map((name) => name.textContent.trim());
-    expect(names).toEqual(["Main agent", "Other agents", "Every agent"]);
-    expect(element.querySelector("[data-main]").textContent).toContain("Reads these at every start");
-});
-
-test("with no worker or helper holding a memory the column says so and offers only the main agent", async () => {
-    const element = await mounted(MemoriesPage, answered({"memory list --other-agents": page([]), "memory agents": page([])}));
-    await settle();
-    expect(element.querySelector("[data-no-agents]").textContent).toContain("No other agent has saved a memory yet");
-    expect(element.querySelector("[data-others]")).toBeNull();
-});
-
-test("the agents holding memories are read in one line each for those at work and those ended, never one line per agent", async () => {
-    const window_ = answered();
-    const element = await mounted(MemoriesPage, window_);
-    await settle();
-    expect(readsWith(window_, "memory agents").sort()).toEqual(["memory agents --environment main --ended --limit 1", "memory agents --environment main --working --limit 30"]);
-    expect(element.querySelector("[data-working-head]").textContent).toContain("Working now");
-    expect(element.textContent).toContain("Worker 646");
-});
-
-test("ended agents stay folded, read only for their number, until they are opened; a search opens them", async () => {
-    const window_ = answered();
-    const element = await mounted(MemoriesPage, window_);
-    await settle();
-    expect(element.textContent).not.toContain("Ada Yonath");
-    element.querySelector("[data-ended-fold]").click();
-    await settle();
-    expect(readsWith(window_, "memory agents --environment main --ended --limit 30")).toHaveLength(1);
-    expect(element.textContent).toContain("Ada Yonath");
-    expect(element.textContent).toContain("2 removed");
-});
-
-test("more ended agents are shown thirty at a time", async () => {
-    const many = Array.from({length: 30}, (_, place) => ({...ENDED, agent_id: 500 - place, name: `Ended ${place}`}));
-    const window_ = answered({"memory agents --environment main --ended": {ok: true, value: {rows: many, page: 1, size: 30, total: 65}}});
-    const element = await mounted(MemoriesPage, window_);
-    await settle();
-    element.querySelector("[data-ended-fold]").click();
-    await settle();
-    await clickByText(element, "[data-agents-more]", "Show 30 more of 65");
-    expect(readsWith(window_, "memory agents --environment main --ended --limit 60")).toHaveLength(1);
-});
-
-test("a name found in the column and the kind of agent are sent to the server", async () => {
-    const window_ = answered();
-    const element = await mounted(MemoriesPage, window_);
-    await settle();
-    typeInto(element.querySelector("[data-agent-find] input"), "worker 646");
-    await settle();
-    expect(readsWith(window_, 'memory agents --environment main --name "worker 646" --working').length).toBeGreaterThan(0);
-    await pickButton(element, "Writing agents", "[data-agent-roles] button");
-    expect(readsWith(window_, 'memory agents --environment main --access writing --name "worker 646"').length).toBeGreaterThan(0);
-    await pickButton(element, "Read-only agents", "[data-agent-roles] button");
-    expect(readsWith(window_, "memory agents --environment main --access read-only").length).toBeGreaterThan(0);
-});
-
-test("an agent with no match for the name says so", async () => {
-    const window_ = answered({"memory agents --environment main --name nobody": page([])});
-    const element = await mounted(MemoriesPage, window_);
-    await settle();
-    typeInto(element.querySelector("[data-agent-find] input"), "nobody");
-    await settle();
-    expect(element.querySelector("[data-no-agent-match]").textContent).toContain("No agent matches");
-});
-
-test("choosing one agent reads its memories alone and its name and role head them", async () => {
-    const window_ = answered();
-    const element = await mounted(MemoriesPage, window_);
-    await settle();
-    await clickByText(element, "[data-who]", "Worker 646");
-    expect(readsWith(window_, "memory page --agent 646 --environment main").length).toBeGreaterThan(0);
-    expect(rowTexts(element)).toEqual(["My worktree is clean"]);
-    expect(element.querySelector("[data-pane-title]").textContent).toContain("Worker 646");
-    expect(element.querySelector("[data-ended-note]")).toBeNull();
-    expect(element.querySelector("[data-open-agent]")).not.toBeNull();
-});
-
-test("an ended agent's memories say that they reach no agent while it is ended", async () => {
-    const element = await mounted(MemoriesPage, answered());
-    await settle();
-    element.querySelector("[data-ended-fold]").click();
-    await settle();
-    await clickByText(element, "[data-who]", "Ada Yonath");
-    expect(element.querySelector("[data-ended-note]").textContent).toContain("reach no agent while it is ended");
-});
-
-test("the workers and helpers are listed under the agent each memory belongs to, with names in the page", async () => {
-    const window_ = answered();
-    const element = await mounted(MemoriesPage, window_);
-    await settle();
-    await clickByText(element, "[data-who]", "Other agents");
-    expect(element.querySelector("[data-group-link]").textContent).toBe("Worker 646");
-    expect(readsWith(window_, "memory agents --agents")).toEqual([]);
-    await clickByText(element, "[data-group-link]", "Worker 646");
-    expect(element.querySelector("[data-pane-title]").textContent).toContain("Worker 646");
-});
-
-test("every agent lists the main agent's memories first under its own name", async () => {
-    const window_ = answered();
-    const element = await mounted(MemoriesPage, window_);
-    await settle();
-    await clickByText(element, "[data-who]", "Every agent");
-    expect([...element.querySelectorAll("[data-group-link]")].map((link) => link.textContent)).toEqual(["Main agent", "Worker 646"]);
-});
-
-test("a search, an order and the removed memories are asked of the server", async () => {
-    const window_ = answered();
-    const element = await mounted(MemoriesPage, window_);
-    await settle();
+async function drawn() {
+    const ran = [];
+    const window = context({}, null, {memories: {line: "memory page", events: ["memory.*"], loading: "requested"}});
+    window.read = async () => ({ok: true, value: {rows: ROWS, agents: AGENTS, total: 3, page: 1, size: 100}});
+    window.readKeys = async ({only = []}) => ({ok: true, value: {declared: {memories: {tab: null, events: ["memory.*"], reload_seconds: 0, loading: "requested", page_size: 0}}, keys: Object.fromEntries(only.map((name) => [name, name === "memories" ? {ok: true, value: {rows: ROWS, agents: AGENTS, total: 3, page: 1, size: 100}} : {ok: true, value: {rows: []}}]))}});
+    window.run = async (line) => (ran.push(line), {ok: true, value: {}});
+    const element = await mounted(MemoriesPage, window);
     document.body.append(element);
-    typeInto(element.querySelector("[data-memory-pane] [data-search-input]"), "cents");
     await settle();
-    expect(readsWith(window_, "memory page --main-agent --environment main --state active --search cents --order newest --limit 20")).toHaveLength(1);
-    element.querySelector("[data-search-menu]").click();
+    return {element, ran};
+}
+const rowOf = (element, id) => element.querySelector(`[data-row="${id}"]`);
+const texts = (element, selector) => [...element.querySelectorAll(selector)].map((found) => found.textContent.trim());
+const choose = async (element, id) => {
+    rowOf(element, id).click();
     await settle();
-    document.querySelector("[data-memory-order='weight']").click();
-    await settle();
-    expect(readsWith(window_, "memory page --main-agent --environment main --state active --search cents --order weight").length).toBeGreaterThan(0);
-    document.querySelector("[data-memory-state='removed']").click();
-    await settle();
-    expect(readsWith(window_, "memory page --main-agent --environment main --removed --state removed --search cents --order weight").length).toBeGreaterThan(0);
+};
+const itemButton = (label) => [...document.body.querySelectorAll("[data-menu-item]")].find((item) => item.textContent.trim().replace(/›$/, "") === label);
+
+test("test_default_filter_active: the list starts on the active memories, with the task as a bare number at the right edge and the agent and weight under the words", async () => {
+    const {element} = await drawn();
+    expect(texts(element, "[data-reader-row] .list-row-title")).toEqual(["Totals are in cents", "My worktree is clean"]);
+    expect(texts(rowOf(element, 1), "[data-memory-task]")).toEqual(["6700"]);
+    expect(texts(element, ".list-row-text")).toEqual(["Main agent · weight 5", "Worker 646 · weight 7"]);
+    const fields = memoryFilters(ROWS, AGENTS);
+    expect(applyFilter(ROWS, fields, defaultFilter(fields)).map((row) => row.id)).toEqual([1, 2]);
+    expect(applyFilter(ROWS, fields, {state: {not: false, values: ["removed"]}}).map((row) => row.id)).toEqual([3]);
+    expect(fields.find((field) => field.key === "agent").options.map(([, label]) => label)).toEqual(["Main agent", "Worker 646", "Main agent"].slice(0, 2));
 });
 
-test("a long list loads the next twenty behind the rows", async () => {
-    const window_ = answered({"memory list --main-agent --environment main": {ok: true, value: {rows: [MAIN_MEMORY], page: 1, size: 20, total: 45}}});
-    const element = await mounted(MemoriesPage, window_);
+test("test_weigh_steps: the reader weighs in the ten steps of the weight and runs memory weigh", async () => {
+    const {element, ran} = await drawn();
+    await choose(element, 1);
+    expect(texts(element, ".field-name")).toEqual(["State", "Weight", "Task", "Made"]);
+    element.querySelector("[data-actions-menu]").click();
     await settle();
-    element.querySelector("[data-memories-more]").click();
+    itemButton("Weigh").click();
     await settle();
-    expect(readsWith(window_, "memory page --main-agent --environment main --state active --order newest --limit 40")).toHaveLength(1);
+    expect(["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"].every((step) => itemButton(step))).toBe(true);
+    itemButton("8").click();
+    await settle();
+    await settle();
+    expect(ran).toContainEqual(["memory", "weigh", "1", "8"]);
 });
 
-test("a search that finds nothing offers to search every agent", async () => {
-    const window_ = answered({"memory list --main-agent --environment main --state active --search deploy": page([])});
-    const element = await mounted(MemoriesPage, window_);
+test("test_remove_and_restore: Remove asks once and says it with an Undo that restores, and a removed memory offers Bring it back", async () => {
+    const {element, ran} = await drawn();
+    await choose(element, 2);
+    element.querySelector("[data-actions-menu]").click();
     await settle();
-    typeInto(element.querySelector("[data-memory-pane] [data-search-input]"), "deploy");
+    itemButton("Remove").click();
     await settle();
-    expect(element.querySelector("[data-memory-empty]").dataset.kind).toBe("search");
-    element.querySelector("[data-memory-everyone]").click();
+    itemButton("Remove: click again").click();
     await settle();
-    expect(element.querySelector("[data-pane-title]").textContent.trim()).toBe("Every agent");
-    expect(element.querySelector("[data-memory-pane] [data-search-input]").value).toBe("deploy");
+    await settle();
+    expect(ran).toContainEqual(["memory", "remove", "2", "--reason", "Removed from the memory list"]);
+    expect(toasts.current.value).toEqual({text: "Removed memory 2", undo: {line: ["memory", "restore", "2"]}});
+    const spoken = [];
+    const items = memoryItems(ROWS[2], {run: async (line) => (ran.push(line), {ok: true}), ask: () => {}});
+    expect(items.map((item) => item.label)).toEqual(["Open", "Weigh", "Copy text", "Edit", "Bring it back"]);
+    await items.find((item) => item.label === "Bring it back").run({say: (text) => spoken.push(text)});
+    expect(ran).toContainEqual(["memory", "restore", "3"]);
+    expect(spoken).toEqual(["Memory 3 is back"]);
 });
 
-test("a main agent with no memories points at the memories of the workers and helpers", async () => {
-    const element = await mounted(MemoriesPage, answered({"memory list --main-agent": page([])}));
-    await settle();
-    expect(element.querySelector("[data-memory-empty]").dataset.kind).toBe("main-others");
-    element.querySelector("[data-memory-others]").click();
-    await settle();
-    expect(element.querySelector("[data-pane-title]").textContent.trim()).toBe("Other agents");
+test("test_no_new_button: the page has no New memory, as an agent makes its own", async () => {
+    const {element} = await drawn();
+    expect(element.textContent).not.toMatch(/new memory/i);
+    expect(element.querySelector(".page-header-end button")).toBeNull();
 });
 
-test("no memories anywhere says so and offers a new memory", async () => {
-    const element = await mounted(MemoriesPage, answered({"memory list": page([]), "memory agents": page([])}));
-    await settle();
-    expect(element.querySelector("[data-memory-empty]").dataset.kind).toBe("main");
-    expect(element.textContent).toContain("No memories yet");
+test("test_agent_tab_rows: the agent's memories tab draws the same memory rows with the same menu", async () => {
+    const answers = {"memory page --agent 646 --state active": page([ROWS[1]]), "memory page --agent 646 --removed": page([ROWS[2]])};
+    const keys = {
+        "agent-memories.*": {line: "memory page --agent {id} --state active --order weight --limit 100", tab: "memories", events: ["memory.*"], loading: "requested"},
+        "agent-removed-memories.*": {line: "memory page --agent {id} --removed --state removed --order weight --limit 100", tab: "memories", events: ["memory.*"], loading: "requested"},
+    };
+    const element = await mounted(AgentMemories, context(answers, null, keys), {agent: 646});
+    document.body.append(element);
+    await vi.waitFor(() => expect(element.querySelector('[data-memory="2"]')).not.toBeNull());
+    const labels = menuEntries(placeUnder(element.querySelector('[data-memory="2"]')).items).filter((entry) => !entry.separator).map((entry) => entry.label);
+    expect(labels).toEqual(["Open", "Weigh", "Copy text", "Edit", "Remove"]);
 });
 
-test("memories that cannot be read say so and can be tried again", async () => {
-    const window_ = answered({"memory list": FAILED, "memory agents": page([])});
-    const element = await mounted(MemoriesPage, window_);
+test("test_menu_items: a right click has Open, Weigh in 9, 7 and 5, Copy text, Edit and Remove, and Edit changes the words through memory edit", async () => {
+    const {element, ran} = await drawn();
+    const entries = menuEntries(placeUnder(rowOf(element, 1)).items).filter((entry) => !entry.separator);
+    expect(entries.map((entry) => entry.label)).toEqual(["Open", "Weigh", "Copy text", "Edit", "Remove"]);
+    expect(entries.find((entry) => entry.label === "Weigh").children.map((child) => child.label)).toEqual(["9: owed work", "7: later today", "5: work in hand"]);
+    entries.find((entry) => entry.label === "Edit").run({say: () => {}});
     await settle();
-    expect(element.querySelector("[data-memory-empty]").dataset.kind).toBe("failure");
-    expect(element.querySelector("[data-memory-failure]").textContent).toContain("the journal did not answer");
-    const before = window_.reads.length;
-    element.querySelector("[data-memory-retry]").click();
+    expect(document.body.querySelector('[data-field="text"]').value).toBe("Totals are in cents");
+    const field = document.body.querySelector('[data-field="text"]');
+    typeInto(field, "Totals are in euro cents");
     await settle();
-    expect(window_.reads.length).toBeGreaterThan(before);
-});
-
-test("a memory made on the page goes to the page's environment and the main agent", async () => {
-    const lines = [];
-    const window_ = {...answered(), run: async (line) => (lines.push(line), {ok: true, value: {}})};
-    const element = await mounted(MemoriesPage, window_);
+    document.body.querySelector("[data-create-send]").click();
     await settle();
-    element.querySelector("[data-memory-new]").click();
-    await settle();
-    const text = element.querySelector("[data-memory-form] textarea");
-    typeInto(text, "Keep this");
-    await settle();
-    element.querySelector("[data-memory-form]").dispatchEvent(new Event("submit"));
-    await settle();
-    expect(lines).toEqual([["memory", "make", "Keep this", "--environment", "main"]]);
-    expect(element.querySelector("[data-memory-notice]").textContent).toContain("Saved for the main agent");
-});
-
-test("a memory opens its panel", async () => {
-    const element = await mounted(MemoriesPage, answered());
-    await settle();
-    element.querySelector('[data-memory="1"]').click();
-    expect(location.href).toContain("memories:1");
-});
-
-test("at phone width a button opens the list of agents over the memories", async () => {
-    const element = await mounted(MemoriesPage, answered());
-    await settle();
-    const browser = element.querySelector("[data-memory-browser]");
-    expect(browser.classList.contains("picking")).toBe(false);
-    element.querySelector("[data-whose]").click();
-    await settle();
-    expect(browser.classList.contains("picking")).toBe(true);
-    await clickByText(element, "[data-who]", "Worker 646");
-    expect(browser.classList.contains("picking")).toBe(false);
-});
-
-test("the command lines say whose memories, in which environment and how they are searched", () => {
-    expect(memoryLine({who: "main", environment: "docs"})).toBe("memory list --main-agent --environment docs --state active --order newest --limit 20");
-    expect(memoryLine({who: "agent:5", environment: "main", state: "all", search: 'say "hi"', order: "weight"})).toBe('memory list --agent 5 --environment main --removed --search "say \\"hi\\"" --order weight --limit 20');
-    expect(memoryLine({who: "everyone", environment: "main", state: "removed"})).toBe("memory list --environment main --removed --state removed --order newest --limit 20");
-    expect(agentsLine({environment: "main", ended: true, role: "read-only"})).toBe("memory agents --environment main --access read-only --ended --limit 30");
-    expect(namesLine([4, 4, 9])).toBe("memory agents --agents 4 9 --limit 2");
+    expect(ran).toContainEqual(["memory", "edit", "1", "--text", "Totals are in euro cents"]);
 });

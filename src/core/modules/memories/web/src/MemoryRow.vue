@@ -1,31 +1,17 @@
 <script setup>
-import {computed} from "vue";
-import {copying, deleteItem, peekRef, short, useWindow, vContext, wordLabel} from "@journal/window-kit";
+import {computed, ref} from "vue";
+import {peekRef, useWindow, vContext, wordLabel} from "@journal/window-kit";
+import MemoryEdit from "./MemoryEdit.vue";
+import {memoryItems} from "./memoryItems.js";
 
 // one memory in a list: its title Memory and its number, its text smaller and muted under it, then its state and weight with a mark of ten steps, the task it belongs to and the reason it was removed
 const HIGHEST_WEIGHT = 10;
 const props = defineProps({row: {type: Object, required: true}});
 const facts = computed(() => [props.row.task_id ? `Task ${props.row.task_id}` : "", props.row.reason ? `Reason: ${props.row.reason}` : ""].filter(Boolean));
 const view = useWindow();
-// the menu of a right click on a memory: open it, weigh it, copy its text, remove it (with an Undo) or, when it was removed, restore it
-const WEIGHTS = [["9", "owed work"], ["7", "later today"], ["5", "work in hand"]];
-const removed = computed(() => props.row.state === "removed");
-const id = computed(() => String(props.row.id));
-const restore = ["memory", "restore", id.value];
-const place = () => ({
-    head: `Memory ${props.row.id}`,
-    items: [
-        {label: "Open", group: "open", run: () => peekRef(`memories:${props.row.id}`)},
-        {label: "Weigh", group: "open", disabled: removed.value, reason: "Removed", children: WEIGHTS.map(([weight, meaning]) => ({
-            label: `${weight}: ${meaning}`,
-            run: async ({say}) => say((await view.run(["memory", "weigh", id.value, weight])).ok ? `Memory ${id.value} weighs ${weight}` : "The journal refused the weight"),
-        }))},
-        {label: "Copy text", group: "copy", run: ({say}) => copying(props.row.text, short(props.row.text, 30), say)},
-        removed.value
-            ? {label: "Restore", group: "own", run: async ({say}) => say((await view.run(restore)).ok ? `Memory ${id.value} is back` : "The journal could not restore it")}
-            : deleteItem({word: "Remove", name: `memory ${id.value}`, remove: () => view.run(["memory", "remove", id.value, "--reason", "Removed from the memory list"]), restore}),
-    ],
-});
+// the menu of a right click on a memory: open it, weigh it, copy its text, edit it, remove it (with an Undo) or, when it was removed, bring it back
+const editing = ref(false);
+const place = () => ({head: `Memory ${props.row.id}`, items: memoryItems(props.row, {run: view.run, ask: () => (editing.value = true)})});
 </script>
 
 <template>
@@ -44,6 +30,7 @@ const place = () => ({
                 <span>{{ fact }}</span>
             </template>
         </span>
+        <template v-if="editing"><MemoryEdit :row="row" @close="editing = false" /></template>
     </button>
 </template>
 

@@ -169,19 +169,19 @@ test("test_feed_file_items: a file of the feed has Open file, Fold and Copy path
     expect(decodeURIComponent(location.hash)).toBe("#/file?q=src/app/Main.vue");
 });
 
-test("an agent's memory has Open, Weigh, Copy text and Remove with an Undo that restores it, and a removed one has Restore", async () => {
+test("an agent's memory has Open, Weigh, Copy text, Edit and Remove with an Undo that restores it, and a removed one has Bring it back", async () => {
     const {runs, window} = recording(plainContext({}));
     const element = await mounted(MemoryRow, window, {row: {id: 3, text: "Run the tests first", state: "active", weight: 7}});
     document.body.append(element);
     const menu = menuAt(element.querySelector("[data-memory]"));
-    expect(menu.labels).toEqual(["Open", "Weigh", "Copy text", "Remove"]);
+    expect(menu.labels).toEqual(["Open", "Weigh", "Copy text", "Edit", "Remove"]);
     await menu.choose("Weigh", "9: owed work");
     await menu.byLabel("Remove").run({say});
     await settle();
     expect(runs).toEqual(["memory weigh 3 9", "memory remove 3 --reason Removed from the memory list"]);
     expect(spoken.at(-1)).toEqual(["Removed memory 3", {line: ["memory", "restore", "3"]}]);
     const gone = await mounted(MemoryRow, window, {row: {id: 4, text: "Old", state: "removed", weight: 5}});
-    expect(menuAt(gone.querySelector("[data-memory]")).labels).toEqual(["Open", "Weigh", "Copy text", "Restore"]);
+    expect(menuAt(gone.querySelector("[data-memory]")).labels).toEqual(["Open", "Weigh", "Copy text", "Edit", "Bring it back"]);
 });
 
 test("a row of a table has Open, Copy number and Copy row", async () => {
