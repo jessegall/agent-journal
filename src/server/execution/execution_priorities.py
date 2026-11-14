@@ -10,6 +10,8 @@ from engine.time.timestamp import Timestamp
 from server.execution.session_starters import SessionStarters
 
 JOURNAL = ExecutionStarter(StarterType.JOURNAL)
+# the lines that give capacity back: the runner's end of a run or a part, and halting or resuming the queue
+RELEASE_LINES = frozenset({("process", "end"), ("process", "part-end"), ("process", "orphan"), ("queue", "halt"), ("queue", "resume")})
 PERSON = ExecutionStarter(StarterType.PERSON)
 
 
@@ -30,7 +32,10 @@ class ExecutionPriorities:
     def hook_ticket(self, session: str, event_name: str, entered_at: Timestamp) -> ExecutionTicket:
         return self.ticket(ExecutionSubject(ExecutionSource.HOOK, self.starters.starter(session) if session else JOURNAL, line=event_name), entered_at)
 
+    # a line that gives capacity back never waits, so no waiter can block the work that frees it
     def command_ticket(self, session: str, line: str, entered_at: Timestamp) -> ExecutionTicket:
+        if tuple(line.split()[:2]) in RELEASE_LINES:
+            return self.release_ticket(line, entered_at)
         return self.ticket(ExecutionSubject(ExecutionSource.COMMAND, self.starters.starter(session), line=line), entered_at)
 
     def viewer_ticket(self, line: str, window: WindowPriority, entered_at: Timestamp) -> ExecutionTicket:

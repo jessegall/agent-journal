@@ -1,3 +1,4 @@
+from engine.execution.held_write_turn import HELD_WRITE_TURN
 import itertools
 import threading
 from collections.abc import Callable, Generator
@@ -62,6 +63,7 @@ class ExecutionQueue:
         while not self.starts_now(queued):
             if not queued.is_client_waiting():
                 raise ClientLeftError(queued.ticket.line)
+            HELD_WRITE_TURN.refuse_wait(f"the wait for an instant lane place for {queued.ticket.line}")
             waited = self.clock.epoch_seconds() - queued.entered_at
             if wait_limit_seconds is not None and waited >= wait_limit_seconds and not queued.ticket.priority.is_unlimited:
                 raise HookDatabaseBusyError(f"the journal was busy for {waited:.1f} seconds: waiting for {self.holders_text()}")
