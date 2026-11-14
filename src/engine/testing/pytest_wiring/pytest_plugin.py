@@ -19,7 +19,6 @@ from engine.testing.runs.full_run_record import FullRunRecord
 from engine.testing.runs.full_run_records import FullRunRecords
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
-from engine.testing.stories.internal_story_files import InternalStoryFiles
 from engine.testing.stories.story_overlap import StoryOverlap
 from engine.testing.stories.story_steps import StorySteps
 from engine.testing.stories.story_budget import BUDGET_MARKER, POINTS_BUDGET, StoryBudget
@@ -28,7 +27,6 @@ from engine.testing.templates.temp_folders import TempFolders
 from engine.testing.templates.template_databases import TemplateDatabases
 
 STORY_OVERLAP = pytest.StashKey[StoryOverlap]()
-INTERNAL_FILES = pytest.StashKey[InternalStoryFiles]()
 STORY_RUNS = pytest.StashKey[list[StorySteps]]()
 RUN_FOLDER = pytest.StashKey[Path]()
 CALL_PASSED = pytest.StashKey[bool]()
@@ -100,7 +98,6 @@ def pytest_configure(config: pytest.Config) -> None:
     config.stash[RUN_DURATIONS] = RunDurations()
     config.addinivalue_line("markers", f"{BUDGET_MARKER}(points, reason): a story that may cost more than the default budget, and why")
     config.stash[STORY_OVERLAP] = StoryOverlap()
-    config.stash[INTERNAL_FILES] = InternalStoryFiles(config.rootpath)
     if config.option.basetemp is None and not hasattr(config, "workerinput"):
         config.stash[RUN_FOLDER] = config.option.basetemp = TempFolders().start()
 
@@ -120,7 +117,6 @@ def templates() -> Generator[TemplateDatabases]:
 @pytest.fixture
 def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.FixtureRequest) -> Generator[Callable[..., Story]]:
     overlap = request.config.stash[STORY_OVERLAP]
-    internal_files = request.config.stash[INTERNAL_FILES]
     item: pytest.Item = getattr(request, "node")
     created = item.stash[STORY_RUNS]
 
@@ -132,7 +128,7 @@ def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.Fixt
         return story
     yield started
     for steps in created if item.stash.get(CALL_PASSED, False) else []:
-        overlap.add(item.nodeid, steps.start, steps.lines(), [] if internal_files.holds(item.path) else steps.path(), steps.fixture, steps.checks())
+        overlap.add(item.nodeid, steps.start, steps.lines(), steps.path(), steps.fixture, steps.checks())
         steps.story.close()
     created.clear()
     SharedTables.shared.cache_clear()
