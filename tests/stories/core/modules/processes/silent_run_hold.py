@@ -21,6 +21,7 @@ from tests.integration.core.modules.processes.test_hang_watch import ActiveBuild
 from tests.stories.core.modules.processes.support.process_samples import end_run
 from core.modules.processes.support.process_nudges import SILENT_RUN_BLOCKED
 from core.modules.drivers.support.driver_nudges import REQUIRED_COMMAND_TOOL_USES
+from core.modules.drivers.commands.support.required_commands import RequiredCommands
 from engine.testing.expectations.expected_nudge import expected_nudge
 
 HANG_SECONDS = 300
@@ -140,8 +141,10 @@ def test_one_read_of_a_stopped_silent_run_that_printed_nothing_clears_the_read_i
     story.step("run started", 1, "make build", ["make build"])
     story.expect_success("output read 1 --all", actor=story.agent)
     story.advance(timedelta(seconds=HANG_SECONDS + 1))
-    story.expect_hook_refusal("s-1", EDIT, BLOCKED)
     story.expect_success("output stop 1", actor=story.agent)
+    # the hold's line opens its read block when a hook answer delivers it, as it did for the stopped runs of report 125728
+    held = RequiredCommands.block(story.agent.id, SILENT_RUN_BLOCKED.nudge(output=1, seconds=HANG_SECONDS + 1, processor="not known", hint="read"))
+    story.container.get(Bus).run(held, story.agent, environment_id=1)
     for _ in range(REQUIRED_COMMAND_TOOL_USES):
         story.advance(timedelta(seconds=1))
         story.hook("s-1", EDIT)
