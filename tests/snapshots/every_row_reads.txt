@@ -53,6 +53,7 @@ src/core/modules/drivers/rules/access_rule.py:a tool use is matched against ever
 src/core/modules/drivers/rules/agent_block_rule.py:the open blocks of one agent are few: each is closed or skipped before the agent goes on
 src/core/modules/drivers/rules/block_stop_rule.py:the open blocks of one agent are few: each is closed or skipped before the agent goes on
 src/core/modules/drivers/support/agent_activities.py:The open agents of one family, which the agent limits bound; every rule of the hook reads them from this one load.
+src/core/modules/drivers/support/agent_open_blocks.py:every open block of the agent for the state's nudges
 src/core/modules/drivers/support/hook_rule_histories.py:An agent has one history row for each driver rule and layer, so the read is bounded by the number of rules, and a hook checks every rule.
 src/core/modules/drivers/support/nudge_records.py:every record of the nudges asked about decides whether each is due again
 src/core/modules/drivers/support/waiting_line_typing.py:a release types every line that waited for the agent, oldest first
@@ -219,6 +220,7 @@ src/suites/coding/modules/workers/commands/record_worktree_takeover/record_workt
 src/suites/coding/modules/workers/commands/remind_behind_updates/remind_behind_updates_handler.py:every behind check in that state is reminded of
 src/suites/coding/modules/workers/commands/remove_orphan_worktrees/remove_orphan_worktrees_handler.py:a folder is an orphan only when no open worktree of any worker holds it
 src/suites/coding/modules/workers/commands/report_stopped_worker_runs/report_stopped_worker_runs_handler.py:every run still going after its worker stopped is reported once
+src/suites/coding/modules/workers/commands/report_unstarted_proofs/report_unstarted_proofs_handler.py:the lines that already told the main agent about a set of unstarted proofs are read once
 src/suites/coding/modules/workers/commands/send_silent_agent_lines/send_silent_agent_lines_handler.py:One activity row for each running agent and each worker that is not retired, which the agent limits bound.
 src/suites/coding/modules/workers/commands/send_silent_agent_lines/send_silent_agent_lines_handler.py:every checked agent is judged silent or idle from its worktrees, lines and merger lines
 src/suites/coding/modules/workers/commands/support/merge_followups.py:a merge waits on every unfinished followup of another worktree
