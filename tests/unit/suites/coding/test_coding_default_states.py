@@ -20,8 +20,8 @@ class Defaults:
 
 def loaded(role: str):
     choice = SimpleNamespace(suite=lambda: SimpleNamespace(name="coding"), driver=lambda agent_role: SimpleNamespace(name=f"coding.{agent_role}"))
-    agent = SimpleNamespace(id=7, environment_id=5, role=role, access="writing", launched_at=None, process_started_at=None, creation_timestamp=lambda: None)
-    return ActorLoader(choice, Defaults(), SimpleNamespace(enabled=lambda name: True)).loaded(agent)
+    agent = SimpleNamespace(id=7, environment_id=5, role=role, access="writing", launched_at=None, process_started_at=None, creation_timestamp=lambda: None, profile="")
+    return ActorLoader(choice, Defaults(), SimpleNamespace(enabled=lambda name: True), SimpleNamespace()).loaded(agent)
 
 
 def test_the_coding_suite_syncs_with_its_two_default_states():

@@ -55,3 +55,17 @@ test("the words for distance, checks and review are plain", () => {
     expect(checksLine(PULL)).toBe("2 passed, 1 failed");
     expect(reviewLine({draft: true})).toBe("draft");
 });
+
+test("the tabs are the underline band of the other pages, the open one marked and each with its count", async () => {
+    const window = gitWindowContext({
+        "git-overview branches": {ok: true, value: {rows: [BRANCH], is_last_page: true}},
+        "git-overview commits": {ok: true, value: {rows: [COMMIT], is_last_page: true}},
+        "git-overview pulls": {ok: true, value: {available: true, rows: [PULL]}},
+    });
+    const element = await mounted(GitOverview, window);
+    const band = element.querySelector("[data-git-tabs] [data-inner-tabs]");
+    expect(band).not.toBeNull();
+    expect(band.querySelector(".inner-tab.on").textContent).toContain("Commits");
+    await tab(element, "Branches");
+    expect(band.querySelector(".inner-tab.on").textContent).toContain("Branches");
+});

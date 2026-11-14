@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {ActionsMenu, Btn, CardPage, Icon, Skeleton, TimeAgo, removed, useWindow} from "@journal/window-kit";
+import {ActionsMenu, Btn, CardPage, Skeleton, TimeAgo, removed, useWindow} from "@journal/window-kit";
 import NewServer from "./NewServer.vue";
 import ServerKey from "./ServerKey.vue";
 import {INSTALLED, SUGGESTED, installedCard, integrationFields, serverMenu, suggestedCard} from "./integrationWords.js";
@@ -50,7 +50,7 @@ const place = (item) => (item.group === INSTALLED ? {head: item.title, items: me
 <template>
     <CardPage title="Integrations" :items="items" :fields="integrationFields" :place="place" empty-title="No servers installed" data-integrations>
         <template #primary>
-            <Btn small variant="primary" data-mcp-new @click="isMaking = true"><Icon name="plus" :size="12" />New</Btn>
+            <Btn small variant="primary" data-mcp-new @click="isMaking = true">Add server</Btn>
         </template>
         <template #actions>
             <template v-if="checkedAt">

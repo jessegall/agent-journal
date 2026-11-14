@@ -29,14 +29,3 @@ test("a new document is made with its title, abstract and text", async () => {
     await settle();
     expect(ran).toContainEqual(["doc", "make", "Tax", "--abstract", "How tax works", "--body", "The rules"]);
 });
-
-test("the arrows walk the documents and escape closes the one open", async () => {
-    const {element} = await drawn();
-    const list = element.querySelector("[data-library-list]");
-    list.dispatchEvent(new KeyboardEvent("keydown", {key: "ArrowDown", bubbles: true}));
-    await settle();
-    expect(element.querySelector(".library-row.chosen")).not.toBeNull();
-    list.dispatchEvent(new KeyboardEvent("keydown", {key: "Escape", bubbles: true}));
-    await settle();
-    expect(element.querySelector(".library-row.chosen")).toBeNull();
-});

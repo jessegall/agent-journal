@@ -1,5 +1,5 @@
-from collections.abc import Sequence
-from dataclasses import dataclass
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass, field
 
 from engine.driver.hook_event import HookEvent
 from engine.enums.hook_event_name import HookEventName
@@ -12,7 +12,7 @@ from engine.time.timestamp import Timestamp
 @dataclass(frozen=True)
 class AgentHook:
     """A hook event with its agent, the agent's driver, the time it was taken, the layer it is asked for,
-    and the row the agent's default states stand on with the defaults it carries."""
+    and the row the agent's default states stand on with the defaults it carries and the state that takes each away while open."""
 
     event: HookEvent
     agent_id: int
@@ -26,11 +26,12 @@ class AgentHook:
     access: str = ""
     anchor: OpenRow | None = None
     defaults: Sequence[str] = ()
+    removed_while: Mapping[str, str] = field(default_factory=dict[str, str])
 
     @classmethod
     def of_actor(cls, event: HookEvent, actor: LoadedActor, timestamp: Timestamp) -> "AgentHook":
         return cls(event, actor.agent_id, actor.environment_id, actor.role, actor.driver, timestamp, suite=actor.suite, access=actor.access, anchor=actor.anchor,
-                   defaults=tuple(actor.defaults))
+                   defaults=tuple(actor.defaults), removed_while=actor.removed_while)
 
     @property
     def hook_name(self) -> str:

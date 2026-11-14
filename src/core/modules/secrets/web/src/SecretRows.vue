@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {ActionsMenu, Btn, CardPage, Icon, Skeleton, removed, useWindow} from "@journal/window-kit";
+import {ActionsMenu, Btn, CardPage, Skeleton, removed, useWindow} from "@journal/window-kit";
 import SecretDialog from "./SecretDialog.vue";
 import SecretNewDialog from "./SecretNewDialog.vue";
 import {secretCard, secretFields, secretMenu} from "./secretItems.js";
@@ -19,7 +19,7 @@ const place = (item) => ({head: item.title, items: menuOf(item)});
 <template>
     <CardPage title="Secrets" :items="items" :fields="secretFields" :place="place" empty-title="No secrets yet" data-secrets>
         <template #primary>
-            <Btn small variant="primary" data-secret-new @click="isMaking = true"><Icon name="plus" :size="12" />New secret</Btn>
+            <Btn small variant="primary" data-secret-new @click="isMaking = true">New secret</Btn>
         </template>
         <template #empty>
             <template v-if="failure">

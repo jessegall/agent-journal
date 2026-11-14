@@ -1,5 +1,5 @@
 import {createApp, h, nextTick, ref} from "vue";
-import {expect, test} from "vitest";
+import {expect, test, vi} from "vitest";
 import AutoScrollPane from "../kit/AutoScrollPane.vue";
 import {WINDOW_CONTEXT} from "../kit/windowContextKey.js";
 import {settle} from "./support/windowContext.js";
@@ -42,8 +42,7 @@ test("scrolling up stops following and shows Newest, and the button starts it ag
     newest(element).click();
     await scrolledTo(pane, pane.scrollTop);
     expect(pane.scrollTop).toBe(1000);
-    await new Promise((resolve) => setTimeout(resolve, 60));
-    expect(newest(element).style.display).toBe("none");
+    await vi.waitFor(() => expect(newest(element).style.display).toBe("none"));
 });
 
 test("a window that follows the top stays at the top", async () => {

@@ -12,12 +12,16 @@ export const secretCard = (row) => ({
     icon: ICONS[row.secret_type],
     state: row.waiting ? NEEDS : LABELS[row.secret_type],
     status: row.waiting ? NEEDS : READY,
+    kind: LABELS[row.secret_type],
     line: row.brief || "Note: none",
     programs: row.programs.length ? row.programs.join(", ") : "none",
     row,
 });
 
-export const secretFields = [{key: "status", label: "State", options: [[READY, READY], [NEEDS, NEEDS]], get: (item) => item.status}];
+export const secretFields = [
+    {key: "status", label: "State", options: [[READY, READY], [NEEDS, NEEDS]], get: (item) => item.status},
+    {key: "kind", label: "Kind", options: Object.values(LABELS).map((label) => [label, label]), get: (item) => item.kind},
+];
 
 // Replace value opens the secret's dialog, Copy name copies the title (never the value), and Delete asks once in place
 export function secretMenu(item, {edit, remove}) {

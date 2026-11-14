@@ -285,16 +285,17 @@ test("process events refresh the queue and output events refresh only an open ou
 });
 
 test("the queue window declares the output events it follows, so an open output keeps following its latest lines, and its inspector the process events", () => {
-    const module = readFileSync(resolve(__dirname, "../../core/modules/processes/processes_module.py"), "utf8");
+    const module = readFileSync(resolve(__dirname, "../../core/modules/processes/windows/queue_body/queue_body_window.py"), "utf8");
     const inspector = readFileSync(resolve(__dirname, "../../core/modules/processes/support/queue_inspector.py"), "utf8");
-    expect(module).toMatch(/WindowDeclaration\("processes\.queue-body", "Process queue",[\s\S]*?events=\["output\.\*"\]\)/);
+    expect(module).toContain('events = ["output.*"]');
     expect(inspector).toContain('events=tuple(["process.*"])');
 });
 
 test("the queue is named Process queue in its window and its inspector, and its window may read the pages of an output it opens", () => {
-    const module = readFileSync(resolve(__dirname, "../../core/modules/processes/processes_module.py"), "utf8");
+    const module = readFileSync(resolve(__dirname, "../../core/modules/processes/windows/queue_body/queue_body_window.py"), "utf8");
     const inspector = readFileSync(resolve(__dirname, "../../core/modules/processes/support/queue_inspector.py"), "utf8");
-    expect(module).toMatch(/WindowDeclaration\("processes\.queue-body", "Process queue",[\s\S]*?reads=\["queue list", "output page", "queue-class list", "queue-class preview"\]/);
+    expect(module).toContain('title = "Process queue"');
+    expect(module).toContain('reads = ["queue list", "output page", "queue-class list", "queue-class preview"]');
     expect(inspector).toContain('label="Process queue"');
     expect(`${module}${inspector}`).not.toContain("Test queue");
 });

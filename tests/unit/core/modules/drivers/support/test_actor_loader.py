@@ -4,6 +4,7 @@ from core.modules.drivers.support.actor_loader import ActorLoader
 from engine.driver.agent_hook import AgentHook
 from engine.driver.open_row import OpenRow
 from engine.enums.agent_kind import AgentKind
+from engine.profile.agent_profile import AgentProfile
 from engine.registry.default_state_entry import DefaultStateEntry
 from engine.time.timestamp import Timestamp
 
@@ -24,17 +25,22 @@ class Switches:
 class Defaults:
     def default_states(self, suite_name, role, driver, helper_type):
         given = [DefaultStateEntry("coding.main-default", AgentKind.ROLE, "main"), DefaultStateEntry("coding.worker-default", AgentKind.HELPER_TYPE, "worker"),
-                 DefaultStateEntry("coding.helper-default", AgentKind.ROLE, "helper")]
+                 DefaultStateEntry("coding.helper-default", AgentKind.ROLE, "helper", removed_while="coding.review-overlay")]
         return tuple(default for default in given if default.matches(role, driver, helper_type))
 
 
+class Profiles:
+    def effective(self, name):
+        return AgentProfile(name, removed_states=tuple(["coding.worker-default"]) if name == "quiet-worker" else ())
+
+
 def loader(off=()) -> ActorLoader:
-    return ActorLoader(CHOICE, Defaults(), Switches(off))
+    return ActorLoader(CHOICE, Defaults(), Switches(off), Profiles())
 
 
-def agent(launched_at=None, process_started_at=None, role="worker"):
+def agent(launched_at=None, process_started_at=None, role="worker", profile=""):
     return SimpleNamespace(id=7, environment_id=5, role=role, access="writing", launched_at=launched_at, process_started_at=process_started_at,
-                           creation_timestamp=lambda: CREATED)
+                           creation_timestamp=lambda: CREATED, profile=profile)
 
 
 def test_the_actor_carries_its_suite_driver_and_launch():
@@ -66,3 +72,13 @@ def test_a_hook_of_the_actor_carries_its_anchor_and_defaults():
     actor = loader().loaded(agent(launched_at=LAUNCHED))
     hook = AgentHook.of_actor(SimpleNamespace(), actor, LAUNCHED)
     assert (hook.anchor, hook.defaults) == (OpenRow("agent", 7, LAUNCHED), ("coding.worker-default", "coding.helper-default"))
+
+
+def test_a_default_named_in_the_profiles_removed_states_is_removed_from_the_actor():
+    assert loader().loaded(agent(profile="quiet-worker")).defaults == ("coding.helper-default",)
+    assert loader().loaded(agent(profile="journal-worker")).defaults == ("coding.worker-default", "coding.helper-default")
+
+
+def test_a_hook_of_the_actor_carries_the_state_that_removes_each_default_while_open():
+    hook = AgentHook.of_actor(SimpleNamespace(), loader().loaded(agent()), LAUNCHED)
+    assert hook.removed_while == {"coding.helper-default": "coding.review-overlay"}

@@ -7,5 +7,6 @@ from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLE
 def test_the_chat_panes_tab_shows_its_cross_on_hover_and_closes_with_a_middle_click(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
+    story.expect_success("environment show 1", actor=story.user)
     with server_story(story) as server:
         expect_browser(server, "tabs.browser.mjs", [])

@@ -1918,7 +1918,8 @@
         "control_return: bool",
         "access: str",
         "anchor: OpenRow | None",
-        "defaults: Sequence[str]"
+        "defaults: Sequence[str]",
+        "removed_while: Mapping[str, str]"
       ],
       "methods": [
         "of_actor(cls, event: HookEvent, actor: LoadedActor, timestamp: Timestamp) -> 'AgentHook'",
@@ -2364,7 +2365,8 @@
         "suite: str",
         "driver: str",
         "anchor: OpenRow",
-        "defaults: Sequence[str]"
+        "defaults: Sequence[str]",
+        "removed_while: Mapping[str, str]"
       ],
       "methods": []
     },
@@ -2765,6 +2767,7 @@
       "fields": [],
       "methods": [
         "is_open(self, entry: AgentStateEntry) -> bool",
+        "is_removed(self, entry: AgentStateEntry) -> bool",
         "open_rows(self, entry: AgentStateEntry) -> Sequence[OpenRow]",
         "stack(self, driver: str) -> list[Layer]",
         "substates_above_parents(layers: list[Layer]) -> list[Layer]",
@@ -6392,7 +6395,8 @@
         "injections: Mapping[str, bool]",
         "skills: tuple[str, ...]",
         "required_skills: tuple[str, ...]",
-        "default_fields: tuple[str, ...]"
+        "default_fields: tuple[str, ...]",
+        "removed_states: tuple[str, ...]"
       ],
       "methods": [
         "display_title(self) -> str",

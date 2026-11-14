@@ -24,7 +24,8 @@ const words = ref("");
 const typeLabel = (row) => types.value.find((type) => type.key === row.agent_type)?.label || row.agent_type;
 const fields = computed(() => [{key: "type", label: "Type", options: types.value.map((type) => [type.key, type.label]), get: (item) => item.p.agent_type}]);
 const usedWords = (row) => (row.uses ? `Uses: ${row.uses} ${row.uses === 1 ? "time" : "times"}, last ${ago(new Date(row.last_used * 1000).toISOString())}` : "Uses: none");
-const modelsOf = (row) => programs.value.map((program) => `${row.program_models?.[program.name] || "chosen at start"} on ${program.title}`).join(" · ");
+// a row's facts: its type and the model it starts with on its own program
+const modelsOf = (row) => `${typeLabel(row)} · ${row.program_models?.[row.program] || row.model || "model chosen at start"}`;
 const listed = computed(() => [
     ...(fresh.value ? [{id: NEW_ID, title: fresh.value.title || "New profile", desc: "Not saved", group: "New", p: fresh.value}] : []),
     ...rows.value.map((row) => ({id: row.name, title: row.title || row.name, desc: modelsOf(row), group: row.is_base ? "Base profiles" : typeLabel(row), kind: typeLabel(row), p: row})),
@@ -71,7 +72,7 @@ const place = (item) => ({head: item.title, items: menuOf(item)});
 </script>
 
 <template>
-    <ListReaderLayout v-model:chosen="chosen" :items="shown" :list-width="LIST_WIDTH" :place="place" empty-title="No profiles yet" pick-line="No profile chosen" data-profiles>
+    <ListReaderLayout v-model:chosen="chosen" :items="shown" :list-width="LIST_WIDTH" :place="place" empty-title="No profiles yet" pick-line="No profile chosen" open-first data-profiles>
         <template #top>
             <PageHeader title="Profiles" :count="rows.length">
                 <template #primary><Btn small variant="primary" data-profile-new @click="make">New profile</Btn></template>

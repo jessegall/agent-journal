@@ -7,5 +7,6 @@ from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLE
 def test_two_changes_saved_together_with_one_refused_leave_the_refused_row_with_its_reason(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
+    story.expect_success(f"setting show {TOUR_COMPLETED}", actor=story.user)
     with server_story(story) as server:
         expect_browser(server, "settings.browser.mjs", [])

@@ -60,7 +60,7 @@ const type = async (element, text) => {
 test("the find box keeps the profiles holding the words, and says when none matches", async () => {
     await drawn();
     const find = host.querySelector("[data-profile-find] input");
-    await type(find, "luna");
+    await type(find, "builder");
     expect(host.querySelectorAll("[data-reader-row]")).toHaveLength(1);
     expect(host.querySelector('[data-row="builder"]')).not.toBeNull();
     await type(find, "nothing like it");
@@ -251,9 +251,9 @@ test("test_list_and_panel: the page lists the profiles by type with their models
     expect([...host.querySelectorAll(".list-reader-group")].map((group) => group.textContent)).toEqual(["Helper", "Worker"]);
     const first = host.querySelector('[data-row="journal-researcher"]').textContent.replace(/\s+/g, " ");
     expect(first).toContain("journal-researcher");
-    expect(first).toContain("sonnet on Claude Code · gpt-6.1-sol on Codex");
+    expect(first).toContain("Helper · sonnet");
     const second = host.querySelector('[data-row="builder"]').textContent.replace(/\s+/g, " ");
-    expect(second).toContain("chosen at start on Claude Code · gpt-6-luna on Codex");
+    expect(second).toContain("Worker · model chosen at start");
     expect(host.querySelector("[data-profile-find]")).not.toBeNull();
     expect(host.querySelector("[data-profile-new]").textContent).toBe("New profile");
     await open("journal-researcher");
@@ -291,4 +291,10 @@ test("test_section_slot: the editor keeps a slot under its tabs for the sections
     expect(element.querySelector("[data-profile-sections] [data-added-section]").textContent).toBe("Triggers");
     expect(element.querySelector("[data-profile-sections] [data-added-section]").dataset.addedSection).toBe("builder");
     slotted.unmount();
+});
+
+test("the first profile of the list is open in the editor when the page is drawn", async () => {
+    await drawn();
+    expect(document.querySelector("[data-profile-reader]")).not.toBeNull();
+    expect(document.querySelector("[data-profile-reader] h2").textContent).toBe("journal-researcher");
 });

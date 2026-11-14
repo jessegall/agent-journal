@@ -7,5 +7,6 @@ from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLE
 def test_integrations_plugins_secrets_and_checks_open_as_card_pages(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
+    story.expect_success("plugin list", actor=story.user)
     with server_story(story) as server:
         expect_browser(server, "cards.browser.mjs", [])

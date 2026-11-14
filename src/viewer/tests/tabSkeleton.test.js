@@ -80,8 +80,15 @@ test("a window that draws InnerTabs puts the body under them in a TabBody, so a 
     const root = resolve(__dirname, "../..");
     const found = readdirRecursive(root).filter((path) => path.endsWith(".vue") && !path.endsWith("kit/InnerTabs.vue") && readFileSync(path, "utf8").includes("<InnerTabs"));
     expect(found.length).toBeGreaterThanOrEqual(3);
-    for (const path of found) expect(readFileSync(path, "utf8"), path).toContain("<TabBody");
+    for (const path of found) expect(withSiblings(path), path).toContain("<TabBody");
 });
+
+// a window may hand the body under its tabs to a component of its own folder, such as AgentSettings and AgentSettingsTab
+function withSiblings(path) {
+    const text = readFileSync(path, "utf8");
+    const siblings = [...text.matchAll(/from "(\.\/[^"]+\.vue)"/g)].map((match) => readFileSync(resolve(path, "..", match[1]), "utf8"));
+    return [text, ...siblings].join("\n");
+}
 
 function readdirRecursive(folder) {
     return readdirSync(folder, {withFileTypes: true}).flatMap((entry) => {

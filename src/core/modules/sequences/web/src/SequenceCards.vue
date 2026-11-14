@@ -1,13 +1,14 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, ListReaderLayout, PageHeader, Skeleton, useWindow} from "@journal/window-kit";
+import {Btn, FilterBar, ListReaderLayout, PageHeader, Skeleton, applyFilter, defaultFilter, useWindow} from "@journal/window-kit";
 import AbandonRun from "./AbandonRun.vue";
 import AddTrigger from "./AddTrigger.vue";
 import EditSteps from "./EditSteps.vue";
 import NewSequence from "./NewSequence.vue";
 import SequenceReader from "./SequenceReader.vue";
 import {sequenceItems} from "./sequenceItems.js";
-import {rowLine, runsOf} from "./sequenceWords.js";
+import {rowLine, runsOf, triggersOf} from "./sequenceWords.js";
+import {TRIGGER_TYPES} from "./sequenceTriggers.js";
 
 // the sequences as a list and a reader: each row is the number, the title and how many steps it has and what starts it, and while it runs a quiet Running badge.
 // A sequence started in the viewer is run by the main agent. A dialog is open for one thing at a time: a new sequence, its steps, a trigger or a run to give up.
@@ -15,7 +16,14 @@ const LIST_WIDTH = 460;
 const view = useWindow();
 const {rows, data, failure, loaded, act, actionFailure} = view.props.board;
 const runs = computed(() => data.value?.runs ?? []);
-const items = computed(() => rows.value.map((row) => ({id: row.id, title: `${row.id} ${row.title}`, desc: rowLine(row, runs.value), row, running: runsOf(row, runs.value).length > 0})));
+const everything = computed(() => rows.value.map((row) => ({id: row.id, title: `${row.id} ${row.title}`, desc: rowLine(row, runs.value), row, running: runsOf(row, runs.value).length > 0})));
+const fields = [
+    {key: "state", label: "State", options: [["Running", "Running"], ["Idle", "Idle"]], get: (item) => (item.running ? "Running" : "Idle")},
+    {key: "trigger", label: "Trigger", options: TRIGGER_TYPES.map((type) => [type.value, type.label]), get: (item) => triggersOf(item.row).map((trigger) => trigger.trigger_type)},
+];
+const filter = ref(defaultFilter(fields));
+const words = ref("");
+const items = computed(() => applyFilter(everything.value, fields, filter.value, words.value, ["title", "desc"]));
 const chosen = ref(null);
 const dialog = ref(null);
 const ask = (kind, sequence, run = null) => (dialog.value = {kind, sequence, run});
@@ -29,6 +37,7 @@ const place = (item) => ({head: `Sequence ${item.id}`, items: menuOf(item.row, (
             <PageHeader title="Sequences" :count="rows.length">
                 <template #primary><Btn small variant="primary" data-sequence-new @click="ask('new')">New sequence</Btn></template>
             </PageHeader>
+            <FilterBar v-model="filter" v-model:words="words" :fields="fields" :rows="everything" :shown="items.length" placeholder="Search sequences" />
             <template v-if="failure || actionFailure">
                 <p class="failure" role="alert" data-sequences-failure>{{ failure || actionFailure }}</p>
             </template>

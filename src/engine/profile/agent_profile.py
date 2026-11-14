@@ -7,7 +7,7 @@ from engine.enums.model_tier import ModelTier
 from engine.enums.occupant import INDEPENDENT_OCCUPANTS, Occupant
 
 KEPT_AGENTS_TEXT = "agents are kept; a user retires them"
-SEQUENCE_FIELDS = ("fallback_programs", "mcp_tools", "writable_folders", "protected_folders", "changed", "notes", "skills", "required_skills", "default_fields")
+SEQUENCE_FIELDS = ("fallback_programs", "mcp_tools", "writable_folders", "protected_folders", "changed", "notes", "skills", "required_skills", "default_fields", "removed_states")
 
 
 @dataclass(frozen=True)
@@ -53,6 +53,7 @@ class AgentProfile:
     skills: tuple[str, ...] = ()
     required_skills: tuple[str, ...] = ()
     default_fields: tuple[str, ...] = ()
+    removed_states: tuple[str, ...] = ()
 
     @property
     def display_title(self) -> str:

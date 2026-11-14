@@ -15,6 +15,7 @@ const props = defineProps({
     emptyTitle: {type: String, default: "Nothing here yet"},
     pickLine: {type: String, default: "No row chosen"},
     place: {type: Function, default: null},
+    // a page that wants its first row read at once, with no row named by the address
     openFirst: {type: Boolean, default: false},
 });
 const chosen = defineModel("chosen", {type: [String, Number], default: null});
@@ -96,7 +97,7 @@ watch(() => props.items.length, () => {
     display: flex;
     flex: 1;
     min-width: 0;
-    min-height: 0;
+    min-height: 160px;
 }
 
 .list-reader-list {

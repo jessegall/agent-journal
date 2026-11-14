@@ -50,7 +50,7 @@ class Listening:
         container = SimpleNamespace(get=lambda rule: rule())
         switches = SimpleNamespace(enabled=lambda name: name not in off)
         boards = SimpleNamespace(for_hook=lambda hook: SimpleNamespace(is_open=lambda entry: open_state))
-        actor = SimpleNamespace(agent_id=7, environment_id=1, role="main", driver="coding.main", suite="coding", access="writing", anchor="", defaults=())
+        actor = SimpleNamespace(agent_id=7, environment_id=1, role="main", driver="coding.main", suite="coding", access="writing", anchor="", defaults=(), removed_while={})
         agents = SimpleNamespace(find=lambda agent_id: SimpleNamespace(id=7, program="claude", session="s-1"))
         bus = SimpleNamespace(run=lambda command, actor, **fields: self.ran.append(command))
         errors = SimpleNamespace(reported=lambda argv, error, environment_id=None: self.errors.append((argv, str(error))))

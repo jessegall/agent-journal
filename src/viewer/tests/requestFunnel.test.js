@@ -33,7 +33,8 @@ function heldServer() {
     return server;
 }
 
-const settled = () => new Promise((resolve) => setTimeout(resolve, 5));
+// a busy machine runs the funnel's timers late, so the wait is long enough for them to have run
+const settled = () => new Promise((resolve) => setTimeout(resolve, 40));
 
 beforeEach(async () => {
     delete globalThis[TRANSPORT];

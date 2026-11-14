@@ -1,7 +1,7 @@
 import {readFileSync, readdirSync, statSync} from "node:fs";
 import {join, resolve} from "node:path";
 import {expect, test} from "vitest";
-import {agentName, agentNumber, agentTitle} from "../src/domain/agentTitle.js";
+import {agentNumber, agentTitle} from "../src/domain/agentTitle.js";
 
 const SOURCE_ROOT = resolve(import.meta.dirname, "../..");
 const FUNNEL = join(SOURCE_ROOT, "viewer/src/domain/agentTitle.js");
@@ -39,6 +39,5 @@ test("no other code builds an agent's title: none reads a given name or joins a 
 
 test("the name of an agent is the one the server builds for a worker, a helper and the main agent", () => {
     const names = JSON.parse(readFileSync(join(SOURCE_ROOT, "../tests/snapshots/agent_names.json"), "utf8"));
-    expect(names.map((each) => agentName(each))).toEqual(names.map((each) => each.title));
     expect(names.map((each) => agentTitle(each).name)).toEqual(names.map((each) => each.title));
 });

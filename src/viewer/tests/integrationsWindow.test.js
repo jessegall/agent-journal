@@ -37,6 +37,7 @@ test("a signing-in server asks the agent to sign in; another has no such button"
 test("a server is added from the New dialog by its name and its address or command", async () => {
     const window = integrations();
     const element = await mounted(ServerRows, window);
+    expect(element.querySelector("[data-mcp-new]").textContent.trim()).toBe("Add server");
     element.querySelector("[data-mcp-new]").click();
     await settle();
     typeInto(document.body.querySelector('[data-field="name"]'), "cart");

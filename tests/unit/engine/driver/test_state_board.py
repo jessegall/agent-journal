@@ -92,7 +92,7 @@ def board(entries=(), role="main", elapsed=None, errors=None, log=None, hook_nam
     registry = SimpleNamespace(agent_state=lambda name: None, suite=lambda name: None, helper_type_book=lambda: HelperTypeBook(),
                                tier_states=lambda driver, tier: [state for state in entries if state.covers(driver)],
                                state_rules=lambda name, hook: (state_rules or {}).get(name, {}).get(hook, []) if state_rules is not None else ["heard"])
-    hook = SimpleNamespace(driver="builder", role=role, suite="", hook_name=hook_name, environment_id=5, timestamp=LATE, agent_id=7)
+    hook = SimpleNamespace(driver="builder", role=role, suite="", hook_name=hook_name, environment_id=5, timestamp=LATE, agent_id=7, removed_while={})
     errors = errors or SimpleNamespace(reported=lambda argv, error, environment_id=None: None)
     return StateBoard(registry, Container(), errors, log or Log(), hook, elapsed or Ticks(*([0.0] * 20)))
 
@@ -228,3 +228,18 @@ def test_a_default_state_is_open_on_the_agents_row_while_the_agent_carries_it_an
     removed = board([entry(WorkerDefault)])
     removed.hook.anchor, removed.hook.defaults = OpenRow("agent", 7, EARLY), ()
     assert not removed.is_open(entry(WorkerDefault))
+
+
+class OpenOverlay(LateState):
+    name = "samples.open-overlay"
+
+
+def test_a_default_counts_as_closed_while_the_state_that_removes_it_is_open_and_comes_back_when_it_closes():
+    default, overlay, closed = entry(WorkerDefault), entry(OpenOverlay, 2), entry(ClosedState, 3)
+    made = board([default, overlay, closed])
+    made.registry.agent_state = {state.name: state for state in (default, overlay, closed)}.get
+    made.hook.anchor, made.hook.defaults = OpenRow("agent", 7, EARLY), tuple(["samples.worker-default"])
+    made.hook.removed_while = {"samples.worker-default": "samples.open-overlay"}
+    assert not made.is_open(default)
+    made.hook.removed_while = {"samples.worker-default": "samples.closed"}
+    assert made.is_open(default)

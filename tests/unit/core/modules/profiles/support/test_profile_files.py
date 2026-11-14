@@ -132,3 +132,8 @@ def test_a_change_file_with_no_text_digest_still_overlays_the_module_profile(tmp
 def test_an_own_profile_of_a_name_a_module_takes_is_a_problem(tmp_path):
     files(tmp_path).save(AgentProfile("module-reader", agent_type="helper", body="Mine."))
     assert files(tmp_path, MODULE_READER).row("module-reader").problem == "Name taken by a module"
+
+
+def test_a_profile_file_names_the_default_states_it_removes(tmp_path):
+    own(tmp_path, "module-reader", "---\nname: module-reader\nremoved-states: [\"workers.worker-log-due\"]\n---\n")
+    assert files(tmp_path, MODULE_READER).row("module-reader").removed_states == tuple(["workers.worker-log-due"])

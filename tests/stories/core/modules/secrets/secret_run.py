@@ -54,13 +54,13 @@ def test_a_deleted_secret_is_refused_as_one_that_does_not_exist(new_story):
     story.expect_refusal("secret run 1 -- head -c 8", "no secret is numbered or titled '1'", actor=story.agent)
 
 
-def test_a_helper_is_refused_until_the_user_lets_helpers_have_the_secret(new_story):
+def test_a_worker_may_not_run_a_secret_even_when_the_user_lets_helpers_have_it(new_story):
     story = filled_story(new_story)
     worker = story.new_row_id(f"agent start s-2 claude worker --parent {story.agent.id} --environment main")
     helper = Actor(worker, ActorType.AGENT)
-    story.expect_refusal("secret run 1 --reason needed -- head -c 64", "The main agent was asked to review this request", actor=helper)
+    story.expect_refusal("secret run 1 --reason needed -- head -c 64", "A worker may not run secret run", actor=helper)
     story.expect_success("secret allow 1 --helpers", "helpers may use secret 1", actor=story.user)
-    story.expect_text("secret run 1 -- head -c 64", MASK, actor=helper)
+    story.expect_refusal("secret run 1 -- head -c 64", "A worker may not run secret run", actor=helper)
 
 
 def test_a_program_that_fails_gives_its_output_and_its_exit_code(new_story):

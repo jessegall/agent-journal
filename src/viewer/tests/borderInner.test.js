@@ -9,7 +9,7 @@ const LIGHT = "src/light.css";
 const INSIDE_A_CARD = [
     "src/resource/agent/AgentNow.vue", "src/resource/agent/AgentStrip.vue", "src/resource/agent/AgentFold.vue", "src/resource/agent/AgentWho.vue",
     "src/resource/agent/AgentBrief.vue", "src/resource/agent/AgentFolds.vue", "src/resource/agent/AgentRecent.vue",
-    "../core/modules/plans/web/src/PlanAgents.vue", "../core/modules/questions/web/src/QuestionCard.vue", "../core/modules/agents/web/src/AgentCard.vue",
+    "../core/modules/questions/web/src/QuestionCard.vue", "../core/modules/agents/web/src/AgentCard.vue",
 ];
 
 test("the line inside a card is a token in both themes and fainter than the line between cards", () => {
@@ -19,9 +19,8 @@ test("the line inside a card is a token in both themes and fainter than the line
     expect(brightness(hex(LIGHT, "--border-inner"))).toBeGreaterThan(brightness(hex(LIGHT, "--border")));
 });
 
-test("every part of a card, the plan's agent row, the question block, the agent card and the inspector sections, draws its lines with the token", () => {
+test("every part of a card, the question block, the agent card and the inspector sections, draws its lines with the token", () => {
     for (const path of INSIDE_A_CARD) expect(lines(path, "--border-inner").length, path).toBeGreaterThan(0);
-    expect(source("../core/modules/plans/web/src/PlanAgents.vue")).toMatch(/border-top: 1px solid var\(--border-inner\)/);
     for (const path of INSIDE_A_CARD.filter((one) => !one.endsWith("AgentCard.vue"))) expect(lines(path, "--border"), path).toEqual([]);
 });
 

@@ -32,3 +32,24 @@ test("a check command refusal leaves the keyed list in place", async () => {
     expect(element.querySelector('[data-row="3"]')).not.toBeNull();
     expect(element.querySelector("[data-check-refusal]").textContent).toBe("The check is paused");
 });
+
+test("New check opens a dialog that shows the command and runs check make with the title, the command and how often", async () => {
+    document.body.replaceChildren();
+    const held = checkWindowContext({"check list": page([row])});
+    held.run = vi.fn(async () => ({ok: true, value: {}}));
+    const element = await mounted(Checks, held);
+    element.querySelector("[data-check-new]").click();
+    await settle();
+    const field = (key) => document.body.querySelector(`[data-field="${key}"]`);
+    field("title").value = "Unit tests";
+    field("title").dispatchEvent(new Event("input"));
+    field("command").value = "pytest tests/unit";
+    field("command").dispatchEvent(new Event("input"));
+    field("every").value = "30";
+    field("every").dispatchEvent(new Event("input"));
+    await settle();
+    expect(document.body.textContent).toContain('journal check make "Unit tests" --command "pytest tests/unit" --every 30');
+    document.body.querySelector("[data-create-send]").click();
+    await settle();
+    expect(held.run).toHaveBeenCalledWith(["check", "make", "Unit tests", "--command", "pytest tests/unit", "--every", "30"]);
+});

@@ -35,7 +35,14 @@ class StateBoard:
         parent = self.registry.agent_state(entry.parent) if entry.parent else None
         if parent is not None and not self.is_open(parent):
             return False
-        return bool(self.open_rows(entry))
+        return not self.is_removed(entry) and bool(self.open_rows(entry))
+
+    # a default state counts as closed while the state its suite named to take it away is open, and comes back when that closes
+    def is_removed(self, entry: AgentStateEntry) -> bool:
+        if entry.name not in self.hook.removed_while:
+            return False
+        remover = self.registry.agent_state(self.hook.removed_while[entry.name])
+        return remover is not None and self.is_open(remover)
 
     def open_rows(self, entry: AgentStateEntry) -> Sequence[OpenRow]:
         if not entry.covers(self.hook.driver):

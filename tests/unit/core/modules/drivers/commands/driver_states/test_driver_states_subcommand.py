@@ -31,7 +31,7 @@ class Board:
 def listing(entries: dict[int, list[AgentStateEntry]], open_names: dict[str, list[OpenRow]]) -> AgentStateListing:
     registry = SimpleNamespace(tier_states=lambda driver, tier: entries.get(tier, []))
     boards = SimpleNamespace(for_hook=lambda hook: Board(open_names))
-    actor = SimpleNamespace(agent_id=5, environment_id=1, role="main", driver="coding.main", suite="coding", access="writing", anchor=None, defaults=())
+    actor = SimpleNamespace(agent_id=5, environment_id=1, role="main", driver="coding.main", suite="coding", access="writing", anchor=None, defaults=(), removed_while={})
     return AgentStateListing(registry, boards, SimpleNamespace(loaded=lambda agent: actor))
 
 

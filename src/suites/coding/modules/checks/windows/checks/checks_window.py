@@ -23,6 +23,6 @@ class ChecksWindow(Window):
     icon = WindowIcon.CHECK
     reads = ["check list", "check runs"]
     count = "check list"
-    runs = ["check run", "check start"]
+    runs = ["check run", "check start", "check make"]
     events = ["check.*"]
     keys = [ChecksKey, RunsKey]

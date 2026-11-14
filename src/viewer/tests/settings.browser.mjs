@@ -20,7 +20,7 @@ try {
     const row = page.locator(`[data-setting="${refused}"]`);
     await row.locator("[data-setting-refused]").waitFor();
     assert.equal(await row.locator("[data-setting-refused]").textContent(), "The request log needs a larger disk");
-    assert.match(await page.locator("[data-settings-note]").textContent(), /1 change/);
+    await page.waitForFunction(() => /1 change/.test(document.querySelector("[data-settings-note]")?.textContent ?? ""));
     await page.locator('[data-sidebar-window="developer.system-logs"]').waitFor();
 } finally {
     await browser.close();
