@@ -15,7 +15,7 @@ def sample_plugin(plugin_id: int = 1) -> Plugin:
 def code_folder(tmp_path, name: str = "sample"):
     folder = tmp_path / name
     folder.mkdir(exist_ok=True)
-    (folder / "manifest.json").write_text("{}")
+    (folder / "journal-plugin.json").write_text("{}")
     return folder
 
 
@@ -38,11 +38,20 @@ def test_the_checks_run_once_for_two_hooks_while_nothing_changed(tmp_path):
 def test_a_changed_manifest_runs_the_checks_again(tmp_path):
     kept, checks, folder = KeptPluginChecks(), CountedChecks(), code_folder(tmp_path)
     kept.check(sample_plugin(), folder, False, checks)
-    manifest = folder / "manifest.json"
+    manifest = folder / "journal-plugin.json"
     manifest.write_text('{"name": "sample"}')
     os.utime(manifest, ns=(LATER_NS, LATER_NS))
     kept.check(sample_plugin(), folder, False, checks)
     assert checks.count == 2
+
+
+def test_a_file_the_manifest_does_not_name_is_never_looked_at(tmp_path):
+    kept, checks, folder = KeptPluginChecks(), CountedChecks(), code_folder(tmp_path)
+    kept.check(sample_plugin(), folder, False, checks)
+    (folder / "src").mkdir()
+    (folder / "src" / "detector.go").write_text("package detectors")
+    kept.check(sample_plugin(), folder, False, checks)
+    assert checks.count == 1
 
 
 def test_a_changed_plugin_row_runs_the_checks_again(tmp_path):
