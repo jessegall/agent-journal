@@ -101,14 +101,14 @@ func TestManagedHooksStartTogetherAndKeepListOrder(t *testing.T) {
 func TestManagedHookGetsTheProgramsProjectDirectoryOfTheCheckout(t *testing.T) {
 	t.Setenv("CLAUDE_PROJECT_DIR", "")
 	checkout := t.TempDir()
-	run := runOne(ManagedHook{ID: "project", Command: "printf '%s' \"$CLAUDE_PROJECT_DIR\"", Timeout: 5}, nil, managedVariables("claude", checkout)...)
+	run := runOne(ManagedHook{ID: "project", Command: "printf '%s' \"$CLAUDE_PROJECT_DIR\"", Timeout: 5}, nil, managedVariables("claude", checkout, noVariables)...)
 	if run.ExitCode != 0 || run.Stdout != checkout {
 		t.Fatalf("run = %+v, want the checkout %s", run, checkout)
 	}
 }
 
 func TestManagedVariablesOfAProgramWithNone(t *testing.T) {
-	if variables := managedVariables("unknown", "/checkout"); len(variables) != 0 {
+	if variables := managedVariables("unknown", "/checkout", noVariables); len(variables) != 0 {
 		t.Fatalf("variables = %v", variables)
 	}
 }
@@ -177,5 +177,27 @@ func TestACodexHookWithArgsStillRunsThroughSh(t *testing.T) {
 	run := runAs(t, "codex", ManagedHook{ID: "exec", Command: "printf codex", Fields: map[string]any{"args": []any{"ignored"}}}, nil)
 	if run.Stdout != "codex" {
 		t.Fatalf("codex honoured args it does not read: %+v", run)
+	}
+}
+
+func noVariables(string) string { return "" }
+
+func TestTheEnvFileVariableIsPassedWhenSet(t *testing.T) {
+	getenv := func(name string) string { return map[string]string{"CLAUDE_ENV_FILE": "/tmp/env-1"}[name] }
+	if variables := managedVariables("claude", "/checkout", getenv); strings.Join(variables, " ") != "CLAUDE_PROJECT_DIR=/checkout CLAUDE_ENV_FILE=/tmp/env-1" {
+		t.Fatalf("variables = %v", variables)
+	}
+}
+
+func TestTheEnvFileVariableIsAbsentWhenNotSet(t *testing.T) {
+	if variables := managedVariables("claude", "/checkout", noVariables); strings.Join(variables, " ") != "CLAUDE_PROJECT_DIR=/checkout" {
+		t.Fatalf("variables = %v", variables)
+	}
+}
+
+func TestOtherProgramsGetNoClaudeVariables(t *testing.T) {
+	getenv := func(string) string { return "/tmp/env-1" }
+	if variables := managedVariables("codex", "/checkout", getenv); len(variables) != 0 {
+		t.Fatalf("codex hooks get %v", variables)
 	}
 }

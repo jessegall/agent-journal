@@ -90,7 +90,7 @@ func detachedRun(program, root, id, bodyFile string) int {
 		}
 		hook.Timeout = runLimit(hook, row)
 		name, arguments := commandFor(hook, row)
-		run := runCommand(hook, name, arguments, body, managedVariables(program, root)...)
+		run := runCommand(hook, name, arguments, body, managedVariables(program, root, os.Getenv)...)
 		if rewakes(hook, row) && run.ExitCode == 2 {
 			postWakeLine(root, program, hook, body, run)
 		}

@@ -71,17 +71,26 @@ func (buffer *cappedBuffer) String() string {
 // in, which a project's hooks read to find their files.
 var projectDirectoryVariables = map[string]string{"claude": "CLAUDE_PROJECT_DIR"}
 
-// managedVariables are the variables the program would give a project hook run for the checkout at root.
-func managedVariables(program, root string) []string {
+// managedVariables are the variables the program would give a project hook run for the checkout at root: the
+// project folder, and for Claude Code the environment file it names to its own hooks when the hook program was given
+// one (report 1468: Claude Code gives CLAUDE_ENV_FILE to SessionStart, Setup, CwdChanged and FileChanged hooks).
+func managedVariables(program, root string, getenv func(string) string) []string {
 	name, ok := projectDirectoryVariables[program]
 	if !ok {
 		return nil
 	}
-	return []string{name + "=" + root}
+	variables := []string{name + "=" + root}
+	if file := getenv(environmentFileVariable); program == "claude" && file != "" {
+		variables = append(variables, environmentFileVariable+"="+file)
+	}
+	return variables
 }
 
+// environmentFileVariable names the file whose exports Claude Code runs before each later shell command.
+const environmentFileVariable = "CLAUDE_ENV_FILE"
+
 func runManaged(hooks []ManagedHook, body []byte, program string, row programs.Program, root string) []ForeignRun {
-	variables := managedVariables(program, root)
+	variables := managedVariables(program, root, os.Getenv)
 	var waited []ManagedHook
 	for _, hook := range hooks {
 		if isAsync(hook, row) {
