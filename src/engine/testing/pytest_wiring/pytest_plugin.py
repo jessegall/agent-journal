@@ -6,7 +6,6 @@ from pathlib import Path
 
 import pytest
 
-from engine.database.shared_tables import SharedTables
 from engine.module.code_fingerprint import PINNED_CODE_VARIABLE
 from engine.module.schema_inputs import SchemaInputs
 
@@ -167,7 +166,6 @@ def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.Fixt
         overlap.add(item.nodeid, steps.start, steps.lines(), steps.path(), steps.fixture, steps.checks())
         steps.story.close()
     created.clear()
-    SharedTables.shared.cache_clear()
     if item.stash.get(CALL_PASSED, False):
         FileAccess.rmtree(tmp_path, ignore_errors=True)
 

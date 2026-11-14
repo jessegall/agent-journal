@@ -1781,7 +1781,9 @@
       "fields": [],
       "methods": [
         "shared(cls, home: JournalHome) -> 'SharedTables'",
-        "read(self, database: Database, table: str, signature: Signature, loader: Callable[[], T]) -> T"
+        "of_template(cls, template_database: Path) -> 'SharedTables'",
+        "read(self, database: Database, table: str, signature: Signature, loader: Callable[[], T]) -> T",
+        "is_as_copied(self) -> bool"
       ]
     },
     "database.statement.Statement": {
@@ -4589,7 +4591,8 @@
       "bases": [],
       "fields": [
         "folder: Path",
-        "container_setup: Callable[[Container], None] | None"
+        "container_setup: Callable[[Container], None] | None",
+        "template_database: Path | None"
       ],
       "methods": [
         "project_folder(self) -> Path",
