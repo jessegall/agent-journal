@@ -1,3 +1,4 @@
+from engine.process.child_process import ChildProcess
 import os
 import select
 import socket
@@ -38,7 +39,7 @@ class SuccessorStart:
         if not ready:
             os.close(self.exit_writer)
             process.kill()
-            process.wait(KILLED_WAIT_SECONDS)
+            ChildProcess(process).wait(KILLED_WAIT_SECONDS)
             self.files.log_line(f"code version {tag} failed its proof; this server keeps serving", LogLevel.WARNING)
         return ready
 

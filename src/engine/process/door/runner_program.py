@@ -1,3 +1,4 @@
+from engine.process.child_process import ChildProcess
 import subprocess
 import threading
 
@@ -20,7 +21,7 @@ class RunnerProgram:
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, errors="replace", start_new_session=True,
                                  env=None if request.variables is None else dict(request.variables))
         try:
-            stdout, stderr = child.communicate(request.stdin, timeout=request.limit_seconds)
+            stdout, stderr = ChildProcess(child).communicate(request.stdin, request.limit_seconds)
         except subprocess.TimeoutExpired as error:
             self.stop_group(child)
             raise RunTimeLimitError.passed(request.text, request.limit_seconds) from error
@@ -39,7 +40,7 @@ class RunnerProgram:
                 lines.append(line)
                 if request.line_callback is not None:
                     request.line_callback(line)
-            child.wait()
+            ChildProcess(child).wait()
         except BaseException:
             group.stop()
             raise

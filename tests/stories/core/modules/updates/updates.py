@@ -119,7 +119,7 @@ def note_row(tag: str) -> dict:
 def test_the_notes_of_a_github_release_say_what_changed_and_a_full_page_has_older_ones(new_story, tmp_path):
     story = released_story(new_story, tmp_path / "release")
     source = GithubReleases(story.container.get(ReleaseSource).settings, story.container.get(ReleaseSource).home, story.container.get(ReleaseSource).clock, [note_row(f"v{n}") for n in range(PAGE_SIZE)])
-    story.container.bind(ReleaseSource, source)
+    story.replace(ReleaseSource, source)
     answer = json.loads(story.run("update notes --page 2 --json", actor=story.user).output_text)
     expect_notes_answer(answer, {"tag": "v0", "text": "changes of v0", "published_at": "2026-10-01T10:00:00Z"})
     expect_absent_last(answer)
@@ -144,7 +144,7 @@ def test_a_check_asked_again_within_the_hour_makes_no_second_network_read_and_an
     reads = []
     original = source.fetched_newest
     source.fetched_newest = lambda address: (reads.append(address), original(address))[1]
-    story.container.bind(ReleaseSource, source)
+    story.replace(ReleaseSource, source)
     story.expect_text("update check", "release", actor=story.agent)
     story.expect_text("update check", "release", actor=story.agent)
     expect_answers(reads, 1)

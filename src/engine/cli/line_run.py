@@ -25,7 +25,6 @@ from engine.performance.route_cost_tool import RouteCostTool
 from engine.registry.errors.stale_registry_error import StaleRegistryError
 from engine.caller.caller import Caller
 from engine.performance.timing import Timing
-from engine.request.request_queue import RequestQueue
 from engine.database.write_turns import WriteTurns
 
 
@@ -42,12 +41,11 @@ class LineRun:
     of the container, which shares the findings already reported with every other line of this run."""
 
     def __init__(self, home: JournalHome, busy_timeout_seconds: float = BUSY_TIMEOUT_SECONDS, listener_runner: CommitListenerRunner | None = None,
-                 reported: ReportedFindings | None = None, request_queue: RequestQueue | None = None,
+                 reported: ReportedFindings | None = None,
                  completion_callback: Callable[[Container, list[str]], None] = ignore_completed, turns: WriteTurns | None = None) -> None:
         self.home, self.busy_timeout_seconds, self.listener_runner = home, busy_timeout_seconds, listener_runner
         self.reported = reported or ReportedFindings()
         self.fingerprint = CodeFingerprint()
-        self.request_queue = request_queue
         self.completion_callback = completion_callback
         self.turns = turns
 
@@ -101,8 +99,6 @@ class LineRun:
         container = synced_container(self.home, self.turns)
         container.bind(CodeFingerprint, self.fingerprint)
         container.bind(ReportedFindings, self.reported)
-        if self.request_queue is not None:
-            container.bind(RequestQueue, self.request_queue)
         remaining_seconds = deadline.remaining_seconds() if deadline else None
         container.get(Database).set_busy_timeout(self.busy_timeout_seconds if remaining_seconds is None else remaining_seconds)
         if deadline is not None:

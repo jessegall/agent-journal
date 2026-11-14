@@ -1,3 +1,4 @@
+from engine.database.write_turns import WriteTurns
 from engine.enums.actor_type import ActorType
 from engine.caller.caller_request import CallerRequest
 from engine.caller.caller_resolver import CallerResolver
@@ -19,11 +20,11 @@ class ViewerKeyRoute:
     running main agent gets a key for itself, so it can see the viewer; a helper, a worker or another caller
     who is no user gets none."""
 
-    def __init__(self, home: JournalHome, login: ViewerLogin) -> None:
-        self.home, self.login = home, login
+    def __init__(self, home: JournalHome, login: ViewerLogin, turns: WriteTurns | None = None) -> None:
+        self.home, self.login, self.turns = home, login, turns
 
     def key(self, request: CallerRequest) -> ViewerKey:
-        container = synced_container(self.home)
+        container = synced_container(self.home, self.turns)
         try:
             caller = container.get(CallerResolver).caller(request)
             queries = container.get(Queries)

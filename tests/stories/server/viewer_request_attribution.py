@@ -47,7 +47,14 @@ def request(server, cookie, path, body=None):
     return headers, json.loads(text)
 
 
+def import_trace_rows(server):
+    # the first round moves the trace file aside, the next writes what it holds
+    server.story.run_tick("request trace import")
+    server.story.run_tick("request trace import")
+
+
 def records(server, cookie):
+    import_trace_rows(server)
     return server.viewer_line_value(cookie, {"window": "developer.hook-requests", "environment": "main",
                                            "line": ["developer", "hook-requests"]})["rows"]
 
@@ -101,31 +108,32 @@ def test_late_join_receipts_complete_the_original_rows_and_name_trailing_reads(a
     expect_value(status["receipt_dropped"], 0)
 
 
-def test_contention_is_counted_as_a_drop_without_waiting_or_retrying(attributed_server):
+def test_contention_drops_no_row_and_a_tick_writes_it_once_the_database_is_free(attributed_server):
     server, cookie = attributed_server
     with sqlite3.connect(server.story.home.database, autocommit=True) as writer:
         writer.execute("BEGIN IMMEDIATE")
         request(server, cookie, "/api/line", line())
-        writer.rollback()
+        writer.execute("ROLLBACK")
     _, status = request(server, cookie, "/api/request-log-status")
     expect_value(status["attempted"], 1)
-    expect_value(status["recorded"], 0)
-    expect_value(status["dropped"], 1)
-    expect_value(records(server, cookie), [])
+    expect_value(status["recorded"], 1)
+    expect_value(status["dropped"], 0)
+    expect_value(len(records(server, cookie)), 1)
 
 
-def test_retention_loss_and_receipts_for_evicted_rows_are_visible(attributed_server, monkeypatch):
+def test_retention_loss_is_visible_and_receipts_are_kept_in_their_order(attributed_server):
     server, cookie = attributed_server
-    server.story.expect_success(f"setting set {HOOK_REQUEST_LOG_SIZE_SETTING} 1 --project", actor=server.story.user)
-    monkeypatch.setattr("server.viewer.request_trace.perf_counter", lambda: perf_counter() + SETTINGS_REFRESH_SECONDS)
+    server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", HOOK_REQUEST_LOG_SIZE_SETTING, "1", "--project"]})
     for number in range(3):
         request(server, cookie, "/api/line", line(command_id=f"read-{number}"))
     request(server, cookie, "/api/read-receipts", {"receipts": [
         {"client_id": "browser-1", "command_id": "read-0", "joined_callers": 1}]})
+    import_trace_rows(server)
     _, status = request(server, cookie, "/api/request-log-status")
-    expect_value(status["recorded"], 3)
+    expect_value(status["recorded"], 4)
     expect_value(status["retained"], 1)
-    expect_value(status["receipt_dropped"], 1)
+    expect_value(status["receipt_recorded"], 1)
+    expect_value(status["receipt_dropped"], 0)
     expect_value(status["retention_limit"], 1)
 
 

@@ -1,3 +1,4 @@
+from tests.stories.core.modules.processes.support.roomy_fixtures import RoomyBuilderStarted
 import json
 import os
 from datetime import timedelta
@@ -65,7 +66,7 @@ def watch_tick(story: Story) -> None:
 
 def started_tree(story: Story, used: float | None) -> FakeGroupCpuTime:
     tree = FakeGroupCpuTime(used)
-    story.container.bind(GroupCpuTime, tree)
+    story.replace(GroupCpuTime, tree)
     story.container.get(OutputFolder).write_pid(1, MISSING_GROUP)
     watch_tick(story)
     return tree
@@ -241,7 +242,7 @@ def test_a_busy_silent_test_run_gets_no_stuck_warning_and_is_still_asked_to_be_l
 
 
 def test_a_stuck_build_test_run_check_and_python_run_are_warned_alike(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
+    story = install_runner(new_story(fixture=RoomyBuilderStarted))
     runs = [moved_run(story, line, category) for line, category in (("make build", CommandCategory.BUILD), ("pytest -q", CommandCategory.TEST_RUN),
                                                                      ("make lint", CommandCategory.CHECK), ("python3 tools/sync.py", CommandCategory.PROCESS))]
     titled(story, "Building the project", runs[0].id)

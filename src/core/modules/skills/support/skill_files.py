@@ -51,6 +51,7 @@ class SkillFiles:
         projects = self.projects.projects()
         permitted = {project: self.projects.permitted(project) for project in projects}
         published: dict[str, bool] = {}
+        handled: set[Path] = set()
         for skill in skills:
             source = Path(skill.path)
             # a skill whose file the registry still names but that is gone is left out; the others are written all the same
@@ -58,20 +59,26 @@ class SkillFiles:
                 published[skill.folder] = False
                 continue
             text = SkillContents.read(source).text
-            published[skill.folder] = any(tuple(self.publish(project, skill, text, permitted[project](skill.folder)) for project in projects))
+            published[skill.folder] = any(tuple(self.publish(project, skill, text, permitted[project](skill.folder), handled) for project in projects))
         return published
 
     def write(self, project: Path, skill: SkillEntry) -> bool:
         return self.publish(project, skill, SkillContents.read(Path(skill.path)).text, self.projects.permitted(project)(skill.folder))
 
-    def publish(self, project: Path, skill: SkillEntry, text: str, is_permitted: bool) -> bool:
+    # a target reached again through a linked folder, as a worktree's links to the project's folders are, is the same
+    # file and is handled once
+    def publish(self, project: Path, skill: SkillEntry, text: str, is_permitted: bool, handled: set[Path] | None = None) -> bool:
         if not is_permitted:
             return False
         changed = False
+        source = Path(skill.path).resolve()
         for program_folder in self.providers.skill_folders():
             target = project / program_folder / skill.folder / SKILL_FILE
-            if target.resolve() == Path(skill.path).resolve():
+            resolved = target.resolve()
+            if resolved == source or (handled is not None and resolved in handled):
                 continue
+            if handled is not None:
+                handled.add(resolved)
             if FileAccess.exists(target) and SkillContents.read(target).digest == SkillDigest.digest(text):
                 continue
             FileAccess.mkdir(target.parent, parents=True, exist_ok=True)

@@ -1,0 +1,61 @@
+/* Round sixteen, the windows: Questions, Reminders, Integrations, Teams. Every colour is a viewer token. */
+
+/* ---------- the agent chip ---------- */
+.r16-agent { display: inline-flex; align-items: center; gap: 4px; flex: none; max-width: 14ch; height: 18px; padding: 0 6px; border-radius: 4px; background: var(--chip);
+  color: var(--text-2); font-size: 11px; font-weight: 500; line-height: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.r16-agent .ico { flex: none; color: var(--text-3); }
+.r16-quiet { color: var(--text-4); font-size: 11.5px; white-space: nowrap; }
+
+/* ---------- 1. the Questions window ---------- */
+.q16-list { display: flex; flex-direction: column; height: 100%; min-height: 0; overflow-y: auto; }
+.q16-cards { display: flex; flex-direction: column; gap: 10px; padding: 12px var(--inset) 14px; }
+.q16-card { display: flex; flex-direction: column; gap: 9px; padding: 11px 12px 12px; border: 1px solid var(--border); border-radius: var(--r); background: var(--bg-2); }
+.q16-card[data-state="open"] { border-color: var(--border-2); box-shadow: inset 2px 0 0 var(--accent); }
+/* an answered or closed card is dimmed, still readable; it comes up on hover or focus */
+.q16-card.done { gap: 6px; padding: 9px 12px; background: none; opacity: .62; transition: opacity .15s; }
+.q16-card.done:hover, .q16-card.done:focus-within { opacity: .9; }
+.q16-card.done .q16-text { color: var(--text-3); font-size: 12.5px; font-weight: 400; }
+.q16-head { display: flex; align-items: center; gap: 7px; min-width: 0; height: 20px; }
+.q16-n { flex: none; padding: 0; border: 0; background: none; color: var(--text-3); font: inherit; font-size: 11.5px; font-variant-numeric: tabular-nums; cursor: pointer; }
+.q16-n:hover { color: var(--text); text-decoration: underline; }
+.q16-ref { flex: none; padding: 0; border: 0; background: none; color: var(--accent-text); font: inherit; font-size: 11.5px; cursor: pointer; }
+.q16-ref:hover { text-decoration: underline; }
+.q16-time { flex: none; color: var(--text-4); font-size: 11.5px; white-space: nowrap; }
+.q16-more { width: 22px; height: 22px; margin-right: -4px; }
+.q16-text { margin: 0; color: var(--text); font-size: 13.5px; font-weight: 500; line-height: 1.45; }
+.q16-context { margin: 0; color: var(--text-3); font-size: 12.5px; line-height: 1.5; }
+.q16-options { display: flex; flex-direction: column; gap: 4px; }
+.q16-option { display: flex; align-items: center; gap: 9px; width: 100%; min-height: 32px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--r-sm);
+  background: var(--bg); color: var(--text); font: inherit; font-size: 12.5px; text-align: left; cursor: pointer; transition: border-color .12s, background .12s; }
+.q16-option:hover { border-color: var(--border-3); background: var(--hover); }
+.q16-option:focus-visible { outline: 0; box-shadow: 0 0 0 1px var(--accent); }
+.q16-option[aria-checked="true"] { border-color: var(--accent); background: var(--sel); }
+.q16-ring { flex: none; width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--text-3); }
+.q16-option[aria-checked="true"] .q16-ring { box-shadow: inset 0 0 0 1.5px var(--accent), inset 0 0 0 4px var(--bg), inset 0 0 0 6px var(--accent); }
+.q16-otext { flex: 1; min-width: 0; }
+.q16-rec { flex: none; margin-left: auto; color: var(--accent-text); font-size: 11px; }
+.q16-form { display: flex; align-items: center; gap: 6px; }
+.q16-input { flex: 1; min-width: 0; height: 28px; }
+.q16-answer { display: flex; align-items: flex-start; gap: 6px; margin: 0; color: var(--text-2); font-size: 12.5px; }
+.q16-answer .ico { flex: none; margin-top: 2px; color: var(--good); }
+.q16-card[data-state="closed"] .q16-answer .ico { color: var(--text-4); }
+
+/* ---------- 2. Reminders (121450): compact two-line rows with normal padding ----------
+   line one: number, the whole title, the due time at the right edge; line two: the repeat rule, the agent chip at its right end.
+   A row grows only by its title's lines. The row's own spans join one grid (display: contents), so the right column lines up on every row. */
+.r16-rem { display: contents; }
+.r16-rem .lrow.r6 { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "num title when" ". rule who"; column-gap: 10px; row-gap: 3px;
+  align-items: start; height: auto; padding: 8px 12px 8px var(--inset); }
+.r16-rem .lrow.r6 .r6-main, .r16-rem .lrow.r6 .r6-meta { display: contents; }
+.r16-rem .lrow.r6 .r7-n { grid-area: num; align-self: start; line-height: 18px; }
+.r16-rem .lrow.r6 .t { grid-area: title; min-width: 0; line-height: 18px; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+.r16-rem .lrow.r6 .d { grid-area: rule; min-width: 0; align-self: center; margin: 0; color: var(--text-3); font-size: 12px; line-height: 18px; }
+.r16-rem .lrow.r6 .r16-next { grid-area: when; justify-self: end; line-height: 18px; }
+.r16-rem .lrow.r6 .r16-agent { grid-area: who; justify-self: end; align-self: center; }
+.r16-next { color: var(--text-2); font-size: 11.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ---------- 3. cards: the state in the corner; the hover lift is not cut ---------- */
+.r16-card-head { align-items: flex-start; }
+.r16-corner { display: inline-flex; flex: none; margin-left: 8px; }
+.r16-cards .cg, .r16-cards .cg-grid { overflow: visible; }
+.r16-cards .cg-grid { padding-top: 4px; }

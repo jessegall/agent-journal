@@ -4,7 +4,6 @@ import shlex
 
 from engine.caller.caller import Caller
 from engine.cli.console import Console
-from core.modules.processes.models.enums.process_setting import ProcessSetting
 from tests.stories.core.modules.plugins.plugin_calls import worker_with_tools
 from tests.stories.core.modules.plugins.support.plugin_samples import event_plugin_folder
 from tests.stories.core.modules.plugins.support.runner_binaries import recording_runner_at
@@ -20,7 +19,6 @@ def categories_plugin(story):
     story.expect_success(f"plugin install {folder} --yes", actor=story.user)
     story.run_listeners()
     recording_runner_at(story.home)
-    story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 3 --project", actor=story.user)
     return story
 
 
@@ -33,12 +31,12 @@ def queue(story) -> dict[str, list[dict[str, object]]]:
     return json.loads(story.run("queue inspect --environment 1 --json", actor=story.user).output_text)
 
 
-def test_a_plugin_run_takes_a_queue_place_and_a_kind_limited_to_one_runs_one_at_a_time(new_story):
+def test_a_plugin_run_takes_a_long_lane_place_and_a_second_run_of_its_kind_waits(new_story):
     story = categories_plugin(worker_with_tools(new_story))
     story.expect_rows(plugin_run(story, "--kind", "lint") != 0)
     story.expect_rows(plugin_run(story, "--kind", "judge") == 0, plugin_run(story, "--kind", "judge") == 0, plugin_run(story) == 0)
     rows = queue(story)
     running = [run for run in rows["running"] if run["plugin"] == PLUGIN]
     waiting = [run for run in rows["waiting"] if run["plugin"] == PLUGIN]
-    story.expect_rows(len(running) == 2, all(run["uses_slot"] for run in running), sorted(run["category"] for run in running) == ["check", "unknown"],
-                      len(waiting) == 1, waiting[0]["category"] == "check", detail=json.dumps(rows)[:600])
+    story.expect_rows(len(running) == 1, [run["execution_class"] for run in running] == [f"{PLUGIN} judge"],
+                      sorted(run["category"] for run in waiting) == ["check", "unknown"], detail=json.dumps(rows)[:600])

@@ -17,6 +17,7 @@ engine  The building blocks every module stands on; it imports no module.
     driver  Drivers, suites, driver rules and overlays: how the journal answers the hooks of an agent.
     environment  The names of environments.
     event  Events: what a change to a row raises, the event log, event types and event patterns.
+    execution  Who asks for an execution and how urgent it is, so every execution waits its turn in one order.
     file  Reading and writing files in one place, with file versions, fingerprints and conflicts.
     git  Git reads of the project's files and of hook files.
     guard  Guards that can refuse a change, their switches and the lifecycle guard.

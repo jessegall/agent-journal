@@ -1,3 +1,4 @@
+from core.modules.plugins.support.kept_plugin_checks import KeptPluginChecks
 from engine.errors.refusal import Refusal
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.queries.plugin_query import PluginQuery
@@ -29,8 +30,11 @@ class RunnablePlugins:
             return PluginRunCheck(plugin, reason="its files changed since it was installed", is_changed=True)
         return PluginRunCheck(plugin, runnable)
 
+    # kept across hooks while a plugin's row, upgrade and code files stay as they were
     def checks(self) -> list[PluginRunCheck]:
-        return [self.check(plugin) for plugin in self.plugins.enabled_plugins()]
+        kept = KeptPluginChecks.shared(self.folders.home)
+        return [kept.check(plugin, self.folders.code(plugin.name), self.folders.is_upgrading(plugin.name), lambda plugin=plugin: self.check(plugin))
+                for plugin in self.plugins.enabled_plugins()]
 
     def enabled_rows(self) -> tuple[Plugin, ...]:
         return tuple(self.plugins.enabled_plugins())

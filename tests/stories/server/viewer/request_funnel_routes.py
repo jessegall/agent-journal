@@ -78,6 +78,8 @@ def test_each_line_of_a_batch_logs_its_own_time(recording_server):
     with patch.object(LineRoute, "batch_answer", delayed_batch_answer), patch("server.viewer.line_route.perf_counter", lambda: perf_counter() + offset[0]):
         status, _, body = viewer_answer(server.viewer_port(), "/api/lines", cookie, "", {"lines": lines})
     expect_answered(status, body)
+    server.story.run_tick("request trace import")
+    server.story.run_tick("request trace import")
     rows = server.viewer_line_value(cookie, {"line": ["developer", "hook-requests"], "environment": "main", "window": "developer.hook-requests"})["rows"]
     expect_slow_line_logged_slow({row["body"]["event"]: row["duration_ms"] for row in rows if "event" in row["body"]})
 

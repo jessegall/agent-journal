@@ -24,6 +24,8 @@ DETECTORS = (
     "architecture_processes_unreadable_mark_outside_unreadable_marks",
     "architecture_processes_stock_reader_outside_the_stock_file",
     "architecture_processes_program_started_outside_the_door",
+    "architecture_server_queue_turn_outside_execution",
+    "architecture_server_transaction_before_admitted",
     "architecture_core_shell_command_under_the_write_lock",
     "architecture_workers_git_call_without_time_limit",
 )

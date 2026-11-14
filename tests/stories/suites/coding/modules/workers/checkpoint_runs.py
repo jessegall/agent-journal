@@ -7,6 +7,7 @@ from engine.database.database import Database
 from engine.database.statement import Statement
 from core.modules.processes.models.enums.process_state import ProcessState
 from suites.coding.modules.workers.listeners.support.worker_test_starts import WorkerTestStarts
+from suites.coding.modules.workers.support.checkpoint_listing import CheckpointListing
 from suites.coding.modules.workers.support.worker_run_windows import WorkerRunWindows
 from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
 from tests.stories.core.support.agent_labels import agent_number
@@ -74,7 +75,14 @@ def merge(worker: StoryWorker) -> None:
 
 def sole_branch_runs(monkeypatch) -> None:
     """These stories test the run of a checkpoint on the branch after the merge, which a window held by more than
-    one actor still gets; the worker run of a window one worker holds is left out of them."""
+    one actor still gets; the worker run of a window one worker holds is left out of them, and so is the listing
+    that splits a checkpoint's own test into parts, so the test runs whole."""
+    branch_runs(monkeypatch)
+    monkeypatch.setattr(CheckpointListing, "command", lambda listing, test_command: "")
+
+
+def branch_runs(monkeypatch) -> None:
+    """The run of a checkpoint on the branch after the merge, with no worker run of a window one worker holds."""
     monkeypatch.setattr(WorkerRunWindows, "completed_windows", lambda windows, worktree: ())
 
 

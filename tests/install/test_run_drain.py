@@ -21,7 +21,7 @@ def active_run(home: Path, name: str, pid: int) -> Path:
 def test_a_change_waits_for_a_going_run_and_makes_new_runs_wait_on_the_lock(tmp_path):
     run = active_run(tmp_path, "7", os.getpid())
     drain = RunDrain(JournalHome(tmp_path), limit_seconds=10, poll_seconds=0.01)
-    waiter = threading.Thread(target=drain.wait)
+    waiter = threading.Thread(target=drain.drain)
     waiter.start()
     assert PolledWait(5, 0.01).poll((tmp_path / "run-lock").exists)
     assert waiter.is_alive()
@@ -51,13 +51,13 @@ def test_the_run_that_started_the_change_does_not_wait_on_itself(tmp_path, monke
 
 def test_past_the_limit_the_change_goes_ahead(tmp_path):
     active_run(tmp_path, "7", os.getpid())
-    RunDrain(JournalHome(tmp_path), limit_seconds=0.05, poll_seconds=0.01).wait()
+    RunDrain(JournalHome(tmp_path), limit_seconds=0.05, poll_seconds=0.01).drain()
 
 
 def test_the_run_queue_is_held_while_a_change_waits_for_a_going_run_and_free_after_it(tmp_path):
     home = JournalHome(tmp_path)
     run = active_run(tmp_path, "7", os.getpid())
-    waiter = threading.Thread(target=RunDrain(home, limit_seconds=10, poll_seconds=0.01).wait)
+    waiter = threading.Thread(target=RunDrain(home, limit_seconds=10, poll_seconds=0.01).drain)
     waiter.start()
     assert PolledWait(5, 0.01).poll(lambda: RunQueueHalt(home).halt_type == "update")
     assert RunQueueHalt(home).running_run_ids() == tuple([7])

@@ -8,6 +8,9 @@ import re
 import shlex
 import sys
 from unittest.mock import patch
+import sqlite3
+from collections.abc import Generator
+from contextlib import contextmanager
 from dataclasses import asdict, replace
 from uuid import uuid4
 from typing import TypeVar, cast
@@ -24,6 +27,9 @@ from engine.caller.process_table import ProcessTable
 from engine.caller.process_row import ProcessRow
 from engine.time.clock import Clock
 from engine.container.container import Container
+from engine.database.points import Points
+from engine.module.performance_tools import PerformanceTools
+from collections.abc import Callable
 from engine.database.database import Database
 from engine.driver.hook_event import HookEvent
 from engine.driver.hook_reply import HookReply
@@ -144,9 +150,25 @@ class Story:
         self.container.get(Database).close()
         self.journal.discard_writes()
 
+    # what was built on the old one is built again on the replacement, the listeners too; a sync keeps it
     def bind(self, class_type: type[S], replacement: S) -> None:
         self.replacements[class_type] = replacement
-        self.container.bind(class_type, replacement)
+        self.replace(class_type, replacement)
+
+    # as bind, for this container only: a sync builds its own
+    def replace(self, class_type: type[S], replacement: S) -> None:
+        self.release_listeners()
+        self.container.replace(class_type, replacement)
+
+    # builds the class anew in this container, as the implementation when one is named, with what was built on it;
+    # a sync builds its own
+    def rebuild(self, class_type: type[S], implementation: type[S] | None = None) -> None:
+        self.release_listeners()
+        self.container.rebuild(class_type, implementation or class_type)
+
+    def release_listeners(self) -> None:
+        if CommitListenerRunner in self.container.instances:
+            self.container.get(CommitListenerRunner).close()
 
     def run(self, line: str, actor: Actor | None = None, environment_id: int | None = None, process_id: int | None = None) -> LineOutcome:
         stream = io.StringIO()
@@ -237,6 +259,29 @@ class Story:
 
     def tick(self, session: str) -> HookReply:
         return self.hook(session, HookSamples.tick())
+
+    # Holds the database's write lock from another connection, as a busy writer would, until the block ends.
+    @contextmanager
+    def busy_database(self) -> Generator[None]:
+        self.steps.append("database held busy")
+        writer = sqlite3.connect(self.home.database, timeout=0, autocommit=True)
+        try:
+            writer.execute("BEGIN IMMEDIATE")
+            yield
+            writer.execute("ROLLBACK")
+        finally:
+            writer.close()
+
+    # Runs a module's tick handler by its name, as the server's ticker would, on the story's journal.
+    def run_tick(self, name: str) -> None:
+        handler = next(handler for module in DEFAULT_MODULES for handler in module.tick_handlers if handler.label == name)
+        handler.handler(self.container)
+
+    def tick_handler_points(self, tick_handler: Callable[[Container], object]) -> Points | None:
+        tools = self.container.get(PerformanceTools)
+        start = tools.begin()
+        tick_handler(self.container)
+        return tools.cost(start)
 
     def expect_hook_allowed(self, session: str, sample: HookSample, *expected_lines: ExpectedText) -> None:
         self.checked(f"hook {sample.action}")

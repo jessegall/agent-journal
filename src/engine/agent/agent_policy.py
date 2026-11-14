@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass, fields
 
 
 @dataclass(frozen=True)
@@ -15,7 +16,6 @@ class AgentPolicy:
     stop_required_roles: tuple[str, ...] = tuple(["main"])
     private_output_roles: tuple[str, ...] = ()
     reader_request_roles: tuple[str, ...] = ()
-    queued_run_roles: tuple[str, ...] = ()
     automatic_watch_roles: tuple[str, ...] = ()
     continuing_run_roles: tuple[str, ...] = ()
     project_skill_roles: tuple[str, ...] = ()
@@ -23,3 +23,9 @@ class AgentPolicy:
     restricted_alias_roles: tuple[str, ...] = ()
     saved_command_roles: tuple[str, ...] = ()
     queue_limit_settings: tuple[str, ...] = ()
+
+    # a registry written by an older version may name a policy that is gone
+    @classmethod
+    def restored(cls, stored: Mapping[str, Sequence[str]]) -> "AgentPolicy":
+        names = {policy.name for policy in fields(cls)}
+        return cls(**{name: tuple(roles) for name, roles in stored.items() if name in names})

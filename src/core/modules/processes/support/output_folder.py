@@ -102,7 +102,7 @@ class OutputFolder:
 
     def tick_interval_seconds(self, agent_id: int, timestamp: Timestamp) -> float:
         path = self.home.folder / FOLDER_NAME / f"tick-{agent_id}"
-        previous = FileAccess.read(path) if FileAccess.exists(path) else timestamp.text
+        previous = FileAccess.current(path) if FileAccess.exists(path) else timestamp.text
         FileAccess.mkdir(path.parent, parents=True, exist_ok=True)
         FileAccess.write(path, timestamp.text)
         return Timestamp.parsed(previous).elapsed_seconds(timestamp)
@@ -217,7 +217,7 @@ class OutputFolder:
     def cut_bytes(self, process_id: int, position: int = 0) -> int:
         positions = [position] if position else range(1, len(self.part_texts(process_id)) + 1)
         files = [self.home.folder / FOLDER_NAME / str(process_id) / f"{number}.cut-bytes" for number in positions]
-        return sum(int(FileAccess.read(path)) for path in files if FileAccess.exists(path))
+        return sum(int(FileAccess.current(path)) for path in files if FileAccess.exists(path))
 
     # Where in the file a reader goes on. Its offset counts every byte ever written, so a cut moves the place
     # by the bytes dropped; a place that was dropped or lies past the file starts again at the top.
@@ -342,7 +342,7 @@ class OutputFolder:
 
     def read_mark(self, process_id: int, mark: str) -> str:
         path = self.home.folder / FOLDER_NAME / str(process_id) / READS_FILE
-        marks = dict(line.rsplit(" ", 1) for line in FileAccess.read(path).splitlines()) if FileAccess.is_file(path) else {}
+        marks = dict(line.rsplit(" ", 1) for line in FileAccess.current(path).splitlines()) if FileAccess.is_file(path) else {}
         return marks.get(mark, "")
 
     def write_read_mark(self, process_id: int, mark: str, read_at: str) -> None:
@@ -364,7 +364,7 @@ class OutputFolder:
 
     def text(self, process_id: int, name: str) -> str:
         path = self.home.folder / FOLDER_NAME / str(process_id) / name
-        return FileAccess.read(path, errors="replace") if FileAccess.exists(path) else ""
+        return FileAccess.current(path, errors="replace") if FileAccess.exists(path) else ""
 
     def number(self, process_id: int, name: str) -> int | None:
         text = self.text(process_id, name).strip()

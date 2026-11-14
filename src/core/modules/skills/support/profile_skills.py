@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from dataclasses import replace
 
 from engine.profile.agent_profile import AgentProfile
@@ -33,7 +34,12 @@ class ProfileSkills:
         return replace(profile, required_skills=required)
 
     def refuses(self, profile: AgentProfile, folder: str) -> bool:
-        return self.catalogue.contains(folder) and folder not in self.folders(profile)
+        return self.refused(profile)(folder)
+
+    # the profile's skills are worked out once, and the answer asks them for any number of folders
+    def refused(self, profile: AgentProfile) -> Callable[[str], bool]:
+        known, given = {skill.folder for skill in self.catalogue.skills()}, set(self.folders(profile))
+        return lambda folder: folder in known and folder not in given
 
     def rows(self, profile: AgentProfile) -> tuple[ProfileSkill, ...]:
         listed, locked = set(self.folders(profile)), set(self.start_folders())

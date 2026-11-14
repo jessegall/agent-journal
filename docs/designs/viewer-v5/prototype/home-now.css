@@ -1,0 +1,245 @@
+/* Round four (messages 120138-120159). Home as the current viewer draws it: the agent bar (src/viewer/src/shell/AgentBar.vue), the information bar
+   (InformationBar.vue, AllowanceBar.vue), pane tabs (src/viewer/src/panes/PaneTabs.vue), the chat (messages/web/src/Chat.vue, viewer/kit/MessageCard.vue,
+   viewer/src/kit/ChatMark.vue), the terminal (suites/coding/web/src/Terminal.vue) and the file feed (FileFeed.vue, viewer/src/kit/DiffCard.vue).
+   Values are copied from those files. Then: the redesigned dropdowns, the Tasks and Plans windows, the agent inspector's bar and memories,
+   and the one-line rule. */
+:root { --bubble: #1a1b1f; --code-bg: #121316; --blocking: #d9a441; --line: #25272b; }
+
+/* ---------- agent bar: AgentBar.vue 66-185 ---------- */
+.now-agent { display: flex; gap: 10px; align-items: center; min-height: 54px; padding: 0 16px; border-bottom: 1px solid var(--border); font-size: 13px; flex: none; min-width: 0; }
+.now-agent strong { font-weight: 600; flex: none; }
+.now-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--text-4); }
+.now-dot.running { background: var(--accent); }
+.now-dot.paused { background: var(--warn); }
+.now-task { flex: 0 1 auto; min-width: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; overflow: hidden; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
+.now-task:hover { text-decoration: underline; }
+.now-plan { flex: none; padding: 0; border: 0; background: none; color: var(--text-3); font-size: 11px; white-space: nowrap; }
+.now-plan:hover { color: var(--text); text-decoration: underline; }
+.now-divider { flex: none; width: 1px; height: 18px; background: var(--border-2); }
+.now-pause { flex: none; color: var(--text-2); }
+.now-pause svg { stroke-width: 2.4; }
+.now-pause.paused { color: var(--accent-text); }
+.now-count { display: inline-flex; flex: none; gap: 5px; align-items: center; padding: 3px 8px; border: 0; border-radius: 6px; background: none; color: var(--text-2); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.now-count:hover { background: var(--hover); color: var(--text); }
+
+/* ---------- information bar: InformationBar.vue 203-284 ---------- */
+.now-info { display: flex; gap: 16px; align-items: center; min-height: 30px; padding: 0 5px 0 16px; border-bottom: 1px solid var(--border); color: var(--text-3); font-size: 12px; flex: none; min-width: 0; }
+/* in an inspector the facts go on to a second line rather than out of the panel, as the build's card bar does (InformationBar.vue 214) */
+.now-info.card { flex-wrap: wrap; gap: 4px 14px; padding: 4px var(--inset); border-top: 1px solid var(--border); }
+.now-fact { display: inline-flex; flex: none; gap: 5px; align-items: center; padding: 0 4px; margin: 0 -4px; border: 0; border-radius: 6px; background: none; color: inherit; font: inherit; font-variant-numeric: tabular-nums; white-space: nowrap; line-height: 22px; }
+button.now-fact:hover, button.now-fact.on { background: var(--hover); color: var(--text); }
+.now-fact.lead { color: var(--text); }
+.now-fact.none { color: var(--text-3); }
+.now-fact.low { color: var(--warn); }
+.now-gauge { display: inline-block; width: 20px; height: 4px; overflow: hidden; border-radius: 2px; background: var(--line); }
+.now-gauge > span { display: block; height: 100%; border-radius: inherit; background: var(--text-3); }
+.now-gauge.usage > span { background: var(--accent-text); }
+.now-info .menu-wrap { flex: none; }
+.now-layout { flex: none; }
+
+/* ---------- the redesigned dropdowns of the information bar ---------- */
+.dd { display: flex; flex-direction: column; min-width: 0; }
+.dd-head { display: flex; align-items: baseline; gap: 8px; padding: 6px 10px 4px; white-space: nowrap; }
+.dd-head > span:first-child { color: var(--text); font-size: 12.5px; font-weight: 500; }
+.dd-head b { font-weight: 500; font-variant-numeric: tabular-nums; color: var(--text); }
+.dd-sub { padding: 0 10px 6px; color: var(--text-4); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dd-meter { position: relative; height: 6px; margin: 4px 10px 6px; border-radius: 3px; background: var(--line); }
+.dd-meter > i { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: var(--text-3); }
+.dd-meter .mark { position: absolute; top: -3px; bottom: -3px; width: 1px; background: var(--text-4); }
+.dd-line { display: flex; align-items: center; gap: 8px; padding: 2px 10px; color: var(--text-2); font-size: 11.5px; white-space: nowrap; min-width: 0; }
+.dd-line > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.dd-line .faint { color: var(--text-4); }
+.dd-cols { display: grid; align-items: center; column-gap: 10px; padding: 0 10px; font-size: 11.5px; white-space: nowrap; }
+.dd-cols > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.dd-cols .h { color: var(--text-4); font-size: 10.5px; padding: 4px 0 2px; }
+.dd-cols .num { text-align: right; font-variant-numeric: tabular-nums; }
+.dd-row { display: grid; align-items: center; column-gap: 10px; height: 28px; padding: 0 10px; border: 0; background: none; color: var(--text-2); font-size: 12px; text-align: left; white-space: nowrap; width: 100%; border-radius: 6px; }
+.dd-row > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+button.dd-row:hover { background: var(--hover); color: var(--text); }
+button.dd-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.dd-row.on { color: var(--text); }
+.dd-row .num { text-align: right; font-variant-numeric: tabular-nums; color: var(--text-3); }
+.dd-row .tick { color: var(--accent-text); }
+.dd-group { padding: 8px 10px 2px; color: var(--text-4); font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; }
+.dd-share { height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.dd-share > i { display: block; height: 100%; background: var(--text-3); }
+.dd-total { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; padding: 4px 10px; font-size: 12px; color: var(--text-2); white-space: nowrap; }
+.dd-total b { color: var(--text); font-weight: 500; font-variant-numeric: tabular-nums; }
+.dd-total.big b { font-size: 15px; }
+.dd-foot { padding: 6px 10px 4px; color: var(--text-4); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-top: 1px solid var(--border); margin-top: 6px; }
+.dd-seg { padding: 4px 10px 6px; }
+.dd-ask { display: flex; flex-direction: column; gap: 8px; padding: 8px 10px; }
+.dd-ask .row { justify-content: flex-end; }
+
+/* ---------- Home: two panes as the coding suite lays them (coding_suite.py:44) ---------- */
+.home-now { display: flex; flex: 1; min-height: 0; min-width: 0; }
+.home-now > .now-pane + .now-pane { border-left: 1px solid var(--border); }
+.now-pane { display: flex; flex-direction: column; flex: 1 1 50%; min-width: 0; min-height: 0; overflow: hidden; }
+.now-ptabs { display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 5px 0 14px; border-bottom: 1px solid var(--border); background: var(--side); flex: none; min-width: 0; }
+.now-ptabs-row { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; overflow: hidden; }
+.now-ptab { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0; border: 0; background: none; color: var(--text-3); font-size: 11.5px; white-space: nowrap; flex: none; }
+.now-ptab:hover { color: var(--text-2); }
+.now-ptab.on { color: var(--text); }
+.now-ptab .n { font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+.now-ptab.on .n, .now-ptab .n.hot { color: var(--accent-text); }
+.now-pbody { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+@media (max-width: 860px) { .home-now { flex-direction: column; overflow: auto; } .home-now > .now-pane { flex: none; height: 70vh; } .home-now > .now-pane + .now-pane { border-left: 0; border-top: 1px solid var(--border); } }
+
+/* ---------- chat: Chat.vue 548-817, MessageCard.vue 181-522, ChatMark.vue 219-400 ---------- */
+.now-chat { position: relative; display: flex; flex-direction: column; gap: 8px; height: 100%; padding: 0 12px 8px; min-height: 0; }
+.now-history { flex: 1; min-height: 0; overflow-y: auto; mask-image: linear-gradient(to bottom, #000 calc(100% - 8px), transparent); }
+.now-list { display: flex; flex-direction: column; gap: 10px; padding: 18px 8px 8px; }
+.now-list > .now-mark + .now-mark { margin-top: -5px; }
+.now-day { margin: 0; padding: 4px 0; color: var(--text-4); font-size: 10.5px; text-align: center; }
+.now-msg { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; max-width: min(78%, calc(100% - 48px)); }
+.now-msg.me { align-items: flex-end; margin-left: auto; }
+.now-body { position: relative; min-width: 0; max-width: 100%; }
+.now-card { max-width: 100%; padding: 9px 12px; border: 1px solid transparent; border-radius: 10px; background: var(--bubble); line-height: 1.45; overflow-wrap: anywhere; }
+.now-msg.me .now-card { background: color-mix(in srgb, var(--accent) 17%, var(--bg)); }
+.now-card p { margin: 0; }
+.now-card p + p { margin-top: 6px; }
+.now-card code { padding: .05em .42em; border-radius: 4px; background: var(--code-bg); font-family: var(--mono); font-size: .9em; }
+.now-tools { position: absolute; top: -11px; right: -6px; display: flex; gap: 1px; padding: 1px; border: 1px solid var(--border-2); border-radius: 99px; background: var(--raised); opacity: 0; pointer-events: none; transition: opacity .12s ease; }
+.now-body:hover .now-tools, .now-tools:focus-within { opacity: 1; pointer-events: auto; }
+.now-tool { padding: 1px 8px; border: 0; border-radius: 99px; background: none; color: var(--text-2); font-size: 11.5px; white-space: nowrap; }
+.now-tool:hover { background: var(--hover); color: var(--text); }
+.now-mfoot { display: flex; gap: 6px; align-items: center; margin: 0 2px; white-space: nowrap; }
+.now-mfoot time { color: var(--text-3); font-size: 11px; }
+.now-mfoot .id, .now-mfoot .dot { color: var(--text-4); font-size: 11px; }
+.now-mfoot .ticks { color: var(--read-tick); font-size: 10px; letter-spacing: -2px; }
+.now-msg.me .now-mfoot .dot { order: -1; }
+.now-msg.me .now-mfoot .id { order: -2; }
+.now-mark { display: flex; align-items: center; gap: 6px; padding: 2px 6px; border: 1px solid transparent; border-radius: 7px; color: var(--text-3); font-size: 11.5px; white-space: nowrap; min-width: 0; align-self: flex-start; max-width: 100%; }
+.now-mark > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.now-mark:hover { background: var(--hover); }
+.now-mark.process { padding: 3px 9px; border-color: var(--border-2); }
+.now-mark.attention { padding: 5px 10px; border-color: color-mix(in srgb, var(--danger) 42%, var(--border-2)); background: color-mix(in srgb, var(--danger) 8%, transparent); color: var(--text-2); }
+.now-mark .ico { color: var(--text-4); }
+.now-running { display: flex; flex: none; gap: 8px; align-items: center; margin: 0; padding: 4px 14px; color: var(--text-3); font-family: var(--mono); font-size: 12px; white-space: nowrap; min-width: 0; }
+.now-running > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.now-running-dot { flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+.now-composer { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid var(--border-2); border-radius: 14px; flex: none; }
+.now-composer textarea { padding: 0; border: 0; outline: 0; color: var(--text); background: transparent; font: inherit; line-height: 1.45; resize: none; }
+.now-composer-row { display: flex; gap: 8px; align-items: center; }
+.now-attach { border: 0; background: none; color: var(--text-3); padding: 0; }
+.now-attach:hover { color: var(--text); }
+.now-send { margin-left: auto; }
+
+/* ---------- terminal: Terminal.vue 101-188 ---------- */
+.now-term { display: flex; flex-direction: column; height: 100%; min-height: 0; background: var(--code-bg); }
+.now-term-body { flex: 1; min-height: 0; padding: 8px 12px; overflow: auto; color: var(--text); font-family: var(--mono); font-size: 12px; line-height: 1.45; }
+.now-trow { display: flex; gap: 7px; align-items: baseline; min-width: 0; }
+.now-tmark, .now-tstate { flex: none; color: var(--text-3); }
+.now-ttext { min-width: 0; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.now-trow.refused .now-ttext, .now-trow.refused .now-tstate { color: var(--danger); }
+.now-tout { margin: 2px 0 6px 16px; padding: 6px 10px; border-left: 1px solid var(--border-2); color: var(--text-3); white-space: pre; overflow-x: auto; }
+.now-trun { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 12px; flex: none; }
+.now-trun span { color: var(--text-3); }
+.now-trun input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: inherit; font: inherit; }
+
+/* ---------- file feed: FileFeed.vue 105-130, FeedBar.vue, DiffCard.vue 153-452 ---------- */
+.now-feed { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.now-feedbar { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--border); flex: none; }
+.now-feed-flow { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 10px; padding: 12px; }
+.now-diff { width: 100%; min-width: 0; overflow: hidden; border: 1px solid var(--border); border-radius: 9px; background: var(--raised); flex: none; }
+.now-diff-head { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 12px; border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: 12px; cursor: pointer; }
+.now-diff.folded .now-diff-head { border-bottom: 0; }
+.now-diff-path { display: flex; flex: 1; align-items: center; min-width: 0; white-space: nowrap; }
+.now-diff-dir { flex: 0 1 auto; min-width: 0; overflow: hidden; color: var(--text-4); text-overflow: ellipsis; }
+.now-diff-name { flex: none; color: var(--text); }
+.now-diff-name:hover { text-decoration: underline; }
+.now-diff-badge { flex: none; margin-left: 7px; color: var(--text-4); font-family: var(--font); font-size: 8.5px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; }
+.now-diff-badge.new { color: var(--add-fg); }
+.now-diff-count { min-width: 4.5ch; font-size: 11.5px; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.now-diff-count.add { color: var(--add-fg); }
+.now-diff-count.del { color: var(--del-fg); }
+.now-diff-count.zero { color: var(--text-4); }
+.now-diff-ago { width: 30px; color: var(--text-4); font-family: var(--font); font-size: 11.5px; text-align: right; white-space: nowrap; }
+.now-diff-rows { overflow-x: auto; padding: 4px 0; }
+.now-drow { display: grid; grid-template-columns: 40px 16px auto; height: 19px; font-family: var(--mono); font-size: 11.5px; line-height: 19px; width: max-content; min-width: 100%; }
+.now-drow .no { padding-right: 8px; color: var(--text-4); text-align: right; user-select: none; }
+.now-drow .sg { text-align: center; user-select: none; }
+.now-drow .cd { padding-right: 14px; color: var(--text-3); white-space: pre; }
+.now-drow.add { background: var(--add-bg); } .now-drow.add .no, .now-drow.add .sg { color: var(--add-fg); } .now-drow.add .cd { color: var(--text); }
+.now-drow.del { background: var(--del-bg); } .now-drow.del .no, .now-drow.del .sg { color: var(--del-fg); } .now-drow.del .cd { color: var(--text-2); }
+.now-drow.fold { background: rgba(255,255,255,.025); } .now-drow.fold .cd { color: var(--text-4); font-family: var(--font); }
+
+/* ---------- Tasks window: tags get their own column (message 120138, point 4) ---------- */
+.tk-wrap { container-type: inline-size; display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.tk-head, .tk-row { display: grid; grid-template-columns: 12px 6ch minmax(0, 1fr) 150px 92px 84px 76px; column-gap: 10px; align-items: center; padding: 0 16px; }
+.tk-head { height: 26px; color: var(--text-4); font-size: 10.5px; border-bottom: 1px solid var(--border); white-space: nowrap; flex: none; }
+.tk-row { width: 100%; height: 34px; border: 0; border-bottom: 1px solid var(--border); background: none; color: var(--text-2); font-size: 12.5px; text-align: left; white-space: nowrap; }
+.tk-row > *, .tk-head > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.tk-row:hover { background: var(--hover); }
+.tk-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.tk-row .id { color: var(--text-3); font-variant-numeric: tabular-nums; text-align: right; }
+.tk-row .t { color: var(--text); }
+.tk-tags { display: flex; gap: 4px; align-items: center; }
+.tk-tag { flex: none; padding: 0 6px; height: 18px; line-height: 16px; border: 1px solid var(--border-2); border-radius: 4px; color: var(--text-3); font-size: 10.5px; }
+.tk-tag.more { border-style: dashed; color: var(--text-4); }
+.tk-row .none { color: var(--text-4); }
+.tk-state { display: inline-flex; align-items: center; gap: 6px; color: var(--text-3); font-size: 11.5px; }
+@container (max-width: 620px) { .tk-head, .tk-row { grid-template-columns: 12px 6ch minmax(0, 1fr) 110px 76px; } .tk-head > :nth-child(6), .tk-row > :nth-child(6), .tk-head > :nth-child(7), .tk-row > :nth-child(7) { display: none; } }
+
+/* a state as a small dot and a word: quiet for each, only blocked and failed stand out */
+.sdot { flex: none; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--text-4); }
+.sdot.started, .sdot.testing { background: var(--text-2); }
+.sdot.ready, .sdot.open, .sdot.draft, .sdot.approved { background: transparent; box-shadow: inset 0 0 0 1.5px var(--text-3); }
+.sdot.blocked, .sdot.failed { background: var(--warn); }
+.sdot.completed, .sdot.cancelled { background: var(--text-4); }
+
+/* ---------- Plans window: less colour, the state in a column of its own (point 4) ---------- */
+.pl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; padding: 12px; overflow: auto; flex: 1; min-height: 0; align-content: start; }
+.pl-card { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 9px; background: var(--raised); text-align: left; color: var(--text-2); min-width: 0; }
+.pl-card:hover { border-color: var(--border-2); background: var(--hover); }
+.pl-card:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.pl-head { display: grid; grid-template-columns: 12px auto 5ch minmax(0, 1fr) 92px; column-gap: 6px; align-items: center; font-size: 11.5px; color: var(--text-3); white-space: nowrap; }
+.pl-head .n { font-variant-numeric: tabular-nums; text-align: right; color: var(--text-2); }
+.pl-state { justify-self: end; display: inline-flex; align-items: center; gap: 6px; height: 20px; padding: 0 8px; border: 1px solid var(--border-2); border-radius: 999px; color: var(--text-2); font-size: 11px; max-width: 92px; overflow: hidden; }
+.pl-title { color: var(--text); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pl-bar { display: flex; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.pl-bar i { display: block; height: 100%; background: var(--text-3); }
+.pl-bar i.testing { background: var(--text-4); }
+.pl-foot { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 10px; font-size: 11.5px; color: var(--text-4); white-space: nowrap; }
+.pl-foot > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- a row's kind and number, each in a column of its own (point 3) ---------- */
+.rc { display: inline-grid; grid-template-columns: var(--rc-kind, 76px) var(--rc-n, 7ch); column-gap: 6px; align-items: baseline; white-space: nowrap; cursor: pointer; border-radius: 3px; min-width: 0; }
+.rc .k { color: var(--text-3); overflow: hidden; text-overflow: ellipsis; }
+.rc .n { color: var(--accent-text); font-variant-numeric: tabular-nums; text-align: right; }
+.rc:hover .n { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
+.rc:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.link-row.cols { display: grid; grid-template-columns: 16px auto minmax(0, 1fr) 96px; column-gap: 10px; align-items: center; height: 32px; white-space: nowrap; }
+.link-row.cols > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.link-row.cols > :last-child { justify-self: end; }
+
+/* ---------- agent inspector: one bar of facts, each a dropdown, and its memories (point 5) ---------- */
+.insp-bar { margin: 10px calc(var(--inset) * -1) -1px; }
+.insp-bar .now-info { border-bottom: 0; }
+.mem-head, .mem-row { display: grid; grid-template-columns: 74px 54px 6ch minmax(0, 1fr) 110px; column-gap: 10px; align-items: center; }
+.mem-head { height: 24px; color: var(--text-4); font-size: 10.5px; white-space: nowrap; border-bottom: 1px solid var(--border); }
+.mem-row { width: 100%; height: 32px; padding: 0; border: 0; border-bottom: 1px solid var(--border); background: none; color: var(--text-2); font-size: 12.5px; text-align: left; white-space: nowrap; }
+.mem-row > *, .mem-head > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.mem-row:hover { background: var(--hover); }
+.mem-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.mem-row .k { color: var(--text-4); font-size: 11.5px; }
+.mem-row .n { color: var(--accent-text); font-variant-numeric: tabular-nums; text-align: right; font-size: 11.5px; }
+.mem-row .t { color: var(--text-2); }
+.mem-row.removed .t, .mem-row.removed .n { color: var(--text-4); }
+.mem-row .x { color: var(--text-3); font-size: 11.5px; }
+.mem-w { display: inline-flex; align-items: center; gap: 6px; color: var(--text-3); font-size: 11px; font-variant-numeric: tabular-nums; }
+.mem-steps { display: inline-flex; gap: 2px; }
+.mem-steps i { width: 3px; height: 8px; border-radius: 1px; background: var(--border-2); }
+.mem-steps i.on { background: var(--text-3); }
+.mem-band { display: flex; align-items: center; gap: 8px; padding: 12px 0 4px; color: var(--text-3); font-size: 12px; white-space: nowrap; }
+.mem-band button { border: 0; background: none; padding: 0; color: inherit; display: inline-flex; gap: 6px; align-items: center; }
+
+/* ---------- no text wraps: one line per row, cut with … (point 3) ---------- */
+.trow, .trow > *, .lrow .t, .lrow .d, .lrow .m, .link-row > *, .fields dt, .fields dd, .menu-item, .menu-item .desc, .menu-item .hint, .menu-label,
+.tab, .ptab, .badge, .chip, .fact, .kind, .crumbs, .statusbar, .statusbar > *, .tl b, .tl small, .count-tile .l, .count-tile .q, .card h3,
+.insp-title, .reader-head h2, .reader-head p, .insp-abstract, .phead h1, .phead p, .phase-head > *, .section-title, .tree-row, .etab, .hitfile, .hitline, .nav, .side-group-title, .env-switch b, .env-switch span {
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.lrow .t, .lrow .d, .menu-item .desc { display: block; }
+.fields dd { display: flex; align-items: center; gap: 4px; }
+.fields dd > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.menu-item .grow { min-width: 0; overflow: hidden; }

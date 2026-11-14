@@ -23,3 +23,12 @@ def test_other_thread_keeps_its_own():
         thread.start()
         thread.join()
     assert executions_read == [BACKGROUND_EXECUTION]
+
+
+def test_a_thread_a_request_starts_carries_its_priority():
+    executions_read = []
+    with HOOK.applied():
+        thread = CurrentExecution.thread(lambda: executions_read.append(CurrentExecution.read()))
+        thread.start()
+        thread.join()
+    assert executions_read == [HOOK]

@@ -113,7 +113,7 @@ def counted_calls(monkeypatch) -> dict[str, int]:
 
     def counted_write(self, file, *arguments, **options):
         call_counts["settings"] += 1 if Path(file).name == SETTINGS_FILE else 0
-        return file_writer(self, file, *arguments, **options)
+        return file_writer(file, *arguments, **options)
 
     def counted_find(self, agent_id):
         call_counts["agent"] += 1
@@ -123,7 +123,7 @@ def counted_calls(monkeypatch) -> dict[str, int]:
         call_counts["skills"] += 1
         return names(self, agent_id)
 
-    monkeypatch.setattr(FileAccess, "write", counted_write)
+    monkeypatch.setattr(FileAccess, "write", classmethod(counted_write))
     monkeypatch.setattr(AgentRows, "find", counted_find)
     monkeypatch.setattr(LoadedSkills, "names", counted_names)
     return call_counts

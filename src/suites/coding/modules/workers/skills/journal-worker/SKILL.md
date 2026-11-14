@@ -106,7 +106,7 @@ result when the run ends. A worker drafts and saves a reader for its own open re
 checks and output proof. After the configured failed-save limit (default 3), it stops and the main agent is
 asked to help. Drafts without `--save` use no try. A worker cannot remove readers, choose defaults or skip requests.
 
-A reader's `--count-command` lists tests before a queued run gets a spot when `worker-run-most-tests` is
+A reader's `--count-command` lists tests before a run waiting in its lane starts when `worker-run-most-tests` is
 positive. Counts of test parts are added. A count above the limit stops the run. A listing that fails, is cut off
 after 120 seconds or gives no number stops it too, and the line says why: a tool the worktree lacks, such as
 `node_modules`, is linked with `--library-link` at dispatch. A test tool with no reader runs once, so a reader can

@@ -1,3 +1,4 @@
+from engine.process.child_process import ChildProcess
 from engine.file.file_access import FileAccess
 import os
 import subprocess
@@ -26,7 +27,7 @@ class ShellHandoff:
             for line in process.stdout or ():
                 stream.write(line)
                 stream.flush()
-            return process.wait()
+            return ChildProcess(process).wait()
 
     def unwatched(self, shell_run: ShellRun, stream: TextIO) -> int:
         output_file = FileAccess.make_temporary_file(prefix="journal-run-", suffix=".txt")
@@ -34,7 +35,7 @@ class ShellHandoff:
             process = subprocess.Popen(["sh", "-c", shell_run.line], cwd=shell_run.folder if shell_run.folder else None, env={**os.environ, **shell_run.variables},
                                        stdin=subprocess.DEVNULL, stdout=output, stderr=subprocess.STDOUT, start_new_session=True)
         try:
-            code = process.wait(timeout=UNWATCHED_LIMIT_SECONDS)
+            code = ChildProcess(process).wait(UNWATCHED_LIMIT_SECONDS)
         except subprocess.TimeoutExpired:
             stream.write(f"moved to the background with no journal watching it: its output goes to {output_file}\n")
             return 0
