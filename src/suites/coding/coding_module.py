@@ -39,6 +39,7 @@ from suites.coding.commands.prune_file_edits.prune_file_edits_handler import Pru
 from suites.coding.migrations.m001_file_edits import FileEditsTableMigration
 from suites.coding.migrations.m002_file_edit_rows import FileEditRowsMigration
 from suites.coding.commands.project_file_find.project_file_find_subcommand import ProjectFileFindSubcommand
+from suites.coding.commands.project_file_grep.project_file_grep_subcommand import ProjectFileGrepSubcommand
 from suites.coding.commands.git_overview_branches.git_overview_branches_subcommand import GitOverviewBranchesSubcommand
 from suites.coding.commands.git_overview_commits.git_overview_commits_subcommand import GitOverviewCommitsSubcommand
 from suites.coding.commands.git_overview_current.git_overview_current_subcommand import GitOverviewCurrentSubcommand
@@ -110,12 +111,12 @@ class CodingModule(Module):
     driver_rules = [WaitingItemsRule, IntroductionRule, FailedFullRunRule, GraphifySearchRule]
     listeners = [FullTestRunListener, GraphifyHookRemovalListener]
     bindings = {ToolRunners: CodingToolRunners, ProjectCheckouts: WorktreeCheckouts}
-    subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand, FileEditFileSubcommand, RecordFileChangesSubcommand]
+    subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileGrepSubcommand, ProjectFileShowSubcommand, FileEditFileSubcommand, RecordFileChangesSubcommand]
     windows = [WindowDeclaration("coding.git", "Git", "git.js", WindowLoading.COMPONENT, skeleton=CODING_GIT_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.BRANCH, reads=["git-overview branches", "git-overview commits", "git-overview pulls"],
                                  keys=[WindowKey("branches", "git-overview branches", arguments=["skip", "limit"]),
                                        WindowKey("commits", "git-overview commits", arguments=["skip", "limit"]),
                                        WindowKey("pulls", "git-overview pulls")]),
-               WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, skeleton=CODING_FILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file show"], search=WindowReadSearch("project-file find", "Find a file in the project"),
+               WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, skeleton=CODING_FILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file grep", "project-file show"], search=WindowReadSearch("project-file find", "Find a file in the project"),
                                  keys=[WindowKey("entries", "project-file list {folder}"),
                                        WindowKey("matches", "project-file find {words}", loading=KeyLoading.REQUESTED),
                                        WindowKey("file", "project-file show {path}", loading=KeyLoading.REQUESTED)]),
