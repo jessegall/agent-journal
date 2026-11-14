@@ -2255,6 +2255,7 @@
         "transcript(self) -> HookTranscript",
         "is_resume(self) -> bool",
         "is_compaction_start(self) -> bool",
+        "is_stop_continuation(self) -> bool",
         "is_manual_compaction(self) -> bool",
         "is_clear_start(self) -> bool",
         "is_launch_clear_end(self) -> bool",
