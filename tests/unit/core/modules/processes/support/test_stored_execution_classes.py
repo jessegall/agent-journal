@@ -1,3 +1,4 @@
+from core.modules.processes.support.installed_plugins import InstalledPlugins
 import pytest
 
 from engine.enums.command_category import CommandCategory
@@ -49,7 +50,7 @@ class NoKeeping:
 
 
 def stored(*rows: ExecutionClassRow, **settings: int) -> StoredExecutionClasses:
-    return StoredExecutionClasses(SampleRows(*rows), SampleSettings(**settings), NoKeeping())  # type: ignore[arg-type]
+    return StoredExecutionClasses(SampleRows(*rows), SampleSettings(**settings), NoKeeping(), InstalledPlugins())  # type: ignore[arg-type]
 
 
 def line(text: str, category: CommandCategory) -> ExecutionSubject:

@@ -1,3 +1,4 @@
+from core.modules.processes.support.installed_plugins import InstalledPlugins
 from dataclasses import replace
 
 from engine.enums.execution_lane import ExecutionLane
@@ -23,13 +24,15 @@ class StoredExecutionClasses(PersonClasses):
     default table of limits stays in the engine, the settings change only each lane's capacity and the share of
     it one starter may hold."""
 
-    def __init__(self, queries: Queries, settings: ProcessSettings, kept: KeptRows) -> None:
-        self.queries, self.settings, self.kept = queries, settings, kept
+    def __init__(self, queries: Queries, settings: ProcessSettings, kept: KeptRows, plugins: InstalledPlugins) -> None:
+        self.queries, self.settings, self.kept, self.plugins = queries, settings, kept, plugins
 
     # kept until the table changes, so every ticket of a grant asks the same rows
+    # a class of a plugin that is not installed is kept for its return but takes no run
     def classes(self) -> tuple[ExecutionClass, ...]:
         rows = self.queries.query(ExecutionClassRow)
-        return self.kept.read(rows, lambda: tuple(row.execution_class for row in rows.every_row(STORED_CLASSES_REASON)), name="processes.execution_classes")
+        stored = self.kept.read(rows, lambda: tuple(row.execution_class for row in rows.every_row(STORED_CLASSES_REASON)), name="processes.execution_classes")
+        return tuple(execution_class for execution_class in stored if not execution_class.plugin or self.plugins.is_installed(execution_class.plugin))
 
     def lane_limits(self) -> LaneLimits:
         capacities = {lane: self.settings.integer(setting) for lane, setting in CAPACITY_SETTINGS.items()}
