@@ -7,6 +7,7 @@ from engine.agent.groups.agent_group import AgentGroup
 from engine.helper_type.helper_type import HelperType
 from engine.profile.agent_profile import AgentProfile
 from engine.module.ask_topic import AskTopic
+from engine.driver.agent_state import AgentState
 
 from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.chat.dock_declaration import DockDeclaration
@@ -74,6 +75,7 @@ class Module:
     drivers: ClassVar[list[type[Driver]]] = []
     overlays: ClassVar[list[type[Overlay]]] = []
     driver_rules: ClassVar[list[type[DriverRule]]] = []
+    agent_states: ClassVar[list[type[AgentState]]] = []
     windows: ClassVar[list[WindowDeclaration]] = []
     window_extensions: ClassVar[list[WindowExtension]] = []
     marks: ClassVar[list[MarkDeclaration]] = []
