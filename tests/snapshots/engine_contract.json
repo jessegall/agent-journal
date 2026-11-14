@@ -2370,6 +2370,13 @@
         "overlay(self, entry: OverlayEntry) -> Overlay"
       ]
     },
+    "driver.line_delivery.LineDelivery": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
     "driver.loaded_actor.LoadedActor": {
       "bases": [],
       "fields": [
@@ -2437,6 +2444,7 @@
         "closed_by: type[BlockCondition] | None",
         "plural_text: str",
         "wakes_agent: bool",
+        "delivery: LineDelivery",
         "path_fields: Sequence[str]",
         "repeats_without_hook: bool",
         "id_field: str | None",
@@ -2462,7 +2470,7 @@
       "methods": [
         "send(self, agent_id: int, declaration: NudgeDeclaration, source: str, context: Context) -> Model",
         "send_nudge(self, agent_id: int, nudge: Nudge, source: str, context: Context, wakes_agent: bool) -> Model",
-        "send_text(self, agent_id: int, text: str, source: str, context: Context, wakes_agent: bool, repeats_without_hook: bool) -> Model"
+        "send_text(self, agent_id: int, text: str, source: str, context: Context, wakes_agent: bool, repeats_without_hook: bool, delivery: LineDelivery) -> Model"
       ]
     },
     "driver.open_row.OpenRow": {
@@ -2933,6 +2941,46 @@
         "is_skill_read(self) -> bool",
         "block_exempt(self) -> bool",
         "is_writing_files(self) -> bool"
+      ]
+    },
+    "driver.wake_ask.WakeAsk": {
+      "bases": [],
+      "fields": [
+        "program: str",
+        "session: str",
+        "launch: str",
+        "token: str"
+      ],
+      "methods": [
+        "parsed(cls, data: object) -> 'WakeAsk'"
+      ]
+    },
+    "driver.wake_reply.WakeReply": {
+      "bases": [],
+      "fields": [
+        "status: int",
+        "agent_id: int",
+        "line: str",
+        "line_id: int",
+        "token: str"
+      ],
+      "methods": [
+        "gone(cls) -> 'WakeReply'",
+        "nothing(cls) -> 'WakeReply'",
+        "waiting(cls, agent_id: int, token: str) -> 'WakeReply'",
+        "given(cls, line: str, line_id: int, token: str) -> 'WakeReply'",
+        "is_waiting(self) -> bool",
+        "json(self) -> dict[str, object]"
+      ]
+    },
+    "driver.wake_route.WakeRoute": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "answer(self, ask: WakeAsk) -> WakeReply",
+        "waited(self, waiting: WakeReply, seconds: float) -> WakeReply",
+        "received(self, line_id: int, token: str) -> bool",
+        "live_waiters(self) -> int"
       ]
     },
     "driver.walk.Walk": {
@@ -6529,6 +6577,20 @@
         "detected(cls, hook: 'ManagedHook', provider: type[Provider], event: HookEventName, rules: Sequence[type[HookToolRule]]) -> list['HookEffect']"
       ]
     },
+    "provider.enums.matcher_style.MatcherStyle": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "provider.enums.wake_answer.WakeAnswer": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
     "provider.errors.unknown_program_error.UnknownProgramError": {
       "bases": [
         "Refusal"
@@ -6580,6 +6642,16 @@
         "import_hooks(self, provider: type[Provider], folder: Path) -> list[ManagedHook]",
         "unmanaged(self, provider: type[Provider], folder: Path) -> list[ManagedHook]",
         "restore(self) -> list[ManagedHook]"
+      ]
+    },
+    "provider.hook_matcher.HookMatcher": {
+      "bases": [],
+      "fields": [
+        "text: str",
+        "style: MatcherStyle"
+      ],
+      "methods": [
+        "matches(self, name: str) -> bool"
       ]
     },
     "provider.hook_partition.HookPartition": {
@@ -6666,7 +6738,7 @@
       ],
       "methods": [
         "all_sources(self) -> tuple[HookSource, ...]",
-        "found(cls, program: str, event: str, matcher: str, entry: Mapping[str, object], source: str, tracked: bool) -> 'ManagedHook'"
+        "found(cls, program: str, event: str, matcher: str, entry: Mapping[str, object], source: str, tracked: bool, default_timeout: int) -> 'ManagedHook'"
       ]
     },
     "provider.managed_hook_history.ManagedHookHistory": {
@@ -6745,6 +6817,7 @@
         "hooks(cls, provider: type[Provider], folder: Path) -> 'ProgramHooks'",
         "journal(cls, provider: type[Provider], path: Path) -> 'ProgramHooks'",
         "journal_blocks(self, runner: str, root: Path, managed: Sequence[ManagedHook]) -> dict[str, list[object]]",
+        "wake_entries(self, event: str, runner: str, root: Path) -> list[dict[str, object]]",
         "write(self, runner: str, root: Path, managed: Sequence[ManagedHook]) -> None",
         "entry_timeout(self, event: str, managed: Sequence[ManagedHook]) -> int",
         "is_complete(self) -> bool",
@@ -6776,7 +6849,12 @@
         "decoder: str",
         "rewrites: Mapping[str, Mapping[str, object]]",
         "matchers: Mapping[str, str]",
-        "halts: Mapping[str, str]"
+        "halts: Mapping[str, str]",
+        "matcher_style: str",
+        "default_hook_seconds: int",
+        "session_end_limit_seconds: int",
+        "wake_answer: str",
+        "wake_seconds: int"
       ],
       "methods": [
         "row(cls, provider: type[Provider]) -> 'ProgramRow'"
@@ -6881,6 +6959,11 @@
         "matchers: ClassVar[Mapping[str, str]]",
         "line_events: ClassVar[Sequence[HookEventName]]",
         "plain_output_events: ClassVar[Sequence[HookEventName]]",
+        "additional_context_limit: ClassVar[int]",
+        "matcher_style: ClassVar[MatcherStyle]",
+        "default_hook_seconds: ClassVar[int]",
+        "session_end_limit_seconds: ClassVar[int]",
+        "wake_hook: ClassVar[WakeHook | None]",
         "refusals: ClassVar[Mapping[HookEventName, RefusalStyle]]",
         "tool_categories: ClassVar[Mapping[str, ToolType]]",
         "safe_tools: ClassVar[tuple[str, ...]]",
@@ -6897,6 +6980,7 @@
         "person_file_note: ClassVar[str]",
         "controls: ClassVar[Sequence[ControlGroup]]",
         "compacts_headless: ClassVar[bool]",
+        "compaction_instructions: ClassVar[str]",
         "has_windowed_compaction: ClassVar[bool]",
         "needs_launch_variables: ClassVar[bool]",
         "session_variable: ClassVar[str]",
@@ -6906,6 +6990,7 @@
         "profile_model_setting: ClassVar[str]"
       ],
       "methods": [
+        "reads_hook_text(self, event: HookEventName) -> bool",
         "readable_folders(self) -> tuple[Path, ...]",
         "server_files(self, folder: Path) -> tuple[ProgramServerFile, ...]",
         "skill_instruction(self, skill: str, path: Path) -> str",
@@ -6938,7 +7023,6 @@
         "uses_web_reader(self, event: HookEvent) -> bool",
         "skills_kept_after_compaction(self, transcript: Path | None) -> Mapping[str, str]",
         "transcript_path(self, event: HookEvent) -> Path | None",
-        "delivered_line(self, line: SessionLine) -> bool",
         "peer_note(self, line: str) -> Sequence[PeerNote]",
         "context_percent(self, home: JournalHome, session: str) -> int | None",
         "context_window(self, home: JournalHome, session: str) -> ContextWindow",
@@ -7040,7 +7124,8 @@
       "fields": [],
       "methods": [
         "row(position: int, row_type: object, text: str, time: object) -> TranscriptRow",
-        "author(row_type: str, text: str) -> str"
+        "author(row_type: str, text: str) -> str",
+        "is_wake_notification(text: str) -> bool"
       ]
     },
     "provider.transcript_entries.TranscriptEntries": {
@@ -7099,6 +7184,16 @@
         "lines(self, count: int) -> list[str]",
         "tail_lines(self, window: int) -> list[str]"
       ]
+    },
+    "provider.wake_hook.WakeHook": {
+      "bases": [],
+      "fields": [
+        "event: str",
+        "answer: WakeAnswer",
+        "fields: Mapping[str, object]",
+        "limit_seconds: int"
+      ],
+      "methods": []
     },
     "query.condition_join.ConditionJoin": {
       "bases": [],
@@ -9707,6 +9802,11 @@
         "run_listeners(self) -> None",
         "step(self, name: str) -> object",
         "run_tick_handler(self, label: str) -> None",
+        "wake_ask(self, session: str, token: str, program: str, launch: str) -> WakeReply",
+        "wake_received(self, answer: WakeReply) -> bool",
+        "expect_wake_line(self, answer: WakeReply, text: ExpectedText) -> None",
+        "expect_no_wake(self, answer: WakeReply) -> None",
+        "live_wake_waiters(self) -> int",
         "tick(self, session: str) -> HookReply",
         "busy_database(self) -> Generator[None]",
         "run_tick(self, name: str) -> None",

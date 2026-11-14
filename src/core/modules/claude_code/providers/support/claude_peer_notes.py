@@ -3,7 +3,9 @@ import re
 
 from engine.provider.peer_note import PeerNote
 from engine.types.type_guards import is_mapping
-from core.modules.claude_code.providers.support.claude_inbox import ENVELOPE
+
+# the tag Claude Code wraps a message from another session in
+ENVELOPE = "cross-session-message"
 
 QUEUE_ROW = "queue-operation"
 QUEUED = "enqueue"

@@ -32,7 +32,6 @@ from engine.enums.halt_style import HaltStyle
 from engine.provider.enums.matcher_style import MatcherStyle
 from engine.provider.wake_hook import WakeHook
 from engine.enums.refusal_style import RefusalStyle
-from engine.provider.session_line import SessionLine
 from engine.provider.transcript_author import AGENT_AUTHOR, USER_AUTHOR
 from engine.provider.transcript_row import TranscriptRow
 from engine.provider.transcript_tail import TranscriptTail
@@ -212,9 +211,6 @@ class Provider(ABC):
 
     def transcript_path(self, event: HookEvent) -> Path | None:
         return event.transcript.path
-
-    def delivered_line(self, line: SessionLine) -> bool:
-        return False
 
     def peer_note(self, line: str) -> Sequence[PeerNote]:
         return ()

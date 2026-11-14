@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pytest
 
-from engine.provider.session_line import SessionLine
 from engine.provider.helper_launch import HelperLaunch
 from engine.provider.launch import Launch
 from engine.journal.journal_home import JournalHome
@@ -101,9 +100,6 @@ def test_every_recorded_hook_name_is_mapped_to_the_event_the_go_program_prepared
              for body, prepared in zip(path.read_text().splitlines(), (PREPARED / path.name).read_text().splitlines(), strict=True) if prepared != "skip"]
     assert len(pairs) > 10 and all(provider.hook_events[name] == event for name, event in pairs)
 
-
-def test_codex_takes_no_line_while_it_runs_so_the_line_waits_for_the_next_hook(provider):
-    assert provider.delivered_line(SessionLine("t-1", "the journal", "log your task")) is False
 
 
 def test_the_context_percent_is_the_last_token_count_of_the_sessions_rollout(provider, tmp_path, monkeypatch):

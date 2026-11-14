@@ -99,3 +99,10 @@ def test_a_stop_body_with_stop_hook_active_is_a_continuation():
 def test_a_stop_body_without_it_is_not():
     assert not stop_event().is_stop_continuation
     assert not stop_event(stop_hook_active=False).is_stop_continuation
+
+
+def test_a_stop_body_with_stop_hook_active_is_read_as_a_continuation():
+    example = json.loads((HOOK_FOLDER / "event" / "testdata" / "schema" / "stop.json").read_text())
+    continued = HookEvent.parsed({**example, "version": 3, "foreign": [], "raw": {"stop_hook_active": True}})
+    first = HookEvent.parsed({**example, "version": 3, "foreign": [], "raw": {"stop_hook_active": False}})
+    assert continued.is_stop_continuation and not first.is_stop_continuation

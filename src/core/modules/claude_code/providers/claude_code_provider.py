@@ -38,7 +38,6 @@ from engine.provider.control_group import ControlGroup
 from engine.provider.provider import Provider
 from engine.enums.halt_style import HaltStyle
 from engine.enums.refusal_style import RefusalStyle
-from engine.provider.session_line import SessionLine
 from engine.provider.peer_note import PeerNote
 from engine.provider.transcript_row import TranscriptRow
 from engine.file.file_access import FileAccess
@@ -47,7 +46,6 @@ from engine.types.type_guards import is_list, is_mapping
 from engine.private.server_keys import ServerKeys
 from core.modules.claude_code.providers.support.claude_folder_name import ClaudeFolderName
 from core.modules.claude_code.providers.support.claude_stream_row import ClaudeStreamRow
-from core.modules.claude_code.providers.support.claude_inbox import ClaudeInbox
 from core.modules.claude_code.providers.support.claude_kept_skills import ClaudeKeptSkills
 from core.modules.claude_code.providers.support.claude_peer_notes import ClaudePeerNotes
 from core.modules.claude_code.providers.support.claude_trust import ClaudeTrust
@@ -318,9 +316,6 @@ class ClaudeCodeProvider(Provider):
     @classmethod
     def hook_settings(cls, runner: str, root: Path) -> Mapping[str, object]:
         return {"autoMemoryEnabled": False, "statusLine": {"type": "command", "command": f'{runner} --status "{root}"', "padding": 0}}
-
-    def delivered_line(self, line: SessionLine) -> bool:
-        return ClaudeInbox(self.folders.folder(CONFIG_VARIABLE, ".claude") / "sessions").delivered_line(line)
 
     def peer_note(self, line: str) -> Sequence[PeerNote]:
         return ClaudePeerNotes.note(line)
