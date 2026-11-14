@@ -4,5 +4,5 @@ export const BOXED_STATES = ["failed", "blocked", "problem", "update", "paused",
 // a dashboard node names a tone, not a state: a danger tone needs the person like a failure, a warning like a wait
 const TONE_STATES = {danger: "failed", warn: "waiting"};
 
-export const isBoxed = (state) => BOXED_STATES.includes(TONE_STATES[state] ?? state);
+const isBoxed = (state) => BOXED_STATES.includes(TONE_STATES[state] ?? state);
 export const badgeClass = (state) => (isBoxed(state) ? ["badge", TONE_STATES[state] ?? state] : ["badge-quiet"]);

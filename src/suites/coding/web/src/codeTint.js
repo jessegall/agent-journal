@@ -4,7 +4,7 @@ const CALLS = /\b([A-Z][A-Za-z]+)(?=\()/g;
 const ESCAPES = {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"};
 const LANGUAGES = {py: "Python", vue: "Vue", md: "Markdown", css: "CSS", js: "JavaScript", json: "JSON", html: "HTML", sh: "Shell", yml: "YAML", yaml: "YAML", toml: "TOML", go: "Go"};
 
-export const escapeHtml = (text) => text.replace(/[&<>"']/g, (mark) => ESCAPES[mark]);
+const escapeHtml = (text) => text.replace(/[&<>"']/g, (mark) => ESCAPES[mark]);
 
 export function tint(line) {
     if (/^\s*(#|\/\/)/.test(line)) return `<span class="tk-c">${escapeHtml(line)}</span>`;

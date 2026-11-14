@@ -21,7 +21,7 @@ const onChosenText = (target) => {
 const withSay = (items, say) => items.map((item) => ({...item, run: item.run && (() => item.run({say})), children: item.children && withSay(item.children, say)}));
 
 // what the menu shows for the element under the pointer: a text field, chosen text, the most particular place a window declares, or the page itself
-export function menuFor(target, say) {
+function menuFor(target, say) {
     const field = target.closest?.(TEXT_FIELD);
     const place = placeUnder(target);
     const found = field

@@ -1,5 +1,5 @@
 <script setup>
-import {computed} from "vue";
+import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {CommentCard, vContext} from "@journal/window-kit";
 import {lineItems} from "./fileMenus.js";
 import {tint} from "./codeTint.js";
@@ -16,9 +16,14 @@ const noted = (number) => props.comments.some((comment) => comment.from != null 
 const placeOf = (number, text) => ({head: `Line ${number}`, items: lineItems(props.browser, props.path, number, text)});
 const picked = (number) => Boolean(props.selection) && number >= props.selection.from && number <= props.selection.to;
 
-function scrolledTo(element, number) {
-    if (element && number === props.target) element.scrollIntoView?.({block: "center"});
+// the line the address or a comment names comes into view once, when it is named, not on every draw
+const code = ref(null);
+async function scrollToTarget() {
+    await nextTick();
+    if (props.target) code.value?.querySelector(`[data-file-line="${props.target}"]`)?.scrollIntoView?.({block: "center"});
 }
+onMounted(scrollToTarget);
+watch(() => [props.target, props.path], scrollToTarget);
 </script>
 
 <template>
@@ -29,9 +34,9 @@ function scrolledTo(element, number) {
         <template v-if="file.moved_from">
             <p class="reader-notice" role="note" data-moved-file>Moved from <span class="reader-mono">{{ file.moved_from }}</span></p>
         </template>
-        <div class="code" data-file-text>
+        <div ref="code" class="code" data-file-text>
             <template v-for="(line, index) in lines" :key="index">
-                <div v-context="() => placeOf(index + 1, line)" :ref="(element) => scrolledTo(element, index + 1)" :class="['files-line', {target: index + 1 === target, picked: picked(index + 1), noted: noted(index + 1)}]" :data-file-line="index + 1">
+                <div v-context="() => placeOf(index + 1, line)" :class="['files-line', {target: index + 1 === target, picked: picked(index + 1), noted: noted(index + 1)}]" :data-file-line="index + 1">
                     <span class="files-number" role="button" :aria-label="`Pick line ${index + 1}`" data-line-number @click="emit('pick', index + 1, $event.shiftKey)">{{ index + 1 }}</span>
                     <span class="files-code" v-html="tint(line) || ' '" />
                 </div>
