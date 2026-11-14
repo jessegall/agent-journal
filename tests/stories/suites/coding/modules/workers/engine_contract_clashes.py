@@ -41,7 +41,7 @@ def test_an_update_whose_only_clash_is_the_engine_contract_takes_the_higher_vers
     committed_on(repository, folder, SNAPSHOT_FILE, snapshot_text("5, 4, 0"), "The worker pins its contract")
     committed_on(repository, base, VERSION_FILE, version_text("5, 5, 0"), "Another unit changes the engine")
     committed_on(repository, base, SNAPSHOT_FILE, snapshot_text("5, 5, 0"), "Another unit pins its contract")
-    story.expect_success("worker update --wait", "Your worktree is on version-5 at", actor=worker)
+    story.expect_text("worker update --wait", "Your worktree is on version-5 at", actor=worker)
     merging = repository.git("rev-parse", "--verify", "--quiet", "MERGE_HEAD", folder=folder).returncode == 0
     story.expect_rows(not merging, (folder / VERSION_FILE).read_text() == version_text("5, 5, 0"), '"version": "5, 5, 0"' in (folder / SNAPSHOT_FILE).read_text(),
                       "<<<<<<<" not in (folder / SNAPSHOT_FILE).read_text())
