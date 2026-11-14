@@ -4,7 +4,8 @@ import time
 from pathlib import Path
 
 from engine.module.python_source_folders import python_source_folders
-from engine.module.schema_inputs import SchemaInputs
+from engine.module.code_fingerprint import CORE_FOLDER
+from engine.module.source_hash import SourceHash
 from engine.testing.seeds.base_seed_switch import BaseSeedSwitch
 from engine.testing.cache.folder_stat import FolderStat
 
@@ -18,10 +19,9 @@ HASH_CHARACTERS = 16
 
 
 class TemplateCache:
-    """Shares complete story templates between every checkout of a project, in a folder keyed on the schema
-    inputs only (migrations, models, seeders and module manifests: see SchemaInputs), so editing any other
-    code leaves the folder as it was and each template checks the code its own build ran (see TouchedCode).
-    When a new folder is made it removes the ones unused for a day and then the least recently used until
+    """Shares complete story templates between every checkout of a project, in a folder keyed on the python sources
+    and the stories' support folders, since a template holds the registry its modules declared and module
+    declarations live in many files. When a new folder is made it removes the ones unused for a day and then the least recently used until
     the cache is under its size limit, never one a running suite holds (each process leaves a lease named
     for its process number); a cache already pruned within the hour is left alone."""
 
@@ -29,7 +29,9 @@ class TemplateCache:
         self.root, self.limit_bytes = root, limit_bytes
 
     def folder(self) -> Path:
-        source_hash = SchemaInputs.hash(python_source_folders())
+        checkout = CORE_FOLDER.parent.parent.resolve()
+        support_folders = tuple(sorted(folder for folder in FileAccess.rglob(checkout / "tests", "support") if FileAccess.is_dir(folder)))
+        source_hash = SourceHash.text((*python_source_folders(), *support_folders))
         current = self.root / f"{source_hash[:HASH_CHARACTERS]}{BaseSeedSwitch.folder_suffix()}"
         is_new = not FileAccess.is_dir(current)
         FileAccess.mkdir(current, parents=True, exist_ok=True)
