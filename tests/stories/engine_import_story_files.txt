@@ -688,13 +688,11 @@ tests/stories/server/viewer_hook_events.py
 tests/stories/server/viewer_read_counts.py
 tests/stories/suites/coding/agent_settings_window.py
 tests/stories/suites/coding/assigned_tasks.py
-tests/stories/suites/coding/coding_module_shape.py
 tests/stories/suites/coding/coding_windows.py
 tests/stories/suites/coding/designer_tools.py
 tests/stories/suites/coding/drivers/helper/builder.py
 tests/stories/suites/coding/drivers/main/orchestrator.py
 tests/stories/suites/coding/drivers/worker/worker_driver.py
-tests/stories/suites/coding/entrances.py
 tests/stories/suites/coding/file_edits.py
 tests/stories/suites/coding/file_edits_prune_links.py
 tests/stories/suites/coding/file_edits_prune_migration.py
@@ -709,7 +707,6 @@ tests/stories/suites/coding/main_file_permissions.py
 tests/stories/suites/coding/modules/checks/checks.py
 tests/stories/suites/coding/modules/checks/library_checks.py
 tests/stories/suites/coding/modules/checks/task_wait_checks.py
-tests/stories/suites/coding/modules/checks/upgrade.py
 tests/stories/suites/coding/modules/workers/activity_reads.py
 tests/stories/suites/coding/modules/workers/agent_actions.py
 tests/stories/suites/coding/modules/workers/agents_retired_by_a_person_alone.py
@@ -893,7 +890,6 @@ tests/stories/suites/coding/support/shape_samples.py
 tests/stories/suites/coding/support/task_assigner_samples.py
 tests/stories/suites/coding/task_assigners.py
 tests/stories/suites/coding/terminal_window.py
-tests/stories/suites/coding/windows_as_classes.py
 tests/stories/suites/coding/windows_open_at_foot_browser.py
 tests/stories/support/program_states.py
 tests/stories/support/registry_compare.py

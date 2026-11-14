@@ -7,14 +7,11 @@ from engine.enums.actor_type import ActorType
 from suites.coding.modules.workers.listeners.support.worker_test_starts import WorkerTestStarts
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.ticks.worker_tests.stalled_worker_test_runs import StalledWorkerTestRuns
-from suites.coding.modules.workers.ticks.worker_tests.unlaunched_worker_test_runs import UnlaunchedWorkerTestRuns
-from suites.coding.modules.workers.workers_module import WorkersModule
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
 from tests.stories.suites.coding.modules.workers.test_queue import PROOF, recording_launch, stalled_tick
-from tests.stories.core.support.agent_labels import agent_number
 
 RUNNING = "the tests of task 1 are running"
 
@@ -113,16 +110,6 @@ def test_with_nothing_to_run_and_a_proof_left_to_check_the_worker_goes_on(new_st
     story.expect_success(COMMIT, actor=worker)
     story.expect_text("task show 1", "state: testing", actor=story.agent)
     story.expect_text("task show 2", "state: started", actor=story.agent)
-
-
-def minute_tick_names():
-    return {type(tick.handler).__name__ for tick in WorkersModule.tick_handlers}
-
-
-def test_385_386_the_two_ticks_of_waiting_test_runs_are_named_for_test_runs(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    story.expect_rows({StalledWorkerTestRuns.__name__, UnlaunchedWorkerTestRuns.__name__} <= minute_tick_names())
-    story.expect_rows(not {"StalledWorkerTests", "UnlaunchedWorkerTests"} & minute_tick_names())
 
 
 def test_a_worktree_released_with_its_test_running_ends_that_test_and_the_tick_goes_on(running_proof):

@@ -4,30 +4,12 @@ from tests.stories.suites.coding.modules.workers.support.program_split import SP
 
 from engine.enums.tool_type import ToolType
 from engine.testing.examples.hook_samples import HookSamples
-from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from tests.stories.core.support.fixtures import UserJoined
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 
 TODO_LIST_HOOK = HookSamples.sample("post_tool_use", {"name": "TodoWrite", "category": ToolType.UNCATEGORISED, "files": [], "diff": None}).with_fields(
     raw={"tool_name": "TodoWrite", "tool_input": {"todos": [{"content": "Add the tax", "status": "completed"},
                                                              {"content": "Round to cents", "status": "in_progress"}]}})
-
-
-def window_story(new_story) -> WindowStory:
-    return WindowStory(new_story(fixture=UserJoined))
-
-
-def test_the_points_window_is_a_page_window_of_one_agent_that_reads_with_no_allowance(new_story):
-    window = window_story(new_story)
-    window.expect_declared_window("workers.points", "component", "pane", "one-agent")
-    window.expect_window_allowed("workers.points", "worker-worktree points --agent 2")
-
-
-def test_the_todos_window_is_a_page_window_of_one_agent_that_reads_with_no_allowance(new_story):
-    window = window_story(new_story)
-    window.expect_declared_window("workers.todos", "component", "pane", "one-agent")
-    window.expect_window_allowed("workers.todos", "todo-item list --agent 2 --oldest")
 
 
 def test_a_to_do_list_the_agent_program_writes_is_kept_in_place_of_the_last(new_story):

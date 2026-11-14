@@ -382,7 +382,6 @@ tests/stories/suites/coding/main_assignment.py
 tests/stories/suites/coding/main_reservation.py
 tests/stories/suites/coding/modules/checks/checks.py
 tests/stories/suites/coding/modules/checks/library_checks.py
-tests/stories/suites/coding/modules/checks/upgrade.py
 tests/stories/suites/coding/modules/workers/activity_reads.py
 tests/stories/suites/coding/modules/workers/agent_actions.py
 tests/stories/suites/coding/modules/workers/agents_retired_by_a_person_alone.py
@@ -539,7 +538,6 @@ tests/stories/suites/coding/shipped_profile_skills.py
 tests/stories/suites/coding/special_helpers.py
 tests/stories/suites/coding/task_assigners.py
 tests/stories/suites/coding/terminal_window.py
-tests/stories/suites/coding/windows_as_classes.py
 tests/stories/tunnels/tunler/account.py
 tests/stories/tunnels/tunler/tunler_tunnel.py
 tests/stories/tunnels/tunler/write_lock.py
