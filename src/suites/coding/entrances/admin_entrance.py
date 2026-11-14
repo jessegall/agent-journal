@@ -1,4 +1,8 @@
 from engine.viewer.entrance import Entrance
+from suites.coding.modules.workers.windows.points.points_window import PointsWindow
+from suites.coding.modules.workers.windows.todos.todos_window import TodosWindow
+from suites.coding.modules.workers.windows.workers.workers_window import WorkersWindow
+from suites.coding.modules.workers.windows.worktrees.worktrees_window import WorktreesWindow
 from core.modules.agents.windows.agents.agents_window import AgentsWindow
 from core.modules.agents.windows.helpers.helpers_window import HelpersWindow
 from core.modules.agents.windows.transcript.transcript_window import TranscriptWindow
@@ -61,10 +65,9 @@ from suites.coding.viewer.presets.home_presets import HomePresets
 
 class AdminEntrance(Entrance):
     """The way in of the person who runs the coding suite: every window it offers, the default layout of each page
-    and the presets of the home and agent pages. A window written as a class is listed by its class; the
-    others, the workers' windows among them, by their names until they are classes."""
+    and the presets of the home and agent pages. Each window is listed by its class."""
 
     key = "admin"
-    windows = [ChatWindow, WaitingWindow, QuestionsWindow, TasksWindow, TaskCountsWindow, PlansWindow, AgentsWindow, HelpersWindow, JobsWindow, MemoriesWindow, RulesWindow, "workers.workers", TranscriptWindow, HookCallsWindow, FileFeedWindow, FileEditsWindow, FilesWindow, GitWindow, "workers.worktrees", AttachmentsWindow, TerminalWindow, OutputsWindow, OutputWindow, SearchWindow, DumpsWindow, SecretsWindow, SkillsWindow, IntegrationsWindow, ProfilesWindow, TranscriptionsWindow, RemindersWindow, SharesWindow, TeamsWindow, TunnelWindow, UpdatesWindow, NumbersWindow, HookRequestsWindow, SystemLogsWindow, NudgesWindow, "workers.points", "workers.todos", DocumentsWindow, PageWindow, SequencesWindow, TemplatesWindow, PluginsWindow, SettingsWindow, ProjectHooksWindow, ToolsWindow, TriggersWindow, ChecksWindow, LoadWindow, UsageWindow, CostWindow, ContextWindow, WorkModeWindow]
+    windows = [ChatWindow, WaitingWindow, QuestionsWindow, TasksWindow, TaskCountsWindow, PlansWindow, AgentsWindow, HelpersWindow, JobsWindow, MemoriesWindow, RulesWindow, WorkersWindow, TranscriptWindow, HookCallsWindow, FileFeedWindow, FileEditsWindow, FilesWindow, GitWindow, WorktreesWindow, AttachmentsWindow, TerminalWindow, OutputsWindow, OutputWindow, SearchWindow, DumpsWindow, SecretsWindow, SkillsWindow, IntegrationsWindow, ProfilesWindow, TranscriptionsWindow, RemindersWindow, SharesWindow, TeamsWindow, TunnelWindow, UpdatesWindow, NumbersWindow, HookRequestsWindow, SystemLogsWindow, NudgesWindow, PointsWindow, TodosWindow, DocumentsWindow, PageWindow, SequencesWindow, TemplatesWindow, PluginsWindow, SettingsWindow, ProjectHooksWindow, ToolsWindow, TriggersWindow, ChecksWindow, LoadWindow, UsageWindow, CostWindow, ContextWindow, WorkModeWindow]
     layouts = {"home": HomeLayout, "agent": AgentLayout, "phone": PhoneLayout, "agent@coding.worker": WorkerAgentLayout}
     presets = {"home": HomePresets, "agent": AgentPresets}

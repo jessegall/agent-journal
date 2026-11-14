@@ -1,0 +1,22 @@
+from suites.coding.modules.workers.guards.alias_worktree_path_guard import AliasWorktreePathGuard
+from suites.coding.modules.workers.guards.base_branch_guard import BaseBranchGuard
+from suites.coding.modules.workers.guards.dispatch_allowance_guard import DispatchAllowanceGuard
+from suites.coding.modules.workers.guards.dispatch_branch_guard import DispatchBranchGuard
+from suites.coding.modules.workers.guards.dispatch_worker_guard import DispatchWorkerGuard
+from suites.coding.modules.workers.guards.merge_advice_guard import MergeAdviceGuard
+from suites.coding.modules.workers.guards.merge_allowance_guard import MergeAllowanceGuard
+from suites.coding.modules.workers.guards.merge_proof_guard import MergeProofGuard
+from suites.coding.modules.workers.guards.proof_point_guard import ProofPointGuard
+from suites.coding.modules.workers.guards.readonly_helper_start_guard import ReadonlyHelperStartGuard
+from suites.coding.modules.workers.guards.reservation_code_guard import ReservationCodeGuard
+from suites.coding.modules.workers.guards.task_start_code_guard import TaskStartCodeGuard
+from suites.coding.modules.workers.guards.worker_checkpoint_guard import WorkerCheckpointGuard
+from suites.coding.modules.workers.guards.worker_helper_guard import WorkerHelperGuard
+from suites.coding.modules.workers.guards.worker_route_access_guard import WorkerRouteAccessGuard
+from suites.coding.modules.workers.guards.worker_route_guard import WorkerRouteGuard
+from suites.coding.modules.workers.guards.worker_route_owner_guard import WorkerRouteOwnerGuard
+from suites.coding.modules.workers.guards.worker_route_shape_guard import WorkerRouteShapeGuard
+from suites.coding.modules.workers.guards.worker_started_tasks_guard import WorkerStartedTasksGuard
+from suites.coding.modules.workers.guards.worker_task_start_guard import WorkerTaskStartGuard
+
+WORKERS_GUARDS = [WorkerTaskStartGuard, WorkerCheckpointGuard, TaskStartCodeGuard, ReservationCodeGuard, MergeAdviceGuard, WorkerRouteGuard, WorkerRouteOwnerGuard, WorkerRouteAccessGuard, WorkerRouteShapeGuard, DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard, WorkerStartedTasksGuard, MergeProofGuard, BaseBranchGuard, DispatchAllowanceGuard, ReadonlyHelperStartGuard, MergeAllowanceGuard, WorkerHelperGuard, AliasWorktreePathGuard]

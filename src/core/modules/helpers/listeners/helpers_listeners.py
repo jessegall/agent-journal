@@ -1,0 +1,12 @@
+from core.modules.helpers.listeners.compact_window_listener import CompactWindowListener
+from core.modules.helpers.listeners.deleted_helper_source_listener import DeletedHelperSourceListener
+from core.modules.helpers.listeners.helper_ended_listener import HelperEndedListener
+from core.modules.helpers.listeners.helper_job_mark_listener import HelperJobMarkListener
+from core.modules.helpers.listeners.helper_job_source_listener import HelperJobSourceListener
+from core.modules.helpers.listeners.helper_program_listener import HelperProgramListener
+from core.modules.helpers.listeners.helper_resume_listener import HelperResumeListener
+from core.modules.helpers.listeners.messaged_helper_listener import MessagedHelperListener
+from core.modules.helpers.listeners.new_main_helpers_listener import NewMainHelpersListener
+from core.modules.helpers.listeners.provider_outage_mark_listener import ProviderOutageMarkListener
+
+HELPERS_LISTENERS = [NewMainHelpersListener, HelperResumeListener, HelperProgramListener, MessagedHelperListener, HelperEndedListener, HelperJobMarkListener, HelperJobSourceListener, DeletedHelperSourceListener, ProviderOutageMarkListener, CompactWindowListener]
