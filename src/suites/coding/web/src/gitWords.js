@@ -16,3 +16,6 @@ const REVIEWS = {APPROVED: "approved", CHANGES_REQUESTED: "changes requested", R
 export const reviewLine = (pull) => (pull.draft ? "draft" : REVIEWS[pull.review] || "not reviewed");
 
 export const shortSha = (sha) => sha.slice(0, 7);
+
+// what a file's git letter says in the Files tree
+export const GIT_WORDS = {M: "Changed", A: "New", D: "Deleted", R: "Moved", "?": "Not tracked"};
