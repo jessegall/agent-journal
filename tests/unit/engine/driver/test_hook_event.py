@@ -85,3 +85,17 @@ def test_a_missing_field_is_refused_by_its_name():
     example = json.loads((HOOK_FOLDER / "event" / "testdata" / "schema" / "stop.json").read_text())
     with pytest.raises(HookEventError, match="needs session"):
         HookEvent.parsed({key: value for key, value in example.items() if key != "session"})
+
+
+def stop_event(**body_fields) -> HookEvent:
+    example = json.loads((HOOK_FOLDER / "event" / "testdata" / "schema" / "stop.json").read_text())
+    return HookEvent.parsed({**example, "version": 3, "raw": {**example.get("raw", {}), **body_fields}})
+
+
+def test_a_stop_body_with_stop_hook_active_is_a_continuation():
+    assert stop_event(stop_hook_active=True).is_stop_continuation
+
+
+def test_a_stop_body_without_it_is_not():
+    assert not stop_event().is_stop_continuation
+    assert not stop_event(stop_hook_active=False).is_stop_continuation

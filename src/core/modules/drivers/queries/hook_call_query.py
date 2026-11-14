@@ -48,6 +48,11 @@ class HookCallQuery(Query[HookCall]):
         refused = [stop.answer == HookAnswer.REFUSED for stop in stops]
         return refused.index(False) if False in refused else len(refused)
 
+    # the newest stops in a row that came while a stop hook already held the agent
+    def consecutive_stop_continuations(self, agent_id: int) -> int:
+        stops = [stop.is_stop_continuation for stop in self.agent(agent_id).filter(hook=HookEventName.STOP).newest().take(STOPS_READ)]
+        return stops.index(False) if False in stops else len(stops)
+
     def last_stop_refused(self, agent_id: int) -> bool:
         stop = self.agent(agent_id).filter(hook=HookEventName.STOP).newest().first()
         return stop is not None and stop.answer == HookAnswer.REFUSED

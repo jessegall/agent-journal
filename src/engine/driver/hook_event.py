@@ -83,6 +83,11 @@ class HookEvent:
     def is_compaction_start(self) -> bool:
         return self.raw.get("source") == COMPACTION_SOURCE
 
+    # Claude Code sets it on a stop that comes while the agent already runs on because a stop hook held it
+    @property
+    def is_stop_continuation(self) -> bool:
+        return self.event is HookEventName.STOP and self.raw.get("stop_hook_active") is True
+
     @property
     def is_manual_compaction(self) -> bool:
         return self.event is HookEventName.COMPACT and self.raw.get("trigger") == MANUAL_TRIGGER
