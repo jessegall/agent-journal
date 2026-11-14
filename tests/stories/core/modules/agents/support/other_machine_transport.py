@@ -41,6 +41,6 @@ class RemoteMachineModule(Module):
     binding is the one in force."""
 
     name = "acme.other-machine"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.agents", "journal.suites.coding.workers"]
     bindings = {ProgramTransport: RemoteMachineTransport}

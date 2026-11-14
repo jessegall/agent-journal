@@ -11,7 +11,7 @@ class ActorsModule(Module):
     delete."""
 
     name = "journal.core.actors"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     models = [ModelDeclaration(ActorRecord, query=ActorQuery)]
     seeders = [ActorsSeeder]
     moves = [ActorsMove]

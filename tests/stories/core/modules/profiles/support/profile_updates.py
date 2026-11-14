@@ -12,7 +12,7 @@ BASE_PROFILE = AgentProfile("module-reader", "Reads one question", "Read the fil
 
 class ProfileVersionOne(Module):
     name = "sample.profile-updates"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.agents", "journal.core.profiles"]
     profiles = [BASE_PROFILE]
     windows = [WindowDeclaration("profile-updates.editor", "Profiles", "profile list", WindowLoading.DOCUMENT, skeleton=[SkeletonPart.line()],

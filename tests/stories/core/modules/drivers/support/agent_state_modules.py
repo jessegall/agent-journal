@@ -24,7 +24,7 @@ class AcmeState(AgentState):
 
 class StateModule(Module):
     name = "acme.states"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.suites.coding"]
     agent_states = [AcmeState]
 

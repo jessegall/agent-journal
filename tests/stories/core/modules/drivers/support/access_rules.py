@@ -100,7 +100,7 @@ class UnrestrictedDriver(AccessDriver):
 
 class AccessModule(Module):
     name = "samples.access"
-    requires_core = ">=5.0,<6"
+    requires_engine = ">=5.0,<6"
     dependencies = ["journal.core.drivers"]
     drivers = [ReaderDriver, WriterDriver, JournalDriver, NoShellDriver, NoGitDriver,
                FileTestsDriver, ReadToolDriver, ReadCommandsDriver, NoCurlDriver, UnrestrictedDriver]

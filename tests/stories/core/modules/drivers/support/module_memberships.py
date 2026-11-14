@@ -10,24 +10,24 @@ class AcmeSuite(Suite):
 
 class SuiteModule(Module):
     name = "acme.suite"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.suites.coding"]
 
 
 class MemberModule(Module):
     name = "acme.member"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["acme.suite"]
 
 
 class UnknownSuiteModule(Module):
     name = "acme.unknown"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
 
 
 class MissingDependencyModule(Module):
     name = "acme.independent"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
 
 
 class SuiteModuleJoining(Suite):

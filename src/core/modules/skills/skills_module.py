@@ -76,7 +76,7 @@ class SkillsModule(Module):
     name = "journal.core.skills"
     nudges = SKILL_NUDGES
     move_reason = "version 4 kept skills as files, not as a table"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     block_conditions = [SkillsRead, SkillLoaded]
     settings = SKILL_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.settings", "journal.core.chat", "journal.core.processes", "journal.core.environments", "journal.core.profiles"]

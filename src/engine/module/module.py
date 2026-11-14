@@ -57,7 +57,7 @@ class Module:
     """Declares the models, commands, rules and viewer windows supplied by one module."""
 
     name: ClassVar[str]
-    requires_core: ClassVar[str]
+    requires_engine: ClassVar[str]
     dependencies: ClassVar[list[str]] = []
     step_conditions: ClassVar[list[type[StepCondition]]] = []
     models: ClassVar[list[ModelDeclaration]] = []

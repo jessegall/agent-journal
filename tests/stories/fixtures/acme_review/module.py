@@ -9,7 +9,7 @@ from .audit_plan_subcommand import AuditPlanSubcommand
 
 class AcmeReviewModule(Module):
     name = "acme.review"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.plans", "journal.core.templates", "journal.core.viewer", "journal.suites.coding"]
     handlers = [AuditPlanHandler]
     subcommands = [AuditPlanSubcommand]

@@ -9,7 +9,7 @@ from engine.journal.journal import Journal
 from engine.module.folder_listing import FolderListing
 from engine.module.module import Module
 from engine.module.source_hash import SourceHash
-from engine.version.version import CORE_VERSION
+from engine.version.version import ENGINE_VERSION
 
 SOURCE_FOLDER = Path(__file__).resolve().parents[2]
 BUILT_WINDOWS_FOLDER = Path("web") / "dist"
@@ -69,7 +69,7 @@ class CodeFingerprint:
         return self.files_text(FolderListing.kept(folders).files())
 
     def files_text(self, files: Sequence[Path]) -> str:
-        digest = hashlib.sha256(".".join(map(str, CORE_VERSION)).encode())
+        digest = hashlib.sha256(".".join(map(str, ENGINE_VERSION)).encode())
         for file in files:
             try:
                 status = FileAccess.stat(file)

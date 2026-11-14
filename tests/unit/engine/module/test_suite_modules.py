@@ -12,7 +12,7 @@ from suites.coding.modules.workers.workers_module import WorkersModule
 
 
 def module(name: str, python_module: str = "samples.sample_module") -> type[Module]:
-    return type("SampleModule", tuple([Module]), {"name": name, "requires_core": ">=5,<6", "__module__": python_module})
+    return type("SampleModule", tuple([Module]), {"name": name, "requires_engine": ">=5,<6", "__module__": python_module})
 
 
 def suite(name: str, *modules: type[Module], helper_types: tuple[HelperType, ...] = ()) -> type[Suite]:

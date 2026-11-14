@@ -44,7 +44,7 @@ class SecretsModule(Module):
 
     name = "journal.core.secrets"
     nudges = SECRET_NUDGES
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages"]
     skills = [SkillDeclaration("journal-secrets", "Use keys and logins without seeing them; read it when a task needs a key or a login", keywords=("secret", "secrets", "api key", "token", "password", "login"), commands=["secret"])]
     seeders = [SecretsSeeder]

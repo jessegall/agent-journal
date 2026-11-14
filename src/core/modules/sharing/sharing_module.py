@@ -41,7 +41,7 @@ class SharingModule(Module):
     revoked; an agent may ask for one, and visitors may comment if the link lets them."""
 
     name = "journal.core.sharing"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.environments", "journal.core.documents", "journal.core.messages", "journal.core.plans", "journal.core.tunnel"]
     models = [ModelDeclaration(ShareLink, commands=[RevokeShareLink, DenyShareLink], excluded_subcommands=["make", "edit", "accept"]),
               ModelDeclaration(ShareComment, excluded_subcommands=["make", "edit", "delete"])]

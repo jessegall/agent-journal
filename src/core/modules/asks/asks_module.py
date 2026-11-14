@@ -27,7 +27,7 @@ class AsksModule(Module):
     parent."""
 
     name = "journal.core.asks"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.settings", "journal.core.tasks"]
     models = [ModelDeclaration(Ask, query=AskQuery, excluded_subcommands=BUILT), ModelDeclaration(AskStep, excluded_subcommands=BUILT), ModelDeclaration(AskStack, excluded_subcommands=BUILT)]
     migrations = [AsksTablesMigration, AskStacksTableMigration, AskSettingKeysMigration]

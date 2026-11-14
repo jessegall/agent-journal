@@ -43,7 +43,7 @@ class AliasesModule(Module):
     """Adds aliases: words of the project's own that run a shell line, `journal <name> [args]`."""
 
     name = "journal.core.aliases"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.processes", "journal.core.plugins", "journal.core.drivers"]
     models = [ModelDeclaration(Alias, query=AliasQuery, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(CommandType)]
     views = [SavedCommand]

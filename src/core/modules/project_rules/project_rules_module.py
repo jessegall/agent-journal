@@ -25,7 +25,7 @@ class ProjectRulesModule(Module):
 
     name = "journal.core.project-rules"
     seed_reason = "the demo shows no rules yet"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.docking", "journal.core.memories", "journal.core.reminders", "journal.core.settings", "journal.core.viewer"]
     models = [ModelDeclaration(ProjectRule, excluded_subcommands=["make"])]
     migrations = [RulesTableMigration, MemoryRulesMigration, PlainMemoriesMigration]

@@ -8,7 +8,7 @@ DEPENDENCIES = ["journal.core.tasks", "journal.core.plans", "journal.core.viewer
 
 class PlainModule(Module):
     name = "plain"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = DEPENDENCIES
 
 

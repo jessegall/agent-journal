@@ -158,7 +158,7 @@ class AgentsModule(Module):
 
     name = "journal.core.agents"
     helper_types = [HelperType("helper", "Read-only helper", run_limit_key="journal.core.helpers.read-only-helper-run-limit", kept_limit_key="journal.core.helpers.read-only-helper-kept-limit", profile_limits_key="journal.core.helpers.read-only-helper-profile-limits", job_command=("helper", "send"), line="Reads the project and reports; it changes no code."), HelperType("reviewer", "Reviewer")]
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
     models = [ModelDeclaration(Agent, query=AgentQuery, excluded_subcommands=["make"]), ModelDeclaration(MenuAnswer, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentFold, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentFoldRow, excluded_subcommands=["make", "edit", "delete", "list"]),
               ModelDeclaration(AgentSession, excluded_subcommands=["make", "edit", "delete"])]

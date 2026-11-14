@@ -41,7 +41,7 @@ class DumpsModule(Module):
     """Adds dumps: notes and files the user adds, which the agent makes rows from, item by item."""
 
     name = "journal.core.dumps"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.docking", "journal.core.agents", "journal.core.drivers"]
     skills = [SkillDeclaration("journal-dumps", "File what the user dropped in a dump by sorting the material by subject into rows of their own; read it when a dump arrives", keywords=("dump", "dumps", "dumped"), commands=["dump"], types=["main"])]
     models = [ModelDeclaration(Dump, excluded_subcommands=BUILT), ModelDeclaration(DumpItem, excluded_subcommands=BUILT)]

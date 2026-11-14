@@ -21,35 +21,35 @@ def frame(name: str, entry: str = "board.html", reads: list[str] | None = None, 
 
 class DuplicateWindowModule(Module):
     name = "twice"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = DEPENDENCIES
     windows = [frame("twice.board"), frame("twice.board")]
 
 
 class ForeignNameModule(Module):
     name = "foreign"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = DEPENDENCIES
     windows = [frame("other.board")]
 
 
 class MissingEntryModule(Module):
     name = "missing"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = DEPENDENCIES
     windows = [frame("missing.board", entry="absent.html")]
 
 
 class UnknownReadModule(Module):
     name = "reads"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = DEPENDENCIES
     windows = [frame("reads.board", reads=["task fly"])]
 
 
 class ChatCommandExtensionModule(Module):
     name = "extender"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = [*DEPENDENCIES, "journal.core.messages"]
     window_extensions = [WindowExtension("messages.chat", runs=["task start"])]
 
@@ -60,77 +60,77 @@ class ChatReadExtensionModule(ChatCommandExtensionModule):
 
 class UnknownRunModule(Module):
     name = "runs"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = DEPENDENCIES
     windows = [frame("runs.board", runs=["task list"])]
 
 
 class UnknownEventModule(Module):
     name = "events"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = DEPENDENCIES
     windows = [frame("events.board", reads=["task list"], events=["rocket.launch"])]
 
 
 class UncoveredEventModule(Module):
     name = "uncovered"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = DEPENDENCIES
     windows = [frame("uncovered.board", reads=["task list"], events=["plan.*"])]
 
 
 class PageWindowModule(Module):
     name = "pages"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = DEPENDENCIES
     windows = [WindowDeclaration("pages.board", "Board", "board.html", WindowLoading.COMPONENT, skeleton=[SkeletonPart.line()])]
 
 
 class NewerKitModule(Module):
     name = "kits"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = DEPENDENCIES
     windows = [frame("kits.board", kit=">=2,<3")]
 
 
 class TwiceOptionModule(Module):
     name = "options"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = DEPENDENCIES
     windows = [WindowDeclaration("options.board", "Board", "board.html", WindowLoading.FRAME, skeleton=[SkeletonPart.line()], options=[ToggleOption("flush", "Flush"), ToggleOption("flush", "Flush all")])]
 
 
 class UnreadShareModule(Module):
     name = "shares"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = DEPENDENCIES
     windows = [WindowDeclaration("shares.board", "Board", "board.html", WindowLoading.FRAME, skeleton=[SkeletonPart.line()], reads=["task list"], shared_reads=["plan show id"])]
 
 
 class UnreadCountModule(Module):
     name = "counts"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = DEPENDENCIES
     windows = [WindowDeclaration("counts.board", "Board", "board.html", WindowLoading.FRAME, skeleton=[SkeletonPart.line()], reads=["task list"], count="plan list")]
 
 
 class UnknownIconModule(Module):
     name = "icons"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = DEPENDENCIES
     windows = [WindowDeclaration("icons.board", "Board", "board.html", WindowLoading.FRAME, skeleton=[SkeletonPart.line()], icon="rocket")]  # pyright: ignore[reportArgumentType]
 
 
 class OutsideChoiceModule(Module):
     name = "choices"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = DEPENDENCIES
     windows = [WindowDeclaration("choices.board", "Board", "board.html", WindowLoading.FRAME, skeleton=[SkeletonPart.line()], options=[ChoiceOption("range", "Range", [("week", "Week")], "year")])]
 
 
 class FlatFloatModule(Module):
     name = "floats"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = DEPENDENCIES
     windows = [WindowDeclaration("floats.board", "Board", "board.html", WindowLoading.FRAME, skeleton=[SkeletonPart.line()], float_size=WindowSize(0, 300))]
 
@@ -144,14 +144,14 @@ class ForeignPresetSuite(Suite):
 
 class ForeignPresetModule(Module):
     name = "presets"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = [*DEPENDENCIES, "journal.core.drivers"]
     windows = [frame("presets.board")]
 
 
 class NoSkeletonModule(Module):
     name = "bare"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = DEPENDENCIES
     windows = [WindowDeclaration("bare.board", "Board", "board.html", WindowLoading.FRAME)]
 

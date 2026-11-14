@@ -318,7 +318,7 @@ class ProcessesModule(Module):
                      TickHandler(TickInterval(seconds=15 * 60), ProcessPruning(), "process pruning"), TickHandler(TickInterval(seconds=5), RequestLogImport(), "request log import")]
     skills = [SkillDeclaration("journal-shell", "Run shell commands through the journal and read what they printed; read it before reading an output, or writing a reader or an alias",
                                keywords=("output", "reader", "alias"))]
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     block_conditions = [ReaderRequestCompleted, OutputEnded, OutputRead, OutputTitled, OutputReadSinceBlock, OutputMonitored]
     settings = PROCESS_SETTINGS
     moves = [ProcessesMove]

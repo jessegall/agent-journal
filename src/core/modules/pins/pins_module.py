@@ -20,7 +20,7 @@ class PinsModule(Module):
     """Adds pins: links pinned above an environment's chat for the user to open on their return."""
 
     name = "journal.core.pins"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.drivers"]
     nudges = PIN_NUDGES
     driver_rules = [LinkPinRule, AgentTextPinRule, AutomaticLinkPinRule]

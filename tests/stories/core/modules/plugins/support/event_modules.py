@@ -74,7 +74,7 @@ class NoteCreatedListener(CommitListener[Created[EventNote]]):
 
 class NotesModule(Module):
     name = "acme.events"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     models = [ModelDeclaration(EventNote)]
     migrations = [EventNotesTable]
     handlers = [ManyNotesHandler]
@@ -86,7 +86,7 @@ class NotesGoneModule(Module):
     """The same module once its code no longer raises the keys of notes."""
 
     name = "acme.events"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     migrations = [EventNotesTable]
 
 
@@ -100,7 +100,7 @@ class FailsLater(SaveListener[Created[Task]]):
 
 class FailsLaterModule(Module):
     name = "acme.fails-later"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.tasks"]
     listeners = [FailsLater]
 
@@ -124,6 +124,6 @@ class ConflictingNotesTable(Migration):
 
 class ClashingModule(Module):
     name = "acme.clash"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     models = [ModelDeclaration(ConflictingNote)]
     migrations = [ConflictingNotesTable]

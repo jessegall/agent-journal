@@ -361,7 +361,7 @@ SAMPLE_SETTINGS = [SettingValue(key, key.replace("-", " ").capitalize(), "Whethe
 
 class SamplesModule(Module):
     name = "samples"
-    requires_core = ">=5.0,<6"
+    requires_engine = ">=5.0,<6"
     settings = SAMPLE_SETTINGS
     dependencies = ["journal.core.agents", "journal.core.drivers"]
     models = [ModelDeclaration(EditLock, commands=[EditLockEnd, EditLockReopen])]

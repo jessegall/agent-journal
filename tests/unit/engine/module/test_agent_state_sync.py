@@ -45,7 +45,7 @@ class AlsoFirstState(AgentState):
 
 
 def module(**lists) -> type[Module]:
-    return type("Samples", tuple([Module]), {"name": "samples", "requires_core": ">=5,<6", "dependencies": [], **lists})
+    return type("Samples", tuple([Module]), {"name": "samples", "requires_engine": ">=5,<6", "dependencies": [], **lists})
 
 
 def refusal(**lists) -> str:
