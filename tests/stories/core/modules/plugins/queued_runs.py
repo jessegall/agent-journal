@@ -98,3 +98,9 @@ def test_a_queued_run_reads_what_it_printed_and_an_undeclared_kind_or_a_missing_
     story.expect_text(f"plugin queue-show {run}", f"run {run} of {PLUGIN} judge is running", actor=story.user)
     story.expect_rows(story.run(f"plugin queue-read {run} --tail 5", actor=story.user).code == 0)
 
+
+
+def test_a_kind_limited_to_one_queues_the_main_agents_runs_one_at_a_time_too(new_story):
+    story = queues_plugin(new_story)
+    runs = [int(story.run(f"plugin queue {PLUGIN} --kind judge --agent {story.agent.id} --detach -- true", actor=story.user).output_text.split()[1]) for _ in range(2)]
+    story.expect_rows(shown(story, runs[0])["state"] == "running", shown(story, runs[1])["state"] == "waiting", detail=str([shown(story, run) for run in runs]))
