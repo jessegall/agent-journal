@@ -3,7 +3,7 @@ from suites.coding.templates.template_words import PLAN_TARGETS
 from suites.coding.templates.template_words import TESTING
 
 
-class TestThroughoutTemplate(TemplateDeclaration):
+class RunTestsThroughoutTemplate(TemplateDeclaration):
     """The Test throughout template."""
 
     title = "Test throughout"

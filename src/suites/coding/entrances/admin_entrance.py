@@ -14,6 +14,7 @@ from core.modules.library.windows.teams.teams_window import TeamsWindow
 from core.modules.mcp.windows.integrations.integrations_window import IntegrationsWindow
 from core.modules.memories.windows.memories.memories_window import MemoriesWindow
 from core.modules.messages.windows.attachments.attachments_window import AttachmentsWindow
+from core.modules.messages.windows.avatar.avatar_window import AvatarWindow
 from core.modules.messages.windows.chat.chat_window import ChatWindow
 from core.modules.plans.windows.plans.plans_window import PlansWindow
 from core.modules.plugins.windows.plugins.plugins_window import PluginsWindow
@@ -66,6 +67,6 @@ class AdminEntrance(Entrance):
     their own windows in entrances of their own under the same key."""
 
     key = ADMIN_ENTRANCE_KEY
-    windows = [ChatWindow, WaitingWindow, QuestionsWindow, TasksWindow, TaskCountsWindow, PlansWindow, AgentsWindow, HelpersWindow, JobsWindow, MemoriesWindow, RulesWindow, TranscriptWindow, HookCallsWindow, FileFeedWindow, FileEditsWindow, FilesWindow, GitWindow, AttachmentsWindow, TerminalWindow, OutputsWindow, OutputWindow, SearchWindow, DumpsWindow, SecretsWindow, SkillsWindow, IntegrationsWindow, ProfilesWindow, TranscriptionsWindow, RemindersWindow, SharesWindow, TeamsWindow, TunnelWindow, UpdatesWindow, NumbersWindow, HookRequestsWindow, SystemLogsWindow, NudgesWindow, DocumentsWindow, PageWindow, SequencesWindow, TemplatesWindow, PluginsWindow, SettingsWindow, ProjectHooksWindow, ToolsWindow, TriggersWindow, LoadWindow, UsageWindow, CostWindow, ContextWindow, WorkModeWindow]
+    windows = [ChatWindow, AvatarWindow, WaitingWindow, QuestionsWindow, TasksWindow, TaskCountsWindow, PlansWindow, AgentsWindow, HelpersWindow, JobsWindow, MemoriesWindow, RulesWindow, TranscriptWindow, HookCallsWindow, FileFeedWindow, FileEditsWindow, FilesWindow, GitWindow, AttachmentsWindow, TerminalWindow, OutputsWindow, OutputWindow, SearchWindow, DumpsWindow, SecretsWindow, SkillsWindow, IntegrationsWindow, ProfilesWindow, TranscriptionsWindow, RemindersWindow, SharesWindow, TeamsWindow, TunnelWindow, UpdatesWindow, NumbersWindow, HookRequestsWindow, SystemLogsWindow, NudgesWindow, DocumentsWindow, PageWindow, SequencesWindow, TemplatesWindow, PluginsWindow, SettingsWindow, ProjectHooksWindow, ToolsWindow, TriggersWindow, LoadWindow, UsageWindow, CostWindow, ContextWindow, WorkModeWindow]
     layouts = {"home": HomeLayout, "agent": AgentLayout, "phone": PhoneLayout, "agent@coding.worker": WorkerAgentLayout}
     presets = {"home": HomePresets, "agent": AgentPresets}

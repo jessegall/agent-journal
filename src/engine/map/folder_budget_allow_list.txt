@@ -1,27 +1,17 @@
-src/core/modules/agents holds more than 12 entries
 src/core/modules/agents/support holds more than 12 entries
 src/core/modules/developer/support holds more than 12 entries
-src/core/modules/documents holds more than 12 entries
 src/core/modules/documents/commands/support holds more than 12 entries
 src/core/modules/documents/support holds more than 12 entries
 src/core/modules/drivers/commands/support holds more than 12 entries
 src/core/modules/drivers/support holds more than 12 entries
-src/core/modules/helpers holds more than 12 entries
 src/core/modules/helpers/support holds more than 12 entries
 src/core/modules/library/support holds more than 12 entries
-src/core/modules/memories holds more than 12 entries
-src/core/modules/messages holds more than 12 entries
 src/core/modules/messages/support holds more than 12 entries
-src/core/modules/plans holds more than 12 entries
 src/core/modules/plans/support holds more than 12 entries
-src/core/modules/plugins holds more than 12 entries
 src/core/modules/plugins/support holds more than 12 entries
-src/core/modules/processes holds more than 12 entries
 src/core/modules/processes/support holds more than 12 entries
-src/core/modules/sequences holds more than 12 entries
 src/core/modules/settings/support holds more than 12 entries
 src/core/modules/skills/support holds more than 12 entries
-src/core/modules/tasks holds more than 12 entries
 src/core/modules/tasks/support holds more than 12 entries
 src/core/modules/usage/support holds more than 12 entries
 src/engine/cli holds more than 12 entries
@@ -37,7 +27,6 @@ src/engine/setting holds more than 12 entries
 src/engine/subcommand holds more than 12 entries
 src/engine/testing/stories holds more than 12 entries
 src/suites/coding holds more than 12 entries
-src/suites/coding/modules/workers holds more than 12 entries
 src/suites/coding/modules/workers/support holds more than 12 entries
 src/suites/coding/support holds more than 12 entries
 src/core/modules/agents/commands/remove_instruction_import/support/instruction_import_question.py sits more than 3 levels below its layer
