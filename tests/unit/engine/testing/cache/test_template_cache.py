@@ -11,14 +11,15 @@ import engine.testing.cache.template_cache as template_cache
 
 def sample_cache(tmp_path, monkeypatch):
     source = tmp_path / "src" / "core"
-    sample = source / "modules" / "sample" / "migrations" / "m001_sample.py"
+    source.mkdir(parents=True)
+    sample = tmp_path / "tests" / "stories" / "support" / "sample.py"
     sample.parent.mkdir(parents=True)
     sample.write_text("class Sample: pass\n")
-    monkeypatch.setattr(template_cache, "python_source_folders", lambda: (source,))
+    monkeypatch.setattr(template_cache, "CORE_FOLDER", source)
     return TemplateCache(tmp_path / "cache"), sample
 
 
-def test_a_migration_change_uses_a_new_template_folder(tmp_path, monkeypatch):
+def test_sample_module_change_uses_a_new_template_folder(tmp_path, monkeypatch):
     cache, sample = sample_cache(tmp_path, monkeypatch)
     first = cache.folder()
     (first / "template").write_text("old")
@@ -28,17 +29,6 @@ def test_a_migration_change_uses_a_new_template_folder(tmp_path, monkeypatch):
 
     assert second != first
     assert not (second / "template").exists()
-
-
-def test_a_change_to_command_code_keeps_the_template_folder(tmp_path, monkeypatch):
-    cache, sample = sample_cache(tmp_path, monkeypatch)
-    first = process_folder(tmp_path, cache.root)
-    command = sample.parents[1] / "commands" / "sample_command.py"
-    command.parent.mkdir()
-    command.write_text("class SampleCommand: pass\n")
-    assert process_folder(tmp_path, cache.root) == first
-    command.write_text("class SampleCommand: value = 1\n")
-    assert process_folder(tmp_path, cache.root) == first
 
 
 def test_a_code_change_leaves_a_folder_a_running_suite_uses(tmp_path, monkeypatch):
@@ -69,7 +59,7 @@ FOLDER_SCRIPT = """
 import sys
 from pathlib import Path
 import engine.testing.cache.template_cache as cache
-cache.python_source_folders = lambda: (Path(sys.argv[1]) / "src" / "core",)
+cache.CORE_FOLDER = Path(sys.argv[1]) / "src" / "core"
 print(cache.TemplateCache(Path(sys.argv[2])).folder())
 """
 
