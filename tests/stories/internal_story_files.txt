@@ -383,11 +383,6 @@ tests/stories/engine/template_database.py
 tests/stories/engine/testing/stories/run_code_text.py
 tests/stories/engine/testing/stories/working_journals.py
 tests/stories/engine/tunnel/tunnel_choice.py
-tests/stories/engine/upgrade/failures.py
-tests/stories/engine/upgrade/map_table.py
-tests/stories/engine/upgrade/moves.py
-tests/stories/engine/upgrade/restore.py
-tests/stories/engine/upgrade/upgrade.py
 tests/stories/engine/viewer/button_icons.py
 tests/stories/engine/viewer/inspector_check.py
 tests/stories/engine/viewer/inspector_declaration.py

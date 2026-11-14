@@ -2,7 +2,7 @@ import threading
 
 from install.version_four.upgrade_journal import FINISHED_LINE, UpgradeJournal
 from install.version_four.upgrade_outcome import UpgradeOutcome
-from tests.stories.engine.upgrade.upgrade import expect_table_counts, upgrading
+from tests.integration.support.upgrade_steps import expect_table_counts, upgrading
 from tests.stories.engine.upgrade.support.move_samples import PATH
 from tests.stories.support.story_checks import expect_absent_exists_version_four, expect_answers, expect_exists_version_four, expect_value
 
@@ -20,8 +20,8 @@ def parallel_upgrades(story) -> list[UpgradeOutcome]:
     return answers
 
 
-def test_two_parallel_upgrades_run_in_turn_the_second_finds_nothing_left_and_no_row_is_moved_twice(new_story):
-    story, version_four = upgrading(new_story, NOTES, TAGS)
+def test_two_parallel_upgrades_run_in_turn_the_second_finds_nothing_left_and_no_row_is_moved_twice(journal_with):
+    story, version_four = upgrading(journal_with, NOTES, TAGS)
     answers = parallel_upgrades(story)
     expect_answers(answers, RUNNERS)
     expect_code_answer_answers(0, answers)
@@ -31,8 +31,8 @@ def test_two_parallel_upgrades_run_in_turn_the_second_finds_nothing_left_and_no_
     expect_home_files(story, "version-4", "*/journal.db", 1)
 
 
-def test_a_second_upgrade_while_the_first_holds_the_lock_waits_for_it(new_story):
-    story, version_four = upgrading(new_story, NOTES, TAGS)
+def test_a_second_upgrade_while_the_first_holds_the_lock_waits_for_it(journal_with):
+    story, version_four = upgrading(journal_with, NOTES, TAGS)
     from install.update.server_lock import ServerLock
 
     with ServerLock(story.home):

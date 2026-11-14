@@ -1,14 +1,13 @@
-from engine.database.database import Database
+from tests.integration.support.integration_journal import main_journal
 from engine.database.statement import Statement
 from engine.upgrade.move_map import MoveMap
-from tests.stories.core.support.fixtures import MainEnvironment
 from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_value, expect_version_four_map_limit
 
 
-def test_the_synced_database_holds_the_two_upgrade_tables_and_a_row_moved_twice_is_one_row_and_one_entry(new_story):
-    story = new_story(fixture=MainEnvironment)
-    database = story.container.get(Database)
+def test_the_synced_database_holds_the_two_upgrade_tables_and_a_row_moved_twice_is_one_row_and_one_entry(journal_with):
+    story = main_journal(journal_with)
+    database = story.database
     names = {row["name"] for row in database.rows(Statement("SELECT name FROM sqlite_master WHERE type = 'table'"))}
     expect_version_four_map_limit("version_four_map", "version_four_moves", names)
     moved = MoveMap(database)

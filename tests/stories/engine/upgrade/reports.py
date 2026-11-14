@@ -1,55 +1,8 @@
 from install.version_four.upgrade_journal import UpgradeJournal
-from tests.stories.engine.upgrade.upgrade import upgrade, upgrading
 from tests.stories.engine.upgrade.support.move_samples import PATH
-from engine.testing.expectations.expect_row import expect_row
-from tests.stories.support.story_checks import expect_code_outcome, expect_lines, expect_value_with, expect_value_without
+from tests.stories.support.story_checks import expect_value_with
 
 NOTES, TAGS, RETRYABLE_TAGS = f"{PATH}:NotesModule", f"{PATH}:TagsModule", f"{PATH}:RetryableTagsModule"
-
-
-def test_the_dry_run_prints_what_would_move_as_a_plain_table_and_says_nothing_was_written(new_story):
-    story, version_four = upgrading(new_story, NOTES, TAGS)
-    text = UpgradeJournal(story.home).run(dry_run=True).text
-    lines = text.splitlines()
-    expect_lines_4(lines, "what would move")
-    expect_split_lines_3(lines, ["module", "rows", "left", "behind"])
-    expect_split_lines_2(2, "movenotes", "2", "note_drafts: 1 rows", lines)
-    expect_split_lines(2, "movetags", "2", lines)
-    expect_value_with(lines, "tables no module claims")
-    expect_split_lines(2, "old_reports", "1", lines)
-    expect_lines(lines, 1, "nothing was written")
-
-
-def test_the_upgrade_prints_the_same_as_what_moved_and_the_path_of_the_backup(new_story):
-    story, version_four = upgrading(new_story, NOTES, TAGS)
-    text = upgrade(story).text
-    lines = text.splitlines()
-    expect_value_with(lines, "what moved")
-    expect_startswith_lines_2("backup: ", lines)
-    expect_split_lines(2, "movenotes", "2", lines)
-    expect_value_without(lines, "nothing was written")
-
-
-def test_a_failed_upgrade_says_which_module_failed_what_rolled_back_what_stayed_moved_and_how_to_finish(new_story):
-    story, version_four = upgrading(new_story, NOTES, RETRYABLE_TAGS)
-    outcome = upgrade(story)
-    lines = outcome.text.splitlines()
-    expect_row(outcome, code=1)
-    expect_value_with(lines, "failed: movetags (the tags table could not be read)")
-    expect_value_with(lines, "rolled back: movetags")
-    expect_startswith_lines("stayed moved: ", "movenotes", "movetags", lines)
-    expect_lines(lines, 1, "run journal upgrade again to finish")
-
-
-def test_the_report_is_saved_and_a_rerun_replaces_it_keeping_the_earlier_one(new_story):
-    story, version_four = upgrading(new_story, NOTES, RETRYABLE_TAGS)
-    first = upgrade(story)
-    saved = story.home.folder / "upgrade-report.txt"
-    expect_saved(saved, first.text.strip())
-    second = upgrade(story)
-    expect_code_outcome(second, 0)
-    expect_saved(saved, second.text.strip())
-    expect_folder_home_upgrade(story, "upgrade-report.1.txt", first.text.strip())
 
 
 def test_the_first_start_after_an_upgrade_shows_one_chat_mark_with_the_counts_and_a_second_start_shows_none(new_story):

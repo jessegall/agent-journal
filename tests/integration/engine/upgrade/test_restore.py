@@ -1,6 +1,5 @@
-from engine.database.database import Database
 from install.version_four.restore_version_four import RestoreVersionFour
-from tests.stories.engine.upgrade.upgrade import expect_upgrade, upgrading
+from tests.integration.support.upgrade_steps import expect_upgrade, upgrading
 from tests.stories.engine.upgrade.support.move_samples import PATH
 from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_code_outcome, expect_outcome_with
@@ -8,11 +7,11 @@ from tests.stories.support.story_checks import expect_code_outcome, expect_outco
 NOTES, TAGS = f"{PATH}:NotesModule", f"{PATH}:TagsModule"
 
 
-def test_an_upgrade_then_a_restore_gives_back_version_4s_bytes_and_puts_version_5_aside_as_a_dated_file(new_story):
-    story, version_four = upgrading(new_story, NOTES, TAGS)
+def test_an_upgrade_then_a_restore_gives_back_version_4s_bytes_and_puts_version_5_aside_as_a_dated_file(journal_with):
+    story, version_four = upgrading(journal_with, NOTES, TAGS)
     original = version_four.read_bytes()
     expect_upgrade(story)
-    story.container.get(Database).close()
+    story.database.close()
     outcome = RestoreVersionFour(story.home).run()
     expect_row(outcome, code=0)
     expect_bytes_folder_home(story, "journal.db", original)
@@ -21,16 +20,16 @@ def test_an_upgrade_then_a_restore_gives_back_version_4s_bytes_and_puts_version_
     expect_outcome_with(outcome, "restored from")
 
 
-def test_a_restore_without_a_backup_is_refused(new_story):
-    story, version_four = upgrading(new_story, NOTES, TAGS)
+def test_a_restore_without_a_backup_is_refused(journal_with):
+    story, version_four = upgrading(journal_with, NOTES, TAGS)
     outcome = RestoreVersionFour(story.home).run()
     expect_code_outcome(outcome, 1)
     expect_outcome_with(outcome, "nothing to restore")
     expect_exists_database_home(story)
 
 
-def test_a_backup_that_fails_its_integrity_check_is_not_restored(new_story):
-    story, version_four = upgrading(new_story, NOTES, TAGS)
+def test_a_backup_that_fails_its_integrity_check_is_not_restored(journal_with):
+    story, version_four = upgrading(journal_with, NOTES, TAGS)
     expect_upgrade(story)
     backup = next((story.home.folder / "version-4").glob("*/journal.db"))
     backup.write_bytes(backup.read_bytes()[:100] + b"\0" * 5000)

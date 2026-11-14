@@ -83,3 +83,11 @@ class IntegrationJournal:
 
     def close(self) -> None:
         self.database.close()
+
+
+# a journal from journal_with that has the main environment, as the journal fixture does
+def main_journal(journal_with, *modules: str) -> IntegrationJournal:
+    journal = journal_with(*modules)
+    answer = journal.run("environment make main /work/journal", environment_id=None)
+    assert answer.code == 0, answer.text
+    return journal

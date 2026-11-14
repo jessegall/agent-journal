@@ -1,3 +1,6 @@
+from pathlib import Path
+from uuid import uuid4
+import shutil
 import io
 
 import pytest
@@ -11,8 +14,14 @@ from engine.testing.fakes.fixed_process_table import FixedProcessTable
 from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
-from tests.stories.engine.module.folder_modules import source_folder
 from tests.stories.core.support.fixtures import UserJoined
+
+
+@pytest.fixture
+def source_folder(tmp_path):
+    folder = tmp_path / f"notes_{uuid4().hex}"
+    shutil.copytree(Path(__file__).parent / "support" / "folder_sample", folder)
+    return folder
 
 
 @pytest.fixture(autouse=True)
