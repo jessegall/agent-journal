@@ -9460,6 +9460,15 @@
         "call_after_sleeps(self, sleeps: int, call: Callable[[], None]) -> None"
       ]
     },
+    "testing.pytest_wiring.unit_runner_scheduling.UnitRunnerScheduling": {
+      "bases": [
+        "WorkStealingScheduling"
+      ],
+      "fields": [],
+      "methods": [
+        "schedule(self) -> None"
+      ]
+    },
     "testing.runs.full_run_record.FullRunRecord": {
       "bases": [],
       "fields": [
@@ -9501,6 +9510,7 @@
         "read(file: Path) -> 'RunDurations'",
         "add(self, test_id: str, seconds: float) -> None",
         "write(self, file: Path) -> None",
+        "run_order(self, test_ids: list[str]) -> list[str]",
         "slowest_lines(self, count: int) -> list[str]",
         "folder_lines(self) -> list[str]",
         "report(self) -> str"

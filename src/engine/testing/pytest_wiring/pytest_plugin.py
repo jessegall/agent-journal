@@ -143,6 +143,15 @@ def pytest_collection_finish(session: pytest.Session) -> None:
     gc.freeze()
 
 
+@pytest.hookimpl(optionalhook=True)
+def pytest_xdist_make_scheduler(config: pytest.Config, log: object) -> object | None:
+    if config.getvalue("dist") != "worksteal":
+        return None
+    # xdist is installed only where a run uses runners, so its scheduler is imported when one is asked for
+    from engine.testing.pytest_wiring.unit_runner_scheduling import UnitRunnerScheduling
+    return UnitRunnerScheduling(config, log)
+
+
 def pytest_itemcollected(item: pytest.Item) -> None:
     item.stash[STORY_RUNS] = []
 
