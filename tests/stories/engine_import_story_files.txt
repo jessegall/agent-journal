@@ -279,7 +279,6 @@ tests/stories/core/modules/plans/declared_buttons.py
 tests/stories/core/modules/plans/marks.py
 tests/stories/core/modules/plans/outline.py
 tests/stories/core/modules/plans/plan_assignment_upgrade.py
-tests/stories/core/modules/plans/plan_author_reads.py
 tests/stories/core/modules/plans/plan_building_sequence.py
 tests/stories/core/modules/plans/plan_context.py
 tests/stories/core/modules/plans/plan_focus_nudges.py

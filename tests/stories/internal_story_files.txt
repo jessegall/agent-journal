@@ -184,7 +184,6 @@ tests/stories/core/modules/plans/declared_buttons.py
 tests/stories/core/modules/plans/marks.py
 tests/stories/core/modules/plans/outline.py
 tests/stories/core/modules/plans/plan_assignment_upgrade.py
-tests/stories/core/modules/plans/plan_author_reads.py
 tests/stories/core/modules/plans/plan_links_browser.py
 tests/stories/core/modules/plans/plan_listeners.py
 tests/stories/core/modules/plans/task_cleanup_skill.py

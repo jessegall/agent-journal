@@ -13,6 +13,7 @@ from engine.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
 from engine.file.file_access import FileAccess
 from engine.container.container import Container
 from engine.database.database import Database
+from engine.database.repeated_work import RepeatedWork
 from engine.driver.hook_event import HookEvent
 from engine.driver.hook_reply import HookReply
 from engine.driver.hook_route import HookRoute
@@ -39,6 +40,7 @@ class IntegrationJournal:
     def __init__(self, home: JournalHome) -> None:
         self.home = home
         self.database = Database.opened(home)
+        self.database.repeated_work = RepeatedWork(self.database)
         self.container: Container = synced_database_container(home, self.database)
 
     def run(self, line: str, actor: Actor | None = None, environment_id: int | None = MAIN_ENVIRONMENT) -> LineAnswer:
@@ -84,6 +86,7 @@ class IntegrationJournal:
         if code == 0:
             self.database.close()
             self.database = Database.opened(self.home)
+            self.database.repeated_work = RepeatedWork(self.database)
             self.container = synced_database_container(self.home, self.database)
         return LineAnswer(code, stream.getvalue())
 

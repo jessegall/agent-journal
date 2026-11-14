@@ -64,7 +64,8 @@ class FixtureJournal:
         caller_environment = environment_id or (None if actor is not None and actor.type is ActorType.AGENT else MAIN_ENVIRONMENT)
         if "environment make" in line:
             caller_environment = None
-        answer = self.journal.run(line, actor, caller_environment)
+        with self.journal.database.repeated_work.request():
+            answer = self.journal.run(line, actor, caller_environment)
         return FixtureLine(answer.code, answer.text)
 
     def new_row_id(self, line: str, actor: Actor | None = None) -> int:
