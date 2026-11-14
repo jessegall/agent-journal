@@ -396,10 +396,8 @@ tests/stories/server/profile_storage.py
 tests/stories/server/quiet_ticks.py
 tests/stories/server/server_hooks.py
 tests/stories/server/server_ticks.py
-tests/stories/server/task_overview_writes.py
 tests/stories/server/tick_warnings.py
 tests/stories/server/viewer_hook_events.py
-tests/stories/server/viewer_line_rows.py
 tests/stories/server/viewer_request_attribution.py
 tests/stories/suites/coding/agent_settings_window.py
 tests/stories/suites/coding/chosen_next_task.py
