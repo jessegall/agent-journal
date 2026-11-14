@@ -688,7 +688,6 @@ tests/stories/server/viewer_hook_events.py
 tests/stories/server/viewer_read_counts.py
 tests/stories/suites/coding/agent_settings_window.py
 tests/stories/suites/coding/assigned_tasks.py
-tests/stories/suites/coding/coding_module_shape.py
 tests/stories/suites/coding/coding_windows.py
 tests/stories/suites/coding/designer_tools.py
 tests/stories/suites/coding/drivers/helper/builder.py
@@ -893,7 +892,6 @@ tests/stories/suites/coding/support/shape_samples.py
 tests/stories/suites/coding/support/task_assigner_samples.py
 tests/stories/suites/coding/task_assigners.py
 tests/stories/suites/coding/terminal_window.py
-tests/stories/suites/coding/windows_as_classes.py
 tests/stories/suites/coding/windows_open_at_foot_browser.py
 tests/stories/support/program_states.py
 tests/stories/support/registry_compare.py

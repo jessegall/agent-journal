@@ -62,6 +62,10 @@ class IntegrationJournal:
     def synced_with(self, module: str) -> LineAnswer:
         modules = json.loads(FileAccess.read(self.home.module_list))
         FileAccess.write(self.home.module_list, json.dumps([*modules, module]))
+        return self.synced()
+
+    # the journal syncs its module list again, as an install does; a passed sync reopens the container
+    def synced(self) -> LineAnswer:
         stream = io.StringIO()
         code = self.container.get(ModuleSyncLine).run(list(SYNC_ARGV), stream)
         if code == 0:
