@@ -8,13 +8,10 @@ const view = useWindow();
 const {rows, failure, loaded, act, actionFailure} = view.props.transcriptions;
 const sources = view.props.sources;
 const chosen = ref(null);
-const drafting = ref(false);
-const draft = ref({title: "", text: ""});
 const notice = ref("");
 const filter = ref(defaultFilter([]));
 const words = ref("");
 
-const canMake = computed(() => draft.value.title.trim() && draft.value.text.trim());
 const dayOf = (at) => {
     const day = new Date(at).toDateString();
     if (day === new Date().toDateString()) return "Today";
@@ -22,13 +19,6 @@ const dayOf = (at) => {
 };
 const listed = computed(() => rows.value.map((row) => ({id: row.id, title: row.title, desc: row.text.trim().slice(0, 140), group: dayOf(row.created_at), row})));
 const shown = computed(() => applyFilter(listed.value, [], filter.value, words.value, ["title", "desc"]));
-
-async function make() {
-    const result = await act(["transcription", "make", draft.value.title.trim(), "--text", draft.value.text]);
-    if (!result.ok) return;
-    draft.value = {title: "", text: ""};
-    drafting.value = false;
-}
 
 const save = (item, text) => act(["transcription", "edit", String(item.id), "--text", text]);
 
@@ -52,7 +42,6 @@ const place = (item) => ({
     <ListReaderLayout v-model:chosen="chosen" :items="shown" :list-width="LIST_WIDTH" :place="place" empty-title="No transcriptions yet" pick-line="No transcription chosen" data-transcriptions>
         <template #top>
             <PageHeader title="Transcriptions" :count="rows.length">
-                <template #primary><Btn small variant="primary" data-transcription-new @click="drafting = !drafting">New transcription</Btn></template>
                 <template #actions>
                     <template v-for="server in sources.rows.value" :key="server.name">
                         <Btn small :data-transcription-fetch="server.name" @click="fetchFrom(server)">Fetch transcriptions from {{ server.title }}</Btn>
@@ -69,13 +58,6 @@ const place = (item) => ({
             <template v-if="failure">
               <p class="note failed" role="alert">{{ failure }}</p>
             </template>
-            <template v-if="drafting">
-                <form class="form" data-transcription-form @submit.prevent="make">
-                    <input v-model="draft.title" placeholder="Title" aria-label="Title">
-                    <textarea v-model="draft.text" rows="10" placeholder="Paste the transcript" aria-label="Transcript"></textarea>
-                    <Btn small variant="primary" type="submit" :disabled="!canMake">Save</Btn>
-                </form>
-            </template>
         </template>
         <template #empty>
             <template v-if="!loaded"><Skeleton shape="rows" /></template>
@@ -88,13 +70,6 @@ const place = (item) => ({
 </template>
 
 <style scoped>
-.form {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 0 var(--inset);
-}
-
 .note {
     margin: 0;
     padding: 4px var(--inset);
@@ -104,17 +79,5 @@ const place = (item) => ({
 
 .failed {
     color: var(--danger);
-}
-
-input,
-textarea {
-    box-sizing: border-box;
-    width: 100%;
-    padding: 6px 8px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--surface, none);
-    color: inherit;
-    font: inherit;
 }
 </style>

@@ -21,21 +21,12 @@ function page({sources = []} = {}) {
     return {window, ran};
 }
 
-test("a pasted transcription is saved with its title and text", async () => {
-    const {window, ran} = page();
+test("the page has no New transcription button: transcriptions come from the servers that record them", async () => {
+    const {window} = page();
     const element = await mounted(TranscriptionRows, window);
     await settle();
-    element.querySelector("[data-transcription-new]").click();
-    await settle();
-    const form = element.querySelector("[data-transcription-form]");
-    form.querySelector("input").value = "Standup";
-    form.querySelector("input").dispatchEvent(new Event("input"));
-    form.querySelector("textarea").value = "Ada: all good.";
-    form.querySelector("textarea").dispatchEvent(new Event("input"));
-    await settle();
-    form.dispatchEvent(new Event("submit"));
-    await settle();
-    expect(ran).toContainEqual(["transcription", "make", "Standup", "--text", "Ada: all good."]);
+    expect(element.querySelector("[data-transcription-new]")).toBeNull();
+    expect(element.querySelector("[data-transcription-form]")).toBeNull();
 });
 
 test("opening a transcription shows what was made from it and saves an edit", async () => {
