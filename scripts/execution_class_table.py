@@ -8,9 +8,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from engine.enums.execution_lane import ExecutionLane  # noqa: E402
 from engine.enums.execution_priority import ExecutionPriority  # noqa: E402
-from engine.execution.builtin_classes import BUILTIN_CLASSES  # noqa: E402
-from engine.execution.default_lane_limits import DEFAULT_LANE_LIMITS  # noqa: E402
-from engine.execution.execution_class import UNLIMITED  # noqa: E402
+from engine.execution.classes.builtin_classes import BUILTIN_CLASSES  # noqa: E402
+from engine.execution.limits.default_lane_limits import DEFAULT_LANE_LIMITS  # noqa: E402
+from engine.execution.classes.execution_class import UNLIMITED  # noqa: E402
 
 CLASS_TABLE = """## Built-in classes
 
