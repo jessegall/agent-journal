@@ -13,8 +13,8 @@ LINK_STATEMENT = ("INSERT INTO links (creator_id, source_model, source_id, targe
                   " SELECT creator_id, 'task', id, 'file_edit', id, 'edited', 1, '{}', created_at, updated_at FROM file_edits WHERE id > 1 ORDER BY id LIMIT ?")
 
 
-def test_pruning_many_file_edits_that_have_links_removes_their_links_in_one_request(new_story, monkeypatch):
-    story = new_story(fixture=BuilderStarted)
+def test_pruning_many_file_edits_that_have_links_removes_their_links_in_one_request(played, monkeypatch):
+    story = played(BuilderStarted)
     for number in range(EDITS_MADE):
         scanned_edit(story, "s-1", f"src/part{number}.py")
     database = story.container.get(Database)
@@ -25,8 +25,8 @@ def test_pruning_many_file_edits_that_have_links_removes_their_links_in_one_requ
     expect_value(database.rows(Statement("SELECT count(*) AS total FROM links WHERE target_model = 'file_edit'"))[0]["total"], 0)
 
 
-def test_a_scan_of_many_changed_files_prunes_the_file_edits_once(new_story):
-    story = new_story(fixture=BuilderStarted)
+def test_a_scan_of_many_changed_files_prunes_the_file_edits_once(played):
+    story = played(BuilderStarted)
     report = story.home.folder / "scan-report.json"
     changes = [{"diff": {"path": f"src/part{number}.py", "existed": True, "lines_added": 1, "lines_removed": 0}, "rows": []} for number in range(EDITS_MADE)]
     report.write_text(json.dumps({"folder": str(story.home.project_folder), "changes": changes}))

@@ -12,8 +12,8 @@ from tests.stories.suites.coding.modules.workers.worker_test_limit import TestLi
 
 
 @pytest.mark.parametrize("selection,count", [("-run '^TestChosen$'", 1), ("-run=^TestChosen$", 1), ("-run '^TestChosen$|^TestOther$'", 2), ("", 2)])
-def test_a_workers_go_listing_counts_its_selected_tests(new_story, tmp_path, selection, count):
-    story = install_runner(new_story(fixture=TestLimitSetup))
+def test_a_workers_go_listing_counts_its_selected_tests(played, tmp_path, selection, count):
+    story = install_runner(played(TestLimitSetup))
     folder = tmp_path / "module"
     folder.mkdir()
     (folder / "go.mod").write_text("module example.org/counts\n\ngo 1.24\n")

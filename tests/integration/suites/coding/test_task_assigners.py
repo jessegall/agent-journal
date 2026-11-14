@@ -43,20 +43,20 @@ def assigners(story, entry) -> SuiteTaskAssigners:
     return SuiteTaskAssigners(SuiteChoice(changed, story.container.get(SuiteChoice).settings), changed, story.container)
 
 
-def test_the_coding_suite_names_its_task_assigner(new_story):
-    story = new_story(fixture=BuilderStarted)
+def test_the_coding_suite_names_its_task_assigner(played):
+    story = played(BuilderStarted)
     expect_isinstance_4(story, 1)
 
 
-def test_a_suite_names_its_own_task_assigner(new_story):
-    story = new_story(fixture=BuilderStarted)
+def test_a_suite_names_its_own_task_assigner(played):
+    story = played(BuilderStarted)
     coding = story.container.get(Registry).suite("coding")
     second = assigners(story, replace(coding, task_assigner=DottedPath.class_path(SecondAssigner).text))
     expect_isinstance_3(story, second, 1)
 
 
-def test_a_suite_with_no_task_assigner_hands_out_nothing(new_story):
-    story = new_story(fixture=BuilderStarted)
+def test_a_suite_with_no_task_assigner_hands_out_nothing(played):
+    story = played(BuilderStarted)
     coding = story.container.get(Registry).suite("coding")
     expect_assigner_assigners(story, coding, "", 1, None)
 

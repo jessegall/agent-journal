@@ -3,8 +3,8 @@ from suites.coding.modules.workers.support.kept_worker_tasks import KeptWorkerTa
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 
 
-def test_a_send_checks_the_tasks_it_names_once_however_many_steps_check_them(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
+def test_a_send_checks_the_tasks_it_names_once_however_many_steps_check_them(played):
+    story = played(OpenTaskOrchestrator)
     tasks = story.container.get(KeptWorkerTasks)
     with story.container.get(Database).repeated_work.request():
         checked = [tasks.check_tasks(tuple([1]), story.agent.id) for _ in range(2)]

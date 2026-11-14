@@ -39,8 +39,8 @@ class WatchedClient(FakeTunlerClient):
 
 
 @pytest.mark.parametrize("line", LINES)
-def test_a_call_that_waits_on_tunler_holds_no_write_lock(new_story, line):
-    story = new_story(MODULE, fixture=UserJoined)
+def test_a_call_that_waits_on_tunler_holds_no_write_lock(played, line):
+    story = played(UserJoined, MODULE)
     client = WatchedClient(story.container.get(Database))
     story.replace(TunlerClient, client)
     story.expect_success(line, actor=story.user)

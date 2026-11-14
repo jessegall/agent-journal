@@ -19,8 +19,8 @@ LINE_COUNT = 12
 LISTING_SAMPLE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, []))
 
 
-def test_a_hook_that_delivers_twelve_worker_lines_reads_their_task_sources_once(new_story):
-    story = checkout_story(new_story)
+def test_a_hook_that_delivers_twelve_worker_lines_reads_their_task_sources_once(played):
+    story = checkout_story(played)
     worktree = story.container.get(WorktreeQuery).worker_worktree(story.worker.id)
     context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
     with story.container.get(Database).transaction():

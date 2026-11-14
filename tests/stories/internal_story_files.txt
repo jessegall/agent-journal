@@ -222,11 +222,8 @@ tests/stories/engine/command/lock_choices.py
 tests/stories/engine/database/large_journal_reads.py
 tests/stories/engine/driver/rule_history_races.py
 tests/stories/engine/errors/errors_moved.py
-tests/stories/engine/event_pruning.py
 tests/stories/engine/file/file_access.py
 tests/stories/engine/hosting/hosted_story.py
-tests/stories/engine/listener/listener_visits.py
-tests/stories/engine/listener/round_gives_way.py
 tests/stories/engine/module/agent_types.py
 tests/stories/engine/module/folder_removal.py
 tests/stories/engine/module/listener_cleanup.py
@@ -239,12 +236,9 @@ tests/stories/engine/scope/environment_rows.py
 tests/stories/engine/scope/session_rows.py
 tests/stories/engine/scope/setting_scope.py
 tests/stories/engine/setting/shared_group.py
-tests/stories/engine/template_database.py
-tests/stories/engine/testing/stories/working_journals.py
 tests/stories/engine/tunnel/tunnel_choice.py
 tests/stories/suites/coding/chosen_next_task.py
 tests/stories/suites/coding/file_edits.py
-tests/stories/suites/coding/file_edits_prune_links.py
 tests/stories/suites/coding/graphify_skill.py
 tests/stories/suites/coding/graphify_tools.py
 tests/stories/suites/coding/main_assignment.py
@@ -254,18 +248,15 @@ tests/stories/suites/coding/modules/checks/library_checks.py
 tests/stories/suites/coding/modules/workers/activity_reads.py
 tests/stories/suites/coding/modules/workers/agents_retired_by_a_person_alone.py
 tests/stories/suites/coding/modules/workers/allowed_models.py
-tests/stories/suites/coding/modules/workers/ask_cards.py
 tests/stories/suites/coding/modules/workers/ask_ledger.py
 tests/stories/suites/coding/modules/workers/assigned_work.py
 tests/stories/suites/coding/modules/workers/assigned_work_returned.py
-tests/stories/suites/coding/modules/workers/background_dispatch.py
 tests/stories/suites/coding/modules/workers/changed_units.py
 tests/stories/suites/coding/modules/workers/checkout_commits.py
 tests/stories/suites/coding/modules/workers/checkpoint_commits.py
 tests/stories/suites/coding/modules/workers/checkpoint_failures.py
 tests/stories/suites/coding/modules/workers/checkpoint_removals.py
 tests/stories/suites/coding/modules/workers/checkpoint_runs.py
-tests/stories/suites/coding/modules/workers/checkpoint_stop_readings.py
 tests/stories/suites/coding/modules/workers/closed_task_conflict.py
 tests/stories/suites/coding/modules/workers/cold_workers.py
 tests/stories/suites/coding/modules/workers/commit.py
@@ -281,7 +272,6 @@ tests/stories/suites/coding/modules/workers/folder_removal.py
 tests/stories/suites/coding/modules/workers/free_commits.py
 tests/stories/suites/coding/modules/workers/free_movement.py
 tests/stories/suites/coding/modules/workers/git_outside_writes.py
-tests/stories/suites/coding/modules/workers/go_test_counts.py
 tests/stories/suites/coding/modules/workers/gone_workers.py
 tests/stories/suites/coding/modules/workers/group_stop.py
 tests/stories/suites/coding/modules/workers/hand_in_rebase.py
@@ -290,7 +280,6 @@ tests/stories/suites/coding/modules/workers/helper_types.py
 tests/stories/suites/coding/modules/workers/hoarding_and_claims.py
 tests/stories/suites/coding/modules/workers/important_lines.py
 tests/stories/suites/coding/modules/workers/interrupted_cut.py
-tests/stories/suites/coding/modules/workers/job_source_reads.py
 tests/stories/suites/coding/modules/workers/keep_going_blocked.py
 tests/stories/suites/coding/modules/workers/keep_going_merger.py
 tests/stories/suites/coding/modules/workers/keep_going_stopped.py
@@ -328,7 +317,6 @@ tests/stories/suites/coding/modules/workers/program_choice_review.py
 tests/stories/suites/coding/modules/workers/project_presets.py
 tests/stories/suites/coding/modules/workers/project_worktrees.py
 tests/stories/suites/coding/modules/workers/proof_any_task.py
-tests/stories/suites/coding/modules/workers/pruned_runs.py
 tests/stories/suites/coding/modules/workers/published_files_commit.py
 tests/stories/suites/coding/modules/workers/queued_commands.py
 tests/stories/suites/coding/modules/workers/queued_judge.py
@@ -341,13 +329,10 @@ tests/stories/suites/coding/modules/workers/refused_steps.py
 tests/stories/suites/coding/modules/workers/release_reassigned_task.py
 tests/stories/suites/coding/modules/workers/release_uncommitted.py
 tests/stories/suites/coding/modules/workers/required_merge_state.py
-tests/stories/suites/coding/modules/workers/restarted_workers.py
 tests/stories/suites/coding/modules/workers/resume_job.py
-tests/stories/suites/coding/modules/workers/resume_paths.py
 tests/stories/suites/coding/modules/workers/resume_task.py
 tests/stories/suites/coding/modules/workers/round.py
 tests/stories/suites/coding/modules/workers/round_task_count.py
-tests/stories/suites/coding/modules/workers/send_task_reads.py
 tests/stories/suites/coding/modules/workers/send_timing.py
 tests/stories/suites/coding/modules/workers/send_worker_routes.py
 tests/stories/suites/coding/modules/workers/server_replacement.py
@@ -356,7 +341,6 @@ tests/stories/suites/coding/modules/workers/skill_folders.py
 tests/stories/suites/coding/modules/workers/skill_paths.py
 tests/stories/suites/coding/modules/workers/stalled_tests.py
 tests/stories/suites/coding/modules/workers/status.py
-tests/stories/suites/coding/modules/workers/stopped_wakes_merger.py
 tests/stories/suites/coding/modules/workers/stopped_with_tasks.py
 tests/stories/suites/coding/modules/workers/stuck.py
 tests/stories/suites/coding/modules/workers/taken_in_by_hand.py
@@ -368,7 +352,6 @@ tests/stories/suites/coding/modules/workers/unit_merges.py
 tests/stories/suites/coding/modules/workers/unit_recovery.py
 tests/stories/suites/coding/modules/workers/unit_standing_rules.py
 tests/stories/suites/coding/modules/workers/unmerged_reminder.py
-tests/stories/suites/coding/modules/workers/unstarted_proofs.py
 tests/stories/suites/coding/modules/workers/usage_bars_workers.py
 tests/stories/suites/coding/modules/workers/usage_lockdown_held_starts.py
 tests/stories/suites/coding/modules/workers/wait_reasons.py
@@ -381,11 +364,9 @@ tests/stories/suites/coding/modules/workers/worker_context_limit.py
 tests/stories/suites/coding/modules/workers/worker_guidance.py
 tests/stories/suites/coding/modules/workers/worker_lines.py
 tests/stories/suites/coding/modules/workers/worker_no_readers.py
-tests/stories/suites/coding/modules/workers/worker_reconcile.py
 tests/stories/suites/coding/modules/workers/worker_recovery.py
 tests/stories/suites/coding/modules/workers/worker_runs.py
 tests/stories/suites/coding/modules/workers/worker_scenario.py
-tests/stories/suites/coding/modules/workers/worker_sent_back.py
 tests/stories/suites/coding/modules/workers/worker_test_commands.py
 tests/stories/suites/coding/modules/workers/worker_test_limit.py
 tests/stories/suites/coding/modules/workers/worker_testing_controls.py
@@ -395,7 +376,4 @@ tests/stories/suites/coding/modules/workers/worktree_takeover.py
 tests/stories/suites/coding/policy_environment_refresh.py
 tests/stories/suites/coding/shipped_profile_skills.py
 tests/stories/suites/coding/special_helpers.py
-tests/stories/suites/coding/task_assigners.py
 tests/stories/tunnels/tunler/account.py
-tests/stories/tunnels/tunler/tunler_tunnel.py
-tests/stories/tunnels/tunler/write_lock.py

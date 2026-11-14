@@ -12,8 +12,8 @@ from tests.stories.core.modules.processes.process_retention import ProcessLog
 from tests.stories.core.modules.processes.support.process_samples import ended_run
 
 
-def test_pruning_a_run_that_a_worker_operation_and_a_merger_line_name_still_ends_the_newest_run(new_story):
-    story = new_story(fixture=ProcessLog)
+def test_pruning_a_run_that_a_worker_operation_and_a_merger_line_name_still_ends_the_newest_run(played):
+    story = played(ProcessLog)
     first = ended_run(story, "make first", "first\n")
     repository, context = story.container.get(Repository), Context(Actor.core(), story.clock.timestamp(), PruneProcesses())
     repository.save(WorkerOperation(worker_id=story.agent.id, creator_id=story.agent.id, actor_type=ActorType.AGENT, process_id=first.id,

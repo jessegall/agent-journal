@@ -10,14 +10,14 @@ SUBDOMAIN = "cart-team"
 VIEWER_PORT = 8000
 
 
-def tunnel(new_story, client: FakeTunlerClient, clock: SetClock | None = None):
-    story = new_story("tunnels.tunler.tunler_module:TunlerModule", fixture=UserJoined)
+def tunnel(played, client: FakeTunlerClient, clock: SetClock | None = None):
+    story = played(UserJoined, "tunnels.tunler.tunler_module:TunlerModule")
     story.expect_success(f"setting set {SUBDOMAIN_SETTING} {SUBDOMAIN} --project", actor=story.user)
     return story, TunlerTunnel(client, story.container.get(SettingValues), clock or SetClock())
 
 
-def test_a_journal_with_no_subdomain_set_gets_the_setting_to_set(new_story):
-    story = new_story("tunnels.tunler.tunler_module:TunlerModule", fixture=UserJoined)
+def test_a_journal_with_no_subdomain_set_gets_the_setting_to_set(played):
+    story = played(UserJoined, "tunnels.tunler.tunler_module:TunlerModule")
     tunler = TunlerTunnel(FakeTunlerClient(), story.container.get(SettingValues), SetClock())
     tunler.open(VIEWER_PORT)
     story.expect_rows(tunler.state() is TunnelState.DISCONNECTED, tunler.reason() == f"name the subdomain with journal setting set {SUBDOMAIN_SETTING} <name> --project")
