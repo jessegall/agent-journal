@@ -15805,7 +15805,7 @@ const gM = /* @__PURE__ */ hM(vM), yM = ["width", "height", "viewBox"], bM = ["w
       ])
     ]));
   }
-}, iI = /* @__PURE__ */ z(rC, [["__scopeId", "data-v-ac94d9ad"]]), uC = {
+}, iI = /* @__PURE__ */ z(rC, [["__scopeId", "data-v-803a0502"]]), uC = {
   class: "table-layout",
   "data-table-layout": ""
 }, cC = { class: "table-layout-body" }, dC = {
@@ -16570,7 +16570,7 @@ const OC = {
       ])
     ]));
   }
-}, vI = /* @__PURE__ */ z(dA, [["__scopeId", "data-v-b494c444"]]), gI = zu(() => import("./VoiceFigure-Lj5SQTrm.js").then((e) => e.V)), yI = "1.2.0", bI = "3.5";
+}, vI = /* @__PURE__ */ z(dA, [["__scopeId", "data-v-b494c444"]]), gI = zu(() => import("./VoiceFigure-B-czdBHW.js").then((e) => e.V)), yI = "1.2.0", bI = "3.5";
 export {
   Dm as $,
   Ie as A,

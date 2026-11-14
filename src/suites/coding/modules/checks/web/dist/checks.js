@@ -1,236 +1,272 @@
-if (!document.getElementById("window-styles-4018aa034efe")) { const style = document.createElement("style"); style.id = "window-styles-4018aa034efe"; style.textContent = ".check-bar[data-v-643882e1]{display:block;overflow:hidden;height:3px;border-radius:2px;background:var(--hover)}.check-bar-fill[data-v-643882e1]{display:block;height:100%;border-radius:2px;background:var(--accent);transition:width .5s ease}.check-bar-fill.sliding[data-v-643882e1]{width:30%;animation:check-bar-slide-643882e1 1.2s ease-in-out infinite alternate}@keyframes check-bar-slide-643882e1{0%{transform:translate(0)}to{transform:translate(233%)}}.check-tools[data-v-a4a837dc]{display:flex;align-items:center;gap:8px;margin-bottom:10px}.check-space[data-v-a4a837dc]{flex:1}.check-command[data-v-a4a837dc]{display:block;margin-bottom:10px;overflow-wrap:anywhere;color:var(--text-2);font-size:12px}.check-output[data-v-a4a837dc]{overflow:auto;max-height:50vh;margin:0;padding:10px 12px;border-radius:8px;background:var(--raised);font-size:12px;white-space:pre-wrap}.check-runs[data-v-a4a837dc]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.check-run-row[data-v-a4a837dc]{display:flex;width:100%;padding:6px 8px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:13px;cursor:pointer}.check-run-row[data-v-a4a837dc]:hover{background:var(--hover)}.check-verdict[data-v-a4a837dc]{color:var(--accent-text)}.check-verdict.failing[data-v-a4a837dc]{color:var(--danger)}.check-note[data-v-a4a837dc]{margin:0;color:var(--text-3)}.note[data-v-d6603ccf]{margin:0;color:var(--text-3);font-size:12.5px}.rhythm[data-v-d6603ccf]{color:var(--text-3);font-size:12px;white-space:nowrap}\n"; document.head.appendChild(style); }
-import { openBlock as t, createElementBlock as o, createElementVNode as m, normalizeStyle as z, normalizeClass as E, ref as R, computed as I, watch as T, onUnmounted as W, createBlock as y, unref as a, withCtx as i, createVNode as B, createTextVNode as P, toDisplayString as p, createCommentVNode as C, Fragment as x, renderList as j } from "vue";
-import { useWindow as A, Dialog as L, Segmented as M, Btn as V, TimeAgo as U, CardPage as G, ActionsMenu as H, Skeleton as J, copying as K } from "@journal/window-kit";
-const D = (n, k) => {
-  const h = n.__vccOpts || n;
-  for (const [f, w] of k)
-    h[f] = w;
-  return h;
-}, Q = {
+if (!document.getElementById("window-styles-0620abcc0989")) { const style = document.createElement("style"); style.id = "window-styles-0620abcc0989"; style.textContent = ".check-bar[data-v-643882e1]{display:block;overflow:hidden;height:3px;border-radius:2px;background:var(--hover)}.check-bar-fill[data-v-643882e1]{display:block;height:100%;border-radius:2px;background:var(--accent);transition:width .5s ease}.check-bar-fill.sliding[data-v-643882e1]{width:30%;animation:check-bar-slide-643882e1 1.2s ease-in-out infinite alternate}@keyframes check-bar-slide-643882e1{0%{transform:translate(0)}to{transform:translate(233%)}}.check-tools[data-v-a4a837dc]{display:flex;align-items:center;gap:8px;margin-bottom:10px}.check-space[data-v-a4a837dc]{flex:1}.check-command[data-v-a4a837dc]{display:block;margin-bottom:10px;overflow-wrap:anywhere;color:var(--text-2);font-size:12px}.check-output[data-v-a4a837dc]{overflow:auto;max-height:50vh;margin:0;padding:10px 12px;border-radius:8px;background:var(--raised);font-size:12px;white-space:pre-wrap}.check-runs[data-v-a4a837dc]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.check-run-row[data-v-a4a837dc]{display:flex;width:100%;padding:6px 8px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:13px;cursor:pointer}.check-run-row[data-v-a4a837dc]:hover{background:var(--hover)}.check-verdict[data-v-a4a837dc]{color:var(--accent-text)}.check-verdict.failing[data-v-a4a837dc]{color:var(--danger)}.check-note[data-v-a4a837dc]{margin:0;color:var(--text-3)}.note[data-v-341d3654]{margin:0;color:var(--text-3);font-size:12.5px}.rhythm[data-v-341d3654]{color:var(--text-3);font-size:12px;white-space:nowrap}\n"; document.head.appendChild(style); }
+import { openBlock as n, createElementBlock as l, createElementVNode as _, normalizeStyle as T, normalizeClass as F, ref as N, computed as P, watch as U, onUnmounted as z, createBlock as h, unref as s, withCtx as d, createVNode as S, createTextVNode as B, toDisplayString as w, createCommentVNode as C, Fragment as I, renderList as M } from "vue";
+import { useWindow as V, Dialog as W, Segmented as J, Btn as q, TimeAgo as G, CreateDialog as H, CardPage as K, ActionsMenu as Q, Skeleton as X, copying as Y } from "@journal/window-kit";
+const E = (t, k) => {
+  const p = t.__vccOpts || t;
+  for (const [v, g] of k)
+    p[v] = g;
+  return p;
+}, Z = {
   class: "check-bar",
   "data-check-progress": ""
-}, X = {
+}, ee = {
   __name: "CheckRunBar",
   props: { percent: { type: Number, required: !0 } },
-  setup(n) {
-    return (k, h) => (t(), o("span", Q, [
-      m("span", {
-        class: E(["check-bar-fill", { sliding: !n.percent }]),
-        style: z(n.percent ? { width: `${n.percent}%` } : {})
+  setup(t) {
+    return (k, p) => (n(), l("span", Z, [
+      _("span", {
+        class: F(["check-bar-fill", { sliding: !t.percent }]),
+        style: T(t.percent ? { width: `${t.percent}%` } : {})
       }, null, 6)
     ]));
   }
-}, F = /* @__PURE__ */ D(X, [["__scopeId", "data-v-643882e1"]]), Y = { class: "check-tools" }, Z = { class: "check-command" }, ee = {
+}, j = /* @__PURE__ */ E(ee, [["__scopeId", "data-v-643882e1"]]), te = { class: "check-tools" }, ne = { class: "check-command" }, se = {
   key: 1,
   class: "check-note"
-}, te = {
+}, ae = {
   key: 0,
   class: "check-output",
   "data-check-output": ""
-}, ne = {
+}, oe = {
   key: 1,
   class: "check-note"
-}, se = {
+}, le = {
   key: 0,
   class: "check-runs",
   "data-check-runs": ""
-}, ae = ["onClick"], oe = {
+}, ce = ["onClick"], re = {
   key: 1,
   class: "check-note"
-}, ce = {
+}, ue = {
   __name: "CheckDialog",
   props: { row: { type: Object, required: !0 }, running: Boolean },
   emits: ["close", "run"],
-  setup(n, { emit: k }) {
-    const h = [
+  setup(t, { emit: k }) {
+    const p = [
       { key: "output", label: "Output" },
       { key: "runs", label: "Runs" }
-    ], f = n, w = k, _ = A(), u = R("output"), r = R(null), d = `runs.${f.row.id}`, { rows: b, failure: S } = _.props[d], N = I(() => {
-      var v;
-      return ((v = r.value) == null ? void 0 : v.output) ?? f.row.last_output;
+    ], v = t, g = k, m = V(), c = N("output"), u = N(null), y = `runs.${v.row.id}`, { rows: b, failure: R } = m.props[y], O = P(() => {
+      var f;
+      return ((f = u.value) == null ? void 0 : f.output) ?? v.row.last_output;
     });
-    function O(v) {
-      r.value = v, u.value = "output";
+    function D(f) {
+      u.value = f, c.value = "output";
     }
-    const $ = () => {
-      if (u.value === "runs") return _.reload(d);
+    const x = () => {
+      if (c.value === "runs") return m.reload(y);
     };
-    T(u, $);
-    const g = _.follow(["check.*"], $);
-    return W(() => g == null ? void 0 : g()), (v, l) => (t(), y(a(L), {
+    U(c, x);
+    const $ = m.follow(["check.*"], x);
+    return z(() => $ == null ? void 0 : $()), (f, r) => (n(), h(s(W), {
       padded: "",
-      title: `Check ${n.row.id}: ${n.row.title}`,
+      title: `Check ${t.row.id}: ${t.row.title}`,
       wide: "",
       "data-check-dialog": "",
-      onClose: l[2] || (l[2] = (e) => w("close"))
+      onClose: r[2] || (r[2] = (i) => g("close"))
     }, {
-      default: i(() => [
-        m("div", Y, [
-          B(a(M), {
-            options: h,
-            value: u.value,
-            onPick: l[0] || (l[0] = (e) => u.value = e)
+      default: d(() => [
+        _("div", te, [
+          S(s(J), {
+            options: p,
+            value: c.value,
+            onPick: r[0] || (r[0] = (i) => c.value = i)
           }, null, 8, ["value"]),
-          l[3] || (l[3] = m("span", { class: "check-space" }, null, -1)),
-          n.row.stopped ? C("", !0) : (t(), y(a(V), {
+          r[3] || (r[3] = _("span", { class: "check-space" }, null, -1)),
+          t.row.stopped ? C("", !0) : (n(), h(s(q), {
             key: 0,
             small: "",
             bordered: "",
             "data-check-run": "",
-            disabled: n.running,
-            onClick: l[1] || (l[1] = (e) => w("run", n.row))
+            disabled: t.running,
+            onClick: r[1] || (r[1] = (i) => g("run", t.row))
           }, {
-            default: i(() => [
-              P(p(n.running ? "Running" : "Run"), 1)
+            default: d(() => [
+              B(w(t.running ? "Running" : "Run"), 1)
             ]),
             _: 1
           }, 8, ["disabled"]))
         ]),
-        m("code", Z, p(n.row.command), 1),
-        n.row.run_percent !== null && n.row.run_percent !== void 0 ? (t(), y(F, {
+        _("code", ne, w(t.row.command), 1),
+        t.row.run_percent !== null && t.row.run_percent !== void 0 ? (n(), h(j, {
           key: 0,
-          percent: n.row.run_percent
+          percent: t.row.run_percent
         }, null, 8, ["percent"])) : C("", !0),
-        a(S) ? (t(), o("p", ee, p(a(S)), 1)) : C("", !0),
-        u.value === "output" ? (t(), o(x, { key: 2 }, [
-          N.value ? (t(), o("pre", te, p(N.value), 1)) : (t(), o("p", ne, "No output yet"))
-        ], 64)) : (t(), o(x, { key: 3 }, [
-          a(b).length ? (t(), o("ul", se, [
-            (t(!0), o(x, null, j(a(b), (e) => (t(), o("li", {
-              key: e.run_at
+        s(R) ? (n(), l("p", se, w(s(R)), 1)) : C("", !0),
+        c.value === "output" ? (n(), l(I, { key: 2 }, [
+          O.value ? (n(), l("pre", ae, w(O.value), 1)) : (n(), l("p", oe, "No output yet"))
+        ], 64)) : (n(), l(I, { key: 3 }, [
+          s(b).length ? (n(), l("ul", le, [
+            (n(!0), l(I, null, M(s(b), (i) => (n(), l("li", {
+              key: i.run_at
             }, [
-              m("button", {
+              _("button", {
                 type: "button",
                 class: "check-run-row",
-                onClick: (c) => O(e)
+                onClick: (e) => D(i)
               }, [
-                m("span", {
-                  class: E(["check-verdict", { failing: !e.passed }])
-                }, p(e.passed ? "Passed" : "Failed"), 3),
-                l[4] || (l[4] = m("span", { class: "check-space" }, null, -1)),
-                B(a(U), {
-                  at: e.run_at
+                _("span", {
+                  class: F(["check-verdict", { failing: !i.passed }])
+                }, w(i.passed ? "Passed" : "Failed"), 3),
+                r[4] || (r[4] = _("span", { class: "check-space" }, null, -1)),
+                S(s(G), {
+                  at: i.run_at
                 }, null, 8, ["at"])
-              ], 8, ae)
+              ], 8, ce)
             ]))), 128))
-          ])) : (t(), o("p", oe, "No runs yet"))
+          ])) : (n(), l("p", re, "No runs yet"))
         ], 64))
       ]),
       _: 1
     }, 8, ["title"]));
   }
-}, le = /* @__PURE__ */ D(ce, [["__scopeId", "data-v-a4a837dc"]]), ue = {
+}, ie = /* @__PURE__ */ E(ue, [["__scopeId", "data-v-a4a837dc"]]), de = (t) => /\s/.test(t) ? JSON.stringify(t) : t, ke = [
+  { key: "title", label: "Title", required: !0, placeholder: "Unit tests" },
+  { key: "command", label: "Command", required: !0, placeholder: "pytest tests/unit" },
+  { key: "every", label: "Run every, in minutes", kind: "number", help: "Leave blank to run it only by hand.", placeholder: "30" }
+], pe = (t) => Number(t.every || 0) < 0 ? { every: "Use a number of minutes, or leave it blank." } : {}, A = (t) => ["check", "make", t.title.trim() || "…", "--command", t.command.trim() || "…", ...Number(t.every) > 0 ? ["--every", String(Number(t.every))] : []], me = (t) => A(t), he = (t) => `journal ${A(t).map(de).join(" ")}`, ve = {
+  __name: "NewCheck",
+  emits: ["close"],
+  setup(t, { emit: k }) {
+    const p = k, v = V(), g = (m) => v.run(me(m));
+    return (m, c) => (n(), h(s(H), {
+      title: "New check",
+      submit: "Make the check",
+      fields: s(ke),
+      command: s(he),
+      check: s(pe),
+      run: g,
+      onClose: c[0] || (c[0] = (u) => p("close"))
+    }, null, 8, ["fields", "command", "check"]));
+  }
+}, ye = {
   key: 1,
   class: "note",
   role: "alert"
-}, re = {
+}, fe = {
   key: 2,
   class: "note"
-}, de = {
+}, we = {
   class: "rhythm",
   "data-check-rhythm": ""
-}, ie = {
+}, ge = {
   key: 1,
   class: "note",
   role: "alert",
   "data-check-refusal": ""
-}, pe = {
+}, _e = {
   __name: "CheckCards",
-  setup(n) {
-    const k = A(), { rows: h, failure: f, loaded: w } = k.props.checks, _ = R(null), u = I(() => h.value.find((e) => e.id === _.value) || null), r = R(/* @__PURE__ */ new Set()), d = R(""), b = (e) => e.status === "running" ? "Running" : e.last_passed === !0 ? "Passing" : e.last_passed === !1 ? "Failing" : "Not run", S = I(() => h.value.map((e) => ({
+  setup(t) {
+    const k = V(), { rows: p, failure: v, loaded: g } = k.props.checks, m = N(null), c = P(() => p.value.find((e) => e.id === m.value) || null), u = N(/* @__PURE__ */ new Set()), y = N(""), b = N(!1), R = (e) => e.status === "running" ? "Running" : e.last_passed === !0 ? "Passing" : e.last_passed === !1 ? "Failing" : "Not run", O = P(() => p.value.map((e) => ({
       id: e.id,
       title: e.title,
       icon: "check",
-      state: b(e),
+      state: R(e),
       line: e.command,
       fault: e.last_passed === !1 ? e.last_output : "",
-      status: b(e),
+      status: R(e),
       row: e
-    }))), N = [{ key: "status", label: "State", options: ["Passing", "Failing", "Running", "Not run"].map((e) => [e, e]), get: (e) => e.status }], O = (e) => e.interval_minutes ? `Every ${e.interval_minutes} minutes` : "Only when run by hand";
+    }))), D = [{ key: "status", label: "State", options: ["Passing", "Failing", "Running", "Not run"].map((e) => [e, e]), get: (e) => e.status }], x = (e) => e.interval_minutes ? `Every ${e.interval_minutes} minutes` : "Only when run by hand";
     async function $(e) {
-      d.value = "";
-      const c = await k.run(["check", "start", String(e.id)]);
-      c.ok || (d.value = c.error);
+      y.value = "";
+      const o = await k.run(["check", "start", String(e.id)]);
+      o.ok || (y.value = o.error);
     }
-    async function g(e) {
-      d.value = "", r.value = /* @__PURE__ */ new Set([...r.value, e.id]);
-      const c = await k.run(["check", "run", String(e.id)]);
-      r.value = new Set([...r.value].filter((s) => s !== e.id)), c.ok || (d.value = c.error);
+    async function f(e) {
+      y.value = "", u.value = /* @__PURE__ */ new Set([...u.value, e.id]);
+      const o = await k.run(["check", "run", String(e.id)]);
+      u.value = new Set([...u.value].filter((a) => a !== e.id)), o.ok || (y.value = o.error);
     }
-    const v = (e) => [
-      { label: "Open", group: "open", run: () => _.value = e.id },
-      e.row.stopped ? { label: "Start", group: "own", run: () => $(e.row) } : { label: "Run now", group: "own", run: () => g(e.row) },
-      { label: "Copy command", group: "copy", run: ({ say: c }) => K(e.row.command, "the command", c) }
-    ], l = (e) => ({ head: e.title, items: v(e) });
-    return (e, c) => (t(), o(x, null, [
-      B(a(G), {
+    const r = (e) => [
+      { label: "Open", group: "open", run: () => m.value = e.id },
+      e.row.stopped ? { label: "Start", group: "own", run: () => $(e.row) } : { label: "Run now", group: "own", run: () => f(e.row) },
+      { label: "Copy command", group: "copy", run: ({ say: o }) => Y(e.row.command, "the command", o) }
+    ], i = (e) => ({ head: e.title, items: r(e) });
+    return (e, o) => (n(), l(I, null, [
+      S(s(K), {
         title: "Checks",
-        items: S.value,
-        fields: N,
-        place: l,
+        items: O.value,
+        fields: D,
+        place: i,
         "empty-title": "No checks yet",
         "data-checks": ""
       }, {
-        empty: i(() => [
-          a(w) ? a(f) ? (t(), o("p", ue, p(a(f)), 1)) : (t(), o("p", re, "A check runs a command and says if it passed.")) : (t(), y(a(J), {
+        primary: d(() => [
+          S(s(q), {
+            small: "",
+            variant: "primary",
+            "data-check-new": "",
+            onClick: o[0] || (o[0] = (a) => b.value = !0)
+          }, {
+            default: d(() => [...o[3] || (o[3] = [
+              B("New check", -1)
+            ])]),
+            _: 1
+          })
+        ]),
+        empty: d(() => [
+          s(g) ? s(v) ? (n(), l("p", ye, w(s(v)), 1)) : (n(), l("p", fe, "A check runs a command and says if it passed.")) : (n(), h(s(X), {
             key: 0,
             shape: "cards"
           }))
         ]),
-        corner: i(({ item: s }) => [
-          m("span", de, p(O(s.row)), 1)
+        corner: d(({ item: a }) => [
+          _("span", we, w(x(a.row)), 1)
         ]),
-        card: i(({ item: s }) => [
-          s.row.run_percent !== null && s.row.run_percent !== void 0 ? (t(), y(F, {
+        card: d(({ item: a }) => [
+          a.row.run_percent !== null && a.row.run_percent !== void 0 ? (n(), h(j, {
             key: 0,
-            percent: s.row.run_percent
+            percent: a.row.run_percent
           }, null, 8, ["percent"])) : C("", !0),
-          d.value ? (t(), o("p", ie, p(d.value), 1)) : C("", !0)
+          y.value ? (n(), l("p", ge, w(y.value), 1)) : C("", !0)
         ]),
-        foot: i(({ item: s }) => [
-          s.row.stopped ? (t(), y(a(V), {
+        foot: d(({ item: a }) => [
+          a.row.stopped ? (n(), h(s(q), {
             key: 1,
             small: "",
             bordered: "",
             "data-check-card-start": "",
-            onClick: (q) => $(s.row)
+            onClick: (L) => $(a.row)
           }, {
-            default: i(() => [...c[1] || (c[1] = [
-              P("Start", -1)
+            default: d(() => [...o[4] || (o[4] = [
+              B("Start", -1)
             ])]),
             _: 1
-          }, 8, ["onClick"])) : (t(), y(a(V), {
+          }, 8, ["onClick"])) : (n(), h(s(q), {
             key: 0,
             small: "",
             bordered: "",
             "data-check-card-run": "",
-            disabled: r.value.has(s.id),
-            onClick: (q) => g(s.row)
+            disabled: u.value.has(a.id),
+            onClick: (L) => f(a.row)
           }, {
-            default: i(() => [
-              P(p(r.value.has(s.id) ? "Running" : "Run"), 1)
+            default: d(() => [
+              B(w(u.value.has(a.id) ? "Running" : "Run"), 1)
             ]),
             _: 2
           }, 1032, ["disabled", "onClick"]))
         ]),
-        "card-actions": i(({ item: s }) => [
-          B(a(H), {
-            items: v(s),
-            head: s.title
+        "card-actions": d(({ item: a }) => [
+          S(s(Q), {
+            items: r(a),
+            head: a.title
           }, null, 8, ["items", "head"])
         ]),
         _: 1
       }, 8, ["items"]),
-      u.value ? (t(), y(le, {
+      b.value ? (n(), h(ve, {
         key: 0,
-        row: u.value,
-        running: r.value.has(u.value.id),
-        onClose: c[0] || (c[0] = (s) => _.value = null),
-        onRun: g
+        onClose: o[1] || (o[1] = (a) => b.value = !1)
+      })) : C("", !0),
+      c.value ? (n(), h(ie, {
+        key: 1,
+        row: c.value,
+        running: u.value.has(c.value.id),
+        onClose: o[2] || (o[2] = (a) => m.value = null),
+        onRun: f
       }, null, 8, ["row", "running"])) : C("", !0)
     ], 64));
   }
-}, ve = /* @__PURE__ */ D(pe, [["__scopeId", "data-v-d6603ccf"]]);
+}, $e = /* @__PURE__ */ E(_e, [["__scopeId", "data-v-341d3654"]]);
 export {
-  ve as default
+  $e as default
 };

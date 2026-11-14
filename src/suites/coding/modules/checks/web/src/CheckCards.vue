@@ -3,6 +3,7 @@ import {computed, ref} from "vue";
 import {ActionsMenu, Btn, CardPage, Skeleton, copying, useWindow} from "@journal/window-kit";
 import CheckDialog from "./CheckDialog.vue";
 import CheckRunBar from "./CheckRunBar.vue";
+import NewCheck from "./NewCheck.vue";
 
 // the checks as cards: its verdict is the state line, the command the line under it, and the one action that waits is Run, or Start for a check that was stopped.
 // A run shows at once and the server's answer settles it, a refusal naming why
@@ -12,6 +13,7 @@ const openedId = ref(null);
 const opened = computed(() => rows.value.find((row) => row.id === openedId.value) || null);
 const runningIds = ref(new Set());
 const refusal = ref("");
+const making = ref(false);
 const verdict = (row) => (row.status === "running" ? "Running" : row.last_passed === true ? "Passing" : row.last_passed === false ? "Failing" : "Not run");
 const items = computed(() => rows.value.map((row) => ({
     id: row.id,
@@ -50,6 +52,9 @@ const place = (item) => ({head: item.title, items: menuOf(item)});
 
 <template>
     <CardPage title="Checks" :items="items" :fields="fields" :place="place" empty-title="No checks yet" data-checks>
+        <template #primary>
+            <Btn small variant="primary" data-check-new @click="making = true">New check</Btn>
+        </template>
         <template #empty>
             <template v-if="!loaded">
               <Skeleton shape="cards" />
@@ -80,6 +85,7 @@ const place = (item) => ({head: item.title, items: menuOf(item)});
             <ActionsMenu :items="menuOf(item)" :head="item.title" />
         </template>
     </CardPage>
+    <template v-if="making"><NewCheck @close="making = false" /></template>
     <template v-if="opened">
         <CheckDialog :row="opened" :running="runningIds.has(opened.id)" @close="openedId = null" @run="run" />
     </template>

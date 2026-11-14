@@ -76,6 +76,7 @@ const clear = () => {
 .card-page-body {
     position: relative;
     flex: 1;
+    min-height: 120px;
     overflow-y: auto;
     padding: var(--s3) var(--inset) var(--s6);
 }
