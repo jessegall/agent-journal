@@ -50,3 +50,22 @@ def test_secrets_window_reads_the_secrets_and_none_that_was_deleted(viewer):
     status, answer = server.window_data(cookie, window="secrets.secrets")
     secrets = answer["keys"]["secrets"]
     assert status == 200 and secrets["code"] == 0 and [row["title"] for row in secrets["value"]["rows"]] == ["Github"], secrets
+
+
+def test_the_tasks_window_reads_its_visible_tab_and_requests_plan_places_on_demand(viewer):
+    server, cookie, _ = viewer
+    journal = server.journal
+    assert journal.run('plan make "Version 5 core" --environment main').code == 0
+    for title in ("Values", "Models", "Queries"):
+        assert journal.run(f'phase make --plan 1 "{title}" --goal "{title.lower()} pass their tests"').code == 0
+    for task_id, title in enumerate(("First", "Second", "Third"), 1):
+        assert journal.run(f'task make "{title}" --brief "A task in the phase" --environment main').code == 0
+        assert journal.run(f"phase place {task_id} --phase 1").code == 0
+    status, listed = server.window_data(cookie, window="tasks.tasks", query="environment=main&tab=list&board.limit=1")
+    assert status == 200 and set(listed["keys"]) == {"board", "tags"} and all(outcome["code"] == 0 for outcome in listed["keys"].values()), listed
+    status, graph = server.window_data(cookie, window="tasks.tasks", query="environment=main&tab=graph")
+    assert status == 200 and set(graph["keys"]) == {"graph"} and graph["keys"]["graph"]["code"] == 0, graph
+    status, places = server.window_data(cookie, keys="places", window="tasks.tasks")
+    rows = places["keys"]["places"]["value"]["rows"]
+    assert status == 200 and set(places["keys"]) == {"places"} and len(rows) == 3, places
+    assert rows[0]["label"] == "Plan 1: Version 5 core › Values" and rows[0]["task_ids"] == [1, 2, 3], rows[0]
