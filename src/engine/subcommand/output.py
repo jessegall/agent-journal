@@ -11,7 +11,7 @@ from engine.model.table import stored
 from engine.model.tables import Tables
 from engine.row.page import Page
 from engine.errors.refusal import Refusal
-from engine.types.type_guards import is_frozenset, is_mapping, is_tuple
+from engine.types.type_guards import is_frozenset, is_list, is_mapping, is_tuple
 
 LIST_HIDDEN_COLUMNS = ("version", "metadata", "created_at", "updated_at", "creator_id", "environment_id")
 
@@ -78,7 +78,7 @@ class Output:
             return sorted(str(item) for item in value)
         if is_mapping(value):
             return {str(key): self.json_value(item) for key, item in value.items()}
-        if is_tuple(value):
+        if is_tuple(value) or is_list(value):
             return [self.json_value(item) for item in value]
         return stored(value)
 

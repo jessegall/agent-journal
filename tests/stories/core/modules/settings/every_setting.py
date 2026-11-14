@@ -16,9 +16,9 @@ def rows(story) -> list[dict]:
 def saved_text(row: dict) -> str:
     match row["type"]:
         case "list":
-            return row["default"]
+            return json.dumps(row["default"])
         case "number list":
-            return ",".join(str(item) for item in json.loads(row["default"]))
+            return ",".join(str(item) for item in row["default"])
         case "flag":
             return "on" if row["default"] else "off"
         case _:
