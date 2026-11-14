@@ -21,10 +21,10 @@ def test_336_core_base_is_removed_and_the_engine_holds_only_folders_and_its_pack
     story.expect_rows(not PREVIOUS_FOLDER.exists(), engine_loose_files == ["__init__.py"], detail=str(engine_loose_files))
 
 
-def test_356_the_helper_type_folder_holds_its_two_classes_and_no_file_declares_them_a_second_time(new_story):
+def test_356_the_helper_type_folder_holds_the_helper_type_and_its_parts_and_no_file_declares_them_a_second_time(new_story):
     story = new_story()
     folder_files = sorted(path.name for path in HELPER_TYPE_FOLDER.iterdir() if path.is_file())
     declared = {name: files_declaring(class_line) for name, class_line in HELPER_TYPE_CLASSES.items()}
-    story.expect_rows(folder_files == ["__init__.py", "helper_type.py", "helper_type_area.py", "helper_type_book.py", "helper_type_entry.py"], detail=str(folder_files))
+    story.expect_rows(folder_files == ["__init__.py", "command_allow_list.py", "helper_behaviours.py", "helper_type.py", "helper_type_area.py", "helper_type_book.py", "helper_type_entry.py", "journal_line.py", "main_agent.py"], detail=str(folder_files))
     story.expect_rows(all(files == [f"src/engine/helper_type/{name}"] for name, files in declared.items()), detail=str(declared))
     story.expect_rows(not list(SOURCE_FOLDER.rglob("core/base/helper_type*")), not list(SOURCE_FOLDER.rglob("core/base/agent_type*")))

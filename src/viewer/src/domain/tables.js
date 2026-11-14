@@ -170,6 +170,8 @@ export const meta = (table) => TABLES[table];
 // The table a word names: its own name, the name without its s, or its title, as "tasks", "task" or "Document".
 const WORDS = new Map(ORDER.flatMap((name) => [name, name.replace(/s$/, ""), TABLES[name].title.toLowerCase()].map((word) => [word, name])));
 export const tableOfWord = (word) => WORDS.get(String(word).toLowerCase()) || "";
+// the name in words of the table a word names, as "Document" for "doc"; a word of no table is its own name
+export const titleOfWord = (word) => TABLES[tableOfWord(word)]?.title || String(word).charAt(0).toUpperCase() + String(word).slice(1);
 export const WORD_PATTERN = [...WORDS.keys()].sort((a, b) => b.length - a.length).join("|");
 
 export const SHARED = ["docs", "reports", "plans"];

@@ -3,7 +3,6 @@ engine  The building blocks every module stands on; it imports no module.
     actor  Who acts on the journal: the actor a command carries, and the check that an actor is a user.
     agent  What the engine knows of agents: groups, roles, policy, checkouts and where an agent may write.
     area  The marker every engine area folder declares itself with: what the area is for and who may import it.
-    bookkeeping  The read commands of the event log and the refusal log.
     caller  Who runs a command line: the caller, its request and the chain of processes it came through.
     chat  Declarations of chat marks, their buttons and docked items.
     check  The conditions a step or a periodic check tests.
@@ -22,7 +21,6 @@ engine  The building blocks every module stands on; it imports no module.
     git  Git reads of the project's files and of hook files.
     guard  Guards that can refuse a change, their switches and the lifecycle guard.
     helper_type  The types of helper a module can add, and the book of them.
-    hosting  Running the journal as a hosted service: the checks of the host, and hosted files.
     instruction  The imports in the instruction files of an agent.
     journal  The journal and its home folder.
     json  JSON pointers, JSON schemas and settings files.
@@ -34,14 +32,13 @@ engine  The building blocks every module stands on; it imports no module.
     module  Modules: the declaration, its checks, the sync into the registry and the layer rules.
     performance  Developer tools that measure how fast the journal runs.
     plan  Who may write a plan.
-    private  Private folders, secret values and the keys of the server.
     process  Child processes, processes left over from an earlier run and the processes of plugin scripts.
     profile  The profile of an agent and its name.
     provider  Providers of agent programs: hooks, launches, models and the context window.
     query  Queries: conditions, filters, pages and shared rows.
     registry  The registry: everything the loaded modules declare, read from the database.
     repository  Saving and loading rows, with the check for a stale row.
-    request  The queue of requests and its entries.
+    request  Values kept while one request is answered.
     row  What every row has: metadata, a page of rows and the owner of a row.
     sandbox  The sandbox of an agent and of a shell line.
     scope  Scopes: which rows an actor or an environment may read.
@@ -51,6 +48,7 @@ engine  The building blocks every module stands on; it imports no module.
     skill  Skills: declarations, contents, digests and the shape a skill must have.
     subcommand  Subcommands: arguments, output and how rows and values are printed.
     template  The declaration of a template.
+    testing  The test kit: the story builder, expectations, fakes and examples.
     text  Text helpers: explanations, search terms and digests.
     ticker  Timed handlers: which are due and how often one runs.
     time  The clock, timestamps, durations, deadlines and timings.
@@ -60,15 +58,18 @@ engine  The building blocks every module stands on; it imports no module.
     version  The versions of the code and of the journal.
     viewer  Declarations for the viewer: windows, buttons, inspectors and fields.
   internal
+    bookkeeping  The read commands of the event log and the refusal log.
+    hosting  Running the journal as a hosted service: the checks of the host, and hosted files.
+    private  Private folders, secret values and the keys of the server.
     script  The record of a plugin script that was left out, and why.
-    testing  The test kit: the story builder, expectations, fakes and examples.
 core  The modules that come with every journal.
   accounts  The people who can log in to a hosted journal: their logins, sessions and second factors. Needs: journal.core.actors.
   actors  Gives the actors table, which the core owns, its commands: journal actor make, show, list, edit and delete.
   agents  Adds agents, one per session of an agent program, each an actor with the same number. Needs: journal.core.actors, journal.core.environments, journal.core.chat.
   aliases  Adds aliases: words of the project's own that run a shell line, `journal <name> [args]`. Needs: journal.core.actors, journal.core.agents, journal.core.processes, journal.core.plugins, journal.core.drivers.
   approvals  Asks for every user-only approval through one persistent dock card. Needs: journal.core.agents, journal.core.actors, journal.core.environments, journal.core.docking, journal.core.viewer, journal.core.chat, journal.core.drivers, journal.core.settings.
-  assign_rules  Adds a user's standing rules that give new free tasks to the main agent, one agent or a kind of agent. Needs: journal.core.actors, journal.core.environments, journal.core.agents, journal.core.tasks, journal.core.plans.
+  asks  Adds questions a helper asks its parent, which go up a stack of levels set per topic before they reach the parent. Needs: journal.core.actors, journal.core.agents, journal.core.drivers, journal.core.settings, journal.core.tasks.
+  assign_rules  Adds a user's standing rules that give new free tasks to the main agent, one agent or the agents of one program and model. Needs: journal.core.actors, journal.core.environments, journal.core.agents, journal.core.drivers, journal.core.tasks, journal.core.plans, journal.core.assignments.
   assignments  Adds assignments: any row of a model that declares itself assignable can be given to actors. Needs: journal.core.actors, journal.core.agents.
   chat  Adds the marks in an environment's chat, of the types modules declare. Needs: journal.core.actors, journal.core.environments, journal.core.settings.
   claude_code  Adds Claude Code as an agent program.
@@ -119,7 +120,7 @@ core  The modules that come with every journal.
   voices  Adds the voice the agent talks to you in, the title and first name it calls you by, and whether the chat shows a figure: chosen with journal voice, and told to the main agent when it starts, after a compaction and when it changes. Needs: journal.core.actors, journal.core.agents, journal.core.drivers, journal.core.settings.
   waits  Adds waits: an agent waits on rows it does not control or reports it is stuck, and while the wait is open it takes control of the agent as an exclusive overlay. Needs: journal.core.actors, journal.core.agents, journal.core.drivers, journal.core.chat.
 suites  Suites: the modules and drivers for one sort of work.
-  coding  Building software: the main agent works from its work controls and starts workers, reviewers and verifiers, while helpers read for it; the viewer shows its chat, tasks, plans, agents, questions and their activity and file edits, a phone layout, and version 4's layout presets. Modules: checks, workers.
+  coding  Building software: the main agent works from its work controls and starts workers and the merger, while helpers read for it; the viewer shows its chat, tasks, plans, agents, questions and their activity and file edits, a phone layout, and version 4's layout presets; the main agent and every worker carry a default state of their own. Modules: checks, workers.
 tunnels  Tunnels that reach the viewer from outside the machine.
   tunler  Reaches this computer through the tunler program, logged in on this machine from its window or with tunler login.
 server  The server process: requests, the routes of the viewer, the handover of code and timed work.

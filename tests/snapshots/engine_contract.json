@@ -5059,6 +5059,7 @@
         "wide_folders(self) -> list[str]",
         "deep_files(self) -> list[str]",
         "layer_depth(self, path: Path) -> int",
+        "counted_entries(self, folder: Path) -> list[Path]",
         "entries(self, folder: Path) -> list[Path]",
         "is_judged(self, path: Path) -> bool",
         "relative(self, path: Path) -> str"
@@ -8763,13 +8764,6 @@
         "passed(self, disabled: DisabledScopes, subject: LoggedEvent | Change[Model]) -> WholeScopes",
         "causing_agent(self, event: LoggedEvent) -> int | None",
         "found_agent(self, event: LoggedEvent) -> int | None"
-      ]
-    },
-    "scope.unscoped_reads.UnscopedReads": {
-      "bases": [],
-      "fields": [],
-      "methods": [
-        "record(model: type[Model]) -> None"
       ]
     },
     "seed.demo.Demo": {

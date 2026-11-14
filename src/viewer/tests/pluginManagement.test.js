@@ -44,17 +44,30 @@ async function drawn(refuse = false, previewAnswered = null) {
     return {element: await mounted(PluginRows, window), ran};
 }
 
+// a choice of the header's Install a plugin menu, as a person makes it
+async function fromInstallMenu(element, label) {
+    element.querySelector("[data-plugin-install-menu] [data-actions-menu]").click();
+    await settle();
+    [...document.body.querySelectorAll("[data-menu-item]")].find((item) => item.textContent.trim() === label).click();
+    await settle();
+}
+
+const installForm = async (element) => {
+    await fromInstallMenu(element, "From a repository or folder");
+    return document.querySelector("[data-plugin-install-form]");
+};
+
 const type = async (input, text) => {
     input.value = text;
     input.dispatchEvent(new Event("input"));
     await settle();
 };
 
-test("the Check button says Check and shows its spinner until the check answers", async () => {
+test("the Check button says Check and shows its spinner until the check answers, and then the preview takes the dialog's place", async () => {
     let answer;
     const previewAnswered = new Promise((resolve) => { answer = resolve; });
     const {element} = await drawn(false, previewAnswered);
-    const form = element.querySelector("[data-plugin-install-form]");
+    const form = await installForm(element);
     const button = form.querySelector("[data-plugin-check]");
     expect(button.textContent.trim()).toBe("Check");
     await type(form.querySelector("input"), "owner/repo");
@@ -63,12 +76,13 @@ test("the Check button says Check and shows its spinner until the check answers"
     expect(button.getAttribute("aria-busy")).toBe("true");
     answer();
     await settle();
-    expect(button.getAttribute("aria-busy")).toBe("false");
+    expect(document.querySelector("[data-plugin-install-dialog]")).toBeNull();
+    expect(document.querySelector("[data-plugin-preview]")).not.toBeNull();
 });
 
 test("a plugin shows everything it would run, and installs only from there", async () => {
     const {element, ran} = await drawn();
-    const form = element.querySelector("[data-plugin-install-form]");
+    const form = await installForm(element);
     await type(form.querySelector("input"), "owner/repo");
     form.dispatchEvent(new Event("submit", {cancelable: true}));
     await settle();
@@ -145,8 +159,7 @@ test("a plugin that declares a dashboard offers it and says when nothing is writ
 
 test("the guide opens with every manifest key", async () => {
     const {element} = await drawn();
-    element.querySelector("[data-plugin-make]").click();
-    await settle();
+    await fromInstallMenu(element, "Create a plugin");
     document.querySelector("[data-plugin-guide-open]").click();
     await settle();
     const guide = document.querySelector("[data-plugin-guide]").textContent;
@@ -155,7 +168,7 @@ test("the guide opens with every manifest key", async () => {
 
 test("a refused install says why", async () => {
     const {element} = await drawn(true);
-    const form = element.querySelector("[data-plugin-install-form]");
+    const form = await installForm(element);
     await type(form.querySelector("input"), "owner/repo");
     form.dispatchEvent(new Event("submit", {cancelable: true}));
     await settle();
@@ -164,8 +177,7 @@ test("a refused install says why", async () => {
 
 test("the agent is asked to make a plugin by a message", async () => {
     const {element, ran} = await drawn();
-    element.querySelector("[data-plugin-make]").click();
-    await settle();
+    await fromInstallMenu(element, "Create a plugin");
     const wish = document.querySelector("[data-plugin-make-form] textarea");
     wish.value = "count my commits";
     wish.dispatchEvent(new Event("input"));
@@ -336,9 +348,25 @@ test("the bar of an open service shows the new state after a change", async () =
     expect(barButton(terminal, "start")).not.toBeNull();
 });
 
-test("a page with no plugin says so and still offers to make one", async () => {
+test("a page with no plugin says so once and still offers to install or make one", async () => {
     const window = pluginWindowContext({"plugin list": page([]), "plugin dashboards": page([]), "plugin descriptions": page([]), "plugin services": page([])});
     const element = await mounted(PluginRows, window);
-    expect(element.querySelector("[data-plugin-none]").textContent).toContain("No plugin is installed");
-    expect(element.querySelector("[data-plugin-make]")).not.toBeNull();
+    expect(element.textContent.split("No plugin is installed")).toHaveLength(2);
+    expect(element.querySelector("[data-plugin-none]").textContent).toContain("Install a plugin");
+    expect(element.querySelector("[data-plugin-install-menu]").textContent).toContain("Install a plugin");
+});
+
+test("the header has one Install a plugin menu, no install field above the title and no other button", async () => {
+    const {element} = await drawn();
+    expect(element.querySelector("[data-plugin-install-form]")).toBeNull();
+    expect(element.querySelector("[data-plugin-make]")).toBeNull();
+    element.querySelector("[data-plugin-install-menu] [data-actions-menu]").click();
+    await settle();
+    expect([...document.body.querySelectorAll("[data-menu-item]")].map((item) => item.textContent.trim())).toEqual(["From a repository or folder", "Create a plugin"]);
+});
+
+test("the search bar holds the State chip beside a search field of its own width", async () => {
+    const {element} = await drawn();
+    expect(element.querySelector('[data-filter-chip="status"]').textContent).toContain("State");
+    expect(element.querySelector("[data-filter-more]")).toBeNull();
 });

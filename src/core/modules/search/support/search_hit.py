@@ -14,7 +14,8 @@ LEAD_CHARACTERS = 40
 
 @dataclass(frozen=True)
 class SearchHit:
-    """A search result with its matching term count, rank and text excerpt."""
+    """A search result with its matching term count, rank and text excerpt, and the row's title and the rest of
+    its searched text, so the result is read without opening the row."""
 
     cli_name: str
     row_id: int
@@ -22,6 +23,8 @@ class SearchHit:
     excerpt: str
     matched_tokens: Sequence[str] = ()
     rank: int = 0
+    title: str = ""
+    body: str = ""
 
     @classmethod
     def matched(cls, row: Model, terms: Sequence[str]) -> "SearchHit":
@@ -30,14 +33,16 @@ class SearchHit:
         start = max(0, min(positions, default=0) - LEAD_CHARACTERS)
         end = start + EXCERPT_CHARACTERS
         excerpt = (CUT_MARK if start else "") + text[start:end] + (CUT_MARK if end < len(text) else "")
-        return cls(row.cli_name, row.id, row.creation_timestamp(), excerpt, row.matching_terms(terms), row.search_rank)
+        # the first searched field names the row, the others are what a reader reads under it
+        title, *rest = (str(getattr(row, name) or "") for name in row.search_fields)
+        return cls(row.cli_name, row.id, row.creation_timestamp(), excerpt, row.matching_terms(terms), row.search_rank, title, "\n\n".join(part for part in rest if part))
 
     @classmethod
     def restored(cls, stored: dict[str, Any]) -> "SearchHit":
-        return cls(stored["cli_name"], stored["row_id"], Timestamp.parsed(stored["created_at"]), stored["excerpt"], stored["matched_tokens"], stored["rank"])
+        return cls(stored["cli_name"], stored["row_id"], Timestamp.parsed(stored["created_at"]), stored["excerpt"], stored["matched_tokens"], stored["rank"], stored["title"], stored["body"])
 
     def stored(self) -> dict[str, object]:
-        return {"cli_name": self.cli_name, "row_id": self.row_id, "created_at": self.created_at.text, "excerpt": self.excerpt, "matched_tokens": list(self.matched_tokens), "rank": self.rank}
+        return {"cli_name": self.cli_name, "row_id": self.row_id, "created_at": self.created_at.text, "excerpt": self.excerpt, "matched_tokens": list(self.matched_tokens), "rank": self.rank, "title": self.title, "body": self.body}
 
     @property
     def matched_terms(self) -> int:
