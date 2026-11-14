@@ -38,7 +38,7 @@ or ask the user again: `journal search find "<words>"`.
 | journal-dispatching-workers | sending, checking and merging workers | a dispatch; a merge | main agent |
 | journal-worker | working as a worker: proofs, commits, the merge ask | a worker's task | worker |
 | journal-plain-code-words | naming variables, methods, classes and files in plain words | naming code, writing a docstring | all |
-| journal-plans, journal-planning, journal-plan-dispatch, journal-plan-review-applying, journal-templates | ordered tasks; how thorough a plan is; getting a plan made; working a review into a plan; templates | a plan command; a review | main agent |
+| journal-plans, journal-planning, journal-plan-dispatch, journal-plan-review-applying, journal-task-cleanup, journal-templates | ordered tasks; how thorough a plan is; getting a plan made; working a review into a plan; sorting loose tasks; templates | a plan command; a review; asked to clean up loose tasks | main agent |
 | journal-helpers, journal-merger, journal-work-modes | read-only helpers; merging a worker's work; auto mode, presets and the worker limit | a helper command; a merge; a work control | main agent |
 | journal-dumps, journal-flowcharts, journal-plugins, journal-transcriptions | dropped material; flowcharts; plugins; transcripts | their commands and words | main agent |
 | journal-functional-design, journal-user-stories | writing a functional design; writing user stories | a design or a story book to write | worker |
