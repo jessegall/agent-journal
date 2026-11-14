@@ -9,7 +9,7 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
 WORKERS_MODULE = "journal.suites.coding.workers"
-ROLE_KEYS_MIGRATION = 81
+ROLE_KEYS_MIGRATION = 84
 
 
 @dataclass(frozen=True)
@@ -90,8 +90,8 @@ def test_an_interrupted_migration_leaves_both_keys_readable_until_it_runs_again(
     story = new_story(fixture=OldRoleKeys)
     story.rerun_migration(WORKERS_MODULE, ROLE_KEYS_MIGRATION)
     story.use_fixture_environment("main")
-    story.seed(AgentActorSeed, 1, name="late verifier")
-    story.seed(OldRoleAgentSeed, 1, session="late-verifier", number=904)
+    actor_ids = story.seed(AgentActorSeed, 1, name="late verifier")
+    story.seed(OldRoleAgentSeed, 1, id=actor_ids[0], session="late-verifier", number=904)
     story.expect_rows(agent_row(story, role_numbers(story, "verifier")[0]).role == "verifier",
                       agent_row(story, role_numbers(story, "merger")[0]).role == "merger")
     story.rerun_migration(WORKERS_MODULE, ROLE_KEYS_MIGRATION)

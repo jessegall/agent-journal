@@ -424,6 +424,41 @@
   "merger": "allowed",
   "worker": "refused"
  },
+ "ask list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "ask show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "ask-stack approve": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "ask-stack list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "ask-stack show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "ask-step list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "ask-step show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
  "assign assign": {
   "helper": "refused",
   "merger": "refused",
@@ -434,9 +469,49 @@
   "merger": "allowed",
   "worker": "refused"
  },
+ "assign-decision record": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
  "assign-decision show": {
   "helper": "allowed",
   "merger": "allowed",
+  "worker": "refused"
+ },
+ "assign-rule apply": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "assign-rule board": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "assign-rule delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "assign-rule disable": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "assign-rule edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "assign-rule enable": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "assign-rule give-back": {
+  "helper": "refused",
+  "merger": "refused",
   "worker": "refused"
  },
  "assign-rule list": {
@@ -444,7 +519,37 @@
   "merger": "allowed",
   "worker": "refused"
  },
+ "assign-rule make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "assign-rule move": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "assign-rule reassign": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "assign-rule recent": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
  "assign-rule show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "assign-rule try": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "assign-rule why": {
   "helper": "allowed",
   "merger": "allowed",
   "worker": "refused"
@@ -769,11 +874,6 @@
   "merger": "refused",
   "worker": "refused"
  },
- "developer request-queue": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
  "developer reset-numbers": {
   "helper": "refused",
   "merger": "refused",
@@ -1065,6 +1165,16 @@
   "worker": "refused"
  },
  "event show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "execution-class list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "execution-class show": {
   "helper": "allowed",
   "merger": "allowed",
   "worker": "refused"
@@ -2504,6 +2614,11 @@
   "merger": "allowed",
   "worker": "refused"
  },
+ "project-file grep": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
  "project-file list": {
   "helper": "allowed",
   "merger": "allowed",
@@ -2530,6 +2645,11 @@
   "worker": "allowed"
  },
  "proof edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "proof end_with_worktree": {
   "helper": "refused",
   "merger": "refused",
   "worker": "allowed"
@@ -2647,6 +2767,56 @@
  "queue resume": {
   "helper": "refused",
   "merger": "refused",
+  "worker": "refused"
+ },
+ "queue-class add": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "queue-class lanes": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "queue-class list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "queue-class preset": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "queue-class presets": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "queue-class preview": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "queue-class remove": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "queue-class reset": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "queue-class set": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "queue-class show": {
+  "helper": "allowed",
+  "merger": "allowed",
   "worker": "refused"
  },
  "reader add": {
@@ -3700,6 +3870,11 @@
   "worker": "refused"
  },
  "template delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "template edit": {
   "helper": "refused",
   "merger": "refused",
   "worker": "refused"

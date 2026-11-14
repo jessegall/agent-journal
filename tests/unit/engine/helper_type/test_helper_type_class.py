@@ -96,3 +96,8 @@ def test_a_stored_key_no_module_registers_answers_no_to_every_behaviour():
     book = HelperTypeBook(tuple([HelperTypeEntry.declared("sample.scribe", Scribe)]))
     assert book.behaviours("clerk") == RETIRED_BEHAVIOURS
     assert not any(getattr(book.behaviours("clerk"), field.name) for field in fields(HelperBehaviours))
+
+
+def test_a_stored_key_no_module_registers_has_no_folder_of_its_own():
+    book = HelperTypeBook(tuple([HelperTypeEntry.declared("sample.scribe", Scribe)]))
+    assert not book.has_separate_folder("clerk") and not book.has_separate_folder("scribe")

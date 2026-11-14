@@ -36,6 +36,10 @@ class HelperTypeBook:
     def behaviours(self, key: str) -> HelperBehaviours:
         return self.entries[key].behaviours if key in self.entries else HelperBehaviours.retired()
 
+    # an agent of a type no installed module registers any more works in no folder of its own, as it does nothing
+    def has_separate_folder(self, key: str) -> bool:
+        return key in self.entries and self.entries[key].separate_folder
+
     def queue_limit_keys(self) -> tuple[str, ...]:
         return tuple(entry.queue_limit_key for entry in self.startable() if entry.queue_limit_key)
 

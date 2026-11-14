@@ -24,7 +24,7 @@ class WorkerSandboxChoice(AgentSandboxChoice):
         return {agent.id: self.decided(agent) for agent in agents}
 
     def decided(self, agent: SandboxedAgent) -> bool:
-        if not self.types.find(agent.role).separate_folder:
+        if not self.types.has_separate_folder(agent.role):
             return True
         choice = agent.metadata.module_part(MODULE_KEY)
         return bool(choice[SANDBOX_KEY]) if SANDBOX_KEY in choice else self.settings.flag(WORKER_SANDBOX)

@@ -524,8 +524,8 @@ class Story:
         self.expected(code == 0, f"module sync after forgetting {module} migration {number} gave {code}: {output_text}")
 
     def expect_sync_without(self, module: str) -> None:
-        modules = json.loads(FileAccess.shared().read(self.home.module_list))
-        FileAccess.shared().write(self.home.module_list, json.dumps([listed for listed in modules if listed != module]))
+        modules = json.loads(FileAccess.read(self.home.module_list))
+        FileAccess.write(self.home.module_list, json.dumps([listed for listed in modules if listed != module]))
         code, output_text = self.synced()
         self.expected(code == 0, f"module sync without {module} gave {code}: {output_text}")
 

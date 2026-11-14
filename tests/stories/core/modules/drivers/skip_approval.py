@@ -58,7 +58,7 @@ def test_a_skip_its_main_agent_declines_leaves_the_refusal_in_force(refused_work
 def test_a_worker_cannot_approve_its_own_skip(refused_worker):
     story, worker, skip = refused_worker
     confirmed(story, worker, skip)
-    story.expect_refusal(f"refusal approve {skip} --environment main", "to answer", actor=worker)
+    story.expect_refusal(f"refusal approve {skip} --environment main", "A worker may not run refusal approve", actor=worker)
 
 
 def test_with_the_setting_off_a_workers_confirmed_skip_passes_at_once(refused_worker):

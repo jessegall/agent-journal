@@ -87,7 +87,7 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
                                     for card in cards_read))
 
     def sandboxes(self, cards: Sequence[AgentCard], read_rows: Sequence[Agent]) -> dict[int, bool]:
-        separate_folder_ids = {card.id for card in cards if self.types.find(card.role).separate_folder}
+        separate_folder_ids = {card.id for card in cards if self.types.has_separate_folder(card.role)}
         rows = [row for row in read_rows if row.id in separate_folder_ids]
         unread = sorted(separate_folder_ids - {row.id for row in rows})
         return self.sandbox.sandboxed_among([*rows, *(self.queries.query(Agent).find_many(unread) if unread else ())])
