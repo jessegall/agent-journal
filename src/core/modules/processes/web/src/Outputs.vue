@@ -1,6 +1,6 @@
 <script setup>
 import {computed} from "vue";
-import {PageHeader, TableLayout, WindowRoom, ago, optionsOf, stateLabel, useWindow} from "@journal/window-kit";
+import {PageHeader, Skeleton, TableLayout, WindowRoom, ago, optionsOf, stateLabel, useWindow} from "@journal/window-kit";
 import RunButtons from "./RunButtons.vue";
 
 // the commands agents ran as a table with the filter chips State, Agent and Task: a row opens its output, and a run that is still going has Stop and Watch above the table
@@ -45,7 +45,8 @@ const running = computed(() => rows.value.filter(isRunning));
             <template v-for="row in running" :key="row.id">
                 <p class="running" data-running-run><span class="line">{{ row.line }}</span><RunButtons :process-id="row.id" /></p>
             </template>
-            <TableLayout :columns="COLUMNS" :rows="lines" :fields="fields" :empty="loaded ? 'No commands yet' : 'Loading'" data-outputs-table />
+            <template v-if="!loaded"><Skeleton shape="rows" /></template>
+            <template v-else><TableLayout :columns="COLUMNS" :rows="lines" :fields="fields" empty="No commands yet" data-outputs-table /></template>
             <template v-if="standingMarks.length">
                 <section class="marks" data-unreadable-marks>
                     <h3>Commands no reader can read</h3>

@@ -19,17 +19,17 @@ const tabs = named ? ALL_TABS.filter((entry) => named.includes(entry.key)) : ALL
 const tab = ref(tabs[0].key);
 const active = computed(() => tabs.find((entry) => entry.key === tab.value));
 
-const loaded = () => Object.values(SCREEN_KEYS).map((key) => view.props[key].data.value);
-const isLoaded = computed(() => loaded().every(Boolean));
+const readScreens = () => Object.values(SCREEN_KEYS).map((key) => view.props[key].data.value);
+const isReady = computed(() => readScreens().every(Boolean));
 const draft = useSettingsDraft({
     run: (line) => view.run(line),
     reload: async () => {
         const typeOpened = "type-screen.type" in view.state;
         await Promise.all([...Object.values(SCREEN_KEYS).map((key) => view.reload(key)), view.reload("limits"), ...(typeOpened ? [view.reload("type-screen")] : [])]);
-        draft.load([...loaded(), ...(typeOpened ? [view.props["type-screen"].data.value] : [])]);
+        draft.load([...readScreens(), ...(typeOpened ? [view.props["type-screen"].data.value] : [])]);
     },
 });
-watch(loaded, (screens) => { if (screens.every(Boolean)) draft.load(screens); }, {immediate: true});
+watch(readScreens, (screens) => { if (screens.every(Boolean)) draft.load(screens); }, {immediate: true});
 
 // the Helpers tab says how many agent types are at a limit; the counts are read when the settings open
 const {rows: helperTable} = useHelperRows(view, draft);
@@ -97,7 +97,7 @@ function pick(entry) {
                     <template v-if="view.readOnly">
                         <p class="note lock" role="note" data-settings-lock>Only a user can change these settings. You can read every value, and ask a user for a change.</p>
                     </template>
-                    <AgentSettingsTab :tab="tab" :active="active" :draft="draft" :is-loaded="isLoaded" :nodes="nodesOf" :read-only="view.readOnly" :found="found" :nothing-starts="nothingStarts" :advanced-extras="advancedExtras" />
+                    <AgentSettingsTab :tab="tab" :active="active" :draft="draft" :is-ready="isReady" :nodes="nodesOf" :read-only="view.readOnly" :found="found" :nothing-starts="nothingStarts" :advanced-extras="advancedExtras" />
                 </template>
                 <template #presets>
                     <AgentSettingsPresets :presets="presets" :switches="switches" :now="form" :read-only="view.readOnly" @back="page = 'main'" @fill="fill" />

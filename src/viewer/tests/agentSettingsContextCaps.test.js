@@ -37,7 +37,7 @@ test("choosing No cap on a kind writes kind:none for it and keeps the other kind
 test("a type with a cap of its own is named under the table, with the way it is changed", async () => {
     const {element} = await mount();
     await choose(element, "advanced");
-    expect(element.querySelector("[data-layout-note]").textContent.replace(/\s+/g, " ").trim()).toBe("Researcher 150k. They are changed on their own screens.");
+    expect(element.querySelector("[data-layout-note]").textContent.replace(/\s+/g, " ").trim()).toBe("Researcher 150k. They are changed on other screens.");
 });
 
 test("the screen of a type shows its cap as one of three choices over the entry of its profile", async () => {

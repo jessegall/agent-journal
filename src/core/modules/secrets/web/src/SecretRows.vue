@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {ActionsMenu, Btn, CardPage, Icon, removed, useWindow} from "@journal/window-kit";
+import {ActionsMenu, Btn, CardPage, Icon, Skeleton, removed, useWindow} from "@journal/window-kit";
 import SecretDialog from "./SecretDialog.vue";
 import SecretNewDialog from "./SecretNewDialog.vue";
 import {secretCard, secretFields, secretMenu} from "./secretItems.js";
@@ -25,8 +25,9 @@ const place = (item) => ({head: item.title, items: menuOf(item)});
             <template v-if="failure">
               <p class="failure" role="alert">{{ failure }}</p>
             </template>
+            <template v-else-if="!loaded"><Skeleton shape="rows" /></template>
             <template v-else>
-              <p class="lead">{{ loaded ? "Add a key or login to get started. Only its name will appear here." : "Loading" }}</p>
+              <p class="lead">Add a key or login to get started. Only its name will appear here.</p>
             </template>
         </template>
         <template #card="{item}">

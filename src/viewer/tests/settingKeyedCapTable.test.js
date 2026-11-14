@@ -13,7 +13,7 @@ test("a row has a name, three choices and a line saying where its size is set", 
     expect(ROWS.map((entry) => row(drawn, entry.key).querySelector(".name").textContent)).toEqual(["Main agent", "Workers", "Merger"]);
     expect([...row(drawn, "main").querySelectorAll("[data-segment]")].map((button) => button.textContent)).toEqual(["Default cap", "A size", "No cap"]);
     expect(row(drawn, "main").querySelector(".where").textContent).toBe("Uses the size set for every agent: 400k");
-    expect(row(drawn, "worker").querySelector(".where").textContent).toBe("Its own size");
+    expect(row(drawn, "worker").querySelector(".where").textContent).toBe("Set for this type");
     expect(row(drawn, "merger").querySelector(".where").textContent).toBe("Never compacted at a size");
 });
 
