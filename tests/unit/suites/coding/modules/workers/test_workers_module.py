@@ -25,3 +25,8 @@ def test_unanswered_questions_are_watched_and_forwarded_by_registered_parts():
     assert ForwardWorkerQuestionsHandler in WorkersModule.handlers
     assert QuestionTimesGuard in AsksModule.guards
     assert any(isinstance(tick.handler, AskWatch) for tick in WorkersModule.tick_handlers)
+
+
+def test_the_two_ticks_of_waiting_test_runs_are_named_for_test_runs():
+    names = {type(tick.handler).__name__ for tick in WorkersModule.tick_handlers}
+    assert {"StalledWorkerTestRuns", "UnlaunchedWorkerTestRuns"} <= names and not {"StalledWorkerTests", "UnlaunchedWorkerTests"} & names
