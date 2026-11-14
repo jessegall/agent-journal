@@ -327,7 +327,7 @@ def test_tasks_sent_while_a_delivery_waited_go_to_the_worker_as_one_batch_after_
     second = story.new_row_id('task make "The invoice" --brief "Add the invoice"', actor=story.agent)
     story.expect_success(f"worker send {agent_number(story, worker.id)} --wait --task {first} {second}", actor=story.agent)
     merged_operation(story, worker)
-    story.expect_text(f"worker status {agent_number(story, worker.id)}", f"task:{first}", f"task:{second}", actor=story.agent)
+    story.expect_text(f"worker status {agent_number(story, worker.id)}", f"task {first}:", f"task {second}:", actor=story.agent)
     story.expect_rows("workers.worker_without_tasks" not in main_line_keys(story), detail=str(main_line_keys(story)))
 
 
