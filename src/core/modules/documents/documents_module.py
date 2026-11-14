@@ -1,10 +1,10 @@
+from core.modules.documents.skills.declarations.documents_skills import DOCUMENTS_SKILLS
 from core.modules.documents.windows.documents_windows import DOCUMENTS_WINDOWS
 from core.modules.documents.step_conditions.report_commented import ReportCommented
 from core.modules.agents.support.agent_report_reads import AgentReportReads
 from core.modules.documents.support.row_agent_report_reads import RowAgentReportReads
 from core.modules.documents.migrations.m008_message_link_paths import MessageLinkPathsMigration
 from core.modules.documents.commands.comment_message.comment_message_subcommand import CommentMessageSubcommand
-from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.documents.commands.plan_context_read.read_plan_context_subcommand import ReadPlanContextSubcommand
 from core.modules.documents.commands.plan_context.read_plan_context_handler import ReadPlanContextHandler
 from core.modules.tasks.support.task_context_reader import TaskContextReader
@@ -108,7 +108,7 @@ class DocumentsModule(Module):
     name = "journal.core.documents"
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.messages", "journal.core.tasks", "journal.core.plans", "journal.core.docking", "journal.core.agents", "journal.core.drivers", "journal.core.processes", "journal.core.chat"]
-    skills = [SkillDeclaration("journal-documents", "Write lasting knowledge as documents and what was checked as reports; read it before the first doc or report command of a session", keywords=("document", "documents", "report"), commands=("doc", "report"))]
+    skills = DOCUMENTS_SKILLS
     nudges = [DOCUMENT_OPEN, DOCUMENT_STOP_REFUSAL]
     models = [ModelDeclaration(OpenDocument, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Doc, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Report, excluded_subcommands=ALL_SUBCOMMANDS),
               ModelDeclaration(DocRevision, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Link, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(CommentSelection, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(LinkCorrection, excluded_subcommands=ALL_SUBCOMMANDS)]

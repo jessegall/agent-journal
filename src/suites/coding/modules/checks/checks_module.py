@@ -1,3 +1,4 @@
+from suites.coding.modules.checks.skills.declarations.checks_skills import CHECKS_SKILLS
 from suites.coding.modules.checks.windows.extensions.shell_checks_extension import ShellChecksExtension
 from suites.coding.modules.checks.windows.checks_windows import CHECKS_WINDOWS
 from core.modules.tasks.support.task_wait_attempts import TaskWaitAttempts
@@ -8,7 +9,6 @@ from suites.coding.modules.checks.migrations.m007_check_task_wait_index import C
 from suites.coding.modules.checks.migrations.m006_open_check_result_index import OpenCheckResultIndexMigration
 from suites.coding.modules.checks.commands.check_runs.check_runs_subcommand import CheckRunsSubcommand
 from suites.coding.modules.checks.support.check_nudges import CHECK_NUDGES
-from engine.skill.skill_declaration import SkillDeclaration
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
 from engine.check.periodic_checks import PeriodicChecks
@@ -63,7 +63,7 @@ class ChecksModule(Module):
     requires_engine = ">=5,<6"
     block_conditions = [CheckPassed]
     dependencies = ["journal.suites.coding", "journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.viewer"]
-    skills = [SkillDeclaration("journal-checks", "Write and run scripts that pass or fail about the project; read it when a check is made, run or fails", keywords=("check", "checks"), commands=["check"])]
+    skills = CHECKS_SKILLS
     library_shares = [CheckLibraryShare]
     models = [ModelDeclaration(Check, query=CheckQuery, excluded_subcommands=BUILT)]
     inspectors = [CHECK_INSPECTOR]

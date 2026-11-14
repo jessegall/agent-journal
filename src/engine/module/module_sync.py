@@ -222,7 +222,7 @@ class ModuleSync:
         shipped = set(self.finder.default_modules())
         entries: list[SkillEntry] = []
         for module in modules:
-            for skill in module.skills:
+            for skill in module.skill_declarations():
                 path = module.folder() / SKILLS_FOLDER / skill.folder / skill.file
                 entries.append(SkillEntry(skill.folder, module.name, skill.description, tuple(skill.keywords), tuple(skill.commands), tuple(skill.events),
                                           SkillContents.read(path).digest, str(path), module in shipped, types=tuple(skill.types), required_setting=skill.required_setting))

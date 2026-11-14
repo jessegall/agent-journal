@@ -1,3 +1,4 @@
+from core.modules.plugins.skills.declarations.plugins_skills import PLUGINS_SKILLS
 from core.modules.plugins.support.plugin_installed_names import PluginInstalledNames
 from core.modules.processes.support.installed_plugins import InstalledPlugins
 from core.modules.plugins.migrations.m012_queued_run_names import QueuedRunNamesMigration
@@ -19,7 +20,6 @@ from core.modules.plugins.commands.log_plugin_line.log_plugin_line_handler impor
 from core.modules.plugins.commands.log_plugin_line.log_plugin_line_subcommand import LogPluginLineSubcommand
 from core.modules.plugins.migrations.m004_plugin_session import PluginSessionMigration
 from core.modules.plugins.migrations.m003_plugin_output_index import PluginOutputIndexMigration
-from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.plugins.commands.deliver_file_edit.deliver_file_edit_handler import DeliverFileEditHandler
 from engine.file.project_reads import ProjectReads
 from core.modules.plugins.guards.plugin_event_guard import PluginEventGuard
@@ -133,7 +133,7 @@ class PluginsModule(Module):
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.chat", "journal.core.skills",
                     "journal.core.processes", "journal.core.agents", "journal.core.messages"]
-    skills = [SkillDeclaration("journal-plugins", "See what plugins do, install and upgrade them or propose one to the user; read it before the first plugin command of a session", keywords=("plugin", "plugins"), commands=["plugin"])]
+    skills = PLUGINS_SKILLS
     models = [ModelDeclaration(QueuedRun, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Plugin, query=PluginQuery, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(PluginSetting, excluded_subcommands=ALL_SUBCOMMANDS),
               ModelDeclaration(PluginDelivery, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(PluginOutput, excluded_subcommands=ALL_SUBCOMMANDS),
               ModelDeclaration(PluginQueueFile, excluded_subcommands=ALL_SUBCOMMANDS)]

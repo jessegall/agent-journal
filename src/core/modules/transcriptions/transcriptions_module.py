@@ -1,9 +1,9 @@
+from core.modules.transcriptions.skills.declarations.transcriptions_skills import TRANSCRIPTIONS_SKILLS
 from core.modules.transcriptions.migrations.m002_environment_index import TranscriptionsEnvironmentIndexMigration
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
 from engine.viewer.window_search import WindowSearch
 from core.modules.transcriptions.support.transcription_searcher import TranscriptionSearcher
-from engine.skill.skill_declaration import SkillDeclaration
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
 from engine.enums.key_loading import KeyLoading
@@ -31,8 +31,7 @@ class TranscriptionsModule(Module):
     move_reason = "version 4 had no transcriptions"
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.documents", "journal.core.mcp"]
-    skills = [SkillDeclaration("journal-transcriptions", "Turn a transcript into summaries, notes, documents, tasks or plans linked back to it; read it when a transcription arrives or is edited",
-                               keywords=("transcription", "transcriptions", "transcript"), commands=["transcription"], types=["main"])]
+    skills = TRANSCRIPTIONS_SKILLS
     models = [ModelDeclaration(Transcription)]
     migrations = [TranscriptionsTableMigration, TranscriptionsEnvironmentIndexMigration]
     handlers = [AddTranscriptionLinkHandler, RequestTranscriptionFetchHandler]

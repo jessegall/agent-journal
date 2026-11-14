@@ -1,3 +1,4 @@
+from core.modules.tasks.skills.declarations.tasks_skills import TASKS_SKILLS
 from core.modules.tasks.commands.repair_task_states.repair_task_states_handler import RepairTaskStatesHandler
 from core.modules.tasks.ticks.task_state_sweep import SWEEP_SECONDS as TASK_SWEEP_SECONDS, TaskStateSweep
 from engine.ticker.tick_handler import TickHandler
@@ -30,7 +31,6 @@ from core.modules.tasks.models.task_block_review import TaskBlockReview
 from core.modules.tasks.migrations.m011_task_block_renewals import TaskBlockRenewalsMigration
 from core.modules.tasks.listeners.task_block_renewal_listener import TaskBlockRenewalListener
 from core.modules.tasks.support.block_conditions.task_blocks_reviewed import TaskBlocksReviewed
-from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.tasks.support.task_nudges import TASK_NUDGES
 from core.modules.tasks.rules.task_return_reminder_rule import TaskReturnReminderRule
 from core.modules.tasks.rules.blocked_work_rule import BlockedWorkRule
@@ -160,7 +160,7 @@ class TasksModule(Module):
     block_conditions = [TaskStopped, TaskStarted, TaskClosed, StartedTaskExists, TaskLogged, TaskBriefRead, TaskBlocksReviewed]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking", "journal.core.settings", "journal.core.assignments"]
     bindings = {AgentTaskReads: RowAgentTaskReads}
-    skills = [SkillDeclaration("journal-tasks", "Use tasks to declare, log and finish the current work; read it before the first task command of a session", keywords=("task", "tasks", "todo"), commands=["task"])]
+    skills = TASKS_SKILLS
     models = [ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS, excluded_subcommands=["block", "release-holder"]), ModelDeclaration(TaskTag, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency), ModelDeclaration(TaskWait, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(TaskBlockRenewal, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(TaskRead, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
     migrations = [TaskHolderAnyActorMigration, DropTaskDelegationMigration, TaskAssignmentsMigration, TaskFocusTimeMigration, TaskHolderDelegationMigration, BlockWaitingTasksMigration, TaskLogImportantMigration, TaskReadSessionMigration, PendingWaitsIndexMigration, OpenTaskEdgeIndexMigration, ClosedTaskIndexMigration, TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartTimeMigration, TaskDelegationMigration, DelegatedTaskIndexMigration, TaskReadsTableMigration, TaskBlockRenewalsMigration, TaskClosedCursorIndexMigration, AllEnvironmentsTaskStateIndexMigration, TaskComplexityMigration, TaskTagsMigration, TaskEnvironmentIdIndexMigration, TaskIndependenceReasonMigration]

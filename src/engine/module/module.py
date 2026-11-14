@@ -99,7 +99,7 @@ class Module:
     tunnels: ClassVar[list[type[Tunnel]]] = []
     shared_rows: ClassVar[list[type[SharedRows]]] = []
     library_shares: ClassVar[list[type[LibraryShareClass]]] = []
-    skills: ClassVar[list[SkillDeclaration]] = []
+    skills: ClassVar[list[SkillDeclaration | type[SkillDeclaration]]] = []
     seeders: ClassVar[list[type[Seeder]]] = []
     moves: ClassVar[list[type[VersionFourMove]]] = []
     move_reason: ClassVar[str] = ""
@@ -120,6 +120,11 @@ class Module:
     @classmethod
     def extension_declarations(cls) -> list[WindowExtension]:
         return [extension.declared() if isinstance(extension, type) else extension for extension in cls.window_extensions]
+
+    # a skill written as a class gives its declaration; an inline declaration is its own
+    @classmethod
+    def skill_declarations(cls) -> list[SkillDeclaration]:
+        return [skill.declared() if isinstance(skill, type) else skill for skill in cls.skills]
 
     @classmethod
     def declared_buttons(cls) -> list[ButtonDeclaration]:

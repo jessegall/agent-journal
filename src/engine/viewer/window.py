@@ -1,4 +1,4 @@
-from engine.viewer.class_fields import class_fields
+from engine.types.class_fields import class_fields
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
 

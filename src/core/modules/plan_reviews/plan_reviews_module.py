@@ -1,6 +1,6 @@
+from core.modules.plan_reviews.skills.declarations.plan_reviews_skills import PLAN_REVIEWS_SKILLS
 from engine.module.module import Module
 from core.modules.plans.support.plan_button_slots import WAITING_PLAN_SLOTS
-from engine.skill.skill_declaration import SkillDeclaration
 from engine.viewer.button_declaration import ButtonCondition, ButtonDeclaration, Choice, ChoiceField, TemplateField, TextField
 from engine.viewer.skeleton_part import SkeletonPart
 from engine.viewer.window_declaration import WindowDeclaration
@@ -31,7 +31,7 @@ class PlanReviewsModule(Module):
     seed_reason = "its only state and rounds come from what a plan does"
     move_reason = "version 4 plan reviews were dropped when a journal moved"
     dependencies = ["journal.core.agents", "journal.core.documents", "journal.core.drivers", "journal.core.plans", "journal.core.skills", "journal.core.templates", "journal.core.viewer", "journal.core.actors"]
-    skills = [SkillDeclaration("journal-plan-review-applying", "Work a critique of a plan into the plan, which is a light job; read it before you work a report of reviews into a plan or end its review", keywords=("review", "critique"), commands=tuple(["plan reviewed"]))]
+    skills = PLAN_REVIEWS_SKILLS
     added_states = tuple([REVIEW_STATE])
     listeners = [CritiqueReportListener, CheckpointReviewReportListener, CheckpointReviewStartListener]
     handlers = [StartCheckpointReviewHandler]

@@ -1,6 +1,6 @@
+from core.modules.project_rules.skills.declarations.project_rules_skills import PROJECT_RULES_SKILLS
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
-from engine.skill.skill_declaration import SkillDeclaration
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
 from engine.enums.window_icon import WindowIcon
@@ -36,7 +36,7 @@ class ProjectRulesModule(Module):
     guards = [RuleApprovalGuard]
     settings = RULE_SETTINGS
     nudges = RULE_NUDGES
-    skills = [SkillDeclaration("journal-rules", "Declare project rules, the standing instructions every agent gets at its start; read it before the first rule command of a session", keywords=("rule", "rules"), commands=["rule"])]
+    skills = PROJECT_RULES_SKILLS
     driver_rules = [StartRulesRule]
     windows = [WindowDeclaration("project-rules.rules", "Rules", "rules.js", WindowLoading.COMPONENT, skeleton=PROJECT_RULES_RULES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.RULE, reads=["rule list"],
                                  keys=[WindowKey("rules", "rule list", events=["rule.*"], arguments=["limit", "before-id", "after-id"], page_size=50)],

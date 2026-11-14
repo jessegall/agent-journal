@@ -1,5 +1,5 @@
+from core.modules.dumps.skills.declarations.dumps_skills import DUMPS_SKILLS
 from core.modules.dumps.migrations.m003_dump_closed_index import DumpClosedIndexMigration
-from engine.skill.skill_declaration import SkillDeclaration
 from engine.module.model_declaration import BUILT, ModelDeclaration
 from engine.module.module import Module
 from engine.viewer.window_search import WindowSearch
@@ -41,7 +41,7 @@ class DumpsModule(Module):
     name = "journal.core.dumps"
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.docking", "journal.core.agents", "journal.core.drivers"]
-    skills = [SkillDeclaration("journal-dumps", "File what the user dropped in a dump by sorting the material by subject into rows of their own; read it when a dump arrives", keywords=("dump", "dumps", "dumped"), commands=["dump"], types=["main"])]
+    skills = DUMPS_SKILLS
     models = [ModelDeclaration(Dump, excluded_subcommands=BUILT), ModelDeclaration(DumpItem, excluded_subcommands=BUILT)]
     migrations = [DumpClosedIndexMigration, DumpsTablesMigration, ProjectDumpsMigration]
     moves = [DumpsMove]

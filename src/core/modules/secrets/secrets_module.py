@@ -1,5 +1,5 @@
+from core.modules.secrets.skills.declarations.secrets_skills import SECRETS_SKILLS
 from core.modules.secrets.migrations.m002_active_secret_index import ActiveSecretIndexMigration
-from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.secrets.support.secret_nudges import SECRET_NUDGES
 from engine.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from engine.module.module import Module
@@ -46,7 +46,7 @@ class SecretsModule(Module):
     nudges = SECRET_NUDGES
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages"]
-    skills = [SkillDeclaration("journal-secrets", "Use keys and logins without seeing them; read it when a task needs a key or a login", keywords=("secret", "secrets", "api key", "token", "password", "login"), commands=["secret"])]
+    skills = SECRETS_SKILLS
     seeders = [SecretsSeeder]
     models = [ModelDeclaration(Secret, query=SecretQuery, excluded_subcommands=ALL_SUBCOMMANDS)]
     migrations = [ActiveSecretIndexMigration, SecretsTableMigration, ErasedDeletedSecretsMigration]

@@ -1,3 +1,4 @@
+from core.modules.memories.skills.declarations.memories_skills import MEMORIES_SKILLS
 from core.modules.memories.windows.memories_windows import MEMORIES_WINDOWS
 from core.modules.memories.commands.memory_agents.memory_agents_subcommand import MemoryAgentsSubcommand
 from core.modules.memories.commands.memory_list.memory_list_subcommand import MemoryListSubcommand
@@ -7,7 +8,6 @@ from core.modules.memories.migrations.m007_memory_session import MemorySessionMi
 from core.modules.memories.migrations.m008_memory_removed_index import MemoryRemovedIndexMigration
 from core.modules.memories.migrations.m005_memory_scope_index import MemoryScopeIndexMigration
 from core.modules.memories.migrations.m006_memory_owner import MemoryOwnerMigration
-from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.memories.support.memory_nudges import MEMORY_NUDGES
 from engine.module.model_declaration import ModelDeclaration
 from core.modules.memories.commands.memory_counts.memory_counts_subcommand import MemoryCountsSubcommand
@@ -77,7 +77,7 @@ class MemoriesModule(Module):
     settings = MEMORY_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.settings", "journal.core.chat", "journal.core.docking",
                     "journal.core.drivers", "journal.core.documents"]
-    skills = [SkillDeclaration("journal-memory", "Keep what matters beyond the context window with weighted memories; read it before the first memory command of a session, or when the context reaches a mark", keywords=("memory", "memories", "remember"), commands=["memory"])]
+    skills = MEMORIES_SKILLS
     models = [ModelDeclaration(Memory, commands=[RemoveMemory], excluded_subcommands=["make", "list"]), ModelDeclaration(MemoryKeyword),
               ModelDeclaration(MemoryDelivery, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(MemoryMark, excluded_subcommands=["make", "edit", "delete", "weigh", "skip"])]

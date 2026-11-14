@@ -1,7 +1,7 @@
+from core.modules.sequences.skills.declarations.sequences_skills import SEQUENCES_SKILLS
 from core.modules.sequences.migrations.m009_environment_index import SequenceRunsEnvironmentIndexMigration
 from core.modules.sequences.migrations.m008_sequence_session import SequenceSessionMigration
 from core.modules.sequences.migrations.m007_open_run_order_index import OpenRunOrderIndexMigration
-from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.sequences.support.sequence_nudges import SEQUENCE_NUDGES
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
@@ -70,7 +70,7 @@ class SequencesModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.documents", "journal.core.plans", "journal.core.questions"]
     block_conditions = [SequenceStepStarted]
     bindings = {StopBlockers: SequenceStopBlockers}
-    skills = [SkillDeclaration("journal-sequences", "Follow a sequence of steps one at a time; read it when a sequence is run or written", keywords=("sequence", "sequences"), commands=["sequence"])]
+    skills = SEQUENCES_SKILLS
     library_shares = [SequenceLibraryShare]
     models = [ModelDeclaration(Sequence, query=SequenceQuery, excluded_subcommands=BUILT), ModelDeclaration(SequenceRun, query=SequenceRunQuery, excluded_subcommands=RUN_BUILT)]
     migrations = [SequenceSessionMigration, OpenRunOrderIndexMigration, SequencesTablesMigration, SequenceTriggersMigration, TriggerEventMigration, CloseLegacyStepBlocksMigration, RunSubjectMigration, OpenRunSubjectIndexMigration, SequenceRunsEnvironmentIndexMigration]

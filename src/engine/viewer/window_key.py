@@ -4,7 +4,7 @@ from dataclasses import dataclass, replace
 
 from engine.enums.key_loading import KeyLoading
 from engine.errors.refusal import Refusal
-from engine.viewer.class_fields import class_fields
+from engine.types.class_fields import class_fields
 
 ID_SUFFIX = ".*"
 ID_TOKEN = "{id}"

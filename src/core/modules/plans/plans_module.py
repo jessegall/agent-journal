@@ -1,10 +1,10 @@
+from core.modules.plans.skills.declarations.plans_skills import PLANS_SKILLS
 from core.modules.plans.commands.repair_plan_states.repair_plan_states_handler import RepairPlanStatesHandler
 from core.modules.plans.ticks.plan_state_sweep import PlanStateSweep
 from core.modules.tasks.ticks.task_state_sweep import SWEEP_SECONDS as PLAN_SWEEP_SECONDS
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
 from core.modules.plans.migrations.m012_environment_index import PlanContextReadsEnvironmentIndexMigration
-from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.plans.support.plan_settings import PLAN_SETTINGS
 from engine.module.model_declaration import ALL_SUBCOMMANDS
 from core.modules.plans.migrations.m008_plan_context_reads import PlanContextReadsMigration
@@ -148,9 +148,7 @@ class PlansModule(Module):
     block_conditions = [PlanApproved, PlanFinished, PlanContextReadCondition]
     bindings = {PlanAuthors: PlanRowAuthors, BlockReviewScope: FocusedBlockReviewScope}
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.chat", "journal.core.docking", "journal.core.drivers", "journal.core.messages", "journal.core.assignments"]
-    skills = [SkillDeclaration("journal-plans", "Build and follow a plan of ordered tasks; read it before the first plan command of a session, or when the user asks for a plan or a roadmap", keywords=("plan", "plans", "roadmap", "phases"), commands=("plan", "phase")),
-              SkillDeclaration("journal-planning", "Build a thorough plan with real steps in each phase, one task per step, and a brief that can be carried out alone; read it before you make a plan or a phase", keywords=("plan", "phases"), commands=("plan make", "phase make")),
-              SkillDeclaration("journal-task-cleanup", "Follow the steps that sort the open tasks in no plan into covered, duplicate and still valid ones; read it when you are asked to clean up, group or cancel loose tasks")]
+    skills = PLANS_SKILLS
     models = [ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]), ModelDeclaration(PlanContextRead, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(PlanWait, excluded_subcommands=ALL_SUBCOMMANDS),
               ModelDeclaration(CheckpointReach, commands=tuple([FailCheckpoint]), excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(CheckpointPass, excluded_subcommands=["make", "edit", "delete"])]
     migrations = [PlanAssignmentsMigration, PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration, PlanContextReadsMigration, PlanWaitsMigration, CheckpointsMigration, CheckpointReachSourceMigration, PlanContextReadsEnvironmentIndexMigration, CheckpointReviewsMigration, CheckpointReviewReportMigration, AgentCommitReachesMigration, PlanContextStartEventUnboundMigration, StartedPlansKeepNoWaitReasonMigration]

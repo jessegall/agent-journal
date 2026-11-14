@@ -1,4 +1,4 @@
-from engine.skill.skill_declaration import SkillDeclaration
+from core.modules.templates.skills.declarations.templates_skills import TEMPLATES_SKILLS
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
 from engine.template.template_declaration import TemplateDeclaration
@@ -37,7 +37,7 @@ class TemplatesModule(Module):
                                      brief="Read it as a whole and say what you would change, and why.")]
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.drivers", "journal.core.messages", "journal.core.documents", "journal.core.plans", "journal.core.agents", "journal.core.skills"]
-    skills = [SkillDeclaration("journal-templates", "Find and use a template for a task, a plan or a review; read it before the first template command of a session", keywords=("template", "templates"), commands=["template"])]
+    skills = TEMPLATES_SKILLS
     models = [ModelDeclaration(Template, query=TemplateQuery, excluded_subcommands=["make", "show", "list"])]
     migrations = [TemplatesTableMigration, TemplateModuleColumnMigration]
     moves = [TemplatesMove]

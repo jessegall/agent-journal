@@ -1,10 +1,10 @@
+from core.modules.skills.skills.declarations.skills_skills import SKILLS_SKILLS
 from core.modules.skills.commands.set_required_skill.set_required_skill_handler import SetRequiredSkillHandler
 from core.modules.skills.rules.loaded_skill_rule import LoadedSkillRule
 from core.modules.skills.commands.set_required_skill.set_required_skill_subcommand import SetRequiredSkillSubcommand
 from core.modules.skills.commands.skill_requirements.skill_requirements_subcommand import SkillRequirementsSubcommand
 from core.modules.skills.migrations.m003_skill_session import SkillSessionMigration
 from engine.viewer.window_read_search import WindowReadSearch
-from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.skills.listeners.skill_publish_listener import SkillPublishListener
 from core.modules.skills.support.skill_nudges import SKILL_NUDGES
 from engine.module.model_declaration import ModelDeclaration
@@ -82,8 +82,7 @@ class SkillsModule(Module):
     block_conditions = [SkillsRead, SkillLoaded]
     settings = SKILL_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.settings", "journal.core.chat", "journal.core.processes", "journal.core.environments", "journal.core.profiles"]
-    skills = [SkillDeclaration("journal", "Find your way in the journal: what it is, its basic ideas and which skill to load for what; read it before your first command of every session"),
-              SkillDeclaration("journal-etiquette", "Behave in the chat with the user and keep the journal's own mechanics out of it; read it before your first reply of every session, with the journal skill", types=["main"])]
+    skills = SKILLS_SKILLS
     models = [ModelDeclaration(AgentSkill, commands=[LoadAgentSkill]), ModelDeclaration(SkillRequest, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
     migrations = [SkillSessionMigration, SkillsTablesMigration, SkillRequestsTableMigration]
     subcommands = [SaveProfileSubcommand, ProfileSkillsSubcommand, SetRequiredSkillSubcommand, SkillRequirementsSubcommand, SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand, SkillShowSubcommand, AgentSkillUnreadSubcommand, SkillRequiredSubcommand]

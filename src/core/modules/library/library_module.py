@@ -1,4 +1,4 @@
-from engine.skill.skill_declaration import SkillDeclaration
+from core.modules.library.skills.declarations.library_skills import LIBRARY_SKILLS
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.enums.window_icon import WindowIcon
 from engine.enums.window_loading import WindowLoading
@@ -91,8 +91,7 @@ class LibraryModule(Module):
                    RevokeLibraryTokenSubcommand,
                    MakeLibraryCopySubcommand, SendLibraryItemSubcommand, LeaveLibraryCopySubcommand, LibraryCopiesSubcommand, RunLibrarySyncSubcommand, ChooseLibraryVersionSubcommand, RemoveLibraryItemSubcommand, RestoreLibraryItemSubcommand]
     tick_handlers = [TickHandler(TickInterval(seconds=10), LibrarySyncTick(), "library sync")]
-    skills = [SkillDeclaration("journal-library", "Use the library to find, read, get and share a team's documents, sequences and checks; read it when a shared item is needed",
-                               keywords=("library", "team", "shared"), commands=["library"])]
+    skills = LIBRARY_SKILLS
     windows = [WindowDeclaration("library.teams", "Teams", "teams.js", WindowLoading.COMPONENT, skeleton=LIBRARY_TEAMS_SKELETON, search=WindowReadSearch("library list", "Search the library", ("title", "abstract")),
                                  place=WindowPlace.PAGE, group="project", icon=WindowIcon.SHARE, reads=["library status", "library list", "library browse", "library inspect", "library show", "library copies", "library-user list", "library-user tokens"],
                                  keys=[WindowKey("status", "library status", events=["library_connection.*"]),

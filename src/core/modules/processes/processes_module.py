@@ -1,3 +1,4 @@
+from core.modules.processes.skills.declarations.processes_skills import PROCESSES_SKILLS
 from core.modules.processes.commands.list_execution_classes.list_lanes_subcommand import ListLanesSubcommand
 from core.modules.processes.commands.choose_execution_preset.choose_execution_preset_handler import ChooseExecutionPresetHandler
 from core.modules.processes.commands.choose_execution_preset.choose_execution_preset_subcommand import ChooseExecutionPresetSubcommand
@@ -98,7 +99,6 @@ from core.modules.processes.commands.resume_run_queue.resume_run_queue_handler i
 from core.modules.processes.commands.resume_run_queue.resume_run_queue_subcommand import ResumeRunQueueSubcommand
 from core.modules.processes.rules.run_queue_halted_rule import RunQueueHaltedRule
 from core.modules.processes.listeners.waiting_message_run_listener import WaitingMessageRunListener
-from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.processes.support.process_nudges import PROCESS_NUDGES
 from engine.driver.watched_runs import WatchedRuns
 from core.modules.processes.support.monitored_runs import MonitoredRuns
@@ -316,8 +316,7 @@ class ProcessesModule(Module):
                      TickHandler(TickInterval(seconds=1), RunTimeouts(), "run timeouts"), TickHandler(TickInterval(seconds=15), HangWatch(), "hang watch"), TickHandler(TickInterval(seconds=10), CadenceWatch(), "cadence watch"), TickHandler(TickInterval(seconds=15), OutputChecks(), "output checks"),
                      TickHandler(TickInterval(seconds=15), RunEndRecovery(), "run end recovery", starts_immediately=True),
                      TickHandler(TickInterval(seconds=15 * 60), ProcessPruning(), "process pruning"), TickHandler(TickInterval(seconds=5), RequestLogImport(), "request log import")]
-    skills = [SkillDeclaration("journal-shell", "Run shell commands through the journal and read what they printed; read it before reading an output, or writing a reader or an alias",
-                               keywords=("output", "reader", "alias"))]
+    skills = PROCESSES_SKILLS
     requires_engine = ">=5,<6"
     block_conditions = [ReaderRequestCompleted, OutputEnded, OutputRead, OutputTitled, OutputReadSinceBlock, OutputMonitored]
     settings = PROCESS_SETTINGS

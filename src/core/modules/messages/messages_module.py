@@ -1,3 +1,4 @@
+from core.modules.messages.skills.declarations.messages_skills import MESSAGES_SKILLS
 from core.modules.messages.migrations.m023_environment_index import MessageWorkSourcesEnvironmentIndexMigration
 from core.modules.messages.migrations.m020_message_parent_environment import MessageParentEnvironmentMigration
 from core.modules.messages.commands.report_safeguards_stop.report_safeguards_stop_handler import ReportSafeguardsStopHandler
@@ -87,7 +88,6 @@ from core.modules.messages.states.unread_countdown import UnreadCountdown
 from core.modules.messages.commands.reply_message.reply_message_subcommand import ReplyMessageSubcommand
 from core.modules.messages.commands.send_message.send_message_subcommand import SendMessageSubcommand
 from engine.module.module import Module
-from engine.skill.skill_declaration import SkillDeclaration
 from engine.viewer.choice_option import ChoiceOption
 from engine.viewer.toggle_option import ToggleOption
 from engine.viewer.window_declaration import WindowDeclaration
@@ -163,9 +163,6 @@ class MessagesModule(Module):
                                  options=[ChoiceOption("figure", "Figure", [("voice", "The voice I chose"), ("none", "None"), ("butler", "Butler"), ("homie", "Homie"), ("coach", "Coach"), ("colleague", "Colleague"), ("squire", "Squire")], "voice"),
                                           ToggleOption("floors", "Show floors")])]
     marks = MESSAGE_MARKS
-    skills = [SkillDeclaration("journal-flowcharts", "Draw a flowchart in the chat and know when one fits; read it when the user asks for a flowchart or a diagram, or a process with branches is easier to see than to read",
-                               keywords=("flowchart", "flow chart", "diagram")),
-              SkillDeclaration("journal-messages", "Read and answer the user's messages and ask the user questions; read it before the first message command of a session",
-                               keywords=("message", "reply", "question"), commands=("message", "question"))]
+    skills = MESSAGES_SKILLS
     listeners = [NewSessionWorkSourceListener, ReportPinListener, MessageRowsListener, MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, WaitingMessageTypingListener, ReadMessageLineListener, ReleasedMessageLineListener, AllowedStopListener, DeletedWorkSourceListener, DeletedAgentWorkSourceListener, TaggedImageBlockListener]
     seeders = [MessagesSeeder]

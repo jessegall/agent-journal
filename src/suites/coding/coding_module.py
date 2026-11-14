@@ -1,3 +1,4 @@
+from suites.coding.skills.declarations.coding_skills import CODING_SKILLS
 from suites.coding.windows.extensions.coding_window_extensions import CODING_WINDOW_EXTENSIONS
 from suites.coding.migrations.m006_main_starts_helpers_key import MainStartsHelpersKeyMigration
 from suites.coding.migrations.m007_read_only_helpers_key import HelpersKeyMigration
@@ -9,7 +10,6 @@ from suites.coding.support.shipped_profiles import HELPER_PROFILES
 from suites.coding.support.coding_nudges import CODING_NUDGES
 from suites.coding.support.coding_templates import CODING_TEMPLATES
 from engine.module.model_declaration import ModelDeclaration
-from engine.skill.skill_declaration import SkillDeclaration
 from engine.module.module import Module
 from engine.agent.groups.agent_group import AgentGroup
 from suites.coding.models.file_edit import FileEdit
@@ -45,7 +45,6 @@ from suites.coding.rules.graphify_search_rule import GraphifySearchRule
 from suites.coding.listeners.graphify_hook_removal_listener import GraphifyHookRemovalListener
 from suites.coding.support.graphify_nudges import TOOL_NUDGES
 from suites.coding.support.graphify_settings import GRAPHIFY_SETTING_VALUES
-from suites.coding.support.graphify_tool import GRAPHIFY
 from suites.coding.bindings.coding_tool_runners import CodingToolRunners
 from suites.coding.migrations.m010_graphify_setting_keys import GraphifySettingKeysMigration
 from suites.coding.migrations.m011_worker_profile_names import WorkerProfileNamesMigration
@@ -76,13 +75,7 @@ class CodingModule(Module):
     moves = [FileEditsMove, ViewerLayoutsMove, CodingSettingsMove]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.assignments", "journal.core.assign_rules", "journal.core.plans", "journal.core.settings", "journal.core.setting-requests", "journal.core.viewer", "journal.core.plugins", "journal.core.processes", "journal.core.messages", "journal.core.questions", "journal.core.helpers", "journal.core.tools"]
     drivers = [MainDriver, HelperDriver, WorkerDriver]
-    skills = [SkillDeclaration("journal-plain-code-words", "Use plain words for every variable, method, class and file, by a ladder; read it before you name anything", keywords=("naming", "rename"), required_setting=PLAIN_NAMES_SETTING),
-              SkillDeclaration("journal-graphify", "Find code through the project's knowledge graph with graphify query, explain and path, using names from the code instead of questions; read it before you search the code while Graphify is on", keywords=["graphify"], required_setting=GRAPHIFY.settings_key),
-              SkillDeclaration("journal-plan-dispatch", "Send a functional designer and then a planner to make the plan; read it when the user asks for a plan", keywords=("plan", "roadmap"), types=["main"]),
-              SkillDeclaration("journal-functional-design", "Write a functional design of user stories, code examples and the phases in order; read it before you write one"),
-              SkillDeclaration("journal-user-stories", "Write user stories for any system design from every angle, and group them into story books; read it before you write stories or a functional design", keywords=("user story", "user stories", "story book")),
-              SkillDeclaration("journal-work-modes", "Work as the main agent of the coding suite from its work controls; read it when auto mode, the presets, read-only helpers or the worker limit come up", keywords=("builder", "orchestrator", "auto mode", "work mode"), types=["main"]),
-              SkillDeclaration("journal-test-draining", "Work off the failed tests of a full run from one file, biggest cause first, with no full rerun until it is empty; read it when a full run has failures", keywords=("failed tests", "full run"))]
+    skills = CODING_SKILLS
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
     migrations = [FileEditOldPathMigration, FileEditOldPathNameMigration, WorkerProfileNamesMigration, HelperRequestKeysMigration, HelpersKeyMigration, MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration, PruneFileEditsMigration, GraphifySettingKeysMigration]
     handlers = [RecordFileEditHandler, RecordFileChangesHandler, PruneFileEditsHandler]
