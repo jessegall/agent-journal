@@ -1,0 +1,5 @@
+from suites.coding.modules.workers.windows.extensions.agents_worker_progress_extension import AgentsWorkerProgressExtension
+from suites.coding.modules.workers.windows.extensions.helpers_worker_progress_extension import HelpersWorkerProgressExtension
+from suites.coding.modules.workers.windows.extensions.shell_workers_extension import ShellWorkersExtension
+
+WORKERS_WINDOW_EXTENSIONS = [AgentsWorkerProgressExtension, HelpersWorkerProgressExtension, ShellWorkersExtension]
