@@ -1,3 +1,5 @@
+import pytest
+
 from tests.stories.core.support.agent_labels import agent_number
 from engine.testing.stories.story_fixture import StoryFixture
 
@@ -5,8 +7,6 @@ from datetime import timedelta
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.registry.registry import Registry
-from engine.registry.suite_windows import SuiteWindows
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
@@ -93,10 +93,22 @@ def test_a_prompt_that_is_a_jobs_words_is_its_run_and_shows_a_mark(new_story):
     story.hook("s-1", HookSamples.prompt("Check the build\nand say"))
     story.run_listeners()
     story.expect_text("chat-mark list --environment 1", f"Scheduled job {JOB} ran")
-    story.expect_text(f"scheduled-job show 1", "last_run_at: 2026", actor=story.user)
+    story.expect_text("scheduled-job show 1", "last_run_at: 2026", actor=story.user)
 
 
 def test_a_job_that_does_not_repeat_ends_with_its_run(new_story):
     story = new_story(fixture=OneTimeBuildJob)
     story.hook("s-1", HookSamples.prompt("Check the build\nand say"))
-    story.expect_text(f"scheduled-job show 1", "ended_at: 2026", actor=story.user)
+    story.expect_text("scheduled-job show 1", "ended_at: 2026", actor=story.user)
+
+
+def test_stopping_a_job_that_ended_is_refused_naming_that_it_ended(new_story):
+    story = new_story(fixture=OneTimeBuildJob)
+    story.hook("s-1", HookSamples.prompt("Check the build\nand say"))
+    story.expect_refusal("scheduled-job stop 1", "ended", actor=story.agent)
+
+
+@pytest.mark.xfail(strict=True, reason="the journal sees a job's run only as a prompt of its words: Claude Code tells it no next run and no outcome")
+def test_a_jobs_state_names_its_next_run_and_last_outcome(new_story):
+    story = new_story(fixture=ScheduledBuildJob)
+    story.expect_text("scheduled-job show 1", "next run", "last outcome", actor=story.agent)
