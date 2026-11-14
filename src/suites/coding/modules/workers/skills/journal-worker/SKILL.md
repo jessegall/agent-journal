@@ -1,6 +1,6 @@
 ---
 name: journal-worker
-description: Work your assigned tasks in your worktree, prove them, commit and ask for the merge; read it at the start of every worker session
+description: Work your assigned tasks in your worktree, prove them, commit and ask for the merge; read it when a worker session starts
 ---
 
 # Being a worker

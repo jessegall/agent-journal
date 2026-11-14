@@ -104,6 +104,11 @@ class Process(EnvironmentScoped, Model):
     def is_journal_merge(self) -> bool:
         return self.run_name == ProcessType.MERGE.value
 
+    # A merge hook the journal started after a merge: not a line any agent ran.
+    @property
+    def is_merge_hook(self) -> bool:
+        return self.run_name == ProcessType.MERGE_HOOK.value
+
     def finish(self, timestamp: Timestamp, actor: Actor, exit_code: int) -> "Process":
         return self.moved(ProcessLifecycle.finish, exit_code=exit_code, ended_at=timestamp, queued_at=None, slot_assigned=False, progress=FINISHED_PROGRESS)
 

@@ -5,8 +5,8 @@ description: Send a worker to write a bounded job, check its proofs and merge it
 
 # Dispatching workers
 
-A worker is a helper that writes: it works in a worktree on its assigned tasks, each with its own brief. A stopped worker
-stays kept on the same agent number and session until retired.
+Dispatching puts a helper that writes into a worktree of its own for a bounded job; the worker stays kept under its
+agent number and session until the main agent retires it.
 
 ## Sending
 

@@ -46,6 +46,7 @@ COMMIT_FORMAT = "--format=%h%x00%B%x1e"
 BASE_COMMIT_FORMAT = "--format=%x1e%h%x1f%P%x1f%s%x1f"
 FIELD_SEPARATOR = "\x1f"
 SHORT_ID_CHARACTERS = 10
+REBASE_FOLDERS = ("rebase-merge", "rebase-apply")
 SHORT_COMMIT_FLAG = f"--abbrev={SHORT_ID_CHARACTERS}"
 # With -M -z a rename is three fields: status, old name, new name.
 RENAME_STATUS = "R"
@@ -183,6 +184,7 @@ class WorktreeGit:
         return tuple(name for name in names if PurePosixPath(name).name in DEPENDENCY_FOLDER_NAMES)
 
     def commit(self, worktree: Worktree, message: str, trailer: str) -> bool:
+        self.hold_branch(worktree)
         self.refuse_conflicts(worktree)
         if not self.checked(worktree.folder, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.strip():
             return False
@@ -238,6 +240,19 @@ class WorktreeGit:
         conflicts = self.conflict_files(worktree)
         if conflicts:
             raise Refusal(f"conflict markers remain in {', '.join(conflicts)}", AskTopic.CONFLICT.hint("settle them in the worktree, then try again"))
+
+    # A rebase a killed server or a timeout cut short leaves the head detached, and every later commit would miss the
+    # branch: its state is dropped, keeping the head, and the branch is moved up to the head when the head holds it.
+    def hold_branch(self, worktree: Worktree) -> None:
+        folder, git_folder = worktree.folder, self.git_folder(worktree.folder)
+        if any(FileAccess.is_dir(git_folder / name) for name in REBASE_FOLDERS):
+            self.checked(folder, GIT_LIMIT_SECONDS, "rebase", "--quit")
+        if self.git(folder, GIT_LIMIT_SECONDS, "symbolic-ref", "--quiet", "--short", "HEAD").stdout.strip() == worktree.branch:
+            return
+        if not self.is_ancestor(folder, worktree.branch, "HEAD"):
+            raise Refusal(f"your worktree's head left the branch {worktree.branch}, and both hold commits of their own",
+                          AskTopic.CONFLICT.hint("the main agent joins them; commit nothing until then"))
+        self.checked(folder, GIT_LIMIT_SECONDS, "checkout", "--quiet", "-B", worktree.branch, "HEAD")
 
     def is_merging(self, folder: str) -> bool:
         return self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", "MERGE_HEAD").returncode == 0
@@ -382,6 +397,7 @@ class WorktreeGit:
         return len(parents) > 1 and self.is_ancestor(worktree.folder, parents[1], "HEAD")
 
     def update(self, worktree: Worktree) -> WorktreeUpdate:
+        self.hold_branch(worktree)
         self.restore_stashes(worktree)
         self.refuse_conflicts(worktree)
         if self.is_merging(worktree.folder):

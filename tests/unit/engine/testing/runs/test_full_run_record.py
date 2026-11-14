@@ -40,3 +40,12 @@ def test_an_old_record_without_cpu_seconds_still_reads(tmp_path):
     file.write_text('{"tests": 4000, "failed": 1, "seconds": 120.0, "finished_at": "2026-11-01T00:00:00+00:00"}\n')
     record = FullRunRecords.read(file).records[0]
     assert (record.tests, record.seconds, record.cpu_seconds) == (4000, 120.0, 0.0)
+
+
+def test_a_run_filtered_by_name_mark_deselection_or_last_failures_is_not_a_full_run():
+    size = RunSize([], 1000)
+    assert size.is_full_run("", "", (), False)
+    assert not size.is_full_run("cart", "", (), False)
+    assert not size.is_full_run("", "slow", (), False)
+    assert not size.is_full_run("", "", ("tests/unit/a.py::test_a",), False)
+    assert not size.is_full_run("", "", (), True)
