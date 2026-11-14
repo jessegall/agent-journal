@@ -4,7 +4,7 @@ from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.helpers.listeners.helper_program_listener import HelperProgramListener
 from core.modules.helpers.ticks.unstarted_job_starts import UnstartedJobStarts
 from engine.journal.journal_home import LAUNCHER_SOCKET
-from tests.integration.core.modules.helpers.test_helper_jobs import JOB, EndedHelper, helper_agent, resumable_session
+from tests.stories.core.modules.helpers.helper_jobs import JOB, EndedHelper, helper_agent, resumable_session
 from tests.stories.core.support.agent_labels import agent_number
 
 

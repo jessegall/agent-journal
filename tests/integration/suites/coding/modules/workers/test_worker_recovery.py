@@ -9,7 +9,7 @@ from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.agents.support.launcher_service import LauncherService
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.ticks.gone_worker_recovery import GoneWorkerRecovery
-from tests.integration.suites.coding.modules.workers.test_gone_workers import RESUMED_PID, WORKER_PID, missing_program, running_worker, start_launcher, worker_story
+from tests.stories.suites.coding.modules.workers.gone_workers import RESUMED_PID, WORKER_PID, missing_program, running_worker, start_launcher, worker_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker
 
 __all__ = ["no_program_on_the_machine", "running_worker", "worker_story"]

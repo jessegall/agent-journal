@@ -1,4 +1,4 @@
-from tests.integration.core.modules.helpers.test_helper_jobs import StartedHelper, helper_agent
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 
 
 def test_a_read_only_helper_that_makes_a_task_is_refused_and_told_it_only_reads(new_story):

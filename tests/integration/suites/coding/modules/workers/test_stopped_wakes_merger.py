@@ -3,7 +3,7 @@ import pytest
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from tests.stories.core.support.agent_labels import agent_number
-from tests.integration.suites.coding.modules.workers.test_merger import merger_agent
+from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.integration.suites.coding.modules.workers.test_stopped_with_tasks import MERGER_ON, ended, main_agent_lines, missing_program, running_worker, two_task_worker, worker_story  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import running_launcher
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RESTARTED

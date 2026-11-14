@@ -11,7 +11,7 @@ from engine.database.schema import Schema
 from engine.database.statement import Statement
 from engine.testing.examples.hook_samples import HookSamples
 from tests.integration.core.modules.helpers.test_cold_sessions import aged
-from tests.integration.core.modules.helpers.test_helper_jobs import EndedHelper, JOB, helper_agent, resumable_session
+from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, JOB, helper_agent, resumable_session
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.engine.upgrade.agent_number_migration import AgentsWithoutNumbers, agent_rows

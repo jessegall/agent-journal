@@ -4,11 +4,11 @@ import pytest
 
 from engine.file.file_access import FileAccess
 from core.modules.profiles.support.profile_files import ProfileFiles
-from tests.integration.core.modules.helpers.test_start_helper import started
-from tests.integration.core.modules.helpers.test_helper_jobs import helper_agent
-from tests.integration.core.modules.helpers.test_helper_reports import helper_report, stop_with_report
+from tests.stories.core.modules.helpers.start_helper import started
+from tests.stories.core.modules.helpers.helper_jobs import helper_agent
+from tests.stories.core.modules.helpers.helper_reports import helper_report, stop_with_report
 from tests.stories.core.modules.messages.peer_messages import ENVELOPE, hook_with, queued, transcript_with
-from tests.integration.suites.coding.modules.workers.test_worker_context import worker_scenario, dispatch
+from tests.stories.suites.coding.modules.workers.worker_context import worker_scenario, dispatch
 from tests.stories.core.modules.documents.support.trail_fixtures import attach_image
 from tests.stories.server.support.server_client import server_story
 from tests.integration.support.server_harness import viewer_answer as http_answer

@@ -1,7 +1,7 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.helpers.support.journal_hook_lines import journal_hook_line
-from tests.integration.core.modules.helpers.test_helper_jobs import StartedHelper, helper_agent, profile_agent, start_helper
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent, profile_agent, start_helper
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.support.fixtures import MainEnvironment
 

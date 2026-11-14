@@ -5,8 +5,8 @@ import pytest
 
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.helpers.ticks.unstarted_job_starts import UnstartedJobStarts
-from tests.integration.core.modules.helpers.test_helper_jobs import JOB, helper_agent, read_jobs, resumable_session
-from tests.integration.core.modules.helpers.test_occupant_rotation import job_launch
+from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, read_jobs, resumable_session
+from tests.stories.core.modules.helpers.occupant_rotation import job_launch
 from tests.stories.core.modules.helpers.support.rotating_helper import SAVE_ROTATING, EndedEachLaunchHelper, StartedEachLaunchHelper, real_program_states, story_with_profile_file
 from tests.stories.core.support.agent_labels import agent_number
 

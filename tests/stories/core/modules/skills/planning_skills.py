@@ -11,7 +11,7 @@ from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from tests.integration.core.modules.skills.test_agent_skills import read_row
+from tests.stories.core.modules.skills.agent_skills import read_row
 from tests.stories.core.modules.skills.due import drain_countdown
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 

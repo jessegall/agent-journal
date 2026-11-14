@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from engine.enums.tool_type import ToolType
 from engine.testing.examples.hook_samples import HookSamples
-from tests.integration.core.modules.skills.test_agent_skills import NOTES_FILE, started
+from tests.stories.core.modules.skills.agent_skills import NOTES_FILE, started
 
 RULE = "skills.already-loaded"
 SKIP = f'refusal skip {RULE} --reason "the text was cut from my context" --environment main'

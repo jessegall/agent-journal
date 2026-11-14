@@ -9647,6 +9647,13 @@
         "steps(self, story: Story) -> None"
       ]
     },
+    "testing.stories.internal_story_files.InternalStoryFiles": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "holds(self, story_file: Path) -> bool"
+      ]
+    },
     "testing.stories.kit_rows.KitRows": {
       "bases": [],
       "fields": [
@@ -9748,6 +9755,13 @@
         "synced_with(self, module: str) -> tuple[int, str]",
         "synced(self) -> tuple[int, str]",
         "expect_rows(self) -> None"
+      ]
+    },
+    "testing.stories.story_body.StoryBody": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "reaches_internals(function: Callable[..., object]) -> bool"
       ]
     },
     "testing.stories.story_budget.StoryBudget": {

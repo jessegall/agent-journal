@@ -1,9 +1,9 @@
 from datetime import timedelta
 
 from core.modules.agents.support.agent_resume import AgentResume
-from tests.integration.core.modules.helpers.test_helper_jobs import JOB, START, helper_agent, resumable_session
+from tests.stories.core.modules.helpers.helper_jobs import JOB, START, helper_agent, resumable_session
 from tests.stories.core.support.agent_labels import agent_number
-from tests.integration.suites.coding.modules.workers.test_gone_workers import missing_program, running_worker, start_launcher, worker_story
+from tests.stories.suites.coding.modules.workers.gone_workers import missing_program, running_worker, start_launcher, worker_story
 
 __all__ = ["missing_program", "running_worker", "worker_story"]
 

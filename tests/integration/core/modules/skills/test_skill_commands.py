@@ -5,7 +5,7 @@ from engine.registry.registry import Registry
 from engine.database.database import Database
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from core.modules.skills.commands.reset_skills.reset_skills import ResetSkills
-from tests.integration.core.modules.skills.test_agent_skills import GOOD
+from tests.stories.core.modules.skills.agent_skills import GOOD
 from tests.stories.core.support.coding_fixtures import BuilderStartedWithoutPlainWords
 
 

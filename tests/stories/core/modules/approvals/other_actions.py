@@ -8,7 +8,7 @@ from core.modules.mcp.models.mcp_server import McpServer
 from core.modules.messages.models.message import Message
 from core.modules.settings.models.setting import Setting
 from tests.stories.core.modules.memories.support.memory_owners import MainAndWorkerMemories, WORKER_FACT
-from tests.integration.core.modules.templates.test_sending import CRITIQUE
+from tests.stories.core.modules.templates.sending import CRITIQUE
 from tests.stories.core.modules.templates.support.sending_templates import SendingTemplates
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.integration.suites.coding.modules.checks.test_checks import StoppedCheck

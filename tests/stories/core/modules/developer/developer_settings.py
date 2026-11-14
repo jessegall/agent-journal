@@ -1,4 +1,4 @@
-from tests.integration.core.modules.drivers.test_hook_durations import UserBuilder, MASTER
+from tests.stories.core.modules.drivers.hook_durations import UserBuilder, MASTER
 
 
 def test_the_developer_tools_are_off_until_the_person_switches_them_on(new_story):

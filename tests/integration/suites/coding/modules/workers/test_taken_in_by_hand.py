@@ -2,7 +2,7 @@ from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.close_claimed_worktree_tasks.close_claimed_worktree_tasks_handler import MERGED_TEXT
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
-from tests.integration.suites.coding.modules.workers.test_merger import merger_agent
+from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.memory_git.memory_repository import MemoryRepository
 from tests.integration.suites.coding.modules.workers.test_test_queue import ended, queued_story

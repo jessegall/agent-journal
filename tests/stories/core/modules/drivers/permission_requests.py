@@ -4,7 +4,7 @@ from engine.enums.tool_type import ToolType
 from core.modules.drivers.models.enums.permission_state import PermissionState
 from core.modules.drivers.models.permission_request import PermissionRequest
 from engine.testing.examples.hook_samples import HookSamples
-from tests.integration.core.modules.helpers.test_helper_jobs import StartedHelper, helper_agent
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 
 DESIGN = "docs/designs/cart/page.html"
 REFUSED = "This driver only reads and searches"

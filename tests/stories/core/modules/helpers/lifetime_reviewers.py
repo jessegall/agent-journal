@@ -8,8 +8,8 @@ from core.modules.drivers.models.helper_job import HelperJob
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.testing.stories.story_fixture import StoryFixture
-from tests.integration.core.modules.helpers.test_helper_jobs import read_jobs, resumable_session
-from tests.integration.core.modules.helpers.test_program_split import helper_split_story, helper_viewer
+from tests.stories.core.modules.helpers.helper_jobs import read_jobs, resumable_session
+from tests.stories.core.modules.helpers.program_split import helper_split_story, helper_viewer
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.support.program_split import set_split

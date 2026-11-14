@@ -12,7 +12,7 @@ from engine.database.database import Database
 from core.modules.drivers.models.agent_line import AgentLine
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
-from tests.integration.core.modules.helpers.test_helper_jobs import StartedHelper, helper_agent, resumable_session
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent, resumable_session
 from tests.stories.core.modules.processes.support.process_samples import start_process
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
 from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPER_GRACE_MINUTES

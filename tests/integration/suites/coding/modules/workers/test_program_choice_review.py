@@ -30,8 +30,8 @@ from engine.provider.providers import Providers
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from tests.integration.core.modules.helpers.test_start_helper import START, started
-from tests.integration.core.modules.helpers.test_helper_jobs import resumable_session
+from tests.stories.core.modules.helpers.start_helper import START, started
+from tests.stories.core.modules.helpers.helper_jobs import resumable_session
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.suites.coding.modules.workers.program_choice import failed_worker_story, worker_starts
 from tests.stories.suites.coding.modules.workers.worker_routes import delivered_worker_story, merged_worker_story

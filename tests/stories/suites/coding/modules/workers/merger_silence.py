@@ -15,7 +15,7 @@ from engine.testing.stories.story import Story
 from core.modules.helpers.testing.story_helper_programs import StoryHelperPrograms
 from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.integration.suites.coding.modules.workers.test_merger import merger_agent
+from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from suites.coding.modules.workers.support.worker_settings import DELIVERY_FAILURE_LIMIT
 

@@ -2,7 +2,7 @@ from tests.stories.core.support.agent_labels import agent_number
 import json
 
 from core.modules.agents.testing.fake_launcher import FakeLauncher
-from tests.integration.core.modules.helpers.test_helper_jobs import EndedHelper, StartedHelper, helper_agent, resumable_session
+from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, StartedHelper, helper_agent, resumable_session
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED

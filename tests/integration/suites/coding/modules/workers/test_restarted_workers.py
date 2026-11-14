@@ -5,7 +5,7 @@ import pytest
 
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
-from tests.integration.suites.coding.modules.workers.test_gone_workers import RESUMED_PID, missing_program, replaced_launcher, running_worker, start_launcher, worker_story
+from tests.stories.suites.coding.modules.workers.gone_workers import RESUMED_PID, missing_program, replaced_launcher, running_worker, start_launcher, worker_story
 
 __all__ = ["missing_program", "running_worker", "worker_story"]
 
