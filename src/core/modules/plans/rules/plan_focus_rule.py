@@ -11,7 +11,9 @@ from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.plans.models.enums.focus_source import FocusSource
 from core.modules.plans.models.plan_task import PlanTask
+from core.modules.plans.support.focus.judged_focus_tasks import JudgedFocusTasks
 from core.modules.plans.support.focus.plan_focus import PlanFocus
+from engine.journal.journal_home import JournalHome
 from core.modules.plans.support.plan_nudges import UNFOCUSED_TASK, FOCUS_SUGGESTED
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
@@ -34,8 +36,9 @@ class PlanFocusRule(DriverRule):
     roles = [AgentRole.MAIN, AgentRole.HELPER]
     history = True
 
-    def __init__(self, queries: Queries, tasks: TaskQuery, focus: PlanFocus, hook_history: HookHistory) -> None:
+    def __init__(self, queries: Queries, tasks: TaskQuery, focus: PlanFocus, hook_history: HookHistory, home: JournalHome) -> None:
         self.queries, self.tasks, self.focus, self.hook_history = queries, tasks, focus, hook_history
+        self.judged = JudgedFocusTasks.shared(home)
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
@@ -43,6 +46,11 @@ class PlanFocusRule(DriverRule):
         places = self.new_places(hook)
         if not places and not starts_plan:
             return RuleAnswer.allowed()
+        # a silent judgement records no answer, so the same started tasks come back on every hook until one changes
+        task_ids = frozenset(place.task_id for place in places)
+        if not starts_plan and self.judged.is_judged(hook.agent_id, task_ids):
+            return RuleAnswer.allowed()
+        self.judged.mark(hook.agent_id, task_ids)
         agent = self.queries.query(Agent).find(hook.agent_id)
         explicit_id = self.focus.explicit_plan_id(agent)
         if not starts_plan and all(place.plan_id == explicit_id for place in places):

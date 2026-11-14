@@ -33,3 +33,7 @@ def test_a_refusal_prints_its_text_and_as_json_names_the_guard_and_its_flag():
     assert output_text(False, lambda output: output.refusal(REFUSAL)) == f"{REFUSAL.text}\n"
     data = json.loads(output_text(True, lambda output: output.refusal(REFUSAL)))
     assert (data["guard"], data["skip_flag"], data["suggestion"]) == ("items.paused-only", "--skip-guard items.paused-only", "journal item pause 3")
+
+
+def test_a_list_value_is_written_as_a_json_list_not_as_its_text():
+    assert Output(Tables(), True, io.StringIO()).json_value(["writer:150000", []]) == ["writer:150000", []]

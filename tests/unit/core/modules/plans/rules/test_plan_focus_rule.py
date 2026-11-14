@@ -1,3 +1,7 @@
+import itertools
+from pathlib import Path
+
+from engine.journal.journal_home import JournalHome
 from types import SimpleNamespace
 
 import pytest
@@ -14,11 +18,17 @@ PLACES = {11: 1, 12: 2, 13: 2}
 
 
 class PlaceRows:
-    def __init__(self, task_ids=()):
-        self.task_ids = task_ids
+    def __init__(self, task_ids=(), plan_count=2):
+        self.task_ids, self.plan_count = task_ids, plan_count
 
     def matching(self, condition):
-        return PlaceRows(condition.values) if condition.column == "task_id" else self
+        return PlaceRows(condition.values, self.plan_count) if condition.column == "task_id" else self
+
+    def filter(self, **fields):
+        return self
+
+    def count(self):
+        return self.plan_count
 
     def find(self, agent_id):
         return SimpleNamespace(id=agent_id)
@@ -27,19 +37,22 @@ class PlaceRows:
         return [SimpleNamespace(task_id=task_id, plan_id=PLACES[task_id]) for task_id in self.task_ids if task_id in PLACES]
 
 
+HOMES = itertools.count()
+
+
 def hook(line_numbers=()):
     shell = SimpleNamespace(journal_command_numbers=lambda *commands: tuple(line_numbers))
     return SimpleNamespace(agent_id=AGENT_ID, event=SimpleNamespace(tool=SimpleNamespace(shell=shell)))
 
 
-def rule(started=(), answered_at=None, explicit_id=None, focus_id=1, source=FocusSource.DEFAULT, plan_ids=(1, 2), waited=()):
+def rule(started=(), answered_at=None, explicit_id=None, focus_id=1, source=FocusSource.DEFAULT, plan_ids=(1, 2), waited=(), home=None):
     tasks = SimpleNamespace(started_tasks=lambda agent_id: [SimpleNamespace(id=task_id, started_at=started_at) for task_id, started_at in started])
     works = tuple(SimpleNamespace(plan=SimpleNamespace(id=plan_id), unblockers=Unblockers(tuple(Unblocker(task_id, 1, 100) for task_id in waited))) for plan_id in plan_ids)
     current = None if focus_id is None else SimpleNamespace(source=source)
     overview = SimpleNamespace(current=current, started=works, focus_work=next((work for work in works if work.plan.id == focus_id), None))
     focus = SimpleNamespace(explicit_plan_id=lambda agent: explicit_id, overview=lambda agent: overview)
     history = SimpleNamespace(last_answer=lambda name, hook: answered_at)
-    return PlanFocusRule(SimpleNamespace(query=lambda model: PlaceRows()), tasks, focus, history)
+    return PlanFocusRule(SimpleNamespace(query=lambda model: PlaceRows(plan_count=len(plan_ids))), tasks, focus, history, home or JournalHome(Path(f"/journals/{next(HOMES)}")))
 
 
 def texts(answer):
@@ -76,3 +89,15 @@ def test_nothing_is_said(changes):
 def test_a_task_started_with_no_tool_call_of_the_agent_is_named_at_its_next_tool_call_and_once():
     assert len(texts(rule(started=[(11, 5)], answered_at=4).answer(hook()))) == 1
     assert texts(rule(started=[(11, 5)], answered_at=5).answer(hook())) == []
+
+
+def test_tasks_judged_silently_are_not_judged_again_at_the_next_hook():
+    home = JournalHome(Path("/journals/silent"))
+    overviews = []
+    first = rule(started=[(11, 5)], focus_id=None, home=home)
+    first.focus.overview = lambda agent: overviews.append(agent) or SimpleNamespace(current=None, started=(), focus_work=None)
+    first.answer(hook())
+    second = rule(started=[(11, 5)], focus_id=None, home=home)
+    second.focus.overview = first.focus.overview
+    second.answer(hook())
+    assert len(overviews) == 1

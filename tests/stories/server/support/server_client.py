@@ -42,7 +42,7 @@ from server.door.journal_door import JournalDoor
 from server.door.local_journal_door import LocalJournalDoor
 from server.request.journal_server import JournalServer
 from engine.serving.server_limits import DRAIN_LIMIT_SECONDS
-from server.context.server_context import ServerContext
+from server.context.server_context import IDLE_CONNECTION_SECONDS, ServerContext
 from server.hook.hook_database import HookDatabase
 from server.work.journal_round import JournalRound
 from server.work.kept_round_container import KeptRoundContainer
@@ -365,21 +365,21 @@ def local_viewer(login: ViewerLogin, routes: ViewerRoutes) -> ViewerEndpoint:
 
 
 @contextmanager
-def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), real_time: bool = False, instant_capacity: int = STORY_INSTANT_CAPACITY):
+def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), real_time: bool = False, instant_capacity: int = STORY_INSTANT_CAPACITY, idle_connection_seconds: float = IDLE_CONNECTION_SECONDS):
     without_start_skills(story)
     story.run(f"setting make {AVATAR_KEY} false")
-    with started_server(story.home, code_folders, listener_thread_started, viewer_factory, journal_door, SYSTEM_CLOCK if real_time else story.clock, instant_capacity) as (socket_path, context):
+    with started_server(story.home, code_folders, listener_thread_started, viewer_factory, journal_door, SYSTEM_CLOCK if real_time else story.clock, instant_capacity, idle_connection_seconds) as (socket_path, context):
         yield ServerStory(story, socket_path, context)
 
 
 @contextmanager
-def started_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), clock: Clock = SYSTEM_CLOCK, instant_capacity: int = STORY_INSTANT_CAPACITY):
-    with running_server(home, code_folders, listener_thread_started, viewer_factory, journal_door, clock, instant_capacity) as (_, socket_path, context):
+def started_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), clock: Clock = SYSTEM_CLOCK, instant_capacity: int = STORY_INSTANT_CAPACITY, idle_connection_seconds: float = IDLE_CONNECTION_SECONDS):
+    with running_server(home, code_folders, listener_thread_started, viewer_factory, journal_door, clock, instant_capacity, idle_connection_seconds) as (_, socket_path, context):
         yield socket_path, context
 
 
 @contextmanager
-def running_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), clock: Clock = SYSTEM_CLOCK, instant_capacity: int = STORY_INSTANT_CAPACITY):
+def running_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), clock: Clock = SYSTEM_CLOCK, instant_capacity: int = STORY_INSTANT_CAPACITY, idle_connection_seconds: float = IDLE_CONNECTION_SECONDS):
     with patch.object(ProcessTable, "rows", FixedProcessTable([]).rows):
         files = ServerFiles(home)
         assert files.acquire_lock(), "a server already holds the lock of this journal"
@@ -392,7 +392,7 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
         login = ViewerLogin(phones, ShareSessions(phones.journal_output, clock))
         reported = ReportedFindings()
         context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, clock.timestamp(), wakes,
-                                hook_database, viewer_factory(login, ViewerRoutes(home, wakes, login, reported, hook_database.viewer_tickets, clock)), ServerTunnel(home), reported, journal_door, STORY_HOOK_LIMIT_SECONDS, STORY_HOOK_LIMIT_SECONDS, STORY_STOP_LIMIT_SECONDS)
+                                hook_database, viewer_factory(login, ViewerRoutes(home, wakes, login, reported, hook_database.viewer_tickets, clock)), ServerTunnel(home), reported, journal_door, STORY_HOOK_LIMIT_SECONDS, STORY_HOOK_LIMIT_SECONDS, STORY_STOP_LIMIT_SECONDS, idle_connection_seconds=idle_connection_seconds)
         context.request_trace.refresh(synced_database_container(home, hook_database.databases[0]))
         InstantLaneReading.shared(home).install(lambda: [entry.reading() for entry in hook_database.executions.read()], hook_database.instant_capacity)
         context.viewer.routes.line_route = StoryLineRoute(home, wakes, reported, completion_callback=context.request_trace.completed)
