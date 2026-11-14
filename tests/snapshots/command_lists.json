@@ -4497,7 +4497,7 @@
  "worker-operation run": {
   "helper": "refused",
   "merger": "refused",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "worker-operation show": {
   "helper": "allowed",

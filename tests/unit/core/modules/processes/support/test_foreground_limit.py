@@ -171,3 +171,24 @@ def test_two_saved_commands_with_one_reader_share_it():
 
 def test_a_chain_with_a_test_stores_as_much_as_a_test():
     assert limit().decide(line(part("ls", CommandCategory.SEARCH), part("pytest", CommandCategory.TEST_RUN)), 1).most_output_bytes == 100 << 20
+
+
+class WorkerAgents:
+    """Every line of these tests is a worker's, whose lines wait in their lane."""
+
+    def find(self, agent_id: int) -> Agent:
+        return Agent(id=agent_id, creator_id=1, session="s-1", program="claude", role="worker")
+
+
+def worker_limit() -> ForegroundLimit:
+    return ForegroundLimit(Settings(), Background(), Rows(False), Messages(False), RunWaits(), WorkerAgents(), CLASSES)  # type: ignore[arg-type]
+
+
+def test_a_line_of_only_reading_and_searching_never_waits_in_a_lane_so_it_is_never_moved_for_its_wait():
+    decided = worker_limit().decide(line(part("grep", CommandCategory.SEARCH), part("cut", CommandCategory.READ)), 1)
+    assert (decided.queued, decided.seconds, decided.background) == (False, 0, False)
+
+
+def test_a_queued_build_waits_for_its_slot_in_the_foreground_at_least_its_foreground_seconds():
+    decided = worker_limit().decide(line(part("make", CommandCategory.BUILD)), 1)
+    assert decided.queued and decided.queue_wait_seconds == decided.seconds == 15
