@@ -33,5 +33,8 @@ class Proof(Model):
     def ended_with_worktree(self, note: str) -> "Proof":
         return self.moved(ProofLifecycle.end_with_worktree, shortfall=note)
 
+    def recalled(self, text: str, test_command: str = "") -> "Proof":
+        return self.moved(ProofLifecycle.recall, text=text, test_command=test_command or self.test_command, process_id=None)
+
     def revise(self, timestamp: Timestamp, actor: Actor, text: str, test_command: str = "") -> "Proof":
         return self.moved(ProofLifecycle.revise, text=text, shortfall="", test_command=test_command or self.test_command, process_id=None)
