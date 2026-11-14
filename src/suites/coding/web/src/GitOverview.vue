@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, EmptyState, FilterBar, ListReaderLayout, PageHeader, Segmented, Skeleton, TimeAgo, applyFilter, defaultFilter, optionsOf, useWindow} from "@journal/window-kit";
+import {Btn, EmptyState, FilterBar, ListReaderLayout, InnerTabs, PageHeader, Skeleton, TabBody, TimeAgo, applyFilter, defaultFilter, optionsOf, useWindow} from "@journal/window-kit";
 import GitReader from "./GitReader.vue";
 import {TABS, branchItem, commitItem, gitMenu, itemFields, pullItem} from "./gitItems.js";
 
@@ -41,7 +41,10 @@ const none = computed(() => current.value.none);
 const items = computed(() => current.value.items.value);
 const fields = computed(() => itemFields[tab.value].map((field) => ({...field, options: field.options ?? optionsOf(items.value, (item) => [field.get(item)])})));
 const shown = computed(() => applyFilter(items.value, fields.value, filter.value, words.value, ["title", "desc"]));
-const tabs = computed(() => TABS.map((each) => ({...each, count: LISTS[each.key].items.value.length})));
+// the underline band the other pages use: each tab with the number of rows its list holds
+const bands = TABS.map((each) => ({...each, count_field: `count_${each.key}`}));
+const counts = computed(() => Object.fromEntries(TABS.map((each) => [`count_${each.key}`, LISTS[each.key].items.value.length])));
+const active = computed(() => bands.find((each) => each.key === tab.value));
 const pick = (key) => {
     tab.value = key;
     chosen.value = null;
@@ -59,7 +62,7 @@ const place = (item) => ({head: item.title, items: menuOf(item, () => (chosen.va
     <ListReaderLayout v-model:chosen="chosen" :items="shown" :list-width="LIST_WIDTH" :place="place" :empty-title="none" pick-line="Choose an item" data-git>
         <template #top>
             <PageHeader title="Git" />
-            <Segmented :options="tabs" :value="tab" data-git-tabs @pick="pick" />
+            <div data-git-tabs><InnerTabs :tabs="bands" :active="active" :answer="counts" @choose="pick($event.key)" /></div>
             <FilterBar v-model="filter" v-model:words="words" :fields="fields" :rows="items" :shown="shown.length" placeholder="Search" />
             <template v-if="failure">
               <p class="note" role="alert">{{ failure }}</p>
@@ -69,12 +72,14 @@ const place = (item) => ({head: item.title, items: menuOf(item, () => (chosen.va
             </template>
         </template>
         <template #empty>
-            <template v-if="!loaded">
-              <Skeleton shape="rows" />
-            </template>
-            <template v-else-if="!failure">
-              <EmptyState>{{ none }}</EmptyState>
-            </template>
+            <TabBody :tab="active">
+                <template v-if="!loaded">
+                  <Skeleton shape="rows" />
+                </template>
+                <template v-else-if="!failure">
+                  <EmptyState>{{ none }}</EmptyState>
+                </template>
+            </TabBody>
         </template>
         <template #meta="{item}">
             <template v-if="item.row.time">
