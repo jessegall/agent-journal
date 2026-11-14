@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, ClassVar
 from engine.viewer.layout_preset import LayoutPreset
 from engine.viewer.layout_shape import LayoutShape
 from engine.helper_type.helper_type import HelperType
+from engine.module.default_state import DefaultState
 from engine.module.task_assigner import TaskAssigner
 
 if TYPE_CHECKING:
@@ -15,7 +16,7 @@ class Suite:
     names, with the modules it lists (its own module first), the suites it requires, whether it takes complete
     control, the other modules' overlays it then includes, the viewer windows its environments show, the
     default layout of each viewer page, per driver where one is named, the layouts it offers per page in the
-    picker, and the kinds of helper it registers. A suite that joins another is no suite to pick: a plugin
+    picker, the kinds of helper it registers and the states it gives agents by default. A suite that joins another is no suite to pick: a plugin
     ships one to add its modules to that suite, whose environments alone run them, so no module names a suite
     itself."""
 
@@ -30,3 +31,4 @@ class Suite:
     presets: ClassVar[Mapping[str, Sequence[LayoutPreset]]] = {}
     task_assigner: ClassVar[type[TaskAssigner] | None] = None
     helper_types: ClassVar[Sequence[type[HelperType]]] = []
+    default_states: ClassVar[Sequence[DefaultState]] = []

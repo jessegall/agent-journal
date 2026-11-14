@@ -45,6 +45,8 @@ from engine.model.state_book import StateBook
 from engine.registry.errors.stale_registry_error import StaleRegistryError
 from engine.registry.state_addition_entry import StateAdditionEntry
 from engine.registry.suite_entry import SuiteEntry
+from engine.registry.default_state_entry import DefaultStateEntry
+from engine.enums.agent_kind import AgentKind
 from engine.registry.window_entry import WindowEntry
 from engine.viewer.layout_preset import LayoutPreset
 from engine.viewer.window_declaration import DEFAULT_FLOAT_SIZE
@@ -157,7 +159,9 @@ class Registry:
                                     tuple(suite.get("windows", [])), {page: loaded_layout(shape) for page, shape in suite.get("layouts", {}).items()},
                                     {page: tuple(LayoutPreset(preset["key"], preset["name"], preset["text"], loaded_layout(preset["shape"])) for preset in presets)
                                      for page, presets in suite.get("presets", {}).items()},
-                                    suite.get("task_assigner", ""), suite.get("shipped", False))
+                                    suite.get("task_assigner", ""), suite.get("shipped", False),
+                                    tuple(DefaultStateEntry(default["state"], AgentKind(default["kind"]), default["value"], default["removed_while"])
+                                          for default in suite.get("default_states", [])))
                          for suite in entries.get("suites", [])),
             drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["opening_lines"]),
                                       tuple(driver.get("guards", [])))
@@ -219,6 +223,8 @@ class Registry:
             "suites": [{"name": suite.name, "module": suite.module, "requires": list(suite.requires), "complete_control": suite.complete_control,
                         "included_overlays": list(suite.included_overlays), "windows": list(suite.windows),
                         "task_assigner": suite.task_assigner, "shipped": suite.shipped,
+                        "default_states": [{"state": default.state, "kind": default.kind.value, "value": default.value, "removed_while": default.removed_while}
+                                           for default in suite.default_states],
                         "layouts": {page: stored_layout(shape) for page, shape in suite.layouts.items()},
                         "presets": {page: [{"key": preset.key, "name": preset.name, "text": preset.text, "shape": stored_layout(preset.shape)} for preset in presets]
                                     for page, presets in suite.presets.items()}} for suite in self.suites],
@@ -281,6 +287,11 @@ class Registry:
 
     def tier_states(self, driver: str, tier: int) -> list[AgentStateEntry]:
         return [state for state in self.agent_states if state.tier == tier and state.covers(driver)]
+
+    # the states a suite gives an agent of this role, driver and helper type, its joining suites' among them
+    def default_states(self, suite_name: str, role: str, driver: str, helper_type: str) -> tuple[DefaultStateEntry, ...]:
+        suite = self.suite(suite_name)
+        return tuple(default for default in suite.default_states if default.matches(role, driver, helper_type)) if suite is not None else ()
 
     def agent_state(self, name: str) -> AgentStateEntry | None:
         return next((state for state in self.agent_states if state.name == name), None)

@@ -9049,6 +9049,24 @@
       "worktree_id"
     ]
   },
+  "suites.coding.workers.proof.recall": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "point",
+      "process_id",
+      "shortfall",
+      "state",
+      "task_id",
+      "test_command",
+      "text",
+      "worktree_id"
+    ]
+  },
   "suites.coding.workers.proof.return_checked": {
     "forms": [
       "commit",

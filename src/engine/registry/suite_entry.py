@@ -1,6 +1,7 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
+from engine.registry.default_state_entry import DefaultStateEntry
 from engine.viewer.layout_preset import LayoutPreset
 from engine.viewer.layout_shape import LayoutShape
 
@@ -9,7 +10,7 @@ from engine.viewer.layout_shape import LayoutShape
 class SuiteEntry:
     """A registered suite: its name, the module that ships it, the suites it requires, whether it takes complete
     control, the other modules' overlays it includes, its viewer windows, its default layouts and its layout
-    presets per page."""
+    presets per page, and the states it gives agents by default, its joining suites' included."""
 
     name: str
     module: str
@@ -21,6 +22,7 @@ class SuiteEntry:
     presets: Mapping[str, Sequence[LayoutPreset]]
     task_assigner: str = ""
     shipped: bool = False
+    default_states: Sequence[DefaultStateEntry] = ()
 
     def is_overlay_included(self, overlay: str) -> bool:
         return not self.complete_control or overlay in self.included_overlays

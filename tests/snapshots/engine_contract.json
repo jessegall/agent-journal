@@ -2923,6 +2923,13 @@
         "can_receive_work(self) -> bool"
       ]
     },
+    "enums.agent_kind.AgentKind": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
     "enums.agent_role.AgentRole": {
       "bases": [
         "StrEnum"
@@ -5188,7 +5195,8 @@
       "fields": [
         "name: str",
         "sources: Sequence[StateValue]",
-        "target: StateValue"
+        "target: StateValue",
+        "has_command: bool"
       ],
       "methods": []
     },
@@ -5385,6 +5393,16 @@
         "folder_text(self, folders: Sequence[Path]) -> str",
         "files_text(self, files: Sequence[Path]) -> str"
       ]
+    },
+    "module.default_state.DefaultState": {
+      "bases": [],
+      "fields": [
+        "state: type[AgentState]",
+        "kind: AgentKind",
+        "value: str",
+        "removed_while: str"
+      ],
+      "methods": []
     },
     "module.dock_check.DockCheck": {
       "bases": [],
@@ -5832,7 +5850,8 @@
         "layouts: ClassVar[Mapping[str, LayoutShape]]",
         "presets: ClassVar[Mapping[str, Sequence[LayoutPreset]]]",
         "task_assigner: ClassVar[type[TaskAssigner] | None]",
-        "helper_types: ClassVar[Sequence[type[HelperType]]]"
+        "helper_types: ClassVar[Sequence[type[HelperType]]]",
+        "default_states: ClassVar[Sequence[DefaultState]]"
       ],
       "methods": []
     },
@@ -5852,6 +5871,14 @@
         "preset_problems(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]",
         "rule_owners(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]",
         "unknown_hooks(self, rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]"
+      ]
+    },
+    "module.suite_funnel.SuiteFunnel": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "entries(self, suite: type[Suite]) -> tuple[DefaultStateEntry, ...]",
+        "entry(self, suite: type[Suite], default: DefaultState) -> DefaultStateEntry"
       ]
     },
     "module.suite_import_check.SuiteImportCheck": {
@@ -7816,6 +7843,18 @@
         "fits(self, part: str, word: str) -> bool"
       ]
     },
+    "registry.default_state_entry.DefaultStateEntry": {
+      "bases": [],
+      "fields": [
+        "state: str",
+        "kind: AgentKind",
+        "value: str",
+        "removed_while: str"
+      ],
+      "methods": [
+        "matches(self, role: str, driver: str, helper_type: str) -> bool"
+      ]
+    },
     "registry.dock_entry.DockEntry": {
       "bases": [],
       "fields": [
@@ -8189,6 +8228,7 @@
         "gates(self) -> dict[str, AgentStateEntry]",
         "rule_gate(self, rule_name: str) -> AgentStateEntry | None",
         "tier_states(self, driver: str, tier: int) -> list[AgentStateEntry]",
+        "default_states(self, suite_name: str, role: str, driver: str, helper_type: str) -> tuple[DefaultStateEntry, ...]",
         "agent_state(self, name: str) -> AgentStateEntry | None",
         "state_rules(self, state_name: str, hook_name: str) -> list[DriverRuleEntry]",
         "driver_overlays(self, driver: str) -> list[OverlayEntry]",
@@ -8339,7 +8379,8 @@
         "layouts: Mapping[str, LayoutShape]",
         "presets: Mapping[str, Sequence[LayoutPreset]]",
         "task_assigner: str",
-        "shipped: bool"
+        "shipped: bool",
+        "default_states: Sequence[DefaultStateEntry]"
       ],
       "methods": [
         "is_overlay_included(self, overlay: str) -> bool",
