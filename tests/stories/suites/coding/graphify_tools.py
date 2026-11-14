@@ -4,7 +4,6 @@ from core.modules.processes.commands.end_process.end_process import EndProcess
 from engine.query.queries import Queries
 from engine.query.conditions.among import Among
 from engine.enums.process_type import ProcessType
-from engine.command.bus import Bus
 from engine.actor.actor import Actor
 from engine.file.file_access import FileAccess
 from core.modules.processes.support.runner_binary import RunnerBinary
@@ -30,7 +29,7 @@ def ended_updates(story) -> None:
     """Ends the process rows of the updates whose line has finished, as the journal's runner reports a finished line."""
     updates = story.container.get(Queries).query(Process).filter(run_name=ProcessType.GRAPHIFY.value).matching(Among("state", RUNNING_STATES)).every_row(TEST_ROWS_REASON)
     for update in updates:
-        story.container.get(Bus).run(EndProcess(update.id, 0, 0, 0), Actor.core(), environment_id=update.environment_id)
+        story.run_command(EndProcess(update.id, 0, 0, 0), Actor.core(), environment_id=update.environment_id)
 
 
 def story_with_graphify(new_story, tmp_path):

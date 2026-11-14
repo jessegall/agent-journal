@@ -10,7 +10,6 @@ from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.helpers.support.usage_lockdown import UsageLockdown
 from core.modules.helpers.ticks.usage_limit_marker import UsageLimitMarker
 from engine.actor.actor import Actor
-from engine.command.bus import Bus
 from engine.driver.program_lockdown import ProgramLockdown
 from engine.enums.actor_type import ActorType
 from engine.file.file_access import FileAccess
@@ -99,7 +98,7 @@ def test_a_person_who_retires_a_worker_with_unmerged_work_is_refused(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     worker = delivered_worker(story, repository_environment(story))
-    story.container.get(Bus).run(EndInactiveWorker(worker.id), story.agent)
+    story.run_command(EndInactiveWorker(worker.id), story.agent)
     story.expect_refusal(f'agent retire {agent_number(story, worker.id)} --reason "Its task is done" --environment main', "unmerged work", actor=person)
     story.expect_rows(story.row(Agent, worker.id).retired_at is None)
 

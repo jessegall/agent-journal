@@ -3,7 +3,6 @@ import shutil
 
 import pytest
 
-from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.repository.repository import Repository
 from core.modules.documents.models.doc import Doc
@@ -244,7 +243,7 @@ def test_a_copy_that_cannot_be_written_leaves_no_row_the_save_made(new_story, sh
 
     broken_copy_save(monkeypatch)
     with pytest.raises(FailingCopyWrite):
-        story.container.get(Bus).run(SaveLibraryCopy("doc", item.item_id, item.version, ArrivingDoc()), story.user)
+        story.run_command(SaveLibraryCopy("doc", item.item_id, item.version, ArrivingDoc()), story.user)
     monkeypatch.undo()
     story.expect_rows(len(list(story.story_rows(Doc))) == 0, len(list(story.story_rows(LibraryCopy))) == 0)
 
@@ -258,6 +257,6 @@ def test_a_merge_whose_new_base_cannot_be_written_leaves_the_row_unchanged(new_s
     body = story.row(Doc, copy.row_id).body
     broken_copy_save(monkeypatch)
     with pytest.raises(FailingCopyWrite):
-        story.container.get(Bus).run(MergeLibraryItem(copy.id, item, story.row(Doc, copy.row_id).version), story.user)
+        story.run_command(MergeLibraryItem(copy.id, item, story.row(Doc, copy.row_id).version), story.user)
     monkeypatch.undo()
     story.expect_rows(story.row(Doc, copy.row_id).body == body, item_copy(story, copy.item_id).base_version == 1)

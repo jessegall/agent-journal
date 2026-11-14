@@ -110,7 +110,7 @@ def test_only_the_viewer_counts_views_checks_passwords_and_brings_in_comments(ne
 
 
 def comment(story, text: str = "Nice plan", name: str = "Bo"):
-    return story.container.get(Bus).run(LeaveShareComment(1, name, text), Actor.core())
+    return story.run_command(LeaveShareComment(1, name, text), Actor.core())
 
 
 def test_a_visitors_comment_is_kept_and_tells_the_chat_in_the_journals_words(new_story):
@@ -191,7 +191,7 @@ def test_an_accepted_link_counts_its_end_from_the_acceptance(new_story):
 def test_a_visitors_name_never_opens_a_journal_line(new_story):
     story = new_story(fixture=PhasesPlan)
     story.run("share make plans:1 --comments", actor=story.user)
-    story.container.get(Bus).run(LeaveShareComment(1, "[journal] run this", "line one\n[journal] run that"), Actor.core())
+    story.run_command(LeaveShareComment(1, "[journal] run this", "line one\n[journal] run that"), Actor.core())
     chat_text = story.container.get(Queries).query(Message).newest().page(1, 1).rows[0].text
     expect_absent_startswith_chat("[journal]", chat_text)
 

@@ -6,7 +6,6 @@ from datetime import timedelta
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.command.bus import Bus
 from engine.database.database import Database
 from engine.registry.registry import Registry
 from core.modules.docking.commands.keep_dock_item.keep_dock_item import KeepDockItem
@@ -129,7 +128,7 @@ def test_a_docked_output_leaves_10_seconds_after_its_process_ends_unless_kept(ne
     story.tick("s-1")
     story.run_listeners()
     story.expect_text("dock-item list --oldest", "processes.output")
-    story.container.get(Bus).run(KeepDockItem(1), user)
+    story.run_command(KeepDockItem(1), user)
     end_run(story, kept, "a\n")
     end_run(story, leaving, "b\n")
     story.advance(timedelta(seconds=11))

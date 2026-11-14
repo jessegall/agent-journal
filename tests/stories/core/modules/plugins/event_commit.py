@@ -4,7 +4,6 @@ from server.work.booting_work import BootingWork
 import json
 
 from engine.event.event_log import HIDDEN
-from engine.command.bus import Bus
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput
 from engine.database.database import Database
 from engine.listener.commit.commit_listener_runner import CommitListenerRunner
@@ -116,6 +115,6 @@ def test_a_commit_script_card_on_a_person_change_shows_in_the_environment_and_up
 
 def test_a_hears_card_for_a_person_still_does_not_show(new_story):
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "see.sh"}, program="card.sh", hears=["file_edited"], scripts={"card.sh": CARD_SCRIPT})
-    story.container.get(Bus).run(AddPluginOutput(plugin_row(story).id, None, CARD_ANSWER), story.user)
+    story.run_command(AddPluginOutput(plugin_row(story).id, None, CARD_ANSWER), story.user)
     story.run_listeners()
     story.expect_no_text("chat-mark list --environment 1", CARD_LABEL, actor=story.user)

@@ -3,7 +3,6 @@ from datetime import timedelta
 import pytest
 
 from engine.actor.actor import Actor
-from engine.command.bus import Bus
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from core.modules.approvals.commands.answer_approval.answer_approval_handler import AnswerApprovalHandler
@@ -43,7 +42,7 @@ class ApprovalInProgress(StoryFixture):
         with viewer_client(story):
             BootingWork().run(story.container)
             story.advance(timedelta(seconds=1))
-            story.container.get(Bus).run(MoveApproval(request.id, ApprovalLifecycle.begin), story.user, environment_id=request.environment_id)
+            story.run_command(MoveApproval(request.id, ApprovalLifecycle.begin), story.user, environment_id=request.environment_id)
 
 
 class CoveredRequestInProgress(StoryFixture):
@@ -94,7 +93,7 @@ def docked_requests(story) -> list[DockItem]:
 def test_a_claim_from_a_stopped_server_is_reopened_at_once(new_story):
     story = new_story(fixture=ServerRestarted)
     request = story.first_row(ApprovalRequest)
-    expect_value(story.container.get(Bus).run(RecoverApprovals(), Actor.core()), 1)
+    expect_value(story.run_command(RecoverApprovals(), Actor.core()), 1)
     story.expect_rows(story.row(ApprovalRequest, request.id).state is ApprovalState.OPEN)
 
 
@@ -110,6 +109,6 @@ def test_a_covered_request_cut_off_by_a_restart_is_accepted_again_with_no_card(n
     story = new_story(NOTES, fixture=CoveredRequestRestarted)
     covered = list(story.story_rows(ApprovalRequest))[-1]
     expect_value((story.row(ApprovalRequest, covered.id).state, docked_requests(story)), (ApprovalState.RUNNING, []))
-    expect_value(story.container.get(Bus).run(RecoverApprovals(), Actor.core()), 1)
+    expect_value(story.run_command(RecoverApprovals(), Actor.core()), 1)
     story.run_listeners()
     expect_value((story.row(ApprovalRequest, covered.id).state, docked_requests(story)), (ApprovalState.ACCEPTED, []))

@@ -14,7 +14,6 @@ from pathlib import Path
 
 from unittest.mock import patch
 
-from engine.command.bus import Bus
 from engine.database.database import Database
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.commands.end_inactive_worker.end_inactive_worker import EndInactiveWorker
@@ -41,7 +40,7 @@ REASON = '--reason "Its work is finished"'
 
 
 def stopped(story, worker) -> None:
-    story.container.get(Bus).run(EndInactiveWorker(worker.id), story.agent)
+    story.run_command(EndInactiveWorker(worker.id), story.agent)
 
 
 def test_a_worker_with_unmerged_work_is_not_retired(new_story):

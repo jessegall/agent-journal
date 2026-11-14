@@ -24,7 +24,6 @@ tests/stories/core/modules/approvals/approvals.py
 tests/stories/core/modules/approvals/legacy_settings.py
 tests/stories/core/modules/approvals/many_approvals.py
 tests/stories/core/modules/approvals/recovery.py
-tests/stories/core/modules/approvals/restart_recovery.py
 tests/stories/core/modules/approvals/source_approvals.py
 tests/stories/core/modules/chat/exception_marks.py
 tests/stories/core/modules/chat/mark_reading.py
@@ -48,15 +47,12 @@ tests/stories/core/modules/documents/task_read_links.py
 tests/stories/core/modules/documents/trail_viewer.py
 tests/stories/core/modules/documents/upgrade.py
 tests/stories/core/modules/documents/work_source_corrections.py
-tests/stories/core/modules/drivers/agent_state_push_pop.py
 tests/stories/core/modules/drivers/agent_state_shapes.py
 tests/stories/core/modules/drivers/agent_states_lifecycle.py
 tests/stories/core/modules/drivers/agent_states_unchanged.py
 tests/stories/core/modules/drivers/bypass_log.py
 tests/stories/core/modules/drivers/compaction_hostile.py
-tests/stories/core/modules/drivers/compaction_repeat.py
 tests/stories/core/modules/drivers/completed_rule_commands.py
-tests/stories/core/modules/drivers/context_compactions.py
 tests/stories/core/modules/drivers/hook_durations.py
 tests/stories/core/modules/drivers/hook_timeouts.py
 tests/stories/core/modules/drivers/hooks_through_the_server.py
@@ -65,7 +61,6 @@ tests/stories/core/modules/drivers/nudges.py
 tests/stories/core/modules/drivers/overview_reads.py
 tests/stories/core/modules/drivers/removed_choices.py
 tests/stories/core/modules/drivers/repeated_file_reads.py
-tests/stories/core/modules/drivers/required_commands.py
 tests/stories/core/modules/drivers/resumed_start.py
 tests/stories/core/modules/drivers/temp_folders.py
 tests/stories/core/modules/helpers/cold_replacement.py
@@ -128,8 +123,6 @@ tests/stories/core/modules/plugins/event_commit.py
 tests/stories/core/modules/plugins/event_guard.py
 tests/stories/core/modules/plugins/event_listen.py
 tests/stories/core/modules/plugins/event_manifest.py
-tests/stories/core/modules/plugins/event_many.py
-tests/stories/core/modules/plugins/faults.py
 tests/stories/core/modules/plugins/hooks.py
 tests/stories/core/modules/plugins/install_steps.py
 tests/stories/core/modules/plugins/login_path.py
@@ -155,7 +148,6 @@ tests/stories/core/modules/processes/output_reading_points.py
 tests/stories/core/modules/processes/output_timeout.py
 tests/stories/core/modules/processes/process_queue_read.py
 tests/stories/core/modules/processes/process_retention.py
-tests/stories/core/modules/processes/queue_halt.py
 tests/stories/core/modules/processes/reader_chain.py
 tests/stories/core/modules/processes/reader_demand.py
 tests/stories/core/modules/processes/reader_draft.py
@@ -191,7 +183,6 @@ tests/stories/core/modules/settings/managed_hooks.py
 tests/stories/core/modules/settings/project_hooks.py
 tests/stories/core/modules/sharing/share_links.py
 tests/stories/core/modules/skills/agent_skills.py
-tests/stories/core/modules/skills/due.py
 tests/stories/core/modules/skills/kept_skills_record.py
 tests/stories/core/modules/skills/repeated_reads.py
 tests/stories/core/modules/skills/skill_commands.py
@@ -209,7 +200,6 @@ tests/stories/core/modules/tasks/task_records.py
 tests/stories/core/modules/templates/sending.py
 tests/stories/core/modules/triggers/action_output.py
 tests/stories/core/modules/updates/updates.py
-tests/stories/core/modules/usage/agent_blocked.py
 tests/stories/core/modules/usage/agent_inspector_reads.py
 tests/stories/core/modules/usage/agent_rows.py
 tests/stories/core/modules/usage/context_limit_reads.py

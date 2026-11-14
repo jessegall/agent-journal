@@ -25,13 +25,13 @@ def test_require_makes_a_skill_due_for_an_agent(new_story):
 
 def test_require_does_nothing_for_a_skill_the_agent_holds_loaded_in_its_current_text(required_notes_skill):
     story = required_notes_skill
-    story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-notes", current_digest(story, "journal-notes")), story.agent)
+    story.run_command(LoadSkill(story.agent.id, "journal-notes", current_digest(story, "journal-notes")), story.agent)
     story.expect_success(f"skill require {story.agent.id} journal-notes", "loaded: journal-notes")
 
 
 def test_require_makes_a_skill_read_in_an_older_text_due_again(required_notes_skill):
     story = required_notes_skill
-    story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-notes", "an-old-digest"), story.agent)
+    story.run_command(LoadSkill(story.agent.id, "journal-notes", "an-old-digest"), story.agent)
     story.expect_success(f"skill require {story.agent.id} journal-notes", "load this first with the Skill tool: journal-notes")
 
 
@@ -45,9 +45,9 @@ def test_a_second_load_of_the_same_digest_changes_nothing(new_story):
 
 def test_reset_removes_the_loaded_rows_of_the_agent_and_keeps_the_due_ones(new_story):
     story = started(new_story)
-    story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-notes", "abc123"), story.agent)
+    story.run_command(LoadSkill(story.agent.id, "journal-notes", "abc123"), story.agent)
     story.run(f"skill require {story.agent.id} journal-chores")
-    story.container.get(Bus).run(ResetSkills(story.agent.id), story.agent)
+    story.run_command(ResetSkills(story.agent.id), story.agent)
     story.expect_refusal("agent-skill show 1", "no agent-skill 1")
     story.expect_success("agent-skill show 2", "state: due")
 

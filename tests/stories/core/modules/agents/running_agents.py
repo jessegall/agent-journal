@@ -1,6 +1,5 @@
 from engine.actor.actor import Actor
 from engine.enums.agent_role import AgentRole
-from engine.command.bus import Bus
 from engine.database.database import Database
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.support.agent_rows import AgentRows
@@ -39,5 +38,5 @@ def test_running_agents_are_read_by_role_and_parent_and_an_ended_one_leaves(new_
     story.expect_rows(len(rows.running()) == AGENT_COUNT, len(rows.running(AgentRole.HELPER)) == AGENT_COUNT - 1,
                       len(rows.running(AgentRole.HELPER, story.agent.id)) == AGENT_COUNT - 1, rows.running(AgentRole.MAIN)[0].id == story.agent.id,
                       rows.running(parent_id=story.helper.id) == ())
-    story.container.get(Bus).run(EndAgent(story.helper.id), Actor.core())
+    story.run_command(EndAgent(story.helper.id), Actor.core())
     story.expect_rows(story.helper.id not in [agent.id for agent in rows.running()])

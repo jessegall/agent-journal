@@ -2,7 +2,6 @@ from datetime import timedelta
 
 import pytest
 
-from engine.command.bus import Bus
 from engine.errors.refusal import Refusal
 from engine.testing.examples.hook_samples import HookSamples
 from core.modules.claude_code.providers.claude_code_provider import COMPACT_LINE
@@ -29,7 +28,7 @@ def test_a_compaction_asked_at_a_stop_is_one_row_from_its_request_to_the_first_s
     story.expect_rows(len(requested) == 1, requested[0].reason is CompactionReason.STOP_LIMIT, requested[0].state is CompactionState.REQUESTED, requested[0].request_tokens == LIMIT_TOKENS,
                       requested[0].line == COMPACT_LINE, requested[0].created_at is not None, detail=str(requested))
     with pytest.raises(Refusal, match="a compact is requested since"):
-        story.container.get(Bus).run(CompactAgentContext(story.agent.id), story.agent)
+        story.run_command(CompactAgentContext(story.agent.id), story.agent)
     story.hook(SESSION, PRE_COMPACT.with_raw({"trigger": "manual"}))
     started = compactions(story)
     story.expect_rows(len(started) == 1, started[0].state is CompactionState.STARTED, started[0].started_at is not None, detail=str(started))
