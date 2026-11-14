@@ -2,7 +2,9 @@ from types import SimpleNamespace
 
 from engine.agent.enums.role_group import RoleGroup
 from engine.dotted_path.dotted_path import DottedPath
-from engine.driver.agent_state import AgentState, StateTier
+from engine.driver.agent_state import AgentState
+from engine.enums.state_tier import StateTier
+from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.driver.open_row import OpenRow
 from engine.driver.state_board import FAILED_OPENER_TABLE, StateBoard
 from engine.registry.agent_state_entry import AgentStateEntry
@@ -73,7 +75,7 @@ class Ticks:
 
 
 def board(entries=(), role="main", elapsed=None, errors=None, log=None) -> StateBoard:
-    registry = SimpleNamespace(agent_state=lambda name: None, suite=lambda name: None, helper_type_book=lambda: None,
+    registry = SimpleNamespace(agent_state=lambda name: None, suite=lambda name: None, helper_type_book=lambda: HelperTypeBook(),
                                tier_states=lambda driver, tier: [state for state in entries if state.covers(driver)])
     hook = SimpleNamespace(driver="builder", role=role, suite="", hook_name="pre_tool_use", environment_id=5, timestamp=LATE, agent_id=7)
     errors = errors or SimpleNamespace(reported=lambda argv, error, environment_id=None: None)

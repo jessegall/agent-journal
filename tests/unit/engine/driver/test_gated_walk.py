@@ -2,7 +2,8 @@ from dataclasses import replace
 
 from engine.container.container import Container
 from engine.driver.agent_hook import AgentHook
-from engine.driver.agent_state import AgentState, StateTier
+from engine.driver.agent_state import AgentState
+from engine.enums.state_tier import StateTier
 from engine.driver.driver_rules import DriverRules
 from engine.driver.essential_allowances import EssentialAllowances
 from engine.driver.hook_event import HookEvent

@@ -1,7 +1,8 @@
 from collections.abc import Sequence
 
 from engine.driver.agent_hook import AgentHook
-from engine.driver.agent_state import AgentState, StateTier
+from engine.driver.agent_state import AgentState
+from engine.enums.state_tier import StateTier
 from engine.driver.open_row import OpenRow
 from core.modules.tasks.models.task import Task
 from core.modules.plans.rules.plan_focus_rule import PlanFocusRule

@@ -3,7 +3,8 @@ from time import perf_counter
 
 from engine.container.container import Container
 from engine.driver.agent_hook import AgentHook
-from engine.driver.agent_state import AgentState, StateTier
+from engine.driver.agent_state import AgentState
+from engine.enums.state_tier import StateTier
 from engine.driver.layer import Layer
 from engine.driver.open_row import OpenRow
 from engine.enums.log_level import LogLevel

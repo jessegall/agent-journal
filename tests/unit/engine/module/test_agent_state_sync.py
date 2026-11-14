@@ -3,7 +3,8 @@ import json
 import pytest
 
 from engine.dotted_path.dotted_path import DottedPath
-from engine.driver.agent_state import AgentState, StateTier
+from engine.driver.agent_state import AgentState
+from engine.enums.state_tier import StateTier
 from engine.driver.driver_rule import DriverRule
 from engine.driver.rule_answer import RuleAnswer
 from engine.enums.hook_event_name import HookEventName

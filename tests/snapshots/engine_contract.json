@@ -48,31 +48,6 @@
         "label(self) -> str"
       ]
     },
-    "agent.agent_policy.AgentPolicy": {
-      "bases": [],
-      "fields": [
-        "job_roles: tuple[str, ...]",
-        "active_task_unblocked_roles: tuple[str, ...]",
-        "task_roles: tuple[str, ...]",
-        "prompt_roles: tuple[str, ...]",
-        "mark_roles: tuple[str, ...]",
-        "plugin_roles: tuple[str, ...]",
-        "dispatch_roles: tuple[str, ...]",
-        "stop_required_roles: tuple[str, ...]",
-        "private_output_roles: tuple[str, ...]",
-        "reader_request_roles: tuple[str, ...]",
-        "automatic_watch_roles: tuple[str, ...]",
-        "continuing_run_roles: tuple[str, ...]",
-        "project_skill_roles: tuple[str, ...]",
-        "pause_retention_roles: tuple[str, ...]",
-        "restricted_alias_roles: tuple[str, ...]",
-        "saved_command_roles: tuple[str, ...]",
-        "queue_limit_settings: tuple[str, ...]"
-      ],
-      "methods": [
-        "restored(cls, stored: Mapping[str, Sequence[str]]) -> 'AgentPolicy'"
-      ]
-    },
     "agent.agent_role_reader.AgentRoleReader": {
       "bases": [],
       "fields": [],
@@ -105,8 +80,8 @@
       ],
       "fields": [],
       "methods": [
-        "roles(self, policy: AgentPolicy) -> tuple[str, ...]",
-        "has_role(self, role: str, policy: AgentPolicy, helper_types: HelperTypeBook) -> bool"
+        "covers(self, behaviours: HelperBehaviours) -> bool",
+        "has_role(self, role: str, helper_types: HelperTypeBook) -> bool"
       ]
     },
     "agent.groups.agent_group.AgentGroup": {
@@ -123,7 +98,7 @@
       "bases": [],
       "fields": [],
       "methods": [
-        "group(self, agent_type: str, profile: str) -> AgentGroupEntry | None",
+        "group(self, helper_type: HelperTypeEntry, profile: str) -> AgentGroupEntry | None",
         "members(self, key: str) -> tuple[str, ...]",
         "problems(self, agent_types: frozenset[str]) -> Iterator[str]"
       ]
@@ -490,6 +465,14 @@
         "is_long_running(self) -> bool"
       ]
     },
+    "cli.caller_line_check.CallerLineCheck": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "allows(self, caller: Caller, line: JournalLine) -> bool",
+        "check(self, caller: Caller, line: JournalLine) -> None"
+      ]
+    },
     "cli.caller_stream.CallerStream": {
       "bases": [],
       "fields": [],
@@ -511,7 +494,7 @@
         "run(self, argv: list[str], caller: Caller, stream: TextIO, request: CallerRequest) -> int",
         "omits_subcommand(self, argv: list[str]) -> bool",
         "request_approval(self, refusal: Refusal, argv: list[str], caller: Caller, parsed: Namespace) -> str | None",
-        "subcommand_help(self, cli_name: str, stream: TextIO) -> int",
+        "subcommand_help(self, cli_name: str, caller: Caller, stream: TextIO) -> int",
         "help_line_count(self, heading: str, names: list[str], stream: TextIO) -> int",
         "requested_run(self, argv: list[str], request: CallerRequest, stream: TextIO) -> int",
         "run_parsed(self, argv: list[str], caller: Caller, output: Output) -> int",
@@ -520,6 +503,7 @@
         "note_overview(self, subcommand: AnySubcommand, arguments: Namespace, caller: Caller) -> None",
         "dispatched(self, argv: list[str], caller: Caller, context: Context) -> object",
         "line_command(self, argv: list[str], caller: Caller) -> tuple[Command[object], int | None]",
+        "journal_line(subcommand: AnySubcommand) -> JournalLine",
         "scoped_caller(self, subcommand: ReadSubcommand[object], caller: Caller) -> Caller",
         "run_commit_listeners(self, argv: list[str]) -> None"
       ]
@@ -1735,6 +1719,7 @@
         "pending(self, module: ModuleMigrations, applied: set[tuple[str, int]]) -> list[Migration]",
         "run_one(self, module: str, migration: Migration) -> None",
         "remove_migration_records(self, module: str) -> None",
+        "remove_migration_record(self, module: str, number: int) -> None",
         "drop_views(self) -> None",
         "rebuild_views(self, views: Sequence[type[ViewModel]]) -> None",
         "check_tables(self, models: Sequence[type[Model]], views: Sequence[type[ViewModel]]) -> None",
@@ -1956,13 +1941,6 @@
         "open_rows(self, hook: AgentHook) -> Sequence[OpenRow]",
         "opener_key(self) -> str"
       ]
-    },
-    "driver.agent_state.StateTier": {
-      "bases": [
-        "IntEnum"
-      ],
-      "fields": [],
-      "methods": []
     },
     "driver.block_check.BlockCheck": {
       "bases": [],
@@ -2770,6 +2748,44 @@
         "for_hook(self, hook: AgentHook) -> StateBoard"
       ]
     },
+    "driver.states.block_state.BlockState": {
+      "bases": [
+        "AgentState"
+      ],
+      "fields": [
+        "nudge_keys: ClassVar[Sequence[str]]"
+      ],
+      "methods": [
+        "keys(self) -> Sequence[str]",
+        "open_rows(self, hook: AgentHook) -> Sequence[OpenRow]"
+      ]
+    },
+    "driver.states.countdown_state.CountdownState": {
+      "bases": [
+        "BlockState"
+      ],
+      "fields": [
+        "span: ClassVar[Span]",
+        "refusal: ClassVar[NudgeDeclaration]",
+        "countdown: ClassVar[CountDown]",
+        "strict: ClassVar[bool]"
+      ],
+      "methods": [
+        "keys(self) -> Sequence[str]",
+        "start(cls, hook: AgentHook, condition: BlockCondition, refusal_fields: Mapping[str, object] | None) -> BlockUntil"
+      ]
+    },
+    "driver.states.hook_triggered_state.HookTriggeredState": {
+      "bases": [
+        "AgentState"
+      ],
+      "fields": [
+        "commands: ClassVar[Sequence[str]]"
+      ],
+      "methods": [
+        "open_rows(self, hook: AgentHook) -> Sequence[OpenRow]"
+      ]
+    },
     "driver.states.open_blocks.OpenBlocks": {
       "bases": [],
       "fields": [],
@@ -3032,13 +3048,6 @@
       "fields": [],
       "methods": []
     },
-    "enums.helper_role.HelperRole": {
-      "bases": [
-        "StrEnum"
-      ],
-      "fields": [],
-      "methods": []
-    },
     "enums.hook_answer.HookAnswer": {
       "bases": [
         "StrEnum"
@@ -3287,6 +3296,13 @@
     "enums.starter_type.StarterType": {
       "bases": [
         "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "enums.state_tier.StateTier": {
+      "bases": [
+        "IntEnum"
       ],
       "fields": [],
       "methods": []
@@ -4012,7 +4028,7 @@
         "archive(self, unfinished: tuple[str, ...]) -> None"
       ]
     },
-    "file.code_copy.CodeCopy": {
+    "file.copies.code_copy.CodeCopy": {
       "bases": [],
       "fields": [],
       "methods": [
@@ -4021,7 +4037,7 @@
         "write(self, folder: Path) -> None"
       ]
     },
-    "file.conflict_files.ConflictFiles": {
+    "file.copies.conflict_files.ConflictFiles": {
       "bases": [],
       "fields": [],
       "methods": [
@@ -4029,6 +4045,13 @@
         "files(self)",
         "has_marker(self, path: Path) -> bool",
         "check(self) -> None"
+      ]
+    },
+    "file.copies.file_clone.FileClone": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "copy(source: Path, target: Path) -> None"
       ]
     },
     "file.file_access.FileAccess": {
@@ -4093,13 +4116,6 @@
       ],
       "fields": [],
       "methods": []
-    },
-    "file.file_clone.FileClone": {
-      "bases": [],
-      "fields": [],
-      "methods": [
-        "copy(source: Path, target: Path) -> None"
-      ]
     },
     "file.file_lock.FileLock": {
       "bases": [],
@@ -4277,25 +4293,84 @@
         "require(self, allowed: bool, row: Model, lifecycle: FullLifecycle, reason: str) -> None"
       ]
     },
+    "helper_type.command_allow_list.CommandAllowList": {
+      "bases": [],
+      "fields": [
+        "categories: Sequence[CommandCategory]",
+        "groups: Sequence[str]",
+        "lines: Sequence[str]",
+        "classes: Sequence[JournalLineClass]"
+      ],
+      "methods": [
+        "restored(cls, stored: Mapping[str, Any]) -> 'CommandAllowList'",
+        "allows_category(self, category: CommandCategory) -> bool",
+        "allows(self, line: JournalLine) -> bool",
+        "refused_line(self, lines: Sequence[JournalLine]) -> JournalLine | None",
+        "joined(self, type_list: 'CommandAllowList') -> 'CommandAllowList'",
+        "intersection(self, profile: 'CommandAllowList') -> 'CommandAllowList'",
+        "widened_names(self, profile: 'CommandAllowList') -> tuple[str, ...]",
+        "entries(self) -> tuple[str, ...]"
+      ]
+    },
+    "helper_type.enums.journal_line_class.JournalLineClass": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": [
+        "subcommand_classes(cls, subcommand: type[Subcommand[Command[object], object]] | type[ReadSubcommand[object]]) -> frozenset['JournalLineClass']"
+      ]
+    },
+    "helper_type.helper_behaviours.HelperBehaviours": {
+      "bases": [],
+      "fields": [
+        "takes_jobs: bool",
+        "started_task_clears_block: bool",
+        "takes_tasks: bool",
+        "takes_prompts: bool",
+        "takes_marks: bool",
+        "runs_plugins: bool",
+        "dispatches: bool",
+        "checked_stops: bool",
+        "has_private_outputs: bool",
+        "needs_readers: bool",
+        "queues_runs: bool",
+        "watches_runs_automatically: bool",
+        "continues_runs: bool",
+        "reads_project_skills: bool",
+        "retains_pause: bool",
+        "has_restricted_aliases: bool",
+        "runs_saved_commands: bool"
+      ],
+      "methods": [
+        "retired(cls) -> 'HelperBehaviours'"
+      ]
+    },
     "helper_type.helper_type.HelperType": {
       "bases": [],
       "fields": [
-        "key: str",
-        "label: str",
-        "extends: str",
-        "access: Access",
-        "separate_folder: bool",
-        "default_profile: str",
-        "start_line: str",
-        "roster: type[AgentRoster] | None",
-        "run_limit_key: str",
-        "kept_limit_key: str",
-        "profile_limits_key: str",
-        "job_command: tuple[str, ...]",
-        "job_task_flag: str",
-        "line: str"
+        "key: ClassVar[str]",
+        "label: ClassVar[str]",
+        "access: ClassVar[Access]",
+        "separate_folder: ClassVar[bool]",
+        "default_profile: ClassVar[str]",
+        "start_line: ClassVar[str]",
+        "roster: ClassVar[type[AgentRoster] | None]",
+        "run_limit_key: ClassVar[str]",
+        "kept_limit_key: ClassVar[str]",
+        "profile_limits_key: ClassVar[str]",
+        "queue_limit_key: ClassVar[str]",
+        "job_command: ClassVar[tuple[str, ...]]",
+        "job_task_flag: ClassVar[str]",
+        "line: ClassVar[str]",
+        "command_types_setting: ClassVar[str]",
+        "behaviours: ClassVar[HelperBehaviours]",
+        "commands: ClassVar[CommandAllowList]"
       ],
-      "methods": []
+      "methods": [
+        "bases(cls) -> tuple[str, ...]",
+        "declares(cls, field: str) -> bool"
+      ]
     },
     "helper_type.helper_type_area.HelperTypeArea": {
       "bases": [
@@ -4312,10 +4387,13 @@
         "helper_keys(self) -> tuple[str, ...]",
         "read_access_keys(self) -> tuple[str, ...]",
         "find(self, key: str) -> HelperTypeEntry",
+        "behaviours(self, key: str) -> HelperBehaviours",
+        "has_separate_folder(self, key: str) -> bool",
+        "queue_limit_keys(self) -> tuple[str, ...]",
+        "type_keys(self, key: str) -> tuple[str, ...]",
         "label(self, key: str) -> str",
         "keys_with(self, access: Access) -> tuple[str, ...]",
         "extends(self, key: str, base: str) -> bool",
-        "type_chain(self, key: str) -> tuple[str, ...]",
         "startable(self) -> tuple[HelperTypeEntry, ...]"
       ]
     },
@@ -4327,21 +4405,49 @@
         "label: str",
         "access: Access",
         "separate_folder: bool",
-        "extends: str",
+        "behaviours: HelperBehaviours",
+        "bases: tuple[str, ...]",
         "default_profile: str",
         "start_line: str",
         "roster: DottedPath | None",
         "run_limit_key: str",
         "kept_limit_key: str",
         "profile_limits_key: str",
+        "queue_limit_key: str",
         "job_command: tuple[str, ...]",
         "job_task_flag: str",
-        "line: str"
+        "line: str",
+        "commands: CommandAllowList",
+        "command_types_setting: str"
       ],
       "methods": [
-        "declared(cls, module: str, declaration: HelperType) -> 'HelperTypeEntry'",
-        "restored(cls, stored: Mapping[str, Any]) -> 'HelperTypeEntry'"
+        "declared(cls, module: str, declaration: type[HelperType]) -> 'HelperTypeEntry'",
+        "restored(cls, stored: Mapping[str, Any]) -> 'HelperTypeEntry'",
+        "matches(self, helper_type: type[HelperType]) -> bool",
+        "extends(self, base: str) -> bool",
+        "type_keys(self) -> tuple[str, ...]"
       ]
+    },
+    "helper_type.journal_line.JournalLine": {
+      "bases": [],
+      "fields": [
+        "text: str",
+        "classes: Set[JournalLineClass]"
+      ],
+      "methods": [
+        "group(self) -> str",
+        "is_listed(self, groups: Sequence[str], lines: Sequence[str]) -> bool",
+        "matches_classes(self, classes: Sequence[JournalLineClass]) -> bool"
+      ]
+    },
+    "helper_type.main_agent.MainAgent": {
+      "bases": [],
+      "fields": [
+        "key: ClassVar[str]",
+        "label: ClassVar[str]",
+        "behaviours: ClassVar[HelperBehaviours]"
+      ],
+      "methods": []
     },
     "instruction.instruction_area.InstructionArea": {
       "bases": [
@@ -5313,8 +5419,10 @@
       "methods": [
         "problems(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry], suites: SuiteList) -> tuple[str, ...]",
         "group_problems(modules: Sequence[type[Module]], names: frozenset[str], profiles: Mapping[str, AgentProfile]) -> Iterator[str]",
-        "declaration_problems(self, module: type[Module], declaration: HelperType, claimed: dict[str, str]) -> list[str]",
-        "inheritance_problems(self, module: str, declaration: HelperType, book: HelperTypeBook) -> list[str]"
+        "owner(module: type[Module], suites: SuiteList) -> str",
+        "declaration_problems(self, module: type[Module], declaration: type[HelperType], claimed: dict[str, str], owner: str) -> list[str]",
+        "list_problems(name: str, commands: CommandAllowList, lines: Mapping[str, Set[JournalLineClass]]) -> Iterator[str]",
+        "inheritance_problems(self, module: str, declaration: type[HelperType], book: HelperTypeBook) -> list[str]"
       ]
     },
     "module.inspector_check.InspectorCheck": {
@@ -5335,6 +5443,13 @@
       "methods": [
         "owners(self) -> Mapping[str, str]",
         "problems(self, module: type[Module], window_name: str, slots: Sequence[str]) -> list[str]"
+      ]
+    },
+    "module.journal_lines.JournalLines": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "classes(self, modules: Sequence[type[Module]]) -> Mapping[str, Set[JournalLineClass]]"
       ]
     },
     "module.layer.Layer": {
@@ -5458,7 +5573,7 @@
         "button_slots: ClassVar[list[str]]",
         "inspectors: ClassVar[list[InspectorDeclaration]]",
         "added_states: ClassVar[Sequence[StateAddition]]",
-        "helper_types: ClassVar[list[HelperType]]",
+        "helper_types: ClassVar[list[type[HelperType]]]",
         "agent_groups: ClassVar[list[AgentGroup]]",
         "profiles: ClassVar[list[AgentProfile]]",
         "providers: ClassVar[list[type[Provider]]]",
@@ -5612,7 +5727,7 @@
       "methods": [
         "problems(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]",
         "occupant_problem(profile_name: str, type_label: str, start_line: str) -> str",
-        "profile_problems(self, module: str, profile: AgentProfile, types: dict[str, HelperType], claimed: dict[str, str], bases: ProfileBases) -> list[str]"
+        "profile_problems(self, module: str, profile: AgentProfile, types: dict[str, type[HelperType]], claimed: dict[str, str], bases: ProfileBases) -> list[str]"
       ]
     },
     "module.provider_check.ProviderCheck": {
@@ -5693,15 +5808,13 @@
         "modules: ClassVar[Sequence[type[Module]]]",
         "joins: ClassVar[str | None]",
         "requires: ClassVar[Sequence[str]]",
-        "defaults: ClassVar[Mapping[str, str]]",
         "complete_control: ClassVar[bool]",
         "included_overlays: ClassVar[Sequence[str]]",
         "windows: ClassVar[Sequence[str]]",
         "layouts: ClassVar[Mapping[str, LayoutShape]]",
         "presets: ClassVar[Mapping[str, Sequence[LayoutPreset]]]",
         "task_assigner: ClassVar[type[TaskAssigner] | None]",
-        "agent_policy: ClassVar[AgentPolicy]",
-        "helper_types: ClassVar[Sequence[HelperType]]"
+        "helper_types: ClassVar[Sequence[type[HelperType]]]"
       ],
       "methods": []
     },
@@ -5718,8 +5831,6 @@
         "loop(self, start: str, requires: Mapping[str, Sequence[str]]) -> list[str]",
         "driver_suites(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]",
         "wrong_suite_drivers(self, modules: Sequence[type[Module]]) -> tuple[str, ...]",
-        "wrong_defaults(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]",
-        "default_problems(self, suite: type[Suite], role: str, driver: str, roles: Mapping[str, str]) -> Iterator[str]",
         "preset_problems(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]",
         "rule_owners(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]",
         "unknown_hooks(self, rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]"
@@ -5753,7 +5864,7 @@
         "module_suites(self, module: type[Module]) -> list[type[Suite]]",
         "parent_name(self, module: type[Module]) -> str | None",
         "suite_names(self, module: type[Module]) -> tuple[str, ...]",
-        "helper_types(self, module: type[Module]) -> list[HelperType]",
+        "helper_types(self, module: type[Module]) -> list[type[HelperType]]",
         "problems(self) -> tuple[str, ...]",
         "modules_listed_twice(self) -> list[str]",
         "core_modules_listed(self) -> list[str]"
@@ -6157,6 +6268,7 @@
         "last_used: int",
         "title: str",
         "has_parent_report: bool",
+        "commands: CommandAllowList | None",
         "messages_siblings: bool",
         "program_models: Mapping[str, str]",
         "uses_project_instructions: bool",
@@ -8054,7 +8166,7 @@
         "with_rules(self, rules: tuple[DriverRuleEntry, ...]) -> 'Registry'",
         "essential_rules(self, driver: str, hook_name: str) -> list[DriverRuleEntry]",
         "overlay_rules(self, overlay: str, hook_name: str) -> list[DriverRuleEntry]",
-        "driver_rules(self, driver: str, role: str, hook_name: str, suite_name: str) -> list[DriverRuleEntry]",
+        "driver_rules(self, driver: str, role: str, hook_name: str) -> list[DriverRuleEntry]",
         "hook_rules(self, hook_name: str) -> list[DriverRuleEntry]",
         "gates(self) -> dict[str, AgentStateEntry]",
         "rule_gate(self, rule_name: str) -> AgentStateEntry | None",
@@ -8091,7 +8203,9 @@
         "default_suite_roots(self) -> list[SuiteEntry]",
         "suite_roots(suites: Sequence[SuiteEntry]) -> list[SuiteEntry]",
         "ancestors(self, suite: SuiteEntry) -> tuple[str, ...]",
-        "suite_drivers(self, suite: SuiteEntry) -> list[DriverEntry]"
+        "suite_drivers(self, suite: SuiteEntry) -> list[DriverEntry]",
+        "type_driver(self, suite: SuiteEntry, key: str) -> DriverEntry | None",
+        "type_drivers(self, suite: SuiteEntry) -> dict[str, DriverEntry]"
       ]
     },
     "registry.registry_area.RegistryArea": {
@@ -8201,13 +8315,11 @@
         "name: str",
         "module: str",
         "requires: Sequence[str]",
-        "defaults: Mapping[str, str]",
         "complete_control: bool",
         "included_overlays: Sequence[str]",
         "windows: Sequence[str]",
         "layouts: Mapping[str, LayoutShape]",
         "presets: Mapping[str, Sequence[LayoutPreset]]",
-        "agent_policy: AgentPolicy",
         "task_assigner: str",
         "shipped: bool"
       ],
@@ -9204,6 +9316,7 @@
         "user(self, user: Actor) -> None",
         "helper(self) -> Actor",
         "helper(self, helper: Actor) -> None",
+        "agent_actor(agent_id: int) -> Actor",
         "close(self) -> None",
         "bind(self, class_type: type[S], replacement: S) -> None",
         "replace(self, class_type: type[S], replacement: S) -> None",
@@ -9212,6 +9325,9 @@
         "run(self, line: str, actor: Actor | None, environment_id: int | None, process_id: int | None) -> LineOutcome",
         "seed(self, seed: type[Seed], count: int) -> tuple[int, ...]",
         "story_rows(self, model: type[M]) -> tuple[M, ...]",
+        "run_command(self, command: Command[R], actor: Actor, environment_id: int) -> R",
+        "end_session(self, agent: Actor) -> None",
+        "expect_agent_group(self, helper_type: str, profile: str, group: str) -> None",
         "use_fixture_environment(self, name: str | None) -> None",
         "caller_environment_id(self, actor: Actor | None) -> int | None",
         "scope_line(self, line: str) -> str",
@@ -9259,7 +9375,16 @@
         "expect_registered_window(self, name: str, text: str) -> None",
         "expect_registered_inspectors(self, models: list[type[Model]]) -> None",
         "expect_registered_provider(self, name: str, module: str) -> None",
+        "expect_helper_type_extends(self, key: str, base: str) -> None",
+        "expect_unrelated_helper_types(self, key: str, base: str) -> None",
+        "expect_registered_helper_type(self, key: str) -> None",
+        "expect_helper_type_behaviours(self, key: str) -> None",
+        "expect_helper_type_field_absent(self, key: str, field: str) -> None",
+        "expect_suite_field_absent(self, name: str, field: str) -> None",
+        "registered_helper_types(self) -> dict[str, dict[str, object]]",
         "expect_logged_event(self, name: str) -> None",
+        "rerun_migration(self, module: str, number: int) -> None",
+        "expect_sync_without(self, module: str) -> None",
         "synced_with(self, module: str) -> tuple[int, str]",
         "synced(self) -> tuple[int, str]",
         "expect_rows(self) -> None"

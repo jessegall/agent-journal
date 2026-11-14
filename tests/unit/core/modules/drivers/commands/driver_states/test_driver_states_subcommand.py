@@ -1,7 +1,8 @@
 from types import SimpleNamespace
 
 from engine.dotted_path.dotted_path import DottedPath
-from engine.driver.agent_state import AgentState, StateTier
+from engine.driver.agent_state import AgentState
+from engine.enums.state_tier import StateTier
 from engine.driver.open_row import OpenRow
 from engine.registry.agent_state_entry import AgentStateEntry
 from engine.time.timestamp import Timestamp

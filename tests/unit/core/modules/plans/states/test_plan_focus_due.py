@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 
-from engine.driver.agent_state import StateTier
+from engine.enums.state_tier import StateTier
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.plans.rules.plan_focus_rule import PlanFocusRule
 from core.modules.plans.states.plan_focus_due import PLAN_START_TABLE, PlanFocusDue

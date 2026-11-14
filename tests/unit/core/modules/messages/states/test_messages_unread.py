@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 
-from engine.driver.agent_state import StateTier
+from engine.enums.state_tier import StateTier
 from engine.driver.open_row import OpenRow
 from engine.driver.rule_answer import RuleAnswer
 from engine.time.timestamp import Timestamp

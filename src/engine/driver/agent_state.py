@@ -1,21 +1,11 @@
 from collections.abc import Sequence
-from enum import IntEnum
 from typing import ClassVar
 
 from engine.agent.enums.role_group import RoleGroup
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.driver.open_row import OpenRow
-
-
-class StateTier(IntEnum):
-    """Where an agent state's rules are asked in a hook's walk: critical first, then the stack newest first, then in
-    the place the rules have today, and deferred after the reply."""
-
-    CRITICAL = 0
-    STACK = 1
-    IN_PLACE = 2
-    DEFERRED = 3
+from engine.enums.state_tier import StateTier
 
 
 class AgentState:

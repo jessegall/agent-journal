@@ -1,7 +1,8 @@
 from collections.abc import Sequence
 
 from engine.driver.agent_hook import AgentHook
-from engine.driver.agent_state import AgentState, StateTier
+from engine.driver.agent_state import AgentState
+from engine.enums.state_tier import StateTier
 from engine.driver.open_row import OpenRow
 from core.modules.messages.models.message import Message
 from core.modules.messages.queries.message_query import MessageQuery

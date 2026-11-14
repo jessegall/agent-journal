@@ -1,7 +1,8 @@
 from types import SimpleNamespace
 
 from engine.agent.enums.role_group import RoleGroup
-from engine.driver.agent_state import AgentState, StateTier
+from engine.driver.agent_state import AgentState
+from engine.enums.state_tier import StateTier
 from engine.driver.open_row import OpenRow
 from engine.driver.overlay import Overlay
 from engine.time.timestamp import Timestamp

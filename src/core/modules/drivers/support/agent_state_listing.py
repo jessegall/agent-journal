@@ -1,7 +1,8 @@
 from dataclasses import dataclass, replace
 
 from engine.driver.agent_hook import AgentHook
-from engine.driver.agent_state import AgentState, StateTier
+from engine.driver.agent_state import AgentState
+from engine.enums.state_tier import StateTier
 from engine.driver.hook_event import HookEvent
 from engine.driver.state_boards import StateBoards
 from engine.enums.hook_event_name import HookEventName

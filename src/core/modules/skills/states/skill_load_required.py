@@ -2,7 +2,8 @@ from collections.abc import Sequence
 
 from engine.agent.enums.role_group import RoleGroup
 from engine.driver.agent_hook import AgentHook
-from engine.driver.agent_state import AgentState, StateTier
+from engine.driver.agent_state import AgentState
+from engine.enums.state_tier import StateTier
 from engine.driver.open_row import OpenRow
 from core.modules.skills.models.agent_skill import AgentSkill
 from core.modules.skills.rules.skill_read_first_rule import SkillReadFirstRule
