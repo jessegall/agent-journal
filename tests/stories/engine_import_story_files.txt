@@ -353,7 +353,6 @@ tests/stories/core/modules/processes/colour_codes.py
 tests/stories/core/modules/processes/command_run_counts.py
 tests/stories/core/modules/processes/cut_outputs.py
 tests/stories/core/modules/processes/docked_titles.py
-tests/stories/core/modules/processes/door_rows.py
 tests/stories/core/modules/processes/execution_classes_browser.py
 tests/stories/core/modules/processes/full_dock.py
 tests/stories/core/modules/processes/hang_watch.py

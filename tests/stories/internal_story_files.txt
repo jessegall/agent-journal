@@ -229,7 +229,6 @@ tests/stories/core/modules/processes/background.py
 tests/stories/core/modules/processes/background_cards.py
 tests/stories/core/modules/processes/background_monitor.py
 tests/stories/core/modules/processes/cut_outputs.py
-tests/stories/core/modules/processes/door_rows.py
 tests/stories/core/modules/processes/full_dock.py
 tests/stories/core/modules/processes/hang_watch.py
 tests/stories/core/modules/processes/hook_batch_reads.py
