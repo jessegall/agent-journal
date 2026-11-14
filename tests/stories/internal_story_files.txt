@@ -317,7 +317,6 @@ tests/stories/core/modules/tasks/task_records.py
 tests/stories/core/modules/templates/module_templates.py
 tests/stories/core/modules/templates/origin.py
 tests/stories/core/modules/templates/sending.py
-tests/stories/core/modules/templates/standard_templates.py
 tests/stories/core/modules/third_party.py
 tests/stories/core/modules/triggers/action_output.py
 tests/stories/core/modules/updates/server_update_marks.py

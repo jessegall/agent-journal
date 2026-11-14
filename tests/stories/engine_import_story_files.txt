@@ -541,10 +541,8 @@ tests/stories/core/modules/templates/active_templates.py
 tests/stories/core/modules/templates/module_templates.py
 tests/stories/core/modules/templates/origin.py
 tests/stories/core/modules/templates/sending.py
-tests/stories/core/modules/templates/standard_templates.py
 tests/stories/core/modules/templates/support/acme_review/module.py
 tests/stories/core/modules/templates/support/active_template_fixture.py
-tests/stories/core/modules/templates/support/legacy_templates.py
 tests/stories/core/modules/templates/support/template_modules.py
 tests/stories/core/modules/third_party.py
 tests/stories/core/modules/transcriptions/transcriptions.py
