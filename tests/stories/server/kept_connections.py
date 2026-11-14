@@ -22,6 +22,7 @@ from engine.testing.stories.counted_connections import CountedConnections
 from engine.testing.stories.database_file_copy import replace_with_copy
 
 TICK_COUNT = 10
+DEPOT_MODULE = "acme.depot"
 JOIN_SECONDS = 30.0
 LATER_SECONDS = 1_000_000.0
 SESSION = "s-1"
@@ -112,7 +113,7 @@ def test_a_module_sync_rebuilds_each_kept_container_once(new_story):
     for journal_round in rounds:
         journal_round.close()
     rebuilt = [(work.containers[0] is not work.containers[1], work.containers[1] is work.containers[2]) for work in works]
-    uses_new_registry = all(any("Depot" in entry for entry in work.containers[2].get(Registry).entries_text().split(",")) for work in works)
+    uses_new_registry = all(f'"module": "{DEPOT_MODULE}"' in work.containers[2].get(Registry).entries_text() for work in works)
     story.expected(code == 0 and rebuilt == [(True, True), (True, True)] and uses_new_registry, f"sync {code}: {report}; rebuilt {rebuilt}")
 
 

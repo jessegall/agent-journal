@@ -1,3 +1,4 @@
+from server.execution.session_starters import SessionStarters
 from engine.time.polled_wait import PolledWait
 from collections.abc import Callable
 from engine.database.reported_findings import ReportedFindings
@@ -397,6 +398,7 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
             server.drain(DRAIN_LIMIT_SECONDS)
             context.request_trace.close()
             context.hook_database.close()
+            SessionStarters.shared(home).close()
             files.remove_server_files()
             server.server_close()
             files.release_lock()

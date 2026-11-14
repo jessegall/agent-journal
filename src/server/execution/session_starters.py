@@ -49,3 +49,10 @@ class SessionStarters:
         if self.database is None:
             self.database = Database.shared(self.home)
         return self.database
+
+    # the server's stop closes the connection; a later read opens one again
+    def close(self) -> None:
+        with self.lock:
+            if self.database is not None:
+                self.database.close()
+                self.database = None

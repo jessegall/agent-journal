@@ -1,3 +1,4 @@
+from server.execution.session_starters import SessionStarters
 import argparse
 import faulthandler
 import math
@@ -252,6 +253,7 @@ def main(argv: list[str]) -> int:
         ticker.stop(deadline - time.monotonic())
         server.context.request_trace.close()
         hook_database.close()
+        SessionStarters.shared(home).close()
         if not server.is_handing_over:
             files.remove_server_files()
         server.server_close()
