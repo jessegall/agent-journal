@@ -91,7 +91,9 @@ function pick(entry) {
                             <FindBox :index="index" @pick="openFound" />
                         </SettingPresetBand>
                     </template>
-                    <div v-if="tabs.length > 1" class="settings-bar"><InnerTabs :tabs="tabs" :active="active" :answer="tabAnswer" @choose="pick" /></div>
+                    <template v-if="tabs.length > 1">
+                      <div class="settings-bar"><InnerTabs :tabs="tabs" :active="active" :answer="tabAnswer" @choose="pick" /></div>
+                    </template>
                     <template v-if="view.readOnly">
                         <p class="note lock" role="note" data-settings-lock>Only a user can change these settings. You can read every value, and ask a user for a change.</p>
                     </template>

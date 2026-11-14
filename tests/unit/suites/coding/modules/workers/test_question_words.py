@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from suites.coding.support.shipped_profiles import WORKER_PROFILE
 from suites.coding.support.shipped_profiles import HELPER_PROFILES
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
@@ -17,4 +18,4 @@ def test_the_mergers_case_book_has_the_entries_for_a_question():
 
 
 def test_the_worker_skill_says_what_happens_after_asking():
-    assert "After you ask, the merger or the journal" in (WORKERS_SKILLS / "journal-worker" / "SKILL.md").read_text()
+    assert "After you ask, the merger or the journal" in (WORKERS_SKILLS / WORKER_PROFILE.name / "SKILL.md").read_text()

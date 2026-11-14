@@ -5,7 +5,9 @@ defineProps({title: {type: String, required: true}, count: {type: Number, defaul
 
 <template>
     <header class="page-header" data-page-header>
-        <h1 class="page-title">{{ title }}<span v-if="count !== null" class="page-count" data-page-count>{{ count }}</span></h1>
+        <h1 class="page-title">{{ title }}<template v-if="count !== null">
+  <span class="page-count" data-page-count>{{ count }}</span>
+</template></h1>
         <span class="page-header-end">
             <slot name="primary" />
             <slot name="actions" />

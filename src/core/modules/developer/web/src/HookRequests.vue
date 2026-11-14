@@ -70,8 +70,12 @@ usePoll(() => loaded.value && load(), () => !paused.value && view.visible.value)
                         <template v-if="count"><MenuItem data-filter-clear @click="filters = emptyFilters()">Clear filters</MenuItem></template>
                     </MenuPanel></template>
                 </div>
-                <p v-if="failure" class="note message" role="alert">{{ failure }}</p>
-                <p v-else-if="!rows.length" class="note message">Nothing recorded yet. Record agent calls in the developer settings turns the log on.</p>
+                <template v-if="failure">
+                  <p class="note message" role="alert">{{ failure }}</p>
+                </template>
+                <template v-else-if="!rows.length">
+                  <p class="note message">Nothing recorded yet. Record agent calls in the developer settings turns the log on.</p>
+                </template>
                 <TableLayout :columns="COLUMNS" :rows="lines" :pick="choose" :active="openedNumber" empty="" data-hook-request-list />
             </section>
             <div class="divider" data-hook-request-divider role="separator" aria-orientation="vertical" />

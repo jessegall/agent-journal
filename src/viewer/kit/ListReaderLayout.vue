@@ -56,7 +56,9 @@ watch(() => props.items.length, () => {
                     <EmptyState :title="emptyTitle"><slot name="empty" /></EmptyState>
                 </template>
                 <template v-for="group in groups" :key="group">
-                    <p v-if="group" class="list-reader-group">{{ group }}</p>
+                    <template v-if="group">
+                      <p class="list-reader-group">{{ group }}</p>
+                    </template>
                     <template v-for="item in inGroup(group)" :key="item.id">
                         <button v-context="place ? () => place(item) : null" type="button" :class="['list-reader-row', {on: item.id === chosen}]" :title="item.title" :aria-current="item.id === chosen" data-reader-row :data-row="item.id" @click="choose(item)">
                             <ListRow :title="item.title" :text="item.desc || ''">

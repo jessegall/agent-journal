@@ -14,6 +14,16 @@ src/core/modules/approvals/commands/pending_approvals/pending_approvals_subcomma
 src/core/modules/approvals/commands/recover_approvals/recover_approvals_handler.py:a restart recovers every approval that was running
 src/core/modules/approvals/listeners/pending_approval_dock_listener.py:at a start every pending approval is docked and every docked one checked
 src/core/modules/approvals/support/standing_approvals.py:a request is matched against the standing approvals of its kind, oldest first
+src/core/modules/assign_rules/commands/record_assign_decision/judge_skipped_tasks_handler.py:the environments with a rule turned on are rule_reasons from their rules
+src/core/modules/assign_rules/queries/assign_decision_query.py:the Assign tab names each target's oldest unstarted task a rule gave it
+src/core/modules/assign_rules/support/assign_rules.py:a task is judged against the rules of its environment, and a save checks the revision of all of them
+src/core/modules/assign_rules/support/assign_rules.py:the decisions about the tasks judged together are read in one query
+src/core/modules/assign_rules/support/board/assign_board_reader.py:the Assign tab lists every agent of the environment that takes tasks and warns of rules for retired ones
+src/core/modules/assign_rules/support/board/assign_board_reader.py:the Assign tab shows every rule of the environment
+src/core/modules/assign_rules/support/rule_assignment_reasons.py:the rules named on the assignments asked about are read in one query
+src/core/modules/assign_rules/support/rule_conditions.py:the conditions of every rule asked about are read in one query
+src/core/modules/assign_rules/support/targets/rule_targets.py:a model target is least_busy among every agent of the environment on its program and model
+src/core/modules/assign_rules/support/task_facts_reader.py:the plan of each task judged is read in one query
 src/core/modules/assignments/support/assignable_rows.py:an assignment reaches every child row of the row it is given to
 src/core/modules/assignments/support/assignments.py:an assignment cascade reaches every assignment that follows from it
 src/core/modules/assignments/support/assignments.py:the assignments of every row asked for are read together
@@ -89,6 +99,7 @@ src/core/modules/plan_reviews/support/plan_rounds.py:the review rounds of a plan
 src/core/modules/plans/bindings/focused_block_review_scope.py:the focus keeps every listed task that is a task of the plan
 src/core/modules/plans/bindings/plan_row_authors.py:every edit asked about is matched to the plan it belongs to
 src/core/modules/plans/commands/plan_places/plan_places_subcommand.py:Every phase of the newest unclosed plans is a place a task can go to, with the tasks already in it.
+src/core/modules/plans/commands/repair_plan_states/repair_plan_states_handler.py:every blocked plan and its open waits are checked against the plans they wait on
 src/core/modules/plans/guards/one_task_phase_guard.py:the check counts the phases of every task of the plan
 src/core/modules/plans/listeners/cancel_open_plan_tasks_listener.py:a cancelled plan cancels every open task it holds
 src/core/modules/plans/listeners/checkpoint_reach_listener.py:every changed task may reach a checkpoint of its plan
@@ -159,6 +170,7 @@ src/core/modules/skills/commands/reset_skills/reset_skills_handler.py:a reset fo
 src/core/modules/skills/support/loaded_skills.py:every loaded skill of the agent is compared with the catalogue's digest
 src/core/modules/skills/support/unread_skills.py:one agent has at most one row for each skill of the project
 src/core/modules/skills/support/unread_skills.py:the skills due for one agent are at most the skills of the project, kept until one changes
+src/core/modules/tasks/commands/repair_task_states/repair_task_states_handler.py:every open task that still names a holder is repaired
 src/core/modules/tasks/commands/reset_task_reads/reset_task_reads_handler.py:a reset forgets every task brief the agent has read
 src/core/modules/tasks/commands/task_board/task_board_subcommand.py:The board shows every task that is being worked on; the columns of open and closed tasks are read a page at a time.
 src/core/modules/tasks/commands/task_graph/task_graph_subcommand.py:The graph draws every wait between unfinished tasks of one environment, and only the tasks that have one.
@@ -171,6 +183,8 @@ src/core/modules/tasks/queries/task_query.py:an agent's current tasks are every 
 src/core/modules/tasks/queries/task_query.py:the tasks assigned to an agent are its whole unit of work, which can hold more than fifty tasks
 src/core/modules/tasks/rules/unopenable_block_rule.py:every task the agent blocked by hand is checked for a review of its block
 src/core/modules/tasks/support/dependency_waits.py:Every dependency that names one of the tasks that changed, to or from it; a task many others wait on has many.
+src/core/modules/tasks/support/task_assignment_reasons.py:the assignments of every task shown are read in one query
+src/core/modules/tasks/support/task_tags.py:the tags of the tasks asked about are read in one query
 src/core/modules/tasks/support/task_waits.py:Every task whose wait just ended is opened; a task many others wait on ends many waits at once.
 src/core/modules/tasks/support/task_waits.py:The open waits are read once and kept on the server, so a listener that ends waits for many targets reads no row per target.
 src/core/modules/triggers/listeners/trigger_process_removal_listener.py:a removed process takes every trigger run of it with it
@@ -193,6 +207,7 @@ src/suites/coding/modules/checks/support/check_task_wait_attempts.py:the last ru
 src/suites/coding/modules/workers/bindings/worker_agent_work.py:the agent cards name the work of every worker with a worktree
 src/suites/coding/modules/workers/bindings/worker_roster.py:a retired worker is checked on every worktree it had and gives up every waiting line
 src/suites/coding/modules/workers/bindings/worker_test_listings.py:the count of a test command comes from the newest kept output of it that holds one
+src/suites/coding/modules/workers/commands/end_worktree_proofs/end_worktree_proofs_handler.py:the proofs of one worktree whose tests wait or run are read together
 src/suites/coding/modules/workers/commands/make_proof/make_proof_subcommand.py:the proof line counts every waiting proof of the held tasks
 src/suites/coding/modules/workers/commands/merge_finished_tasks/merge_finished_tasks_handler.py:a merge checks every proof of the tasks it takes in
 src/suites/coding/modules/workers/commands/queue_worker_tests/record_affected_test_handler.py:a failed affected test reopens every testing task the worktree proved
@@ -211,6 +226,7 @@ src/suites/coding/modules/workers/commands/worker_progress/worker_progress_subco
 src/suites/coding/modules/workers/commands/worker_status/worker_status_subcommand.py:a worker's unit is every task assigned to it, which can hold more than fifty
 src/suites/coding/modules/workers/commands/worker_waits/worker_waits_subcommand.py:the list shows what every worker waits on
 src/suites/coding/modules/workers/listeners/blocking_task_listener.py:every task that waited on the moved one may be taken now
+src/suites/coding/modules/workers/listeners/boot_interrupted_cuts_listener.py:every worktree a restart left new is undone as the journal starts
 src/suites/coding/modules/workers/listeners/worker_job_source_listener.py:every source not yet started is matched against the delivered line
 src/suites/coding/modules/workers/listeners/worker_move_mark_listener.py:a worker's unit is every task assigned to it, which can hold more than fifty
 src/suites/coding/modules/workers/listeners/worker_process_removal_listener.py:removed processes leave every operation, line and worktree that pointed at them
@@ -237,6 +253,7 @@ src/suites/coding/modules/workers/support/main_agent_work.py:every run, wait, pr
 src/suites/coding/modules/workers/support/merge_ask_section.py:the merge queue holds every waiting merge ask
 src/suites/coding/modules/workers/support/merger_visits.py:every line of every open merger visit that was not handled goes back
 src/suites/coding/modules/workers/support/merger_work.py:the merger reads every line it has not read and settled
+src/suites/coding/modules/workers/support/outside_waits.py:every open wait of the tasks of one unit, and of the tasks they wait on in turn
 src/suites/coding/modules/workers/support/phase_test_deferrals.py:the notes name every open deferral of the phases asked about
 src/suites/coding/modules/workers/support/stop_facts_reader.py:every ended-worker line since the progress is checked for this worker
 src/suites/coding/modules/workers/support/work_units.py:a worker's unit is every task assigned to it, which can hold more than fifty
@@ -249,7 +266,6 @@ src/suites/coding/modules/workers/support/worker_places.py:the places count ever
 src/suites/coding/modules/workers/support/worker_proof_queue.py:a commit hands in every proof of the worktree
 src/suites/coding/modules/workers/support/worker_questions.py:the merger answers every open question of every worker
 src/suites/coding/modules/workers/support/worker_resume.py:every line typed to the worker since its last hook may be the job it lost
-src/suites/coding/modules/workers/support/worker_routes.py:a route is matched on every tag of the tasks it is asked about
 src/suites/coding/modules/workers/support/worker_staging.py:the staging shows every cancelled task of the unit
 src/suites/coding/modules/workers/support/worker_started_work.py:every stopped worker, and every line that resumed it, is counted to start it again
 src/suites/coding/modules/workers/support/worker_steps.py:every merge conflict line of the worker is checked for one after the delivery
@@ -257,8 +273,11 @@ src/suites/coding/modules/workers/support/worker_task_copies.py:every task of th
 src/suites/coding/modules/workers/support/worker_test_failures.py:the flagged lines name every test failure of the tasks asked about
 src/suites/coding/modules/workers/support/worker_unfinished_tasks.py:a worker's unit is every task assigned to it, which can hold more than fifty
 src/suites/coding/modules/workers/ticks/merger_retry.py:the tick retries the merger in every environment with an unread line or an open visit
+src/suites/coding/modules/workers/ticks/stalled_worker_test_runs.py:every test of a checkpoint run still shown as running is looked at
 src/suites/coding/modules/workers/ticks/stalled_worker_test_runs.py:the run of every proof still shown as running is looked at
+src/suites/coding/modules/workers/ticks/stalled_worker_test_runs.py:the runs and checkpoints of those tests are read in one query each
 src/suites/coding/modules/workers/ticks/stopped_worker_runs.py:the tick reports in every environment with a run of a stopped worker
 src/suites/coding/modules/workers/ticks/unlaunched_worker_test_runs.py:every running run may be a worker test that never launched
+src/suites/coding/modules/workers/ticks/unlaunched_worker_test_runs.py:every test of a checkpoint run still shown as running may be one that never launched
 src/suites/coding/modules/workers/ticks/worker_resume_retry.py:every worker with a waiting resume line is tried again
 src/suites/coding/support/next_task.py:the own tasks of an agent are every task it holds or is assigned

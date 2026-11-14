@@ -83,6 +83,10 @@ class MessageQuery(Query[Message]):
     def unread(self, agent_id: int) -> Self:
         return self.addressed(agent_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at"))
 
+    # The messages the agent was told of and has not read, oldest first.
+    def delivered_unread(self, agent_id: int) -> Self:
+        return self.unread(agent_id).matching(Greater("delivered_at", "")).oldest()
+
     def undelivered(self, agent_id: int) -> Self:
         return self.unread(agent_id).matching(IsNull("delivered_at"))
 

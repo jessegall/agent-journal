@@ -18,6 +18,8 @@ onUnmounted(() => stop());
 </script>
 
 <template>
-    <ContextMenu v-if="menu" v-bind="menu" @close="close" />
+    <template v-if="menu">
+      <ContextMenu v-bind="menu" @close="close" />
+    </template>
     <ToastArea :toasts="own" />
 </template>

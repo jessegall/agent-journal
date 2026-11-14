@@ -90,7 +90,7 @@ from core.modules.plans.listeners.started_plan_dock_listener import StartedPlanD
 from core.modules.plans.listeners.ready_plan_sync_listener import ReadyPlanSyncListener
 from core.modules.plans.commands.plan_timeline.plan_timeline_subcommand import PlanTimelineSubcommand
 from core.modules.plans.rules.plan_order_rule import PlanOrderRule
-from core.modules.plans.rules.plan_focus_rule import PlanFocusRule
+from core.modules.plans.states.plan_focus_due import PlanFocusDue
 from core.modules.plans.rules.plan_state_rule import PlanStateRule
 from core.modules.plans.rules.plan_task_line_rule import PlanTaskLineRule
 from core.modules.plans.support.plan_marks import PLAN_DOCKS, PLAN_MARKS
@@ -166,7 +166,8 @@ class PlansModule(Module):
                  FinishedPlanListener, PassedPlanListener, CheckpointRunListener, FinishedPlanLineListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener, NextPlanTaskStarterListener, ReadyPlanSyncListener]
     marks = PLAN_MARKS
     nudges = PLAN_NUDGES
-    driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule, PlanContextRule, PlanFocusRule]
+    driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule, PlanContextRule]
+    agent_states = [PlanFocusDue]
     docks = PLAN_DOCKS
     window_extensions = [WindowExtension("messages.chat", reads=["agent running"])]
     buttons = [ButtonDeclaration("plans.approve", WAITING_PLAN_SLOTS, "Approve", "plan approve {row_id}",

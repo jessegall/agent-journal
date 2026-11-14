@@ -17,12 +17,15 @@ class UnreadSkills:
         self.queries, self.catalogue, self.kept, self.profile_skills = queries, catalogue, kept, profile_skills
 
     def names(self, agent_id: int) -> list[str]:
+        return [row.skill for row in self.due_rows(agent_id)]
+
+    def due_rows(self, agent_id: int) -> list[AgentSkill]:
         due = self.queries.query(AgentSkill).filter(session_agent_id=agent_id, state=AgentSkillState.DUE)
         rows = self.kept.read(due, lambda: tuple(due.every_row(DUE_SKILLS_REASON)), name="skills.due")
         if not rows:
             return []
         declared = {skill.folder for skill in self.catalogue.skills()}
-        return [row.skill for row in rows if row.skill in declared and not self.profile_skills.refuses(agent_id, row.skill)]
+        return [row for row in rows if row.skill in declared and not self.profile_skills.refuses(agent_id, row.skill)]
 
     def unread(self, agent_id: int) -> list[str]:
         current = {skill.folder: skill.digest for skill in self.catalogue.skills()}

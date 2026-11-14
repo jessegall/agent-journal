@@ -69,7 +69,9 @@ watch(() => [props.fields.length, props.modelValue], () => fit(), {flush: "post"
             </template>
         </template>
         <template v-if="active">
-            <span v-if="shown !== null" class="filter-count" data-filter-count>{{ shown }} of {{ rows.length }}</span>
+            <template v-if="shown !== null">
+              <span class="filter-count" data-filter-count>{{ shown }} of {{ rows.length }}</span>
+            </template>
             <button type="button" class="filter-clear" data-filter-clear-all @click="clear">Clear</button>
         </template>
     </SearchBar>

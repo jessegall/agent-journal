@@ -14,7 +14,7 @@ const place = (row) => {
         items: [
             {label: "Open", group: "open", disabled: !row.open, reason: "Nothing to open", run: () => emit("open", row.open)},
             {label: "Copy number", group: "copy", run: ({say}) => copying(String(row.cells[0] ?? ""), "", say)},
-            {label: "Copy row", group: "copy", run: ({say}) => copying(line, "the row", say)},
+            {label: "Copy line", group: "copy", run: ({say}) => copying(line, "the line", say)},
         ],
     };
 };

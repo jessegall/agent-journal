@@ -61,7 +61,7 @@ test("test_git_menu_no_delete: a right click has Open, Show changes and a copy, 
     expect(itemsOf(element.querySelector('[data-row="4"]')).length).toBe(4);
 });
 
-test("test_output_table_filters: the commands are a table with Output, Command, Agent, Task, State, Took and When, and the filter chips State, Agent and Task", async () => {
+test("test_output_table_filters: the commands are a table with Output, Command, Agent, Task, State, Duration and When, and the filter chips State, Agent and Task", async () => {
     const rows = [
         {id: 2, line: "make test", state: "running", session_agent_id: 7, task_id: 11, created_at: new Date(Date.now() - 120000).toISOString(), started_at: new Date(Date.now() - 90000).toISOString(), ended_at: null},
         {id: 1, line: "ls build", state: "failed", session_agent_id: 8, task_id: null, created_at: new Date(Date.now() - 3600000 * 3).toISOString(), started_at: null, ended_at: null},
@@ -69,11 +69,11 @@ test("test_output_table_filters: the commands are a table with Output, Command, 
     const element = await mounted(Outputs, commandsWindowContext({"process feed": page(rows)}));
     document.body.append(element);
     await settle();
-    expect([...element.querySelectorAll(".table-row.head .cell")].map((cell) => cell.textContent)).toEqual(["Output", "Command", "Agent", "Task", "State", "Took", "When"]);
+    expect([...element.querySelectorAll(".table-row.head .cell")].map((cell) => cell.textContent)).toEqual(["Output", "Command", "Agent", "Task", "State", "Duration", "When"]);
     const first = [...element.querySelectorAll(".table-row:not(.head)")][0];
     expect([...first.querySelectorAll(".cell")].map((cell) => cell.textContent).slice(0, 5)).toEqual(["2", "make test", "Agent 7", "Task 11", "Running"]);
     expect(element.querySelectorAll(".table-row.danger")).toHaveLength(1);
     expect(element.querySelector("[data-filter-bar]")).not.toBeNull();
-    // a right click on a row is the table row's place: Open, Copy number and Copy row
-    expect(labelsOf(first)).toEqual(["Open", "Copy number", "Copy row"]);
+    // a right click on a row is the table row's place: Open, Copy number and Copy line
+    expect(labelsOf(first)).toEqual(["Open", "Copy number", "Copy line"]);
 });

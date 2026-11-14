@@ -4,10 +4,14 @@ defineProps({toasts: {type: Object, required: true}});
 </script>
 
 <template>
-    <div v-if="toasts.current.value" class="toast" role="status" data-toast>
-        <span class="toast-text" data-toast-text>{{ toasts.current.value.text }}</span>
-        <button v-if="toasts.current.value.undo" type="button" class="toast-undo" data-toast-undo @click="toasts.undo()">Undo</button>
-    </div>
+    <template v-if="toasts.current.value">
+      <div class="toast" role="status" data-toast>
+          <span class="toast-text" data-toast-text>{{ toasts.current.value.text }}</span>
+          <template v-if="toasts.current.value.undo">
+            <button type="button" class="toast-undo" data-toast-undo @click="toasts.undo()">Undo</button>
+          </template>
+      </div>
+    </template>
 </template>
 
 <style scoped>

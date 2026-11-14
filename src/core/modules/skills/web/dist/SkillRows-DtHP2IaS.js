@@ -931,7 +931,7 @@ const vt = {
       _: 1
     }, 8, ["chosen", "items"]));
   }
-}, jl = /* @__PURE__ */ I(Nl, [["__scopeId", "data-v-1646fb31"]]);
+}, jl = /* @__PURE__ */ I(Nl, [["__scopeId", "data-v-fa882c72"]]);
 export {
   jl as S
 };

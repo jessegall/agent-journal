@@ -1,5 +1,6 @@
 import threading
 
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 from engine.container.container import Container
 from engine.database.database import Database
 from engine.module.journal_container import synced_container
@@ -12,7 +13,7 @@ from tests.stories.core.support.fixtures import UserJoined
 WAIT_SECONDS = 30.0
 PRUNING_SECONDS = 600
 OUTPUT_READER_SECONDS = 1
-TICK_WORKERS_KEY = "journal.core.processes.tick-workers"
+TICK_WORKERS_KEY = ProcessSetting.TICK_WORKERS.key
 
 
 class TickClock:

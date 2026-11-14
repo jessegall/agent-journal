@@ -1,3 +1,4 @@
+from functools import cache
 from core.modules.secrets.support.secret_nudges import SECRETS_FOLDER_BAN
 import json
 from pathlib import Path
@@ -34,7 +35,12 @@ class SecretsFolderRule(DriverRule):
         return RuleAnswer.refused(SECRETS_FOLDER_BAN.nudge())
 
     def spellings(self) -> tuple[str, ...]:
-        home = str(Path.home())
-        folders = {str(self.folder.folder), str(self.folder.folder.resolve())}
-        return (*MARKERS, *folders, *(folder.replace(home, "~", 1) for folder in folders if folder.startswith(home)),
-                *(folder.replace(home, "$HOME", 1) for folder in folders if folder.startswith(home)))
+        return folder_spellings(str(self.folder.folder), str(Path.home()))
+
+
+# resolving the folder checks each folder of its path, so a server works the spellings out once per folder and home
+@cache
+def folder_spellings(folder: str, home: str) -> tuple[str, ...]:
+    folders = {folder, str(Path(folder).resolve())}
+    return (*MARKERS, *folders, *(spelling.replace(home, "~", 1) for spelling in folders if spelling.startswith(home)),
+            *(spelling.replace(home, "$HOME", 1) for spelling in folders if spelling.startswith(home)))

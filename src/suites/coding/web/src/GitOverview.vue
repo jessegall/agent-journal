@@ -61,15 +61,25 @@ const place = (item) => ({head: item.title, items: menuOf(item, () => (chosen.va
             <PageHeader title="Git" />
             <Segmented :options="tabs" :value="tab" data-git-tabs @pick="pick" />
             <FilterBar v-model="filter" v-model:words="words" :fields="fields" :rows="items" :shown="shown.length" placeholder="Search" />
-            <p v-if="failure" class="note" role="alert">{{ failure }}</p>
-            <Btn v-if="more" small data-git-more @click="loadMore">Show more</Btn>
+            <template v-if="failure">
+              <p class="note" role="alert">{{ failure }}</p>
+            </template>
+            <template v-if="more">
+              <Btn small data-git-more @click="loadMore">Show more</Btn>
+            </template>
         </template>
         <template #empty>
-            <Skeleton v-if="!loaded" shape="rows" />
-            <EmptyState v-else-if="!failure">{{ none }}</EmptyState>
+            <template v-if="!loaded">
+              <Skeleton shape="rows" />
+            </template>
+            <template v-else-if="!failure">
+              <EmptyState>{{ none }}</EmptyState>
+            </template>
         </template>
         <template #meta="{item}">
-            <TimeAgo v-if="item.row.time" class="age" :at="item.row.time" />
+            <template v-if="item.row.time">
+              <TimeAgo class="age" :at="item.row.time" />
+            </template>
         </template>
         <template #reader="{item}">
             <GitReader :item="item" :items="menuOf(item)" @changes="showChanges" />

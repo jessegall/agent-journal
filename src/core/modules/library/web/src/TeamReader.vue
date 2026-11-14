@@ -43,7 +43,9 @@ const there = computed(() => copy.value?.server_fields ?? {});
 <template>
     <Reader v-model:tab="tab" :title="item.title" :number="`${KIND_WORDS[item.row.share]} ${item.row.item_id}`" :abstract="item.row.by ? `Shared by ${item.row.by}` : ''" :tabs="tabs" :facts="facts" data-team-reader>
         <template #primary>
-            <Btn v-if="primary" small variant="primary" data-team-primary @click="emit('act', primary)">{{ primary }}</Btn>
+            <template v-if="primary">
+              <Btn small variant="primary" data-team-primary @click="emit('act', primary)">{{ primary }}</Btn>
+            </template>
         </template>
         <template #actions>
             <ActionsMenu :items="items" :head="item.title" />
@@ -52,17 +54,25 @@ const there = computed(() => copy.value?.server_fields ?? {});
             <template v-if="open === 'details' && item.row.at"><p class="when" data-team-when>Changed <TimeAgo :at="item.row.at" /></p></template>
             <template v-if="open === 'details' && copy?.note"><p class="when" data-team-note>{{ copy.note }}</p></template>
             <template v-if="open === 'compare' && copy">
-                <p v-if="!KEEPS_REVISIONS.includes(item.row.share)" class="loss" data-library-loss>The text on this journal is lost when you use the library's version: a {{ item.row.share }} keeps no earlier versions.</p>
+                <template v-if="!KEEPS_REVISIONS.includes(item.row.share)">
+                  <p class="loss" data-library-loss>The text on this journal is lost when you use the library's version: a {{ item.row.share }} keeps no earlier versions.</p>
+                </template>
                 <CopyCompare :here="copy.local_fields" :library="there" :at="new Date().toISOString()" />
-                <Btn v-if="item.way !== 'Changed here'" small variant="primary" data-library-take @click="emit('act', 'Take')">Use the library's version</Btn>
+                <template v-if="item.way !== 'Changed here'">
+                  <Btn small variant="primary" data-library-take @click="emit('act', 'Take')">Use the library's version</Btn>
+                </template>
             </template>
             <template v-if="open === 'versions'">
-                <p v-if="failure" class="loss" role="alert">{{ failure }}</p>
+                <template v-if="failure">
+                  <p class="loss" role="alert">{{ failure }}</p>
+                </template>
                 <ul class="versions" data-library-versions>
                     <template v-for="change in versions" :key="change.version">
                         <li :data-library-version="change.version">
                             <span>Version {{ change.version }}, changed by {{ change.user }}, <TimeAgo :at="change.created_at" /></span>
-                            <Btn v-if="canWrite && change.version !== item.row.version" small data-library-restore-version @click="restore(change.version)">Restore this version</Btn>
+                            <template v-if="canWrite && change.version !== item.row.version">
+                              <Btn small data-library-restore-version @click="restore(change.version)">Restore this version</Btn>
+                            </template>
                         </li>
                     </template>
                 </ul>
