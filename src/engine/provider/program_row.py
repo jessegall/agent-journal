@@ -8,7 +8,8 @@ from engine.provider.provider import Provider
 class ProgramRow:
     """One agent program's row of the program table: its hook names under the journal's event names, the
     the events whose answer takes lines, its refusal styles, tool
-    categories, decoder, the fields a rewritten tool input must carry and how it is stopped at each event."""
+    categories, decoder, the fields a rewritten tool input must carry, how it is stopped at each event, how it
+    reads a hook's matcher, how long a hook with no timeout runs and the most seconds it gives a SessionEnd hook."""
 
     events: Mapping[str, str]
     line_events: Sequence[str]
@@ -19,6 +20,9 @@ class ProgramRow:
     rewrites: Mapping[str, Mapping[str, object]]
     matchers: Mapping[str, str]
     halts: Mapping[str, str]
+    matcher_style: str
+    default_hook_seconds: int
+    session_end_limit_seconds: int
 
     @classmethod
     def row(cls, provider: type[Provider]) -> "ProgramRow":
@@ -27,4 +31,5 @@ class ProgramRow:
                    {name.value: style.value for name, style in provider.refusals.items()},
                    {tool: category.value for tool, category in provider.tool_categories.items()}, provider.decoder.value,
                    {name.value: dict(fields) for name, fields in provider.rewrites.items()}, dict(provider.matchers),
-                   {name.value: style.value for name, style in provider.halts.items()})
+                   {name.value: style.value for name, style in provider.halts.items()}, provider.matcher_style.value,
+                   provider.default_hook_seconds, provider.session_end_limit_seconds)

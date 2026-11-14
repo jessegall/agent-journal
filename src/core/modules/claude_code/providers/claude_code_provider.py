@@ -15,6 +15,7 @@ from pathlib import Path
 
 from engine.enums.hook_event_name import HookEventName
 from engine.enums.tool_type import ToolType
+from engine.provider.enums.matcher_style import MatcherStyle
 from engine.journal.journal_home import JournalHome
 from engine.provider.helper_launch import HelperLaunch
 from engine.provider.helper_outcome import HelperOutcome
@@ -94,6 +95,8 @@ class ClaudeCodeProvider(Provider):
                    "SessionEnd": HookEventName.SESSION_END, "MessageDisplay": HookEventName.MESSAGE_DISPLAY}
     line_events = [HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE]
     plain_output_events = [HookEventName.SESSION_START, HookEventName.PROMPT]
+    matcher_style = MatcherStyle.NAMES_OR_REGEX
+    session_end_limit_seconds = 60
     refusals = {HookEventName.PRE_TOOL_USE: RefusalStyle.DENY, HookEventName.PROMPT: RefusalStyle.BLOCK, HookEventName.STOP: RefusalStyle.BLOCK}
     skills_folder = ".claude/skills"
     profile_model_setting = "journal.core.profiles.model-claude"

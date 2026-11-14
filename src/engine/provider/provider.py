@@ -29,6 +29,7 @@ from engine.provider.peer_note import PeerNote
 from engine.provider.program_model import ProgramModel
 from engine.provider.program_server_file import ProgramServerFile
 from engine.enums.halt_style import HaltStyle
+from engine.provider.enums.matcher_style import MatcherStyle
 from engine.enums.refusal_style import RefusalStyle
 from engine.provider.session_line import SessionLine
 from engine.provider.transcript_author import AGENT_AUTHOR, USER_AUTHOR
@@ -55,6 +56,9 @@ class Provider(ABC):
     matchers: ClassVar[Mapping[str, str]] = {}
     line_events: ClassVar[Sequence[HookEventName]]
     plain_output_events: ClassVar[Sequence[HookEventName]] = ()
+    matcher_style: ClassVar[MatcherStyle] = MatcherStyle.REGEX
+    default_hook_seconds: ClassVar[int] = 600
+    session_end_limit_seconds: ClassVar[int] = 3
     refusals: ClassVar[Mapping[HookEventName, RefusalStyle]] = {}
     tool_categories: ClassVar[Mapping[str, ToolType]]
     safe_tools: ClassVar[tuple[str, ...]] = ()

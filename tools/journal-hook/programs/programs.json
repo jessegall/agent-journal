@@ -14,6 +14,7 @@
   "programs": {
     "claude": {
       "decoder": "common",
+      "default_hook_seconds": 600,
       "events": {
         "MessageDisplay": "message_display",
         "PostToolUse": "post_tool_use",
@@ -35,6 +36,7 @@
         "pre_tool_use",
         "post_tool_use"
       ],
+      "matcher_style": "names_or_regex",
       "matchers": {
         "PostToolUse": "tool_name",
         "PostToolUseFailure": "tool_name",
@@ -57,6 +59,7 @@
           "run_in_background": false
         }
       },
+      "session_end_limit_seconds": 60,
       "tool_categories": {
         "Agent": "agent",
         "AskUserQuestion": "question",
@@ -76,6 +79,7 @@
     },
     "codex": {
       "decoder": "codex",
+      "default_hook_seconds": 600,
       "events": {
         "PostToolUse": "post_tool_use",
         "PreCompact": "compact",
@@ -95,6 +99,7 @@
         "pre_tool_use",
         "post_tool_use"
       ],
+      "matcher_style": "regex",
       "matchers": {
         "PostToolUse": "tool_name",
         "PreToolUse": "tool_name",
@@ -109,6 +114,7 @@
         "stop": "block"
       },
       "rewrites": {},
+      "session_end_limit_seconds": 3,
       "tool_categories": {
         "Bash": "shell",
         "apply_patch": "edit",

@@ -61,3 +61,16 @@ func TestEveryDecoderHasAShippedRowUsingIt(t *testing.T) {
 		}
 	}
 }
+
+func TestTheTableReadsMatcherStyleAndLimits(t *testing.T) {
+	table := LoadTable("")
+	for name, want := range map[string]Program{
+		"claude": {MatcherStyle: "names_or_regex", DefaultHookSeconds: 600, SessionEndLimitSeconds: 60},
+		"codex":  {MatcherStyle: "regex", DefaultHookSeconds: 600, SessionEndLimitSeconds: 3},
+	} {
+		got := table.Programs[name]
+		if got.MatcherStyle != want.MatcherStyle || got.DefaultHookSeconds != want.DefaultHookSeconds || got.SessionEndLimitSeconds != want.SessionEndLimitSeconds {
+			t.Fatalf("%s reads matcher style %q, default %d s, SessionEnd limit %d s; want %+v", name, got.MatcherStyle, got.DefaultHookSeconds, got.SessionEndLimitSeconds, want)
+		}
+	}
+}

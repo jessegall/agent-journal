@@ -4,6 +4,8 @@ from enum import StrEnum
 from engine.enums.hook_event_name import HookEventName
 
 CAPITAL = re.compile(r"(?<!^)(?=[A-Z])")
+# Codex runs a SessionEnd hook for 1 second unless it says more, and for 3 at most
+SESSION_END_LIMIT_SECONDS = 3
 
 
 class CodexHookEvent(StrEnum):
@@ -35,7 +37,7 @@ class CodexHookEvent(StrEnum):
         return self in (self.SESSION_START, self.PROMPT, self.PRE_TOOL_USE, self.POST_TOOL_USE)
 
     def timeout(self, seconds: int) -> int:
-        return min(3, max(1, seconds)) if self is self.SESSION_END else max(1, seconds)
+        return min(SESSION_END_LIMIT_SECONDS, max(1, seconds)) if self is self.SESSION_END else max(1, seconds)
 
     @property
     def default_timeout(self) -> int:
