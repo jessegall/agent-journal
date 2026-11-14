@@ -10,10 +10,10 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import F
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
 
-@pytest.mark.parametrize("command,notice", [("worker merge --wait {worker}", "clashed on cart.py"),
-                                           ('worker send --wait {worker} "Finish the total"', "takes the job")])
+@pytest.mark.parametrize("command,notice,proof_goes_short", [("worker merge --wait {worker}", "clashed on cart.py", True),
+                                                             ('worker send --wait {worker} "Finish the total"', "takes the job", False)])
 @pytest.mark.real_git
-def test_a_conflict_reopens_the_closed_task_before_asking_the_worker_to_edit(new_story, command, notice):
+def test_a_conflict_reopens_the_closed_task_before_asking_the_worker_to_edit(new_story, command, notice, proof_goes_short):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
@@ -26,9 +26,11 @@ def test_a_conflict_reopens_the_closed_task_before_asking_the_worker_to_edit(new
     path = repository.worktree_folder(worker.id) / "cart.py"
     story.expect_hook_allowed(worker_session(story, worker), HookSamples.edit(str(path)))
     path.write_text("TOTAL = 3\n")
-    story.expect_success(FIRST_PROOF, "point: 1", actor=worker)
+    if proof_goes_short:
+        story.expect_success(FIRST_PROOF, "point: 1", actor=worker)
     story.expect_success("worker commit --wait --differences none", actor=worker)
-    story.expect_success("proof check 1", "state: checked", actor=story.agent)
+    if proof_goes_short:
+        story.expect_success("proof check 1", "state: checked", actor=story.agent)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     request_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
