@@ -29,8 +29,8 @@ class DriverEntries:
         funnel = SuiteFunnel(suites, [state.name for state in self.agent_states(modules)], [driver.name for module in modules for driver in module.drivers],
                              [helper_type.key for module in modules for helper_type in suites.helper_types(module)])
         return tuple(SuiteEntry(suite.name, module.name, tuple(suite.requires), suite.complete_control, tuple(suite.included_overlays),
-                                      tuple(suite.windows), dict(suite.layouts), {page: tuple(presets) for page, presets in suite.presets.items()},
-                                      self.task_assigner_path(suite), shipped=module in shipped_modules, default_states=funnel.entries(suite))
+                                      suite.offered_windows(), suite.default_layouts(), suite.offered_presets(),
+                                      self.task_assigner_path(suite), shipped=module in shipped_modules, entrances=suite.entrance_windows(), default_states=funnel.entries(suite))
                      for module in modules for suite in suites.module_suites(module))
 
     @staticmethod

@@ -1,3 +1,9 @@
+from core.modules.agents.windows.agents_windows import AGENTS_WINDOWS
+from core.modules.agents.models.declarations.agent_model_declaration import AgentModelDeclaration
+from core.modules.agents.models.declarations.menu_answer_model_declaration import MenuAnswerModelDeclaration
+from core.modules.agents.models.declarations.agent_fold_model_declaration import AgentFoldModelDeclaration
+from core.modules.agents.models.declarations.agent_fold_row_model_declaration import AgentFoldRowModelDeclaration
+from core.modules.agents.models.declarations.agent_session_model_declaration import AgentSessionModelDeclaration
 from core.modules.agents.migrations.m021_menu_answer_agent_index import MenuAnswerAgentIndexMigration
 from engine.agent.agent_role_reader import AgentRoleReader
 from core.modules.agents.guards.agent_chat_guard import AgentChatGuard
@@ -55,17 +61,11 @@ from core.modules.agents.migrations.m004_menu_answers import MenuAnswersMigratio
 from core.modules.agents.migrations.m006_agent_end_name import AgentEndNameMigration
 from core.modules.agents.migrations.m005_agent_identity import AgentIdentityMigration
 from core.modules.agents.migrations.m007_agent_role_index import AgentRoleIndexMigration
-from core.modules.agents.models.agent import Agent
-from core.modules.agents.queries.agent_query import AgentQuery
-from core.modules.agents.models.menu_answer import MenuAnswer
-from core.modules.agents.models.agent_session import AgentSession
 from core.modules.agents.listeners.session_end_listener import SessionEndListener
 from core.modules.agents.listeners.session_launch_listener import SessionLaunchListener
 from core.modules.agents.migrations.m023_agent_sessions import AgentSessionsMigration
 from core.modules.agents.migrations.m027_agent_folds import AgentFoldsMigration
 from core.modules.agents.migrations.m028_fold_main_agents import FoldMainAgentsMigration
-from core.modules.agents.models.agent_fold import AgentFold
-from core.modules.agents.models.agent_fold_row import AgentFoldRow
 from core.modules.agents.migrations.m024_main_agent_parent import MainAgentParentMigration
 from core.modules.agents.support.local_launcher_transport import LocalLauncherTransport
 from core.modules.agents.support.program_transport import ProgramTransport
@@ -98,22 +98,11 @@ from core.modules.agents.commands.record_menu_answer.record_menu_answer_handler 
 from core.modules.agents.commands.record_menu_answer.record_menu_answer_subcommand import RecordMenuAnswerSubcommand
 from core.modules.agents.support.agent_marks import AGENT_MARKS
 from core.modules.agents.support.agent_inspector import AGENT_INSPECTOR
-from engine.viewer.skeleton_part import SkeletonPart
-from engine.enums.window_place import WindowPlace
 from engine.caller.caller_resolver import CallerResolver
 from engine.module.module import Module
 from core.modules.agents.migrations.m009_agent_access import AgentAccessMigration
 from core.modules.agents.commands.record_agent_launch_failure.launch_nudges import AGENT_START_FAILED
 from core.modules.agents.commands.record_agent_process.record_agent_process_handler import RecordAgentProcessHandler
-from engine.enums.auto_scroll import AutoScroll
-from engine.viewer.window_search import WindowSearch
-from core.modules.agents.support.agent_searcher import AgentSearcher
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.enums.key_loading import KeyLoading
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
-from engine.enums.window_shows import WindowShows
-from engine.viewer.window_tab import WindowTab
 from engine.agent.agent_checkouts import AgentCheckouts
 from core.modules.agents.bindings.agent_caller_resolver import AgentCallerResolver
 from core.modules.agents.bindings.agent_row_numbers import AgentRowNumbers
@@ -132,24 +121,9 @@ from core.modules.agents.commands.remove_instruction_import.remove_instruction_i
 from core.modules.agents.commands.remove_instruction_import.remove_instruction_import_subcommand import RemoveInstructionImportSubcommand
 from core.modules.agents.commands.warn_instruction_imports.warn_instruction_imports_handler import WarnInstructionImportsHandler
 from core.modules.agents.listeners.boot_instruction_imports_listener import BootInstructionImportsListener
-from engine.viewer.window_key import WindowKey
-from engine.module.model_declaration import ModelDeclaration
 from core.modules.agents.seeders.agents_seeder import AgentsSeeder
-from core.modules.agents.support.skeletons import AGENTS_AGENTS_SKELETON, AGENTS_HELPERS_SKELETON, AGENTS_TRANSCRIPT_SKELETON
 
 
-CARD_READS = ["agent limits", "setting show", "agent cards", "agent sessions", "agent list", "agent programs", "usage agents", "usage tool", "agent transcript", "message agent-reports", "hook-call feed", "output hook-page", "task show", "task list", "process-part list"]
-CARD_EVENTS = ["setting.*", "agent.*", "agent_block.*", "hook_call.*", "task.*", "process_part.*", "message.*"]
-CARD_TABS = [WindowTab("tasks", "Tasks", "usage agents", "tasks"), WindowTab("reports", "Reports", "message agent-reports", "reports"), WindowTab("transcript", "Transcript", "agent transcript")]
-CARD_KEYS = [WindowKey("reports", "message agent-reports", tab="reports", events=["message.*"], arguments=["agent"]),
-             WindowKey("agents", "agent cards", events=["agent.*", "agent_block.*", "task.*"], arguments=["show", "search", "limit", "roles", "profiles", "programs"]),
-             WindowKey("card.*", "agent cards --show all --include-main --id {id}", events=["agent.*", "agent_block.*", "task.*", "hook_call.*"], event_column="session_agent_id"),
-             WindowKey("filters", "agent cards --options", events=["agent.*"]),
-             WindowKey("programs", "agent programs"),
-             WindowKey("tool", "usage tool", loading=KeyLoading.REQUESTED, arguments=["agent"]),
-             WindowKey("transcript.*", "agent transcript row:{id}", arguments=["before-id"], page_size=50),
-             WindowKey("jobs", "task list --state open --limit 100", loading=KeyLoading.REQUESTED, arguments=["page"]),
-             WindowKey("terminal-output.*", "output hook-page {id}", arguments=["before", "after"])]
 
 
 class AgentsModule(Module):
@@ -158,8 +132,7 @@ class AgentsModule(Module):
     name = "journal.core.agents"
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
-    models = [ModelDeclaration(Agent, query=AgentQuery, excluded_subcommands=["make"]), ModelDeclaration(MenuAnswer, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentFold, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentFoldRow, excluded_subcommands=["make", "edit", "delete", "list"]),
-              ModelDeclaration(AgentSession, excluded_subcommands=["make", "edit", "delete"])]
+    models = [AgentModelDeclaration, MenuAnswerModelDeclaration, AgentFoldModelDeclaration, AgentFoldRowModelDeclaration, AgentSessionModelDeclaration]
     moves = [AgentsMove]
     migrations = [FoldMainAgentsMigration, AgentFoldsMigration, AgentAnnouncedColumnMigration, AgentLaunchFailureColumnMigration, MainAgentParentMigration, AgentSessionsMigration, AgentNumberMigration, MenuAnswerAgentIndexMigration, AgentHaltColumnMigration, AgentLaunchColumnMigration, PlainColumnNamesMigration, AgentInterruptMigration, AgentUsageCapMigration, KeptAgentsIndexMigration, AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
     nudges = [AGENT_START_FAILED, *REPORT_NUDGES, PROGRAM_SETTINGS_BAN]
@@ -170,13 +143,7 @@ class AgentsModule(Module):
     handlers = [StopUnusedLauncherHandler, CheckAgentProgramsHandler, StartAgentProgramHandler, StopAgentProgramHandler, HaltAgentHandler, EndAgentHaltHandler, ReplaceAgentSessionHandler, WarnInstructionImportsHandler, RemoveInstructionImportHandler, RecordAgentInterruptHandler, SetAgentUsageLimitHandler, RetireAgentHandler, EndReplacedMainHandler, RecordAgentProcessHandler, StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler, CheckMainAgentFoldHandler]
     subcommands = [RemoveInstructionImportSubcommand, RecordAgentInterruptSubcommand, RetireAgentSubcommand, ShowMainAgentsSubcommand, MainSessionsSubcommand, AgentSessionsSubcommand, AgentStandingSubcommand, StartAgentProgramSubcommand, StopAgentProgramSubcommand, ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, AgentPeopleSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand, ManageProgramSubcommand, RestoreHooksSubcommand, CheckMainAgentFoldSubcommand]
     bindings = {ProgramSessions: AgentProgramSessions, ProgramTransport: LocalLauncherTransport, CallerResolver: AgentCallerResolver, AgentCheckouts: AgentProjectCheckouts, AgentRoleReader: AgentRoleRows, RowNumbers: AgentRowNumbers}
-    windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, skeleton=AGENTS_AGENTS_SKELETON, search=WindowSearch(AgentSearcher, "Search the agents"), icon=WindowIcon.AGENT, reads=["agent show", *CARD_READS], runs=["setting set", "message send", "helper send", "helper stop", "agent retire", "agent driver", "agent pause", "agent resume", "agent stop", "process lift-hold"], events=CARD_EVENTS, tabs=CARD_TABS, keys=CARD_KEYS),
-               WindowDeclaration("agents.helpers", "Helpers", "helpers.js", WindowLoading.COMPONENT, skeleton=AGENTS_HELPERS_SKELETON, icon=WindowIcon.SUBAGENT, shows=WindowShows.SELECTED_AGENT, search=WindowSearch(AgentSearcher, "Search the agents"), reads=CARD_READS, runs=["setting set", "message send", "helper send", "helper stop", "agent retire", "agent driver", "agent pause", "agent resume", "agent stop", "process lift-hold"],
-                                 events=CARD_EVENTS, tabs=CARD_TABS, keys=CARD_KEYS),
-               WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, skeleton=AGENTS_TRANSCRIPT_SKELETON, icon=WindowIcon.DOCUMENT, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM,
-                                 reads=["agent transcript", "hook-call feed"], runs=["message send", "helper send"], events=["hook_call.*"], keys=[WindowKey("transcript.*", "agent transcript row:{id}", arguments=["before-id"], page_size=50)]),
-               WindowDeclaration("agents.agent-detail", "Agent", "agent-detail.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.AGENT, skeleton=[SkeletonPart.line()],
-                                 reads=["usage inspector", "agent list", "agent-skill list"], events=["agent.*"])]
+    windows = AGENTS_WINDOWS
     inspectors = [AGENT_INSPECTOR]
     listeners = [SessionEndListener, SessionLaunchListener, MenuAnswerMarkListener, EndedAgentProgramListener, BootInstructionImportsListener]
     marks = AGENT_MARKS

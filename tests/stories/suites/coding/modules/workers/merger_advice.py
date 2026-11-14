@@ -238,8 +238,8 @@ def test_each_worker_has_its_own_count_and_its_own_advice_in_a_visit(advising):
 
 @pytest.mark.parametrize("sender", ["worker", "main"])
 def test_only_the_merger_advises(advising, sender):
-    actor = advising.worker if sender == "worker" else advising.story.agent
-    expect_refused_with(advising.story, f'merger advise {agent_number(advising.story, advising.worker.id)} "{ADVICES[0]}"', MERGER_ROLE_REFUSAL, actor=actor)
+    actor, refusal = (advising.worker, "may not run merger advise") if sender == "worker" else (advising.story.agent, MERGER_ROLE_REFUSAL)
+    expect_refused_with(advising.story, f'merger advise {agent_number(advising.story, advising.worker.id)} "{ADVICES[0]}"', refusal, actor=actor)
     advising.story.expect_rows(advising.merger_message_rows() == (), detail=str(advising.merger_message_rows()))
 
 

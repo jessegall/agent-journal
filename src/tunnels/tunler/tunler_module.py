@@ -1,12 +1,6 @@
+from tunnels.tunler.windows.tunler_windows import TUNLER_WINDOWS
+from tunnels.tunler.settings.tunler_setting_values import TunlerSettingValues
 from engine.module.module import Module
-from engine.enums.setting_scope import SettingScope
-from engine.enums.setting_type import SettingType
-from engine.setting.setting_value import SettingValue
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.enums.window_icon import WindowIcon
-from engine.viewer.window_key import WindowKey
-from engine.enums.window_loading import WindowLoading
-from engine.enums.window_place import WindowPlace
 from tunnels.tunler.commands.install_tunler.install_tunler_handler import InstallTunlerHandler
 from tunnels.tunler.commands.install_tunler.install_tunler_subcommand import InstallTunlerSubcommand
 from tunnels.tunler.commands.login_tunler.login_tunler_handler import LoginTunlerHandler
@@ -21,7 +15,6 @@ from tunnels.tunler.commands.tunler_version.tunler_version_subcommand import Tun
 from tunnels.tunler.commands.update_tunler.update_tunler_handler import UpdateTunlerHandler
 from tunnels.tunler.commands.update_tunler.update_tunler_subcommand import UpdateTunlerSubcommand
 from tunnels.tunler.support.tunler_tunnel import TunlerTunnel
-from tunnels.tunler.support.skeletons import TUNLER_ACCOUNT_SKELETON
 
 
 class TunlerModule(Module):
@@ -31,13 +24,9 @@ class TunlerModule(Module):
     name = "journal.tunnels.tunler"
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.tunnel", "journal.core.settings", "journal.core.agents"]
-    settings = [SettingValue("subdomain", "Subdomain", "The name in front of the tunler server's address that reaches this journal.",
-                             SettingType.TEXT, default="", scope=SettingScope.PROJECT)]
+    settings = [TunlerSettingValues]
     tunnels = [TunlerTunnel]
     subcommands = [TunlerStatusSubcommand, TunlerDomainsSubcommand, TunlerVersionSubcommand, LoginTunlerSubcommand, LogoutTunlerSubcommand,
                    UpdateTunlerSubcommand, InstallTunlerSubcommand, ReleaseTunlerDomainSubcommand]
     handlers = [LoginTunlerHandler, LogoutTunlerHandler, UpdateTunlerHandler, InstallTunlerHandler, ReleaseTunlerDomainHandler]
-    windows = [WindowDeclaration("tunler.account", "Tunler", "tunler.js", WindowLoading.COMPONENT, skeleton=TUNLER_ACCOUNT_SKELETON, group="project", place=WindowPlace.PAGE, icon=WindowIcon.SHARE,
-                                 reads=["tunler status", "tunler domains", "tunler version"],
-                                 keys=[WindowKey("status", "tunler status"), WindowKey("version", "tunler version"), WindowKey("domains", "tunler domains")],
-                                 runs=["tunler login", "tunler logout", "tunler update", "tunler install", "tunler release", "setting set"])]
+    windows = TUNLER_WINDOWS

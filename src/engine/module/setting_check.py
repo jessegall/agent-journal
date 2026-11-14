@@ -16,17 +16,17 @@ class SettingCheck:
         return (*(problem for module in modules for problem in self.module_problems(module)), *self.reference_problems(modules))
 
     def module_problems(self, module: type[Module]) -> Iterator[str]:
-        keys = [entry.key for entry in SettingTree().entries(module.name, module.settings)]
+        keys = [entry.key for entry in SettingTree().entries(module.name, module.setting_nodes())]
         for key in sorted({key for key in keys if keys.count(key) > 1}):
             yield f"{module.name} declares the setting {key} twice"
-        yield from self.node_problems(module.name, module.settings)
+        yield from self.node_problems(module.name, module.setting_nodes())
 
     def node_problems(self, prefix: str, nodes: Sequence[SettingNode]) -> Iterator[str]:
         for node in nodes:
             yield from node.problems(f"{prefix}.{node.key}")
 
     def reference_problems(self, modules: Sequence[type[Module]]) -> Iterator[str]:
-        entries = [entry for module in modules for entry in SettingTree().entries(module.name, module.settings)]
+        entries = [entry for module in modules for entry in SettingTree().entries(module.name, module.setting_nodes())]
         groups = {entry.key: entry for entry in entries if entry.type == GROUP_TYPE}
         names = {module.name for module in modules}
         for reference in (entry for entry in entries if entry.type == REFERENCE_TYPE):

@@ -16,7 +16,7 @@ class InspectorCheck:
     def problems(self, modules: Sequence[type[Module]], events: Sequence[str]) -> tuple[str, ...]:
         reads, runs = WindowCheck.lines(modules)
         provided = RegistryLines(frozenset(reads), frozenset(runs), events)
-        windows = {window.name: (module, window) for module in modules for window in module.windows}
+        windows = {window.name: (module, window) for module in modules for window in module.window_declarations()}
         owners: dict[str, str] = {}
         problems: list[str] = []
         for module in modules:

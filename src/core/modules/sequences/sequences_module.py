@@ -1,16 +1,13 @@
+from core.modules.sequences.windows.sequences_windows import SEQUENCES_WINDOWS
+from core.modules.sequences.models.declarations.sequence_model_declaration import SequenceModelDeclaration
+from core.modules.sequences.models.declarations.sequence_run_model_declaration import SequenceRunModelDeclaration
+from core.modules.sequences.skills.declarations.sequences_skills import SEQUENCES_SKILLS
 from core.modules.sequences.migrations.m009_environment_index import SequenceRunsEnvironmentIndexMigration
 from core.modules.sequences.migrations.m008_sequence_session import SequenceSessionMigration
 from core.modules.sequences.migrations.m007_open_run_order_index import OpenRunOrderIndexMigration
-from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.sequences.support.sequence_nudges import SEQUENCE_NUDGES
-from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
 from core.modules.sequences.listeners.sequence_event_index_listener import SequenceEventIndexListener
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
-from engine.viewer.window_key import WindowKey
-from engine.enums.window_place import WindowPlace
 from core.modules.sequences.commands.abandon_sequence.abandon_sequence_subcommand import AbandonSequenceSubcommand
 from core.modules.sequences.commands.follow_step.follow_step_subcommand import FollowStepSubcommand
 from core.modules.sequences.commands.make_sequence.make_sequence_handler import MakeSequenceHandler
@@ -35,11 +32,7 @@ from core.modules.sequences.migrations.m003_trigger_event import TriggerEventMig
 from core.modules.sequences.migrations.m004_close_legacy_step_blocks import CloseLegacyStepBlocksMigration
 from core.modules.sequences.migrations.m005_run_subject import RunSubjectMigration
 from core.modules.sequences.migrations.m006_open_run_subject_index import OpenRunSubjectIndexMigration
-from core.modules.sequences.models.sequence import Sequence
-from core.modules.sequences.models.sequence_run import SequenceRun
 from core.modules.sequences.models.sequence_run_row import SequenceRunRow
-from core.modules.sequences.queries.sequence_query import SequenceQuery
-from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.modules.sequences.shares.sequence_library_share import SequenceLibraryShare
 from core.modules.sequences.rules.sequence_trigger_rule import SequenceTriggerRule
 from core.modules.sequences.guards.step_condition_name_guard import StepConditionNameGuard
@@ -51,13 +44,10 @@ from core.modules.sequences.rules.unstarted_step_rule import UnstartedStepRule
 from core.modules.sequences.seeders.sequences_seeder import SequencesSeeder
 from core.modules.sequences.upgrade.sequences_move import SequencesMove
 from core.modules.sequences.support.sequence_marks import SEQUENCE_MARKS
-from core.modules.sequences.support.skeletons import SEQUENCES_SEQUENCES_SKELETON
 from engine.driver.stop_blockers import StopBlockers
 from core.modules.sequences.support.sequence_step_started import SequenceStepStarted
 from core.modules.sequences.support.sequence_stop_blockers import SequenceStopBlockers
 
-BUILT = ["make", "show", "list"]
-RUN_BUILT = [*BUILT, "edit", "delete"]
 
 
 class SequencesModule(Module):
@@ -70,9 +60,9 @@ class SequencesModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.documents", "journal.core.plans", "journal.core.questions"]
     block_conditions = [SequenceStepStarted]
     bindings = {StopBlockers: SequenceStopBlockers}
-    skills = [SkillDeclaration("journal-sequences", "Follow a sequence of steps one at a time; read it when a sequence is run or written", keywords=("sequence", "sequences"), commands=["sequence"])]
+    skills = SEQUENCES_SKILLS
     library_shares = [SequenceLibraryShare]
-    models = [ModelDeclaration(Sequence, query=SequenceQuery, excluded_subcommands=BUILT), ModelDeclaration(SequenceRun, query=SequenceRunQuery, excluded_subcommands=RUN_BUILT)]
+    models = [SequenceModelDeclaration, SequenceRunModelDeclaration]
     migrations = [SequenceSessionMigration, OpenRunOrderIndexMigration, SequencesTablesMigration, SequenceTriggersMigration, TriggerEventMigration, CloseLegacyStepBlocksMigration, RunSubjectMigration, OpenRunSubjectIndexMigration, SequenceRunsEnvironmentIndexMigration]
     moves = [SequencesMove]
     handlers = [MakeSequenceHandler, MoveSequenceRunHandler, SaveStandardSequencesHandler]
@@ -84,5 +74,4 @@ class SequencesModule(Module):
     marks = SEQUENCE_MARKS
     driver_rules = [UnstartedStepRule, StepGuardRule, StepCommandRule, SequenceStopRule, SequenceTriggerRule]
     seeders = [SequencesSeeder]
-    windows = [WindowDeclaration("sequences.sequences", "Sequences", "sequences.js", WindowLoading.COMPONENT, skeleton=SEQUENCES_SEQUENCES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.SEQUENCE,
-                                 reads=["sequence list", "sequence show", "sequence-run list", "sequence board"], keys=[WindowKey("board", "sequence board", events=["sequence.*", "sequence_run.*"])], runs=["sequence make", "sequence edit", "sequence delete"], events=["sequence.*", "sequence_run.*"])]
+    windows = SEQUENCES_WINDOWS

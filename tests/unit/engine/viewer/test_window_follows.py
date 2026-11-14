@@ -21,9 +21,9 @@ def undeclared_successors(text: str, declared: set[str]) -> list[str]:
 
 
 def listed_events(modules: list[type[Module]]) -> dict[str, set[str]]:
-    events = {window.name: set(window.events) for module in modules for window in module.windows}
+    events = {window.name: set(window.events) for module in modules for window in module.window_declarations()}
     for module in modules:
-        for extension in module.window_extensions:
+        for extension in module.extension_declarations():
             if extension.window in events:
                 events[extension.window] |= set(extension.events)
     return events
@@ -31,7 +31,7 @@ def listed_events(modules: list[type[Module]]) -> dict[str, set[str]]:
 
 def body_stems(module: type[Module]) -> set[str]:
     """A dock or mark body hears every event through ModuleBody, so its follows answer to no window's list."""
-    return {Path(declaration.body).stem.replace("-", "").lower() for declaration in (*module.docks, *module.marks) if declaration.body}
+    return {Path(declaration.body).stem.replace("-", "").lower() for declaration in (*module.dock_declarations(), *module.marks) if declaration.body}
 
 
 def test_a_follow_of_an_event_its_window_does_not_list_is_found():
@@ -47,7 +47,7 @@ def test_every_follow_in_shipped_window_code_is_listed_by_a_window_of_its_module
     events = listed_events(modules)
     matched = {}
     for module in modules:
-        names = [*(window.name for window in module.windows), *(extension.window for extension in module.window_extensions)]
+        names = [*(window.name for window in module.window_declarations()), *(extension.window for extension in module.extension_declarations())]
         declared = set().union(*(events.get(name, set()) for name in names))
         for path in (module.folder() / "web" / "src").rglob("*"):
             if path.suffix in (".vue", ".js") and path.stem.lower() not in body_stems(module):

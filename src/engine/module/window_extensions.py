@@ -8,7 +8,7 @@ class WindowExtensions:
     """Combines the installed modules' extensions with a window declaration."""
 
     def __init__(self, modules: Sequence[type[Module]]) -> None:
-        self.extensions = tuple(extension for module in modules for extension in module.window_extensions)
+        self.extensions = tuple(extension for module in modules for extension in module.extension_declarations())
 
     def extend(self, declaration: WindowDeclaration) -> WindowDeclaration:
         for extension in self.extensions:

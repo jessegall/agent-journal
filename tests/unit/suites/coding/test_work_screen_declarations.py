@@ -3,9 +3,9 @@ from collections import Counter
 
 from core.modules.helpers.support.helper_settings import HELPER_SETTING_VALUES
 from suites.coding.modules.workers.support.worker_settings import WORKER_SETTING_VALUES
-from suites.coding.support.coding_settings import CODING_SETTING_VALUES
+from suites.coding.settings.coding_setting_values import CodingSettingValues
 
-DECLARED = [*CODING_SETTING_VALUES, *WORKER_SETTING_VALUES, *HELPER_SETTING_VALUES]
+DECLARED = [*CodingSettingValues.values, *WORKER_SETTING_VALUES, *HELPER_SETTING_VALUES]
 
 WORK = {
     "Taking on work": ["auto-mode", "main-writes-code"],

@@ -1,8 +1,6 @@
-from core.modules.actors.queries.actor_query import ActorQuery
-from core.modules.actors.models.actor_record import ActorRecord
+from core.modules.actors.models.declarations.actor_record_model_declaration import ActorRecordModelDeclaration
 from core.modules.actors.upgrade.actors_move import ActorsMove
 from engine.module.module import Module
-from engine.module.model_declaration import ModelDeclaration
 from core.modules.actors.seeders.actors_seeder import ActorsSeeder
 
 
@@ -12,6 +10,6 @@ class ActorsModule(Module):
 
     name = "journal.core.actors"
     requires_engine = ">=5,<6"
-    models = [ModelDeclaration(ActorRecord, query=ActorQuery)]
+    models = [ActorRecordModelDeclaration]
     seeders = [ActorsSeeder]
     moves = [ActorsMove]

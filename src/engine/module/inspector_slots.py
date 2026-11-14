@@ -12,7 +12,7 @@ class InspectorSlots:
 
     @property
     def owners(self) -> Mapping[str, str]:
-        return {f"inspector.{declaration.model.cli_name}": module.name for module in self.modules for declaration in module.models}
+        return {f"inspector.{declaration.model.cli_name}": module.name for module in self.modules for declaration in module.model_declarations()}
 
     def problems(self, module: type[Module], window_name: str, slots: Sequence[str]) -> list[str]:
         owners = self.owners

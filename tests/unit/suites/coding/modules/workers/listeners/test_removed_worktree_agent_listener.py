@@ -21,7 +21,7 @@ class RecordingBus:
 def commands_after(state: WorktreeState, ended_at: datetime | None = None, helper_ids: list[int] | None = None) -> list[tuple[str, int]]:
     bus = RecordingBus()
     rows = SimpleNamespace(required=lambda model, row_id: SimpleNamespace(id=row_id, ended_at=ended_at, retired_at=None))
-    agents = SimpleNamespace(running=lambda role, parent_id: [SimpleNamespace(id=helper_id) for helper_id in helper_ids or []])
+    agents = SimpleNamespace(running_with_read_access=lambda parent_id: [SimpleNamespace(id=helper_id) for helper_id in helper_ids or []])
     RemovedWorktreeAgentListener(rows, bus, agents).handle(SimpleNamespace(row=SimpleNamespace(state=state, session_agent_id=WORKER_ID)), SimpleNamespace())
     return [(type(command).__name__, command.row_id) for command in bus.commands]
 

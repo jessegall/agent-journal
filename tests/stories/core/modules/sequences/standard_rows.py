@@ -6,7 +6,7 @@ from engine.database.database import Database
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.commands.save_standard_sequences.standard_sequences import STANDARD_SEQUENCES
 from core.modules.templates.models.template import Template
-from suites.coding.support.coding_templates import CODING_TEMPLATES
+from suites.coding.templates.coding_templates import CODING_TEMPLATES
 from suites.coding.modules.workers.support.worker_templates import WORKER_TEMPLATES
 from server.work.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import UserBuilder

@@ -1,0 +1,11 @@
+from engine.viewer.layout_shape import split, tabs
+from engine.viewer.viewer_preset import ViewerPreset
+
+
+class HomeDefaultPreset(ViewerPreset):
+    """The home page as it opens: the chat and the terminal beside the tasks, plans, questions and file feed."""
+
+    key = "default"
+    name = "Default"
+    text = "Chat and side panels"
+    shape = split("row", 0.5, tabs("messages.chat", "coding.terminal"), tabs("tasks.tasks", "plans.plans", "questions.questions", "coding.file-feed", active="coding.file-feed"))

@@ -1,10 +1,8 @@
-from engine.chat.dock_declaration import DockDeclaration
 from engine.chat.mark_button import MarkButton
 from engine.enums.mark_colouring import MarkColouring
 from engine.chat.mark_declaration import MarkDeclaration
 from engine.chat.mark_family import MarkFamily
 from engine.enums.mark_group import MarkGroup
-from core.modules.processes.models.enums.process_dock_type import ProcessDockType
 from core.modules.processes.models.enums.process_mark_type import ProcessMarkType
 from core.modules.processes.models.enums.process_mark_variant import ProcessMarkVariant
 
@@ -16,5 +14,3 @@ UNWATCH = MarkButton("close", "Unwatch", "output unwatch {row_id}")
 
 PROCESS_MARKS = [MarkDeclaration(ProcessMarkType.COMMAND, ProcessMarkVariant, COMMANDS_FAMILY, "Commands run", "terminal", buttons=[STOP, DOCK], process=True)]
 
-PROCESS_DOCKS = [DockDeclaration(ProcessDockType.OUTPUT, "terminal", "Output {row_id}", "output-dock.js", buttons=[STOP], most=6, leaves_after_seconds=5, draws_head=True, folds="Output",
-                                 reads=["process card", "process show", "output peek", "output page"])]

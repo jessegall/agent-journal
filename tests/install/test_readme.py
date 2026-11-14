@@ -25,7 +25,7 @@ def documented_commands() -> set[str]:
 
     documented = set(CLI_ENTRY_COMMANDS)
     for module in (*DEFAULT_MODULES, *SuiteList(DEFAULT_SUITES).modules()):
-        documented |= {subcommand.cli_name for subcommand in module.subcommands} | {declaration.model.cli_name for declaration in module.models}
+        documented |= {subcommand.cli_name for subcommand in module.subcommands} | {declaration.model.cli_name for declaration in module.model_declarations()}
     return documented
 
 

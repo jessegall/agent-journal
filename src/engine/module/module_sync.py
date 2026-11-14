@@ -143,7 +143,7 @@ class ModuleSync:
             module_fingerprints={module.name: self.fingerprint.module_text(module) for module in modules},
             module_suites={module.name: suites.suite_names(module) for module in modules},
             models={declaration.model.cli_name: ModelEntry(module.name, DottedPath.class_path(declaration.model), tuple(DottedPath.class_path(command).text for command in declaration.commands),
-                                                  declaration.excluded_subcommands) for module in modules for declaration in module.models},
+                                                  declaration.excluded_subcommands) for module in modules for declaration in module.model_declarations()},
             handlers={**DEFAULT_HANDLERS, **{DottedPath.class_path(handler.command).text: DottedPath.class_path(handler) for module in modules for handler in module.handlers}},
             subcommands={subcommand_line(subcommand): DottedPath.class_path(subcommand) for module in modules for subcommand in module.subcommands},
             outward_lines=tuple(sorted(subcommand_line(subcommand) for module in modules for subcommand in module.subcommands if subcommand.outward)),
@@ -164,17 +164,17 @@ class ModuleSync:
             marks=self.marks(modules),
             nudges=self.nudges(modules),
             docks=self.docks(modules),
-            templates=tuple(TemplateEntry(module.name, declaration) for module in modules for declaration in module.templates),
+            templates=tuple(TemplateEntry(module.name, declaration) for module in modules for declaration in module.template_declarations()),
             buttons=self.buttons(modules),
             button_slots=self.button_slots(modules),
             inspectors=self.inspectors(modules),
             inspector_slots=tuple(sorted(InspectorSlots(modules).owners)),
             state_additions=tuple(StateAdditionEntry.declared(module.name, addition, module not in self.finder.default_modules()) for module in modules for addition in module.added_states),
             helper_types=tuple(HelperTypeEntry.declared(module.name, declaration) for module in modules for declaration in suites.helper_types(module)),
-            agent_groups=tuple(AgentGroupEntry.declared(module.name, group) for module in modules for group in module.agent_groups),
+            agent_groups=tuple(AgentGroupEntry.declared(module.name, group) for module in modules for group in module.group_declarations()),
             profiles=self.profile_entries(modules),
             providers=self.providers.providers(modules),
-            settings=tuple(entry for module in modules for entry in SettingTree().entries(module.name, module.settings)),
+            settings=tuple(entry for module in modules for entry in SettingTree().entries(module.name, module.setting_nodes())),
             shared_rows={shared.row.model_name: DottedPath.class_path(shared) for module in modules for shared in module.shared_rows},
             library_shares={share.name: DottedPath.class_path(share) for module in modules for share in module.library_shares},
             tunnels=tuple(TunnelEntry(tunnel.name, DottedPath.class_path(tunnel), module.name, tunnel.title) for module in modules for tunnel in module.tunnels),
@@ -200,7 +200,7 @@ class ModuleSync:
                                  tuple(window.reads), tuple(window.runs), tuple(window.events), module in shipped, unavailable_reason(window.kit), window.icon.value,
                                  window.float_size.width, window.float_size.height, tuple(option.listed() for option in window.options), window.count, tuple(window.shared_reads), window.group, window.auto_scroll.value, tuple(tab.listed() for tab in window.tabs),
                                  window.search.listed() if window.search is not None else {}, window.shows.value, tuple(part.listed() for part in window.skeleton), tuple(window.required_settings), tuple(source.listed() for source in window.sources), dict(window.links), tuple(window.slots))
-                     for module in modules for window in map(extensions.extend, module.windows))
+                     for module in modules for window in map(extensions.extend, module.window_declarations()))
 
     def marks(self, modules: tuple[type[Module], ...]) -> tuple[MarkEntry, ...]:
         shipped = set(self.finder.default_modules())
@@ -217,13 +217,13 @@ class ModuleSync:
         shipped = set(self.finder.default_modules())
         return tuple(DockEntry(dock.type.value, module.name, dock.icon, dock.title, dock.body, tuple(button.listed() for button in dock.buttons), dock.most,
                                dock.leaves_after_seconds, tuple(dock.reads), module in shipped, unavailable_reason(dock.kit), dock.badge, dock.draws_head, dock.folds, dock.needs_user, dock.word, dock.reads_target)
-                     for module in modules for dock in module.docks)
+                     for module in modules for dock in module.dock_declarations())
 
     def skills(self, modules: tuple[type[Module], ...]) -> tuple[SkillEntry, ...]:
         shipped = set(self.finder.default_modules())
         entries: list[SkillEntry] = []
         for module in modules:
-            for skill in module.skills:
+            for skill in module.skill_declarations():
                 path = module.folder() / SKILLS_FOLDER / skill.folder / skill.file
                 entries.append(SkillEntry(skill.folder, module.name, skill.description, tuple(skill.keywords), tuple(skill.commands), tuple(skill.events),
                                           SkillContents.read(path).digest, str(path), module in shipped, types=tuple(skill.types), required_setting=skill.required_setting))

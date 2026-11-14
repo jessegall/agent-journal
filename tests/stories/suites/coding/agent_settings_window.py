@@ -123,7 +123,7 @@ def test_the_context_limit_is_in_the_advanced_tab_and_the_modal_is_no_page(viewe
     story, viewer = viewer_person
     advanced = field_values(active_work_row(viewer), "advanced")
     declared = next(window for window in Registry.read(story.container.get(Database)).windows if window.name == WINDOW)
-    story.expect_rows({CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS} <= set(advanced), advanced[CONTEXT_LIMIT_ENABLED] is False, declared.place != WindowPlace.PAGE, WINDOW not in CodingSuite.windows, detail=str(advanced))
+    story.expect_rows({CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS} <= set(advanced), advanced[CONTEXT_LIMIT_ENABLED] is False, declared.place != WindowPlace.PAGE, WINDOW not in CodingSuite.offered_windows(), detail=str(advanced))
 
 
 def test_the_context_limit_action_is_a_choice_of_compact_or_clear(viewer_person):

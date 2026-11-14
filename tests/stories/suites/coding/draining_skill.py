@@ -3,7 +3,7 @@ from pathlib import Path
 from suites.coding.coding_module import CodingModule
 from tests.stories.core.support.fixtures import UserJoined
 
-SKILL = next(skill for skill in CodingModule.skills if skill.folder == "journal-test-draining")
+SKILL = next(skill for skill in CodingModule.skill_declarations() if skill.folder == "journal-test-draining")
 WITHOUT_FULL_RERUN = next(line for line in Path(f"src/suites/coding/skills/{SKILL.folder}/{SKILL.file}").read_text().splitlines() if "Never run the full suite" in line)
 
 

@@ -1,18 +1,11 @@
-from engine.skill.skill_declaration import SkillDeclaration
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
-from engine.viewer.window_key import WindowKey
-from engine.enums.key_loading import KeyLoading
-from engine.enums.window_place import WindowPlace
-from engine.viewer.window_read_search import WindowReadSearch
+from core.modules.library.windows.library_windows import LIBRARY_WINDOWS
+from core.modules.library.models.declarations.library_connection_model_declaration import LibraryConnectionModelDeclaration
+from core.modules.library.models.declarations.library_copy_model_declaration import LibraryCopyModelDeclaration
+from core.modules.library.settings.library_setting_values import LibrarySettingValues
+from core.modules.library.skills.declarations.library_skills import LIBRARY_SKILLS
 from engine.library.library_lookup import LibraryLookup
 from core.modules.library.support.server_library_lookup import ServerLibraryLookup
-from engine.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from engine.module.module import Module
-from engine.enums.setting_scope import SettingScope
-from engine.enums.setting_type import SettingType
-from engine.setting.setting_value import SettingValue
 from core.modules.library.commands.pair_library.pair_library_handler import PairLibraryHandler
 from core.modules.library.commands.pair_library.pair_library_subcommand import PairLibrarySubcommand
 from core.modules.library.commands.unpair_library.unpair_library_handler import UnpairLibraryHandler
@@ -61,10 +54,6 @@ from core.modules.library.guards.library_address_guard import LibraryAddressGuar
 from core.modules.library.migrations.m001_library import LibraryTablesMigration
 from core.modules.library.migrations.m002_connection_signature_index import ConnectionSignatureIndexMigration
 from core.modules.library.listeners.connection_rows_listener import ConnectionRowsListener
-from core.modules.library.models.library_connection import LibraryConnection
-from core.modules.library.models.library_copy import LibraryCopy
-from core.modules.library.queries.library_connection_query import LibraryConnectionQuery
-from core.modules.library.support.skeletons import LIBRARY_TEAMS_SKELETON
 
 
 class LibraryModule(Module):
@@ -75,11 +64,8 @@ class LibraryModule(Module):
     seed_reason = "it keeps only what a connected server gave it"
     move_reason = "version 4's team rows are not carried over"
     dependencies = ["journal.core.actors", "journal.core.settings", "journal.core.documents", "journal.core.secrets", "journal.core.agents"]
-    settings = [SettingValue("address", "Shared server address", "The IP address or URL of your team's shared server, such as 10.0.0.5 or https://library.example.com.",
-                             SettingType.TEXT, default="", scope=SettingScope.PROJECT),
-                SettingValue("agent-edits-wait", "Agent edits wait for a user", "An agent's edit of an item that follows the library stays on this journal until a user sends it.",
-                             SettingType.FLAG, default=True, scope=SettingScope.PROJECT)]
-    models = [ModelDeclaration(LibraryConnection, query=LibraryConnectionQuery, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(LibraryCopy, excluded_subcommands=ALL_SUBCOMMANDS)]
+    settings = [LibrarySettingValues]
+    models = [LibraryConnectionModelDeclaration, LibraryCopyModelDeclaration]
     migrations = [LibraryTablesMigration, ConnectionSignatureIndexMigration]
     listeners = [ConnectionRowsListener]
     guards = [LibraryAddressGuard]
@@ -91,15 +77,5 @@ class LibraryModule(Module):
                    RevokeLibraryTokenSubcommand,
                    MakeLibraryCopySubcommand, SendLibraryItemSubcommand, LeaveLibraryCopySubcommand, LibraryCopiesSubcommand, RunLibrarySyncSubcommand, ChooseLibraryVersionSubcommand, RemoveLibraryItemSubcommand, RestoreLibraryItemSubcommand]
     tick_handlers = [TickHandler(TickInterval(seconds=10), LibrarySyncTick(), "library sync")]
-    skills = [SkillDeclaration("journal-library", "Use the library to find, read, get and share a team's documents, sequences and checks; read it when a shared item is needed",
-                               keywords=("library", "team", "shared"), commands=["library"])]
-    windows = [WindowDeclaration("library.teams", "Teams", "teams.js", WindowLoading.COMPONENT, skeleton=LIBRARY_TEAMS_SKELETON, search=WindowReadSearch("library list", "Search the library", ("title", "abstract")),
-                                 place=WindowPlace.PAGE, group="project", icon=WindowIcon.SHARE, reads=["library status", "library list", "library browse", "library inspect", "library show", "library copies", "library-user list", "library-user tokens"],
-                                 keys=[WindowKey("status", "library status", events=["library_connection.*"]),
-                                       WindowKey("copies", "library copies", events=["library_copy.*"], reload_seconds=30),
-                                       WindowKey("users", "library-user list", loading=KeyLoading.REQUESTED),
-                                       WindowKey("tokens", "library-user tokens {user}", loading=KeyLoading.REQUESTED),
-                                       WindowKey("item", "library show {share} {id}", loading=KeyLoading.REQUESTED),
-                                       WindowKey("inspection", "library inspect {share} {id}", loading=KeyLoading.REQUESTED),
-                                       WindowKey("listing", "library browse", arguments=["type", "search"], loading=KeyLoading.REQUESTED)],
-                                 runs=["library connect", "library get", "library share", "library sync", "library resolve", "library leave", "library remove", "library restore", "library-user add", "library-user role", "library-user remove", "library-user revoke"], events=["library_connection.*", "library_copy.*"])]
+    skills = LIBRARY_SKILLS
+    windows = LIBRARY_WINDOWS

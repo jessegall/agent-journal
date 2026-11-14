@@ -1,6 +1,8 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+from engine.types.class_fields import class_fields
+
 SKILLS_FOLDER = "skills"
 SKILL_FILE = "SKILL.md"
 
@@ -18,3 +20,8 @@ class SkillDeclaration:
     file: str = SKILL_FILE
     types: Sequence[str] = ()
     required_setting: str | None = None
+
+    # a skill written as a class in its own file sets the fields as class attributes
+    @classmethod
+    def declared(cls) -> "SkillDeclaration":
+        return SkillDeclaration(**class_fields(cls, SkillDeclaration))

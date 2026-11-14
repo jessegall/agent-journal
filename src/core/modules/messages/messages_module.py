@@ -1,16 +1,16 @@
+from core.modules.messages.windows.messages_windows import MESSAGES_WINDOWS
+from core.modules.messages.models.declarations.message_model_declaration import MessageModelDeclaration
+from core.modules.messages.models.declarations.message_work_source_model_declaration import MessageWorkSourceModelDeclaration
+from core.modules.messages.skills.declarations.messages_skills import MESSAGES_SKILLS
 from core.modules.messages.migrations.m023_environment_index import MessageWorkSourcesEnvironmentIndexMigration
 from core.modules.messages.migrations.m020_message_parent_environment import MessageParentEnvironmentMigration
 from core.modules.messages.commands.report_safeguards_stop.report_safeguards_stop_handler import ReportSafeguardsStopHandler
 from core.modules.messages.migrations.m022_message_agent_text import MessageAgentTextMigration
-from engine.enums.key_loading import KeyLoading
-from engine.viewer.window_key import WindowKey
 from core.modules.messages.commands.message_conversations.message_conversations_subcommand import MessageConversationsSubcommand
 from core.modules.messages.migrations.m015_main_message_targets import MainMessageTargetsMigration
 from core.modules.messages.migrations.m016_message_session import MessageSessionMigration
 from core.modules.messages.migrations.m013_visible_message_index import VisibleMessageIndexMigration
 from core.modules.messages.migrations.m012_message_reply_index import MessageReplyIndexMigration
-from engine.enums.window_priority import WindowPriority
-from engine.viewer.window_read_search import WindowReadSearch
 from core.modules.messages.listeners.read_message_line_listener import ReadMessageLineListener
 from core.modules.messages.listeners.released_message_line_listener import ReleasedMessageLineListener
 from core.modules.messages.listeners.waiting_message_typing_listener import WaitingMessageTypingListener
@@ -61,7 +61,6 @@ from core.modules.messages.commands.send_agent_message.send_agent_message_handle
 from core.modules.messages.commands.record_waiting_message_line.record_waiting_message_line_handler import RecordWaitingMessageLineHandler
 from core.modules.messages.listeners.allowed_stop_listener import AllowedStopListener
 from core.modules.messages.listeners.waiting_message_listener import WaitingMessageListener
-from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.listeners.message_rows_listener import MessageRowsListener
 from core.modules.messages.listeners.tagged_image_block_listener import TaggedImageBlockListener
 from core.modules.messages.listeners.report_pin_listener import ReportPinListener
@@ -87,22 +86,11 @@ from core.modules.messages.states.unread_countdown import UnreadCountdown
 from core.modules.messages.commands.reply_message.reply_message_subcommand import ReplyMessageSubcommand
 from core.modules.messages.commands.send_message.send_message_subcommand import SendMessageSubcommand
 from engine.module.module import Module
-from engine.skill.skill_declaration import SkillDeclaration
-from engine.viewer.choice_option import ChoiceOption
-from engine.viewer.toggle_option import ToggleOption
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
-from engine.module.model_declaration import ModelDeclaration
-from core.modules.messages.models.message import Message
 from core.modules.messages.upgrade.messages_move import MessagesMove
 from core.modules.messages.support.message_marks import MESSAGE_MARKS
 from core.modules.messages.seeders.messages_seeder import MessagesSeeder
 from core.modules.messages.support.block_conditions.messages_read import MessagesRead
 from core.modules.messages.support.block_conditions.messages_answered import MessagesAnswered
-from core.modules.messages.support.skeletons import MESSAGES_ATTACHMENTS_SKELETON, MESSAGES_AVATAR_SKELETON, MESSAGES_CHAT_SKELETON
-from engine.module.model_declaration import ALL_SUBCOMMANDS
-from core.modules.messages.models.message_work_source import MessageWorkSource
 from core.modules.messages.listeners.new_session_work_source_listener import NewSessionWorkSourceListener
 from core.modules.messages.migrations.m018_message_work_sources import MessageWorkSourcesMigration
 from core.modules.messages.commands.choose_work_source.choose_work_source_handler import ChooseWorkSourceHandler
@@ -127,7 +115,7 @@ class MessagesModule(Module):
     requires_engine = ">=5,<6"
     block_conditions = [MessagesRead, MessagesAnswered]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.docking", "journal.core.pins", "journal.core.drivers", "journal.core.dumps", "journal.core.settings", "journal.core.schedules", "journal.core.profiles"]
-    models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"]), ModelDeclaration(MessageWorkSource, excluded_subcommands=ALL_SUBCOMMANDS)]
+    models = [MessageModelDeclaration, MessageWorkSourceModelDeclaration]
     bindings = {EnvironmentActivity: MessageEnvironmentActivity}
     moves = [MessagesMove]
     views = [AttachedFile, ChatMessage, MainChatMark]
@@ -137,35 +125,8 @@ class MessagesModule(Module):
     driver_rules = [WaitingMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, ToolMessageRule, TranscriptMessageRule, TypedPromptRule, UnansweredMessageRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule, PeerMessageRule, ReplyNoteRule]
     agent_states = [MessagesUnread, UnreadCountdown]
     subcommands = [MessageConversationsSubcommand, AgentReportsSubcommand, UnreadReportsSubcommand, AttachmentListSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand, ChooseWorkSourceSubcommand, ClearWorkSourceSubcommand, WorkSourceSubcommand]
-    windows = [WindowDeclaration("messages.attachments", "Attachments", "attachments.js", WindowLoading.COMPONENT, skeleton=MESSAGES_ATTACHMENTS_SKELETON, group="project", icon=WindowIcon.FILE, reads=["attachment list"], keys=[WindowKey("attachments", "attachment list", arguments=["category", "skip", "search"])], search=WindowReadSearch("attachment list", "Search file names and their messages", ("name", "message_text"))),
-               WindowDeclaration("messages.avatar", "Avatar", "avatar.js", WindowLoading.COMPONENT, skeleton=MESSAGES_AVATAR_SKELETON, icon=WindowIcon.SPEECH, reads=["setting show", "usage tool", "hook-call feed", "dock-item main", "process-part list"],
-                                 events=["hook_call.*", "dock_item.*", "process_part.*", "setting.*"],
-                                 keys=[WindowKey("voice-profile", "setting show journal.core.voices.profile", events=["setting.*"]),
-                                       WindowKey("voice-avatar", "setting show journal.core.voices.avatar", events=["setting.*"]),
-                                       WindowKey("voice-avatar-shown", "setting show journal.core.voices.avatar-shown", events=["setting.*"]),
-                                       WindowKey("tool", "usage tool", reload_seconds=5, loading=KeyLoading.AFTER_WINDOW)]),
-               WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, request_priority=WindowPriority.FIRST, skeleton=MESSAGES_CHAT_SKELETON, icon=WindowIcon.SPEECH, reads=["question show", "link list", "link receipts", "task show", "message feed", "message show", "chat-mark main", "chat-mark show", "dock-item main", "dock-item read", "process card", "pin list", "agent main", "usage tool", "hook-call feed", "output peek", "output page", "output list", "process-part list", "setting show"], runs=["message send", "message reply", "message comment", "message react", "message edit", "message delete", "link remove", "pin make", "pin close", "agent type", "dump make", "dock remove", "dock keep", "dock unkeep", "developer record-mark-motion"],
-                                 events=["message.*", "chat_mark.*", "dock_item.*", "pin.*", "hook_call.*", "process_part.*", "setting.*", "question.*"],
-                                 keys=[WindowKey("messages", "message feed", events=["message.*"], arguments=["limit", "before-id", "after-id", "ids"], page_size=50),
-                                       WindowKey("marks", "chat-mark main", events=["chat_mark.*"], arguments=["limit", "before-id", "after-id", "ids"], page_size=50),
-                                       WindowKey("docks", "dock-item main", events=["dock_item.*"]),
-                                       WindowKey("pins", "pin list", events=["pin.*"]),
-                                       WindowKey("mark-motion", "setting show journal.core.developer.tools.mark-motion", events=["setting.*"]),
-                                       WindowKey("voice-profile", "setting show journal.core.voices.profile", events=["setting.*"]),
-                                       WindowKey("voice-avatar", "setting show journal.core.voices.avatar", events=["setting.*"]),
-                                       WindowKey("voice-avatar-shown", "setting show journal.core.voices.avatar-shown", events=["setting.*"]),
-                                       WindowKey("tool", "usage tool", reload_seconds=5, loading=KeyLoading.AFTER_WINDOW),
-                                       WindowKey("main-agent", "agent main", loading=KeyLoading.REQUESTED),
-                                       WindowKey("dock.*", "dock-item read {id}", answered_line=True),
-                                       WindowKey("output.*", "output page {id}", arguments=["after", "before"]),
-                                       WindowKey("run.*", "process card {id}"),
-                                       WindowKey("question.*", "question show {id}")],
-                                 options=[ChoiceOption("figure", "Figure", [("voice", "The voice I chose"), ("none", "None"), ("butler", "Butler"), ("homie", "Homie"), ("coach", "Coach"), ("colleague", "Colleague"), ("squire", "Squire")], "voice"),
-                                          ToggleOption("floors", "Show floors")])]
+    windows = MESSAGES_WINDOWS
     marks = MESSAGE_MARKS
-    skills = [SkillDeclaration("journal-flowcharts", "Draw a flowchart in the chat and know when one fits; read it when the user asks for a flowchart or a diagram, or a process with branches is easier to see than to read",
-                               keywords=("flowchart", "flow chart", "diagram")),
-              SkillDeclaration("journal-messages", "Read and answer the user's messages and ask the user questions; read it before the first message command of a session",
-                               keywords=("message", "reply", "question"), commands=("message", "question"))]
+    skills = MESSAGES_SKILLS
     listeners = [NewSessionWorkSourceListener, ReportPinListener, MessageRowsListener, MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, WaitingMessageTypingListener, ReadMessageLineListener, ReleasedMessageLineListener, AllowedStopListener, DeletedWorkSourceListener, DeletedAgentWorkSourceListener, TaggedImageBlockListener]
     seeders = [MessagesSeeder]

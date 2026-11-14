@@ -1,0 +1,5 @@
+from suites.coding.commands.prune_file_edits.prune_file_edits_handler import PruneFileEditsHandler
+from suites.coding.commands.record_file_changes.record_file_changes_handler import RecordFileChangesHandler
+from suites.coding.commands.record_file_edit.record_file_edit_handler import RecordFileEditHandler
+
+CODING_HANDLERS = [RecordFileEditHandler, RecordFileChangesHandler, PruneFileEditsHandler]

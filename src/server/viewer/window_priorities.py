@@ -17,7 +17,7 @@ class WindowPriorities:
     def windows(self) -> tuple[WindowDeclaration, ...]:
         modules = self.finder.modules()
         extensions = WindowExtensions(modules)
-        return tuple(extensions.extend(window) for module in modules for window in module.windows)
+        return tuple(extensions.extend(window) for module in modules for window in module.window_declarations())
 
     @cached_property
     def declared(self) -> dict[str, WindowPriority]:

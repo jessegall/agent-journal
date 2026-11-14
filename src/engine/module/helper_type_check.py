@@ -63,7 +63,7 @@ class HelperTypeCheck:
 
     @staticmethod
     def group_problems(modules: Sequence[type[Module]], names: frozenset[str], profiles: Mapping[str, AgentProfile]) -> Iterator[str]:
-        groups = tuple(AgentGroupEntry.declared(module.name, group) for module in modules for group in module.agent_groups)
+        groups = tuple(AgentGroupEntry.declared(module.name, group) for module in modules for group in module.group_declarations())
         yield from AgentGroupBook(groups).problems(names)
         for group in groups:
             for name in group.profiles:
