@@ -1,3 +1,4 @@
+from engine.database.kept_rows import KeptRows
 from engine.container.container import Container
 from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.hosting.hosted_file import HostedFile
@@ -29,6 +30,9 @@ def database_container(home: JournalHome, database: Database) -> Container:
     container = Container()
     container.bind(JournalHome, home)
     container.bind(Database, database)
+    # a connection the server keeps for many hooks keeps its kept reads too, instead of reading them anew for each hook
+    if database.kept_rows is not None:
+        container.bind(KeptRows, database.kept_rows)
     container.bind(Hosting, HostedFile.shared_hosting(home))
     container.bind(PluginScriptProcesses, PluginScriptProcesses.shared(home))
     container.bind(SharedTables, SharedTables.shared(home))
