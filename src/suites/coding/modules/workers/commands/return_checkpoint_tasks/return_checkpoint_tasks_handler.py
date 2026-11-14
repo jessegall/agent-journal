@@ -57,12 +57,13 @@ class ReturnCheckpointTasksHandler(Handler[ReturnCheckpointTasks, tuple[Returned
             return ()
         tasks = self.rows.required_index(Task, failed.task_ids)
         worker_tasks = defaultdict[int, list[int]](list)
+        merged = self.folders.merged_worktrees(reach)
         self.return_unmerged([proof for proof in proofs if proof.state is ProofState.SHORT], context)
         for task in tasks.values():
             if task.state is not TaskState.COMPLETED:
                 continue
             self.repository.save_change(task, task.reopen(context.timestamp, context.actor), context)
-            worker = self.merged_worker(task.id)
+            worker = self.merged_worker(merged, task.id)
             if worker is not None:
                 worker_tasks[worker.id].append(task.id)
         if failed.fallback_task_id is not None:
@@ -81,13 +82,13 @@ class ReturnCheckpointTasksHandler(Handler[ReturnCheckpointTasks, tuple[Returned
         self.test_results.reopen_tasks(worktree, task_ids, outputs, context)
 
     def return_unmerged(self, short_proofs: list[Proof], context: Context) -> None:
-        for worktree in self.worktrees.open_worktrees():
+        for worktree in self.worktrees.open_worktrees_among([proof.worktree_id for proof in short_proofs]):
             worktree_proofs = [proof for proof in short_proofs if proof.worktree_id == worktree.id]
             if worktree_proofs:
                 self.test_results.reopen_work(worktree, worktree_proofs, context)
 
-    def merged_worker(self, task_id: int) -> Agent | None:
-        merged = [worktree for worktree in self.worktrees.all_worktrees() if task_id in worktree.merged_tasks()]
+    def merged_worker(self, reach_worktrees: tuple[Worktree, ...], task_id: int) -> Agent | None:
+        merged = [worktree for worktree in reach_worktrees if task_id in worktree.merged_tasks()]
         return self.kept_worker(merged[-1]) if merged else None
 
     def kept_worker(self, worktree: Worktree) -> Agent | None:
