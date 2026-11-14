@@ -1,3 +1,4 @@
+from engine.database.query_plans import QueryPlans
 from engine.skill.skill_contents import SkillContents
 from engine.file.file_access import FileAccess
 from collections.abc import Sequence
@@ -89,6 +90,8 @@ class ModuleSync:
         self.actors, self.registry_table, self.entries, self.providers, self.home, self.notes = actors, registry_table, entries, providers, home, notes
 
     def run(self) -> SyncReport:
+        # a sync can change the tables and indexes, so no query plan read before it holds after it
+        QueryPlans.forget()
         with PerformanceState(self.home).reload():
             return self.synchronize()
 

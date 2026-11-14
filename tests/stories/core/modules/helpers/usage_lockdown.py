@@ -10,7 +10,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
-from tests.stories.core.modules.helpers.usage_limits import WEEK_SECONDS, report
+from tests.integration.core.modules.helpers.test_usage_limits import WEEK_SECONDS, report
 
 EDIT = HookSamples.edit("src/cart.py")
 STOP_LINE = "[journal] Claude is at your usage limit until"

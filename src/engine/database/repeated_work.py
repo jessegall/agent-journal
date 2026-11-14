@@ -96,7 +96,6 @@ class RepeatedWork(PointTally):
         self.commands: Counter[str] = Counter()
         self.findings: list[RepeatedFinding] = []
         self.checked_plans: set[Statement] = set()
-        self.schema: tuple[int, str] | None = None
         self.allowed_scans: dict[Statement, str] = {}
         self.file_reads: Counter[str] = Counter()
         self.file_versions: dict[str, int] = {}
@@ -192,7 +191,7 @@ class RepeatedWork(PointTally):
         if UNFILTERED_COUNT.fullmatch(statement.sql):
             return
         page = BOUNDED_PAGE.fullmatch(statement.sql)
-        plans = QueryPlans.plan(database, self.schema_of(database), statement)
+        plans = QueryPlans.plan(database, statement)
         for plan in plans:
             if "USING COVERING INDEX" in plan or plan == "SCAN CONSTANT ROW":
                 continue
@@ -210,13 +209,6 @@ class RepeatedWork(PointTally):
                 self.allowed_scans[statement] = statement.scan_reason
                 continue
             self.findings.append(self.build_finding("scan", f"{match.group(1)}|{self.sql_without_parameters(statement)}", f"one request scanned {match.group(1)}: {plan}\n{statement.sql} {statement.parameters}"))
-
-    # the schema text of the database, read again only when its schema version moved
-    def schema_of(self, database: Database) -> str:
-        version = database.schema_version()
-        if self.schema is None or self.schema[0] != version:
-            self.schema = (version, QueryPlans.schema(database))
-        return self.schema[1]
 
     @staticmethod
     def has_page_bounds(page: re.Match[str], statement: Statement) -> bool:

@@ -211,15 +211,6 @@ class Database:
     def query_plan(self, statement: Statement) -> tuple[str, ...]:
         return tuple(row[3] for row in self.connection.execute(f"EXPLAIN QUERY PLAN {statement.sql}", statement.parameters))
 
-    # the text of every table and index the database declares, which says whether two databases plan a query alike
-    def schema_text(self, sql: str) -> str:
-        row = self.connection.execute(sql).fetchone()
-        return str(row[0]) if row is not None else ""
-
-    # a number SQLite raises with every change to the tables or indexes
-    def schema_version(self) -> int:
-        return int(self.connection.execute("PRAGMA schema_version").fetchone()[0])
-
     def is_partial_index(self, name: str) -> bool:
         row = self.connection.execute("SELECT partial FROM pragma_index_list((SELECT tbl_name FROM sqlite_master WHERE type = 'index' AND name = ?)) WHERE name = ?", (name, name)).fetchone()
         return row is not None and bool(row[0])

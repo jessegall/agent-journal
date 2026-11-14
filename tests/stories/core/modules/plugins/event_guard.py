@@ -15,7 +15,7 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.plugins.commands.support.plugin_service_round import PluginServiceRound
 from core.modules.plugins.support.plugin_program import PluginProgram
 from core.modules.plugins.support.service_processes import ServiceProcesses
-from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE, REMOVAL_SAMPLE
+from tests.integration.core.modules.plugins.test_hooks import LISTING_SAMPLE, REMOVAL_SAMPLE
 from tests.stories.core.modules.plugins.support.event_modules import FAILS_LATER, LATER_REFUSAL, NOTE_CREATED, NOTES, REFUSED_TITLE
 from tests.stories.core.modules.plugins.support.refusing_modules import LATER_KEY_REFUSAL, REFUSED_NOTE_TITLE, REFUSED_NOTES
 from tests.stories.core.modules.plugins.support.event_stories import (

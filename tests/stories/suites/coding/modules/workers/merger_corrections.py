@@ -11,7 +11,7 @@ from tests.stories.suites.coding.modules.workers.checkpoint_failures import end_
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import sole_branch_runs, CART_COMMAND, PASSES, REACHES, commit_tasks, merge, rows, run_lines
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.merger_cases import running_merger
-from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON
+from tests.integration.suites.coding.modules.workers.test_stopped_with_tasks import MERGER_ON
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import running_launcher
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import SHOWN_SETTINGS, apply_work_setting

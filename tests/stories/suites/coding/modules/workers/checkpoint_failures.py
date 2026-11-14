@@ -10,7 +10,7 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.ticks.worker_tests.stalled_worker_test_runs import StalledWorkerTestRuns
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import sole_branch_runs, BUILD_TEST, CART_COMMAND, OUTLINE, PASSES, PICKER, REACHES, TOTALS_COMMAND, WAITING_PHASE_TERMS, merge, task_proofs, rows, run_lines
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import committed_window, running_checkpoint  # noqa: F401
-from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON
+from tests.integration.suites.coding.modules.workers.test_stopped_with_tasks import MERGER_ON
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import running_launcher
