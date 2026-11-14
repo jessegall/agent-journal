@@ -34,13 +34,14 @@ def test_the_process_queue_lists_worker_commands_waiting_and_running_and_uses_an
     story.expect_success(f"setting set {ProcessSetting.LANE_CAPACITY_LONG.key} 4 --environment main", actor=story.user)
     story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main", actor=story.user)
     story.expect_success(f"setting set {ProcessSetting.READERS_FORCED.key} false --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.STARTER_CAP_PERCENT.key} 100 --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start queue-worker claude worker --environment main"), ActorType.AGENT)
     first = start_process(story, "make package", category=CommandCategory.BUILD)
     second = start_process(story, "python check_cart.py", category=CommandCategory.TEST_RUN)
     start_process(story, "ls cart", category=CommandCategory.READ)
     page = queue_page(story)
     story.expect_rows(page["parallel_limit"] == 4, page["total"] == 2,
-                      page["used_slots"] == 1, page["waiting_count"] == 1,
+                      page["used_slots"] == 4, page["waiting_count"] == 1,
                       [row["id"] for row in page["running"]] == [first.id],
                       [row["id"] for row in page["waiting"]] == [second.id],
                       [row["id"] for row in page["rows"]] == [first.id, second.id],
@@ -78,9 +79,9 @@ def test_the_lanes_name_each_run_s_slots_kind_and_run_the_halt_of_the_long_lane_
     story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main", actor=story.user)
     story.expect_success(f"setting set {ProcessSetting.READERS_FORCED.key} false --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start lanes-worker claude worker --environment main"), ActorType.AGENT)
+    end_run(story, start_process(story, "make old", category=CommandCategory.BUILD), "built\n")
     build = start_process(story, "make package", category=CommandCategory.BUILD)
     test = start_process(story, "python check_cart.py", category=CommandCategory.TEST_RUN)
-    end_run(story, start_process(story, "ls cart", category=CommandCategory.READ), "cart\n")
     story.expect_success('queue halt "Machine maintenance"', actor=story.user)
     page = queue_page(story)
     lanes = {lane["lane"]: lane for lane in page["execution"]["lanes"]}
@@ -89,4 +90,4 @@ def test_the_lanes_name_each_run_s_slots_kind_and_run_the_halt_of_the_long_lane_
                       [(entry["run_id"], entry["slot_cost"], entry["kind"], entry["reason"]) for entry in long_lane["waiting"]] == [(test.id, 4, "test run", "the long lane is paused")],
                       (long_lane["halted"], long_lane["halt_type"], long_lane["halt_reason"]) == (True, "command", "Machine maintenance"),
                       (short_lane["halted"], short_lane["halt_type"], short_lane["halt_reason"]) == (False, "", ""),
-                      [(row["line"], row["lane"]) for row in page["recent"]] == [("ls cart", "short")])
+                      [(row["line"], row["lane"]) for row in page["recent"]] == [("make old", "long")])

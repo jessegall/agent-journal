@@ -25,7 +25,6 @@ from engine.execution.classes.execution_classes import ExecutionClasses
 from engine.execution.execution_starter import ExecutionStarter
 from engine.execution.execution_subject import ExecutionSubject
 from core.modules.processes.support.queue_inspector_json import QueueInspectorJson
-from core.modules.processes.support.run_queue_halt import RunQueueHalt
 from engine.setting.setting_values import SettingValues
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
 
@@ -45,9 +44,9 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
     name = "list"
     environment_refusal = "the process queue needs an environment"
 
-    def __init__(self, queries: Queries, halt: RunQueueHalt, types: HelperTypeBook, catalogue: SettingCatalogue, values: SettingValues, queue_runs: ActiveQueueRuns,
+    def __init__(self, queries: Queries, types: HelperTypeBook, catalogue: SettingCatalogue, values: SettingValues, queue_runs: ActiveQueueRuns,
                  status: ExecutionStatus, classes: ExecutionClasses) -> None:
-        self.queries, self.halt, self.queue_runs, self.status, self.classes = queries, halt, queue_runs, status, classes
+        self.queries, self.queue_runs, self.status, self.classes = queries, queue_runs, status, classes
         self.types, self.catalogue, self.values = types, catalogue, values
 
     def suite_limits(self) -> list[dict[str, object]]:
@@ -78,7 +77,7 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
             "environment_name": self.queries.query(Environment).find(environment_id).name,
             "parallel_limit": long_lane.capacity, "limit_setting": ProcessSetting.LANE_CAPACITY_LONG.key, "suite_limits": self.suite_limits(),
             "used_slots": long_lane.used, "waiting_count": len(waiting),
-            "halted": self.halt.is_halted, "halt_state": "halted" if self.halt.is_halted else "running", "halt_reason": self.halt.reason, "halt_cause": self.halt.halt_type,
+            "halted": long_lane.is_halted, "halt_state": "halted" if long_lane.is_halted else "running", "halt_reason": long_lane.halt_reason, "halt_cause": long_lane.halt_type,
             "running": running, "waiting": waiting, "recent": recent, "recent_total": query.filter(section=QueueSection.RECENT).count()}
         queue_runs = tuple(self.queue_runs.query().every_row(QUEUE_REASON))
         number, size = max(1, arguments.page), min(MAX_PAGE_SIZE, max(1, arguments.limit))
