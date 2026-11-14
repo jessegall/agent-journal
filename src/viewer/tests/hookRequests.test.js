@@ -47,19 +47,19 @@ test("request filters are sent to the server and remembered", async () => {
     localStorage.removeItem("journal.hook-requests.filters");
 });
 
-test("the request queue is read only after its inspector opens", async () => {
+test("the executions are read only after their inspector opens", async () => {
     const window = requestLogWindowContext({
         "developer hook-requests": {ok: true, value: {rows: []}},
-        "developer request-queue": {ok: true, value: {running: [], waiting: [], hook_limit: 2, main_hook_seconds: 1, agent_hook_seconds: 1, viewer_wait_seconds: 1}},
+        "queue list": {ok: true, value: {halted: false, halt_reason: "", execution: {lanes: [{lane: "instant", used: 0, capacity: 24, over_capacity: false, halted: false, running: [], waiting: []}], waits: []}}},
     });
     const requests = vi.spyOn(window, "readKeys");
     const element = await mounted(HookRequests, window);
     expect(requests).toHaveBeenCalledTimes(1);
-    expect(window.reads.some((line) => line.startsWith("developer request-queue"))).toBe(false);
-    element.querySelector("[data-request-queue-open]").click();
+    expect(window.reads.some((line) => line.startsWith("queue list"))).toBe(false);
+    element.querySelector("[data-executions-open]").click();
     await settle();
     expect(requests.mock.calls.at(-1)[0].only).toEqual(["queue"]);
-    expect(element.querySelector("[data-request-queue-empty]").textContent).toBe("No running requests.");
+    expect(element.querySelector('[data-lane="instant"]').textContent).toContain("Nothing runs or waits here.");
 });
 
 test("slow requests are amber and refused requests stay red even when slow", async () => {
@@ -135,5 +135,5 @@ test("an agent sender links to its card without opening request details", async 
 
 test("the buttons of the request log are the kit's", async () => {
     const element = await mounted(HookRequests, requestLogWindowContext());
-    for (const marker of ["data-filter-open", "data-feed-pause", "data-request-queue-open"]) expect(element.querySelector(`button[${marker}]`).classList.contains("btn")).toBe(true);
+    for (const marker of ["data-filter-open", "data-feed-pause", "data-executions-open"]) expect(element.querySelector(`button[${marker}]`).classList.contains("btn")).toBe(true);
 });

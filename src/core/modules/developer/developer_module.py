@@ -5,7 +5,6 @@ from core.modules.developer.commands.record_private_data_finding.record_private_
 from core.modules.developer.listeners.private_data_mark_listener import PrivateDataMarkListener
 from core.modules.developer.migrations.m002_private_data_marks import PrivateDataFlagsMigration
 from core.modules.developer.models.private_data_mark import PrivateDataMark
-from core.modules.developer.commands.request_queue.request_queue_subcommand import RequestQueueSubcommand
 from core.modules.developer.support.developer_nudges import DEVELOPER_NUDGES
 from core.modules.developer.listeners.exception_line_listener import ExceptionLineListener
 from core.modules.developer.support.reader_time_tool import ReaderTimeTool
@@ -57,11 +56,11 @@ class DeveloperModule(Module):
     nudges = DEVELOPER_NUDGES
     bindings = {RouteCostTool: DeveloperRouteCostTool, RequestWatch: ReportingRequestWatch}
     performance_tools = [SlowTickTool, ReaderTimeTool, RouteCostTool]
-    subcommands = [SystemLogsSubcommand, RequestQueueSubcommand, HookNumbersSubcommand, HookRequestsSubcommand, ResetHookNumbersSubcommand, RecordMarkMotionSubcommand, MarkMotionsSubcommand, CodeMapSubcommand]
+    subcommands = [SystemLogsSubcommand, HookNumbersSubcommand, HookRequestsSubcommand, ResetHookNumbersSubcommand, RecordMarkMotionSubcommand, MarkMotionsSubcommand, CodeMapSubcommand]
     windows = [WindowDeclaration("developer.numbers", "Numbers", "numbers.js", WindowLoading.COMPONENT, skeleton=DEVELOPER_NUMBERS_SKELETON, place=WindowPlace.PAGE, group="developer", required_settings=[TOOLS_SETTING, HOOK_DURATIONS_SETTING], icon=WindowIcon.FITNESS, reads=["developer numbers"], runs=["developer reset-numbers"],
                                  keys=[WindowKey("numbers", "developer numbers", switches=["costliest"], reload_seconds=10)]),
-               WindowDeclaration("developer.hook-requests", "Request log", "hookRequests.js", WindowLoading.COMPONENT, skeleton=DEVELOPER_HOOK_REQUESTS_SKELETON, place=WindowPlace.PAGE, group="developer", required_settings=[TOOLS_SETTING, HOOK_REQUEST_LOG_SETTING], icon=WindowIcon.RULE, reads=["developer hook-requests", "developer request-queue"], unqueued=True,
+               WindowDeclaration("developer.hook-requests", "Request log", "hookRequests.js", WindowLoading.COMPONENT, skeleton=DEVELOPER_HOOK_REQUESTS_SKELETON, place=WindowPlace.PAGE, group="developer", required_settings=[TOOLS_SETTING, HOOK_REQUEST_LOG_SETTING], icon=WindowIcon.RULE, reads=["developer hook-requests", "queue list"], unqueued=True,
                                  keys=[WindowKey("requests", "developer hook-requests", arguments=["categories", "families", "senders"]),
-                                       WindowKey("queue", "developer request-queue", loading=KeyLoading.REQUESTED)]),
+                                       WindowKey("queue", "queue list", loading=KeyLoading.REQUESTED)]),
                WindowDeclaration("developer.system-logs", "System logs", "systemLogs.js", WindowLoading.COMPONENT, skeleton=DEVELOPER_HOOK_REQUESTS_SKELETON, place=WindowPlace.PAGE, group="developer", required_settings=[TOOLS_SETTING], icon=WindowIcon.RULE, reads=["developer system-logs"], unqueued=True,
                                  keys=[WindowKey("logs", "developer system-logs", arguments=["page", "source", "level", "limit"])])]

@@ -7,7 +7,6 @@ from server.errors.hook_database_busy_error import HookDatabaseBusyError
 from engine.enums.window_priority import WindowPriority
 from server.hook.hook_sender import AGENT_HOOK_PRIORITY, MAIN_AGENT_HOOK_PRIORITY
 from server.hook.server_queue import ServerQueue
-from server.hook.queue_request import QueueRequest
 from engine.enums.execution_priority import ExecutionPriority
 from engine.execution.current_execution import CurrentExecution
 
@@ -230,11 +229,6 @@ def test_a_waiting_viewer_request_names_its_priority():
 def test_a_hook_writes_with_its_agents_priority():
     with ServerQueue().hook_turn(AGENT_HOOK_PRIORITY, WAIT_SECONDS):
         assert CurrentExecution.read().priority is ExecutionPriority.RESERVED
-
-
-def test_a_command_writes_with_its_askers_priority():
-    with ServerQueue().cli_turn(QueueRequest.started("CLI", "task list"), ExecutionPriority.IMMEDIATE):
-        assert CurrentExecution.read().priority is ExecutionPriority.IMMEDIATE
 
 
 def test_a_viewer_request_writes_with_its_windows_priority():

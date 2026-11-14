@@ -1,3 +1,4 @@
+from engine.execution.instant_lane_reading import InstantLaneReading
 import threading
 import sqlite3
 from server.execution.session_starters import SessionStarters
@@ -393,6 +394,7 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
         context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, clock.timestamp(), wakes,
                                 hook_database, viewer_factory(login, ViewerRoutes(home, wakes, login, reported, hook_database.queue, clock)), ServerTunnel(home), reported, journal_door, STORY_HOOK_LIMIT_SECONDS, STORY_HOOK_LIMIT_SECONDS, STORY_STOP_LIMIT_SECONDS)
         context.request_trace.refresh(synced_database_container(home, hook_database.databases[0]))
+        InstantLaneReading.shared(home).install(lambda: [entry.reading() for entry in hook_database.executions.read()], hook_database.instant_capacity)
         context.viewer.routes.line_route = StoryLineRoute(home, wakes, reported, completion_callback=context.request_trace.completed)
         context.viewer.routes.line_route.line_run.request_queue = hook_database.queue
         server = JournalServer(str(files.socket), RequestHandler, context)
@@ -413,6 +415,7 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
             context.request_trace.close()
             context.hook_database.close()
             SessionStarters.shared(home).close()
+            InstantLaneReading.shared(home).remove()
             files.remove_server_files()
             server.server_close()
             files.release_lock()
