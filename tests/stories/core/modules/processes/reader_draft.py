@@ -1,3 +1,4 @@
+from core.modules.processes.models.reader_request import ReaderRequest
 import pytest
 
 from engine.enums.command_category import CommandCategory
@@ -41,7 +42,7 @@ def test_a_draft_says_which_field_it_could_not_fill_and_save_is_refused(draft_sa
     story.step("run printed", request.sample_process_id, 1, "building cart\ncompiling\nwaiting\nworking\nfinished\n")
     story.expect_refusal(f"reader draft {request.id} --save", "could not fill --count", actor=story.agent)
     story.expect_text(f"reader draft {request.id}", "could not fill --count", "building cart", actor=story.agent)
-    story.expect_rows(story.container.get(ReaderRequestQuery).find(request.id).completed_at is None)
+    story.expect_rows(story.first_row(ReaderRequest, id=request.id).completed_at is None)
 
 
 def test_draft_save_frees_the_held_worker(draft_sample):
@@ -87,7 +88,7 @@ def test_a_draft_with_no_matching_lines_does_not_close_the_request(draft_sample)
     story, request = draft_sample
     story.step("run printed", request.sample_process_id, 1, "nothing useful\n")
     story.expect_refusal(f"reader draft {request.id} --save", "--lines picked none", actor=story.agent)
-    story.expect_rows(story.container.get(ReaderRequestQuery).find(request.id).completed_at is None)
+    story.expect_rows(story.first_row(ReaderRequest, id=request.id).completed_at is None)
 
 
 @pytest.fixture
@@ -103,11 +104,11 @@ def test_removing_a_reader_clears_ended_history(saved_draft):
     process = worker_run(story, "custom-test run", CommandCategory.TEST_RUN)
     end_run(story, process, PYTEST_SAMPLE)
     story.expect_success("reader remove pytest", actor=story.agent)
-    story.expect_rows(story.container.get(ReaderRequestQuery).find(request.id).reader_id is None)
+    story.expect_rows(story.first_row(ReaderRequest, id=request.id).reader_id is None)
 
 
 def test_removing_a_reader_used_by_an_alias_is_refused(saved_draft):
     story, request = saved_draft
     story.expect_success('alias add saved-tests "pytest" --reader pytest', actor=story.agent)
     story.expect_refusal("reader remove pytest", "referenced", actor=story.agent)
-    story.expect_rows(story.container.get(ReaderRequestQuery).find(request.id).reader_id is not None)
+    story.expect_rows(story.first_row(ReaderRequest, id=request.id).reader_id is not None)

@@ -145,7 +145,7 @@ def test_a_reader_that_does_not_read_the_command_leaves_the_request_open(new_sto
     story = new_story(fixture=ForcedReaders)
     worker_run(story, "unmatched-build run")
     story.expect_text('reader add unrelated --commands "another-build*" --title Building --lines done --summary done', "does not read unmatched-build run", actor=story.agent)
-    story.expect_rows(story.container.get(ReaderRequestQuery).open().count() == 1)
+    story.expect_rows(story.row_count(ReaderRequest, completed_at=None) == 1)
 
 
 def test_the_hold_runs_out_and_the_run_starts_with_no_reader(kept_reader_sample):
@@ -161,7 +161,7 @@ def test_readers_forced_off_creates_no_request_block_or_wait(new_story):
     story = new_story(fixture=ForcedReaders)
     story.run(f"setting set {ProcessSetting.READERS_FORCED.key} off --environment main")
     process = worker_run(story)
-    story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists(), story.step("run holds a slot", process.id))
+    story.expect_rows(not story.row_exists(ReaderRequest, completed_at=None), story.step("run holds a slot", process.id))
     story.expect_rows(not story.row_exists(AgentBlock, session_agent_id=reader_worker(story).id))
 
 
@@ -243,7 +243,7 @@ def test_waive_frees_the_worker_and_starts_its_run_with_no_reader(kept_reader_sa
     story = kept_reader_sample
     process = worker_run(story)
     story.expect_success('reader-request waive 1 --reason "read this build by hand"', actor=story.agent)
-    request = story.container.get(ReaderRequestQuery).find(1)
+    request = story.first_row(ReaderRequest, id=1)
     story.expect_rows(request.completed_at is not None, request.skip_reason == "read this build by hand")
     story.expect_rows(story.step("run holds a slot", process.id))
     story.expect_rows(story.container.get(OutputQuery).process(process.id).page(1, 1).rows[0].reader_id is None)
@@ -263,7 +263,7 @@ def test_an_idle_main_agent_gets_the_reader_request_on_tick(requested_reader_sto
 
 def test_reader_sample_changes_make_no_chat_mark(requested_reader_story):
     story = requested_reader_story
-    request = story.container.get(ReaderRequestQuery).find(1)
+    request = story.first_row(ReaderRequest, id=1)
     story.step("run printed", request.sample_process_id, 1, "first line\n" + "middle\n" * 30 + "last line\n")
     worker = reader_worker(story)
     story.run_command(EndProcess(request.sample_process_id, 0, 5000, 32), worker, 1)
@@ -282,7 +282,7 @@ def test_a_run_with_no_test_results_does_not_fail_the_reader_or_hold_the_next_wo
     process = worker_run(story, "python3 -m pytest tests/empty.py", CommandCategory.TEST_RUN)
     end_run(story, process, text, exit_code=5)
     following = worker_run(story, "python3 -m pytest tests/next.py", CommandCategory.TEST_RUN)
-    story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists())
+    story.expect_rows(not story.row_exists(ReaderRequest, completed_at=None))
     story.expect_rows(story.step("run holds a slot", following.id))
     story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
 

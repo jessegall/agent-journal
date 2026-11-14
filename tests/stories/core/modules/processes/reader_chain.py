@@ -1,3 +1,4 @@
+from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.processes.queries.conditions.reader_sample_scope import ReaderSampleScope
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
@@ -7,7 +8,6 @@ from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.support.part_spec import PartSpec
-from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.support.reader_demands import ReaderDemands
 from tests.stories.core.modules.processes.support.process_samples import end_run
@@ -35,7 +35,7 @@ def test_a_test_reader_is_not_judged_on_a_python_setup_command(new_story):
     reader = story.container.get(ReaderQuery).with_name("python3").page(1, 1).rows[0]
     expect_reason_2(story, parts, reader, worker.id, "")
     bus.run(StartProcess.single_part(worker.id, parts[1].text, "/work", CommandCategory.TEST_RUN, 30), worker, environment_id=1)
-    story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists())
+    story.expect_rows(not story.row_exists(ReaderRequest, completed_at=None))
 
 
 def test_only_the_owner_is_told_to_read_a_shared_sample(new_story):
@@ -57,11 +57,11 @@ def test_a_shell_limit_before_pytest_needs_no_reader_of_its_own(new_story):
     parts = [PartSpec("ulimit -n 8192", "ulimit", category=CommandCategory.READ),
              PartSpec("python3 -m pytest tests/cart -q", "python3", category=CommandCategory.TEST_RUN)]
     story.run_command(StartProcess(worker.id, None, " && ".join(part.text for part in parts), "/work", CommandCategory.TEST_RUN, 30, parts), worker, 1)
-    story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists())
+    story.expect_rows(not story.row_exists(ReaderRequest, completed_at=None))
 
 
 def expect_count_open(story, expected) -> None:
-    actual = story.container.get(ReaderRequestQuery).open().count()
+    actual = story.row_count(ReaderRequest, completed_at=None)
     assert actual == expected, actual
 
 

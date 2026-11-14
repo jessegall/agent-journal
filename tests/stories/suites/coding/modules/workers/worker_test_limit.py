@@ -1,3 +1,4 @@
+from core.modules.processes.models.reader_request import ReaderRequest
 from suites.coding.modules.workers.models.worktree import Worktree
 from dataclasses import replace
 from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
@@ -14,7 +15,6 @@ from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.models.process import Process
-from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.ticks.output_reading import OutputReading
@@ -227,12 +227,12 @@ def test_a_listing_that_printed_nothing_is_a_killed_run_and_asks_for_no_reader_w
     story, process = limited_run
     story.step("run counted", process.id, "", 143)
     story.run_command(GrantRunSlots(), story.agent, 1)
-    story.expect_rows(story.container.get(ReaderRequestQuery).open().count() == 0, story.row(Process, process.id).state is not ProcessState.STOPPED)
+    story.expect_rows(story.row_count(ReaderRequest, completed_at=None) == 0, story.row(Process, process.id).state is not ProcessState.STOPPED)
     second_run = worker_run(story, "pytest tests/totals.py", CommandCategory.TEST_RUN)
     story.run_command(GrantRunSlots(), story.agent, 1)
     story.step("run counted", second_run.id, "no number\n", 0)
     story.run_command(GrantRunSlots(), story.agent, 1)
-    story.expect_rows(story.container.get(ReaderRequestQuery).open().count() == 1, story.row(Process, second_run.id).state is ProcessState.STOPPED)
+    story.expect_rows(story.row_count(ReaderRequest, completed_at=None) == 1, story.row(Process, second_run.id).state is ProcessState.STOPPED)
 
 
 def test_a_worker_stopped_for_an_unknown_count_adds_a_counting_reader_and_its_next_run_starts(new_story):

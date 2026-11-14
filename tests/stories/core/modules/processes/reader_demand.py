@@ -1,3 +1,4 @@
+from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.processes.queries.conditions.reader_sample_scope import ReaderSampleScope
 from engine.module.module_actors import ModuleActors
 import pytest
@@ -8,7 +9,6 @@ from core.modules.processes.support.reader_demands import ReaderDemands
 from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.enums.reader_type import ReaderType
-from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 from tests.stories.core.modules.processes.support.process_samples import moved_run
 from engine.enums.command_category import CommandCategory
@@ -47,7 +47,7 @@ def test_a_crashed_sample_does_not_make_a_working_reader_lose_its_standing(new_s
     crashed = start_process(story, "pytest tests", category=CommandCategory.TEST_RUN)
     end_run(story, crashed, "pytest could not load a package\n", exit_code=1)
     worker_run(story, "pytest tests", CommandCategory.TEST_RUN)
-    story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists())
+    story.expect_rows(not story.row_exists(ReaderRequest, completed_at=None))
 
 
 @pytest.mark.parametrize("exit_code, text", [(0, "collected 3 items\n.. [ 66%]\n+++++++++++++ Timeout +++++++++++++\n"), (143, "collected 3 items\n.. [ 66%]\n"), (-9, "collected 3 items\n")],
@@ -59,7 +59,7 @@ def test_a_run_that_was_killed_before_its_summary_asks_for_no_reader(new_story, 
     killed = start_process(story, "pytest tests", category=CommandCategory.TEST_RUN)
     end_run(story, killed, text, exit_code=exit_code)
     end_run(story, worker_run(story, "pytest tests", CommandCategory.TEST_RUN), "collected 3 items\n... [100%]\n3 passed in 1.00s\n")
-    story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists())
+    story.expect_rows(not story.row_exists(ReaderRequest, completed_at=None))
 
 
 def test_the_stock_pytest_reader_takes_a_timeout_line_as_the_summary(new_story):
@@ -130,7 +130,7 @@ def test_each_part_of_a_chain_is_judged_alone(new_story):
              PartSpec("custom-build run", "custom-build", category=CommandCategory.BUILD),
              PartSpec("ls", "ls", category=CommandCategory.READ))
     story.run_command(StartProcess(worker.id, None, "custom-tests a && custom-build run && ls", "/work/main", CommandCategory.TEST_RUN, 30, parts), worker, 1)
-    story.expect_rows(story.container.get(ReaderRequestQuery).open().count() == 1)
+    story.expect_rows(story.row_count(ReaderRequest, completed_at=None) == 1)
 
 
 def test_a_read_a_search_and_a_journal_command_never_need_a_reader(new_story):
@@ -168,7 +168,7 @@ def test_a_run_the_journal_started_is_never_held(new_story):
     worker = reader_worker(story)
     actor = story.container.get(ModuleActors).actor("journal.core.processes")
     story.run_command(StartProcess.single_part(worker.id, "module-build run", "/work/main", CommandCategory.BUILD, 30), actor, 1)
-    story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists())
+    story.expect_rows(not story.row_exists(ReaderRequest, completed_at=None))
 
 
 def test_a_quiet_run_and_an_empty_output_do_not_make_the_stock_test_reader_poor(new_story):
