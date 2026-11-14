@@ -36,9 +36,8 @@ from server.execution.session_starters import SessionStarters
 from server.hook.hook_sender import HookSender
 from server.hook.raw_hook_body import RawHookBody, is_raw_body
 from server.hook.hook_headers import HookHeaders
-from server.errors.hook_database_busy_error import HookDatabaseBusyError
+from server.errors.lane_busy_error import LaneBusyError
 from engine.enums.execution_priority import ExecutionPriority
-from server.hook.queue_request import QueueRequest
 from server.context.server_context import ServerContext
 
 
@@ -73,12 +72,11 @@ class HookEndpoint:
             self.kept_row(sender, program)
             return self.locked(sender)
         try:
-            request = QueueRequest.started(sender.name, sender.event_name, sender.session)
-            with self.context.hook_database.used(sender.priority, sender.limit_seconds, sender.owner, request) as database:
+            with self.context.hook_database.used(sender.priority, sender.limit_seconds, sender.owner, sender.event_name) as database:
                 self.timing.stamp("hook_locked")
                 queued_ms = (perf_counter() - started_at) * 1000
                 return self.routed_answer(data, program, headers, database, started_at, sender, queued_ms)
-        except (HookDatabaseBusyError, OldHookRunnerError) as error:
+        except (LaneBusyError, OldHookRunnerError) as error:
             return self.unchecked(sender, error)
         finally:
             self.timing.stamp("hook_answered")
@@ -93,7 +91,7 @@ class HookEndpoint:
             with self.context.hook_database.used(ExecutionPriority.IMMEDIATE, self.context.hook_limit_seconds) as database:
                 database.set_busy_timeout(self.context.hook_limit_seconds)
                 retries.retry(synced_database_container(self.context.home, database))
-        except HookDatabaseBusyError as error:
+        except LaneBusyError as error:
             self.context.files.log_line(f"delivery reset for hook call {reply.hook_call_id} will retry at the next hook: {error}", LogLevel.WARNING)
         except sqlite3.OperationalError as error:
             if not DatabaseBusy.is_busy(error):

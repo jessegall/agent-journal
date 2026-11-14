@@ -69,7 +69,7 @@ POLL_SECONDS = 0.05
 STORY_HOOK_LIMIT_SECONDS = 0.5
 # Longer than the hook limit, as the twenty seconds of a real stop are longer than its three and a half.
 STORY_STOP_LIMIT_SECONDS = 2.0
-STORY_RUNNING_HOOKS_COUNT = 1
+STORY_INSTANT_CAPACITY = 1
 HOOK_POLL_SECONDS = 0.01
 
 
@@ -365,38 +365,37 @@ def local_viewer(login: ViewerLogin, routes: ViewerRoutes) -> ViewerEndpoint:
 
 
 @contextmanager
-def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), real_time: bool = False, running_hooks_count: int = STORY_RUNNING_HOOKS_COUNT):
+def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), real_time: bool = False, instant_capacity: int = STORY_INSTANT_CAPACITY):
     without_start_skills(story)
     story.run(f"setting make {AVATAR_KEY} false")
-    with started_server(story.home, code_folders, listener_thread_started, viewer_factory, journal_door, SYSTEM_CLOCK if real_time else story.clock, running_hooks_count) as (socket_path, context):
+    with started_server(story.home, code_folders, listener_thread_started, viewer_factory, journal_door, SYSTEM_CLOCK if real_time else story.clock, instant_capacity) as (socket_path, context):
         yield ServerStory(story, socket_path, context)
 
 
 @contextmanager
-def started_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), clock: Clock = SYSTEM_CLOCK, running_hooks_count: int = STORY_RUNNING_HOOKS_COUNT):
-    with running_server(home, code_folders, listener_thread_started, viewer_factory, journal_door, clock, running_hooks_count) as (_, socket_path, context):
+def started_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), clock: Clock = SYSTEM_CLOCK, instant_capacity: int = STORY_INSTANT_CAPACITY):
+    with running_server(home, code_folders, listener_thread_started, viewer_factory, journal_door, clock, instant_capacity) as (_, socket_path, context):
         yield socket_path, context
 
 
 @contextmanager
-def running_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), clock: Clock = SYSTEM_CLOCK, running_hooks_count: int = STORY_RUNNING_HOOKS_COUNT):
+def running_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), clock: Clock = SYSTEM_CLOCK, instant_capacity: int = STORY_INSTANT_CAPACITY):
     with patch.object(ProcessTable, "rows", FixedProcessTable([]).rows):
         files = ServerFiles(home)
         assert files.acquire_lock(), "a server already holds the lock of this journal"
         files.clear_leftover_socket()
-        hook_database = HookDatabase(home, running_hooks_count=running_hooks_count)
-        listener_round = JournalRound(home, "listener thread", ListenerWork(), KeptRoundContainer(home), hook_database.queue)
+        hook_database = HookDatabase(home, instant_capacity=instant_capacity)
+        listener_round = JournalRound(home, "listener thread", ListenerWork(), KeptRoundContainer(home))
         listener_thread = ListenerThread(listener_round.run, listener_round.report, stop_callback=listener_round.close)
         wakes = ListenerWakeRouter.waking(listener_thread)
         phones = PhoneSessions(home, wakes)
         login = ViewerLogin(phones, ShareSessions(phones.journal_output, clock))
         reported = ReportedFindings()
         context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, clock.timestamp(), wakes,
-                                hook_database, viewer_factory(login, ViewerRoutes(home, wakes, login, reported, hook_database.queue, clock)), ServerTunnel(home), reported, journal_door, STORY_HOOK_LIMIT_SECONDS, STORY_HOOK_LIMIT_SECONDS, STORY_STOP_LIMIT_SECONDS)
+                                hook_database, viewer_factory(login, ViewerRoutes(home, wakes, login, reported, hook_database.viewer_tickets, clock)), ServerTunnel(home), reported, journal_door, STORY_HOOK_LIMIT_SECONDS, STORY_HOOK_LIMIT_SECONDS, STORY_STOP_LIMIT_SECONDS)
         context.request_trace.refresh(synced_database_container(home, hook_database.databases[0]))
         InstantLaneReading.shared(home).install(lambda: [entry.reading() for entry in hook_database.executions.read()], hook_database.instant_capacity)
         context.viewer.routes.line_route = StoryLineRoute(home, wakes, reported, completion_callback=context.request_trace.completed)
-        context.viewer.routes.line_route.line_run.request_queue = hook_database.queue
         server = JournalServer(str(files.socket), RequestHandler, context)
         if listener_thread_started:
             listener_thread.start()

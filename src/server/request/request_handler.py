@@ -17,7 +17,6 @@ from engine.caller.caller_request import CallerRequest
 from engine.errors.refusal import Refusal
 from engine.types.type_guards import is_mapping
 from server.work.client_disconnected import client_disconnected
-from server.hook.queue_request import QueueRequest
 from engine.caller.caller_request import SESSION_VARIABLE
 from server.viewer.viewer_key_route import ViewerKeyRoute
 from server.endpoints.cli_endpoint import CliEndpoint
@@ -39,7 +38,7 @@ from server.context.server_context import ServerContext
 from engine.execution.execution_ticket import ExecutionTicket
 from engine.execution.current_execution import CurrentExecution
 from collections.abc import Generator
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from server.execution.session_starters import SessionStarters
 
 EXIT_CODE_TRAILER = "Journal-Exit-Code"
@@ -112,12 +111,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def answered_safely(self, answer: Callable[[], None]) -> None:
         try:
-            route = self.path.partition("?")[0]
-            if route in ("/hook", "/cli"):
-                answer()
-                return
-            with self.journal_server().context.hook_database.queue.observing(QueueRequest.started("Client", f"{self.command} {self.path}")):
-                answer()
+            answer()
         except Exception as error:
             if client_disconnected(error):
                 self.close_connection = True
@@ -216,9 +210,9 @@ class RequestHandler(BaseHTTPRequestHandler):
     # a command takes its place in the instant lane, its session's one at a time, and its writes wait with its priority
     @staticmethod
     @contextmanager
-    def command_turn(context: ServerContext, queued: QueueRequest, ticket: ExecutionTicket) -> Generator[None]:
-        with context.hook_database.executions.admitted(ticket, queued.session) as admitted, context.hook_database.queue.observing(queued), \
-                CurrentExecution(admitted.ticket.priority, "command", queued.event, admitted.ticket).applied():
+    def command_turn(context: ServerContext, session: str, ticket: ExecutionTicket) -> Generator[None]:
+        with context.hook_database.executions.admitted(ticket, session) as admitted, \
+                CurrentExecution(admitted.ticket.priority, "command", ticket.line, admitted.ticket).applied():
             yield
 
     def answer_cli(self, request: CliRequest) -> None:
@@ -232,13 +226,12 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_header("Trailer", EXIT_CODE_TRAILER)
         self.end_headers()
         try:
-            queued = QueueRequest.started("CLI", " ".join(request.argv), request.caller.variables.get(SESSION_VARIABLE, ""), "cli")
-            queue = context.hook_database.queue
-            ticket = ExecutionPriorities(SessionStarters.shared(context.home)).command_ticket(queued.session, queued.event, context.clock.timestamp())
-            turn = queue.observing(queued) if context.viewer.routes.priorities.is_unqueued(request.argv) else self.command_turn(context, queued, ticket)
+            session = request.caller.variables.get(SESSION_VARIABLE, "")
+            ticket = ExecutionPriorities(SessionStarters.shared(context.home)).command_ticket(session, " ".join(request.argv), context.clock.timestamp())
+            turn = nullcontext() if context.viewer.routes.priorities.is_unqueued(request.argv) else self.command_turn(context, session, ticket)
             with turn:
                 queued_ms = (perf_counter() - started_at) * 1000
-                code = CliEndpoint(context.home, ListenerWake(context.listener_wakes), context.reported_findings, queue, context.request_trace.completed, context.hook_database.turns).answer(request, ChunkStream(self.send_chunk, self.has_caller_disconnected))
+                code = CliEndpoint(context.home, ListenerWake(context.listener_wakes), context.reported_findings, context.request_trace.completed, context.hook_database.turns).answer(request, ChunkStream(self.send_chunk, self.has_caller_disconnected))
         except Exception as error:
             if client_disconnected(error):
                 self.close_connection = True

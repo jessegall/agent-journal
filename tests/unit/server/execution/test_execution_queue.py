@@ -14,7 +14,7 @@ from engine.execution.execution_starter import ExecutionStarter
 from engine.execution.execution_ticket import ExecutionTicket
 from engine.time.clock import Clock
 from engine.time.timestamp import Timestamp
-from server.errors.hook_database_busy_error import HookDatabaseBusyError
+from server.errors.lane_busy_error import LaneBusyError
 from server.execution.execution_queue import ExecutionQueue
 
 ENTERED = Timestamp(datetime(2026, 11, 13, 12, tzinfo=timezone.utc))
@@ -45,7 +45,7 @@ def test_wait_past_limit_names_the_holders():
     with ExitStack() as running:
         for number in range(RESERVED_LIMIT):
             running.enter_context(lane.admitted(ticket(ExecutionPriority.RESERVED, f"hook {number}", agent=number), owner=f"session-{number}"))
-        with pytest.raises(HookDatabaseBusyError, match="waiting for reserved hook at reserved: hook 0"):
+        with pytest.raises(LaneBusyError, match="waiting for reserved hook at reserved: hook 0"):
             with lane.admitted(ticket(ExecutionPriority.RESERVED, agent=99), owner="late", wait_limit_seconds=0):
                 pass
 

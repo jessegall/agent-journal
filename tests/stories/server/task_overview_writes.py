@@ -37,7 +37,7 @@ def test_six_worker_overviews_leave_hook_and_viewer_writes_free(new_story, monke
         return original(reader, task, caller)
 
     monkeypatch.setattr(WorkContextReader, "overview", delayed_context)
-    with server_story(story, listener_thread_started=False, running_hooks_count=INSTANT_CAPACITY) as server:
+    with server_story(story, listener_thread_started=False, instant_capacity=INSTANT_CAPACITY) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         with ThreadPoolExecutor(max_workers=WORKERS_COUNT) as pool:
             futures = [pool.submit(server.run_as, f"task overview {number}", f"worker-{number}") for number in range(1, WORKERS_COUNT + 1)]

@@ -4,7 +4,7 @@ from contextlib import ExitStack, contextmanager
 from engine.enums.window_priority import WindowPriority
 from engine.execution.current_execution import CurrentExecution
 from engine.time.clock import Clock
-from server.errors.hook_database_busy_error import HookDatabaseBusyError
+from server.errors.lane_busy_error import LaneBusyError
 from server.execution.execution_priorities import ExecutionPriorities
 from server.execution.execution_queue import ExecutionQueue
 
@@ -17,12 +17,12 @@ class ViewerTickets:
         self.queue, self.priorities, self.clock, self.wait_limit_seconds = queue, priorities, clock, wait_limit_seconds
 
     @contextmanager
-    def admitted(self, line: str, window: WindowPriority, is_hidden: bool = False) -> Generator[None]:
+    def admitted(self, line: str, window: WindowPriority = WindowPriority.NORMAL, is_hidden: bool = False) -> Generator[None]:
         ticket = self.priorities.viewer_ticket(line, window, self.clock.timestamp(), is_hidden)
         with ExitStack() as held:
             try:
                 ticket = held.enter_context(self.queue.admitted(ticket, wait_limit_seconds=self.wait_limit_seconds)).ticket
-            except HookDatabaseBusyError:
+            except LaneBusyError:
                 pass
             with CurrentExecution(ticket.priority, "viewer", line, ticket).applied():
                 yield

@@ -9,7 +9,6 @@ from time import perf_counter
 
 from engine.database.repeated_lines import RepeatedLines
 from engine.database.request_watch import RequestWatch
-from engine.request.request_queue import RequestQueue
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.database.kept_rows import KeptRows
@@ -48,9 +47,9 @@ FLAG_SEPARATOR = "--"
 class LineRoute:
     """Checks and runs viewer lines, sharing one read container for a batch and returning each line's answer."""
 
-    def __init__(self, home: JournalHome, wakes: ListenerWakeRouter, reported: ReportedFindings, request_queue: RequestQueue | None = None, completion_callback: Callable[[Container, list[str]], None] = ignore_completed,
+    def __init__(self, home: JournalHome, wakes: ListenerWakeRouter, reported: ReportedFindings, completion_callback: Callable[[Container, list[str]], None] = ignore_completed,
                  turns: WriteTurns | None = None) -> None:
-        self.line_run = LineRun(home, CLI_LIMIT_SECONDS, ListenerWake(wakes), reported, request_queue, completion_callback, turns)
+        self.line_run = LineRun(home, CLI_LIMIT_SECONDS, ListenerWake(wakes), reported, completion_callback, turns)
 
     def answer(self, window: str, argv: list[str], person_id: int, environment: str, shared: SharedRow | None = None) -> LineAnswer:
         return self.timed_single_answer(window, argv, person_id, environment, shared).answer

@@ -21,7 +21,6 @@ from engine.time.clock import Clock
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 from engine.setting.setting_values import SettingValues
 from engine.container.container import Container
-from server.hook.server_queue import ServerQueue
 
 TICK_WORKER_COUNT = ProcessSetting.TICK_WORKERS.value.default
 LATE_LINE_SECONDS = 300.0
@@ -33,10 +32,10 @@ class Ticker:
     other handler, and a handler still queued or running is never queued again. A fault in a handler is logged
     under its name and stops nothing. The handlers are the modules' declared ones and those registered."""
 
-    def __init__(self, home: JournalHome, handlers: Sequence[TickHandler], wake_listeners: Callable[[], None], seconds: Callable[[], float] = time.monotonic, queue: ServerQueue | None = None,
+    def __init__(self, home: JournalHome, handlers: Sequence[TickHandler], wake_listeners: Callable[[], None], seconds: Callable[[], float] = time.monotonic,
                  containers: Callable[[JournalHome], RoundContainer] = KeptRoundContainer, tickets: RoundTickets | None = None) -> None:
         self.home, self.wake_listeners, self.seconds = home, wake_listeners, seconds
-        self.queue, self.tickets = queue, tickets
+        self.tickets = tickets
         self.due = DueTickHandlers(handlers, seconds())
         self.waiting_handlers: "queue_module.Queue[QueuedTickHandler]" = queue_module.Queue()
         self.busy: set[str] = set()
@@ -80,7 +79,7 @@ class Ticker:
     def run(self, queued: QueuedTickHandler, containers: RoundContainer) -> None:
         self.log_late_start(queued)
         handler = queued.handler
-        journal_round = JournalRound(self.home, handler.label, TickHandlerWork(handler, self.wake_listeners), containers, self.queue)
+        journal_round = JournalRound(self.home, handler.label, TickHandlerWork(handler, self.wake_listeners), containers)
         try:
             with self.tickets.tick_turn(handler.label) if self.tickets is not None else nullcontext():
                 journal_round.run()

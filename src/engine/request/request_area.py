@@ -3,5 +3,5 @@ from engine.area.engine_area import EngineArea
 
 
 class RequestArea(EngineArea):
-    summary = "The queue of requests and its entries."
+    summary = "Values kept while one request is answered."
     use = AreaUse.CONTRACT

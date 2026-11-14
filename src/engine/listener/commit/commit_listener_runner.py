@@ -174,7 +174,6 @@ class CommitListenerRunner(RoundState):
             if not self.cursors.claimed(entry.name, position, event.id):
                 self.positions_stale = True
                 return progress
-            self.turns.pause()
             with self.turns.event_turn(event.event):
                 handled = self.handle_event(entry, event)
             if not handled:

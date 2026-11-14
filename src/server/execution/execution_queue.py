@@ -9,7 +9,7 @@ from engine.execution.execution_order import ExecutionOrder
 from engine.execution.execution_ticket import ExecutionTicket
 from engine.time.clock import Clock
 from server.errors.client_left_error import ClientLeftError
-from server.errors.hook_database_busy_error import HookDatabaseBusyError
+from server.errors.lane_busy_error import LaneBusyError
 from server.execution.instant_entry import InstantEntry
 
 LOOK_AGAIN_SECONDS = 0.5
@@ -69,7 +69,7 @@ class ExecutionQueue:
             HELD_WRITE_TURN.refuse_wait(f"the wait for an instant lane place for {queued.ticket.line}")
             waited = self.clock.epoch_seconds() - queued.entered_at
             if wait_limit_seconds is not None and waited >= wait_limit_seconds and not queued.ticket.priority.is_unlimited:
-                raise HookDatabaseBusyError.waited(waited, self.holders())
+                raise LaneBusyError.waited(waited, self.holders())
             self.changed.wait(LOOK_AGAIN_SECONDS if wait_limit_seconds is None else max(0.0, min(LOOK_AGAIN_SECONDS, wait_limit_seconds - waited)))
 
     # a waited child starts at once, since its parent holds its place; a session's tickets go one at a time and in

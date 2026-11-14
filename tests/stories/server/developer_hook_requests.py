@@ -282,7 +282,7 @@ def test_inspection_reads_alone_and_in_a_batch_skip_hooks_and_the_request_log(re
     server = recording_server
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
     request = {"line": line, "environment": "main", "window": window}
-    server.context.hook_database.queue.viewer_wait_limit_seconds = 5
+    server.context.hook_database.viewer_tickets.wait_limit_seconds = 5
     with ThreadPoolExecutor(1) as pool:
         with server.context.hook_database.used(MAIN_AGENT_HOOK_PRIORITY, 1):
             single = pool.submit(server.viewer_line_value, cookie, request)

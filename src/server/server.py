@@ -157,10 +157,10 @@ def main(argv: list[str]) -> int:
     round_tickets = RoundTickets(hook_database.executions, ExecutionPriorities(SessionStarters.shared(home)), clock)
     InstantLaneReading.shared(home).install(lambda: [entry.reading() for entry in hook_database.executions.read()], hook_database.instant_capacity)
     LaneDoor.shared(home).install(TicketAdmission(hook_database.executions, ExecutionPriorities(SessionStarters.shared(home)), clock).admitted)
-    urgent_round = JournalRound(home, "urgent listener thread", UrgentListenerWork(), urgent_kept, hook_database.queue, round_tickets)
-    listener_round = JournalRound(home, "listener thread", OrdinaryListenerWork(), listener_kept, hook_database.queue, round_tickets)
-    plugin_round = JournalRound(home, "plugin listener thread", PluginListenerWork(), plugin_kept, hook_database.queue, round_tickets)
-    stop_round = JournalRound(home, "program stop thread", ProgramStopListenerWork(), stop_kept, hook_database.queue, round_tickets)
+    urgent_round = JournalRound(home, "urgent listener thread", UrgentListenerWork(), urgent_kept, round_tickets)
+    listener_round = JournalRound(home, "listener thread", OrdinaryListenerWork(), listener_kept, round_tickets)
+    plugin_round = JournalRound(home, "plugin listener thread", PluginListenerWork(), plugin_kept, round_tickets)
+    stop_round = JournalRound(home, "program stop thread", ProgramStopListenerWork(), stop_kept, round_tickets)
     wakes = ListenerWakeRouter(WrittenEvents.shared(), [])
     urgent_thread = ListenerThread(urgent_round.run, urgent_round.report, name="urgent listeners", stop_callback=urgent_round.close, after_round=wakes.wake)
     plugin_thread = ListenerThread(plugin_round.run, plugin_round.report, name="plugin listeners", stop_callback=plugin_round.close, after_round=wakes.wake)
@@ -168,11 +168,11 @@ def main(argv: list[str]) -> int:
     listener_thread = ListenerThread(listener_round.run, listener_round.report, stop_callback=listener_round.close, after_round=wakes.wake)
     wakes.threads = [(urgent_thread, urgent_kept.listener_set), (listener_thread, listener_kept.listener_set), (plugin_thread, plugin_kept.listener_set),
                      (stop_thread, stop_kept.listener_set)]
-    ticker = Ticker(home, Ticker.module_handlers(finder), wakes.wake, queue=hook_database.queue, containers=partial(KeptRoundContainer, turns=turns), tickets=round_tickets)
+    ticker = Ticker(home, Ticker.module_handlers(finder), wakes.wake, containers=partial(KeptRoundContainer, turns=turns), tickets=round_tickets)
     phones = PhoneSessions(home, wakes, turns)
     login = ViewerLogin(phones, ShareSessions(phones.journal_output, clock), SessionFile(home.viewer_sessions_file))
     reported_findings = ReportedFindings()
-    routes = ViewerRoutes(home, wakes, login, reported_findings, hook_database.queue, clock, turns)
+    routes = ViewerRoutes(home, wakes, login, reported_findings, hook_database.viewer_tickets, clock, turns)
     inherited_viewer = waiting_server.viewer_socket() if waiting_server else None
     tunnel = ServerTunnel(home, turns)
     if hosting.is_hosted:

@@ -7,7 +7,3 @@ class RoundYield:
 
     def event_turn(self, event_name: str) -> AbstractContextManager[None]:
         return nullcontext()
-
-    # the server's old queue pauses here between events; a round that waits per event never pauses
-    def pause(self) -> None:
-        return None

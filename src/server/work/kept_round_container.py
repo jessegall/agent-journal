@@ -18,12 +18,9 @@ from engine.module.journal_container import synced_database_container
 from engine.time.clock import Clock
 from server.work.round_container import RoundContainer
 
-BACKGROUND_BUSY_TIMEOUT_SECONDS = 60.0
-
 
 def background_container(home: JournalHome, turns: WriteTurns | None = None) -> Container:
     database = Database.opened(home, turns)
-    database.set_busy_timeout(BACKGROUND_BUSY_TIMEOUT_SECONDS)
     try:
         return synced_database_container(home, database)
     except BaseException:

@@ -23,10 +23,9 @@ from engine.execution.limits.lane_limits import LaneLimits
 from engine.journal.journal_home import JournalHome
 from engine.time.clock import Clock
 from server.execution.execution_queue import ExecutionQueue
-from server.hook.queue_request import QueueRequest
-from server.hook.server_queue import RUNNING_HOOKS_COUNT, ServerQueue
 
 CLOSE_WAIT_SECONDS = 60.0
+VIEWER_WAIT_LIMIT_SECONDS = 1.0
 INSTANT_CAPACITY = DEFAULT_LANE_LIMITS.capacity(ExecutionLane.INSTANT)
 
 
@@ -40,20 +39,19 @@ class HookDatabase:
     """The database connections hooks use, one per running hook, made as the instant lane needs them; a hook takes
     its place in the instant lane, the main agent's at once, a session's one at a time."""
 
-    def __init__(self, home: JournalHome, turns: WriteTurns | None = None, running_hooks_count: int = INSTANT_CAPACITY) -> None:
+    def __init__(self, home: JournalHome, turns: WriteTurns | None = None, instant_capacity: int = INSTANT_CAPACITY) -> None:
         self.home, self.turns = home, turns
-        self.databases = [Database.shared(home, turns) for _ in range(min(running_hooks_count, RUNNING_HOOKS_COUNT))]
+        self.databases = [Database.shared(home, turns)]
         self.free_databases = list(self.databases)
-        self.queue = ServerQueue(running_hooks_count)
-        self.instant_capacity = running_hooks_count
+        self.instant_capacity = instant_capacity
         log = SystemLogWriter(home, Clock())
-        self.executions = ExecutionQueue(ExecutionOrder(instant_limits(running_hooks_count)), Clock(), lambda text: log.write(LogLevel.WARNING, f"an execution failed: {text}", LogSource.SERVER))
-        self.queue.viewer_tickets = ViewerTickets(self.executions, ExecutionPriorities(SessionStarters.shared(home)), Clock(), self.queue.viewer_wait_limit_seconds)
+        self.executions = ExecutionQueue(ExecutionOrder(instant_limits(instant_capacity)), Clock(), lambda text: log.write(LogLevel.WARNING, f"an execution failed: {text}", LogSource.SERVER))
+        self.viewer_tickets = ViewerTickets(self.executions, ExecutionPriorities(SessionStarters.shared(home)), Clock(), VIEWER_WAIT_LIMIT_SECONDS)
 
     @contextmanager
-    def used(self, priority: ExecutionPriority, wait_seconds: float, owner: str = "", request: QueueRequest | None = None) -> Generator[Database]:
-        with self.executions.admitted(self.hook_ticket(priority, request), owner, wait_seconds) as queued, \
-                CurrentExecution(queued.ticket.priority, "hook", queued.ticket.line, queued.ticket).applied(), self.queue.observing(request or QueueRequest.started("hook", "hook", owner)):
+    def used(self, priority: ExecutionPriority, wait_seconds: float, owner: str = "", event_name: str = "hook") -> Generator[Database]:
+        with self.executions.admitted(self.hook_ticket(priority, event_name), owner, wait_seconds) as queued, \
+                CurrentExecution(queued.ticket.priority, "hook", queued.ticket.line, queued.ticket).applied():
             database = self.free_database()
             busy_timeout_seconds = database.busy_timeout_seconds()
             try:
@@ -70,14 +68,13 @@ class HookDatabase:
         self.databases.append(database)
         return database
 
-    def hook_ticket(self, priority: ExecutionPriority, request: QueueRequest | None) -> ExecutionTicket:
+    def hook_ticket(self, priority: ExecutionPriority, event_name: str) -> ExecutionTicket:
         starter = ExecutionStarter(StarterType.MAIN_AGENT if priority.is_unlimited else StarterType.HELPER)
         entered_at = Clock().timestamp()
         execution_class = ExecutionClass("main agent hook" if priority.is_unlimited else "agent hook", ExecutionLane.INSTANT, 1, priority)
-        return ExecutionTicket(execution_class, priority, priority, starter, request.event if request is not None else "hook", entered_at, entered_at)
+        return ExecutionTicket(execution_class, priority, priority, starter, event_name, entered_at, entered_at)
 
     def close(self) -> None:
         self.executions.wait_idle(CLOSE_WAIT_SECONDS)
-        self.queue.wait_idle(CLOSE_WAIT_SECONDS)
         for database in self.databases:
             database.close()

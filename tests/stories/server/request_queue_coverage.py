@@ -83,10 +83,9 @@ def test_a_main_agent_hook_is_answered_while_an_agent_hook_holds_the_whole_insta
 
 def test_a_cli_line_is_not_queued_behind_a_slow_round(recording_server):
     server = recording_server
-    queue = server.context.hook_database.queue
     work = BlockedRound()
     with ThreadPoolExecutor(1) as pool:
-        running = pool.submit(JournalRound(server.story.home, "plugin listener thread", work, PerRoundContainer(server.story.home), queue).run)
+        running = pool.submit(JournalRound(server.story.home, "plugin listener thread", work, PerRoundContainer(server.story.home)).run)
         try:
             server.story.expect_rows(work.entered.wait(ROUND_START_LIMIT_SECONDS))
             server.expect_cli_exit("task list", "/", 0, "")
@@ -98,9 +97,8 @@ def test_a_cli_line_is_not_queued_behind_a_slow_round(recording_server):
 
 def test_a_tick_round_does_not_wait_behind_a_running_hook(recording_server):
     server = recording_server
-    queue = server.context.hook_database.queue
     work = BlockedRound()
     work.release.set()
     with server.context.hook_database.used(MAIN_AGENT_HOOK_PRIORITY, 1):
-        JournalRound(server.story.home, "output reading", work, PerRoundContainer(server.story.home), queue).run()
+        JournalRound(server.story.home, "output reading", work, PerRoundContainer(server.story.home)).run()
         server.story.expect_rows(work.entered.is_set())
