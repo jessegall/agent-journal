@@ -6,11 +6,10 @@ import pytest
 
 from engine.database.listener_cursor_table import ListenerCursorTable
 from engine.listener.commit.commit_listener_runner import CommitListenerRunner
+from server.work.listeners.ordinary_listener_work import OrdinaryListenerWork
 from server.work.rounds.journal_round import JournalRound
 from server.work.rounds.per_round_container import PerRoundContainer
-from server.work.listeners.ordinary_listener_work import OrdinaryListenerWork
 from server.work.rounds.round_work import RoundWork
-from tests.stories.core.support.fixtures import UserJoined
 
 
 class ListenerRound(RoundWork):
@@ -24,20 +23,20 @@ class ListenerRound(RoundWork):
         OrdinaryListenerWork().run(container)
 
 
-def test_an_ordinary_listener_round_waits_past_five_seconds_for_a_writer(new_story, monkeypatch):
-    story = new_story(fixture=UserJoined)
+def test_an_ordinary_listener_round_waits_past_five_seconds_for_a_writer(journal, monkeypatch):
     with monkeypatch.context() as delayed:
         delayed.setattr(CommitListenerRunner, "run", lambda runner: None)
-        story.expect_success('task make "Waiting for a listener" --environment main')
-    positions = story.container.get(ListenerCursorTable).positions()
+        made = journal.run('task make "Waiting for a listener" --brief "A task whose events wait"')
+        assert made.code == 0, made.text
+    positions = journal.container.get(ListenerCursorTable).positions()
     work = ListenerRound()
-    connection = sqlite3.connect(story.home.database, timeout=0, autocommit=True)
+    connection = sqlite3.connect(journal.home.database, timeout=0, autocommit=True)
     try:
         connection.execute("BEGIN IMMEDIATE")
         with ThreadPoolExecutor(1) as pool:
-            running = pool.submit(JournalRound(story.home, "ordinary listener", work, PerRoundContainer(story.home)).run)
+            running = pool.submit(JournalRound(journal.home, "ordinary listener", work, PerRoundContainer(journal.home)).run)
             try:
-                story.expect_rows(work.entered.wait(3))
+                assert work.entered.wait(3)
                 with pytest.raises(TimeoutError):
                     running.result(timeout=5.2)
             finally:
@@ -45,5 +44,5 @@ def test_an_ordinary_listener_round_waits_past_five_seconds_for_a_writer(new_sto
             running.result(timeout=10)
     finally:
         connection.close()
-    after = story.container.get(ListenerCursorTable).positions()
-    story.expect_rows(any(after[name] > position for name, position in positions.items()))
+    after = journal.container.get(ListenerCursorTable).positions()
+    assert any(after[name] > position for name, position in positions.items())
