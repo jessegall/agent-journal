@@ -86,3 +86,16 @@ def test_memories_window_reads_filtered_rows_through_keys_and_has_no_counts_key(
     query = "environment=main&memories.other-agents=true&memories.environment=main&memories.limit=20"
     status, listed = server.window_data(cookie, keys="memories", window="memories.memories", query=query)
     assert status == 200 and listed["keys"]["memories"]["code"] == 0 and listed["keys"]["memories"]["value"]["agents"][0]["agent_id"] == worker, listed
+
+
+def test_agent_counts_and_a_page_of_thirty_idle_agents_do_not_read_worktrees_per_agent(viewer):
+    server, cookie, _ = viewer
+    for number in range(30):
+        agent = server.journal.new_row_id(f"agent start count-{number} claude worker --environment main")
+        assert server.journal.run(f"agent end {agent}").code == 0
+    status, answer = server.window_data(cookie, keys="limits", window="coding.agent-settings")
+    worker = next(row for row in answer["keys"]["limits"]["value"]["rows"] if row["key"] == "worker")
+    assert status == 200 and answer["keys"]["limits"]["code"] == 0 and (worker["kept"], worker["running"]) == (30, 0), worker
+    status, answer = server.window_data(cookie, keys="count-agents", window="coding.agent-settings", query="environment=main&count-agents.role=worker&count-agents.page=1")
+    cards = answer["keys"]["count-agents"]
+    assert status == 200 and cards["code"] == 0 and len(cards["value"]["rows"]) == 25 and cards["value"]["total"] == 30, cards
