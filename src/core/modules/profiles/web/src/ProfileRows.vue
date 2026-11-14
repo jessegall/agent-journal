@@ -1,46 +1,46 @@
 <script setup>
 import {computed, ref} from "vue";
-import {ago, Btn, EmptyState, ListRow, SearchBar, matchesSearch, useWindow} from "@journal/window-kit";
+import {Btn, FilterBar, ListReaderLayout, PageHeader, Skeleton, ago, applyFilter, copying, defaultFilter, removed, useWindow} from "@journal/window-kit";
 import HelperStartForm from "./HelperStartForm.vue";
 import ProfilePanel from "./ProfilePanel.vue";
 
 const NEW_PROFILE = {name: "", title: "", description: "", agent_type: "helper", access: "read-only", program: "", occupant: "when-cold", mcp_tools: [], fallback_programs: [], changed: [], notes: [], problem: "", program_models: {}, tier: null, body: "", shipped: false, uses: 0};
-const ACCESS_WORDS = {"read-only": "Read-only", writing: "Writing"};
+const LIST_WIDTH = 360;
+const NEW_ID = "__new";
 
+// the profiles as a list and an editor: the list is grouped by type, each row says its models; the editor is the panel with its tabs, and keeps a slot for the sections that other plans add.
+// New and Duplicate start a draft that is a row of its own until it is saved or dropped
 const context = useWindow();
 const {rows, listing, failure, loaded, act, actionFailure} = context.props.profiles;
 const programs = context.props.programs.rows;
-const types = computed(() => listing.value ? listing.value.types : []);
-const opened = ref("");
-const query = ref("");
+const types = computed(() => (listing.value ? listing.value.types : []));
+const chosen = ref(null);
+const fresh = ref(null);
+const draftNumber = ref(0);
 const notice = ref("");
-const making = ref(false);
+const filter = ref(defaultFilter([]));
+const words = ref("");
 
-const matching = computed(() => {
-    const words = query.value.toLowerCase().split(/\s+/).filter(Boolean);
-    return rows.value.filter((row) => words.every((word) => matchesSearch(row, word, context.search?.fields)));
-});
-const panel = computed(() => (making.value ? NEW_PROFILE : rows.value.find((row) => row.name === opened.value) || null));
 const typeLabel = (row) => types.value.find((type) => type.key === row.agent_type)?.label || row.agent_type;
-const origin = (row) => (row.shipped ? "Comes with the journal" : row.module);
-const rowLine = (row) => [`Type: ${typeLabel(row)}`, `Access: ${ACCESS_WORDS[row.access]}`, ...programs.value.map((program) => `${row.program_models?.[program.name] || "chosen at start"} on ${program.title}`), row.changed.length ? "Changed" : "", origin(row)].filter(Boolean).join(" · ");
-const warnings = (row) => [row.problem, row.module_text_changed ? "Text changed: the journal's instructions have a new version" : "", ...row.notes].filter(Boolean);
+const fields = computed(() => [{key: "type", label: "Type", options: types.value.map((type) => [type.key, type.label]), get: (item) => item.p.agent_type}]);
 const usedWords = (row) => (row.uses ? `Uses: ${row.uses} ${row.uses === 1 ? "time" : "times"}, last ${ago(new Date(row.last_used * 1000).toISOString())}` : "Uses: none");
-
-function make() {
-    making.value = true;
-    opened.value = "";
-}
-
-function open(row) {
-    making.value = false;
-    opened.value = row.name;
-}
-
-function close() {
-    making.value = false;
-    opened.value = "";
-}
+const modelsOf = (row) => programs.value.map((program) => `${row.program_models?.[program.name] || "chosen at start"} on ${program.title}`).join(" · ");
+const listed = computed(() => [
+    ...(fresh.value ? [{id: NEW_ID, title: fresh.value.title || "New profile", desc: "Not saved", group: "New", p: fresh.value}] : []),
+    ...rows.value.map((row) => ({id: row.name, title: row.title || row.name, desc: modelsOf(row), group: row.is_base ? "Base profiles" : typeLabel(row), kind: typeLabel(row), p: row})),
+]);
+const shown = computed(() => applyFilter(listed.value, fields.value, filter.value, words.value, ["id", "title", "desc", "kind"]));
+const reopen = (profile) => {
+    fresh.value = profile;
+    draftNumber.value += 1;
+    chosen.value = NEW_ID;
+};
+const make = () => reopen({...NEW_PROFILE});
+const duplicate = (row) => reopen({...row, name: "", title: `${row.title || row.name} copy`, shipped: false, changed: [], uses: 0, problem: "", notes: [], module_text_changed: false, is_base: false});
+const drop = () => {
+    fresh.value = null;
+    chosen.value = null;
+};
 
 async function reset(profile) {
     notice.value = "";
@@ -48,150 +48,71 @@ async function reset(profile) {
     if (result.ok) notice.value = `${profile.name} is back to the journal's version.`;
 }
 
-async function save(profile, fields) {
+async function save(profile, values) {
     notice.value = "";
-    const name = profile.name || fields.name;
-    const result = await act(["profile", "save", name, ...(fields.title ? ["--title", fields.title] : []), "--description", fields.description, "--type", fields.agent_type, "--access", fields.access, "--program", fields.program, fields.preferred_program ? "--program-if-possible" : "--no-program-if-possible", "--fallback-programs", fields.fallback_programs, "--tier", fields.tier || "", ...programs.value.flatMap((program) => [program.model_option, fields.program_models[program.name] || ""]), "--mcp-tools", fields.mcp_tools, ...(types.value.find((type) => type.key === fields.agent_type)?.declares_occupant ? ["--occupant", fields.occupant] : []), "--body", fields.body, ...(fields.skills ? ["--skills", fields.skills.join(",")] : []), ...(fields.required_skills ? ["--required-skills", fields.required_skills.join(",")] : [])]);
+    const name = profile.name || values.name;
+    const result = await act(["profile", "save", name, ...(values.title ? ["--title", values.title] : []), "--description", values.description, "--type", values.agent_type, "--access", values.access, "--program", values.program, values.preferred_program ? "--program-if-possible" : "--no-program-if-possible", "--fallback-programs", values.fallback_programs, "--tier", values.tier || "", ...programs.value.flatMap((program) => [program.model_option, values.program_models[program.name] || ""]), "--mcp-tools", values.mcp_tools, ...(types.value.find((type) => type.key === values.agent_type)?.declares_occupant ? ["--occupant", values.occupant] : []), "--body", values.body, ...(values.skills ? ["--skills", values.skills.join(",")] : []), ...(values.required_skills ? ["--required-skills", values.required_skills.join(",")] : [])]);
     if (!result.ok) return;
-    making.value = false;
-    opened.value = name;
+    fresh.value = null;
+    chosen.value = name;
     notice.value = `${name} saved. The agent will use it the next time it starts a helper with this profile.`;
 }
+
+// the menu of a right click: Open, Duplicate, Copy name, Reset to the journal's version when something is changed, and Remove for a profile the journal does not supply
+const needsReset = (row) => Boolean(row.changed.length || row.problem || row.module_text_changed);
+const menuOf = (item) => [
+    {label: "Open", group: "open", disabled: item.id === chosen.value, reason: "Already open", run: () => (chosen.value = item.id)},
+    {label: "Duplicate", group: "open", disabled: item.id === NEW_ID, reason: "Not saved yet", run: () => duplicate(item.p)},
+    {label: "Copy name", group: "copy", disabled: item.id === NEW_ID, reason: "Not saved yet", run: ({say}) => copying(item.id, item.id, say)},
+    {label: "Reset", group: "own", disabled: item.id === NEW_ID || !item.p.module || !needsReset(item.p), reason: "Same as the journal's version", run: () => reset(item.p)},
+    {label: "Remove", group: "delete", danger: true, armedLabel: "Remove: click again", disabled: item.id === NEW_ID || Boolean(item.p.module), reason: "Comes with the journal", run: () => act(["profile", "remove", item.id], removed(item.id))},
+];
+const place = (item) => ({head: item.title, items: menuOf(item)});
 </script>
 
 <template>
-    <section class="profiles" data-profiles>
-        <SearchBar v-model="query" class="bar" data-profile-find>
-            <Btn variant="ghost" small data-profile-new @click="make">New profile</Btn>
-            <span class="count" data-profile-count>{{ rows.length }} {{ rows.length === 1 ? "profile" : "profiles" }}</span>
-            <template v-if="notice">
-                <span class="notice" data-profile-notice>{{ notice }}</span>
-            </template>
-            <template v-if="actionFailure">
-                <span class="notice failed" role="alert" data-profile-failure>{{ actionFailure }}</span>
-            </template>
-        </SearchBar>
-        <template v-if="failure">
-            <EmptyState class="empty" title="The profiles could not be read">{{ failure }}</EmptyState>
+    <ListReaderLayout v-model:chosen="chosen" :items="shown" :list-width="LIST_WIDTH" :place="place" empty-title="No profiles yet" pick-line="No profile chosen" data-profiles>
+        <template #top>
+            <PageHeader title="Profiles" :count="rows.length">
+                <template #primary><Btn small variant="primary" data-profile-new @click="make">New profile</Btn></template>
+            </PageHeader>
+            <FilterBar v-model="filter" v-model:words="words" :fields="fields" :rows="listed" :shown="shown.length" placeholder="Search profiles" data-profile-find />
+            <p v-if="notice" class="note" data-profile-notice>{{ notice }}</p>
+            <p v-if="actionFailure" class="note failed" role="alert" data-profile-failure>{{ actionFailure }}</p>
+            <p v-if="failure" class="note failed" role="alert">{{ failure }}</p>
         </template>
-        <template v-else-if="!loaded || !rows.length">
-            <EmptyState class="empty" :loading="!loaded" title="No profiles yet">
-                A profile gives an agent its instructions, type and model. The journal includes standard profiles.
-            </EmptyState>
+        <template #empty>
+            <template v-if="!loaded"><Skeleton shape="rows" /></template>
+            <template v-else>A profile gives an agent its instructions, type and model. The journal includes standard profiles.</template>
         </template>
-        <template v-else-if="!matching.length">
-            <EmptyState class="empty" title="No profile matches">Try other words.</EmptyState>
+        <template #meta="{item}">
+            <span v-if="item.id === NEW_ID" class="faint">New</span>
+            <span v-else-if="item.p.is_base" class="faint" title="Other profiles extend this one; it is never started by itself" data-profile-base>Base</span>
+            <span v-else-if="item.p.changed.length" class="faint">Changed</span>
         </template>
-        <template v-else>
-            <div class="rows">
-                <template v-for="profile in matching" :key="profile.name">
-                    <Btn variant="text" fill class="profile-open" :aria-label="`Open ${profile.name}`" :data-profile="profile.name" @click="open(profile)">
-                        <ListRow :title="profile.title || profile.name" :text="profile.description">
-                            <template #end>
-                                <span class="profile-meta">
-                                    <template v-if="profile.is_base"><span class="profile-base" title="Other profiles extend this one; it is never started by itself" data-profile-base>Base</span></template>
-                                    <template v-if="profile.title"><span class="profile-model">{{ profile.name }}</span></template>
-                                    <span class="profile-model">{{ rowLine(profile) }}</span>
-                                    <template v-for="warning in warnings(profile)" :key="warning">
-                                        <span class="profile-warning" data-profile-warning>{{ warning }}</span>
-                                    </template>
-                                    <span :class="['profile-used', {never: !profile.uses}]">{{ usedWords(profile) }}</span>
-                                </span>
-                            </template>
-                        </ListRow>
-                    </Btn>
-                </template>
-            </div>
-        </template>
-        <template v-if="panel">
-            <ProfilePanel :notice="notice" :failure="actionFailure" :programs="programs" :types="types" :profile="panel" :used="usedWords(panel)" @close="close" @save="save" @reset="reset">
-                <template v-if="panel.name && panel.agent_type === 'helper'"><HelperStartForm :programs="programs" :profile="panel.name" /></template>
+        <template #reader="{item}">
+            <ProfilePanel :key="`${item.id}-${draftNumber}`" :notice="notice" :failure="actionFailure" :programs="programs" :types="types" :profile="item.p" :used="usedWords(item.p)" @close="drop" @save="save" @reset="reset">
+                <template v-if="item.p.name && item.p.agent_type === 'helper'"><HelperStartForm :programs="programs" :profile="item.p.name" /></template>
             </ProfilePanel>
         </template>
-    </section>
+    </ListReaderLayout>
 </template>
 
 <style scoped>
-.profiles {
-    padding: 0 0 40px;
-}
-
-.bar {
-    flex-wrap: wrap;
-    gap: 8px 12px;
+.note {
+    margin: 0;
+    padding: 4px var(--inset);
     color: var(--text-2);
-}
-
-.count {
-    margin-left: auto;
-    color: var(--text-3);
-    font-size: 12.5px;
-}
-
-.notice {
     font-size: 12px;
-    color: var(--text-2);
 }
 
-.notice.failed {
+.failed {
     color: var(--danger);
 }
 
-.empty {
-    margin: 40px auto;
-    max-width: 480px;
-}
-
-.rows {
-    display: flex;
-    flex-direction: column;
-    padding: 8px 14px 0 22px;
-}
-
-.profile-open {
-    text-align: left;
-}
-
-.profile-meta {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 2px;
-    font-size: 12px;
-}
-
-.profile-model {
-    color: var(--text-2);
-}
-
-.profile-used {
-    color: var(--text-3);
-    white-space: nowrap;
-}
-
-.profile-warning {
-    color: var(--tone-warn);
-}
-
-.profile-used.never {
+.faint {
     color: var(--text-4);
-}
-
-@media (max-width: 640px) {
-    .profiles-find {
-        flex: 1 1 100%;
-    }
-
-    .profile-meta {
-        display: none;
-    }
-}
-
-.profile-base {
-    padding: 1px 7px;
-    border: 1px solid var(--border-2);
-    border-radius: 6px;
-    color: var(--text-2);
-    font-size: 11px;
+    font-size: 12px;
+    white-space: nowrap;
 }
 </style>

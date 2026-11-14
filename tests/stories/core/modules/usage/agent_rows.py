@@ -12,6 +12,7 @@ from tests.stories.server.support.server_client import server_story
 from tests.stories.server.support.browser_story import expect_browser
 
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from tests.stories.core.support.fixtures import CheckpointPlan
 from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
@@ -196,3 +197,11 @@ def test_agent_card_filters_combine_before_paging(new_story):
     story.expect_rows("worker" in options["roles"], "helper" in options["roles"])
     main = json.loads(story.run("agent cards --include-main --role main --show all --environment main --json", actor=story.user).output_text)
     story.expect_rows(any(row["id"] == story.agent.id for row in main["rows"]))
+
+
+def test_an_agent_with_a_task_in_a_plan_gets_the_counts_of_the_plan_by_state(new_story):
+    story = new_story(fixture=CheckpointPlan)
+    story.expect_success("task start 1", actor=story.agent)
+    rows = json.loads(story.run("usage agents --environment main --json", actor=story.user).output_text)["rows"]
+    counts = next(row for row in rows if row["id"] == story.agent.id)["plan_counts"]
+    story.expect_rows(counts["1"] == {"completed": 0, "testing": 0, "started": 1, "total": 4})

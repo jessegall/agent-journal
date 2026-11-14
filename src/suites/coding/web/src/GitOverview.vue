@@ -1,8 +1,11 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, EmptyState, Skeleton, TimeAgo, useWindow} from "@journal/window-kit";
-import {checksLine, distanceLine, reviewLine, shortSha} from "./gitWords.js";
+import {Btn, EmptyState, FilterBar, ListReaderLayout, PageHeader, Segmented, Skeleton, TimeAgo, applyFilter, defaultFilter, optionsOf, useWindow} from "@journal/window-kit";
+import GitReader from "./GitReader.vue";
+import {TABS, branchItem, commitItem, gitMenu, itemFields, pullItem} from "./gitItems.js";
 
+// the Git window: commits, branches and pull requests, each a list with a reader beside it. Show changes goes to the Files page, where the changed files are marked
+const LIST_WIDTH = 460;
 const view = useWindow();
 
 function pagedList(key) {
@@ -21,138 +24,70 @@ function pagedList(key) {
 const branches = pagedList("branches");
 const commits = pagedList("commits");
 const {data: pulls, failure: pullsFailure} = view.props.pulls;
+const tab = ref("commits");
+const chosen = ref(null);
+const filter = ref(defaultFilter([]));
+const words = ref("");
+
+const LISTS = {
+    commits: {title: "Commits", source: commits, items: computed(() => commits.rows.value.map(commitItem)), none: "The current branch has no commits yet.", failure: computed(() => commits.failure.value), loaded: computed(() => commits.loaded.value)},
+    branches: {title: "Branches", source: branches, items: computed(() => branches.rows.value.map(branchItem)), none: "This project has no branches yet.", failure: computed(() => branches.failure.value), loaded: computed(() => branches.loaded.value)},
+    pulls: {title: "Pull requests", source: null, items: computed(() => (pulls.value?.available ? pulls.value.rows.map(pullItem) : [])), none: "No pull request is open.", failure: computed(() => pullsFailure.value || (pulls.value && !pulls.value.available ? "The pull requests are read through gh, which is not installed or not signed in here." : "")), loaded: computed(() => Boolean(pulls.value))},
+};
+const current = computed(() => LISTS[tab.value]);
+const failure = computed(() => current.value.failure.value);
+const loaded = computed(() => current.value.loaded.value);
+const none = computed(() => current.value.none);
+const items = computed(() => current.value.items.value);
+const fields = computed(() => itemFields[tab.value].map((field) => ({...field, options: field.options ?? optionsOf(items.value, (item) => [field.get(item)])})));
+const shown = computed(() => applyFilter(items.value, fields.value, filter.value, words.value, ["title", "desc"]));
+const tabs = computed(() => TABS.map((each) => ({...each, count: LISTS[each.key].items.value.length})));
+const pick = (key) => {
+    tab.value = key;
+    chosen.value = null;
+    filter.value = defaultFilter([]);
+    words.value = "";
+};
+const more = computed(() => (tab.value === "pulls" ? false : current.value.source.more.value));
+const loadMore = () => current.value.source.load();
+const showChanges = () => location.assign(`?page=${view.links.files}`);
+const menuOf = (item, open = null) => gitMenu(item, {open, showChanges});
+const place = (item) => ({head: item.title, items: menuOf(item, () => (chosen.value = item.id))});
 </script>
 
 <template>
-    <section class="git" data-git>
-        <div class="part">
-            <h3>Branches</h3>
-            <template v-if="branches.failure.value">
-                <EmptyState>{{ branches.failure.value }}</EmptyState>
-            </template>
-            <template v-else-if="!branches.loaded.value">
-                <Skeleton shape="rows" />
-            </template>
-            <template v-else-if="!branches.rows.value.length">
-                <EmptyState>This project has no branches yet.</EmptyState>
-            </template>
-            <template v-for="branch in branches.rows.value" :key="branch.name">
-                <div :class="['row', {current: branch.current}]" data-git-branch>
-                    <span class="name">{{ branch.name }}</span>
-                    <span class="fact">{{ distanceLine(branch) }}</span>
-                    <span class="subject">{{ branch.subject }}</span>
-                    <span class="fact">{{ branch.author }}, <TimeAgo :at="branch.time" /></span>
-                </div>
-            </template>
-            <template v-if="branches.more.value">
-                <Btn small data-git-more-branches @click="branches.load">Show more</Btn>
-            </template>
-        </div>
-        <div class="part">
-            <h3>Recent commits</h3>
-            <template v-if="commits.failure.value">
-                <EmptyState>{{ commits.failure.value }}</EmptyState>
-            </template>
-            <template v-else-if="!commits.loaded.value">
-                <Skeleton shape="rows" />
-            </template>
-            <template v-else-if="!commits.rows.value.length">
-                <EmptyState>The current branch has no commits yet.</EmptyState>
-            </template>
-            <template v-for="commit in commits.rows.value" :key="commit.sha">
-                <div class="row" data-git-commit>
-                    <span class="sha">{{ shortSha(commit.sha) }}</span>
-                    <span class="subject">{{ commit.subject }}</span>
-                    <span class="fact">{{ commit.author }}, <TimeAgo :at="commit.time" /></span>
-                </div>
-            </template>
-            <template v-if="commits.more.value">
-                <Btn small data-git-more-commits @click="commits.load">Show more</Btn>
-            </template>
-        </div>
-        <div class="part">
-            <h3>Open pull requests</h3>
-            <template v-if="pullsFailure">
-                <EmptyState>{{ pullsFailure }}</EmptyState>
-            </template>
-            <template v-else-if="!pulls">
-                <Skeleton shape="rows" />
-            </template>
-            <template v-else-if="!pulls.available">
-                <EmptyState>The pull requests are read through gh, which is not installed or not signed in here.</EmptyState>
-            </template>
-            <template v-else-if="!pulls.rows.length">
-                <EmptyState>No pull request is open.</EmptyState>
-            </template>
-            <template v-else>
-                <template v-for="pull in pulls.rows" :key="pull.number">
-                    <div class="row" data-git-pull>
-                        <a class="name" :href="pull.url" target="_blank" rel="noopener">#{{ pull.number }} {{ pull.title }}</a>
-                        <span class="fact">{{ pull.branch }} by {{ pull.author }}</span>
-                        <span class="fact">{{ reviewLine(pull) }}</span>
-                        <span :class="['fact', {failed: pull.checks_failed}]">{{ checksLine(pull) }}</span>
-                    </div>
-                </template>
-            </template>
-        </div>
-    </section>
+    <ListReaderLayout v-model:chosen="chosen" :items="shown" :list-width="LIST_WIDTH" :place="place" :empty-title="none" pick-line="Choose an item" data-git>
+        <template #top>
+            <PageHeader title="Git" />
+            <Segmented :options="tabs" :value="tab" data-git-tabs @pick="pick" />
+            <FilterBar v-model="filter" v-model:words="words" :fields="fields" :rows="items" :shown="shown.length" placeholder="Search" />
+            <p v-if="failure" class="note" role="alert">{{ failure }}</p>
+            <Btn v-if="more" small data-git-more @click="loadMore">Show more</Btn>
+        </template>
+        <template #empty>
+            <Skeleton v-if="!loaded" shape="rows" />
+            <EmptyState v-else-if="!failure">{{ none }}</EmptyState>
+        </template>
+        <template #meta="{item}">
+            <TimeAgo v-if="item.row.time" class="age" :at="item.row.time" />
+        </template>
+        <template #reader="{item}">
+            <GitReader :item="item" :items="menuOf(item)" @changes="showChanges" />
+        </template>
+    </ListReaderLayout>
 </template>
 
 <style scoped>
-.git {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-    padding: 24px 28px;
-}
-
-.part {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-}
-
-h3 {
+.note {
     margin: 0;
-    font-size: 13px;
-    font-weight: 600;
+    padding: 6px var(--inset);
+    color: var(--text-2);
+    font-size: 12.5px;
 }
 
-.row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 10px;
-    align-items: baseline;
-    width: 100%;
-    font-size: 13px;
-}
-
-.row.current .name {
-    font-weight: 600;
-}
-
-.name,
-.subject {
-    min-width: 0;
-    overflow-wrap: anywhere;
-}
-
-.subject {
-    flex: 1;
-}
-
-.sha,
-.fact {
+.age {
     color: var(--text-3);
     font-size: 12px;
-}
-
-.sha {
-    font-family: var(--font-mono, ui-monospace, monospace);
-}
-
-.fact.failed {
-    color: var(--danger);
+    white-space: nowrap;
 }
 </style>

@@ -2,6 +2,7 @@
 import {computed, nextTick, ref, watch} from "vue";
 import {useOutputPages} from "../composables/outputPages.js";
 import {useSharedNow} from "../composables/now.js";
+import {ago, dated} from "../format/time.js";
 import {useResourceEvents} from "./resourceEvents.js";
 import {peek} from "../route.js";
 import Icon from "../kit/Icon.vue";
@@ -24,6 +25,9 @@ const duration = computed(() => {
     if (seconds < 3600) return `${Math.floor(seconds / 60)} m ${seconds % 60} s`;
     return `${Math.floor(seconds / 3600)} h ${String(Math.floor(seconds / 60) % 60).padStart(2, "0")} m`;
 });
+// when a command started, in the words of every other time of the viewer; a waiting command has not started, and an old row with no start shows none
+const startedAgo = computed(() => (props.run.section === "waiting" || !props.run.started_at ? "" : ago(props.run.started_at, now.value * 1000)));
+const durationTitle = computed(() => (props.run.section === "waiting" ? "Waiting for" : props.run.ended_at ? "Ran for" : "Running for"));
 async function refresh() {
     if (!props.expanded) return;
     const box = output.value;
@@ -60,7 +64,7 @@ useResourceEvents(["output.*"], refresh, (event) => eventAboutRows(event, new Se
             </div>
             <div class="details"><span data-queue-type>{{ type }}</span><template v-if="run.owner_agent_id"><span class="separator">·</span><button type="button" class="link" data-queue-agent @click.stop="peek('agents', run.owner_agent_id)">Agent {{ run.owner_agent_id }}</button></template><template v-else-if="run.is_main"><span class="separator">·</span><span>Main agent</span></template><template v-if="run.task_id"><span class="separator">·</span><button type="button" class="link" data-queue-task @click.stop="peek('tasks', run.task_id)">Task {{ run.task_id }}</button></template><template v-if="run.state === 'failed'"><span class="separator">·</span><span class="failed">Failed, exit {{ run.exit_code }}</span></template></div>
         </div>
-        <div class="drop" :class="{open: expanded}"><div class="drop-inner"><div class="output"><div class="output-heading"><span>Output {{ run.id }}</span><a :href="`?page=processes.output&output=${run.id}&environment=${encodeURIComponent(environment)}`" target="_blank" rel="noopener">Open output window</a></div><pre ref="output" data-queue-output-body @scroll="expanded && pages.loadEarlier($event.target)"><span class="prompt">$ </span>{{ run.line }}<template v-if="lines.length">{{ '\n' + lines.join('\n') }}</template></pre></div></div></div>
+        <div class="drop" :class="{open: expanded}"><div class="drop-inner"><div class="output"><div class="output-heading"><span>Output {{ run.id }}<template v-if="run.task_id"> · Task {{ run.task_id }}</template><template v-if="startedAgo"> · <span class="started" data-queue-started :title="dated(run.started_at)">Started {{ startedAgo }}</span></template><template v-if="duration"> · <span :title="durationTitle" data-queue-duration>{{ duration }}</span></template></span><a :href="`?page=processes.output&output=${run.id}&environment=${encodeURIComponent(environment)}`" target="_blank" rel="noopener">Open output window</a></div><pre ref="output" data-queue-output-body @scroll="expanded && pages.loadEarlier($event.target)"><span class="prompt">$ </span>{{ run.line }}<template v-if="lines.length">{{ '\n' + lines.join('\n') }}</template></pre></div></div></div>
     </div>
 </template>
 <style scoped>

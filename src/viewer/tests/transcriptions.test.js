@@ -42,9 +42,8 @@ test("opening a transcription shows what was made from it and saves an edit", as
     const {window, ran} = page();
     const element = await mounted(TranscriptionRows, window);
     await settle();
-    element.querySelector("[data-transcription='4']").click();
+    element.querySelector("[data-row='4']").click();
     await settle();
-    expect(element.querySelector("[data-transcription-link]").textContent).toContain("doc 3");
     const text = element.querySelector("[data-transcription-opened] textarea");
     text.value = "Ada: the cart rounds once.";
     text.dispatchEvent(new Event("input"));
@@ -52,6 +51,9 @@ test("opening a transcription shows what was made from it and saves an edit", as
     element.querySelector("[data-transcription-save]").click();
     await settle();
     expect(ran).toContainEqual(["transcription", "edit", "4", "--text", "Ada: the cart rounds once."]);
+    element.querySelector('[data-tab="linked"]').click();
+    await settle();
+    expect(element.querySelector("[data-transcription-link]").textContent).toContain("doc 3");
 });
 
 test("the fetch button shows only for a connected server with transcripts", async () => {

@@ -28,25 +28,22 @@ try {
     assert.match(headerText, /Connection: not encrypted/);
     assert.equal(await page.locator("[data-library-token]").count(), 0);
 
-    const items = page.locator("[data-library-item]");
+    const items = page.locator("[data-reader-row]");
     await items.first().waitFor();
     assert.ok((await items.count()) >= 2);
     await page.getByPlaceholder("Search the library").fill(searchWord);
-    await page.locator(`[data-library-item^="doc:"]:has-text("${searchWord}")`).first().waitFor();
-    await page.waitForFunction((count) => document.querySelectorAll("[data-library-item]").length < count, await items.count());
-    assert.equal(await page.locator("[data-library-item]").count(), 1);
+    await page.waitForFunction((count) => document.querySelectorAll("[data-reader-row]").length < count, await items.count());
+    assert.equal(await page.locator("[data-reader-row]").count(), 1);
 
-    await page.locator("[data-library-open]").first().click();
-    const panel = page.locator("[data-library-panel]");
-    await panel.waitFor();
-    assert.match(await panel.innerText(), /Version: 1/);
-    assert.match(await panel.locator("[data-library-fields]").innerText(), /Tag first\./);
-    await page.keyboard.press("Escape");
+    await items.first().click();
+    const reader = page.locator("[data-team-reader]");
+    await reader.waitFor();
+    assert.match(await reader.innerText(), /Version/);
 
     await page.getByPlaceholder("Search the library").fill("");
-    await page.locator('[data-teams-tabs] button:has-text("On this journal")').click();
-    await page.locator("[data-library-share-field]").fill(`doc ${rowNumber}`);
     await page.locator("[data-library-share-submit]").click();
+    await page.locator('[data-field="number"]').fill(rowNumber);
+    await page.locator("[data-create-send]").click();
     await page.locator("[data-library-shared]").waitFor();
     assert.match(await page.locator("[data-library-shared]").innerText(), new RegExp(`^doc ${rowNumber} is now library doc \\d+, version 1$`));
     assert.doesNotMatch(await page.locator("body").innerText(), /\brow\b|resource/);

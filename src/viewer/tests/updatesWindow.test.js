@@ -65,10 +65,11 @@ test("what changed lists the releases and older ones come after the button", asy
     const window = updates({line: "up to date", tag: "v2", is_current: true}, {ok: true, value: {notes: [NOTE], is_last_page: false}});
     const element = await mounted(UpdatesPanel, window);
     expect(element.querySelector("[data-update-note]").textContent).toContain("A new thing");
+    expect(element.querySelectorAll("[data-reader-row]").length).toBe(1);
     window.read = async () => ({ok: true, value: {notes: [{...NOTE, tag: "v1"}], is_last_page: true}});
     element.querySelector("[data-update-older]").click();
     await settle();
-    expect(element.querySelectorAll("[data-update-note]").length).toBe(2);
+    expect(element.querySelectorAll("[data-reader-row]").length).toBe(2);
     expect(element.querySelector("[data-update-older]")).toBeNull();
 });
 

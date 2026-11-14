@@ -52,6 +52,7 @@ PLAN_PROGRESS_SELECT = Select("plans").selecting(
     Aliased(place_count(place_state(ComparisonOperator.UNEQUAL, "cancelled")), "task_count"),
     Aliased(place_count(place_state(ComparisonOperator.EQUAL, "completed")), "completed_count"),
     Aliased(place_count(place_state(ComparisonOperator.EQUAL, "testing")), "testing_count"),
+    Aliased(place_count(place_state(ComparisonOperator.EQUAL, "started")), "started_count"),
     Aliased(zero_fallback(ScalarSubselect(plan_places().selecting(FunctionCall(SqlFunction.MIN, [Column("plan_tasks.phase_position")]))
                                     .matching(IsNull("plan_tasks.closed_at")))), "current_phase"),
     Aliased(ScalarSubselect(plan_places().selecting(FunctionCall(SqlFunction.ROUND, [FunctionCall(SqlFunction.AVG, [Column("tasks.complexity")]), Literal(1)]))
@@ -63,7 +64,7 @@ NEWEST_TASK_CHANGE = ScalarSubselect(plan_places().selecting(FunctionCall(SqlFun
 
 PLAN_CARDS_SELECT = Select("plans").selecting(
     *(Column(f"plans.{name}") for name in ("id", "environment_id", "title", "state")),
-    *(Column(f"plan_progress.{name}") for name in ("task_count", "completed_count", "testing_count", "current_phase", "complexity")),
+    *(Column(f"plan_progress.{name}") for name in ("task_count", "completed_count", "testing_count", "started_count", "current_phase", "complexity")),
     Aliased(FunctionCall(SqlFunction.MAX, [Column("plans.updated_at"), FunctionCall(SqlFunction.COALESCE, [NEWEST_TASK_CHANGE, Column("plans.updated_at")])]),
             "changed_at"),
     Aliased(json_rows(plan_places().joined(PLACE_TASK).joined(ConditionJoin("agents", condition=task_helper_match(), alias="helper"))

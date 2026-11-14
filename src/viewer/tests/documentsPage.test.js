@@ -117,7 +117,7 @@ test("test_menu_has_no_delete: a right click has Open, Open in the inspector, Co
     await settle();
     document.body.querySelector("[data-create-send]").click();
     await settle();
-    expect(ran).toContainEqual(["doc", "settle", "1", "--why", "Done another way"]);
+    expect(ran).toContainEqual(["doc", "close", "1", "--why", "Done another way"]);
 });
 
 test("the documents window stays a list that opens a row in the inspector", async () => {

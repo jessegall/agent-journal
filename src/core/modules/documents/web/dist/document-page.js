@@ -111,13 +111,13 @@ const me = {
   props: { term: { type: String, required: !0 }, id: { type: Number, required: !0 } },
   emits: ["close"],
   setup(e, { emit: s }) {
-    const o = e, u = s, n = R(), l = [{ key: "why", label: "Why it needs no action", required: !0, placeholder: "The change was made another way" }], r = (b) => `journal ${o.term} settle ${o.id} --why "${b.why.trim() || "…"}"`;
+    const o = e, u = s, n = R(), l = [{ key: "why", label: "Why it needs no action", required: !0, placeholder: "The change was made another way" }], r = (b) => `journal ${o.term} close ${o.id} --why "${b.why.trim() || "…"}"`;
     return (b, f) => (i(), w(t(V), {
       title: `Mark this ${t(P)[e.term]} as needing no action`,
       submit: "Mark it",
       fields: l,
       command: r,
-      run: (c) => t(n).run([e.term, "settle", String(e.id), "--why", c.why.trim()]),
+      run: (c) => t(n).run([e.term, "close", String(e.id), "--why", c.why.trim()]),
       onClose: f[0] || (f[0] = (c) => u("close"))
     }, null, 8, ["title", "run"]));
   }

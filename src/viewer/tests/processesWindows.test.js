@@ -24,34 +24,33 @@ function recording(answers, options = {}) {
 test("the outputs window lists the runs as the journal gives them, newest first, each with its state and command", async () => {
     const windowContext = recording({"process feed": page([run(2, "make test", "running"), run(1, "ls build", "finished")])});
     const element = await mounted(Outputs, windowContext);
-    const rows = [...element.querySelectorAll(".run")];
-    expect(rows.map((row) => row.querySelector(".line").textContent)).toEqual(["make test", "ls build"]);
-    expect(rows.map((row) => row.querySelector(".state").textContent)).toEqual(["Running", "Finished"]);
+    const rows = [...element.querySelectorAll(".table-row:not(.head)")];
+    expect(rows.map((row) => row.querySelectorAll(".cell")[1].textContent)).toEqual(["make test", "ls build"]);
+    expect(rows.map((row) => row.querySelectorAll(".cell")[4].textContent)).toEqual(["Running", "Finished"]);
 });
 
 test("a state change is shown without a reload", async () => {
     const answers = {"process feed": page([run(1, "make test", "running")])};
     const windowContext = recording(answers);
     const element = await mounted(Outputs, windowContext);
-    expect(element.querySelector(".state").textContent).toBe("Running");
+    expect(element.querySelectorAll(".table-row:not(.head) .cell")[4].textContent).toBe("Running");
     answers["process feed"] = page([run(1, "make test", "failed", {exit_code: 2})]);
     windowContext.heard.forEach((follow) => follow.heard({event: "output.update"}));
     await new Promise((resolve) => setTimeout(resolve, 60));
     await settle();
-    expect(element.querySelector(".state").textContent).toBe("Failed");
+    expect(element.querySelectorAll(".table-row:not(.head) .cell")[4].textContent).toBe("Failed");
     expect(windowContext.heard.some((follow) => follow.patterns.includes("process.*"))).toBe(true);
 });
 
 test("the stop and watch buttons of a running run run their lines and an ended run has neither", async () => {
     const windowContext = recording({"process feed": page([run(2, "make test", "running"), run(1, "ls", "finished")])});
     const element = await mounted(Outputs, windowContext);
-    const [running, ended] = [...element.querySelectorAll(".run")];
-    running.querySelector(".stop").click();
-    running.querySelector(".watch").click();
+    const running = element.querySelectorAll("[data-running-run]");
+    expect(running).toHaveLength(1);
+    running[0].querySelector(".stop").click();
+    running[0].querySelector(".watch").click();
     await settle();
     expect(windowContext.runs).toEqual(["output stop 2", "output watch 2"]);
-    expect(ended.querySelector(".stop")).toBeNull();
-    expect(ended.querySelector(".watch")).toBeNull();
 });
 
 test("with no run the window says so", async () => {

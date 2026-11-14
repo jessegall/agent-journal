@@ -21,9 +21,9 @@ let reading = 0;
 const items = computed(() => {
     if (!queue.value) return [];
     const sections = [
-        {type: "running", heading: "Running", icon: "start", rows: queue.value.running, empty: "Nothing is running."},
-        {type: "waiting", heading: "Waiting", icon: "clock", rows: queue.value.waiting, empty: "Nothing waits. A command that starts now gets a place at once."},
-        {type: "recent", heading: "Finished", icon: "check", rows: queue.value.recent, empty: "Nothing has run yet."},
+        {type: "running", heading: "Running", icon: "start", rows: queue.value.running, empty: "None"},
+        {type: "waiting", heading: "Waiting", icon: "clock", rows: queue.value.waiting, empty: "None"},
+        {type: "recent", heading: "Finished", icon: "check", rows: queue.value.recent, empty: "None"},
     ];
     return sections.flatMap((section) => [
         {key: `band:${section.type}`, section},
@@ -50,7 +50,7 @@ onMounted(load);
 
 <template>
     <article class="process-queue" data-test-queue>
-        <template v-if="!agent"><p class="lead">Commands from workers wait here for a free place. Reading and editing never wait.</p></template>
+        <template v-if="!agent"><p class="lead">Commands from workers wait here for a free slot. Reading and editing never wait.</p></template>
         <div class="scroll">
             <template v-if="failure"><p class="failure" role="alert" data-resource-failure>{{ failure }}</p></template>
             <template v-if="queue">
@@ -80,7 +80,8 @@ h1 { margin: 0; color: var(--text); font-size: 11.5px; font-weight: 600; letter-
 .scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
 .queue-list { position: relative; border-top: 1px solid var(--border); }
 .sticky-band { position: sticky; top: 0; z-index: 1; }
-.empty { margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--border); background: var(--bg); color: var(--text-3); font-size: 12px; }
+/* an empty section is one command row high: the row's 30 px line and its 1 px rule, so the list does not jump when the first command comes or the last one leaves */
+.empty { display: flex; align-items: center; box-sizing: border-box; height: 31px; margin: 0; padding: 0 14px; border-bottom: 1px solid var(--border); background: var(--bg); color: var(--text-3); font-size: 12px; }
 .failure { padding: 10px 14px; color: var(--danger); font-size: 12px; }
 .older { display: block; width: 100%; padding: 10px 14px; border: 0; background: none; color: var(--text-2); font: inherit; font-size: 12px; cursor: pointer; }
 .older:hover { color: var(--text); }
