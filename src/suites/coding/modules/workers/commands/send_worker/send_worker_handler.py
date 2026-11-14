@@ -92,7 +92,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
         self.check_job(command, worker)
         self.check_session(worker)
         if command.task_ids:
-            self.kept_tasks.check_tasks(command.task_ids, actor.id, worker.id)
+            self.kept_tasks.check_tasks(command.task_ids, actor.id, worker.id, command.takes)
         if command.task_ids and self.worktrees.newest_worktree(worker.id) is None:
             raise Refusal(f"{AgentLabel.labelled(worker).text} has no worktree", "journal worker dispatch <task> starts a new one")
 
@@ -105,7 +105,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
         task_ids = command.task_ids
         self.task_ids = task_ids
         if task_ids:
-            read = self.release.released(self.kept_tasks.read_tasks(task_ids), actor, worker.environment_id)
+            read = self.release.released(self.kept_tasks.read_tasks(task_ids), actor, worker.environment_id, command.takes)
             tasks = self.kept_tasks.checked_cut(worker, task_ids, read)
             if tasks:
                 self.cut(worker, tasks, command, actor)

@@ -18,3 +18,4 @@ class SendWorker(Command[AgentLine], TasksChangedTogether):
     test_commands: tuple[WorkerTestCommandEntry, ...] = ()
     plan_id: int | None = None
     phase_id: int | None = None
+    takes: bool = False
