@@ -38,3 +38,13 @@ def test_a_git_command_that_only_reads_is_a_quick_run(arguments):
 
 def test_the_command_of_arguments_with_only_options_is_empty():
     assert WorktreeGit.subcommand(SimpleNamespace().__dict__.keys() or ["-c", "a=b"]) == ""
+
+
+FOLDER = "/project/.journal/worktrees/development/worker-935"
+
+
+@pytest.mark.parametrize("registered, holds_another", [([], False), ([(FOLDER, "journal/development/worker-935")], False), ([(FOLDER, None)], False), ([(FOLDER, "journal/development/worker-935-2")], True)],
+                         ids=["not registered", "its own branch", "a folder left on a commit", "another branch"])
+def test_a_folder_checked_out_on_no_branch_is_still_its_workers_and_only_another_branch_is_refused(registered, holds_another):
+    worktree = SimpleNamespace(branch="journal/development/worker-935")
+    assert WorktreeGit.holds_another_branch(registered, worktree) is holds_another
