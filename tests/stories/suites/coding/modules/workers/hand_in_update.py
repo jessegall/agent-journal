@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 import os
 
 import pytest
@@ -14,9 +15,9 @@ from tests.stories.suites.coding.modules.workers.test_queue import PROOF, record
 
 
 @pytest.fixture
-def running_delivery(new_story, monkeypatch):
+def running_delivery(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    recording_launch(monkeypatch)
+    recorded_test_launches(story)
     repository = repository_environment(story)
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)

@@ -39,10 +39,10 @@ def worktree_row(worker: StoryWorker) -> dict[str, object]:
 
 
 @pytest.fixture
-def group_worker(new_story, monkeypatch) -> StoryWorker:
+def group_worker(new_story) -> StoryWorker:
     """A worker of a started plan that started the three tasks of phase Build and committed tasks 1 and 2 in an
     interim commit, the first proved with a test; it has proved the last task 3 with a test and not committed it."""
-    worker = worker_with_tasks(new_story, monkeypatch, BUILD_TASKS)
+    worker = worker_with_tasks(new_story, BUILD_TASKS)
     worker.repository.changed(worker.worker.id, "cart.py", CART_CHANGE)
     prove_task(worker, 1, 1, TEST_LINE)
     prove_task(worker, 2, 1)

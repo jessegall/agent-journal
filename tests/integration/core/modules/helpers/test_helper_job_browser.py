@@ -13,10 +13,10 @@ from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 
 
-def test_resumed_helper_shows_its_new_job(played, monkeypatch):
+def test_resumed_helper_shows_its_new_job(played):
     story = played(EndedHelper)
     helper = helper_agent(story)
-    resumable_session(story, helper, monkeypatch)
+    resumable_session(story, helper)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_success(f'helper send {agent_number(story, helper.id)} "Review plan 1093"', actor=story.agent)
     launcher.drain_requests()
@@ -27,10 +27,10 @@ def test_resumed_helper_shows_its_new_job(played, monkeypatch):
 
 
 
-def test_a_title_given_with_a_new_job_replaces_the_title_of_the_helper(played, monkeypatch):
+def test_a_title_given_with_a_new_job_replaces_the_title_of_the_helper(played):
     story = played(EndedHelper)
     helper = helper_agent(story)
-    resumable_session(story, helper, monkeypatch)
+    resumable_session(story, helper)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_success(f'helper send {agent_number(story, helper.id)} "Review plan 1093" --title "Plan review"', actor=story.agent)
     launcher.drain_requests()

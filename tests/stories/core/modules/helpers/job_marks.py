@@ -21,11 +21,11 @@ def test_a_steer_to_a_running_helper_shows_a_steered_mark_and_not_a_started_one(
     story.expect_no_text(MARKS, f"Started {PLANNER_PROFILE.name} . sonnet: {STEERING}")
 
 
-def test_a_next_job_for_an_ended_helper_shows_a_sent_a_job_mark(new_story, monkeypatch):
+def test_a_next_job_for_an_ended_helper_shows_a_sent_a_job_mark(new_story):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
-    resumable_session(story, helper, monkeypatch)
+    resumable_session(story, helper)
     story.expect_success(f'helper send {agent_number(story, helper.id)} "{JOB}"', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()

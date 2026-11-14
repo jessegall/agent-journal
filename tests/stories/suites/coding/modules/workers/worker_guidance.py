@@ -32,19 +32,19 @@ def expect_step(worker, step: str, *status_parts: str) -> str:
 
 
 @pytest.fixture
-def phase_worker(new_story, monkeypatch):
-    return start_planned_worker(new_story, monkeypatch, PHASE_DISPATCH)
+def phase_worker(new_story):
+    return start_planned_worker(new_story, PHASE_DISPATCH)
 
 
 @pytest.fixture
-def plan_worker(new_story, monkeypatch):
-    return start_planned_worker(new_story, monkeypatch, PLAN_DISPATCH)
+def plan_worker(new_story):
+    return start_planned_worker(new_story, PLAN_DISPATCH)
 
 
 @pytest.fixture
-def last_of_phase(new_story, monkeypatch):
+def last_of_phase(new_story):
     """A worker of phase Build that started its three tasks and proved each with a test; nothing is committed."""
-    worker = worker_with_tasks(new_story, monkeypatch, BUILD_TASKS)
+    worker = worker_with_tasks(new_story, BUILD_TASKS)
     for task_id, test_line in ((1, TEST_LINE), (2, SECOND_TEST_LINE), (3, TEST_LINE)):
         prove_task(worker, task_id, 1, test_line)
     return worker
@@ -72,8 +72,8 @@ def test_a_proven_task_of_a_started_plan_is_committed_with_worker_commit_and_tes
     expect_step(plan_worker, "commit", "journal worker commit", "checkpoint")
 
 
-def test_a_proven_task_in_no_plan_is_committed_with_worker_commit_and_tested_on_the_commit(new_story, monkeypatch):
-    worker = unplanned_worker(new_story, monkeypatch)
+def test_a_proven_task_in_no_plan_is_committed_with_worker_commit_and_tested_on_the_commit(new_story):
+    worker = unplanned_worker(new_story)
     worker.prove(TEST_LINE)
     expect_step(worker, "commit", "journal worker commit", "tests it on your commit")
 
@@ -84,8 +84,8 @@ def test_the_run_allowance_follows_its_setting(phase_worker):
     phase_worker.story.expect_text(f"worker status {agent_number(phase_worker.story, phase_worker.worker.id)}", "Own test runs left: 5", actor=phase_worker.story.agent)
 
 
-def test_a_worker_of_a_task_in_no_plan_has_the_same_count_of_its_own_runs(new_story, monkeypatch):
-    worker = unplanned_worker(new_story, monkeypatch)
+def test_a_worker_of_a_task_in_no_plan_has_the_same_count_of_its_own_runs(new_story):
+    worker = unplanned_worker(new_story)
     worker.story.expect_text("worker status", "Own test runs left: 3", actor=worker.worker)
 
 
@@ -106,16 +106,16 @@ def test_an_interim_commit_in_a_started_plan_says_what_status_says(proven):
     expect_voice(proven, outcome.output_text)
 
 
-def test_the_failed_tests_line_outside_a_phase_says_what_status_says(new_story, monkeypatch):
-    worker = unplanned_worker(new_story, monkeypatch)
+def test_the_failed_tests_line_outside_a_phase_says_what_status_says(new_story):
+    worker = unplanned_worker(new_story)
     worker.prove_commit(TEST_LINE)
     worker.story.run_listeners()
     worker.end_tests(1)
     expect_voice(worker, next(line for line in worker.worker_lines() if "tests failed" in line))
 
 
-def test_the_passed_tests_line_of_an_interim_commit_says_what_status_says(new_story, monkeypatch):
-    worker = unplanned_worker_with_tasks(new_story, monkeypatch)
+def test_the_passed_tests_line_of_an_interim_commit_says_what_status_says(new_story):
+    worker = unplanned_worker_with_tasks(new_story)
     prove_task(worker, 1, 1, TEST_LINE)
     worker.story.run(COMMIT, actor=worker.worker)
     worker.story.run_listeners()

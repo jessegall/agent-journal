@@ -27,9 +27,9 @@ def expect_open_undelegated(worker, *task_ids: int) -> None:
 
 
 @pytest.fixture
-def advanced_worker(new_story, monkeypatch):
+def advanced_worker(new_story):
     """A worker of phase Build that started task 2 beside task 1 and committed task 1: task 2 is its started task."""
-    worker = start_planned_worker(new_story, monkeypatch, PHASE_DISPATCH)
+    worker = start_planned_worker(new_story, PHASE_DISPATCH)
     worker.story.run("task start 2", actor=worker.worker)
     worker.prove_commit()
     return worker
@@ -55,9 +55,9 @@ def handoff_worker(advanced_worker, monkeypatch):
 
 
 @pytest.fixture
-def phase_delivered(new_story, monkeypatch):
+def phase_delivered(new_story):
     """A worker of phase Build that started its three tasks, proved each with a test and committed them together."""
-    worker = worker_with_tasks(new_story, monkeypatch, BUILD_TASKS)
+    worker = worker_with_tasks(new_story, BUILD_TASKS)
     for task_id, test_line in ((1, TEST_LINE), (2, SECOND_TEST_LINE), (3, TEST_LINE)):
         prove_task(worker, task_id, 1, test_line)
     worker.story.run(COMMIT, actor=worker.worker)
@@ -65,10 +65,10 @@ def phase_delivered(new_story, monkeypatch):
 
 
 @pytest.fixture
-def ended_during_tests(new_story, monkeypatch):
+def ended_during_tests(new_story):
     """A worker of three tasks in no plan committed them together, the first and the third with a test, and
     its program ended while the tests run."""
-    worker = unplanned_worker_with_tasks(new_story, monkeypatch, BUILD_TASKS)
+    worker = unplanned_worker_with_tasks(new_story, BUILD_TASKS)
     for task_id, test_line in ((1, TEST_LINE), (2, ""), (3, SECOND_TEST_LINE)):
         prove_task(worker, task_id, 1, test_line)
     worker.story.run(COMMIT, actor=worker.worker)
@@ -85,10 +85,10 @@ def test_a_worker_waiting_on_the_tests_of_its_commit_is_not_told_to_go_on(ended_
 
 
 @pytest.fixture
-def ended_during_interim_tests(new_story, monkeypatch):
+def ended_during_interim_tests(new_story):
     """A worker of three tasks in no plan committed the first two, the first with a test, and its program
     ended while that test runs; task 3 is started and has no proof."""
-    worker = unplanned_worker_with_tasks(new_story, monkeypatch, BUILD_TASKS)
+    worker = unplanned_worker_with_tasks(new_story, BUILD_TASKS)
     prove_task(worker, 1, 1, TEST_LINE)
     prove_task(worker, 2, 1)
     worker.story.run(COMMIT, actor=worker.worker)

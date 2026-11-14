@@ -23,8 +23,8 @@ def agents(story) -> list[Agent]:
     return list(story.story_rows(Agent))
 
 
-def test_a_cold_replacement_a_refusal_at_the_kept_limit_and_a_profile_moved_to_another_program_retire_no_agent(cooling, monkeypatch):
-    replaced, _ = with_job(cooling, monkeypatch, SILENT_MINUTES, 40)
+def test_a_cold_replacement_a_refusal_at_the_kept_limit_and_a_profile_moved_to_another_program_retire_no_agent(cooling):
+    replaced, _ = with_job(cooling, SILENT_MINUTES, 40)
     cooling.expect_success(KEPT_LIMIT, actor=cooling.user)
     refusal = refusal_text(cooling, SECOND_HELPER)
     cooling.expect_success(CODEX_SAVE, actor=cooling.user)

@@ -9577,6 +9577,7 @@
         "agent_actor(agent_id: int) -> Actor",
         "close(self) -> None",
         "bind(self, class_type: type[S], replacement: S) -> None",
+        "unbind(self, class_type: type) -> None",
         "replace(self, class_type: type[S], replacement: S) -> None",
         "rebuild(self, class_type: type[S], implementation: type[S] | None) -> None",
         "release_listeners(self) -> None",

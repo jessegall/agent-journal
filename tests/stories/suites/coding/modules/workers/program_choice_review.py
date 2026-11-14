@@ -96,24 +96,24 @@ def started_split_helper(split_story):
     return split_story, helper_id
 
 
-def test_both_plans_reuse_stays_on_the_chosen_program_for_a_helper(started_split_helper, split_viewer, monkeypatch):
+def test_both_plans_reuse_stays_on_the_chosen_program_for_a_helper(started_split_helper, split_viewer):
     story, helper_id = started_split_helper
     story.expect_success(f'agent end {helper_id}', actor=story.user)
     helper = story.row(Agent, helper_id)
-    resumable_session(story, helper, monkeypatch)
+    resumable_session(story, helper)
     set_split(story, 'claude 0,codex 100', viewer=split_viewer)
     next_helper, _ = started(story, f'helper start {RESEARCHER_PROFILE.name} --brief "Read the new queue" --environment main')
     story.expect_text(f'agent show {agent_number(story, next_helper)}', 'program: codex')
     story.expect_rows(next_helper != helper_id)
 
 
-def test_both_plans_reuse_stays_on_the_chosen_program_counts_each_helper_job(split_story, split_viewer, monkeypatch):
+def test_both_plans_reuse_stays_on_the_chosen_program_counts_each_helper_job(split_story, split_viewer):
     story = split_story
     set_split(story, 'claude 100,codex 0', viewer=split_viewer)
     helper_id, _ = started(story)
     story.expect_success(f'agent end {helper_id}', actor=story.user)
     helper = story.row(Agent, helper_id)
-    resumable_session(story, helper, monkeypatch)
+    resumable_session(story, helper)
     launcher = FakeLauncher.accepting(story.home.socket('launcher'))
     story.expect_success(f'helper send {agent_number(story, helper_id)} "Read the next queue"', actor=story.agent)
     story.run_listeners()
@@ -171,12 +171,12 @@ def test_split_with_none_eligible_differs_from_unset(unavailable_split, agent_ro
 
 
 @pytest.fixture
-def outage_helper_story(split_story, monkeypatch):
+def outage_helper_story(split_story):
     story = split_story
     helper_id, _ = started(story)
     story.expect_success(f'agent end {helper_id}', actor=story.user)
     helper = story.row(Agent, helper_id)
-    resumable_session(story, helper, monkeypatch)
+    resumable_session(story, helper)
     _, ends_at = outage(story, 'claude')
     FakeLauncher.accepting(story.home.socket('launcher'))
     return story, helper_id, ends_at

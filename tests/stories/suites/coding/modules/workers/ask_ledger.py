@@ -179,7 +179,7 @@ def test_worker_status_names_the_open_ask_with_its_due_time_and_then_how_it_ende
     case.story.expect_absent("worker status", "open since", actor=case.worker)
 
 
-def test_an_ask_made_with_the_merger_off_starts_no_merger_when_the_merger_is_switched_on_later(merger_disabled_worker, monkeypatch):
+def test_an_ask_made_with_the_merger_off_starts_no_merger_when_the_merger_is_switched_on_later(merger_disabled_worker):
     story = merger_disabled_worker.story
     merger_disabled_worker.post_question()
     story.expect_success(f"setting set {MERGER_ENABLED} true --project", actor=story.user)

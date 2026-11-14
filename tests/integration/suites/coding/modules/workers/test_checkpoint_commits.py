@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.test_queue import recording_launch
 from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 import json
 
@@ -39,10 +40,10 @@ def worktree_row(worker: StoryWorker) -> dict[str, object]:
 
 
 @pytest.fixture
-def group_worker(played, monkeypatch) -> StoryWorker:
+def group_worker(played) -> StoryWorker:
     """A worker of a started plan that started the three tasks of phase Build and committed tasks 1 and 2 in an
     interim commit, the first proved with a test; it has proved the last task 3 with a test and not committed it."""
-    worker = worker_with_tasks(played, monkeypatch, BUILD_TASKS)
+    worker = worker_with_tasks(played, BUILD_TASKS)
     worker.repository.changed(worker.worker.id, "cart.py", CART_CHANGE)
     prove_task(worker, 1, 1, TEST_LINE)
     prove_task(worker, 2, 1)
@@ -66,15 +67,17 @@ def merged_worker(committed_worker) -> StoryWorker:
     return committed_worker
 
 
+# the commit's test launch is built where a bound stand-in does not reach, so this test patches the class itself
 def test_160_a_commit_of_a_task_in_no_plan_starts_its_test_as_before(played, monkeypatch):
-    worker = unplanned_worker(played, monkeypatch)
+    worker = unplanned_worker(played)
+    started = recording_launch(monkeypatch)
     worker.prove_commit(TEST_LINE)
     worker.story.run_listeners()
-    worker.story.expect_rows(len(worker.started) == 1, COMMITTED not in proof_states(worker).values(), detail=f"started: {worker.started}, proofs: {proof_states(worker)}")
+    worker.story.expect_rows(len(started) == 1, COMMITTED not in proof_states(worker).values(), detail=f"started: {started}, proofs: {proof_states(worker)}")
 
 
-def test_162_a_commit_with_a_missing_proof_is_refused_in_a_started_plan_as_outside_one(played, monkeypatch):
-    worker = start_planned_worker(played, monkeypatch, PHASE_DISPATCH)
+def test_162_a_commit_with_a_missing_proof_is_refused_in_a_started_plan_as_outside_one(played):
+    worker = start_planned_worker(played, PHASE_DISPATCH)
     outcome = worker.story.run(COMMIT, actor=worker.worker)
     worker.story.expect_rows(outcome.code != 0, "proof" in outcome.output_text, proof_states(worker) == {}, detail=outcome.output_text)
 
@@ -87,8 +90,8 @@ def test_162_a_commit_with_a_missing_proof_is_refused_in_a_started_plan_as_outsi
 
 
 
-def test_166_a_task_in_no_plan_is_not_merged_before_its_tests_passed(played, monkeypatch):
-    worker = unplanned_worker(played, monkeypatch)
+def test_166_a_task_in_no_plan_is_not_merged_before_its_tests_passed(played):
+    worker = unplanned_worker(played)
     worker.prove(TEST_LINE)
     refused = merge(worker)
     worker.story.expect_rows(refused.code != 0, COMMITTED not in proof_states(worker).values(), detail=refused.output_text)

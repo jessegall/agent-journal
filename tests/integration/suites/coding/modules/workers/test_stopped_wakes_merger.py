@@ -26,7 +26,7 @@ def stop_after_asking_for_help(story) -> None:
 
 
 @pytest.mark.parametrize("stop", [stop_as_resumed, stop_after_asking_for_help])
-def test_a_worker_that_stops_with_tasks_left_wakes_the_merger(two_task_worker, monkeypatch, stop):
+def test_a_worker_that_stops_with_tasks_left_wakes_the_merger(two_task_worker, stop):
     story = two_task_worker
     story.expect_success(MERGER_ON, actor=story.user)
     stop(story)

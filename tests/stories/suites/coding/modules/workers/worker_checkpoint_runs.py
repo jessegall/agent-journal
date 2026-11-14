@@ -18,9 +18,9 @@ PASSED_UNIT_TERMS = "checkpoint of phase 1 passed on your commit"
 PASSED_LINE = "the tests of checkpoint phase Build passed"
 
 
-def plan_worker(new_story, monkeypatch) -> StoryWorker:
+def plan_worker(new_story) -> StoryWorker:
     """A worker given the whole of plan 1, whose phase Build is a checkpoint with a test of its own."""
-    return dispatched_story_worker(planned_story(new_story, build_test=BUILD_TEST), PLAN_DISPATCH, monkeypatch)
+    return dispatched_story_worker(planned_story(new_story, build_test=BUILD_TEST), PLAN_DISPATCH)
 
 
 def worker_reaches(worker: StoryWorker) -> list[dict[str, object]]:
@@ -28,10 +28,10 @@ def worker_reaches(worker: StoryWorker) -> list[dict[str, object]]:
 
 
 @pytest.fixture
-def running_worker_run(new_story, monkeypatch) -> StoryWorker:
+def running_worker_run(new_story) -> StoryWorker:
     """The worker of the whole plan committed tasks 1, 2 and 3, the window of checkpoint phase 1, with a test
     each; the worker run of that window goes."""
-    worker = plan_worker(new_story, monkeypatch)
+    worker = plan_worker(new_story)
     commit_tasks(worker, TEST_LINE, SECOND_TEST_LINE, TEST_LINE)
     return worker
 
@@ -89,8 +89,8 @@ def test_33_35_a_second_run_follows_the_failed_one_and_runs_only_what_failed(run
     worker.story.expect_rows([row["state"] for row in worker_reaches(worker)] == ["failed", "running"], detail=str(worker_reaches(worker)))
 
 
-def test_36_a_window_with_no_test_passes_at_once(new_story, monkeypatch):
-    worker = dispatched_story_worker(planned_story(new_story), PLAN_DISPATCH, monkeypatch)
+def test_36_a_window_with_no_test_passes_at_once(new_story):
+    worker = dispatched_story_worker(planned_story(new_story), PLAN_DISPATCH)
     worker.story.run('phase edit 1 --checkpoint', actor=worker.story.user)
     commit_tasks(worker, "", "", "")
     worker.story.expect_rows([row["state"] for row in worker_reaches(worker)] == ["passed"], detail=str(rows(worker, REACHES)))
@@ -103,7 +103,7 @@ def test_37_the_test_checkout_is_made_if_it_is_missing(running_worker_run):
 
 
 def test_38_a_run_that_cannot_start_does_not_block_the_worker(new_story, monkeypatch):
-    worker = plan_worker(new_story, monkeypatch)
+    worker = plan_worker(new_story)
     monkeypatch.setattr(type(worker.story.container.get(WorktreeGit)), "commit_checkout", unstartable_checkout)
     commit_tasks(worker, TEST_LINE, SECOND_TEST_LINE, TEST_LINE)
     worker.story.expect_rows(worker_reaches(worker)[0]["state"] == "failed", WORKER_RUN_UNSTARTED.nudge(phase=1).text in worker.worker_lines(),
@@ -120,9 +120,9 @@ def test_40_a_task_after_the_checkpoint_is_still_refused_to_everyone_else_as_hel
     worker.story.expect_refusal('worker dispatch --test-command python=pytest --model sonnet --fresh "second" 4', "task 4 is held by worker", actor=worker.story.agent)
 
 
-def test_41_a_shared_window_keeps_the_branch_run(new_story, monkeypatch):
+def test_41_a_shared_window_keeps_the_branch_run(new_story):
     story = planned_story(new_story, build_test=BUILD_TEST)
-    worker = dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1 2", monkeypatch)
+    worker = dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1 2")
     commit_tasks(worker, TEST_LINE, SECOND_TEST_LINE)
     worker.story.expect_rows(worker_reaches(worker) == [], detail=str(rows(worker, REACHES)))
 
@@ -136,9 +136,9 @@ def test_42_the_merge_records_the_passed_windows_without_a_new_run(running_worke
                              detail=f"{run_lines(worker)} / {rows(worker, PASSES)}")
 
 
-def last_window_worker(new_story, monkeypatch) -> StoryWorker:
+def last_window_worker(new_story) -> StoryWorker:
     """The worker of the whole plan committed all four tasks; both windows ran and passed on its commit."""
-    worker = plan_worker(new_story, monkeypatch)
+    worker = plan_worker(new_story)
     commit_tasks(worker, TEST_LINE, SECOND_TEST_LINE, TEST_LINE, SECOND_TEST_LINE)
     worker.end_all_tests()
     return worker
@@ -148,15 +148,15 @@ def branch_runs(worker: StoryWorker) -> list[int]:
     return [row["phase_id"] for row in rows(worker, REACHES) if row["source"] == "merged"]
 
 
-def test_43_the_last_window_does_not_run_on_the_branch_when_the_branch_did_not_move(new_story, monkeypatch):
-    worker = last_window_worker(new_story, monkeypatch)
+def test_43_the_last_window_does_not_run_on_the_branch_when_the_branch_did_not_move(new_story):
+    worker = last_window_worker(new_story)
     merge(worker)
     worker.story.expect_rows(branch_runs(worker) == [], detail=str(rows(worker, REACHES)))
 
 
 @pytest.mark.real_git
-def test_43_the_last_window_runs_on_the_branch_when_the_branch_moved(new_story, monkeypatch):
-    worker = last_window_worker(new_story, monkeypatch)
+def test_43_the_last_window_runs_on_the_branch_when_the_branch_moved(new_story):
+    worker = last_window_worker(new_story)
     worker.repository.checkout(ENVIRONMENT_BRANCH)
     worker.repository.committed("readme.md", "moved\n", "The branch moves")
     merge(worker)

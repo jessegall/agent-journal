@@ -9,15 +9,15 @@ BLOCK_REASON = "the tax table is not there"
 
 
 @pytest.fixture
-def task_worker(new_story, monkeypatch) -> StoryWorker:
+def task_worker(new_story) -> StoryWorker:
     """A worker of phase Build that holds task 1 started; tasks 2 and 3 are its next ones."""
-    return worker_with_tasks(new_story, monkeypatch, 1)
+    return worker_with_tasks(new_story, 1)
 
 
 @pytest.fixture
-def two_tasks(new_story, monkeypatch) -> StoryWorker:
+def two_tasks(new_story) -> StoryWorker:
     """A worker of phase Build that holds tasks 1 and 2 started, task 1 the one it works on."""
-    return worker_with_tasks(new_story, monkeypatch, 2)
+    return worker_with_tasks(new_story, 2)
 
 
 @pytest.fixture

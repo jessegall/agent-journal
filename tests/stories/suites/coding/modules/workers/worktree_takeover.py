@@ -14,8 +14,8 @@ def open_worktree_owner(worker: StoryWorker) -> int:
     return next(row["session_agent_id"] for row in listed["rows"] if row["state"] != "removed")
 
 
-def test_a_new_worker_takes_over_the_open_worktree_the_tasks_and_the_plan_of_a_stopped_worker(new_story, monkeypatch):
-    worker = start_planned_worker(new_story, monkeypatch)
+def test_a_new_worker_takes_over_the_open_worktree_the_tasks_and_the_plan_of_a_stopped_worker(new_story):
+    worker = start_planned_worker(new_story)
     commit_tasks_singly(worker, tuple([1]))
     worker.story.run("task start 2", actor=worker.worker)
     worker.story.end_session(worker.worker)
@@ -27,6 +27,6 @@ def test_a_new_worker_takes_over_the_open_worktree_the_tasks_and_the_plan_of_a_s
     worker.story.expect_text(f"worker status {agent_number(worker.story, new_id)}", "Unit: plan 1", actor=worker.story.agent)
 
 
-def test_a_running_worker_is_not_taken_over(new_story, monkeypatch):
-    worker = start_planned_worker(new_story, monkeypatch)
+def test_a_running_worker_is_not_taken_over(new_story):
+    worker = start_planned_worker(new_story)
     worker.story.expect_refusal(TAKEOVER.format(number=agent_number(worker.story, worker.worker.id)), "is still running", actor=worker.story.agent)

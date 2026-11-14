@@ -1,3 +1,5 @@
+from engine.container.container import Container
+from dataclasses import replace
 from collections.abc import Callable, Generator
 from pathlib import Path
 
@@ -52,6 +54,14 @@ def upgraded(journal_with) -> UpgradedJournal:
 
 # makes journals copied from a story fixture's template, built once and cached as the stories' are, with the agent and
 # user the fixture made: played(StartedTaskBuilder), or played(CheckpointPlan, "tests.samples:NotesModule")
+
+# the setup of each container built from a played home: every stand-in the test bound, bound again
+def bound_in(replacements: dict[type, object]) -> Callable[[Container], None]:
+    def setup(container: Container) -> None:
+        for kind, instance in replacements.items():
+            container.bind(kind, instance)
+    return setup
+
 @pytest.fixture
 def played(templates: TemplateDatabases, tmp_path: Path) -> Generator[Callable[..., FixtureJournal]]:
     opened: list[IntegrationJournal] = []
@@ -61,12 +71,15 @@ def played(templates: TemplateDatabases, tmp_path: Path) -> Generator[Callable[.
         modules = arguments if fixture is not None else arguments[1:]
         fixture = fixture if fixture is not None else arguments[0]
         home, state = templates.fixture_home(tmp_path / f"played-{len(opened)}", fixture, tuple(modules))
+        # what the test binds in place of a part of the outside world reaches every container built from this home
+        replacements: dict[type, object] = {}
+        home = replace(home, container_setup=bound_in(replacements))
         journal = IntegrationJournal(home)
         opened.append(journal)
         # the fixture's rows were written on the story clock, so the journal goes on from that same moment
         clock = ManualClock()
         journal.with_clock(clock)
-        return FixtureJournal(journal, clock, state.agent, state.user)
+        return FixtureJournal(journal, clock, replacements, state.agent, state.user)
 
     yield make
     for journal in opened:

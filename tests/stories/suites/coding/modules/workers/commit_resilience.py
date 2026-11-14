@@ -29,15 +29,15 @@ def branch_tip(worker: StoryWorker) -> str:
 
 
 @pytest.fixture
-def two_proved(new_story, monkeypatch) -> StoryWorker:
+def two_proved(new_story) -> StoryWorker:
     """A worker that holds tasks 1 and 2 started, in no plan, and proved each with a test."""
-    return prove_first_two(unplanned_worker_with_tasks(new_story, monkeypatch))
+    return prove_first_two(unplanned_worker_with_tasks(new_story))
 
 
 @pytest.fixture
-def two_of_three_proved(new_story, monkeypatch) -> StoryWorker:
+def two_of_three_proved(new_story) -> StoryWorker:
     """A worker that holds tasks 1, 2 and 3 started, in no plan, and proved tasks 1 and 2 with a test each."""
-    return prove_first_two(unplanned_worker_with_tasks(new_story, monkeypatch, THREE_TASKS))
+    return prove_first_two(unplanned_worker_with_tasks(new_story, THREE_TASKS))
 
 
 def test_60_a_second_commit_right_after_the_first_finds_nothing_staged_and_makes_no_second_git_commit(two_of_three_proved):

@@ -24,7 +24,7 @@ TEST_ROWS_REASON = "the test reads every row it checks"
 
 
 @pytest.fixture
-def waiting_worker(new_story, monkeypatch):
+def waiting_worker(new_story):
     worker = asking_worker(new_story(fixture=OpenTaskOrchestrator))
     return worker
 
@@ -114,7 +114,7 @@ def test_a_line_the_merger_read_and_did_nothing_about_comes_back(merger_that_rea
 
 
 @pytest.fixture
-def merger_with_ended_main(new_story, monkeypatch):
+def merger_with_ended_main(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     case = merger_case(story, repository_environment(story))
     story.expect_success(f"agent end {story.agent.id}", actor=story.agent)

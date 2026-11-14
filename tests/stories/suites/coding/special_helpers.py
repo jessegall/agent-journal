@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
@@ -30,10 +31,10 @@ def read_merger(story):
     return next(iter(story.story_rows(Agent, profile=f"{MERGER_PROFILE.name}")), None)
 
 
-def merger_delivery(story, monkeypatch):
+def merger_delivery(story):
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     repository = repository_environment(story)
-    recording_launch(monkeypatch)
+    recorded_test_launches(story)
     worker = dispatched_worker(story)
     repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
     story.expect_success(PROOF, actor=worker)
@@ -48,10 +49,10 @@ def merger_delivery(story, monkeypatch):
     return worker
 
 
-def test_s05_the_merger_takes_in_workers_while_ordinary_helpers_are_off(new_story, monkeypatch):
+def test_s05_the_merger_takes_in_workers_while_ordinary_helpers_are_off(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     story.run(f"setting set {HELPERS} off --project")
-    worker = merger_delivery(story, monkeypatch)
+    worker = merger_delivery(story)
     merger = read_merger(story)
     story.expect_rows(merger is not None)
     story.expect_text("merger next", agent_label(story, worker.id), actor=Actor(merger.id, ActorType.AGENT))
@@ -68,9 +69,9 @@ def test_s07_the_designer_starts_only_once_a_person_turns_it_on_and_reads_withou
     story.expect_text(f"agent show {agent_number(story, helper_id)}", f"profile: {DESIGNER_PROFILE.name}", "access: read", actor=story.user)
 
 
-def test_s48_the_merger_keeps_its_claim_after_the_merger_setting_is_turned_off(new_story, monkeypatch):
+def test_s48_the_merger_keeps_its_claim_after_the_merger_setting_is_turned_off(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    worker = merger_delivery(story, monkeypatch)
+    worker = merger_delivery(story)
     merger = read_merger(story)
     story.expect_success(f"setting set {MERGER} off --project", actor=story.user)
     expect_value(read_merger(story).id, merger.id)

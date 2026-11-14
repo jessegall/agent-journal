@@ -34,27 +34,27 @@ def states(worker: StoryWorker) -> list[ProofState]:
 
 
 @pytest.fixture
-def two_proved_unplanned(new_story, monkeypatch) -> StoryWorker:
+def two_proved_unplanned(new_story) -> StoryWorker:
     """A worker that holds tasks 1 and 2 started, in no plan, and proved the one point of each with a test."""
-    return prove_pair(unplanned_worker_with_tasks(new_story, monkeypatch))
+    return prove_pair(unplanned_worker_with_tasks(new_story))
 
 
 @pytest.fixture
-def two_proved(new_story, monkeypatch) -> StoryWorker:
+def two_proved(new_story) -> StoryWorker:
     """A worker of phase Build that holds tasks 1 and 2 started and proved the one point of each with a test."""
-    return prove_pair(worker_with_tasks(new_story, monkeypatch, 2))
+    return prove_pair(worker_with_tasks(new_story, 2))
 
 
 @pytest.fixture
-def two_started(new_story, monkeypatch) -> StoryWorker:
+def two_started(new_story) -> StoryWorker:
     """A worker of phase Build that holds tasks 1 and 2 started and proved nothing."""
-    return worker_with_tasks(new_story, monkeypatch, 2)
+    return worker_with_tasks(new_story, 2)
 
 
 @pytest.fixture
-def three_started(new_story, monkeypatch) -> StoryWorker:
+def three_started(new_story) -> StoryWorker:
     """A worker of phase Build that holds tasks 1, 2 and 3 started; task 2 has four points and task 3 three."""
-    worker = worker_with_tasks(new_story, monkeypatch, 3)
+    worker = worker_with_tasks(new_story, 3)
     worker.story.expect_success(f'task edit 2 --brief "{FOUR_POINT_BRIEF}"', actor=worker.story.agent)
     worker.story.expect_success(f'task edit 3 --brief "{THREE_POINT_BRIEF}"', actor=worker.story.agent)
     return worker

@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
@@ -11,9 +12,9 @@ from tests.stories.suites.coding.modules.workers.test_queue import ended, record
 
 
 
-def test_a_second_test_round_of_the_same_task_gets_its_own_mark(new_story, monkeypatch):
+def test_a_second_test_round_of_the_same_task_gets_its_own_mark(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story)
     story.expect_success('task edit 1 --brief "- Cart\n- Tax"', actor=story.agent)
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)

@@ -23,9 +23,9 @@ MEMORY_TEXT = "The cart rounds each line before it adds them"
 
 
 @pytest.fixture
-def rotating(new_story, monkeypatch):
+def rotating(new_story):
     story = story_with_profile_file(new_story, EndedEachLaunchHelper)
-    resumable_session(story, helper_agent(story), monkeypatch)
+    resumable_session(story, helper_agent(story))
     return story
 
 

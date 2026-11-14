@@ -45,11 +45,11 @@ def test_a_helper_started_on_codex_while_claude_is_locked_down_starts(new_story)
     story.expect_rows(helper_count(story) == 1, helper_agent(story).program == "codex", len(launcher.requests) == 1)
 
 
-def test_a_send_to_an_ended_kept_helper_is_refused_with_the_reason_and_the_same_job_is_sent_once_the_limit_is_lifted(new_story, monkeypatch):
+def test_a_send_to_an_ended_kept_helper_is_refused_with_the_reason_and_the_same_job_is_sent_once_the_limit_is_lifted(new_story):
     story = lockdown_story(new_story, fixture=LimitedEndedHelper)
     helper = helper_agent(story)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
-    resumable_session(story, helper, monkeypatch)
+    resumable_session(story, helper)
     report(story, 55)
     story.expect_refusal(f'helper send {agent_number(story, helper.id)} "{JOB}"', REFUSAL, actor=story.agent)
     story.run_listeners()

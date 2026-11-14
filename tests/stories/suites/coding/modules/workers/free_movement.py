@@ -14,20 +14,20 @@ SEVERAL_TASKS = 55
 
 
 @pytest.fixture
-def task_worker(new_story, monkeypatch) -> StoryWorker:
+def task_worker(new_story) -> StoryWorker:
     """A worker of phase Build that holds task 1 started; tasks 2 and 3 of the phase are open, and task 4 is the
     one task of phase Ship."""
-    return worker_with_tasks(new_story, monkeypatch, 1)
+    return worker_with_tasks(new_story, 1)
 
 
 @pytest.fixture
-def two_tasks(new_story, monkeypatch) -> StoryWorker:
+def two_tasks(new_story) -> StoryWorker:
     """A worker of phase Build that holds tasks 1 and 2 started; task 3 of the phase is open."""
-    return worker_with_tasks(new_story, monkeypatch, 2)
+    return worker_with_tasks(new_story, 2)
 
 
 @pytest.fixture
-def after_a_checkpoint(new_story, monkeypatch) -> StoryWorker:
+def after_a_checkpoint(new_story) -> StoryWorker:
     """Plan 1 has a third phase, Later, with task 5; phase Ship is a checkpoint that has not passed. A worker of
     the whole plan holds task 1 started."""
     story = planned_story(new_story, approve=False)
@@ -35,7 +35,7 @@ def after_a_checkpoint(new_story, monkeypatch) -> StoryWorker:
     story.run('phase make --plan 1 "Later"')
     story.run('task make "Clean up" --phase 3 --environment main')
     approve_plan(story)
-    return dispatched_story_worker(story, PLAN_DISPATCH, monkeypatch)
+    return dispatched_story_worker(story, PLAN_DISPATCH)
 
 
 def startable_ids(worker: StoryWorker) -> list[int]:

@@ -16,7 +16,6 @@ from suites.coding.modules.workers.support.worker_test_launch import WorkerTestL
 
 
 
-REAL_WORKER_TEST_START_WAITED = WorkerTestLaunch.start_waited
 PYTHON = "--test-command python=pytest"
 VITE = '--test-command "vite=npx vitest run"'
 GOLANG = '--test-command "go-journal=go -C tools/journal test -count=1"'
@@ -38,31 +37,31 @@ def task_story(new_story):
 
 
 @pytest.fixture
-def worker_with_commands(task_story, monkeypatch):
-    return dispatched_story_worker(task_story, COMMANDS_DISPATCH, monkeypatch)
+def worker_with_commands(task_story):
+    return dispatched_story_worker(task_story, COMMANDS_DISPATCH)
 
 
 @pytest.fixture
 def runner_starts(worker_with_commands, monkeypatch):
     """Every start of the real runner, by the real launch that a dispatched story worker otherwise has faked."""
     starts = []
-    monkeypatch.setattr(WorkerTestLaunch, "start_waited", REAL_WORKER_TEST_START_WAITED)
+    worker_with_commands.story.unbind(WorkerTestLaunch)
     monkeypatch.setattr(RunnerBinary, "is_installed", lambda _runner: True)
     monkeypatch.setattr(subprocess, "Popen", lambda command, **options: starts.append((command, options)))
     return starts
 
 
 @pytest.fixture
-def worker_without_commands(task_story, monkeypatch):
+def worker_without_commands(task_story):
     task_story.run('task make "Tax" --brief "The tax" --environment main', actor=task_story.agent)
-    return person_dispatched_worker(task_story, monkeypatch)
+    return person_dispatched_worker(task_story)
 
 
-def person_dispatched_worker(story, monkeypatch):
+def person_dispatched_worker(story):
     agent = story.agent
     story.agent = story.user
     try:
-        return dispatched_story_worker(story, PERSON_DISPATCH, monkeypatch)
+        return dispatched_story_worker(story, PERSON_DISPATCH)
     finally:
         story.agent = agent
 
@@ -142,8 +141,8 @@ def test_an_argument_cannot_change_the_program(worker_with_commands, test_argume
 
 
 @pytest.fixture
-def phase_worker(new_story, monkeypatch):
-    return start_planned_worker(new_story, monkeypatch, PHASE_DISPATCH)
+def phase_worker(new_story):
+    return start_planned_worker(new_story, PHASE_DISPATCH)
 
 
 def worker_test_hook(worker, *test_arguments):

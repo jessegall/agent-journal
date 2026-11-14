@@ -7,13 +7,13 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import PLAN
 EXTRA_TASK_COUNT = 56
 
 
-def test_a_unit_of_sixty_tasks_is_worked_under_the_read_limit(new_story, monkeypatch):
+def test_a_unit_of_sixty_tasks_is_worked_under_the_read_limit(new_story):
     story = planned_story(new_story, approve=False)
     for place in range(EXTRA_TASK_COUNT):
         task_id = story.new_row_id(f'task make "Receipt {place}" --environment main')
         story.run(f"phase place {task_id} --phase 1")
     approve_plan(story)
-    worker = dispatched_story_worker(story, PLAN_DISPATCH, monkeypatch)
+    worker = dispatched_story_worker(story, PLAN_DISPATCH)
     worker.story.expect_text("worker status", "Unit: plan 1", actor=worker.worker)
     commit_tasks_singly(worker, tuple([1]))
     worker.story.expect_success(REQUEST_MERGE, actor=worker.worker)

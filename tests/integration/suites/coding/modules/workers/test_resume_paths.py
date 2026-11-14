@@ -22,7 +22,7 @@ def test_555_a_worker_and_a_helper_that_ended_are_started_again_on_the_same_path
     story.run_listeners()
     helper = helper_agent(story)
     story.expect_success(f"agent end {helper.id}", actor=story.user)
-    resumable_session(story, helper, monkeypatch)
+    resumable_session(story, helper)
     story.expect_success(f'helper send {agent_number(story, helper.id)} "{JOB}"', actor=story.agent)
     story.run_listeners()
     starts = {request["agent_id"]: set(request) for request in launcher.starts}

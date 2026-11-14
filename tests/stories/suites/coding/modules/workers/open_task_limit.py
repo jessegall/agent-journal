@@ -13,21 +13,21 @@ SIX_BUILD_TASKS = 6
 
 
 @pytest.fixture
-def task_worker(new_story, monkeypatch) -> StoryWorker:
+def task_worker(new_story) -> StoryWorker:
     """A worker of phase Build that holds task 1 started; tasks 2 and 3 are its next ones."""
-    return worker_with_tasks(new_story, monkeypatch, 1)
+    return worker_with_tasks(new_story, 1)
 
 
 @pytest.fixture
-def three_tasks(new_story, monkeypatch) -> StoryWorker:
+def three_tasks(new_story) -> StoryWorker:
     """A worker of a phase Build of six tasks that holds tasks 1, 2 and 3 started."""
-    return worker_with_tasks(new_story, monkeypatch, 3, SIX_BUILD_TASKS)
+    return worker_with_tasks(new_story, 3, SIX_BUILD_TASKS)
 
 
 @pytest.fixture
-def five_tasks(new_story, monkeypatch) -> StoryWorker:
+def five_tasks(new_story) -> StoryWorker:
     """A worker of a phase Build of six tasks that holds tasks 1, 2, 3, 5 and 6 started; task 7 is open."""
-    return worker_with_tasks(new_story, monkeypatch, 5, SIX_BUILD_TASKS)
+    return worker_with_tasks(new_story, 5, SIX_BUILD_TASKS)
 
 
 def started_ids(worker: StoryWorker) -> list[int]:

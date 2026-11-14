@@ -10,8 +10,8 @@ RULE = "workers.phase-tests"
 
 
 @pytest.fixture
-def planned_worker(new_story, monkeypatch):
-    worker = start_planned_worker(new_story, monkeypatch)
+def planned_worker(new_story):
+    worker = start_planned_worker(new_story)
     worker.story.expect_success(f"setting set {WORKER_PHASE_TEST_RUNS} 0 --environment main", actor=worker.story.user)
     return worker
 
@@ -33,8 +33,8 @@ def failed_commit(worker) -> None:
     worker.end_tests(1)
 
 
-def test_a_worker_of_an_unplanned_task_with_failed_tests_runs_a_test_without_spending_its_count(new_story, monkeypatch):
-    worker = unplanned_worker(new_story, monkeypatch)
+def test_a_worker_of_an_unplanned_task_with_failed_tests_runs_a_test_without_spending_its_count(new_story):
+    worker = unplanned_worker(new_story)
     failed_commit(worker)
     worker.story.expect_success(f"setting set {WORKER_PHASE_TEST_RUNS} 0 --environment main", actor=worker.story.user)
     worker.story.expect_rows("Point: fix" in worker.status(), detail=worker.status())

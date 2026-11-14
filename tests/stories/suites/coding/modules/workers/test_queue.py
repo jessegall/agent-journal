@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 from tests.stories.core.support.agent_labels import agent_number
 from suites.coding.modules.workers.models.merger_line import MergerLine
@@ -40,9 +41,9 @@ def recording_launch(monkeypatch) -> list[int]:
     return started
 
 
-def queued_story(new_story, monkeypatch):
+def queued_story(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story)
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
@@ -58,9 +59,9 @@ def ended(story, process_id: int, code: int) -> None:
     story.run_listeners()
 
 
-def test_a_proof_refuses_a_test_with_a_pipe_or_a_redirect(new_story, monkeypatch):
+def test_a_proof_refuses_a_test_with_a_pipe_or_a_redirect(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    recording_launch(monkeypatch)
+    recorded_test_launches(story)
     repository_environment(story)
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     story.expect_refusal(PIPED_PROOF, "without a pipe, a redirect or a reading flag", actor=worker)
@@ -68,8 +69,8 @@ def test_a_proof_refuses_a_test_with_a_pipe_or_a_redirect(new_story, monkeypatch
     story.expect_refusal(TAILED_PROOF, "without a pipe, a redirect or a reading flag", actor=worker)
 
 
-def test_the_last_delivery_queues_the_tests_and_the_journal_starts_them(new_story, monkeypatch):
-    story, _, worker, started = queued_story(new_story, monkeypatch)
+def test_the_last_delivery_queues_the_tests_and_the_journal_starts_them(new_story):
+    story, _, worker, started = queued_story(new_story)
     expect_answers(started, 1)
     story.expect_text("proof show 1", "state: running", "test_command: pytest tests/cart.py", actor=story.agent)
     expect_marks_text(story, "queued")
@@ -79,8 +80,8 @@ def test_the_last_delivery_queues_the_tests_and_the_journal_starts_them(new_stor
     story.expect_rows(queue["running"][0]["owner_agent_id"] == worker.id, queue["running"][0]["task_id"] == 1)
 
 
-def test_all_tests_passing_checks_the_proofs_and_tells_the_main_agent_and_the_merge_goes_through(new_story, monkeypatch):
-    story, repository, worker, started = queued_story(new_story, monkeypatch)
+def test_all_tests_passing_checks_the_proofs_and_tells_the_main_agent_and_the_merge_goes_through(new_story):
+    story, repository, worker, started = queued_story(new_story)
     story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
     ended(story, started[0], 0)
     story.expect_text("proof show 1", "state: checked", actor=story.agent)
@@ -93,8 +94,8 @@ def test_all_tests_passing_checks_the_proofs_and_tells_the_main_agent_and_the_me
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", CART_CHANGE)
 
 
-def test_a_failed_test_goes_back_to_the_worker_and_its_next_delivery_runs_it_again(new_story, monkeypatch):
-    story, repository, worker, started = queued_story(new_story, monkeypatch)
+def test_a_failed_test_goes_back_to_the_worker_and_its_next_delivery_runs_it_again(new_story):
+    story, repository, worker, started = queued_story(new_story)
     ended(story, started[0], 1)
     story.expect_text("proof show 1", "state: short", actor=story.agent)
     story.expect_text(f"agent-line list --agent {worker.id}", f"Your tests failed, output {started[0]}")
@@ -108,8 +109,8 @@ def test_a_failed_test_goes_back_to_the_worker_and_its_next_delivery_runs_it_aga
 
 
 
-def test_an_orphaned_proof_returns_to_the_worker_and_runs_again_at_delivery(new_story, monkeypatch):
-    story, _, worker, started = queued_story(new_story, monkeypatch)
+def test_an_orphaned_proof_returns_to_the_worker_and_runs_again_at_delivery(new_story):
+    story, _, worker, started = queued_story(new_story)
     orphaned_process_id = started[0]
     story.run_command(OrphanProcess(orphaned_process_id), Actor.core(), 1)
     story.run_listeners()
@@ -126,9 +127,9 @@ def test_an_orphaned_proof_returns_to_the_worker_and_runs_again_at_delivery(new_
     story.expect_text("proof show 1", "state: checked", actor=story.agent)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
 
-def mixed_proof_story(new_story, monkeypatch):
+def mixed_proof_story(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story)
     story.expect_success('task edit 1 --brief "- the total\n- the tax"', actor=story.agent)
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
@@ -140,8 +141,8 @@ def mixed_proof_story(new_story, monkeypatch):
     return story, repository, worker, started
 
 
-def test_passed_tests_with_a_proof_with_no_test_ask_for_the_check_not_the_merge(new_story, monkeypatch):
-    story, repository, worker, started = mixed_proof_story(new_story, monkeypatch)
+def test_passed_tests_with_a_proof_with_no_test_ask_for_the_check_not_the_merge(new_story):
+    story, repository, worker, started = mixed_proof_story(new_story)
     ended(story, started[0], 0)
     lines = story.run(f"agent-line list --agent {story.agent.id}")
     lines.expect_text(PROOF_CHECK.nudge(worker=agent_number(story, worker.id), task=1, proofs="2").text)
@@ -154,15 +155,15 @@ def test_passed_tests_with_a_proof_with_no_test_ask_for_the_check_not_the_merge(
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
 
 
-def test_a_task_with_an_unchecked_proof_stays_in_testing_after_its_tests_pass(new_story, monkeypatch):
-    story, _, _, started = mixed_proof_story(new_story, monkeypatch)
+def test_a_task_with_an_unchecked_proof_stays_in_testing_after_its_tests_pass(new_story):
+    story, _, _, started = mixed_proof_story(new_story)
     ended(story, started[0], 0)
     story.expect_text("task show 1", "state: testing", actor=story.agent)
 
 
-def test_a_proof_with_no_test_still_waits_for_the_main_agents_check(new_story, monkeypatch):
+def test_a_proof_with_no_test_still_waits_for_the_main_agents_check(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story)
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
@@ -173,9 +174,9 @@ def test_a_proof_with_no_test_still_waits_for_the_main_agents_check(new_story, m
     story.expect_text("proof show 1", "state: shown", actor=story.agent)
 
 
-def test_picked_tests_run_after_proof_tests_on_the_rebased_worktree(new_story, monkeypatch):
+def test_picked_tests_run_after_proof_tests_on_the_rebased_worktree(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story)
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("pick.py", "import sys\nfrom pathlib import Path\nassert 'cart.py' in sys.argv\nassert Path('base.txt').read_text() == 'rebased\\n'\nprint('tests/other test.py')\n", "Picker")
@@ -208,9 +209,9 @@ def run_test_process(story, process_id):
     ended(story, process_id, completed.returncode)
 
 
-def affected_test_story(new_story, monkeypatch):
+def affected_test_story(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story)
     story.expect_success(f'setting set {AFFECTED_TESTS_COMMAND} "python3 pick.py" --environment main')
     story.expect_success(f'setting set {PROJECT_TEST_COMMAND} "python3 -m pytest -q" --environment main')
@@ -223,16 +224,16 @@ def affected_test_story(new_story, monkeypatch):
     return story, repository, worker, started
 
 
-def test_a_failed_picker_returns_the_work_with_its_output(new_story, monkeypatch):
-    story, _, worker, started = affected_test_story(new_story, monkeypatch)
+def test_a_failed_picker_returns_the_work_with_its_output(new_story):
+    story, _, worker, started = affected_test_story(new_story)
     ended(story, started[1], 1)
     story.expect_text("worker-worktree show 1", "state: cut", actor=story.agent)
     story.expect_text("task show 1", "state: started", actor=story.agent)
     story.expect_text(f"agent-line list --agent {worker.id}", f"Your tests failed, output {started[1]}")
 
 
-def test_a_failed_picked_test_returns_the_work_with_its_output(new_story, monkeypatch):
-    story, _, worker, started = affected_test_story(new_story, monkeypatch)
+def test_a_failed_picked_test_returns_the_work_with_its_output(new_story):
+    story, _, worker, started = affected_test_story(new_story)
     story.step("run printed", started[1], 1, "tests/other.py\n")
     ended(story, started[1], 0)
     ended(story, started[2], 1)
@@ -241,8 +242,8 @@ def test_a_failed_picked_test_returns_the_work_with_its_output(new_story, monkey
     story.expect_text(f"agent-line list --agent {worker.id}", f"Your tests failed, output {started[2]}")
 
 
-def test_a_failed_picker_runs_again_at_the_next_hand_in(new_story, monkeypatch):
-    story, repository, worker, started = affected_test_story(new_story, monkeypatch)
+def test_a_failed_picker_runs_again_at_the_next_hand_in(new_story):
+    story, repository, worker, started = affected_test_story(new_story)
     ended(story, started[1], 1)
     repository.changed(worker.id, "cart.py", "TOTAL = 4\n")
     story.expect_success("worker commit --wait --differences none", actor=worker)
@@ -254,16 +255,16 @@ def test_a_failed_picker_runs_again_at_the_next_hand_in(new_story, monkeypatch):
     story.expect_text("task show 1", "state: completed", actor=story.agent)
 
 
-def test_an_empty_picker_result_finishes_without_an_extra_test(new_story, monkeypatch):
-    story, _, _, started = affected_test_story(new_story, monkeypatch)
+def test_an_empty_picker_result_finishes_without_an_extra_test(new_story):
+    story, _, _, started = affected_test_story(new_story)
     ended(story, started[1], 0)
     story.expect_rows(len(started) == 2)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
 
 
-def test_picked_tests_run_when_the_proof_has_no_test_command(new_story, monkeypatch):
+def test_picked_tests_run_when_the_proof_has_no_test_command(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story)
     story.expect_success(f'setting set {AFFECTED_TESTS_COMMAND} "python3 pick.py" --environment main')
     story.expect_success(f'setting set {PROJECT_TEST_COMMAND} "python3 -m pytest" --environment main')
@@ -281,9 +282,9 @@ def test_picked_tests_run_when_the_proof_has_no_test_command(new_story, monkeypa
 
 
 @pytest.mark.parametrize("setting", ("affected-tests-command", "project-test-command"))
-def test_a_single_setting_does_not_run_the_picker(new_story, monkeypatch, setting):
+def test_a_single_setting_does_not_run_the_picker(new_story, setting):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story)
     story.expect_success(f'setting set journal.suites.coding.workers.{setting} "python3 command.py" --environment main')
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
@@ -301,8 +302,8 @@ def expect_cwd_options(options, expected) -> None:
     assert actual == expected, actual
 
 
-def test_three_failed_hand_ins_of_a_task_give_the_main_agent_a_line_the_worker_never_sees(new_story, monkeypatch):
-    story, repository, worker, started = queued_story(new_story, monkeypatch)
+def test_three_failed_hand_ins_of_a_task_give_the_main_agent_a_line_the_worker_never_sees(new_story):
+    story, repository, worker, started = queued_story(new_story)
     for attempt in range(2):
         ended(story, started[attempt], 1)
         repository.changed(worker.id, "cart.py", f"TOTAL = {attempt + 10}\n")
@@ -319,8 +320,8 @@ def test_three_failed_hand_ins_of_a_task_give_the_main_agent_a_line_the_worker_n
     story.expect_text(f"worker logs {agent_number(story, worker.id)}", "! failed 3 hand-ins", actor=story.agent)
 
 
-def test_every_third_failed_hand_in_in_a_row_puts_a_line_before_the_merger(new_story, monkeypatch):
-    story, repository, worker, started = queued_story(new_story, monkeypatch)
+def test_every_third_failed_hand_in_in_a_row_puts_a_line_before_the_merger(new_story):
+    story, repository, worker, started = queued_story(new_story)
     for attempt in range(2):
         ended(story, started[attempt], 1)
         repository.changed(worker.id, "cart.py", f"TOTAL = {attempt + 10}\n")
@@ -336,10 +337,10 @@ def review_lines(story) -> list[str]:
     return [line.text for line in story.story_rows(MergerLine) if "in a row" in line.text]
 
 
-def test_a_worker_waiting_for_tests_or_merge_is_not_reported_as_stopped(new_story, monkeypatch):
+def test_a_worker_waiting_for_tests_or_merge_is_not_reported_as_stopped(new_story):
     from datetime import timedelta
 
-    story, repository, worker, started = queued_story(new_story, monkeypatch)
+    story, repository, worker, started = queued_story(new_story)
     story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
     story.end_session(worker)
     story.advance(timedelta(minutes=20))
@@ -351,10 +352,10 @@ def test_a_worker_waiting_for_tests_or_merge_is_not_reported_as_stopped(new_stor
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has stopped")
 
 
-def test_a_queued_proof_survives_the_workers_first_hook_on_a_freshly_started_server_and_counts(new_story, monkeypatch):
+def test_a_queued_proof_survives_the_workers_first_hook_on_a_freshly_started_server_and_counts(new_story):
     from engine.testing.examples.hook_samples import HookSamples
     from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session
-    story, _, worker, started = queued_story(new_story, monkeypatch)
+    story, _, worker, started = queued_story(new_story)
     session = worker_session(story, worker)
     story.hook(session, HookSamples.session_start())
     story.hook(session, HookSamples.tick())
@@ -365,9 +366,9 @@ def test_a_queued_proof_survives_the_workers_first_hook_on_a_freshly_started_ser
     story.expect_text("proof show 1", "state: checked", actor=story.agent)
 
 
-def test_a_queued_proof_whose_runner_never_started_is_launched_again_and_counts(new_story, monkeypatch):
+def test_a_queued_proof_whose_runner_never_started_is_launched_again_and_counts(new_story):
     from suites.coding.modules.workers.ticks.worker_tests.unlaunched_worker_test_runs import UnlaunchedWorkerTestRuns
-    story, _, _, started = queued_story(new_story, monkeypatch)
+    story, _, _, started = queued_story(new_story)
     expect_answers(started, 1)
     story.advance(timedelta(seconds=40))
     UnlaunchedWorkerTestRuns()(story.container)
@@ -395,7 +396,7 @@ def stalled_tick(story) -> None:
 
 @pytest.fixture
 def unrecorded_end(new_story, monkeypatch):
-    story, _, _, started = queued_story(new_story, monkeypatch)
+    story, _, _, started = queued_story(new_story)
     ended_with_nothing_recorded(story, monkeypatch, started[0], 0)
     return story, started[0]
 
@@ -417,9 +418,9 @@ def test_a_running_proof_whose_process_is_gone_leaves_running_as_lost(unrecorded
 
 
 @pytest.mark.real_git
-def test_the_picked_tests_run_on_the_work_merged_into_a_base_that_moved_after_the_hand_in_and_a_failure_returns_the_work(new_story, monkeypatch):
+def test_the_picked_tests_run_on_the_work_merged_into_a_base_that_moved_after_the_hand_in_and_a_failure_returns_the_work(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story, real_git=True)
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("pick.py", "print('tests/other.py')\n", "Picker")
@@ -446,16 +447,16 @@ def test_the_picked_tests_run_on_the_work_merged_into_a_base_that_moved_after_th
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
 
 
-def test_a_release_of_the_worker_ends_the_proof_test_that_waited_or_ran_for_its_worktree(new_story, monkeypatch):
-    story, _, worker, _ = queued_story(new_story, monkeypatch)
+def test_a_release_of_the_worker_ends_the_proof_test_that_waited_or_ran_for_its_worktree(new_story):
+    story, _, worker, _ = queued_story(new_story)
     story.expect_success(f'worker release {agent_number(story, worker.id)} --abandon "the worker is gone"', actor=story.agent)
     story.run_listeners()
     story.expect_text("proof show 1", "state: short", "was abandoned or removed while this test waited or ran", actor=story.agent)
 
 
-def test_a_worker_whose_commit_passed_with_every_other_task_of_its_unit_blocked_is_told_to_the_main_agent(new_story, monkeypatch):
+def test_a_worker_whose_commit_passed_with_every_other_task_of_its_unit_blocked_is_told_to_the_main_agent(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     repository = repository_environment(story)
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     second = story.new_row_id('task make "Later work" --brief "Waits on the main agent" --environment main', actor=story.agent)

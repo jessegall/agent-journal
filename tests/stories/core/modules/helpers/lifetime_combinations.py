@@ -42,26 +42,26 @@ def test_a_continue_helper_whose_conversation_is_missing_starts_a_new_session_an
     steady.expect_rows(helper_agent(steady).id == helper.id, helper_agent(steady).session != helper.session, UNAVAILABLE_TEXT in command, detail=command)
 
 
-def test_a_continue_helper_past_the_context_limit_still_gets_a_new_session(steady, monkeypatch):
+def test_a_continue_helper_past_the_context_limit_still_gets_a_new_session(steady):
     steady.expect_success(f"setting set {CONTEXT_LIMIT_ENABLED} true --project", actor=steady.user)
     steady.expect_success(f"setting set {CONTEXT_LIMIT_TOKENS} {LIMIT_TOKENS} --project", actor=steady.user)
     helper = helper_agent(steady)
-    resumable_session(steady, helper, monkeypatch)
+    resumable_session(steady, helper)
     save_status_file(steady, helper.session, {"context_window": {"total_input_tokens": LIMIT_TOKENS}})
     request = launched_job(steady)
     steady.expect_rows(helper_agent(steady).session != helper.session, "--resume" not in request["command"], detail=str(request["command"][-4:]))
 
 
 @pytest.mark.parametrize("fixture,minutes,percent", [(EndedColdRotationHelper, 1, 100), (EndedColdRotationHelper, 54, 80), (EndedColdRotationHelper, 300, 19), (EndedContinueHelper, 300, 80)])
-def test_a_when_cold_helper_that_is_warm_or_small_and_a_continue_helper_that_is_cold_and_large_are_resumed(new_story, monkeypatch, fixture, minutes, percent):
+def test_a_when_cold_helper_that_is_warm_or_small_and_a_continue_helper_that_is_cold_and_large_are_resumed(new_story, fixture, minutes, percent):
     story = story_with_profile_file(new_story, fixture)
-    helper, request = with_job(story, monkeypatch, minutes, percent)
+    helper, request = with_job(story, minutes, percent)
     story.expect_rows(helper_agent(story).session == helper.session, "--resume" in request["command"], helper.session in request["command"], detail=str(request["command"][-4:]))
 
 
-def test_a_when_cold_helper_that_is_cold_and_large_gets_a_new_session_on_its_program_and_number(cooling, monkeypatch):
+def test_a_when_cold_helper_that_is_cold_and_large_gets_a_new_session_on_its_program_and_number(cooling):
     number = agent_number(cooling, helper_agent(cooling).id)
-    helper, request = with_job(cooling, monkeypatch, cooling.number_default(COLD_SESSION_MINUTES), cooling.number_default(COLD_SESSION_CONTEXT_PERCENT))
+    helper, request = with_job(cooling, cooling.number_default(COLD_SESSION_MINUTES), cooling.number_default(COLD_SESSION_CONTEXT_PERCENT))
     current = helper_agent(cooling)
     cooling.expect_rows(current.session != helper.session, current.program == helper.program, request["command"][0] == "claude",
                         agent_number(cooling, current.id) == number, detail=str(request["command"][:2]))
@@ -79,16 +79,16 @@ def test_a_when_cold_helper_never_changes_program_while_its_own_is_out(cooling):
     cooling.expect_rows(helper_agent(cooling).program == "claude", not any(request["command"][0] == "codex" for request in launcher.requests), detail=str(launcher.requests))
 
 
-def test_cold_minutes_at_zero_resumes_a_when_cold_helper_that_is_silent_and_large(cooling, monkeypatch):
+def test_cold_minutes_at_zero_resumes_a_when_cold_helper_that_is_silent_and_large(cooling):
     cooling.expect_success(f"setting set {COLD_SESSION_MINUTES} 0 --project", actor=cooling.user)
-    helper, request = with_job(cooling, monkeypatch, 300, 100)
+    helper, request = with_job(cooling, 300, 100)
     cooling.expect_rows(helper_agent(cooling).session == helper.session, "--resume" in request["command"], detail=str(request["command"][-4:]))
 
 
-def test_cold_minutes_at_zero_changes_nothing_for_an_each_launch_helper(new_story, monkeypatch):
+def test_cold_minutes_at_zero_changes_nothing_for_an_each_launch_helper(new_story):
     story = story_with_profile_file(new_story, EndedEachLaunchHelper)
     story.expect_success(f"setting set {COLD_SESSION_MINUTES} 0 --project", actor=story.user)
-    helper, request = with_job(story, monkeypatch, 1, 10)
+    helper, request = with_job(story, 1, 10)
     story.expect_rows(helper_agent(story).session != helper.session, "--resume" not in request["command"], detail=str(request["command"][-4:]))
 
 

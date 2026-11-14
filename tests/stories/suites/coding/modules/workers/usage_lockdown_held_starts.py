@@ -82,8 +82,8 @@ def test_the_launcher_answers_locked_down_and_asks_nothing_of_the_launcher_for_a
     story.expect_rows(answer is LaunchAnswer.LOCKED_DOWN, launches == [])
 
 
-def test_the_merger_is_not_started_by_the_retry_at_the_limit_and_is_started_after_it_is_lifted(new_story, monkeypatch):
-    story, repository, worker, started = queued_story(new_story, monkeypatch)
+def test_the_merger_is_not_started_by_the_retry_at_the_limit_and_is_started_after_it_is_lifted(new_story):
+    story, repository, worker, started = queued_story(new_story)
     with_reported_usage(story)
     owner = person(story)
     story.expect_success(LIMIT, actor=owner)

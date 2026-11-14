@@ -115,9 +115,12 @@ class Story(KitRows):
 
     @classmethod
     def opened(cls, home: JournalHome, state: StoryState) -> "Story":
-        home = replace(home, container_setup=story_stand_ins(home))
+        # what the story binds reaches every container built from its home, the server's and its background work's too
+        replacements: dict[type, object] = {}
+        home = replace(home, container_setup=story_stand_ins(home, replacements))
         clock, process_table = ManualClock(), FixedProcessTable([])
         story = cls(home, story_container(home, clock, process_table), clock, process_table, state)
+        story.replacements = replacements
         story.container.get(Database).cuts_raise = True
         return story
 
@@ -161,6 +164,11 @@ class Story(KitRows):
     def bind(self, class_type: type[S], replacement: S) -> None:
         self.replacements[class_type] = replacement
         self.replace(class_type, replacement)
+
+    # lifts what bind put in place: the class is built anew as the journal builds it, here and in every later container
+    def unbind(self, class_type: type) -> None:
+        self.replacements.pop(class_type, None)
+        self.replace(class_type, self.container.constructed(class_type))
 
     # as bind, for this container only: a sync builds its own
     def replace(self, class_type: type[S], replacement: S) -> None:
@@ -537,8 +545,6 @@ class Story(KitRows):
         if code == 0:
             self.container.get(Database).close()
             self.container = story_container(self.home, self.clock, self.process_table, self.journal)
-            for class_type, replacement in self.replacements.items():
-                self.container.bind(class_type, replacement)
         return code, stream.getvalue()
 
     def expect_rows(self, *checks: object, detail: object | None = None) -> None:
@@ -561,7 +567,7 @@ def story_container(home: JournalHome, clock: ManualClock, process_table: "Fixed
 # the parts a story stands in for, so it is not about them: the sandbox, the overview and skills an agent must read
 # first, the helper programs installed, the login path and the task brief requirement; a story's home names this step,
 # so every container built from it during the story, a server's among them, gets the same
-def story_stand_ins(home: JournalHome) -> Callable[[Container], None]:
+def story_stand_ins(home: JournalHome, replacements: dict[type, object]) -> Callable[[Container], None]:
     def bind(container: Container) -> None:
         container.bind(ShellSandbox, StoryShellSandbox(home))
         container.bind(OverviewFirst, StoryOverviewFirst())
@@ -570,4 +576,6 @@ def story_stand_ins(home: JournalHome) -> Callable[[Container], None]:
         container.bind(MainAgentSkills, StoryMainAgentSkills())
         container.bind(LoginPath, StoryLoginPath(home))
         container.bind(TaskBriefRequirement, StoryTaskBriefRequirement())
+        for class_type, replacement in replacements.items():
+            container.bind(class_type, replacement)
     return bind
