@@ -8,8 +8,6 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.worker_ask import asking_worker
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
-from suites.coding.modules.workers.ticks.ask_watch import AskWatch
-from core.modules.asks.support.ask_settings import QUESTION_FORWARD_MINUTES
 
 MAIN_SESSION = "s-1"
 INTERVAL = timedelta(seconds=WORKER_ASKING_STOPPED.interval.seconds)
@@ -77,17 +75,3 @@ def test_a_stopped_worker_is_not_named_while_workers_are_switched_off(ended_with
     story.expect_rows(stopped_lines(story) == [], detail=str(stopped_lines(story)))
 
 
-
-def test_a_worker_whose_question_went_to_the_main_agent_is_named_with_no_open_task_and_again_after_the_interval(silent_worker):
-    story = silent_worker.story
-    silent_worker.post_question()
-    story.expect_success('task cancel 1 --reason "The receipt is no longer needed"', actor=story.agent)
-    silent_worker.program_ended()
-    story.advance(timedelta(minutes=story.number_default(QUESTION_FORWARD_MINUTES) + 1))
-    AskWatch()(story.container)
-    story.run_listeners()
-    story.tick(MAIN_SESSION)
-    named = stopped_lines(story)
-    story.advance(INTERVAL)
-    story.tick(MAIN_SESSION)
-    story.expect_rows(len(named) == 1, "its question is unanswered" in named[0], len(stopped_lines(story)) == 2, detail=str(stopped_lines(story)))

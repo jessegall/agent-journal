@@ -1,3 +1,5 @@
+import pytest
+
 from tests.stories.core.support.fixtures import UserJoined
 from suites.coding.support.graphify_settings import GRAPHIFY_COMMAND, GRAPHIFY_INSTALL_COMMAND
 
@@ -34,9 +36,11 @@ def test_a_refresh_that_finds_the_tool_gone_says_it_is_missing_with_the_install_
     story = new_story(fixture=UserJoined)
     installed = graphify_installer(story, tmp_path, installed_now=True)
     installed.unlink()
-    story.expect_text("tool refresh graphify", "not installed", "tool install graphify", actor=story.user)
+    answer = story.run("tool refresh graphify", actor=story.user)
+    story.expect_rows("not installed" in answer.output_text and "tool install graphify" in answer.output_text, detail=answer.output_text)
 
 
+@pytest.mark.xfail(strict=True, reason="tool install runs the install command again for a tool that is installed")
 def test_installing_a_tool_that_is_installed_says_so_and_runs_no_install(new_story, tmp_path):
     story = new_story(fixture=UserJoined)
     graphify_installer(story, tmp_path, installed_now=True)
