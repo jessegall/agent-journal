@@ -634,7 +634,6 @@ tests/stories/engine/hosting/hosted_story.py
 tests/stories/engine/hosting/support/fake_host.py
 tests/stories/engine/listener/listener_visits.py
 tests/stories/engine/listener/round_gives_way.py
-tests/stories/engine/map/budgets.py
 tests/stories/engine/map/map_command.py
 tests/stories/engine/module/agent_types.py
 tests/stories/engine/module/folder_removal.py
