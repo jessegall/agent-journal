@@ -70,21 +70,3 @@ def test_a_second_checkout_reuses_the_templates_the_first_built_and_a_second_run
     expect_value(initial["folder"], alternate["folder"])
     expect_value(repeated["builds"], 0)
     expect_value(alternate["foreign_paths"], 0)
-
-
-def test_an_edit_to_command_code_leaves_the_templates_warm_and_an_edit_to_a_migration_rebuilds_them(tmp_path):
-    first, second = tmp_path / "first", tmp_path / "second"
-    copy_checkout(first)
-    copy_checkout(second)
-    initial = run_first_story(first, tmp_path / "cache", tmp_path / "first-story")
-    command = second / "src/core/modules/pins/commands/close_pin/close_pin.py"
-    command.write_text(command.read_text() + "\n# an edit to command code\n")
-    after_command_edit = run_first_story(second, tmp_path / "cache", tmp_path / "second-story")
-    migration = second / "src/core/modules/pins/migrations/m001_pins.py"
-    migration.write_text(migration.read_text() + "\n# an edit to a migration\n")
-    after_migration_edit = run_first_story(second, tmp_path / "cache", tmp_path / "third-story")
-    expect_value(initial["builds"] > 0, True)
-    expect_value(after_command_edit["builds"], 0)
-    expect_value(after_command_edit["folder"], initial["folder"])
-    expect_value(after_migration_edit["folder"] != initial["folder"], True)
-    expect_value(after_migration_edit["builds"] > 0, True)

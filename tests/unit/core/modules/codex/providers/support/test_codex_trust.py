@@ -74,3 +74,14 @@ def test_equivalent_defaults_and_formatting_keep_the_same_hash(trusted_hooks):
     settings["hooks"]["Stop"][0]["matcher"] = "ignored"
     hooks.write_text(json.dumps(settings, indent=4))
     assert CodexTrust(config).trust(hooks, HOOK_NAMES) is HookTrust.READY
+
+
+@pytest.mark.parametrize("second_state", [None, {"enabled": True}])
+def test_a_second_journal_stop_entry_without_its_trusted_hash_is_caught(trusted_hooks, second_state):
+    hooks, config = trusted_hooks
+    settings = json.loads(hooks.read_text())
+    settings["hooks"]["Stop"].append({"matcher": "", "hooks": [{"type": "command", "command": "journal-hook codex /work/app", "timeout": 60}]})
+    hooks.write_text(json.dumps(settings))
+    if second_state is not None:
+        config.write_text(config.read_text() + "\n" + CodexTrust.state_table(f"{hooks}:stop:1:0", second_state))
+    assert CodexTrust(config).trust(hooks, HOOK_NAMES) is HookTrust.CHANGED

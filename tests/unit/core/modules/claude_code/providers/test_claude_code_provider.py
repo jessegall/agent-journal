@@ -175,3 +175,12 @@ def test_a_compact_window_is_held_between_the_sizes_claude_accepts(tmp_path):
     assert json.loads((tmp_path / ".claude" / "settings.json").read_text())["autoCompactWindow"] == 100_000
     provider.change_agent_setting(tmp_path, AgentSetting.COMPACT_WINDOW, 9_000_000)
     assert json.loads((tmp_path / ".claude" / "settings.json").read_text())["autoCompactWindow"] == 1_000_000
+
+
+def test_the_launch_variables_lift_the_stop_hook_cap(provider, tmp_path):
+    assert provider.launch_variables(JournalHome(tmp_path / ".journal")) == {"CLAUDE_CODE_STOP_HOOK_BLOCK_CAP": "1000000"}
+
+
+def test_the_cap_is_a_number_the_program_accepts(provider, tmp_path):
+    cap = provider.launch_variables(JournalHome(tmp_path / ".journal"))["CLAUDE_CODE_STOP_HOOK_BLOCK_CAP"]
+    assert cap.isdigit() and 8 < int(cap) <= 1_000_000

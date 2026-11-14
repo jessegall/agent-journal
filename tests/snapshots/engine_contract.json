@@ -2255,6 +2255,7 @@
         "transcript(self) -> HookTranscript",
         "is_resume(self) -> bool",
         "is_compaction_start(self) -> bool",
+        "is_stop_continuation(self) -> bool",
         "is_manual_compaction(self) -> bool",
         "is_clear_start(self) -> bool",
         "is_launch_clear_end(self) -> bool",
@@ -5830,6 +5831,14 @@
         "providers(self, modules: Sequence[type[Module]]) -> tuple[ProviderEntry, ...]"
       ]
     },
+    "module.schema_inputs.SchemaInputs": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "hash(source_folders: tuple[Path, ...]) -> str",
+        "files(root: Path) -> list[Path]"
+      ]
+    },
     "module.setting_check.SettingCheck": {
       "bases": [],
       "fields": [],
@@ -9237,14 +9246,6 @@
       "methods": [
         "modified_time(folder: Path) -> float",
         "bytes(folder: Path) -> int"
-      ]
-    },
-    "testing.cache.schema_inputs.SchemaInputs": {
-      "bases": [],
-      "fields": [],
-      "methods": [
-        "hash(source_folders: tuple[Path, ...]) -> str",
-        "files(root: Path) -> list[Path]"
       ]
     },
     "testing.cache.template_cache.TemplateCache": {

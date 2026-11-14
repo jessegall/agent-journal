@@ -1,5 +1,5 @@
 from engine.module.source_hash import SourceHash
-from engine.testing.cache.schema_inputs import SchemaInputs
+from engine.module.schema_inputs import SchemaInputs
 
 
 def sample_source(tmp_path):
