@@ -2559,7 +2559,8 @@
         "rules: Sequence[RuleRecord]",
         "delays_lines: bool",
         "skipped_lines: frozenset[tuple[str, str]]",
-        "stop_checks: Sequence[StopCheck]"
+        "stop_checks: Sequence[StopCheck]",
+        "states: Sequence[StateRecord]"
       ],
       "methods": [
         "answered(self) -> list[RuleRecord]",
@@ -2737,7 +2738,9 @@
         "open_rows(self, entry: AgentStateEntry) -> Sequence[OpenRow]",
         "stack(self, driver: str) -> list[Layer]",
         "applies_to_role(self, state: AgentState) -> bool",
-        "timed_rows(self, entry: AgentStateEntry, state: AgentState) -> Sequence[OpenRow]",
+        "timed_rows(self, entry: AgentStateEntry, state: AgentState, key: str) -> Sequence[OpenRow]",
+        "outcome(rows: Sequence[OpenRow]) -> str",
+        "state_records(self) -> tuple[StateRecord, ...]",
         "guarded_rows(self, entry: AgentStateEntry, state: AgentState) -> Sequence[OpenRow]"
       ]
     },
@@ -2747,6 +2750,16 @@
       "methods": [
         "for_hook(self, hook: AgentHook) -> StateBoard"
       ]
+    },
+    "driver.state_record.StateRecord": {
+      "bases": [],
+      "fields": [
+        "name: str",
+        "tier: str",
+        "outcome: str",
+        "milliseconds: int"
+      ],
+      "methods": []
     },
     "driver.states.block_state.BlockState": {
       "bases": [
@@ -2872,7 +2885,7 @@
         "record_silenced(self, entry: DriverRuleEntry, layer: str) -> None",
         "leave_layer(self, layer: Layer, overlay: type[Overlay]) -> None",
         "silences(self, rule: type[DriverRule]) -> bool",
-        "answers(self) -> RuleAnswers"
+        "answers(self, states: Sequence[StateRecord]) -> RuleAnswers"
       ]
     },
     "driver.watched_runs.WatchedRuns": {
@@ -8969,6 +8982,7 @@
         "explanation(self, explanation: Explanation) -> None",
         "error(self, text: str) -> None",
         "values(self, record: object) -> dict[str, object]",
+        "dataclass_values(self, record: object) -> dict[str, object]",
         "properties(self, record: object) -> dict[str, object]",
         "listed_properties(self, record: object) -> dict[str, object]",
         "json_value(self, value: object) -> object",

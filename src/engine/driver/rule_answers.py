@@ -4,6 +4,7 @@ from dataclasses import asdict, dataclass
 from engine.command.command import Command
 from engine.driver.nudge import Nudge
 from engine.driver.rule_record import RuleRecord
+from engine.driver.state_record import StateRecord
 from engine.driver.stop_check import StopCheck
 
 
@@ -16,6 +17,7 @@ class RuleAnswers:
     delays_lines: bool = False
     skipped_lines: frozenset[tuple[str, str]] = frozenset()
     stop_checks: Sequence[StopCheck] = ()
+    states: Sequence[StateRecord] = ()
 
     @property
     def answered(self) -> list[RuleRecord]:
@@ -96,4 +98,4 @@ class RuleAnswers:
 
     def metadata(self) -> dict[str, object]:
         return {"layers": list(self.layers), "rules": [rule.saved_fields for rule in self.rules], "terminal": self.terminal,
-                "stop_checks": [asdict(check) for check in self.stop_checks]}
+                "stop_checks": [asdict(check) for check in self.stop_checks], "states": [asdict(state) for state in self.states]}

@@ -92,7 +92,7 @@ class DriverRules:
         return gate.name
 
     def complete_checks(self, walk: Walk, hook: AgentHook, calls: list[RuleCall], board: StateBoard | None = None) -> RuleAnswers:
-        answers = walk.answers()
+        answers = walk.answers(board.state_records() if board is not None else ())
         if not hook.is_main_stop:
             return answers
         recorded = {(record.name, record.layer): record for record in answers.rules}

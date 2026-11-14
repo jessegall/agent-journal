@@ -22,4 +22,4 @@ class HookCallShowSubcommand(ReadSubcommand[HookCallView]):
     def read(self, arguments: Namespace, caller: Caller) -> HookCallView:
         call = self.queries.query(HookCall).find(arguments.id)
         return HookCallView(call.id, call.session_agent_id, call.hook, call.suite, call.driver, call.answer, call.refusal, call.lines.replace("\n", " | "),
-                            ", ".join(call.layers), ", ".join(call.rule_outcomes), ", ".join(call.dropped_commands))
+                            ", ".join(call.layers), ", ".join(call.rule_outcomes), ", ".join(call.state_outcomes), ", ".join(call.dropped_commands))

@@ -7,6 +7,7 @@ from engine.driver.overlay import Overlay
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.rule_answers import RuleAnswers
 from engine.driver.rule_outcome import RAISED, SILENCED, RuleOutcome
+from engine.driver.state_record import StateRecord
 from engine.registry.driver_rule_entry import DriverRuleEntry
 
 
@@ -52,5 +53,5 @@ class Walk:
             return self.holds_wakes
         return (self.is_silenced and not rule.overlay_proof) or (self.is_paused and rule.is_pause_skipped) or (self.delays_notices and rule.is_notice)
 
-    def answers(self) -> RuleAnswers:
-        return RuleAnswers(self.layers, self.rules, self.delays_lines)
+    def answers(self, states: Sequence[StateRecord] = ()) -> RuleAnswers:
+        return RuleAnswers(self.layers, self.rules, self.delays_lines, states=tuple(states))

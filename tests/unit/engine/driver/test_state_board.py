@@ -7,6 +7,7 @@ from engine.enums.state_tier import StateTier
 from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.driver.open_row import OpenRow
 from engine.driver.state_board import FAILED_OPENER_TABLE, StateBoard
+from engine.driver.state_record import StateRecord
 from engine.registry.agent_state_entry import AgentStateEntry
 from engine.time.timestamp import Timestamp
 
@@ -35,6 +36,13 @@ class LateState(AgentState):
 
     def open_rows(self, hook):
         return [OpenRow("samples", 2, LATE)]
+
+
+class ClosedState(AgentState):
+    name = "samples.closed"
+
+    def open_rows(self, hook):
+        return []
 
 
 class RaisingState(AgentState):
@@ -125,3 +133,17 @@ def test_a_slow_opener_is_logged_at_the_threshold():
 def test_the_stack_is_newest_first():
     entries = [entry(CountedState, 1), entry(LateState, 2)]
     assert [layer.overlay.name for layer in board(entries).stack("builder")] == ["samples.late", "samples.counted"]
+
+
+def test_the_board_records_each_state_it_worked_out_with_its_tier_outcome_and_opener_time():
+    open_entry, closed_entry = entry(LateState), entry(ClosedState)
+    checked = board(elapsed=Ticks(0.0, 0.004, 0.010, 0.010))
+    checked.is_open(open_entry)
+    checked.is_open(closed_entry)
+    assert checked.state_records() == (StateRecord("samples.late", "stack", "open", 4), StateRecord("samples.closed", "stack", "closed", 0))
+
+
+def test_a_failed_opener_is_recorded_as_failed():
+    checked = board(errors=SimpleNamespace(reported=lambda *arguments: None))
+    checked.is_open(entry(RaisingState))
+    assert checked.state_records()[0].outcome == FAILED_OPENER_TABLE

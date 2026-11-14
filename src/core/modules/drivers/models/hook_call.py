@@ -176,6 +176,12 @@ class HookCall(Prunable, EnvironmentScoped, Model):
         values = self.metadata.module_part(DRIVERS_MODULE).get("rules", [])
         return tuple(f"{row['rule']}: {row['outcome']}" for row in values if is_mapping(row)) if is_list(values) else ()
 
+    # each agent state the hook's board worked out: its name, tier, outcome and the opener's milliseconds
+    @property
+    def state_outcomes(self) -> tuple[str, ...]:
+        values = self.metadata.module_part(DRIVERS_MODULE).get("states", [])
+        return tuple(f"{row['name']} ({row['tier']}): {row['outcome']}, {row['milliseconds']} ms" for row in values if is_mapping(row)) if is_list(values) else ()
+
     @property
     def dropped_commands(self) -> tuple[str, ...]:
         return self.text_values("dropped")

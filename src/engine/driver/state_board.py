@@ -7,6 +7,7 @@ from engine.driver.agent_state import AgentState
 from engine.enums.state_tier import StateTier
 from engine.driver.layer import Layer
 from engine.driver.open_row import OpenRow
+from engine.driver.state_record import StateRecord
 from engine.enums.log_level import LogLevel
 from engine.log.error_log import ErrorLog
 from engine.log.system_log_writer import SystemLogWriter
@@ -27,6 +28,8 @@ class StateBoard:
         self.registry, self.container, self.errors, self.system_log, self.hook = registry, container, errors, system_log, hook
         self.elapsed = elapsed
         self.opened: dict[str, Sequence[OpenRow]] = {}
+        self.opener_milliseconds: dict[str, int] = {}
+        self.records: dict[str, StateRecord] = {}
 
     def is_open(self, entry: AgentStateEntry) -> bool:
         parent = self.registry.agent_state(entry.parent) if entry.parent else None
@@ -42,8 +45,10 @@ class StateBoard:
             return ()
         key = state.opener_key()
         if key not in self.opened:
-            self.opened[key] = self.timed_rows(entry, state)
-        return self.opened[key]
+            self.opened[key] = self.timed_rows(entry, state, key)
+        rows = self.opened[key]
+        self.records[entry.name] = StateRecord(entry.name, state.tier.name.lower(), self.outcome(rows), self.opener_milliseconds[key])
+        return rows
 
     def stack(self, driver: str) -> list[Layer]:
         layers = [Layer(entry, row) for entry in self.registry.tier_states(driver, int(StateTier.STACK)) for row in self.open_rows(entry)]
@@ -53,13 +58,23 @@ class StateBoard:
     def applies_to_role(self, state: AgentState) -> bool:
         return state.role_group.has_role(self.hook.role, self.registry.helper_type_book())
 
-    def timed_rows(self, entry: AgentStateEntry, state: AgentState) -> Sequence[OpenRow]:
+    def timed_rows(self, entry: AgentStateEntry, state: AgentState, key: str) -> Sequence[OpenRow]:
         started_at = self.elapsed()
         rows = self.guarded_rows(entry, state)
         seconds = self.elapsed() - started_at
         if seconds >= SLOW_OPENER_SECONDS:
             self.system_log.write(LogLevel.INFORMATION, f"state {entry.name} took {seconds * 1000:.0f} ms on a {self.hook.hook_name} hook")
+        self.opener_milliseconds[key] = round(seconds * 1000)
         return rows
+
+    @staticmethod
+    def outcome(rows: Sequence[OpenRow]) -> str:
+        if any(row.table == FAILED_OPENER_TABLE for row in rows):
+            return FAILED_OPENER_TABLE
+        return "open" if rows else "closed"
+
+    def state_records(self) -> tuple[StateRecord, ...]:
+        return tuple(self.records.values())
 
     def guarded_rows(self, entry: AgentStateEntry, state: AgentState) -> Sequence[OpenRow]:
         try:
