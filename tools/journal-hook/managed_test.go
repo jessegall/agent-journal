@@ -157,3 +157,64 @@ func TestMatchingUsesTheProgramsStyle(t *testing.T) {
 		}
 	}
 }
+
+func bashBody(command string) []byte {
+	body, _ := json.Marshal(map[string]any{"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": map[string]any{"command": command}})
+	return body
+}
+
+func TestIfToolNameOnly(t *testing.T) {
+	if !ifMatches("Bash", bashBody("ls")) || ifMatches("Edit", bashBody("ls")) {
+		t.Fatal("a condition naming only a tool does not match that tool alone")
+	}
+}
+
+func TestIfBashPatternMatchesAFirstCommand(t *testing.T) {
+	if !ifMatches("Bash(git *)", bashBody("git push")) || !ifMatches("Bash(git *)", bashBody("FOO=bar git push")) {
+		t.Fatal("Bash(git *) does not match git push")
+	}
+}
+
+func TestIfBashPatternMatchesACommandAfterAnAndAnd(t *testing.T) {
+	if !ifMatches("Bash(git *)", bashBody("ls && git status")) {
+		t.Fatal("Bash(git *) does not match the git command after &&")
+	}
+}
+
+func TestIfBashPatternDoesNotMatchADifferentCommand(t *testing.T) {
+	if ifMatches("Bash(git *)", bashBody("npm test")) {
+		t.Fatal("Bash(git *) matched npm test")
+	}
+}
+
+func TestIfFilePathPattern(t *testing.T) {
+	body, _ := json.Marshal(map[string]any{"hook_event_name": "PostToolUse", "tool_name": "Edit", "cwd": "/p", "tool_input": map[string]any{"file_path": "/p/src/cart.ts"}})
+	if !ifMatches("Edit(*.ts)", body) || !ifMatches("Edit(src/**)", body) || ifMatches("Edit(*.py)", body) {
+		t.Fatal("the file path pattern is not read")
+	}
+}
+
+func TestIfOnAnEventWithoutATool(t *testing.T) {
+	if ifMatches("Bash", []byte(`{"hook_event_name":"Stop"}`)) {
+		t.Fatal("an if condition held on an event without a tool")
+	}
+}
+
+func TestIfUnreadableMatchesNothing(t *testing.T) {
+	if ifMatches("Bash(git *", bashBody("git push")) {
+		t.Fatal("an unreadable condition matched")
+	}
+}
+
+func TestIfIsIgnoredForAProgramThatDoesNotHonourIt(t *testing.T) {
+	table := programs.Table{Programs: map[string]programs.Program{
+		"claude": {Matchers: map[string]string{"PreToolUse": "tool_name"}, EntryFields: []string{"if"}},
+		"codex":  {Matchers: map[string]string{"PreToolUse": "tool_name"}},
+	}}
+	for program, want := range map[string]int{"claude": 0, "codex": 1} {
+		hook := ManagedHook{ID: "git", Program: program, Event: "PreToolUse", State: "on", Fields: map[string]any{"if": "Bash(git *)"}}
+		if matched := Matching([]ManagedHook{hook}, program, "PreToolUse", bashBody("npm test"), table); len(matched) != want {
+			t.Fatalf("%s ran %d hooks whose if does not hold, want %d", program, len(matched), want)
+		}
+	}
+}

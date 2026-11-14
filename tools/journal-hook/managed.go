@@ -46,6 +46,9 @@ func Matching(hooks []ManagedHook, program, event string, body []byte, table pro
 		if hook.State != "on" || hook.Program != program || hook.Event != event {
 			continue
 		}
+		if condition, ok := hook.Fields["if"].(string); ok && table.Programs[program].HonoursEntryField("if") && !ifMatches(condition, body) {
+			continue
+		}
 		if field == "" || hook.Matcher == "" || hook.Matcher == "*" {
 			matches = append(matches, hook)
 			continue
