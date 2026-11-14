@@ -124,7 +124,7 @@ def test_an_item_whose_type_gives_it_no_title_is_refused_and_says_where_to_fix_i
 
 
 def test_the_chat_window_may_run_the_buttons_of_its_docked_cards():
-    chat = next(window for window in MessagesModule.windows if window.name == "messages.chat")
+    chat = next(window for window in MessagesModule.window_declarations() if window.name == "messages.chat")
     expect_value_limit("dock remove", "dock keep", "dock unkeep", set(chat.runs))
 
 

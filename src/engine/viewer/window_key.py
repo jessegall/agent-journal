@@ -1,6 +1,6 @@
 import re
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, fields, replace
 
 from engine.enums.key_loading import KeyLoading
 
@@ -25,6 +25,11 @@ class WindowKey:
     name_ids: bool = False
     switches: Sequence[str] = ()
     event_column: str = ""
+
+    # a key written as a class in its own file sets the fields as class attributes
+    @classmethod
+    def declared(cls) -> "WindowKey":
+        return WindowKey(**{field.name: getattr(cls, field.name) for field in fields(WindowKey)})
 
     def listed(self) -> Mapping[str, object]:
         return {"tab": self.tab, "events": list(self.events), "reload_seconds": self.reload_seconds, "loading": self.loading,

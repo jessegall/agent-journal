@@ -42,7 +42,7 @@ def read_fails(parser: LineParser, line: str) -> bool:
 def declared() -> tuple[list[tuple[str, WindowKey]], list[tuple[str, str]]]:
     keys, reads = [], []
     for module in ModuleFinder(JournalHome(Path("/nonexistent-journal"))).default_modules():
-        for window in module.windows:
+        for window in module.window_declarations():
             keys += [(window.name, key) for key in window.keys]
             reads += [(window.name, read) for read in (*window.reads, *(tab.read for tab in window.tabs)) if read]
         for extension in module.window_extensions:

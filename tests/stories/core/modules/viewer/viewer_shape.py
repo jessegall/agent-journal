@@ -35,7 +35,7 @@ def declared_lines(folder):
     dotted = ".".join(folder.relative_to(ROOT / "src").parts)
     module_file = importlib.import_module(f"{dotted}.{folder.name}_module")
     modules = [value for name, value in vars(module_file).items() if name.endswith("Module") and getattr(value, "__module__", "") == module_file.__name__]
-    readers = [declared for module in modules for declared in (*map(EXTENSIONS.extend, module.windows), *module.marks, *module.docks)]
+    readers = [declared for module in modules for declared in (*map(EXTENSIONS.extend, module.window_declarations()), *module.marks, *module.docks)]
     return {line for reader in readers for line in getattr(reader, "reads", ())}, {line for reader in readers for line in getattr(reader, "runs", ())}
 
 
@@ -63,7 +63,7 @@ def test_a_window_declares_each_line_it_reads_or_runs():
 
 
 def test_the_shell_declares_each_line_it_reads():
-    viewer = EXTENSIONS.extend(next(window for window in ViewerModule.windows if window.name == "viewer.shell"))
+    viewer = EXTENSIONS.extend(next(window for window in ViewerModule.window_declarations() if window.name == "viewer.shell"))
     declared = {*viewer.reads, *viewer.runs, *WINDOW_SETTING_LINES}
     missing = {f"{target_type} {action}" for path in source_files(VIEWER / "src") for target_type, action in SHELL_LINE.findall(path.read_text(errors="ignore"))} - declared
     expect_absent_value(missing)
@@ -74,7 +74,7 @@ def test_the_coding_suite_offers_every_window_a_module_declares():
     for folder in module_folders():
         dotted = ".".join(folder.relative_to(ROOT / "src").parts)
         module_file = importlib.import_module(f"{dotted}.{folder.name}_module")
-        declared |= {window.name for name, value in vars(module_file).items() if name.endswith("Module") and getattr(value, "__module__", "") == module_file.__name__ for window in value.windows if window.place is not WindowPlace.SECTION}
-    text = (ROOT / "src/suites/coding/coding_suite.py").read_text()
+        declared |= {window.name for name, value in vars(module_file).items() if name.endswith("Module") and getattr(value, "__module__", "") == module_file.__name__ for window in value.window_declarations() if window.place is not WindowPlace.SECTION}
+    text = (ROOT / "src/suites/coding/entrances/admin_entrance.py").read_text()
     missing = {name for name in declared if f'"{name}"' not in text} - INTERNAL_WINDOWS
     expect_absent_value(missing)

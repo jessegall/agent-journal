@@ -5,7 +5,6 @@ from suites.coding.migrations.m004_main_agent_settings import MainAgentSettingsM
 from suites.coding.migrations.m005_main_driver import MainDriverMigration
 from suites.coding.migrations.m009_prune_file_edits import PruneFileEditsMigration
 from suites.coding.support.shipped_profiles import HELPER_PROFILES
-from engine.viewer.window_read_search import WindowReadSearch
 from engine.viewer.window_extension import WindowExtension
 from engine.viewer.window_tab import WindowTab
 from suites.coding.support.coding_nudges import CODING_NUDGES
@@ -14,17 +13,7 @@ from engine.module.model_declaration import ModelDeclaration
 from engine.skill.skill_declaration import SkillDeclaration
 from engine.module.module import Module
 from engine.agent.groups.agent_group import AgentGroup
-from engine.viewer.window_search import WindowSearch
-from suites.coding.support.file_edit_searcher import FileEditSearcher
-from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
-from engine.enums.key_loading import KeyLoading
-from engine.enums.auto_scroll import AutoScroll
-from engine.viewer.choice_option import ChoiceOption
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
-from engine.enums.window_place import WindowPlace
-from engine.enums.window_shows import WindowShows
 from suites.coding.models.file_edit import FileEdit
 from suites.coding.upgrade.file_edits_move import FileEditsMove
 from suites.coding.upgrade.viewer_layouts_move import ViewerLayoutsMove
@@ -66,11 +55,10 @@ from suites.coding.migrations.m012_file_edit_old_path import FileEditOldPathMigr
 from suites.coding.migrations.m013_file_edit_old_path_name import FileEditOldPathNameMigration
 from core.modules.tools.support.tool_runners import ToolRunners
 from suites.coding.support.full_run_nudges import TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN
-from suites.coding.support.skeletons import CODING_GIT_SKELETON, CODING_FILES_SKELETON, CODING_WORK_MODE_SKELETON, CODING_AGENT_SETTINGS_SKELETON, CODING_FILE_FEED_SKELETON, CODING_FILE_EDITS_SKELETON, CODING_TERMINAL_SKELETON
+from suites.coding.windows.coding_windows import CODING_WINDOWS
 from engine.checkout.project_checkouts import ProjectCheckouts
 from suites.coding.support.worktree_checkouts import WorktreeCheckouts
 
-FILE_EDIT_READS = ["file-edit list", "file-edit show", "project-file show"]
 
 
 class CodingModule(Module):
@@ -110,50 +98,4 @@ class CodingModule(Module):
     listeners = [FullTestRunListener, GraphifyHookRemovalListener]
     bindings = {ToolRunners: CodingToolRunners, ProjectCheckouts: WorktreeCheckouts}
     subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileGrepSubcommand, ProjectFileShowSubcommand, FileEditFileSubcommand, RecordFileChangesSubcommand]
-    windows = [WindowDeclaration("coding.git", "Git", "git.js", WindowLoading.COMPONENT, skeleton=CODING_GIT_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.BRANCH, reads=["git-overview branches", "git-overview commits", "git-overview pulls"],
-                                 keys=[WindowKey("branches", "git-overview branches", arguments=["skip", "limit"]),
-                                       WindowKey("commits", "git-overview commits", arguments=["skip", "limit"]),
-                                       WindowKey("pulls", "git-overview pulls")]),
-               WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, skeleton=CODING_FILES_SKELETON, place=WindowPlace.PANE_PAGE, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file grep", "project-file show", "file-edit list"], search=WindowReadSearch("project-file find", "Find a file in the project"),
-                                 keys=[WindowKey("entries", "project-file list {folder}"),
-                                       WindowKey("matches", "project-file find {words}", loading=KeyLoading.REQUESTED),
-                                       WindowKey("file", "project-file show {path}", loading=KeyLoading.REQUESTED)]),
-               WindowDeclaration("coding.work-mode", "Work mode", "work-mode.js", WindowLoading.COMPONENT, skeleton=CODING_WORK_MODE_SKELETON, icon=WindowIcon.WINDOW, place=WindowPlace.HEADER,
-                                 reads=["work-settings show", "setting-screen show", "setting-screen index", "setting show", "agent limits", "agent cards"], runs=["work-settings preset", "work-settings apply", "setting-screen apply", "setting set", "agent profile-limits", "agent retire"], events=["setting.*", "agent.*"],
-                                 keys=[WindowKey("work", "work-settings show", events=["setting.*"]),
-                                       WindowKey("work-screen", "setting-screen show work", events=["setting.*"]),
-                                       WindowKey("tests-screen", "setting-screen show tests", events=["setting.*"]),
-                                       WindowKey("advanced-screen", "setting-screen show advanced", events=["setting.*"]),
-                                       WindowKey("helper-types-screen", "setting-screen show helper-type", events=["setting.*"]),
-                                       WindowKey("find", "setting-screen index", events=["setting.*"]),
-                                       WindowKey("auto", "setting show journal.suites.coding.auto-mode", events=["setting.*"]),
-                                       WindowKey("limits", "agent limits", loading=KeyLoading.REQUESTED, events=["agent.*", "setting.*"]),
-                                       WindowKey("type-screen", "setting-screen show helper-type", arguments=["type"], loading=KeyLoading.REQUESTED, events=["setting.*"]),
-                                       WindowKey("count-agents", "agent cards --show all --reusable", arguments=["role", "profile", "page"], loading=KeyLoading.REQUESTED, events=["agent.*"])]),
-               WindowDeclaration("coding.agent-settings", "Agent settings", "agent-settings.js", WindowLoading.COMPONENT, skeleton=CODING_AGENT_SETTINGS_SKELETON, icon=WindowIcon.WINDOW,
-                                 reads=["work-settings show", "setting-screen show", "setting-screen index", "agent limits", "agent cards", "setting show", "assign-rule board", "assign-rule try", "assign-rule recent", "worker-route list"],
-                                 runs=["work-settings apply", "work-settings preset", "setting-screen apply", "setting set", "agent profile-limits", "agent retire", "assign-rule make", "assign-rule edit", "assign-rule move",
-                                       "assign-rule enable", "assign-rule disable", "assign-rule delete", "assign-rule apply", "assign-rule reassign", "assign-rule give-back"],
-                                 events=["setting.*", "agent.*", "assign_rule.*", "assign_rule_condition.*", "worker_route.*"],
-                                 keys=[WindowKey("work", "work-settings show", events=["setting.*"]),
-                                       WindowKey("work-screen", "setting-screen show work", events=["setting.*"]),
-                                       WindowKey("tests-screen", "setting-screen show tests", events=["setting.*"]),
-                                       WindowKey("advanced-screen", "setting-screen show advanced", events=["setting.*"]),
-                                       WindowKey("helper-types-screen", "setting-screen show helper-type", events=["setting.*"]),
-                                       WindowKey("find", "setting-screen index", events=["setting.*"]),
-                                       WindowKey("limits", "agent limits", loading=KeyLoading.REQUESTED, events=["agent.*", "setting.*"]),
-                                       WindowKey("type-screen", "setting-screen show helper-type", arguments=["type"], loading=KeyLoading.REQUESTED, events=["setting.*"]),
-                                       WindowKey("count-agents", "agent cards --show all --reusable", arguments=["role", "profile", "page"], loading=KeyLoading.REQUESTED, events=["agent.*"]),
-                                       WindowKey("assign", "assign-rule board", loading=KeyLoading.REQUESTED, events=["assign_rule.*", "assign_rule_condition.*", "agent.*", "worker_route.*"])]),
-               WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, skeleton=CODING_FILE_FEED_SKELETON, search=WindowSearch(FileEditSearcher, "Filter files"), icon=WindowIcon.FILE, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM, reads=[*FILE_EDIT_READS, "file-edit file", "window setting"],
-                                 events=["file_edit.create"],
-                                 keys=[WindowKey("edits", "file-edit list", events=["file_edit.create"], arguments=["agent", "limit", "before-id", "after-id"], page_size=50),
-                                       WindowKey("view", "window setting coding.file-feed view"),
-                                       WindowKey("file.*", "file-edit file {id}")]),
-               WindowDeclaration("coding.file-edits", "File edits", "file-edits.js", WindowLoading.COMPONENT, skeleton=CODING_FILE_EDITS_SKELETON, search=WindowSearch(FileEditSearcher, "Filter files"), icon=WindowIcon.COMMIT, reads=[*FILE_EDIT_READS, "agent list"],
-                                 events=["file_edit.create"], keys=[WindowKey("edits", "file-edit list", events=["file_edit.create"], arguments=["limit", "before-id", "after-id"], page_size=50)]),
-               WindowDeclaration("coding.terminal", "Terminal", "terminal.js", WindowLoading.COMPONENT, skeleton=CODING_TERMINAL_SKELETON, icon=WindowIcon.TERMINAL, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM,
-                                 reads=["agent terminal", "hook-call feed", "output hook-page"], runs=["agent type"], events=["hook_call.*"],
-                                 keys=[WindowKey("calls", "hook-call feed", events=["hook_call.*"], arguments=["session-agent-id", "limit", "before-id", "after-id"], page_size=200),
-                                       WindowKey("terminal-output.*", "output hook-page {id}", arguments=["before", "after"])],
-                                 options=[ChoiceOption("verbosity", "Detail level", [("commands", "Commands"), ("journal", "Commands and journal"), ("everything", "Show everything")], "everything")])]
+    windows = CODING_WINDOWS

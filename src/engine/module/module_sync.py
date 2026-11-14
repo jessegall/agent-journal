@@ -199,7 +199,7 @@ class ModuleSync:
                                  tuple(window.reads), tuple(window.runs), tuple(window.events), module in shipped, unavailable_reason(window.kit), window.icon.value,
                                  window.float_size.width, window.float_size.height, tuple(option.listed() for option in window.options), window.count, tuple(window.shared_reads), window.group, window.auto_scroll.value, tuple(tab.listed() for tab in window.tabs),
                                  window.search.listed() if window.search is not None else {}, window.shows.value, tuple(part.listed() for part in window.skeleton), tuple(window.required_settings), tuple(source.listed() for source in window.sources), dict(window.links), tuple(window.slots))
-                     for module in modules for window in map(extensions.extend, module.windows))
+                     for module in modules for window in map(extensions.extend, module.window_declarations()))
 
     def marks(self, modules: tuple[type[Module], ...]) -> tuple[MarkEntry, ...]:
         shipped = set(self.finder.default_modules())

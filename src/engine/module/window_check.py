@@ -32,12 +32,12 @@ class WindowCheck:
         self.finder = finder
 
     def problems(self, modules: Sequence[type[Module]], events: Sequence[str]) -> tuple[str, ...]:
-        names = [window.name for module in modules for window in module.windows]
+        names = [window.name for module in modules for window in module.window_declarations()]
         reads, runs = self.lines(modules)
         provided = RegistryLines(frozenset(reads), frozenset(runs), events)
         problems = list(NameGroups.duplicates([("windows", names)]))
         extensions = WindowExtensions(modules)
-        owners = {window.name: module.name for module in modules for window in module.windows}
+        owners = {window.name: module.name for module in modules for window in module.window_declarations()}
         shipped = {module.name for module in self.finder.default_modules()}
         inspector_slots = InspectorSlots(modules)
         for module in modules:
@@ -50,7 +50,7 @@ class WindowCheck:
                     problems.append(f"module {module.name} extends window {extension.window} without depending on {owner}")
                 if owner in shipped and module.name not in shipped:
                     problems += [f"{module.name} adds {line} to {extension.window}, which the journal ships" for line in extension.runs]
-            for window in map(extensions.extend, module.windows):
+            for window in map(extensions.extend, module.window_declarations()):
                 problems += window.problems(module.name, module.web_folder(), provided)
                 problems += inspector_slots.problems(module, window.name, window.slots)
         problems += self.slotless_section_problems(modules)
@@ -59,12 +59,12 @@ class WindowCheck:
     @staticmethod
     def slotless_section_problems(modules: Sequence[type[Module]]) -> list[str]:
         component_windows = {component.window for module in modules for inspector in module.inspectors for component in inspector.components}
-        return [f"{window.name} is a section and names no slot" for module in modules for window in module.windows
+        return [f"{window.name} is a section and names no slot" for module in modules for window in module.window_declarations()
                 if window.place is WindowPlace.SECTION and not window.slots and window.name not in component_windows]
 
     def suite_section_problems(self, modules: Sequence[type[Module]]) -> list[str]:
         suites = self.finder.suite_list()
-        sections = {window.name for module in modules for window in module.windows if window.place is WindowPlace.SECTION}
+        sections = {window.name for module in modules for window in module.window_declarations() if window.place is WindowPlace.SECTION}
         return [f"suite {suite.name} names the section {name}, which an inspector draws and no pane offers"
                 for module in modules for suite in suites.module_suites(module) for name in suite.offered_windows() if name in sections]
 
@@ -76,7 +76,7 @@ class WindowCheck:
     @staticmethod
     def allowed_button_lines(modules: Sequence[type[Module]], shipped: set[str] | frozenset[str]) -> frozenset[str]:
         extensions = WindowExtensions(modules)
-        return frozenset(line for module in modules if module.name in shipped for window in map(extensions.extend, module.windows) if window.name in ButtonWindow
+        return frozenset(line for module in modules if module.name in shipped for window in map(extensions.extend, module.window_declarations()) if window.name in ButtonWindow
                          for line in (*window.reads, *window.runs))
 
     @staticmethod

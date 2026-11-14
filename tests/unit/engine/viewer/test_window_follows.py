@@ -21,7 +21,7 @@ def undeclared_successors(text: str, declared: set[str]) -> list[str]:
 
 
 def listed_events(modules: list[type[Module]]) -> dict[str, set[str]]:
-    events = {window.name: set(window.events) for module in modules for window in module.windows}
+    events = {window.name: set(window.events) for module in modules for window in module.window_declarations()}
     for module in modules:
         for extension in module.window_extensions:
             if extension.window in events:
@@ -47,7 +47,7 @@ def test_every_follow_in_shipped_window_code_is_listed_by_a_window_of_its_module
     events = listed_events(modules)
     matched = {}
     for module in modules:
-        names = [*(window.name for window in module.windows), *(extension.window for extension in module.window_extensions)]
+        names = [*(window.name for window in module.window_declarations()), *(extension.window for extension in module.window_extensions)]
         declared = set().union(*(events.get(name, set()) for name in names))
         for path in (module.folder() / "web" / "src").rglob("*"):
             if path.suffix in (".vue", ".js") and path.stem.lower() not in body_stems(module):

@@ -58,7 +58,7 @@ def window_components(module: type[Module]) -> list[tuple[WindowDeclaration, Pat
     if not config.is_file():
         return []
     entries = dict(ENTRY.findall(config.read_text()))
-    return [(window, (folder / "web" / entries[window.entry.removesuffix(".js")]).resolve()) for window in module.windows if window.entry.removesuffix(".js") in entries]
+    return [(window, (folder / "web" / entries[window.entry.removesuffix(".js")]).resolve()) for window in module.window_declarations() if window.entry.removesuffix(".js") in entries]
 
 
 def undeclared(window: WindowDeclaration, entry: Path) -> list[str]:
@@ -80,7 +80,7 @@ def test_a_line_left_out_of_a_declaration_is_named():
 
 
 MODULES = ModuleFinder(JournalHome(Path("/nonexistent-journal"))).default_modules()
-EXTENDED = [window for module in MODULES for window in map(WindowExtensions(MODULES).extend, module.windows)]
+EXTENDED = [window for module in MODULES for window in map(WindowExtensions(MODULES).extend, module.window_declarations())]
 
 
 @pytest.mark.parametrize("window", EXTENDED, ids=[window.name for window in EXTENDED])

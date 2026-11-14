@@ -29,6 +29,7 @@ from engine.provider.provider import Provider
 from engine.skill.skill_declaration import SkillDeclaration
 from engine.upgrade.version_four_move import VersionFourMove
 from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window import Window
 from engine.viewer.window_extension import WindowExtension
 from engine.subcommand.subcommand import Subcommand
 from engine.seed.seeder import Seeder
@@ -76,7 +77,7 @@ class Module:
     overlays: ClassVar[list[type[Overlay]]] = []
     driver_rules: ClassVar[list[type[DriverRule]]] = []
     agent_states: ClassVar[list[type[AgentState]]] = []
-    windows: ClassVar[list[WindowDeclaration]] = []
+    windows: ClassVar[list[WindowDeclaration | type[Window]]] = []
     window_extensions: ClassVar[list[WindowExtension]] = []
     marks: ClassVar[list[MarkDeclaration]] = []
     block_conditions: ClassVar[list[type[BlockCondition]]] = []
@@ -109,6 +110,11 @@ class Module:
         if "named_plugin_events" in cls.__dict__:
             return cls.declared_plugin_events
         return getattr(cls, "plugin_moments", cls.declared_plugin_events)
+
+    # a window written as a class gives its declaration; an inline declaration is its own
+    @classmethod
+    def window_declarations(cls) -> list[WindowDeclaration]:
+        return [window.declaration() if isinstance(window, type) and issubclass(window, Window) else window for window in cls.windows]
 
     @classmethod
     def declared_buttons(cls) -> list[ButtonDeclaration]:
