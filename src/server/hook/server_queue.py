@@ -1,3 +1,4 @@
+from server.execution.viewer_tickets import ViewerTickets
 import itertools
 import threading
 from collections.abc import Generator
@@ -28,6 +29,7 @@ class ServerQueue(RequestQueue):
         self.running_hooks_count, self.viewer_wait_limit_seconds = running_hooks_count, viewer_wait_limit_seconds
         self.running_viewers_count = running_viewers_count
         self.running_viewers = 0
+        self.viewer_tickets: ViewerTickets | None = None
         self.viewer_windows: dict[int, str] = {}
         self.sent_at: dict[str, list[float]] = {}
         self.main_hook_seconds, self.agent_hook_seconds = 0.0, 0.0
@@ -139,25 +141,31 @@ class ServerQueue(RequestQueue):
             self.note_sent(window)
             self.changed.notify_all()
         try:
-            if priority is not WindowPriority.FIRST:
-                self.claim_viewer_turn(number)
-            with self.changed:
-                del self.waiting_viewers[number]
-                self.running_requests[number] = request.entry()
-                self.running_viewers += 1
-            try:
-                with CurrentExecution(priority.execution_priority, "viewer", line).applied():
-                    yield
-            finally:
+            with self.viewer_tickets.admitted(line, priority) if self.viewer_tickets is not None else self.claimed_viewer_turn(number, priority, line):
                 with self.changed:
-                    del self.running_requests[number]
-                    self.running_viewers -= 1
-                    self.changed.notify_all()
+                    del self.waiting_viewers[number]
+                    self.running_requests[number] = request.entry()
+                    self.running_viewers += 1
+                try:
+                    yield
+                finally:
+                    with self.changed:
+                        del self.running_requests[number]
+                        self.running_viewers -= 1
+                        self.changed.notify_all()
         finally:
             with self.changed:
                 self.waiting_viewers.pop(number, None)
                 self.viewer_windows.pop(number, None)
                 self.changed.notify_all()
+
+    # with no viewer tickets, as a queue of its own, a request waits for a viewer turn and runs at its window's priority
+    @contextmanager
+    def claimed_viewer_turn(self, number: int, priority: WindowPriority, line: str) -> Generator[None]:
+        if priority is not WindowPriority.FIRST:
+            self.claim_viewer_turn(number)
+        with CurrentExecution(priority.execution_priority, "viewer", line).applied():
+            yield
 
     def claim_viewer_turn(self, number: int) -> None:
         deadline = monotonic() + self.viewer_wait_limit_seconds

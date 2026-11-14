@@ -1,3 +1,6 @@
+from server.execution.session_starters import SessionStarters
+from server.execution.execution_priorities import ExecutionPriorities
+from server.execution.viewer_tickets import ViewerTickets
 from engine.execution.current_execution import CurrentExecution
 from engine.enums.log_source import LogSource
 from engine.enums.log_level import LogLevel
@@ -44,6 +47,7 @@ class HookDatabase:
         self.queue = ServerQueue(running_hooks_count)
         log = SystemLogWriter(home, Clock())
         self.executions = ExecutionQueue(ExecutionOrder(instant_limits(running_hooks_count)), Clock(), lambda text: log.write(LogLevel.WARNING, f"an execution failed: {text}", LogSource.SERVER))
+        self.queue.viewer_tickets = ViewerTickets(self.executions, ExecutionPriorities(SessionStarters.shared(home)), Clock(), self.queue.viewer_wait_limit_seconds)
 
     @contextmanager
     def used(self, priority: ExecutionPriority, wait_seconds: float, owner: str = "", request: QueueRequest | None = None) -> Generator[Database]:
