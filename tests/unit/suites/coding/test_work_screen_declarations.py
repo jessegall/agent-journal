@@ -10,7 +10,7 @@ DECLARED = [*CODING_SETTING_VALUES, *WORKER_SETTING_VALUES, *HELPER_SETTING_VALU
 WORK = {
     "Taking on work": ["auto-mode", "main-writes-code"],
     "Workers": ["main-dispatches-workers", "continue-while-delegatable", "merger-on", "main-agent-may-merge"],
-    "Other helpers": ["main-starts-read-only-helpers", "designer-enabled"],
+    "Other helpers": ["main-starts-read-only-helpers", "designer-enabled", "plain-code-words"],
     "Keeping worktrees up to date": ["keep-worktrees-up-to-date", "behind-commits-to-check", "behind-check-minutes", "behind-recheck-commits", "update-to-main-commits", "update-wait-minutes", "update-reminders", "check-history-days"],
     "Approvals": ["accept-every-approval", "skips-need-approval"],
 }

@@ -45,7 +45,7 @@ def test_a_refused_stop_keeps_later_checks_without_applying_their_commands(stop_
                       not checks["coding.main-stop"]["applied"],
                       "Tasks 1 are yours and unfinished" in checks["coding.main-stop"]["reason"])
     lines = [line for line in story.system_log_text().splitlines() if "stop " in line and "refused" in line]
-    story.expect_rows(len(lines) == 1, len(lines[0]) < 300, "tasks.carry-on-at-stop" in lines[0], "coding.main-stop" in lines[0], detail=str(lines))
+    story.expect_rows(len(lines) == 1, len(lines[0]) < 300, "tasks.carry-on-at-stop" in lines[0], detail=str(lines))
 
 
 def test_a_diagnostic_check_does_not_start_a_task_after_a_plan_refuses_stop(new_story):

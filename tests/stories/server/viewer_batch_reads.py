@@ -24,8 +24,8 @@ def test_five_viewer_reads_open_one_database_and_read_one_registry_row(batch_ser
     statements = []
     open_database = Database.opened
 
-    def recorded(home):
-        database = open_database(home)
+    def recorded(home, *turns):
+        database = open_database(home, *turns)
         database.connection.set_trace_callback(statements.append)
         databases.append(database)
         return database

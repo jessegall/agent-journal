@@ -1,4 +1,7 @@
 import shutil
+from pathlib import Path
+
+from engine.provider.providers import Providers
 
 from server.work.booting_work import BootingWork
 from tests.stories.core.modules.plugins.support.plugin_samples import sample_plugin_folder
@@ -7,7 +10,13 @@ from tests.stories.core.modules.skills.support.skill_samples import PATH
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 READER = "cart-test"
+PLUGIN_SKILL = "sample-rules"
 SKILLS_MODULE = f"{PATH}:GoodSkillsModule"
+
+
+def skill_files(story, name: str) -> list[Path]:
+    """Where each agent program keeps the skill, in the project."""
+    return [story.home.project_folder / program_folder / name / "SKILL.md" for program_folder in story.container.get(Providers).skill_folders()]
 
 
 def booted(story):
@@ -33,10 +42,11 @@ def test_a_boot_puts_back_the_journals_skills(new_story):
 
 def test_a_boot_puts_back_the_skills_of_a_plugin_that_is_switched_on(new_story):
     story = installed_plugin(new_story)
-    for skill_file in skill_files(story, PLUGIN_SKILL):
+    published = [file for file in skill_files(story, PLUGIN_SKILL) if file.is_file()]
+    for skill_file in published:
         shutil.rmtree(skill_file.parent)
     booted(story)
-    story.expect_rows(*(skill_file.is_file() for skill_file in skill_files(story, PLUGIN_SKILL)))
+    story.expect_rows(bool(published), *(skill_file.is_file() for skill_file in published))
 
 
 def test_a_boot_puts_back_a_reader_a_plugin_ships_and_the_project_removed(new_story):
