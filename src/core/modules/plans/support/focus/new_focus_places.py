@@ -1,5 +1,6 @@
 from engine.container.single_instance import SingleInstance
 from engine.driver.agent_hook import AgentHook
+from engine.driver.hook_event import HookEvent
 from engine.driver.hook_history import HookHistory
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
@@ -18,7 +19,7 @@ class NewFocusPlaces(SingleInstance):
 
     def __init__(self, queries: Queries, tasks: TaskQuery, hook_history: HookHistory) -> None:
         self.queries, self.tasks, self.hook_history = queries, tasks, hook_history
-        self.read_hook: AgentHook | None = None
+        self.read_event: HookEvent | None = None
         self.read_places: list[PlanTask] = []
 
     @staticmethod
@@ -26,10 +27,11 @@ class NewFocusPlaces(SingleInstance):
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         return bool(shell.journal_command_numbers("plan start")) if shell is not None else False
 
-    # read once for a hook: the state that opens on the places and the rule that speaks about them share the answer
+    # read once for a hook event: the state that opens on the places and the rule that speaks about them share the answer,
+    # though each is given its own copy of the hook
     def places(self, hook: AgentHook) -> list[PlanTask]:
-        if self.read_hook is not hook:
-            self.read_hook, self.read_places = hook, self.found(hook)
+        if self.read_event is not hook.event:
+            self.read_event, self.read_places = hook.event, self.found(hook)
         return self.read_places
 
     def found(self, hook: AgentHook) -> list[PlanTask]:
