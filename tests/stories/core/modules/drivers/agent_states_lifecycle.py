@@ -1,21 +1,44 @@
 from pathlib import Path
 
 from engine.enums.tool_type import ToolType
-from engine.module.driver_entries import DRIVERS_MODULE
-from engine.query.queries import Queries
 from engine.testing.examples.hook_samples import HookSamples
-from core.modules.drivers.models.hook_call import HookCall
+from core.modules.skills.rules.skill_read_first_rule import SkillReadFirstRule
+from core.modules.skills.states.skill_load_required import SkillLoadRequired
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
-from tests.stories.core.modules.skills.due import JOURNAL_TASK_LIST, due_lines, environment, start
+from engine.testing.stories.story_fixture import StoryFixture
+from core.modules.skills.support.skill_requirement import SkillRequirement
+from tests.stories.core.modules.skills.due import DUE, JOURNAL_TASK_LIST, due_lines, start
+from tests.stories.core.support.coding_fixtures import CodingEnvironmentWithoutPlainWords
 
-SKILL_RULE = "skills.read-first"
-SKILL_STATE = "skills.load-required"
+
+class SkillsDueAgent(StoryFixture):
+    """The coding environment with skills required, and a main agent that has just started, so its first skills are due."""
+
+    parent = CodingEnvironmentWithoutPlainWords
+
+    def steps(self, story):
+        story.replace(SkillRequirement, SkillRequirement())
+        story.run("skill write")
+        start(story)
 
 
-def records(story, sample) -> dict[str, dict]:
-    reply = story.hook("s-1", sample)
-    rows = story.container.get(Queries).query(HookCall).find(reply.hook_call_id).metadata.module_part(DRIVERS_MODULE)["rules"]
-    return {row["rule"]: row for row in rows}
+class Calls:
+    """How often the skill state's opener ran and the read-first rule was asked, counted while hooks run."""
+
+    def __init__(self, monkeypatch) -> None:
+        self.opened, self.asked = 0, 0
+        opener, rule = SkillLoadRequired.open_rows, SkillReadFirstRule.answer
+
+        def counted_opener(state, hook):
+            self.opened += 1
+            return opener(state, hook)
+
+        def counted_answer(read_first, hook):
+            self.asked += 1
+            return rule(read_first, hook)
+
+        monkeypatch.setattr(SkillLoadRequired, "open_rows", counted_opener)
+        monkeypatch.setattr(SkillReadFirstRule, "answer", counted_answer)
 
 
 def read_every_due_skill(story) -> None:
@@ -26,16 +49,16 @@ def read_every_due_skill(story) -> None:
     story.run_listeners()
 
 
-def test_an_agent_with_a_skill_due_has_the_load_state_open_and_its_rule_is_asked(new_story):
-    story = environment(new_story)
-    start(story)
-    rows = records(story, JOURNAL_TASK_LIST)
-    story.expect_rows(SKILL_RULE in rows, "is not open" not in rows[SKILL_RULE].get("reason", ""), detail=str(rows))
+def test_an_agent_with_a_skill_due_has_the_load_state_open_and_its_rule_is_asked_once(new_story, monkeypatch):
+    story = new_story(DUE, fixture=SkillsDueAgent)
+    calls = Calls(monkeypatch)
+    story.hook("s-1", JOURNAL_TASK_LIST)
+    story.expect_rows((calls.opened, calls.asked) == (1, 1), detail=f"{calls.opened}, {calls.asked}")
 
 
-def test_with_every_due_skill_read_the_state_closes_and_the_rule_is_recorded_allowed_without_being_asked(new_story):
-    story = environment(new_story)
-    start(story)
+def test_with_every_due_skill_read_the_state_closes_and_the_rule_is_not_asked(new_story, monkeypatch):
+    story = new_story(DUE, fixture=SkillsDueAgent)
     read_every_due_skill(story)
-    rows = records(story, JOURNAL_TASK_LIST)
-    story.expect_rows(rows[SKILL_RULE]["outcome"] == "allowed", rows[SKILL_RULE].get("reason") == f"{SKILL_STATE} is not open", rows[SKILL_RULE].get("milliseconds", 0) == 0, detail=str(rows))
+    calls = Calls(monkeypatch)
+    story.hook("s-1", JOURNAL_TASK_LIST)
+    story.expect_rows((calls.opened, calls.asked) == (1, 0), detail=f"{calls.opened}, {calls.asked}, {due_lines(story)}")
