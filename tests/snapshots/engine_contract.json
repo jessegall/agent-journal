@@ -4795,6 +4795,13 @@
         "applies(self, entry_name: str, change: Change[Model]) -> bool"
       ]
     },
+    "listener.commit.agent_state_openness.AgentStateOpenness": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "is_open(self, agent_id: int, state: type[AgentState]) -> bool"
+      ]
+    },
     "listener.commit.commit_listener.CommitListener": {
       "bases": [
         "EventSubscriber[E]"
@@ -4839,6 +4846,8 @@
         "is_prepared(self, entry: ListenerEntry, events: list[LoggedEvent], position: int) -> bool",
         "prepare_rows(self, entry: ListenerEntry, events: list[LoggedEvent]) -> None",
         "handle_event(self, entry: ListenerEntry, event: LoggedEvent) -> bool",
+        "is_heard_in_state(self, listener: CommitListener[object], built_event: object, event: LoggedEvent) -> bool",
+        "is_state_open(self, agent_id: int, state: type[AgentState], event: LoggedEvent) -> bool",
         "hold_when_over_time_limit(self, entry: ListenerEntry, event: LoggedEvent, elapsed: float) -> None"
       ]
     },
@@ -4854,6 +4863,17 @@
         "guard_current_thread() -> None",
         "thread_name(container: Container) -> str",
         "close(self) -> None"
+      ]
+    },
+    "listener.commit.state_listener.StateListener": {
+      "bases": [
+        "CommitListener[E]"
+      ],
+      "fields": [
+        "state: ClassVar[type[AgentState]]"
+      ],
+      "methods": [
+        "agent_of(self, event: E) -> int | None"
       ]
     },
     "listener.deletion_listener.DeletionListener": {
@@ -4890,6 +4910,13 @@
       "methods": []
     },
     "listener.errors.listener_time_limit_error.ListenerTimeLimitError": {
+      "bases": [
+        "Exception"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "listener.errors.unregistered_listener_state_error.UnregisteredListenerStateError": {
       "bases": [
         "Exception"
       ],
@@ -9713,7 +9740,8 @@
         "defer_writes(self, database: Database) -> None",
         "discard_writes(self) -> None",
         "has_open_connection(self) -> bool",
-        "is_file_open(self) -> bool"
+        "is_file_open(self) -> bool",
+        "descriptor_states() -> list[os.stat_result]"
       ]
     },
     "testing.templates.temp_folders.TempFolders": {

@@ -1,16 +1,13 @@
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 
-from engine.driver.agent_hook import AgentHook
 from engine.driver.agent_state import AgentState
 from engine.enums.state_tier import StateTier
-from engine.driver.hook_event import HookEvent
-from engine.driver.state_boards import StateBoards
-from engine.enums.hook_event_name import HookEventName
 from engine.registry.agent_state_entry import AgentStateEntry
 from engine.registry.registry import Registry
 from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.actor_loader import ActorLoader
+from core.modules.drivers.support.agent_boards import AgentBoards
 
 NONE = "(none)"
 TIER_LABELS = ((StateTier.CRITICAL, "critical"), (StateTier.STACK, "stack"), (StateTier.IN_PLACE, "in place"), (None, "defaults"), (StateTier.DEFERRED, "deferred"))
@@ -61,7 +58,7 @@ class AgentStateListing:
     the agent's state board, so a tier a later phase fills is listed from the registry and never from a
     fixed list."""
 
-    def __init__(self, registry: Registry, boards: StateBoards, loader: ActorLoader) -> None:
+    def __init__(self, registry: Registry, boards: AgentBoards, loader: ActorLoader) -> None:
         self.registry, self.boards, self.loader = registry, boards, loader
 
     def states(self, agent: Agent, current_time: Timestamp) -> AgentStates:
@@ -73,8 +70,7 @@ class AgentStateListing:
     # The open states of an agent as a hook of now finds them, tier by tier in the order of the tiers, each state in its place.
     def open_states(self, agent: Agent, current_time: Timestamp) -> list[OpenState]:
         actor = self.loader.loaded(agent)
-        tick = HookEvent.tick(agent.program, agent.session, "", 0, str(agent.id), "")
-        board = self.boards.for_hook(AgentHook.of_actor(replace(tick, event=HookEventName.PRE_TOOL_USE), actor, current_time))
+        board = self.boards.for_agent(agent, current_time)
         matched: list[OpenState] = []
         for tier, label in TIER_LABELS:
             for entry in self.registry.tier_states(actor.driver, int(tier)) if tier is not None else []:
