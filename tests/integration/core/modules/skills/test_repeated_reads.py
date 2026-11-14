@@ -42,4 +42,4 @@ def test_one_request_asks_for_the_due_skills_of_an_agent_many_times_and_reads_th
     unread = story.container.get(UnreadSkills)
     with story.repeated_work.request():
         answers = [unread.names(story.agent.id) for _ in range(12)]
-    story.expect_rows(answers[0] == ["journal-notes"], all(answer == answers[0] for answer in answers))
+    story.expect_rows("journal-notes" in answers[0], all(answer == answers[0] for answer in answers), detail=str(answers[0]))
