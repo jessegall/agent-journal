@@ -4,6 +4,7 @@ import {computed, ref, watch} from "vue";
 import Icon from "../kit/Icon.vue";
 import MarkIcon from "../kit/MarkIcon.vue";
 import NewEnvironment from "./NewEnvironment.vue";
+import {copying} from "../domain/contextItems.js";
 import Skeleton from "../kit/Skeleton.vue";
 
 // the left sidebar as version 4 drew it: a header with the project's mark, then Home and the windows the suite offers in one
@@ -46,6 +47,19 @@ const sections = computed(() => [
 // each page has its own address, which a click follows
 const pageOf = (name) => `?environment=${encodeURIComponent(props.current)}&page=${encodeURIComponent(name)}`;
 
+// the menu of a row: open it here or in a new tab, copy its link
+const rowPlace = (head, address, enter, reason = "") => ({
+    head,
+    items: [
+        {label: "Open", group: "open", disabled: Boolean(reason), reason: "Not available", run: enter},
+        {label: "Open in a new tab", group: "open", disabled: Boolean(reason), reason: "Not available", run: () => window.open(address, "_blank", "noopener")},
+        {label: "Copy link", group: "copy", run: ({say}) => copying(new URL(address, location.href).href, "the link", say)},
+    ],
+});
+const pagePlace = (page) => rowPlace(page.title, pageOf(page.name), () => (props.navigate ? props.navigate(page.name) : location.assign(pageOf(page.name))), page.unavailable_reason);
+const homePlace = () => rowPlace("Home", `?environment=${props.current}`, () => location.assign(`?environment=${props.current}`));
+const environmentPlace = (name) => rowPlace(name, `?environment=${name}`, () => openEnvironment(name));
+
 const isPlainClick = (event) => event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
 
 function go(event, page) {
@@ -84,10 +98,10 @@ function fold(key) {
                 </template>
                 <template v-if="!folded.has(section.key)">
                     <template v-if="section.key === 'pages'">
-                        <a :class="['item', {active: !open}]" :href="`?environment=${current}`"><Icon name="home" :size="14" /><span class="item-title">Home</span></a>
+                        <a v-context="homePlace" :class="['item', {active: !open}]" :href="`?environment=${current}`"><Icon name="home" :size="14" /><span class="item-title">Home</span></a>
                     </template>
                     <template v-for="window in section.windows" :key="window.name">
-                        <a :class="['item', {active: window.name === open}]" :title="window.title" :href="pageOf(window.name)" :data-sidebar-window="window.name" :aria-disabled="Boolean(window.unavailable_reason)" @click="go($event, window)">
+                        <a v-context="() => pagePlace(window)" :class="['item', {active: window.name === open}]" :title="window.title" :href="pageOf(window.name)" :data-sidebar-window="window.name" :aria-disabled="Boolean(window.unavailable_reason)" @click="go($event, window)">
                             <MarkIcon :name="window.icon || 'window'" /><span class="item-title">{{ window.title }}</span>
                             <template v-if="counts[window.name]">
                                 <span class="item-count">{{ counts[window.name] }}</span>
@@ -104,7 +118,7 @@ function fold(key) {
                     <button type="button" class="item" data-new-environment @click="drafting = true"><Icon name="plus" :size="14" /><span class="item-title">New environment</span></button>
                 </template>
                 <template v-for="environment in shownEnvironments" :key="environment.id">
-                    <a :class="['item', {active: environment.name === current}]" :data-environment="environment.name" :href="`?environment=${environment.name}`">
+                    <a v-context="() => environmentPlace(environment.name)" :class="['item', {active: environment.name === current}]" :data-environment="environment.name" :href="`?environment=${environment.name}`">
                         <span :class="['dot', {active: activeEnvironments.includes(environment.id)}]" /><span class="item-title">{{ environment.name }}</span>
                     </a>
                 </template>

@@ -16,7 +16,12 @@ export function menuEntries(items) {
 // the one open menu of a component: it opens at the pointer, or under the focused element on Shift+F10 or the Menu key, and gives focus back to the element it belongs to
 export function useContextMenu() {
     const menu = ref(null);
-    const show = (at, head, items, target) => (menu.value = {at, head, items, target});
+    // focus goes back to returnTo, which is the element the menu belongs to unless the shell says it was somewhere else
+    let returnTo = null;
+    const show = (at, head, items, target, back = target) => {
+        returnTo = back;
+        menu.value = {at, head, items, target};
+    };
 
     function open(event, head, items) {
         event.preventDefault();
@@ -31,10 +36,9 @@ export function useContextMenu() {
     }
 
     function close() {
-        const target = menu.value?.target;
         menu.value = null;
-        if (target?.isConnected) target.focus({preventScroll: true});
+        if (returnTo?.isConnected) returnTo.focus({preventScroll: true});
     }
 
-    return {menu, open, openFromKey, close};
+    return {menu, show, open, openFromKey, close};
 }

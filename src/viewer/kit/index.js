@@ -141,3 +141,5 @@ export {default as CardPage} from "./CardPage.vue";
 export {default as TableLayout} from "./TableLayout.vue";
 export {default as CreateDialog} from "./CreateDialog.vue";
 export {useToast} from "./useToast.js";
+export {vContext} from "./vContext.js";
+export {copying} from "../src/domain/contextItems.js";
