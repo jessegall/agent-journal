@@ -16,11 +16,11 @@ function drawn(component, props) {
     return element;
 }
 
-test("the sidebar shows every page in one list, under no heading", () => {
+test("the sidebar shows every page: the design's groups, what it does not place under More, Settings at the foot", () => {
     const element = drawn(SidebarPages, {windows, environments: [], current: "main"});
     expect(element.querySelector('[data-fold="project"]')).toBeNull();
     expect(element.querySelector('[data-fold="environment"]')).toBeNull();
-    expect([...element.querySelectorAll("[data-sidebar-window]")].map((page) => page.textContent.trim())).toEqual(["Chat", "Files", "Settings"]);
+    expect([...element.querySelectorAll("[data-sidebar-window]")].map((page) => page.textContent.trim())).toEqual(["Files", "Chat", "Settings"]);
     expect(element.textContent).toContain("Home");
 });
 

@@ -59,8 +59,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     position: fixed;
     z-index: 40;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(3px);
+    background: rgb(0 0 0 / 0.35);
 }
 
 .veil.fades { background: rgba(0, 0, 0, .45); }
@@ -78,20 +77,17 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 
 .side-enter-active,
 .side-leave-active {
-    transition:
-        background 0.24s ease,
-        backdrop-filter 0.24s ease;
+    transition: background 0.24s ease;
 }
 
 .side-enter-active .panel,
 .side-leave-active .panel {
-    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: transform var(--t-panel, 0.34s) var(--ease, cubic-bezier(0.2, 0.9, 0.25, 1));
 }
 
 .side-enter-from,
 .side-leave-to {
     background: transparent;
-    backdrop-filter: blur(0);
 }
 
 .side-enter-from .panel,

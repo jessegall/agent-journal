@@ -15,6 +15,7 @@ import WindowPane from "../windows/WindowPane.vue";
 import ResourcePanel from "../resource/ResourcePanel.vue";
 import ToastArea from "../kit/ToastArea.vue";
 import {usePageToasts} from "../composables/toasts.js";
+import {pageTitle} from "../domain/sidebarNav.js";
 
 const props = defineProps({
     environment: {type: String, required: true},
@@ -63,7 +64,7 @@ onUnmounted(() => {
 });
 watchEffect(() => {
     const entry = catalogue.window(page.value);
-    if (entry) document.title = `${entry.title} · ${props.environment}`;
+    if (entry) document.title = `${pageTitle(page.value, entry.title)} · ${props.environment}`;
 });
 </script>
 
@@ -77,7 +78,7 @@ watchEffect(() => {
             </template>
             <div class="view-window-main">
                 <template v-if="standalone">
-                    <Breadcrumb :environment="environment" :page="catalogue.window(page)?.title || page" />
+                    <Breadcrumb :environment="environment" :page="pageTitle(page, catalogue.window(page)?.title || page)" />
                 </template>
                 <template v-else>
                     <div class="view-window-bar">

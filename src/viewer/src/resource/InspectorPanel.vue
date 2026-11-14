@@ -66,7 +66,8 @@ defineExpose({focus: () => root.value?.focus()});
     bottom: 0;
     display: flex;
     flex-direction: column;
-    border-left: 1px solid var(--border);
+    min-width: 0;
+    border-left: 1px solid var(--border-2);
     background: var(--bg);
     box-shadow: -20px 0 50px rgba(0, 0, 0, 0.4);
 }

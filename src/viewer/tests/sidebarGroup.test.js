@@ -18,7 +18,8 @@ test("the pages of every module stand in one list in the sidebar, and none is a 
     app.unmount();
     expect(groups.filter((name) => ["Tasks", "Plans", "Documents"].includes(name))).toEqual([]);
     expect(groups).not.toContain("Environment");
-    expect(items).toEqual(["tasks.tasks", "plans.plans", "documents.documents"]);
+    // Documents has its place in the design's Work group; the pages the design does not place follow under More
+    expect(items).toEqual(["documents.documents", "tasks.tasks", "plans.plans"]);
 });
 
 test("changing a setting reloads the windows offered by the server", async () => {
