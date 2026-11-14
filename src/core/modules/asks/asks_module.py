@@ -8,6 +8,11 @@ from core.modules.asks.models.ask_stack import AskStack
 from core.modules.asks.models.ask import Ask
 from core.modules.asks.models.ask_step import AskStep
 from core.modules.asks.queries.ask_query import AskQuery
+from core.modules.asks.commands.approve_ask_stack.approve_ask_stack_handler import ApproveAskStackHandler
+from core.modules.asks.commands.approve_ask_stack.approve_ask_stack_subcommand import ApproveAskStackSubcommand
+from core.modules.asks.commands.end_replaced_ask_stacks.end_replaced_ask_stacks_handler import EndReplacedAskStacksHandler
+from core.modules.asks.guards.agent_stack_guard import AgentStackGuard
+from core.modules.asks.listeners.ask_stack_listener import AskStackListener
 from core.modules.asks.support.helper_ask_facts import HelperAskFacts
 
 # the journal ask command makes a question (task 9815), so the built make, edit and delete are left out
@@ -25,3 +30,7 @@ class AsksModule(Module):
     migrations = [AsksTablesMigration, AskStacksTableMigration]
     ask_topics = [AskTopic("general", "go on with anything the task still holds, or stop")]
     bindings = {AskFacts: HelperAskFacts}
+    guards = [AgentStackGuard]
+    handlers = [ApproveAskStackHandler, EndReplacedAskStacksHandler]
+    subcommands = [ApproveAskStackSubcommand]
+    listeners = [AskStackListener]
