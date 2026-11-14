@@ -1,1 +1,5 @@
 tests/stories/core/modules/chat/mark_removal.py::test_deleting_an_environment_deletes_its_marks -> integration tests/integration/core/modules/chat/test_mark_removal.py::test_deleting_an_environment_deletes_its_marks
+tests/stories/core/modules/chat/marks.py::test_a_process_mark_with_the_same_key_is_edited_in_place -> integration tests/integration/core/modules/chat/test_marks.py::test_a_process_mark_with_the_same_key_is_edited_in_place
+tests/stories/core/modules/chat/marks.py::test_a_process_mark_is_never_edited_once_it_ended -> integration tests/integration/core/modules/chat/test_marks.py::test_a_process_mark_is_never_edited_once_it_ended
+tests/stories/core/modules/chat/marks.py::test_a_mark_shown_again_under_its_key_takes_the_new_words_and_keeps_its_id -> integration tests/integration/core/modules/chat/test_marks.py::test_a_mark_shown_again_under_its_key_takes_the_new_words_and_keeps_its_id
+tests/stories/core/modules/chat/marks.py::test_a_listener_run_twice_for_one_event_leaves_one_mark -> integration tests/integration/core/modules/chat/test_marks.py::test_a_listener_run_twice_for_one_event_leaves_one_mark

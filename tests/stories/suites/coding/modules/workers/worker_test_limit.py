@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.models.worktree import Worktree
 from dataclasses import replace
 from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
 import pytest
@@ -26,7 +27,6 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from core.modules.agents.testing.fake_launcher import FakeLauncher
-from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.bindings.worker_test_listings import WorkerTestListings
 from suites.coding.modules.workers.models.proof import Proof
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
@@ -165,7 +165,7 @@ def test_a_stopped_worker_is_started_again_with_the_count_and_limit(new_story):
     story.step("run printed", process.id, 1, "collected 8 items\n")
     OutputReading()(story.container)
     story.run_listeners()
-    worktree = story.container.get(WorktreeQuery).worker_worktree(worker.id)
+    worktree = story.first_row(Worktree, session_agent_id=worker.id)
     launcher.expect_started(worker.id, worker_session(story, worker), Path(worktree.folder))
     story.expect_rows("8 tests" in str(launcher.requests[0]["command"]), "limit 5" in str(launcher.requests[0]["command"]))
 

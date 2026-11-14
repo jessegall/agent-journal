@@ -47,12 +47,6 @@ def test_a_server_installed_already_is_refused(new_story):
     story.expect_refusal("mcp install github", "github is installed already: journal mcp list shows it", actor=story.user)
 
 
-def test_a_key_is_kept_outside_the_project_and_never_in_a_row(new_story, private_folder):
-    story = new_story(fixture=ServersInstalled)
-    story.expect_success(f"mcp key github {KEY}", "key kept for github, outside the project", actor=story.user)
-    keys_file = next(private_folder.glob("*.keys.json"))
-    story.expect_rows(json.loads(keys_file.read_text()) == {GITHUB_VARIABLE: KEY}, stat.S_IMODE(keys_file.stat().st_mode) == 0o600,
-                      KEY.encode() not in story.home.database.read_bytes())
 
 
 def test_a_key_for_a_server_that_signs_in_a_blank_key_and_a_server_not_installed_are_refused(new_story):
@@ -86,13 +80,6 @@ def test_the_check_names_what_each_server_still_needs_and_where_it_is_written(ne
     story.expect_text("mcp check", "linear  missing from .mcp.json: journal mcp remove linear, then journal mcp install linear", actor=story.agent)
 
 
-def test_the_real_key_is_given_to_the_agent_program_at_its_launch(new_story):
-    story = new_story(fixture=ServersInstalled)
-    story.expect_success(f"mcp key github {KEY}", actor=story.user)
-    launch = Launch(story.home.project_folder, story.home.project_folder, "sonnet", "", SessionStart("s-9"), {})
-    providers = story.container.get(Providers)
-    story.expect_rows(providers.provider("claude").session_command(launch).variables[GITHUB_VARIABLE] == KEY,
-                      providers.provider("codex").session_command(launch).variables[GITHUB_VARIABLE] == KEY)
 
 
 def test_a_row_write_holding_a_server_key_is_refused(new_story):

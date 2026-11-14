@@ -3,7 +3,6 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.command.bus import Bus
 from engine.database.database import Database
 from engine.enums.command_category import CommandCategory
 from engine.enums.tool_type import ToolType
@@ -59,7 +58,7 @@ def due_skill_files(skill_files):
 
 def test_a_skill_whose_text_changed_since_it_was_read_counts_as_unread(due_skill_files):
     story = due_skill_files
-    story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-notes", "the-digest-of-an-older-text"), story.agent)
+    story.run_command(LoadSkill(story.agent.id, "journal-notes", "the-digest-of-an-older-text"), story.agent)
     story.expect_success(f"agent-skill unread {agent_number(story, story.agent.id)}", "journal-notes")
 
 

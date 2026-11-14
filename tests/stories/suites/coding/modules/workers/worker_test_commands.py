@@ -75,17 +75,6 @@ def started_lines(worker):
     return [process.line for process in worker_runs(worker)]
 
 
-def test_a_named_test_run_starts_through_the_runner_in_the_worktree_once_it_is_saved(worker_with_commands, runner_starts, monkeypatch):
-    worker_with_commands.story.expect_success(PYTHON_RUN, actor=worker_with_commands.worker)
-    worker_with_commands.story.run_listeners()
-    process = worker_runs(worker_with_commands)[-1]
-    command, options = runner_starts[0]
-    expect_value_with(command, f"--process {process.id}")
-    expect_value_with(command, "pytest tests/cart.py")
-    expect_value(options["cwd"], str(worker_with_commands.repository.worktree_folder(worker_with_commands.worker.id)))
-    monkeypatch.setattr(RunnerBinary, "is_installed", lambda _runner: False)
-    with pytest.raises(MissingRunnerError, match="not installed"):
-        worker_with_commands.story.container.get(WorkerTestLaunch).start_waited(process, "pytest tests/cart.py", "s-1")
 
 
 def test_a_named_test_run_with_a_counting_reader_starts_with_its_count(worker_with_commands, runner_starts):

@@ -144,11 +144,3 @@ def expect_lines_hook_2(text, text_2, story, text_3, text_4, text_5) -> None:
     assert actual, actual
 
 
-def test_a_link_in_the_command_and_output_is_checked_once(new_story):
-    story = new_story(fixture=UserJoined)
-    link = "https://docs.example.com/pages/4"
-    database = story.container.get(Database)
-    with patch.object(database, "rows", wraps=database.rows) as reads:
-        expect_pin_lines(story.hook("s-1", shell_call(f"curl {link}", link)))
-    pin_reads = [call for call in reads.call_args_list if "FROM pins WHERE closed_at IS NULL AND link IN" in call.args[0].sql and "count(*)" not in call.args[0].sql]
-    story.expect_rows(len(pin_reads) == 1)

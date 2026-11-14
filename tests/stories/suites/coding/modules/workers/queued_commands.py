@@ -223,7 +223,7 @@ def test_a_worker_command_lost_before_it_started_tells_the_worker_and_can_be_giv
     story, _, worker, launches = worker_command
     story.expect_text('worker commit --differences none', "command accepted", actor=worker)
     operation = story.newest_row(WorkerOperation)
-    story.container.get(Bus).run(OrphanProcess(operation.process_id), Actor.core(), environment_id=story.row(Agent, worker.id).environment_id)
+    story.run_command(OrphanProcess(operation.process_id), Actor.core(), environment_id=story.row(Agent, worker.id).environment_id)
     lines = story.story_rows(AgentLine, session_agent_id=worker.id)
     notifications = [line for line in lines if line.nudge.key == "workers.operation_never_started"]
     story.expect_rows(len(notifications) == 1, str(operation.process_id) in notifications[0].text,

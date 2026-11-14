@@ -10,7 +10,6 @@ from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.helpers.support.usage_lockdown import UsageLockdown
 from core.modules.helpers.ticks.usage_limit_marker import UsageLimitMarker
 from engine.actor.actor import Actor
-from engine.command.bus import Bus
 from engine.driver.program_lockdown import ProgramLockdown
 from engine.enums.actor_type import ActorType
 from engine.file.file_access import FileAccess
@@ -99,7 +98,7 @@ def test_a_person_who_retires_a_worker_with_unmerged_work_is_refused(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     worker = delivered_worker(story, repository_environment(story))
-    story.container.get(Bus).run(EndInactiveWorker(worker.id), story.agent)
+    story.run_command(EndInactiveWorker(worker.id), story.agent)
     story.expect_refusal(f'agent retire {agent_number(story, worker.id)} --reason "Its task is done" --environment main', "unmerged work", actor=person)
     story.expect_rows(story.row(Agent, worker.id).retired_at is None)
 
@@ -150,7 +149,7 @@ def test_a_worker_whose_worktree_was_merged_stays_kept_and_idle_with_its_memorie
     story.expect_text("memory list", MEMORY_TEXT, actor=story.worker)
     story.expect_text(f"worker status {worker.number}", f"worker {worker.number} is idle", "no worktree", actor=story.agent)
     story.expect_text(f"agent show {worker.number} --environment main", f"number: {worker.number}", "role: worker", actor=story.agent)
-    story.expect_rows(worker.retired_at is None, worker.ended_at is not None, story.container.get(WorktreeQuery).worker_worktree(worker.id) is None, len(worker_rows(story)) == 1)
+    story.expect_rows(worker.retired_at is None, worker.ended_at is not None, story.first_row(Worktree, session_agent_id=worker.id) is None, len(worker_rows(story)) == 1)
 
 
 def test_a_task_sent_to_a_merged_worker_cuts_a_second_worktree_from_the_current_branch_and_its_status_shows_it(merged_worker):
@@ -167,10 +166,10 @@ def test_a_task_sent_to_a_merged_worker_cuts_a_second_worktree_from_the_current_
 
 def test_a_cold_worker_with_an_open_worktree_starts_its_new_session_in_the_same_folder_and_branch_and_its_uncommitted_file_stays(stopped_worker):
     story = stopped_worker
-    opened = story.container.get(WorktreeQuery).worker_worktree(story.worker.id)
+    opened = story.first_row(Worktree, session_agent_id=story.worker.id)
     uncommitted_file = Path(opened.folder) / "tax.py"
     uncommitted_file.write_text(UNCOMMITTED_TEXT)
     worker, request = with_job(story, COLD_IDLE_SECONDS // 60, 20)
-    current = story.container.get(WorktreeQuery).worker_worktree(worker.id)
+    current = story.first_row(Worktree, session_agent_id=worker.id)
     story.expect_rows(story.row(Agent, worker.id).session != worker.session, request["folder"] == opened.folder, current.id == opened.id, current.folder == opened.folder,
                       current.branch == opened.branch, uncommitted_file.read_text() == UNCOMMITTED_TEXT, len(worktree_rows(story, worker.id)) == 1, detail=str(request))

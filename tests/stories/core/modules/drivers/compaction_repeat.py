@@ -2,7 +2,6 @@ from datetime import timedelta
 
 import pytest
 
-from engine.command.bus import Bus
 from engine.errors.refusal import Refusal
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
@@ -83,7 +82,7 @@ def test_g1_a_second_request_made_in_the_same_second_as_the_first_is_refused_nam
     has_context(exceeding_limit, LIMIT_TOKENS)
     exceeding_limit.hook(SESSION, HookSamples.stop())
     with pytest.raises(Refusal, match=OPEN_REFUSAL):
-        exceeding_limit.container.get(Bus).run(CompactAgentContext(exceeding_limit.agent.id), exceeding_limit.agent)
+        exceeding_limit.run_command(CompactAgentContext(exceeding_limit.agent.id), exceeding_limit.agent)
     expect_single_entered_request(exceeding_limit)
 
 

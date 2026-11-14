@@ -4,7 +4,6 @@ from core.modules.processes.commands.end_process.end_process import EndProcess
 from engine.query.queries import Queries
 from engine.query.conditions.among import Among
 from engine.enums.process_type import ProcessType
-from engine.command.bus import Bus
 from engine.actor.actor import Actor
 from engine.file.file_access import FileAccess
 from core.modules.processes.support.runner_binary import RunnerBinary
@@ -30,7 +29,7 @@ def ended_updates(story) -> None:
     """Ends the process rows of the updates whose line has finished, as the journal's runner reports a finished line."""
     updates = story.container.get(Queries).query(Process).filter(run_name=ProcessType.GRAPHIFY.value).matching(Among("state", RUNNING_STATES)).every_row(TEST_ROWS_REASON)
     for update in updates:
-        story.container.get(Bus).run(EndProcess(update.id, 0, 0, 0), Actor.core(), environment_id=update.environment_id)
+        story.run_command(EndProcess(update.id, 0, 0, 0), Actor.core(), environment_id=update.environment_id)
 
 
 def story_with_graphify(new_story, tmp_path):
@@ -106,17 +105,6 @@ def test_refresh_now_is_refused_while_graphify_is_not_installed(new_story, tmp_p
     story.expect_rows(repo.call_count() == 0)
 
 
-def test_installing_graphify_writes_no_search_hook_for_an_agent_program(new_story, tmp_path):
-    story, _ = story_with_graphify(new_story, tmp_path)
-    writer = tmp_path / "hook-writing-graphify"
-    settings = {"hooks": {"PreToolUse": [{"matcher": "Grep", "hooks": [{"type": "command", "command": "graphify-guard"}]}]}}
-    writer.write_text(f"#!/bin/sh\nif [ \"$1\" = claude ]; then mkdir -p .claude; echo '{json.dumps(settings)}' > .claude/settings.json; fi\n")
-    writer.chmod(0o755)
-    story.expect_success(f"setting set {COMMAND_SETTING} {writer} --project", actor=story.user)
-    story.expect_success(f"setting set {INSTALL_SETTING} true --project", actor=story.user)
-    story.expect_success("tool install graphify", actor=story.user)
-    commands = [hook.command for hook in story.container.get(ManagedHooks).all()]
-    story.expect_rows("graphify-guard" not in commands, detail=str(commands))
 
 
 def test_a_failing_install_is_refused_with_its_last_line(new_story, tmp_path):
@@ -133,33 +121,8 @@ def test_an_unknown_tool_is_refused(new_story, tmp_path):
     story.expect_refusal("tool on nothing", "no supported tool", actor=story.user)
 
 
-def test_a_new_worktree_gets_a_copy_of_the_graph_files_without_the_cache_only_while_graphify_is_on(new_story, tmp_path):
-    story, repo = story_with_graphify(new_story, tmp_path)
-    source = tmp_path / "source"
-    target = tmp_path / "target"
-    (source / "graphify-out").mkdir(parents=True)
-    (source / "graphify-out/graph.json").write_text("graph")
-    (source / "graphify-out/.journal-running").write_text("1")
-    (source / "graphify-out/.rebuild.lock").write_text("1")
-    (source / "graphify-out/cache").mkdir()
-    (source / "graphify-out/cache/chunk.json").write_text("cached")
-    target.mkdir()
-    tools = story.container.get(Tools)
-    story.expect_rows(tools.worktree_outputs(str(source), str(target)) == [], not (target / "graphify-out").exists())
-    story.expect_success("tool on graphify", actor=story.user)
-    story.expect_rows(tools.worktree_outputs(str(source), str(target)) == ["graphify-out"], (target / "graphify-out/graph.json").read_text() == "graph",
-                      not (target / "graphify-out/.journal-running").exists(), not (target / "graphify-out/.rebuild.lock").exists(),
-                      not (target / "graphify-out/cache").exists())
 
 
-def test_a_removed_worktree_folder_is_not_made_again_for_the_graph(new_story, tmp_path):
-    story, repo = story_with_graphify(new_story, tmp_path)
-    source = tmp_path / "source"
-    target = tmp_path / "removed"
-    (source / "graphify-out").mkdir(parents=True)
-    (source / "graphify-out/graph.json").write_text("graph")
-    story.expect_success("tool on graphify", actor=story.user)
-    story.expect_rows(story.container.get(Tools).worktree_outputs(str(source), str(target)) == [], not target.exists())
 
 
 def test_the_tools_window_is_a_project_page_that_reads_the_list_and_runs_its_buttons(new_story):

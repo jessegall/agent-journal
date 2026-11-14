@@ -1,5 +1,4 @@
 from core.modules.tasks.models.task import Task
-from engine.query.queries import Queries
 import json
 
 from tests.stories.core.support.fixtures import ThreeTasks
@@ -18,7 +17,7 @@ def test_tasks_are_listed_newest_first_a_page_at_a_time_and_by_state(new_story):
     story = new_story(fixture=ThreeTasks)
     story.run(lines.SECOND_TASK_START, actor=story.agent)
     story.expect_success("task list --limit 2", "3  Third  open  normal", f"2  {story.agent.id}  Second  started  normal  2026-10-31T09:00:00.000000+00:00",
-                         f"page 1, 2 of {story.container.get(Queries).query(Task).count()} rows: --page 2 for the next")
+                         f"page 1, 2 of {story.row_count(Task)} rows: --page 2 for the next")
     story.expect_success("task list --limit 2 --page 2", "1  First  open  normal")
     story.expect_success("task list --state started", f"2  {story.agent.id}  Second  started  normal  2026-10-31T09:00:00.000000+00:00")
 

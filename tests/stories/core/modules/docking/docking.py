@@ -27,7 +27,7 @@ def test_at_the_types_limit_the_oldest_ended_item_that_is_not_kept_undocks(ended
     story, first, second = ended_pair
     third = ended_task(story, "Third")
     oldest, newer = docked(story, first), docked(story, second)
-    story.container.get(Bus).run(KeepDockItem(oldest.id), story.user)
+    story.run_command(KeepDockItem(oldest.id), story.user)
     with story.repeated_work.request():
         added = docked(story, third)
     expect_docked_state_3(story, oldest, newer, added, ("docked", "undocked", "docked"))
@@ -53,7 +53,7 @@ def test_two_items_added_in_one_request_to_a_full_dock_read_the_items_of_the_cha
 def test_an_item_leaves_after_its_time_unless_it_was_kept(leaving_dock):
     story, leaves = leaving_dock
     stays = docked(story, ended_task(story, "Staying"))
-    story.container.get(Bus).run(KeepDockItem(stays.id), story.user)
+    story.run_command(KeepDockItem(stays.id), story.user)
     story.advance(timedelta(seconds=TIMEOUT_SECONDS + 1))
     leave_tick(story)
     expect_docked_state_2(story, leaves, stays, ("undocked", "docked"))
@@ -133,7 +133,7 @@ def ended_pair(new_story):
 def kept_dock(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     item = docked(story, ended_task(story, "Kept"))
-    story.container.get(Bus).run(KeepDockItem(item.id), story.user)
+    story.run_command(KeepDockItem(item.id), story.user)
     return story, item
 
 

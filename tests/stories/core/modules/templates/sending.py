@@ -1,5 +1,4 @@
 from engine.actor.actor import Actor
-from engine.command.bus import Bus
 from core.modules.sequences.commands.save_standard_sequences.save_standard_sequences import SaveStandardSequences
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 import pytest
@@ -127,7 +126,7 @@ def test_malformed_or_repeated_values_are_refused(new_story, value):
 
 def test_a_critique_request_starts_the_sequence_that_applies_the_reviews(new_story):
     story = new_story(fixture=SendingTemplates)
-    story.container.get(Bus).run(SaveStandardSequences(), Actor.core())
+    story.run_command(SaveStandardSequences(), Actor.core())
     story.expect_success(CRITIQUE, actor=story.user)
     story.run_listeners()
     run = story.container.get(SequenceRunQuery).current(story.agent.id)
@@ -138,7 +137,7 @@ def test_a_critique_request_starts_the_sequence_that_applies_the_reviews(new_sto
 
 def test_viewer_critique_is_a_plan_comment_in_the_chat_and_reaches_the_agent(new_story):
     story = new_story(fixture=SendingTemplates)
-    story.container.get(Bus).run(SaveStandardSequences(), Actor.core())
+    story.run_command(SaveStandardSequences(), Actor.core())
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         server.viewer_line_value(cookie, {"window": "messages.chat", "environment": "main", "line": ["template", "send", "1", "--on=plan:1", "--set=agents=2 agents", "--set=size=a normal read"]})

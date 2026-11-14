@@ -1,6 +1,5 @@
 import pytest
 
-from engine.query.queries import Queries
 from suites.coding.modules.workers.models.affected_test import AffectedTest
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.held_tasks import worker_with_tasks, prove_task
@@ -55,7 +54,7 @@ def test_no_selected_test_is_queued_at_the_commit_of_a_phase_of_a_started_plan(d
     story.expect_success(f'setting set {AFFECTED_TESTS_COMMAND} "python3 pick.py" --environment main')
     story.expect_success(f'setting set {PROJECT_TEST_COMMAND} "python3 run_tests.py" --environment main')
     story.expect_text(COMMIT, "committed tasks 1, 2, 3", actor=declared_tests.worker)
-    story.expect_rows(declared_tests.started == [], not story.container.get(Queries).query(AffectedTest).exists(), detail=f"started: {declared_tests.started}")
+    story.expect_rows(declared_tests.started == [], not story.row_exists(AffectedTest), detail=f"started: {declared_tests.started}")
 
 
 def test_two_workers_in_one_phase_each_commit_their_own_tasks(two_workers):

@@ -4,7 +4,6 @@ import json
 import pytest
 
 from engine.actor.actor import Actor
-from engine.command.bus import Bus
 from engine.environment.environment_names import EnvironmentNames
 from core.modules.tasks.commands.close_task.close_task import CloseTask
 from engine.testing.examples.hook_samples import HookSamples
@@ -401,7 +400,7 @@ def test_tasks_closed_in_two_environments_in_one_round_reach_the_checkpoints_of_
     for environment, task_id in tasks.items():
         story.expect_success(f"task start {task_id} --environment {environment}", actor=story.user)
     for environment, task_id in tasks.items():
-        story.container.get(Bus).run(CloseTask(task_id, "done"), story.user, environment_id=story.container.get(EnvironmentNames).environment_id(environment))
+        story.run_command(CloseTask(task_id, "done"), story.user, environment_id=story.container.get(EnvironmentNames).environment_id(environment))
     story.run_listeners()
     for environment in tasks:
         story.expect_text(f"checkpoint-reach list --json --oldest --environment {environment}", '"state"', actor=story.user)

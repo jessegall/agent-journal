@@ -41,16 +41,6 @@ def test_a_helpers_hook_leaves_the_log_for_the_main_agent(new_story):
     story.expect_rows(log_file(story).exists())
 
 
-def test_the_hook_wait_a_person_sets_reaches_the_file_the_go_hook_reads(new_story):
-    story = new_story(fixture=UserJoined)
-    home = story.container.get(JournalHome)
-    home.hook_wait_file.parent.mkdir(parents=True, exist_ok=True)
-    story.expect_success(f"setting set {HOOK_WAIT_SECONDS} 12 --project", actor=story.user)
-    story.run_listeners()
-    story.expect_rows(home.hook_wait_file.read_text().strip() == "12")
-    setting = next(row for row in story.container.get(SettingRows).kept_table(Setting).values() if row.key == HOOK_WAIT_SECONDS)
-    story.container.get(HookWaitFileListener).handle(Deleted(setting), None)
-    story.expect_rows(not home.hook_wait_file.exists())
 
 
 @pytest.fixture

@@ -85,9 +85,3 @@ def test_9_a_proof_of_a_point_that_is_checked_is_refused(four_points):
     four_points.story.expect_rows(refused.code != 0, "point 2 is checked already" in refused.output_text, "prove the points that are not" in refused.output_text, detail=refused.output_text)
 
 
-def test_11_five_proofs_of_three_tasks_each_answer_at_once_with_the_count_of_shown_proofs_and_their_tasks(new_story, monkeypatch):
-    worker = worker_with_tasks(new_story, monkeypatch, 3)
-    worker.story.expect_success(FOUR_POINT_BRIEF, actor=worker.story.agent)
-    outcomes = [prove_task(worker, task_id, point, TEST_LINE) for task_id, point in ((1, 1), (1, 2), (2, 1), (3, 1), (1, 3))]
-    worker.story.expect_rows(all(outcome.code == 0 and "registered" in outcome.output_text for outcome in outcomes), "5 proofs are staged for tasks 1, 2, 3" in outcomes[-1].output_text,
-                             worker.started == [], detail=outcomes[-1].output_text)

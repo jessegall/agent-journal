@@ -5,7 +5,6 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.provider.launch_command import LaunchCommand
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_launcher import AgentLauncher
 from core.modules.agents.models.enums.launch_answer import LaunchAnswer
@@ -37,7 +36,7 @@ def worker_count(story) -> int:
 
 
 def waiting_lines(story, worker) -> int:
-    return story.container.get(Queries).query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.WAITING).count()
+    return story.row_count(AgentLine, session_agent_id=worker.id, state=AgentLineState.WAITING)
 
 
 @pytest.fixture

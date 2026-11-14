@@ -1,7 +1,6 @@
 import pytest
 import json
 
-from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.settings.models.setting import Setting
 from tests.stories.core.support.fixtures import UserJoined
@@ -53,25 +52,25 @@ def test_the_person_decides_the_setting_from_the_shared_dock(pending_setting, se
 def test_a_person_cannot_make_the_request(setting_story):
     story = setting_story
     story.expect_refusal(REQUEST, "only an agent asks for a setting", actor=story.user)
-    story.expect_rows(not story.container.get(Queries).query(ApprovalRequest).exists())
+    story.expect_rows(not story.row_exists(ApprovalRequest))
 
 
 def test_a_setting_an_agent_may_set_itself_is_not_asked_for(setting_story):
     story = setting_story
     story.expect_refusal(f'setting request {AGENT_SETTING} 30 --reason "Copy more often" --environment main', f"an agent may set {AGENT_SETTING} itself", actor=story.agent)
-    story.expect_rows(not story.container.get(Queries).query(ApprovalRequest).exists())
+    story.expect_rows(not story.row_exists(ApprovalRequest))
 
 
 def test_a_request_with_no_reason_is_refused(setting_story):
     story = setting_story
     story.expect_refusal(f'setting request {SETTING} on --reason " " --environment main', "say why the setting should change", actor=story.agent)
-    story.expect_rows(not story.container.get(Queries).query(ApprovalRequest).exists())
+    story.expect_rows(not story.row_exists(ApprovalRequest))
 
 
 def test_a_value_of_the_wrong_type_is_refused_before_requesting_approval(setting_story):
     story = setting_story
     story.expect_refusal(f'setting request {SETTING} maybe --reason "Rules need no card" --environment main', f"{SETTING} is a", actor=story.agent)
-    story.expect_rows(not story.container.get(Queries).query(ApprovalRequest).exists())
+    story.expect_rows(not story.row_exists(ApprovalRequest))
 
 
 @pytest.mark.parametrize("decision", ["accept", "refuse"])

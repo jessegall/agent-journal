@@ -2,7 +2,6 @@ from datetime import timedelta
 
 import pytest
 
-from engine.command.bus import Bus
 from engine.database.database import Database
 from engine.registry.registry import Registry
 from engine.enums.command_category import CommandCategory
@@ -84,7 +83,7 @@ def test_after_a_compaction_the_due_skill_is_named_for_three_tool_uses_and_then_
     drain_countdown(story, HookSamples.edit("src/cart.py"), "journal")
     story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "load this first with the Skill tool: journal")
     for skill in (*DEFAULTS, "journal-chores"):
-        story.container.get(Bus).run(LoadSkill(story.agent.id, skill, read_digest(story, skill)), story.agent)
+        story.run_command(LoadSkill(story.agent.id, skill, read_digest(story, skill)), story.agent)
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
 
 
@@ -120,7 +119,7 @@ def test_loading_the_skill_during_the_countdown_ends_it(defaults_loaded):
     start_countdown(story, RULE_LIST)
     expect_countdown(story, RULE_LIST, "journal-rules", 2)
     expect_countdown(story, RULE_LIST, "journal-rules", 1)
-    story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-rules", read_digest(story, "journal-rules")), story.agent)
+    story.run_command(LoadSkill(story.agent.id, "journal-rules", read_digest(story, "journal-rules")), story.agent)
     for _ in range(4):
         story.expect_hook_allowed("s-1", RULE_LIST)
     expect_value("load skill" not in story.hook("s-1", RULE_LIST).lines, True)
@@ -130,10 +129,10 @@ def test_a_block_raised_again_for_another_skill_waits_for_the_skill_its_text_nam
     story = started_tasks
     story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "load this first with the Skill tool: journal-tasks")
     story.expect_hook_refusal("s-1", RULE_LIST, "load this first with the Skill tool: journal-tasks")
-    story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-tasks", read_digest(story, "journal-tasks")), story.agent)
+    story.run_command(LoadSkill(story.agent.id, "journal-tasks", read_digest(story, "journal-tasks")), story.agent)
     drain_countdown(story, RULE_LIST, "journal-rules")
     story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "load this first with the Skill tool: journal-rules")
-    story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-rules", read_digest(story, "journal-rules")), story.agent)
+    story.run_command(LoadSkill(story.agent.id, "journal-rules", read_digest(story, "journal-rules")), story.agent)
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
 
 
@@ -142,7 +141,7 @@ def test_a_refused_command_blocks_every_other_tool_until_its_skill_is_read(start
     story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "load this first with the Skill tool: journal-tasks")
     story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "load this first with the Skill tool: journal-tasks")
     story.expect_hook_refusal("s-1", HookSamples.shell("cat src/cart.py", ShellPart("cat", CommandCategory.READ, ["src/cart.py"])), "load this first with the Skill tool: journal-tasks")
-    story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-tasks", read_digest(story, "journal-tasks")), story.agent)
+    story.run_command(LoadSkill(story.agent.id, "journal-tasks", read_digest(story, "journal-tasks")), story.agent)
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
 
 
@@ -173,7 +172,7 @@ def compacted_environment(skill_environment):
 def defaults_loaded(started_skill_environment):
     story = started_skill_environment
     for skill in DEFAULTS:
-        story.container.get(Bus).run(LoadSkill(story.agent.id, skill, read_digest(story, skill)), story.agent)
+        story.run_command(LoadSkill(story.agent.id, skill, read_digest(story, skill)), story.agent)
     return story
 
 
@@ -194,7 +193,7 @@ def prompt_skill_due(started_skill_environment):
 @pytest.fixture
 def prompt_skill_loaded(started_skill_environment):
     story = started_skill_environment
-    story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-notes", read_digest(story, "journal-notes")), story.agent)
+    story.run_command(LoadSkill(story.agent.id, "journal-notes", read_digest(story, "journal-notes")), story.agent)
     story.hook("s-1", HookSamples.prompt("please take a note of that"))
     story.run_listeners()
     return story
@@ -212,7 +211,7 @@ def task_skill_due(started_skill_environment):
 @pytest.fixture
 def task_skill_loaded(started_skill_environment):
     story = started_skill_environment
-    story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-chores", read_digest(story, "journal-chores")), story.agent)
+    story.run_command(LoadSkill(story.agent.id, "journal-chores", read_digest(story, "journal-chores")), story.agent)
     story.run('task make "Fix the cart" --environment main')
     story.run("task start 1 --environment main", actor=story.agent)
     story.run_listeners()

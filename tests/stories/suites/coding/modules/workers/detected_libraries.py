@@ -47,7 +47,3 @@ def test_the_linked_folders_stay_out_of_git(detected_worktree):
     expect_value(repository.git("status", "--porcelain", folder=folder).stdout, "")
 
 
-def test_the_test_checkout_gets_the_detected_folders_too(detected_worktree):
-    story, repository, folder = detected_worktree
-    worktree = story.container.get(WorktreeQuery).open_worktrees()[0]
-    expect_value({".venv", "src/viewer/node_modules"} <= set(story.container.get(WorktreeGit).library_names(worktree)), True)

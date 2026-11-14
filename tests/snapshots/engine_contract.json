@@ -9546,8 +9546,24 @@
         "holds(self, story_file: Path) -> bool"
       ]
     },
-    "testing.stories.story.Story": {
+    "testing.stories.kit_rows.KitRows": {
       "bases": [],
+      "fields": [
+        "container: Container"
+      ],
+      "methods": [
+        "story_rows(self, model: type[M]) -> tuple[M, ...]",
+        "first_row(self, model: type[M]) -> M | None",
+        "newest_row(self, model: type[M]) -> M | None",
+        "row_exists(self, model: type[M]) -> bool",
+        "row_count(self, model: type[M]) -> int",
+        "with_touched_rows(self, output_text: str) -> str"
+      ]
+    },
+    "testing.stories.story.Story": {
+      "bases": [
+        "KitRows"
+      ],
       "fields": [],
       "methods": [
         "opened(cls, home: JournalHome, state: StoryState) -> 'Story'",
@@ -9566,10 +9582,7 @@
         "release_listeners(self) -> None",
         "run(self, line: str, actor: Actor | None, environment_id: int | None, process_id: int | None) -> LineOutcome",
         "seed(self, seed: type[Seed], count: int) -> tuple[int, ...]",
-        "story_rows(self, model: type[M]) -> tuple[M, ...]",
-        "first_row(self, model: type[M]) -> M | None",
-        "newest_row(self, model: type[M]) -> M | None",
-        "run_command(self, command: Command[R], actor: Actor, environment_id: int) -> R",
+        "run_command(self, command: Command[R], actor: Actor, environment_id: int | None) -> R",
         "end_session(self, agent: Actor) -> None",
         "expect_agent_group(self, helper_type: str, profile: str, group: str) -> None",
         "use_fixture_environment(self, name: str | None) -> None",
@@ -9602,7 +9615,6 @@
         "checked(self, subject: str) -> None",
         "expected(self, passed: bool, message: str) -> None",
         "expect_success(self, line: str) -> None",
-        "with_touched_rows(self, outcome: LineOutcome) -> str",
         "expect_ordered_lines(self, line: str) -> None",
         "expect_text(self, line: str) -> None",
         "expect_no_text(self, line: str) -> None",

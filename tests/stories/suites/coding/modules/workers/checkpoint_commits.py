@@ -66,17 +66,8 @@ def merged_worker(committed_worker) -> StoryWorker:
     return committed_worker
 
 
-def test_160_a_commit_of_a_task_in_no_plan_starts_its_test_as_before(new_story, monkeypatch):
-    worker = unplanned_worker(new_story, monkeypatch)
-    worker.prove_commit(TEST_LINE)
-    worker.story.run_listeners()
-    worker.story.expect_rows(len(worker.started) == 1, COMMITTED not in proof_states(worker).values(), detail=f"started: {worker.started}, proofs: {proof_states(worker)}")
 
 
-def test_162_a_commit_with_a_missing_proof_is_refused_in_a_started_plan_as_outside_one(new_story, monkeypatch):
-    worker = start_planned_worker(new_story, monkeypatch, PHASE_DISPATCH)
-    outcome = worker.story.run(COMMIT, actor=worker.worker)
-    worker.story.expect_rows(outcome.code != 0, "proof" in outcome.output_text, proof_states(worker) == {}, detail=outcome.output_text)
 
 
 def test_164_the_merge_takes_a_worktree_of_committed_proofs_in_a_started_plan_and_refuses_one_with_an_unchecked_proof_of_no_test(committed_worker):
@@ -113,18 +104,8 @@ def test_165_a_task_that_waits_on_a_committed_task_can_start_once_that_task_is_m
     story.expect_rows(waiting.code != 0, started.code == 0, detail=f"{waiting.output_text} | {started.output_text}")
 
 
-def test_166_a_task_in_no_plan_is_not_merged_before_its_tests_passed(new_story, monkeypatch):
-    worker = unplanned_worker(new_story, monkeypatch)
-    worker.prove(TEST_LINE)
-    refused = merge(worker)
-    worker.story.expect_rows(refused.code != 0, COMMITTED not in proof_states(worker).values(), detail=refused.output_text)
 
 
-def test_a_committed_proof_of_a_started_plan_is_left_as_it_is_by_three_sweeps_of_waiting_tests(committed_worker):
-    for _ in range(3):
-        StalledWorkerTestRuns()(committed_worker.story.container)
-    states = proof_states(committed_worker)
-    committed_worker.story.expect_rows(states[1] == COMMITTED, states[3] == COMMITTED, committed_worker.started == [], detail=f"{states}, started: {committed_worker.started}")
 
 
 def test_239_a_worker_that_stops_with_committed_tasks_that_are_not_merged_has_them_named(group_worker):

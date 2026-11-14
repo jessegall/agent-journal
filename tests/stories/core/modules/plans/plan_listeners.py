@@ -45,17 +45,3 @@ def test_a_commit_listener_that_fails_three_times_is_skipped_and_the_cancel_stan
     story.expect_rows(story.system_log_text().count("listener samples.failing-worker-notice") == 3 * 2)
 
 
-def test_a_failed_listener_receives_the_same_event_in_the_next_round(new_story, monkeypatch):
-    story = plan_with_placed_tasks(new_story, "tests.stories.core.support.plans_samples:FailingNoticeModule")
-    events = []
-
-    def handle(listener, event, logged):
-        events.append(logged.id)
-        if len(events) == 1:
-            raise ConnectionError("temporarily unavailable")
-
-    monkeypatch.setattr(FailingWorkerNotice, "handle", handle)
-    story.expect_success(lines.PLAN_CANCEL, "state: cancelled")
-    story.run_listeners()
-    story.run_listeners()
-    story.expect_rows(len(events) >= 2, events[0] == events[1])

@@ -127,7 +127,7 @@ def test_resetting_many_task_reads_reads_each_row_no_more(new_story):
         story.expect_hook_allowed("s-1", COMPACTION)
     link_reads = [call.args[1] for call in reads.call_args_list if "FROM links " in call.args[1].sql]
     story.expect_rows(len(link_reads) == 2)
-    story.expect_rows(not story.container.get(Queries).query(TaskRead).filter(session_agent_id=story.agent.id).exists())
+    story.expect_rows(not story.row_exists(TaskRead, session_agent_id=story.agent.id))
 
 
 def test_reading_the_overview_context_holds_no_write_lock(new_story, monkeypatch):
@@ -169,6 +169,6 @@ def test_redirecting_or_piping_a_task_overview_does_not_mark_the_brief_read(new_
     piped = ShellPart("journal", CommandCategory.JOURNAL, ["task", "overview", "1"], subcommand="task", pipe_target=1)
     sink = ShellPart("cat", CommandCategory.READ, [])
     story.expect_hook_refusal("s-1", HookSamples.shell("journal task overview 1 && cat", piped, sink), expected_nudge(READ_COMMAND_OUTPUT))
-    story.expect_rows(not story.container.get(Queries).query(TaskRead).filter(task_id=1, session_agent_id=story.agent.id).exists())
+    story.expect_rows(not story.row_exists(TaskRead, task_id=1, session_agent_id=story.agent.id))
     story.expect_success("task overview 1", actor=story.agent)
-    story.expect_rows(story.container.get(Queries).query(TaskRead).filter(task_id=1, session_agent_id=story.agent.id).exists())
+    story.expect_rows(story.row_exists(TaskRead, task_id=1, session_agent_id=story.agent.id))

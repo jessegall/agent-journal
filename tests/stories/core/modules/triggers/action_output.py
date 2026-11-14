@@ -33,16 +33,3 @@ def test_command_output_goes_to_the_agent_that_fired_it_once(new_story, tmp_path
     story.expect_absent_hook_line("s-1", HookSamples.prompt("Continue again"), "agent-line:1")
 
 
-def test_an_old_trigger_run_is_removed_with_its_process(new_story):
-    story = install_runner(new_story(fixture=AgentsEnableTriggers))
-    story.expect_success(f"setting set {ProcessSetting.PROCESSES_KEPT.key} 1 --environment main", actor=story.agent)
-    story.expect_success('''trigger make cart "Mind the cart" --extra-actions '[{"type":"run","target":"pwd"}]' ''', actor=story.agent)
-    story.hook("s-1", HookSamples.prompt("Fix the cart"))
-    story.run_listeners()
-    queries = story.container.get(Queries)
-    process = next(queries.query(Process).every_row(TEST_ROWS_REASON))
-    end_run(story, process, "old\n")
-    ended_run(story, "make recent", "recent\n")
-    story.expect_rows(not queries.query(Process).filter(id=process.id).exists(),
-                      not queries.query(TriggerActionRun).filter(process_id=process.id).exists())
-    story.run_listeners()

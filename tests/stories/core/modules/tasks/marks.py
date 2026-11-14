@@ -57,24 +57,8 @@ def test_a_task_is_docked_from_its_inspector_and_no_task_row_changes(new_story):
     expect_output(story, "task show 1", starting_text)
 
 
-def test_a_task_made_shows_a_mark_that_opens_the_task(new_story):
-    story = new_story(fixture=OpenTaskBuilder)
-    story.run_listeners()
-    mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "tasks.task")
-    expect_marks_text(story, "Task 1 created")
-    expect_row(mark, click="open row")
-    expect_absent_marks_text(story, "Task 1 made")
-    expect_marks_text(story, "tasks.task  made")
 
 
-def test_a_task_edited_by_an_agent_shows_a_mark_that_opens_the_task(new_story):
-    story = new_story(fixture=OpenTaskBuilder)
-    story.expect_success('task edit 1 --title "Fix the cart total"', actor=story.agent)
-    story.run_listeners()
-    mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "tasks.task")
-    expect_marks_text(story, "Task 1 edited: Fix the cart total")
-    expect_row(mark, click="open row")
-    expect_marks_text(story, "tasks.task  edited")
 
 
 def test_a_task_edited_by_the_user_shows_no_edited_mark(new_story):

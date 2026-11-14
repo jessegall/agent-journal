@@ -1,4 +1,4 @@
-from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_steps import WorkerSteps
 from tests.stories.support.story_checks import expect_value
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
@@ -12,7 +12,7 @@ def read_steps(worker) -> WorkerSteps:
 
 
 def read_worktree(worker):
-    return worker.story.container.get(WorktreeQuery).worker_worktree(worker.worker.id)
+    return worker.story.first_row(Worktree, session_agent_id=worker.worker.id)
 
 
 def test_a_worker_dispatched_on_a_plan_holds_its_first_task_and_the_plan_is_started(new_story, monkeypatch):

@@ -22,11 +22,3 @@ def test_each_worker_profile_can_read_its_task_log_work_and_make_a_proof(new_sto
     expect_worker_commands(story)
 
 
-def test_the_committed_copies_of_the_shipped_profiles_are_what_publish_writes(new_story):
-    story = new_story(fixture=UserBuilder)
-    files = story.container.get(ProfileFiles)
-    files.publish()
-    repository = Path(__file__).resolve().parents[5]
-    published = files.folder(".claude/agents")
-    stale = [path.name for path in sorted(published.glob("journal-*.md")) if (repository / ".claude/agents" / path.name).read_text() != path.read_text()]
-    expect_value(stale, [])

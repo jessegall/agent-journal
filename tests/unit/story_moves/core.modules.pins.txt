@@ -1,1 +1,2 @@
 tests/stories/core/modules/pins/upgrade.py::test_a_version_4_pin_keeps_its_title_link_and_button_and_a_closed_one_stays_closed -> integration tests/integration/core/modules/pins/test_upgrade.py::test_a_version_4_pin_keeps_its_title_link_and_button_and_a_closed_one_stays_closed
+tests/stories/core/modules/pins/link_pins.py::test_a_link_in_the_command_and_output_is_checked_once -> integration tests/integration/core/modules/pins/test_link_pins.py::test_a_link_in_the_command_and_output_is_checked_once
