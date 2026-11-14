@@ -2,6 +2,8 @@ from urllib.parse import urlencode
 
 import pytest
 
+from engine.actor.actor import Actor
+from engine.enums.actor_type import ActorType
 from tests.integration.support.integration_server import integration_server
 
 SESSION = "s-1"
@@ -69,3 +71,18 @@ def test_the_tasks_window_reads_its_visible_tab_and_requests_plan_places_on_dema
     rows = places["keys"]["places"]["value"]["rows"]
     assert status == 200 and set(places["keys"]) == {"places"} and len(rows) == 3, places
     assert rows[0]["label"] == "Plan 1: Version 5 core › Values" and rows[0]["task_ids"] == [1, 2, 3], rows[0]
+
+
+def test_memories_window_reads_filtered_rows_through_keys_and_has_no_counts_key(viewer):
+    server, cookie, _ = viewer
+    agent_line(server, 'memory make "The cart keeps totals in cents" --environment main')
+    worker = server.journal.new_row_id("agent start s-9 claude worker --environment main")
+    assert server.journal.run('memory make "The worker reads the cart" --environment main', Actor(worker, ActorType.AGENT)).code == 0
+    status, counts = server.window_data(cookie, window="memories.memories")
+    assert status == 200 and "counts" not in counts["keys"]
+    query = "environment=main&memories.main-agent=true&memories.environment=main&memories.state=active&memories.limit=20"
+    status, listed = server.window_data(cookie, keys="memories", window="memories.memories", query=query)
+    assert status == 200 and listed["keys"]["memories"]["code"] == 0 and listed["keys"]["memories"]["value"]["total"] == 1, listed
+    query = "environment=main&memories.other-agents=true&memories.environment=main&memories.limit=20"
+    status, listed = server.window_data(cookie, keys="memories", window="memories.memories", query=query)
+    assert status == 200 and listed["keys"]["memories"]["code"] == 0 and listed["keys"]["memories"]["value"]["agents"][0]["agent_id"] == worker, listed
