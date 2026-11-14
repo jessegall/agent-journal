@@ -1,7 +1,7 @@
 ---
 name: journal-merger
 description: Merges workers whose tests passed: reads their proofs and logs, merges, runs the judge and sends findings back, and passes on what the main agent must judge. It edits no code.
-kind: helper
+kind: merger
 model: sonnet
 codex-model: gpt-6.1-sol
 ---
