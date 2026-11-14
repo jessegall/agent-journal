@@ -18,6 +18,9 @@ from engine.testing.runs.run_size import RunSize
 from engine.testing.runs.full_run_record import FullRunRecord
 from engine.testing.runs.full_run_records import FullRunRecords
 from engine.testing.stories.story import Story
+from engine.testing.selection.test_map import TestMap
+from engine.testing.selection.test_map_recorder import TestMapRecorder
+from engine.testing.templates.touched_code import TouchedCode
 from engine.testing.stories.story_fixture import StoryFixture
 from engine.testing.stories.story_overlap import StoryOverlap
 from engine.testing.stories.story_steps import StorySteps
@@ -40,6 +43,10 @@ STORY_STEPS_KEY = "journal_story_steps"
 STORY_PATHS_KEY = "journal_story_paths"
 STORY_FIXTURES_KEY = "journal_story_fixtures"
 STORY_CHECKS_KEY = "journal_story_checks"
+RECORDS_MAP_KEY = "journal_records_test_map"
+TEST_MAP_KEY = "journal_test_map"
+RECORDER = pytest.StashKey[TestMapRecorder]()
+TEMPLATE_FILES = pytest.StashKey[dict[str, list[str]]]()
 FIXTURE_RULES_OPTION = "story_fixture_rules"
 FIXTURE_RULES_FAIL = "fail"
 SINGLE_RUNNER_LIMIT_OPTION = "one_runner_below"
@@ -98,8 +105,29 @@ def pytest_configure(config: pytest.Config) -> None:
     config.stash[RUN_DURATIONS] = RunDurations()
     config.addinivalue_line("markers", f"{BUDGET_MARKER}(points, reason): a story that may cost more than the default budget, and why")
     config.stash[STORY_OVERLAP] = StoryOverlap()
+    if records_test_map(config):
+        config.stash[RECORDER] = TestMapRecorder()
+        config.stash[TEMPLATE_FILES] = {}
+        config.stash[RECORDER].start()
     if config.option.basetemp is None and not hasattr(config, "workerinput"):
         config.stash[RUN_FOLDER] = config.option.basetemp = TempFolders().start()
+
+
+# the run's first process decides once whether the run records a test map and tells its runners, so a test run
+# started inside a test never writes one
+def records_test_map(config: pytest.Config) -> bool:
+    worker_input: dict[str, object] | None = getattr(config, "workerinput", None)
+    if worker_input is not None:
+        return bool(worker_input.get(RECORDS_MAP_KEY, False))
+    option = config.option
+    is_full_run = RunSize(config.args, 1).is_full_run(option.keyword, option.markexpr, option.deselect or (), bool(getattr(option, "lf", False)))
+    return TestMap.is_recorded(is_full_run) and not option.collectonly
+
+
+@pytest.hookimpl(optionalhook=True)
+def pytest_configure_node(node: object) -> None:
+    worker_input: dict[str, object] = getattr(node, "workerinput")
+    worker_input[RECORDS_MAP_KEY] = RECORDER in getattr(node, "config").stash
 
 
 def pytest_itemcollected(item: pytest.Item) -> None:
@@ -125,6 +153,9 @@ def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.Fixt
         story.environment = environment
         story.use_fixture_environment(fixture.line_environment() if fixture else None)
         created.append(StorySteps(story, " ".join((*modules, fixture.__name__ if fixture else "")), fixture.__name__ if fixture else ""))
+        if TEMPLATE_FILES in request.config.stash:
+            touched = TouchedCode.read(templates.template(modules, fixture).home.folder)
+            request.config.stash[TEMPLATE_FILES][item.nodeid] = sorted({*request.config.stash[TEMPLATE_FILES].get(item.nodeid, []), *touched})
         return story
     yield started
     for steps in created if item.stash.get(CALL_PASSED, False) else []:
@@ -155,10 +186,15 @@ def pytest_report_teststatus(report: pytest.TestReport | pytest.CollectReport, c
 @pytest.hookimpl(wrapper=True)
 def pytest_runtest_protocol(item: pytest.Item, nextitem: pytest.Item | None) -> Generator[None, object, object]:
     started = time.thread_time()
+    recorder = item.config.stash.get(RECORDER, None)
+    if recorder is not None:
+        recorder.begin_test()
     try:
         return (yield)
     finally:
         item.config.stash[RUN_CPU].add(time.thread_time() - started)
+        if recorder is not None:
+            recorder.finish_test(item.nodeid)
 
 
 @pytest.hookimpl(wrapper=True, tryfirst=True)
@@ -195,6 +231,9 @@ def pytest_testnodedown(node: pytest.Session, error: object) -> None:
     node.config.stash[STORY_OVERLAP].story_fixtures.update(getattr(node, "workeroutput", {}).get(STORY_FIXTURES_KEY, {}))
     node.config.stash[STORY_OVERLAP].add_checks(output.get(STORY_CHECKS_KEY, {}))
     node.config.stash[RUN_CPU].add(float(getattr(node, "workeroutput", {}).get(CPU_SECONDS_KEY, 0.0)))
+    if RECORDER in node.config.stash:
+        node.config.stash[RECORDER].tests.update(output.get(TEST_MAP_KEY, {}).get("functions", {}))
+        node.config.stash[TEMPLATE_FILES].update(output.get(TEST_MAP_KEY, {}).get("template_files", {}))
 
 
 def pytest_sessionfinish(session: pytest.Session) -> None:
@@ -206,7 +245,13 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
         process_output[STORY_FIXTURES_KEY] = overlap.story_fixtures
         process_output[STORY_CHECKS_KEY] = {name: sorted(checks) for name, checks in overlap.story_checks.items()}
         process_output[CPU_SECONDS_KEY] = session.config.stash[RUN_CPU].seconds
+        if RECORDER in session.config.stash:
+            session.config.stash[RECORDER].stop()
+            process_output[TEST_MAP_KEY] = {"functions": session.config.stash[RECORDER].tests, "template_files": session.config.stash[TEMPLATE_FILES]}
         return
+    if RECORDER in session.config.stash:
+        session.config.stash[RECORDER].stop()
+        TestMap(session.config.stash[RECORDER].tests, session.config.stash[TEMPLATE_FILES]).with_bodies().write()
     option = session.config.option
     is_full_run = RunSize(session.config.args, 1).is_full_run(option.keyword, option.markexpr, option.deselect or (), bool(getattr(option, "lf", False)))
     if is_full_run and not option.collectonly:
