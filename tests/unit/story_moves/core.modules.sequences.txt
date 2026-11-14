@@ -1,0 +1,2 @@
+tests/stories/core/modules/sequences/upgrade.py::test_a_second_upgrade_moves_no_sequence_again -> integration tests/integration/core/modules/sequences/test_upgrade.py::test_a_second_upgrade_moves_no_sequence_again
+tests/stories/core/modules/sequences/upgrade.py::test_a_sequence_whose_triggers_or_guards_do_not_read_is_skipped_and_told -> integration tests/integration/core/modules/sequences/test_upgrade.py::test_a_sequence_whose_triggers_or_guards_do_not_read_is_skipped_and_told

@@ -81,3 +81,6 @@ class UpgradedJournal:
         answer = self.run(line, actor)
         places = [answer.output_text.find(text) for text in texts]
         assert answer.code == 0 and -1 not in places and places == sorted(places), (line, texts, answer)
+
+    def expect_no_text(self, line: str, text: str, actor: Actor | None = None) -> None:
+        self.expect_absent(line, text, actor)
