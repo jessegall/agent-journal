@@ -1,0 +1,1 @@
+tests/stories/core/modules/plans/plan_assignment.py::test_each_child_assignment_is_its_own_event_caused_by_the_command_event -> repeat tests/stories/core/modules/assignments/cascade_down.py::test_each_child_assignment_is_its_own_event_caused_by_the_command_event

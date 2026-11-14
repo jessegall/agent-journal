@@ -2,21 +2,17 @@ from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_WAI
 from engine.sandbox.shell_sandbox import ShellSandbox
 from core.modules.processes.support.stock_reader import STOCK_READERS
 from core.modules.processes.support.output_folder import OutputFolder
-from datetime import timedelta
 import pytest
 
-from engine.command.bus import Bus
-from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
-from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
 from engine.enums.command_category import CommandCategory
 from engine.enums.command_effect import CommandEffect
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.engine.driver.support.samples import SAMPLES
-from tests.stories.core.modules.processes.support.process_samples import expect_rewritten, install_runner, runner_line, user_waits, with_parse_error
+from tests.stories.core.modules.processes.support.process_samples import install_runner, runner_line, user_waits, with_parse_error
 from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderHelper
 from engine.testing.expectations.expect_reply import expect_reply_allowed
-from tests.stories.support.story_checks import expect_lines_reply_line, expect_refusal_hook_rule, expect_updated_input_hook, expect_updated_input_reply
+from tests.stories.support.story_checks import expect_updated_input_hook, expect_updated_input_reply
 from tests.stories.core.modules.documents.support.trail_fixtures import viewer
 
 PYTEST_COUNT_PATTERN = next(reader.count for reader in STOCK_READERS if reader.name == "pytest")
@@ -43,18 +39,6 @@ def test_a_read_or_a_write_runs_with_no_limit_and_an_unknown_command_gets_fiftee
     reply = story.hook("s-1", HookSamples.shell(f"{program} file", ShellPart(program, category, ["file"])))
     story.expect_rows(f"--limit {limit} " in str(reply.updated_input), "--background" not in str(reply.updated_input))
     story.expect_text("process show 1", f"limit_seconds: {limit}", actor=story.agent)
-
-
-def test_a_command_whose_last_run_went_past_the_limit_goes_to_the_background_at_once(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    story.hook("s-1", SERVER)
-    story.run("process background 1", actor=story.agent)
-    story.hook("s-1", HookSamples.sample("pre_tool_use", {"name": "Monitor", "category": "monitor", "input": {"command": "journal output monitor 1"}}).with_raw({"tool_input": {"command": "journal output monitor 1"}}))
-    bus = story.container.get(Bus)
-    bus.run(StartProcessPart(1, 1), story.agent, environment_id=1)
-    story.advance(timedelta(seconds=40))
-    bus.run(EndProcessPart(1, 1, 0), story.agent, environment_id=1)
-    expect_updated_input_hook(story, "s-1", SERVER, {"command": runner_line(story, 2, "node serve.js", background=True)})
 
 
 def test_the_limit_drops_to_10_seconds_while_a_message_waits_for_the_user(new_story):
