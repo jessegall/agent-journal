@@ -1,3 +1,5 @@
+from server.execution.round_tickets import RoundTickets
+from contextlib import nullcontext
 import queue as queue_module
 import threading
 import time
@@ -32,9 +34,9 @@ class Ticker:
     under its name and stops nothing. The handlers are the modules' declared ones and those registered."""
 
     def __init__(self, home: JournalHome, handlers: Sequence[TickHandler], wake_listeners: Callable[[], None], seconds: Callable[[], float] = time.monotonic, queue: ServerQueue | None = None,
-                 containers: Callable[[JournalHome], RoundContainer] = KeptRoundContainer) -> None:
+                 containers: Callable[[JournalHome], RoundContainer] = KeptRoundContainer, tickets: RoundTickets | None = None) -> None:
         self.home, self.wake_listeners, self.seconds = home, wake_listeners, seconds
-        self.queue = queue
+        self.queue, self.tickets = queue, tickets
         self.due = DueTickHandlers(handlers, seconds())
         self.waiting_handlers: "queue_module.Queue[QueuedTickHandler]" = queue_module.Queue()
         self.busy: set[str] = set()
@@ -80,7 +82,8 @@ class Ticker:
         handler = queued.handler
         journal_round = JournalRound(self.home, handler.label, TickHandlerWork(handler, self.wake_listeners), containers, self.queue)
         try:
-            journal_round.run()
+            with self.tickets.tick_turn(handler.label) if self.tickets is not None else nullcontext():
+                journal_round.run()
         except Exception as error:
             journal_round.report(error)
         finally:

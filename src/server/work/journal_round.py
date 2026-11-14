@@ -1,3 +1,5 @@
+from server.execution.round_tickets import RoundTickets
+from server.execution.execution_round_yield import ExecutionRoundYield
 from contextlib import nullcontext
 
 from engine.time.clock import Clock
@@ -19,9 +21,9 @@ class JournalRound:
     inspector lists a running round, and a round takes no turn: no hook or CLI line waits behind one, and it
     waits behind none, but its listeners pause for the hooks that run or wait between the events they handle."""
 
-    def __init__(self, home: JournalHome, name: str, work: RoundWork, containers: RoundContainer, queue: ServerQueue | None = None) -> None:
+    def __init__(self, home: JournalHome, name: str, work: RoundWork, containers: RoundContainer, queue: ServerQueue | None = None, tickets: RoundTickets | None = None) -> None:
         self.home, self.name, self.work, self.containers = home, name, work, containers
-        self.queue = queue
+        self.queue, self.tickets = queue, tickets
 
     def run(self) -> None:
         listed = self.queue.observing(QueueRequest.started("Background", self.name, priority="background")) if self.queue is not None else nullcontext()
@@ -31,7 +33,9 @@ class JournalRound:
     def run_work(self) -> None:
         try:
             container = self.containers.round_container()
-            if self.queue is not None:
+            if self.tickets is not None:
+                container.bind(RoundYield, ExecutionRoundYield(self.tickets))
+            elif self.queue is not None:
                 container.bind(RoundYield, QueueRoundYield(self.queue))
             self.work.run(container)
         except Exception as error:

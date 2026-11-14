@@ -31,6 +31,8 @@ from engine.module.code_fingerprint import CodeFingerprint
 from engine.module.module_finder import ModuleFinder
 from engine.database.reported_findings import ReportedFindings
 from server.execution.session_starters import SessionStarters
+from server.execution.execution_priorities import ExecutionPriorities
+from server.execution.round_tickets import RoundTickets
 from server.work.booting_work import BootingWork
 from server.work.code_sync_work import CodeSyncWork
 from server.handover.code_version import CodeVersion
@@ -149,10 +151,11 @@ def main(argv: list[str]) -> int:
     turns = WriteTurnQueue(clock, WRITE_TURN_LIMIT_SECONDS, lambda slow_turn_text: files.log_line(slow_turn_text, LogLevel.WARNING))
     hook_database = HookDatabase(home, turns)
     urgent_kept, listener_kept, plugin_kept, stop_kept = (KeptRoundContainer(home, turns) for _ in range(4))
-    urgent_round = JournalRound(home, "urgent listener thread", UrgentListenerWork(), urgent_kept, hook_database.queue)
-    listener_round = JournalRound(home, "listener thread", OrdinaryListenerWork(), listener_kept, hook_database.queue)
-    plugin_round = JournalRound(home, "plugin listener thread", PluginListenerWork(), plugin_kept, hook_database.queue)
-    stop_round = JournalRound(home, "program stop thread", ProgramStopListenerWork(), stop_kept, hook_database.queue)
+    round_tickets = RoundTickets(hook_database.executions, ExecutionPriorities(SessionStarters.shared(home)), clock)
+    urgent_round = JournalRound(home, "urgent listener thread", UrgentListenerWork(), urgent_kept, hook_database.queue, round_tickets)
+    listener_round = JournalRound(home, "listener thread", OrdinaryListenerWork(), listener_kept, hook_database.queue, round_tickets)
+    plugin_round = JournalRound(home, "plugin listener thread", PluginListenerWork(), plugin_kept, hook_database.queue, round_tickets)
+    stop_round = JournalRound(home, "program stop thread", ProgramStopListenerWork(), stop_kept, hook_database.queue, round_tickets)
     wakes = ListenerWakeRouter(WrittenEvents.shared(), [])
     urgent_thread = ListenerThread(urgent_round.run, urgent_round.report, name="urgent listeners", stop_callback=urgent_round.close, after_round=wakes.wake)
     plugin_thread = ListenerThread(plugin_round.run, plugin_round.report, name="plugin listeners", stop_callback=plugin_round.close, after_round=wakes.wake)
@@ -160,7 +163,7 @@ def main(argv: list[str]) -> int:
     listener_thread = ListenerThread(listener_round.run, listener_round.report, stop_callback=listener_round.close, after_round=wakes.wake)
     wakes.threads = [(urgent_thread, urgent_kept.listener_set), (listener_thread, listener_kept.listener_set), (plugin_thread, plugin_kept.listener_set),
                      (stop_thread, stop_kept.listener_set)]
-    ticker = Ticker(home, Ticker.module_handlers(finder), wakes.wake, queue=hook_database.queue, containers=partial(KeptRoundContainer, turns=turns))
+    ticker = Ticker(home, Ticker.module_handlers(finder), wakes.wake, queue=hook_database.queue, containers=partial(KeptRoundContainer, turns=turns), tickets=round_tickets)
     phones = PhoneSessions(home, wakes, turns)
     login = ViewerLogin(phones, ShareSessions(phones.journal_output, clock), SessionFile(home.viewer_sessions_file))
     reported_findings = ReportedFindings()
