@@ -389,7 +389,6 @@ tests/stories/engine/viewer/inspector_check.py
 tests/stories/engine/viewer/inspector_declaration.py
 tests/stories/server/browser_diagnostics.py
 tests/stories/server/developer_hook_requests.py
-tests/stories/server/developer_system_logs.py
 tests/stories/server/library_client.py
 tests/stories/server/message_targets.py
 tests/stories/server/profile_storage.py

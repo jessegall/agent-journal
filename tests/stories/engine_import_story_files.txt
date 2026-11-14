@@ -707,7 +707,6 @@ tests/stories/fixtures/third_party.py
 tests/stories/real_programs.py
 tests/stories/server/boot_files.py
 tests/stories/server/developer_hook_requests.py
-tests/stories/server/developer_system_logs.py
 tests/stories/server/launch_stop.py
 tests/stories/server/library_client.py
 tests/stories/server/message_targets.py
@@ -725,7 +724,6 @@ tests/stories/server/tick_warnings.py
 tests/stories/server/viewer/login_link.py
 tests/stories/server/viewer/request_funnel_routes.py
 tests/stories/server/viewer_chat_declarations.py
-tests/stories/server/viewer_events.py
 tests/stories/server/viewer_hook_events.py
 tests/stories/server/viewer_read_counts.py
 tests/stories/server/viewer_request_attribution.py

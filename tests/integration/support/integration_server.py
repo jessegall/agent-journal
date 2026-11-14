@@ -22,7 +22,7 @@ class IntegrationServer(ServerClient):
 
     # a main agent starts as Claude Code starts one: its session_start hook reaches the server
     def start_agent(self, session: str) -> ServerAnswer:
-        answer = self.request("POST", "/hook", dict(HookSamples.session_start().with_fields(session=session).body))
+        answer = self.request("POST", "/hook", dict(HookSamples.session_start().with_fields(session=session, firing=f"start-{session}").body))
         assert answer.status == 200, answer
         return answer
 
