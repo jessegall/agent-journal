@@ -99,3 +99,36 @@ def test_agent_counts_and_a_page_of_thirty_idle_agents_do_not_read_worktrees_per
     status, answer = server.window_data(cookie, keys="count-agents", window="coding.agent-settings", query="environment=main&count-agents.role=worker&count-agents.page=1")
     cards = answer["keys"]["count-agents"]
     assert status == 200 and cards["code"] == 0 and len(cards["value"]["rows"]) == 25 and cards["value"]["total"] == 30, cards
+
+
+def started_plan(journal, user, plan_id: int, title: str) -> int:
+    lines = [f'plan make "{title}" --environment main', f'phase make --plan {plan_id} "Build" --goal "it builds"']
+    for line in lines:
+        assert journal.run(line, user).code == 0, line
+    task_ids = [journal.new_row_id(f'task make "{title} task {number}" --brief "A task of the plan" --environment main', user) for number in (1, 2)]
+    for task_id in task_ids:
+        assert journal.run(f"phase place {task_id} --phase {plan_id}", user).code == 0
+    for task_id in task_ids:
+        journal.run(f'task waits-on-nothing {task_id} --why "the plan needs no order here"', user)
+    for line in (f'plan ready {plan_id} --environment main --skip-guard plans.one-task-phase --skip-reason "one phase is enough here"',
+                 f"plan approve {plan_id} --environment main", f"plan start {plan_id} --environment main"):
+        answer = journal.run(line, user)
+        assert answer.code == 0, (line, answer.text)
+    return task_ids[0]
+
+
+def started_ids(server, cookie: str) -> list[int]:
+    status, answer = server.window_data(cookie, keys="started", window="plans.plans")
+    assert status == 200 and answer["keys"]["started"]["code"] == 0, answer
+    value = answer["keys"]["started"]["value"]
+    return [value["started_total"]] + [plan["id"] for plan in value["plans"]]
+
+
+def test_a_task_change_moves_its_plan_first_in_the_started_tab(viewer):
+    server, cookie, user = viewer
+    older_task = started_plan(server.journal, user, 1, "Older plan")
+    started_plan(server.journal, user, 2, "Newer plan")
+    assert started_ids(server, cookie) == [2, 2, 1]
+    agent_line(server, f"task start {older_task}")
+    agent_line(server, f'task close {older_task} --outcome "Done"')
+    assert started_ids(server, cookie) == [2, 1, 2]
