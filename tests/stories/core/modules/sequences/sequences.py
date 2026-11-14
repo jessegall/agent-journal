@@ -237,5 +237,6 @@ def test_a_person_running_a_sequence_starts_the_run_of_the_main_agent_and_can_gi
     story.expect_text("sequence run 1", "sequence 1, step 1: Run the suite", actor=story.user)
     story.run("sequence follow", actor=story.agent)
     story.expect_text("sequence next", "sequence 1, step 2: Tag the release", actor=story.agent)
+    story.run("sequence follow", actor=story.agent)
     story.expect_text('sequence abandon --why "The plan changed" --sure', "sequence 1 abandoned", actor=story.user)
     story.expect_refusal("sequence next", "no sequence is running", actor=story.agent)

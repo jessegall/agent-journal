@@ -4,6 +4,7 @@ from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
 
 from engine.actor.actor import Actor
+from core.modules.agents.models.agent import Agent
 from engine.enums.actor_type import ActorType
 from engine.enums.command_category import CommandCategory
 
@@ -161,8 +162,7 @@ def test_a_worker_stopped_for_good_with_its_job_sent_before_is_not_named(new_sto
     story.expect_rows(line_count(story, "has had work waiting") == 0)
 
 
-def expect_waiting_job_name(story, monkeypatch) -> None:
-    helper = helper_agent(story)
+def expect_waiting_job_name(story, helper, monkeypatch) -> None:
     story.end_session(Actor(helper.id, ActorType.AGENT))
     resumable_session(story, helper, monkeypatch)
     story.advance(minutes(1))
@@ -171,17 +171,18 @@ def expect_waiting_job_name(story, monkeypatch) -> None:
     launcher.drain_requests()
     story.advance(minutes(grace(story)))
     story.tick(MAIN_SESSION)
-    story.expect_rows(line_count(story, f"helper:{agent_number(story, helper.id)} has had work waiting") == 1)
+    story.expect_rows(line_count(story, f"{helper.role}:{agent_number(story, helper.id)} has had work waiting") == 1)
 
 
 def test_an_ended_helper_whose_job_has_not_started_is_named(new_story, monkeypatch):
-    expect_waiting_job_name(new_story(fixture=StartedHelper), monkeypatch)
+    story = new_story(fixture=StartedHelper)
+    expect_waiting_job_name(story, helper_agent(story), monkeypatch)
 
 
 def test_an_ended_merger_whose_job_has_not_started_is_named_too(new_story, monkeypatch):
     story = new_story(fixture=StartedMerger)
     story.advance(minutes(1))
-    expect_waiting_job_name(story, monkeypatch)
+    expect_waiting_job_name(story, story.story_rows(Agent, role=Merger.key)[0], monkeypatch)
 
 
 def test_a_helper_that_used_a_tool_within_the_limit_is_not_named(new_story):

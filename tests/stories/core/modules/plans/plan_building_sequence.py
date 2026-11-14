@@ -266,7 +266,7 @@ def test_making_a_plan_ready_ends_its_sequence_and_the_run_on_another_plan_stays
     story.expect_success("plan ready 1", actor=story.agent)
     story.run_listeners()
     open_runs = [run.session_agent_id for run in story.story_rows(SequenceRun) if run.ended_at is None]
-    expect_value(open_runs, [worker.id])
+    expect_value(open_runs, [planner.id])
 
 
 def test_cancelling_the_plan_lets_its_agent_stop(new_story):
