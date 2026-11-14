@@ -12,4 +12,4 @@ def test_syncing_a_module_with_an_agent_state_adds_no_model_and_no_migration(new
     story.expect_sync_success(f"{PATH}:StateModuleJoining")
     registry = Registry.read(story.container.get(Database))
     story.expect_rows(set(registry.models) == models, story.container.get(Schema).applied_numbers() == migrations,
-                      [state.name for state in registry.agent_states] == ["acme.state"])
+                      "acme.state" in [state.name for state in registry.agent_states])

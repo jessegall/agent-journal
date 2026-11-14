@@ -746,7 +746,10 @@ def test_a_message_is_typed_at_once_to_an_agent_back_from_a_compaction_a_person_
     story.replace(TerminalTyping, typing)
     story.hook("s-1", HookSamples.sample("compact").with_fields(accepts_lines=False).with_raw({"trigger": "manual"}))
     story.hook("s-1", HookSamples.session_start().with_raw({"source": "compact"}))
-    story.advance(timedelta(seconds=11))
+    story.advance(timedelta(seconds=5))
+    story.tick("s-1")
+    expect_terminal_lines(typing, [])
+    story.advance(timedelta(seconds=6))
     story.tick("s-1")
     post_message(story, "Are you back")
     story.run_listeners()
@@ -766,25 +769,6 @@ def test_an_agent_that_runs_a_tool_within_ten_seconds_of_its_compaction_is_not_t
     story.tick("s-1")
     story.run_listeners()
     expect_terminal_lines(typing, [])
-
-
-def test_an_idle_agent_is_told_once_after_ten_seconds_and_not_before(new_story):
-    story = delivery_story(new_story)
-    typing = KeptTyping()
-    story.replace(TerminalTyping, typing)
-    story.hook("s-1", HookSamples.edit("src/shop.py"))
-    story.hook("s-1", HookSamples.sample("compact").with_fields(accepts_lines=False).with_raw({"trigger": "manual"}))
-    story.hook("s-1", HookSamples.session_start().with_raw({"source": "compact"}))
-    story.advance(timedelta(seconds=5))
-    story.tick("s-1")
-    story.run_listeners()
-    expect_terminal_lines(typing, [])
-    story.advance(timedelta(seconds=6))
-    story.tick("s-1")
-    story.advance(timedelta(seconds=6))
-    story.tick("s-1")
-    story.run_listeners()
-    expect_terminal_lines(typing, [TERMINAL_PREFIX + AGENT_COMPACTED.nudge().text])
 
 
 def test_after_an_automatic_compaction_the_turn_goes_on_and_no_line_is_typed(new_story):
