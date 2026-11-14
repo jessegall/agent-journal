@@ -114,6 +114,34 @@ func TestAServerThatNeverAnswersEndsTheWaitWithNoServer(t *testing.T) {
 	}
 }
 
+func TestAServerThatRunsButAnswersLateGetsTheBusyAnswerAndTheLineRunsNowhere(t *testing.T) {
+	home := shortHome(t)
+	lock, err := os.OpenFile(filepath.Join(home, "server.lock"), os.O_CREATE|os.O_RDWR, 0o600)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer lock.Close()
+	if err := syscall.Flock(int(lock.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
+		t.Fatal(err)
+	}
+	previous := StartLimit
+	StartLimit = 200 * time.Millisecond
+	t.Cleanup(func() { StartLimit = previous })
+	startListener(t, socket.Path(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) { time.Sleep(3 * time.Second) }))
+	_, started, err := Connect(home, StartServer)
+	if err == nil {
+		t.Fatal("a server that answers after the health limit counts as answering")
+	}
+	var stdout, stderr strings.Builder
+	code := NoAnswer(home, started, []string{"task", "list"}, &stdout, &stderr)
+	if code != ErrorCode || !strings.Contains(stderr.String(), "the journal is busy, try again") || stdout.Len() != 0 {
+		t.Fatalf("code %d, stdout %q, stderr %q", code, stdout.String(), stderr.String())
+	}
+	if _, statErr := os.Stat(filepath.Join(home, "server.failed")); statErr == nil {
+		t.Fatal("a busy server marks no failed start")
+	}
+}
+
 func TestAMaintenanceMarkMeansNoServerIsStartedWhileTheLockIsFree(t *testing.T) {
 	home := shortHome(t)
 	if err := os.WriteFile(filepath.Join(home, MaintenanceMark), []byte(strconv.Itoa(os.Getpid())), 0o600); err != nil {

@@ -83,19 +83,12 @@ func Run(requestTiming *timing.Timing, argv []string, stdout, stderr io.Writer) 
 	if len(argv) == 2 && argv[0] == "server" && argv[1] == "update" {
 		return ServerUpdate(home, stdout, stderr)
 	}
-	if !ServerSupported || (FailedRecently(home) && !InMaintenance(home) && !Healthy(socket.Client(socket.Path(home)))) {
+	if !ServerSupported || (FailedRecently(home) && !InMaintenance(home) && !ServerRunning(home) && !Healthy(socket.Client(socket.Path(home)))) {
 		return DirectRun(home, argv, stdout, stderr)
 	}
 	client, started, err := Connect(home, StartServer)
 	if err != nil {
-		if started != nil {
-			started.Kill()
-		}
-		if !InMaintenance(home) {
-			MarkFailed(home)
-		}
-		fmt.Fprintf(stderr, "the journal's server did not start; this line runs directly. %s\n", LastLogLines(home, 3))
-		return DirectRun(home, argv, stdout, stderr)
+		return NoAnswer(home, started, argv, stdout, stderr)
 	}
 	argv, inputErr := BodyFromInput(argv, os.Stdin)
 	if inputErr != nil {
@@ -121,6 +114,29 @@ func Run(requestTiming *timing.Timing, argv []string, stdout, stderr io.Writer) 
 		return ErrorCode
 	}
 	return code
+}
+
+// ServerRunning says whether a server holds the lock: one that is running, starting or stopping.
+func ServerRunning(home string) bool {
+	return !LockIsFree(filepath.Join(home, "server.lock"))
+}
+
+// NoAnswer is what a client does when Connect found no server answering: a server that runs but answers late is
+// busy, so the client says so and fails without running the line itself, which a sandboxed agent cannot do; only
+// when no server runs does the line run directly.
+func NoAnswer(home string, started *os.Process, argv []string, stdout, stderr io.Writer) int {
+	if started == nil && ServerRunning(home) {
+		fmt.Fprintln(stderr, "the journal is busy, try again")
+		return ErrorCode
+	}
+	if started != nil {
+		started.Kill()
+	}
+	if !InMaintenance(home) {
+		MarkFailed(home)
+	}
+	fmt.Fprintf(stderr, "the journal's server did not start; this line runs directly. %s\n", LastLogLines(home, 3))
+	return DirectRun(home, argv, stdout, stderr)
 }
 
 // StopServer asks a running server to stop and waits until it has let its lock go.
