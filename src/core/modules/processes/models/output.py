@@ -36,6 +36,7 @@ class Output(Model):
     state: OutputState = OutputState.KEPT
     ended_at: Timestamp | None = None
     read_at: Timestamp | None = None
+    last_read_at: Timestamp | None = None
     fully_read_at: Timestamp | None = None
     full_read_output_id: int | None = None
     pruned_at: Timestamp | None = None
