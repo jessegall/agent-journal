@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref, watch} from "vue";
+import {computed, watch} from "vue";
 import ResourceFields from "../src/resource/ResourceFields.vue";
 import ResourceHeading from "../src/resource/ResourceHeading.vue";
 import InnerTabs from "./InnerTabs.vue";
@@ -15,7 +15,9 @@ const props = defineProps({
     facts: {type: Array, default: () => []},
 });
 const emit = defineEmits(["peek"]);
-const open = ref(props.tabs[0]?.key ?? "");
+// the open tab is the reader's own, or the page's when it binds v-model:tab, so a page can open a tab from a menu
+const open = defineModel("tab", {type: String, default: ""});
+if (!open.value) open.value = props.tabs[0]?.key ?? "";
 watch(() => props.tabs.map((tab) => tab.key).join(), () => {
     if (!props.tabs.some((tab) => tab.key === open.value)) open.value = props.tabs[0]?.key ?? "";
 });

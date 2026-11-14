@@ -10,7 +10,7 @@ export {allowed, buttonCatalogue, buttonsAt, startButtons} from "../src/domain/b
 export {default as RunningCommand} from "./RunningCommand.vue";
 export {default as Switch} from "./Switch.vue";
 export {default as Notice} from "../src/kit/Notice.vue";
-export {openInChat, peekRef} from "../src/route.js";
+export {openFileInspector, openInChat, peekRef} from "../src/route.js";
 export {tableOfWord} from "../src/domain/tables.js";
 export {steppedItem} from "../src/domain/steppedItem.js";
 export {loadStates, stateLabel, stateLook, stateTipRead} from "../src/domain/states.js";

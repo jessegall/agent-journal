@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted} from "vue";
+import {computed, watch} from "vue";
 import EmptyState from "../src/kit/EmptyState.vue";
 import ListRow from "../src/kit/ListRow.vue";
 import {chooseRow, route} from "../src/route.js";
@@ -39,10 +39,12 @@ function keyed(event) {
     step(STEPS[event.key]);
 }
 
-onMounted(() => {
+// the row the address names is chosen once the list has it, which for a page that reads its rows is after it is drawn
+watch(() => props.items.length, () => {
+    if (chosen.value !== null) return;
     const wanted = props.items.find((item) => String(item.id) === route.value.row);
     if (wanted) chosen.value = wanted.id;
-});
+}, {immediate: true});
 </script>
 
 <template>

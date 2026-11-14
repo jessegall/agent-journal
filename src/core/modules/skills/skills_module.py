@@ -54,14 +54,15 @@ from core.modules.skills.support.skeletons import SKILLS_SKILLS_SKELETON
 from core.modules.skills.support.skill_inspector import SKILL_INSPECTOR
 
 
-SKILLS_READS = ["agent main", "agent-skill list", "agent-skill show", "skill list", "skill show", "skill requirements", "setting show", "trigger list", "trigger try"]
-SKILLS_RUNS = ["skill set-required", "skill require", "agent-skill reset", "trigger make", "trigger edit", "trigger pause", "trigger enable", "trigger strike"]
+SKILLS_READS = ["agent main", "agent-skill list", "agent-skill show", "skill list", "skill show", "skill requirements", "setting show", "trigger list", "trigger try", "profile list"]
+SKILLS_RUNS = ["skill set-required", "skill require", "agent-skill reset", "trigger make", "trigger edit", "trigger pause", "trigger enable", "trigger strike", "profile save"]
 SKILLS_EVENTS = ["agent_skill.*", "agent.*", "setting.*", "trigger.*"]
 SKILLS_KEYS = [WindowKey("catalogue", "skill list", events=["setting.*"]),
     WindowKey("requirements", "skill requirements", events=["setting.*"]),
     WindowKey("main-agent", "agent main", events=["agent.*"]),
     WindowKey("loaded", "agent-skill list --limit 1000", arguments=["agent"], events=["agent_skill.*"], loading=KeyLoading.REQUESTED),
     WindowKey("triggers", "trigger list --skill", events=["trigger.*"]),
+    WindowKey("profiles", "profile list", events=["setting.*"]),
     WindowKey("text", "skill show", arguments=["folder"], loading=KeyLoading.REQUESTED),
     WindowKey("agent-skill.*", "agent-skill show {id}", loading=KeyLoading.REQUESTED),
     WindowKey("trial", "trigger try", arguments=["phrases", "sentence", "match-mode"], loading=KeyLoading.REQUESTED)]
