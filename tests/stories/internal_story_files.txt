@@ -394,7 +394,6 @@ tests/stories/engine/upgrade/upgrade.py
 tests/stories/engine/viewer/button_icons.py
 tests/stories/engine/viewer/inspector_check.py
 tests/stories/engine/viewer/inspector_declaration.py
-tests/stories/server/browser_diagnostics.py
 tests/stories/server/library_client.py
 tests/stories/server/viewer_hook_events.py
 tests/stories/suites/coding/agent_settings_window.py
