@@ -26,7 +26,8 @@ class WakeWaiters:
     def register(self, agent_id: int, token: str) -> WakeWaiter:
         with self.changed:
             current = self.waiters.get(agent_id)
-            if current is not None and current.token == token and current.is_live:
+            # the same waiter asking again keeps its wait, and a line given to it between two of its asks
+            if current is not None and current.token == token and current.outcome is not WakeOutcome.CANCELLED:
                 return current
             if current is not None and current.is_live:
                 current.outcome = WakeOutcome.CANCELLED

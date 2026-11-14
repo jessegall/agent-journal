@@ -56,3 +56,11 @@ def test_cancel_wakes_the_wait_with_cancelled():
 def test_the_same_token_asking_again_keeps_its_waiter():
     waiters = WakeWaiters()
     assert waiters.register(3, "token") is waiters.register(3, "token")
+
+
+def test_a_line_given_between_two_asks_reaches_the_next_ask():
+    waiters = WakeWaiters()
+    waiter = waiters.register(3, "token")
+    waiters.offer(3, "[journal] go on", 7, GIVEN_AT)
+    again = waiters.register(3, "token")
+    assert again is waiter and waiters.wait(again, 0).outcome is WakeOutcome.GIVEN
