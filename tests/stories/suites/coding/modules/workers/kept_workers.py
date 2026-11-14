@@ -29,6 +29,7 @@ from suites.coding.modules.workers.support.worker_proof_queue import WorkerProof
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+from tests.stories.suites.coding.modules.workers.libraries import LIBRARY_FILE, LIBRARY_TEXT
 from tests.stories.suites.coding.modules.workers.support.worktree_samples import worktree_commit
 from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
 from tests.stories.core.support.agent_labels import agent_label
@@ -267,12 +268,13 @@ def test_an_approved_plan_does_not_hold_a_stop_when_no_new_worker_can_start(new_
 def test_a_task_sent_after_merge_is_started_in_a_new_worktree_that_keeps_the_links(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
-    worker = checked_worker(story, repository, "worker dispatch --test-command python=pytest --model sonnet 1")
+    repository.library("node_modules", LIBRARY_FILE, LIBRARY_TEXT)
+    worker = checked_worker(story, repository, "worker dispatch --test-command python=pytest --model sonnet --library-link node_modules 1")
     repository.checkout(ENVIRONMENT_BRANCH)
     request_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     session = worker_session(story, worker)
-    task =story.new_row_id('task make "Fix the findings" --brief "Fix what the merge found" --environment main', actor=story.agent)
+    task = story.new_row_id('task make "Fix the findings" --brief "Fix what the merge found" --environment main', actor=story.agent)
     story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task {task}", actor=story.agent)
     worktree = story.container.get(WorktreeQuery).worker_worktree(worker.id)
     story.expect_rows(worktree.task_id == task)

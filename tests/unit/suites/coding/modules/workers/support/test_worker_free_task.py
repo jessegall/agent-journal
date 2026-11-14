@@ -21,6 +21,11 @@ class Rows:
     def filter(self, state):
         return Rows().found([task for task in self.held if task.state is state])
 
+    # the one condition the free task asks: leave out the ids of the commit
+    def matching(self, among):
+        left_out = set(among.values)
+        return Rows().found([task for task in self.held if task.id not in left_out])
+
 
 class Tasks:
     def __init__(self, assigned=(), kept=(), testing=()) -> None:
@@ -54,12 +59,12 @@ class Bus:
         self.commands.append(command)
 
 
-def given(tasks: Tasks) -> list[int]:
+def given(tasks: Tasks, committed: tuple[SimpleNamespace, ...] = ()) -> list[int]:
     bus = Bus()
     rows = SimpleNamespace(required=lambda model, row_id: SimpleNamespace(id=row_id, ended_at=None))
     places = SimpleNamespace(running=lambda: [], run_limit=lambda: 2)
     plans = SimpleNamespace(plan_exclusion=lambda: None)
-    WorkerFreeTask(tasks, plans, bus, rows, places).give_next(WORKER, Asker())
+    WorkerFreeTask(tasks, plans, bus, rows, places).give_next(WORKER, committed, Asker())
     return [command.task_id for command in bus.commands]
 
 
@@ -71,3 +76,8 @@ def test_a_worker_with_no_task_is_given_the_free_task():
                                    Tasks(testing=[SimpleNamespace(id=3, state=TaskState.TESTING)])], ids=["assigned", "held started", "waiting for tests"])
 def test_a_worker_that_still_has_a_task_is_given_none(tasks):
     assert given(tasks) == []
+
+
+def test_the_task_the_commit_just_sent_to_its_tests_does_not_hold_the_free_task_back():
+    committed = SimpleNamespace(id=3, state=TaskState.TESTING)
+    assert given(Tasks(testing=[committed]), (committed,)) == [FREE_TASK.id]
