@@ -114,6 +114,7 @@ from engine.provider.managed_hook_history_reader import ManagedHookHistoryReader
 from core.modules.drivers.queries.managed_hook_history_query import ManagedHookHistoryQuery
 from core.modules.drivers.overlays.paused_overlay import PausedOverlay
 from core.modules.drivers.listeners.bypass_log_listener import BypassLogListener
+from core.modules.drivers.listeners.deferred_rules_listener import DeferredRulesListener
 from core.modules.drivers.commands.record_bypass_line.record_bypass_line_handler import RecordBypassLineHandler
 from core.modules.drivers.commands.record_hook_timeout.record_hook_timeout_handler import RecordHookTimeoutHandler
 from core.modules.drivers.commands.record_missing_prompt.record_missing_prompt_handler import RecordMissingPromptHandler
@@ -265,7 +266,7 @@ class DriversModule(Module):
     subcommands = [CheckSuiteSubcommand, ApproveRefusalSkipSubcommand, DeclineRefusalSkipSubcommand, AskPermissionSubcommand, AllowPermissionSubcommand, DeclinePermissionSubcommand, ConfirmRefusalSkipSubcommand, CancelRefusalSkipSubcommand, HookCallStopsSubcommand, EnvironmentMenuSubcommand, SkipRefusalSubcommand, RestoreRefusalSkipSubcommand, SkipAgentBlockSubcommand,PauseAgentSubcommand, ResumeAgentSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneEventsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand, DriverStatesSubcommand, DriverStateTypesSubcommand,
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]
-    listeners = [CompactionNoticeMarkListener, InstructionImportsListener, HookTimeoutMarkListener, JournalStartedListener, ManageHooksListener, AgentBlockSkipMarkListener, BypassLogListener, HookWaitFileListener, TypedLineListener, StopLineTypingListener, ClaimedLineReleaseListener, NewDriverLinesListener]
+    listeners = [CompactionNoticeMarkListener, InstructionImportsListener, HookTimeoutMarkListener, JournalStartedListener, ManageHooksListener, AgentBlockSkipMarkListener, BypassLogListener, DeferredRulesListener, HookWaitFileListener, TypedLineListener, StopLineTypingListener, ClaimedLineReleaseListener, NewDriverLinesListener]
     overlays = [PausedOverlay]
     marks = [*BYPASS_MARKS, *DISPATCH_MARKS, *COMPACTION_MARKS]
     performance_tools = [HookCostTool]
