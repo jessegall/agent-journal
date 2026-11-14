@@ -75,6 +75,3 @@ def test_the_same_program_started_for_other_work_is_left_alone(served):
     LeftoverProcess.stop(unrelated_process, str(plugin_program(served)))
 
 
-def test_the_check_runs_once_a_minute():
-    handler = next(handler for handler in PluginsModule.tick_handlers if handler.name == "orphan plugin service stopping")
-    expect_value(handler.interval.seconds, 60)

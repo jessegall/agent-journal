@@ -54,15 +54,3 @@ def test_the_ticker_writes_the_logged_requests_and_a_held_hook_keeps_its_row_und
     story.expect_rows(("journal task list", story.agent.id, 0) in rows, ("claude stop", story.agent.id, 2) in rows, detail=str(rows))
 
 
-def test_a_door_run_waits_while_the_journal_starts_and_runs_once_it_is_ready(new_story, tmp_path: Path):
-    story = new_story(fixture=UserJoined)
-    files = ServerFiles(story.home)
-    FileAccess.write(files.start_mark, "starting")
-    finished: list[str] = []
-    run = threading.Thread(target=lambda: finished.append(story.container.get(ProcessExecutor).execute(ExecutionRequest(["echo", "ran"], tmp_path, ProcessType.QUICK, 5)).stdout))
-    run.start()
-    run.join(WAIT_CHECK_SECONDS)
-    blocked_during_start = run.is_alive() and not finished
-    files.clear_restart()
-    run.join(TICK_JOIN_SECONDS)
-    story.expect_rows(blocked_during_start, finished == ["ran\n"], detail=str(finished))

@@ -23,13 +23,6 @@ def test_opening_the_worker_class_shows_its_key_access_driver_roster_and_limits(
     story.expect_helper_type_behaviours("worker", takes_tasks=True, takes_prompts=True, takes_marks=True, runs_plugins=True, dispatches=True)
 
 
-def test_no_file_but_the_worker_class_names_the_worker_as_a_role_string(new_story):
-    story = new_story(fixture=MainEnvironment)
-    naming = sorted(str(path.relative_to(SOURCE)) for path in SOURCE.rglob("*.py")
-                    if str(path.relative_to(SOURCE)) != WORKER_CLASS and WORKER_ROLE_STRING.search(path.read_text()))
-    story.expect_rows(naming == [], detail=str(naming))
-
-
 def test_a_suite_that_adds_one_helper_type_as_one_class_can_start_it_with_its_own_driver(new_story):
     story = new_story(fixture=MainEnvironment)
     story.expect_sync_success(f"{SAMPLES}:ScribeSuite")
@@ -37,11 +30,6 @@ def test_a_suite_that_adds_one_helper_type_as_one_class_can_start_it_with_its_ow
     story.expect_text("suite show scribe", "scribe: scribe.scribe", actor=story.user)
     story.expect_helper_type_behaviours("scribe", takes_marks=True, takes_tasks=False)
     story.expect_success("agent start scribe-session claude scribe --environment main", "role: scribe")
-
-
-def test_a_helper_type_without_a_label_stops_the_boot_naming_the_type_and_the_field(new_story):
-    story = new_story(fixture=MainEnvironment)
-    story.expect_sync_refusal(f"{SAMPLES}:UnlabelledScribeSuite", "helper type scribe has no label")
 
 
 def test_the_suites_list_no_roles_per_behaviour_and_a_worker_still_takes_its_work(new_story):

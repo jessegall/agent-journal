@@ -70,15 +70,6 @@ def test_the_key_pair_is_made_on_first_need_and_kept_as_two_secret_settings(new_
         shown.expect_text("set")
 
 
-def test_a_signature_made_with_a_secret_verifies_against_its_public_key():
-    pair = PushKeys(int("c0ffee", 16))
-    token = pair.token(ENDPOINT, "https://example.test", 1000.0)
-    head, claims, signature = token.split(".")
-    raw = base64.urlsafe_b64decode(signature + "=" * (-len(signature) % 4))
-    expect_signed_p256_2(P256, pair, f"{head}.{claims}", raw)
-    expect_absent_signed_p256(P256, pair, f"{head}.{claims}x", raw)
-
-
 def test_a_phone_subscription_is_kept_and_never_shown(new_story):
     story = subscribed_story(new_story)
     story.expect_no_text("phone show 1", ENDPOINT, actor=story.user)

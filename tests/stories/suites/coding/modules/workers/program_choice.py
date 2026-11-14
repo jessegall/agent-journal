@@ -99,7 +99,6 @@ def window_split_story(split_story, request, split_viewer):
     return split_story, dispatch(split_story)
 
 
-
 def worker_starts(launcher, worker) -> list[dict[str, object]]:
     return [start for start in launcher.starts if start["agent_id"] == worker.id]
 

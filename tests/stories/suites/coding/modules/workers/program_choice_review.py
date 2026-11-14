@@ -464,8 +464,6 @@ def test_program_states_copes_with_a_stale_file(split_story, split_viewer):
     expect_program(story, dispatch(story), 'claude')
 
 
-
-
 @pytest.fixture
 def trusted_codex_story(split_story, tmp_path, monkeypatch):
     story = split_story
@@ -498,8 +496,6 @@ def test_board_filters_tags_beyond_the_first_page(split_story, split_viewer):
     board = split_viewer.value('tasks.tasks', ['task', 'board', '--tag', 'networking', '--limit', '1'])
     opened = next(group for group in board['groups'] if group['state'] == 'open')
     story.expect_rows(opened['total'] == 1, [row['id'] for row in opened['rows']] == [matching])
-
-
 
 
 def test_route_commands_as_the_doc_writes_them(split_story):

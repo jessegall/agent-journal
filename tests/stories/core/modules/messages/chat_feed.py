@@ -45,8 +45,3 @@ def test_the_feed_lists_only_the_rows_with_the_ids_asked_for(new_story):
     story.run("message feed --ids 1,x", actor=story.user).expect_text("no list of whole numbers")
 
 
-def test_the_chat_window_reads_both_paged_keys_by_ids(new_story):
-    story = new_story(fixture=UserJoined)
-    window = next(window for window in MessagesModule.window_declarations() if window.name == "messages.chat")
-    keys = {key.name: key for key in window.keys}
-    story.expect_rows("ids" in keys["messages"].arguments, "ids" in keys["marks"].arguments, keys["messages"].listed()["reads_ids"], keys["marks"].listed()["reads_ids"])

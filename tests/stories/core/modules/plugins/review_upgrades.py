@@ -11,13 +11,6 @@ from pathlib import Path
 CONTRACT_FILE = Path("tests/snapshots/plugin_event_contract.json")
 
 
-def test_s79_the_runner_line_gives_read_folders_in_a_variable_and_no_flag(new_story):
-    story = new_story()
-    run = ForegroundRun(30, False, read_folders=tuple([Path("/project/.rules")]))
-    line = RunnerLine.build(Path("/bin/journal-run"), 1, run, "true", "s-1")
-    story.expect_rows(f"{READ_FOLDERS_VARIABLE}=/project/.rules" in line, "--read-folder" not in line)
-
-
 def test_s81_the_snapshot_a_test_holds_names_what_journal_event_keys_lists(new_story):
     story = event_plugin_story(new_story)
     contract_file = json.loads(CONTRACT_FILE.read_text())

@@ -27,7 +27,6 @@ tests/stories/core/modules/agents/helper_transcripts.py
 tests/stories/core/modules/agents/hook_sweep_failures.py
 tests/stories/core/modules/agents/instruction_imports.py
 tests/stories/core/modules/agents/launch_stop.py
-tests/stories/core/modules/agents/main_agent_finder.py
 tests/stories/core/modules/agents/main_agent_one_row.py
 tests/stories/core/modules/agents/marks.py
 tests/stories/core/modules/agents/one_launcher.py
@@ -35,7 +34,6 @@ tests/stories/core/modules/agents/program_manage.py
 tests/stories/core/modules/agents/program_settings_abuse.py
 tests/stories/core/modules/agents/program_settings_content.py
 tests/stories/core/modules/agents/program_settings_interruption.py
-tests/stories/core/modules/agents/program_settings_others.py
 tests/stories/core/modules/agents/program_settings_refusal.py
 tests/stories/core/modules/agents/program_settings_watch.py
 tests/stories/core/modules/agents/program_settings_writes.py
@@ -87,7 +85,6 @@ tests/stories/core/modules/assignments/support/assignment_listeners.py
 tests/stories/core/modules/assignments/support/unsound_chains.py
 tests/stories/core/modules/chat/exception_marks.py
 tests/stories/core/modules/chat/mark_buttons.py
-tests/stories/core/modules/chat/mark_family_titles.py
 tests/stories/core/modules/chat/mark_reading.py
 tests/stories/core/modules/chat/mark_removal.py
 tests/stories/core/modules/chat/mark_rounds.py
@@ -142,7 +139,6 @@ tests/stories/core/modules/drivers/agent_state_push_pop.py
 tests/stories/core/modules/drivers/agent_state_reads.py
 tests/stories/core/modules/drivers/agent_state_shapes.py
 tests/stories/core/modules/drivers/agent_states_lifecycle.py
-tests/stories/core/modules/drivers/agent_states_sync.py
 tests/stories/core/modules/drivers/agent_states_unchanged.py
 tests/stories/core/modules/drivers/agent_substates.py
 tests/stories/core/modules/drivers/block_conditions.py
@@ -170,7 +166,6 @@ tests/stories/core/modules/drivers/managed_history.py
 tests/stories/core/modules/drivers/managed_sweep.py
 tests/stories/core/modules/drivers/module_memberships.py
 tests/stories/core/modules/drivers/named_hook_changes.py
-tests/stories/core/modules/drivers/nudge_collapse.py
 tests/stories/core/modules/drivers/nudge_types_upgrade.py
 tests/stories/core/modules/drivers/nudges.py
 tests/stories/core/modules/drivers/open_blocks.py
@@ -577,7 +572,6 @@ tests/stories/core/modules/usage/slow_read_plans.py
 tests/stories/core/modules/usage/status_file_reads.py
 tests/stories/core/modules/usage/usage.py
 tests/stories/core/modules/viewer/avatar_window.py
-tests/stories/core/modules/viewer/button_registry.py
 tests/stories/core/modules/viewer/inspector_sections.py
 tests/stories/core/modules/viewer/support/acme_buttons_module.py
 tests/stories/core/modules/viewer/support/button_module.py
@@ -586,8 +580,6 @@ tests/stories/core/modules/viewer/support/section_modules.py
 tests/stories/core/modules/viewer/support/wider_acme_buttons_module.py
 tests/stories/core/modules/viewer/support/window_samples.py
 tests/stories/core/modules/viewer/support/window_story.py
-tests/stories/core/modules/viewer/viewer_shape.py
-tests/stories/core/modules/viewer/window_key_lines.py
 tests/stories/core/modules/viewer/window_search.py
 tests/stories/core/modules/viewer/window_search_declared.py
 tests/stories/core/modules/waits/ended_targets.py
@@ -652,7 +644,6 @@ tests/stories/engine/setting/support/setting_samples.py
 tests/stories/engine/support/large_journal.py
 tests/stories/engine/support/view_samples.py
 tests/stories/engine/template_database.py
-tests/stories/engine/testing/stories/run_code_text.py
 tests/stories/engine/testing/stories/working_journals.py
 tests/stories/engine/testing/templates/shared_templates.py
 tests/stories/engine/tunnel/support/tunnel_samples.py

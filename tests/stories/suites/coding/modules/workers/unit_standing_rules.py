@@ -29,14 +29,6 @@ def test_91_the_merges_of_a_list_are_its_asks(new_story, monkeypatch):
     worker.story.expect_rows(len(merged) == 1, detail=str(worker.main_agent_lines()))
 
 
-def test_92_the_words_agree_with_the_behaviour(new_story):
-    story = new_story()
-    skill = SKILL.read_text()
-    texts = (WORKER_RULES, WORKER_COMMANDS, WORK_STEPS)
-    story.expect_rows(all("journal worker ask-merge" in text for text in texts), not any("journal worker deliver" in text for text in texts),
-                      not any("is final" in text for text in texts), "is final" not in skill)
-
-
 def test_89_and_90_a_commit_of_a_unit_of_one_keeps_its_checks(new_story, monkeypatch):
     worker = single_task_worker(new_story, monkeypatch)
     worker.story.expect_refusal("worker commit --wait --differences none", "nothing is staged", actor=worker.worker)

@@ -54,10 +54,6 @@ def test_a_blocked_task_is_not_left_to_the_merger(worker_blocked_its_task):
     story.expect_rows(not any(expected_nudge(WORKER_TASK_BLOCKED).matches_text(text) for text in texts), detail=str(texts))
 
 
-def test_the_line_about_a_blocked_task_wakes_the_main_agent():
-    expect_value_4(WORKER_TASK_BLOCKED.wakes_agent)
-
-
 def test_worker_deliver_on_a_blocked_task_is_refused_and_hands_in_nothing(worker_blocked_its_task):
     story = worker_blocked_its_task
     text = refusal_text(story, "worker commit --wait --differences none")

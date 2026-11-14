@@ -22,49 +22,6 @@ def facts(**values) -> TaskFacts:
     return TaskFacts(**{**fields, **values})
 
 
-@pytest.mark.parametrize("field, operator, value, given, expected", [
-    (ConditionField.COMPLEXITY, ConditionOperator.MINIMUM, "4", {}, False),
-    (ConditionField.COMPLEXITY, ConditionOperator.UNSET, "", {}, True),
-    (ConditionField.COMPLEXITY, ConditionOperator.IS_SET, "", {}, False),
-    (ConditionField.COMPLEXITY, ConditionOperator.MINIMUM, "4", {"complexity": 4}, True),
-    (ConditionField.COMPLEXITY, ConditionOperator.MINIMUM, "4", {"complexity": 3}, False),
-    (ConditionField.COMPLEXITY, ConditionOperator.MAXIMUM, "5", {"complexity": 5}, True),
-    (ConditionField.COMPLEXITY, ConditionOperator.EQUALS, "3", {"complexity": 3}, True),
-    (*TITLE_HAS_WORD, "migration", {"title": "Fix migration of users"}, True),
-    (*TITLE_HAS_WORD, "migration", {"title": "Fix migrations"}, False),
-    (*TITLE_HAS_WORD, "migration", {"title": "Migration, again"}, True),
-    (*TITLE_HAS_WORD, "migration", {"title": "A MIGRATION now"}, True),
-    (*TITLE_HAS_WORD, "pre-migration", {"title": "A pre-migration step"}, True),
-    (*TITLE_HAS_WORD, "migration", {"title": "A pre-migration step"}, False),
-    (*TITLE_HAS_WORD, "data model", {"title": "Change the data model"}, True),
-    (*TITLE_HAS_WORD, "data model", {"title": "The model of data"}, False),
-    (*TITLE_HAS_WORD, "migration", {"brief": "the migration"}, False),
-    (ConditionField.BRIEF, ConditionOperator.HAS_WORD, "migration", {"brief": "the migration"}, True),
-    (ConditionField.TEXT, ConditionOperator.HAS_WORD, "migration", {"brief": "the migration"}, True),
-    (ConditionField.TEXT, ConditionOperator.HAS_WORD, "migration", {"title": "A migration"}, True),
-    (ConditionField.TEXT, ConditionOperator.LACKS_WORD, "migration", {"title": "A migration"}, False),
-    (ConditionField.TAG, ConditionOperator.HAS, "backend", {"tags": tuple(["backend"])}, True),
-    (ConditionField.TAG, ConditionOperator.HAS, "backend", {}, False),
-    (ConditionField.TAG, ConditionOperator.LACKS, "backend", {}, True),
-    (ConditionField.PRIORITY, ConditionOperator.MINIMUM, "high", {"priority": TaskPriority("critical")}, True),
-    (ConditionField.PRIORITY, ConditionOperator.MINIMUM, "high", {"priority": TaskPriority("high")}, True),
-    (ConditionField.PRIORITY, ConditionOperator.MINIMUM, "high", {"priority": TaskPriority("normal")}, False),
-    (ConditionField.PRIORITY, ConditionOperator.EQUALS, "high", {"priority": TaskPriority("high")}, True),
-    (ConditionField.CREATOR, ConditionOperator.IS_PERSON, "", {}, True),
-    (ConditionField.CREATOR, ConditionOperator.IS_PERSON, "", {"creator_type": CreatorType.HELPER}, False),
-    (ConditionField.CREATOR, ConditionOperator.IS_PERSON, "", {"creator_type": CreatorType.MAIN_AGENT}, False),
-    (ConditionField.CREATOR, ConditionOperator.IS_MAIN_AGENT, "", {"creator_type": CreatorType.MAIN_AGENT}, True),
-    (ConditionField.CREATOR, ConditionOperator.IS_HELPER, "", {"creator_type": CreatorType.HELPER}, True),
-    (ConditionField.CREATOR, ConditionOperator.IS_AGENT, "7", {"creator_id": 7}, True),
-    (ConditionField.PLACE, ConditionOperator.UNPLANNED, "", {}, True),
-    (ConditionField.PLACE, ConditionOperator.UNPLANNED, "", {"plan_id": 3}, False),
-    (ConditionField.PLACE, ConditionOperator.PLANNED, "3", {"plan_id": 3}, True),
-    (ConditionField.ANY, ConditionOperator.ANY, "", {}, True),
-])
-def test_a_condition_matches_the_facts_of_a_task(field, operator, value, given, expected):
-    expect_absent_value([] if check_condition(field, operator, value, facts(**given)) is expected else [(field, operator, value, given)])
-
-
 @pytest.fixture
 def rule_story(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)

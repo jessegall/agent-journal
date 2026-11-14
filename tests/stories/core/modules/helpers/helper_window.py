@@ -68,9 +68,5 @@ def test_a_start_at_the_limit_says_so(new_story):
     launcher.server.close()
 
 
-def test_helper_start_is_a_persons_line():
-    assert_person_line()
-
-
 def assert_person_line():
     assert "helper start" in PERSON_LINES

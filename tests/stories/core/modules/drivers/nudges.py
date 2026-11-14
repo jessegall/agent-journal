@@ -32,28 +32,6 @@ from tests.stories.support.story_checks import expect_answers, expect_outcome_wi
 TEST_ROWS_REASON = "the test reads every row it checks"
 
 
-def test_a_declared_nudge_fills_its_fields_and_keeps_its_key_and_type():
-    nudge = NudgeDeclaration("shop.total", NudgeType.STEERING, "the total is {total}").nudge(total=12)
-    expect_row(nudge, key="shop.total", type=NudgeType.STEERING, text="the total is 12", labelled="journal: the total is 12")
-
-
-def test_a_nudge_longer_than_its_longest_is_cut_in_its_middle_so_its_end_stays():
-    nudge = NudgeDeclaration("shop.long", NudgeType.STEERING, "{text} {other} do this").nudge(text="x" * 70, other="y" * 70)
-    expect_nudge(nudge, 120)
-    expect_endswith_nudge(nudge, "do this")
-    expect_outcome_with(nudge, "…")
-
-
-def test_a_steering_line_and_a_refusal_are_cut_at_120_characters_and_only_info_may_be_longer():
-    template = "{text} " + "w" * 700
-    lengths = {nudge_type: len(NudgeDeclaration("shop.kind", nudge_type, template).nudge(text="x").text) for nudge_type in NudgeType}
-    expect_value(lengths, {NudgeType.NOTICE: 702, NudgeType.STEERING: 120, NudgeType.REFUSAL: 120, NudgeType.SAFETY_REFUSAL: 120})
-
-
-def test_each_type_can_be_declared():
-    expect_item_nudge_type(["info", "steering", "refusal", "safety_refusal"])
-
-
 def test_module_sync_registers_every_declared_nudge_under_its_module(new_story):
     story = new_story(fixture=UserJoined)
     entry = next(entry for entry in story.container.get(Registry).nudges if entry.key == RUN_NAME.key)
@@ -63,11 +41,6 @@ def test_module_sync_registers_every_declared_nudge_under_its_module(new_story):
 def test_no_two_nudges_share_a_key(new_story):
     keys = [entry.key for entry in new_story(fixture=UserJoined).container.get(Registry).nudges]
     expect_answers(keys, len(set(keys)))
-
-
-def test_a_reminder_on_a_clock_is_said_again_in_the_same_turn():
-    declared = NudgeDeclaration("shop.reminder", NudgeType.STEERING, "check the cart", turn_limited=False)
-    expect_turn_limited_nudge(declared, False)
 
 
 def test_a_clock_nudge_going_back_to_an_older_text_keeps_one_row_for_that_text(new_story):

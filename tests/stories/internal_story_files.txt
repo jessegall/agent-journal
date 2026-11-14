@@ -1,6 +1,5 @@
 # story files that may still reach internals: plan 1138 empties this list; never add a line
 tests/stories/core/modules/accounts/account_rows.py
-tests/stories/core/modules/accounts/accounts_tables.py
 tests/stories/core/modules/agents/agent_actions.py
 tests/stories/core/modules/agents/agent_bar.py
 tests/stories/core/modules/agents/agent_card_buttons.py
@@ -16,7 +15,6 @@ tests/stories/core/modules/agents/dispatcher_rules.py
 tests/stories/core/modules/agents/ended_program.py
 tests/stories/core/modules/agents/helper_transcripts.py
 tests/stories/core/modules/agents/instruction_imports.py
-tests/stories/core/modules/agents/main_agent_finder.py
 tests/stories/core/modules/agents/marks.py
 tests/stories/core/modules/agents/no_automatic_retirement.py
 tests/stories/core/modules/agents/one_launcher.py
@@ -26,11 +24,9 @@ tests/stories/core/modules/agents/program_settings_abuse.py
 tests/stories/core/modules/agents/program_settings_backups.py
 tests/stories/core/modules/agents/program_settings_content.py
 tests/stories/core/modules/agents/program_settings_interruption.py
-tests/stories/core/modules/agents/program_settings_others.py
 tests/stories/core/modules/agents/program_settings_switch.py
 tests/stories/core/modules/agents/program_settings_watch.py
 tests/stories/core/modules/agents/program_settings_writes.py
-tests/stories/core/modules/agents/project_hook_files.py
 tests/stories/core/modules/agents/replaced_main.py
 tests/stories/core/modules/agents/running_agents.py
 tests/stories/core/modules/agents/transport_port.py
@@ -54,7 +50,6 @@ tests/stories/core/modules/assign_rules/foundations.py
 tests/stories/core/modules/assign_rules/matching.py
 tests/stories/core/modules/assignments/assigning.py
 tests/stories/core/modules/chat/exception_marks.py
-tests/stories/core/modules/chat/mark_family_titles.py
 tests/stories/core/modules/chat/mark_reading.py
 tests/stories/core/modules/chat/mark_removal.py
 tests/stories/core/modules/chat/mark_rounds.py
@@ -90,7 +85,6 @@ tests/stories/core/modules/drivers/agent_pause.py
 tests/stories/core/modules/drivers/agent_state_push_pop.py
 tests/stories/core/modules/drivers/agent_state_shapes.py
 tests/stories/core/modules/drivers/agent_states_lifecycle.py
-tests/stories/core/modules/drivers/agent_states_sync.py
 tests/stories/core/modules/drivers/agent_states_unchanged.py
 tests/stories/core/modules/drivers/block_conditions.py
 tests/stories/core/modules/drivers/bypass_log.py
@@ -342,10 +336,7 @@ tests/stories/core/modules/usage/slow_read_plans.py
 tests/stories/core/modules/usage/status_file_reads.py
 tests/stories/core/modules/usage/usage.py
 tests/stories/core/modules/viewer/avatar_window.py
-tests/stories/core/modules/viewer/button_registry.py
 tests/stories/core/modules/viewer/inspector_sections.py
-tests/stories/core/modules/viewer/window_key_lines.py
-tests/stories/core/modules/viewer/window_search.py
 tests/stories/core/modules/viewer/window_search_declared.py
 tests/stories/core/modules/waits/ended_targets.py
 tests/stories/core/modules/waits/idle_wakes.py
@@ -376,7 +367,6 @@ tests/stories/engine/scope/session_rows.py
 tests/stories/engine/scope/setting_scope.py
 tests/stories/engine/setting/shared_group.py
 tests/stories/engine/template_database.py
-tests/stories/engine/testing/stories/run_code_text.py
 tests/stories/engine/testing/stories/working_journals.py
 tests/stories/engine/tunnel/tunnel_choice.py
 tests/stories/server/library_client.py
@@ -552,7 +542,6 @@ tests/stories/suites/coding/special_helpers.py
 tests/stories/suites/coding/task_assigners.py
 tests/stories/suites/coding/terminal_window.py
 tests/stories/suites/coding/windows_as_classes.py
-tests/stories/suites/coding/worker_architecture_pointer.py
 tests/stories/tunnels/tunler/account.py
 tests/stories/tunnels/tunler/tunler_tunnel.py
 tests/stories/tunnels/tunler/write_lock.py

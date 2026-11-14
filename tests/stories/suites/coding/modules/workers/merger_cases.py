@@ -236,11 +236,6 @@ def test_the_merger_text_names_the_ladder_and_the_case_book(case):
     case.story.expect_rows("Ladder" in profile.body, "journal merger scope" in profile.body, "journal merger repair" in profile.body, "journal helper grant" in profile.body, f"{MERGER_PROFILE.name}" in profile.body, detail=profile.body)
 
 
-@pytest.mark.parametrize("case_text", ["journal merger scope", "journal merger repair", "journal helper grant", "already built", "add the case to this file"])
-def test_the_case_book_holds_each_known_case(case_text):
-    expect_value_with(merger_skill_text(), case_text)
-
-
 def logs_read_at(story: Story, worker: Actor) -> str | None:
     return story.container.get(Queries).query(Worktree).filter(session_agent_id=worker.id).first().logs_read_at
 

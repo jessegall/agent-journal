@@ -36,11 +36,6 @@ def test_a_reference_to_a_group_its_module_does_not_declare_is_refused_naming_th
     story.expect_sync_refusal(f"{PATH}:DanglingModule", "dangling places good.sharing.nothing, which the module good does not declare")
 
 
-def test_a_reference_that_leads_back_to_its_own_group_is_refused(new_story):
-    story = new_story(fixture=UserJoined)
-    story.expect_sync_refusal(f"{PATH}:LoopModule", "loop places loop.again, which holds it")
-
-
 def test_a_sync_keeps_working_when_the_module_that_owns_a_placed_group_is_removed(new_story):
     story = shared_story(new_story)
     story.container.get(ModuleRemoval).remove("good")

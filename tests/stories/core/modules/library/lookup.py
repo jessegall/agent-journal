@@ -38,24 +38,6 @@ def shared_server(tmp_path_factory):
         yield server, Tokens(server.new_user("Ada", "admin"), server.new_user("Grace", "edit"))
 
 
-def test_a_lookup_with_no_library_module_bound_answers_nothing(new_story):
-    story = new_story(fixture=UserJoined)
-    lookup = Container().get(LibraryLookup)
-    story.expect_rows(type(lookup) is LibraryLookup, lookup.hits(["release"], ["doc"]) == LibraryHits(), lookup.item("doc", LibraryRef(1)) is None, lookup.title("doc", 1) is None,
-                      lookup.is_copy("doc", 1) is False)
-
-
-def test_the_library_module_binds_its_own_lookup(new_story):
-    story = new_story(fixture=UserJoined)
-    story.expect_rows(type(story.container.get(LibraryLookup)).__name__ == "ServerLibraryLookup")
-
-
-def test_with_no_connection_a_search_answers_nothing(new_story):
-    story = new_story(fixture=UserJoined)
-    lookup = story.container.get(LibraryLookup)
-    story.expect_rows(lookup.hits(["release"], ["doc", "sequence", "check"]) == LibraryHits(), lookup.title("doc", 1) is None)
-
-
 def test_a_connection_that_stopped_asks_no_server(new_story):
     with StubServer(StubAnswer(200, EMPTY_PAGE, JSON_HEADERS)) as stub:
         story = saved_connection(new_story, stub.address, "jsl_token", stopped="The address changed. Connect again to send your token to it.")

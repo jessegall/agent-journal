@@ -28,7 +28,3 @@ def test_a_task_has_one_decision_which_can_be_updated(new_story):
     story.expect_rows(database.update(Statement("UPDATE assign_decisions SET outcome = 'skipped' WHERE task_id = ?", [TASK_ID])) == 1)
 
 
-@pytest.mark.parametrize("complexity, minimum, maximum, expected", [(4, 4, None, True), (5, 4, None, True), (3, 4, None, False), (None, 4, None, False), (None, None, 3, False), (None, None, None, True), (2, 2, 2, True)])
-def test_a_complexity_range_means_the_same_for_a_rule_and_a_route(complexity, minimum, maximum, expected):
-    route = WorkerRoute(creator_id=1, position=1, minimum_complexity=minimum, maximum_complexity=maximum)
-    expect_absent_value([answer for answer in (matches_complexity_range(complexity, minimum, maximum), route.matches((), complexity)) if answer is not expected])

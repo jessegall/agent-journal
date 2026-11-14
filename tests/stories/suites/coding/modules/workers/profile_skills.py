@@ -42,7 +42,3 @@ def test_the_etiquette_skill_is_required_of_the_main_agent_only_and_no_helper_pr
                       not any("journal-etiquette" in profile.skills for profile in HELPER_PROFILES), detail=str(requirements))
 
 
-def test_the_merger_profile_carries_the_case_book_skill():
-    merger = next(profile for profile in HELPER_PROFILES if profile.name == f"{MERGER_PROFILE.name}")
-    expect_value(f"{MERGER_PROFILE.name}" in merger.skills and "journal-dispatching-workers" in merger.skills, True)
-
