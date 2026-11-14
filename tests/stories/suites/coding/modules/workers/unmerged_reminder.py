@@ -4,7 +4,6 @@ import pytest
 
 from datetime import timedelta
 
-from engine.query.queries import Queries
 from core.modules.drivers.models.agent_block import AgentBlock
 from engine.testing.stories.story_fixture import StoryFixture
 from suites.coding.modules.workers.support.worker_nudges import WORKER_UNMERGED
@@ -15,7 +14,6 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.support.story_checks import expect_value
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 MAIN_SESSION = "s-1"
 REMINDER_INTERVAL = timedelta(seconds=WORKER_UNMERGED.interval.seconds)
@@ -93,7 +91,7 @@ def remind(story, count: int) -> None:
 
 
 def merge_block_rows(story, worker_id: int) -> list[AgentBlock]:
-    return [row for row in story.container.get(Queries).query(AgentBlock).filter(session_agent_id=story.agent.id).every_row(TEST_ROWS_REASON)
+    return [row for row in story.story_rows(AgentBlock, session_agent_id=story.agent.id)
             if f"journal worker merge {agent_number(story, worker_id)}" in row.condition_text and row.closed_at is None]
 
 

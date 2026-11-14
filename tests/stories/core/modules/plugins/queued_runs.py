@@ -1,5 +1,4 @@
 from core.modules.processes.commands.end_process.end_process import EndProcess
-from engine.command.bus import Bus
 from engine.actor.actor import Actor
 import json
 import os
@@ -79,7 +78,7 @@ def test_runs_wait_for_a_machine_wide_count_and_free_memory_join_a_waiting_twin_
     different.unlink()
     story.run_tick("run slots")
     story.expect_rows(shown(story, shared)["state"] == "running")
-    story.container.get(Bus).run(EndProcess(shown(story, shared)["process_id"], 0, 0, 0), Actor.core(), environment_id=1)
+    story.run_command(EndProcess(shown(story, shared)["process_id"], 0, 0, 0), Actor.core(), 1)
     timed = queued(story, "judge", "--timeout", "60")
     story.expect_rows(shown(story, timed)["state"] == "running")
     story.expect_success("queue halt 'a deploy is going'", actor=story.user)

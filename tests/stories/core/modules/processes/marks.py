@@ -313,7 +313,7 @@ def ended_short_mark(new_story):
 def background_plain_mark(new_story):
     story = install_runner(new_story(fixture=RoomyBuilderStarted))
     process = started_run(story, "grep -n cart notes", category=CommandCategory.SEARCH)
-    story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
+    story.run_command(MoveProcess(process.id), story.agent, 1)
     story.run_listeners()
     end_run(story, process, "done\n")
     story.run_listeners()

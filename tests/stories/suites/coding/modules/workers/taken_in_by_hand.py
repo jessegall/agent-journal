@@ -18,8 +18,8 @@ def merged_manually(story, repository: MemoryRepository) -> Worktree:
 
 
 def expect_closed_without_the_merger(story, repository: MemoryRepository, worktree: Worktree) -> None:
-    task = story.container.get(Queries).query(Task).find(worktree.task_id)
-    closed = story.container.get(Queries).query(Worktree).find(worktree.id)
+    task = story.row(Task, worktree.task_id)
+    closed = story.row(Worktree, worktree.id)
     story.expect_rows(task.state.value == "completed", task.outcome in ("its tests passed", MERGED_TEXT.format(branch=ENVIRONMENT_BRANCH)),
                       closed.merged_at is not None, closed.commit_before_merge == closed.commit_after_merge, closed.removed_at is not None, merger_agent(story) is None,
                       detail=f"{task.state} {task.outcome!r} {closed}")

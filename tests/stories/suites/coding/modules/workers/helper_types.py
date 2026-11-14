@@ -9,7 +9,6 @@ from engine.enums.access import Access
 from engine.enums.agent_role import AgentRole
 from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.database.database import Database
-from engine.query.queries import Queries
 from engine.registry.registry import Registry
 from core.modules.drivers.models.agent_line import AgentLine
 from tests.stories.core.support.coding_fixtures import CodingEnvironment
@@ -18,7 +17,6 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.suites.coding.modules.workers.support.helper_types import ClerkStarted, HelperStarted, BuilderNativeHelper, EveryHelperRule, ReaderHelpersRule, WorkerStarted
 from suites.coding.support.shipped_profiles import WORKER_MEDIOR_PROFILE
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 READ_SAMPLE = HookSamples.tool_use("Read", ToolType.READ, ["README.md"], None)
 FIXTURES = {"helper": HelperStarted, "helper": BuilderNativeHelper, "worker": WorkerStarted, "clerk": ClerkStarted}
@@ -49,7 +47,7 @@ def test_an_inactive_helper_of_any_registered_descendant_type_wakes_its_parent(n
     story.tick("s-1")
     wanted = f"{role}:{agent_number(story, helper['id'])} used no tool for 15 min"
     story.expect_text(f"agent-line list --agent {story.agent.id}", wanted)
-    lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).every_row(TEST_ROWS_REASON)
+    lines = story.story_rows(AgentLine, session_agent_id=story.agent.id)
     story.expect_rows(any(wanted in line.text and line.wakes_agent for line in lines))
 
 

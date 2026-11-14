@@ -3,7 +3,6 @@ import json
 import pytest
 
 from engine.actor.actor import Actor
-from engine.command.bus import Bus
 from engine.database.database import Database
 from engine.database.statement import Statement
 from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput
@@ -19,7 +18,7 @@ QUEUE_PLAN = Statement("EXPLAIN QUERY PLAN SELECT id FROM processes WHERE enviro
 
 
 def advance(story, process):
-    story.container.get(Bus).run(ReadNewOutput(process.id), Actor.core(), environment_id=1)
+    story.run_command(ReadNewOutput(process.id), Actor.core(), 1)
 
 
 def read_row(story, process):

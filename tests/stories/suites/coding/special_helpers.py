@@ -1,7 +1,6 @@
 from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from engine.sandbox.shell_sandbox import ShellSandbox
 from core.modules.agents.models.agent import Agent
 from core.modules.helpers.support.helper_programs import HelperPrograms
@@ -20,7 +19,6 @@ from suites.coding.support.coding_settings import STARTS_HELPERS_SETTING
 from suites.coding.support.shipped_profiles import DESIGNER_PROFILE
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 DESIGNER = f"{DESIGNER_ENABLED_SETTING}"
 HELPERS = f"{STARTS_HELPERS_SETTING}"
@@ -29,7 +27,7 @@ START_DESIGNER = f'helper start {DESIGNER_PROFILE.name} --brief "Design the cart
 
 
 def read_merger(story):
-    return next(iter(story.container.get(Queries).query(Agent).filter(profile=f"{MERGER_PROFILE.name}").every_row(TEST_ROWS_REASON)), None)
+    return next(iter(story.story_rows(Agent, profile=f"{MERGER_PROFILE.name}")), None)
 
 
 def merger_delivery(story, monkeypatch):

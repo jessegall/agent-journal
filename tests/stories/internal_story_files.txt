@@ -1,13 +1,11 @@
 # story files that may still reach internals: plan 1138 empties this list; never add a line
 tests/stories/core/modules/accounts/account_rows.py
-tests/stories/core/modules/agents/agent_actions.py
 tests/stories/core/modules/agents/agent_bar.py
 tests/stories/core/modules/agents/agent_card_buttons.py
 tests/stories/core/modules/agents/agent_detail_browser.py
 tests/stories/core/modules/agents/agent_kind_controls.py
 tests/stories/core/modules/agents/agent_limits.py
 tests/stories/core/modules/agents/agent_numbers_allocation.py
-tests/stories/core/modules/agents/agent_numbers_shown.py
 tests/stories/core/modules/agents/agent_session_history.py
 tests/stories/core/modules/agents/agent_standing.py
 tests/stories/core/modules/agents/agent_transcripts.py
@@ -15,7 +13,6 @@ tests/stories/core/modules/agents/dispatcher_rules.py
 tests/stories/core/modules/agents/ended_program.py
 tests/stories/core/modules/agents/helper_transcripts.py
 tests/stories/core/modules/agents/instruction_imports.py
-tests/stories/core/modules/agents/marks.py
 tests/stories/core/modules/agents/no_automatic_retirement.py
 tests/stories/core/modules/agents/one_launcher.py
 tests/stories/core/modules/agents/program_command_format.py
@@ -30,7 +27,6 @@ tests/stories/core/modules/agents/program_settings_writes.py
 tests/stories/core/modules/agents/replaced_main.py
 tests/stories/core/modules/agents/running_agents.py
 tests/stories/core/modules/agents/transport_port.py
-tests/stories/core/modules/aliases/expanded_commands.py
 tests/stories/core/modules/aliases/running.py
 tests/stories/core/modules/aliases/silent_aliases.py
 tests/stories/core/modules/approvals/approval_commands.py
@@ -45,7 +41,6 @@ tests/stories/core/modules/approvals/recovery.py
 tests/stories/core/modules/approvals/restart_recovery.py
 tests/stories/core/modules/approvals/secret_approvals.py
 tests/stories/core/modules/approvals/source_approvals.py
-tests/stories/core/modules/approvals/user_waits.py
 tests/stories/core/modules/assign_rules/matching.py
 tests/stories/core/modules/assignments/assigning.py
 tests/stories/core/modules/chat/exception_marks.py
@@ -91,15 +86,11 @@ tests/stories/core/modules/drivers/compaction_repeat.py
 tests/stories/core/modules/drivers/completed_rule_commands.py
 tests/stories/core/modules/drivers/context_compactions.py
 tests/stories/core/modules/drivers/countdowns.py
-tests/stories/core/modules/drivers/deferred_queue.py
-tests/stories/core/modules/drivers/foreign_runs.py
 tests/stories/core/modules/drivers/hook_durations.py
 tests/stories/core/modules/drivers/hook_points.py
 tests/stories/core/modules/drivers/hook_timeouts.py
 tests/stories/core/modules/drivers/hooks_through_the_server.py
 tests/stories/core/modules/drivers/journal_started.py
-tests/stories/core/modules/drivers/managed_answers.py
-tests/stories/core/modules/drivers/managed_failures.py
 tests/stories/core/modules/drivers/managed_history.py
 tests/stories/core/modules/drivers/managed_sweep.py
 tests/stories/core/modules/drivers/named_hook_changes.py
@@ -164,26 +155,21 @@ tests/stories/core/modules/memories/memory_delivery_owners.py
 tests/stories/core/modules/memories/memory_holders.py
 tests/stories/core/modules/memories/removed_memories.py
 tests/stories/core/modules/messages/agent_messages.py
-tests/stories/core/modules/messages/chat_messages.py
 tests/stories/core/modules/messages/delivery.py
 tests/stories/core/modules/messages/dock_scroll_browser.py
 tests/stories/core/modules/messages/lost_hooks.py
-tests/stories/core/modules/messages/marks.py
 tests/stories/core/modules/messages/message_links_browser.py
 tests/stories/core/modules/messages/message_targets_through_the_server.py
 tests/stories/core/modules/messages/message_wakes_agent.py
-tests/stories/core/modules/messages/reactions.py
 tests/stories/core/modules/overview/overview.py
 tests/stories/core/modules/pins/link_pins.py
 tests/stories/core/modules/plan_reviews/critique_button.py
 tests/stories/core/modules/plan_reviews/review_cancel.py
-tests/stories/core/modules/plan_reviews/review_rounds.py
 tests/stories/core/modules/plan_reviews/review_state.py
 tests/stories/core/modules/plans/checkpoints.py
 tests/stories/core/modules/plans/declared_buttons.py
 tests/stories/core/modules/plans/marks.py
 tests/stories/core/modules/plans/outline.py
-tests/stories/core/modules/plans/plan_links_browser.py
 tests/stories/core/modules/plans/plan_listeners.py
 tests/stories/core/modules/plans/task_cleanup_skill.py
 tests/stories/core/modules/plugins/answers.py
@@ -204,7 +190,6 @@ tests/stories/core/modules/plugins/plugin_queue_reads.py
 tests/stories/core/modules/plugins/plugins.py
 tests/stories/core/modules/plugins/previews_and_boards.py
 tests/stories/core/modules/plugins/queued_cards.py
-tests/stories/core/modules/plugins/queued_runs.py
 tests/stories/core/modules/plugins/reaches.py
 tests/stories/core/modules/plugins/review_authors.py
 tests/stories/core/modules/plugins/review_scripts.py
@@ -216,8 +201,6 @@ tests/stories/core/modules/plugins/skills.py
 tests/stories/core/modules/plugins/stale_managed_hooks.py
 tests/stories/core/modules/plugins/worker_steps.py
 tests/stories/core/modules/processes/background.py
-tests/stories/core/modules/processes/background_cards.py
-tests/stories/core/modules/processes/background_monitor.py
 tests/stories/core/modules/processes/cut_outputs.py
 tests/stories/core/modules/processes/full_dock.py
 tests/stories/core/modules/processes/hang_watch.py
@@ -241,7 +224,6 @@ tests/stories/core/modules/processes/reader_samples.py
 tests/stories/core/modules/processes/reader_start.py
 tests/stories/core/modules/processes/readers.py
 tests/stories/core/modules/processes/readers_upgrade.py
-tests/stories/core/modules/processes/reading_shadow.py
 tests/stories/core/modules/processes/request_reader.py
 tests/stories/core/modules/processes/run_owners.py
 tests/stories/core/modules/processes/run_slot_reads.py
@@ -302,10 +284,8 @@ tests/stories/core/modules/templates/origin.py
 tests/stories/core/modules/templates/sending.py
 tests/stories/core/modules/third_party.py
 tests/stories/core/modules/triggers/action_output.py
-tests/stories/core/modules/updates/server_update_marks.py
 tests/stories/core/modules/updates/updates.py
 tests/stories/core/modules/usage/agent_blocked.py
-tests/stories/core/modules/usage/agent_inspection.py
 tests/stories/core/modules/usage/agent_inspector_reads.py
 tests/stories/core/modules/usage/agent_rows.py
 tests/stories/core/modules/usage/codex_agent_facts.py
@@ -315,9 +295,6 @@ tests/stories/core/modules/usage/usage.py
 tests/stories/core/modules/viewer/avatar_window.py
 tests/stories/core/modules/viewer/inspector_sections.py
 tests/stories/core/modules/viewer/window_search_declared.py
-tests/stories/core/modules/waits/ended_targets.py
-tests/stories/core/modules/waits/idle_wakes.py
-tests/stories/core/modules/waits/marks.py
 tests/stories/core/process_door.py
 tests/stories/core/process_door_rules.py
 tests/stories/core/test_source_walks.py
@@ -381,7 +358,6 @@ tests/stories/suites/coding/modules/workers/commit_resilience.py
 tests/stories/suites/coding/modules/workers/connection_recovery.py
 tests/stories/suites/coding/modules/workers/delegation.py
 tests/stories/suites/coding/modules/workers/detected_libraries.py
-tests/stories/suites/coding/modules/workers/dispatch_no_program.py
 tests/stories/suites/coding/modules/workers/ended_worker_merger_starts.py
 tests/stories/suites/coding/modules/workers/failed_dispatch.py
 tests/stories/suites/coding/modules/workers/failed_tests.py
@@ -406,7 +382,6 @@ tests/stories/suites/coding/modules/workers/kept_workers.py
 tests/stories/suites/coding/modules/workers/large_units.py
 tests/stories/suites/coding/modules/workers/lasting_workers.py
 tests/stories/suites/coding/modules/workers/launch_failures.py
-tests/stories/suites/coding/modules/workers/libraries.py
 tests/stories/suites/coding/modules/workers/main_agent_told.py
 tests/stories/suites/coding/modules/workers/main_task_handoff.py
 tests/stories/suites/coding/modules/workers/managed_hooks.py

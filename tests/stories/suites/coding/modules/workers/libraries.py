@@ -1,5 +1,4 @@
 import pytest
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
@@ -34,7 +33,7 @@ def test_a_program_that_picks_its_own_session_is_bound_to_its_worker_row_by_its_
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story, "worker dispatch --test-command python=pytest --program codex --model gpt-6.1-sol 1")
-    launch_name = story.container.get(Queries).query(Agent).find(worker.id).session
+    launch_name = story.row(Agent, worker.id).session
     story.hook("real-codex-session", HookSamples.sample("session_start").with_fields(launch=launch_name, program="codex"))
     expect_session(story, worker, "real-codex-session")
 
@@ -99,5 +98,5 @@ def expect_resolve_folder_node(folder, text, expected) -> None:
 
 
 def expect_session(story, worker, expected) -> None:
-    actual = story.container.get(Queries).query(Agent).find(worker.id).session
+    actual = story.row(Agent, worker.id).session
     assert actual == expected, actual

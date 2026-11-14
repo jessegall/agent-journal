@@ -2,7 +2,6 @@ import pytest
 
 from datetime import timedelta
 
-from engine.command.bus import Bus
 from engine.query.conditions.prefix import Prefix
 from engine.query.queries import Queries
 from core.modules.processes.commands.end_process.end_process import EndProcess
@@ -35,7 +34,7 @@ def merger_texts(story) -> list[str]:
 def background_run(story) -> Process:
     story.run(f"setting set {WORKER_TEST_LIMIT} 0 --environment main")
     part = PartSpec("make test", "make", False, CommandCategory.TEST_RUN)
-    run = story.container.get(Bus).run(StartProcess(story.worker.id, None, "make test", "/work", CommandCategory.TEST_RUN, 30, [part]), story.worker, environment_id=1)
+    run = story.run_command(StartProcess(story.worker.id, None, "make test", "/work", CommandCategory.TEST_RUN, 30, [part]), story.worker, 1)
     story.expect_success(f"process background {run.id}", actor=story.worker)
     return run
 
@@ -105,6 +104,6 @@ def test_a_stopped_worker_whose_run_goes_on_past_the_minutes_set_on_the_workers_
     lines = stopped_run_lines(story)
     story.expect_rows(len(lines) == 1, expected_nudge(WORKER_RUN_RUNS_AFTER_STOP).matches_text(lines[0].text), lines[0].outcome is None,
                       lines[0].worker_id == story.worker.id, "waits on output" not in main_agent_lines(story), detail=f"{lines} | {main_agent_lines(story)}")
-    story.container.get(Bus).run(EndProcess(run.id, 0, 10, 1), story.worker, environment_id=1)
+    story.run_command(EndProcess(run.id, 0, 10, 1), story.worker, 1)
     StoppedWorkerRuns()(story.container)
     story.expect_rows(stopped_run_lines(story)[0].outcome is AskOutcome.MOOT, detail=str(stopped_run_lines(story)))

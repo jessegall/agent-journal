@@ -1,4 +1,3 @@
-from engine.command.bus import Bus
 from core.modules.documents.commands.record_mentions.record_mentions import RecordMentions
 from core.modules.documents.references.row_ref import RowRef
 from tests.stories.core.support.fixtures import UserJoined
@@ -19,6 +18,6 @@ def test_a_plan_with_a_hundred_links_shows_a_compact_linked_section(new_story):
     for number in range(1, MESSAGES + 1):
         story.run(f'message send "Linked message {number}" --environment main', actor=story.user)
     text = " ".join([f"task {number}" for number in range(1, TASKS + 1)] + [f"message {number}" for number in range(1, MESSAGES + 1)])
-    story.container.get(Bus).run(RecordMentions(RowRef("plan", 1), tuple([text])), story.user, environment_id=1)
+    story.run_command(RecordMentions(RowRef("plan", 1), tuple([text])), story.user, 1)
     with server_story(story) as server:
         expect_browser(server, "planLinks.browser.mjs", ["/tmp/journal-worker-680-plan-links.png"])

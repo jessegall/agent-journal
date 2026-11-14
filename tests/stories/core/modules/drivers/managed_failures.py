@@ -1,7 +1,6 @@
 import pytest
 
 from engine.module.driver_entries import DRIVERS_MODULE
-from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.fixtures import LeadStarted
@@ -24,7 +23,7 @@ def test_a_failed_project_hook_never_refuses_and_keeps_its_diagnostic_and_outcom
     expect_reply_allowed(reply)
     expect_terminal_reply(reply, [terminal])
     expect_updated_input_reply(reply, {})
-    call = story.container.get(Queries).query(HookCall).find(reply.hook_call_id)
+    call = story.row(HookCall, reply.hook_call_id)
     expect_row(call.metadata.module_part(DRIVERS_MODULE), foreign=runs)
     expect_terminal_hook(story, "s-1", hook, terminal)
 

@@ -6,7 +6,6 @@ from pathlib import Path
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
 from core.modules.processes.ticks.run_slot_grant import RunSlotGrant
 from suites.coding.modules.workers.models.proof import Proof
@@ -31,11 +30,11 @@ def installed_runner(story) -> None:
 
 
 def proof_state(story) -> str:
-    return str(story.container.get(Queries).query(Proof).find(1).state)
+    return str(story.row(Proof, 1).state)
 
 
 def run_report(story) -> str:
-    process_id = story.container.get(Queries).query(Proof).find(1).process_id
+    process_id = story.row(Proof, 1).process_id
     folder = story.home.folder.resolve() / "processes" / str(process_id)
     files = {path.name: path.read_text(errors="replace")[:200] for path in sorted(folder.iterdir()) if path.is_file()} if folder.is_dir() else {}
     return f"{story.run(f'process show {process_id}', actor=story.agent).output_text}\n{files}"
@@ -43,7 +42,7 @@ def run_report(story) -> str:
 
 def pending_item(story, ticks, wanted: str) -> None:
     deadline = time.monotonic() + WAIT_SECONDS
-    process_id = story.container.get(Queries).query(Proof).find(1).process_id
+    process_id = story.row(Proof, 1).process_id
     folder = story.home.folder.resolve() / "processes" / str(process_id)
     with FileChanges(folder) as changes:
         while proof_state(story) != wanted:
@@ -74,4 +73,4 @@ def test_a_queued_proof_is_started_by_the_new_server_and_counts(new_story, monke
     with started_server(story.home):
         pending_item(story, (RunSlotGrant(), RunEndRecovery(), UnlaunchedWorkerTestRuns()), "checked")
     story.expect_text("proof show 1", "state: checked", actor=story.agent)
-    story.expect_text(f"process show {story.container.get(Queries).query(Proof).find(1).process_id}", "state: finished", "exit_code: 0", actor=story.agent)
+    story.expect_text(f"process show {story.row(Proof, 1).process_id}", "state: finished", "exit_code: 0", actor=story.agent)

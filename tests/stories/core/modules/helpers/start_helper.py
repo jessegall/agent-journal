@@ -188,7 +188,7 @@ def test_a_helper_with_no_hook_after_a_minute_ends_and_the_parent_is_told(new_st
 def test_a_helper_that_sent_a_hook_stays(new_story):
     story = new_story(fixture=StartedHelper)
     helper_id = running_helper(story)
-    session = story.container.get(Queries).query(Agent).find(helper_id).session
+    session = story.row(Agent, helper_id).session
     story.hook(session, HookSamples.helper(session))
     story.advance(timedelta(seconds=61))
     story.hook("s-1", HookSamples.tick())

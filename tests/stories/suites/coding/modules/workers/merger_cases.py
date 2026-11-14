@@ -7,7 +7,6 @@ import pytest
 import suites.coding.modules.workers as workers_package
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.command.bus import Bus
 from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
 from engine.testing.stories.story import Story
@@ -29,7 +28,6 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_LIBRARIES
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 MERGER_ROLE_REFUSAL = "only the merger runs this"
 WORKER_NOTICE_REFUSAL = "A worker may not run merger tell"
@@ -59,7 +57,7 @@ class MergerCase:
 
     def refused_at_hand_in(self, text: str) -> None:
         worktree = self.story.container.get(Queries).query(Worktree).filter(session_agent_id=self.worker.id).first()
-        self.story.container.get(Bus).run(RecordWorkerRefusal(worktree.id, text), self.worker, environment_id=1)
+        self.story.run_command(RecordWorkerRefusal(worktree.id, text), self.worker, 1)
 
     def main_lines(self) -> str:
         self.story.run_listeners()
@@ -71,10 +69,10 @@ class MergerCase:
 
     def worker_messages(self) -> str:
         self.story.run_listeners()
-        return "\n".join(message.text for message in self.story.container.get(Queries).query(Message).filter(target_agent_id=self.worker.id).every_row(TEST_ROWS_REASON))
+        return "\n".join(message.text for message in self.story.story_rows(Message, target_agent_id=self.worker.id))
 
     def main_messages(self) -> tuple[Message, ...]:
-        return tuple(self.story.container.get(Queries).query(Message).filter(session_agent_id=self.merger.id).every_row(TEST_ROWS_REASON))
+        return tuple(self.story.story_rows(Message, session_agent_id=self.merger.id))
 
     def marks(self) -> str:
         self.story.run_listeners()

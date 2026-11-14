@@ -1,5 +1,4 @@
 from engine.enums.command_category import CommandCategory
-from engine.query.queries import Queries
 from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from core.modules.processes.models.reading_decision_row import ReadingDecisionRow
 from tests.stories.core.modules.processes.support.process_samples import install_runner, start_process
@@ -8,7 +7,6 @@ from tests.stories.core.modules.processes.support.reading_scenarios import (TwoT
                                                                              main_test_run_without_reader, rejected_worker_command, tox_run)
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 # The end decision the engine keeps for each pin scenario, as (state, action, level), beside what the old code did.
 # Two rows disagree with the old code; they are listed in the task log of task 8773.
@@ -52,5 +50,5 @@ def test_a_line_of_many_parts_reads_the_reading_facts_and_kept_decisions_of_its_
     story = new_story(fixture=BuilderStarted)
     with story.repeated_work.request():
         process = start_process(story, SEVERAL_PARTS_LINE, category=CommandCategory.TEST_RUN)
-    kept = tuple(story.container.get(Queries).query(ReadingDecisionRow).filter(process_id=process.id, phase=ReadingPhase.START).every_row(TEST_ROWS_REASON))
+    kept = tuple(story.story_rows(ReadingDecisionRow, process_id=process.id, phase=ReadingPhase.START))
     story.expect_rows(len(kept) == SEVERAL_PARTS, detail=str(len(kept)))

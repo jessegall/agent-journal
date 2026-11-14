@@ -1,10 +1,8 @@
 from datetime import timedelta
 
 from engine.actor.actor import Actor
-from engine.command.bus import Bus
 from engine.database.database import Database
 from engine.database.statement import Statement
-from engine.query.queries import Queries
 from engine.enums.tool_type import ToolType
 from engine.testing.examples.hook_samples import HookSamples
 from core.modules.waits.models.enums.wait_state import WaitState
@@ -27,7 +25,6 @@ from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from core.modules.asks.support.ask_settings import QUESTION_ANSWER_MINUTES, QUESTION_FORWARD_MINUTES, QUESTION_VISITS_LIMIT
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 QUESTION = "The sandbox has no compiler"
 SECOND_QUESTION = "The fixture file is empty"
@@ -43,7 +40,7 @@ def questions(story) -> tuple[MergerLine, ...]:
 
 
 def waits_of(story, worker: Actor) -> tuple[Wait, ...]:
-    return tuple(story.container.get(Queries).query(Wait).filter(session_agent_id=worker.id).every_row(TEST_ROWS_REASON))
+    return tuple(story.story_rows(Wait, session_agent_id=worker.id))
 
 
 def ask(case: MergerCase, text: str = QUESTION, topic: AskTopic = AskTopic.TOOL):
@@ -54,7 +51,7 @@ def ask(case: MergerCase, text: str = QUESTION, topic: AskTopic = AskTopic.TOOL)
 
 def end_unanswered_visit(case: MergerCase) -> None:
     case.story.expect_success("merger next", actor=case.merger)
-    case.story.container.get(Bus).run(ReturnUnhandledMergerLines(), Actor.core(), environment_id=1)
+    case.story.run_command(ReturnUnhandledMergerLines(), Actor.core(), 1)
 
 
 def test_an_ask_is_one_line_with_its_wait_task_and_due_time_and_the_same_ask_again_or_a_changed_setting_moves_nothing(asking):
@@ -101,7 +98,7 @@ def test_a_merger_that_read_an_ask_and_did_nothing_gets_it_again_and_after_the_s
     AskWatch()(case.story.container)
     case.story.expect_rows(questions(case.story)[0].outcome is None, detail="one reading is under the limit of two")
     case.story.expect_text("merger next", QUESTION, "task 1", actor=case.merger)
-    case.story.container.get(Bus).run(ReturnUnhandledMergerLines(), Actor.core(), environment_id=1)
+    case.story.run_command(ReturnUnhandledMergerLines(), Actor.core(), 1)
     second = questions(case.story)[0]
     case.story.expect_rows(second.visit_count == 2, second.outcome is AskOutcome.FORWARDED, detail=str(second))
 

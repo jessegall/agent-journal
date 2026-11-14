@@ -31,7 +31,7 @@ def test_a_person_approves_the_ready_plan_on_its_card_and_a_registry_change_asks
     story.run_listeners()
     story.expect_rows(len(story.story_rows(ApprovalRequest)) == 0)
     story.expect_success("plan approve 1 --environment main", "state: approved", actor=story.user)
-    story.expect_rows(story.container.get(Queries).query(Plan).find(1).state is PlanState.APPROVED)
+    story.expect_rows(story.row(Plan, 1).state is PlanState.APPROVED)
 
 
 @pytest.fixture
@@ -53,7 +53,7 @@ def trigger_viewer(waiting_trigger):
 def test_a_waiting_trigger_uses_the_shared_dock(waiting_trigger, trigger_viewer, decision):
     story, request = waiting_trigger
     trigger_viewer.value("messages.chat", ["approval", decision, str(request.id)])
-    trigger = story.container.get(Queries).query(Trigger).find(1)
+    trigger = story.row(Trigger, 1)
     story.expect_rows((not trigger.needs_enabling) if decision == "accept" else trigger.ended_at is not None)
 
 
@@ -76,7 +76,7 @@ def share_viewer(waiting_share):
 def test_an_agents_share_request_creates_the_approval_without_another_command(waiting_share, share_viewer, decision, state):
     story, request = waiting_share
     share_viewer.value("messages.chat", ["approval", decision, str(request.id)])
-    share = story.container.get(Queries).query(ShareLink).find(1)
+    share = story.row(ShareLink, 1)
     story.expect_rows(share.state is state)
     if state is ShareLinkState.ACTIVE:
         story.expect_rows(share.creator_id == story.user.id)

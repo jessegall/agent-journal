@@ -9,13 +9,12 @@ from server.work.booting_work import BootingWork
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 __all__ = ["pending_setting"]
 
 
 def docked_cards(story, request) -> int:
-    return len(tuple(story.container.get(Queries).query(DockItem).filter(target_model="approval", target_id=request.id, state=DockItemState.DOCKED).every_row(TEST_ROWS_REASON)))
+    return len(tuple(story.story_rows(DockItem, target_model="approval", target_id=request.id, state=DockItemState.DOCKED)))
 
 
 def decide(story, request, decision: str) -> None:

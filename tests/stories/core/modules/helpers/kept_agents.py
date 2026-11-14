@@ -81,7 +81,7 @@ def test_helper_form_offers_send_for_an_idle_helper_through_the_viewer(helper_fo
     server.story.expect_rows(not availability["can_start"] and availability["can_start_fresh"])
     server.story.expect_rows([row["id"] for row in availability["idle_helpers"]] == [helper.id])
     profile_line(server, cookie, ["helper", "send", str(agent_number(server.story, helper.id)), "Read src/tax.py"])
-    jobs = tuple(server.story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).every_row(TEST_ROWS_REASON))
+    jobs = tuple(server.story.story_rows(HelperJob, helper_id=helper.id))
     server.story.expect_rows(jobs[-1].brief == "Read src/tax.py")
     server.story.expect_rows(len({job.helper_id for job in jobs}) == 1)
 
@@ -293,7 +293,7 @@ def test_steering_or_new_job(new_story):
     helper = helper_agent(story)
     story.expect_refusal(f'helper send {agent_number(story, helper.id)} "Unrelated work"', f"helper {agent_number(story, helper.id)} is busy", actor=story.agent)
     story.expect_success(f'helper send {agent_number(story, helper.id)} "Also read the tax" --steer', actor=story.agent)
-    jobs = tuple(story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).every_row(TEST_ROWS_REASON))
+    jobs = tuple(story.story_rows(HelperJob, helper_id=helper.id))
     story.expect_rows(len(jobs) == 1, "Also read the tax" in jobs[0].brief)
 
 

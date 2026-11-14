@@ -4,7 +4,6 @@ import subprocess
 import pytest
 
 from engine.enums.command_category import CommandCategory
-from engine.query.queries import Queries
 from core.modules.processes.models.process import Process
 from core.modules.processes.errors.missing_runner_error import MissingRunnerError
 from core.modules.processes.support.runner_binary import RunnerBinary
@@ -15,7 +14,6 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import PHAS
 from tests.stories.support.story_checks import expect_value, expect_value_with
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 
 REAL_WORKER_TEST_START_WAITED = WorkerTestLaunch.start_waited
@@ -70,7 +68,7 @@ def person_dispatched_worker(story, monkeypatch):
 
 
 def worker_runs(worker):
-    return tuple(worker.story.container.get(Queries).query(Process).filter(owner_agent_id=worker.worker.id).every_row(TEST_ROWS_REASON))
+    return tuple(worker.story.story_rows(Process, owner_agent_id=worker.worker.id))
 
 
 def started_lines(worker):

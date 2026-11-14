@@ -4,7 +4,6 @@ from tests.stories.core.support.agent_labels import agent_number
 from engine.database.database import Database
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.claude_code.providers.claude_code_provider import CONFIG_VARIABLE
@@ -15,7 +14,6 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 JOB = "Now read the listener side."
 START = f'helper start {RESEARCHER_PROFILE.name} --brief "Read src/cart.py" --environment main'
@@ -57,7 +55,7 @@ def resumable_session(story, helper, monkeypatch) -> None:
 
 
 def read_jobs(story, helper):
-    return list(story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).every_row(TEST_ROWS_REASON))
+    return list(story.story_rows(HelperJob, helper_id=helper.id))
 
 
 class EndedHelper(StoryFixture):

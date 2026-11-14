@@ -2,7 +2,6 @@ import json
 from datetime import timedelta
 
 from engine.actor.actor import Actor
-from engine.command.bus import Bus
 from engine.file.file_access import FileAccess
 from engine.journal.journal_home import LAUNCHER_SOCKET
 from engine.query.queries import Queries
@@ -44,7 +43,7 @@ def read_agent(story: Story) -> Agent:
 
 
 def waiting_line(story: Story) -> AgentLine:
-    story.container.get(Bus).run(RecordAgentNotice(story.agent.id, "A message arrived", "messages.idle"), Actor.core(), environment_id=1)
+    story.run_command(RecordAgentNotice(story.agent.id, "A message arrived", "messages.idle"), Actor.core(), 1)
     story.run_listeners()
     return story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, source="messages.idle").newest().first()
 

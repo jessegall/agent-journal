@@ -1,6 +1,4 @@
-from engine.command.bus import Bus
 from engine.enums.command_category import CommandCategory
-from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
@@ -28,8 +26,8 @@ def test_a_message_is_sent_as_the_caller_in_the_callers_environment(new_story):
 
 def test_reading_a_message_marks_it_read_once(new_story):
     story = new_story(fixture=UnansweredMessage)
-    story.container.get(Bus).run(ReadMessage(1), story.agent, environment_id=1)
-    story.container.get(Bus).run(ReadMessage(1), story.agent, environment_id=1)
+    story.run_command(ReadMessage(1), story.agent, 1)
+    story.run_command(ReadMessage(1), story.agent, 1)
     story.expect_success("message show 1", "read_at: 2026-10-31T09:00:00.000000+00:00", "version: 2", actor=story.agent)
 
 
@@ -54,6 +52,6 @@ def test_a_redirected_or_piped_message_read_does_not_mark_the_message(new_story)
     piped = ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message", pipe_target=1)
     sink = ShellPart("cat", CommandCategory.READ, [])
     story.expect_hook_refusal("s-1", HookSamples.shell("journal message read 1 && cat", piped, sink), expected_nudge(READ_COMMAND_OUTPUT))
-    story.expect_rows(story.container.get(Queries).query(Message).find(1).read_at is None)
+    story.expect_rows(story.row(Message, 1).read_at is None)
     story.expect_success("message read 1", actor=story.agent)
-    story.expect_rows(story.container.get(Queries).query(Message).find(1).read_at is not None)
+    story.expect_rows(story.row(Message, 1).read_at is not None)

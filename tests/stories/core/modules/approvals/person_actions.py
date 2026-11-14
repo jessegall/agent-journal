@@ -81,5 +81,5 @@ def test_a_different_person_cannot_accept_an_owners_approval(pending_rename, ren
     body = {"window": "messages.chat", "environment": "main", "line": ["approval", "accept", str(request.id)]}
     rename_viewer.server.expect_viewer_line(cookie, body, 200, "this approval belongs to another user")
     rename_viewer.value("messages.chat", ["approval", "accept", str(request.id)])
-    saved = story.container.get(Queries).query(PersonPreset).find(preset.id)
+    saved = story.row(PersonPreset, preset.id)
     story.expect_rows(saved.name == "Review", saved.person_id == story.user.id)

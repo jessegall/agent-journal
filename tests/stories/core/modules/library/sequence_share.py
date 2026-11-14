@@ -6,7 +6,6 @@ import pytest
 
 from engine.actor.actor import CORE_ACTOR_ID, Actor
 from engine.command.context import Context
-from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.library.models.enums.copy_state import CopyState
 from core.modules.library.models.library_copy import LibraryCopy
@@ -17,7 +16,6 @@ from tests.stories.core.modules.library.support.copy_stories import connected, s
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.server.support.shared_server_binary import SharedServerBinary
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 __all__ = ["private_folder", "shared_server"]
 
@@ -48,7 +46,7 @@ def library_sequence_story(new_story, server: SharedServerBinary, tokens, title:
 
 
 def stored_copy(story: Story, item_id: int) -> LibraryCopy:
-    return next(copy for copy in story.container.get(Queries).query(LibraryCopy).filter(share="sequence").every_row(TEST_ROWS_REASON) if copy.item_id == item_id)
+    return next(copy for copy in story.story_rows(LibraryCopy, share="sequence") if copy.item_id == item_id)
 
 
 def test_a_sequence_arrives_with_its_steps_and_no_triggers(new_story, shared_server):

@@ -1,4 +1,3 @@
-from engine.command.bus import Bus
 from engine.errors.refusal import Refusal
 import pytest
 
@@ -29,8 +28,8 @@ def test_a_failed_send_shows_no_mark(new_story):
 def test_the_messages_module_writes_only_its_own_marks(new_story):
     story = new_story(fixture=UnansweredMessage)
     with pytest.raises(Refusal, match="only journal.core.tasks writes a mark of tasks.task"):
-        story.container.get(Bus).run(ShowMark(TaskMarkType.TASK, TaskMarkVariant.STARTED, "task:1", "A mark"), module_actor(story, "journal.core.messages"), environment_id=1)
-    story.container.get(Bus).run(ShowMark(MessageMarkType.SUMMARY, MessageMarkVariant.SUMMARY, "thought:9", "A mark"), module_actor(story, "journal.core.messages"), environment_id=1)
+        story.run_command(ShowMark(TaskMarkType.TASK, TaskMarkVariant.STARTED, "task:1", "A mark"), module_actor(story, "journal.core.messages"), 1)
+    story.run_command(ShowMark(MessageMarkType.SUMMARY, MessageMarkVariant.SUMMARY, "thought:9", "A mark"), module_actor(story, "journal.core.messages"), 1)
 
 
 def test_a_message_edited_by_an_agent_shows_a_mark_that_opens_the_message(new_story):

@@ -5,7 +5,6 @@ from pathlib import Path
 
 import pytest
 
-from engine.command.bus import Bus
 from engine.enums.command_category import CommandCategory
 from engine.process.leftover_process import LeftoverProcess
 from core.modules.agents.commands.record_agent_process.record_agent_process import RecordAgentProcess
@@ -33,7 +32,7 @@ def writing_folder(delivered_folder, request, monkeypatch):
     story, repository, worker = delivered_folder
     folder = repository.worktree_folder(worker.id) / request.param
     folder.mkdir(parents=True, exist_ok=True)
-    process = story.container.get(Bus).run(StartProcess.single_part(story.agent.id, 'python3 build.py', str(folder), CommandCategory.BUILD, 30), story.agent, environment_id=1)
+    process = story.run_command(StartProcess.single_part(story.agent.id, 'python3 build.py', str(folder), CommandCategory.BUILD, 30), story.agent, 1)
     script = "from pathlib import Path\nimport sys\nroot = Path(sys.argv[2])\nprint('ready', flush=True)\nfor line in sys.stdin:\n root.mkdir(parents=True, exist_ok=True)\n (root / 'late.txt').write_text('late build')\n print('written', flush=True)\n"
     writer = subprocess.Popen([sys.executable, '-u', '-c', script, f'processes/{process.id}/run.sh', str(folder)], cwd=folder, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, start_new_session=True)
     assert writer.stdout.readline().strip() == 'ready'
@@ -69,7 +68,7 @@ def test_removal_stops_a_build_before_it_can_recreate_the_folder(writing_folder,
 
 def test_removal_stops_the_worker_program_before_git(writing_folder):
     story, repository, worker, process, writer = writing_folder
-    story.container.get(Bus).run(RecordAgentProcess(worker.id, writer.pid), story.agent, environment_id=1)
+    story.run_command(RecordAgentProcess(worker.id, writer.pid), story.agent, 1)
     story.expect_success(f'worker merge --wait {agent_number(story, worker.id)}', actor=story.agent)
     repository.expect_no_folder(worker.id)
     story.expect_rows(writer.poll() is not None, story.row(Process, process.id).state is ProcessState.STOPPED)
@@ -114,7 +113,7 @@ def test_send_preserves_a_registered_worktree(delivered_folder):
 def test_removal_leaves_a_run_in_a_sibling_folder(delivered_folder):
     story, repository, worker = delivered_folder
     folder = str(repository.worktree_folder(worker.id)) + '-other'
-    process = story.container.get(Bus).run(StartProcess.single_part(story.agent.id, 'python3 other.py', folder, CommandCategory.BUILD, 30), story.agent, environment_id=1)
+    process = story.run_command(StartProcess.single_part(story.agent.id, 'python3 other.py', folder, CommandCategory.BUILD, 30), story.agent, 1)
     story.expect_success(f'worker merge --wait {agent_number(story, worker.id)}', actor=story.agent)
     repository.expect_no_folder(worker.id)
     story.expect_rows(story.row(Process, process.id).state is ProcessState.RUNNING)

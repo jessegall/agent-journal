@@ -5,7 +5,6 @@ from typing import NamedTuple
 import pytest
 
 from engine.actor.actor import Actor
-from engine.query.queries import Queries
 from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from engine.testing.examples.hook_samples import HookSamples
@@ -105,7 +104,7 @@ def test_an_approved_plan_stop_shares_several_pending_workers(pending_workers, p
 def test_one_request_reads_the_pending_work_once_inside_and_outside_a_worker_scope(pending_workers):
     story, workers = pending_workers
     work = story.container.get(WorkerAgentWork)
-    worker = story.container.get(Queries).query(Agent).find(workers[0].id)
+    worker = story.row(Agent, workers[0].id)
     scopes = story.container.get(Scopes)
     with story.repeated_work.request():
         external = dict(work.pending())

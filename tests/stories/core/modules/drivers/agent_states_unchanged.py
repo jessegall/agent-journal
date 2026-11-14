@@ -1,6 +1,5 @@
 from engine.enums.command_category import CommandCategory
 from engine.module.driver_entries import DRIVERS_MODULE
-from engine.query.queries import Queries
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from core.modules.drivers.models.hook_call import HookCall
@@ -36,7 +35,7 @@ class Calls:
 
 def recorded(story, sample) -> dict[str, dict]:
     reply = story.hook("s-1", sample)
-    rows = story.container.get(Queries).query(HookCall).find(reply.hook_call_id).metadata.module_part(DRIVERS_MODULE)["rules"]
+    rows = story.row(HookCall, reply.hook_call_id).metadata.module_part(DRIVERS_MODULE)["rules"]
     return {row["rule"]: row for row in rows}
 
 

@@ -24,7 +24,7 @@ def expect_empty_messages(story):
 def test_a_person_sends_the_same_critique_request_as_the_button(new_story):
     story = new_story(fixture=SendingTemplates)
     story.expect_success(CRITIQUE, actor=story.user)
-    message = story.container.get(Queries).query(Message).find(1)
+    message = story.row(Message, 1)
     expect_row(message, is_chat_visible=True, text="Please have 2 agents give plan 1 a normal read, following template 1 (Plan critique), "
                              "and compile what they find into a report linked to the plan.", creator_id=story.user.id)
     story.expect_text("plan comments 1", "Please have 2 agents give plan 1 a normal read", "Plan critique")
@@ -39,7 +39,7 @@ def test_every_critique_sentence_matches_version_four_with_a_named_template(new_
     story.expect_success(f'template send 1 --on=plan:1 --set=agents="{agents}" --set=size="{size}"', actor=story.user)
     expected = (f"Please have {agents} give plan 1 {size}, following template 1 (Plan critique), "
                 "and compile what they find into a report linked to the plan.")
-    expect_row(story.container.get(Queries).query(Message).find(1), text=expected)
+    expect_row(story.row(Message, 1), text=expected)
 
 
 def test_an_unknown_purpose_uses_the_default_prompt(new_story):

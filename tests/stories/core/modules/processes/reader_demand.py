@@ -2,7 +2,6 @@ from core.modules.processes.queries.conditions.reader_sample_scope import Reader
 from engine.module.module_actors import ModuleActors
 import pytest
 
-from engine.command.bus import Bus
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.support.part_spec import PartSpec
 from core.modules.processes.support.reader_demands import ReaderDemands
@@ -130,7 +129,7 @@ def test_each_part_of_a_chain_is_judged_alone(new_story):
     parts = (PartSpec("custom-tests a", "custom-tests", category=CommandCategory.TEST_RUN),
              PartSpec("custom-build run", "custom-build", category=CommandCategory.BUILD),
              PartSpec("ls", "ls", category=CommandCategory.READ))
-    story.container.get(Bus).run(StartProcess(worker.id, None, "custom-tests a && custom-build run && ls", "/work/main", CommandCategory.TEST_RUN, 30, parts), worker, environment_id=1)
+    story.run_command(StartProcess(worker.id, None, "custom-tests a && custom-build run && ls", "/work/main", CommandCategory.TEST_RUN, 30, parts), worker, 1)
     story.expect_rows(story.container.get(ReaderRequestQuery).open().count() == 1)
 
 
@@ -168,7 +167,7 @@ def test_a_run_the_journal_started_is_never_held(new_story):
     story = new_story(fixture=ForcedReaders)
     worker = reader_worker(story)
     actor = story.container.get(ModuleActors).actor("journal.core.processes")
-    story.container.get(Bus).run(StartProcess.single_part(worker.id, "module-build run", "/work/main", CommandCategory.BUILD, 30), actor, environment_id=1)
+    story.run_command(StartProcess.single_part(worker.id, "module-build run", "/work/main", CommandCategory.BUILD, 30), actor, 1)
     story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists())
 
 

@@ -3,7 +3,6 @@ import json
 import os
 from datetime import timedelta
 
-from engine.command.bus import Bus
 from engine.enums.command_category import CommandCategory
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from engine.module.module_finder import ModuleFinder
@@ -172,7 +171,7 @@ class ActiveCommit(StoryFixture):
 def test_a_silent_journal_command_waiting_on_its_agents_queued_run_is_never_stopped_as_hung(new_story):
     story = new_story(fixture=ActiveCommit)
     started_tree(story, 12.0)
-    judge = story.container.get(Bus).run(StartProcess.single_part(story.agent.id, "pytest tests/web -q", "/work/main", CommandCategory.TEST_RUN, 30), story.agent, environment_id=1)
+    judge = story.run_command(StartProcess.single_part(story.agent.id, "pytest tests/web -q", "/work/main", CommandCategory.TEST_RUN, 30), story.agent, 1)
     story.advance(timedelta(seconds=HANG_SECONDS + 30))
     watch_tick(story)
     story.expect_rows(judge.is_queue_run)

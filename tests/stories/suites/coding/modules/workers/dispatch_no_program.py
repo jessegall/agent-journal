@@ -3,7 +3,6 @@ from tests.stories.suites.coding.modules.workers.support.commit_command import C
 from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.examples.hook_samples import HookSamples
@@ -28,7 +27,7 @@ def test_a_person_dispatches_a_worker_that_starts_no_program_and_its_session_hoo
     try:
         worker = Actor(story.new_row_id(MISSING_PROGRAM, actor=person(story)), ActorType.AGENT)
         story.run_listeners()
-        story.expect_rows(launcher.requests == [], story.container.get(Queries).query(Agent).find(worker.id).session == SESSION)
+        story.expect_rows(launcher.requests == [], story.row(Agent, worker.id).session == SESSION)
         story.expect_text("worker-worktree list", f"worker-{worker.id}")
         story.expect_hook_allowed(SESSION, HookSamples.tick())
         story.expect_rows(launcher.requests == [])

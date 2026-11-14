@@ -16,7 +16,6 @@ from core.modules.helpers.testing.story_helper_programs import StoryHelperProgra
 from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
 from engine.testing.expectations.expect_reply import expect_reply_allowed, expect_reply_refusal
 from engine.testing.examples.shell_part import ShellPart
-from engine.query.queries import Queries
 from engine.testing.stories.story import Story
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
@@ -68,7 +67,7 @@ def test_s37_the_picked_files_become_the_arguments_of_the_project_test_command(n
     story, _, _, started = affected_test_story(new_story, monkeypatch)
     story.container.get(OutputFolder).write_output(started[1], 1, "tests/cart.py\n")
     ended(story, started[1], 0)
-    story.expect_rows(story.container.get(Queries).query(Process).find(started[2]).line == "python3 -m pytest -q tests/cart.py")
+    story.expect_rows(story.row(Process, started[2]).line == "python3 -m pytest -q tests/cart.py")
     ended(story, started[2], 0)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
 

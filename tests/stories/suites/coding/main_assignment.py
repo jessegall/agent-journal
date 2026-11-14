@@ -5,7 +5,6 @@ from engine.database.database import READ_LIMIT_ROWS, Database
 from core.modules.chat.models.journal_exception import JournalException
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
-from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.queries.hook_call_query import IDLE_LIMIT_SECONDS
 from suites.coding.modules.workers.support.available_work import AvailableWork
@@ -21,7 +20,6 @@ from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIM
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 from suites.coding.support.coding_settings import KEEP_RUNNING_SETTING
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 AUTO = f"{AUTO_MODE_SETTING}"
 DISPATCHES = f"{DISPATCHES_WORKERS_SETTING}"
 WORKER_LIMIT = f"{WORKER_RUN_LIMIT}"
@@ -73,7 +71,7 @@ def test_s02_s10_keep_going_does_not_hold_a_stop_for_a_free_worker_place_and_han
 
 def waking_lines(story) -> list[str]:
     InactiveMainAgentPrompt()(story.container)
-    return [line.text for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, source=WAKE_SOURCE).every_row(TEST_ROWS_REASON)]
+    return [line.text for line in story.story_rows(AgentLine, session_agent_id=story.agent.id, source=WAKE_SOURCE)]
 
 
 def test_s08_the_main_driver_lets_a_stop_through_with_a_free_worker_place_and_open_task_when_keep_going_is_off_and_never_wakes_it(new_story):

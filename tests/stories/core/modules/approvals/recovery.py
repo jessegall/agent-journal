@@ -13,7 +13,6 @@ from tests.stories.core.modules.viewer.support.window_samples import NOTES
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 
 @pytest.fixture
@@ -42,7 +41,7 @@ def test_a_missing_open_card_is_restored_after_a_registry_refresh(phone_request,
     phone_viewer.value("messages.chat", ["dock", "remove", str(item.id)])
     story.expect_sync_success(UPGRADE)
     story.run_listeners()
-    items = tuple(story.container.get(Queries).query(DockItem).filter(target_model="approval", target_id=request.id, state=DockItemState.DOCKED).every_row(TEST_ROWS_REASON))
+    items = tuple(story.story_rows(DockItem, target_model="approval", target_id=request.id, state=DockItemState.DOCKED))
     story.expect_rows(len(items) == 1, items[0].kept)
 
 
@@ -56,10 +55,10 @@ def test_a_failed_action_ends_the_request_failed_with_its_reason_and_is_not_offe
     with viewer_client(story) as viewer:
         viewer.value("viewer.shell", ["viewer-layout", "save", "--suite", "notes", "--page", "home", "--layout", '{"root":"changed"}'])
         viewer.refusal("messages.chat", ["approval", "accept", str(request.id)], "the requested action failed")
-    saved = story.container.get(Queries).query(ApprovalRequest).find(request.id)
-    docked = story.container.get(Queries).query(DockItem).filter(target_model="approval", target_id=request.id, state=DockItemState.DOCKED).every_row(TEST_ROWS_REASON)
+    saved = story.row(ApprovalRequest, request.id)
+    docked = story.story_rows(DockItem, target_model="approval", target_id=request.id, state=DockItemState.DOCKED)
     story.expect_rows(saved.state is ApprovalState.FAILED, saved.failure != "", not tuple(docked))
-    story.expect_rows(not tuple(story.container.get(Queries).query(ApprovalRequest).filter(state=ApprovalState.OPEN).every_row(TEST_ROWS_REASON)))
+    story.expect_rows(not tuple(story.story_rows(ApprovalRequest, state=ApprovalState.OPEN)))
 
 
 def test_an_action_that_raises_ends_the_request_failed_and_the_agent_asks_again(phone_request, phone_viewer, monkeypatch):

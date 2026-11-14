@@ -3,7 +3,6 @@ import shutil
 from datetime import timedelta
 
 from core.modules.agents.models.agent import Agent
-from engine.query.queries import Queries
 from tests.stories.core.modules.helpers.helper_jobs import read_jobs, resumable_session
 from tests.stories.core.modules.helpers.lifetime_reviewers import START_REVIEW, StartedReviewer, idle_reviewer, launches, refusal_text, review_job, reviewers
 from tests.stories.core.modules.helpers.support.rotating_helper import installed_program_checks, real_program_states
@@ -11,7 +10,6 @@ from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.modules.profiles.profile_storage import boot, profile_path, save_profile_file
 from suites.coding.support.shipped_profiles import PLAN_REVIEWER_PROFILE
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 __all__ = ["idle_reviewer"]
 
@@ -26,7 +24,7 @@ def session_history(story, reviewer: Agent) -> list[dict]:
 
 
 def diff_readers(story) -> list[Agent]:
-    return list(story.container.get(Queries).query(Agent).filter(profile="diff-reader").every_row(TEST_ROWS_REASON))
+    return list(story.story_rows(Agent, profile="diff-reader"))
 
 
 def test_a_personal_profile_with_the_old_independent_line_runs_as_each_launch_and_is_saved_back_so(new_story, monkeypatch):

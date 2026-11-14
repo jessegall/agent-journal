@@ -3,7 +3,6 @@ from datetime import timedelta
 
 import pytest
 
-from engine.command.bus import Bus
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
@@ -28,7 +27,7 @@ FOREGROUND_SECONDS = timedelta(seconds=16)
 
 def moved(story: Story, process: Process) -> Process:
     """The run sent to the background, as the runner reports it."""
-    story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
+    story.run_command(MoveProcess(process.id), story.agent, 1)
     story.run_listeners()
     return process
 
@@ -71,7 +70,7 @@ def test_a_helpers_background_run_gets_the_card_and_the_title_ask(new_story):
     story = install_runner(new_story(fixture=ForcedReaders))
     worker = reader_worker(story)
     process = worker_run(story, "python3 build_site.py", CommandCategory.BUILD)
-    story.container.get(Bus).run(MoveProcess(process.id), worker, environment_id=1)
+    story.run_command(MoveProcess(process.id), worker, 1)
     lines = docked(story, "s-reader")
     story.expect_text(DOCK, "processes.output", f"Output {process.id}", actor=story.user)
     expect_value_line(lines, RUN_NAME.nudge(process=process.id).text)

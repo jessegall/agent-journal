@@ -3,7 +3,6 @@ from engine.testing.stories.story_fixture import StoryFixture
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.messages.commands.react_message.react_message_handler import REACTION_SOURCE
 from engine.testing.examples.hook_samples import HookSamples
@@ -11,7 +10,6 @@ from tests.stories.engine.driver.support.fixtures import SampleSuiteChoice
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.engine.driver.support.samples import SAMPLES
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 
 class ReactableMessage(StoryFixture):
@@ -59,7 +57,7 @@ def test_the_agent_is_told_of_a_face_the_user_puts_on_but_not_of_its_own_or_one_
 def test_a_face_the_user_puts_on_wakes_the_agent(new_story):
     story = reaction_story(new_story)
     story.run('message react 1 "🎉"', actor=story.user)
-    line = next(story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, source=REACTION_SOURCE).every_row(TEST_ROWS_REASON))
+    line = next(iter(story.story_rows(AgentLine, session_agent_id=story.agent.id, source=REACTION_SOURCE)))
     story.expect_rows(line.wakes_agent)
 
 

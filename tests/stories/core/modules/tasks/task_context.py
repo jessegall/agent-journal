@@ -245,7 +245,7 @@ def test_another_agents_private_branch_does_not_enter_context(linked_scenario):
 def test_database_errors_are_not_replaced_by_empty_context(linked_scenario):
     story = linked_scenario.story
     with story.container.get(Scopes).read_scope((), story.agent.id, 1):
-        row = story.container.get(Queries).query(Task).find(1)
+        row = story.row(Task, 1)
         with patch.object(WorkContextSeeds, "statement", return_value=Statement("SELECT missing_context_column FROM messages")):
             with pytest.raises(sqlite3.OperationalError, match="missing_context_column"):
                 story.container.get(WorkContextReader).read(row, Caller(story.agent, 1), WorkContextRequest())

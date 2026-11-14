@@ -1,7 +1,6 @@
 from tests.stories.core.support.agent_labels import agent_number
 import json
 
-from engine.command.bus import Bus
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import start_process
@@ -21,7 +20,7 @@ def test_one_read_gives_what_the_inspector_adds_to_the_row_of_an_agent_with_a_ta
 def test_a_run_that_failed_is_counted_and_listed_as_a_bad_move(new_story):
     story = new_story(fixture=BriefedTaskBuilder)
     process = start_process(story, "make build")
-    story.container.get(Bus).run(EndProcess(process.id, 1, 0, 0), story.agent, environment_id=1)
+    story.run_command(EndProcess(process.id, 1, 0, 0), story.agent, 1)
     story.expect_text(f"usage agent {agent_number(story, story.agent.id)} --json", '"failed_runs": 1', '"text": "A run failed: make build"', '"tone": "bad"', actor=story.user)
 
 

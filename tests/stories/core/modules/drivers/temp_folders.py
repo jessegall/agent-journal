@@ -1,6 +1,5 @@
 import os
 
-from engine.command.bus import Bus
 from core.modules.claude_code.providers import claude_code_provider
 from core.modules.drivers.commands.prune_temp_folders.prune_temp_folders import PruneTempFolders
 from engine.testing.examples.hook_samples import HookSamples
@@ -18,7 +17,7 @@ def session_folders(story, monkeypatch, tmp_path, *sessions: str):
 
 
 def prune(story) -> None:
-    story.container.get(Bus).run(PruneTempFolders(), story.agent, environment_id=1)
+    story.run_command(PruneTempFolders(), story.agent, 1)
 
 
 def test_a_running_sessions_folder_stays(new_story, monkeypatch, tmp_path):

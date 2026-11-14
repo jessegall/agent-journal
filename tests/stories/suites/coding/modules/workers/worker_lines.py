@@ -1,5 +1,4 @@
 from tests.stories.core.support.agent_labels import agent_number
-from engine.query.queries import Queries
 from core.modules.tasks.rules.log_request_rule import LOG_REQUEST_WRITES
 from core.modules.tasks.rules.unlogged_write_rule import UNLOGGED_WRITES_CEILING
 from core.modules.drivers.models.nudge_record import NudgeRecord
@@ -15,7 +14,6 @@ from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.modules.workers.support.worker_nudges import WORKER_FILE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_LOG_DUE
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 
 def test_the_main_agent_edits_no_file_in_a_workers_worktree(new_story):
@@ -40,7 +38,7 @@ def test_a_line_on_a_clock_waits_out_its_time_though_the_number_in_it_changes(ne
     story.expect_absent_hook_line(session, finished, "you logged nothing")
     story.advance(timedelta(minutes=30))
     story.expect_hook_allowed(session, finished, expected_nudge(WORKER_LOG_DUE))
-    records = list(story.container.get(Queries).query(NudgeRecord).filter(session_agent_id=worker.id, key=WORKER_LOG_DUE.key).every_row(TEST_ROWS_REASON))
+    records = list(story.story_rows(NudgeRecord, session_agent_id=worker.id, key=WORKER_LOG_DUE.key))
     story.expect_rows(len(records) == 1, records[0].delivery_count == 2)
 
 

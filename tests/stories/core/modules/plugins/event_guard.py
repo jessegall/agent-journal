@@ -7,7 +7,6 @@ import pytest
 
 from engine.enums.agent_role import AgentRole
 from engine.enums.event_form import EventForm
-from engine.query.queries import Queries
 from engine.registry.registry import Registry
 from engine.scope.scopes import Scopes
 from engine.process.plugin_script_processes import PluginScriptProcesses
@@ -25,7 +24,6 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.modules.drivers.support.confirmed_skips import confirmed_skip
 from core.modules.plugins.support.plugin_event_entry import CEILING_SETTING
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 GUARD_MESSAGE = "noted by the guard"
 CARD_LABEL = "Lane open"
@@ -71,7 +69,7 @@ def test_s21_a_skip_with_the_bare_guard_name_passes_nothing(new_story):
 
 
 def agent_lines_containing(story, text: str) -> list[AgentLine]:
-    return [line for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).every_row(TEST_ROWS_REASON) if text in line.text]
+    return [line for line in story.story_rows(AgentLine, session_agent_id=story.agent.id) if text in line.text]
 
 
 def test_s22_a_plugin_reads_the_agent_granted_a_test_environment_from_inside_it(new_story):

@@ -15,7 +15,6 @@ from engine.enums.nudge_type import NudgeType
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.rule_answers import RuleAnswers
 from engine.driver.rule_record import RuleRecord
-from engine.query.queries import Queries
 from engine.registry.registry import Registry
 from core.modules.drivers.support.nudge_log import NudgeLog
 from core.modules.messages.commands.read_message.read_message import ReadMessage
@@ -29,7 +28,6 @@ from tests.stories.core.support.fixtures import UserJoined
 from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_answers, expect_outcome_with, expect_value, expect_value_with
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 
 def test_module_sync_registers_every_declared_nudge_under_its_module(new_story):
@@ -56,7 +54,7 @@ def test_a_clock_nudge_going_back_to_an_older_text_keeps_one_row_for_that_text(n
     write(Nudge("sample.clock", NudgeType.STEERING, "first text", turn_limited=False))
     write(Nudge("sample.clock", NudgeType.STEERING, "second text", turn_limited=False))
     write(Nudge("sample.clock", NudgeType.STEERING, "first text", interval=Interval(Seconds(60)), turn_limited=False))
-    rows = story.container.get(Queries).query(NudgeRecord).filter(session_agent_id=story.agent.id, key="sample.clock").every_row(TEST_ROWS_REASON)
+    rows = story.story_rows(NudgeRecord, session_agent_id=story.agent.id, key="sample.clock")
     expect_delivery_count(rows, [("first text", 2), ("second text", 1)])
 
 

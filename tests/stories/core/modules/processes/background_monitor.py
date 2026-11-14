@@ -2,7 +2,6 @@ from datetime import timedelta
 
 import pytest
 
-from engine.command.bus import Bus
 from engine.enums.command_category import CommandCategory
 from core.modules.processes.commands.move_process.move_process import MoveProcess
 from engine.testing.examples.hook_samples import HookSamples
@@ -48,7 +47,7 @@ def test_a_monitor_set_while_the_run_still_waited_lets_the_agent_stop_once_the_r
     story.advance(timedelta(seconds=2))
     process = started_run(story, "make test")
     story.hook("s-1", monitor(f"journal output monitor {process.id}"))
-    story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
+    story.run_command(MoveProcess(process.id), story.agent, 1)
     expect_absent_reply_refusal(story.hook("s-1", HookSamples.stop()), "set a Monitor")
 
 
@@ -58,5 +57,5 @@ def test_a_monitor_whose_life_ended_before_the_run_moved_does_not_let_the_agent_
     process = started_run(story, "make build")
     story.hook("s-1", monitor(f"journal output monitor {process.id}"))
     story.advance(timedelta(minutes=31))
-    story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
+    story.run_command(MoveProcess(process.id), story.agent, 1)
     story.expect_hook_refusal("s-1", HookSamples.stop(), f"Output {process.id} is still running")

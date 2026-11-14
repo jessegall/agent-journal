@@ -85,7 +85,7 @@ def memory_viewer(pending_memory_read):
 def test_a_private_memory_view_is_returned_only_to_the_deciding_person(pending_memory_read, memory_viewer):
     story, request = pending_memory_read
     answer = memory_viewer.value("messages.chat", ["approval", "accept", str(request.id)])
-    saved = story.container.get(Queries).query(ApprovalRequest).find(request.id)
+    saved = story.row(ApprovalRequest, request.id)
     story.expect_rows(bool(answer["viewer_output"]), saved.state is ApprovalState.ACCEPTED, WORKER_FACT not in saved.text)
 
 

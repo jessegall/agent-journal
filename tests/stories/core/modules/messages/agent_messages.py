@@ -73,7 +73,7 @@ def test_a_main_agents_reply_to_a_helper_names_that_helper_as_its_recipient(new_
     requested = sender_name(story, helper.id)
     story.expect_success(f'message reply {requested.id} "Fixing it"', actor=story.agent)
     reply = sender_name(story, story.agent.id)
-    story.expect_rows(reply.parent_id == requested.id, reply.recipient == story.container.get(Queries).query(Agent).find(helper.id).display_name, detail=reply.recipient)
+    story.expect_rows(reply.parent_id == requested.id, reply.recipient == story.row(Agent, helper.id).display_name, detail=reply.recipient)
 
 
 def test_a_main_agents_reply_to_a_person_names_no_recipient(new_story):

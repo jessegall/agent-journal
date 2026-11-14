@@ -71,7 +71,7 @@ def test_a_person_shares_a_document_and_the_row_follows_the_new_item(new_story, 
     outcome = story.run(f"library share doc {row_id}", actor=story.user)
     copy = copied_row(story, row_id)
     item = server_item(server, tokens.editor, copy.item_id)
-    doc = story.container.get(Queries).query(Doc).find(row_id)
+    doc = story.row(Doc, row_id)
     story.expect_rows(outcome.output_text.strip() == f"doc {row_id} is now library doc {copy.item_id}, version 1", item["fields"] == read_fields("Quartz release"),
                       item["creator"] == "Grace", (copy.base_version, copy.base_digest) == (1, story.container.get(DocLibraryShare).digest(doc)))
 
@@ -125,7 +125,7 @@ def test_an_admin_removes_an_item_and_every_local_row_stays(new_story, shared_se
     row_id, item_id = shared(story, server, tokens.admin, "Slate removed")
     stored_copy = copied_row(story, row_id)
     story.expect_success(f"library remove doc {item_id}", f"library doc {item_id} is removed, as version 2", actor=story.user)
-    story.expect_rows(server_item(server, tokens.admin, item_id)["removed_at"] != "", copied_row(story, row_id) == stored_copy, story.container.get(Queries).query(Doc).find(row_id).title == "Slate removed")
+    story.expect_rows(server_item(server, tokens.admin, item_id)["removed_at"] != "", copied_row(story, row_id) == stored_copy, story.row(Doc, row_id).title == "Slate removed")
 
 
 def test_only_an_admin_removes_and_only_a_person(new_story, shared_server):

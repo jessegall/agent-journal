@@ -1,7 +1,6 @@
 from engine.enums.command_category import CommandCategory
 from engine.enums.command_effect import CommandEffect
 from engine.module.driver_entries import DRIVERS_MODULE
-from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
@@ -51,7 +50,7 @@ def test_project_context_is_dropped_on_an_event_without_lines(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
     reply = story.hook("s-1", managed(HookSamples.sample("session_end").with_fields(accepts_lines=False), {"lines": ["project guidance"]}))
     expect_absent_reply_line(reply, "project guidance")
-    call = story.container.get(Queries).query(HookCall).find(reply.hook_call_id)
+    call = story.row(HookCall, reply.hook_call_id)
     rules = call.metadata.module_part(DRIVERS_MODULE)["rules"]
     expect_rule_rules("rule", "drivers.managed-hooks", "dropped_lines", 1, rules)
 

@@ -13,7 +13,6 @@ from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 from core.modules.project_rules.support.rule_settings import RULE_APPROVAL_SETTING
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 SETTING = f"{RULE_APPROVAL_SETTING}"
 CHANGE_SETTING = f"setting set {SETTING} true --project --reason needed"
@@ -91,7 +90,7 @@ def test_every_pending_approval_stays_visible_beyond_the_ordinary_dock_limit(new
     story = new_story(fixture=UserBuilder)
     for number in range(8):
         story.new_row_id(f'rule make "Keep rule {number}"', actor=story.agent)
-    items = tuple(story.container.get(Queries).query(DockItem).filter(type="approvals.request", state=DockItemState.DOCKED).every_row(TEST_ROWS_REASON))
+    items = tuple(story.story_rows(DockItem, type="approvals.request", state=DockItemState.DOCKED))
     story.expect_rows(len(items) == 8, all(item.kept for item in items))
 
 

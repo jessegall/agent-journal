@@ -1,7 +1,6 @@
 import json
 from unittest.mock import patch
 
-from engine.command.bus import Bus
 from engine.database.database import Database
 from core.modules.documents.commands.record_subject_link.record_subject_link import RecordSubjectLink
 from tests.stories.core.support.fixtures import UserJoined
@@ -31,7 +30,7 @@ def test_several_messages_naming_one_task_read_that_task_once(new_story):
     target = story.new_row_id('task make "Fix the cart" --environment main')
     numbers = [story.new_row_id(f'message send "Look again {number}" --environment main') for number in range(3)]
     for number in numbers:
-        story.container.get(Bus).run(RecordSubjectLink(number, "task", target), story.agent, environment_id=1)
+        story.run_command(RecordSubjectLink(number, "task", target), story.agent, 1)
     database = story.container.get(Database)
     with patch.object(database, "rows", wraps=database.rows) as reads:
         outcome = story.run(f"link receipts --messages {','.join(str(number) for number in numbers)} --json")

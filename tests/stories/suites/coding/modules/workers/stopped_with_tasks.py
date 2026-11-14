@@ -4,8 +4,6 @@ from datetime import timedelta
 import pytest
 
 from engine.actor.actor import Actor
-from engine.command.bus import Bus
-from engine.query.queries import Queries
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
@@ -15,7 +13,6 @@ from tests.stories.suites.coding.modules.workers.queued_commands import worker_c
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 __all__ = ["missing_program", "running_worker", "worker_command", "worker_story"]
 
@@ -47,9 +44,9 @@ def main_agent_lines(story) -> str:
 
 
 def waiting_lines_entered(story) -> None:
-    rows = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.worker.id, state=AgentLineState.WAITING).every_row(TEST_ROWS_REASON)
+    rows = story.story_rows(AgentLine, session_agent_id=story.worker.id, state=AgentLineState.WAITING)
     for row in rows:
-        story.container.get(Bus).run(EnterAgentLine(row.id), Actor.core(), environment_id=1)
+        story.run_command(EnterAgentLine(row.id), Actor.core(), 1)
 
 
 @pytest.fixture

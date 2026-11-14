@@ -7,7 +7,6 @@ from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.environment.environment_names import EnvironmentNames
 from core.modules.tasks.commands.close_task.close_task import CloseTask
-from engine.query.queries import Queries
 from engine.testing.examples.hook_samples import HookSamples
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.testing.fake_launcher import FakeLauncher
@@ -352,7 +351,7 @@ def test_a_passed_checkpoint_launches_its_read_only_reviewer_on_the_sonnet_model
     expect_value(len(launcher.starts), 1)
     command = " ".join(launcher.starts[0]["command"])
     story.expect_rows("sonnet" in command, "phase Check of plan 1" in command, detail=command)
-    reviewer = story.container.get(Queries).query(Agent).find(review["reviewer_id"])
+    reviewer = story.row(Agent, review["reviewer_id"])
     story.hook(reviewer.session, stop_with_report("Matches the brief; the polish step is missing."))
     story.run_listeners()
     story.expect_rows(rows(story, REVIEWS)[0]["report"] == "Matches the brief; the polish step is missing.", detail=str(rows(story, REVIEWS)))
@@ -365,7 +364,7 @@ def test_two_checkpoint_reviews_get_sessions_of_their_own(new_story):
     close(story, 2)
     pass_reach(story, 2)
     reviewers = [row["reviewer_id"] for row in rows(story, REVIEWS)]
-    sessions = {story.container.get(Queries).query(Agent).find(reviewer).session for reviewer in reviewers}
+    sessions = {story.row(Agent, reviewer).session for reviewer in reviewers}
     story.expect_rows(len(reviewers) == 2, len(sessions) == 2, detail=str(reviewers))
 
 

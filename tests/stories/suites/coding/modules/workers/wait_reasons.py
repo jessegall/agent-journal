@@ -1,6 +1,5 @@
 import json
 
-from engine.command.bus import Bus
 from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.enums.command_category import CommandCategory
@@ -53,7 +52,7 @@ def test_a_stopped_worker_with_a_task_says_what_it_waits_on_and_never_for_a_job(
     database = story.container.get(Database)
     part = PartSpec("make test", "make", False, CommandCategory.TEST_RUN)
     command = StartProcess(worker.id, None, "make test", "/work/main", CommandCategory.TEST_RUN, 30, [part])
-    process = story.container.get(Bus).run(command, worker, environment_id=1)
+    process = story.run_command(command, worker, 1)
     database.update(Statement("UPDATE agents SET ended_at = ? WHERE id = ?", [ENDED_AT, worker.id]))
     expect_reason(story, worker, "reader")
     database.update(Statement("UPDATE reader_requests SET completed_at = ?", [ENDED_AT]))

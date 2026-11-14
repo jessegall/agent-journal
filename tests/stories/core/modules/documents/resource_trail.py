@@ -4,7 +4,6 @@ from unittest.mock import patch
 from engine.event.event_log import EventLog
 from engine.query.query import Query
 from engine.listener.commit.commit_listener_runner import CommitListenerRunner
-from engine.command.bus import Bus
 from engine.module.module_actors import ModuleActors
 from core.modules.documents.commands.record_mentions.record_mentions import RecordMentions
 from core.modules.documents.references.row_ref import RowRef
@@ -36,7 +35,7 @@ def test_deleted_sources_are_not_relinked_by_deferred_events(scenario):
         scenario.command("task delete 2")
     scenario.story.run_listeners()
     actor = scenario.story.container.get(ModuleActors).actor("journal.core.documents")
-    scenario.story.container.get(Bus).run(RecordMentions(RowRef("task", 2), ["doc 1"]), actor, environment_id=1)
+    scenario.story.run_command(RecordMentions(RowRef("task", 2), ["doc 1"]), actor, 1)
     feature(scenario.links("task:2") == [], "deferred save recreated deleted source links")
 
 

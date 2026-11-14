@@ -142,7 +142,7 @@ def test_a_reader_that_keeps_nearly_every_line_is_told_to_narrow_and_one_with_no
     story.run('reader add deploys --commands "./deploy*" --lines "step" --summary "NOTHING MATCHES THIS"', actor=story.agent)
     process = moved_run(story, "./deploy.sh staging", category=CommandCategory.BUILD)
     end_run(story, process, "".join(f"step {number}\n" for number in range(60)))
-    story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
+    story.run_command(ReadNewOutput(process.id, True), story.agent, 1)
     resolved(story)
     lines = read_lines(story, READ_NOTES)
     expect_value_line(lines, "reader deploys kept 60 of 60 lines")
@@ -154,7 +154,7 @@ def test_a_test_run_whose_reader_finds_progress_only_on_its_last_line_is_told_to
     story.run("""reader add dots --commands "./dots*" --lines "Tests" --progress "Tests +([0-9]+) of ([0-9]+)" """, actor=story.agent)
     process = moved_run(story, "./dots.sh", category=CommandCategory.TEST_RUN)
     end_run(story, process, "".join("........\n" for _ in range(60)) + "Tests 60 of 60\n")
-    story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
+    story.run_command(ReadNewOutput(process.id, True), story.agent, 1)
     resolved(story)
     expect_lines(story, READ_NOTES, "showed no progress")
 
@@ -164,7 +164,7 @@ def test_a_run_printing_a_count_with_no_progress_pattern_is_told_to_add_one(new_
     story.run('reader add deploys --commands "./deploy*" --lines "step"', actor=story.agent)
     process = moved_run(story, "./deploy.sh staging", category=CommandCategory.BUILD)
     end_run(story, process, "step 3/9\nstep 9/9\n")
-    story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
+    story.run_command(ReadNewOutput(process.id, True), story.agent, 1)
     resolved(story)
     expect_lines(story, READ_NOTES, "showed no progress")
 
@@ -286,8 +286,8 @@ def ended_chain_output(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     parts = (PartSpec("mkdir build", "mkdir", False, CommandCategory.EDIT), PartSpec("cart-suite test", "cart-suite", False, CommandCategory.TEST_RUN))
     command = StartProcess(story.agent.id, None, "mkdir build && cart-suite test", "/work/main", CommandCategory.TEST_RUN, 30, parts)
-    process = story.container.get(Bus).run(command, story.agent, environment_id=1)
-    story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
+    process = story.run_command(command, story.agent, 1)
+    story.run_command(MoveProcess(process.id), story.agent, 1)
     end_run(story, process, "one\ntwo\n")
     resolved(story)
     lines = read_lines(story, READ_NOTES)
@@ -329,7 +329,7 @@ def unmatched_reader_output(deploy_reader):
     story = deploy_reader
     process = moved_run(story, "./deploy.sh staging", category=CommandCategory.BUILD)
     end_run(story, process, "uploading\nstill going\nhalf way\nnearly\nall done\n")
-    story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
+    story.run_command(ReadNewOutput(process.id, True), story.agent, 1)
     resolved(story)
     return story, process
 
@@ -349,7 +349,7 @@ def chain_reader_output(deploy_reader):
     story = deploy_reader
     process = moved_run(story, "./deploy.sh staging && echo one && echo two", category=CommandCategory.BUILD)
     end_run(story, process, "uploading\nstill going\nhalf way\nnearly\nall done\n")
-    story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
+    story.run_command(ReadNewOutput(process.id, True), story.agent, 1)
     resolved(story)
     return story, process
 
@@ -359,7 +359,7 @@ def unshown_output(deploy_reader):
     story = deploy_reader
     process = moved_run(story, "./deploy.sh staging")
     end_run(story, process, "uploading\nstill going\nhalf way\nnearly\nall done\n")
-    story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
+    story.run_command(ReadNewOutput(process.id, True), story.agent, 1)
     resolved(story)
     return story, process
 

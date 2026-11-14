@@ -11,7 +11,6 @@ from engine.file.file_access import FileAccess
 from engine.enums.command_category import CommandCategory
 from engine.enums.command_effect import CommandEffect
 from core.modules.plugins.support.login_path import LoginPath
-from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from engine.testing.expectations.expect_reply import expect_reply_allowed, expect_absent_reply_line
 from engine.testing.examples.hook_samples import HookSamples
@@ -23,7 +22,6 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.modules.plugins.support.plugin_event_entry import CEILING_SETTING
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 REMOVAL_SAMPLE = HookSamples.shell("rm -rf build", ShellPart("rm", CommandCategory.EDIT, ["-rf", "build"], effects=[CommandEffect.DELETES_FILES]))
 LISTING_SAMPLE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, []))
@@ -152,8 +150,8 @@ def expect_plugin_notice(story, sample, text):
     reply = story.hook("s-1", sample)
     expect_reply_allowed(reply)
     expect_absent_reply_line(reply, text)
-    saved = next((line for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).every_row(TEST_ROWS_REASON) if text in line.text), None)
-    assert saved is not None, [(line.source, line.text) for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).every_row(TEST_ROWS_REASON)]
+    saved = next((line for line in story.story_rows(AgentLine, session_agent_id=story.agent.id) if text in line.text), None)
+    assert saved is not None, [(line.source, line.text) for line in story.story_rows(AgentLine, session_agent_id=story.agent.id)]
     story.expect_text(f"agent-line show {saved.id}", text, actor=story.agent)
     next_reply = story.hook("s-1", LISTING_SAMPLE)
     story.expect_rows(any(text in line for line in next_reply.lines), not any(f"agent-line:{saved.id}" in line for line in next_reply.lines))

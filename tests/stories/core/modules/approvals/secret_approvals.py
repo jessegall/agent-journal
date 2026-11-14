@@ -40,7 +40,7 @@ def program_viewer(pending_program):
 def test_program_permission_uses_the_persons_dock_decision(pending_program, program_viewer, decision, expected):
     story, request = pending_program
     answer = program_viewer.value("messages.chat", ["approval", decision, str(request.id)])
-    secret = story.container.get(Queries).query(Secret).find(1)
+    secret = story.row(Secret, 1)
     story.expect_rows(("head" in secret.programs) is expected)
     if request.continued_arguments and expected:
         story.expect_rows("[secret GITHUB_KEY]" in answer["viewer_output"], VALUE not in answer["viewer_output"])

@@ -6,7 +6,6 @@ import threading
 from pathlib import Path
 
 from engine.actor.actor import Actor
-from engine.command.bus import Bus
 from engine.enums.command_category import CommandCategory
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
@@ -57,7 +56,7 @@ def skill_digest(story, name):
 
 
 def mark_rules_loaded(story, digest):
-    story.container.get(Bus).run(LoadSkill(story.agent.id, "sample-rules", digest), Actor.core(), environment_id=1)
+    story.run_command(LoadSkill(story.agent.id, "sample-rules", digest), Actor.core(), 1)
 
 
 def test_s41_a_compaction_resets_the_skills_and_the_next_event_lists_none(new_story):

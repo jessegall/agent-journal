@@ -3,7 +3,6 @@ import json
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.command.bus import Bus
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
@@ -26,7 +25,7 @@ def shown(story: Story, agent_id: int, actor: Actor | None = None) -> dict:
 def test_a_main_agent_reads_a_workers_report_by_the_workers_number_not_its_row_id(new_story):
     story = new_story(fixture=BuilderStarted)
     worker = Actor(started_worker(story, "s-9", "main", story.agent.id), ActorType.AGENT)
-    story.container.get(Bus).run(RecordParentReport(worker.id, story.agent.id, "Handed in"), worker, environment_id=1)
+    story.run_command(RecordParentReport(worker.id, story.agent.id, "Handed in"), worker, 1)
     story.run_listeners()
     story.expect_text(f"agent-line list --agent {story.agent.id}", "worker 2 reported in message:1")
     story.expect_absent(f"agent-line list --agent {story.agent.id}", f"agent:{agent_number(story, worker.id)} reports")

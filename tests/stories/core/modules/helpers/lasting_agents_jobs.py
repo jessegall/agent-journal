@@ -10,7 +10,6 @@ from tests.stories.core.modules.helpers.lifetime_reviewers import launches, refu
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 from core.modules.helpers.support.helper_settings import HELPER_PROFILE_LIMITS
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 MEMORY_TEXT = "The cart rounds each line before it adds them"
 NEW_AGENT_REASON = "A second reader for the tax file"
@@ -26,7 +25,7 @@ def idle_helper(new_story, monkeypatch):
 
 
 def researchers(story) -> list[Agent]:
-    return sorted(story.container.get(Queries).query(Agent).filter(profile=f"{RESEARCHER_PROFILE.name}").every_row(TEST_ROWS_REASON), key=lambda helper: helper.id)
+    return sorted(story.story_rows(Agent, profile=f"{RESEARCHER_PROFILE.name}"), key=lambda helper: helper.id)
 
 
 def test_a_job_sent_to_an_idle_helper_runs_on_that_helper_which_still_reads_its_memory(idle_helper):

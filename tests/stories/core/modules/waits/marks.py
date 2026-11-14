@@ -1,7 +1,6 @@
 from tests.stories.engine.driver.support.samples import SAMPLES
 import pytest
 
-from engine.command.bus import Bus
 from engine.errors.refusal import Refusal
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.tasks.models.enums.task_mark_type import TaskMarkType
@@ -20,6 +19,6 @@ def test_an_agent_reporting_it_is_stuck_shows_an_impasse_mark_after_the_commit(n
 def test_the_waits_module_writes_only_its_own_marks(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
     with pytest.raises(Refusal, match="only journal.core.tasks writes a mark of tasks.task"):
-        story.container.get(Bus).run(ShowMark(TaskMarkType.TASK, TaskMarkVariant.STARTED, "task:9", "A mark"), module_actor(story, "journal.core.waits"), environment_id=1)
+        story.run_command(ShowMark(TaskMarkType.TASK, TaskMarkVariant.STARTED, "task:9", "A mark"), module_actor(story, "journal.core.waits"), 1)
 
 

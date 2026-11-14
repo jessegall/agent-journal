@@ -2,7 +2,6 @@ import shlex
 
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.modules.aliases.running import worker_actor
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.server.support.alias_hook import AliasHook
@@ -47,7 +46,7 @@ def test_expansion_keeps_the_worker_permission_on_the_alias(new_story):
     story, worker = worker_actor(new_story)
     story.expect_success('alias add judged "echo checker {args}"', actor=story.agent)
     story.run_listeners()
-    session = story.container.get(Queries).query(Agent).find(worker.id).session
+    session = story.row(Agent, worker.id).session
     with server_story(story) as server:
         hook = AliasHook(server, session)
         hook.expect_denied("journal judged src", "marked for agents")

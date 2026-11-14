@@ -8,7 +8,6 @@ import shlex
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.database.database import Database
-from engine.query.queries import Queries
 from core.modules.sequences.models.sequence_run import SequenceRun
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
@@ -202,7 +201,7 @@ def expect_absent_running(story) -> None:
 
 
 def expect_agent_id(story, number, expected) -> None:
-    actual = story.container.get(Queries).query(SequenceRun).find(number).session_agent_id
+    actual = story.row(SequenceRun, number).session_agent_id
     assert actual == expected, actual
 
 

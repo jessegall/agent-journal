@@ -1,7 +1,6 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.event.event_log import EventLog
-from engine.command.bus import Bus
 from core.modules.documents.commands.record_subject_link.record_subject_link import RecordSubjectLink
 import json
 import pytest
@@ -136,7 +135,7 @@ def test_clearing_source_keeps_historical_attribution(attributed):
 
 def test_correction_survives_the_deferred_subject_writer(new_story):
     scenario = Scenario(new_story(fixture=CorrectedTask))
-    scenario.story.container.get(Bus).run(RecordSubjectLink(2, "task", 2), scenario.story.agent, environment_id=1)
+    scenario.story.run_command(RecordSubjectLink(2, "task", 2), scenario.story.agent, 1)
     scenario.expect_no_link("message:2", "task:2")
     events = [event for event in scenario.story.container.get(EventLog).events_after(0) if event.event == "link.delete"]
     scenario.story.expect_rows(sum(event.event == "link.delete" for event in events) == 1)

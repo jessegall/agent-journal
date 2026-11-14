@@ -2,7 +2,6 @@ from datetime import timedelta
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.command.bus import Bus
 from engine.query.queries import Queries
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.drivers.models.agent_line import AgentLine
@@ -23,7 +22,7 @@ def story_with_worker(new_story, typing=None):
 
 
 def report(story, worker) -> None:
-    story.container.get(Bus).run(RecordParentReport(worker.id, story.agent.id, "Handed in"), worker, environment_id=1)
+    story.run_command(RecordParentReport(worker.id, story.agent.id, "Handed in"), worker, 1)
     story.run_listeners()
 
 

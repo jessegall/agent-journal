@@ -13,7 +13,6 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.database.database import Database
 from tests.stories.core.modules.agents.support.numbered_agents import MainWithOneWorker
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from tests.stories.core.support import story_lines as lines
 from engine.actor.actor import Actor
@@ -143,7 +142,7 @@ def test_a_helper_of_a_paused_agent_is_paused_too(new_story):
 def test_the_pause_ends_with_the_agent(paused_task_holder):
     story = paused_task_holder
     story.expect_success(f"agent end {story.agent.id}", actor=story.user)
-    story.expect_rows(story.container.get(Queries).query(Agent).find(story.agent.id).paused_at is None)
+    story.expect_rows(story.row(Agent, story.agent.id).paused_at is None)
 
 
 def test_a_worker_of_a_paused_agent_may_only_read_and_goes_on_after_the_resume(new_story):

@@ -4,7 +4,6 @@ from core.modules.waits.support.wait_nudges import WAIT_ENDED
 from engine.testing.expectations.expected_nudge import expected_nudge
 from datetime import timedelta
 
-from engine.command.bus import Bus
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import start_process
@@ -39,7 +38,7 @@ def test_an_agent_stopped_on_a_wait_on_an_output_is_woken_when_the_output_ends(n
     process = start_process(story, "make test")
     entered = stopped_waiting(story, f"output:{process.id}")
     story.expect_rows(entered == [])
-    story.container.get(Bus).run(EndProcess(process.id, 0, 40, 3), story.agent, environment_id=1)
+    story.run_command(EndProcess(process.id, 0, 40, 3), story.agent, 1)
     story.run_listeners()
     expect_entered(story, entered, expected_nudge(WAIT_ENDED, wait=1))
 

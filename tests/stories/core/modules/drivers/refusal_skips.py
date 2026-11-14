@@ -4,7 +4,6 @@ from itertools import count
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.command.bus import Bus
 from engine.enums.command_category import CommandCategory
 from engine.enums.tool_type import ToolType
 from engine.guard.errors.guard_refusal import GuardRefusal
@@ -44,7 +43,7 @@ class FailedFullRun(StoryFixture):
     def steps(self, story: Story) -> None:
         part = PartSpec("pytest", "pytest", False, CommandCategory.TEST_RUN)
         command = StartProcess(story.agent.id, None, "pytest", "/work/main", CommandCategory.TEST_RUN, 30, [part], is_full_test_run=True)
-        end_run(story, story.container.get(Bus).run(command, story.agent, environment_id=1), "1 failed\n", exit_code=1)
+        end_run(story, story.run_command(command, story.agent, 1), "1 failed\n", exit_code=1)
         story.advance(timedelta(seconds=1))
 
 
@@ -70,7 +69,7 @@ def test_a_named_run_that_passes_lifts_the_refusal(new_story):
     story = failed_run_story(new_story)
     part = PartSpec("pytest tests/cart.py", "pytest", False, CommandCategory.TEST_RUN)
     command = StartProcess(story.agent.id, None, "pytest tests/cart.py", "/work/main", CommandCategory.TEST_RUN, 30, [part])
-    end_run(story, story.container.get(Bus).run(command, story.agent, environment_id=1), "1 passed\n")
+    end_run(story, story.run_command(command, story.agent, 1), "1 passed\n")
     story.expect_hook_allowed("s-1", full_line())
 
 

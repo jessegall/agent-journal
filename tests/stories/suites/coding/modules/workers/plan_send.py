@@ -22,7 +22,6 @@ from tests.stories.suites.coding.modules.workers.queued_commands import run_oper
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 
 def joined_person(story):
@@ -31,7 +30,7 @@ def joined_person(story):
 
 def assignment_marks(story):
     story.run_listeners()
-    return tuple(story.container.get(Queries).query(ChatMark).filter(variant=WorkerMarkVariant.ASSIGNED).every_row(TEST_ROWS_REASON))
+    return tuple(story.story_rows(ChatMark, variant=WorkerMarkVariant.ASSIGNED))
 
 
 def merged_worker(story):

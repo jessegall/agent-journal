@@ -1,9 +1,7 @@
-from engine.query.queries import Queries
 from core.modules.chat.models.chat_mark import ChatMark
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 RUN = "r1"
 
@@ -14,7 +12,7 @@ def run_step(story, line: str) -> None:
 
 
 def update_mark(story) -> ChatMark:
-    return next(story.container.get(Queries).query(ChatMark).filter(key=f"server-update:{RUN}").every_row(TEST_ROWS_REASON))
+    return next(iter(story.story_rows(ChatMark, key=f"server-update:{RUN}")))
 
 
 def test_one_mark_moves_through_the_steps_of_a_server_update_and_ends_with_the_version(new_story):
@@ -28,7 +26,7 @@ def test_one_mark_moves_through_the_steps_of_a_server_update_and_ends_with_the_v
     last = update_mark(story)
     expect_value(step_marks, [("proof", "step 1 of 4", 0.25, "shown"), ("handover", "step 2 of 4", 0.5, "shown"), ("serving", "step 3 of 4", 0.75, "shown")])
     expect_value((last.variant, last.text, last.outcome.value, last.state.value), ("finished", "Server updated to abc123", "passed", "ended"))
-    expect_value(len(list(story.container.get(Queries).query(ChatMark).filter(type="updates.server-update").every_row(TEST_ROWS_REASON))), 1)
+    expect_value(len(list(story.story_rows(ChatMark, type="updates.server-update"))), 1)
 
 
 def test_a_refused_server_update_ends_its_mark_with_the_reason(new_story):

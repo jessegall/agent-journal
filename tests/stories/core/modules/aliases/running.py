@@ -7,7 +7,6 @@ from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
 from engine.caller.caller_request import CallerRequest
 from engine.cli.shell_aliases import ShellAliases
-from engine.command.bus import Bus
 from engine.enums.command_category import CommandCategory
 from core.modules.processes.commands.move_process.move_process import MoveProcess
 from core.modules.processes.queries.process_query import ProcessQuery
@@ -82,7 +81,7 @@ def test_a_background_alias_run_that_is_no_test_or_build_ends_with_an_ended_line
     story.run('alias add sins "echo judged" --reader judge --background', actor=story.agent)
     story.hook("s-1", ALIAS_LINE)
     process = story.container.get(ProcessQuery).find(1)
-    story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
+    story.run_command(MoveProcess(process.id), story.agent, 1)
     end_run(story, process, "sin one\nsin two\n")
     story.advance(timedelta(seconds=1))
     story.run_listeners()

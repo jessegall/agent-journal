@@ -38,7 +38,6 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 
 class WorkerCommandStory(NamedTuple):
@@ -163,7 +162,7 @@ def test_worker_commands_return_before_slow_git_and_notify_once(worker_git_comma
     print(f"{name}: accepted {accepted_seconds:.3f}s; synchronous work {finished_seconds:.3f}s")
     with operation_story(story) as ending_story:
         end_operation(ending_story, operation)
-    lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=actor.id).every_row(TEST_ROWS_REASON)
+    lines = story.story_rows(AgentLine, session_agent_id=actor.id)
     notifications = [line for line in lines if line.nudge.key.startswith("workers.operation_")]
     story.expect_rows(len(notifications) == 1, story.row(WorkerOperation, operation.id).ended_at is not None)
 
@@ -180,7 +179,7 @@ def test_a_merge_that_succeeds_makes_no_conflict_line_when_the_worker_has_a_next
     story.expect_rows(outcome.code == 0, detail=outcome.output_text)
     with operation_story(story) as ending_story:
         end_operation(ending_story, operation)
-    lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).every_row(TEST_ROWS_REASON)
+    lines = story.story_rows(AgentLine, session_agent_id=story.agent.id)
     keys = [line.nudge.key for line in lines if line.nudge.key.startswith("workers.operation_")]
     story.expect_rows(keys == ["workers.operation_merged"], detail=str(keys))
 
@@ -206,7 +205,7 @@ def test_a_failed_background_command_releases_the_worker_and_names_its_output(wo
     outcome = run_operation(story, operation)
     story.expect_rows(outcome.code == 1, "the base branch has a conflict" in outcome.output_text)
     end_operation(story, operation, 1)
-    lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=worker.id).every_row(TEST_ROWS_REASON)
+    lines = story.story_rows(AgentLine, session_agent_id=worker.id)
     notifications = [line for line in lines if line.nudge.key == "workers.operation_failed"]
     story.expect_rows(len(notifications) == 1, str(operation.process_id) in notifications[0].text)
     story.expect_rows(story.row(WorkerOperation, operation.id).ended_at is not None)
@@ -226,7 +225,7 @@ def test_a_worker_command_lost_before_it_started_tells_the_worker_and_can_be_giv
     story.expect_text('worker commit --differences none', "command accepted", actor=worker)
     operation = story.container.get(Queries).query(WorkerOperation).newest().first()
     story.container.get(Bus).run(OrphanProcess(operation.process_id), Actor.core(), environment_id=story.row(Agent, worker.id).environment_id)
-    lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=worker.id).every_row(TEST_ROWS_REASON)
+    lines = story.story_rows(AgentLine, session_agent_id=worker.id)
     notifications = [line for line in lines if line.nudge.key == "workers.operation_never_started"]
     story.expect_rows(len(notifications) == 1, str(operation.process_id) in notifications[0].text,
                       story.row(WorkerOperation, operation.id).ended_at is not None)
@@ -315,7 +314,7 @@ def merged_operation(story, worker):
 
 
 def main_line_keys(story):
-    lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).every_row(TEST_ROWS_REASON)
+    lines = story.story_rows(AgentLine, session_agent_id=story.agent.id)
     return [line.nudge.key for line in lines]
 
 

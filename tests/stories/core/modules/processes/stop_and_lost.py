@@ -7,7 +7,6 @@ from datetime import timedelta
 
 from tests.stories.core.modules.processes.background import READ_NOTES
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run, start_process
-from engine.command.bus import Bus
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
@@ -248,7 +247,7 @@ def test_a_run_the_runner_reported_first_is_passed_over_and_the_others_still_end
     def stale_commands(container, process):
         commands = original(container, process)
         if process.id == reported.id:
-            story.container.get(Bus).run(EndProcess(process.id, 0, 0, 0), story.agent, environment_id=1)
+            story.run_command(EndProcess(process.id, 0, 0, 0), story.agent, 1)
         return commands
 
     handler.commands = stale_commands

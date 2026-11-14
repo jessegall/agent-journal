@@ -17,7 +17,6 @@ from tests.stories.suites.coding.modules.workers.support.program_split import se
 from suites.coding.support.shipped_profiles import PLAN_REVIEWER_PROFILE
 from core.modules.helpers.support.helper_settings import HELPER_PROFILE_LIMITS
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 __all__ = ["helper_split_story", "helper_viewer"]
 
@@ -51,7 +50,7 @@ def refusal_text(story, line: str) -> str:
 
 
 def reviewers(story) -> list[Agent]:
-    return sorted(story.container.get(Queries).query(Agent).filter(profile=REVIEWER).every_row(TEST_ROWS_REASON), key=lambda reviewer: reviewer.number)
+    return sorted(story.story_rows(Agent, profile=REVIEWER), key=lambda reviewer: reviewer.number)
 
 
 def review_job(story, reviewer: Agent, plan: int) -> str:

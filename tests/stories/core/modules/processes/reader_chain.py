@@ -44,7 +44,7 @@ def test_only_the_owner_is_told_to_read_a_shared_sample(new_story):
     story = new_story(fixture=ForcedReaders)
     sample = worker_run(story)
     second = Actor(story.new_row_id("agent start s-second claude worker --environment main"), ActorType.AGENT)
-    story.container.get(Bus).run(StartProcess.single_part(second.id, "custom-build another", "/work", CommandCategory.TEST_RUN, 30), second, environment_id=1)
+    story.run_command(StartProcess.single_part(second.id, "custom-build another", "/work", CommandCategory.TEST_RUN, 30), second, 1)
     expect_count_open(story, 2)
     end_run(story, sample, "compile\n" * 8 + "done\n")
     story.expect_success('reader add custom --commands "custom-build*" --title "Custom tests" --lines done --summary done --step PASSED --count "collected ([0-9]+)" --count-command "{part} --list"', actor=story.agent)
@@ -58,7 +58,7 @@ def test_a_shell_limit_before_pytest_needs_no_reader_of_its_own(new_story):
     worker = reader_worker(story)
     parts = [PartSpec("ulimit -n 8192", "ulimit", category=CommandCategory.READ),
              PartSpec("python3 -m pytest tests/cart -q", "python3", category=CommandCategory.TEST_RUN)]
-    story.container.get(Bus).run(StartProcess(worker.id, None, " && ".join(part.text for part in parts), "/work", CommandCategory.TEST_RUN, 30, parts), worker, environment_id=1)
+    story.run_command(StartProcess(worker.id, None, " && ".join(part.text for part in parts), "/work", CommandCategory.TEST_RUN, 30, parts), worker, 1)
     story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists())
 
 

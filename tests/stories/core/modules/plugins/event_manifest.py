@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pytest
 
-from engine.command.bus import Bus
 from core.modules.plugins.commands.deliver_plugin_event.deliver_plugin_event import DeliverPluginEvent
 from engine.enums.event_form import EventForm
 from core.modules.plugins.support.plugin_manifest import PluginManifest
@@ -121,7 +120,7 @@ def test_s13_a_script_changed_on_disk_switches_the_plugin_off_at_the_next_hook(n
 
 def test_a_delivery_for_a_manifest_edited_into_broken_json_is_a_fault_and_is_not_tried_again(new_story):
     story = event_plugin_story(new_story, name="broken", program="see.sh", hears=["file_edited"])
-    story.container.get(Bus).run(DeliverPluginEvent(plugin_row(story, "broken").id, story.agent.id, "file_edited", "{}"), story.user, environment_id=1)
+    story.run_command(DeliverPluginEvent(plugin_row(story, "broken").id, story.agent.id, "file_edited", "{}"), story.user, 1)
     (story.home.folder / "plugins" / "broken" / "journal-plugin.json").write_text("{ half written")
     story.run_listeners()
     story.run_listeners()

@@ -4,7 +4,6 @@ from engine.database.database import Database
 from engine.registry.registry import Registry
 import pytest
 
-from engine.command.bus import Bus
 from engine.errors.refusal import Refusal
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.messages.models.enums.message_mark_type import MessageMarkType
@@ -48,7 +47,7 @@ def test_a_refused_move_shows_no_task_mark(new_story):
 def test_the_tasks_module_writes_only_its_own_marks(new_story):
     story = new_story(fixture=OpenTaskBuilder)
     with pytest.raises(Refusal, match="only journal.core.messages writes a mark of messages.thought"):
-        story.container.get(Bus).run(ShowMark(MessageMarkType.SUMMARY, MessageMarkVariant.SUMMARY, "thought:9", "A mark"), module_actor(story, "journal.core.tasks"), environment_id=1)
+        story.run_command(ShowMark(MessageMarkType.SUMMARY, MessageMarkVariant.SUMMARY, "thought:9", "A mark"), module_actor(story, "journal.core.tasks"), 1)
 
 
 def test_a_task_is_docked_from_its_inspector_and_no_task_row_changes(new_story):

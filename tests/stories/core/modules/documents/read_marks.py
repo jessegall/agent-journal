@@ -5,7 +5,6 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.database.database import Database
-from engine.query.queries import Queries
 from engine.registry.registry import Registry
 from core.modules.chat.models.chat_mark import ChatMark
 from engine.testing.examples.hook_samples import HookSamples
@@ -13,7 +12,6 @@ from tests.stories.core.modules.documents.support.read_marks import ReadableText
 from tests.stories.core.modules.processes.support.process_samples import start_process
 from tests.stories.support.story_checks import expect_value
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 
 def finished_read(story, line):
@@ -23,7 +21,7 @@ def finished_read(story, line):
 
 
 def read_marks(story):
-    return list(story.container.get(Queries).query(ChatMark).filter(type="documents.read").every_row(TEST_ROWS_REASON))
+    return list(story.story_rows(ChatMark, type="documents.read"))
 
 
 def test_document_and_report_reads_show_one_clickable_mark_per_row_in_a_turn(new_story):

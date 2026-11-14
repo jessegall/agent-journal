@@ -7,7 +7,6 @@ from tests.stories.core.modules.chat.support.mark_samples import SampleMarkType
 from tests.stories.core.modules.chat.support.round_marks import KEY, PATH
 from tests.stories.core.support.fixtures import OpenTask, UserJoined
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 
 def test_an_expected_listener_refusal_is_logged_once_without_an_exception_mark(new_story):
@@ -35,7 +34,7 @@ def test_one_listener_key_follows_a_mark_that_ends_and_comes_back(new_story):
     story.expect_success("task reopen 1", actor=story.agent)
     story.run_listeners()
 
-    marks = list(story.container.get(Queries).query(ChatMark).filter(type=SampleMarkType.PROCESS.value).every_row(TEST_ROWS_REASON))
+    marks = list(story.story_rows(ChatMark, type=SampleMarkType.PROCESS.value))
     story.expect_rows(len(marks) == 2)
     story.expect_rows(marks[0].id == first.id, marks[0].state is ChatMarkState.ENDED,
                       marks[1].key.startswith(KEY), marks[1].key != KEY, marks[1].state is ChatMarkState.SHOWN)

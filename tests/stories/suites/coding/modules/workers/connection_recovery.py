@@ -12,7 +12,6 @@ from engine.enums.actor_type import ActorType
 from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.process.leftover_process import LeftoverProcess
-from engine.query.queries import Queries
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.drivers.models.agent_line import AgentLine
@@ -36,7 +35,6 @@ from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 RECOVERY_SOURCE = "workers.silent-agent"
 FAILED_SOURCE = "workers.silent-agent-failed"
@@ -91,7 +89,7 @@ class RecoveryCase:
         return sum(f"worker:{agent_number(self.story, self.worker.id)} has stopped" in row["text"] for row in rows)
 
     def lines(self, agent_id, source=RECOVERY_SOURCE):
-        return list(self.story.container.get(Queries).query(AgentLine).filter(session_agent_id=agent_id, source=source).every_row(TEST_ROWS_REASON))
+        return list(self.story.story_rows(AgentLine, session_agent_id=agent_id, source=source))
 
 
 @pytest.fixture

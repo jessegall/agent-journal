@@ -3,7 +3,6 @@ from datetime import timedelta
 
 import pytest
 
-from engine.command.bus import Bus
 from core.modules.tasks.commands.reset_task_reads.reset_task_reads import ResetTaskReads
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
 from engine.testing.examples.hook_samples import HookSamples
@@ -117,7 +116,7 @@ def test_a_task_handed_back_for_rework_can_be_read_again_in_the_same_window(new_
     story.container.get(TaskBriefRequirement).is_required = True
     story.expect_text("task overview 1", "task 1: Fix the cart", actor=story.agent)
     story.expect_refusal("task overview 1", REFUSAL, actor=story.agent)
-    story.container.get(Bus).run(ResetTaskReads(story.agent.id), story.agent, environment_id=1)
+    story.run_command(ResetTaskReads(story.agent.id), story.agent, 1)
     story.expect_text("task overview 1", "task 1: Fix the cart", actor=story.agent)
 
 

@@ -1,6 +1,5 @@
 from tests.stories.core.support.agent_labels import agent_number
 from core.modules.agents.models.agent import Agent
-from engine.query.queries import Queries
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
@@ -17,7 +16,7 @@ def test_a_helper_keeps_the_session_the_journal_chose_when_another_comes_under_i
 
 def test_a_helper_sends_hooks_as_itself(new_story):
     story = new_story(fixture=HelperStarted)
-    session = story.container.get(Queries).query(Agent).find(story.helper.id).session
+    session = story.row(Agent, story.helper.id).session
     story.hook(session, HookSamples.helper(HELPER_LAUNCH_NAME))
     story.hook(session, HookSamples.prompt("Read the cart"))
     story.expect_rows(story.container.get(HookCallQuery).newest_agent_hook(story.helper.id) is not None)

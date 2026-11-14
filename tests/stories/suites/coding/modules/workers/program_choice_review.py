@@ -47,7 +47,6 @@ from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLE
 from suites.coding.support.shipped_profiles import PLANNER_PROFILE
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 
 @pytest.mark.parametrize('agent_role', ['worker', 'helper'])
@@ -101,7 +100,7 @@ def started_split_helper(split_story):
 def test_both_plans_reuse_stays_on_the_chosen_program_for_a_helper(started_split_helper, split_viewer, monkeypatch):
     story, helper_id = started_split_helper
     story.expect_success(f'agent end {helper_id}', actor=story.user)
-    helper = story.container.get(Queries).query(Agent).find(helper_id)
+    helper = story.row(Agent, helper_id)
     resumable_session(story, helper, monkeypatch)
     set_split(story, 'claude 0,codex 100', viewer=split_viewer)
     next_helper, _ = started(story, f'helper start {RESEARCHER_PROFILE.name} --brief "Read the new queue" --environment main')
@@ -114,7 +113,7 @@ def test_both_plans_reuse_stays_on_the_chosen_program_counts_each_helper_job(spl
     set_split(story, 'claude 100,codex 0', viewer=split_viewer)
     helper_id, _ = started(story)
     story.expect_success(f'agent end {helper_id}', actor=story.user)
-    helper = story.container.get(Queries).query(Agent).find(helper_id)
+    helper = story.row(Agent, helper_id)
     resumable_session(story, helper, monkeypatch)
     launcher = FakeLauncher.accepting(story.home.socket('launcher'))
     story.expect_success(f'helper send {agent_number(story, helper_id)} "Read the next queue"', actor=story.agent)
@@ -177,7 +176,7 @@ def outage_helper_story(split_story, monkeypatch):
     story = split_story
     helper_id, _ = started(story)
     story.expect_success(f'agent end {helper_id}', actor=story.user)
-    helper = story.container.get(Queries).query(Agent).find(helper_id)
+    helper = story.row(Agent, helper_id)
     resumable_session(story, helper, monkeypatch)
     _, ends_at = outage(story, 'claude')
     FakeLauncher.accepting(story.home.socket('launcher'))
@@ -199,7 +198,7 @@ def test_helper_send_on_an_out_program_says_until_when_resume_keeps_its_job(star
     launcher = FakeLauncher.accepting(story.home.socket('launcher'), request_count=2)
     story.expect_success(f'agent end {helper_id}', actor=story.user)
     story.run_listeners()
-    helper = story.container.get(Queries).query(Agent).find(helper_id)
+    helper = story.row(Agent, helper_id)
     job = story.container.get(Queries).query(HelperJob).filter(helper_id=helper_id).newest().first()
     story.expect_rows(helper.ended_at is not None, job.ended_at is None, len(launcher.starts) == 0)
     story.advance(timedelta(minutes=16))
@@ -538,7 +537,7 @@ def test_codex_hooks_run_in_the_worker_folder(new_story, monkeypatch, program, m
                                       input=json.dumps({"session_id": session, "hook_event_name": event, "cwd": str(folder), **body}),
                                       capture_output=True, text=True, timeout=30, env=environment)
             story.expect_rows(finished.returncode == 0, detail=finished.stderr)
-    calls = tuple(story.container.get(Queries).query(HookCall).filter(session_agent_id=worker.id, tool="read_file").every_row(TEST_ROWS_REASON))
+    calls = tuple(story.story_rows(HookCall, session_agent_id=worker.id, tool="read_file"))
     story.expect_rows(len(calls) == 1)
     story.expect_rows(calls[0].folder == str(folder))
     story.expect_success(f"program trust codex {shlex.quote(str(folder))}", "ready")

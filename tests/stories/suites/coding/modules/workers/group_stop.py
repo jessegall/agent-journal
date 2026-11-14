@@ -10,14 +10,12 @@ from tests.stories.suites.coding.modules.workers.support.held_tasks import worke
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, start_planned_worker, unplanned_worker
 from suites.coding.modules.workers.support.worker_nudges import UNFINISHED_TASKS_SOURCE
-from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RESTARTED
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
 from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 MERGER_OFF = f"setting set {MERGER_ENABLED} false --project"
 BUILD_TASKS = 3
@@ -25,7 +23,7 @@ BUILD_TASKS = 3
 
 def unfinished_lines(worker) -> tuple[AgentLine, ...]:
     worker.story.run_listeners()
-    return tuple(worker.story.container.get(Queries).query(AgentLine).filter(session_agent_id=worker.worker.id, source=UNFINISHED_TASKS_SOURCE).every_row(TEST_ROWS_REASON))
+    return tuple(worker.story.story_rows(AgentLine, session_agent_id=worker.worker.id, source=UNFINISHED_TASKS_SOURCE))
 
 
 def expect_silent_stop(worker) -> None:

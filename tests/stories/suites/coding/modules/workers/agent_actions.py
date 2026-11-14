@@ -1,7 +1,6 @@
 from tests.stories.core.modules.tasks.support.holder_assignee_check import assignee_of
 import pytest
 
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.task import Task
 from tests.stories.core.support.coding_fixtures import UserBuilder
@@ -22,7 +21,7 @@ def agent_task_server(new_story, monkeypatch):
     worker_id = story.new_row_id(f"worker dispatch --test-command python=pytest --model sonnet {first}", actor=story.agent)
     story.expect_success(f"agent end {worker_id}", actor=story.user)
     task_id = story.new_row_id('task make "Check rounding" --brief "Check the rounding calculation"', actor=story.agent)
-    worker = story.container.get(Queries).query(Agent).find(worker_id)
+    worker = story.row(Agent, worker_id)
     resumable_session(story, worker, monkeypatch)
     story.expect_success(f"setting set {TOUR_COMPLETED} true --project", actor=story.user)
     with server_story(story, listener_thread_started=False) as server:
@@ -38,11 +37,11 @@ def test_an_idle_worker_takes_an_open_task_through_the_agents_window(agent_task_
     server.story.expect_rows(row["id"] == worker and row["job_command"] == ["worker", "send"])
     server.story.expect_rows(row["job_task_flag"] == "--task" and row["resume_reason"] is None)
     line(["worker", "send", str(row["number"]), "--task", str(task)])
-    assigned = server.story.container.get(Queries).query(Task).find(task)
+    assigned = server.story.row(Task, task)
     server.story.expect_rows(assignee_of(server.story, assigned) == worker)
 
 
 def test_the_worker_task_picker_in_light_and_dark(agent_task_server):
     server, _, worker, task = agent_task_server
     expect_browser(server, "agentTask.browser.mjs", [str(worker), str(task), "/tmp/worker-675-agent-task"])
-    server.story.expect_rows(assignee_of(server.story, server.story.container.get(Queries).query(Task).find(task)) == worker)
+    server.story.expect_rows(assignee_of(server.story, server.story.row(Task, task)) == worker)

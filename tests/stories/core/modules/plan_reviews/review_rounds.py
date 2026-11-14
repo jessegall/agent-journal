@@ -2,7 +2,6 @@ import json
 
 import pytest
 
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.documents.models.report import Report
 from core.modules.agents.testing.fake_launcher import FakeLauncher
@@ -13,7 +12,6 @@ from tests.stories.server.support.server_client import server_story
 from tests.stories.support.story_checks import expect_value
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 ROUNDS_WINDOW = "plan_reviews.rounds"
 REPORT = 'report make "{title}" --abstract "What the review found" --body "Fine" --about plan:1 --environment main'
@@ -122,7 +120,7 @@ def start_helper(story, brief: str) -> Agent:
     launcher.drain_requests()
     launcher.server.close()
     story.home.socket("launcher").unlink()
-    return max(story.container.get(Queries).query(Agent).filter(role="helper").every_row(TEST_ROWS_REASON), key=lambda agent: agent.id)
+    return max(story.story_rows(Agent, role="helper"), key=lambda agent: agent.id)
 
 
 def test_helpers_whose_brief_names_the_plan_in_the_round_are_its_reviewers(rounds, cookie):
@@ -137,7 +135,7 @@ def test_helpers_whose_brief_names_the_plan_in_the_round_are_its_reviewers(round
 
 def test_a_report_says_who_filed_it(two_rounds):
     report = read_rounds(two_rounds, two_rounds.expect_viewer_login(two_rounds.viewer_key("Ada")))[0]["reports"][0]
-    agent = two_rounds.story.container.get(Queries).query(Agent).find(two_rounds.story.agent.id)
+    agent = two_rounds.story.row(Agent, two_rounds.story.agent.id)
     expect_value(report["filed_by"], agent.given_name or agent.profile or agent.role)
 
 

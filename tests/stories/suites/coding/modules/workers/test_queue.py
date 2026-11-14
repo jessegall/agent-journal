@@ -9,10 +9,8 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.command.bus import Bus
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
-from engine.query.queries import Queries
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
@@ -56,8 +54,8 @@ def queued_story(new_story, monkeypatch):
 
 
 def ended(story, process_id: int, code: int) -> None:
-    owner = Actor(story.container.get(Queries).query(Process).find(process_id).session_agent_id, ActorType.AGENT)
-    story.container.get(Bus).run(EndProcess(process_id, code, 0, 0), owner, environment_id=1)
+    owner = Actor(story.row(Process, process_id).session_agent_id, ActorType.AGENT)
+    story.run_command(EndProcess(process_id, code, 0, 0), owner, 1)
     story.run_listeners()
 
 
@@ -114,7 +112,7 @@ def test_a_failed_test_goes_back_to_the_worker_and_its_next_delivery_runs_it_aga
 def test_an_orphaned_proof_returns_to_the_worker_and_runs_again_at_delivery(new_story, monkeypatch):
     story, _, worker, started = queued_story(new_story, monkeypatch)
     orphaned_process_id = started[0]
-    story.container.get(Bus).run(OrphanProcess(orphaned_process_id), Actor.core(), environment_id=1)
+    story.run_command(OrphanProcess(orphaned_process_id), Actor.core(), 1)
     story.run_listeners()
     story.expect_text("proof show 1", "state: short", actor=story.agent)
     story.expect_text("task show 1", "state: started", actor=story.agent)
@@ -194,18 +192,18 @@ def test_picked_tests_run_after_proof_tests_on_the_rebased_worktree(new_story, m
     story.expect_success("worker commit --wait --differences none", actor=worker)
     story.run_listeners()
     run_test_process(story, started[0])
-    picker = story.container.get(Queries).query(Process).find(started[1])
+    picker = story.row(Process, started[1])
     story.expect_rows("pick.py" in picker.line, "cart.py" in picker.line,
                       (repository.worktree_folder(worker.id) / "base.txt").read_text() == "rebased\n")
     run_test_process(story, picker.id)
-    first_answer = story.container.get(Queries).query(Process).find(started[2])
+    first_answer = story.row(Process, started[2])
     story.expect_rows(first_answer.line == "python3 run_tests.py 'tests/other test.py'")
     run_test_process(story, first_answer.id)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
 
 
 def run_test_process(story, process_id):
-    process = story.container.get(Queries).query(Process).find(process_id)
+    process = story.row(Process, process_id)
     completed = subprocess.run(process.line, shell=True, cwd=process.folder, capture_output=True, text=True, timeout=30, check=False)
     story.container.get(OutputFolder).write_output(process_id, 1, completed.stdout)
     ended(story, process_id, completed.returncode)
@@ -437,10 +435,10 @@ def test_the_picked_tests_run_on_the_work_merged_into_a_base_that_moved_after_th
     story.expect_success("worker commit --wait --differences none", actor=worker)
     story.run_listeners()
     ended(story, started[0], 0)
-    picker_folder = Path(story.container.get(Queries).query(Process).find(started[1]).folder)
+    picker_folder = Path(story.row(Process, started[1]).folder)
     story.container.get(OutputFolder).write_output(started[1], 1, "tests/other.py\n")
     ended(story, started[1], 0)
-    selected = story.container.get(Queries).query(Process).find(started[2])
+    selected = story.row(Process, started[2])
     story.expect_rows(picker_folder != repository.worktree_folder(worker.id), (picker_folder / "base.txt").read_text() == "moved\n",
                       (picker_folder / "cart.py").read_text() == CART_CHANGE, selected.folder == str(picker_folder))
     ended(story, selected.id, 1)

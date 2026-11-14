@@ -91,7 +91,7 @@ def test_a_password_is_kept_only_by_its_digest_and_shown_as_locked(new_story):
     expect_locked(shown)
     expect_comments(shown)
     story.expect_no_text("event list --json", "open-sesame", actor=story.user)
-    digest = story.container.get(Queries).query(ShareLink).find(1).password_digest
+    digest = story.row(ShareLink, 1).password_digest
     story.expect_rows(SharePassword.matches("open-sesame", digest), not SharePassword.matches("wrong", digest))
 
 

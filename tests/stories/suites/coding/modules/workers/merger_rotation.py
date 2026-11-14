@@ -5,7 +5,6 @@ import pytest
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.actor.actor import Actor
-from engine.command.bus import Bus
 from engine.enums.actor_type import ActorType
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
@@ -42,12 +41,12 @@ def declared_occupant(story, occupant: str) -> None:
 
 
 def mergers(story) -> list[Agent]:
-    return list(story.container.get(Queries).query(Agent).filter(profile=f"{MERGER_PROFILE.name}").every_row(TEST_ROWS_REASON))
+    return list(story.story_rows(Agent, profile=f"{MERGER_PROFILE.name}"))
 
 
 def merger_launch(story) -> dict:
     launcher = FakeLauncher.accepting(story.home.socket("launcher"), answer=b"started 701\n")
-    story.container.get(Bus).run(StartMerger(FALLBACK_LINE), Actor.core(), environment_id=1)
+    story.run_command(StartMerger(FALLBACK_LINE), Actor.core(), 1)
     story.run_listeners()
     launcher.drain_requests()
     launcher.server.close()

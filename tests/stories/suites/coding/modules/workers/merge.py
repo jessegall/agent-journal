@@ -58,10 +58,10 @@ def test_a_merged_worker_whose_program_never_ended_ends_at_the_merge_and_is_not_
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_rows(story.container.get(Queries).query(Agent).find(worker.id).ended_at is None)
+    story.expect_rows(story.row(Agent, worker.id).ended_at is None)
     request_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
-    story.expect_rows(story.container.get(Queries).query(Agent).find(worker.id).ended_at is not None)
+    story.expect_rows(story.row(Agent, worker.id).ended_at is not None)
     story.advance(timedelta(minutes=10))
     story.tick("s-1")
     story.run_listeners()
@@ -270,7 +270,7 @@ def test_a_job_whose_program_died_at_once_is_handed_again_by_the_next_trigger(ne
     story.advance(timedelta(minutes=3))
     story.use_processes()
     story.tick(MAIN_SESSION)
-    story.container.get(WorkerResume).resume(story.container.get(Queries).query(Agent).find(worker.id), story.agent)
+    story.container.get(WorkerResume).resume(story.row(Agent, worker.id), story.agent)
     launcher.drain_requests()
     story.expect_rows(len(launcher.starts) == 2)
     expect_command_requests_launcher_line(launcher, "Add the tax as well")
@@ -323,10 +323,10 @@ def test_long_worker_logs_are_marked_read_only_after_the_saved_output_is_read_wh
     story.expect_rows(worktree.logs_read_at is None, worktree.logs_output_id == process.id)
     end_run(story, process, outcome.output_text)
     story.expect_success(f"output read {process.id} --summary", actor=story.agent)
-    worktree = story.container.get(Queries).query(Worktree).find(worktree.id)
+    worktree = story.row(Worktree, worktree.id)
     story.expect_rows(worktree.logs_read_at is None)
     story.expect_success(f"output read {process.id} --all", actor=story.user)
-    worktree = story.container.get(Queries).query(Worktree).find(worktree.id)
+    worktree = story.row(Worktree, worktree.id)
     story.expect_rows(worktree.logs_read_at is None)
     story.advance(timedelta(seconds=1))
     reader = start_process(story, f"journal output read {process.id} --all && echo done")
@@ -334,10 +334,10 @@ def test_long_worker_logs_are_marked_read_only_after_the_saved_output_is_read_wh
     second = story.run_requested(f"output read {process.id} --all", request)
     second.expect_code(0)
     end_run(story, reader, second.output_text)
-    worktree = story.container.get(Queries).query(Worktree).find(worktree.id)
+    worktree = story.row(Worktree, worktree.id)
     story.expect_rows(worktree.logs_read_at is None)
     story.expect_success(f"output read {reader.id} --all", actor=story.agent)
-    worktree = story.container.get(Queries).query(Worktree).find(worktree.id)
+    worktree = story.row(Worktree, worktree.id)
     output = story.container.get(Queries).query(Output).filter(process_id=process.id).first()
     story.expect_rows(worktree.logs_read_at is not None, worktree.logs_output_id is None, output.fully_read_at is not None)
 
@@ -353,7 +353,7 @@ def test_redirected_worker_logs_do_not_mark_the_logs_read(new_story):
     worktree = story.container.get(Queries).query(Worktree).filter(session_agent_id=worker.id).first()
     story.expect_rows(worktree.logs_read_at is None)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
-    story.expect_rows(story.container.get(Queries).query(Worktree).find(worktree.id).logs_read_at is not None)
+    story.expect_rows(story.row(Worktree, worktree.id).logs_read_at is not None)
 
 
 def test_reading_one_task_does_not_mark_other_tasks_logs_as_read(new_story):
@@ -376,7 +376,7 @@ def test_reading_one_task_does_not_mark_other_tasks_logs_as_read(new_story):
     worktree = story.container.get(Queries).query(Worktree).filter(session_agent_id=worker.id).first()
     story.expect_rows(worktree.logs_read_at is None)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
-    story.expect_rows(story.container.get(Queries).query(Worktree).find(worktree.id).logs_read_at is not None)
+    story.expect_rows(story.row(Worktree, worktree.id).logs_read_at is not None)
 
 
 def test_an_explained_merge_checks_the_rows_and_merges_nothing(checked_work):

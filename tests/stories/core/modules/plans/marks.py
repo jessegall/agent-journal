@@ -5,7 +5,6 @@ from engine.registry.registry import Registry
 from tests.stories.core.support.fixtures import UserJoined
 import pytest
 
-from engine.command.bus import Bus
 from engine.errors.refusal import Refusal
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.tasks.models.enums.task_mark_type import TaskMarkType
@@ -62,7 +61,7 @@ def test_a_refused_plan_move_shows_no_plan_mark(new_story):
 def test_the_plans_module_writes_only_its_own_marks(new_story):
     story = started_plan(new_story)
     with pytest.raises(Refusal, match="only journal.core.tasks writes a mark of tasks.task"):
-        story.container.get(Bus).run(ShowMark(TaskMarkType.TASK, TaskMarkVariant.STARTED, "task:9", "A mark"), module_actor(story, "journal.core.plans"), environment_id=1)
+        story.run_command(ShowMark(TaskMarkType.TASK, TaskMarkVariant.STARTED, "task:9", "A mark"), module_actor(story, "journal.core.plans"), 1)
 
 
 def test_a_started_plan_is_docked_and_undocked_when_it_ends(running_plan):

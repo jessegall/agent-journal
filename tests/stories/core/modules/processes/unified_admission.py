@@ -131,5 +131,5 @@ def test_stopping_a_waiting_run_clears_its_queue_timestamp(new_story):
     worker_run(story, "make active")
     waiting = worker_run(story, "make waiting")
     story.expect_success(f"output stop {waiting.id}", actor=story.user)
-    process = story.container.get(Queries).query(Process).find(waiting.id)
+    process = story.row(Process, waiting.id)
     story.expect_rows(process.queued_at is None)

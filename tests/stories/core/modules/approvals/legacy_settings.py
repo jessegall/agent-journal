@@ -31,7 +31,7 @@ def test_a_pending_old_setting_question_uses_the_shared_dock_after_upgrade(resto
     story, request = restored_question
     legacy_viewer.value("messages.chat", ["approval", decision, str(request.id)])
     legacy_viewer.server.expect_eventually(f"setting show {SETTING} --environment main", f"value: {changed}")
-    question = story.container.get(Queries).query(Question).find(1)
+    question = story.row(Question, 1)
     story.expect_rows(story.container.get(SettingValues).flag(SETTING) is changed)
     story.expect_rows(question.state is QuestionState.ANSWERED)
 
@@ -39,7 +39,7 @@ def test_a_pending_old_setting_question_uses_the_shared_dock_after_upgrade(resto
 def test_closing_the_original_question_closes_its_pending_card(restored_question):
     story, request = restored_question
     story.expect_success("question close 1", actor=story.agent)
-    ended = story.container.get(Queries).query(ApprovalRequest).find(request.id)
+    ended = story.row(ApprovalRequest, request.id)
     story.expect_rows(ended.state is ApprovalState.CLOSED, not story.container.get(SettingValues).flag(SETTING))
 
 
@@ -48,7 +48,7 @@ def test_an_agent_cannot_answer_the_old_permission_question(restored_question):
     story.expect_refusal("question answer 1 --answer 'Yes, approve'", "a user was asked", actor=story.agent)
     story.expect_refusal("question answer 1 --answer 'Yes, approve' --skip-guard setting-requests.person-answers",
                          "safety refusal", actor=story.agent)
-    saved = story.container.get(Queries).query(ApprovalRequest).find(request.id)
+    saved = story.row(ApprovalRequest, request.id)
     story.expect_rows(saved.state is ApprovalState.OPEN)
 
 
@@ -56,5 +56,5 @@ def test_answering_the_original_question_in_the_viewer_resolves_its_card(restore
     story, request = restored_question
     legacy_viewer.value("questions.questions", ["question", "answer", "1", "--answer", "Yes, approve"])
     story.run_listeners()
-    saved = story.container.get(Queries).query(ApprovalRequest).find(request.id)
+    saved = story.row(ApprovalRequest, request.id)
     story.expect_rows(saved.state is ApprovalState.CLOSED, story.container.get(SettingValues).flag(SETTING))

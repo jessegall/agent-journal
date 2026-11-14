@@ -23,7 +23,6 @@ from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 from tests.stories.support.story_checks import expect_value
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 
 class ApprovalRequested(StoryFixture):
@@ -90,7 +89,7 @@ def stopped(*arguments, **keywords):
 
 
 def docked_requests(story) -> list[DockItem]:
-    return list(story.container.get(Queries).query(DockItem).filter(type=ApprovalDockType.REQUEST.value, state=DockItemState.DOCKED).every_row(TEST_ROWS_REASON))
+    return list(story.story_rows(DockItem, type=ApprovalDockType.REQUEST.value, state=DockItemState.DOCKED))
 
 
 def test_a_claim_from_a_stopped_server_is_reopened_at_once(new_story):

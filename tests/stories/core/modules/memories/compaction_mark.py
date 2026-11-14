@@ -1,6 +1,5 @@
 import json
 
-from engine.command.bus import Bus
 from engine.module.module_actors import ModuleActors
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.memories.listeners.memory_mark_listener import MEMORIES_MODULE
@@ -40,7 +39,7 @@ def test_the_viewer_reads_the_compaction_mark_and_its_declaration(new_story):
 def test_the_newest_page_of_chat_marks_leaves_an_older_compaction_mark_for_a_page_behind_it(new_story):
     story = new_story(fixture=CompactedMainAgent)
     for number in range(55):
-        story.container.get(Bus).run(ShowMark(MemoryMarkType.MEMORY, MemoryMarkVariant.GIVEN, f"given:{number}", f"Fact {number}", agent_id=story.agent.id), story.container.get(ModuleActors).actor(MEMORIES_MODULE), environment_id=1)
+        story.run_command(ShowMark(MemoryMarkType.MEMORY, MemoryMarkVariant.GIVEN, f"given:{number}", f"Fact {number}", agent_id=story.agent.id), story.container.get(ModuleActors).actor(MEMORIES_MODULE), 1)
     first = json.loads(story.run("chat-mark main --environment main --limit 50 --json", actor=story.user).output_text)["rows"]
     story.expect_rows(len(first) == 50, "memories.compaction" not in {row["type"] for row in first}, detail=str(len(first)))
     older = story.run(f"chat-mark main --environment main --before-id {min(row['id'] for row in first)} --json", actor=story.user)

@@ -2,7 +2,6 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.command.bus import Bus
 from engine.enums.command_category import CommandCategory
 from engine.query.queries import Queries
 from core.modules.processes.commands.start_process.start_process import StartProcess
@@ -33,7 +32,7 @@ def reader_scoped_story(reader_sample_story):
 def test_each_worker_gets_its_own_request_and_sample(reader_scoped_story):
     story = reader_scoped_story
     second = Actor(story.new_row_id("agent start s-second claude worker --environment main"), ActorType.AGENT)
-    process = story.container.get(Bus).run(StartProcess.single_part(second.id, "custom-build run", "/work/main", CommandCategory.TEST_RUN, 30), second, environment_id=1)
+    process = story.run_command(StartProcess.single_part(second.id, "custom-build run", "/work/main", CommandCategory.TEST_RUN, 30), second, 1)
     requests = tuple(story.container.get(ReaderRequestQuery).open().agent(second.id).every_row(TEST_ROWS_REASON))
     story.expect_rows(len(requests) == 1, requests[0].creator_id == second.id,
                       requests[0].sample_process_id == process.id,
@@ -51,7 +50,7 @@ def test_another_command_of_the_same_program_has_its_own_sample(reader_scoped_st
 def test_a_worker_saves_against_its_sample_and_leaves_a_foreign_request_open(reader_scoped_story):
     story = reader_scoped_story
     second = Actor(story.new_row_id("agent start s-other claude worker --environment main"), ActorType.AGENT)
-    process = story.container.get(Bus).run(StartProcess.single_part(second.id, "custom-build run", "/work/main", CommandCategory.TEST_RUN, 30), second, environment_id=1)
+    process = story.run_command(StartProcess.single_part(second.id, "custom-build run", "/work/main", CommandCategory.TEST_RUN, 30), second, 1)
     end_run(story, process, "compiling\n" * 8 + "finished elsewhere\n")
     story.expect_success('reader add local-build --commands "custom-build*" --title "Custom tests" --lines done --summary done --step PASSED --count "collected ([0-9]+)" --count-command "{part} --list"', actor=reader_worker(story))
     requests = story.container.get(ReaderRequestQuery)
@@ -74,7 +73,7 @@ def test_nothing_to_judge_does_not_make_a_good_reader_poor(reader_sample_story):
     story = reader_sample_story
     story.run('reader add checks --commands "custom-check*" --title Checking --lines "findings|clean" --summary "findings|clean"')
     process = worker_run(story, "custom-check run", CommandCategory.CHECK)
-    story.container.get(Bus).run(MoveProcess(process.id), reader_worker(story), environment_id=1)
+    story.run_command(MoveProcess(process.id), reader_worker(story), 1)
     end_run(story, process, "Nothing to judge\n")
     worker_run(story, "custom-check run", CommandCategory.CHECK)
     story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists())

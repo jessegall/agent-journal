@@ -2,7 +2,6 @@ import pytest
 
 from engine.enums.command_category import CommandCategory
 from engine.enums.hook_event_name import HookEventName
-from engine.query.queries import Queries
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story_fixture import StoryFixture
@@ -45,7 +44,7 @@ def no_notes():
 def test_the_answer_of_a_hook_is_stored_before_its_deferred_command_runs(new_story):
     story = new_story(fixture=QueueAgent)
     reply = story.hook("s-1", LISTING)
-    stored = story.container.get(Queries).query(HookCall).find(reply.hook_call_id)
+    stored = story.row(HookCall, reply.hook_call_id)
     logged_previous = list(NOTES)
     story.run_listeners()
     story.expect_rows(stored.hook == HookEventName.POST_TOOL_USE, logged_previous == [], NOTES == ["noted"], detail=f"{logged_previous} {NOTES}")

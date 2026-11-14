@@ -1,7 +1,6 @@
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
-from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import FIRST_PROOF, checked_worker, repository_environment
@@ -12,7 +11,6 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import PHAS
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 RUNS_SETTING = f"setting set {WORKER_PHASE_TEST_RUNS} 5 --environment main"
 BUILD_TASKS = 3
@@ -129,7 +127,7 @@ def test_a_clash_names_the_clashed_files_at_status_and_in_its_line(clashed):
     story, worker, repository = clashed
     status = story.run("worker status", actor=worker).output_text
     story.expect_rows("Point: conflict" in status, "cart.py" in status.splitlines()[0], "journal worker commit" in status.splitlines()[0], detail=status)
-    lines = [line.text for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=worker.id).every_row(TEST_ROWS_REASON) if "clashes on" in line.text]
+    lines = [line.text for line in story.story_rows(AgentLine, session_agent_id=worker.id) if "clashes on" in line.text]
     story.expect_rows(bool(lines), all("Now:" in line and "Then:" in line for line in lines), detail=str(lines))
 
 

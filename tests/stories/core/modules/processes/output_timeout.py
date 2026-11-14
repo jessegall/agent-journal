@@ -51,7 +51,7 @@ def test_a_passed_limit_is_refused_and_the_run_keeps_going(new_story):
     story.advance(timedelta(seconds=45))
     story.expect_refusal(f"output timeout {process.id} 30s", "already passed", actor=story.agent)
     story.expect_success(f"process show {process.id}", "state: running", actor=story.agent)
-    story.expect_rows(story.container.get(Queries).query(Process).find(process.id).timeout_seconds is None)
+    story.expect_rows(story.row(Process, process.id).timeout_seconds is None)
 
 
 def test_a_refused_replacement_preserves_the_existing_timeout(new_story):
@@ -60,7 +60,7 @@ def test_a_refused_replacement_preserves_the_existing_timeout(new_story):
     story.expect_success(f"output timeout {process.id} 3m", actor=story.agent)
     story.advance(timedelta(minutes=1))
     story.expect_refusal(f"output timeout {process.id} 20s", "already passed", actor=story.agent)
-    story.expect_rows(story.container.get(Queries).query(Process).find(process.id).timeout_seconds == 180)
+    story.expect_rows(story.row(Process, process.id).timeout_seconds == 180)
 
 
 def test_an_ended_output_cannot_get_a_timeout(new_story):
@@ -91,7 +91,7 @@ def test_a_run_ending_before_its_timeout_is_not_reported_as_timed_out(new_story)
     end_run(story, process, "built\n")
     story.advance(timedelta(minutes=2))
     timeout_tick(story)
-    story.expect_rows(story.container.get(Queries).query(Process).find(process.id).expired_at is None)
+    story.expect_rows(story.row(Process, process.id).expired_at is None)
 
 
 def test_time_waiting_in_the_queue_does_not_consume_the_timeout(new_story):
@@ -102,17 +102,17 @@ def test_time_waiting_in_the_queue_does_not_consume_the_timeout(new_story):
     story.expect_success(f"output timeout {waiting.id} 10s", actor=story.user)
     story.advance(timedelta(minutes=2))
     timeout_tick(story)
-    story.expect_rows(story.container.get(Queries).query(Process).find(waiting.id).started_at is None)
+    story.expect_rows(story.row(Process, waiting.id).started_at is None)
     end_run(story, active, "done\n")
     story.advance(timedelta(seconds=10))
     timeout_tick(story)
-    story.expect_rows(story.container.get(Queries).query(Process).find(waiting.id).state is ProcessState.STOPPED)
+    story.expect_rows(story.row(Process, waiting.id).state is ProcessState.STOPPED)
 
 
 def test_a_search_run_with_no_timeout_of_its_own_is_stopped_after_a_minute_and_reads_as_stopped(new_story):
     story = new_story(fixture=UserBuilder)
     process = start_process(story, "grep -r token /big", category=CommandCategory.SEARCH)
-    story.expect_rows(story.container.get(Queries).query(Process).find(process.id).timeout_seconds == 60)
+    story.expect_rows(story.row(Process, process.id).timeout_seconds == 60)
     story.advance(timedelta(seconds=59))
     timeout_tick(story)
     story.expect_success(f"process show {process.id}", "state: running", actor=story.agent)

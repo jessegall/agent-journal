@@ -13,7 +13,6 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 
 @pytest.fixture
@@ -78,7 +77,7 @@ def test_the_worker_stops_saving_after_three_failures(exhausted_worker_reader):
 def test_an_idle_main_agent_is_asked_to_help_after_failed_saves(exhausted_worker_reader):
     story = exhausted_worker_reader
     story.tick("s-1")
-    lines = tuple(story.container.get(Queries).query(AgentLine).filter(source="processes.reader-request.1").every_row(TEST_ROWS_REASON))
+    lines = tuple(story.story_rows(AgentLine, source="processes.reader-request.1"))
     story.expect_rows(len(lines) == 1, lines[0].wakes_agent, "Reader request 1" in lines[0].text)
 
 
