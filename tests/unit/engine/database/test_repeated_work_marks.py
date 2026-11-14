@@ -22,6 +22,12 @@ class TaggedDatabase:
     def is_partial_index(self, name: str) -> bool:
         return False
 
+    def schema_version(self) -> int:
+        return 1
+
+    def schema_text(self, sql: str) -> str:
+        return "CREATE TABLE agents (id INTEGER PRIMARY KEY, version INTEGER)"
+
 
 def read(work: RepeatedWork, database: TaggedDatabase, commit_during_read: bool) -> None:
     work.mark_read()

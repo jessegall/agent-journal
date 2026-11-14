@@ -10,11 +10,12 @@ from pathlib import Path
 import sqlite3
 import re
 import sys
-from types import FrameType
+from types import CodeType, FrameType
 import traceback
 
 from engine.database.point_tally import PointTally
 from engine.database.database import Database
+from engine.database.query_plans import QueryPlans
 from engine.database.statement import Statement
 from engine.file.file_access import FILE_READ_EVENT, FILE_CHANGE_EVENT
 from engine.database.errors.repeated_calls_error import RepeatedCallsError
@@ -37,7 +38,6 @@ VIRTUAL_TABLE = "VIRTUAL TABLE INDEX"
 BOUNDED_PAGE = re.compile(r"^SELECT \* FROM (\w+)(?: ORDER BY id (?:ASC|DESC))? LIMIT ([1-9]\d*|\?)(?: OFFSET (\d+|\?))?$", re.IGNORECASE)
 UNFILTERED_COUNT = re.compile(r"^SELECT count\(\*\) FROM \w+$", re.IGNORECASE)
 SMALL_TABLES = {
-    "listener_cursors": "One row per listener, read when a request wakes the listeners.",
     "settings": "Project and environment settings are small configuration sets kept on the connection.",
     "secret_settings": "Secret settings are a small configuration set kept on the connection.",
     "sequences": "Reusable instructions form a small catalogue indexed in memory after one read.",
@@ -91,11 +91,12 @@ class RepeatedWork(PointTally):
         self.database = database
         self.read_text_limit = read_text_limit
         self.reads: Counter[Statement] = Counter()
-        self.read_origins: dict[Statement, list[traceback.FrameSummary]] = {}
+        self.read_origins: dict[Statement, list[tuple[CodeType, int]]] = {}
         self.read_texts: Counter[str] = Counter()
         self.commands: Counter[str] = Counter()
         self.findings: list[RepeatedFinding] = []
         self.checked_plans: set[Statement] = set()
+        self.schema: tuple[int, str] | None = None
         self.allowed_scans: dict[Statement, str] = {}
         self.file_reads: Counter[str] = Counter()
         self.file_versions: dict[str, int] = {}
@@ -138,9 +139,9 @@ class RepeatedWork(PointTally):
         if not statement.is_walk_page:
             self.read_texts[statement.sql] += 1
         if self.reads[statement] == 1:
-            self.read_origins[statement] = self.caller_frames()
+            self.read_origins[statement] = self.raw_caller_frames()
         if self.reads[statement] == READ_LIMIT_REPEATS + 1:
-            first_read = self.shown_calls(self.read_origins[statement])
+            first_read = self.shown_calls(self.summaries(self.read_origins[statement]))
             self.reject(self.build_finding("read", self.sql_without_parameters(statement), f"one request read this more than {READ_LIMIT_REPEATS} times: {statement.sql} {statement.parameters}\nfirst read: {first_read}\nrepeated read:"))
         if self.read_texts[statement.sql] == self.read_text_limit + 1:
             self.reject(self.build_finding("read-sql", self.sql_without_parameters(statement), f"one request read this SQL more than {self.read_text_limit} times: {statement.sql} {statement.parameters}"))
@@ -191,7 +192,7 @@ class RepeatedWork(PointTally):
         if UNFILTERED_COUNT.fullmatch(statement.sql):
             return
         page = BOUNDED_PAGE.fullmatch(statement.sql)
-        plans = database.query_plan(statement)
+        plans = QueryPlans.plan(database, self.schema_of(database), statement)
         for plan in plans:
             if "USING COVERING INDEX" in plan or plan == "SCAN CONSTANT ROW":
                 continue
@@ -209,6 +210,13 @@ class RepeatedWork(PointTally):
                 self.allowed_scans[statement] = statement.scan_reason
                 continue
             self.findings.append(self.build_finding("scan", f"{match.group(1)}|{self.sql_without_parameters(statement)}", f"one request scanned {match.group(1)}: {plan}\n{statement.sql} {statement.parameters}"))
+
+    # the schema text of the database, read again only when its schema version moved
+    def schema_of(self, database: Database) -> str:
+        version = database.schema_version()
+        if self.schema is None or self.schema[0] != version:
+            self.schema = (version, QueryPlans.schema(database))
+        return self.schema[1]
 
     @staticmethod
     def has_page_bounds(page: re.Match[str], statement: Statement) -> bool:
@@ -236,6 +244,21 @@ class RepeatedWork(PointTally):
     def caller_frames() -> list[traceback.FrameSummary]:
         stack = traceback.StackSummary.extract(traceback.walk_stack(RepeatedWork.caller_frame(1)), limit=CALLER_FRAMES, lookup_lines=False)
         return [frame for frame in stack if not frame.filename.endswith(WATCH_FILES)]
+
+    # the calling code and line of each frame, kept raw: the text of a frame is built only for a finding
+    @staticmethod
+    def raw_caller_frames() -> list[tuple[CodeType, int]]:
+        frames: list[tuple[CodeType, int]] = []
+        frame = RepeatedWork.caller_frame(1)
+        while frame is not None and len(frames) < CALLER_FRAMES:
+            if not frame.f_code.co_filename.endswith(WATCH_FILES):
+                frames.append((frame.f_code, frame.f_lineno))
+            frame = frame.f_back
+        return frames
+
+    @staticmethod
+    def summaries(frames: list[tuple[CodeType, int]]) -> list[traceback.FrameSummary]:
+        return [traceback.FrameSummary(code.co_filename, line, code.co_name, lookup_line=False) for code, line in frames]
 
     @staticmethod
     def stack_calls(frames: list[traceback.FrameSummary]) -> list[str]:

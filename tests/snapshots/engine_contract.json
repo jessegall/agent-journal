@@ -1315,6 +1315,8 @@
         "report_cut(self, sql: str, limit: int) -> None",
         "report_unscoped_read(self, table_name: str) -> None",
         "query_plan(self, statement: Statement) -> tuple[str, ...]",
+        "schema_text(self, sql: str) -> str",
+        "schema_version(self) -> int",
         "is_partial_index(self, name: str) -> bool",
         "defer_checkpoints(self) -> None",
         "file_integrity(path: Path) -> str",
@@ -1575,6 +1577,16 @@
         "delete(self, table: str, ids: list[int]) -> int"
       ]
     },
+    "database.query_plans.QueryPlans": {
+      "bases": [],
+      "fields": [
+        "plans: ClassVar[dict[tuple[str, str], tuple[str, ...]]]"
+      ],
+      "methods": [
+        "plan(cls, database: Database, schema: str, statement: Statement) -> tuple[str, ...]",
+        "schema(database: Database) -> str"
+      ]
+    },
     "database.rebuild_migration.RebuildMigration": {
       "bases": [
         "Migration"
@@ -1660,11 +1672,14 @@
         "is_allowed_read() -> bool",
         "is_bulk_seed(frame: FrameType | None) -> bool",
         "check_scan(self, database: Database, statement: Statement) -> None",
+        "schema_of(self, database: Database) -> str",
         "has_page_bounds(page: re.Match[str], statement: Statement) -> bool",
         "page_bound(value: str | None, parameters: Iterator[object]) -> object",
         "is_logical_scan(table: str, plans: Sequence[str]) -> bool",
         "sql_without_parameters(statement: Statement) -> str",
         "caller_frames() -> list[traceback.FrameSummary]",
+        "raw_caller_frames() -> list[tuple[CodeType, int]]",
+        "summaries(frames: list[tuple[CodeType, int]]) -> list[traceback.FrameSummary]",
         "stack_calls(frames: list[traceback.FrameSummary]) -> list[str]",
         "shown_calls(cls, frames: list[traceback.FrameSummary]) -> str",
         "build_finding(cls, category: str, subject: str, text: str) -> RepeatedFinding",
@@ -9449,6 +9464,8 @@
         "failed: int",
         "seconds: float",
         "cpu_seconds: float",
+        "selected: int",
+        "missed: int",
         "finished_at: str"
       ],
       "methods": [
@@ -9532,6 +9549,63 @@
         "seed(self, seed: Seed, count: int) -> tuple[int, ...]",
         "filling(self) -> Generator[None]",
         "disabled_rules(self) -> Generator[None]"
+      ]
+    },
+    "testing.selection.affected_tests.AffectedTests": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "arguments(self, changed: list[str]) -> list[str]",
+        "changed_files(self) -> list[str]",
+        "reached(self, name: str) -> set[str]",
+        "tests_running_in(self, prefix: str) -> set[str]",
+        "is_test_file(name: str) -> bool",
+        "module_folder(name: str) -> str"
+      ]
+    },
+    "testing.selection.function_bodies.FunctionBodies": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "hashes(source: str) -> dict[str, str]",
+        "file_hashes(path: Path) -> dict[str, str]",
+        "walk(nodes: list[ast.stmt], prefix: str, found: dict[str, str]) -> None"
+      ]
+    },
+    "testing.selection.selection_misses.SelectionMisses": {
+      "bases": [],
+      "fields": [
+        "arguments: tuple[str, ...]"
+      ],
+      "methods": [
+        "missed(self, failed: Iterable[str]) -> list[str]",
+        "chooses(argument: str, test: str) -> bool"
+      ]
+    },
+    "testing.selection.test_map.TestMap": {
+      "bases": [],
+      "fields": [
+        "functions: dict[str, list[str]]",
+        "template_files: dict[str, list[str]]",
+        "bodies: dict[str, dict[str, str]]"
+      ],
+      "methods": [
+        "is_recorded(is_full_run: bool) -> bool",
+        "add(self, functions: dict[str, list[str]], template_files: dict[str, list[str]]) -> None",
+        "with_bodies(self) -> 'TestMap'",
+        "write(self, file: Path) -> None",
+        "read(file: Path) -> 'TestMap'"
+      ]
+    },
+    "testing.selection.test_map_recorder.TestMapRecorder": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "start(self) -> None",
+        "stop(self) -> None",
+        "begin_test(self) -> None",
+        "finish_test(self, node_id: str) -> None",
+        "started(self, code: CodeType, offset: int) -> object"
       ]
     },
     "testing.stories.counted_connections.CountedConnections": {
