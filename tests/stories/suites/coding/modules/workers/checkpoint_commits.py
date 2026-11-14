@@ -131,3 +131,10 @@ def test_239_a_worker_that_stops_with_committed_tasks_that_are_not_merged_has_th
     group_worker.story.end_session(group_worker.worker)
     lines = " | ".join(group_worker.main_agent_lines())
     group_worker.story.expect_rows(expected_nudge(WORKER_COMMITTED_UNMERGED, tasks='task:1, task:2', worker=2).matches_text(lines), detail=lines)
+
+
+def test_a_committed_proof_is_shown_again_when_its_worker_proves_the_same_point_again(committed_worker):
+    story = committed_worker.story
+    story.expect_rows(proof_states(committed_worker)[1] == COMMITTED, detail=str(proof_states(committed_worker)))
+    story.expect_success('proof make 1 --task 1 "cart.py:2, the cart total after the clash"', actor=committed_worker.worker)
+    story.expect_rows(proof_states(committed_worker)[1] == "shown", detail=str(proof_states(committed_worker)))

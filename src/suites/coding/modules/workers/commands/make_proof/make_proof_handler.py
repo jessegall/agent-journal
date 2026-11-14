@@ -19,8 +19,8 @@ FIRST_POINT = 1
 
 
 class MakeProofHandler(Handler[MakeProof, Proof]):
-    """Makes the worker's proof for a point, changes its text while it waits for a check, or shows a short one
-    again."""
+    """Makes the worker's proof for a point, changes its text while it waits for a check, or shows a short or a
+    committed one again."""
 
     command = MakeProof
 
@@ -47,6 +47,8 @@ class MakeProofHandler(Handler[MakeProof, Proof]):
                                               text=command.text, test_command=test_command), context)
         if existing.state is ProofState.SHORT:
             return self.repository.save(existing.revise(context.timestamp, context.actor, command.text, test_command), context)
+        if existing.state is ProofState.COMMITTED:
+            return self.repository.save(existing.recalled(command.text, test_command), context)
         if existing.state is ProofState.CHECKED:
             raise Refusal(f"point {command.point} is checked already", "prove the points that are not")
         return self.repository.save(existing.changed(text=command.text, test_command=test_command or existing.test_command), context)

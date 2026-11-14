@@ -11,8 +11,10 @@ def outgoing(moves: Sequence[Move], state: StateValue) -> tuple[Move, ...]:
 
 
 def next_moves_text(moves: Sequence[Move], cli_name: str, row_id: int, state: StateValue) -> str:
-    lines = [f"journal {cli_name} {move.name} {row_id}" for move in outgoing(moves, state)]
-    return f"from {state.value} it can only go on with {', '.join(lines)}" if lines else f"{state.value} is final"
+    lines = [f"journal {cli_name} {move.name} {row_id}" for move in outgoing(moves, state) if move.has_command]
+    if lines:
+        return f"from {state.value} it can only go on with {', '.join(lines)}"
+    return f"from {state.value} it moves only through the journal's own work, no command moves it" if outgoing(moves, state) else f"{state.value} is final"
 
 
 class Lifecycle:
