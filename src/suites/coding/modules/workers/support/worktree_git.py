@@ -686,6 +686,11 @@ class WorktreeGit:
     def changed_files(self, worktree: Worktree) -> tuple[str, ...]:
         return tuple(change.relative for change in self.file_changes(worktree.folder, worktree.base_commit))
 
+    # The files the worktree's commits changed since it was cut, so no file waiting uncommitted is among them.
+    def committed_files(self, worktree: Worktree) -> tuple[str, ...]:
+        listing = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-status", "-M", "-z", worktree.base_commit, "HEAD").stdout
+        return tuple(change.relative for change in self.tracked_changes(listing))
+
     def comparison(self, worktree: Worktree) -> WorktreeChanges:
         base = self.merge_base(worktree.folder, worktree.base_branch, worktree.branch)
         changes = self.file_changes(worktree.folder, base)

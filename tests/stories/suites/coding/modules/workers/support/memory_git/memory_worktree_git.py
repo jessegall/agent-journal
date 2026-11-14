@@ -346,6 +346,9 @@ class MemoryWorktreeGit(WorktreeGit):
         untracked = tuple(WorktreeFileChange(name, FileStatus.ADDED) for name in sorted(working) if name not in committed and name not in names)
         return (*tracked, *untracked)
 
+    def committed_files(self, worktree: Worktree) -> tuple[str, ...]:
+        return tuple(change.relative for change in TreeChanges(self.history.commits[worktree.base_commit].tree, self.committed_tree(worktree.folder)).tracked_changes())
+
     def has_commit(self, folder: str, commit: str) -> bool:
         return self.history.resolves(commit)
 

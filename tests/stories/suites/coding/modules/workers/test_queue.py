@@ -3,6 +3,7 @@ from tests.stories.core.support.agent_labels import agent_number
 from suites.coding.modules.workers.models.merger_line import MergerLine
 import json
 import subprocess
+from pathlib import Path
 from datetime import timedelta
 import pytest
 
@@ -435,6 +436,7 @@ def test_the_picked_tests_run_on_the_work_merged_into_a_base_that_moved_after_th
     story.expect_success(PROOF, actor=worker)
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("base.txt", "moved\n", "Base change")
+    base_tip = repository.tip(ENVIRONMENT_BRANCH)
     story.expect_success("worker commit --wait --differences none", actor=worker)
     story.run_listeners()
     ended(story, started[0], 0)
@@ -447,5 +449,4 @@ def test_the_picked_tests_run_on_the_work_merged_into_a_base_that_moved_after_th
     ended(story, selected.id, 1)
     story.expect_text("worker-worktree show 1", "state: cut", actor=story.agent)
     story.expect_text("task show 1", "state: started", actor=story.agent)
-    story.expect_absent_file = None
-    repository.expect_absent(ENVIRONMENT_BRANCH, "cart.py") if hasattr(repository, "expect_absent") else None
+    repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
