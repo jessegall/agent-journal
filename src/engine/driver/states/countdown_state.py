@@ -6,6 +6,7 @@ from engine.driver.block_condition import BlockCondition
 from engine.driver.block_until import BlockUntil
 from engine.driver.count_down import CountDown
 from engine.driver.interval import Interval
+from engine.driver.nudge import Nudge
 from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.driver.span import Span
 from engine.driver.states.block_state import BlockState
@@ -24,6 +25,8 @@ class CountdownState(BlockState):
     def keys(self) -> Sequence[str]:
         return [self.refusal.key]
 
+    # A state whose refusal is worded per call hands the rendered refusal in; one whose strictness differs per call, the strictness.
     @classmethod
-    def start(cls, hook: AgentHook, condition: BlockCondition, refusal_fields: Mapping[str, object] | None = None, **countdown_fields: object) -> BlockUntil:
-        return BlockUntil(hook.agent_id, cls.refusal.nudge(**(refusal_fields or {})), condition, Interval(cls.span), cls.countdown.nudge("{left}", **countdown_fields), strict=cls.strict)
+    def start(cls, hook: AgentHook, condition: BlockCondition, refusal_fields: Mapping[str, object] | None = None, *, refusal: Nudge | None = None, strict: bool | None = None, **countdown_fields: object) -> BlockUntil:
+        return BlockUntil(hook.agent_id, refusal if refusal is not None else cls.refusal.nudge(**(refusal_fields or {})), condition, Interval(cls.span), cls.countdown.nudge("{left}", **countdown_fields),
+                          strict=cls.strict if strict is None else strict)

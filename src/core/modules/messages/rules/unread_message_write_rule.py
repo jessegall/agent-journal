@@ -3,9 +3,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.messages.queries.message_query import MessageQuery
-from engine.driver.interval import Interval
-from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
-from core.modules.messages.support.message_nudges import UNREAD_COUNTDOWN, UNREAD_REFUSAL, UNREAD_TOOL_USES
+from core.modules.messages.states.unread_countdown import UnreadCountdown
 from core.modules.messages.support.block_conditions.messages_read import MessagesRead
 
 MESSAGE_COUNT_SHOWN = 3
@@ -29,5 +27,4 @@ class UnreadMessageWriteRule(DriverRule):
             return RuleAnswer.allowed()
         count = waiting.count() if len(delivered) == MESSAGE_COUNT_SHOWN else len(delivered)
         message_numbers = ", ".join(str(message.id) for message in delivered)
-        return RuleAnswer.allowed().blocking_after(hook, UNREAD_REFUSAL.nudge(count=count), MessagesRead([message.id for message in delivered]),
-                                                   Interval(ToolUseSpan(UNREAD_TOOL_USES)), UNREAD_COUNTDOWN.nudge("{left}", messages=message_numbers))
+        return RuleAnswer.allowed().running(UnreadCountdown.start(hook, MessagesRead([message.id for message in delivered]), {"count": count}, messages=message_numbers))
