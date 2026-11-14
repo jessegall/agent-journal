@@ -34,7 +34,7 @@ class StoredExecutionClasses(PersonClasses):
     def lane_limits(self) -> LaneLimits:
         capacities = {lane: self.settings.integer(setting) for lane, setting in CAPACITY_SETTINGS.items()}
         share = self.settings.integer(ProcessSetting.STARTER_CAP_PERCENT)
-        return replace(DEFAULT_LANE_LIMITS, capacities=capacities, starter_caps={lane: max(1, capacity * share // PERCENT) for lane, capacity in capacities.items()})
+        return replace(DEFAULT_LANE_LIMITS.with_capacities(capacities), starter_caps={lane: max(1, capacity * share // PERCENT) for lane, capacity in capacities.items()})
 
     # a row is refused before it is kept when its cost could never fit its lane
     def validated(self, execution_class: ExecutionClass) -> ExecutionClass:

@@ -1,3 +1,4 @@
+from tests.stories.core.modules.processes.support.roomy_fixtures import RoomyBuilderStarted
 import json
 import os
 from datetime import timedelta
@@ -241,7 +242,7 @@ def test_a_busy_silent_test_run_gets_no_stuck_warning_and_is_still_asked_to_be_l
 
 
 def test_a_stuck_build_test_run_check_and_python_run_are_warned_alike(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
+    story = install_runner(new_story(fixture=RoomyBuilderStarted))
     runs = [moved_run(story, line, category) for line, category in (("make build", CommandCategory.BUILD), ("pytest -q", CommandCategory.TEST_RUN),
                                                                      ("make lint", CommandCategory.CHECK), ("python3 tools/sync.py", CommandCategory.PROCESS))]
     titled(story, "Building the project", runs[0].id)

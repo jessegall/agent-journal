@@ -26,7 +26,7 @@ INSTANT_CAPACITY = DEFAULT_LANE_LIMITS.capacity(ExecutionLane.INSTANT)
 # a session runs one hook at a time, so the instant lane needs no share per starter on top of that
 def instant_limits(capacity: int) -> LaneLimits:
     capacities = {**DEFAULT_LANE_LIMITS.capacities, ExecutionLane.INSTANT: capacity}
-    return replace(DEFAULT_LANE_LIMITS, capacities=capacities, starter_caps=dict(capacities))
+    return replace(DEFAULT_LANE_LIMITS.with_capacities(capacities), starter_caps=dict(capacities))
 
 
 class HookDatabase:

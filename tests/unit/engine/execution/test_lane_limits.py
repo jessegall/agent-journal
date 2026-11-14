@@ -26,3 +26,10 @@ def test_per_starter_cap_is_half_a_lane():
 def test_unlimited_priority_has_no_limit():
     for lane in ExecutionLane:
         assert DEFAULT_LANE_LIMITS.priority_limit(lane, ExecutionPriority.IMMEDIATE) == PriorityLimit(UNLIMITED, 0)
+
+
+def test_a_lane_given_twice_its_capacity_gives_each_priority_twice_its_running_limit():
+    capacities = {**DEFAULT_LANE_LIMITS.capacities, ExecutionLane.LONG: 16}
+    doubled = DEFAULT_LANE_LIMITS.with_capacities(capacities)
+    assert [doubled.priority_limit(ExecutionLane.LONG, priority).running_limit for priority in LIMITED_PRIORITIES] == [4, 8, 16, 16]
+    assert doubled.priority_limit(ExecutionLane.LONG, ExecutionPriority.IMMEDIATE).running_limit == UNLIMITED
