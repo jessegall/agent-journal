@@ -11,7 +11,7 @@ from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.worker_nudges import PROOFS_NOT_STARTED
-from suites.coding.modules.workers.ticks.stalled_worker_test_runs import STALLED_TESTS_TICK
+from suites.coding.modules.workers.ticks.worker_tests.stalled_worker_test_runs import STALLED_TESTS_TICK
 
 UNSTARTED_PROOF_SECONDS = 180
 NO_ERROR = "no error was logged"

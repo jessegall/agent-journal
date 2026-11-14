@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
+from suites.coding.modules.workers.ticks.worker_tests.stalled_worker_test_runs import StalledWorkerTestRuns
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.held_tasks import prove_task, unplanned_worker_with_tasks
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker

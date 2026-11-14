@@ -6,7 +6,7 @@ import pytest
 from engine.container.round_state import RoundState
 from engine.database.database import Database
 from engine.journal.journal_home import JournalHome
-from server.work.kept_round_container import KeptRoundContainer
+from server.work.rounds.kept_round_container import KeptRoundContainer
 
 
 class CountedRoundState(RoundState):

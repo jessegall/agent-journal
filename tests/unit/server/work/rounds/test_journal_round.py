@@ -5,9 +5,9 @@ import pytest
 from engine.container.container import Container
 from engine.database.database import Database
 from engine.journal.journal_home import JournalHome
-from server.work.journal_round import JournalRound
-from server.work.kept_round_container import KeptRoundContainer
-from server.work.round_work import RoundWork
+from server.work.rounds.journal_round import JournalRound
+from server.work.rounds.kept_round_container import KeptRoundContainer
+from server.work.rounds.round_work import RoundWork
 
 
 class FailedRoundError(Exception):

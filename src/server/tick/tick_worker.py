@@ -3,7 +3,7 @@ import threading
 from collections.abc import Callable
 
 from server.tick.queued_tick_handler import QueuedTickHandler
-from server.work.round_container import RoundContainer
+from server.work.rounds.round_container import RoundContainer
 
 
 class TickWorker:

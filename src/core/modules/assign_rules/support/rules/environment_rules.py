@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from core.modules.assign_rules.models.assign_rule import AssignRule
 from core.modules.assign_rules.support.condition_line import ConditionLine
-from core.modules.assign_rules.support.enabled_rules import EnabledRules
+from core.modules.assign_rules.support.rules.enabled_rules import EnabledRules
 
 
 @dataclass(frozen=True)

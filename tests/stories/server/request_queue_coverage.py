@@ -5,9 +5,9 @@ from threading import Event
 from engine.testing.examples.hook_samples import HookSamples
 from server.endpoints.cli_endpoint import CliEndpoint
 from engine.testing.stories.hook_priorities import AGENT_HOOK_PRIORITY, MAIN_AGENT_HOOK_PRIORITY
-from server.work.journal_round import JournalRound
-from server.work.per_round_container import PerRoundContainer
-from server.work.round_work import RoundWork
+from server.work.rounds.journal_round import JournalRound
+from server.work.rounds.per_round_container import PerRoundContainer
+from server.work.rounds.round_work import RoundWork
 from server.viewer.windows_route import WindowsRoute
 from tests.stories.server.support.server_client import viewer_answer
 

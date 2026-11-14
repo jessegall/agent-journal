@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from engine.subcommand.subcommand import Subcommand
-from core.modules.assign_rules.support.rule_arguments import RuleArguments
+from core.modules.assign_rules.support.rules.rule_arguments import RuleArguments
 from core.modules.assign_rules.commands.move_assign_rule.move_assign_rule import MoveAssignRule
 from core.modules.assign_rules.models.assign_rule import AssignRule
 

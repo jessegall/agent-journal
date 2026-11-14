@@ -5,7 +5,7 @@ from core.modules.assign_rules.commands.record_assign_decision.apply_assign_rule
 from core.modules.assign_rules.guards.assign_rule_person_guard import AssignRulePersonGuard
 from core.modules.assign_rules.models.assign_rule import AssignRule
 from core.modules.assign_rules.support.assign_rules import AssignRules
-from core.modules.assign_rules.support.rule_revision import RuleRevision
+from core.modules.assign_rules.support.rules.rule_revision import RuleRevision
 from core.modules.assign_rules.support.rule_tasks.rule_task_list import RuleTaskList
 from core.modules.assign_rules.support.rule_tasks.rule_tasks import RuleTasks
 from core.modules.assign_rules.support.targets.decision_batch import DecisionBatch

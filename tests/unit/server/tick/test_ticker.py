@@ -6,7 +6,7 @@ from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
 from server.tick.ticker import Ticker
 from server.tick.queued_tick_handler import QueuedTickHandler
-from server.work.round_container import RoundContainer
+from server.work.rounds.round_container import RoundContainer
 
 TIMEOUT_SECONDS = 10.0
 INTERVAL_SECONDS = 60

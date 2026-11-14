@@ -10,10 +10,10 @@ from engine.ticker.tick_interval import TickInterval
 from core.modules.tasks.models.task import Task
 from engine.query.queries import Queries
 from server.tick.ticker import Ticker
-from server.work.journal_round import JournalRound
-from server.work.kept_round_container import KeptRoundContainer
+from server.work.rounds.journal_round import JournalRound
+from server.work.rounds.kept_round_container import KeptRoundContainer
 from server.work.listeners.ordinary_listener_work import OrdinaryListenerWork
-from server.work.round_work import RoundWork
+from server.work.rounds.round_work import RoundWork
 from tests.stories.core.modules.assignments.support.assignable_samples import DEPOT
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.fixtures import StartedPlanTask, UserJoined

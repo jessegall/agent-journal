@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
+from suites.coding.modules.workers.ticks.worker_tests.stalled_worker_test_runs import StalledWorkerTestRuns
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE

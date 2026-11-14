@@ -20,8 +20,8 @@ src/core/modules/assign_rules/support/assign_rules.py:a task is judged against t
 src/core/modules/assign_rules/support/assign_rules.py:the decisions about the tasks judged together are read in one query
 src/core/modules/assign_rules/support/board/assign_board_reader.py:the Assign tab lists every agent of the environment that takes tasks and warns of rules for retired ones
 src/core/modules/assign_rules/support/board/assign_board_reader.py:the Assign tab shows every rule of the environment
-src/core/modules/assign_rules/support/rule_assignment_reasons.py:the rules named on the assignments asked about are read in one query
-src/core/modules/assign_rules/support/rule_conditions.py:the conditions of every rule asked about are read in one query
+src/core/modules/assign_rules/support/rules/rule_assignment_reasons.py:the rules named on the assignments asked about are read in one query
+src/core/modules/assign_rules/support/rules/rule_conditions.py:the conditions of every rule asked about are read in one query
 src/core/modules/assign_rules/support/targets/rule_targets.py:a model target is least_busy among every agent of the environment on its program and model
 src/core/modules/assign_rules/support/task_facts_reader.py:the plan of each task judged is read in one query
 src/core/modules/assignments/support/assignable_rows.py:an assignment reaches every child row of the row it is given to
@@ -247,6 +247,7 @@ src/suites/coding/modules/workers/support/behind_checks.py:every behind check of
 src/suites/coding/modules/workers/support/behind_checks.py:every worktree that is cut is checked for how far behind it is
 src/suites/coding/modules/workers/support/behind_decisions.py:every behind check of the worktree is weighed
 src/suites/coding/modules/workers/support/behind_facts_reader.py:every behind check of the worktree is weighed
+src/suites/coding/modules/workers/support/blocked_unit_notice.py:the tasks left in a worker's unit are looked at for one that is not blocked
 src/suites/coding/modules/workers/support/checkpoint_listing.py:a checkpoint looks for the reader that lists the tests of its own test
 src/suites/coding/modules/workers/support/checkpoint_results.py:a checkpoint result counts every test of its reach
 src/suites/coding/modules/workers/support/checkpoint_runner.py:a checkpoint runs the tests of every committed proof of its tasks
@@ -275,12 +276,12 @@ src/suites/coding/modules/workers/support/worker_task_copies.py:every task of th
 src/suites/coding/modules/workers/support/worker_test_failures.py:the flagged lines name every test failure of the tasks asked about
 src/suites/coding/modules/workers/support/worker_unfinished_tasks.py:a worker's unit is every task assigned to it, which can hold more than fifty
 src/suites/coding/modules/workers/ticks/merger_retry.py:the tick retries the merger in every environment with an unread line or an open visit
-src/suites/coding/modules/workers/ticks/stalled_worker_test_runs.py:every checkpoint reach still running is looked at for a run that has no tests
-src/suites/coding/modules/workers/ticks/stalled_worker_test_runs.py:every test of a checkpoint run still shown as running is looked at
-src/suites/coding/modules/workers/ticks/stalled_worker_test_runs.py:the run of every proof still shown as running is looked at
-src/suites/coding/modules/workers/ticks/stalled_worker_test_runs.py:the runs and checkpoints of those tests are read in one query each
+src/suites/coding/modules/workers/ticks/worker_tests/stalled_worker_test_runs.py:every checkpoint reach still running is looked at for a run that has no tests
+src/suites/coding/modules/workers/ticks/worker_tests/stalled_worker_test_runs.py:every test of a checkpoint run still shown as running is looked at
+src/suites/coding/modules/workers/ticks/worker_tests/stalled_worker_test_runs.py:the run of every proof still shown as running is looked at
+src/suites/coding/modules/workers/ticks/worker_tests/stalled_worker_test_runs.py:the runs and checkpoints of those tests are read in one query each
 src/suites/coding/modules/workers/ticks/stopped_worker_runs.py:the tick reports in every environment with a run of a stopped worker
-src/suites/coding/modules/workers/ticks/unlaunched_worker_test_runs.py:every running run may be a worker test that never launched
-src/suites/coding/modules/workers/ticks/unlaunched_worker_test_runs.py:every test of a checkpoint run still shown as running may be one that never launched
+src/suites/coding/modules/workers/ticks/worker_tests/unlaunched_worker_test_runs.py:every running run may be a worker test that never launched
+src/suites/coding/modules/workers/ticks/worker_tests/unlaunched_worker_test_runs.py:every test of a checkpoint run still shown as running may be one that never launched
 src/suites/coding/modules/workers/ticks/worker_resume_retry.py:every worker with a waiting resume line is tried again
 src/suites/coding/support/next_task.py:the own tasks of an agent are every task it holds or is assigned

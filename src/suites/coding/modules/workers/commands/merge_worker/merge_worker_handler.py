@@ -4,7 +4,7 @@ from core.modules.tasks.commands.make_task_log.make_task_log import MakeTaskLog
 from suites.coding.modules.workers.support.worker_log_lines import WorkerLogLines
 from suites.coding.modules.workers.support.worker_review import WorkerReview
 from engine.command.context import Context
-from engine.file.conflict_files import ConflictFiles
+from engine.file.copies.conflict_files import ConflictFiles
 from pathlib import Path
 from engine.command.handler import Handler
 from engine.listener.rows.event_rows import EventRows

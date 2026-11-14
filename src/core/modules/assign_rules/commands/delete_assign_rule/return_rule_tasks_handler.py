@@ -2,7 +2,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from core.modules.assign_rules.commands.delete_assign_rule.return_rule_tasks import ReturnRuleTasks
 from core.modules.assign_rules.guards.assign_rule_person_guard import AssignRulePersonGuard
-from core.modules.assign_rules.support.rule_revision import RuleRevision
+from core.modules.assign_rules.support.rules.rule_revision import RuleRevision
 from core.modules.assign_rules.support.rule_tasks.rule_task_list import RuleTaskList
 from core.modules.assign_rules.support.rule_tasks.rule_tasks import RuleTasks
 from core.modules.assignments.support.assignments import Assignments

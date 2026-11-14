@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 
-from engine.file.code_copy import IGNORED
+from engine.file.copies.code_copy import IGNORED
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from engine.testing.expectations.expect_row import expect_row

@@ -52,7 +52,7 @@ from server.tick.server_plugin_services import ServerPluginServices
 from server.tick.server_tunnel import ServerTunnel
 from server.hook.hook_database import HookDatabase
 from server.viewer.request_trace import SETTINGS_REFRESH_SECONDS
-from server.work.journal_round import JournalRound
+from server.work.rounds.journal_round import JournalRound
 from server.work.listeners.listener_thread import STOP_LIMIT_SECONDS, ListenerThread
 from server.work.listeners.listener_wake_router import ListenerWakeRouter
 from engine.event.written_events import WrittenEvents
@@ -77,9 +77,9 @@ from engine.serving.server_files import ServerFiles
 from server.handover.waiting_server import WaitingServer
 from functools import partial
 from server.execution.write_turn_queue import WriteTurnQueue
-from server.work.per_round_container import PerRoundContainer
-from server.work.kept_round_container import background_container
-from server.work.kept_round_container import KeptRoundContainer
+from server.work.rounds.per_round_container import PerRoundContainer
+from server.work.rounds.kept_round_container import background_container
+from server.work.rounds.kept_round_container import KeptRoundContainer
 
 # how long a write waits for the database's write turn before it is refused with the holder named
 WRITE_TURN_LIMIT_SECONDS = 30.0

@@ -3,8 +3,8 @@ from collections.abc import Callable
 from engine.container.container import Container
 from engine.database.database import Database
 from engine.journal.journal_home import JournalHome
-from server.work.kept_round_container import background_container
-from server.work.round_container import RoundContainer
+from server.work.rounds.kept_round_container import background_container
+from server.work.rounds.round_container import RoundContainer
 
 
 class PerRoundContainer(RoundContainer):
