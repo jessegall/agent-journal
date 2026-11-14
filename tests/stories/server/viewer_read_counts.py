@@ -262,8 +262,8 @@ class WorkloadServer:
         read_binary = FileAccess.binary
         byte_range = OutputFolder.byte_range
 
-        def opened(home):
-            database = open_database(home)
+        def opened(home, *turns):
+            database = open_database(home, *turns)
             started_at = perf_counter()
 
             def traced(sql):
@@ -291,8 +291,8 @@ class WorkloadServer:
             overhead.append(perf_counter() - started_at)
             return database
 
-        def binary(access, path):
-            value = read_binary(access, path)
+        def binary(path):
+            value = read_binary(path)
             counted_at = perf_counter()
             file_sizes.append(len(value))
             overhead.append(perf_counter() - counted_at)
