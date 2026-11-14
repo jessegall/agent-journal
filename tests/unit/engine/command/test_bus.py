@@ -1,3 +1,5 @@
+from engine.time.deadline import Deadline
+from engine.errors.deadline_passed_error import DeadlinePassedError
 from dataclasses import dataclass
 
 import pytest
@@ -439,3 +441,10 @@ def test_lock_is_command_metadata_and_defaults_to_true():
     assert MakeItem.lock is True
     assert OutsideWorkCreateItems.lock is False
     assert OutsideWorkCreateItems("First", "Second").field_values(()) == {"first": "First", "second": "Second"}
+
+
+def test_a_write_whose_deadline_passed_before_the_commit_writes_nothing(container):
+    container.bind(Deadline, Deadline(ends_at=0.0))
+    with pytest.raises(DeadlinePassedError):
+        container.get(Bus).run(MakeItem(title="Late"), AGENT)
+    assert titles(container) == []

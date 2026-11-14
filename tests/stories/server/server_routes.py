@@ -1,5 +1,4 @@
 
-from tests.stories.core.support import story_lines as lines
 
 from engine.cli.console import REFUSED_CODE
 from server.work.request_limits import CLI_LIMIT_SECONDS
@@ -24,11 +23,6 @@ def test_a_refused_line_through_the_server_exits_with_its_refusal(task_server):
 def test_a_command_line_through_the_server_waits_for_another_writer_up_to_the_cli_limit(task_server):
     story = task_server
     story.expect_busy_timeout(CLI_LIMIT_SECONDS)
-
-
-def test_a_write_whose_deadline_passed_before_the_commit_is_readonly(task_server):
-    story = task_server
-    story.expect_deadline_rollback('task make "Late" --environment main', lines.TASK_LIST, "4  Late  open  normal")
 
 
 def test_a_timing_line_that_cannot_be_written_is_noted_and_the_request_still_answered(task_server):
