@@ -40,7 +40,10 @@ class WorkerStartedWork:
         return list(stopped.every_row(STOPPED_WORKERS_REASON))
 
     def stopped_with_tasks(self) -> list[Agent]:
-        return [worker for worker in self.stopped_workers() if self.tasks.has_assigned_work(worker.id)]
+        return self.with_tasks(self.stopped_workers())
+
+    def with_tasks(self, workers: list[Agent]) -> list[Agent]:
+        return [worker for worker in workers if self.tasks.has_assigned_work(worker.id)]
 
     def is_abandoned(self, worker: Agent) -> bool:
         return bool(self.abandoned_tasks(worker))

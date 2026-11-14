@@ -66,11 +66,10 @@ def bound_in(replacements: dict[type, object]) -> Callable[[Container], None]:
 def played(templates: TemplateDatabases, tmp_path: Path) -> Generator[Callable[..., FixtureJournal]]:
     opened: list[IntegrationJournal] = []
 
-    # played(Fixture, module, ...), played(module, ...) with no fixture, or, as a story helper calls new_story, played(module, ..., fixture=Fixture)
-    def make(*arguments, fixture: type | None = None) -> FixtureJournal:
-        leading_fixture = arguments[:1] if arguments and isinstance(arguments[0], type) else ()
-        modules = arguments[len(leading_fixture):]
-        fixture = fixture if fixture is not None else next(iter(leading_fixture), None)
+    def make(*arguments, fixture: type | None = None, environment: str | None = None) -> FixtureJournal:
+        # the fixture may come first, last or by name, as the moved stories wrote new_story; every other argument is a module
+        modules = tuple(argument for argument in arguments if isinstance(argument, str))
+        fixture = fixture if fixture is not None else next((argument for argument in arguments if isinstance(argument, type)), None)
         home, state = templates.fixture_home(tmp_path / f"played-{len(opened)}", fixture, tuple(modules))
         # what the test binds in place of a part of the outside world reaches every container built from this home
         replacements: dict[type, object] = {}
@@ -80,7 +79,7 @@ def played(templates: TemplateDatabases, tmp_path: Path) -> Generator[Callable[.
         # the fixture's rows were written on the story clock, so the journal goes on from that same moment
         clock = ManualClock()
         journal.with_clock(clock)
-        return FixtureJournal(journal, clock, replacements, state.agent, state.user, state.helper)
+        return FixtureJournal(journal, clock, replacements, state.agent, state.user, state.helper, environment)
 
     yield make
     for journal in opened:

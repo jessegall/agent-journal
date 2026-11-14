@@ -12,9 +12,19 @@ from suites.coding.modules.workers.support.behind_decisions import BehindDecisio
 from tests.unit.suites.coding.modules.workers.test_merger_update_subcommand import MAIN, MERGER, OUTSIDER_ID, WORKER, Agents, Checks, Numbers, Repository, Visits, Worktrees
 
 
+class ForcedUpdateSettings:
+    """The project's settings as far as leaving reads them: how far behind forces an update."""
+
+    def __init__(self, forced: int = 0) -> None:
+        self.forced = forced
+
+    def number(self, key: str) -> int:
+        return self.forced
+
+
 def ignoring_actor(actor_id: int, checks: Checks, worktrees: Worktrees | None = None) -> tuple[Repository, Visits]:
     repository, visits = Repository(), Visits()
-    LeaveWorkerBehindHandler(Agents(), BehindDecisions(worktrees or Worktrees(), checks, Numbers()), repository, visits).handle(
+    LeaveWorkerBehindHandler(Agents(), BehindDecisions(worktrees or Worktrees(), checks, Numbers()), repository, visits, ForcedUpdateSettings()).handle(
         LeaveWorkerBehind(WORKER, "only the docs moved"), SimpleNamespace(actor=Actor(actor_id, ActorType.AGENT)))
     return repository, visits
 

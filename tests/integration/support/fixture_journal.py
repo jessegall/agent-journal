@@ -1,6 +1,11 @@
+import shlex
 from datetime import timedelta
 from dataclasses import dataclass, field
 from typing import TypeVar, cast
+from collections.abc import Generator
+from contextlib import contextmanager
+import io
+import sqlite3
 
 from engine.actor.actor import Actor
 from engine.container.container import Container
@@ -10,6 +15,12 @@ from engine.enums.actor_type import ActorType
 from engine.journal.journal_home import JournalHome
 from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from engine.query.queries import Queries
+from engine.caller.process_row import ProcessRow
+from engine.caller.process_table import ProcessTable
+from engine.testing.fakes.fixed_process_table import FixedProcessTable
+from engine.module.module_finder import ModuleFinder
+from engine.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
+from engine.file.file_access import FileAccess
 from engine.command.bus import Bus
 from engine.command.command import Command
 from engine.testing.expectations.text_match import ExpectedText, contains_line, contains_text
@@ -58,6 +69,10 @@ class FixtureJournal(KitRows):
     agent: Actor = field(default_factory=Actor.core)
     user: Actor = field(default_factory=Actor.core)
     helper: Actor = field(default_factory=Actor.core)
+    # the environment a moved story named: each line names it, as the story kit's scope_line does
+    environment: str | None = None
+    # the steps a moved story's helpers note, kept as the story kit keeps them; no overlap check reads them here
+    steps: list[str] = field(default_factory=list)
 
     @property
     def home(self) -> JournalHome:
@@ -69,6 +84,8 @@ class FixtureJournal(KitRows):
 
     def run(self, line: str, actor: Actor | None = None, environment_id: int | None = None) -> FixtureLine:
         caller_environment = environment_id or (None if actor is not None and actor.type is ActorType.AGENT else MAIN_ENVIRONMENT)
+        if self.environment is not None and "--environment" not in shlex.split(line):
+            line = f"{line} --environment {shlex.quote(self.environment)}"
         if "environment make" in line:
             caller_environment = None
         with self.journal.database.repeated_work.request():
@@ -189,3 +206,42 @@ class FixtureJournal(KitRows):
         if not isinstance(default, int) or isinstance(default, bool):
             raise SettingTypeError(f"{key} declares {default!r}, not a whole number")
         return default
+
+    def use_fixture_environment(self, name: str | None) -> None:
+        self.environment = name
+
+    def use_processes(self, *rows: ProcessRow) -> None:
+        self.replace(ProcessTable, FixedProcessTable(list(rows)))
+
+    def rebuild(self, class_type: type, implementation: type | None = None) -> None:
+        if CommitListenerRunner in self.container.instances:
+            self.container.get(CommitListenerRunner).close()
+        self.container.rebuild(class_type, implementation or class_type)
+
+    def run_tick_handler(self, label: str) -> None:
+        handler = next(handler for module in ModuleFinder(self.home).modules() for handler in module.tick_handlers if handler.label == label)
+        with self.journal.database.repeated_work.request():
+            handler.handler(self.container)
+
+    @contextmanager
+    def busy_database(self) -> Generator[None]:
+        writer = sqlite3.connect(self.home.database, timeout=0, autocommit=True)
+        try:
+            writer.execute("BEGIN IMMEDIATE")
+            yield
+            writer.execute("ROLLBACK")
+        finally:
+            writer.close()
+
+    def system_log_text(self) -> str:
+        return FileAccess.read(self.home.system_log) if FileAccess.exists(self.home.system_log) else ""
+
+    def synced(self) -> tuple[int, str]:
+        stream = io.StringIO()
+        code = self.container.get(ModuleSyncLine).run(list(SYNC_ARGV), stream)
+        return code, stream.getvalue()
+
+    def expect_ordered_lines(self, line: str, *texts: str, actor: Actor | None = None) -> None:
+        answer = self.run(line, actor)
+        places = [answer.output_text.find(text) for text in texts]
+        assert answer.code == 0 and -1 not in places and places == sorted(places), (line, texts, answer)
