@@ -5,7 +5,6 @@ from engine.cli.caller_line_check import CallerLineCheck
 from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
 from engine.helper_type.journal_line import JournalLine
-from engine.row.row_owner import MAIN_AGENT
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.support.type_command_check import TypeCommandCheck
 
@@ -31,6 +30,6 @@ class AgentLineCheck(CallerLineCheck):
         if caller.actor.type is not ActorType.AGENT or caller.plugin_script:
             return None
         owner = self.actors.row_owner(caller.actor.id)
-        if owner is not None and owner.agent == MAIN_AGENT:
+        if owner is not None and owner.is_main:
             return None
         return self.commands.refusal(self.agents.find_unscoped(caller.actor.id), [line])
