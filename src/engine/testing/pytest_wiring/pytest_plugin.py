@@ -198,11 +198,12 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
         process_output[CPU_SECONDS_KEY] = session.config.stash[RUN_CPU].seconds
         return
     option = session.config.option
-    if RunSize(session.config.args, 1).is_full_run(option.keyword, option.markexpr, option.deselect or (), bool(getattr(option, "lf", False))) and not option.collectonly:
+    is_full_run = RunSize(session.config.args, 1).is_full_run(option.keyword, option.markexpr, option.deselect or (), bool(getattr(option, "lf", False)))
+    if is_full_run and not option.collectonly:
         record = FullRunRecord(session.testscollected, session.testsfailed, time.monotonic() - session.config.stash[RUN_START], session.config.stash[RUN_CPU].seconds)
         session.config.stash[FULL_RUN] = record
         FullRunRecords.add(record)
-    lines = [*overlap.report_lines(), *fixture_rule_lines(session.config, overlap)]
+    lines = [*overlap.report_lines(is_full_run), *fixture_rule_lines(session.config, overlap)]
     if not lines:
         return
     report = pytest.TestReport(nodeid="stories::overlapping_steps", location=("stories", 0, "overlapping_steps"),
