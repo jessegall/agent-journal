@@ -1911,7 +1911,9 @@
         "layer: OpenRow | None",
         "suite: str",
         "control_return: bool",
-        "access: str"
+        "access: str",
+        "anchor: OpenRow | None",
+        "defaults: Sequence[str]"
       ],
       "methods": [
         "of_actor(cls, event: HookEvent, actor: LoadedActor, timestamp: Timestamp) -> 'AgentHook'",
@@ -2764,6 +2766,15 @@
         "milliseconds: int"
       ],
       "methods": []
+    },
+    "driver.states.agent_row_state.AgentRowState": {
+      "bases": [
+        "AgentState"
+      ],
+      "fields": [],
+      "methods": [
+        "open_rows(self, hook: AgentHook) -> Sequence[OpenRow]"
+      ]
     },
     "driver.states.block_state.BlockState": {
       "bases": [
