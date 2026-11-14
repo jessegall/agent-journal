@@ -150,7 +150,6 @@ tests/stories/core/modules/drivers/deferred_queue.py
 tests/stories/core/modules/drivers/foreign_runs.py
 tests/stories/core/modules/drivers/hook_durations.py
 tests/stories/core/modules/drivers/hook_points.py
-tests/stories/core/modules/drivers/hook_rule_scans.py
 tests/stories/core/modules/drivers/hook_timeouts.py
 tests/stories/core/modules/drivers/hooks_through_the_server.py
 tests/stories/core/modules/drivers/interrupted_agent.py

@@ -7,8 +7,6 @@ from engine.driver import driver_rules
 from engine.testing.examples.hook_samples import HookSamples
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.shell_part import ShellPart
-from tests.stories.core.modules.drivers.hook_durations import UserBuilder
-from tests.stories.support.story_checks import expect_value
 
 MESSAGES = 30000
 PROCESSES = 60000
@@ -43,34 +41,34 @@ class RuleCalls:
 
 
 @pytest.fixture
-def long_chat(new_story):
-    story = new_story(fixture=UserBuilder)
-    database = story.container.get(Database)
+def long_chat(journal):
+    agent_id = journal.new_row_id("agent start s-1 claude main --environment main")
+    database = journal.database
     connection = database.connection
     connection.execute("PRAGMA foreign_keys = OFF")
     connection.execute(COUNTING.format(count=MESSAGES) + "INSERT INTO messages (environment_id, creator_id, type, text, read_at, created_at, updated_at, target_agent_id, peer_key, delivered_at) "
                        "SELECT 1, 59, CASE WHEN n % 3 = 0 THEN 'agent' WHEN n % 3 = 1 THEN 'user' ELSE 'comment' END, 'old message ' || n, "
                        "CASE WHEN n % 3 = 0 OR n % 60 = 1 THEN NULL ELSE '2026-10-29T09:00:00.000000+00:00' END, '2026-10-30T09:00:00.000000+00:00', '2026-10-30T09:00:00.000000+00:00', "
                        "CASE WHEN n % 2 = 0 THEN 9999 END, '', CASE WHEN n % 60 = 1 THEN '2026-10-30T09:00:00.000000+00:00' END FROM c")
-    connection.execute(f"INSERT INTO messages (environment_id, creator_id, type, text, created_at, updated_at, peer_key) VALUES (1, {story.agent.id}, 'agent', 'a recent reply', '2026-10-31T08:59:00.000000+00:00', '2026-10-31T08:59:00.000000+00:00', '')")
+    connection.execute(f"INSERT INTO messages (environment_id, creator_id, type, text, created_at, updated_at, peer_key) VALUES (1, {agent_id}, 'agent', 'a recent reply', '2026-10-31T08:59:00.000000+00:00', '2026-10-31T08:59:00.000000+00:00', '')")
     connection.execute(COUNTING.format(count=PROCESSES) + "INSERT INTO processes (environment_id, session_agent_id, creator_id, line, folder, category, limit_seconds, created_at, updated_at, started_at) "
-                       f"SELECT 1, CASE WHEN n % 2 = 0 THEN {story.agent.id} ELSE 9999 END, 59, 'run ' || n, '/', 'read', 0, '2026-10-30T09:00:00.000000+00:00', '2026-10-30T09:00:00.000000+00:00', '2026-10-30T09:00:00.000000+00:00' FROM c")
+                       f"SELECT 1, CASE WHEN n % 2 = 0 THEN {agent_id} ELSE 9999 END, 59, 'run ' || n, '/', 'read', 0, '2026-10-30T09:00:00.000000+00:00', '2026-10-30T09:00:00.000000+00:00', '2026-10-30T09:00:00.000000+00:00' FROM c")
     connection.execute("UPDATE processes SET state = 'finished', ended_at = '2026-10-30T09:00:01.000000+00:00' WHERE line LIKE 'run %'")
     connection.execute("PRAGMA foreign_keys = ON")
-    return story, database
+    return journal, database
 
 
 @pytest.fixture
 def watched_hooks(long_chat, monkeypatch):
-    story, database = long_chat
+    journal, database = long_chat
     calls = RuleCalls(database)
     calls.watch(monkeypatch)
-    story.hook("s-1", SHELL)
-    story.hook("s-1", HookSamples.stop())
+    journal.hook("s-1", SHELL)
+    journal.hook("s-1", HookSamples.stop())
     return calls
 
 
 def test_no_hook_rule_reads_a_whole_table_on_a_journal_with_a_long_chat_and_many_runs(watched_hooks):
     scans = {rule: [plan for plan in watched_hooks.plans(rule) if any(index in plan for index in SCANNED_INDEXES)] for rule in WATCHED_RULES}
-    expect_value({rule: plans for rule, plans in scans.items() if plans}, {})
+    assert {rule: plans for rule, plans in scans.items() if plans} == {}
 
