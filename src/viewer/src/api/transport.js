@@ -165,12 +165,22 @@ class Transport {
         }
     }
 
-    // a request that fails to reach the server puts the cover up
+    // a request that fails to reach the server puts the cover up; a read is tried once more at once first, since the
+    // server closes a connection left idle and the read may have gone out on it; a write is never sent twice
     async sent(url, init, requests, limit = WAIT_MS) {
         try {
             return await this.out(url, init, requests, limit);
         } catch (error) {
-            if (error instanceof TypeError) serverGone();
+            if (!(error instanceof TypeError)) throw error;
+            if ((init.method || "GET") === "GET") {
+                try {
+                    return await this.out(url, init, requests, limit);
+                } catch (retried) {
+                    if (retried instanceof TypeError) serverGone();
+                    throw retried;
+                }
+            }
+            serverGone();
             throw error;
         }
     }
