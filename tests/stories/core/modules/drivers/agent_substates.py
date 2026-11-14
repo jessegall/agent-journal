@@ -38,7 +38,8 @@ def test_a_substates_rule_is_asked_when_its_parent_is_open(new_story):
     story = new_story(fixture=SubstateAgent)
     PARENT_OPEN[0] = True
     rows = recorded(story, LISTING)
-    story.expect_rows("milliseconds" in rows["acme.child-rule"], "milliseconds" in rows["acme.parent-rule"], OPENED.count("acme.child") == 1, detail=f"{rows} {OPENED}")
+    story.expect_rows(rows["acme.child-rule"].get("layer") == "acme.child", rows["acme.parent-rule"].get("layer") == "acme.parent", OPENED.count("acme.child") == 1,
+                      detail=f"{rows} {OPENED}")
 
 
 def test_a_closed_parent_silences_its_substate_whose_opener_does_not_run(new_story):

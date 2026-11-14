@@ -2133,6 +2133,10 @@
       "fields": [],
       "methods": [
         "ask(self, hook: AgentHook) -> RuleAnswers",
+        "newest_first(layers: list[Layer]) -> list[Layer]",
+        "layer_ref(layer: Layer) -> str",
+        "layer_rules(self, layer: Layer, hook_name: str) -> list[DriverRuleEntry]",
+        "layer_class(layer: Layer) -> type[Overlay] | type[AgentState]",
         "closed_gate(self, entry: DriverRuleEntry, board: StateBoard) -> str",
         "complete_checks(self, walk: Walk, hook: AgentHook, calls: list[RuleCall], board: StateBoard | None) -> RuleAnswers",
         "critical_checks(self, answers: RuleAnswers, hook: AgentHook, board: StateBoard) -> list[StopCheck]",
@@ -2918,7 +2922,7 @@
         "record(self, entry: DriverRuleEntry, layer: str, outcome: RuleOutcome) -> bool",
         "record_gated(self, entry: DriverRuleEntry, state: str) -> None",
         "record_silenced(self, entry: DriverRuleEntry, layer: str) -> None",
-        "leave_layer(self, layer: Layer, overlay: type[Overlay]) -> None",
+        "leave_layer(self, layer: Layer, overlay: type[Overlay] | type[AgentState]) -> None",
         "silences(self, rule: type[DriverRule]) -> bool",
         "answers(self, states: Sequence[StateRecord]) -> RuleAnswers"
       ]
