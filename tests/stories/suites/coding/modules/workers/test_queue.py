@@ -454,3 +454,19 @@ def test_a_release_of_the_worker_ends_the_proof_test_that_waited_or_ran_for_its_
     story.expect_success(f'worker release {agent_number(story, worker.id)} --abandon "the worker is gone"', actor=story.agent)
     story.run_listeners()
     story.expect_text("proof show 1", "state: short", "was abandoned or removed while this test waited or ran", actor=story.agent)
+
+
+def test_a_worker_whose_commit_passed_with_every_other_task_of_its_unit_blocked_is_told_to_the_main_agent(new_story, monkeypatch):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    started = recording_launch(monkeypatch)
+    repository = repository_environment(story)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    second = story.new_row_id('task make "Later work" --brief "Waits on the main agent" --environment main', actor=story.agent)
+    story.expect_success(f"worker send {agent_number(story, worker.id)} --task {second}", actor=story.agent)
+    story.expect_success(f'task block {second} --reason "waits on the main agent engine task"', actor=worker)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.expect_success(PROOF, actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
+    story.run_listeners()
+    ended(story, started[0], 0)
+    story.expect_text("agent-line show 5", "committed task:1; every task left in its unit is blocked", actor=story.agent)

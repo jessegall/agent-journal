@@ -407,7 +407,7 @@ from suites.coding.modules.workers.migrations.m030_merger_lines import MergerLin
 from suites.coding.modules.workers.migrations.m031_worktree_library_links import WorktreeLibraryLinksMigration
 from suites.coding.modules.workers.migrations.m034_worktree_pass_reason import WorktreePassReasonMigration
 from suites.coding.modules.workers.models.merger_line import MergerLine
-from suites.coding.modules.workers.support.merger_nudges import MERGE_HOOK_FAILED, MERGER_LINE_AVAILABLE, MERGER_PASSED, UNIT_MERGE_WAITS, UNIT_MERGED, WORKER_MERGED, WORKER_WITHOUT_TASKS
+from suites.coding.modules.workers.support.merger_nudges import MERGE_HOOK_FAILED, MERGER_LINE_AVAILABLE, MERGER_PASSED, UNIT_BLOCKED, UNIT_MERGE_WAITS, UNIT_MERGED, WORKER_MERGED, WORKER_WITHOUT_TASKS
 from suites.coding.modules.workers.commands.report_merge_hook.report_merge_hook_handler import ReportMergeHookHandler
 from suites.coding.modules.workers.listeners.merge_hooks_listener import MergeHooksListener
 from suites.coding.modules.workers.listeners.merge_hook_end_listener import MergeHookEndListener
@@ -509,7 +509,7 @@ class WorkersModule(Module):
                          WindowExtension("viewer.shell", reads=["worker-worktree points", "worker-worktree list", "proof list"],
                                          runs=["worker send", "worker merge", "worker release"], events=["proof.*", "worker_worktree.*"],
                                          key_events={"usage": ["proof.*", "worker_worktree.*"], "bars": ["proof.*", "worker_worktree.*"]})]
-    nudges = [MERGE_HOOK_FAILED, UNIT_MERGE_WAITS, UNIT_MERGED, WORKER_WITHOUT_TASKS, MERGER_LINE_AVAILABLE, WORKER_MERGED, MERGER_PASSED, *WORKER_NUDGES, *STALE_NUDGES, TEST_COUNT_UNKNOWN, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL]
+    nudges = [MERGE_HOOK_FAILED, UNIT_BLOCKED, UNIT_MERGE_WAITS, UNIT_MERGED, WORKER_WITHOUT_TASKS, MERGER_LINE_AVAILABLE, WORKER_MERGED, MERGER_PASSED, *WORKER_NUDGES, *STALE_NUDGES, TEST_COUNT_UNKNOWN, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL]
     seed_reason = "a worker needs a git worktree, which a scratch demo has none of"
     requires_engine = ">=5,<6"
     settings = WORKER_SETTINGS

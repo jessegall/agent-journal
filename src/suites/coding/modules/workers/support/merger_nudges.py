@@ -7,6 +7,7 @@ MERGER_JOB = "A worker waits for its merge: journal merger next"
 NO_WORKER_WAITING = "no worker waits: stop"
 MERGER_FINDINGS_PREFIX = "From the merger, please fix this: "
 MERGE_HOOK_FAILED = NudgeDeclaration("workers.merge_hook_failed", NudgeType.STEERING, "the merge hook {command!r} of worker:{worker} failed, and its merge stands: run it in the checkout to read its output", wakes_agent=True)
+UNIT_BLOCKED = NudgeDeclaration("workers.unit_blocked", NudgeType.STEERING, "worker:{worker} committed {committed}; every task left in its unit is blocked: {waits}", wakes_agent=True)
 WORKER_MERGED = NudgeDeclaration("workers.worker_merged", NudgeType.STEERING, "worker:{worker} was merged", plural_text="workers {worker} were merged", id_field="worker", wakes_agent=True)
 UNIT_MERGE_WAITS = NudgeDeclaration("workers.unit_merge_waits", NudgeType.STEERING, "worker:{worker} waits for its unit merge in merge-ask:{merge_ask}; the merger is off", wakes_agent=True)
 WORKER_WITHOUT_TASKS = NudgeDeclaration("workers.worker_without_tasks", NudgeType.STEERING, "worker:{worker} has no task left after its merge and stopped: it takes your next batch", wakes_agent=True)
