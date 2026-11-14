@@ -11,6 +11,8 @@ const props = defineProps({
     rows: {type: Array, required: true},
     readOnly: {type: Boolean, required: true},
     save: {type: Function, required: true},
+    // the refusals of a save that was refused in part, by the key of the setting
+    refusals: {type: Object, default: () => ({})},
 });
 
 const children = computed(() => props.rows.filter((row) => row.parent === props.row.key));
@@ -75,11 +77,11 @@ function savedSecret() {
             <p class="setting-description">{{ row.description }}</p>
             <div :class="['setting-children', {off: row.value === false}]">
                 <template v-for="child in children" :key="child.key">
-                    <SettingNode :row="child" :rows="rows" :read-only="readOnly" :save="save" />
+                    <SettingNode :row="child" :rows="rows" :read-only="readOnly" :save="save" :refusals="refusals" />
                 </template>
             </div>
-            <template v-if="refusal">
-                <p class="setting-refusal">{{ refusal }}</p>
+            <template v-if="refusal || refusals[row.key]">
+                <p class="setting-refusal" data-setting-refused>{{ refusal || refusals[row.key] }}</p>
             </template>
         </section>
     </template>
@@ -127,8 +129,8 @@ function savedSecret() {
                     </template>
                 </div>
             </template>
-            <template v-if="refusal">
-                <p class="setting-refusal">{{ refusal }}</p>
+            <template v-if="refusal || refusals[row.key]">
+                <p class="setting-refusal" data-setting-refused>{{ refusal || refusals[row.key] }}</p>
             </template>
         </div>
     </template>

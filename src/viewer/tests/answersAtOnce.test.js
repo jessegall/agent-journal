@@ -17,6 +17,19 @@ function slowServer(rows) {
     return {window, runs, held};
 }
 
+// the declared settings of a module no section names are under Advanced
+async function mountedTree(window, section = "advanced") {
+    const element = await mounted(SettingsTree, window);
+    element.querySelector(`[data-section="${section}"]`).click();
+    await settle();
+    return element;
+}
+
+const save = async (element) => {
+    element.querySelector("[data-settings-apply]").click();
+    await settle();
+};
+
 const switchOf = (element, key) => element.querySelector(`[data-setting='${key}'] [data-flag-switch]`);
 
 test("the row helpers give the rows the command will leave and keep the rows they were given", () => {
@@ -30,33 +43,37 @@ test("the row helpers give the rows the command will leave and keep the rows the
 
 const isOn = (element, key) => switchOf(element, key).getAttribute("aria-checked");
 
-test("a setting shows its new value before the server has answered", async () => {
+test("a setting shows its new value as a draft, and runs only when Save is pressed", async () => {
     const {window, runs} = slowServer(ROWS);
-    const element = await mounted(SettingsTree, window);
+    const element = await mountedTree(window);
     expect(isOn(element, "shop.fast")).toBe("false");
     switchOf(element, "shop.fast").click();
     await settle();
+    expect(runs).toEqual([]);
+    expect(isOn(element, "shop.fast")).toBe("true");
+    await save(element);
     expect(runs.map((run) => run.line)).toEqual([["setting", "set", "shop.fast", "on"]]);
     expect(isOn(element, "shop.fast")).toBe("true");
 });
 
-test("a refused setting goes back to the value it had and says why", async () => {
+test("a refused setting stays in the draft and says why", async () => {
     const {window, runs} = slowServer(ROWS);
-    const element = await mounted(SettingsTree, window);
+    const element = await mountedTree(window);
     switchOf(element, "shop.fast").click();
     await settle();
-    expect(isOn(element, "shop.fast")).toBe("true");
+    await save(element);
     runs[0].answer({ok: false, error: "the model is not allowed"});
     await settle();
-    expect(isOn(element, "shop.fast")).toBe("false");
+    expect(isOn(element, "shop.fast")).toBe("true");
     expect(element.querySelector("[data-setting='shop.fast'] .setting-refusal").textContent).toBe("the model is not allowed");
 });
 
 test("an accepted setting stays as the server lists it and shows no refusal", async () => {
     const {window, runs, held} = slowServer(ROWS);
-    const element = await mounted(SettingsTree, window);
+    const element = await mountedTree(window);
     switchOf(element, "shop.fast").click();
     await settle();
+    await save(element);
     held.rows = ROWS.map((listedRow) => (listedRow.key === "shop.fast" ? {...listedRow, value: true, shown: "on"} : listedRow));
     runs[0].answer({ok: true, value: {}});
     await settle();
@@ -70,9 +87,7 @@ async function environmentsTab() {
     const window = context({"setting tree": page(ROWS), "environment cards": page(ENVIRONMENTS)});
     const runs = [];
     window.run = (line) => new Promise((resolve) => runs.push({line, answer: resolve}));
-    const element = await mounted(SettingsTree, window);
-    [...element.querySelectorAll("[data-settings-tabs] button")].find((button) => button.textContent.includes("Environments")).click();
-    await settle();
+    const element = await mountedTree(window, "environments");
     element.querySelector("[data-environment='staging'] [data-environment-remove]").click();
     await settle();
     element.querySelector("[data-environment='staging'] [data-environment-confirm]").click();
@@ -98,11 +113,14 @@ test("a removed environment stays gone when the server removes it", async () => 
 
 test("a list shows its new items at once, kept as a list", async () => {
     const {window, runs} = slowServer(ROWS);
-    const element = await mounted(SettingsTree, window);
+    const element = await mountedTree(window);
     const box = element.querySelector("[data-setting-list]");
     box.value = "a\nb\nc";
     box.dispatchEvent(new Event("change"));
     await settle();
+    expect(runs).toEqual([]);
+    expect(element.querySelector("[data-setting-list]").value).toBe("a\nb\nc");
+    await save(element);
     expect(runs[0].line).toEqual(["setting", "set", "shop.names", '["a","b","c"]']);
     expect(element.querySelector("[data-setting-list]").value).toBe("a\nb\nc");
 });
