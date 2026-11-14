@@ -1,5 +1,5 @@
-import re
 from pathlib import Path
+import re
 
 ROOT = Path(__file__).resolve().parents[3]
 ENGINE_FOLDER = ROOT / "src" / "engine"
@@ -29,28 +29,25 @@ def files_naming_a_previous_area() -> list[str]:
     return matching
 
 
-def test_337_every_area_folder_sits_in_the_engine_and_none_in_core_base(new_story):
-    story = new_story()
+def test_337_every_area_folder_sits_in_the_engine_and_none_in_core_base():
     missing = [area for area in AREAS if not python_files(ENGINE_FOLDER / RENAMED_AFTER.get(area, area))]
     remaining = [str(folder.relative_to(ROOT) / area) for folder in PREVIOUS_FOLDERS for area in AREAS if (folder / area).exists()]
-    story.expect_rows(missing == [], remaining == [], detail=f"missing {missing}, remaining {remaining}")
+    assert missing == [], f'missing {missing}, remaining {remaining}'
+    assert remaining == [], f'missing {missing}, remaining {remaining}'
 
 
-def test_338_the_test_folders_of_each_moved_area_sit_under_the_engine_test_folders(new_story):
-    story = new_story()
+def test_338_the_test_folders_of_each_moved_area_sit_under_the_engine_test_folders():
     unit_areas = {folder.name for folder in (ROOT / "tests" / "unit" / "engine").iterdir() if folder.is_dir()}
     story_areas = {folder.name for folder in (ROOT / "tests" / "stories" / "engine").iterdir() if folder.is_dir()}
     unknown = sorted((unit_areas | story_areas) - {folder.name for folder in ENGINE_FOLDER.iterdir()} - {"__pycache__", "samples", "support"})
-    story.expect_rows(unknown == [], detail=str(unknown))
+    assert unknown == [], str(unknown)
 
 
-def test_no_source_or_test_file_names_a_moved_area_by_its_previous_path(new_story):
-    story = new_story()
+def test_no_source_or_test_file_names_a_moved_area_by_its_previous_path():
     matching = files_naming_a_previous_area()
-    story.expect_rows(matching == [], detail=str(matching[:20]))
+    assert matching == [], str(matching[:20])
 
 
-def test_387_no_product_file_is_named_like_a_test(new_story):
-    story = new_story()
+def test_387_no_product_file_is_named_like_a_test():
     test_like_names = [str(path.relative_to(ROOT)) for path in python_files(ROOT / "src") if path.name.startswith("test_") and "testing" not in path.parts]
-    story.expect_rows(test_like_names == [], detail=str(test_like_names))
+    assert test_like_names == [], str(test_like_names)

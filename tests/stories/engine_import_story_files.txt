@@ -614,7 +614,6 @@ tests/stories/engine/chat/support/legacy_buttons_module.py
 tests/stories/engine/chat/support/mark_faults.py
 tests/stories/engine/command/lock_choices.py
 tests/stories/engine/command/support/lock_commands.py
-tests/stories/engine/database/hot_query_indexes.py
 tests/stories/engine/database/large_journal_reads.py
 tests/stories/engine/driver/driver_guards.py
 tests/stories/engine/driver/first_hooks.py
@@ -624,7 +623,6 @@ tests/stories/engine/driver/rule_history_races.py
 tests/stories/engine/driver/shell_line_parts.py
 tests/stories/engine/driver/support/hook_agents.py
 tests/stories/engine/driver/support/samples.py
-tests/stories/engine/engine_closed.py
 tests/stories/engine/errors/errors_moved.py
 tests/stories/engine/event_pruning.py
 tests/stories/engine/file/file_access.py
@@ -646,8 +644,6 @@ tests/stories/engine/module/support/loop_modules.py
 tests/stories/engine/module/support/notes_dependent.py
 tests/stories/engine/module/support/sample_programs.py
 tests/stories/engine/module/support/suite_samples.py
-tests/stories/engine/module_stories.py
-tests/stories/engine/provider_models.py
 tests/stories/engine/query_scans.py
 tests/stories/engine/repeated_calls.py
 tests/stories/engine/repeated_origins.py

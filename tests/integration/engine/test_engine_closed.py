@@ -1,6 +1,6 @@
+from pathlib import Path
 import re
 import subprocess
-from pathlib import Path
 
 from engine.module.module_finder import DEFAULT_MODULE_LISTS
 
@@ -9,8 +9,8 @@ PREVIOUS_FOLDERS = ("src/core/base", "tests/unit/core/base", "tests/stories/core
 PREVIOUS_NAME = re.compile(r"core[./]base\b")
 SEARCHED = ("src", "tests", "scripts", "docs", "pyrightconfig.json", ".commandments", "install.sh", "deploy")
 STORIES_OF_THE_MOVES = {
-    "tests/stories/engine/areas_moved.py", "tests/stories/engine/loose_files.py", "tests/stories/engine/errors/errors_moved.py",
-    "tests/stories/engine/engine_closed.py", "tests/stories/engine/map/tidy_rules.py",
+    "tests/unit/engine/test_areas_moved.py", "tests/unit/engine/test_loose_files.py", "tests/stories/engine/errors/errors_moved.py",
+    "tests/integration/engine/test_engine_closed.py", "tests/unit/engine/map/test_tidy_rules.py", "tests/integration/engine/map/test_tidy_rules.py",
 }
 DETECTOR_OF_THE_REMOVED_FOLDER = (
     ".commandments/custom/architecture_layers_import_of_core_base.json", ".commandments/custom/samples/layers/src/core/modules/tasks/support/removed_folder_sample.py",
@@ -32,11 +32,12 @@ def files_naming_core_base() -> list[str]:
     return naming
 
 
-def test_418_core_base_is_gone_and_no_file_names_it(new_story):
-    story = new_story()
+def test_418_core_base_is_gone_and_no_file_names_it():
     remaining = [folder for folder in PREVIOUS_FOLDERS if (ROOT / folder).exists()]
     naming = files_naming_core_base()
     module_lists = [path.text for path in DEFAULT_MODULE_LISTS]
     layer_table = (ROOT / "src/engine/module/layer_table.py").read_text()
-    story.expect_rows(remaining == [], naming == [], detail=f"remaining {remaining}, naming {naming[:20]}")
-    story.expect_rows(not any("base" in path for path in module_lists), 'r"src/engine/"' in layer_table, detail=str(module_lists))
+    assert remaining == [], f'remaining {remaining}, naming {naming[:20]}'
+    assert naming == [], f'remaining {remaining}, naming {naming[:20]}'
+    assert not any(('base' in path for path in module_lists)), str(module_lists)
+    assert 'r"src/engine/"' in layer_table, str(module_lists)

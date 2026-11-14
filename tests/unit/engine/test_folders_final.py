@@ -1,5 +1,5 @@
-import json
 from pathlib import Path
+import json
 
 ROOT = Path(__file__).resolve().parents[3]
 SOURCE = ROOT / "src"
@@ -33,29 +33,29 @@ def loose_files(folder: str) -> list[str]:
     return sorted(relative(path) for path in (ROOT / folder).glob("*.py") if path.name != "__init__.py" and not path.name.endswith(AREA_MARKER_ENDING))
 
 
-def test_339_every_error_file_sits_in_an_errors_folder_and_none_in_support(new_story):
-    story = new_story()
+def test_339_every_error_file_sits_in_an_errors_folder_and_none_in_support():
     error_files = [path for path in python_files(SOURCE) if path.name.endswith(ERROR_FILE_ENDINGS)]
     external = sorted({relative(path) for path in error_files if path.parent.name != "errors"} - FALSE_ERROR_NAMES)
     library_errors = [path for path in python_files(SOURCE / "core" / "modules" / "library" / "errors") if path.name != "__init__.py"]
-    story.expect_rows(external == [], len(library_errors) == 8, detail=f"outside {external}, library {len(library_errors)}")
+    assert external == [], f'outside {external}, library {len(library_errors)}'
+    assert len(library_errors) == 8, f'outside {external}, library {len(library_errors)}'
 
 
-def test_340_the_tops_of_the_server_the_installer_and_the_kit_hold_only_folders(new_story):
-    story = new_story()
+def test_340_the_tops_of_the_server_the_installer_and_the_kit_hold_only_folders():
     loose = sorted({name for top in FOLDER_TOPS for name in loose_files(top)} - PATH_STARTED_ENTRY_FILES)
-    story.expect_rows(loose == [], not (SOURCE / "core" / "testing").exists(), detail=str(loose))
+    assert loose == [], str(loose)
+    assert not (SOURCE / 'core' / 'testing').exists(), str(loose)
 
 
-def test_389_the_rules_scan_every_top_folder_of_the_source(new_story):
-    story = new_story()
+def test_389_the_rules_scan_every_top_folder_of_the_source():
     scanned = json.loads((ROOT / ".commandments" / "config.json").read_text())["paths"]
     tops = sorted(f"src/{folder.name}" for folder in SOURCE.iterdir() if folder.is_dir() and python_files(folder))
-    story.expect_rows(tops == sorted(SCANNED_TOPS), all(top in scanned for top in tops), detail=f"tops {tops}, scanned {scanned}")
+    assert tops == sorted(SCANNED_TOPS), f'tops {tops}, scanned {scanned}'
+    assert all((top in scanned for top in tops)), f'tops {tops}, scanned {scanned}'
 
 
-def test_420_the_test_kit_is_split_between_the_engine_and_the_modules(new_story):
-    story = new_story()
+def test_420_the_test_kit_is_split_between_the_engine_and_the_modules():
     kit_folders = sorted(folder.name for folder in (SOURCE / "engine" / "testing").iterdir() if folder.is_dir() and folder.name != "__pycache__")
     stand_ins = {relative(folder): sorted(path.name for path in folder.glob("*.py") if path.name != "__init__.py") for folder in SOURCE.rglob("testing") if folder.is_dir() and "engine" not in folder.parts}
-    story.expect_rows(kit_folders == KIT_FOLDERS, stand_ins == MODULE_STAND_INS, detail=f"kit {kit_folders}, stand-ins {stand_ins}")
+    assert kit_folders == KIT_FOLDERS, f'kit {kit_folders}, stand-ins {stand_ins}'
+    assert stand_ins == MODULE_STAND_INS, f'kit {kit_folders}, stand-ins {stand_ins}'
