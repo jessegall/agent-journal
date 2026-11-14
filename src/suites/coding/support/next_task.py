@@ -59,7 +59,10 @@ class NextTask(TaskAssigner[Task]):
         return self.plan_order.first_started_plan_task(self.reserved_ready(agent_id, excluded_id))
 
     def rule_reserved(self, agent_id: int, excluded_id: int | None = None) -> Task | None:
-        return self.plan_order.first_started_plan_task(self.rule_tasks.given(self.reserved_ready(agent_id, excluded_id), agent_id))
+        return self.rule_reserved_of(self.reserved_ready(agent_id, excluded_id), agent_id)
+
+    def rule_reserved_of(self, ready: tuple[Task, ...], agent_id: int) -> Task | None:
+        return self.plan_order.first_started_plan_task(self.rule_tasks.given(ready, agent_id))
 
     def reserved_ready(self, agent_id: int, excluded_id: int | None) -> tuple[Task, ...]:
         return tuple(task for task in self.tasks.assigned_ready(agent_id) if task.id != excluded_id)
@@ -71,10 +74,18 @@ class NextTask(TaskAssigner[Task]):
         open_task = self.tasks.next_open(excluded_id, self.plan_tasks.plan_exclusion())
         if open_task is not None and open_task.priority >= URGENT_PRIORITY:
             return open_task
-        planned = self.focused.first_started(self.queries.query(Agent).find(agent_id), excluded_id, lambda: self.rule_reserved(agent_id, excluded_id))
+        # the agent's ready tasks are read once for both the rule-reserved step and the reserved last step
+        ready: list[tuple[Task, ...]] = []
+
+        def ready_tasks() -> tuple[Task, ...]:
+            if not ready:
+                ready.append(self.reserved_ready(agent_id, excluded_id))
+            return ready[0]
+
+        planned = self.focused.first_started(self.queries.query(Agent).find(agent_id), excluded_id, lambda: self.rule_reserved_of(ready_tasks(), agent_id))
         if planned is not None:
             return planned
-        return open_task if open_task is not None else self.reserved(agent_id, excluded_id)
+        return open_task if open_task is not None else self.plan_order.first_started_plan_task(ready_tasks())
 
     def agent_tasks(self, agent_ids: Sequence[int]) -> dict[int, tuple[int, ...]]:
         tasks = self.queries.query(Task).matching(Among("state", [TaskState.OPEN, TaskState.STARTED])).ordered("id")
