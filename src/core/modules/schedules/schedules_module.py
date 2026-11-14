@@ -1,3 +1,4 @@
+from core.modules.schedules.windows.schedules_windows import SCHEDULES_WINDOWS
 from core.modules.schedules.models.declarations.scheduled_job_model_declaration import ScheduledJobModelDeclaration
 from core.modules.schedules.migrations.m004_schedule_session import ScheduleSessionMigration
 from core.modules.schedules.migrations.m005_environment_index import ScheduledJobsEnvironmentIndexMigration
@@ -5,12 +6,6 @@ from core.modules.schedules.migrations.m002_stop_requested import StopRequestedM
 from core.modules.schedules.support.schedule_marks import SCHEDULE_MARKS
 from core.modules.schedules.support.schedule_nudges import SCHEDULE_NUDGES
 from engine.module.module import Module
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_key import WindowKey
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
-from engine.enums.window_place import WindowPlace
-from engine.enums.window_shows import WindowShows
 from core.modules.schedules.commands.end_scheduled_job.end_scheduled_job_handler import EndScheduledJobHandler
 from core.modules.schedules.commands.record_scheduled_job.record_scheduled_job_handler import RecordScheduledJobHandler
 from core.modules.schedules.commands.record_scheduled_job_run.record_scheduled_job_run_handler import RecordScheduledJobRunHandler
@@ -24,7 +19,6 @@ from core.modules.schedules.rules.scheduled_job_rule import ScheduledJobRule
 from core.modules.schedules.upgrade.schedules_move import SchedulesMove
 from core.modules.schedules.rules.scheduled_job_run_rule import ScheduledJobRunRule
 from core.modules.schedules.seeders.schedules_seeder import SchedulesSeeder
-from core.modules.schedules.support.skeletons import SCHEDULES_JOBS_SKELETON
 
 
 class SchedulesModule(Module):
@@ -44,6 +38,4 @@ class SchedulesModule(Module):
     driver_rules = [ScheduledJobRule, ScheduledJobRunRule]
     listeners = [JobRunMarkListener]
     marks = SCHEDULE_MARKS
-    windows = [WindowDeclaration("schedules.jobs", "Scheduled jobs", "jobs.js", WindowLoading.COMPONENT, skeleton=SCHEDULES_JOBS_SKELETON, icon=WindowIcon.WINDOW, place=WindowPlace.DROPDOWN, shows=WindowShows.SELECTED_AGENT,
-                                 reads=["scheduled-job running"], runs=["scheduled-job stop"], events=["scheduled_job.*"],
-                                 keys=[WindowKey("jobs", "scheduled-job running", arguments=["agent"], events=["scheduled_job.*"])])]
+    windows = SCHEDULES_WINDOWS

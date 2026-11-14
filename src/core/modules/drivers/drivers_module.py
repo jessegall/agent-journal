@@ -1,3 +1,4 @@
+from core.modules.drivers.windows.drivers_windows import DRIVERS_WINDOWS
 from core.modules.drivers.models.declarations.countdown_model_declaration import CountdownModelDeclaration
 from core.modules.drivers.models.declarations.hook_timeout_notice_model_declaration import HookTimeoutNoticeModelDeclaration
 from core.modules.drivers.models.declarations.permission_request_model_declaration import PermissionRequestModelDeclaration
@@ -102,11 +103,6 @@ from core.modules.drivers.migrations.m030_hook_call_partial_indexes import HookC
 from engine.listener.change_filter import ChangeFilter
 from engine.driver.hook_route import HookRoute
 from engine.module.module import Module
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_key import WindowKey
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
-from engine.enums.window_shows import WindowShows
 from core.modules.drivers.bindings.agent_hook_route import AgentHookRoute
 from core.modules.drivers.commands.pause_agent.pause_agent_subcommand import PauseAgentSubcommand
 from core.modules.drivers.commands.pause_agent.pause_agent_handler import PauseAgentHandler
@@ -237,7 +233,6 @@ from core.modules.drivers.commands.record_agent_launch_failure.record_agent_laun
 from core.modules.drivers.listeners.instruction_imports_listener import InstructionImportsListener
 from core.modules.drivers.support.driver_settings import DRIVERS_SETTINGS
 from core.modules.drivers.support.reviewer_start import REVIEWER_PROFILE
-from core.modules.drivers.support.skeletons import DRIVERS_NUDGES_SKELETON, DRIVERS_HOOK_CALLS_SKELETON
 
 
 class DriversModule(Module):
@@ -269,8 +264,5 @@ class DriversModule(Module):
     driver_rules = [RepeatedFileReadRule, SafeguardsStopRule, PanicFileRule, BlockStopRule, LongOutputRule, ForeignHooksRule, CompactionDueStopRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, ContinuedSessionRule, AgentBlockRule, TakeoverRule, AccessRule, TypeCommandsRule, NativeSubagentRule, PrivateCorpusRule]
     bindings = {OpenBlocks: AgentOpenBlocks, CallerLineCheck: AgentLineCheck, ContextChangeRequests: RecordedContextChangeRequests, Nudger: AgentLineNudger, OverviewReads: TableOverviewReads, RefusalSkips: TableRefusalSkips, ManagedHookHistoryReader: ManagedHookHistoryQuery, TranscriptAuthors: LineTranscriptAuthors, HookHistory: TableHookHistory,HookRoute: AgentHookRoute, ChangeFilter: DriverChangeFilter,
                 EssentialAllowances: SettingEssentialAllowances}
-    windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, skeleton=DRIVERS_NUDGES_SKELETON, group="project", icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"], keys=[WindowKey("nudges", "nudge list", events=["nudge_record.*"]) ]),
-               WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.COMPONENT, skeleton=DRIVERS_HOOK_CALLS_SKELETON, icon=WindowIcon.RUNS, shows=WindowShows.SELECTED_AGENT,
-                                 reads=["hook-call feed", "hook-call show", "hook-call stops"], events=["hook_call.*"],
-                                 keys=[WindowKey("calls", "hook-call feed", events=["hook_call.*"], arguments=["session-agent-id", "limit", "before-id", "after-id"], page_size=50)])]
+    windows = DRIVERS_WINDOWS
     seed_reason = "each suite chooses the drivers used by its demo"

@@ -1,15 +1,8 @@
+from core.modules.transcriptions.windows.transcriptions_windows import TRANSCRIPTIONS_WINDOWS
 from core.modules.transcriptions.skills.declarations.transcriptions_skills import TRANSCRIPTIONS_SKILLS
 from core.modules.transcriptions.migrations.m002_environment_index import TranscriptionsEnvironmentIndexMigration
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
-from engine.viewer.window_search import WindowSearch
-from core.modules.transcriptions.support.transcription_searcher import TranscriptionSearcher
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_key import WindowKey
-from engine.enums.key_loading import KeyLoading
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
-from engine.enums.window_place import WindowPlace
 from core.modules.transcriptions.commands.request_transcription_fetch.request_transcription_fetch_handler import RequestTranscriptionFetchHandler
 from core.modules.transcriptions.commands.request_transcription_fetch.request_transcription_fetch_subcommand import RequestTranscriptionFetchSubcommand
 from core.modules.transcriptions.commands.add_transcription_link.add_transcription_link_handler import AddTranscriptionLinkHandler
@@ -20,7 +13,6 @@ from core.modules.transcriptions.migrations.m001_transcriptions import Transcrip
 from core.modules.transcriptions.models.transcription import Transcription
 from core.modules.transcriptions.seeders.transcriptions_seeder import TranscriptionsSeeder
 from core.modules.transcriptions.support.transcription_nudges import TRANSCRIPTION_NUDGES
-from core.modules.transcriptions.support.skeletons import TRANSCRIPTIONS_TRANSCRIPTIONS_SKELETON
 
 
 class TranscriptionsModule(Module):
@@ -39,8 +31,4 @@ class TranscriptionsModule(Module):
     nudges = TRANSCRIPTION_NUDGES
     listeners = [TranscriptionTaskListener]
     seeders = [TranscriptionsSeeder]
-    windows = [WindowDeclaration("transcriptions.transcriptions", "Transcriptions", "transcriptions.js", WindowLoading.COMPONENT, skeleton=TRANSCRIPTIONS_TRANSCRIPTIONS_SKELETON, search=WindowSearch(TranscriptionSearcher, "Search the transcriptions"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILED,
-                                 reads=["transcription list", "transcription sources", "link list"], runs=["transcription make", "transcription edit", "transcription fetch"], events=["transcription.*"],
-                                 keys=[WindowKey("transcriptions", "transcription list", events=["transcription.*"]),
-                                       WindowKey("sources", "transcription sources"),
-                                       WindowKey("links.*", "link list --row transcription:{id} --group-counterparts", arguments=["page", "page-size", "kind"], loading=KeyLoading.REQUESTED)])]
+    windows = TRANSCRIPTIONS_WINDOWS

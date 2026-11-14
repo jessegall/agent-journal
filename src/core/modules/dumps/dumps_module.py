@@ -1,16 +1,10 @@
+from core.modules.dumps.windows.dumps_windows import DUMPS_WINDOWS
 from core.modules.dumps.models.declarations.dump_model_declaration import DumpModelDeclaration
 from core.modules.dumps.models.declarations.dump_item_model_declaration import DumpItemModelDeclaration
 from core.modules.dumps.docks.dumps_docks import DUMPS_DOCKS
 from core.modules.dumps.skills.declarations.dumps_skills import DUMPS_SKILLS
 from core.modules.dumps.migrations.m003_dump_closed_index import DumpClosedIndexMigration
 from engine.module.module import Module
-from engine.viewer.window_search import WindowSearch
-from core.modules.dumps.support.dump_searcher import DumpSearcher
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_key import WindowKey
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
-from engine.enums.window_place import WindowPlace
 from core.modules.dumps.commands.dump_board.dump_board_subcommand import DumpBoardSubcommand
 from core.modules.dumps.commands.dump_board.dump_item_board_subcommand import DumpItemBoardSubcommand
 from core.modules.dumps.commands.dump_items.dump_items_subcommand import DumpItemsSubcommand
@@ -31,7 +25,6 @@ from core.modules.dumps.migrations.m001_dumps import DumpsTablesMigration
 from core.modules.dumps.migrations.m002_project_dumps import ProjectDumpsMigration
 from core.modules.dumps.upgrade.dumps_move import DumpsMove
 from core.modules.dumps.seeders.dumps_seeder import DumpsSeeder
-from core.modules.dumps.support.skeletons import DUMPS_DUMPS_SKELETON
 
 
 class DumpsModule(Module):
@@ -51,7 +44,5 @@ class DumpsModule(Module):
     driver_rules = [OpenDumpRule]
     listeners = [DumpArrivalListener, DumpDockListener]
     docks = DUMPS_DOCKS
-    windows = [WindowDeclaration("dumps.dumps", "Dumps", "dumps.js", WindowLoading.COMPONENT, skeleton=DUMPS_DUMPS_SKELETON, search=WindowSearch(DumpSearcher, "Search the dumps"), place=WindowPlace.PANE, icon=WindowIcon.FILED, reads=["dump board", "dump-item board"],
-                                 runs=["dump name"], events=["dump.*", "dump_item.*"],
-                                 keys=[WindowKey("dumps", "dump board", arguments=["before"], events=["dump.*", "dump_item.*"])])]
+    windows = DUMPS_WINDOWS
     seeders = [DumpsSeeder]

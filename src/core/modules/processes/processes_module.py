@@ -1,3 +1,4 @@
+from core.modules.processes.windows.processes_windows import PROCESSES_WINDOWS
 from core.modules.processes.models.declarations.request_run_model_declaration import RequestRunModelDeclaration
 from core.modules.processes.models.declarations.reader_request_model_declaration import ReaderRequestModelDeclaration
 from core.modules.processes.models.declarations.process_model_declaration import ProcessModelDeclaration
@@ -111,16 +112,8 @@ from core.modules.processes.support.process_nudges import PROCESS_NUDGES
 from engine.driver.watched_runs import WatchedRuns
 from core.modules.processes.support.monitored_runs import MonitoredRuns
 from engine.module.module import Module
-from engine.enums.auto_scroll import AutoScroll
-from engine.viewer.window_search import WindowSearch
-from core.modules.processes.support.process_searcher import ProcessSearcher
-from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_extension import WindowExtension
-from engine.viewer.window_key import WindowKey
 from engine.viewer.window_tab import WindowTab
-from engine.enums.key_loading import KeyLoading
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
 from core.modules.processes.upgrade.processes_move import ProcessesMove
 from core.modules.processes.commands.end_process.end_process_handler import EndProcessHandler
 from core.modules.processes.commands.end_process_part.end_process_part_handler import EndProcessPartHandler
@@ -283,16 +276,10 @@ from core.modules.processes.support.block_conditions.output_read import OutputRe
 from core.modules.processes.migrations.m083_stale_output_blocks import StaleOutputBlocksMigration
 from core.modules.processes.support.block_conditions.output_titled import OutputTitled
 from core.modules.processes.support.block_conditions.output_read_since_block import OutputReadSinceBlock
-from core.modules.processes.support.skeletons import PROCESSES_OUTPUTS_SKELETON, PROCESSES_OUTPUT_SKELETON
 
-WINDOW_READS = ["process card", "process show", "process feed", "output peek", "output page", "unreadable-mark list"]
-WINDOW_RUNS = ["output stop", "output watch", "output ask-reader", "output unreadable", "output readable"]
-WINDOW_EVENTS = ["process.*", "output.*"]
 
 
 from core.modules.processes.support.queue_inspector import QUEUE_INSPECTOR
-from engine.enums.window_place import WindowPlace
-from engine.viewer.skeleton_part import SkeletonPart
 
 
 class ProcessesModule(Module):
@@ -326,18 +313,6 @@ class ProcessesModule(Module):
                                            tabs=[WindowTab("processes", "Processes", "queue list", component="/modules/journal.core.processes/agent-processes.js")])
                            for name in ("agents.agents", "agents.helpers")),
                          WindowExtension("agents.agents", runs=["process lift-hold"])]
-    windows = [WindowDeclaration("processes.outputs", "Commands", "outputs.js", WindowLoading.COMPONENT, skeleton=PROCESSES_OUTPUTS_SKELETON, search=WindowSearch(ProcessSearcher, "Search the commands"), icon=WindowIcon.TERMINAL, reads=WINDOW_READS,
-                                 keys=[WindowKey("runs", "process feed", arguments=["session-agent-id"], events=WINDOW_EVENTS),
-                                       WindowKey("marks", "unreadable-mark list", events=["unreadable_mark.*"])], runs=WINDOW_RUNS, events=[*WINDOW_EVENTS, "unreadable_mark.*"]),
-               WindowDeclaration("processes.output", "Output", "output.js", WindowLoading.COMPONENT, skeleton=PROCESSES_OUTPUT_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.TERMINAL, auto_scroll=AutoScroll.BOTTOM, reads=[*WINDOW_READS, "window setting"],
-                                 keys=[WindowKey("selection", "window setting processes.output output", loading=KeyLoading.REQUESTED),
-                                       WindowKey("latest", "process feed --limit 1", arguments=["session-agent-id"], loading=KeyLoading.REQUESTED),
-                                       WindowKey("run.*", "process feed --id {id}", loading=KeyLoading.REQUESTED),
-                                       WindowKey("summary.*", "output peek {id} --summary", loading=KeyLoading.REQUESTED),
-                                       WindowKey("output.*", "output page {id}", arguments=["after", "before"], loading=KeyLoading.REQUESTED)],
-                                 runs=WINDOW_RUNS, events=WINDOW_EVENTS),
-               WindowDeclaration("processes.queue-body", "Process queue", "queue-body.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.TERMINAL, skeleton=[SkeletonPart.line()],
-                                 reads=["queue list", "output page", "queue-class list", "queue-class preview"],
-                                 runs=["setting set", "queue-class set", "queue-class add", "queue-class reset", "queue-class remove", "queue-class preset"], events=["output.*"])]
+    windows = PROCESSES_WINDOWS
     inspectors = [QUEUE_INSPECTOR]
     seeders = [ProcessesSeeder]

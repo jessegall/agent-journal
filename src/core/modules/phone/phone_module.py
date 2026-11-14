@@ -1,3 +1,4 @@
+from core.modules.phone.windows.phone_windows import PHONE_WINDOWS
 from core.modules.phone.models.declarations.phone_model_declaration import PhoneModelDeclaration
 from core.modules.phone.models.declarations.phone_code_model_declaration import PhoneCodeModelDeclaration
 from core.modules.phone.settings.phone_setting_values import PhoneSettingValues
@@ -6,12 +7,6 @@ from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
 from core.modules.phone.ticks.phone_notices import PhoneNotices
 from engine.module.module import Module
-from engine.viewer.window_search import WindowSearch
-from core.modules.phone.support.phone_searcher import PhoneSearcher
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_key import WindowKey
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
 from core.modules.phone.commands.pair_phone.pair_phone_handler import PairPhoneHandler
 from core.modules.phone.commands.pair_phone.pair_phone_subcommand import PairPhoneSubcommand
 from core.modules.phone.commands.phone_session.phone_session_subcommand import PhoneSessionSubcommand
@@ -35,7 +30,6 @@ from core.modules.phone.commands.send_phone_notices.send_phone_notices_handler i
 from core.modules.phone.support.push_service import PushService
 from core.modules.phone.support.push_transport import PushTransport
 from core.modules.phone.push.web_push import WebPush
-from core.modules.phone.support.skeletons import PHONE_PHONES_SKELETON
 
 
 class PhoneModule(Module):
@@ -53,9 +47,7 @@ class PhoneModule(Module):
     listeners = [QuestionNoticeListener, PlanNoticeListener]
     bindings = {PushService: WebPush, PushTransport: PushTransport}
     settings = [PhoneSettingValues]
-    windows = [WindowDeclaration("phone.phones", "Phones", "phones.js", WindowLoading.COMPONENT, skeleton=PHONE_PHONES_SKELETON, search=WindowSearch(PhoneSearcher, "Search the phones"), group="project", icon=WindowIcon.PHONE,
-                                 reads=["phone list", "tunnel status"], keys=[WindowKey("phones", "phone list", events=["phone.*"]),
-                                       WindowKey("tunnel", "tunnel status")], runs=["phone pair", "phone unpair"], events=["phone.*"])]
+    windows = PHONE_WINDOWS
     seeders = [PhoneSeeder]
     moves = [PhoneMove]
     tick_handlers = [TickHandler(TickInterval(seconds=60), PhoneNotices(), "phone notices", starts_immediately=True)]

@@ -1,14 +1,8 @@
+from core.modules.library.windows.library_windows import LIBRARY_WINDOWS
 from core.modules.library.models.declarations.library_connection_model_declaration import LibraryConnectionModelDeclaration
 from core.modules.library.models.declarations.library_copy_model_declaration import LibraryCopyModelDeclaration
 from core.modules.library.settings.library_setting_values import LibrarySettingValues
 from core.modules.library.skills.declarations.library_skills import LIBRARY_SKILLS
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
-from engine.viewer.window_key import WindowKey
-from engine.enums.key_loading import KeyLoading
-from engine.enums.window_place import WindowPlace
-from engine.viewer.window_read_search import WindowReadSearch
 from engine.library.library_lookup import LibraryLookup
 from core.modules.library.support.server_library_lookup import ServerLibraryLookup
 from engine.module.module import Module
@@ -60,7 +54,6 @@ from core.modules.library.guards.library_address_guard import LibraryAddressGuar
 from core.modules.library.migrations.m001_library import LibraryTablesMigration
 from core.modules.library.migrations.m002_connection_signature_index import ConnectionSignatureIndexMigration
 from core.modules.library.listeners.connection_rows_listener import ConnectionRowsListener
-from core.modules.library.support.skeletons import LIBRARY_TEAMS_SKELETON
 
 
 class LibraryModule(Module):
@@ -85,13 +78,4 @@ class LibraryModule(Module):
                    MakeLibraryCopySubcommand, SendLibraryItemSubcommand, LeaveLibraryCopySubcommand, LibraryCopiesSubcommand, RunLibrarySyncSubcommand, ChooseLibraryVersionSubcommand, RemoveLibraryItemSubcommand, RestoreLibraryItemSubcommand]
     tick_handlers = [TickHandler(TickInterval(seconds=10), LibrarySyncTick(), "library sync")]
     skills = LIBRARY_SKILLS
-    windows = [WindowDeclaration("library.teams", "Teams", "teams.js", WindowLoading.COMPONENT, skeleton=LIBRARY_TEAMS_SKELETON, search=WindowReadSearch("library list", "Search the library", ("title", "abstract")),
-                                 place=WindowPlace.PAGE, group="project", icon=WindowIcon.SHARE, reads=["library status", "library list", "library browse", "library inspect", "library show", "library copies", "library-user list", "library-user tokens"],
-                                 keys=[WindowKey("status", "library status", events=["library_connection.*"]),
-                                       WindowKey("copies", "library copies", events=["library_copy.*"], reload_seconds=30),
-                                       WindowKey("users", "library-user list", loading=KeyLoading.REQUESTED),
-                                       WindowKey("tokens", "library-user tokens {user}", loading=KeyLoading.REQUESTED),
-                                       WindowKey("item", "library show {share} {id}", loading=KeyLoading.REQUESTED),
-                                       WindowKey("inspection", "library inspect {share} {id}", loading=KeyLoading.REQUESTED),
-                                       WindowKey("listing", "library browse", arguments=["type", "search"], loading=KeyLoading.REQUESTED)],
-                                 runs=["library connect", "library get", "library share", "library sync", "library resolve", "library leave", "library remove", "library restore", "library-user add", "library-user role", "library-user remove", "library-user revoke"], events=["library_connection.*", "library_copy.*"])]
+    windows = LIBRARY_WINDOWS

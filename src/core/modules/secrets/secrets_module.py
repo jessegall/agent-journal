@@ -1,13 +1,9 @@
+from core.modules.secrets.windows.secrets_windows import SECRETS_WINDOWS
 from core.modules.secrets.models.declarations.secret_model_declaration import SecretModelDeclaration
 from core.modules.secrets.skills.declarations.secrets_skills import SECRETS_SKILLS
 from core.modules.secrets.migrations.m002_active_secret_index import ActiveSecretIndexMigration
 from core.modules.secrets.support.secret_nudges import SECRET_NUDGES
 from engine.module.module import Module
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
-from engine.viewer.window_key import WindowKey
-from engine.enums.window_place import WindowPlace
 from core.modules.secrets.commands.allow_program.allow_program_handler import AllowProgramHandler
 from core.modules.secrets.commands.delete_secret.delete_secret_handler import DeleteSecretHandler
 from core.modules.secrets.commands.edit_secret.edit_secret_handler import EditSecretHandler
@@ -32,7 +28,6 @@ from core.modules.secrets.migrations.m003_erased_deleted_secrets import ErasedDe
 from core.modules.secrets.rules.secrets_folder_rule import SecretsFolderRule
 from core.modules.secrets.seeders.secrets_seeder import SecretsSeeder
 from core.modules.secrets.upgrade.secrets_move import SecretsMove
-from core.modules.secrets.support.skeletons import SECRETS_SECRETS_SKELETON
 
 
 class SecretsModule(Module):
@@ -55,5 +50,4 @@ class SecretsModule(Module):
     guards = [SecretValueGuard]
     listeners = [SecretApprovalListener]
     driver_rules = [SecretsFolderRule]
-    windows = [WindowDeclaration("secrets.secrets", "Secrets", "secrets.js", WindowLoading.COMPONENT, skeleton=SECRETS_SECRETS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.HASH,
-                                 reads=["secret list", "secret show"], keys=[WindowKey("secrets", "secret list", events=["secret.*"])], runs=["secret fill", "secret allow", "secret make", "secret update", "secret delete"], events=["secret.*"])]
+    windows = SECRETS_WINDOWS

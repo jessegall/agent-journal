@@ -1,3 +1,4 @@
+from core.modules.tasks.windows.tasks_windows import TASKS_WINDOWS
 from core.modules.tasks.models.declarations.task_model_declaration import TaskModelDeclaration
 from core.modules.tasks.models.declarations.task_tag_model_declaration import TaskTagModelDeclaration
 from core.modules.tasks.models.declarations.task_wait_model_declaration import TaskWaitModelDeclaration
@@ -114,17 +115,7 @@ from core.modules.tasks.migrations.m024_task_focus_time import TaskFocusTimeMigr
 from core.modules.tasks.migrations.m026_drop_task_delegation import DropTaskDelegationMigration
 from core.modules.tasks.migrations.m027_task_holder_any_actor import TaskHolderAnyActorMigration
 from engine.module.module import Module
-from engine.viewer.window_search import WindowSearch
-from core.modules.tasks.support.task_searcher import TaskSearcher
-from engine.viewer.choice_option import ChoiceOption
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_key import WindowKey
-from engine.enums.key_loading import KeyLoading
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_place import WindowPlace
 from core.modules.tasks.support.task_inspector import TASK_INSPECTOR
-from engine.viewer.skeleton_part import SkeletonPart
-from engine.enums.window_loading import WindowLoading
 from engine.module.model_declaration import ModelDeclaration
 from core.modules.tasks.models.open_dependency import OpenDependency
 from core.modules.tasks.models.task_dependency import TaskDependency
@@ -137,9 +128,7 @@ from core.modules.tasks.support.block_conditions.task_started import TaskStarted
 from core.modules.tasks.support.block_conditions.task_closed import TaskClosed
 from core.modules.tasks.support.block_conditions.started_task_exists import StartedTaskExists
 from core.modules.tasks.support.block_conditions.task_logged import TaskLogged
-from core.modules.tasks.support.task_counts import TASK_COUNT_PERIODS
 from core.modules.tasks.support.block_conditions.task_stopped import TaskStopped
-from core.modules.tasks.support.skeletons import TASKS_TASKS_SKELETON
 from core.modules.tasks.support.task_settings import TASK_SETTINGS
 
 
@@ -170,24 +159,6 @@ class TasksModule(Module):
     former_event_keys = {"core.tasks.task.drop_hold": "core.tasks.task.release_holder"}
     docks = TASKS_DOCKS
     driver_rules = [TaskFiledRule, TaskStartRule, TaskReturnReminderRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, AutoModeTaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
-    windows = [WindowDeclaration("tasks.tasks", "Tasks", "tasks.js", WindowLoading.COMPONENT, skeleton=TASKS_TASKS_SKELETON, search=WindowSearch(TaskSearcher, "Search the tasks"), icon=WindowIcon.TASK, reads=["task board", "task tags", "task graph", "task list", "task show", "task inspect", "task comments", "link list", "plan place", "plan places", "plan board", "plan outline", "task-log list"],
-                               options=[ChoiceOption("rows", "Tasks per page", [("5", "5"), ("10", "10"), ("25", "25"), ("50", "50")], "10")],
-              runs=["task assign", "phase place", "task make", "task edit", "task tag", "task untag", "task delete", "task start", "task block", "task unblock", "task retest", "task close", "task cancel", "task reopen"], events=["task.*", "task_tag.*", "task_wait.*", "task_log.*"],
-              keys=[WindowKey("board", "task board", tab="list", arguments=["limit", "tag", "hide-plan-tasks"], events=["task.*", "task_tag.*", "task_wait.*"]),
-                    WindowKey("tags", "task tags", tab="list", events=["task_tag.*"]),
-                    WindowKey("group", "task board", arguments=["state", "limit", "before-id", "before-closed-at", "tag", "hide-plan-tasks"], loading=KeyLoading.REQUESTED),
-                    WindowKey("graph", "task graph", tab="graph", events=["task.*"]),
-                    WindowKey("places", "plan places", loading=KeyLoading.REQUESTED),
-                    WindowKey("task.*", "task show {id}", loading=KeyLoading.REQUESTED)]),
-               WindowDeclaration("tasks.task-details", "Details", "task-details.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.TASK, skeleton=[SkeletonPart.line()],
-                                 reads=["plan place"], runs=["task edit"]),
-               WindowDeclaration("tasks.task-chain", "What waits on what", "task-chain.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.TASK, skeleton=[SkeletonPart.line()],
-                                 reads=["task graph"], events=["task.*"], keys=[WindowKey("graph", "task graph", events=["task.*"])]),
-               WindowDeclaration("tasks.task-counts", "Task counts", "task-counts.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, skeleton=[SkeletonPart.line()],
-                                 options=[ChoiceOption("columns", "Columns", [("auto", "Auto"), ("1", "1"), ("2", "2"), ("4", "4")], "auto"),
-                                          ChoiceOption("completed", "Completed in", TASK_COUNT_PERIODS, "today")],
-                                 reads=["task counts"], events=["task.*"], keys=[WindowKey("counts", "task counts", arguments=["hours", "since"], events=["task.*"])]),
-               WindowDeclaration("tasks.task-log", "Log", "task-log.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.TASK, skeleton=[SkeletonPart.line()],
-                                 reads=["task-log list"], events=["task_log.*"])]
+    windows = TASKS_WINDOWS
     inspectors = [TASK_INSPECTOR]
     seeders = [TasksSeeder]

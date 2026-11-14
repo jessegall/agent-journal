@@ -1,3 +1,4 @@
+from core.modules.developer.windows.developer_windows import DEVELOPER_WINDOWS
 from core.modules.developer.models.declarations.private_data_mark_model_declaration import PrivateDataMarkModelDeclaration
 from core.modules.developer.commands.code_map.code_map_subcommand import CodeMapSubcommand
 from core.modules.developer.migrations.m003_private_data_mark_environment_index import PrivateDataMarkEnvironmentIndexMigration
@@ -10,12 +11,6 @@ from core.modules.developer.support.reader_time_tool import ReaderTimeTool
 from engine.performance.route_cost_tool import RouteCostTool
 from core.modules.developer.support.developer_route_cost_tool import DeveloperRouteCostTool
 from core.modules.developer.support.slow_tick_tool import SlowTickTool
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
-from engine.viewer.window_key import WindowKey
-from engine.enums.key_loading import KeyLoading
-from engine.enums.window_place import WindowPlace
 from core.modules.developer.commands.hook_numbers.hook_numbers_subcommand import HookNumbersSubcommand
 from core.modules.developer.commands.hook_requests.hook_requests_subcommand import HookRequestsSubcommand
 from core.modules.developer.commands.system_logs.system_logs_subcommand import SystemLogsSubcommand
@@ -32,7 +27,6 @@ from core.modules.developer.ticks.private_data_tick import PrivateDataTick
 from core.modules.developer.ticks.request_trace_import import RequestTraceImport
 from core.modules.developer.support.reporting_request_watch import ReportingRequestWatch
 from core.modules.developer.support.developer_settings import DEVELOPER_SETTINGS, TOOLS_SETTING, HOOK_DURATIONS_SETTING, HOOK_REQUEST_LOG_SETTING
-from core.modules.developer.support.skeletons import DEVELOPER_NUMBERS_SKELETON, DEVELOPER_HOOK_REQUESTS_SKELETON
 from core.modules.developer.models.hook_request import HookRequest
 from core.modules.developer.migrations.m001_hook_requests import HookRequestsMigration
 
@@ -56,10 +50,4 @@ class DeveloperModule(Module):
     bindings = {RouteCostTool: DeveloperRouteCostTool, RequestWatch: ReportingRequestWatch}
     performance_tools = [SlowTickTool, ReaderTimeTool, RouteCostTool]
     subcommands = [SystemLogsSubcommand, HookNumbersSubcommand, HookRequestsSubcommand, ResetHookNumbersSubcommand, RecordMarkMotionSubcommand, MarkMotionsSubcommand, CodeMapSubcommand]
-    windows = [WindowDeclaration("developer.numbers", "Numbers", "numbers.js", WindowLoading.COMPONENT, skeleton=DEVELOPER_NUMBERS_SKELETON, place=WindowPlace.PAGE, group="developer", required_settings=[TOOLS_SETTING, HOOK_DURATIONS_SETTING], icon=WindowIcon.FITNESS, reads=["developer numbers"], runs=["developer reset-numbers"],
-                                 keys=[WindowKey("numbers", "developer numbers", switches=["costliest"], reload_seconds=10)]),
-               WindowDeclaration("developer.hook-requests", "Request log", "hookRequests.js", WindowLoading.COMPONENT, skeleton=DEVELOPER_HOOK_REQUESTS_SKELETON, place=WindowPlace.PAGE, group="developer", required_settings=[TOOLS_SETTING, HOOK_REQUEST_LOG_SETTING], icon=WindowIcon.RULE, reads=["developer hook-requests", "queue list"], unqueued=True,
-                                 keys=[WindowKey("requests", "developer hook-requests", arguments=["categories", "families", "senders"]),
-                                       WindowKey("queue", "queue list", loading=KeyLoading.REQUESTED)]),
-               WindowDeclaration("developer.system-logs", "System logs", "systemLogs.js", WindowLoading.COMPONENT, skeleton=DEVELOPER_HOOK_REQUESTS_SKELETON, place=WindowPlace.PAGE, group="developer", required_settings=[TOOLS_SETTING], icon=WindowIcon.RULE, reads=["developer system-logs"], unqueued=True,
-                                 keys=[WindowKey("logs", "developer system-logs", arguments=["page", "source", "level", "limit"])])]
+    windows = DEVELOPER_WINDOWS

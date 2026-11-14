@@ -1,3 +1,4 @@
+from core.modules.plans.windows.plans_windows import PLANS_WINDOWS
 from core.modules.plans.models.declarations.plan_model_declaration import PlanModelDeclaration
 from core.modules.plans.models.declarations.phase_task_model_declaration import PhaseTaskModelDeclaration
 from core.modules.plans.models.declarations.plan_context_read_model_declaration import PlanContextReadModelDeclaration
@@ -70,13 +71,7 @@ from core.modules.plans.models.plan_outline_task import PlanOutlineTask
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.support.plan_shared_rows import PlanSharedRows
 from engine.module.module import Module
-from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_extension import WindowExtension
-from engine.viewer.window_key import WindowKey
-from engine.enums.key_loading import KeyLoading
-from engine.viewer.window_tab import WindowTab
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
 from engine.module.model_declaration import ModelDeclaration
 from core.modules.plans.models.phase import Phase
 from core.modules.plans.upgrade.plans_move import PlansMove
@@ -93,7 +88,6 @@ from core.modules.plans.support.plan_nudges import PLAN_NUDGES
 from core.modules.plans.seeders.plans_seeder import PlansSeeder
 from core.modules.plans.support.block_conditions.plan_approved import PlanApproved
 from core.modules.plans.support.block_conditions.plan_finished import PlanFinished
-from core.modules.plans.support.skeletons import PLANS_PLANS_SKELETON
 from engine.plan.plan_authors import PlanAuthors
 from core.modules.plans.bindings.plan_row_authors import PlanRowAuthors
 from core.modules.plans.bindings.focused_block_review_scope import FocusedBlockReviewScope
@@ -106,8 +100,6 @@ from core.modules.plans.support.plan_inspector import PLAN_INSPECTOR
 from core.modules.plans.commands.assign_plan.assign_plan_handler import AssignPlanHandler
 from core.modules.plans.commands.record_plan_agent.record_plan_agent_handler import RecordPlanAgentHandler
 from core.modules.plans.commands.assign_plan.assign_plan_subcommand import AssignPlanSubcommand
-from engine.viewer.skeleton_part import SkeletonPart
-from engine.enums.window_place import WindowPlace
 from core.modules.plans.commands.record_checkpoints.record_checkpoints_handler import RecordCheckpointsHandler
 from core.modules.plans.commands.approve_checkpoint.approve_checkpoint_handler import ApproveCheckpointHandler
 from core.modules.plans.migrations.m013_checkpoint_reviews import CheckpointReviewsMigration
@@ -164,20 +156,7 @@ class PlansModule(Module):
                                  menu=tuple([ButtonMenuItem("Approve with a message", "plan approve {row_id} --message={message}",
                                                            tuple([TextField("message", "Message to the agent")]),
                                                            "Your message reaches the agent before the plan starts")]))]
-    windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, skeleton=PLANS_PLANS_SKELETON, icon=WindowIcon.PLAN, reads=["plan board", "task list", "plan list", "plan show", "plan progress", "plan outline", "plan inspect", "plan comments", "link list", "phase list", "phase show"],
-                                 events=["plan.*", "phase.*", "task.*"], shared_reads=["plan show id", "plan progress plan_id", "phase list plan", "phase show id"],
-                                 keys=[WindowKey("open", "plan board", tab="open", events=["plan.*", "phase.*", "task.*"], arguments=["limit"]),
-                                       WindowKey("started", "plan board --started", tab="started", events=["plan.*", "phase.*", "task.*"], arguments=["limit"]),
-                                       WindowKey("closed", "plan board --closed", tab="closed", events=["plan.*", "phase.*", "task.*"], arguments=["limit"]),
-                                       WindowKey("older-open", "plan board", loading=KeyLoading.REQUESTED, arguments=["before-id"]),
-                                       WindowKey("older-closed", "plan board --closed", loading=KeyLoading.REQUESTED, arguments=["before-id"]),
-                                       WindowKey("plan.*", "plan show {id}", loading=KeyLoading.REQUESTED)],
-                                 tabs=[WindowTab("open", "Open", "plan board", "open_total"), WindowTab("started", "Started", "plan board --started", "started_total"), WindowTab("closed", "Closed", "plan board --closed", "closed_total")]),
-               WindowDeclaration("plans.plan-details", "Details", "plan-details.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.PLAN, skeleton=[SkeletonPart.line()]),
-               WindowDeclaration("plans.plan-phases", "Phases", "plan-phases.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.PLAN, skeleton=[SkeletonPart.line()],
-                                 runs=["task edit", "task cancel"]),
-               WindowDeclaration("plans.plan-timeline", "Timeline", "plan-timeline.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.PLAN, skeleton=[SkeletonPart.line()],
-                                 reads=["plan timeline"], events=["plan.*"])]
+    windows = PLANS_WINDOWS
     inspectors = [PLAN_INSPECTOR]
 
     shared_rows = [PlanSharedRows]

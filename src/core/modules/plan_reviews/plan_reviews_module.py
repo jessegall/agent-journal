@@ -1,15 +1,9 @@
+from core.modules.plan_reviews.windows.plan_reviews_windows import PLAN_REVIEWS_WINDOWS
 from core.modules.plan_reviews.models.declarations.checkpoint_review_model_declaration import CheckpointReviewModelDeclaration
 from core.modules.plan_reviews.skills.declarations.plan_reviews_skills import PLAN_REVIEWS_SKILLS
 from engine.module.module import Module
 from core.modules.plans.support.plan_button_slots import WAITING_PLAN_SLOTS
 from engine.viewer.button_declaration import ButtonCondition, ButtonDeclaration, Choice, ChoiceField, TemplateField, TextField
-from engine.viewer.skeleton_part import SkeletonPart
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_key import WindowKey
-from engine.enums.key_loading import KeyLoading
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
-from engine.enums.window_place import WindowPlace
 from core.modules.plan_reviews.commands.plan_review_tip.plan_review_tip_subcommand import PlanReviewTipSubcommand
 from core.modules.plan_reviews.commands.plan_rounds.plan_rounds_subcommand import PlanRoundsSubcommand
 from core.modules.plan_reviews.listeners.critique_report_listener import CritiqueReportListener
@@ -49,7 +43,4 @@ class PlanReviewsModule(Module):
                                  condition=ButtonCondition("state", tuple(["reviewing"])), tip="The plan is ready again"),
                ButtonDeclaration("plan_reviews.cancel", tuple(["row.plan"]), "Cancel the plan", "plan cancel {row_id} --reason={reason}", icon="stop", danger=True,
                                  condition=ButtonCondition("state", tuple(["reviewing"])), fields=tuple([TextField("reason", "Why is it cancelled?")]))]
-    windows = [WindowDeclaration("plan_reviews.rounds", "Review rounds", "rounds.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION,
-                                 slots=tuple(["inspector.plan"]), icon=WindowIcon.REVIEW,
-                                 reads=["plan rounds"], keys=[WindowKey("rounds.*", "plan rounds {id}", loading=KeyLoading.REQUESTED)], events=["plan.*"],
-                                 skeleton=tuple([SkeletonPart.line()]))]
+    windows = PLAN_REVIEWS_WINDOWS

@@ -1,14 +1,8 @@
+from core.modules.sharing.windows.sharing_windows import SHARING_WINDOWS
 from core.modules.sharing.models.declarations.share_link_model_declaration import ShareLinkModelDeclaration
 from core.modules.sharing.models.declarations.share_comment_model_declaration import ShareCommentModelDeclaration
 from core.modules.sharing.migrations.m003_share_comment_index import ShareCommentIndexMigration
 from engine.module.module import Module
-from engine.viewer.window_search import WindowSearch
-from core.modules.sharing.support.share_searcher import ShareSearcher
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_key import WindowKey
-from engine.enums.key_loading import KeyLoading
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
 from core.modules.sharing.commands.make_share_link.make_share_link_handler import MakeShareLinkHandler
 from core.modules.sharing.commands.make_share_link.make_share_link_subcommand import MakeShareLinkSubcommand
 from core.modules.sharing.commands.share_session.share_session_subcommand import ShareSessionSubcommand
@@ -29,7 +23,6 @@ from core.modules.sharing.migrations.m001_share_links import ShareLinksTableMigr
 from core.modules.sharing.migrations.m004_share_link_environment_index import ShareLinkEnvironmentIndexMigration
 from core.modules.sharing.seeders.sharing_seeder import SharingSeeder
 from core.modules.sharing.upgrade.share_move import ShareMove
-from core.modules.sharing.support.skeletons import SHARING_SHARES_SKELETON
 
 
 class SharingModule(Module):
@@ -48,9 +41,4 @@ class SharingModule(Module):
     handlers = [MakeShareLinkHandler, AcceptShareLinkHandler, CountShareViewHandler, LeaveShareCommentHandler]
     moves = [ShareMove]
     seeders = [SharingSeeder]
-    windows = [WindowDeclaration("sharing.shares", "Shares", "shares.js", WindowLoading.COMPONENT, skeleton=SHARING_SHARES_SKELETON, search=WindowSearch(ShareSearcher, "Search the links"), group="project", icon=WindowIcon.SHARE,
-                                 reads=["share list", "share comments", "share opens", "tunnel status"], runs=["share make", "share revoke", "share accept", "share deny"], events=["share_link.*", "share_comment.*"],
-                                 keys=[WindowKey("shares", "share list", events=["share_link.*", "share_comment.*"]),
-                                       WindowKey("tunnel", "tunnel status", loading=KeyLoading.REQUESTED),
-                                       WindowKey("opens", "share opens", arguments=["target"], loading=KeyLoading.REQUESTED),
-                                       WindowKey("comments.*", "share comments {id}", events=["share_comment.*"], loading=KeyLoading.REQUESTED)])]
+    windows = SHARING_WINDOWS

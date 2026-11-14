@@ -1,11 +1,7 @@
+from core.modules.project_rules.windows.project_rules_windows import PROJECT_RULES_WINDOWS
 from core.modules.project_rules.models.declarations.project_rule_model_declaration import ProjectRuleModelDeclaration
 from core.modules.project_rules.skills.declarations.project_rules_skills import PROJECT_RULES_SKILLS
 from engine.module.module import Module
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_key import WindowKey
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
-from engine.enums.window_place import WindowPlace
 from core.modules.project_rules.commands.make_rule.make_rule_handler import MakeRuleHandler
 from core.modules.project_rules.commands.make_rule.make_rule_subcommand import MakeRuleSubcommand
 from core.modules.project_rules.listeners.rule_dock_listener import RuleDockListener
@@ -16,7 +12,6 @@ from core.modules.project_rules.guards.rule_approval_guard import RuleApprovalGu
 from core.modules.project_rules.rules.start_rules_rule import StartRulesRule
 from core.modules.project_rules.support.rule_nudges import RULE_NUDGES
 from core.modules.project_rules.support.rule_settings import RULE_SETTINGS
-from core.modules.project_rules.support.skeletons import PROJECT_RULES_RULES_SKELETON
 from core.modules.project_rules.upgrade.rules_move import RulesMove
 
 class ProjectRulesModule(Module):
@@ -37,6 +32,4 @@ class ProjectRulesModule(Module):
     nudges = RULE_NUDGES
     skills = PROJECT_RULES_SKILLS
     driver_rules = [StartRulesRule]
-    windows = [WindowDeclaration("project-rules.rules", "Rules", "rules.js", WindowLoading.COMPONENT, skeleton=PROJECT_RULES_RULES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.RULE, reads=["rule list"],
-                                 keys=[WindowKey("rules", "rule list", events=["rule.*"], arguments=["limit", "before-id", "after-id"], page_size=50)],
-                                 runs=["rule approve", "rule deny", "rule edit", "rule remove"], events=["rule.*"])]
+    windows = PROJECT_RULES_WINDOWS

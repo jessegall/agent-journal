@@ -1,3 +1,4 @@
+from core.modules.skills.windows.skills_windows import SKILLS_WINDOWS
 from core.modules.skills.models.declarations.agent_skill_model_declaration import AgentSkillModelDeclaration
 from core.modules.skills.models.declarations.skill_request_model_declaration import SkillRequestModelDeclaration
 from core.modules.skills.skills.declarations.skills_skills import SKILLS_SKILLS
@@ -6,16 +7,9 @@ from core.modules.skills.rules.loaded_skill_rule import LoadedSkillRule
 from core.modules.skills.commands.set_required_skill.set_required_skill_subcommand import SetRequiredSkillSubcommand
 from core.modules.skills.commands.skill_requirements.skill_requirements_subcommand import SkillRequirementsSubcommand
 from core.modules.skills.migrations.m003_skill_session import SkillSessionMigration
-from engine.viewer.window_read_search import WindowReadSearch
 from core.modules.skills.listeners.skill_publish_listener import SkillPublishListener
 from core.modules.skills.support.skill_nudges import SKILL_NUDGES
 from engine.module.module import Module
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_key import WindowKey
-from engine.enums.key_loading import KeyLoading
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
-from engine.enums.window_place import WindowPlace
 from core.modules.skills.commands.agent_skill_unread.agent_skill_unread_subcommand import AgentSkillUnreadSubcommand
 from core.modules.skills.commands.load_skill.load_skill_handler import LoadSkillHandler
 from core.modules.skills.commands.request_skill.request_skill_handler import RequestSkillHandler
@@ -49,22 +43,9 @@ from core.modules.skills.support.skill_marks import SKILL_MARKS
 from core.modules.skills.support.start_skills import SKILL_SETTINGS
 from core.modules.skills.support.block_conditions.skill_loaded import SkillLoaded
 from core.modules.skills.support.block_conditions.skills_read import SkillsRead
-from core.modules.skills.support.skeletons import SKILLS_SKILLS_SKELETON
 from core.modules.skills.support.skill_inspector import SKILL_INSPECTOR
 
 
-SKILLS_READS = ["agent main", "agent-skill list", "agent-skill show", "skill list", "skill show", "skill requirements", "setting show", "trigger list", "trigger try", "profile list"]
-SKILLS_RUNS = ["skill set-required", "skill require", "agent-skill reset", "trigger make", "trigger edit", "trigger pause", "trigger enable", "trigger strike", "profile save"]
-SKILLS_EVENTS = ["agent_skill.*", "agent.*", "setting.*", "trigger.*"]
-SKILLS_KEYS = [WindowKey("catalogue", "skill list", events=["setting.*"]),
-    WindowKey("requirements", "skill requirements", events=["setting.*"]),
-    WindowKey("main-agent", "agent main", events=["agent.*"]),
-    WindowKey("loaded", "agent-skill list --limit 1000", arguments=["agent"], events=["agent_skill.*"], loading=KeyLoading.REQUESTED),
-    WindowKey("triggers", "trigger list --skill", events=["trigger.*"]),
-    WindowKey("profiles", "profile list", events=["setting.*"]),
-    WindowKey("text", "skill show", arguments=["folder"], loading=KeyLoading.REQUESTED),
-    WindowKey("agent-skill.*", "agent-skill show {id}", loading=KeyLoading.REQUESTED),
-    WindowKey("trial", "trigger try", arguments=["phrases", "sentence", "match-mode"], loading=KeyLoading.REQUESTED)]
 
 from core.modules.skills.commands.profile_skills.profile_skills_subcommand import ProfileSkillsSubcommand
 from core.modules.skills.commands.save_profile.save_profile_handler import SaveProfileHandler
@@ -89,10 +70,6 @@ class SkillsModule(Module):
     marks = SKILL_MARKS
     driver_rules = [LoadedSkillRule, ProfileSkillFirstRule, UnreadSkillStopRule, CommandSkillRule]
     agent_states = [SkillLoadRequired, SkillBlockCountdown]
-    windows = [WindowDeclaration("skills.skills", "Skills", "skills.js", WindowLoading.COMPONENT, skeleton=SKILLS_SKILLS_SKELETON, group="project", place=WindowPlace.PAGE, icon=WindowIcon.SKILL, search=WindowReadSearch("skill list", "Find a skill", ("folder", "description")),
-                                 reads=SKILLS_READS, runs=SKILLS_RUNS, events=SKILLS_EVENTS,
-                                 keys=SKILLS_KEYS),
-               WindowDeclaration("skills.skill-body", "Skill", "skill-body.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.SKILL, skeleton=SKILLS_SKILLS_SKELETON,
-                                 reads=SKILLS_READS, runs=SKILLS_RUNS, events=SKILLS_EVENTS, keys=SKILLS_KEYS)]
+    windows = SKILLS_WINDOWS
     inspectors = [SKILL_INSPECTOR]
     seeders = [SkillsSeeder]

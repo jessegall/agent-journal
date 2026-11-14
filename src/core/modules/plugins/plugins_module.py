@@ -1,3 +1,4 @@
+from core.modules.plugins.windows.plugins_windows import PLUGINS_WINDOWS
 from core.modules.plugins.models.declarations.queued_run_model_declaration import QueuedRunModelDeclaration
 from core.modules.plugins.models.declarations.plugin_model_declaration import PluginModelDeclaration
 from core.modules.plugins.models.declarations.plugin_setting_model_declaration import PluginSettingModelDeclaration
@@ -54,14 +55,6 @@ from core.modules.plugins.commands.plugin_file.plugin_file_subcommand import Plu
 from core.modules.plugins.support.plugin_nudges import PLUGIN_NUDGES
 from core.modules.plugins.support.plugin_project_reads import PluginProjectReads
 from engine.module.module import Module
-from engine.viewer.window_search import WindowSearch
-from core.modules.plugins.support.plugin_searcher import PluginSearcher
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_key import WindowKey
-from engine.enums.key_loading import KeyLoading
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
-from engine.enums.window_place import WindowPlace
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output_handler import AddPluginOutputHandler
 from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults_handler import ClearPluginFaultsHandler
 from core.modules.plugins.commands.clear_plugin_queue_file.clear_plugin_queue_file_handler import ClearPluginQueueFileHandler
@@ -116,7 +109,6 @@ from core.modules.plugins.rules.plugin_rule import PluginRule
 from core.modules.plugins.rules.plugin_program_rule import PluginProgramRule
 from core.modules.plugins.support.plugin_marks import PLUGIN_MARKS
 from core.modules.plugins.upgrade.plugins_move import PluginsMove
-from core.modules.plugins.support.skeletons import PLUGINS_PLUGINS_SKELETON
 
 
 class PluginsModule(Module):
@@ -132,18 +124,7 @@ class PluginsModule(Module):
     skills = PLUGINS_SKILLS
     models = [QueuedRunModelDeclaration, PluginModelDeclaration, PluginSettingModelDeclaration, PluginDeliveryModelDeclaration, PluginOutputModelDeclaration, PluginQueueFileModelDeclaration]
     moves = [PluginsMove]
-    windows = [WindowDeclaration("plugins.plugins", "Plugins", "plugins.js", WindowLoading.COMPONENT, skeleton=PLUGINS_PLUGINS_SKELETON, search=WindowSearch(PluginSearcher, "Search the plugins"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.PLUGIN, reads=["plugin events", "plugin service-log", "plugin record", "plugin list", "plugin settings", "plugin services", "plugin preview", "plugin latest", "plugin dashboard", "plugin dashboards", "plugin descriptions"],
-                                 keys=[WindowKey("plugins", "plugin list", events=["plugin.*"]),
-                                       WindowKey("dashboards", "plugin dashboards", events=["plugin.*"]),
-                                       WindowKey("descriptions", "plugin descriptions", events=["plugin.*"]),
-                                       WindowKey("services", "plugin services", events=["plugin.*"], reload_seconds=15),
-                                       WindowKey("preview", "plugin preview {source}", loading=KeyLoading.REQUESTED),
-                                       WindowKey("latest.*", "plugin latest {id}", name_ids=True, loading=KeyLoading.REQUESTED),
-                                       WindowKey("settings.*", "plugin settings {id}", name_ids=True, loading=KeyLoading.REQUESTED),
-                                       WindowKey("record.*", "plugin record {id}", name_ids=True, loading=KeyLoading.REQUESTED),
-                                       WindowKey("dashboard", "plugin dashboard {plugin}", tab="dashboard"),
-                                       WindowKey("dashboard-poll", "plugin dashboard {plugin}", tab="dashboard-poll", reload_seconds=60)],
-                                 runs=["plugin service", "plugin upgrade", "plugin enable", "plugin disable", "plugin install", "plugin remove", "plugin configure", "message send"], events=["plugin.*"])]
+    windows = PLUGINS_WINDOWS
     migrations = [QueuedRunsMigration, PlainColumnNamesMigration, PluginConfigMigration, PluginOutputEnvironmentMigration, PluginEventDeliveriesMigration, PluginSessionMigration, PluginOutputIndexMigration, PluginsTablesMigration, PluginQueueIndexMigration, PluginSettingEnvironmentsMigration, PluginRowsEnvironmentIndexMigration, QueuedRunNamesMigration]
     handlers = [QueuePluginRunHandler, CancelQueuedRunHandler, ChangePluginServiceHandler, LogPluginLineHandler, RefreshPluginConfigHandler, PrunePluginDeliveriesHandler, RunPluginCommandHandler, SendPluginStepLineHandler, DeliverFileEditHandler, UpgradePluginHandler, InstallPluginHandler, SwitchPluginHandler, ConfigurePluginHandler, RemovePluginHandler, DeliverPluginEventHandler, SwitchOffChangedPluginHandler, PublishPluginReadersHandler,
                 RecordPluginFaultHandler, ClearPluginFaultsHandler, AddPluginOutputHandler,
