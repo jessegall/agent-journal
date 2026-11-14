@@ -1,6 +1,6 @@
 from core.modules.dumps.migrations.m003_dump_closed_index import DumpClosedIndexMigration
 from engine.skill.skill_declaration import SkillDeclaration
-from engine.module.model_declaration import ModelDeclaration
+from engine.module.model_declaration import BUILT, ModelDeclaration
 from engine.module.module import Module
 from engine.viewer.window_search import WindowSearch
 from core.modules.dumps.support.dump_searcher import DumpSearcher
@@ -33,8 +33,6 @@ from core.modules.dumps.upgrade.dumps_move import DumpsMove
 from core.modules.dumps.seeders.dumps_seeder import DumpsSeeder
 from core.modules.dumps.support.dump_docks import DUMP_DOCKS
 from core.modules.dumps.support.skeletons import DUMPS_DUMPS_SKELETON
-
-BUILT = ["make", "edit", "delete"]
 
 
 class DumpsModule(Module):

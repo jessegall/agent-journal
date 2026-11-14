@@ -40,6 +40,7 @@ from core.modules.plugins.support.plugin_socket import PluginSocket
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 from core.modules.plugins.errors.plugin_stopped_error import PluginStoppedError
 from core.modules.plugins.support.script_pipes import ScriptPipes
+from core.modules.plugins.support.machine_runs import PROJECT_MARK_CHARACTERS
 
 # the time a script without a window of its own is shown with on its ticket
 SCRIPT_TICKET_LIMIT_MS = 60_000
@@ -49,7 +50,6 @@ SETTINGS_FILE = ".journal-settings.json"
 STOP_LIMIT_SECONDS = 1
 
 
-PROJECT_MARK_CHARACTERS = 12
 
 class PluginProgram:
     """Runs a plugin event through its service or a time-limited process."""

@@ -4,10 +4,9 @@ from dataclasses import dataclass
 from engine.enums.execution_priority import ExecutionPriority
 from engine.query.conditions.greater import Greater
 from engine.query.queries import Queries
-from engine.time.timestamp import Timestamp
+from engine.time.timestamp import HOUR_SECONDS, Timestamp
 from core.modules.processes.models.process import Process
 
-HOUR_SECONDS = 3600
 
 
 @dataclass(frozen=True)

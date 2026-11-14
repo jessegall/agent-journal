@@ -275,6 +275,7 @@ src/suites/coding/modules/workers/support/worker_task_copies.py:every task of th
 src/suites/coding/modules/workers/support/worker_test_failures.py:the flagged lines name every test failure of the tasks asked about
 src/suites/coding/modules/workers/support/worker_unfinished_tasks.py:a worker's unit is every task assigned to it, which can hold more than fifty
 src/suites/coding/modules/workers/ticks/merger_retry.py:the tick retries the merger in every environment with an unread line or an open visit
+src/suites/coding/modules/workers/ticks/stalled_worker_test_runs.py:every checkpoint reach still running is looked at for a run that has no tests
 src/suites/coding/modules/workers/ticks/stalled_worker_test_runs.py:every test of a checkpoint run still shown as running is looked at
 src/suites/coding/modules/workers/ticks/stalled_worker_test_runs.py:the run of every proof still shown as running is looked at
 src/suites/coding/modules/workers/ticks/stalled_worker_test_runs.py:the runs and checkpoints of those tests are read in one query each

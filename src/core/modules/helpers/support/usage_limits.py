@@ -8,9 +8,9 @@ from core.modules.helpers.models.enums.usage_limit_mode import UsageLimitMode
 from core.modules.helpers.models.enums.usage_limit_window import UsageLimitWindow
 from core.modules.helpers.models.usage_limit import UsageLimit
 from core.modules.helpers.support.limit_end import LimitEnd
+from engine.time.timestamp import HOUR_SECONDS
 from core.modules.usage.support.plan_window import PlanWindow
 
-HOUR_SECONDS = 3600
 
 
 class UsageLimits:

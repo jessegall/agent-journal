@@ -6,6 +6,7 @@ from engine.model.model import Model
 from engine.query.query import Query
 
 ALL_SUBCOMMANDS = ["make", "edit", "show", "list", "delete"]
+BUILT = ["make", "edit", "delete"]
 
 
 @dataclass(frozen=True)

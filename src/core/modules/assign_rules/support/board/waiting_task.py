@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-MINUTE_SECONDS = 60
-HOUR_SECONDS = 60 * MINUTE_SECONDS
+from engine.time.timestamp import HOUR_SECONDS, MINUTE_SECONDS
+
 DAY_SECONDS = 24 * HOUR_SECONDS
 
 
