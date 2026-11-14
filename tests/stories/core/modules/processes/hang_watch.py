@@ -65,7 +65,7 @@ def watch_tick(story: Story) -> None:
 
 def started_tree(story: Story, used: float | None) -> FakeGroupCpuTime:
     tree = FakeGroupCpuTime(used)
-    story.container.bind(GroupCpuTime, tree)
+    story.bind(GroupCpuTime, tree)
     story.container.get(OutputFolder).write_pid(1, MISSING_GROUP)
     watch_tick(story)
     return tree

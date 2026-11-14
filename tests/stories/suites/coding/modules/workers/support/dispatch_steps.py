@@ -9,7 +9,6 @@ import shlex
 from pathlib import Path
 
 from engine.actor.actor import Actor
-from engine.container.container import UNBUILT_MODULES, needed_values
 from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from engine.enums.actor_type import ActorType
@@ -47,18 +46,7 @@ def repository_environment(story: Story, branch: str = ENVIRONMENT_BRANCH, real_
 def memory_repository(story: Story) -> MemoryRepository:
     repository = MemoryRepository.sample(repository_folder(story))
     story.bind(WorktreeGit, MemoryWorktreeGit(story.container.get(WorkerFolderRuns), repository.history, story.container.get(ProcessExecutor), story.container.get(MergeBuilds)))
-    checked: dict[type, bool] = {}
-    for class_type in [key for key, instance in story.container.instances.items() if uses_git(type(instance), checked)]:
-        del story.container.instances[class_type]
     return repository
-
-
-def uses_git(class_type: type, checked: dict[type, bool]) -> bool:
-    if class_type not in checked:
-        checked[class_type] = False
-        needed = [] if class_type.__module__.partition(".")[0] in UNBUILT_MODULES else [hint for _, hint in needed_values(class_type)]
-        checked[class_type] = any(hint is WorktreeGit or (isinstance(hint, type) and uses_git(hint, checked)) for hint in needed)
-    return checked[class_type]
 
 
 def story_repository(story: Story) -> GitRepository:

@@ -263,8 +263,8 @@ def test_a_read_only_profile_folder_leaves_copy_undone_and_start_continues(profi
     def refuse_profile_write(files, path, *args, **kwargs):
         if ".agents/profiles" in str(path):
             raise PermissionError("read-only profile folder")
-        return save_file(files, path, *args, **kwargs)
-    monkeypatch.setattr(FileAccess, "write", refuse_profile_write)
+        return save_file(path, *args, **kwargs)
+    monkeypatch.setattr(FileAccess, "write", classmethod(refuse_profile_write))
     boot(story)
     expect_value(profile_path(story).exists(), False)
     expect_value(story.system_log_text().count("warning journal Profiles left unchanged: the profile folder is read-only"), 1)

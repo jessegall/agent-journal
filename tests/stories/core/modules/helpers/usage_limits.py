@@ -22,7 +22,7 @@ def report(story: Story, five_hours: float, seven_days: float = 0) -> None:
 
 def limited_story(new_story) -> Story:
     story = new_story(fixture=UserBuilder)
-    story.container.bind(ProgramStates, story.container.constructed(ProgramStates))
+    story.bind(ProgramStates, story.container.constructed(ProgramStates))
     return story
 
 

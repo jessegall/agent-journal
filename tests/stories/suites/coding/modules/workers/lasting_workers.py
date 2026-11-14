@@ -49,7 +49,7 @@ def worker_story(new_story):
     story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
     repository_environment(story)
     real_program_states(story)
-    story.container.bind(ProgramLockdown, story.container.constructed(UsageLockdown))
+    story.bind(ProgramLockdown, story.container.constructed(UsageLockdown))
     return story
 
 

@@ -69,7 +69,7 @@ PRE_COMPACT = HookSamples.sample("compact").with_fields(accepts_lines=False)
 
 def overview_story(new_story):
     story = new_story(SAMPLES, fixture=SampleSuiteChoice)
-    story.container.bind(OverviewFirst, OverviewFirst())
+    story.bind(OverviewFirst, OverviewFirst())
     return story
 
 
@@ -123,7 +123,7 @@ class CartWork(StoryFixture):
 
 def compacted_story(new_story):
     story = new_story(SAMPLES, fixture=CartWork)
-    story.container.bind(OverviewFirst, OverviewFirst())
+    story.bind(OverviewFirst, OverviewFirst())
     return story
 
 
@@ -131,7 +131,7 @@ def compacted_story(new_story):
 def compacted(new_story):
     story = compacted_story(new_story)
     typing = KeptTyping()
-    story.container.bind(TerminalTyping, typing)
+    story.bind(TerminalTyping, typing)
     compaction_lines = story.hook("s-1", PRE_COMPACT).lines
     story.run_listeners()
     start_lines = story.hook("s-1", COMPACTION).lines
@@ -176,7 +176,7 @@ def expect_replace_without(text, text_2, text_3, expected) -> None:
 
 def test_the_overview_lists_the_skills_the_agent_must_load_with_how_to_load_each(new_story):
     story = new_story(SAMPLES, fixture=SampleSuiteChoice)
-    story.container.bind(MainAgentSkills, MainAgentSkills())
+    story.bind(MainAgentSkills, MainAgentSkills())
     agent = hook_agent(story, story.hook("s-1", HookSamples.session_start()))
     story.run_listeners()
     story.expect_text("skill required", "load this first with the Skill tool: journal-tasks", actor=agent)

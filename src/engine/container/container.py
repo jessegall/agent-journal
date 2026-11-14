@@ -29,6 +29,14 @@ def needed_values(class_type: type) -> tuple[tuple[str, type], ...]:
     return tuple((name, hints[name]) for name in needed)
 
 
+def depends_on(class_type: type, checked: dict[type, bool]) -> bool:
+    if class_type not in checked:
+        checked[class_type] = False
+        needed = [] if class_type.__module__.partition(".")[0] in UNBUILT_MODULES else [hint for _, hint in needed_values(class_type)]
+        checked[class_type] = any(isinstance(hint, type) and depends_on(hint, checked) for hint in needed)
+    return checked[class_type]
+
+
 class Container:
     """Creates the objects the journal needs and hands each one out, creating it only once; a module may name
     the class that stands in for an interface of the core."""
@@ -39,6 +47,15 @@ class Container:
         self.build_places: dict[type, str] = {}
 
     def bind(self, class_type: type[T], instance: T) -> None:
+        self.instances[class_type] = instance
+
+    # every instance built on the old one is forgotten with its build, so the next get builds it on the replacement
+    def replace(self, class_type: type[T], instance: T) -> None:
+        checked: dict[type, bool] = {class_type: True}
+        for built_type, built in list(self.instances.items()):
+            if built_type not in (class_type, Container) and depends_on(type(built), checked):
+                del self.instances[built_type]
+                self.build_places.pop(type(built), None)
         self.instances[class_type] = instance
 
     def substitute(self, class_type: type, implementation: type) -> None:

@@ -21,7 +21,7 @@ class CompactionSkills(StoryFixture):
     parent = CodingEnvironment
 
     def steps(self, story):
-        story.container.bind(SkillRequirement, SkillRequirement())
+        story.bind(SkillRequirement, SkillRequirement())
         story.run("skill write")
         story.run(f"setting make {AFTER_COMPACTION_KEY} {AFTER_COMPACTION}")
 

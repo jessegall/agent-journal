@@ -19,7 +19,7 @@ def builder(new_story):
 def test_a_lost_prompt_is_recorded_once_over_run_hooks(builder, tmp_path):
     path = transcript(tmp_path, prompt_row(builder, "please look at the cart"))
     run_hook(builder, path, TOOL_FINISHED)
-    builder.container.bind(TranscriptEntries, TranscriptEntries())
+    builder.bind(TranscriptEntries, TranscriptEntries())
     run_hook(builder, path, TOOL_FINISHED)
     builder.expect_rows(prompt_summaries(builder) == ["please look at the cart"])
 
@@ -35,7 +35,7 @@ def test_a_typed_prompt_is_read_already_and_asks_for_no_reply(builder):
 def test_a_lost_typed_prompt_shows_in_the_chat_once(builder, tmp_path):
     path = transcript(tmp_path, prompt_row(builder, "please look at the cart"))
     run_hook(builder, path, TOOL_FINISHED)
-    builder.container.bind(TranscriptEntries, TranscriptEntries())
+    builder.bind(TranscriptEntries, TranscriptEntries())
     run_hook(builder, path, TOOL_FINISHED)
     expect_chat_count(builder, "please look at the cart", 1)
 

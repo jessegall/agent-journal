@@ -18,7 +18,7 @@ from tests.stories.support.story_checks import expect_outcome_with, expect_value
 def story_with_worker(new_story, typing=None):
     story = new_story(fixture=BuilderStarted)
     if typing is not None:
-        story.container.bind(TerminalTyping, typing)
+        story.bind(TerminalTyping, typing)
     worker = Actor(story.new_row_id(f"agent start s-9 claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
     return story, worker
 

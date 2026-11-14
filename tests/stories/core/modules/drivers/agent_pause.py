@@ -48,7 +48,7 @@ class FakeTyping(TerminalTyping):
 
 def test_a_paused_agents_tool_calls_are_refused_until_it_is_resumed(new_story):
     story = new_story(fixture=UserJoined)
-    story.container.bind(TerminalTyping, FakeTyping())
+    story.bind(TerminalTyping, FakeTyping())
     story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", f"paused {agent_label(story, story.agent.id)}", actor=story.user)
     story.expect_hook_refusal("s-1", EDIT_SAMPLE, "The user paused you")
     story.expect_success(f"agent resume {agent_number(story, story.agent.id)}", f"resumed {agent_label(story, story.agent.id)}", actor=story.user)
@@ -57,7 +57,7 @@ def test_a_paused_agents_tool_calls_are_refused_until_it_is_resumed(new_story):
 
 def test_a_paused_agent_may_read_and_run_message_commands_and_is_not_told_of_the_pause_on_what_it_may_do(new_story):
     story = new_story(fixture=UserJoined)
-    story.container.bind(TerminalTyping, FakeTyping())
+    story.bind(TerminalTyping, FakeTyping())
     story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
     story.expect_hook_refusal("s-1", JOURNAL_SAMPLE, "The user paused you")
     story.expect_hook_refusal("s-1", NESTED_JOURNAL_SAMPLE, "The user paused you")
@@ -106,7 +106,7 @@ def test_a_paused_agent_cannot_resume_itself_and_the_user_resumes_it(new_story):
 
 def paused_story(new_story, fixture):
     story = new_story(fixture=fixture)
-    story.container.bind(TerminalTyping, FakeTyping())
+    story.bind(TerminalTyping, FakeTyping())
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     return story
 
@@ -175,7 +175,7 @@ def watched_paused_agent(new_story):
             transaction_flags.append(database.has_transaction)
             super().send_line(agent_id, line)
 
-    story.container.bind(TerminalTyping, WatchedTyping())
+    story.bind(TerminalTyping, WatchedTyping())
     story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
     return story, database, transaction_flags
 

@@ -107,7 +107,7 @@ def foreign_run(story: Story, actor: Actor) -> Process:
 
 def tree_of(story: Story, tree: GroupCpuTime, group: int, *processes: Process) -> None:
     """The given CPU time stands for the process trees of the runs, each under the given group."""
-    story.container.bind(GroupCpuTime, tree)
+    story.bind(GroupCpuTime, tree)
     for process in processes:
         story.container.get(OutputFolder).write_pid(process.id, group)
 

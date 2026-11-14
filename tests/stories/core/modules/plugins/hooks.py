@@ -130,9 +130,9 @@ def read_counter(monkeypatch, file: Path) -> list[Path]:
 
     def counted(self, path):
         reads.extend([Path(path).resolve()] if Path(path).resolve() == file.resolve() else [])
-        return read(self, path)
+        return read(path)
 
-    monkeypatch.setattr(FileAccess, "binary", counted)
+    monkeypatch.setattr(FileAccess, "binary", classmethod(counted))
     return reads
 
 

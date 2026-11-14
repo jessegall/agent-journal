@@ -140,7 +140,7 @@ def kept_typing(story) -> list[tuple[int, str]]:
         def send_line(self, agent_id: int, line: str) -> None:
             entered.append((agent_id, line))
 
-    story.container.bind(TerminalTyping, KeptTyping())
+    story.bind(TerminalTyping, KeptTyping())
     return entered
 
 

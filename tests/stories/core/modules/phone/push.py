@@ -43,7 +43,7 @@ class FakeTransport(PushTransport):
 
 def subscribed_story(new_story, service: FakePush | None = None):
     story = paired_story(new_story)
-    story.container.bind(PushService, service or FakePush())
+    story.bind(PushService, service or FakePush())
     story.expect_success(f"phone subscribe {TOKEN_DIGEST} '{SUBSCRIPTION}'", actor=Actor.core())
     return story
 
@@ -102,7 +102,7 @@ def test_a_plan_made_ready_is_pushed_by_the_ticker_round(new_story):
 def test_a_phone_that_never_subscribed_is_not_pushed(new_story):
     service = FakePush()
     story = paired_story(new_story)
-    story.container.bind(PushService, service)
+    story.bind(PushService, service)
     ask(story)
     tick(story)
     expect_row(service, sent=[])
@@ -138,8 +138,8 @@ def built_service(story, address: str | None):
     from core.modules.phone.push.web_push import WebPush
 
     transport = FakeTransport()
-    story.container.bind(PushTransport, transport)
-    story.container.bind(Tunnels, FakeTunnels(address))
+    story.bind(PushTransport, transport)
+    story.bind(Tunnels, FakeTunnels(address))
     return transport, WebPush(story.container.get(Bus), story.container.get(Tunnels), story.container.get(Clock), transport)
 
 

@@ -25,7 +25,7 @@ DEFAULTS = ("journal", "journal-memory", "journal-etiquette")
 
 def environment(new_story):
     story = new_story(DUE, fixture=CodingEnvironment)
-    story.container.bind(SkillRequirement, SkillRequirement())
+    story.bind(SkillRequirement, SkillRequirement())
     story.run("skill write")
     return story
 

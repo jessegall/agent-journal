@@ -12,7 +12,7 @@ from core.modules.skills.support.start_skills import SESSION_START_KEY
 def test_one_request_asks_for_the_due_skills_of_an_agent_many_times_and_reads_them_once(new_story):
     story = environment(new_story)
     story.run(f'setting make {SESSION_START_KEY} \'["journal-notes"]\'')
-    story.container.bind(SkillRequirement, SkillRequirement())
+    story.bind(SkillRequirement, SkillRequirement())
     start(story)
     unread = story.container.get(UnreadSkills)
     with story.repeated_work.request():

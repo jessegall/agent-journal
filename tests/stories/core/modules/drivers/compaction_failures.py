@@ -80,7 +80,7 @@ def test_f9_after_a_request_that_failed_a_person_sends_the_compaction_by_hand_an
 def test_f2_a_missing_launcher_fails_the_request_with_its_cause_and_the_person_is_told_once(new_story):
     story = new_story(fixture=LimitEnabled)
     story.typing = MissingLauncherTyping()
-    story.container.bind(TerminalTyping, story.typing)
+    story.bind(TerminalTyping, story.typing)
     has_context(story, LIMIT_TOKENS)
     stops(story)
     story.run_listeners()

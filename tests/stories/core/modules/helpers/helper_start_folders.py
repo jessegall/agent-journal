@@ -23,7 +23,7 @@ def started_folder(new_story, monkeypatch):
     (story.checkout / "CLAUDE.md").write_text("The project's own instructions\n")
     (story.checkout / "src").mkdir(exist_ok=True)
     (story.checkout / "src" / "cart.py").write_text("TOTAL = 9\n")
-    story.container.bind(HelperPrograms, NoProgramChecks())
+    story.bind(HelperPrograms, NoProgramChecks())
     story.start_folder = folders.start_folder(helper_agent(story))
     yield story
     shutil.rmtree(story.start_folder, ignore_errors=True)

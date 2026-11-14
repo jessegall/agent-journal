@@ -37,7 +37,7 @@ class RecordedTyping(TerminalTyping):
 
 def typing_recorded(story):
     story.typing = RecordedTyping()
-    story.container.bind(TerminalTyping, story.typing)
+    story.bind(TerminalTyping, story.typing)
     return story
 
 
@@ -254,7 +254,7 @@ def test_an_agent_left_at_its_prompt_by_a_compaction_is_woken(agent):
 
 @pytest.fixture
 def overview_block(agent):
-    agent.container.bind(OverviewFirst, OverviewFirst())
+    agent.bind(OverviewFirst, OverviewFirst())
     agent.hook(SESSION, PRE_COMPACT)
     agent.hook(SESSION, COMPACTION_START)
     agent.advance(timedelta(seconds=40))

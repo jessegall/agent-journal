@@ -150,9 +150,12 @@ class Story:
         self.container.get(Database).close()
         self.journal.discard_writes()
 
+    # what was built on the old one is built again on the replacement, the listeners too
     def bind(self, class_type: type[S], replacement: S) -> None:
         self.replacements[class_type] = replacement
-        self.container.bind(class_type, replacement)
+        if CommitListenerRunner in self.container.instances:
+            self.container.get(CommitListenerRunner).close()
+        self.container.replace(class_type, replacement)
 
     def run(self, line: str, actor: Actor | None = None, environment_id: int | None = None, process_id: int | None = None) -> LineOutcome:
         stream = io.StringIO()

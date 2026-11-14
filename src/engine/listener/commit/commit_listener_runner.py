@@ -89,9 +89,11 @@ class CommitListenerRunner(RoundState):
     def listener_set(self) -> ListenerSet:
         return ListenerSet(ListenerSet.thread_name(self.container), self.registry, self.container, sorted((entry for entry in self.registry.listeners if entry.timing is ListenerTiming.COMMIT), key=self.run_order))
 
+    # the next round builds the listeners again, from the container as it is then
     def close(self) -> None:
         if "listener_set" in self.__dict__:
             self.listener_set.close()
+            del self.__dict__["listener_set"]
 
     def is_urgent(self, entry: ListenerEntry) -> bool:
         return self.run_order(entry) < 0

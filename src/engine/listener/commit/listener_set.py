@@ -19,9 +19,9 @@ class ListenerSet:
         self.key = (thread_name, registry.fingerprint)
         if self.key in ListenerSet.built_sets:
             raise ListenerRebuiltError(thread_name, registry.fingerprint)
-        ListenerSet.built_sets.add(self.key)
         self.entries = tuple(entries)
         self.instances: dict[str, Any] = {entry.name: container.get(entry.path.loaded()) for entry in self.entries}
+        ListenerSet.built_sets.add(self.key)
         self.event_matches: dict[str, bool] = {}
 
     def matches(self, event_name: str) -> bool:

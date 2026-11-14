@@ -42,6 +42,6 @@ class WatchedClient(FakeTunlerClient):
 def test_a_call_that_waits_on_tunler_holds_no_write_lock(new_story, line):
     story = new_story(MODULE, fixture=UserJoined)
     client = WatchedClient(story.container.get(Database))
-    story.container.bind(TunlerClient, client)
+    story.bind(TunlerClient, client)
     story.expect_success(line, actor=story.user)
     story.expect_rows(client.held == [False])

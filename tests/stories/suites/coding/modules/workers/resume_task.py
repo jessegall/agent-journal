@@ -56,9 +56,9 @@ def test_a_task_sent_to_a_stopped_worker_resumes_it_once(new_story, monkeypatch,
     def read_hook_file(access, file):
         if Path(file).resolve() == path.resolve():
             reads.append(str(file))
-        return original(access, file)
+        return original(file)
 
-    monkeypatch.setattr(FileAccess, "binary", read_hook_file)
+    monkeypatch.setattr(FileAccess, "binary", classmethod(read_hook_file))
     monkeypatch.setattr(AgentConversations, "exists", lambda conversations, agent: True)
     launches = []
     original_hand = AgentLauncher.hand
