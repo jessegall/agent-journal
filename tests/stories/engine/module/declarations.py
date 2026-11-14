@@ -70,7 +70,7 @@ def test_story_322_a_declaration_class_no_module_lists_is_found_by_the_check(tmp
     assert "CartWindow" in report
 
 
-@pytest.mark.parametrize("entry", ['WindowDeclaration("shop.cart", "Cart", "cart.js")', '"shop.cart"', '("shop.cart", "Cart")'])
+@pytest.mark.parametrize("entry", ['WindowDeclaration("shop.cart", "Cart", "cart.js")', '"shop.cart"', '("shop.cart", "Cart")'], ids=["call", "literal", "tuple"])
 def test_story_369_a_list_entry_that_is_a_call_a_literal_or_a_tuple_is_refused_naming_the_attribute_and_file(tmp_path, entry):
     module = CLEAN_MODULE.replace("windows = [CartWindow]", f"windows = [{entry}]")
     report = refused(judged(tmp_path, LIST_ENTRY_RULE, {"shop_module.py": module, "cart_window.py": CART_WINDOW}))
