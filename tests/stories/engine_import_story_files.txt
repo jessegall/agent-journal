@@ -745,7 +745,6 @@ tests/stories/suites/coding/modules/workers/held_tasks.py
 tests/stories/suites/coding/modules/workers/helper_count.py
 tests/stories/suites/coding/modules/workers/helper_types.py
 tests/stories/suites/coding/modules/workers/important_lines.py
-tests/stories/suites/coding/modules/workers/index_lock_start.py
 tests/stories/suites/coding/modules/workers/instruction_files.py
 tests/stories/suites/coding/modules/workers/instruction_refresh.py
 tests/stories/suites/coding/modules/workers/interrupted_cut.py

@@ -423,7 +423,6 @@ tests/stories/suites/coding/modules/workers/helper_count.py
 tests/stories/suites/coding/modules/workers/helper_types.py
 tests/stories/suites/coding/modules/workers/hoarding_and_claims.py
 tests/stories/suites/coding/modules/workers/important_lines.py
-tests/stories/suites/coding/modules/workers/index_lock_start.py
 tests/stories/suites/coding/modules/workers/interrupted_cut.py
 tests/stories/suites/coding/modules/workers/job_source_reads.py
 tests/stories/suites/coding/modules/workers/keep_going_blocked.py
