@@ -376,6 +376,8 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                         @grab="(event, key) => grabTab(event, id, key)"
                         @pick="(key) => pick(id, key)"
                         @close="(key) => closeTab(id, key)"
+                        @split="(key, side) => split(id, side, key)"
+                        @detach="(key) => detach(id, key)"
                     >
                         <Btn variant="icon" class="pane-add-button" data-add-window aria-label="Add a window" title="Add a window" @click="adding = adding === id ? null : id"><Icon name="plus" :size="13" /></Btn>
                         <Btn variant="icon" class="pane-menu-button" aria-label="Window settings" title="Window settings" @click="toggleMenu(id)"><Icon name="dots-vertical" :size="13" /></Btn>

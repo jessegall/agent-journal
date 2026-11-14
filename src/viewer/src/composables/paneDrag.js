@@ -1,4 +1,5 @@
 import {onUnmounted, ref} from "vue";
+import {onMac} from "../platform/keys.js";
 
 const THRESHOLD = 6;
 
@@ -7,7 +8,8 @@ export function usePaneDrag(aim, land) {
     let release = null;
 
     function grab(e, grip) {
-        if (e.button) return;
+        // a right press, and Ctrl+click on a Mac, open the tab's menu and never pick or drag it
+        if (e.button || (onMac && e.ctrlKey)) return;
         e.preventDefault();
         const start = {x: e.clientX, y: e.clientY};
         let moving = false;
