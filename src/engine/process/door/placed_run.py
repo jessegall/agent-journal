@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from engine.errors.long_child_error import LongChildError
+from engine.execution.current_execution import CurrentExecution
 from engine.process.door.execution import Execution
 from engine.process.door.execution_request import ExecutionRequest
 
@@ -17,6 +19,11 @@ class PlacedRun:
     environment_id: int | None = None
     is_main_agent: bool = False
     is_waiting: bool = False
+
+    # a row that still waits sits in the long lane, which a hook may never wait on
+    def refuse_hook_wait(self) -> None:
+        if self.is_waiting and CurrentExecution.read().is_hook:
+            raise LongChildError(self.request.process_type.value, self.request.text)
 
     def failed(self, exit_code: int, reason: str) -> Execution:
         return Execution.failed(self.process_id, exit_code, reason)

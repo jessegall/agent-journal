@@ -1,7 +1,7 @@
 from server.execution.session_starters import SessionStarters
 from server.execution.execution_priorities import ExecutionPriorities
 from server.execution.viewer_tickets import ViewerTickets
-from engine.execution.current_execution import CurrentExecution
+from engine.execution.current_execution import HOOK_CLASS, CurrentExecution
 from engine.enums.log_source import LogSource
 from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
@@ -51,7 +51,7 @@ class HookDatabase:
     @contextmanager
     def used(self, priority: ExecutionPriority, wait_seconds: float, owner: str = "", event_name: str = "hook") -> Generator[Database]:
         with self.executions.admitted(self.hook_ticket(priority, event_name), owner, wait_seconds) as queued, \
-                CurrentExecution(queued.ticket.priority, "hook", queued.ticket.line, queued.ticket).applied():
+                CurrentExecution(queued.ticket.priority, HOOK_CLASS, queued.ticket.line, queued.ticket).applied():
             database = self.free_database()
             busy_timeout_seconds = database.busy_timeout_seconds()
             try:

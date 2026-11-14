@@ -8,6 +8,8 @@ from dataclasses import dataclass
 
 from engine.enums.execution_priority import ExecutionPriority
 
+HOOK_CLASS = "hook"
+
 
 @dataclass(frozen=True)
 class CurrentExecution:
@@ -18,6 +20,10 @@ class CurrentExecution:
     class_name: str | None = None
     line: str | None = None
     ticket: ExecutionTicket | None = None
+
+    @property
+    def is_hook(self) -> bool:
+        return self.class_name == HOOK_CLASS
 
     @classmethod
     def read(cls) -> "CurrentExecution":

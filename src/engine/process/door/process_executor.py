@@ -25,6 +25,7 @@ class ProcessExecutor:
     def execute(self, request: ExecutionRequest) -> Execution:
         placed = self.placement.placed(request)
         try:
+            placed.refuse_hook_wait()
             self.gate.opened(placed)
             with self.placement.admitted(placed), self.admission.admitted(placed):
                 execution = self.runner.run(placed)
