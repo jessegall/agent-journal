@@ -23,7 +23,7 @@ from engine.testing.expectations.expect_row import expect_row
 from suites.coding.support.coding_nudges import TASK_ASSIGNMENT
 from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING
 
-SCHEMA_EXAMPLES = Path(__file__).resolve().parents[3] / "tools" / "journal-hook" / "event" / "testdata" / "schema"
+SCHEMA_EXAMPLES = Path(__file__).resolve().parents[5] / "tools" / "journal-hook" / "event" / "testdata" / "schema"
 
 
 def example(name: str) -> object:
