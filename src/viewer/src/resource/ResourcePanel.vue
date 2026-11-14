@@ -1,6 +1,7 @@
 <script setup>
 import {computed, nextTick, onUnmounted, ref, watch} from "vue";
 import {opening, peek, route, unpeek} from "../route.js";
+import FileInspector from "./FileInspector.vue";
 import InspectorPanel from "./InspectorPanel.vue";
 import {cliOf} from "../domain/resourceNouns.js";
 
@@ -9,6 +10,8 @@ const props = defineProps({read: {type: Function, required: true}, catalogue: {t
 
 const opened = computed(() => route.value.open);
 const term = computed(() => (opened.value ? cliOf(opened.value.table) : ""));
+// a file has no number and no declared inspector: its own inspector shows the Files browser
+const isFile = computed(() => opened.value?.table === "file");
 const fullyOpen = ref(false);
 
 const close = () => opening([]);
@@ -34,7 +37,9 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     <Teleport to="body">
         <Transition name="side" appear @before-enter="fullyOpen = false" @after-enter="fullyOpen = true">
             <div v-if="opened" :class="['veil', {fades: term === 'test-queue'}]" @click.self="close">
+                <FileInspector v-if="isFile" :path="opened.id" :environment="environment" :backed="route.stack.length > 1" @close="close" @back="unpeek" />
                 <InspectorPanel
+                    v-else
                     ref="panel"
                     :term="term"
                     :id="opened.id"

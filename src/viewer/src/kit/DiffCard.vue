@@ -3,7 +3,7 @@ import {computed, onMounted, onUnmounted, ref} from "vue";
 import TimeAgo from "../../kit/TimeAgo.vue";
 import Icon from "./Icon.vue";
 import {copying} from "../domain/contextItems.js";
-import {href} from "../route.js";
+import {href, openFileInspector} from "../route.js";
 import {vContext} from "../../kit/vContext.js";
 
 const props = defineProps({
@@ -112,6 +112,7 @@ onUnmounted(() => sized && sized.disconnect());
             <span :class="['diff-card-count', 'add', {zero: !added}]">+{{ added }}</span>
             <span :class="['diff-card-count', 'del', {zero: !removed}]">−{{ removed }}</span>
             <TimeAgo class="diff-card-ago" :at="at" />
+            <button type="button" class="diff-card-open" title="Open in the inspector" aria-label="Open in the inspector" data-diff-open @click.stop="openFileInspector(path)"><Icon name="open" :size="13" /></button>
             <template v-if="whole && whole.old !== undefined">
                 <button
                     type="button"
@@ -472,5 +473,20 @@ onUnmounted(() => sized && sized.disconnect());
     from {
         opacity: 0;
     }
+}
+
+.diff-card-open {
+    display: inline-flex;
+    padding: 2px;
+    border: 0;
+    border-radius: 4px;
+    background: none;
+    color: var(--text-3);
+    cursor: pointer;
+}
+
+.diff-card-open:hover {
+    background: var(--hover);
+    color: var(--text);
 }
 </style>

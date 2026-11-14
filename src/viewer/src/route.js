@@ -26,6 +26,8 @@ window.addEventListener("hashchange", () => {
     leaveOldAddress();
 });
 
+const FILE_TABLE = "file";
+
 export const route = computed(() => {
     const [path, query = ""] = hash.value.replace(/^#\/?/, "").split("?");
     const [page = "", n = ""] = path.split("/");
@@ -36,7 +38,8 @@ export const route = computed(() => {
         .map((entry) => {
             const [part, env = ""] = entry.split("@");
             const [table = "", id = "", comment = ""] = part.split(":");
-            return {table, id: Number(id), comment: Number(comment) || 0, env};
+            // a file has no number: its inspector is named by its path, which the address keeps encoded
+            return {table, id: table === FILE_TABLE ? decodeURIComponent(id) : Number(id), comment: Number(comment) || 0, env};
         });
     return {
         env: environment.value,
@@ -76,7 +79,7 @@ export function shareAddress(ref, from = window.location.href) {
     return address.href;
 }
 
-const entry = (open) => `${open.table}:${open.id}${open.comment ? `:${open.comment}` : ""}${open.env ? `@${open.env}` : ""}`;
+const entry = (open) => `${open.table}:${open.table === FILE_TABLE ? encodeURIComponent(open.id) : open.id}${open.comment ? `:${open.comment}` : ""}${open.env ? `@${open.env}` : ""}`;
 
 export function opening(stack, sub = "") {
     const [path, query = ""] = location.hash.replace(/^#/, "").split("?");
@@ -110,6 +113,9 @@ export function peek(table, id, comment = 0, sub = "") {
     const at = stack.findIndex((open) => open.table === table && open.id === id);
     opening([...(at < 0 ? stack : stack.slice(0, at)), {table, id, comment}], sub);
 }
+
+// the file inspector: the Files browser in the widest inspector, on a path, or on nothing for the project's own files
+export const openFileInspector = (path = "") => peek(FILE_TABLE, path);
 
 function peekThere(env, table, id, comment = 0, sub = "") {
     if (env === route.value.env) return peek(table, id, comment, sub);

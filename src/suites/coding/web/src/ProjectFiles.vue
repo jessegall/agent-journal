@@ -48,6 +48,10 @@ function showComment(id) {
 }
 const lineCount = computed(() => (chosen.value?.text ?? "").split("\n").length);
 
+// the file inspector hands the window the path it opens on
+const start = view.option("start").value;
+if (start) browser.open(start);
+
 // an address can name a file to open, and the line to show first, as a plugin's dashboard does
 const address = new URLSearchParams(globalThis.location.search);
 if (address.get("file")) browser.open(address.get("file"), Number(address.get("line")) || 0);

@@ -74,7 +74,7 @@ watchEffect(() => {
         <ToastArea :toasts="toasts" />
         <template v-if="catalogue.offered.length">
             <template v-if="standalone">
-                <SidebarPages :journal-version="journalVersion" :windows="catalogue.pages.value" :environments="environments" :current="environment" :open="page" :navigate="navigate" />
+                <SidebarPages :journal-version="journalVersion" :windows="catalogue.pages.value" :environments="environments" :current="environment" :open="page" :navigate="navigate" :layout-line="shellLine" />
             </template>
             <div class="view-window-main">
                 <template v-if="standalone">

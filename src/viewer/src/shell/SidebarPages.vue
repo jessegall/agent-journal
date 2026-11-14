@@ -7,6 +7,8 @@ import SidebarRow from "./SidebarRow.vue";
 import {vContext} from "../../kit/vContext.js";
 import {sidebarSections} from "../domain/sidebarNav.js";
 import {copying} from "../domain/contextItems.js";
+import {openFileInspector} from "../route.js";
+import {placeOnHome} from "../windows/placeOnHome.js";
 import Skeleton from "../kit/Skeleton.vue";
 
 // the left sidebar as version 4 drew it: a header with the project's mark, then Home and the windows the suite offers in one
@@ -24,6 +26,8 @@ const props = defineProps({
     run: {type: Function, default: null},
     // a page shell that changes its page in place gives this, called with the name of the page a plain click asks for
     navigate: {type: Function, default: null},
+    // sends a journal line the way the shell does; with it a window that can also stand in a pane of Home has Place on Home in its menu
+    layoutLine: {type: Function, default: null},
     mini: Boolean,
 });
 // the change log is a page of its own that the sidebar's name and version open, not an item of the list
@@ -56,13 +60,30 @@ const rowPlace = (head, address, enter, reason = "") => ({
         {label: "Copy link", group: "copy", run: ({say}) => copying(new URL(address, location.href).href, "the link", say)},
     ],
 });
-const pagePlace = (page) => rowPlace(page.title, pageOf(page.name), () => (props.navigate ? props.navigate(page.name) : location.assign(pageOf(page.name))), page.unavailable_reason);
+const PANE_PAGE = "pane_or_page";
+const pagePlace = (page) => {
+    const place = rowPlace(page.title, pageOf(page.name), () => (props.navigate ? props.navigate(page.name) : location.assign(pageOf(page.name))), page.unavailable_reason);
+    if (page.place !== PANE_PAGE || !props.layoutLine) return place;
+    const placeIt = async ({say}) => {
+        const answer = await placeOnHome(props.layoutLine, props.current, page.name);
+        say(answer.ok ? `${page.title} is on Home` : answer.error);
+    };
+    return {...place, items: [...place.items, {label: "Place on Home", group: "own", run: placeIt}]};
+};
 const homePlace = () => rowPlace("Home", `?environment=${props.current}`, () => location.assign(`?environment=${props.current}`));
 const environmentPlace = (name) => rowPlace(name, `?environment=${name}`, () => openEnvironment(name));
 
 const isPlainClick = (event) => event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
 
+const FILES_PAGE = "coding.files";
+
 function go(event, page) {
+    // Command or Control and a click on Files opens the file inspector over the page instead of leaving it
+    if (page.name === FILES_PAGE && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        openFileInspector();
+        return;
+    }
     if (page.unavailable_reason) {
         event.preventDefault();
         return;
