@@ -80,7 +80,8 @@
         "ToolSearch": "search",
         "Write": "write"
       },
-      "wake_answer": "exit_with_stderr"
+      "wake_answer": "exit_with_stderr",
+      "wake_seconds": 86400
     },
     "codex": {
       "decoder": "codex",
@@ -129,7 +130,8 @@
         "view_image": "read",
         "write_file": "write"
       },
-      "wake_answer": ""
+      "wake_answer": "",
+      "wake_seconds": 0
     }
   }
 }

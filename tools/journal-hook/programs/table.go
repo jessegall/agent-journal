@@ -32,6 +32,8 @@ type Program struct {
 	// WakeAnswer is how the program is woken by its wake hook: "exit_with_stderr", "block_with_reason", or empty when
 	// it has none.
 	WakeAnswer string `json:"wake_answer"`
+	// WakeSeconds is the timeout of the program's wake hook entry, 0 when it has none.
+	WakeSeconds int `json:"wake_seconds"`
 }
 
 // Table is every agent program the hook knows: the shipped ones, with the project's own laid over them.

@@ -1,7 +1,8 @@
 // Command journal-hook is the hook the agent programs run: it reads the hook body on stdin, prepares the HookEvent,
 // hands it to the journal's Python server and prints the answer. Run as journal-hook <program> <project root>, or as
-// journal-hook --status <project root> by Claude Code's status line, or as journal-hook --file-scan <journal home>
-// <owner flag> <owner> <folder> [<since in Unix nanoseconds>] after a shell line or an edit tool.
+// journal-hook <program> <project root> --wake by the program's wake hook entry, which waits for a line that wakes the
+// agent, or as journal-hook --status <project root> by Claude Code's status line, or as journal-hook --file-scan
+// <journal home> <owner flag> <owner> <folder> [<since in Unix nanoseconds>] after a shell line or an edit tool.
 package main
 
 import (
@@ -48,6 +49,9 @@ func main() {
 	}
 	program, root := os.Args[1], os.Args[2]
 	folder, _ := os.Getwd()
+	if len(os.Args) == 4 && os.Args[3] == "--wake" {
+		os.Exit(Wake(os.Stdin, os.Stdout, os.Stderr, os.Getenv, program, root, folder))
+	}
 	context, skip := hookContext(os.Getenv, root, folder, os.Getpid(), started)
 	if Panicking(root, context.Role) {
 		NotePanicBypass(root, program)
