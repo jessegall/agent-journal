@@ -1,5 +1,3 @@
-import json
-
 import pytest
 
 from tests.stories.core.modules.usage.support.status_files import save_status_file
@@ -92,19 +90,19 @@ def test_the_agents_of_a_type_say_whether_they_run_so_retiring_is_offered_for_id
 def test_a_profiles_own_limits_leave_the_line_of_every_profile_and_the_line_leaves_them(helpers):
     _, tab = helpers
     all_profiles = tab.modal.value("helper-type.read-only", READONLY_RUN)
-    expect_value(json.loads(tab.modal.value("helper-type.read-only", PROFILE_LIMITS)), [])
+    expect_value(tab.modal.value("helper-type.read-only", PROFILE_LIMITS), [])
     tab.modal.save({PROFILE_LIMITS: f'["{RESEARCHER_PROFILE.name}:2:5"]'}, "helper-type.read-only")
     expect_value(tab.modal.value("helper-type.read-only", READONLY_RUN), all_profiles)
     expect_value(tab.profiles()[f"{RESEARCHER_PROFILE.name}"]["run_limit"], 2)
     tab.modal.save({READONLY_RUN: str(int(all_profiles) + 1)}, "helper-type.read-only")
-    expect_value(json.loads(tab.modal.value("helper-type.read-only", PROFILE_LIMITS)), [f"{RESEARCHER_PROFILE.name}:2:5"])
+    expect_value(tab.modal.value("helper-type.read-only", PROFILE_LIMITS), [f"{RESEARCHER_PROFILE.name}:2:5"])
     expect_value(tab.profiles()[f"{RESEARCHER_PROFILE.name}"]["run_limit"], 2)
 
 
 def test_a_context_cap_set_on_the_screen_of_a_type_is_the_cap_its_agent_bar_counts_against(helpers):
     story, tab = helpers
     tab.modal.save({CONTEXT_ON: "on", CONTEXT_PROFILES: f'["{DESIGNER_PROFILE.name}:150000"]'}, "advanced", HELPER_TYPES)
-    expect_value(json.loads(tab.modal.value(HELPER_TYPES, CONTEXT_PROFILES)), [f"{DESIGNER_PROFILE.name}:150000"])
+    expect_value(tab.modal.value(HELPER_TYPES, CONTEXT_PROFILES), [f"{DESIGNER_PROFILE.name}:150000"])
     expect_value_without(tab.modal.nodes("advanced"), CONTEXT_PROFILES)
     agent_reads(story)
     designer = tab.contexts()[f"{DESIGNER_PROFILE.name}"]

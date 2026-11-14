@@ -13,4 +13,3 @@ tests/stories/suites/coding/modules/workers/ended_with_tasks.py::test_the_line_c
 tests/stories/suites/coding/shipped_profile_skills.py::test_a_group_no_longer_holds_the_skill_of_the_agent_that_sends_it[HELPER_SKILLS-journal-helpers]  the skills journal-worker and journal-helper, which are not written yet
 tests/stories/suites/coding/shipped_profile_skills.py::test_a_group_no_longer_holds_the_skill_of_the_agent_that_sends_it[WORKER_SKILLS-journal-workers]  the skills journal-worker and journal-helper, which are not written yet
 tests/stories/suites/coding/shipped_profile_skills.py::test_a_skill_for_one_audience_is_in_that_group_and_no_other[journal-helper-HELPER_SKILLS]  the skills journal-worker and journal-helper, which are not written yet
-tests/stories/suites/coding/shipped_profile_skills.py::test_a_skill_for_one_audience_is_in_that_group_and_no_other[journal-worker-WORKER_SKILLS]  the skills journal-worker and journal-helper, which are not written yet
