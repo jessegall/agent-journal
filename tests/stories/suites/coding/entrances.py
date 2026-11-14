@@ -15,7 +15,7 @@ def entrances_of(story, suite: str) -> dict[str, tuple[str, ...]]:
 def test_581_the_coding_suite_lists_its_windows_in_the_admin_entrance(new_story):
     story = new_story(fixture=CodingEnvironment)
     entrances = entrances_of(story, CodingSuite.name)
-    story.expect_rows(list(entrances) == [AdminEntrance.key], entrances[AdminEntrance.key] == tuple(AdminEntrance.windows), detail=str(list(entrances)))
+    story.expect_rows(list(entrances) == [AdminEntrance.key], entrances[AdminEntrance.key] == AdminEntrance.window_names(), detail=str(list(entrances)))
 
 
 def test_581_a_second_entrance_is_a_second_class_the_registry_reads_beside_the_admin_entrance(new_story):

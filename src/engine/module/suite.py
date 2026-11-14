@@ -32,7 +32,7 @@ class Suite:
 
     @classmethod
     def offered_windows(cls) -> tuple[str, ...]:
-        return tuple(dict.fromkeys(window for entrance in cls.entrances for window in entrance.windows))
+        return tuple(dict.fromkeys(window for entrance in cls.entrances for window in entrance.window_names()))
 
     # an earlier entrance's layout of a page comes first
     @classmethod
@@ -46,4 +46,4 @@ class Suite:
 
     @classmethod
     def entrance_windows(cls) -> dict[str, tuple[str, ...]]:
-        return {entrance.key: tuple(entrance.windows) for entrance in cls.entrances}
+        return {entrance.key: entrance.window_names() for entrance in cls.entrances}

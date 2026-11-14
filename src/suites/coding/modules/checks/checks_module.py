@@ -1,3 +1,4 @@
+from suites.coding.modules.checks.windows.checks_windows import CHECKS_WINDOWS
 from core.modules.tasks.support.task_wait_attempts import TaskWaitAttempts
 from suites.coding.modules.checks.migrations.m009_live_check_index import ActiveCheckIndexMigration
 from suites.coding.modules.checks.support.check_task_wait_attempts import CheckTaskWaitAttempts
@@ -9,17 +10,10 @@ from suites.coding.modules.checks.support.check_nudges import CHECK_NUDGES
 from engine.skill.skill_declaration import SkillDeclaration
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
-from engine.viewer.window_search import WindowSearch
-from suites.coding.modules.checks.support.check_searcher import CheckSearcher
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_key import WindowKey
 from engine.viewer.window_extension import WindowExtension
-from engine.enums.window_icon import WindowIcon
 from engine.check.periodic_checks import PeriodicChecks
 from engine.check.step_checks import StepChecks
 from suites.coding.modules.checks.support.passed_checks import PassedChecks
-from engine.enums.window_loading import WindowLoading
-from engine.enums.window_place import WindowPlace
 from suites.coding.modules.checks.commands.check_list.check_list_subcommand import CheckListSubcommand
 from suites.coding.modules.checks.commands.check_show.check_show_subcommand import CheckShowSubcommand
 from suites.coding.modules.checks.commands.edit_check.edit_check_handler import EditCheckHandler
@@ -54,7 +48,6 @@ from suites.coding.modules.checks.seeders.checks_seeder import ChecksSeeder
 from suites.coding.modules.checks.rules.failed_check_rule import FailedCheckRule
 from suites.coding.modules.checks.support.block_conditions.check_passed import CheckPassed
 from suites.coding.modules.checks.support.check_library_share import CheckLibraryShare
-from suites.coding.modules.checks.support.skeletons import CHECKS_CHECKS_SKELETON
 from suites.coding.modules.checks.support.check_inspector import CHECK_INSPECTOR
 
 BUILT = ["make", "edit", "show", "list", "delete"]
@@ -80,8 +73,6 @@ class ChecksModule(Module):
     subcommands = [CheckRunsSubcommand, MakeCheckSubcommand, CreateCheckSubcommand, EditCheckSubcommand, RunCheckSubcommand, StartCheckSubcommand, StopCheckSubcommand, RemoveCheckSubcommand, CheckListSubcommand, CheckShowSubcommand]
     driver_rules = [FailedCheckRule, BrokenTaskWaitRule]
     bindings = {PeriodicChecks: DueCheckRuns, StepChecks: PassedChecks, TaskWaitAttempts: CheckTaskWaitAttempts}
-    windows = [WindowDeclaration("checks.checks", "Checks", "checks.js", WindowLoading.COMPONENT, skeleton=CHECKS_CHECKS_SKELETON, search=WindowSearch(CheckSearcher, "Search the checks"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.CHECK,
-                                 reads=["check list", "check runs"], runs=["check run", "check start"], events=["check.*"],
-                                 keys=[WindowKey("checks", "check list", events=["check.*"]), WindowKey("runs.*", "check runs {id}")])]
+    windows = CHECKS_WINDOWS
     seeders = [ChecksSeeder]
     moves = [ChecksMove]

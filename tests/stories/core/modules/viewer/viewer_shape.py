@@ -1,3 +1,4 @@
+from suites.coding.coding_suite import CodingSuite
 import importlib
 import re
 from pathlib import Path
@@ -75,6 +76,5 @@ def test_the_coding_suite_offers_every_window_a_module_declares():
         dotted = ".".join(folder.relative_to(ROOT / "src").parts)
         module_file = importlib.import_module(f"{dotted}.{folder.name}_module")
         declared |= {window.name for name, value in vars(module_file).items() if name.endswith("Module") and getattr(value, "__module__", "") == module_file.__name__ for window in value.window_declarations() if window.place is not WindowPlace.SECTION}
-    text = (ROOT / "src/suites/coding/entrances/admin_entrance.py").read_text()
-    missing = {name for name in declared if f'"{name}"' not in text} - INTERNAL_WINDOWS
+    missing = set(declared) - set(CodingSuite.offered_windows()) - INTERNAL_WINDOWS
     expect_absent_value(missing)
