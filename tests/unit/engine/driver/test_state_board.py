@@ -167,3 +167,50 @@ def test_a_flagged_stack_state_runs_on_every_hook_and_the_order_of_the_layers_ru
     entries = [entry(CountedState, 1), entry(FlaggedState, 2), entry(LateState, 3)]
     heard = {"samples.counted": {"pre_tool_use": ["samples.tool-rule"]}, "samples.late": {"stop": ["samples.stop-rule"]}}
     assert [layer.overlay.name for layer in board(entries, rules_by_state=heard).stack("builder")] == ["samples.flagged", "samples.counted"]
+
+
+class LateParent(LateState):
+    name = "samples.parent"
+
+
+class ClosedParent(AgentState):
+    name = "samples.closed-parent"
+
+    def open_rows(self, hook):
+        return []
+
+
+class MiddleState(AgentState):
+    name = "samples.middle"
+
+    def open_rows(self, hook):
+        return [OpenRow("samples", 3, Timestamp.parsed("2026-11-14T06:30:00+00:00"))]
+
+
+class OldSubstate(AgentState):
+    name = "samples.substate"
+
+    def open_rows(self, hook):
+        OPENS.append("OldSubstate")
+        return [OpenRow("samples", 4, EARLY)]
+
+
+def substate(state: type[AgentState], parent: str, position: int) -> AgentStateEntry:
+    return AgentStateEntry(state.name, DottedPath.class_path(state), "samples", position, int(StateTier.STACK), ("*",), parent)
+
+
+def test_a_substate_layer_sits_directly_above_its_parent_whatever_their_times():
+    parent, child, middle = entry(LateParent, 1), substate(OldSubstate, "samples.parent", 2), entry(MiddleState, 3)
+    made = board([parent, child, middle])
+    made.registry.agent_state = {state.name: state for state in (parent, child, middle)}.get
+    assert [layer.overlay.name for layer in made.stack("builder")] == ["samples.substate", "samples.parent", "samples.middle"]
+
+
+def test_a_closed_parent_never_runs_its_substates_opener():
+    OPENS.clear()
+    parent, child = entry(ClosedParent, 1), substate(OldSubstate, "samples.closed-parent", 2)
+    made = board([parent, child])
+    made.registry.agent_state = {parent.name: parent, child.name: child}.get
+    assert not made.is_open(child)
+    assert made.stack("builder") == []
+    assert "OldSubstate" not in OPENS

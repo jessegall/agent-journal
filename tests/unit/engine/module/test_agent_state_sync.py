@@ -84,3 +84,30 @@ def test_the_registry_keeps_its_agent_states_and_finds_a_rules_gate():
     assert restored.agent_states == (entry,)
     assert restored.rule_gate("samples.first") == entry and restored.rule_gate("samples.second") is None
     assert json.loads(registry.entries_text())["agent_states"][0]["rules"] == ["samples.first"]
+
+
+class ChildState(AgentState):
+    name = "samples.child"
+
+
+class ParentState(AgentState):
+    name = "samples.parent"
+    substates = [ChildState]
+
+
+class SecondParentState(AgentState):
+    name = "samples.second-parent"
+    substates = [ChildState]
+
+
+def test_a_substate_named_by_two_parents_is_refused():
+    assert refusal(agent_states=[ParentState, SecondParentState]) == "the substate samples.child is named by two parents: samples.parent, samples.second-parent"
+
+
+def test_a_substate_also_listed_as_a_state_of_its_own_is_refused():
+    assert refusal(agent_states=[ParentState, ChildState]) == "the substate samples.child of samples.parent is also listed as an agent state of its own"
+
+
+def test_a_substate_entry_names_its_parent_and_its_parents_owner():
+    entries = {entry.name: entry for entry in DriverEntries().agent_states([module(agent_states=[ParentState])])}
+    assert (entries["samples.child"].parent, entries["samples.child"].owner) == ("samples.parent", "samples")

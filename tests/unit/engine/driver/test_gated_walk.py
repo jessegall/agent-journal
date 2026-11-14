@@ -82,3 +82,29 @@ def test_an_opener_that_raises_leaves_the_rule_asked(tmp_path):
 def test_a_main_agent_stop_lists_a_gated_rule_as_allowed_without_asking(tmp_path):
     checks = walked(tmp_path, ClosedState, rule_class=Allows, hook_name="stop").stop_checks
     assert [(check.rule, check.outcome, check.reason) for check in checks] == [("samples.gated", "allowed", "test.state is not open")]
+
+
+class ParentClosed(ClosedState):
+    name = "test.parent"
+
+
+class ParentOpen(OpenState):
+    name = "test.parent"
+
+
+def substate_walk(tmp_path, parent_state: type[AgentState]):
+    gated = rule("samples.gated", Refuses, 1, DRIVER)
+    parent = AgentStateEntry("test.parent", DottedPath.class_path(parent_state), "samples", 1, int(StateTier.IN_PLACE), ("*",), "", ())
+    child = AgentStateEntry(STATE, DottedPath.class_path(OpenState), "samples", 2, int(StateTier.IN_PLACE), ("*",), "test.parent", ("samples.gated",))
+    registry = replace(empty_registry().with_rules(tuple([replace(gated, hook="pre_tool_use")])), agent_states=tuple([parent, child]))
+    errors, system_log = ErrorLog(SystemLogWriter(JournalHome(tmp_path), Clock()), ExceptionSink()), SystemLogWriter(JournalHome(tmp_path), Clock())
+    walker = DriverRules(registry, Container(), Switches(), Layers(registry, Container()), RegainedHistory(), errors, EssentialAllowances(), empty_database_scopes(),
+                         RefusalSkips(), system_log, RuleTimings(), StateBoards(registry, Container(), errors, system_log))
+    event = HookEvent(1, "claude", "pre_tool_use", "s1", "f1", 1, "agent", "main", None, None, {})
+    return walker.ask(AgentHook(event, 3, 1, "main", DRIVER, at(30)))
+
+
+def test_a_substates_rule_is_asked_only_while_its_parent_is_open(tmp_path):
+    assert substate_walk(tmp_path, ParentOpen).rules[0].outcome == "refused"
+    closed = substate_walk(tmp_path, ParentClosed).rules[0]
+    assert (closed.outcome, closed.reason) == ("allowed", "test.state is not open")

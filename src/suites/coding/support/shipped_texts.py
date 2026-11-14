@@ -2,6 +2,8 @@ import re
 from collections.abc import Mapping
 from pathlib import Path
 
+from engine.file.file_access import FileAccess
+
 RESOURCES = Path(__file__).resolve().parents[1] / "resources"
 PLACEHOLDER = re.compile(r"\{([A-Z][A-Z_]+)\}")
 
@@ -13,9 +15,9 @@ class ShippedTexts:
 
     @staticmethod
     def rule(name: str) -> str:
-        return (RESOURCES / "rules" / f"{name}.md").read_text()
+        return FileAccess.read(RESOURCES / "rules" / f"{name}.md")
 
     @staticmethod
     def profile(name: str, values: Mapping[str, str]) -> str:
-        text = (RESOURCES / "profiles" / f"{name}.md").read_text()
+        text = FileAccess.read(RESOURCES / "profiles" / f"{name}.md")
         return PLACEHOLDER.sub(lambda found: values[found.group(1)], text)
