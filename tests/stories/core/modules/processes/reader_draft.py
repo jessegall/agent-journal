@@ -4,7 +4,6 @@ from engine.enums.command_category import CommandCategory
 from engine.query.queries import Queries
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
-from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 
@@ -39,7 +38,7 @@ def test_a_draft_offers_an_existing_reader_that_already_passes(draft_sample):
 
 def test_a_draft_says_which_field_it_could_not_fill_and_save_is_refused(draft_sample):
     story, request = draft_sample
-    story.container.get(OutputFolder).write_output(request.sample_process_id, 1, "building cart\ncompiling\nwaiting\nworking\nfinished\n")
+    story.step("run printed", request.sample_process_id, 1, "building cart\ncompiling\nwaiting\nworking\nfinished\n")
     story.expect_refusal(f"reader draft {request.id} --save", "could not fill --count", actor=story.agent)
     story.expect_text(f"reader draft {request.id}", "could not fill --count", "building cart", actor=story.agent)
     story.expect_rows(story.container.get(ReaderRequestQuery).find(request.id).completed_at is None)
@@ -59,14 +58,14 @@ def test_a_worker_can_save_its_own_draft(draft_sample):
 
 def test_candidates_fill_an_unrecognized_test_output(draft_sample):
     story, request = draft_sample
-    story.container.get(OutputFolder).write_output(request.sample_process_id, 1, "starting\n" * 10 + "3/3\nTests: 3 passed\n")
+    story.step("run printed", request.sample_process_id, 1, "starting\n" * 10 + "3/3\nTests: 3 passed\n")
     story.expect_text(f"reader draft {request.id} --save", "saved reader custom-test-reader", "count: 3", "progress: 100", actor=story.agent)
 
 
 def test_a_stock_draft_keeps_test_steps(draft_sample):
     story, request = draft_sample
     story.expect_success("reader remove go-test")
-    story.container.get(OutputFolder).write_output(request.sample_process_id, 1, "ok  \texample.org/project/tools/runner\t1.723s\n")
+    story.step("run printed", request.sample_process_id, 1, "ok  \texample.org/project/tools/runner\t1.723s\n")
     story.expect_text(f"reader draft {request.id} --save", "saved reader go-test", actor=story.agent)
     reader = story.container.get(Queries).query(Reader).filter(name="go-test").page(1, 1).rows[0]
     story.expect_rows("?P<passed>" in reader.step_pattern, "?P<failed>" in reader.step_pattern)
@@ -86,7 +85,7 @@ def test_a_vitest_request_saves_vitest_patterns(new_story):
 
 def test_a_draft_with_no_matching_lines_does_not_close_the_request(draft_sample):
     story, request = draft_sample
-    story.container.get(OutputFolder).write_output(request.sample_process_id, 1, "nothing useful\n")
+    story.step("run printed", request.sample_process_id, 1, "nothing useful\n")
     story.expect_refusal(f"reader draft {request.id} --save", "--lines picked none", actor=story.agent)
     story.expect_rows(story.container.get(ReaderRequestQuery).find(request.id).completed_at is None)
 

@@ -8,7 +8,6 @@ from engine.enums.command_category import CommandCategory
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.terminal_typing import TerminalTyping
-from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.expectations.expect_reply import expect_absent_reply_line, expect_absent_reply_refusal, expect_reply_line, expect_reply_refusal
 from engine.testing.expectations.expect_row import expect_row
 from engine.testing.examples.hook_samples import HookSamples
@@ -137,9 +136,8 @@ def test_a_workers_message_moves_only_its_foreground_run(targeted_chat):
     story.hook(story.worker_session, LINT)
     post_target(server, cookie, story.worker, "Interrupt the worker command")
     story.run_listeners()
-    folder = story.container.get(OutputFolder)
-    expect_value(folder.text(1, "move"), "")
-    expect_value(folder.text(2, "move"), "1")
+    expect_value(story.step("run file text", 1, "move"), "")
+    expect_value(story.step("run file text", 2, "move"), "1")
 
 
 def test_main_chat_hides_worker_messages(targeted_chat):

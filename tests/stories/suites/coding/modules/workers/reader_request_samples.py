@@ -9,7 +9,6 @@ from core.modules.processes.commands.move_process.move_process import MoveProces
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
-from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 
@@ -36,7 +35,7 @@ def test_each_worker_gets_its_own_request_and_sample(reader_scoped_story):
     requests = tuple(story.container.get(ReaderRequestQuery).open().agent(second.id).every_row(TEST_ROWS_REASON))
     story.expect_rows(len(requests) == 1, requests[0].creator_id == second.id,
                       requests[0].sample_process_id == process.id,
-                      story.container.get(OutputFolder).has_slot(process.id))
+                      story.step("run holds a slot", process.id))
 
 
 def test_another_command_of_the_same_program_has_its_own_sample(reader_scoped_story):
@@ -44,7 +43,7 @@ def test_another_command_of_the_same_program_has_its_own_sample(reader_scoped_st
     process = worker_run(story, "custom-build other")
     requests = tuple(story.container.get(ReaderRequestQuery).open().every_row(TEST_ROWS_REASON))
     story.expect_rows(len(requests) == 2, any(request.sample_process_id == process.id for request in requests),
-                      story.container.get(OutputFolder).has_slot(process.id))
+                      story.step("run holds a slot", process.id))
 
 
 def test_a_worker_saves_against_its_sample_and_leaves_a_foreign_request_open(reader_scoped_story):
@@ -66,7 +65,7 @@ def test_a_rejected_command_ends_its_request_without_a_reader(reader_sample_stor
     story.expect_rows(not requests.has_active_requests(reader_worker(story).id, story.clock.timestamp()))
     retry = worker_run(story, "journal sins --tail", CommandCategory.TEST_RUN)
     request = requests.open().page(1, 1).rows[0]
-    story.expect_rows(request.sample_process_id == retry.id, story.container.get(OutputFolder).has_slot(retry.id))
+    story.expect_rows(request.sample_process_id == retry.id, story.step("run holds a slot", retry.id))
 
 
 def test_nothing_to_judge_does_not_make_a_good_reader_poor(reader_sample_story):

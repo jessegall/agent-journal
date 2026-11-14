@@ -7,7 +7,6 @@ from engine.enums.command_category import CommandCategory
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
-from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run

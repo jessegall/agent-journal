@@ -5,7 +5,6 @@ from datetime import timedelta
 
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
-from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
 from core.modules.processes.commands.move_process.move_process import MoveProcess
@@ -234,9 +233,8 @@ def test_a_chains_reader_reads_only_its_part_and_gives_the_card_its_progress(new
     parts = (PartSpec("grep -n word notes", "grep", False, CommandCategory.SEARCH), PartSpec("pytest -q -n 4", "pytest", False, CommandCategory.TEST_RUN))
     bus = story.container.get(Bus)
     process = bus.run(StartProcess(story.agent.id, None, "grep -n word notes; pytest -q -n 4", "/work/main", CommandCategory.TEST_RUN, 30, parts), story.agent, environment_id=1)
-    folder = story.container.get(OutputFolder)
-    folder.write_output(process.id, 1, "FAILED in a note [ 90%]\n")
-    folder.write_output(process.id, 2, "..... [ 40%]\n")
+    story.step("run printed", process.id, 1, "FAILED in a note [ 90%]\n")
+    story.step("run printed", process.id, 2, "..... [ 40%]\n")
     bus.run(ReadNewOutput(process.id, False), story.agent, environment_id=1)
     story.expect_text(f"process show {process.id}", "progress: 40", actor=story.agent)
 
@@ -244,11 +242,10 @@ def test_a_chains_reader_reads_only_its_part_and_gives_the_card_its_progress(new
 def test_a_persons_message_asks_the_main_agents_foreground_run_to_move_to_the_background(new_story):
     story = new_story(fixture=UserBuilder)
     process = start_process(story, "sleep 60")
-    folder = story.container.get(OutputFolder)
-    expect_folder(folder, process, "move", "")
+    expect_folder(story, process, "move", "")
     story.run('message send "are you there" --environment main', actor=story.user)
     story.run_listeners()
-    expect_folder(folder, process, "move", "1")
+    expect_folder(story, process, "move", "1")
 
 
 def test_a_persons_message_leaves_a_running_journal_command_in_the_foreground(new_story):
@@ -256,7 +253,7 @@ def test_a_persons_message_leaves_a_running_journal_command_in_the_foreground(ne
     process = start_process(story, "journal message react 1")
     story.run('message send "are you there" --environment main', actor=story.user)
     story.run_listeners()
-    expect_folder(story.container.get(OutputFolder), process, "move", "")
+    expect_folder(story, process, "move", "")
 
 
 @pytest.fixture
@@ -338,7 +335,7 @@ def unmatched_reader_output(deploy_reader):
 def program_reader_output(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "pytest tests/one.py && echo done", category=CommandCategory.TEST_RUN)
-    story.container.get(OutputFolder).write_start(process.id, process.line, [process.line])
+    story.step("run started", process.id, process.line, [process.line])
     end_run(story, process, "one\ntwo\n")
     resolved(story)
     return story, process
@@ -373,12 +370,12 @@ def expect_absent_lines(story, sample, expected) -> None:
 
 
 def expect_value_10(story, process, text, expected) -> None:
-    actual = story.container.get(OutputFolder).text(process.id, text)
+    actual = story.step("run file text", process.id, text)
     assert actual == expected, actual
 
 
-def expect_folder(folder, process, text, expected) -> None:
-    actual = folder.text(process.id, text)
+def expect_folder(story, process, text, expected) -> None:
+    actual = story.step("run file text", process.id, text)
     assert actual == expected, actual
 
 

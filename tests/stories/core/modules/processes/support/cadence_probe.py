@@ -60,7 +60,7 @@ def ticks(story: Story, seconds: int, *processes: Process, every: int = 0, text:
     for elapsed in range(TICK_SECONDS, seconds + 1, TICK_SECONDS):
         story.advance(TICK)
         for process in processes if every and elapsed % every < TICK_SECONDS else ():
-            folder.write_output(process.id, 1, folder.output(process.id, 1) + text)
+            story.step("run printed", process.id, 1, folder.output(process.id, 1) + text)
         cadence_tick(story)
 
 
@@ -109,13 +109,13 @@ def tree_of(story: Story, tree: GroupCpuTime, group: int, *processes: Process) -
     """The given CPU time stands for the process trees of the runs, each under the given group."""
     story.replace(GroupCpuTime, tree)
     for process in processes:
-        story.container.get(OutputFolder).write_pid(process.id, group)
+        story.step("run process id", process.id, group)
 
 
 def emitted_current(story: Story, process: Process, text: str) -> None:
     """The run prints the text now, by the story's clock."""
     folder = story.container.get(OutputFolder)
-    folder.write_output(process.id, 1, folder.output(process.id, 1) + text)
+    story.step("run printed", process.id, 1, folder.output(process.id, 1) + text)
     emitted_at = story.clock.timestamp().value.timestamp()
     os.utime(story.home.folder / "processes" / str(process.id) / "1.out", (emitted_at, emitted_at))
 
@@ -125,18 +125,18 @@ def removed_output(story: Story, process: Process) -> None:
 
 
 def damaged_record(story: Story, process: Process) -> None:
-    story.container.get(OutputFolder).write(process.id, CADENCE_FILE, "ten looked x")
+    story.step("run file written", process.id, CADENCE_FILE, "ten looked x")
 
 
 def record_text(story: Story, process: Process) -> str:
-    return story.container.get(OutputFolder).text(process.id, CADENCE_FILE)
+    return story.step("run file text", process.id, CADENCE_FILE)
 
 
 def truncate_output(story: Story, process: Process, kept: str, dropped: int) -> None:
     """The runner cuts the output to its limit: it keeps the given text and adds the dropped bytes to the cut count."""
     folder = story.container.get(OutputFolder)
-    folder.write(process.id, "1.cut-bytes", str(folder.cut_bytes(process.id, 1) + dropped))
-    folder.write_output(process.id, 1, kept)
+    story.step("run file written", process.id, "1.cut-bytes", str(folder.cut_bytes(process.id, 1) + dropped))
+    story.step("run printed", process.id, 1, kept)
 
 
 def folder_made_a_file(story: Story, process: Process) -> None:
@@ -176,11 +176,11 @@ def ring(story: Story, process: Process) -> tuple[float, ...]:
 
 
 def has_cadence_record(story: Story, process: Process) -> bool:
-    return bool(story.container.get(OutputFolder).text(process.id, CADENCE_FILE))
+    return bool(story.step("run file text", process.id, CADENCE_FILE))
 
 
 def emitted(story: Story, process: Process, text: str) -> None:
-    story.container.get(OutputFolder).write_output(process.id, 1, text)
+    story.step("run printed", process.id, 1, text)
 
 
 def running_run(story: Story) -> Process:

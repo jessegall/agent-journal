@@ -18,7 +18,6 @@ from engine.testing.expectations.expect_reply import expect_reply_allowed, expec
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story import Story
 from core.modules.processes.models.process import Process
-from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.important_lines import WORKER_RUN_LINE, proved_worker
@@ -65,7 +64,7 @@ def test_s36_adding_version_control_to_the_worker_command_types_does_not_allow_a
 
 def test_s37_the_picked_files_become_the_arguments_of_the_project_test_command(new_story, monkeypatch):
     story, _, _, started = affected_test_story(new_story, monkeypatch)
-    story.container.get(OutputFolder).write_output(started[1], 1, "tests/cart.py\n")
+    story.step("run printed", started[1], 1, "tests/cart.py\n")
     ended(story, started[1], 0)
     story.expect_rows(story.row(Process, started[2]).line == "python3 -m pytest -q tests/cart.py")
     ended(story, started[2], 0)
@@ -74,7 +73,7 @@ def test_s37_the_picked_files_become_the_arguments_of_the_project_test_command(n
 
 def test_s38_a_failed_selected_test_returns_the_work_and_no_full_suite_follows(new_story, monkeypatch):
     story, _, _, started = affected_test_story(new_story, monkeypatch)
-    story.container.get(OutputFolder).write_output(started[1], 1, "tests/cart.py\n")
+    story.step("run printed", started[1], 1, "tests/cart.py\n")
     ended(story, started[1], 0)
     ended(story, started[2], 1)
     story.expect_rows(len(started) == 3)

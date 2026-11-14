@@ -147,7 +147,6 @@ tests/stories/core/modules/memories/removed_memories.py
 tests/stories/core/modules/messages/delivery.py
 tests/stories/core/modules/messages/lost_hooks.py
 tests/stories/core/modules/messages/message_links_browser.py
-tests/stories/core/modules/messages/message_targets_through_the_server.py
 tests/stories/core/modules/messages/message_wakes_agent.py
 tests/stories/core/modules/overview/overview.py
 tests/stories/core/modules/pins/link_pins.py
@@ -195,14 +194,12 @@ tests/stories/core/modules/processes/hook_batch_reads.py
 tests/stories/core/modules/processes/listing_commands.py
 tests/stories/core/modules/processes/long_run_cost.py
 tests/stories/core/modules/processes/marks.py
-tests/stories/core/modules/processes/output_dock_browser.py
 tests/stories/core/modules/processes/output_reader.py
 tests/stories/core/modules/processes/output_reading_points.py
 tests/stories/core/modules/processes/output_timeout.py
 tests/stories/core/modules/processes/process_queue_read.py
 tests/stories/core/modules/processes/process_retention.py
 tests/stories/core/modules/processes/queue_halt.py
-tests/stories/core/modules/processes/queue_inspector_browser.py
 tests/stories/core/modules/processes/reader_chain.py
 tests/stories/core/modules/processes/reader_demand.py
 tests/stories/core/modules/processes/reader_draft.py
@@ -221,7 +218,6 @@ tests/stories/core/modules/processes/stock_reader_catalog.py
 tests/stories/core/modules/processes/stock_reader_publish.py
 tests/stories/core/modules/processes/stop_and_lost.py
 tests/stories/core/modules/processes/unified_admission.py
-tests/stories/core/modules/processes/watch.py
 tests/stories/core/modules/processes/worker_reader.py
 tests/stories/core/modules/profiles/job_commands.py
 tests/stories/core/modules/profiles/module_profiles.py
@@ -447,10 +443,8 @@ tests/stories/suites/coding/modules/workers/worker_context_limit.py
 tests/stories/suites/coding/modules/workers/worker_guidance.py
 tests/stories/suites/coding/modules/workers/worker_lines.py
 tests/stories/suites/coding/modules/workers/worker_no_readers.py
-tests/stories/suites/coding/modules/workers/worker_overview_card.py
 tests/stories/suites/coding/modules/workers/worker_reconcile.py
 tests/stories/suites/coding/modules/workers/worker_recovery.py
-tests/stories/suites/coding/modules/workers/worker_run_wait.py
 tests/stories/suites/coding/modules/workers/worker_runs.py
 tests/stories/suites/coding/modules/workers/worker_scenario.py
 tests/stories/suites/coding/modules/workers/worker_sent_back.py
@@ -464,7 +458,6 @@ tests/stories/suites/coding/policy_environment_refresh.py
 tests/stories/suites/coding/shipped_profile_skills.py
 tests/stories/suites/coding/special_helpers.py
 tests/stories/suites/coding/task_assigners.py
-tests/stories/suites/coding/terminal_window.py
 tests/stories/tunnels/tunler/account.py
 tests/stories/tunnels/tunler/tunler_tunnel.py
 tests/stories/tunnels/tunler/write_lock.py

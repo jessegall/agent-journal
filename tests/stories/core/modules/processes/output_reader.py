@@ -29,7 +29,7 @@ SECOND = "error b\n[ 80%]\n3 failed\n"
 
 def append(story, process_id: int, text: str) -> None:
     folder = story.container.get(OutputFolder)
-    folder.write_output(process_id, 1, folder.output(process_id, 1) + text)
+    story.step("run printed", process_id, 1, folder.output(process_id, 1) + text)
 
 
 def reader_texts(reader_mock) -> list[str]:

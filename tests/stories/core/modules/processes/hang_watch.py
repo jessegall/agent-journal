@@ -66,7 +66,7 @@ def watch_tick(story: Story) -> None:
 def started_tree(story: Story, used: float | None) -> FakeGroupCpuTime:
     tree = FakeGroupCpuTime(used)
     story.replace(GroupCpuTime, tree)
-    story.container.get(OutputFolder).write_pid(1, MISSING_GROUP)
+    story.step("run process id", 1, MISSING_GROUP)
     watch_tick(story)
     return tree
 
@@ -76,8 +76,8 @@ def test_an_idle_run_that_printed_lately_is_left_alone(new_story):
     started_tree(story, 12.0)
     story.advance(timedelta(seconds=HANG_SECONDS + 10))
     folder = story.container.get(OutputFolder)
-    folder.write_start(1, "make build", ["make build"])
-    folder.write_output(1, 1, "still alive\n")
+    story.step("run started", 1, "make build", ["make build"])
+    story.step("run printed", 1, 1, "still alive\n")
     shown_at = story.clock.timestamp().value.timestamp() - 5
     os.utime(folder.home.folder / "processes" / "1" / "1.out", (shown_at, shown_at))
     watch_tick(story)
@@ -128,8 +128,8 @@ def test_a_test_run_that_prints_again_after_the_ask_is_asked_again_only_after_it
     tree = started_tree(story, 12.0)
     busy_for(story, tree, CHECK_SECONDS + 5)
     folder = story.container.get(OutputFolder)
-    folder.write_start(1, "go test ./...", ["go test ./..."])
-    folder.write_output(1, 1, "ok\n")
+    story.step("run started", 1, "go test ./...", ["go test ./..."])
+    story.step("run printed", 1, 1, "ok\n")
     emitted_at = story.clock.timestamp().value.timestamp()
     os.utime(folder.home.folder / "processes" / "1" / "1.out", (emitted_at, emitted_at))
     busy_for(story, tree, HANG_SECONDS + 1)
@@ -139,7 +139,7 @@ def test_a_test_run_that_prints_again_after_the_ask_is_asked_again_only_after_it
 def test_one_listing_of_the_processes_serves_every_run_of_a_tick(new_story):
     story = new_story(fixture=ActiveBuild)
     moved_run(story, "make test")
-    story.container.get(OutputFolder).write_pid(2, MISSING_GROUP)
+    story.step("run process id", 2, MISSING_GROUP)
     tree = started_tree(story, 12.0)
     tree.listings = 0
     watch_tick(story)

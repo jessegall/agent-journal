@@ -11,7 +11,6 @@ from core.modules.agents.commands.record_agent_process.record_agent_process impo
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.commands.start_process.start_process import StartProcess
-from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
@@ -37,7 +36,7 @@ def writing_folder(delivered_folder, request, monkeypatch):
     writer = subprocess.Popen([sys.executable, '-u', '-c', script, f'processes/{process.id}/run.sh', str(folder)], cwd=folder, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, start_new_session=True)
     assert writer.stdout.readline().strip() == 'ready'
     monkeypatch.setattr(LeftoverProcess, 'command_line', lambda pid: f'claude processes/{process.id}/run.sh' if pid == writer.pid and writer.poll() is None else '')
-    story.container.get(OutputFolder).write_pid(process.id, writer.pid)
+    story.step("run process id", process.id, writer.pid)
     try:
         yield story, repository, worker, process, writer
     finally:

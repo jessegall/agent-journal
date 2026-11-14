@@ -10,7 +10,6 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.modules.processes.models.process import Process
-from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
@@ -205,7 +204,7 @@ def test_picked_tests_run_after_proof_tests_on_the_rebased_worktree(new_story, m
 def run_test_process(story, process_id):
     process = story.row(Process, process_id)
     completed = subprocess.run(process.line, shell=True, cwd=process.folder, capture_output=True, text=True, timeout=30, check=False)
-    story.container.get(OutputFolder).write_output(process_id, 1, completed.stdout)
+    story.step("run printed", process_id, 1, completed.stdout)
     ended(story, process_id, completed.returncode)
 
 
@@ -234,7 +233,7 @@ def test_a_failed_picker_returns_the_work_with_its_output(new_story, monkeypatch
 
 def test_a_failed_picked_test_returns_the_work_with_its_output(new_story, monkeypatch):
     story, _, worker, started = affected_test_story(new_story, monkeypatch)
-    story.container.get(OutputFolder).write_output(started[1], 1, "tests/other.py\n")
+    story.step("run printed", started[1], 1, "tests/other.py\n")
     ended(story, started[1], 0)
     ended(story, started[2], 1)
     story.expect_text("worker-worktree show 1", "state: cut", actor=story.agent)
@@ -249,7 +248,7 @@ def test_a_failed_picker_runs_again_at_the_next_hand_in(new_story, monkeypatch):
     story.expect_success("worker commit --wait --differences none", actor=worker)
     story.run_listeners()
     story.expect_rows(len(started) == 3)
-    story.container.get(OutputFolder).write_output(started[2], 1, "tests/other.py\n")
+    story.step("run printed", started[2], 1, "tests/other.py\n")
     ended(story, started[2], 0)
     ended(story, started[3], 0)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
@@ -274,7 +273,7 @@ def test_picked_tests_run_when_the_proof_has_no_test_command(new_story, monkeypa
     story.expect_success("worker commit --wait --differences none", actor=worker)
     story.run_listeners()
     story.expect_rows(len(started) == 1)
-    story.container.get(OutputFolder).write_output(started[0], 1, "tests/cart.py\n")
+    story.step("run printed", started[0], 1, "tests/cart.py\n")
     ended(story, started[0], 0)
     ended(story, started[1], 0)
     story.expect_text("proof show 1", "state: shown", actor=story.agent)
@@ -436,7 +435,7 @@ def test_the_picked_tests_run_on_the_work_merged_into_a_base_that_moved_after_th
     story.run_listeners()
     ended(story, started[0], 0)
     picker_folder = Path(story.row(Process, started[1]).folder)
-    story.container.get(OutputFolder).write_output(started[1], 1, "tests/other.py\n")
+    story.step("run printed", started[1], 1, "tests/other.py\n")
     ended(story, started[1], 0)
     selected = story.row(Process, started[2])
     story.expect_rows(picker_folder != repository.worktree_folder(worker.id), (picker_folder / "base.txt").read_text() == "moved\n",

@@ -1,4 +1,3 @@
-from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_steps import WorkerSteps
 from tests.stories.support.story_checks import expect_value
@@ -39,7 +38,7 @@ def test_a_failed_selected_test_is_a_failure(new_story, monkeypatch):
     external.edit_prove(TEST_LINE)
     external.story.expect_success(COMMIT, actor=external.worker)
     external.end_test(external.started[0])
-    external.story.container.get(OutputFolder).write_output(external.started[1], 1, "tests/other.py\n")
+    external.story.step("run printed", external.started[1], 1, "tests/other.py\n")
     external.end_test(external.started[1])
     expect_value(not steps.has_open_failure(read_worktree(external)), True)
     external.end_test(external.started[2], 1)

@@ -1,5 +1,6 @@
 from functools import cache
 import inspect
+from engine.module.story_step import StoryStep
 from collections.abc import Sequence
 from pathlib import Path
 from typing import ClassVar, Never
@@ -96,6 +97,7 @@ class Module:
     agent_groups: ClassVar[list[AgentGroup | type[AgentGroup]]] = []
     profiles: ClassVar[list[AgentProfile]] = []
     providers: ClassVar[list[type[Provider]]] = []
+    story_steps: ClassVar[list[type[StoryStep]]] = []
     settings: ClassVar[Sequence[SettingNode | type[SettingList]]] = []
     tunnels: ClassVar[list[type[Tunnel]]] = []
     shared_rows: ClassVar[list[type[SharedRows]]] = []

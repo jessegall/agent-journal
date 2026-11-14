@@ -20,7 +20,6 @@ from core.modules.processes.support.part_spec import PartSpec
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.examples.hook_sample import HookSample
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story import Story
@@ -100,8 +99,7 @@ def install_runner(story: Story) -> Story:
 
 def ended_run(story: Story, line: str, text: str, exit_code: int = 0) -> Process:
     process = start_process(story, line)
-    folder = story.container.get(OutputFolder)
-    folder.write_output(process.id, 1, text)
+    story.step("run printed", process.id, 1, text)
     bus = story.container.get(Bus)
     bus.run(EndProcessPart(process.id, 1, exit_code), story.agent, environment_id=1)
     bus.run(EndProcess(process.id, exit_code, max(len(text), BYTES_LONG), text.count("\n")), story.agent, environment_id=1)
@@ -134,8 +132,7 @@ def moved_run_of(story: Story, owner: Actor, line: str, category: CommandCategor
 
 
 def end_run(story: Story, process: Process, text: str, exit_code: int = 0) -> None:
-    folder = story.container.get(OutputFolder)
-    folder.write_output(process.id, 1, text)
+    story.step("run printed", process.id, 1, text)
     bus = story.container.get(Bus)
     actor = Actor(process.session_agent_id, ActorType.AGENT)
     bus.run(EndProcessPart(process.id, 1, exit_code), actor, environment_id=1)
@@ -143,14 +140,14 @@ def end_run(story: Story, process: Process, text: str, exit_code: int = 0) -> No
 
 
 def emitted_read(story: Story, process: Process, text: str) -> None:
-    story.container.get(OutputFolder).write_output(process.id, 1, text)
+    story.step("run printed", process.id, 1, text)
     OutputReading()(story.container)
 
 
 def tick(story) -> None:
     story.advance(timedelta(minutes=1))
     for process in tuple(story.container.get(ProcessQuery).running().every_row(TEST_ROWS_REASON)):
-        story.container.get(OutputFolder).beat(process.id, story.clock.timestamp())
+        story.step("run beat", process.id, story.clock.timestamp())
     OutputReading().read(story.container)
     story.tick("s-1")
 

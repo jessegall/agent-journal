@@ -1,7 +1,6 @@
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_WAIT
 from engine.sandbox.shell_sandbox import ShellSandbox
 from core.modules.processes.support.stock_reader import STOCK_READERS
-from core.modules.processes.support.output_folder import OutputFolder
 import pytest
 
 from engine.enums.command_category import CommandCategory
@@ -26,9 +25,8 @@ BUILD = HookSamples.shell("make build", ShellPart("make", CommandCategory.BUILD,
 def test_the_agent_terminal_reads_the_call_output_through_the_viewer(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     reply = story.hook("s-1", SERVER)
-    folder = story.container.get(OutputFolder)
-    folder.write_start(1, "node serve.js", ["node serve.js"])
-    folder.write_output(1, 1, "server started\n")
+    story.step("run started", 1, "node serve.js", ["node serve.js"])
+    story.step("run printed", 1, 1, "server started\n")
     page = viewer(story, "agents.agents", ["output", "hook-page", str(reply.hook_call_id)])
     story.expect_rows(page["lines"] == ["server started"])
 

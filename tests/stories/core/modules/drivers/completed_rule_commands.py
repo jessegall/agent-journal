@@ -57,7 +57,7 @@ def test_a_runner_finishing_between_ask_and_record_makes_the_rules_end_commands_
     story, process = running_process
     folder = story.container.get(OutputFolder)
     folder.write_status(process.id, 1, exit_code)
-    folder.write_end(process.id, exit_code)
+    story.step("run ended", process.id, exit_code)
     move_after_answers(story, monkeypatch, ["EndProcessPart", "EndProcess"], lambda: finish_run(story, process, exit_code))
     expect_commands_answered(story, story.tick("s-1"), "EndProcessPart", "EndProcess")
     story.expect_text(f"process show {process.id}", f"exit_code: {exit_code}")

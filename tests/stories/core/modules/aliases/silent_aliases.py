@@ -8,7 +8,6 @@ from core.modules.processes.commands.move_process.move_process import MoveProces
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.support.part_spec import PartSpec
 from core.modules.processes.models.process import Process
-from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story import Story
@@ -78,7 +77,7 @@ def test_an_edited_alias_whose_run_prints_clears_its_mark(new_story):
     edited_alias(story)
     expect_value(bool(read_alias(story).fixed_at is not None and not read_alias(story).is_claimed), True)
     process = moved_run(story, RUN, category=CommandCategory.BUILD)
-    story.container.get(OutputFolder).write_output(process.id, 1, "step 1\n")
+    story.step("run printed", process.id, 1, "step 1\n")
     SilentAliasMarking()(story.container)
     cleared = read_alias(story)
     expect_value(bool(cleared.silent_at is None and cleared.fixed_at is None), True)

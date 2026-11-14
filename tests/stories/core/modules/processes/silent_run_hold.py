@@ -34,8 +34,8 @@ BLOCKED = "Output 1 printed nothing for 301s"
 
 def output_line(story: Story, text: str) -> None:
     folder = story.container.get(OutputFolder)
-    folder.write_start(1, "make build", ["make build"])
-    folder.write_output(1, 1, text)
+    story.step("run started", 1, "make build", ["make build"])
+    story.step("run printed", 1, 1, text)
     emitted_at = story.clock.timestamp().value.timestamp()
     os.utime(folder.home.folder / "processes" / "1" / "1.out", (emitted_at, emitted_at))
 

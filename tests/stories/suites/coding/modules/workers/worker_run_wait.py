@@ -4,7 +4,6 @@ import pytest
 
 from engine.enums.command_category import CommandCategory
 from core.modules.processes.models.process import Process
-from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.runner_binary import RunnerBinary
 from core.modules.processes.support.runner_line import QUEUE_WAIT_VARIABLE
 from engine.testing.examples.hook_samples import HookSamples
@@ -64,9 +63,8 @@ def newest_run(story) -> Process:
 def end_run_during_wait(story, text: str, exit_code: int = 0, after_sleeps: int = 1) -> None:
     def ended() -> None:
         process = newest_run(story)
-        folder = story.container.get(OutputFolder)
-        folder.write_output(process.id, 1, text)
-        folder.write_end(process.id, exit_code)
+        story.step("run printed", process.id, 1, text)
+        story.step("run ended", process.id, exit_code)
     story.clock.call_after_sleeps(after_sleeps, ended)
 
 
@@ -83,13 +81,13 @@ def test_a_negative_wait_is_refused(worker):
 
 def test_a_named_test_past_the_wait_asks_its_run_to_go_to_the_background(worker):
     worker.story.run(TEST_RUN, actor=worker.worker)
-    expect_value(worker.story.container.get(OutputFolder).has_move_request(newest_run(worker.story).id), True)
+    expect_value(worker.story.step("run asked to move", newest_run(worker.story).id), True)
 
 
 def test_a_named_test_that_ends_in_time_is_not_asked_to_move(worker):
     end_run_during_wait(worker.story, "ok\n")
     worker.story.run(TEST_RUN, actor=worker.worker)
-    expect_value(worker.story.container.get(OutputFolder).has_move_request(newest_run(worker.story).id), False)
+    expect_value(worker.story.step("run asked to move", newest_run(worker.story).id), False)
 
 
 def test_a_named_test_launches_and_holds_the_call_with_the_settings_queue_wait(worker, launches):
@@ -115,7 +113,7 @@ def test_the_commands_card_in_the_workers_chat_shows_what_its_named_test_printed
     line = f"journal {TEST_RUN}"
     reply = worker.run_line(line, ShellPart("journal", CommandCategory.JOURNAL, TEST_RUN.split(), subcommand="worker"))
     process = worker.story.first_row(Process, line=line)
-    worker.story.container.get(OutputFolder).write_output(process.id, 1, "10 passed\n")
+    worker.story.step("run printed", process.id, 1, "10 passed\n")
     with server_story(worker.story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         key = f"terminal-output.{reply.hook_call_id}"

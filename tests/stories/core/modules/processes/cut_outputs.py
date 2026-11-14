@@ -7,7 +7,6 @@ from engine.database.database import Database
 from engine.database.statement import Statement
 from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput
 from core.modules.processes.support.grown_outputs import GrownOutputs
-from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
@@ -30,7 +29,7 @@ def read_run(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
     story.expect_success(COUNTING_READER, actor=story.agent)
     process = moved_run(story, "cart-suite run")
-    story.container.get(OutputFolder).write_output(process.id, 1, FIRST_OUTPUT)
+    story.step("run printed", process.id, 1, FIRST_OUTPUT)
     advance(story, process)
     return story, process
 
@@ -42,13 +41,13 @@ def test_a_read_output_has_no_new_bytes(read_run):
 
 def test_a_cut_counts_as_a_change_for_a_reader(read_run):
     story, process = read_run
-    story.container.get(OutputFolder).write_output(process.id, 1, CUT_OUTPUT)
+    story.step("run printed", process.id, 1, CUT_OUTPUT)
     story.expect_rows(story.container.get(GrownOutputs).has_new_bytes(process.id))
 
 
 def test_a_reader_after_a_cut_starts_again_and_counts_only_what_is_kept(read_run):
     story, process = read_run
-    story.container.get(OutputFolder).write_output(process.id, 1, CUT_OUTPUT)
+    story.step("run printed", process.id, 1, CUT_OUTPUT)
     advance(story, process)
     read = read_row(story, process)
     story.expect_rows(read["read_offset"] == len(CUT_OUTPUT), read["read_lines"] == 2)

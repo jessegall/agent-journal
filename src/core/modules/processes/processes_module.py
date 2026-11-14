@@ -1,3 +1,4 @@
+from core.modules.processes.story_steps.processes_story_steps import PROCESSES_STORY_STEPS
 from core.modules.processes.windows.extensions.agents_processes_extension import AgentsProcessesExtension
 from core.modules.processes.windows.extensions.helpers_processes_extension import HelpersProcessesExtension
 from core.modules.processes.windows.extensions.agents_lift_hold_extension import AgentsLiftHoldExtension
@@ -315,3 +316,4 @@ class ProcessesModule(Module):
     windows = PROCESSES_WINDOWS
     inspectors = [QUEUE_INSPECTOR]
     seeders = [ProcessesSeeder]
+    story_steps = PROCESSES_STORY_STEPS

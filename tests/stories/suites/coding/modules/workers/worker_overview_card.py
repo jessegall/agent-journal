@@ -1,5 +1,4 @@
 from engine.enums.command_category import CommandCategory
-from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.runner_line import RunnerLine
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
@@ -17,8 +16,7 @@ def test_the_card_of_a_worker_shows_the_output_of_journal_overview(new_story):
     worker = dispatched_worker(story)
     reply = story.hook(worker_session(story, worker), OVERVIEW)
     process = RunnerLine.process_id(dict(reply.updated_input)["command"])
-    folder = story.container.get(OutputFolder)
-    folder.write_start(process, "journal overview", ["journal overview"])
-    folder.write_output(process, 1, "## skill required\nno skills to load\n")
+    story.step("run started", process, "journal overview", ["journal overview"])
+    story.step("run printed", process, 1, "## skill required\nno skills to load\n")
     page = viewer(story, "agents.agents", ["output", "hook-page", str(reply.hook_call_id)])
     story.expect_rows(page["lines"] == ["## skill required", "no skills to load"])

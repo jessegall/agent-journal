@@ -1,5 +1,4 @@
 from core.modules.chat.models.journal_exception import JournalException
-from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.ticks.output_reading import OutputReading
 from engine.log.exception_sink import CLOCK_TICK_SOURCE
 from tests.stories.core.modules.developer.support.performance_fixture import DevelopmentToolsEnabled
@@ -24,7 +23,7 @@ def test_a_tick_that_reads_twenty_grown_runs_is_within_its_limit_and_reports_no_
     story = new_story(fixture=DevelopmentToolsEnabled)
     runs = [started_run(story, f"make test-{number}") for number in range(GROWN_COUNT)]
     for run in runs:
-        story.container.get(OutputFolder).write_output(run.id, 1, "line\n")
+        story.step("run printed", run.id, 1, "line\n")
     OutputReading()(story.container)
     story.run_listeners()
     slow_ticks = [row for row in story.story_rows(JournalException) if row.source == CLOCK_TICK_SOURCE and "points" in row.message]

@@ -5,7 +5,6 @@ from engine.testing.expectations.expect_reply import expect_reply_allowed
 from tests.stories.core.support.agent_labels import agent_number
 
 from core.modules.processes.models.enums.process_state import ProcessState
-from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.ticks.worker_tests.stalled_worker_test_runs import StalledWorkerTestRuns
@@ -42,7 +41,7 @@ def output_id(worker: StoryWorker, line: str) -> int:
 
 
 def produce_output(worker: StoryWorker, line: str, text: str) -> None:
-    worker.story.container.get(OutputFolder).write_output(output_id(worker, line), 1, text)
+    worker.story.step("run printed", output_id(worker, line), 1, text)
 
 
 def failure_lines(worker: StoryWorker) -> list[str]:

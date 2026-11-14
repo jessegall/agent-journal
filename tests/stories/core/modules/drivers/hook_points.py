@@ -6,7 +6,6 @@ from engine.registry.registry import Registry
 from core.modules.drivers.support.hook_cost_tool import HOOK_LIMIT_POINTS
 from engine.enums.command_category import CommandCategory
 from engine.enums.tool_type import ToolType
-from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.modules.checks.support.due_check_runs import DueCheckRuns
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
@@ -102,7 +101,7 @@ def busy_hook_points(filled_hook_points):
     story.container.get(DueCheckRuns).run()
     for number in range(10):
         process = moved_run(story, f"deploy build-{number}")
-        story.container.get(OutputFolder).write_output(process.id, 1, "building\n")
+        story.step("run printed", process.id, 1, "building\n")
         monitor = HookSamples.tool_use("Monitor", ToolType.MONITOR, [], None).with_raw({"tool_input": {"command": f"journal output monitor {process.id}"}})
         story.hook("s-1", monitor)
     story.hook("s-1", SAMPLES["post_tool_use"])

@@ -1,6 +1,5 @@
 import pytest
 
-from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.expectations.expect_reply import expect_reply_allowed, expect_reply_refusal
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.held_tasks import prove_task, unplanned_worker_with_tasks
@@ -88,7 +87,7 @@ def test_50_a_failed_run_of_the_selected_tests_returns_the_tasks_of_the_commit_a
     prove_task(worker, 2, 1, SECOND_TEST_LINE)
     commit(worker)
     worker.end_tests(0, 0)
-    story.container.get(OutputFolder).write_output(worker.started[2], 1, SELECTED_TESTS)
+    story.step("run printed", worker.started[2], 1, SELECTED_TESTS)
     worker.end_test(worker.started[2])
     worker.end_test(worker.started[3], 1)
     expect_task_states(worker, "started", 1, 2)

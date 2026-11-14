@@ -4,7 +4,6 @@ from datetime import timedelta
 from engine.enums.command_category import CommandCategory
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story import Story
@@ -82,7 +81,7 @@ class SecondBuildStarted(StoryFixture):
 
 
 def finish_build(story: Story, process_id: int, text: str, seconds: int = 70) -> None:
-    story.container.get(OutputFolder).write_start(process_id, ALIAS, [ALIAS])
+    story.step("run started", process_id, ALIAS, [ALIAS])
     story.advance(timedelta(seconds=seconds))
     end_run(story, story.row(Process, process_id), text)
 

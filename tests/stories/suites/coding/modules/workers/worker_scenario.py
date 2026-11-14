@@ -5,7 +5,6 @@ from datetime import timedelta
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
 from tests.stories.core.modules.chat.support.mark_samples import expect_absent_marks_text, expect_marks_text
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
@@ -94,9 +93,8 @@ def test_a_proof_test_whose_end_the_server_missed_still_completes_its_task(new_s
     story.run_listeners()
     ended_program = subprocess.Popen(["true"])
     ended_program.wait()
-    folder = story.container.get(OutputFolder)
-    folder.write_pid(started[0], ended_program.pid)
-    folder.write_end(started[0], 0)
+    story.step("run process id", started[0], ended_program.pid)
+    story.step("run ended", started[0], 0)
     story.advance(timedelta(seconds=11))
     RunEndRecovery()(story.container)
     story.run_listeners()

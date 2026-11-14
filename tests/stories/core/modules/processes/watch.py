@@ -2,7 +2,6 @@ import pytest
 
 from engine.enums.command_category import CommandCategory
 from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from core.modules.processes.ticks.output_reading import OutputReading
@@ -27,14 +26,13 @@ def test_a_watch_tells_the_progress_only_as_it_passes_each_10_percent(new_story)
     story.run('reader add steps --commands "make*" --lines "FAILED" --progress "\\[ *([0-9]+)%\\]"', actor=story.agent)
     process_id = start_process(story, "make test").id
     story.run(f"output watch {process_id}", actor=story.agent)
-    folder = story.container.get(OutputFolder)
-    folder.write_output(process_id, 1, "[ 42%]\nFAILED a\n")
+    story.step("run printed", process_id, 1, "[ 42%]\nFAILED a\n")
     tick(story)
     story.expect_hook_allowed("s-1", AFTER, f"Output {process_id}: 42%")
-    folder.write_output(process_id, 1, "[ 42%]\nFAILED a\n[ 47%]\n")
+    story.step("run printed", process_id, 1, "[ 42%]\nFAILED a\n[ 47%]\n")
     tick(story)
     story.expect_absent_hook_line("s-1", AFTER, "output")
-    folder.write_output(process_id, 1, "[ 42%]\nFAILED a\n[ 47%]\n[ 53%]\n")
+    story.step("run printed", process_id, 1, "[ 42%]\nFAILED a\n[ 47%]\n[ 53%]\n")
     tick(story)
     story.expect_hook_allowed("s-1", AFTER, f"Output {process_id}: 53%")
 
@@ -60,7 +58,7 @@ def test_a_background_run_is_named_running_once_and_then_each_10_percent(new_sto
     process = moved_run(story, "make test")
     story.expect_hook_allowed("s-1", AFTER, f"Output {process.id}: running")
     story.expect_absent_hook_line("s-1", AFTER, f"Output {process.id}: running")
-    story.container.get(OutputFolder).write_output(process.id, 1, "[ 42%]\nFAILED a\n")
+    story.step("run printed", process.id, 1, "[ 42%]\nFAILED a\n")
     tick(story)
     story.expect_hook_allowed("s-1", AFTER, f"Output {process.id}: 42%")
 
@@ -76,7 +74,7 @@ def test_a_tick_of_the_clock_keeps_a_runs_progress_current(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.run('reader add steps --commands "make*" --lines "FAILED" --progress "\\[ *([0-9]+)%\\]"', actor=story.agent)
     process_id = start_process(story, "make test").id
-    story.container.get(OutputFolder).write_output(process_id, 1, "[ 42%]\n")
+    story.step("run printed", process_id, 1, "[ 42%]\n")
     output_tick = OutputReading()
     expect_handler(output_tick, story, True)
     expect_progress(story, process_id, 42)

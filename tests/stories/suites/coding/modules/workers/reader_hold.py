@@ -26,7 +26,6 @@ from core.modules.processes.commands.start_process.start_process import StartPro
 from core.modules.processes.support.part_spec import PartSpec
 from core.modules.processes.support.reading_notices.reading_notices import ReadingNotices
 from core.modules.processes.support.run_visibility import RunVisibility
-from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from engine.testing.expectations.expect_reply import expect_reply_line
@@ -88,7 +87,7 @@ def test_a_worker_run_with_a_poor_reader_or_none_gets_only_the_ended_line(new_st
     for line in ("poor-build run", "unread-build run"):
         process = bus.run(StartProcess(worker.id, None, line, "/work/main", CommandCategory.BUILD, 30,
                                        [PartSpec(line, line.split()[0], category=CommandCategory.BUILD)]), worker, environment_id=1)
-        story.container.get(OutputFolder).write_output(process.id, 1, "compile\n" * 10)
+        story.step("run printed", process.id, 1, "compile\n" * 10)
         bus.run(EndProcessPart(process.id, 1, 0), worker, environment_id=1)
         ended = bus.run(EndProcess(process.id, 0, 5000, 10), worker, environment_id=1)
         output = story.container.get(OutputQuery).process_output(ended.id)
@@ -121,7 +120,7 @@ def test_a_held_worker_may_read_and_may_stop(new_story):
 def test_a_run_waits_in_the_queue_while_a_kept_sample_exists(kept_reader_sample):
     story = kept_reader_sample
     process = worker_run(story)
-    story.expect_rows(not story.container.get(OutputFolder).has_slot(process.id))
+    story.expect_rows(not story.step("run holds a slot", process.id))
     story.expect_rows(story.container.get(Queries).query(type(process)).find(process.id).queued_at is not None)
 
 
@@ -129,7 +128,7 @@ def test_a_run_with_no_sample_runs_as_the_sample_while_its_worker_is_held(new_st
     story = new_story(fixture=ForcedReaders)
     process = worker_run(story, "sample-build run")
     request = story.container.get(ReaderRequestQuery).open().page(1, 1).rows[0]
-    story.expect_rows(request.sample_process_id == process.id, story.container.get(OutputFolder).has_slot(process.id))
+    story.expect_rows(request.sample_process_id == process.id, story.step("run holds a slot", process.id))
 
 
 def test_a_saved_proper_reader_frees_the_worker_and_starts_its_run_with_that_reader(kept_reader_sample):
@@ -154,7 +153,7 @@ def test_the_hold_runs_out_and_the_run_starts_with_no_reader(kept_reader_sample)
     process = worker_run(story)
     story.advance(timedelta(minutes=26))
     story.run_command(GrantRunSlots(), story.agent, 1)
-    story.expect_rows(story.container.get(OutputFolder).has_slot(process.id))
+    story.expect_rows(story.step("run holds a slot", process.id))
     story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
 
 
@@ -162,7 +161,7 @@ def test_readers_forced_off_creates_no_request_block_or_wait(new_story):
     story = new_story(fixture=ForcedReaders)
     story.run(f"setting set {ProcessSetting.READERS_FORCED.key} off --environment main")
     process = worker_run(story)
-    story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists(), story.container.get(OutputFolder).has_slot(process.id))
+    story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists(), story.step("run holds a slot", process.id))
     story.expect_rows(not story.container.get(Queries).query(AgentBlock).filter(session_agent_id=reader_worker(story).id).exists())
 
 
@@ -171,7 +170,7 @@ def test_with_no_main_agent_the_worker_is_not_held_and_its_run_goes_on(new_story
     story.run(f"agent end {story.agent.id}", actor=story.agent)
     process = worker_run(story, "alone-build run")
     request = story.container.get(ReaderRequestQuery).open().page(1, 1).rows[0]
-    story.expect_rows(request.expires_at == story.clock.timestamp(), story.container.get(OutputFolder).has_slot(process.id))
+    story.expect_rows(request.expires_at == story.clock.timestamp(), story.step("run holds a slot", process.id))
     story.expect_rows(not story.container.get(Queries).query(AgentBlock).filter(session_agent_id=reader_worker(story).id).exists())
 
 
@@ -246,7 +245,7 @@ def test_waive_frees_the_worker_and_starts_its_run_with_no_reader(kept_reader_sa
     story.expect_success('reader-request waive 1 --reason "read this build by hand"', actor=story.agent)
     request = story.container.get(ReaderRequestQuery).find(1)
     story.expect_rows(request.completed_at is not None, request.skip_reason == "read this build by hand")
-    story.expect_rows(story.container.get(OutputFolder).has_slot(process.id))
+    story.expect_rows(story.step("run holds a slot", process.id))
     story.expect_rows(story.container.get(OutputQuery).process(process.id).page(1, 1).rows[0].reader_id is None)
     story.run_listeners()
     story.expect_rows(not story.container.get(Queries).query(ChatMark).filter(key="reader-request:1").exists())
@@ -265,7 +264,7 @@ def test_an_idle_main_agent_gets_the_reader_request_on_tick(requested_reader_sto
 def test_reader_sample_changes_make_no_chat_mark(requested_reader_story):
     story = requested_reader_story
     request = story.container.get(ReaderRequestQuery).find(1)
-    story.container.get(OutputFolder).write_output(request.sample_process_id, 1, "first line\n" + "middle\n" * 30 + "last line\n")
+    story.step("run printed", request.sample_process_id, 1, "first line\n" + "middle\n" * 30 + "last line\n")
     worker = reader_worker(story)
     story.run_command(EndProcess(request.sample_process_id, 0, 5000, 32), worker, 1)
     story.run_listeners()
@@ -284,7 +283,7 @@ def test_a_run_with_no_test_results_does_not_fail_the_reader_or_hold_the_next_wo
     end_run(story, process, text, exit_code=5)
     following = worker_run(story, "python3 -m pytest tests/next.py", CommandCategory.TEST_RUN)
     story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists())
-    story.expect_rows(story.container.get(OutputFolder).has_slot(following.id))
+    story.expect_rows(story.step("run holds a slot", following.id))
     story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
 
 
@@ -297,4 +296,4 @@ def test_a_reader_that_stops_matching_on_a_worker_build_holds_nothing(new_story)
     end_run(story, second, "new output\n" * 8)
     following = worker_run(story, "changing-build second", CommandCategory.BUILD)
     story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
-    story.expect_rows(story.container.get(OutputFolder).has_slot(following.id))
+    story.expect_rows(story.step("run holds a slot", following.id))

@@ -8,7 +8,6 @@ from engine.query.queries import Queries
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.rules.read_advice_rule import ReadAdviceRule
-from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner
@@ -75,7 +74,7 @@ def busy_worker(readers_disabled):
 def test_a_worker_build_with_no_reader_opens_no_request_and_holds_nothing(forced):
     process = worker_run(forced, "custom-build run", CommandCategory.BUILD)
     expect_unblocked(forced)
-    forced.expect_rows(forced.container.get(OutputFolder).has_slot(process.id))
+    forced.expect_rows(forced.step("run holds a slot", process.id))
 
 
 def test_a_worker_test_with_no_reader_and_no_limit_opens_no_request(unlimited_runs):

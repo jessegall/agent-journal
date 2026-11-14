@@ -12,7 +12,6 @@ from tests.stories.core.modules.processes.run_queue import has_slot, queued, wai
 from tests.stories.core.modules.processes.support.process_samples import end_run, ended_hook_lines, install_runner
 from tests.stories.core.modules.processes.support.queue_fixtures import QueueAgents as BuilderStarted
 from tests.stories.support.story_checks import expect_value_with
-from core.modules.processes.support.output_folder import OutputFolder
 
 VIEW_LINE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, []))
 HALT = 'queue halt "a deploy is going"'
@@ -43,7 +42,7 @@ def test_a_slot_timeout_ends_failed_and_resuming_only_admits_a_new_retry(new_sto
     story.advance(timedelta(minutes=30))
     expect_absent_slot(story, expired)
     message = "queue slot wait expired: no command was started\n"
-    story.container.get(OutputFolder).write_output(expired.id, 1, message)
+    story.step("run printed", expired.id, 1, message)
     story.expect_success(f"process end {expired.id} --exit-code 124 --bytes {len(message)} --lines 1", actor=Actor(expired.session_agent_id, ActorType.AGENT))
     story.expect_text(f"process show {expired.id}", "state: failed", "exit_code: 124")
     story.expect_success("queue resume", actor=story.agent)

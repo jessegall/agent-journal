@@ -8,7 +8,6 @@ from engine.command.bus import Bus
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.models.process import Process
-from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.modules.processes.support.queue_fixtures import QueueAgents
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
@@ -26,7 +25,7 @@ def queued(story, line: str, category: CommandCategory = CommandCategory.TEST_RU
 
 
 def has_slot(story, process: Process) -> bool:
-    return story.container.get(OutputFolder).has_slot(process.id)
+    return story.step("run holds a slot", process.id)
 
 
 def waits(story, process: Process) -> bool:

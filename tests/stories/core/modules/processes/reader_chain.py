@@ -10,7 +10,6 @@ from core.modules.processes.support.part_spec import PartSpec
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.support.reader_demands import ReaderDemands
-from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 from suites.coding.modules.workers.support.worker_nudges import READER_SAMPLE_READY
@@ -26,9 +25,8 @@ def test_a_test_reader_is_not_judged_on_a_python_setup_command(new_story):
              PartSpec("python3 -m pytest tests/cart -q", "python3", category=CommandCategory.TEST_RUN)]
     bus = story.container.get(Bus)
     process = bus.run(StartProcess(worker.id, None, " && ".join(part.text for part in parts), "/work", CommandCategory.TEST_RUN, 30, parts), worker, environment_id=1)
-    folder = story.container.get(OutputFolder)
-    folder.write_output(process.id, 1, "updated source\n" * 6)
-    folder.write_output(process.id, 2, "collected 73\n73 passed in 9.84s\n")
+    story.step("run printed", process.id, 1, "updated source\n" * 6)
+    story.step("run printed", process.id, 2, "collected 73\n73 passed in 9.84s\n")
     for position in (1, 2):
         bus.run(EndProcessPart(process.id, position, 0), worker, environment_id=1)
     bus.run(EndProcess(process.id, 0, 5000, 8), worker, environment_id=1)
