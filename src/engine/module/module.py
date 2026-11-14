@@ -6,6 +6,7 @@ from typing import ClassVar, Never
 from engine.agent.groups.agent_group import AgentGroup
 from engine.helper_type.helper_type import HelperType
 from engine.profile.agent_profile import AgentProfile
+from engine.module.ask_topic import AskTopic
 
 from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.chat.dock_declaration import DockDeclaration
@@ -80,6 +81,7 @@ class Module:
     performance_tools: ClassVar[list[type[PerformanceTool]]] = []
     nudges: ClassVar[list[NudgeDeclaration]] = []
     tick_handlers: ClassVar[list[TickHandler]] = []
+    ask_topics: ClassVar[list[AskTopic]] = []
     docks: ClassVar[list[DockDeclaration]] = []
     templates: ClassVar[list[TemplateDeclaration]] = []
     buttons: ClassVar[list[ButtonDeclaration]] = []
