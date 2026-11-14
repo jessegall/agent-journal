@@ -66,8 +66,8 @@ def test_a_worker_may_not_add_remove_or_choose_a_reader_even_with_skip_guard(new
     story = new_story(fixture=BuilderStarted)
     story.run('reader add local --commands "custom-build*" --lines "done"', actor=story.agent)
     worker = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
-    for line in ('reader add blocked --commands "custom-build*" --lines "done"', 'reader remove local', 'reader default local'):
-        story.expect_refusal(line + " --skip-guard processes.reader-owner", "has no skip", actor=worker)
+    for line, refusal in (('reader add blocked --commands "custom-build*" --lines "done"', "has no skip"), ('reader remove local', "A worker may not run reader remove"), ('reader default local', "A worker may not run reader default")):
+        story.expect_refusal(line + " --skip-guard processes.reader-owner", refusal, actor=worker)
     story.expect_text("reader list", "local", actor=story.agent)
     story.expect_absent("reader list", "blocked", actor=story.agent)
 

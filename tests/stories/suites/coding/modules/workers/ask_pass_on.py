@@ -100,7 +100,7 @@ def test_a_worker_cannot_answer_or_pass_on_a_question_itself(case):
     ask(case)
     line = questions(case.story)[0]
     expect_refused_with(case.story, f'merger answer {line.id} "I answer myself"', "may not run merger answer", actor=case.worker)
-    expect_refused_with(case.story, f"{MERGER_QUESTION_LINE} --worker {agent_number(case.story, case.worker.id)}", "only the merger runs this", actor=case.worker)
+    expect_refused_with(case.story, f"{MERGER_QUESTION_LINE} --worker {agent_number(case.story, case.worker.id)}", "A worker may not run merger tell", actor=case.worker)
     case.story.expect_rows(questions(case.story)[0].outcome is None, detail="the question is still open")
 
 
