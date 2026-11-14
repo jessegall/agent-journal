@@ -19,6 +19,7 @@ class ForeignRun:
     milliseconds: int
     timed_out: bool
     answer: Mapping[str, object] = field(default_factory=dict[str, object])
+    on_failure: str = ""
 
     @classmethod
     def parsed(cls, data: object) -> "ForeignRun":
@@ -31,7 +32,7 @@ class ForeignRun:
             raise HookEventError(f"milliseconds is nonnegative, not {milliseconds}")
         answer = mapping(fields.get("answer", {}), "a foreign hook answer")
         return cls(text(fields, "id"), number(fields, "exit_code"), text(fields, "stdout"), text(fields, "stderr"), milliseconds, boolean(fields, "timed_out"),
-                   {str(key): value for key, value in answer.items()})
+                   {str(key): value for key, value in answer.items()}, text(fields, "on_failure"))
 
     @classmethod
     def parsed_many(cls, data: object) -> tuple["ForeignRun", ...]:

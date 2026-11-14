@@ -155,3 +155,11 @@ func TestAsyncRewakeIsIgnoredForAProgramThatDoesNotHonourIt(t *testing.T) {
 		t.Fatalf("codex honoured asyncRewake: %+v", *posted)
 	}
 }
+
+func TestOnFailureIsIgnoredForAnAsyncHook(t *testing.T) {
+	root, hook := asyncProject(t, "exit 1", 10)
+	hook.Fields["onFailure"] = "block"
+	if runs := runManaged([]ManagedHook{hook}, nil, "claude", programs.LoadTable("").Programs["claude"], root); len(runs) != 0 {
+		t.Fatalf("an async hook gave a run that could refuse: %+v", runs)
+	}
+}

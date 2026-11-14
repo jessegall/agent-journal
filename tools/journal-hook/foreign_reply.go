@@ -62,13 +62,13 @@ func foreignReply(program programs.Program, event string, runs []ForeignRun) Rep
 
 func foreignRunReply(program programs.Program, event string, run ForeignRun) Reply {
 	if run.TimedOut {
-		return Reply{Terminal: run.ID + ": hook timed out"}
+		return failed(run, "hook timed out")
 	}
 	if run.ExitCode == 2 {
 		return Reply{Refusal: withDefault(strings.TrimSpace(run.Stderr), refusedWithoutReason)}
 	}
 	if run.ExitCode != 0 {
-		return Reply{Terminal: fmt.Sprintf("%s: hook exited with code %d: %s", run.ID, run.ExitCode, strings.TrimSpace(run.Stderr))}
+		return failed(run, fmt.Sprintf("hook exited with code %d: %s", run.ExitCode, strings.TrimSpace(run.Stderr)))
 	}
 	stdout := strings.TrimSpace(run.Stdout)
 	if stdout == "" {
@@ -79,9 +79,18 @@ func foreignRunReply(program programs.Program, event string, run ForeignRun) Rep
 		if program.TakesPlainOutput(event) {
 			return Reply{Lines: strings.Split(stdout, "\n")}
 		}
-		return Reply{Terminal: run.ID + ": hook answer must be a JSON object"}
+		return failed(run, "hook answer must be a JSON object")
 	}
 	return answer
+}
+
+// failed is a project hook's failure: a refusal naming the hook when its entry says onFailure block, else a note for
+// the terminal.
+func failed(run ForeignRun, reason string) Reply {
+	if run.OnFailure == blockOnFailure {
+		return Reply{Refusal: run.ID + " failed: " + reason}
+	}
+	return Reply{Terminal: run.ID + ": " + reason}
 }
 
 func withDefault(text, fallback string) string {

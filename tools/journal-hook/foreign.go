@@ -99,6 +99,7 @@ func runManaged(hooks []ManagedHook, body []byte, program string, row programs.P
 		go func() {
 			defer group.Done()
 			runs[index] = runCommand(hook, name, arguments, body, variables...)
+			runs[index].OnFailure = onFailure(hook, row)
 		}()
 	}
 	group.Wait()
@@ -112,6 +113,22 @@ func runLimit(hook ManagedHook, row programs.Program) int {
 		return hook.Timeout
 	}
 	return min(hook.Timeout, max(1, row.SessionEndLimitSeconds-sessionEndAnswerSeconds))
+}
+
+// blockOnFailure is the onFailure value that makes a project hook's failure refuse the action it ran for.
+const blockOnFailure = "block"
+
+// unblockedEvents are the events on which Claude Code gives onFailure no effect: exit code 2 there sends the agent
+// back to work, and it cannot repair a hook that will not run (report 1468).
+var unblockedEvents = map[string]bool{"Stop": true, "SubagentStop": true, "TaskCompleted": true, "TeammateIdle": true}
+
+// onFailure is "block" when the hook's failure refuses its action: its entry says so, its program honours the field
+// and its event is one onFailure has an effect on.
+func onFailure(hook ManagedHook, row programs.Program) string {
+	if value, _ := hook.Fields["onFailure"].(string); value == blockOnFailure && row.HonoursEntryField("onFailure") && !unblockedEvents[hook.Event] {
+		return blockOnFailure
+	}
+	return ""
 }
 
 // runOne runs a project hook with sh -c, as a program that honours no field of the entry runs it.

@@ -496,6 +496,9 @@
         "timed_out": {
           "type": "boolean"
         },
+        "on_failure": {
+          "type": "string"
+        },
         "answer": {
           "type": "object",
           "additionalProperties": false,
