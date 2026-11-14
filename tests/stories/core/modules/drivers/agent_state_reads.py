@@ -10,7 +10,8 @@ def test_driver_states_shows_the_load_state_in_its_tier_with_the_row_that_holds_
     story = new_story(DUE, fixture=SkillsDueAgent)
     shown = story.run(f"driver states {agent_number(story, story.agent.id)}", actor=story.agent).output_text
     in_place = next(line for line in shown.splitlines() if line.startswith("in_place:") or line.startswith("in place:"))
-    story.expect_rows("skills.load-required (agent_skill:" in in_place and " since " in in_place, "critical: (none)" in shown and "deferred: (none)" in shown, detail=shown)
+    deferred = next(line for line in shown.splitlines() if line.startswith("deferred:"))
+    story.expect_rows("skills.load-required (agent_skill:" in in_place and " since " in in_place, "critical: (none)" in shown, "skills.kept-record-due (agent_skill:" in deferred, detail=shown)
 
 
 def test_driver_state_types_lists_the_states_of_the_shipped_modules_with_module_shape_tier_and_gated_rules(new_story):

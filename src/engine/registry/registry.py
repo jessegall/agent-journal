@@ -39,6 +39,7 @@ from engine.registry.model_entry import ModelEntry
 from engine.registry.move_entry import MoveEntry
 from engine.registry.overlay_entry import OverlayEntry
 from engine.registry.agent_state_entry import AgentStateEntry
+from engine.registry.deferred_rule_entry import DeferredRuleEntry
 from engine.registry.provider_entry import ProviderEntry
 from engine.registry.skill_entry import SkillEntry
 from engine.model.state_book import StateBook
@@ -77,6 +78,7 @@ class Registry:
     bindings: dict[str, DottedPath] = field(default_factory=lambda: {})
     overlays: tuple[OverlayEntry, ...] = ()
     agent_states: tuple[AgentStateEntry, ...] = ()
+    deferred_rule_entries: tuple[DeferredRuleEntry, ...] = ()
     rules: tuple[DriverRuleEntry, ...] = ()
     suites: tuple[SuiteEntry, ...] = ()
     drivers: tuple[DriverEntry, ...] = ()
@@ -151,6 +153,8 @@ class Registry:
             overlays=tuple(OverlayEntry(overlay["name"], DottedPath(overlay["path"]), overlay["position"], tuple(overlay["drivers"])) for overlay in entries.get("overlays", [])),
             agent_states=tuple(AgentStateEntry(state["name"], DottedPath(state["path"]), state["owner"], state["position"], state["tier"], tuple(state["drivers"]), state["parent"],
                                                tuple(state["rules"]), tuple(state["deferred"])) for state in entries.get("agent_states", [])),
+            deferred_rule_entries=tuple(DeferredRuleEntry(rule["name"], DottedPath(rule["path"]), rule["state"], rule["hook"], tuple(rule["drivers"]), RoleGroup(rule["role_group"]))
+                                        for rule in entries.get("deferred_rules", [])),
             rules=tuple(DriverRuleEntry(rule["name"], DottedPath(rule["path"]), rule["hook"], rule["position"], rule["owner"], tuple(rule["drivers"]), tuple(rule["roles"]),
                                         rule.get("exempt", rule.get("unsilenced", False)), rule["essential"], rule.get("history", False), rule.get("claims_essential", False),
                                         RoleGroup(rule.get("role_group", "any")), rule.get("priority", 0))
@@ -218,6 +222,8 @@ class Registry:
             "overlays": [{"name": overlay.name, "path": overlay.path.text, "position": overlay.position, "drivers": list(overlay.drivers)} for overlay in self.overlays],
             "agent_states": [{"name": state.name, "path": state.path.text, "owner": state.owner, "position": state.position, "tier": state.tier, "drivers": list(state.drivers),
                               "parent": state.parent, "rules": list(state.rules), "deferred": list(state.deferred)} for state in self.agent_states],
+            "deferred_rules": [{"name": rule.name, "path": rule.path.text, "state": rule.state, "hook": rule.hook, "drivers": list(rule.drivers), "role_group": rule.role_group.value}
+                               for rule in self.deferred_rule_entries],
             "rules": [{"name": rule.name, "path": rule.path.text, "hook": rule.hook, "position": rule.position, "owner": rule.owner, "drivers": list(rule.drivers),
                        "roles": list(rule.roles), "exempt": rule.exempt, "essential": rule.essential, "history": rule.history,
                        "claims_essential": rule.claims_essential, "role_group": rule.role_group.value, "priority": rule.priority} for rule in self.rules],
@@ -285,6 +291,10 @@ class Registry:
 
     def rule_gate(self, rule_name: str) -> AgentStateEntry | None:
         return self.gates.get(rule_name)
+
+    # the deferred rules of a state that run after a hook of this name, in registration order
+    def deferred_rules(self, state_name: str, hook_name: str) -> list[DeferredRuleEntry]:
+        return [rule for rule in self.deferred_rule_entries if rule.state == state_name and rule.covers_hook(hook_name)]
 
     def tier_states(self, driver: str, tier: int) -> list[AgentStateEntry]:
         return [state for state in self.agent_states if state.tier == tier and state.covers(driver)]

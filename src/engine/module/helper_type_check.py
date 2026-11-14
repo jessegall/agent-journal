@@ -7,6 +7,7 @@ from engine.agent.agent_roster import AgentRoster
 from engine.agent.groups.agent_group_book import AgentGroupBook
 from engine.helper_type.command_allow_list import CommandAllowList
 from engine.helper_type.helper_type import HelperType
+from engine.helper_type.journal_line import JournalLine
 from engine.helper_type.enums.journal_line_class import JournalLineClass
 from engine.module.journal_lines import JournalLines
 from engine.profile.agent_profile import AgentProfile
@@ -40,6 +41,8 @@ class HelperTypeCheck:
         lines = JournalLines().classes(modules)
         problems.extend(problem for module in modules for declaration in suites.helper_types(module)
                         for problem in self.list_problems(f"{module.name}'s helper type {declaration.key}", declaration.commands, lines))
+        problems.extend(problem for module in modules for declaration in suites.helper_types(module)
+                        for problem in self.run_problems(f"{module.name}'s helper type {declaration.key}", declaration.commands, declaration.journal_runs, lines))
         profiles = {profile.name: profile for module in modules for profile in module.profiles}
         for declaration in (declaration for module in modules for declaration in suites.helper_types(module) if declaration.default_profile):
             if declaration.default_profile not in profiles:
@@ -105,6 +108,13 @@ class HelperTypeCheck:
         yield from (f"{name} lists the line {line} and its whole group" for line in commands.lines if line.partition(" ")[0] in commands.groups)
         yield from (f"{name} lists the class {line_class}, which no line has" for line_class in commands.classes
                     if not any(line_class in classes for classes in lines.values()))
+
+    # a line the journal runs under an agent of the type is judged by the type's own list like any line the agent types
+    @staticmethod
+    def run_problems(name: str, commands: CommandAllowList, journal_runs: Sequence[str], lines: Mapping[str, Set[JournalLineClass]]) -> Iterator[str]:
+        yield from (f"{name} names the line {line} the journal runs under it, which no module serves" for line in journal_runs if line not in lines)
+        yield from (f"{name} does not list the line {line}, which the journal runs under it" for line in journal_runs
+                    if line in lines and not commands.allows(JournalLine(line, lines[line])))
 
     def inheritance_problems(self, module: str, declaration: type[HelperType], book: HelperTypeBook) -> list[str]:
         name = f"{module}'s helper type {declaration.key}"

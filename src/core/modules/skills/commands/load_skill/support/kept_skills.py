@@ -1,6 +1,5 @@
-from core.modules.drivers.support.current_context_window import COMPACTION_ENDED_AT
-from engine.module.driver_entries import DRIVERS_MODULE
 from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.skills.support.kept_skill_mark import KeptSkillMark
 from core.modules.skills.support.kept_skill_records import KeptSkillRecords
 from engine.journal.journal_home import JournalHome
 from collections.abc import Mapping
@@ -28,13 +27,16 @@ class KeptSkills:
         return [LoadSkill(agent_id, skill.folder, skill.digest) for skill in self.catalogue.skills()
                 if skill.folder in due and skill.folder in kept and kept[skill.folder] == SkillDigest.digest(SkillContents.read(Path(skill.path)).body)]
 
+    # whether a deferred record of the agent's session and compaction has already loaded what was kept
+    def is_recorded(self, agent_id: int) -> bool:
+        return KeptSkillMark.is_recorded(self.agents.find(agent_id))
+
     # the transcript's record is kept until the agent's session is replaced or compacted, the only times the program
     # writes it
     def kept_digests(self, agent_id: int, transcript: HookTranscript) -> Mapping[str, str]:
         if self.last is not None and self.last[0] == transcript.firing:
             return self.last[1]
-        agent = self.agents.find(agent_id)
-        session_mark = f"{agent.session} {agent.metadata.module_part(DRIVERS_MODULE).get(COMPACTION_ENDED_AT)}"
+        session_mark = KeptSkillMark.of(self.agents.find(agent_id))
         digests = KeptSkillRecords.shared(self.home).digests(str(transcript.path), session_mark, lambda: self.read_digests(transcript))
         self.last = (transcript.firing, digests)
         return digests
