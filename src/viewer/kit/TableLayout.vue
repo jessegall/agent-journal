@@ -12,19 +12,24 @@ const props = defineProps({
     rows: {type: Array, required: true},
     fields: {type: Array, default: () => []},
     empty: {type: String, default: "No match"},
+    pick: {type: Function, default: null},
+    active: {type: [String, Number], default: ""},
 });
 const value = ref(defaultFilter(props.fields));
 const words = ref("");
 const shown = computed(() => applyFilter(props.rows, props.fields, value.value, words.value, props.columns.map((column) => column.key)));
 const labels = computed(() => props.columns.map((column) => column.label));
-const lines = computed(() => shown.value.map((row) => ({cells: props.columns.map((column) => row[column.key] ?? ""), open: row.ref ?? "", tone: row.tone ?? ""})));
+// a row with a mark is chosen in place through pick, as the request log shows the chosen request beside its table
+const open = (row) => row.ref ?? (props.pick && row.mark !== undefined ? String(row.mark) : "");
+const lines = computed(() => shown.value.map((row) => ({cells: props.columns.map((column) => row[column.key] ?? ""), open: open(row), tone: row.tone ?? "", mark: row.mark, active: props.active !== "" && row.mark === props.active})));
+const opens = (ref) => (props.pick ? props.pick(ref) : peekRef(ref));
 </script>
 
 <template>
     <div class="table-layout" data-table-layout>
         <FilterBar v-model="value" v-model:words="words" :fields="fields" :rows="rows" :shown="shown.length" />
         <div class="table-layout-body">
-            <DataTable :columns="labels" :rows="lines" :empty="empty" @open="peekRef" />
+            <DataTable :columns="labels" :rows="lines" :empty="empty" @open="opens" />
         </div>
     </div>
 </template>

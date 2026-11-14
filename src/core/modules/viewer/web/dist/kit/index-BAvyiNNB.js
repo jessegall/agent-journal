@@ -5648,8 +5648,9 @@ const Qa = Symbol.for("journal.context-place"), jt = {
       (r(!0), d(L, null, Q(e.rows, (u, c) => ke((r(), D(Je(u.open ? "button" : "div"), {
         key: c,
         type: u.open ? "button" : void 0,
-        class: Y(["table-row", u.tone, { opens: u.open }]),
+        class: Y(["table-row", u.tone, { opens: u.open, active: u.active }]),
         style: ye(s.value),
+        "data-table-row": u.mark,
         onClick: (f) => u.open && a("open", u.open)
       }, {
         default: N(() => [
@@ -5659,13 +5660,13 @@ const Qa = Symbol.for("journal.context-place"), jt = {
           }, v(f), 1))), 128))
         ]),
         _: 2
-      }, 1032, ["type", "class", "style", "onClick"])), [
+      }, 1032, ["type", "class", "style", "data-table-row", "onClick"])), [
         [B(jt), () => o(u)]
       ])), 128)),
       !e.rows.length && e.empty ? (r(), d("div", Vy, v(e.empty), 1)) : k("", !0)
     ]));
   }
-}, vr = /* @__PURE__ */ z(Gy, [["__scopeId", "data-v-07aa7ad1"]]), Ky = { class: "stat-value" }, Yy = { class: "stat-label" }, Xy = {
+}, vr = /* @__PURE__ */ z(Gy, [["__scopeId", "data-v-6d2c3ecc"]]), Ky = { class: "stat-value" }, Yy = { class: "stat-label" }, Xy = {
   key: 0,
   class: "stat-note"
 }, Qy = {
@@ -15711,16 +15712,18 @@ const i_ = /* @__PURE__ */ s_(l_), r_ = ["width", "height", "viewBox"], u_ = ["w
     columns: { type: Array, required: !0 },
     rows: { type: Array, required: !0 },
     fields: { type: Array, default: () => [] },
-    empty: { type: String, default: "No match" }
+    empty: { type: String, default: "No match" },
+    pick: { type: Function, default: null },
+    active: { type: [String, Number], default: "" }
   },
   setup(e) {
-    const t = e, n = _(va(t.fields)), a = _(""), s = S(() => Ir(t.rows, t.fields, n.value, a.value, t.columns.map((i) => i.key))), o = S(() => t.columns.map((i) => i.label)), l = S(() => s.value.map((i) => ({ cells: t.columns.map((u) => i[u.key] ?? ""), open: i.ref ?? "", tone: i.tone ?? "" })));
-    return (i, u) => (r(), d("div", Z_, [
+    const t = e, n = _(va(t.fields)), a = _(""), s = S(() => Ir(t.rows, t.fields, n.value, a.value, t.columns.map((c) => c.key))), o = S(() => t.columns.map((c) => c.label)), l = (c) => c.ref ?? (t.pick && c.mark !== void 0 ? String(c.mark) : ""), i = S(() => s.value.map((c) => ({ cells: t.columns.map((f) => c[f.key] ?? ""), open: l(c), tone: c.tone ?? "", mark: c.mark, active: t.active !== "" && c.mark === t.active }))), u = (c) => t.pick ? t.pick(c) : Fe(c);
+    return (c, f) => (r(), d("div", Z_, [
       C(Lr, {
         modelValue: n.value,
-        "onUpdate:modelValue": u[0] || (u[0] = (c) => n.value = c),
+        "onUpdate:modelValue": f[0] || (f[0] = (m) => n.value = m),
         words: a.value,
-        "onUpdate:words": u[1] || (u[1] = (c) => a.value = c),
+        "onUpdate:words": f[1] || (f[1] = (m) => a.value = m),
         fields: e.fields,
         rows: e.rows,
         shown: s.value.length
@@ -15728,14 +15731,14 @@ const i_ = /* @__PURE__ */ s_(l_), r_ = ["width", "height", "viewBox"], u_ = ["w
       h("div", eC, [
         C(vr, {
           columns: o.value,
-          rows: l.value,
+          rows: i.value,
           empty: e.empty,
-          onOpen: B(Fe)
-        }, null, 8, ["columns", "rows", "empty", "onOpen"])
+          onOpen: u
+        }, null, 8, ["columns", "rows", "empty"])
       ])
     ]));
   }
-}, XT = /* @__PURE__ */ z(tC, [["__scopeId", "data-v-32f1bba5"]]), nC = ["id", "onUpdate:modelValue", "data-field"], aC = ["value"], sC = ["data-refused"], oC = {
+}, XT = /* @__PURE__ */ z(tC, [["__scopeId", "data-v-433a14b9"]]), nC = ["id", "onUpdate:modelValue", "data-field"], aC = ["value"], sC = ["data-refused"], oC = {
   class: "create-command",
   "data-command-preview": ""
 }, lC = {
@@ -16465,7 +16468,7 @@ const kC = {
       ])
     ]));
   }
-}, sI = /* @__PURE__ */ z(tE, [["__scopeId", "data-v-b494c444"]]), oI = Hu(() => import("./VoiceFigure-ITo1xz57.js").then((e) => e.V)), lI = "1.2.0", iI = "3.5";
+}, sI = /* @__PURE__ */ z(tE, [["__scopeId", "data-v-b494c444"]]), oI = Hu(() => import("./VoiceFigure-BRdOfyjz.js").then((e) => e.V)), lI = "1.2.0", iI = "3.5";
 export {
   qm as $,
   Ie as A,

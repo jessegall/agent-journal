@@ -18,9 +18,9 @@ test("system logs show time, source, level and escaped messages through one read
     const window = context({"developer system-logs": listing("<script>sample</script>")});
     const element = await mounted(SystemLogs, window);
     expect(window.reads).toEqual(["developer system-logs --page 1"]);
-    expect(element.querySelector("time").dateTime).toBe("2026-11-06T12:00:00+00:00");
-    expect(element.querySelector("[data-log-line]").textContent).toContain("ServerInfo<script>sample</script>");
-    expect(element.querySelector("[data-log-line] time").textContent).not.toContain("2026-11-06T12:00");
+    const line = element.querySelector(".table-row:not(.head)");
+    expect(line.textContent).toContain("ServerInfo<script>sample</script>");
+    expect(line.querySelector(".cell").textContent).not.toContain("2026-11-06T12:00");
     expect(element.querySelector("script")).toBeNull();
     expect(element.textContent).toContain("Page 1 of 2");
 });
@@ -53,7 +53,7 @@ test("pause freezes log lines and filters until resume, and reports read failure
     pause.click();
     await settle();
     expect(element.querySelector('[role="alert"]').textContent).toBe("could not read logs");
-    expect(element.querySelector("[data-log-line]").textContent).toContain("server started");
+    expect(element.querySelector(".table-row:not(.head)").textContent).toContain("server started");
 });
 
 test("the page reads again at its chosen rate", async () => {

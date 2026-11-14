@@ -32,8 +32,9 @@ const place = (row) => {
                 :is="row.open ? 'button' : 'div'"
                 v-context="() => place(row)"
                 :type="row.open ? 'button' : undefined"
-                :class="['table-row', row.tone, {opens: row.open}]"
+                :class="['table-row', row.tone, {opens: row.open, active: row.active}]"
                 :style="grid"
+                :data-table-row="row.mark"
                 @click="row.open && emit('open', row.open)"
             >
                 <template v-for="(cell, column) in row.cells" :key="column">
@@ -82,6 +83,7 @@ const place = (row) => {
     cursor: pointer;
 }
 
+.table-row.active,
 .table-row.opens:hover {
     background: var(--hover);
 }
