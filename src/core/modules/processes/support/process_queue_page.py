@@ -8,11 +8,13 @@ from core.modules.processes.support.queue_inspector_json import QueueInspectorJs
 
 @dataclass(frozen=True)
 class ProcessQueuePage:
-    """One environment's active queue runs and the setting that limits their parallel runs."""
+    """One environment's active queue runs, the setting that limits their parallel runs, and the lanes as a person
+    reads them."""
 
     page: Page[ProcessQueueRow]
     inspector: QueueInspectorJson
+    lanes: tuple[str, ...] = ()
 
     def json(self) -> ProcessQueueJson:
         return {**self.inspector, "page": self.page.number, "size": self.page.size, "total": self.page.total,
-                "rows": [row.inspector_json() for row in self.page.rows]}
+                "rows": [row.inspector_json() for row in self.page.rows], "lanes": list(self.lanes)}

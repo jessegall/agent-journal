@@ -136,7 +136,6 @@ src/core/modules/processes/support/blocked_runs.py:every old running run of the 
 src/core/modules/processes/support/cadence/judged_runs.py:the cadence tick judges every running run with its agent and parts
 src/core/modules/processes/support/decisions/command_run_counts.py:one count row for each command a run names
 src/core/modules/processes/support/execution_class_lines.py:The person's classes are few, and a match reads every one of them.
-src/core/modules/processes/support/priority_waits.py:the waits of the last hour are counted over every run that started in it
 src/core/modules/processes/support/reader_rows.py:A command is matched against every reader's patterns, and the readers are a catalogue of shipped and saved readers.
 src/core/modules/processes/support/reading/catalogue_audit.py:every creator of a recent mark is checked for an agent
 src/core/modules/processes/support/run_slots.py:the run slots are shared out over every running and queued run

@@ -8,3 +8,4 @@ class ProcessQueueJson(QueueInspectorJson):
     size: int
     total: int
     rows: list[dict[str, object]]
+    lanes: list[str]

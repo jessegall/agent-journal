@@ -21,3 +21,11 @@ def test_a_run_started_more_than_an_hour_ago_is_not_counted(new_story):
     queued(story, "make old", CommandCategory.BUILD)
     story.advance(timedelta(hours=2))
     story.expect_text(LANES, "waits over the last hour: no run started", actor=story.user)
+
+
+def test_the_queue_list_shows_the_lanes_and_filters_by_class_and_starter(new_story):
+    story = new_story(fixture=QueueAgents)
+    queued(story, "make site", CommandCategory.BUILD)
+    story.expect_text("queue list --environment main", "short lane:", "long lane:", "make site (test, build or check", actor=story.user)
+    story.expect_no_text("queue list --environment main --class merge", "make site", actor=story.user)
+    story.expect_text("queue list --environment main --starter worker", "make site", actor=story.user)

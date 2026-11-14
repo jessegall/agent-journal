@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from core.modules.processes.conditions.priority_wait_figures import PriorityWaitFigures
 from dataclasses import dataclass
 
 from engine.enums.execution_priority import ExecutionPriority
@@ -8,7 +8,6 @@ from engine.time.timestamp import Timestamp
 from core.modules.processes.models.process import Process
 
 HOUR_SECONDS = 3600
-STARTED_REASON = "the waits of the last hour are counted over every run that started in it"
 
 
 @dataclass(frozen=True)
@@ -32,14 +31,9 @@ class PriorityWaits:
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
+    # one grouped read, so the figures cost the same however many runs started in the hour
     def last_hour(self, now: Timestamp) -> list[PriorityWait]:
-        since = now.plus_seconds(-HOUR_SECONDS)
-        return self.waits(self.queries.query(Process).matching(Greater("started_at", since.text)).every_row(STARTED_REASON))
-
-    @staticmethod
-    def waits(runs: Iterable[Process]) -> list[PriorityWait]:
-        waited: dict[ExecutionPriority, list[float]] = {priority: [] for priority in ExecutionPriority}
-        for run in runs:
-            if run.started_at is not None:
-                waited[run.first_priority].append(max(0.0, run.creation_timestamp().elapsed_seconds(run.started_at)))
-        return [PriorityWait(priority, len(seconds), max(seconds, default=0.0), sum(seconds) / len(seconds) if seconds else 0.0) for priority, seconds in waited.items()]
+        started = self.queries.query(Process).matching(Greater("started_at", now.plus_seconds(-HOUR_SECONDS).text))
+        figures = {ExecutionPriority(row["first_priority"]): row for row in self.queries.database.rows(PriorityWaitFigures(started.scoped(started.select)).statement())}
+        return [PriorityWait(priority, int(figures[priority]["runs"]), float(figures[priority]["longest"]), float(figures[priority]["average"])) if priority in figures
+                else PriorityWait(priority, 0, 0.0, 0.0) for priority in ExecutionPriority]

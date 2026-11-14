@@ -1,3 +1,4 @@
+from core.modules.processes.support.execution_status import ExecutionStatus
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -29,15 +30,18 @@ RECENT_RUNS = 20
 
 
 class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
-    """Reads queue controls and ordered inspector lists, with a page of active queued commands for the CLI; with an
-    agent, only that agent's runs."""
+    """Reads the short and long lanes, what runs and waits in each and the waits of the last hour, with the queue
+    controls and ordered inspector lists the queue page reads; with an agent, only that agent's runs, and with a
+    class or a starter, only the lines of that class or starter. JSON: the inspector fields, page, size, total, rows,
+    and lanes, the lines as text."""
 
     cli_name = "queue"
     name = "list"
     environment_refusal = "the process queue needs an environment"
 
-    def __init__(self, queries: Queries, settings: ProcessSettings, halt: RunQueueHalt, suites: SuiteChoice, catalogue: SettingCatalogue, values: SettingValues, queue_runs: ActiveQueueRuns) -> None:
-        self.queries, self.settings, self.halt, self.queue_runs = queries, settings, halt, queue_runs
+    def __init__(self, queries: Queries, settings: ProcessSettings, halt: RunQueueHalt, suites: SuiteChoice, catalogue: SettingCatalogue, values: SettingValues, queue_runs: ActiveQueueRuns,
+                 status: ExecutionStatus) -> None:
+        self.queries, self.settings, self.halt, self.queue_runs, self.status = queries, settings, halt, queue_runs, status
         self.suites, self.catalogue, self.values = suites, catalogue, values
 
     def suite_limits(self) -> list[dict[str, object]]:
@@ -48,6 +52,8 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         parser.add_argument("--limit", type=int, default=50)
         parser.add_argument("--page", type=int, default=1)
         parser.add_argument("--recent", type=int, default=RECENT_RUNS)
+        parser.add_argument("--class", dest="class_name", default="", help="only the runs and waits of this class")
+        parser.add_argument("--starter", default="", help="only the runs and waits of this starter, such as main agent or worker 3")
         parser.add_argument("--agent", type=AgentNumber, default=0)
 
     def read(self, arguments: Namespace, caller: Caller) -> ProcessQueuePage:
@@ -69,7 +75,12 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
             "running": running, "waiting": waiting, "recent": recent, "recent_total": query.filter(section=QueueSection.RECENT).count()}
         queue_runs = tuple(self.queue_runs.query().every_row(QUEUE_REASON))
         number, size = max(1, arguments.page), min(MAX_PAGE_SIZE, max(1, arguments.limit))
-        return ProcessQueuePage(Page(queue_runs[(number - 1) * size:number * size], number, size, len(queue_runs)), inspector)
+        return ProcessQueuePage(Page(queue_runs[(number - 1) * size:number * size], number, size, len(queue_runs)), inspector, self.lane_lines(arguments.class_name, arguments.starter))
+
+    # a filter keeps the lane headings and the lines of runs and waits whose class or starter it names
+    def lane_lines(self, class_name: str, starter: str) -> tuple[str, ...]:
+        wanted = [text for text in (f"({class_name}, " if class_name else "", f", {starter}" if starter else "") if text]
+        return tuple(line for line in self.status.lines() if not line.startswith("  ") or all(text in line for text in wanted))
 
     @staticmethod
     def agent_rows(query: Query[ProcessQueueRow], agent_id: int) -> Query[ProcessQueueRow]:
@@ -82,4 +93,5 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ProcessQueuePage):
-            output.write("\n".join(f"{process.id}  {process.session_agent_id}  {process.queue_label}  {process.line}" for process in value.page.rows) or "No command waits or runs in this process queue.", value.json())
+            halted = [f"the queue is halted: {value.inspector['halt_reason']}"] if value.inspector["halted"] else []
+            output.write("\n".join([*halted, *value.lanes]), value.json())
