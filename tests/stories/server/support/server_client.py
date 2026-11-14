@@ -3,34 +3,26 @@ import sqlite3
 from engine.time.polled_wait import PolledWait
 from engine.database.reported_findings import ReportedFindings
 import json
-import shlex
 import socket
-import time
 from unittest.mock import patch
 from engine.time.clock import Clock
 from contextlib import contextmanager
 from pathlib import Path
 from threading import Event
 
-from engine.cli.console import ERROR_CODE
 from engine.journal.journal_home import JournalHome
-from server.endpoints.cli_endpoint import CliEndpoint
 from server.endpoints.hook_endpoint import HookEndpoint
-from engine.performance.timing import Timing
 from engine.performance.timing_log import TimingLog
 from engine.testing.stories.story import Story
-from tests.integration.support.server_client import ServerClient
-from tests.integration.support.server_harness import SYSTEM_CLOCK, TEST_HOOK_LIMIT_SECONDS, TEST_INSTANT_CAPACITY, TEST_STOP_LIMIT_SECONDS, TIMEOUT_SECONDS, ViewerFactory, local_viewer, raw_answer, read_answer, request_answer, running_server
+from tests.integration.support.server_client import DirectRun, ServerClient
+from tests.integration.support.server_harness import SYSTEM_CLOCK, TEST_HOOK_LIMIT_SECONDS, TEST_INSTANT_CAPACITY, TEST_STOP_LIMIT_SECONDS, TIMEOUT_SECONDS, ViewerFactory, local_viewer, running_server
 from tests.stories.server.support.story_line_route import StoryLineRoute
 from core.modules.skills.models.agent_skill import AgentSkill
 from server.handover.code_folders import CodeFolders
 from server.door.journal_door import JournalDoor
 from server.door.local_journal_door import LocalJournalDoor
 from server.context.server_context import IDLE_CONNECTION_SECONDS, ServerContext
-from server.work.listeners.listener_thread import ListenerThread
 from server.work.listeners.listener_wake_router import ListenerWakeRouter
-from server.work.listeners.listener_wake import ListenerWake
-from engine.serving.server_files import ServerFiles
 from scripts.timing_report import logged_timings, report
 from core.modules.skills.support.start_skills import SESSION_START_KEY
 from core.modules.voices.support.voices_settings import AVATAR_KEY
@@ -46,8 +38,12 @@ class ServerStory(ServerClient):
     """A story's journal with a server running on it, and the checks of what the server answers."""
 
     def __init__(self, story: Story, socket_path: Path, context: ServerContext) -> None:
-        super().__init__(socket_path, context)
+        super().__init__(socket_path, context, story.home)
         self.story = story
+
+    def direct_run(self, line: str) -> DirectRun:
+        outcome = self.story.run(line)
+        return DirectRun(outcome.code, outcome.output_text)
 
     # a main agent's hook never waits for a place, so the hook is held by another writer holding the database, for
     # the whole hook or, with locked seconds, until the writer lets go part-way
@@ -91,51 +87,10 @@ class ServerStory(ServerClient):
         self.story.steps.append(f"viewer line {json.dumps(body, sort_keys=True)}")
         return super().viewer_line_value(cookie, body)
 
-    @contextmanager
-
-    def expect_direct_run_answer(self, line: str, folder: str = "/") -> None:
-        direct = self.story.run(line)
-        answer = request_answer(self.socket_path, "POST", "/cli", {"argv": shlex.split(line), "variables": {}, "folder": folder})
-        assert (answer.status, answer.exit_code, answer.text) == (200, direct.code, direct.output_text), (answer, direct)
-
-    def expect_busy_timeout(self, seconds: float) -> None:
-        idle_thread = ListenerThread(lambda: None, lambda error: None)
-        assert CliEndpoint(self.story.home, ListenerWake(ListenerWakeRouter.waking(idle_thread)), ReportedFindings()).line_run.busy_timeout_seconds == seconds
-
-    def expect_raw_request_error(self, raw_request: bytes, error_name: str) -> None:
-        answer = read_answer(raw_answer(self.socket_path, raw_request))
-        assert answer.status == 500 and error_name in answer.text and answer.text.count("\n") <= 1, answer
-        assert "Traceback" in ServerFiles(self.story.home).log.read_text()
-
-    def expect_deadline_rollback(self, line: str, check_line: str, absent_line: str) -> None:
-        answer = request_answer(self.socket_path, "POST", "/cli", {"argv": shlex.split(line), "folder": "/", "deadline_seconds": 0})
-        assert answer.exit_code == ERROR_CODE and "deadline passed" in answer.text, answer
-        assert absent_line not in self.story.run(check_line).output_text.splitlines(), self.story.run(check_line).output_text
-
-    def expect_eventually(self, line: str, expected_line: str) -> None:
-        deadline = time.monotonic() + TIMEOUT_SECONDS
-        while time.monotonic() < deadline:
-            if expected_line in self.story.run(line).output_text.splitlines():
-                return
-        raise AssertionError(f"{line} never printed {expected_line!r}: {self.story.run(line).output_text}")
-
-    def expect_line(self, line: str, expected_line: str) -> None:
-        assert expected_line in self.story.run(line).output_text.splitlines(), self.story.run(line).output_text
-
-    def expect_answer_with_unwritable_timing_log(self, line: str) -> None:
-        TimingLog(self.story.home).path.mkdir(parents=True)
-        self.post_timed_line(line, "go_start=1")
-        assert "timing line not written" in ServerFiles(self.story.home).log.read_text()
-
 
 def expect_timing_report_steps(home: JournalHome, route_line: str, steps: list[str]) -> None:
     rows = report(logged_timings(TimingLog(home).path.read_text().splitlines())).splitlines()
     assert rows[0] == f"{route_line}  (1 requests)" and [row.split("  ")[1].strip() for row in rows[2:]] == steps, rows
-
-
-def expect_timing_lines(home: JournalHome, lines: list[tuple[str, list[str]]]) -> None:
-    log_lines = [json.loads(line) for line in TimingLog(home).path.read_text().splitlines()]
-    assert [(line["request_id"], [name for name, _ in Timing.parsed(line["timing"]).stamps]) for line in log_lines] == lines, log_lines
 
 
 def without_start_skills(story: Story) -> None:

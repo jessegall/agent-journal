@@ -35,3 +35,16 @@ def agent_server(journal):
     with integration_server(journal, journal_door=HostedJournalDoor(os.getuid() + 1)) as server:
         yield server
 
+
+# a journal with three open tasks, First, Second and Third, made through its console
+@pytest.fixture
+def tasks_journal(journal):
+    for title in ("First", "Second", "Third"):
+        assert journal.run(f'task make "{title}" --brief "A task to list"').code == 0
+    return journal
+
+
+@pytest.fixture
+def task_server(tasks_journal):
+    with integration_server(tasks_journal) as server:
+        yield server

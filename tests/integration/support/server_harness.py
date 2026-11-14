@@ -15,6 +15,8 @@ from engine.journal.journal_home import JournalHome
 from engine.module.code_fingerprint import CodeFingerprint
 from engine.module.journal_container import synced_database_container
 from engine.module.module_finder import ModuleFinder
+from engine.performance.timing import Timing
+from engine.performance.timing_log import TimingLog
 from engine.serving.server_files import ServerFiles
 from engine.serving.server_limits import DRAIN_LIMIT_SECONDS
 from engine.testing.fakes.fixed_process_table import FixedProcessTable
@@ -164,3 +166,8 @@ def viewer_answer(port: int, path: str, cookie: str, host: str, body: dict[str, 
         return response.status, dict(response.getheaders()), response.read().decode(errors="replace")
     finally:
         connection.close()
+
+
+def expect_timing_lines(home: JournalHome, lines: list[tuple[str, list[str]]]) -> None:
+    log_lines = [json.loads(line) for line in TimingLog(home).path.read_text().splitlines()]
+    assert [(line["request_id"], [name for name, _ in Timing.parsed(line["timing"]).stamps]) for line in log_lines] == lines, log_lines

@@ -1,24 +1,48 @@
 import http.client
 import json
+import time
 import os
 import shlex
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
+from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlencode
 
+from engine.cli.console import ERROR_CODE
+from engine.database.reported_findings import ReportedFindings
+from engine.journal.journal_home import JournalHome
 from engine.performance.timing import TIMING_HEADER
+from engine.performance.timing_log import TimingLog
+from engine.serving.server_files import ServerFiles
 from engine.testing.examples.hook_samples import HookSamples
 from server.context.server_context import ServerContext
-from tests.integration.support.server_harness import TIMEOUT_SECONDS, ServerAnswer, raw_answer, request_answer, viewer_answer
+from server.endpoints.cli_endpoint import CliEndpoint
+from server.work.listeners.listener_thread import ListenerThread
+from server.work.listeners.listener_wake import ListenerWake
+from server.work.listeners.listener_wake_router import ListenerWakeRouter
+from tests.integration.support.server_harness import TIMEOUT_SECONDS, ServerAnswer, raw_answer, read_answer, request_answer, viewer_answer
+
+
+@dataclass(frozen=True)
+class DirectRun:
+    """A line run on the journal itself, with no server: its exit code and what it printed."""
+
+    code: int
+    text: str
 
 
 class ServerClient:
     """A client of a running server: what it sends to the socket and the viewer port, and the checks of what the
-    server answers."""
+    server answers beside what the journal answers to the same line run on its own."""
 
-    def __init__(self, socket_path: Path, context: ServerContext) -> None:
+    def __init__(self, socket_path: Path, context: ServerContext, home: JournalHome) -> None:
         self.socket_path = socket_path
         self.context = context
+        self.home = home
+
+    def direct_run(self, line: str) -> DirectRun:
+        raise NotImplementedError
 
     def request(self, method: str, route: str, body: object = None, headers: dict[str, str] | None = None) -> ServerAnswer:
         return request_answer(self.socket_path, method, route, body, headers)
@@ -136,6 +160,7 @@ class ServerClient:
     def expect_viewer_event_ids(self, cookie: str, cursor_id: int, count: int, ids: list[int]) -> None:
         assert self.viewer_event_ids(cookie, cursor_id, count) == ids
 
+    @contextmanager
     def viewer_stream(self, cookie: str, cursor_id: int, patterns: list[str]):
         port = self.viewer_port()
         follows = [("follow", pattern) for pattern in patterns] or [("follow", "")]
@@ -186,3 +211,37 @@ class ServerClient:
     def post_timed_line(self, line: str, timing_text: str) -> None:
         answer = request_answer(self.socket_path, "POST", "/cli", {"argv": shlex.split(line), "folder": "/"}, {TIMING_HEADER: timing_text})
         assert answer.exit_code == 0, answer
+
+    def expect_direct_run_answer(self, line: str, folder: str = "/") -> None:
+        direct = self.direct_run(line)
+        answer = request_answer(self.socket_path, "POST", "/cli", {"argv": shlex.split(line), "variables": {}, "folder": folder})
+        assert (answer.status, answer.exit_code, answer.text) == (200, direct.code, direct.text), (answer, direct)
+
+    def expect_busy_timeout(self, seconds: float) -> None:
+        idle_thread = ListenerThread(lambda: None, lambda error: None)
+        assert CliEndpoint(self.home, ListenerWake(ListenerWakeRouter.waking(idle_thread)), ReportedFindings()).line_run.busy_timeout_seconds == seconds
+
+    def expect_raw_request_error(self, raw_request: bytes, error_name: str) -> None:
+        answer = read_answer(raw_answer(self.socket_path, raw_request))
+        assert answer.status == 500 and error_name in answer.text and answer.text.count("\n") <= 1, answer
+        assert "Traceback" in ServerFiles(self.home).log.read_text()
+
+    def expect_deadline_rollback(self, line: str, check_line: str, absent_line: str) -> None:
+        answer = request_answer(self.socket_path, "POST", "/cli", {"argv": shlex.split(line), "folder": "/", "deadline_seconds": 0})
+        assert answer.exit_code == ERROR_CODE and "deadline passed" in answer.text, answer
+        assert absent_line not in self.direct_run(check_line).text.splitlines(), self.direct_run(check_line).text
+
+    def expect_eventually(self, line: str, expected_line: str) -> None:
+        deadline = time.monotonic() + TIMEOUT_SECONDS
+        while time.monotonic() < deadline:
+            if expected_line in self.direct_run(line).text.splitlines():
+                return
+        raise AssertionError(f"{line} never printed {expected_line!r}: {self.direct_run(line).text}")
+
+    def expect_line(self, line: str, expected_line: str) -> None:
+        assert expected_line in self.direct_run(line).text.splitlines(), self.direct_run(line).text
+
+    def expect_answer_with_unwritable_timing_log(self, line: str) -> None:
+        TimingLog(self.home).path.mkdir(parents=True)
+        self.post_timed_line(line, "go_start=1")
+        assert "timing line not written" in ServerFiles(self.home).log.read_text()

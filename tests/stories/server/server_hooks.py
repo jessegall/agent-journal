@@ -1,4 +1,3 @@
-from tests.stories.server.support.server_fixtures import task_server
 
 import pytest
 
@@ -8,38 +7,27 @@ from core.modules.processes.support.request_log import RequestLog
 from core.modules.processes.support.request_log_entry import RequestLogEntry
 
 import json
-import os
 import sqlite3
 from pathlib import Path
 
-from engine.driver.hook_event import HOOK_EVENT_VERSION
 from core.modules.drivers.bindings.agent_hook_route import AgentHookRoute
-from engine.performance.timing import TIMING_HEADER
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.fixtures import LeadStarted
 from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
-from tests.stories.core.support.fixtures import ThreeTasks, UserJoined
-from tests.stories.server.support.server_client import STORY_HOOK_LIMIT_SECONDS, STORY_STOP_LIMIT_SECONDS, expect_timing_lines, server_story
+from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.server.support.server_client import STORY_HOOK_LIMIT_SECONDS, STORY_STOP_LIMIT_SECONDS, server_story
 from engine.testing.expectations.expect_row import expect_row
 from suites.coding.support.coding_nudges import TASK_ASSIGNMENT
 from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING
 
-RAW_HEADERS = {"X-Journal-Request-At": "1793395000123", "X-Journal-Hook-Id": "7731-1793395000123", "X-Journal-Actor": "agent", "X-Journal-Env": "main"}
 SCHEMA_EXAMPLES = Path(__file__).resolve().parents[3] / "tools" / "journal-hook" / "event" / "testdata" / "schema"
-
 
 
 def example(name: str) -> object:
     return json.loads((SCHEMA_EXAMPLES / f"{name}.json").read_text())
-
-
-def test_a_prepared_hook_object_is_read_and_let_through_until_the_drivers_decide(task_server):
-    story = task_server
-    for name in ("document_example", "edit", "write", "prompt", "stop"):
-        story.expect_hook_answer("/hook", example(name), 200, '"refusal": ""')
 
 
 def test_a_hook_is_recorded_as_it_was_sent_while_the_developer_option_is_on(new_story):
@@ -49,30 +37,6 @@ def test_a_hook_is_recorded_as_it_was_sent_while_the_developer_option_is_on(new_
     with server_story(started) as story:
         story.expect_hook_answer("/hook", example("edit"), 200, '"refusal": ""')
     expect_row(started.container.get(HookRequestLog).read()[0], body=example("edit"))
-
-
-def test_a_raw_body_with_no_version_is_read_the_old_way(task_server):
-    story = task_server
-    raw = {"hook_event_name": "PreToolUse", "session_id": "s-1", "tool_name": "Bash", "tool_input": {"command": "ls"}}
-    story.expect_hook_answer("/hook?program=claude", raw, 200, '"refusal": ""', RAW_HEADERS)
-
-
-def test_a_hook_object_of_another_version_is_refused_naming_both_versions(task_server):
-    story = task_server
-    story.expect_hook_answer("/hook", {**example("stop"), "version": 1}, 400, f"version 1 of the prepared object, and this server reads version {HOOK_EVENT_VERSION}")
-
-
-def test_a_hook_body_the_server_cannot_read_is_refused_with_its_reason(task_server):
-    story = task_server
-    story.expect_hook_answer("/hook?program=claude", {"hook_event_name": "Whatever"}, 400, "claude sends no 'Whatever' hook", RAW_HEADERS)
-    story.expect_hook_answer("/hook?program=claude", {"hook_event_name": "Stop", "session_id": "s-1"}, 400, "the headers the hook sends")
-
-
-def test_a_hook_sent_with_a_timing_leaves_one_log_line_with_the_hook_route_steps_in_order(task_server):
-    story = task_server.story
-    server = task_server
-    server.expect_hook_answer("/hook", example("write"), 200, '"refusal": ""', {TIMING_HEADER: "go_start=1;go_sent=2"})
-    expect_timing_lines(story.home, [(f"{os.getpid()}-1", ["go_start", "go_sent", "server_accepted", "server_received", "body_read", "stale_checked", "hook_body", "hook_json", "hook_locked", "hook_synced", "hook_read", "route_ready", "hook_answered", "answered"])])
 
 
 def started_agent(server, role: str) -> str:
@@ -154,12 +118,9 @@ def test_a_tool_hook_that_waits_past_its_limit_for_another_hook_is_let_through_w
     story.expect_locked_hook_answer(body, "the journal let this through unchecked")
 
 
-
 def test_a_hook_from_a_program_no_module_provides_is_refused_naming_it(lead_server):
     story = lead_server
     story.expect_hook_answer("/hook", {**lead_stop("server-6"), "program": "gemini"}, 400, "no module provides the agent program 'gemini'")
-
-
 
 
 @pytest.fixture

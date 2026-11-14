@@ -1,8 +1,6 @@
 import json
 from pathlib import Path
 
-import pytest
-
 from engine.database.registry_table import RegistryTable
 from engine.serving.server_files import ServerFiles
 from tests.integration.support.code_folders import SampleCodeFolders
@@ -13,13 +11,6 @@ SCHEMA_EXAMPLES = Path(__file__).resolve().parents[3] / "tools" / "journal-hook"
 SCHEMA_EDIT = json.loads((SCHEMA_EXAMPLES / "edit.json").read_text())
 SCHEMA_STOP = json.loads((SCHEMA_EXAMPLES / "stop.json").read_text())
 TASK_LIST = "task list --environment main"
-
-
-@pytest.fixture
-def tasks_journal(journal):
-    for title in ("First", "Second", "Third"):
-        assert journal.run(f'task make "{title}" --brief "A task to list"').code == 0
-    return journal
 
 
 def older_registry(journal, entries_change: str = "") -> None:

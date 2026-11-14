@@ -713,7 +713,6 @@ tests/stories/server/library_client.py
 tests/stories/server/message_targets.py
 tests/stories/server/profile_storage.py
 tests/stories/server/server_hooks.py
-tests/stories/server/server_routes.py
 tests/stories/server/server_ticks.py
 tests/stories/server/setting_requests.py
 tests/stories/server/support/alias_hook.py

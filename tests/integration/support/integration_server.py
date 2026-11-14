@@ -5,7 +5,7 @@ from pathlib import Path
 from engine.testing.examples.hook_samples import HookSamples
 from server.context.server_context import ServerContext
 from tests.integration.support.integration_journal import IntegrationJournal
-from tests.integration.support.server_client import ServerClient
+from tests.integration.support.server_client import DirectRun, ServerClient
 from tests.integration.support.server_harness import ServerAnswer, running_server
 
 
@@ -13,8 +13,12 @@ class IntegrationServer(ServerClient):
     """The real server running on an integration journal, asked through its socket as a client asks it."""
 
     def __init__(self, journal: IntegrationJournal, socket_path: Path, context: ServerContext) -> None:
-        super().__init__(socket_path, context)
+        super().__init__(socket_path, context, journal.home)
         self.journal = journal
+
+    def direct_run(self, line: str) -> DirectRun:
+        answer = self.journal.run(line)
+        return DirectRun(answer.code, answer.text)
 
     # a main agent starts as Claude Code starts one: its session_start hook reaches the server
     def start_agent(self, session: str) -> ServerAnswer:
