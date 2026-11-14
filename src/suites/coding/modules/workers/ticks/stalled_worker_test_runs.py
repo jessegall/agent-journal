@@ -35,7 +35,7 @@ class StalledWorkerTestRuns:
 
     def __call__(self, container: Container) -> None:
         bus = container.get(Bus)
-        environments = {worktree.id: worktree.environment_id for worktree in container.get(WorktreeQuery).all_worktrees()}
+        environments = {worktree.id: worktree.environment_id for worktree in container.get(WorktreeQuery).open_worktrees()}
         self.record_ended(container, [proof for proof in container.get(ProofQuery).test_rows() if proof.state is ProofState.RUNNING and proof.worktree_id in environments], environments)
         self.record_ended_checkpoint_tests(container)
         bus.run(QueueStalledTests(), Actor.core())

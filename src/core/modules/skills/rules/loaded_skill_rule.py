@@ -7,13 +7,13 @@ from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.skills.support.agent_skill_rows import AgentSkillRows
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
-from core.modules.skills.support.skill_nudges import SKILL_LOADED_TWICE
+from core.modules.skills.support.skill_nudges import LOADED_SKILL_REFUSAL
 
 
-class SkillLoadedTwiceRule(DriverRule):
-    """Refuses a load of a skill the agent has loaded in its context already, with the very text the catalogue
-    holds now: a compaction unloads the agent's skills, so the load passes again after it, and so does one of
-    a skill whose text changed. The refusal is skipped like any other."""
+class LoadedSkillRule(DriverRule):
+    """Refuses a load of a skill the agent has loaded in its context, with the very text the catalogue holds
+    now: a compaction unloads the agent's skills, so the load passes again after it, and so does one of a
+    skill whose text changed. The refusal is skipped like any other."""
 
     name = "skills.already-loaded"
     hook = HookEventName.PRE_TOOL_USE
@@ -32,4 +32,4 @@ class SkillLoadedTwiceRule(DriverRule):
         loaded = [skill.folder for skill in self.catalogue.skills() if skill.folder in folders and self.rows.is_loaded(hook.agent_id, skill.folder, skill.digest)]
         if not loaded:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(SKILL_LOADED_TWICE.nudge(skill=loaded[0]))
+        return RuleAnswer.refused(LOADED_SKILL_REFUSAL.nudge(skill=loaded[0]))

@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 
 from engine.query.conditions.among import Among
 from engine.scope.actor_scope import ActorScope
@@ -14,12 +14,17 @@ from core.modules.tasks.queries.task_query import TaskQuery
 READY_TASKS_REASON = "the free task with the highest priority is chosen among every ready task"
 
 
+def empty_step() -> Task | None:
+    return None
+
+
 class FocusedPlanTasks:
     """Picks the task an agent takes next for its plan focus: a ready task of the focused plan or an open task
     the plan waits on, whichever the most plan tasks wait on. Only tasks the agent may take are picked. It
     reads every row of the agent's environment, whatever the scope of its caller, so a task reserved for
-    nobody is seen. An agent with no focus is given nothing. It can also go on to the started plans that are
-    not the focus, oldest first, and pick the next task of the first one that has a task reserved for nobody."""
+    nobody is seen. An agent with no focus is given nothing. It can also go on, after a step the caller names, to
+    the started plans that are not the focus, oldest first, and pick the next task of the first one that has a task
+    reserved for nobody."""
 
     def __init__(self, focus: PlanFocus, tasks: TaskQuery, scopes: Scopes) -> None:
         self.focus, self.tasks, self.scopes = focus, tasks, scopes
@@ -28,10 +33,10 @@ class FocusedPlanTasks:
         with self.scopes.opened(agent.id, agent.environment_id, [ActorScope]):
             return self.focus_task(self.focus.overview(agent), excluded_id)
 
-    def first_started(self, agent: Agent, excluded_id: int | None = None) -> Task | None:
+    def first_started(self, agent: Agent, excluded_id: int | None = None, focus_fallback: Callable[[], Task | None] = empty_step) -> Task | None:
         with self.scopes.opened(agent.id, agent.environment_id, [ActorScope]):
             overview = self.focus.overview(agent)
-            return self.focus_task(overview, excluded_id) or self.free_task(overview.remaining, excluded_id)
+            return self.focus_task(overview, excluded_id) or focus_fallback() or self.free_task(overview.remaining, excluded_id)
 
     def focus_task(self, overview: FocusOverview, excluded_id: int | None) -> Task | None:
         work = overview.focus_work

@@ -1,22 +1,71 @@
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
+from engine.ticker.tick_handler import TickHandler
+from engine.ticker.tick_interval import TickInterval
+from core.modules.assign_rules.commands.record_assign_decision.apply_assign_rule_handler import ApplyAssignRuleHandler
+from core.modules.assign_rules.commands.record_assign_decision.apply_assign_rule_subcommand import ApplyAssignRuleSubcommand
+from core.modules.assign_rules.commands.edit_assign_rule.move_rule_tasks_handler import MoveRuleTasksHandler
+from core.modules.assign_rules.commands.edit_assign_rule.move_rule_tasks_subcommand import MoveRuleTasksSubcommand
+from core.modules.assign_rules.commands.delete_assign_rule.return_rule_tasks_handler import ReturnRuleTasksHandler
+from core.modules.assign_rules.commands.delete_assign_rule.return_rule_tasks_subcommand import ReturnRuleTasksSubcommand
+from core.modules.assign_rules.commands.assign_rule_board.assign_rule_board_subcommand import AssignRuleBoardSubcommand
+from core.modules.assign_rules.commands.count_assign_rule.count_assign_rule_subcommand import CountAssignRuleSubcommand
+from core.modules.assign_rules.commands.delete_assign_rule.delete_assign_rule_handler import DeleteAssignRuleHandler
+from core.modules.assign_rules.commands.delete_assign_rule.delete_assign_rule_subcommand import DeleteAssignRuleSubcommand
+from core.modules.assign_rules.commands.edit_assign_rule.edit_assign_rule_handler import EditAssignRuleHandler
+from core.modules.assign_rules.commands.edit_assign_rule.edit_assign_rule_subcommand import EditAssignRuleSubcommand
+from core.modules.assign_rules.commands.make_assign_rule.make_assign_rule_handler import MakeAssignRuleHandler
+from core.modules.assign_rules.commands.make_assign_rule.make_assign_rule_subcommand import MakeAssignRuleSubcommand
+from core.modules.assign_rules.commands.move_assign_rule.move_assign_rule_handler import MoveAssignRuleHandler
+from core.modules.assign_rules.commands.move_assign_rule.move_assign_rule_subcommand import MoveAssignRuleSubcommand
+from core.modules.assign_rules.commands.switch_assign_rule.disable_assign_rule_subcommand import DisableAssignRuleSubcommand
+from core.modules.assign_rules.commands.switch_assign_rule.enable_assign_rule_subcommand import EnableAssignRuleSubcommand
+from core.modules.assign_rules.commands.switch_assign_rule.switch_assign_rule_handler import SwitchAssignRuleHandler
+from core.modules.assign_rules.commands.try_assign_rule.try_assign_rule_subcommand import TryAssignRuleSubcommand
+from core.modules.assign_rules.commands.try_assign_rule.why_assign_rule_subcommand import WhyAssignRuleSubcommand
+from core.modules.assign_rules.commands.judge_task.judge_task_handler import JudgeTaskHandler
+from core.modules.assign_rules.commands.judge_task.record_failed_decision_handler import RecordFailedDecisionHandler
+from core.modules.assign_rules.commands.record_assign_decision.judge_skipped_tasks_handler import JudgeSkippedTasksHandler
+from core.modules.assign_rules.listeners.agent_start_retry_listener import AgentStartRetryListener
+from core.modules.assign_rules.ticks.judge_skipped_tasks_tick import JudgeSkippedTasksTick
+from core.modules.assign_rules.guards.assign_rule_person_guard import AssignRulePersonGuard
+from core.modules.assign_rules.listeners.auto_assign_tag_listener import AutoAssignTagListener
+from core.modules.assign_rules.listeners.auto_assign_task_listener import AutoAssignTaskListener
+from core.modules.assign_rules.guards.assign_rule_target_guard import AssignRuleTargetGuard
 from core.modules.assign_rules.commands.record_assign_decision.record_assign_decision_handler import RecordAssignDecisionHandler
+from core.modules.assign_rules.commands.record_assign_decision.record_assign_decision_subcommand import RecordAssignDecisionSubcommand
 from core.modules.assign_rules.migrations.m001_assign_rules import AssignRulesMigration
+from core.modules.assign_rules.migrations.m002_decision_indexes import DecisionIndexesMigration
+from core.modules.assign_rules.migrations.m003_rule_target_agent import RuleTargetAgentMigration
+from core.modules.assign_rules.migrations.m004_enabled_rule_index import EnabledRuleIndexMigration
 from core.modules.assign_rules.models.assign_decision import AssignDecision
 from core.modules.assign_rules.models.assign_rule import AssignRule
 from core.modules.assign_rules.models.assign_rule_condition import AssignRuleCondition
+from core.modules.assign_rules.support.assign_rules_nudges import ASSIGN_RULES_NUDGES
+from core.modules.assign_rules.support.rule_assignment_reasons import RuleAssignmentReasons
+from core.modules.assignments.support.assignment_reasons import AssignmentReasons
 
 EXCLUDED_WRITES = ["make", "edit", "delete"]
 
 
 class AssignRulesModule(Module):
-    """Adds a user's standing rules that give new free tasks to the main agent, one agent or a kind of agent."""
+    """Adds a user's standing rules that give new free tasks to the main agent, one agent or the agents of one
+    program and model."""
 
     name = "journal.core.assign_rules"
     seed_reason = "a rule assigns new tasks, which the demo does not make"
     move_reason = "version 4 has no assign rules"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.plans"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.plans", "journal.core.assignments"]
     models = [ModelDeclaration(AssignRule, excluded_subcommands=EXCLUDED_WRITES), ModelDeclaration(AssignRuleCondition, excluded_subcommands=EXCLUDED_WRITES), ModelDeclaration(AssignDecision, excluded_subcommands=EXCLUDED_WRITES)]
-    migrations = [AssignRulesMigration]
-    handlers = [RecordAssignDecisionHandler]
+    migrations = [AssignRulesMigration, DecisionIndexesMigration, RuleTargetAgentMigration, EnabledRuleIndexMigration]
+    listeners = [AutoAssignTaskListener, AutoAssignTagListener, AgentStartRetryListener]
+    handlers = [RecordAssignDecisionHandler, JudgeTaskHandler, RecordFailedDecisionHandler, JudgeSkippedTasksHandler, MakeAssignRuleHandler, EditAssignRuleHandler, MoveAssignRuleHandler, SwitchAssignRuleHandler, DeleteAssignRuleHandler,
+                ApplyAssignRuleHandler, MoveRuleTasksHandler, ReturnRuleTasksHandler]
+    subcommands = [MakeAssignRuleSubcommand, EditAssignRuleSubcommand, MoveAssignRuleSubcommand, EnableAssignRuleSubcommand, DisableAssignRuleSubcommand, DeleteAssignRuleSubcommand,
+                   TryAssignRuleSubcommand, WhyAssignRuleSubcommand, RecordAssignDecisionSubcommand, AssignRuleBoardSubcommand, CountAssignRuleSubcommand,
+                   ApplyAssignRuleSubcommand, MoveRuleTasksSubcommand, ReturnRuleTasksSubcommand]
+    guards = [AssignRulePersonGuard, AssignRuleTargetGuard]
+    bindings = {AssignmentReasons: RuleAssignmentReasons}
+    nudges = ASSIGN_RULES_NUDGES
+    tick_handlers = [TickHandler(TickInterval(seconds=60), JudgeSkippedTasksTick(), "assign rules retry")]

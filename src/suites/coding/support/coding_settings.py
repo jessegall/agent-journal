@@ -30,7 +30,7 @@ CODING_SETTING_VALUES = [
                  default=(CommandCategory.READ.value, CommandCategory.SEARCH.value, CommandCategory.EDIT.value, CommandCategory.CHECK.value, CommandCategory.TEST_RUN.value,
                           CommandCategory.BUILD.value), person_set=True),
 ]
-PLAIN_CODE_WORDS = f"{MODULE_KEY}.plain-code-words"
+PLAIN_NAMES_SETTING = f"{MODULE_KEY}.plain-code-words"
 CODING_SETTING_RULES = {COMMAND_TYPES: ListRule(choices=tuple(category.value for category in CommandCategory))}
 CODING_SETTINGS = ruled_settings(MODULE_KEY, CODING_SETTING_VALUES, CODING_SETTING_RULES)
 WORKER_TEST_LIMIT = "journal.suites.coding.workers.worker-run-most-tests"

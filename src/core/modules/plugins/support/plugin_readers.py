@@ -22,18 +22,18 @@ class PluginReaders:
         self.readers, self.repository = readers, repository
 
     def publish(self, folder: Path, plugin_name: str, context: Context) -> None:
-        shipped = [reader_file.reader(context.actor.id, plugin_name) for reader_file in ReaderFile.found(folder / READERS_FOLDER)]
-        existing = {reader.name: reader for reader in self.readers.where_in("name", [reader.name for reader in shipped]).every_row(PLUGIN_READERS_PUBLISH_REASON)}
-        for reader in shipped:
-            if reader.name not in existing:
+        plugin_readers = [reader_file.reader(context.actor.id, plugin_name) for reader_file in ReaderFile.found(folder / READERS_FOLDER)]
+        stored_readers = {reader.name: reader for reader in self.readers.where_in("name", [reader.name for reader in plugin_readers]).every_row(PLUGIN_READERS_PUBLISH_REASON)}
+        for reader in plugin_readers:
+            if reader.name not in stored_readers:
                 self.repository.save(reader, context)
-            elif existing[reader.name].plugin_name == plugin_name:
-                self.republish(existing[reader.name], reader, context)
+            elif stored_readers[reader.name].plugin_name == plugin_name:
+                self.republish(stored_readers[reader.name], reader, context)
 
-    def republish(self, existing: Reader, shipped: Reader, context: Context) -> None:
-        current = existing.changed(**{field: getattr(shipped, field) for field in SHIPPED_FIELDS})
-        if current != existing:
-            self.repository.save(current, context)
+    def republish(self, stored_reader: Reader, plugin_reader: Reader, context: Context) -> None:
+        updated_reader = stored_reader.changed(**{field: getattr(plugin_reader, field) for field in SHIPPED_FIELDS})
+        if updated_reader != stored_reader:
+            self.repository.save(updated_reader, context)
 
     def remove(self, plugin_name: str, context: Context) -> None:
         for reader in tuple(self.readers.filter(plugin_name=plugin_name).every_row(PLUGIN_READERS_REASON)):
