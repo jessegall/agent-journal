@@ -400,8 +400,6 @@ tests/stories/server/server_hooks.py
 tests/stories/server/server_restarts.py
 tests/stories/server/server_ticks.py
 tests/stories/server/task_overview_writes.py
-tests/stories/server/tick/server_backup.py
-tests/stories/server/tick/ticker.py
 tests/stories/server/tick_warnings.py
 tests/stories/server/viewer_hook_events.py
 tests/stories/server/viewer_line_rows.py

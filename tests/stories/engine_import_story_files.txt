@@ -733,10 +733,7 @@ tests/stories/server/support/server_process.py
 tests/stories/server/support/story_line_route.py
 tests/stories/server/support/viewer_events.py
 tests/stories/server/task_overview_writes.py
-tests/stories/server/tick/server_backup.py
-tests/stories/server/tick/ticker.py
 tests/stories/server/tick_warnings.py
-tests/stories/server/ticker_workers.py
 tests/stories/server/viewer/login_link.py
 tests/stories/server/viewer/request_funnel_routes.py
 tests/stories/server/viewer_batch_reads.py

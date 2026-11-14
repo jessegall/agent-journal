@@ -23,6 +23,11 @@ class IntegrationServer:
     def run_as(self, line: str, session: str) -> ServerAnswer:
         return self.request("POST", "/cli", {"argv": shlex.split(line), "variables": {"JOURNAL_AGENT_SESSION": session}, "folder": "/"})
 
+    def viewer_port(self) -> int:
+        answer = self.request("GET", "/health").json()
+        assert isinstance(answer, dict) and isinstance(answer["viewer_port"], int), answer
+        return answer["viewer_port"]
+
     # a main agent starts as Claude Code starts one: its session_start hook reaches the server
     def start_agent(self, session: str) -> ServerAnswer:
         answer = self.request("POST", "/hook", dict(HookSamples.session_start().with_fields(session=session).body))
