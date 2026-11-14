@@ -47,3 +47,9 @@ def test_a_tier_with_an_open_state_names_it_with_its_rows_and_since_when_and_an_
 def test_the_defaults_tier_says_none_until_a_later_phase_registers_it_and_the_agent_is_named_with_its_driver():
     states = listing({}, {}).states(AGENT, NOW)
     assert (states.agent, states.driver, states.role, states.defaults) == ("agent 5", "coding.main", "main", "(none)")
+
+
+def test_open_states_lists_each_open_state_with_its_tier_rows_and_since_in_the_order_of_the_tiers():
+    entries = {int(StateTier.STACK): [entry("messages.unread-countdown", StateTier.STACK)], int(StateTier.IN_PLACE): [entry("skills.load-required", StateTier.IN_PLACE)]}
+    open_states = listing(entries, {"skills.load-required": [OpenRow("agent_skill", 3, SINCE)], "messages.unread-countdown": [OpenRow("agent_block", 812, SINCE)]}).open_states(AGENT, NOW)
+    assert [(state.tier, state.name, state.rows, state.since) for state in open_states] == [("stack", "messages.unread-countdown", ("agent_block:812",), SINCE.text), ("in place", "skills.load-required", ("agent_skill:3",), SINCE.text)]

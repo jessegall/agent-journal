@@ -12,6 +12,7 @@ import AgentBrief from "./AgentBrief.vue";
 import AgentFolds from "./AgentFolds.vue";
 import AgentNow from "./AgentNow.vue";
 import AgentRecent from "./AgentRecent.vue";
+import AgentStates from "./AgentStates.vue";
 import AgentStrip from "./AgentStrip.vue";
 import AgentWho from "./AgentWho.vue";
 
@@ -27,6 +28,7 @@ const counts = ref({helpers: 0, skills: 0});
 const loads = ref(0);
 const points = ref([]);
 const programs = ref([]);
+const states = ref([]);
 const failure = ref("");
 let reading = 0;
 
@@ -46,6 +48,7 @@ async function load() {
     counts.value = {helpers: answer.value.helpers, skills: answer.value.skills};
     points.value = answer.value.points;
     programs.value = answer.value.programs;
+    states.value = answer.value.states ?? [];
     loads.value += 1;
 }
 
@@ -67,6 +70,7 @@ onMounted(load);
                 <AgentStrip :cells="stripCells({row, facts, inspection, now})" />
                 <AgentNow :inspection="inspection" :tool="tool" :nothing="nothing" />
                 <AgentBrief :label="row.access === 'read-only' ? 'Instruction' : 'Brief'" :text="facts?.instruction ?? ''" :points="points" />
+                <AgentStates :states="states" />
                 <AgentRecent :moves="inspection.recent" />
                 <AgentFolds :id="id" :read="read" :counts="counts" :loads="loads" :details="detailRows(row, inspection, contextChange)" />
                 <template v-if="row.ended_at"><p class="ended" data-agent-ended>Ended {{ ago(row.ended_at, now) }}. It takes no more actions.</p></template>
