@@ -10,7 +10,7 @@ SHELL_RESTRICTION = NudgeDeclaration("drivers.no_shell", NudgeType.SAFETY_REFUSA
 PROGRAM_RESTRICTION = NudgeDeclaration("drivers.program_not_allowed", NudgeType.SAFETY_REFUSAL, "This driver cannot run {program}")
 UNJUDGED_LINE = NudgeDeclaration("drivers.unjudged_line", NudgeType.SAFETY_REFUSAL, "This line cannot be judged from its text: read with grep, or say in your report what should be run")
 OLD_HOOK_LINE = NudgeDeclaration("drivers.old_hook_line", NudgeType.SAFETY_REFUSAL, "Your hooks are too old to judge this line: update the journal, then restart the agent")
-HELPER_TYPE_CATEGORY = NudgeDeclaration("drivers.helper_type_category", NudgeType.REFUSAL, "a {helper_type} here runs no {category} command")
+HELPER_TYPE_CATEGORY = NudgeDeclaration("drivers.helper_type_category", NudgeType.REFUSAL, "a {helper_type} here runs no {category} command{hint}", full_text=True)
 HELPER_TYPE_COMMAND = NudgeDeclaration("drivers.helper_type_command", NudgeType.REFUSAL, "A {helper_type} may not run {line}: it runs the groups {groups} and the lines {lines}; ask your main agent",
                                        full_text=True)
 OUTWARD_JOURNAL_LINE = NudgeDeclaration("drivers.outward_journal_line", NudgeType.SAFETY_REFUSAL, "This command reaches outside the journal: say in your report what should be run")

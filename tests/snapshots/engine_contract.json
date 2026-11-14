@@ -4437,6 +4437,7 @@
         "job_task_flag: ClassVar[str]",
         "line: ClassVar[str]",
         "command_types_setting: ClassVar[str]",
+        "refusal_hint: ClassVar[str]",
         "behaviours: ClassVar[HelperBehaviours]",
         "commands: ClassVar[CommandAllowList]",
         "journal_runs: ClassVar[tuple[str, ...]]"
@@ -4492,7 +4493,8 @@
         "job_task_flag: str",
         "line: str",
         "commands: CommandAllowList",
-        "command_types_setting: str"
+        "command_types_setting: str",
+        "refusal_hint: str"
       ],
       "methods": [
         "declared(cls, module: str, declaration: type[HelperType]) -> 'HelperTypeEntry'",
@@ -9552,6 +9554,8 @@
         "run(self, line: str, actor: Actor | None, environment_id: int | None, process_id: int | None) -> LineOutcome",
         "seed(self, seed: type[Seed], count: int) -> tuple[int, ...]",
         "story_rows(self, model: type[M]) -> tuple[M, ...]",
+        "first_row(self, model: type[M]) -> M | None",
+        "newest_row(self, model: type[M]) -> M | None",
         "run_command(self, command: Command[R], actor: Actor, environment_id: int) -> R",
         "end_session(self, agent: Actor) -> None",
         "expect_agent_group(self, helper_type: str, profile: str, group: str) -> None",
@@ -9782,6 +9786,7 @@
         "remove_stale_working_folders(current_time: float) -> None",
         "story(self, folder: Path, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Story",
         "synced_home(self, folder: Path, modules: tuple[str, ...]) -> JournalHome",
+        "fixture_home(self, folder: Path, fixture: type[StoryFixture], modules: tuple[str, ...]) -> tuple[JournalHome, StoryState]",
         "free_journal(self, template: Template) -> WorkingJournal",
         "linked_home(self, template: Template, journal: WorkingJournal, folder: Path) -> JournalHome",
         "template(self, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Template",
@@ -10698,5 +10703,5 @@
       ]
     }
   },
-  "engine_version": "5.0.0"
+  "engine_version": "5.1.0"
 }

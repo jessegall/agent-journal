@@ -28,6 +28,7 @@ class HelperType:
     job_task_flag: ClassVar[str] = ""
     line: ClassVar[str] = ""
     command_types_setting: ClassVar[str] = ""
+    refusal_hint: ClassVar[str] = ""
     behaviours: ClassVar[HelperBehaviours]
     commands: ClassVar[CommandAllowList]
     journal_runs: ClassVar[tuple[str, ...]] = ()
