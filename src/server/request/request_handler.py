@@ -217,8 +217,8 @@ class RequestHandler(BaseHTTPRequestHandler):
     @staticmethod
     @contextmanager
     def command_turn(context: ServerContext, queued: QueueRequest, ticket: ExecutionTicket) -> Generator[None]:
-        with context.hook_database.executions.admitted(ticket, queued.session), context.hook_database.queue.observing(queued), \
-                CurrentExecution(ticket.priority, "command", queued.event).applied():
+        with context.hook_database.executions.admitted(ticket, queued.session) as admitted, context.hook_database.queue.observing(queued), \
+                CurrentExecution(admitted.ticket.priority, "command", queued.event, admitted.ticket).applied():
             yield
 
     def answer_cli(self, request: CliRequest) -> None:

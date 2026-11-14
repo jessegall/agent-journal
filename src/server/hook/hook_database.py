@@ -1,3 +1,4 @@
+from engine.execution.current_execution import CurrentExecution
 from engine.enums.log_source import LogSource
 from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
@@ -46,7 +47,8 @@ class HookDatabase:
 
     @contextmanager
     def used(self, priority: ExecutionPriority, wait_seconds: float, owner: str = "", request: QueueRequest | None = None) -> Generator[Database]:
-        with self.executions.admitted(self.hook_ticket(priority, request), owner, wait_seconds), self.queue.observing(request or QueueRequest.started("hook", "hook", owner)):
+        with self.executions.admitted(self.hook_ticket(priority, request), owner, wait_seconds) as queued, \
+                CurrentExecution(queued.ticket.priority, "hook", queued.ticket.line, queued.ticket).applied(), self.queue.observing(request or QueueRequest.started("hook", "hook", owner)):
             database = self.free_database()
             busy_timeout_seconds = database.busy_timeout_seconds()
             try:

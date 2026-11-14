@@ -1,3 +1,4 @@
+from engine.execution.execution_ticket import ExecutionTicket
 import contextvars
 import threading
 from collections.abc import Callable, Generator
@@ -10,11 +11,13 @@ from engine.enums.execution_priority import ExecutionPriority
 
 @dataclass(frozen=True)
 class CurrentExecution:
-    """Who asks for the write turn: the priority it waits with, the class of what runs and its line."""
+    """Who asks for the write turn: the priority it waits with, the class of what runs, its line, and the instant
+    lane ticket it holds, whose waited children the door gives to the programs it runs."""
 
     priority: ExecutionPriority
     class_name: str | None = None
     line: str | None = None
+    ticket: ExecutionTicket | None = None
 
     @classmethod
     def read(cls) -> "CurrentExecution":

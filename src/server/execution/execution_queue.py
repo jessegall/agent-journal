@@ -72,8 +72,11 @@ class ExecutionQueue:
                 raise HookDatabaseBusyError.waited(waited, self.holders())
             self.changed.wait(LOOK_AGAIN_SECONDS if wait_limit_seconds is None else max(0.0, min(LOOK_AGAIN_SECONDS, wait_limit_seconds - waited)))
 
-    # a session's tickets go one at a time and in the order they asked; of the rest the one decision picks
+    # a waited child starts at once, since its parent holds its place; a session's tickets go one at a time and in
+    # the order they asked; of the rest the one decision picks
     def starts_now(self, queued: QueuedTicket) -> bool:
+        if queued.ticket.parent is not None:
+            return True
         busy_owners = {running.owner for running in self.running if running.owner}
         first_of_owner = {}
         for waiting in self.waiting:
