@@ -210,9 +210,13 @@ class CommitListenerRunner(RoundState):
         if not is_commit_listener_class(listener_class):
             return
         groups: dict[tuple[EventType, int | None, int | None], list[LoggedEvent]] = {}
+        modelless: list[LoggedEvent] = []
         for event in events:
             event_type = listener_class.event_type(event.event)
-            if event_type.model is None or not issubclass(event_type.event_class, Changed):
+            if event_type.model is None:
+                modelless.append(event)
+                continue
+            if not issubclass(event_type.event_class, Changed):
                 continue
             with self.scopes.event_scope(listener_class.disabled_scopes, event):
                 groups.setdefault((event_type, self.scopes.actor_id, self.scopes.environment_id), []).append(event)
@@ -220,6 +224,8 @@ class CommitListenerRunner(RoundState):
             with self.scopes.event_scope(listener_class.disabled_scopes, grouped[0]):
                 self.container.get(EventBuilder).prepare(event_type, grouped)
                 self.listener_set.instance(entry).prepare(grouped)
+        if modelless:
+            self.listener_set.instance(entry).prepare(modelless)
 
     def handle_event(self, entry: ListenerEntry, event: LoggedEvent) -> bool:
         listener_class = entry.path.loaded()

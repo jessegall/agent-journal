@@ -1,5 +1,7 @@
 from engine.event.changed import Changed
 from engine.event.deleted import Deleted
+from collections.abc import Sequence
+
 from engine.event.logged_event import LoggedEvent
 from core.modules.processes.listeners.process_mark_listener import MODULE_NAME, ProcessMarkListener
 from core.modules.processes.models.process import Process
@@ -11,6 +13,9 @@ class ProcessEndMarkListener(ProcessMarkListener[Changed[Process]]):
     """Each change of a run brings its chat mark up to date."""
 
     name = "processes.process-mark"
+
+    def prepare(self, events: Sequence[LoggedEvent]) -> None:
+        self.keep_parts_of(events)
 
     def handle(self, event: Changed[Process], logged: LoggedEvent) -> None:
         if not isinstance(event, Deleted):

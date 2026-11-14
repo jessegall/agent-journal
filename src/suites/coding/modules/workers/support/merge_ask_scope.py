@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.support.worktree_git import SHORT_ID_CHARACTERS
 from engine.errors.refusal import Refusal
 from engine.query.queries import Queries
 from core.modules.plans.models.enums.checkpoint_state import CheckpointState
@@ -50,7 +51,8 @@ class MergeAskScope:
 
     def part(self, worktree: Worktree, unit: WorkUnit, last_task: str) -> MergeAskPart:
         if not last_task:
-            return MergeAskPart(worktree, unit, worktree.commit_short_id, unit.task_ids, True)
+            # the branch's tip, which holds an update's merge of the base on top of the last task commit
+            return MergeAskPart(worktree, unit, self.range.git.tip(worktree.folder, worktree.branch)[:SHORT_ID_CHARACTERS], unit.task_ids, True)
         commit = self.range.task_commit(worktree, int(last_task)) if self.range.is_task_number(last_task) else last_task
         if commit is None:
             committed = self.range.leading_tasks(worktree, worktree.branch)
