@@ -148,7 +148,7 @@ class AgentHookRoute(HookRoute):
     def launch_name_agent(self, event: HookEvent) -> Agent | None:
         if not event.launch:
             return None
-        agent = self.open_agent(event.launch) or self.cleared_agent(event)
+        agent = self.agents.open_session(event.launch) or self.cleared_agent(event)
         if agent is None:
             if self.agents.session(event.session) is None and self.ended_agent(event) is None:
                 self.system_log.write(LogLevel.WARNING, f"a {event.program} session {event.session} came under launch name {event.launch}, which no open agent holds; let through")
@@ -165,8 +165,7 @@ class AgentHookRoute(HookRoute):
         return agent if agent is not None and agent.ended_at is None else None
 
     def open_agent(self, session: str) -> Agent | None:
-        agent = self.agents.session(session)
-        return agent if agent is not None and agent.ended_at is None else None
+        return self.agents.open_session(session)
 
     def started(self, event: HookEvent, role: str, parent_id: int | None) -> Agent | None:
         environment = self.queries.query(Environment).filter(name=event.environment).first()

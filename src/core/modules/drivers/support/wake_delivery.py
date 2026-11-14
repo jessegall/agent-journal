@@ -1,6 +1,7 @@
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.errors.refusal import Refusal
+from engine.journal.journal_home import JournalHome
 from engine.time.clock import Clock
 from core.modules.drivers.commands.claim_agent_line.claim_agent_line import ClaimAgentLine
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
@@ -18,8 +19,8 @@ class WakeDelivery:
     agent compacts. The line is claimed first, so no hook gives it too, and entered once the waiter confirms it printed
     it; a line no waiter takes, or one not confirmed within 20 seconds, waits again."""
 
-    def __init__(self, bus: Bus, hook_calls: HookCallQuery, waiters: WakeWaiters, clock: Clock) -> None:
-        self.bus, self.hook_calls, self.waiters, self.clock = bus, hook_calls, waiters, clock
+    def __init__(self, bus: Bus, hook_calls: HookCallQuery, home: JournalHome, clock: Clock) -> None:
+        self.bus, self.hook_calls, self.waiters, self.clock = bus, hook_calls, WakeWaiters.shared(home), clock
 
     def deliver(self, line: AgentLine, actor: Actor) -> bool:
         agent_id, now = line.session_agent_id, self.clock.timestamp()

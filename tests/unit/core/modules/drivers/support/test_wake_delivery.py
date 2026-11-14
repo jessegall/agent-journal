@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from types import SimpleNamespace
 
 from core.modules.drivers.commands.claim_agent_line.claim_agent_line import ClaimAgentLine
@@ -9,6 +10,7 @@ from core.modules.drivers.support.wake_waiters import WakeWaiters
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
+from engine.journal.journal_home import JournalHome
 from engine.time.timestamp import Timestamp
 
 ACTOR = Actor(1, ActorType.USER)
@@ -48,24 +50,24 @@ class ManualClock:
         return Timestamp(self.now)
 
 
-def delivery(turn: AgentTurn | None = None) -> tuple[WakeDelivery, WakeWaiters, RecordedBus, ManualClock]:
-    waiters, bus, clock = WakeWaiters(), RecordedBus(), ManualClock()
-    return WakeDelivery(bus, turn or AgentTurn(), waiters, clock), waiters, bus, clock  # type: ignore[arg-type]
+def delivery(tmp_path: Path, turn: AgentTurn | None = None) -> tuple[WakeDelivery, WakeWaiters, RecordedBus, ManualClock]:
+    home, bus, clock = JournalHome(tmp_path), RecordedBus(), ManualClock()
+    return WakeDelivery(bus, turn or AgentTurn(), home, clock), WakeWaiters.shared(home), bus, clock  # type: ignore[arg-type]
 
 
 def kinds(bus: RecordedBus) -> list[type]:
     return [type(command) for command in bus.commands]
 
 
-def test_a_waiting_line_is_claimed_and_offered():
-    wake, waiters, bus, _ = delivery()
+def test_a_waiting_line_is_claimed_and_offered(tmp_path):
+    wake, waiters, bus, _ = delivery(tmp_path)
     waiter = waiters.register(3, "token")
     assert wake.deliver(LINE, ACTOR)  # type: ignore[arg-type]
     assert kinds(bus) == [ClaimAgentLine] and waiter.text == "[journal] new message 12: read it"
 
 
-def test_a_confirmed_line_is_entered():
-    wake, waiters, bus, _ = delivery()
+def test_a_confirmed_line_is_entered(tmp_path):
+    wake, waiters, bus, _ = delivery(tmp_path)
     waiters.register(3, "token")
     wake.deliver(LINE, ACTOR)  # type: ignore[arg-type]
     assert not wake.confirm(7, "another token", ACTOR)
@@ -73,8 +75,8 @@ def test_a_confirmed_line_is_entered():
     assert kinds(bus) == [ClaimAgentLine, EnterAgentLine]
 
 
-def test_an_unconfirmed_line_is_released_after_20_seconds():
-    wake, waiters, bus, clock = delivery()
+def test_an_unconfirmed_line_is_released_after_20_seconds(tmp_path):
+    wake, waiters, bus, clock = delivery(tmp_path)
     waiters.register(3, "token")
     wake.deliver(LINE, ACTOR)  # type: ignore[arg-type]
     clock.now += timedelta(seconds=19)
@@ -85,8 +87,8 @@ def test_an_unconfirmed_line_is_released_after_20_seconds():
     assert kinds(bus) == [ClaimAgentLine, ReleaseAgentLine] and not wake.confirm(7, "token", ACTOR)
 
 
-def test_a_claimed_line_is_not_given_twice():
-    wake, waiters, bus, _ = delivery()
+def test_a_claimed_line_is_not_given_twice(tmp_path):
+    wake, waiters, bus, _ = delivery(tmp_path)
     waiters.register(3, "token")
     assert wake.deliver(LINE, ACTOR)  # type: ignore[arg-type]
     waiters.register(3, "second token")
@@ -94,21 +96,21 @@ def test_a_claimed_line_is_not_given_twice():
     assert kinds(bus) == [ClaimAgentLine]
 
 
-def test_nothing_is_offered_while_the_agent_compacts():
-    wake, waiters, bus, _ = delivery(AgentTurn(compacting=True))
+def test_nothing_is_offered_while_the_agent_compacts(tmp_path):
+    wake, waiters, bus, _ = delivery(tmp_path, AgentTurn(compacting=True))
     waiter = waiters.register(3, "token")
     assert not wake.deliver(LINE, ACTOR)  # type: ignore[arg-type]
     assert bus.commands == [] and waiter.is_live
 
 
-def test_nothing_is_offered_in_a_turn():
-    wake, waiters, bus, _ = delivery(AgentTurn(between_turns=False))
+def test_nothing_is_offered_in_a_turn(tmp_path):
+    wake, waiters, bus, _ = delivery(tmp_path, AgentTurn(between_turns=False))
     waiter = waiters.register(3, "token")
     assert not wake.deliver(LINE, ACTOR)  # type: ignore[arg-type]
     assert bus.commands == [] and waiter.is_live
 
 
-def test_a_line_no_waiter_takes_is_not_claimed():
-    wake, _, bus, _ = delivery()
+def test_a_line_no_waiter_takes_is_not_claimed(tmp_path):
+    wake, _, bus, _ = delivery(tmp_path)
     assert not wake.deliver(LINE, ACTOR)  # type: ignore[arg-type]
     assert bus.commands == []

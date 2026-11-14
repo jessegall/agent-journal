@@ -1,5 +1,7 @@
 import threading
+from functools import cache
 
+from engine.journal.journal_home import JournalHome
 from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.enums.wake_outcome import WakeOutcome
 from core.modules.drivers.support.given_wake_line import GivenWakeLine
@@ -14,6 +16,12 @@ class WakeWaiters:
         self.changed = threading.Condition()
         self.waiters: dict[int, WakeWaiter] = {}
         self.given: dict[int, GivenWakeLine] = {}
+
+    # one set of waiters for each journal a server process serves, shared by every request thread
+    @staticmethod
+    @cache
+    def shared(home: JournalHome) -> "WakeWaiters":
+        return WakeWaiters()
 
     def register(self, agent_id: int, token: str) -> WakeWaiter:
         with self.changed:
@@ -50,6 +58,15 @@ class WakeWaiters:
             if waiter is not None and waiter.is_live:
                 waiter.outcome = WakeOutcome.CANCELLED
             self.changed.notify_all()
+
+    def waiter(self, agent_id: int, token: str) -> WakeWaiter | None:
+        with self.changed:
+            waiter = self.waiters.get(agent_id)
+            return waiter if waiter is not None and waiter.token == token else None
+
+    def live_count(self) -> int:
+        with self.changed:
+            return sum(1 for waiter in self.waiters.values() if waiter.is_live)
 
     def has_waiter(self, agent_id: int) -> bool:
         with self.changed:
