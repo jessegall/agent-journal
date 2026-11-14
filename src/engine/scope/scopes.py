@@ -105,23 +105,25 @@ class Scopes(RoundState):
 
     @contextmanager
     def read_scope(self, disabled: WholeScopes, actor_id: int | None, environment_id: int | None = None) -> Generator[None]:
-        previous = self.database.read_actor_id, self.database.row_owner
+        previous = self.database.read_actor_id, self.database.row_owner, self.database.environment_scope_passed
         self.database.read_actor_id = None if ActorScope in disabled else actor_id
         self.database.row_owner = self.owner(actor_id, environment_id, disabled)
+        self.database.environment_scope_passed = EnvironmentScope in disabled
         try:
             yield
         finally:
-            self.database.read_actor_id, self.database.row_owner = previous
+            self.database.read_actor_id, self.database.row_owner, self.database.environment_scope_passed = previous
 
     @contextmanager
     def opened(self, actor_id: int | None, environment_id: int | None = None, disabled: WholeScopes = ()) -> Generator[None]:
-        previous = self.actor_id, self.decided, self.database.row_owner
+        previous = self.actor_id, self.decided, self.database.row_owner, self.database.environment_scope_passed
         owner = self.owner(actor_id, environment_id, disabled)
         self.actor_id, self.decided, self.database.row_owner = None if ActorScope in disabled else actor_id, True, owner
+        self.database.environment_scope_passed = EnvironmentScope in disabled
         try:
             yield
         finally:
-            self.actor_id, self.decided, self.database.row_owner = previous
+            self.actor_id, self.decided, self.database.row_owner, self.database.environment_scope_passed = previous
 
     def owner(self, actor_id: int | None, environment_id: int | None, disabled: WholeScopes = ()) -> RowOwner | None:
         owner = self.actors.row_owner(actor_id) or RowOwner(None, environment_id)
