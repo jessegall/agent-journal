@@ -6,7 +6,7 @@ from engine.database.database import Database
 from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment, worker_session
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import FIRST_PROOF, checked_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
 
@@ -26,7 +26,9 @@ def test_a_conflict_reopens_the_closed_task_before_asking_the_worker_to_edit(new
     path = repository.worktree_folder(worker.id) / "cart.py"
     story.expect_hook_allowed(worker_session(story, worker), HookSamples.edit(str(path)))
     path.write_text("TOTAL = 3\n")
+    story.expect_success(FIRST_PROOF, "point: 1", actor=worker)
     story.expect_success("worker commit --wait --differences none", actor=worker)
+    story.expect_success("proof check 1", "state: checked", actor=story.agent)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     request_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
@@ -48,3 +50,22 @@ def test_worker_send_runs_git_outside_its_transaction(new_story, monkeypatch):
     story.expect_text(f'worker send --wait {agent_number(story, worker.id)} "Finish the total"', "takes the job", actor=story.agent)
     story.expect_rows(transaction_flags == [False])
 
+
+
+@pytest.mark.real_git
+def test_a_task_that_comes_back_from_a_clash_has_its_proof_short_and_is_proved_and_committed_again(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    repository.committed("cart.py", "TOTAL = 2\n", "Another total")
+    story.expect_text(f"worker merge --wait {agent_number(story, worker.id)}", "clashed on cart.py", actor=story.agent)
+    story.expect_text("proof show 1", "state: short", "settle them and prove it again", actor=story.agent)
+    repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
+    story.expect_success(FIRST_PROOF, "point: 1", actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
+    story.expect_success("proof check 1", "state: checked", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    request_merge(story, worker)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
+    repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 3\n")
