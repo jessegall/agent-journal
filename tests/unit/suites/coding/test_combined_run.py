@@ -7,8 +7,8 @@ COMBINED_RUN = (
     "tests/unit/suites/coding/test_main_openings.py", "tests/stories/suites/coding/main_settings_migration.py", "tests/stories/suites/coding/main_driver_migration.py",
     "tests/stories/suites/coding/main_driver_registration.py", "tests/stories/suites/coding/work_settings.py", "tests/stories/suites/coding/policy_setting_writes.py",
     "tests/stories/suites/coding/policy_request_approval.py", "tests/stories/suites/coding/policy_environment_refresh.py", "tests/stories/suites/coding/refusal_texts.py",
-    "tests/stories/core/modules/agents/agent_kind_controls.py", "tests/stories/core/modules/agents/agent_groups.py", "tests/stories/core/modules/agents/agent_limits.py",
-    "tests/stories/suites/coding/modules/workers/worker_testing_controls.py", "tests/stories/suites/coding/modules/workers/merge_followup_plan.py",
+    "tests/stories/core/modules/agents/agent_kind_controls.py", "tests/stories/core/modules/agents/agent_groups.py", "tests/integration/core/modules/agents/test_agent_limits.py",
+    "tests/integration/suites/coding/modules/workers/test_worker_testing_controls.py", "tests/integration/suites/coding/modules/workers/test_merge_followup_plan.py",
     "tests/stories/core/modules/helpers/helper_job_budget.py", "tests/unit/engine/setting/test_setting_rule_text.py", "tests/unit/core/modules/helpers/support/test_helper_spend.py",
 )
 ROOT = Path(__file__).resolve().parents[4]

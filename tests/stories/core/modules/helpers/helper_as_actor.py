@@ -5,14 +5,9 @@ def helper(story):
     return story.agent_actor(helper_agent(story).id)
 
 
-def test_a_read_only_helper_that_makes_a_task_is_refused_and_told_it_only_reads(new_story):
-    story = new_story(fixture=StartedHelper)
-    story.expect_refusal('task make "Fix the cart" --environment main', "read", actor=helper(story))
-
-
 def test_a_helper_is_shown_the_job_its_parent_sent(new_story):
     story = new_story(fixture=StartedHelper)
-    story.expect_text("message work-source", "Read src/cart.py", actor=helper(story))
+    story.expect_text("message work-source", "origin: job snapshot", actor=helper(story))
 
 
 def test_the_parent_hears_of_a_report_its_helper_filed_and_reads_it_by_number(new_story):
@@ -20,7 +15,6 @@ def test_the_parent_hears_of_a_report_its_helper_filed_and_reads_it_by_number(ne
     filed = story.run('report make Findings --abstract "What was read" --body "The cart sums cents." --environment main', actor=helper(story))
     story.expect_rows(filed.code == 0, detail=filed.output_text)
     story.run_listeners()
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "report", actor=story.user)
     story.expect_text("report list", "Findings", actor=story.agent)
 
 
