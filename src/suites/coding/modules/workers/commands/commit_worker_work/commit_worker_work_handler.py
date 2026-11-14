@@ -110,7 +110,7 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
         for task in tasks:
             if task.state is TaskState.STARTED:
                 self.repository.save_change(task, task.moved(TaskLifecycle.test), context)
-        self.free_task.give_next(context.actor.id, context)
+        self.free_task.give_next(context.actor.id, tasks, context)
         unit = self.units.unit(context.actor.id)
         worktree = self.repository.save_change(committed, self.moved_worktree(committed, open_tasks, tasks, unit, context), context)
         submission = self.proof_queue.submit_ready(worktree, tasks, context)

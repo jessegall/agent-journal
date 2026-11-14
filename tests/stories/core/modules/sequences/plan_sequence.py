@@ -37,14 +37,12 @@ def test_the_main_agent_making_a_plan_follows_the_plan_sequence_and_the_chat_sho
     expect_marks_text(story, PLAN_SEQUENCE)
 
 
-def test_a_worker_making_a_plan_follows_the_plan_sequence_and_the_chat_shows_no_mark(new_story):
+def test_a_worker_may_not_make_a_plan_so_no_plan_sequence_starts_for_it(new_story):
     story = new_story(fixture=StandardSequences)
     worker = read_worker(story)
-    story.run(lines.NEW_PLAN, actor=worker)
+    story.expect_refusal(lines.NEW_PLAN, "A worker may not run", actor=worker)
     story.run_listeners()
-    expect_run_agents(story, [worker.id])
-    story.expect_text("sequence-run list", PLAN_SEQUENCE, actor=worker)
-    expect_absent_marks_text(story, PLAN_SEQUENCE)
+    expect_run_agents(story, [])
 
 
 def test_a_helper_making_a_plan_follows_the_plan_sequence_and_the_chat_shows_no_mark(new_story):

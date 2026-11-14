@@ -40,7 +40,7 @@ def test_the_designer_writes_under_docs_designs_and_nowhere_else(new_story):
 
 def test_a_designer_job_ends_with_its_page_and_picture_committed(new_story):
     story = new_story(fixture=UserBuilder)
-    repository = repository_environment(story)
+    repository = repository_environment(story, real_git=True)
     designer = started_designer(story)
     (repository.folder / DESIGN_FOLDER).mkdir(parents=True)
     (repository.folder / DESIGN_FOLDER / "agent-settings.html").write_text("<html>Agent settings</html>\n")
