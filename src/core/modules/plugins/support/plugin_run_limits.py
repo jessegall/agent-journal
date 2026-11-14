@@ -1,8 +1,5 @@
 from collections.abc import Sequence
 
-from engine.enums.execution_lane import ExecutionLane
-from engine.enums.execution_priority import ExecutionPriority
-from engine.execution.classes.execution_class import UNLIMITED, ExecutionClass
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from core.modules.environments.models.environment import Environment
@@ -18,7 +15,6 @@ from core.modules.plugins.support.plugin_settings import PluginSettings
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.process_type_limits import ProcessTypeLimits
 
-PLUGIN_KIND_COST = 4
 PLUGINS_REASON = "the limits of every plugin that has a run kind are read"
 
 
@@ -37,12 +33,6 @@ class PluginRunLimits(ProcessTypeLimits):
         needs_memory = any(rule.declared.memory_mb for rule in rules.values())
         machine = {(plugin, category): self.machine.count(plugin, category) for (plugin, category, _), rule in rules.items() if rule.declared.scope is RunScope.MACHINE}
         return PluginRunAdmission(rules, self.memory.megabytes() if needs_memory else 0, machine)
-
-    # a plugin's kind runs in the long lane at normal, as many at once as its manifest's setting allows
-    def kind_classes(self, waiting: Sequence[Process]) -> dict[tuple[str, str], ExecutionClass]:
-        return {(plugin, category): ExecutionClass(f"{plugin} {category}", ExecutionLane.LONG, PLUGIN_KIND_COST, ExecutionPriority.NORMAL,
-                                                   rule.limit if rule.limit is not None else UNLIMITED, plugin=plugin)
-                for (plugin, category, _), rule in self.rules(waiting).items()}
 
     def rules(self, waiting: Sequence[Process]) -> dict[tuple[str, str, int], PluginRunRule]:
         categories = {(process.plugin, process.run_name, process.environment_id) for process in waiting if process.plugin and process.run_name}

@@ -18,7 +18,7 @@ class ExecutionStatus:
     def lines(self) -> list[str]:
         limits, running = self.classes.lane_limits(), self.slots.running()
         lines: list[str] = []
-        lanes = self.tickets.lanes(running)
+        lanes = self.tickets.lanes_of_rows(running)
         for lane in (ExecutionLane.SHORT, ExecutionLane.LONG):
             lane_tickets = lanes[lane]
             used = sum(ticket.execution_class.slot_cost for ticket in lane_tickets.running)

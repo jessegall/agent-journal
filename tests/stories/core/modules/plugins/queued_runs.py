@@ -1,3 +1,6 @@
+from core.modules.processes.commands.end_process.end_process import EndProcess
+from engine.command.bus import Bus
+from engine.actor.actor import Actor
 import json
 import os
 from datetime import timedelta
@@ -74,8 +77,11 @@ def test_runs_wait_for_a_machine_wide_count_and_free_memory_join_a_waiting_twin_
     shared, big = queued(story, "shared"), queued(story, "big")
     story.expect_rows(shown(story, shared)["state"] == "waiting", shown(story, big)["state"] == "waiting")
     different.unlink()
-    timed = queued(story, "judge", "--timeout", "60")
+    story.run_tick("run slots")
     story.expect_rows(shown(story, shared)["state"] == "running")
+    story.container.get(Bus).run(EndProcess(shown(story, shared)["process_id"], 0, 0, 0), Actor.core(), environment_id=1)
+    timed = queued(story, "judge", "--timeout", "60")
+    story.expect_rows(shown(story, timed)["state"] == "running")
     story.expect_success("queue halt 'a deploy is going'", actor=story.user)
     index, repeated, different_line = queued(story, "index", line="make index"), queued(story, "index", line="make index"), queued(story, "index", line="make other")
     story.expect_rows(index == repeated, different_line != index)

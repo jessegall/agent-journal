@@ -16,6 +16,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.lane_tickets import LaneTickets
+from core.modules.processes.support.process_type_admission import ProcessTypeAdmission
 from core.modules.processes.support.process_type_limits import ProcessTypeLimits
 from core.modules.processes.support.run_admission import RunAdmission
 
@@ -29,12 +30,15 @@ class ExecutionTickets:
         self.classes, self.kind_limits, self.admission, self.rows, self.clock = classes, kind_limits, admission, rows, clock
 
     def of_rows(self, processes: Sequence[Process], lane: ExecutionLane) -> LaneTickets:
-        return self.lanes(processes)[lane]
+        return self.lanes_of_rows(processes)[lane]
+
+    def lanes_of_rows(self, processes: Sequence[Process]) -> dict[ExecutionLane, LaneTickets]:
+        return self.lanes(processes, self.kind_limits.admissions([process for process in processes if process.queued_at is not None]))
 
     # every row is read once for all lanes: its agent, its kind's class and its parts
-    def lanes(self, processes: Sequence[Process]) -> dict[ExecutionLane, LaneTickets]:
+    def lanes(self, processes: Sequence[Process], kinds: ProcessTypeAdmission) -> dict[ExecutionLane, LaneTickets]:
         agents = self.rows.required_index(Agent, [process.session_agent_id for process in processes])
-        kind_classes = self.kind_limits.kind_classes([process for process in processes if process.queued_at is not None])
+        kind_classes = kinds.kind_classes()
         parts = self.admission.waiting_parts([process for process in processes if process.queued_at is not None])
         tickets = [(process, self.ticket(process, agents[process.session_agent_id], kind_classes, parts)) for process in processes]
         return {lane: LaneTickets(tuple(ticket for process, ticket in tickets if ticket.execution_class.lane is lane and process.queued_at is not None),

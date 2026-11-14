@@ -52,7 +52,7 @@ class RunSlots:
         waiting = [process for process in running if process.queued_at is not None]
         processes = self.rows.required_index(Process, [process.id for process in waiting])
         categories = self.kind_limits.admissions(waiting)
-        lanes = self.tickets.lanes(running)
+        lanes = self.tickets.lanes(running, categories)
         for lane in (ExecutionLane.SHORT, ExecutionLane.LONG):
             lane_tickets = lanes[lane]
             is_halted = self.halt.is_halted and lane is ExecutionLane.LONG
@@ -60,7 +60,9 @@ class RunSlots:
                 self.keep_raise(processes[ticket.run_id], ticket, context)
             if order.over_ceiling(lane_tickets.running):
                 self.system_log.write(LogLevel.WARNING, f"{len(lane_tickets.running)} immediate runs share the {lane} lane, past its ceiling of {limits.immediate_ceiling}")
-            for ticket in order.starting(lane_tickets.waiting, lane_tickets.running, current_time, is_halted):
+            # a run its kind holds back takes no room in the order, so the runs behind it still start
+            admissible = tuple(ticket for ticket in lane_tickets.waiting if not categories.is_blocked(processes[ticket.run_id], self.admitted_runs()))
+            for ticket in order.starting(admissible, lane_tickets.running, current_time, is_halted):
                 process = processes[ticket.run_id]
                 if categories.is_blocked(process, self.admitted_runs()):
                     continue

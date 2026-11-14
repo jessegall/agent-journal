@@ -1,3 +1,4 @@
+from engine.execution.limits.default_lane_limits import RUN_SLOT_COST
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
@@ -50,10 +51,11 @@ def test_a_main_agents_run_does_not_wait_and_holds_a_spot(new_story):
     expect_waits(story, second)
 
 
-def test_each_environment_queues_its_runs_by_its_own_batch_size(new_story):
+def test_each_environment_queues_its_runs_by_its_own_long_lane_capacity(new_story):
     story = install_runner(new_story(fixture=QueueAgents))
     story.run("environment make web /work/web", actor=story.user)
-    story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 1 --environment web", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.LANE_CAPACITY_LONG.key} {RUN_SLOT_COST} --environment web", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.STARTER_CAP_PERCENT.key} 100 --environment web", actor=story.user)
     story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment web", actor=story.user)
     main_first, main_second, main_third = queued(story, "make one"), queued(story, "make two"), queued(story, "make three")
     story.agent = Actor(story.new_row_id("agent start s-9 claude worker --environment web"), ActorType.AGENT)
