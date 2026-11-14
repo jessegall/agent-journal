@@ -3,7 +3,7 @@ import {copying, deleteItem} from "@journal/window-kit";
 // the words of a secret card and its menu: the card has the same lines whatever is configured, and a delete erases the value for good, so it has no Undo
 export const ICONS = {"api key": "key", login: "lock", custom: "rows"};
 export const LABELS = {"api key": "API key", login: "Login", custom: "Custom"};
-export const NEEDS = "Needs a value";
+export const NEEDS = "Needs credentials";
 export const READY = "Ready";
 
 export const secretCard = (row) => ({

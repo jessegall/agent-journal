@@ -7,15 +7,15 @@ export const STATE_WORDS = {update: "Update", current: "Up to date", unfollowed:
 export const KEEPS_REVISIONS = ["doc"];
 const CHANGED_HERE = ["unsent", "sending", "agent", "denied", "rejected", "paused"];
 
-export const stateOf = (copy) => (!copy ? "unfollowed" : copy.status === "synced" ? "current" : "update");
-export const wayOf = (copy) => {
+const stateOf = (copy) => (!copy ? "unfollowed" : copy.status === "synced" ? "current" : "update");
+const wayOf = (copy) => {
     if (stateOf(copy) !== "update") return "";
     if (copy.status === "removed") return "Removed from the library";
     return CHANGED_HERE.includes(copy.status) ? "Changed here" : "Newer in library";
 };
 
 export const teamFields = [
-    {key: "kind", label: "Kind", options: Object.entries(KIND_WORDS), get: (item) => item.row.share},
+    {key: "kind", label: "Type", options: Object.entries(KIND_WORDS), get: (item) => item.row.share},
     {key: "state", label: "State", options: Object.entries(STATE_WORDS), get: (item) => item.state},
 ];
 

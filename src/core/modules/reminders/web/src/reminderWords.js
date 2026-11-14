@@ -11,7 +11,7 @@ function every(seconds) {
 }
 
 // the kinds of repeat a reminder has, as the Repeats filter names them
-export function repeatKinds(row) {
+function repeatKinds(row) {
     const kinds = [];
     if (row.interval_seconds) kinds.push("minutes");
     if (row.interval_tool_uses) kinds.push("tool_uses");

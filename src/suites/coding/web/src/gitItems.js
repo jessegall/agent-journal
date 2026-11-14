@@ -11,7 +11,7 @@ export const pullItem = (pull) => ({id: String(pull.number), title: `#${pull.num
 
 export const itemFields = {
     commits: [{key: "author", label: "Author", get: (item) => item.row.author}],
-    branches: [{key: "current", label: "Kind", options: [["Current", "Current"], ["Other", "Other"]], get: (item) => (item.row.current ? "Current" : "Other")}],
+    branches: [{key: "current", label: "Type", options: [["Current", "Current"], ["Other", "Other"]], get: (item) => (item.row.current ? "Current" : "Other")}],
     pulls: [{key: "review", label: "Review", get: (item) => reviewLine(item.row)}],
 };
 

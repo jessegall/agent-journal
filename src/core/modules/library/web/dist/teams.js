@@ -1,4 +1,4 @@
-if (!document.getElementById("window-styles-d105d6a31a63")) { const style = document.createElement("style"); style.id = "window-styles-d105d6a31a63"; style.textContent = ".connect[data-v-b69f5dd5]{display:flex;flex-direction:column;gap:12px;max-width:420px}.connect-lead[data-v-b69f5dd5]{margin:0;color:var(--text-2);font-size:13px}.connect-failure[data-v-b69f5dd5]{margin:0;color:var(--danger);font-size:13px}.person[data-v-21161250]{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 0}.person-name[data-v-21161250]{min-width:120px;font-weight:600}.person-facts[data-v-21161250],.person-tokens[data-v-21161250]{color:var(--text-3);font-size:12px}.person-tokens[data-v-21161250]{flex-basis:100%;margin:0;padding:0 0 0 16px;list-style:none}.person-tokens li[data-v-21161250]{display:flex;align-items:center;gap:10px;padding:2px 0}.person-failure[data-v-21161250]{flex-basis:100%;margin:0;color:var(--danger);font-size:13px}.people[data-v-ebd0ab68]{display:flex;flex-direction:column;gap:10px}.people-add[data-v-ebd0ab68]{display:flex;align-items:flex-end;gap:10px}.people-token[data-v-ebd0ab68]{margin:0;font-family:var(--mono);font-size:12px;word-break:break-all}.people-failure[data-v-ebd0ab68]{margin:0;color:var(--danger);font-size:13px}.compare[data-v-a6494d43]{display:flex;flex-direction:column;gap:10px}.compare-help[data-v-a6494d43]{margin:0;color:var(--text-3);font-size:12px}.when[data-v-c6a98325],.loss[data-v-c6a98325]{margin:8px 0;color:var(--text-3);font-size:12.5px}.versions[data-v-c6a98325]{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none;font-size:12.5px}.versions li[data-v-c6a98325]{display:flex;align-items:center;justify-content:space-between;gap:8px}.failure[data-v-7663ac1f]{margin:0;padding:6px var(--inset);color:var(--bad, var(--text-2));font-size:12px}.quiet[data-v-7663ac1f]{color:var(--text-4);font-size:12px;white-space:nowrap}.badge-update[data-v-7663ac1f]{padding:1px 7px;border-radius:999px;background:var(--accent-dim);color:var(--accent-text);font-size:11.5px;font-weight:500}.note[data-v-7663ac1f]{margin:0 0 8px;color:var(--text-2);font-size:13px}pre[data-v-7663ac1f]{margin:0;padding:8px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px}.teams[data-v-100944e6]{display:flex;flex:1;flex-direction:column;gap:6px;min-height:0}.teams-header[data-v-100944e6]{display:flex;flex-wrap:wrap;gap:6px 18px;padding:0 var(--inset);color:var(--text-2);font-size:13px}.teams-note[data-v-100944e6]{margin:0;padding:0 var(--inset);color:var(--text-2);font-size:13px}.failure[data-v-100944e6]{color:var(--danger)}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-d0308b064eaa")) { const style = document.createElement("style"); style.id = "window-styles-d0308b064eaa"; style.textContent = ".connect[data-v-b69f5dd5]{display:flex;flex-direction:column;gap:12px;max-width:420px}.connect-lead[data-v-b69f5dd5]{margin:0;color:var(--text-2);font-size:13px}.connect-failure[data-v-b69f5dd5]{margin:0;color:var(--danger);font-size:13px}.person[data-v-21161250]{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 0}.person-name[data-v-21161250]{min-width:120px;font-weight:600}.person-facts[data-v-21161250],.person-tokens[data-v-21161250]{color:var(--text-3);font-size:12px}.person-tokens[data-v-21161250]{flex-basis:100%;margin:0;padding:0 0 0 16px;list-style:none}.person-tokens li[data-v-21161250]{display:flex;align-items:center;gap:10px;padding:2px 0}.person-failure[data-v-21161250]{flex-basis:100%;margin:0;color:var(--danger);font-size:13px}.people[data-v-ebd0ab68]{display:flex;flex-direction:column;gap:10px}.people-add[data-v-ebd0ab68]{display:flex;align-items:flex-end;gap:10px}.people-token[data-v-ebd0ab68]{margin:0;font-family:var(--mono);font-size:12px;word-break:break-all}.people-failure[data-v-ebd0ab68]{margin:0;color:var(--danger);font-size:13px}.compare[data-v-a6494d43]{display:flex;flex-direction:column;gap:10px}.compare-help[data-v-a6494d43]{margin:0;color:var(--text-3);font-size:12px}.when[data-v-784917b9],.loss[data-v-784917b9]{margin:8px 0;color:var(--text-3);font-size:12.5px}.versions[data-v-784917b9]{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none;font-size:12.5px}.versions li[data-v-784917b9]{display:flex;align-items:center;justify-content:space-between;gap:8px}.failure[data-v-7663ac1f]{margin:0;padding:6px var(--inset);color:var(--bad, var(--text-2));font-size:12px}.quiet[data-v-7663ac1f]{color:var(--text-4);font-size:12px;white-space:nowrap}.badge-update[data-v-7663ac1f]{padding:1px 7px;border-radius:999px;background:var(--accent-dim);color:var(--accent-text);font-size:11.5px;font-weight:500}.note[data-v-7663ac1f]{margin:0 0 8px;color:var(--text-2);font-size:13px}pre[data-v-7663ac1f]{margin:0;padding:8px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px}.teams[data-v-100944e6]{display:flex;flex:1;flex-direction:column;gap:6px;min-height:0}.teams-header[data-v-100944e6]{display:flex;flex-wrap:wrap;gap:6px 18px;padding:0 var(--inset);color:var(--text-2);font-size:13px}.teams-note[data-v-100944e6]{margin:0;padding:0 var(--inset);color:var(--text-2);font-size:13px}.failure[data-v-100944e6]{color:var(--danger)}\n"; document.head.appendChild(style); }
 import { ref as $, openBlock as n, createElementBlock as u, withModifiers as re, createElementVNode as A, createVNode as b, unref as t, withCtx as f, toDisplayString as _, createCommentVNode as w, createTextVNode as q, Fragment as E, renderList as Y, createBlock as D, computed as V, useModel as ue, watch as le, mergeModels as ee, createSlots as de } from "vue";
 import { useWindow as U, FormField as M, TextInput as G, Btn as N, useRunLine as z, Segmented as J, RowList as ce, CreateDialog as me, DiffCard as ve, copying as pe, Reader as ye, TimeAgo as H, ActionsMenu as be, defaultFilter as fe, applyFilter as he, ListReaderLayout as ke, Skeleton as we, FilterBar as ge, Dialog as _e, WindowRoom as $e, PageHeader as Se, SwitchCase as Ce } from "@journal/window-kit";
 const W = (a, h) => {
@@ -11,7 +11,7 @@ const W = (a, h) => {
   class: "connect-failure",
   role: "alert",
   "data-library-refusal": ""
-}, xe = {
+}, Te = {
   __name: "LibraryConnect",
   props: { address: { type: String, default: "" } },
   emits: ["connected"],
@@ -77,7 +77,7 @@ const W = (a, h) => {
       }, 8, ["busy", "disabled"])
     ], 32));
   }
-}, Te = /* @__PURE__ */ W(xe, [["__scopeId", "data-v-b69f5dd5"]]), Oe = ["data-people-user"], Le = { class: "person-name" }, Ve = {
+}, xe = /* @__PURE__ */ W(Te, [["__scopeId", "data-v-b69f5dd5"]]), Oe = ["data-people-user"], Le = { class: "person-name" }, Ve = {
   key: 0,
   class: "person-facts",
   "data-people-removed": ""
@@ -123,7 +123,7 @@ const W = (a, h) => {
           options: s,
           value: a.user.role,
           "data-people-role": "",
-          onPick: m[0] || (m[0] = (T) => i("role", a.user, T))
+          onPick: m[0] || (m[0] = (x) => i("role", a.user, x))
         }, null, 8, ["value"]),
         b(t(N), {
           small: "",
@@ -139,7 +139,7 @@ const W = (a, h) => {
           small: "",
           variant: "danger",
           "data-people-remove": "",
-          onClick: m[1] || (m[1] = (T) => i("remove", a.user))
+          onClick: m[1] || (m[1] = (x) => i("remove", a.user))
         }, {
           default: f(() => [...m[3] || (m[3] = [
             q("Remove user", -1)
@@ -149,17 +149,17 @@ const W = (a, h) => {
       ], 64)),
       d.value || t(R) ? (n(), u("p", qe, _(d.value || t(R)), 1)) : w("", !0),
       l.value ? (n(), u("ul", Ae, [
-        (n(!0), u(E, null, Y(l.value, (T) => (n(), u("li", {
-          key: T.id,
-          "data-people-token": T.id
+        (n(!0), u(E, null, Y(l.value, (x) => (n(), u("li", {
+          key: x.id,
+          "data-people-token": x.id
         }, [
-          A("span", null, _(T.label || "No label") + ", Last used: " + _(T.last_used_at || "never"), 1),
-          T.revoked_at ? (n(), u("span", je, "Revoked")) : (n(), D(t(N), {
+          A("span", null, _(x.label || "No label") + ", Last used: " + _(x.last_used_at || "never"), 1),
+          x.revoked_at ? (n(), u("span", je, "Revoked")) : (n(), D(t(N), {
             key: 1,
             small: "",
             variant: "danger",
             "data-people-revoke": "",
-            onClick: (O) => t(k)(["library-user", "revoke", String(T.id)])
+            onClick: (O) => t(k)(["library-user", "revoke", String(x.id)])
           }, {
             default: f(() => [...m[4] || (m[4] = [
               q("Revoke", -1)
@@ -195,7 +195,7 @@ const W = (a, h) => {
       R.value = g.ok ? g.value : null, g.ok && (o.value = "");
     }
     return e(), (g, m) => {
-      var T;
+      var x;
       return n(), u("div", Ee, [
         A("form", {
           class: "people-add",
@@ -239,7 +239,7 @@ const W = (a, h) => {
         R.value ? (n(), u("p", Ue, _(R.value.user.name) + " has this token, shown once: " + _(R.value.token_text), 1)) : w("", !0),
         t(l) ? (n(), u("p", We, _(t(l)), 1)) : w("", !0),
         b(t(ce), {
-          rows: ((T = t(r)) == null ? void 0 : T.users) ?? [],
+          rows: ((x = t(r)) == null ? void 0 : x.users) ?? [],
           failure: t(i),
           loaded: !!t(r) || !!t(i),
           empty: "No users yet",
@@ -248,8 +248,8 @@ const W = (a, h) => {
           default: f(({ row: O }) => [
             b(Ne, {
               user: O,
-              onRole: m[2] || (m[2] = (x, C) => t(d)(["library-user", "role", String(x.id), C])),
-              onRemove: m[3] || (m[3] = (x) => t(d)(["library-user", "remove", String(x.id)]))
+              onRole: m[2] || (m[2] = (T, C) => t(d)(["library-user", "role", String(T.id), C])),
+              onRemove: m[3] || (m[3] = (T) => t(d)(["library-user", "remove", String(T.id)]))
             }, null, 8, ["user"])
           ]),
           _: 1
@@ -262,7 +262,7 @@ const W = (a, h) => {
   emits: ["close", "shared"],
   setup(a, { emit: h }) {
     const s = h, r = U(), i = [
-      { key: "kind", label: "Kind", kind: "select", options: [["doc", "Document"], ["sequence", "Sequence"], ["check", "Check"]], required: !0 },
+      { key: "kind", label: "Type", kind: "select", options: [["doc", "Document"], ["sequence", "Sequence"], ["check", "Check"]], required: !0 },
       { key: "number", label: "Number", required: !0, placeholder: "63" }
     ], e = (o) => /^\d+$/.test(o.number.trim()) ? {} : { number: "Write the number, such as 63." }, l = (o) => `journal library share ${o.kind} ${o.number.trim() || "…"}`;
     async function d(o) {
@@ -322,7 +322,7 @@ const Ge = {
     ]));
   }
 }, Ye = /* @__PURE__ */ W(Ke, [["__scopeId", "data-v-a6494d43"]]), K = { doc: "Document", sequence: "Sequence", check: "Check" }, ze = { doc: "Documents", sequence: "Sequences", check: "Checks" }, P = { update: "Update", current: "Up to date", unfollowed: "Not followed" }, se = ["doc"], Je = ["unsent", "sending", "agent", "denied", "rejected", "paused"], ne = (a) => a ? a.status === "synced" ? "current" : "update" : "unfollowed", te = (a) => ne(a) !== "update" ? "" : a.status === "removed" ? "Removed from the library" : Je.includes(a.status) ? "Changed here" : "Newer in library", F = [
-  { key: "kind", label: "Kind", options: Object.entries(K), get: (a) => a.row.share },
+  { key: "kind", label: "Type", options: Object.entries(K), get: (a) => a.row.share },
   { key: "state", label: "State", options: Object.entries(P), get: (a) => a.state }
 ];
 function Qe(a, h) {
@@ -370,24 +370,24 @@ const Ze = {
   emits: /* @__PURE__ */ ee(["act"], ["update:tab"]),
   setup(a, { emit: h }) {
     const s = a, r = h, i = U(), e = ue(a, "tab"), l = V(() => s.item.row.copy), d = V(() => oe(s.item)), o = V(() => !l.value || l.value.version === l.value.server_version), v = V(() => [
-      { name: "kind", label: "Kind", value: K[s.item.row.share] },
+      { name: "kind", label: "Type", value: K[s.item.row.share] },
       { name: "state", label: "State", value: s.item.way ? `${P[s.item.state]}: ${s.item.way}` : P[s.item.state] },
       ...o.value ? [{ name: "version", label: "Version", value: String(s.item.row.version) }] : [{ name: "library", label: "Library", value: `version ${l.value.server_version}` }, { name: "here", label: "Here", value: `version ${l.value.version}` }]
     ]), R = V(() => [{ key: "details", label: "Details" }, ...s.item.state === "update" && l.value ? [{ key: "compare", label: "Compare" }] : [], { key: "versions", label: "Versions" }]), k = $([]), g = $("");
     async function m() {
       i.state["inspection.share"] = s.item.row.share, i.state["inspection.id"] = String(s.item.row.item_id), await i.reload("inspection");
-      const x = i.props.inspection;
-      g.value = x.failure.value, k.value = g.value ? [] : x.data.value.versions;
+      const T = i.props.inspection;
+      g.value = T.failure.value, k.value = g.value ? [] : T.data.value.versions;
     }
-    le([() => e.value, () => s.item.id], ([x]) => x === "versions" && m(), { immediate: !0 });
-    const T = async (x) => {
-      const C = await i.run(["library", "restore", s.item.row.share, String(s.item.row.item_id), "--version", String(x)]);
+    le([() => e.value, () => s.item.id], ([T]) => T === "versions" && m(), { immediate: !0 });
+    const x = async (T) => {
+      const C = await i.run(["library", "restore", s.item.row.share, String(s.item.row.item_id), "--version", String(T)]);
       C.ok ? m() : g.value = C.error;
     }, O = V(() => {
-      var x;
-      return ((x = l.value) == null ? void 0 : x.server_fields) ?? {};
+      var T;
+      return ((T = l.value) == null ? void 0 : T.server_fields) ?? {};
     });
-    return (x, C) => (n(), D(t(ye), {
+    return (T, C) => (n(), D(t(ye), {
       tab: e.value,
       "onUpdate:tab": C[2] || (C[2] = (S) => e.value = S),
       title: a.item.title,
@@ -464,7 +464,7 @@ const Ze = {
                   key: 0,
                   small: "",
                   "data-library-restore-version": "",
-                  onClick: (j) => T(I.version)
+                  onClick: (j) => x(I.version)
                 }, {
                   default: f(() => [...C[5] || (C[5] = [
                     q("Restore this version", -1)
@@ -479,7 +479,7 @@ const Ze = {
       _: 1
     }, 8, ["tab", "title", "number", "abstract", "tabs", "facts"]));
   }
-}, nt = /* @__PURE__ */ W(st, [["__scopeId", "data-v-c6a98325"]]), ot = {
+}, nt = /* @__PURE__ */ W(st, [["__scopeId", "data-v-784917b9"]]), ot = {
   key: 0,
   class: "failure",
   role: "alert",
@@ -498,19 +498,19 @@ const Ze = {
   emits: ["changed", "counted"],
   setup(a, { emit: h }) {
     const s = a, r = h, i = U(), e = $(!1), l = $(""), d = $([]), o = $(""), v = $(null), R = $("details"), k = $(null), g = $(fe(F)), m = $("");
-    async function T() {
+    async function x() {
       delete i.state["listing.type"], delete i.state["listing.search"], await i.reload("listing");
       const y = i.props.listing;
       l.value = y.failure.value, d.value = l.value ? [] : y.data.value.rows, e.value = !0;
     }
-    T();
-    const O = V(() => Qe(d.value, s.copies)), x = V(() => O.value.filter((y) => y.row.by === s.userName));
-    le([O, x], () => r("counted", { library: O.value.length, here: x.value.length }), { immediate: !0 });
-    const C = V(() => s.mine ? x.value : O.value), S = V(() => he(C.value, F, g.value, m.value, ["title"]));
+    x();
+    const O = V(() => Qe(d.value, s.copies)), T = V(() => O.value.filter((y) => y.row.by === s.userName));
+    le([O, T], () => r("counted", { library: O.value.length, here: T.value.length }), { immediate: !0 });
+    const C = V(() => s.mine ? T.value : O.value), S = V(() => he(C.value, F, g.value, m.value, ["title"]));
     async function p(y) {
       o.value = "";
       const c = await i.run(y);
-      return c.ok ? (await T(), r("changed")) : o.value = c.error, c;
+      return c.ok ? (await x(), r("changed")) : o.value = c.error, c;
     }
     async function I(y) {
       if (y.row.share !== "check") return p(["library", "get", y.row.share, String(y.row.item_id)]);
@@ -661,7 +661,7 @@ const Ze = {
     }), R = V(() => {
       var S;
       return ((S = r.value) == null ? void 0 : S.role) === "admin";
-    }), k = $({ library: 0, here: 0 }), g = $(!1), m = $(null), T = V(() => [
+    }), k = $({ library: 0, here: 0 }), g = $(!1), m = $(null), x = V(() => [
       { key: "library", label: "Library", count: k.value.library },
       { key: "here", label: "Shared from here", count: k.value.here },
       ...R.value ? [{ key: "people", label: "Users" }] : []
@@ -669,7 +669,7 @@ const Ze = {
     async function O() {
       await s.reload(["status", "copies"]);
     }
-    const { refusal: x, run: C } = z(O);
+    const { refusal: T, run: C } = z(O);
     return (S, p) => (n(), D(t($e), { padding: "0" }, {
       default: f(() => {
         var I;
@@ -706,7 +706,7 @@ const Ze = {
               } : void 0
             ]), 1024),
             t(i) ? (n(), u("p", pt, _(t(i)), 1)) : w("", !0),
-            t(x) ? (n(), u("p", yt, _(t(x)), 1)) : w("", !0),
+            t(T) ? (n(), u("p", yt, _(t(T)), 1)) : w("", !0),
             m.value ? (n(), u(E, { key: 2 }, [
               A("p", bt, _(m.value.line), 1),
               m.value.warning ? (n(), u("p", ft, _(m.value.warning), 1)) : w("", !0)
@@ -725,14 +725,14 @@ const Ze = {
               ]),
               t(r).stopped ? (n(), u("p", $t, _(t(r).stopped), 1)) : w("", !0)
             ], 64)) : w("", !0),
-            t(r) && !d.value ? (n(), D(Te, {
+            t(r) && !d.value ? (n(), D(xe, {
               key: 4,
               address: t(r).address,
               onConnected: O
             }, null, 8, ["address"])) : w("", !0),
             d.value ? (n(), u(E, { key: 5 }, [
               b(t(J), {
-                options: T.value,
+                options: x.value,
                 value: l.value,
                 "data-teams-tabs": "",
                 onPick: p[2] || (p[2] = (j) => l.value = j)
@@ -776,7 +776,7 @@ const Ze = {
       _: 1
     }));
   }
-}, xt = /* @__PURE__ */ W(St, [["__scopeId", "data-v-100944e6"]]);
+}, Tt = /* @__PURE__ */ W(St, [["__scopeId", "data-v-100944e6"]]);
 export {
-  xt as default
+  Tt as default
 };

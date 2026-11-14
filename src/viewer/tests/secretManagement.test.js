@@ -33,7 +33,7 @@ const save = async () => {
 test("the page shows no input, and a card says what is set in the same rows whatever is configured", async () => {
     const {element} = await drawn([SECRET, {...SECRET, id: 8, brief: "", programs: ["curl", "gh"], helpers: true}]);
     expect(element.querySelector("input[type=password], textarea")).toBeNull();
-    expect(element.textContent).not.toContain("Needs a value");
+    expect(element.textContent).not.toContain("Needs credentials");
     expect(element.querySelector('[data-row="3"] [data-secret-programs]').textContent).toBe("Programs: none");
     expect(element.querySelector('[data-row="8"] [data-secret-programs]').textContent).toBe("Programs: curl, gh");
     expect(element.querySelector('[data-row="8"] [data-card-line]').textContent).toBe("Note: none");
@@ -44,7 +44,7 @@ test("what waits on the user is one button, apart from the saved secrets, and op
     const {element, ran} = await drawn([SECRET, ASKED]);
     const ask = element.querySelector('[data-secret-ask="5"]');
     expect(element.querySelector('[data-row="5"]').textContent).toContain("GitHub login");
-    expect(element.querySelector('[data-row="5"] [data-card-state]').textContent).toBe("Needs a value");
+    expect(element.querySelector('[data-row="5"] [data-card-state]').textContent).toBe("Needs credentials");
     expect(ask.textContent).toContain("Add credentials");
     ask.click();
     await settle();

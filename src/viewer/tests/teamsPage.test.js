@@ -120,7 +120,7 @@ test("test_update_badge_with_direction: only Update is a badge, and the way it g
     expect(element.textContent).not.toMatch(/Skill/);
 });
 
-test("test_state_filter: the filter has Kind and State with Update, Up to date and Not followed", async () => {
+test("test_state_filter: the filter has Type and State with Update, Up to date and Not followed", async () => {
     const element = await mounted(TeamsPage, window({}));
     await settle();
     expect(teamFields.map((field) => field.key)).toEqual(["kind", "state"]);

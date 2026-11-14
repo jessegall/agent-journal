@@ -1,7 +1,7 @@
 import {startWords} from "./sequenceTriggers.js";
 
 // what the Sequences page says about a sequence and its runs, from the rows the board reads
-export const stepsOfRun = (run) => JSON.parse(run.steps);
+const stepsOfRun = (run) => JSON.parse(run.steps);
 export const runsOf = (sequence, runs) => runs.filter((run) => run.sequence_id === sequence.id);
 export const triggersOf = (sequence) => JSON.parse(sequence.triggers || "[]");
 

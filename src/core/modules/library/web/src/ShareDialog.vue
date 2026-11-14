@@ -5,7 +5,7 @@ import {CreateDialog, useWindow} from "@journal/window-kit";
 const emit = defineEmits(["close", "shared"]);
 const view = useWindow();
 const fields = [
-    {key: "kind", label: "Kind", kind: "select", options: [["doc", "Document"], ["sequence", "Sequence"], ["check", "Check"]], required: true},
+    {key: "kind", label: "Type", kind: "select", options: [["doc", "Document"], ["sequence", "Sequence"], ["check", "Check"]], required: true},
     {key: "number", label: "Number", required: true, placeholder: "63"},
 ];
 const check = (values) => (/^\d+$/.test(values.number.trim()) ? {} : {number: "Write the number, such as 63."});

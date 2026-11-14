@@ -14,7 +14,7 @@ const copy = computed(() => props.item.row.copy);
 const primary = computed(() => primaryOf(props.item));
 const same = computed(() => !copy.value || copy.value.version === copy.value.server_version);
 const facts = computed(() => [
-    {name: "kind", label: "Kind", value: KIND_WORDS[props.item.row.share]},
+    {name: "kind", label: "Type", value: KIND_WORDS[props.item.row.share]},
     {name: "state", label: "State", value: props.item.way ? `${STATE_WORDS[props.item.state]}: ${props.item.way}` : STATE_WORDS[props.item.state]},
     ...(same.value ? [{name: "version", label: "Version", value: String(props.item.row.version)}] : [{name: "library", label: "Library", value: `version ${copy.value.server_version}`}, {name: "here", label: "Here", value: `version ${copy.value.version}`}]),
 ]);

@@ -340,7 +340,7 @@ const M = (s, N) => {
       _: 1
     }));
   }
-}, Fe = /* @__PURE__ */ M(De, [["__scopeId", "data-v-8301a7e5"]]), Ie = { "api key": "key", login: "lock", custom: "rows" }, xe = { "api key": "API key", login: "Login", custom: "Custom" }, P = "Needs a value", q = "Ready", Ue = (s) => ({
+}, Fe = /* @__PURE__ */ M(De, [["__scopeId", "data-v-8301a7e5"]]), Ie = { "api key": "key", login: "lock", custom: "rows" }, xe = { "api key": "API key", login: "Login", custom: "Custom" }, P = "Needs credentials", q = "Ready", Ue = (s) => ({
   id: s.id,
   title: s.title,
   icon: Ie[s.secret_type],

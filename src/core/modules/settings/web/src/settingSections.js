@@ -29,7 +29,6 @@ export const SECTIONS = {
 // the modules the agent settings window draws itself, so no section lists them again
 export const DRAWN_ELSEWHERE = ["journal.suites.coding", "journal.suites.coding.workers", "journal.core.helpers"];
 
-const named = new Set(Object.values(SECTIONS).flatMap((section) => section.modules ?? []));
 
 // the section a module's declared settings are in
 export function sectionOf(module) {
@@ -37,4 +36,3 @@ export function sectionOf(module) {
     return Object.entries(SECTIONS).find(([, section]) => section.modules?.includes(module))?.[0] ?? "advanced";
 }
 
-export const isNamed = (module) => named.has(module);
