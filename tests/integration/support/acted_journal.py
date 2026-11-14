@@ -40,3 +40,20 @@ class ActedJournal:
 
     def run_listeners(self) -> None:
         self.container.get(CommitListenerRunner).run()
+
+    def expect_success(self, line: str, *texts: str, actor: Actor | None = None) -> LineAnswer:
+        answer = self.run(line, actor)
+        assert answer.code == 0 and all(text in answer.text for text in texts), (line, answer)
+        return answer
+
+    def expect_text(self, line: str, *texts: str, actor: Actor | None = None) -> None:
+        answer = self.run(line, actor)
+        assert all(text in answer.text for text in texts), (line, answer)
+
+    def expect_absent(self, line: str, text: str, actor: Actor | None = None) -> None:
+        answer = self.run(line, actor)
+        assert text not in answer.text, (line, answer)
+
+    def expect_refusal(self, line: str, text: str, actor: Actor | None = None) -> None:
+        answer = self.run(line, actor)
+        assert answer.code != 0 and text in answer.text, (line, answer)
