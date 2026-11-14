@@ -12,7 +12,6 @@ from engine.query.rows.kept_row_changes import KeptRowChanges
 from core.modules.assignments.support.assignments import Assignments
 from engine.repository.repository import Repository
 from core.modules.tasks.models.enums.task_state import TaskState
-from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_wait import TaskWait
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
@@ -42,7 +41,7 @@ class TaskWaits(KeptRowChanges[TaskWait]):
             return
         self.assignments.keep_rows(Task, [task.id for task in opened])
         for task in opened:
-            self.repository.save_change(task, task.moved(TaskLifecycle.unblock), context)
+            self.repository.save_change(task, task.unblock(context.timestamp, context.actor), context)
         self.notify_agents(opened, context)
 
     def waits_target_tasks(self, task_id: int) -> bool:
