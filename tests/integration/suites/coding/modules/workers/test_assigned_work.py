@@ -33,8 +33,8 @@ def test_the_main_agent_assigns_a_task_to_a_worker_and_the_workers_next_task_and
     story.expect_text(f"task show {receipt}", "state: started", f"holder_id: {worker.worker.id}", actor=story.agent)
 
 
-def test_a_workers_next_task_is_the_first_in_plan_order_of_its_assigned_open_tasks_that_wait_on_nothing(played, monkeypatch):
-    worker = dispatched_story_worker(planned_story(played), PLAN_DISPATCH, monkeypatch)
+def test_a_workers_next_task_is_the_first_in_plan_order_of_its_assigned_open_tasks_that_wait_on_nothing(played):
+    worker = dispatched_story_worker(planned_story(played), PLAN_DISPATCH)
     story = worker.story
     story.expect_success("task depend 2 --on 3", actor=story.agent)
     story.expect_success("task edit 4 --priority high", actor=story.agent)

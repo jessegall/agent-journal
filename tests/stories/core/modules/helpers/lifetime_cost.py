@@ -78,7 +78,7 @@ def test_a_later_launch_of_an_each_launch_profile_costs_what_its_first_did(new_s
                       detail=str(lifetimes(story, "rotating")))
 
 
-def test_a_person_who_sets_a_profile_to_each_launch_sees_its_next_job_marked_fresh_in_the_agents_list(steady, monkeypatch):
+def test_a_person_who_sets_a_profile_to_each_launch_sees_its_next_job_marked_fresh_in_the_agents_list(steady):
     first_launch = launch_of_the_last_job(steady)
     resumable_session(steady, helper_agent(steady))
     finished_job(steady)
@@ -91,8 +91,8 @@ def test_a_person_who_sets_a_profile_to_each_launch_sees_its_next_job_marked_fre
 @pytest.mark.parametrize("fixture,minutes,new_session", [(EndedColdRotationHelper, 5, True), (EndedColdRotationHelper, 55, False), (EndedColdRotationHelper, 0, False),
                                                          (EndedContinueHelper, 5, False), (EndedContinueHelper, 55, False), (EndedContinueHelper, 0, False),
                                                          (EndedEachLaunchHelper, 5, True), (EndedEachLaunchHelper, 55, True), (EndedEachLaunchHelper, 0, True)])
-def test_only_a_when_cold_profile_reads_the_cold_session_minutes_a_person_sets(new_story, monkeypatch, fixture, minutes, new_session):
+def test_only_a_when_cold_profile_reads_the_cold_session_minutes_a_person_sets(new_story, fixture, minutes, new_session):
     story = story_with_profile_file(new_story, fixture)
     story.expect_success(f"setting set {COLD_SESSION_MINUTES} {minutes} --project", actor=story.user)
-    helper, request = with_job(story, monkeypatch, IDLE_MINUTES, CONTEXT_PERCENT)
+    helper, request = with_job(story, IDLE_MINUTES, CONTEXT_PERCENT)
     story.expect_rows((helper_agent(story).session != helper.session) is new_session, ("--resume" not in request["command"]) is new_session, detail=str(request["command"][-4:]))

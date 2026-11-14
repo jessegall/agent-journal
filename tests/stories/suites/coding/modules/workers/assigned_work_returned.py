@@ -22,12 +22,12 @@ def test_a_person_assignee_skips_the_agent_only_checks(new_story):
     story.expect_text("task info 1", "assigned to: Ada", actor=story.agent)
 
 
-def test_a_worker_that_is_released_gives_back_its_waiting_tasks_open_and_blocked_and_they_become_unassigned(new_story, monkeypatch):
+def test_a_worker_that_is_released_gives_back_its_waiting_tasks_open_and_blocked_and_they_become_unassigned(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     for title in ("Tax", "Totals"):
         story.expect_success(f'task make "{title}" --brief "The {title.lower()}"', actor=story.agent)
     repository_environment(story)
-    worker = dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1 2 3", monkeypatch)
+    worker = dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1 2 3")
     story.expect_success('task block 3 --reason "needs an answer"', actor=story.agent)
     story.expect_success(f'worker release {agent_number(story, worker.worker.id)} "wrong job"', actor=story.agent)
     story.expect_text("task show 2", "state: open", actor=story.agent)

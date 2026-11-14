@@ -76,7 +76,7 @@ class EndedReviewer(StoryFixture):
 
 
 @pytest.fixture
-def idle_reviewer(new_story, monkeypatch):
+def idle_reviewer(new_story):
     story = new_story(fixture=EndedReviewer)
     resumable_session(story, reviewers(story)[0])
     return story

@@ -101,7 +101,7 @@ class ExitedHelper(StoryFixture):
         exited(story, 0, "some output")
 
 
-def test_a_resumed_helper_reports_its_next_job_the_same_way(new_story, monkeypatch):
+def test_a_resumed_helper_reports_its_next_job_the_same_way(new_story):
     story = new_story(fixture=EndedHelper)
     resumable_session(story, helper_agent(story))
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))

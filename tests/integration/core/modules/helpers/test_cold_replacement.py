@@ -21,10 +21,10 @@ def cooling(played):
     return story_with_profile_file(played, EndedColdRotationHelper)
 
 
-def test_a_helper_silent_for_three_hours_with_a_large_context_gets_a_new_session_and_its_history_says_why(cooling, monkeypatch):
+def test_a_helper_silent_for_three_hours_with_a_large_context_gets_a_new_session_and_its_history_says_why(cooling):
     number = agent_number(cooling, helper_agent(cooling).id)
     memory = cooling.new_row_id('memory make "The cart adds tax twice" --weight 5 --environment main', actor=cooling.user)
-    helper, request = with_job(cooling, monkeypatch, SILENT_MINUTES, 40)
+    helper, request = with_job(cooling, SILENT_MINUTES, 40)
     current, rows, folders = helper_agent(cooling), session_rows(cooling), cooling.container.get(AgentFolders)
     cooling.expect_rows(current.id == helper.id, agent_number(cooling, current.id) == number, current.session != helper.session, folders.folder(current) == folders.folder(helper),
                         "--resume" not in request["command"], detail=str(request))
@@ -32,8 +32,8 @@ def test_a_helper_silent_for_three_hours_with_a_large_context_gets_a_new_session
     cooling.expect_text(f"memory read {memory}", "The cart adds tax twice", actor=cooling.user)
 
 
-def test_a_helper_silent_for_three_hours_with_a_small_context_resumes_its_session_and_adds_no_history(cooling, monkeypatch):
-    helper, request = with_job(cooling, monkeypatch, SILENT_MINUTES, 5)
+def test_a_helper_silent_for_three_hours_with_a_small_context_resumes_its_session_and_adds_no_history(cooling):
+    helper, request = with_job(cooling, SILENT_MINUTES, 5)
     rows = session_rows(cooling)
     cooling.expect_rows(helper_agent(cooling).session == helper.session, "--resume" in request["command"], [row["session"] for row in rows] == [helper.session], detail=str(rows))
 

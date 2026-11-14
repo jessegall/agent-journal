@@ -31,10 +31,10 @@ PIPED_TEST = HookSamples.shell("journal worker test python tests/cart.py && tail
 
 
 @pytest.fixture
-def worker(new_story, monkeypatch):
+def worker(new_story):
     story = new_story(fixture=OrchestratorWithPerson)
     repository_environment(story)
-    return dispatched_story_worker(story, DISPATCH, monkeypatch)
+    return dispatched_story_worker(story, DISPATCH)
 
 
 @pytest.fixture

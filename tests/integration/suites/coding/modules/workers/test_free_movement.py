@@ -27,7 +27,7 @@ def two_tasks(played, monkeypatch) -> StoryWorker:
 
 
 @pytest.fixture
-def after_a_checkpoint(played, monkeypatch) -> StoryWorker:
+def after_a_checkpoint(played) -> StoryWorker:
     """Plan 1 has a third phase, Later, with task 5; phase Ship is a checkpoint that has not passed. A worker of
     the whole plan holds task 1 started."""
     story = planned_story(played, approve=False)
@@ -35,7 +35,7 @@ def after_a_checkpoint(played, monkeypatch) -> StoryWorker:
     story.run('phase make --plan 1 "Later"')
     story.run('task make "Clean up" --phase 3 --environment main')
     approve_plan(story)
-    return dispatched_story_worker(story, PLAN_DISPATCH, monkeypatch)
+    return dispatched_story_worker(story, PLAN_DISPATCH)
 
 
 def startable_ids(worker: StoryWorker) -> list[int]:
@@ -71,7 +71,7 @@ def test_23_a_task_that_waits_on_a_task_of_another_agent_is_listed_to_start_once
 
 
 
-def test_the_status_of_a_worker_reads_a_checkpoint_phase_of_many_tasks_without_loading_them_all(played, monkeypatch):
+def test_the_status_of_a_worker_reads_a_checkpoint_phase_of_many_tasks_without_loading_them_all(played):
     story = planned_story(played, approve=False)
     story.run('phase edit 2 --checkpoint')
     for number in range(SEVERAL_TASKS):
@@ -79,7 +79,7 @@ def test_the_status_of_a_worker_reads_a_checkpoint_phase_of_many_tasks_without_l
     story.run('phase make --plan 1 "Later"')
     later_task = story.new_row_id('task make "Clean up" --phase 3 --environment main')
     approve_plan(story)
-    worker = dispatched_story_worker(story, PHASE_DISPATCH, monkeypatch)
+    worker = dispatched_story_worker(story, PHASE_DISPATCH)
     database = story.container.get(Database)
     database.read_limit_rows, database.collected_large_reads = READ_LIMIT_ROWS, None
     started = story.run("task start 2", actor=worker.worker)

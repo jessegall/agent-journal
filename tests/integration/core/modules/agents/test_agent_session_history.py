@@ -74,7 +74,7 @@ def job_launch(story, launcher_answer: bytes = b"started 701\n") -> dict:
 
 
 @pytest.fixture
-def cold_helper(played, monkeypatch):
+def cold_helper(played):
     story = played(EndedHelper)
     resumable_session(story, helper_agent(story))
     aged(story, COLD_MINUTES, COLD_PERCENT)

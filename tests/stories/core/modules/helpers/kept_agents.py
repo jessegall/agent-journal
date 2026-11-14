@@ -228,7 +228,7 @@ def test_a_start_with_an_idle_helper_is_refused_with_its_send_line(new_story):
     story.home.socket("launcher").unlink()
 
 
-def test_fresh_with_a_reason_starts_a_new_helper_and_keeps_the_reason(new_story, monkeypatch):
+def test_fresh_with_a_reason_starts_a_new_helper_and_keeps_the_reason(new_story):
     story = new_story(fixture=EndedHelper)
     resumable_session(story, helper_agent(story))
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))

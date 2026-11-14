@@ -15,7 +15,7 @@ def worker_with_tasks(new_story, monkeypatch, count: int, build_task_count: int 
     for task_id in BUILD_TASK_IDS[PLANNED_BUILD_TASK_COUNT:build_task_count]:
         story.run(f'task make "Build part {task_id}" --phase 1 --environment main')
     approve_plan(story)
-    worker = dispatched_story_worker(story, PHASE_DISPATCH, monkeypatch)
+    worker = dispatched_story_worker(story, PHASE_DISPATCH)
     for task_id in BUILD_TASK_IDS[1:count]:
         worker.story.run(f"task start {task_id}", actor=worker.worker)
     return worker

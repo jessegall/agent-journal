@@ -20,7 +20,7 @@ PASSED_LINE = "the tests of checkpoint phase Build passed"
 
 def plan_worker(new_story, monkeypatch) -> StoryWorker:
     """A worker given the whole of plan 1, whose phase Build is a checkpoint with a test of its own."""
-    return dispatched_story_worker(planned_story(new_story, build_test=BUILD_TEST), PLAN_DISPATCH, monkeypatch)
+    return dispatched_story_worker(planned_story(new_story, build_test=BUILD_TEST), PLAN_DISPATCH)
 
 
 def worker_reaches(worker: StoryWorker) -> list[dict[str, object]]:
@@ -89,8 +89,8 @@ def test_33_35_a_second_run_follows_the_failed_one_and_runs_only_what_failed(run
     worker.story.expect_rows([row["state"] for row in worker_reaches(worker)] == ["failed", "running"], detail=str(worker_reaches(worker)))
 
 
-def test_36_a_window_with_no_test_passes_at_once(new_story, monkeypatch):
-    worker = dispatched_story_worker(planned_story(new_story), PLAN_DISPATCH, monkeypatch)
+def test_36_a_window_with_no_test_passes_at_once(new_story):
+    worker = dispatched_story_worker(planned_story(new_story), PLAN_DISPATCH)
     worker.story.run('phase edit 1 --checkpoint', actor=worker.story.user)
     commit_tasks(worker, "", "", "")
     worker.story.expect_rows([row["state"] for row in worker_reaches(worker)] == ["passed"], detail=str(rows(worker, REACHES)))
@@ -120,9 +120,9 @@ def test_40_a_task_after_the_checkpoint_is_still_refused_to_everyone_else_as_hel
     worker.story.expect_refusal('worker dispatch --test-command python=pytest --model sonnet --fresh "second" 4', "task 4 is held by worker", actor=worker.story.agent)
 
 
-def test_41_a_shared_window_keeps_the_branch_run(new_story, monkeypatch):
+def test_41_a_shared_window_keeps_the_branch_run(new_story):
     story = planned_story(new_story, build_test=BUILD_TEST)
-    worker = dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1 2", monkeypatch)
+    worker = dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1 2")
     commit_tasks(worker, TEST_LINE, SECOND_TEST_LINE)
     worker.story.expect_rows(worker_reaches(worker) == [], detail=str(rows(worker, REACHES)))
 

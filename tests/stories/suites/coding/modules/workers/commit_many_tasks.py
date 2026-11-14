@@ -8,14 +8,14 @@ TASK_COUNT = 13
 STARTED_PLAN_COUNT = 12
 
 
-def test_a_commit_of_many_tasks_that_others_wait_on_reads_their_dependencies_together(new_story, monkeypatch):
+def test_a_commit_of_many_tasks_that_others_wait_on_reads_their_dependencies_together(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     for number in range(2, TASK_COUNT + 2):
         story.run(f'task make "Part {number}" --brief "Part {number}"', actor=story.agent)
     for waiting in (TASK_COUNT, TASK_COUNT + 1):
         story.run(f"task depend {waiting} --on 2", actor=story.agent)
-    worker = dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet " + " ".join(str(number) for number in range(1, TASK_COUNT)), monkeypatch)
+    worker = dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet " + " ".join(str(number) for number in range(1, TASK_COUNT)))
     for number in range(2, TASK_COUNT):
         story.run(f"task start {number}", actor=worker.worker)
     for number in range(1, TASK_COUNT):

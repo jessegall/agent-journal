@@ -44,7 +44,7 @@ def launcher(story, **answers) -> FakeLauncher:
 
 
 @pytest.fixture
-def ended_helper(new_story, monkeypatch):
+def ended_helper(new_story):
     story = new_story(fixture=EndedHelper)
     resumable_session(story, helper_agent(story))
     return story

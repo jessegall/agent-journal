@@ -79,7 +79,7 @@ def test_a_send_to_a_running_helper_adds_to_its_open_job(new_story):
     story.expect_text(f"agent-line list --agent {helper.id}", JOB)
 
 
-def test_a_send_to_an_ended_helper_opens_a_new_job_and_resumes_it(new_story, monkeypatch):
+def test_a_send_to_an_ended_helper_opens_a_new_job_and_resumes_it(new_story):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))

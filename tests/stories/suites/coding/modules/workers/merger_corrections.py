@@ -50,7 +50,7 @@ def failed_checkpoint(new_story, monkeypatch, output: str, *failing_lines: str) 
     """Phase Build is a checkpoint whose own test also names stories written ahead for task 4 of phase Ship.
     Its three tasks are merged and its run has ended with the given tests failed; the merger runs."""
     sole_branch_runs(monkeypatch)
-    worker = dispatched_story_worker(planned_story(new_story, build_test=WORKER_TEST), PHASE_DISPATCH, monkeypatch)
+    worker = dispatched_story_worker(planned_story(new_story, build_test=WORKER_TEST), PHASE_DISPATCH)
     worker.story.expect_success(MERGER_ON, actor=worker.story.user)
     commit_tasks(worker, TEST_LINE, "", SECOND_TEST_LINE)
     with running_launcher(worker.story):

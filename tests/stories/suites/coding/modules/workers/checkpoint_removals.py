@@ -23,7 +23,7 @@ OLD_PHASE_TEST = "python tests/build.py"
 
 def phase_worker(new_story, monkeypatch) -> StoryWorker:
     """A worker of a started plan with no flagged checkpoint, holding the three tasks of phase Build."""
-    return dispatched_story_worker(planned_story(new_story), PHASE_DISPATCH, monkeypatch)
+    return dispatched_story_worker(planned_story(new_story), PHASE_DISPATCH)
 
 
 @pytest.fixture
@@ -42,9 +42,9 @@ def test_196_201_a_phase_that_is_no_checkpoint_runs_no_test_at_its_end_and_gets_
                                    detail=f"{run_lines(merged_phase)}, points {points}")
 
 
-def test_200_a_task_in_no_plan_is_tested_at_its_own_commit_whatever_the_batch_size_was(new_story, monkeypatch):
+def test_200_a_task_in_no_plan_is_tested_at_its_own_commit_whatever_the_batch_size_was(new_story):
     story = planned_story(new_story, approve=False)
-    worker = dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1 2", monkeypatch)
+    worker = dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1 2")
     worker.prove_commit(TEST_LINE)
     story.run_listeners()
     story.expect_rows(run_lines(worker) == [CART_COMMAND], detail=str(run_lines(worker)))

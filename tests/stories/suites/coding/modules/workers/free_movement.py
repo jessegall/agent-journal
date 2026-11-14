@@ -27,7 +27,7 @@ def two_tasks(new_story, monkeypatch) -> StoryWorker:
 
 
 @pytest.fixture
-def after_a_checkpoint(new_story, monkeypatch) -> StoryWorker:
+def after_a_checkpoint(new_story) -> StoryWorker:
     """Plan 1 has a third phase, Later, with task 5; phase Ship is a checkpoint that has not passed. A worker of
     the whole plan holds task 1 started."""
     story = planned_story(new_story, approve=False)
@@ -35,7 +35,7 @@ def after_a_checkpoint(new_story, monkeypatch) -> StoryWorker:
     story.run('phase make --plan 1 "Later"')
     story.run('task make "Clean up" --phase 3 --environment main')
     approve_plan(story)
-    return dispatched_story_worker(story, PLAN_DISPATCH, monkeypatch)
+    return dispatched_story_worker(story, PLAN_DISPATCH)
 
 
 def startable_ids(worker: StoryWorker) -> list[int]:

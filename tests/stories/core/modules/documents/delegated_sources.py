@@ -55,7 +55,7 @@ def test_helper_followups_keep_separate_request_boundaries(scenario):
     scenario.expect_no_link("message:1", "plan:2")
 
 
-def test_resumed_helper_does_not_reuse_previous_request(scenario, monkeypatch):
+def test_resumed_helper_does_not_reuse_previous_request(scenario):
     helper_id = helper_agent(scenario.story).id
     helper_plan(scenario, helper_id, "First sourced helper assignment")
     scenario.expect_link("message:2", "plan:2", "about")

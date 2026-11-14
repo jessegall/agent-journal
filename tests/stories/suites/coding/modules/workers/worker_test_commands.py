@@ -37,8 +37,8 @@ def task_story(new_story):
 
 
 @pytest.fixture
-def worker_with_commands(task_story, monkeypatch):
-    return dispatched_story_worker(task_story, COMMANDS_DISPATCH, monkeypatch)
+def worker_with_commands(task_story):
+    return dispatched_story_worker(task_story, COMMANDS_DISPATCH)
 
 
 @pytest.fixture
@@ -61,7 +61,7 @@ def person_dispatched_worker(story, monkeypatch):
     agent = story.agent
     story.agent = story.user
     try:
-        return dispatched_story_worker(story, PERSON_DISPATCH, monkeypatch)
+        return dispatched_story_worker(story, PERSON_DISPATCH)
     finally:
         story.agent = agent
 

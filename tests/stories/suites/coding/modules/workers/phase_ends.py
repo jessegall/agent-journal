@@ -30,9 +30,9 @@ def undeclared_tests(new_story, monkeypatch) -> StoryWorker:
 
 
 @pytest.fixture
-def two_workers(new_story, monkeypatch):
+def two_workers(new_story):
     story = planned_story(new_story)
-    first = dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1", monkeypatch)
+    first = dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1")
     return first, first.added_worker("worker dispatch --test-command python=pytest --model sonnet 2 3")
 
 
@@ -69,9 +69,9 @@ def test_two_workers_in_one_phase_each_commit_their_own_tasks(two_workers):
     expect_task_states(first, "started", 3)
 
 
-def test_neither_of_two_workers_runs_the_phases_own_test_at_its_commit_in_a_started_plan(new_story, monkeypatch):
+def test_neither_of_two_workers_runs_the_phases_own_test_at_its_commit_in_a_started_plan(new_story):
     story = planned_story(new_story, build_test=PHASE_TEST)
-    first = dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1", monkeypatch)
+    first = dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1")
     second = first.added_worker("worker dispatch --test-command python=pytest --model sonnet 2")
     first.prove()
     first.story.expect_success(COMMIT, actor=first.worker)

@@ -15,7 +15,7 @@ TEST_LIMIT = 25
 def listed_phase_test(new_story, monkeypatch) -> StoryWorker:
     """A checkpoint whose own test is a pytest run of 60 tests in three files: its listing ran and passed, so its parts run."""
     branch_runs(monkeypatch)
-    worker = dispatched_story_worker(planned_story(new_story, build_test=PHASE_TEST), PHASE_DISPATCH, monkeypatch)
+    worker = dispatched_story_worker(planned_story(new_story, build_test=PHASE_TEST), PHASE_DISPATCH)
     commit_tasks(worker, TEST_LINE, "", SECOND_TEST_LINE)
     merge(worker)
     produce_output(worker, LISTING_LINE, "".join(f"{file}::test_{number}\n" for file in PHASE_FILES for number in range(FILE_TEST_COUNT)))

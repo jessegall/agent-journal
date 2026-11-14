@@ -21,7 +21,7 @@ def committed_list(new_story, monkeypatch) -> StoryWorker:
 
 def running_plan(new_story, monkeypatch) -> StoryWorker:
     """The worker of plan 1, whose phase Build is a checkpoint, committed the three tasks of Build; their run goes."""
-    worker = dispatched_story_worker(planned_story(new_story, build_test=BUILD_TEST), PLAN_DISPATCH, monkeypatch)
+    worker = dispatched_story_worker(planned_story(new_story, build_test=BUILD_TEST), PLAN_DISPATCH)
     commit_tasks_singly(worker, (1, 2, 3))
     return worker
 

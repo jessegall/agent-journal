@@ -62,8 +62,8 @@ def test_s36_adding_version_control_to_the_worker_command_types_does_not_allow_a
     expect_reply_refusal(worker.run_line("git status", ShellPart("git", CommandCategory.VERSION_CONTROL, ["status"])), "a worker runs no git")
 
 
-def test_s37_the_picked_files_become_the_arguments_of_the_project_test_command(new_story, monkeypatch):
-    story, _, _, started = affected_test_story(new_story, monkeypatch)
+def test_s37_the_picked_files_become_the_arguments_of_the_project_test_command(new_story):
+    story, _, _, started = affected_test_story(new_story)
     story.step("run printed", started[1], 1, "tests/cart.py\n")
     ended(story, started[1], 0)
     story.expect_rows(story.row(Process, started[2]).line == "python3 -m pytest -q tests/cart.py")
@@ -71,8 +71,8 @@ def test_s37_the_picked_files_become_the_arguments_of_the_project_test_command(n
     story.expect_text("task show 1", "state: completed", actor=story.agent)
 
 
-def test_s38_a_failed_selected_test_returns_the_work_and_no_full_suite_follows(new_story, monkeypatch):
-    story, _, _, started = affected_test_story(new_story, monkeypatch)
+def test_s38_a_failed_selected_test_returns_the_work_and_no_full_suite_follows(new_story):
+    story, _, _, started = affected_test_story(new_story)
     story.step("run printed", started[1], 1, "tests/cart.py\n")
     ended(story, started[1], 0)
     ended(story, started[2], 1)
@@ -88,8 +88,8 @@ class MergedWork:
 
 
 @pytest.fixture
-def merged_work(new_story, monkeypatch):
-    story, repository, worker, started = queued_story(new_story, monkeypatch)
+def merged_work(new_story):
+    story, repository, worker, started = queued_story(new_story)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)

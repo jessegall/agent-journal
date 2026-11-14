@@ -32,8 +32,8 @@ def saved(folder, path, text):
 
 
 
-def test_a_worker_dispatched_with_no_test_command_runs_the_one_found_in_the_project(project, monkeypatch):
+def test_a_worker_dispatched_with_no_test_command_runs_the_one_found_in_the_project(project):
     story, folder = project
     saved(folder, "pyproject.toml", PYPROJECT)
-    worker = dispatched_story_worker(story, BARE_DISPATCH, monkeypatch)
+    worker = dispatched_story_worker(story, BARE_DISPATCH)
     story.expect_text(PYTHON_RUN, "output", actor=worker.worker)
