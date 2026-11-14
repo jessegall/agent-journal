@@ -4236,7 +4236,8 @@
       "bases": [],
       "fields": [],
       "methods": [
-        "folders(self, project_root: Path) -> tuple[Path, ...]"
+        "folders(self, project_root: Path) -> tuple[Path, ...]",
+        "writable_folders(self) -> tuple[Path, ...]"
       ]
     },
     "file.rotated_file.RotatedFile": {

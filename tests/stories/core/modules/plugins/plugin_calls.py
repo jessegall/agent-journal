@@ -7,6 +7,11 @@ import sys
 
 from engine.caller.caller import Caller
 from engine.cli.console import Console
+from engine.enums.command_category import CommandCategory
+from engine.sandbox.shell_sandbox import ShellSandbox
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
+from core.modules.processes.support.runner_line import WRITABLE_FOLDERS_VARIABLE
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.models.plugin_output import PluginOutput
 from tests.stories.core.modules.plugins.event_guard import LOCK_CHECK
@@ -122,3 +127,11 @@ def test_s61_the_inputs_of_a_plugin_show_a_held_event_that_has_no_row(new_story)
     story = install_runner(event_plugin_story(new_story, program="see.sh", hears=["command_starting"], holds=["command_starting"]))
     story.hook("s-1", LISTING_SAMPLE)
     story.expect_text("plugin record events --inputs", "command_starting", actor=story.user)
+
+
+def test_a_sandboxed_worker_may_write_the_data_folder_of_a_running_plugin(new_story):
+    story = checkout_story(new_story)
+    story.container.get(ShellSandbox).is_required = True
+    reply = story.hook(story.worker_session, HookSamples.shell(f"cat {ORDER}", ShellPart("cat", CommandCategory.READ, [ORDER])))
+    command = str(reply.updated_input["command"])
+    story.expect_rows(f"{WRITABLE_FOLDERS_VARIABLE}=" in command, "plugin-data/events" in command, detail=command)
