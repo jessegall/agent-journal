@@ -4,7 +4,7 @@ from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.core.support.read_limit import limit_reads
 from tests.stories.core.support.seeds.large_read_seeds import SavedBuildSeed
-from tests.stories.server.support.go_build import GoBuild
+from tests.integration.support.go_build import GoBuild
 
 SAVED_BUILDS = 60
 LAST_BUILD = HookSamples.shell("builder59 all", ShellPart("builder59", CommandCategory.BUILD, ["all"]), has_saved_commands=True)

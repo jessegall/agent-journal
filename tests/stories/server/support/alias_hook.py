@@ -5,7 +5,7 @@ import subprocess
 from engine.enums.command_category import CommandCategory
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
-from tests.stories.server.support.go_build import GoBuild
+from tests.integration.support.go_build import GoBuild
 from tests.stories.server.support.server_client import ServerStory
 
 

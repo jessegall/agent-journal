@@ -129,3 +129,16 @@ def test_system_logs_navigation_depends_on_developer_tools_and_not_request_recor
             logs_server.viewer_line_value(cookie, {"line": line, "environment": "main", "window": "settings.settings"})
         status, body, _ = logs_server.viewer_download("/api/windows?environment=main", cookie)
         assert status == 200 and any(window["name"] == "developer.system-logs" for window in json.loads(body)["windows"]) is visible
+
+
+def test_system_log_key_filters_before_paging_and_reloads_only_logs(logs_server):
+    server = logs_server
+    cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+    query = "environment=main&logs.source=server&logs.level=warning&logs.limit=1"
+    status, answer = server.window_data(cookie, window="developer.system-logs", query=query)
+    page = answer["keys"]["logs"]["value"]
+    assert status == 200 and set(answer["keys"]) == {"logs"} and len(page["rows"]) == 1 and page["total"] >= 2, answer
+    assert all(row["source"] == "server" and row["level"] == "warning" for row in page["rows"])
+    status, older = server.window_data(cookie, keys="logs", window="developer.system-logs", query=f"{query}&logs.page=2")
+    older_rows = older["keys"]["logs"]["value"]["rows"]
+    assert status == 200 and set(older["keys"]) == {"logs"} and len(older_rows) == 1 and older_rows[0]["id"] != page["rows"][0]["id"], older

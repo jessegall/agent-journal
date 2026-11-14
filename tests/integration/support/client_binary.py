@@ -9,10 +9,10 @@ from engine.performance.performance_state import PerformanceState
 from engine.performance.timing import Timing
 from engine.performance.timing_log import TimingLog
 from engine.serving.server_files import ServerFiles, socket_path
-from tests.stories.server.support.go_build import GoBuild
+from tests.integration.support.go_build import GoBuild
 from tests.integration.support.server_harness import request_answer
 
-ROOT = Path(__file__).resolve().parents[4]
+ROOT = Path(__file__).resolve().parents[3]
 RUN_TIMEOUT_SECONDS = 30
 
 

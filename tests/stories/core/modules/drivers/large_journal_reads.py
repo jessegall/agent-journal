@@ -8,7 +8,7 @@ from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.large_reads import seeded_children, seeded_finished_jobs
 from tests.stories.core.support.read_limit import limit_reads
 from tests.stories.core.support.seeds.large_read_seeds import AgentSkillSeed, HookCallRefusalSeed, SavedBuildSeed
-from tests.stories.server.support.go_build import GoBuild
+from tests.integration.support.go_build import GoBuild
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 """Story 27 of doc 1255: on a journal as large as the one that tripped the read limit, the commands whose reads were

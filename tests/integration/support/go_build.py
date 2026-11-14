@@ -6,7 +6,7 @@ import subprocess
 import time
 from pathlib import Path
 
-TOOLS_FOLDER = Path(__file__).resolve().parents[4] / "tools"
+TOOLS_FOLDER = Path(__file__).resolve().parents[3] / "tools"
 CACHE_FOLDER = Path.home() / ".cache" / "agent-journal" / "go-builds"
 BUILD_TIMEOUT_SECONDS = 180
 UNUSED_BUILD_SECONDS = 7 * 24 * 3600

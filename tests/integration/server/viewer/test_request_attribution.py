@@ -3,6 +3,7 @@ import sqlite3
 from threading import Event
 from time import perf_counter
 from unittest.mock import patch
+from urllib.parse import urlencode
 
 import pytest
 
@@ -161,3 +162,29 @@ def test_legacy_line_requests_and_historical_rows_still_display(attributed_serve
     assert historical['event'] == 'Legacy event', historical['event']
     assert historical['body'] == {'event': 'Legacy event'}, historical['body']
     assert historical['duration_ms'] == 2.5, historical['duration_ms']
+
+
+@pytest.fixture
+def request_log_server(attributed_server):
+    server, cookie, _ = attributed_server
+    request(server, cookie, "/api/line", {"window": "tasks.tasks", "environment": "main", "line": ["task", "list"]})
+    import_trace_rows(server)
+    return server, cookie
+
+
+def test_request_filters_reach_the_key_and_the_queue_is_requested_separately(request_log_server):
+    server, cookie = request_log_server
+    query = urlencode({"environment": "main", "requests.categories": json.dumps(["viewer", "hook"]), "requests.families": json.dumps(["task", "process bookkeeping"])})
+    status, answer = server.window_data(cookie, window="developer.hook-requests", query=query)
+    rows = answer["keys"]["requests"]["value"]["rows"]
+    assert status == 200 and set(answer["keys"]) == {"requests"} and rows, answer
+    assert all(row["category"] == "viewer" and row["family"] == "task" for row in rows), rows
+    status, queue = server.window_data(cookie, keys="queue", window="developer.hook-requests")
+    assert status == 200 and set(queue["keys"]) == {"queue"} and queue["keys"]["queue"]["code"] == 0, queue
+
+
+@pytest.mark.parametrize("value", ["invalid JSON", '[1]', '{"category":"viewer"}'])
+def test_an_invalid_filter_list_refuses_only_its_key(request_log_server, value):
+    server, cookie = request_log_server
+    status, answer = server.window_data(cookie, keys="requests,queue", window="developer.hook-requests", query=urlencode({"environment": "main", "requests.categories": value}))
+    assert status == 200 and answer["keys"]["requests"]["code"] != 0 and answer["keys"]["queue"]["code"] == 0, answer

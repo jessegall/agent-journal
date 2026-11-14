@@ -15,7 +15,7 @@ from tests.integration.support.server_harness import viewer_answer as http_answe
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.documents.support.trail_fixtures import LinkedTrail, Scenario
 from tests.stories.core.modules.documents.support.trail_fixtures import ImageScenario
-from tests.stories.server.viewer.attachments import uploaded
+from tests.integration.support.viewer_files import uploaded
 
 from tests.stories.core.modules.documents.support.trail_fixtures import IMAGE_BYTES, feature, linked_scenario, image_scenario
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE

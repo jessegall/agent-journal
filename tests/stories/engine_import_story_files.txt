@@ -26,6 +26,7 @@ tests/stories/core/modules/agents/ended_program.py
 tests/stories/core/modules/agents/helper_transcripts.py
 tests/stories/core/modules/agents/hook_sweep_failures.py
 tests/stories/core/modules/agents/instruction_imports.py
+tests/stories/core/modules/agents/launch_stop.py
 tests/stories/core/modules/agents/main_agent_finder.py
 tests/stories/core/modules/agents/main_agent_one_row.py
 tests/stories/core/modules/agents/marks.py
@@ -101,6 +102,7 @@ tests/stories/core/modules/demo/owner_end.py
 tests/stories/core/modules/demo/support/sample_review/module.py
 tests/stories/core/modules/developer/exception_lines.py
 tests/stories/core/modules/developer/hook_requests.py
+tests/stories/core/modules/developer/hook_requests_browser.py
 tests/stories/core/modules/developer/mark_motion_browser.py
 tests/stories/core/modules/developer/numbers.py
 tests/stories/core/modules/developer/performance_state.py
@@ -108,6 +110,8 @@ tests/stories/core/modules/developer/read_limit_setting.py
 tests/stories/core/modules/developer/repeated_work_setting.py
 tests/stories/core/modules/developer/support/performance_fixture.py
 tests/stories/core/modules/developer/system_logs_browser.py
+tests/stories/core/modules/developer/tick_warnings.py
+tests/stories/core/modules/developer/ticks_through_the_ticker.py
 tests/stories/core/modules/docking/dock_actions.py
 tests/stories/core/modules/docking/dock_models.py
 tests/stories/core/modules/docking/dock_reads.py
@@ -157,6 +161,7 @@ tests/stories/core/modules/drivers/hook_durations.py
 tests/stories/core/modules/drivers/hook_points.py
 tests/stories/core/modules/drivers/hook_rule_scans.py
 tests/stories/core/modules/drivers/hook_timeouts.py
+tests/stories/core/modules/drivers/hooks_through_the_server.py
 tests/stories/core/modules/drivers/interrupted_agent.py
 tests/stories/core/modules/drivers/journal_started.py
 tests/stories/core/modules/drivers/managed_answers.py
@@ -386,6 +391,7 @@ tests/stories/core/modules/processes/reader_draft.py
 tests/stories/core/modules/processes/reader_layers.py
 tests/stories/core/modules/processes/reader_partial_ticks.py
 tests/stories/core/modules/processes/reader_repairs.py
+tests/stories/core/modules/processes/reader_requests_out_of_the_chat.py
 tests/stories/core/modules/processes/reader_samples.py
 tests/stories/core/modules/processes/reader_start.py
 tests/stories/core/modules/processes/reader_teaching.py
@@ -491,9 +497,11 @@ tests/stories/core/modules/settings/managed_scans.py
 tests/stories/core/modules/settings/project_hooks.py
 tests/stories/core/modules/settings/undeclared_settings.py
 tests/stories/core/modules/settings/upgrade.py
+tests/stories/core/modules/sharing/login_link.py
 tests/stories/core/modules/sharing/share_links.py
 tests/stories/core/modules/sharing/upgrade.py
 tests/stories/core/modules/skills/agent_skills.py
+tests/stories/core/modules/skills/boot_files.py
 tests/stories/core/modules/skills/due.py
 tests/stories/core/modules/skills/event_reads.py
 tests/stories/core/modules/skills/hook_file_calls.py
@@ -708,20 +716,11 @@ tests/stories/fixtures/acme_suite/acme_suite.py
 tests/stories/fixtures/acme_suite/module.py
 tests/stories/fixtures/third_party.py
 tests/stories/real_programs.py
-tests/stories/server/boot_files.py
-tests/stories/server/developer_hook_requests.py
-tests/stories/server/launch_stop.py
 tests/stories/server/library_client.py
-tests/stories/server/server_hooks.py
-tests/stories/server/server_ticks.py
 tests/stories/server/support/alias_hook.py
-tests/stories/server/support/client_binary.py
 tests/stories/server/support/launch_terminal.py
 tests/stories/server/support/server_client.py
 tests/stories/server/support/story_line_route.py
-tests/stories/server/tick_warnings.py
-tests/stories/server/viewer/login_link.py
-tests/stories/server/viewer_chat_declarations.py
 tests/stories/server/viewer_hook_events.py
 tests/stories/server/viewer_read_counts.py
 tests/stories/suites/coding/agent_settings_window.py

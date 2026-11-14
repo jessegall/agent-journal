@@ -15,7 +15,7 @@ from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.helpers.support.helper_resume import HelperResume
 from core.modules.agents.models.agent import Agent
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.server.support.go_build import GoBuild
+from tests.integration.support.go_build import GoBuild
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 import json

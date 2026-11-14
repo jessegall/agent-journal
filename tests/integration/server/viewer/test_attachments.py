@@ -1,12 +1,4 @@
-import json
-
-IMAGE_BYTES = b"\x89PNG\r\n\x1a\nthe cart picture"
-
-
-def uploaded(server, cookie: str, name: str = "cart.png", data: bytes = IMAGE_BYTES) -> str:
-    status, body = server.viewer_upload(f"/api/files?name={name}", cookie, data)
-    assert status == 200, (status, body)
-    return json.loads(body)["file"]
+from tests.integration.support.viewer_files import IMAGE_BYTES, uploaded
 
 
 def test_a_file_is_uploaded_sent_with_a_message_and_read_back_as_the_same_bytes(person_server):
