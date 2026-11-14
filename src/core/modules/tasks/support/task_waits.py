@@ -33,6 +33,8 @@ class TaskWaits(KeptRowChanges[TaskWait]):
         self.kept = kept
 
     def resolved(self, waits: Sequence[TaskWait], context: Context) -> None:
+        if not waits:
+            return
         for wait in waits:
             self.repository.update(wait, context, ended_at=context.timestamp)
         opened = [task for task in self.queries.query(Task).matching(Among("id", list(dict.fromkeys(wait.task_id for wait in waits)))).every_row(ENDED_WAITS_REASON)
