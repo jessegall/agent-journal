@@ -4237,7 +4237,8 @@
       "bases": [],
       "fields": [],
       "methods": [
-        "folders(self, project_root: Path) -> tuple[Path, ...]"
+        "folders(self, project_root: Path) -> tuple[Path, ...]",
+        "writable_folders(self) -> tuple[Path, ...]"
       ]
     },
     "file.rotated_file.RotatedFile": {
@@ -4438,6 +4439,7 @@
         "job_task_flag: ClassVar[str]",
         "line: ClassVar[str]",
         "command_types_setting: ClassVar[str]",
+        "refusal_hint: ClassVar[str]",
         "behaviours: ClassVar[HelperBehaviours]",
         "commands: ClassVar[CommandAllowList]",
         "journal_runs: ClassVar[tuple[str, ...]]"
@@ -4493,7 +4495,8 @@
         "job_task_flag: str",
         "line: str",
         "commands: CommandAllowList",
-        "command_types_setting: str"
+        "command_types_setting: str",
+        "refusal_hint: str"
       ],
       "methods": [
         "declared(cls, module: str, declaration: type[HelperType]) -> 'HelperTypeEntry'",
@@ -5698,6 +5701,7 @@
         "agent_groups: ClassVar[list[AgentGroup | type[AgentGroup]]]",
         "profiles: ClassVar[list[AgentProfile]]",
         "providers: ClassVar[list[type[Provider]]]",
+        "story_steps: ClassVar[list[type[StoryStep]]]",
         "settings: ClassVar[Sequence[SettingNode | type[SettingList]]]",
         "tunnels: ClassVar[list[type[Tunnel]]]",
         "shared_rows: ClassVar[list[type[SharedRows]]]",
@@ -5768,6 +5772,7 @@
       "fields": [],
       "methods": [
         "modules(self) -> tuple[type[Module], ...]",
+        "story_step(self, name: str) -> StoryStep",
         "default_modules(self) -> tuple[type[Module], ...]",
         "listed_modules(self, path: DottedPath) -> tuple[type[Module], ...]",
         "listed_entries(self, path: DottedPath) -> tuple[object, ...]",
@@ -5936,6 +5941,15 @@
       "methods": [
         "names(self) -> set[str]",
         "problems(self, names: Sequence[str], subject_id: int) -> tuple[str, ...]"
+      ]
+    },
+    "module.story_step.StoryStep": {
+      "bases": [],
+      "fields": [
+        "name: ClassVar[str]"
+      ],
+      "methods": [
+        "run(self, container: Container) -> object"
       ]
     },
     "module.suite.Suite": {
@@ -9553,8 +9567,25 @@
         "holds(self, story_file: Path) -> bool"
       ]
     },
-    "testing.stories.story.Story": {
+    "testing.stories.kit_rows.KitRows": {
       "bases": [],
+      "fields": [
+        "container: Container"
+      ],
+      "methods": [
+        "story_rows(self, model: type[M]) -> tuple[M, ...]",
+        "first_row(self, model: type[M]) -> M | None",
+        "newest_row(self, model: type[M]) -> M | None",
+        "row_exists(self, model: type[M]) -> bool",
+        "row_count(self, model: type[M]) -> int",
+        "registry(self) -> Registry",
+        "with_touched_rows(self, output_text: str) -> str"
+      ]
+    },
+    "testing.stories.story.Story": {
+      "bases": [
+        "KitRows"
+      ],
       "fields": [],
       "methods": [
         "opened(cls, home: JournalHome, state: StoryState) -> 'Story'",
@@ -9568,15 +9599,13 @@
         "agent_actor(agent_id: int) -> Actor",
         "close(self) -> None",
         "bind(self, class_type: type[S], replacement: S) -> None",
+        "unbind(self, class_type: type) -> None",
         "replace(self, class_type: type[S], replacement: S) -> None",
         "rebuild(self, class_type: type[S], implementation: type[S] | None) -> None",
         "release_listeners(self) -> None",
         "run(self, line: str, actor: Actor | None, environment_id: int | None, process_id: int | None) -> LineOutcome",
         "seed(self, seed: type[Seed], count: int) -> tuple[int, ...]",
-        "story_rows(self, model: type[M]) -> tuple[M, ...]",
-        "first_row(self, model: type[M]) -> M | None",
-        "newest_row(self, model: type[M]) -> M | None",
-        "run_command(self, command: Command[R], actor: Actor, environment_id: int) -> R",
+        "run_command(self, command: Command[R], actor: Actor, environment_id: int | None) -> R",
         "end_session(self, agent: Actor) -> None",
         "expect_agent_group(self, helper_type: str, profile: str, group: str) -> None",
         "use_fixture_environment(self, name: str | None) -> None",
@@ -9592,6 +9621,7 @@
         "hook(self, session: str, sample: HookSample) -> HookReply",
         "repeated_work(self) -> RepeatedWork",
         "run_listeners(self) -> None",
+        "step(self, name: str) -> object",
         "run_tick_handler(self, label: str) -> None",
         "tick(self, session: str) -> HookReply",
         "busy_database(self) -> Generator[None]",
@@ -9608,7 +9638,6 @@
         "checked(self, subject: str) -> None",
         "expected(self, passed: bool, message: str) -> None",
         "expect_success(self, line: str) -> None",
-        "with_touched_rows(self, outcome: LineOutcome) -> str",
         "expect_ordered_lines(self, line: str) -> None",
         "expect_text(self, line: str) -> None",
         "expect_no_text(self, line: str) -> None",
@@ -9806,7 +9835,7 @@
         "remove_stale_working_folders(current_time: float) -> None",
         "story(self, folder: Path, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Story",
         "synced_home(self, folder: Path, modules: tuple[str, ...]) -> JournalHome",
-        "fixture_home(self, folder: Path, fixture: type[StoryFixture], modules: tuple[str, ...]) -> tuple[JournalHome, StoryState]",
+        "fixture_home(self, folder: Path, fixture: type[StoryFixture] | None, modules: tuple[str, ...]) -> tuple[JournalHome, StoryState]",
         "free_journal(self, template: Template) -> WorkingJournal",
         "linked_home(self, template: Template, journal: WorkingJournal, folder: Path) -> JournalHome",
         "template(self, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Template",

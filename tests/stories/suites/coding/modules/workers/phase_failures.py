@@ -8,10 +8,10 @@ THREE_TASKS = 3
 
 
 @pytest.fixture
-def first_failed(new_story, monkeypatch) -> StoryWorker:
+def first_failed(new_story) -> StoryWorker:
     """A worker committed its three started tasks together, the first and the third with a test; the test of
     the first failed and the test of the third passed."""
-    worker = unplanned_worker_with_tasks(new_story, monkeypatch, THREE_TASKS)
+    worker = unplanned_worker_with_tasks(new_story, THREE_TASKS)
     prove_task(worker, 1, 1, TEST_LINE)
     prove_task(worker, 2, 1)
     prove_task(worker, 3, 1, SECOND_TEST_LINE)

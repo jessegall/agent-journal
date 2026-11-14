@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.models.worktree import Worktree
 import pytest
 import json
 import socket
@@ -19,7 +20,6 @@ from core.modules.skills.models.enums.agent_skill_state import AgentSkillState
 from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE, installed_story
 from tests.stories.core.modules.plugins.support.notices import expect_plugin_notice
 from tests.stories.core.modules.skills.due import expect_countdown
-from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from tests.stories.core.modules.plugins.support.event_stories import SECOND_JOB, TASK_CREATED, EventPluginStarted, event_folder, event_plugin_story, plugin_row, script_calls
 from tests.stories.core.modules.plugins.support.plugin_samples import SKILL
 from tests.stories.core.modules.processes.support.process_samples import install_runner
@@ -148,7 +148,7 @@ def test_removing_a_plugin_unlinks_a_worktree_skill_without_removing_its_target(
     repository_environment(story)
     story.expect_success('task make "Fix the cart" --environment main', actor=story.agent)
     worker = dispatched_worker(story)
-    worktree = story.container.get(WorktreeQuery).worker_worktree(worker.id)
+    worktree = story.first_row(Worktree, session_agent_id=worker.id)
     target = tmp_path / "linked-skill"
     target.mkdir()
     skill = target / "SKILL.md"

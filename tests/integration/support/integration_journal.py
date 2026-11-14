@@ -20,6 +20,7 @@ from engine.driver.hook_reply import HookReply
 from engine.driver.hook_route import HookRoute
 from engine.journal.journal_home import JournalHome
 from engine.module.journal_container import synced_database_container
+from engine.module.module_finder import ModuleFinder
 from engine.registry.registry import Registry
 from engine.testing.examples.hook_sample import HookSample
 from engine.testing.examples.hook_samples import SAMPLE_FIRING
@@ -48,6 +49,11 @@ class IntegrationJournal:
         stream = io.StringIO()
         code = self.container.get(Console).run(shlex.split(line), Caller(actor or Actor.core(), environment_id), stream)
         return LineAnswer(code, stream.getvalue())
+
+    # a step a module offers for a part of the world no command makes, such as a run printing its output
+    def step(self, name: str, *arguments: object) -> object:
+        with cast(RepeatedWork, self.database.repeated_work).request():
+            return ModuleFinder(self.home).story_step(name).run(self.container, *arguments)
 
     # the agent program of the session fires the sample hook, answered through the real hook route
     def hook(self, session: str, sample: HookSample) -> HookReply:

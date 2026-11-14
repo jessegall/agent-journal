@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import {Btn, Dialog, ListReaderLayout, Markdown, Reader, SearchBar, Skeleton, copying, peekRef, tableOfWord, titleOfWord, useWindow} from "@journal/window-kit";
+import {Btn, Dialog, ListReaderLayout, Markdown, Reader, SearchBar, Skeleton, copying, peekRef, stateLabel, tableOfWord, titleOfWord, useWindow} from "@journal/window-kit";
 
 const context = useWindow();
 const terms = ref("");
@@ -99,6 +99,9 @@ const place = (item) => ({
                 </Dialog>
             </template>
         </template>
+        <template #meta="{item}">
+            <template v-if="item.hit.state"><span class="search-state" data-search-state>{{ stateLabel(item.hit.cli_name, item.hit.state) }}</span></template>
+        </template>
         <template #line="{item}">
             <span class="search-line"><span>{{ item.desc }}</span><span class="search-reference" data-search-reference>{{ referenceOf(item.hit) }}</span></span>
         </template>
@@ -152,6 +155,12 @@ const place = (item) => ({
 .search-line > span:first-child {
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.search-state {
+    color: var(--text-4);
+    font-size: 12px;
     white-space: nowrap;
 }
 

@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.models.worktree import Worktree
 from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
 
@@ -5,7 +6,6 @@ import pytest
 
 from core.modules.agents.models.agent import Agent
 from core.modules.helpers.support.helper_settings import COLD_SESSION_CONTEXT_PERCENT, COLD_SESSION_MINUTES
-from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
 from tests.stories.core.modules.helpers.helper_jobs import resumable_session
 from tests.stories.core.modules.usage.support.status_files import full_status
@@ -40,18 +40,18 @@ def with_job(story, minutes, percent):
 
 
 def test_a_cold_worker_starts_a_new_session_and_keeps_its_agent_and_worktree(stopped_worker):
-    folder = stopped_worker.container.get(WorktreeQuery).worker_worktree(stopped_worker.worker.id).folder
+    folder = stopped_worker.first_row(Worktree, session_agent_id=stopped_worker.worker.id).folder
     worker, request = with_job(stopped_worker, stopped_worker.number_default(COLD_SESSION_MINUTES), stopped_worker.number_default(COLD_SESSION_CONTEXT_PERCENT))
     replaced = stopped_worker.row(Agent, worker.id)
-    worktree = stopped_worker.container.get(WorktreeQuery).worker_worktree(worker.id)
+    worktree = stopped_worker.first_row(Worktree, session_agent_id=worker.id)
     prompt = " ".join(request["command"])
     stopped_worker.expect_rows(replaced.session != worker.session, request["session"] == replaced.session, "--resume" not in request["command"], worktree.folder == folder,
                                f"You are worker {agent_number(stopped_worker, worker.id)}." in prompt, JOB in prompt, f"journal task overview {worktree.task_id}" in prompt, detail=prompt)
 
 
 @pytest.mark.parametrize("minutes, percent", [(49, 100), (50, 19), (0, 0)], ids=["warm", "small and under an hour", "just stopped"])
-def test_a_worker_idle_under_an_hour_that_is_warm_or_small_resumes_its_own_session(stopped_worker, monkeypatch, minutes, percent):
-    resumable_session(stopped_worker, stopped_worker.row(Agent, stopped_worker.worker.id), monkeypatch)
+def test_a_worker_idle_under_an_hour_that_is_warm_or_small_resumes_its_own_session(stopped_worker, minutes, percent):
+    resumable_session(stopped_worker, stopped_worker.row(Agent, stopped_worker.worker.id))
     worker, request = with_job(stopped_worker, minutes, percent)
     stopped_worker.expect_rows(stopped_worker.row(Agent, worker.id).session == worker.session, "--resume" in request["command"], worker.session in request["command"], detail=str(request))
 

@@ -1,5 +1,6 @@
 from engine.enums.actor_type import ActorType
 from engine.module.module_finder import ModuleFinder
+from engine.testing.stories.kit_rows import KitRows
 from engine.environment.environment_names import EnvironmentNames
 from engine.file.file_access import FileAccess
 import io
@@ -52,8 +53,6 @@ from core.modules.settings.support.setting_reader import SettingReader
 from engine.setting.errors.setting_type_error import SettingTypeError
 from engine.setting.setting_declaration import SettingDefault
 from engine.module.module import Module
-from engine.model.tables import Tables
-from engine.subcommand.output import Output
 from engine.query.queries import Queries
 from engine.log.refusal_log import RefusalLog
 from engine.log.recorded_refusal import RecordedRefusal
@@ -75,8 +74,6 @@ from engine.testing.examples.hook_sample import HookSample
 from engine.testing.examples.hook_samples import SAMPLE_FIRING, HookSamples
 from engine.testing.fakes.manual_clock import ManualClock
 from engine.testing.stories.story_journal import StoryJournal
-from engine.database.seed_tables import ID_COLUMN
-from engine.query.conditions.minimum import Minimum
 from engine.testing.seeds.seed import Seed
 from engine.testing.seeds.seeder import Seeder
 from engine.testing.stories.story_path import StoryPath
@@ -86,7 +83,6 @@ from engine.testing.expectations.line_outcome import LineOutcome
 from engine.testing.expectations.expected_nudge import ExpectedNudge
 from engine.testing.expectations.text_match import ExpectedText, contains_line, contains_text
 
-STORY_ROWS_REASON = "the story kit lists every row of a table for an assertion"
 
 
 M = TypeVar("M", bound=Model)
@@ -94,10 +90,9 @@ R = TypeVar("R")
 S = TypeVar("S")
 
 COMMITTING_JOURNAL = StoryJournal()
-TOUCHED_LINE = re.compile(r"^(?:created|updated): (.+)$", re.MULTILINE)
 
 
-class Story:
+class Story(KitRows):
     """One story on a journal of its template that rolls back at its end, the public entry a plugin's stories
     use: it loads the modules named, runs command lines as text through the same console, container and
     registry as a real run, moves its clock by hand, reads rows and refusals, and checks what came back. It
@@ -120,9 +115,12 @@ class Story:
 
     @classmethod
     def opened(cls, home: JournalHome, state: StoryState) -> "Story":
-        home = replace(home, container_setup=story_stand_ins(home))
+        # what the story binds reaches every container built from its home, the server's and its background work's too
+        replacements: dict[type, object] = {}
+        home = replace(home, container_setup=story_stand_ins(home, replacements))
         clock, process_table = ManualClock(), FixedProcessTable([])
         story = cls(home, story_container(home, clock, process_table), clock, process_table, state)
+        story.replacements = replacements
         story.container.get(Database).cuts_raise = True
         return story
 
@@ -167,6 +165,11 @@ class Story:
         self.replacements[class_type] = replacement
         self.replace(class_type, replacement)
 
+    # lifts what bind put in place: the class is built anew as the journal builds it, here and in every later container
+    def unbind(self, class_type: type) -> None:
+        self.replacements.pop(class_type, None)
+        self.replace(class_type, self.container.constructed(class_type))
+
     # as bind, for this container only: a sync builds its own
     def replace(self, class_type: type[S], replacement: S) -> None:
         self.release_listeners()
@@ -198,16 +201,7 @@ class Story:
         with seeder.filling():
             return seeder.seed(seed(), count, **fixed)
 
-    def story_rows(self, model: type[M], **values: object) -> tuple[M, ...]:
-        return tuple(self.container.get(Queries).query(model).filter(**values).matching(Minimum(ID_COLUMN, 1)).every_row(STORY_ROWS_REASON))
-
-    def first_row(self, model: type[M], **values: object) -> M | None:
-        return self.container.get(Queries).query(model).filter(**values).first()
-
-    def newest_row(self, model: type[M], **values: object) -> M | None:
-        return self.container.get(Queries).query(model).filter(**values).newest().first()
-
-    def run_command(self, command: Command[R], actor: Actor, environment_id: int) -> R:
+    def run_command(self, command: Command[R], actor: Actor, environment_id: int | None = None) -> R:
         return self.container.get(Bus).run(command, actor, environment_id=environment_id)
 
     # the session end hook ends the agent as itself, with no journal line, so no command list judges it; its commit
@@ -293,10 +287,9 @@ class Story:
 
     # a step a module offers stories, such as a run printing its output, asked for by the name the module gives it
     def step(self, name: str, *arguments: object) -> object:
-        step = next(step for module in ModuleFinder(self.home).modules() for step in module.story_steps if step.name == name)
         self.steps.append(f"step {name} {arguments!r}")
         with self.repeated_work.request():
-            return step().run(self.container, *arguments)
+            return ModuleFinder(self.home).story_step(name).run(self.container, *arguments)
 
     def run_tick_handler(self, label: str) -> None:
         handler = next(handler for module in ModuleFinder(self.home).modules() for handler in module.tick_handlers if handler.label == label)
@@ -398,20 +391,9 @@ class Story:
             self.checked(line)
         outcome = self.run(line, actor)
         self.expected(outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}")
-        lines = self.with_touched_rows(outcome).splitlines()
+        lines = self.with_touched_rows(outcome.output_text).splitlines()
         for expected_line in expected_lines:
             self.expected(expected_line in lines, f"{line} printed no line {expected_line!r}:\n{outcome.output_text}")
-
-    def with_touched_rows(self, outcome: LineOutcome) -> str:
-        loaded_classes = (entry.model.loaded() for entry in self.container.get(Registry).models.values())
-        models = {model.model_name: model for model in loaded_classes if issubclass(model, Model)}
-        stream = io.StringIO()
-        output = Output(self.container.get(Tables), False, stream)
-        for match in TOUCHED_LINE.finditer(outcome.output_text):
-            for model_name, row_id in (name.split(":") for name in match[1].split(", ")):
-                for row in self.container.get(Queries).query(models[model_name]).filter(id=int(row_id)).get() if model_name in models else ():
-                    output.row(row)
-        return outcome.output_text + stream.getvalue()
 
     def expect_ordered_lines(self, line: str, *texts: str, actor: Actor | None = None) -> None:
         self.checked(line)
@@ -423,7 +405,7 @@ class Story:
         self.checked(line)
         outcome = self.run(line, actor)
         self.expected(outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}")
-        output_text = self.with_touched_rows(outcome)
+        output_text = self.with_touched_rows(outcome.output_text)
         missing = [text for text in texts if not contains_text(output_text, text)]
         self.expected(not missing, f"{line} printed none of {missing}:\n{outcome.output_text}")
 
@@ -454,7 +436,7 @@ class Story:
         self.checked(line)
         outcome = self.run_requested(line, request)
         self.expected(outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}")
-        lines = self.with_touched_rows(outcome).splitlines()
+        lines = self.with_touched_rows(outcome.output_text).splitlines()
         for expected_line in expected_lines:
             self.expected(expected_line in lines, f"{line} printed no line {expected_line!r}:\n{outcome.output_text}")
 
@@ -563,8 +545,6 @@ class Story:
         if code == 0:
             self.container.get(Database).close()
             self.container = story_container(self.home, self.clock, self.process_table, self.journal)
-            for class_type, replacement in self.replacements.items():
-                self.container.bind(class_type, replacement)
         return code, stream.getvalue()
 
     def expect_rows(self, *checks: object, detail: object | None = None) -> None:
@@ -587,7 +567,7 @@ def story_container(home: JournalHome, clock: ManualClock, process_table: "Fixed
 # the parts a story stands in for, so it is not about them: the sandbox, the overview and skills an agent must read
 # first, the helper programs installed, the login path and the task brief requirement; a story's home names this step,
 # so every container built from it during the story, a server's among them, gets the same
-def story_stand_ins(home: JournalHome) -> Callable[[Container], None]:
+def story_stand_ins(home: JournalHome, replacements: dict[type, object]) -> Callable[[Container], None]:
     def bind(container: Container) -> None:
         container.bind(ShellSandbox, StoryShellSandbox(home))
         container.bind(OverviewFirst, StoryOverviewFirst())
@@ -596,4 +576,6 @@ def story_stand_ins(home: JournalHome) -> Callable[[Container], None]:
         container.bind(MainAgentSkills, StoryMainAgentSkills())
         container.bind(LoginPath, StoryLoginPath(home))
         container.bind(TaskBriefRequirement, StoryTaskBriefRequirement())
+        for class_type, replacement in replacements.items():
+            container.bind(class_type, replacement)
     return bind

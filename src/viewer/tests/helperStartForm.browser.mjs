@@ -6,7 +6,7 @@ const browser = await chromium.launch({executablePath: process.env.CHROMIUM_PATH
 try {
     const page = await browser.newPage({viewport: {width: 1440, height: 1100}, reducedMotion: "reduce"});
     await page.goto(`${address}&windows=profiles.profiles`);
-    await page.locator('[data-profile="journal-researcher"]').click();
+    await page.locator('[data-reader-row][data-row="journal-researcher"]').click();
     const form = page.locator("[data-helper-start]");
     const send = form.locator(`[data-helper-send="${helper}"]`);
     await send.waitFor();

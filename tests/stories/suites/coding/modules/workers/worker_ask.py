@@ -92,7 +92,7 @@ def merger_disabled_worker(new_story):
 
 
 @pytest.fixture
-def asking_with_merger_running(new_story, monkeypatch):
+def asking_with_merger_running(new_story):
     questioning_worker = asking_worker(new_story(fixture=OpenTaskOrchestrator))
     with running_launcher(questioning_worker.story):
         yield questioning_worker

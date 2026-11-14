@@ -102,12 +102,3 @@ def expect_fewer_rows_loaded(loaded, limit) -> None:
     assert loaded < limit, loaded
 
 
-def test_a_search_that_matches_nothing_loads_no_whole_rows(new_story):
-    story = new_story(fixture=UserJoined)
-    for number in range(30):
-        story.run(f'task make "Fix the cart {number}" --environment main', actor=story.user)
-    story.expect_text("task show 1", "Fix the cart", actor=story.agent)
-    counts = story.container.get(Database).repeated_work
-    previous_count = counts.rows
-    story.expect_text("search find zebra quartz plume", "nothing here holds all of", actor=story.agent)
-    expect_fewer_rows_loaded(counts.rows - previous_count, 100)

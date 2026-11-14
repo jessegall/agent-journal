@@ -1,4 +1,3 @@
-from engine.query.queries import Queries
 from core.modules.drivers.models.agent_block import AgentBlock
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
@@ -13,7 +12,7 @@ def test_a_main_agent_gets_one_reader_count_after_its_session_start_without_a_bl
     story.run_listeners()
     listed = story.run(f"agent-line list --agent {story.agent.id}", actor=story.user).output_text
     story.expect_rows(listed.count(f"1 {NOTICE}") == 1, not reply.refusal,
-                      not story.container.get(Queries).query(AgentBlock).exists())
+                      not story.row_exists(AgentBlock))
 
 
 def test_a_worker_gets_no_reader_count_at_session_start(new_story):

@@ -1,3 +1,5 @@
+from pathlib import Path
+import os
 from tests.stories.core.support.large_reads import seeded_finished_jobs
 from tests.stories.core.support.read_limit import limit_reads
 from tests.stories.core.support.agent_labels import agent_number
@@ -45,11 +47,11 @@ def profile_agent(story, profile: str):
     return story.story_rows(Agent, profile=profile)[0]
 
 
-def resumable_session(story, helper, monkeypatch) -> None:
-    """Puts the helper's Claude transcript where a resume in its folder finds it."""
-    monkeypatch.setenv(CONFIG_VARIABLE, str(story.home.folder.parent / "claude-config"))
+def resumable_session(story, helper) -> None:
+    """Puts the helper's Claude transcript where a resume in its folder finds it, in the Claude config folder the test
+    run points every test at."""
     project = story.container.get(AgentFolders).folder(helper)
-    transcript = story.home.folder.parent / "claude-config" / "projects" / ClaudeFolderName.folder_name(project) / f"{helper.session}.jsonl"
+    transcript = Path(os.environ[CONFIG_VARIABLE]) / "projects" / ClaudeFolderName.folder_name(project) / f"{helper.session}.jsonl"
     transcript.parent.mkdir(parents=True, exist_ok=True)
     transcript.write_text("{}\n")
 
@@ -77,11 +79,11 @@ def test_a_send_to_a_running_helper_adds_to_its_open_job(new_story):
     story.expect_text(f"agent-line list --agent {helper.id}", JOB)
 
 
-def test_a_send_to_an_ended_helper_opens_a_new_job_and_resumes_it(new_story, monkeypatch):
+def test_a_send_to_an_ended_helper_opens_a_new_job_and_resumes_it(new_story):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
-    resumable_session(story, helper_agent(story), monkeypatch)
+    resumable_session(story, helper_agent(story))
     story.expect_success(f'helper send {agent_number(story, helper.id)} "{JOB}"', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()

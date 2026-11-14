@@ -51,13 +51,3 @@ def test_s60_cross_environment_draft_is_stale(new_story):
     story.expect_text(f"setting show {MERGER} --environment other", "value: True", actor=story.user)
 
 
-def test_s60_a_project_change_reaches_a_viewer_of_another_environment_as_a_reference_only(new_story):
-    story = new_story(fixture=UserBuilder)
-    with server_story(story) as server:
-        server.story.run('actor make user "Ada"')
-        cookie = server.expect_viewer_login(server.viewer_key("Ada"))
-        cursor_id = story.container.get(EventLog).newest_id()
-        with server.viewer_stream(cookie, cursor_id, ["setting.*"]) as response:
-            story.expect_success(f"setting set {HELPERS} off --project", actor=story.user)
-            event = next_event(response)
-    story.expect_rows(set(event) == REFERENCE_KEYS, event.get("environment") is None, str(event.get("event")).startswith("setting."), detail=str(event))

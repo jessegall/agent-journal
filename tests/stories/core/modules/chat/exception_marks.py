@@ -4,7 +4,6 @@ from engine.actor.actor import CORE_ACTOR_ID
 from engine.cli.console import Console
 from engine.database.database import Database
 from engine.database.statement import Statement
-from engine.registry.registry import Registry
 from tests.stories.core.modules.chat.support.mark_samples import EXCEPTION_SAMPLE, marks_text
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_count_marks, expect_system_log_with, expect_value
@@ -26,7 +25,7 @@ OLD_TABLE_STATEMENTS = (
 
 def test_the_chat_module_declares_the_exception_and_upgrade_marks_under_the_journal_group(new_story):
     story = new_story(fixture=UserJoined)
-    marks = [mark for mark in Registry.read(story.container.get(Database)).marks if mark.module == "journal.core.chat"]
+    marks = [mark for mark in story.registry().marks if mark.module == "journal.core.chat"]
     expect_type_mark_family(marks, [("chat.exception", "chat.exceptions", "journal", True), ("chat.upgrade", "chat.upgrade", "journal", True), ("chat.private-data", "chat.private-data", "journal", True)])
 
 

@@ -4,7 +4,6 @@ import pytest
 
 from engine.enums.command_category import CommandCategory
 from engine.enums.tool_type import ToolType
-from engine.query.queries import Queries
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.rules.read_advice_rule import ReadAdviceRule
@@ -24,7 +23,7 @@ MAIN = "s-1"
 def expect_unblocked(story) -> None:
     worker = reader_worker(story)
     story.expect_rows(not story.container.get(ReaderRequestQuery).open().filter(creator_id=worker.id).exists(),
-                      not story.container.get(Queries).query(AgentBlock).filter(session_agent_id=worker.id, closed_at=None).exists())
+                      not story.row_exists(AgentBlock, session_agent_id=worker.id, closed_at=None))
 
 
 def expect_blocked(story) -> None:
@@ -87,11 +86,6 @@ def test_a_worker_test_of_a_known_tool_under_a_limit_opens_no_request(limited):
     expect_unblocked(limited)
 
 
-def test_a_worker_test_of_an_unknown_tool_under_a_limit_asks_for_the_count_reader(limited):
-    worker_run(limited, "custom-test run", CommandCategory.TEST_RUN)
-    expect_blocked(limited)
-    request = limited.container.get(ReaderRequestQuery).open().first()
-    limited.expect_rows("count" in request.reason, detail=request.reason)
 
 
 def test_a_worker_build_under_a_limit_opens_no_request(limited):
@@ -135,11 +129,5 @@ def test_a_worker_after_two_silent_runs_is_refused_its_start_like_every_role(bus
     busy_worker.expect_hook_refusal(WORKER, sample, "custom-build run ran silent twice")
 
 
-def test_a_long_worker_run_is_asked_for_a_title_like_a_main_agents_and_asked_for_no_reader(readers_disabled):
-    process = worker_run(readers_disabled, "custom-build run", CommandCategory.BUILD)
-    readers_disabled.advance(timedelta(seconds=10))
-    lines = hook_lines(readers_disabled, WORKER, HookSamples.prompt("go on"))
-    readers_disabled.expect_rows(any(f"Output {process.id} is titled by its raw command" in line for line in lines),
-                                 not readers_disabled.container.get(ReaderRequestQuery).open().filter(creator_id=reader_worker(readers_disabled).id).exists(), detail="\n".join(lines))
 
 

@@ -6,7 +6,6 @@ from datetime import timedelta
 from server.work.booting_work import BootingWork
 from engine.process.leftover_process import LeftoverProcess
 from engine.cli.caller_stream import CallerStream
-from engine.command.bus import Bus
 from engine.enums.event_form import EventForm
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
@@ -69,7 +68,7 @@ def test_s77_a_failing_plugin_has_its_guard_skipped_and_is_tried_again_after_fiv
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "see.sh"})
     plugin_id = plugin_row(story).id
     for _ in range(FAILING_COUNT):
-        story.container.get(Bus).run(RecordPluginFault(plugin_id, "it ended with code 3"), story.user)
+        story.run_command(RecordPluginFault(plugin_id, "it ended with code 3"), story.user)
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.expect_rows(not script_calls(story, "see.sh"), "was skipped" in story.system_log_text())
     story.advance(timedelta(minutes=6))

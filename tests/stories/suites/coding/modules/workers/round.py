@@ -15,8 +15,8 @@ def worker_test_hook(worker, *test_arguments):
     return worker.run_line("journal worker test " + " ".join(test_arguments), ShellPart("journal", CommandCategory.JOURNAL, ["worker", "test", *test_arguments]))
 
 
-def test_three_tasks_committed_together_with_a_failure_and_a_free_run(new_story, monkeypatch):
-    worker = unplanned_worker_with_tasks(new_story, monkeypatch, THREE_TASKS)
+def test_three_tasks_committed_together_with_a_failure_and_a_free_run(new_story):
+    worker = unplanned_worker_with_tasks(new_story, THREE_TASKS)
     prove_task(worker, 1, 1, FILE_TEST_COMMAND)
     status = worker.status_json()
     expect_value((status["step"], status["test_runs_available"], worker.started), ("commit", 3, []))
@@ -38,8 +38,8 @@ def test_three_tasks_committed_together_with_a_failure_and_a_free_run(new_story,
     expect_value(any("ended with tasks left" in line for line in worker.worker_lines()), False)
 
 
-def test_a_commit_of_three_tasks_judges_them_together(new_story, monkeypatch):
-    worker = worker_with_tasks(new_story, monkeypatch, THREE_TASKS)
+def test_a_commit_of_three_tasks_judges_them_together(new_story):
+    worker = worker_with_tasks(new_story, THREE_TASKS)
     worker.story.expect_success(f"plugin install {judge_plugin_folder(worker.story.home.folder.parent)} --yes", actor=worker.story.user)
     worker.repository.changed(worker.worker.id, "own.py", SINFUL_TEXT)
     for task_id in TASK_IDS:

@@ -1,3 +1,5 @@
+from core.modules.processes.models.reader_request import ReaderRequest
+from suites.coding.modules.workers.models.worktree import Worktree
 from dataclasses import replace
 from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
 import pytest
@@ -13,7 +15,6 @@ from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.models.process import Process
-from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.ticks.output_reading import OutputReading
@@ -26,7 +27,6 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from core.modules.agents.testing.fake_launcher import FakeLauncher
-from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.bindings.worker_test_listings import WorkerTestListings
 from suites.coding.modules.workers.models.proof import Proof
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
@@ -165,7 +165,7 @@ def test_a_stopped_worker_is_started_again_with_the_count_and_limit(new_story):
     story.step("run printed", process.id, 1, "collected 8 items\n")
     OutputReading()(story.container)
     story.run_listeners()
-    worktree = story.container.get(WorktreeQuery).worker_worktree(worker.id)
+    worktree = story.first_row(Worktree, session_agent_id=worker.id)
     launcher.expect_started(worker.id, worker_session(story, worker), Path(worktree.folder))
     story.expect_rows("8 tests" in str(launcher.requests[0]["command"]), "limit 5" in str(launcher.requests[0]["command"]))
 
@@ -227,12 +227,12 @@ def test_a_listing_that_printed_nothing_is_a_killed_run_and_asks_for_no_reader_w
     story, process = limited_run
     story.step("run counted", process.id, "", 143)
     story.run_command(GrantRunSlots(), story.agent, 1)
-    story.expect_rows(story.container.get(ReaderRequestQuery).open().count() == 0, story.row(Process, process.id).state is not ProcessState.STOPPED)
+    story.expect_rows(story.row_count(ReaderRequest, completed_at=None) == 0, story.row(Process, process.id).state is not ProcessState.STOPPED)
     second_run = worker_run(story, "pytest tests/totals.py", CommandCategory.TEST_RUN)
     story.run_command(GrantRunSlots(), story.agent, 1)
     story.step("run counted", second_run.id, "no number\n", 0)
     story.run_command(GrantRunSlots(), story.agent, 1)
-    story.expect_rows(story.container.get(ReaderRequestQuery).open().count() == 1, story.row(Process, second_run.id).state is ProcessState.STOPPED)
+    story.expect_rows(story.row_count(ReaderRequest, completed_at=None) == 1, story.row(Process, second_run.id).state is ProcessState.STOPPED)
 
 
 def test_a_worker_stopped_for_an_unknown_count_adds_a_counting_reader_and_its_next_run_starts(new_story):

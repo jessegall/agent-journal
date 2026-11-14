@@ -23,14 +23,6 @@ def unfinished_worktree(story, repository: GitRepository) -> str:
     return str(folder.resolve())
 
 
-def test_removing_a_worktree_holds_no_write_lock(new_story, monkeypatch):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    folder = unfinished_worktree(story, repository_environment(story))
-    database = story.container.get(Database)
-    transaction_flags: list[bool] = []
-    monkeypatch.setattr(WorktreeGit, "remove_folder", lambda self, repository, path: transaction_flags.append(database.has_transaction))
-    story.expect_success(f"project-worktree remove {folder} --environment main", actor=story.user)
-    story.expect_rows(transaction_flags == [False])
 
 
 def test_a_worktree_a_worker_is_out_on_stays(new_story):

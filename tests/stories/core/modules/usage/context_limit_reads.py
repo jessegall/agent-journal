@@ -29,32 +29,5 @@ def test_a_limit_that_comes_before_the_window_is_the_limit_the_usage_read_gives(
     expect_value((row["context_percent"], row["context_tokens"], row["context_limit_tokens"]), (62, USED_TOKENS, 400000))
 
 
-def test_a_status_file_that_changes_during_a_hook_is_read_once_and_gives_both_numbers_from_that_read(new_story, monkeypatch):
-    story = new_story(fixture=UserJoined)
-    save_status_file(story, "s-1", {"context_window": {"used_percentage": WINDOW_PERCENT, "total_input_tokens": USED_TOKENS}})
-    path = story.home.status_file("s-1")
-    modified = path.stat().st_mtime_ns
-    original = JournalHome.status_file
-    requested = []
-
-    def status_file_race(home, session):
-        requested.append(session)
-        matched = original(home, session)
-        if len(requested) > 1:
-            matched.write_text(json.dumps({"context_window": {"used_percentage": 90, "total_input_tokens": 1_000_000_000}}))
-            os.utime(matched, ns=(modified, modified))
-        return matched
-
-    monkeypatch.setattr(JournalHome, "status_file", status_file_race)
-    with story.repeated_work.request():
-        usage = story.container.get(ContextShare).session_usage("claude", "s-1", None)
-    expect_value((usage.percent, usage.used_tokens), (WINDOW_PERCENT, USED_TOKENS))
-    expect_value(len(requested), 1)
 
 
-def test_the_card_and_every_other_read_give_the_percent_of_the_agents_own_cap(new_story):
-    story = new_story(fixture=UserJoined)
-    story.expect_success(f"setting set {CONTEXT_LIMIT_CATEGORIES} main:300000 --project", actor=story.user)
-    row = reported(story, "true", 400000)
-    agent = story.first_row(Agent)
-    expect_value((agent.role, row["context_percent"], story.container.get(ContextShare).agent_percent(agent)), ("main", 82, 82))

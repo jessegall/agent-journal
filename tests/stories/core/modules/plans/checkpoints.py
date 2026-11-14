@@ -4,7 +4,6 @@ import json
 import pytest
 
 from engine.actor.actor import Actor
-from engine.command.bus import Bus
 from engine.environment.environment_names import EnvironmentNames
 from core.modules.tasks.commands.close_task.close_task import CloseTask
 from engine.testing.examples.hook_samples import HookSamples
@@ -23,7 +22,6 @@ from tests.stories.server.support.server_client import server_story
 from core.modules.plans.support.plan_nudges import CHECKPOINT_FINISHED
 from engine.testing.expectations.expected_nudge import expected_nudge
 from core.modules.plan_reviews.support.plan_review_settings import QUICK_REVIEW_SETTING
-from core.modules.plans.support.plan_settings import PERSON_WAIT_SETTING
 from tests.stories.support.story_checks import expect_value
 
 REACHES = "checkpoint-reach list --json --oldest --environment main"
@@ -46,10 +44,10 @@ def close(story: Story, *task_ids: int) -> None:
     story.run_listeners()
 
 
-def plan_of_phases(story: Story, *phases: tuple[str, bool, int]) -> None:
+def plan_of_phases(story: Story, *phases: tuple[str, bool, int], person_check_phase: int = 0) -> None:
     story.run(lines.NEW_PLAN)
     for number, (title, is_checkpoint, task_count) in enumerate(phases, 1):
-        story.run(f'phase make --plan 1 "{title}"{" --checkpoint" if is_checkpoint else ""}')
+        story.run(f'phase make --plan 1 "{title}"{" --checkpoint" if is_checkpoint else ""}{" --person-check" if number == person_check_phase else ""}')
         for task_number in range(1, task_count + 1):
             task_id = story.new_row_id(f'task make "{title} {task_number}" --environment main')
             story.run(f"phase place {task_id} --phase {number}")
@@ -75,6 +73,16 @@ class ReachedCheckpoint(StoryFixture):
     parent = WindowsPlan
 
     def steps(self, story: Story) -> None:
+        close(story, 1, 2, 3)
+
+
+class PersonCheckedCheckpoint(StoryFixture):
+    """The plan of ReachedCheckpoint with phase 3 made to wait for a person."""
+
+    parent = UserJoined
+
+    def steps(self, story: Story) -> None:
+        plan_of_phases(story, ("Read", False, 1), ("Write", False, 1), ("Check", True, 1), ("Polish", False, 1), ("Ship", False, 1), person_check_phase=3)
         close(story, 1, 2, 3)
 
 
@@ -309,13 +317,11 @@ def test_190_the_plan_view_gets_a_line_on_how_each_checkpoint_stands_and_on_a_te
     story.expect_rows("checkpoint of phase 3: running" in lines, "checkpoint of phase 5: waits for tasks 4, 5" in lines, "test of phase 1 not run: this phase is not a checkpoint" in lines, detail=str(lines))
 
 
-WAIT_FOR_PERSON = f"setting set {PERSON_WAIT_SETTING} true --environment main"
 APPROVE = "plan approve-checkpoint 1 3 --environment main"
 
 
-def test_a_passed_checkpoint_keeps_the_later_phase_closed_until_a_person_approves_it_when_the_plan_waits_for_the_person(new_story):
-    story = new_story(fixture=ReachedCheckpoint)
-    story.expect_success(WAIT_FOR_PERSON, actor=story.user)
+def test_a_passed_checkpoint_keeps_the_later_phase_closed_until_a_person_approves_it_when_the_phase_was_made_for_a_person_check(new_story):
+    story = new_story(fixture=PersonCheckedCheckpoint)
     pass_reach(story, 1)
     story.expect_rows(rows(story, PASSES) == [], rows(story, REACHES)[0]["state"] == "passed", detail=str(rows(story, PASSES)))
     story.expect_text(f"agent-line list --agent {story.agent.id}", "later phases open once a user approves it on the plan card")
@@ -394,7 +400,7 @@ def test_tasks_closed_in_two_environments_in_one_round_reach_the_checkpoints_of_
     for environment, task_id in tasks.items():
         story.expect_success(f"task start {task_id} --environment {environment}", actor=story.user)
     for environment, task_id in tasks.items():
-        story.container.get(Bus).run(CloseTask(task_id, "done"), story.user, environment_id=story.container.get(EnvironmentNames).environment_id(environment))
+        story.run_command(CloseTask(task_id, "done"), story.user, environment_id=story.container.get(EnvironmentNames).environment_id(environment))
     story.run_listeners()
     for environment in tasks:
         story.expect_text(f"checkpoint-reach list --json --oldest --environment {environment}", '"state"', actor=story.user)

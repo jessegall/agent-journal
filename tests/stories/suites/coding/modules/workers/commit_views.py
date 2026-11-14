@@ -10,9 +10,9 @@ THREE_POINT_BRIEF = 'task edit 3 --brief "- the totals are added\n- the totals a
 
 
 @pytest.fixture
-def three_started(new_story, monkeypatch) -> StoryWorker:
+def three_started(new_story) -> StoryWorker:
     """A worker that holds tasks 1, 2 and 3 started, in no plan; task 3 has three points."""
-    worker = unplanned_worker_with_tasks(new_story, monkeypatch, THREE_TASKS)
+    worker = unplanned_worker_with_tasks(new_story, THREE_TASKS)
     worker.story.expect_success(THREE_POINT_BRIEF, actor=worker.story.agent)
     return worker
 

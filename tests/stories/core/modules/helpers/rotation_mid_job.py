@@ -20,9 +20,9 @@ def working(new_story):
 
 
 @pytest.fixture
-def rotating(new_story, monkeypatch):
+def rotating(new_story):
     story = story_with_profile_file(new_story, EndedEachLaunchHelper)
-    resumable_session(story, helper_agent(story), monkeypatch)
+    resumable_session(story, helper_agent(story))
     return story
 
 
@@ -53,10 +53,10 @@ def test_a_steering_line_to_a_running_helper_joins_its_open_job_and_starts_no_ne
 
 
 @pytest.mark.parametrize("has_conversation", [True, False])
-def test_a_helper_that_dies_in_a_job_resumes_its_session_or_gets_a_new_one_with_the_whole_brief(working, monkeypatch, has_conversation):
+def test_a_helper_that_dies_in_a_job_resumes_its_session_or_gets_a_new_one_with_the_whole_brief(working, has_conversation):
     helper = helper_agent(working)
     if has_conversation:
-        resumable_session(working, helper, monkeypatch)
+        resumable_session(working, helper)
     steered(working)
     command = launches_after_the_program_died(working)[0]["command"]
     line = " ".join(command)
@@ -65,9 +65,9 @@ def test_a_helper_that_dies_in_a_job_resumes_its_session_or_gets_a_new_one_with_
     working.expect_absent("question list --environment main", "rotating", actor=working.user)
 
 
-def test_a_paused_main_agent_that_resumes_gets_the_same_session_of_its_helper_back(working, monkeypatch):
+def test_a_paused_main_agent_that_resumes_gets_the_same_session_of_its_helper_back(working):
     helper = helper_agent(working)
-    resumable_session(working, helper, monkeypatch)
+    resumable_session(working, helper)
     working.expect_success(f"agent pause {agent_number(working, working.agent.id)}", actor=working.user)
     working.expect_success(f"agent end {helper.id}", actor=working.user)
     working.run_listeners()
@@ -78,10 +78,10 @@ def test_a_paused_main_agent_that_resumes_gets_the_same_session_of_its_helper_ba
     working.expect_rows(len(launcher.requests) == 1, helper_agent(working).session == helper.session, helper.session in launcher.requests[0]["command"], detail=str(launcher.requests))
 
 
-def test_a_program_that_goes_out_in_a_job_makes_the_job_wait_never_changes_program_and_goes_on_once_the_outage_ends(working, monkeypatch):
+def test_a_program_that_goes_out_in_a_job_makes_the_job_wait_never_changes_program_and_goes_on_once_the_outage_ends(working):
     helper = helper_agent(working)
     real_program_states(working)
-    resumable_session(working, helper, monkeypatch)
+    resumable_session(working, helper)
     steered(working)
     ends_at = (working.clock.timestamp().value + timedelta(minutes=30)).isoformat()
     working.expect_success(f'provider-outage make claude "rate limit" --ends-at {ends_at}', actor=working.agent)
@@ -93,14 +93,14 @@ def test_a_program_that_goes_out_in_a_job_makes_the_job_wait_never_changes_progr
                         read_jobs(working, helper)[0].ended_at is None, detail=str(after_outage))
 
 
-def test_a_changed_occupant_leaves_the_open_job_alone_and_decides_the_next_launch(working, monkeypatch):
+def test_a_changed_occupant_leaves_the_open_job_alone_and_decides_the_next_launch(working):
     helper = helper_agent(working)
     working.expect_success(SAVE_ROTATING.replace("--occupant each-launch", "--occupant continue"), actor=working.user)
     jobs = read_jobs(working, helper)
     working.expect_rows(len(jobs) == 1, jobs[0].ended_at is None, FIRST_BRIEF in jobs[0].brief, helper_agent(working).session == helper.session)
     working.expect_success(f"agent end {helper.id}", actor=working.user)
     working.run_listeners()
-    resumable_session(working, helper, monkeypatch)
+    resumable_session(working, helper)
     command = job_launch(working)["command"]
     working.expect_rows("--resume" in command, helper_agent(working).session == helper.session, detail=str(command[-4:]))
 
@@ -113,9 +113,9 @@ def test_a_second_send_while_the_first_job_is_open_is_refused_and_only_one_occup
     rotating.expect_rows(len(rows) == 2, rows[1]["end_reason"] == "each_launch", rows[0]["session"] == helper_agent(rotating).session, detail=str(rows))
 
 
-def test_a_stopped_helper_ends_its_job_as_stopped_and_the_next_send_makes_a_new_occupant(working, monkeypatch):
+def test_a_stopped_helper_ends_its_job_as_stopped_and_the_next_send_makes_a_new_occupant(working):
     helper = helper_agent(working)
-    resumable_session(working, helper, monkeypatch)
+    resumable_session(working, helper)
     working.expect_success(f"helper stop {agent_number(working, helper.id)}", actor=working.user)
     working.run_listeners()
     working.expect_rows(read_jobs(working, helper)[0].returned == "Stopped", detail=str(read_jobs(working, helper)[0]))

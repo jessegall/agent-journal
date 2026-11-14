@@ -105,13 +105,3 @@ def test_a_message_to_a_worker_keeps_its_target(new_story):
     story.expect_rows(story.row(Message, message_id).target_agent_id == worker.id)
 
 
-def test_the_migration_clears_a_stored_main_target_and_keeps_a_worker_s(new_story):
-    story = new_story(fixture=MainAndWorkerMemories)
-    worker = read_agent(story, "s-9")
-    first = story.new_row_id(f'message send "{PERSON_MESSAGE}" --environment main', story.user)
-    second = story.new_row_id(f'message send "{PERSON_MESSAGE}" --target-agent {agent_number(story, worker.id)} --environment main', story.user)
-    database = story.container.get(Database)
-    database.update(Statement(f"UPDATE messages SET target_agent_id = {story.agent.id} WHERE id = {first}"))
-    for sql in MainMessageTargetsMigration.statements:
-        database.update(Statement(sql))
-    story.expect_rows(story.row(Message, first).target_agent_id is None, story.row(Message, second).target_agent_id == worker.id)

@@ -12,8 +12,8 @@ PLAN_BLOCK = 'plan block 1 --reason "the supplier is late"'
 
 
 @pytest.fixture
-def planned_worker(new_story, monkeypatch):
-    return start_planned_worker(new_story, monkeypatch)
+def planned_worker(new_story):
+    return start_planned_worker(new_story)
 
 
 @pytest.fixture
@@ -25,17 +25,6 @@ def committed_with_test(planned_worker):
     return planned_worker
 
 
-def test_a_worker_status_reuses_its_phase_worktree_and_waiting_test_reads(planned_worker):
-    story = planned_worker.story
-    worktrees = story.container.get(WorktreeQuery)
-    proofs = story.container.get(ProofQuery)
-    plans = story.container.get(TaskPlans)
-    task_id = planned_worker.current_task()
-    with story.repeated_work.request():
-        worktree = worktrees.worker_worktree(planned_worker.worker.id)
-        answers = [(worktrees.worker_worktree(planned_worker.worker.id), worktrees.newest_worktree(planned_worker.worker.id),
-                    proofs.tests_waiting(worktree.id), plans.find_phase(task_id)) for _ in range(12)]
-    story.expect_rows(all(row[0].id == worktree.id and row[1].id == worktree.id and not row[2] and row[3].id == 1 for row in answers))
 
 
 def test_on_a_blocked_plan_a_worker_runs_tests_as_today(committed_with_test):

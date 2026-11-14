@@ -21,16 +21,16 @@ PHASE_TEST_POINT = 0
 OLD_PHASE_TEST = "python tests/build.py"
 
 
-def phase_worker(new_story, monkeypatch) -> StoryWorker:
+def phase_worker(new_story) -> StoryWorker:
     """A worker of a started plan with no flagged checkpoint, holding the three tasks of phase Build."""
-    return dispatched_story_worker(planned_story(new_story), PHASE_DISPATCH, monkeypatch)
+    return dispatched_story_worker(planned_story(new_story), PHASE_DISPATCH)
 
 
 @pytest.fixture
-def merged_phase(new_story, monkeypatch) -> StoryWorker:
+def merged_phase(new_story) -> StoryWorker:
     """The three tasks of phase Build, which is no checkpoint, are committed with a test each and merged; task 4
     of the last phase is open, so no checkpoint is reached."""
-    worker = phase_worker(new_story, monkeypatch)
+    worker = phase_worker(new_story)
     commit_tasks(worker, TEST_LINE, SECOND_TEST_LINE, TEST_LINE)
     merge(worker)
     return worker
@@ -42,16 +42,16 @@ def test_196_201_a_phase_that_is_no_checkpoint_runs_no_test_at_its_end_and_gets_
                                    detail=f"{run_lines(merged_phase)}, points {points}")
 
 
-def test_200_a_task_in_no_plan_is_tested_at_its_own_commit_whatever_the_batch_size_was(new_story, monkeypatch):
+def test_200_a_task_in_no_plan_is_tested_at_its_own_commit_whatever_the_batch_size_was(new_story):
     story = planned_story(new_story, approve=False)
-    worker = dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1 2", monkeypatch)
+    worker = dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1 2")
     worker.prove_commit(TEST_LINE)
     story.run_listeners()
     story.expect_rows(run_lines(worker) == [CART_COMMAND], detail=str(run_lines(worker)))
 
 
-def test_202_a_checked_proof_of_point_zero_from_the_old_rule_holds_no_merge(new_story, monkeypatch):
-    worker = phase_worker(new_story, monkeypatch)
+def test_202_a_checked_proof_of_point_zero_from_the_old_rule_holds_no_merge(new_story):
+    worker = phase_worker(new_story)
     commit_tasks(worker, TEST_LINE, SECOND_TEST_LINE, TEST_LINE)
     old_command = MakeProof(PHASE_TEST_POINT, "the test phase Build names", 3, OLD_PHASE_TEST)
     context = Context(Actor(worker.worker.id, ActorType.AGENT), worker.story.clock.timestamp(), old_command, frozenset(), environment_id=1)
@@ -62,8 +62,8 @@ def test_202_a_checked_proof_of_point_zero_from_the_old_rule_holds_no_merge(new_
     worker.story.expect_text("task show 3", "state: completed", actor=worker.story.agent)
 
 
-def test_206_the_runs_a_worker_may_start_itself_are_counted_between_two_commits(new_story, monkeypatch):
-    worker = phase_worker(new_story, monkeypatch)
+def test_206_the_runs_a_worker_may_start_itself_are_counted_between_two_commits(new_story):
+    worker = phase_worker(new_story)
     apply_work_setting(worker.story, RUNS_SETTING, 1)
     expect_reply_allowed(worker.run_test())
     expect_reply_refusal(worker.run_test(), "No test runs left")
@@ -73,8 +73,8 @@ def test_206_the_runs_a_worker_may_start_itself_are_counted_between_two_commits(
     worker.story.expect_text("work-settings show --json --environment main", RUNS_TITLE, actor=worker.story.user)
 
 
-def test_213_a_proof_test_that_runs_when_the_rule_changes_ends_as_it_was_and_the_next_commit_starts_none(new_story, monkeypatch):
-    worker = phase_worker(new_story, monkeypatch)
+def test_213_a_proof_test_that_runs_when_the_rule_changes_ends_as_it_was_and_the_next_commit_starts_none(new_story):
+    worker = phase_worker(new_story)
     story = worker.story
     story.run("task start 2", actor=worker.worker)
     worker.prove_commit(TEST_LINE)

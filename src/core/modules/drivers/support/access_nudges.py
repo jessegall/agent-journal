@@ -10,7 +10,7 @@ SHELL_RESTRICTION = NudgeDeclaration("drivers.no_shell", NudgeType.SAFETY_REFUSA
 PROGRAM_RESTRICTION = NudgeDeclaration("drivers.program_not_allowed", NudgeType.SAFETY_REFUSAL, "This driver cannot run {program}")
 UNJUDGED_LINE = NudgeDeclaration("drivers.unjudged_line", NudgeType.SAFETY_REFUSAL, "This line cannot be judged from its text: read with grep, or say in your report what should be run")
 OLD_HOOK_LINE = NudgeDeclaration("drivers.old_hook_line", NudgeType.SAFETY_REFUSAL, "Your hooks are too old to judge this line: update the journal, then restart the agent")
-HELPER_TYPE_CATEGORY = NudgeDeclaration("drivers.helper_type_category", NudgeType.REFUSAL, "a {helper_type} here runs no {category} command")
+HELPER_TYPE_CATEGORY = NudgeDeclaration("drivers.helper_type_category", NudgeType.REFUSAL, "a {helper_type} here runs no {category} command{hint}", full_text=True)
 HELPER_TYPE_COMMAND = NudgeDeclaration("drivers.helper_type_command", NudgeType.REFUSAL, "A {helper_type} may not run {line}: it runs the groups {groups} and the lines {lines}; ask your main agent",
                                        full_text=True)
 OUTWARD_JOURNAL_LINE = NudgeDeclaration("drivers.outward_journal_line", NudgeType.SAFETY_REFUSAL, "This command reaches outside the journal: say in your report what should be run")
@@ -24,9 +24,11 @@ NATIVE_SUBAGENT_WITHOUT_LAUNCH = NudgeDeclaration("drivers.native_subagent_no_la
 PANIC_FILE = NudgeDeclaration("drivers.panic_file", NudgeType.SAFETY_REFUSAL, "The panic file is only for a journal that does not answer: it answers you, so report what is wrong instead")
 PRIVATE_CORPUS = NudgeDeclaration("drivers.private_corpus", NudgeType.SAFETY_REFUSAL, "The private command corpus is only read or run in its sandboxed go test: say in your report what you need")
 
+DATABASE_FILE = NudgeDeclaration("drivers.database_file", NudgeType.SAFETY_REFUSAL, "The journal's database file is changed only by the journal's commands: find the command for what you want with journal --help, or say in your report what is missing", full_text=True)
+
 SKIP_NEEDS_APPROVAL = NudgeDeclaration("drivers.skip_waits_for_approval", NudgeType.STEERING, "agent:{agent} confirmed a skip that needs your answer: refusal-skip:{refusal}", turn_limited=False)
 SKIP_APPROVED = NudgeDeclaration("drivers.skip_approved", NudgeType.STEERING, "Skip refusal-skip:{refusal} approved: try again", turn_limited=False)
 SKIP_DECLINED = NudgeDeclaration("drivers.skip_declined", NudgeType.STEERING, "Skip refusal-skip:{refusal} declined: do what the refusal asks", turn_limited=False)
 SKIPS_SPENT = NudgeDeclaration("drivers.skips_spent", NudgeType.STEERING, "agent:{agent} skipped {count} refusals in a row and lost the right to skip", turn_limited=False, wakes_agent=True)
-ACCESS_NUDGES = [PANIC_FILE, PRIVATE_CORPUS, SKIPS_SPENT, SKIP_NEEDS_APPROVAL, SKIP_APPROVED, SKIP_DECLINED, NATIVE_SUBAGENT, NATIVE_SUBAGENT_WITHOUT_LAUNCH, ENDED_AGENT, REPLACED_SESSION, UNKNOWN_AGENT, UNJUDGED_LINE, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, HELPER_TYPE_CATEGORY, HELPER_TYPE_COMMAND, LIMITED_TOOL, TOOL_RESTRICTION, COMMAND_RESTRICTION, READONLY, FILE_ACCESS_RESTRICTION, JOURNAL_RESTRICTION,
+ACCESS_NUDGES = [PANIC_FILE, PRIVATE_CORPUS, DATABASE_FILE, SKIPS_SPENT, SKIP_NEEDS_APPROVAL, SKIP_APPROVED, SKIP_DECLINED, NATIVE_SUBAGENT, NATIVE_SUBAGENT_WITHOUT_LAUNCH, ENDED_AGENT, REPLACED_SESSION, UNKNOWN_AGENT, UNJUDGED_LINE, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, HELPER_TYPE_CATEGORY, HELPER_TYPE_COMMAND, LIMITED_TOOL, TOOL_RESTRICTION, COMMAND_RESTRICTION, READONLY, FILE_ACCESS_RESTRICTION, JOURNAL_RESTRICTION,
                  SHELL_RESTRICTION, PROGRAM_RESTRICTION]

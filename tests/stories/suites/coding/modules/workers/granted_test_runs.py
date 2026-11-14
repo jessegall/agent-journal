@@ -18,7 +18,7 @@ GRANT_REFUSAL = "A worker may not run helper grant"
 
 @pytest.fixture
 def spent(new_story, monkeypatch):
-    worker = start_planned_worker(new_story, monkeypatch)
+    worker = start_planned_worker(new_story)
     worker.story.expect_success(f"setting set {WORKER_PHASE_TEST_RUNS} 0 --environment main", actor=worker.story.user)
     monkeypatch.setattr(RunnerBinary, "is_installed", lambda _runner: True)
     monkeypatch.setattr(subprocess, "Popen", lambda command, **options: SimpleNamespace(pid=1))

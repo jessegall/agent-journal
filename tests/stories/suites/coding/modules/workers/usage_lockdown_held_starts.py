@@ -5,7 +5,6 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.provider.launch_command import LaunchCommand
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_launcher import AgentLauncher
 from core.modules.agents.models.enums.launch_answer import LaunchAnswer
@@ -37,7 +36,7 @@ def worker_count(story) -> int:
 
 
 def waiting_lines(story, worker) -> int:
-    return story.container.get(Queries).query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.WAITING).count()
+    return story.row_count(AgentLine, session_agent_id=worker.id, state=AgentLineState.WAITING)
 
 
 @pytest.fixture
@@ -83,8 +82,8 @@ def test_the_launcher_answers_locked_down_and_asks_nothing_of_the_launcher_for_a
     story.expect_rows(answer is LaunchAnswer.LOCKED_DOWN, launches == [])
 
 
-def test_the_merger_is_not_started_by_the_retry_at_the_limit_and_is_started_after_it_is_lifted(new_story, monkeypatch):
-    story, repository, worker, started = queued_story(new_story, monkeypatch)
+def test_the_merger_is_not_started_by_the_retry_at_the_limit_and_is_started_after_it_is_lifted(new_story):
+    story, repository, worker, started = queued_story(new_story)
     with_reported_usage(story)
     owner = person(story)
     story.expect_success(LIMIT, actor=owner)

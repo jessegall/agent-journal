@@ -1,3 +1,4 @@
+from datetime import timedelta
 from dataclasses import dataclass, field
 from typing import cast
 
@@ -9,6 +10,7 @@ from engine.enums.actor_type import ActorType
 from engine.journal.journal_home import JournalHome
 from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from engine.query.queries import Queries
+from engine.testing.stories.kit_rows import KitRows
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.unread_skills import UnreadSkills
 from engine.enums.command_category import CommandCategory
@@ -16,7 +18,7 @@ from engine.enums.tool_type import ToolType
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.examples.hook_sample import HookSample
 from engine.testing.examples.hook_samples import HookSamples
-from engine.time.clock import Clock
+from engine.testing.fakes.manual_clock import ManualClock
 from tests.integration.support.integration_journal import MAIN_ENVIRONMENT, IntegrationJournal
 
 
@@ -35,12 +37,14 @@ class FixtureLine:
 
 
 @dataclass
-class FixtureJournal:
+class FixtureJournal(KitRows):
     """An integration journal copied from a story fixture's template, with the agent and user that fixture made, so a
     mechanical story moved to tests/integration starts from the same state. A person's line runs in the main
     environment and an agent's in its own, as in a story."""
 
     journal: IntegrationJournal
+    clock: ManualClock
+    replacements: dict[type, object]
     agent: Actor = field(default_factory=Actor.core)
     user: Actor = field(default_factory=Actor.core)
 
@@ -52,10 +56,6 @@ class FixtureJournal:
     def container(self) -> Container:
         return self.journal.container
 
-    @property
-    def clock(self) -> Clock:
-        return self.container.get(Clock)
-
     def run(self, line: str, actor: Actor | None = None, environment_id: int | None = None) -> FixtureLine:
         caller_environment = environment_id or (None if actor is not None and actor.type is ActorType.AGENT else MAIN_ENVIRONMENT)
         if "environment make" in line:
@@ -63,6 +63,9 @@ class FixtureJournal:
         with self.journal.database.repeated_work.request():
             answer = self.journal.run(line, actor, caller_environment)
         return FixtureLine(answer.code, answer.text)
+
+    def advance(self, duration: timedelta) -> None:
+        self.clock.advance(duration)
 
     def new_row_id(self, line: str, actor: Actor | None = None) -> int:
         return self.journal.new_row_id(line, actor)
@@ -74,12 +77,27 @@ class FixtureJournal:
     def repeated_work(self) -> RepeatedWork:
         return cast(RepeatedWork, self.journal.database.repeated_work)
 
-    # binds the instance for the type, as a story replaces one of the story kit's own bindings
+    # puts the instance in place of the type, and forgets what was already built on the old one, as a story does
     def replace(self, kind: type, instance: object) -> None:
-        self.container.bind(kind, instance)
+        self.container.replace(kind, instance)
 
     # what an agent does after its session starts: it reads the overview and reads the file of each skill it must load,
     # through its program's Read tool, so the journal's own blocks and refusals lift as they do for a real agent
+    # a stand-in for a part of the outside world, in this container and in every container later built from the home
+    def bind(self, kind: type, instance: object) -> None:
+        self.replacements[kind] = instance
+        self.replace(kind, instance)
+
+    def unbind(self, kind: type) -> None:
+        self.replacements.pop(kind, None)
+        self.container.replace(kind, self.container.constructed(kind))
+
+    def expect_sync_success(self, module: str) -> None:
+        self.journal.expect_sync_success(module)
+
+    def expect_sync_refusal(self, module: str, text: str) -> None:
+        self.journal.expect_sync_refusal(module, text)
+
     def reads_what_it_must(self, session: str) -> None:
         self.hook(session, HookSamples.shell("journal overview", ShellPart("journal", CommandCategory.JOURNAL, ["overview"], subcommand="overview")))
         self.run("overview", actor=self.agent)
@@ -87,6 +105,17 @@ class FixtureJournal:
         for name in self.container.get(UnreadSkills).unread(self.agent.id):
             self.hook(session, HookSamples.sample("pre_tool_use", {"name": "Read", "category": ToolType.READ, "files": [skills[name]], "diff": None}))
         self.run_listeners()
+
+    # a step a module offers for a part of the world no command makes, such as a run printing its output
+    def step(self, name: str, *arguments: object) -> object:
+        return self.journal.step(name, *arguments)
+
+    def tick(self, session: str) -> HookReply:
+        return self.hook(session, HookSamples.tick())
+
+    def expect_no_text(self, line: str, *texts: str, actor: Actor | None = None) -> None:
+        answer = self.run(line, actor)
+        assert all(text not in answer.output_text for text in texts), (line, answer)
 
     def row(self, model: type, row_id: int):
         return self.container.get(Queries).query(model).find(row_id)
@@ -96,7 +125,8 @@ class FixtureJournal:
 
     def expect_success(self, line: str, *texts: str, actor: Actor | None = None) -> FixtureLine:
         answer = self.run(line, actor)
-        assert answer.code == 0 and all(text in answer.output_text for text in texts), (line, answer)
+        written = self.with_touched_rows(answer.output_text)
+        assert answer.code == 0 and all(text in written for text in texts), (line, answer)
         return answer
 
     def expect_text(self, line: str, *texts: str, actor: Actor | None = None) -> None:

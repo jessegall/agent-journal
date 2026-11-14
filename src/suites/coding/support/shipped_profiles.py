@@ -15,6 +15,9 @@ WORKER_SKILLS = ("journal", "journal-messages", "journal-memory", "journal-shell
 DESIGN_TOOLS = tuple(f"mcp__claude_design__{name}" for name in ("get_claude_design_prompt", "list_projects", "create_project", "get_project", "list_files", "read_file", "write_files", "copy_files", "delete_files", "render_preview",
                                                                   "list_design_systems", "read_design_skill", "finalize_plan", "list_comments", "ack_comments"))
 
+# a designer saves its designs and publishes them as artifacts itself (user 125268)
+ARTIFACT_TOOL = "Artifact"
+DESIGN_FOLDER = "docs/designs"
 READER_RULES = ShippedTexts.rule("reader")
 REPORT_RULES = ShippedTexts.rule("report")
 DOCUMENT_RULES = ShippedTexts.rule("document")
@@ -33,8 +36,8 @@ DEBUGGER_PROFILE = AgentProfile("journal-debugger", "Traces a fault to where it 
                                 ShippedTexts.profile("journal-debugger", TEXT_VALUES), title="Debugger", agent_type="helper", tier=ModelTier.GENERAL, model="sonnet", codex_model="gpt-6.1-terra", skills=HELPER_SKILLS, commands=ReaderCommands())
 MERGER_PROFILE = AgentProfile("journal-merger", "Merges workers whose tests passed: reads their proofs and logs, merges, runs the judge and sends findings back, and passes on what the main agent must judge. It edits no code.",
                               ShippedTexts.profile("journal-merger", TEXT_VALUES), title="Merger", agent_type="merger", tier=ModelTier.GENERAL, model="sonnet", codex_model="gpt-6.1-sol", has_parent_report=False, messages_siblings=True, occupant=Occupant.LAUNCH_ROTATION, skills=MERGER_SKILLS)
-DESIGNER_PROFILE = AgentProfile("journal-designer", "Designs a screen or a flow and files the design as a document. It changes no code; a design that needs project files changed goes to a worker.",
-                                ShippedTexts.profile("journal-designer", TEXT_VALUES), title="Designer", agent_type="helper", tier=ModelTier.GENERAL, model="sonnet", codex_model="gpt-6.1-terra", skills=HELPER_SKILLS, mcp_tools=DESIGN_TOOLS)
+DESIGNER_PROFILE = AgentProfile("journal-designer", "Designs a screen or a flow, saves it under docs/designs and publishes it as an artifact. It changes no code; a design that needs project files changed goes to a worker.",
+                                ShippedTexts.profile("journal-designer", TEXT_VALUES), title="Designer", agent_type="helper", tier=ModelTier.GENERAL, model="sonnet", codex_model="gpt-6.1-terra", skills=HELPER_SKILLS, mcp_tools=(*DESIGN_TOOLS, ARTIFACT_TOOL), writable_folders=(DESIGN_FOLDER,))
 CODE_REVIEWER_PROFILE = AgentProfile("journal-code-reviewer", "Reviews a range of changes, or the code of a project, for faults and for what the user asked against what exists, and files its findings as critical tasks. Read-only.",
                                      ShippedTexts.profile("journal-code-reviewer", TEXT_VALUES), title="Code reviewer", agent_type="helper", tier=ModelTier.STRONGEST, model="opus", codex_model="gpt-6.1-sol", skills=HELPER_SKILLS, commands=ReaderCommands())
 PLAN_REVIEWER_PROFILE = AgentProfile("journal-plan-reviewer", "Reviews a plan before it is approved: whether its phases and tasks reach its goal and nothing more, and what must change. Read-only.",

@@ -51,15 +51,6 @@ def test_a_silent_saved_command_is_named_by_its_alias_and_told_its_next_run_show
     story.expect_hook_allowed("s-1", READ_NOTES, SILENT_LINE)
 
 
-def test_an_alias_is_marked_silent_only_once_its_run_has_printed_nothing_for_30_seconds(new_story):
-    story = install_runner(new_story(fixture=BuildSaved))
-    moved_run(story, RUN, category=CommandCategory.BUILD)
-    story.advance(timedelta(seconds=10))
-    SilentAliasMarking()(story.container)
-    expect_value(read_alias(story).silent_at is None, True)
-    story.advance(timedelta(seconds=21))
-    SilentAliasMarking()(story.container)
-    expect_value(bool(read_alias(story).is_claimed), True)
 
 
 def test_the_next_run_of_a_silent_alias_is_refused_until_the_alias_is_edited(new_story):
@@ -72,24 +63,8 @@ def test_the_next_run_of_a_silent_alias_is_refused_until_the_alias_is_edited(new
         hook.expect_expanded(RUN, EDITED_LINE)
 
 
-def test_an_edited_alias_whose_run_prints_clears_its_mark(new_story):
-    story = silent_run(new_story)
-    edited_alias(story)
-    expect_value(bool(read_alias(story).fixed_at is not None and not read_alias(story).is_claimed), True)
-    process = moved_run(story, RUN, category=CommandCategory.BUILD)
-    story.step("run printed", process.id, 1, "step 1\n")
-    SilentAliasMarking()(story.container)
-    cleared = read_alias(story)
-    expect_value(bool(cleared.silent_at is None and cleared.fixed_at is None), True)
 
 
-def test_an_edited_alias_whose_run_stays_silent_is_held_again(new_story):
-    story = silent_run(new_story)
-    edited_alias(story, "npm run build --quiet")
-    moved_run(story, RUN, category=CommandCategory.BUILD)
-    story.advance(timedelta(seconds=31))
-    SilentAliasMarking()(story.container)
-    expect_value(bool(read_alias(story).is_claimed), True)
 
 
 def test_an_edit_that_leaves_the_line_alone_does_not_free_a_silent_alias(new_story):

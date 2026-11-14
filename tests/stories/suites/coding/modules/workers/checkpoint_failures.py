@@ -107,7 +107,7 @@ def test_182_a_failed_own_test_goes_to_the_task_whose_proof_names_the_failing_pa
     story.expect_rows(reach["failed_task_ids"] == "1", f"output {output_id(worker, BUILD_TEST)}" in " | ".join(failure_lines(worker)), detail=f"{reach} | {worker.worker_lines()}")
 
 
-def test_183_a_failure_that_names_no_task_goes_to_the_task_completed_last_and_the_merger_gets_a_line(running_checkpoint, monkeypatch):
+def test_183_a_failure_that_names_no_task_goes_to_the_task_completed_last_and_the_merger_gets_a_line(running_checkpoint):
     worker, story = running_checkpoint, running_checkpoint.story
     story.expect_success(MERGER_ON, actor=story.user)
     produce_output(worker, BUILD_TEST, "FAILED tests/receipts.py::test_print - assert 3 == 4\n")
@@ -135,7 +135,7 @@ def test_175_183_the_run_makes_the_selected_run_over_the_files_the_window_change
 
 def test_187_a_failed_test_of_a_run_the_main_agent_started_early_returns_the_task_in_testing_to_its_worker(new_story, monkeypatch):
     sole_branch_runs(monkeypatch)
-    worker = dispatched_story_worker(planned_story(new_story), PHASE_DISPATCH, monkeypatch)
+    worker = dispatched_story_worker(planned_story(new_story), PHASE_DISPATCH)
     worker.story.run("task start 2", actor=worker.worker)
     worker.prove_commit(TEST_LINE)
     StalledWorkerTestRuns()(worker.story.container)

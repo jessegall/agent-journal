@@ -41,14 +41,14 @@ def configure(worker, key, value):
         return server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", key, value, "--environment", "main"]})
 
 
-def test_s34_a_zero_allowance_sends_the_first_grouped_test_command_to_the_main_agent_for_approval(new_story, monkeypatch):
-    worker = plan_worker(new_story, monkeypatch)
+def test_s34_a_zero_allowance_sends_the_first_grouped_test_command_to_the_main_agent_for_approval(new_story):
+    worker = plan_worker(new_story)
     configure(worker, RUNS, "0")
     expect_reply_refusal(worker.run_test(), "No test runs left")
 
 
-def test_s34_a_settings_edit_between_commands_keeps_the_commands_already_used(new_story, monkeypatch):
-    worker = plan_worker(new_story, monkeypatch)
+def test_s34_a_settings_edit_between_commands_keeps_the_commands_already_used(new_story):
+    worker = plan_worker(new_story)
     expect_reply_allowed(worker.run_test())
     configure(worker, RUNS, "1")
     expect_reply_refusal(worker.run_test(), "No test runs left")
@@ -56,14 +56,14 @@ def test_s34_a_settings_edit_between_commands_keeps_the_commands_already_used(ne
     expect_reply_allowed(worker.run_test())
 
 
-def test_s36_adding_version_control_to_the_worker_command_types_does_not_allow_a_worker_git(new_story, monkeypatch):
-    worker = plan_worker(new_story, monkeypatch)
+def test_s36_adding_version_control_to_the_worker_command_types_does_not_allow_a_worker_git(new_story):
+    worker = plan_worker(new_story)
     configure(worker, COMMAND_TYPES, json.dumps(["read", "search", "edit", "test run", "build", "version control"]))
     expect_reply_refusal(worker.run_line("git status", ShellPart("git", CommandCategory.VERSION_CONTROL, ["status"])), "a worker runs no git")
 
 
-def test_s37_the_picked_files_become_the_arguments_of_the_project_test_command(new_story, monkeypatch):
-    story, _, _, started = affected_test_story(new_story, monkeypatch)
+def test_s37_the_picked_files_become_the_arguments_of_the_project_test_command(new_story):
+    story, _, _, started = affected_test_story(new_story)
     story.step("run printed", started[1], 1, "tests/cart.py\n")
     ended(story, started[1], 0)
     story.expect_rows(story.row(Process, started[2]).line == "python3 -m pytest -q tests/cart.py")
@@ -71,8 +71,8 @@ def test_s37_the_picked_files_become_the_arguments_of_the_project_test_command(n
     story.expect_text("task show 1", "state: completed", actor=story.agent)
 
 
-def test_s38_a_failed_selected_test_returns_the_work_and_no_full_suite_follows(new_story, monkeypatch):
-    story, _, _, started = affected_test_story(new_story, monkeypatch)
+def test_s38_a_failed_selected_test_returns_the_work_and_no_full_suite_follows(new_story):
+    story, _, _, started = affected_test_story(new_story)
     story.step("run printed", started[1], 1, "tests/cart.py\n")
     ended(story, started[1], 0)
     ended(story, started[2], 1)
@@ -88,8 +88,8 @@ class MergedWork:
 
 
 @pytest.fixture
-def merged_work(new_story, monkeypatch):
-    story, repository, worker, started = queued_story(new_story, monkeypatch)
+def merged_work(new_story):
+    story, repository, worker, started = queued_story(new_story)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
@@ -115,7 +115,7 @@ def test_s39_configured_merger_checks_are_listed_after_the_merge_with_the_commit
     story.expect_text("task show 1", "state: completed", actor=story.agent)
 
 
-def test_manual_merge_keeps_mechanical_judging(new_story, monkeypatch):
+def test_manual_merge_keeps_mechanical_judging(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)

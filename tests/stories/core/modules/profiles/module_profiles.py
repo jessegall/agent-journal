@@ -3,8 +3,6 @@ import json
 
 import pytest
 
-from engine.database.database import Database
-from engine.registry.registry import Registry
 from core.modules.profiles.support.profile_files import ProfileFiles
 from tests.stories.core.support.fixtures import UserJoined
 from suites.coding.support.shipped_profiles import CODE_REVIEWER_PROFILE
@@ -26,7 +24,7 @@ def test_a_module_that_is_no_suite_registers_a_profile_and_keeps_its_origin(new_
     rows = json.loads(story.run("profile list --json").output_text)["rows"]
     profile = next(row for row in rows if row["name"] == "module-reader")
     story.expect_rows(profile["agent_type"] == "helper", profile["module"] == "sample.profiles", profile["shipped"])
-    registered = Registry.read(story.container.get(Database)).profile("module-reader")
+    registered = story.registry().profile("module-reader")
     story.expect_rows(registered.module == "sample.profiles", registered.profile.body == "Read the files.")
 
 

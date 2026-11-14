@@ -2,7 +2,6 @@ from tests.stories.core.modules.skills.due import drain_countdown
 import pytest
 from concurrent.futures import ThreadPoolExecutor
 
-from engine.command.bus import Bus
 from engine.enums.command_category import CommandCategory
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
@@ -104,7 +103,7 @@ def test_a_skill_trigger_refuses_the_tool_then_allows_it_after_the_skill_is_read
     drain_countdown(story, sample, "journal")
     story.expect_hook_refusal("s-1", sample, "load this first with the Skill tool: journal")
     entry = next(skill for skill in story.container.get(SkillCatalogue).skills() if skill.folder == "journal")
-    story.container.get(Bus).run(LoadSkill(story.agent.id, "journal", entry.digest), story.agent)
+    story.run_command(LoadSkill(story.agent.id, "journal", entry.digest), story.agent)
     story.run_listeners()
     story.expect_text(f"agent-skill list --agent {story.agent.id}", "journal", "loaded")
     story.expect_hook_allowed("s-1", sample)
@@ -141,7 +140,7 @@ def test_invalid_skill_or_pattern_is_refused_without_saving_a_trigger(skills_pag
 def test_read_again_uses_the_skill_reset_action_through_the_page(skills_page_story):
     story = skills_page_story
     entry = next(skill for skill in story.container.get(SkillCatalogue).skills() if skill.folder == "project-notes")
-    row = story.container.get(Bus).run(LoadSkill(story.agent.id, "project-notes", entry.digest), story.agent)
+    row = story.run_command(LoadSkill(story.agent.id, "project-notes", entry.digest), story.agent)
     with skills_server(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         line(server, cookie, "agent-skill", "reset", str(row.id))
@@ -186,7 +185,7 @@ def test_a_required_plugin_skill_is_due_at_start_and_after_compaction(skills_pag
     story.run_listeners()
     story.expect_text(f"agent-skill list --agent {story.agent.id}", "sample-plugin", "due")
     entry = next(skill for skill in story.container.get(SkillCatalogue).skills() if skill.folder == "sample-plugin")
-    story.container.get(Bus).run(LoadSkill(story.agent.id, "sample-plugin", entry.digest), story.agent)
+    story.run_command(LoadSkill(story.agent.id, "sample-plugin", entry.digest), story.agent)
     story.hook("s-1", HookSamples.sample("compact"))
     story.hook("s-1", HookSamples.session_start())
     story.run_listeners()

@@ -1,0 +1,2 @@
+tests/stories/tunnels/tunler/tunler_tunnel.py::test_a_journal_with_no_subdomain_set_gets_the_setting_to_set -> integration tests/integration/tunnels/tunler/test_tunler_tunnel.py::test_a_journal_with_no_subdomain_set_gets_the_setting_to_set
+tests/stories/tunnels/tunler/write_lock.py::test_a_call_that_waits_on_tunler_holds_no_write_lock -> integration tests/integration/tunnels/tunler/test_write_lock.py::test_a_call_that_waits_on_tunler_holds_no_write_lock

@@ -1,7 +1,5 @@
 from engine.testing.stories.story_fixture import StoryFixture
 
-from engine.database.database import Database
-from engine.registry.registry import Registry
 from tests.stories.core.modules.chat.support.mark_samples import mark_count, marks_text, expect_mark_count, expect_marks_text
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 
@@ -55,7 +53,7 @@ def test_a_close_ends_the_one_mark_in_place_and_says_it_is_closed(new_story):
 
 def test_the_question_mark_is_declared_as_a_process_in_its_family(new_story):
     story = new_story(fixture=BuilderStarted)
-    mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "questions.question")
+    mark = next(entry for entry in story.registry().marks if entry.type == "questions.question")
     expect_family_mark(mark, "questions.questions")
     expect_process_mark(mark)
 

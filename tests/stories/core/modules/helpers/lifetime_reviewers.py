@@ -76,9 +76,9 @@ class EndedReviewer(StoryFixture):
 
 
 @pytest.fixture
-def idle_reviewer(new_story, monkeypatch):
+def idle_reviewer(new_story):
     story = new_story(fixture=EndedReviewer)
-    resumable_session(story, reviewers(story)[0], monkeypatch)
+    resumable_session(story, reviewers(story)[0])
     return story
 
 
@@ -136,14 +136,14 @@ def test_a_second_job_sent_to_an_ended_reviewer_is_accepted_and_ends_its_session
                       len(read_jobs(story, reviewer)) == 2, detail=str(history))
 
 
-def test_a_second_review_of_the_same_plan_by_one_reviewer_is_refused_and_names_another_idle_reviewer_or_fresh(idle_reviewer, monkeypatch):
+def test_a_second_review_of_the_same_plan_by_one_reviewer_is_refused_and_names_another_idle_reviewer_or_fresh(idle_reviewer):
     story = idle_reviewer
     first = reviewers(story)[0]
     launches(story, f"{START_REVIEW.format(plan=6)} --fresh '{NEW_AGENT_REASON}'")
     second = reviewers(story)[1]
     story.expect_success(f"agent end {second.id}", actor=story.user)
     story.run_listeners()
-    resumable_session(story, second, monkeypatch)
+    resumable_session(story, second)
     refusal = refusal_text(story, review_job(story, first, 5))
     story.expect_rows("reviewed plan 5" in refusal, f"journal helper send {second.number}" in refusal, "--fresh" in refusal, detail=refusal)
 

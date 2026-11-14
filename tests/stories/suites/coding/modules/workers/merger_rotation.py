@@ -54,12 +54,12 @@ def merger_launch(story) -> dict:
     return launches[0]
 
 
-def ended_merger(story, monkeypatch) -> Agent:
+def ended_merger(story) -> Agent:
     merger_launch(story)
     merger = mergers(story)[0]
     story.expect_success(f"agent end {merger.id}", actor=story.agent)
     story.run_listeners()
-    resumable_session(story, merger, monkeypatch)
+    resumable_session(story, merger)
     return merger
 
 
@@ -68,16 +68,16 @@ def test_the_first_merger_start_gives_one_agent_with_a_new_session(merging):
     merging.expect_rows(len(mergers(merging)) == 1, "--resume" not in command, mergers(merging)[0].session in command, detail=str(command[:4]))
 
 
-def test_a_later_merger_start_opens_a_job_on_the_idle_merger_under_a_new_session(merging, monkeypatch):
-    merger = ended_merger(merging, monkeypatch)
+def test_a_later_merger_start_opens_a_job_on_the_idle_merger_under_a_new_session(merging):
+    merger = ended_merger(merging)
     command = merger_launch(merging)["command"]
     current = mergers(merging)
     merging.expect_rows(len(current) == 1, current[0].id == merger.id, current[0].session != merger.session, "--resume" not in command,
                         agent_number(merging, current[0].id) == agent_number(merging, merger.id), detail=str(command[:4]))
 
 
-def test_a_merger_profile_changed_to_codex_gives_the_same_agent_a_codex_session_and_retires_nobody(merging, monkeypatch):
-    merger = ended_merger(merging, monkeypatch)
+def test_a_merger_profile_changed_to_codex_gives_the_same_agent_a_codex_session_and_retires_nobody(merging):
+    merger = ended_merger(merging)
     merging.expect_success(f'memory make "{MEMORY_TEXT}" --weight 5', actor=Actor(merger.id, ActorType.AGENT))
     merging.expect_success(PROGRAM_SAVE.format(program="codex"), actor=merging.user)
     command = merger_launch(merging)["command"]
@@ -86,8 +86,8 @@ def test_a_merger_profile_changed_to_codex_gives_the_same_agent_a_codex_session_
     merging.expect_text("memory list", MEMORY_TEXT, actor=Actor(merger.id, ActorType.AGENT))
 
 
-def test_a_merger_whose_first_program_is_out_runs_on_its_second_and_returns_when_the_outage_ends(merging, monkeypatch):
-    merger = ended_merger(merging, monkeypatch)
+def test_a_merger_whose_first_program_is_out_runs_on_its_second_and_returns_when_the_outage_ends(merging):
+    merger = ended_merger(merging)
     merging.expect_success(TWO_PROGRAM_SAVE, actor=merging.user)
     real_program_states(merging)
     ends_at = (merging.clock.timestamp().value + timedelta(minutes=30)).isoformat()
@@ -103,9 +103,9 @@ def test_a_merger_whose_first_program_is_out_runs_on_its_second_and_returns_when
 
 
 @pytest.fixture
-def when_cold_merger(merging, monkeypatch) -> Agent:
+def when_cold_merger(merging) -> Agent:
     declared_occupant(merging, "when-cold")
-    return ended_merger(merging, monkeypatch)
+    return ended_merger(merging)
 
 
 def test_a_merger_kept_since_before_the_declaration_gets_a_new_session_at_its_next_start(merging, when_cold_merger):

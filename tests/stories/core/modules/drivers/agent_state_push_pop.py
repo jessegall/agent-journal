@@ -1,7 +1,6 @@
 import pytest
 
 from engine.actor.actor import Actor
-from engine.command.bus import Bus
 from engine.command.errors.completed_command_error import CompletedCommandError
 from engine.driver.block_until import BlockUntil
 from engine.driver.conditions.ran_command import RanCommand
@@ -27,7 +26,7 @@ class PushedBlock(StoryFixture):
     parent = LeadStarted
 
     def steps(self, story):
-        story.container.get(Bus).run(BlockUntil(story.agent.id, Nudge("samples.wait", NudgeType.REFUSAL, LINE), RanCommand("journal overview")), Actor.core())
+        story.run_command(BlockUntil(story.agent.id, Nudge("samples.wait", NudgeType.REFUSAL, LINE), RanCommand("journal overview")), Actor.core())
 
 
 class SkippableBlock(StoryFixture):
@@ -36,7 +35,7 @@ class SkippableBlock(StoryFixture):
     parent = LeadStarted
 
     def steps(self, story):
-        story.container.get(Bus).run(BlockUntil(story.agent.id, Nudge("samples.wait", NudgeType.REFUSAL, LINE), RanCommand("journal overview"), is_skippable=True), Actor.core())
+        story.run_command(BlockUntil(story.agent.id, Nudge("samples.wait", NudgeType.REFUSAL, LINE), RanCommand("journal overview"), is_skippable=True), Actor.core())
 
 
 def open_blocks(story) -> list[AgentBlock]:
@@ -51,13 +50,13 @@ def test_a_block_pushed_by_a_command_refuses_the_next_tool_use(new_story):
 
 def test_pushing_the_same_block_twice_keeps_one_open_block(new_story):
     story = new_story(SAMPLES, fixture=PushedBlock)
-    story.container.get(Bus).run(BlockUntil(story.agent.id, Nudge("samples.wait", NudgeType.REFUSAL, LINE), RanCommand("journal overview")), Actor.core())
+    story.run_command(BlockUntil(story.agent.id, Nudge("samples.wait", NudgeType.REFUSAL, LINE), RanCommand("journal overview")), Actor.core())
     story.expect_rows(len(open_blocks(story)) == 1, detail=str(len(open_blocks(story))))
 
 
 def test_a_rule_pops_a_block_by_closing_its_row_and_the_next_hook_is_allowed(new_story):
     story = new_story(SAMPLES, fixture=PushedBlock)
-    story.container.get(Bus).run(CloseAgentBlock(open_blocks(story)[0].id), Actor.core())
+    story.run_command(CloseAgentBlock(open_blocks(story)[0].id), Actor.core())
     story.expect_hook_allowed("s-1", EDIT)
 
 
@@ -68,7 +67,7 @@ def test_a_block_closes_by_itself_when_the_agent_does_what_it_waits_for_and_popp
     story.expect_hook_allowed("s-1", EDIT)
     story.expect_rows(open_blocks(story) == [])
     with pytest.raises(CompletedCommandError, match="settled already"):
-        story.container.get(Bus).run(CloseAgentBlock(closed), Actor.core())
+        story.run_command(CloseAgentBlock(closed), Actor.core())
     story.expect_hook_allowed("s-1", EDIT)
     story.expect_rows(open_blocks(story) == [])
 

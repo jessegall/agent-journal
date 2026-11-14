@@ -23,12 +23,12 @@ FIXED_CART = "TOTAL = 3\n"
 
 
 @pytest.fixture
-def proved(new_story, monkeypatch) -> StoryWorker:
+def proved(new_story) -> StoryWorker:
     """A worker of one task in no plan that changed the cart and proved the one point of its task with a test;
     nothing is committed."""
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    worker = dispatched_story_worker(story, DISPATCH, monkeypatch)
+    worker = dispatched_story_worker(story, DISPATCH)
     worker.prove(TEST_LINE)
     return worker
 

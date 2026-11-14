@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 from tests.stories.core.support.agent_labels import agent_number
 import json
@@ -49,7 +50,7 @@ def waiting_place(new_story, monkeypatch, request):
         return LaunchAnswer.STARTED
 
     monkeypatch.setattr(AgentLauncher, "hand", launch)
-    tests = recording_launch(monkeypatch)
+    tests = recorded_test_launches(story)
     repository = repository_environment(story)
     first = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(first.id, "cart.py", CART_CHANGE)

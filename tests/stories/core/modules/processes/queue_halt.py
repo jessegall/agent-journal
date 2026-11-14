@@ -4,7 +4,6 @@ from engine.enums.command_category import CommandCategory
 from engine.module.module_finder import ModuleFinder
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.command.bus import Bus
 from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
@@ -73,7 +72,7 @@ def test_a_restart_holds_the_queue_and_releases_it_by_itself_when_the_restart_is
     expect_waits(story, first)
     expect_waits(story, second)
     story.home.restart_mark.unlink()
-    story.container.get(Bus).run(GrantRunSlots(), Actor.core())
+    story.run_command(GrantRunSlots(), Actor.core())
     expect_slot(story, first)
     expect_slot(story, second)
 
@@ -83,7 +82,7 @@ def test_a_restart_does_not_release_a_queue_a_command_halted(new_story):
     story.home.restart_mark.write_text("1")
     first = queued(story, "make one")
     story.home.restart_mark.unlink()
-    story.container.get(Bus).run(GrantRunSlots(), Actor.core())
+    story.run_command(GrantRunSlots(), Actor.core())
     expect_waits(story, first)
 
 

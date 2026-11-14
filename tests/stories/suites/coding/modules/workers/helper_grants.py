@@ -19,7 +19,7 @@ def worker(new_story, monkeypatch):
     repository_environment(story)
     monkeypatch.setattr(RunnerBinary, "is_installed", lambda _runner: True)
     monkeypatch.setattr(subprocess, "Popen", lambda command, **options: SimpleNamespace(pid=1))
-    return dispatched_story_worker(story, DISPATCH, monkeypatch)
+    return dispatched_story_worker(story, DISPATCH)
 
 
 @pytest.fixture

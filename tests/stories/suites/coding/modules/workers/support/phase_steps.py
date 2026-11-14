@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 from tests.stories.core.modules.processes.support.roomy_fixtures import RoomyOrchestratorWithPerson
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
@@ -181,40 +182,40 @@ def agent_lines(story: Story, agent: Actor) -> tuple[str, ...]:
     return tuple(line.text for line in lines)
 
 
-def dispatched_story_worker(story: Story, dispatch: str, monkeypatch) -> StoryWorker:
+def dispatched_story_worker(story: Story, dispatch: str) -> StoryWorker:
     install_runner(story)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     worker = dispatched_worker(story, dispatch)
     repository = story_repository(story)
     return StoryWorker(story, repository, worker, worker_session(story, worker), started, len(agent_lines(story, story.agent)))
 
 
-def start_planned_worker(new_story, monkeypatch, dispatch: str = PLAN_DISPATCH, build_test: str = "") -> StoryWorker:
-    return dispatched_story_worker(planned_story(new_story, build_test=build_test), dispatch, monkeypatch)
+def start_planned_worker(new_story, dispatch: str = PLAN_DISPATCH, build_test: str = "") -> StoryWorker:
+    return dispatched_story_worker(planned_story(new_story, build_test=build_test), dispatch)
 
 
-def unplanned_worker(new_story, monkeypatch) -> StoryWorker:
+def unplanned_worker(new_story) -> StoryWorker:
     """A worker holding task 1 with task 2 queued, neither of them in a plan."""
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.run('task make "Tax" --brief "The tax"', actor=story.agent)
-    return dispatched_story_worker(story, EXTERNAL_DISPATCH, monkeypatch)
+    return dispatched_story_worker(story, EXTERNAL_DISPATCH)
 
 
-def single_task_worker(new_story, monkeypatch) -> StoryWorker:
+def single_task_worker(new_story) -> StoryWorker:
     """A worker sent task 1 alone, in no plan: a unit of one."""
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    return dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1", monkeypatch)
+    return dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1")
 
 
-def unplanned_group_worker(new_story, monkeypatch) -> StoryWorker:
+def unplanned_group_worker(new_story) -> StoryWorker:
     """A worker holding task 1 with tasks 2 and 3 queued, none of them in a plan."""
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     for title in ("Tax", "Totals"):
         story.run(f'task make "{title}" --brief "The {title.lower()}"', actor=story.agent)
-    return dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1 2 3", monkeypatch)
+    return dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1 2 3")
 
 
 def expect_task_states(worker: StoryWorker, state: str, *task_ids: int) -> None:

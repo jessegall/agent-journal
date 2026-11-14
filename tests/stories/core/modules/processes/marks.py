@@ -6,9 +6,6 @@ from datetime import timedelta
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.command.bus import Bus
-from engine.database.database import Database
-from engine.registry.registry import Registry
 from core.modules.docking.commands.keep_dock_item.keep_dock_item import KeepDockItem
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.run_visibility import RunVisibility
@@ -107,7 +104,7 @@ def test_a_short_run_whose_output_is_dropped_still_ends_its_mark(ended_short_mar
 
 def test_the_mark_is_a_process_mark_that_folds_open_in_place_and_has_a_stop_and_a_dock_button(new_story):
     story = install_runner(new_story(fixture=RoomyBuilderStarted))
-    mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "processes.command")
+    mark = next(entry for entry in story.registry().marks if entry.type == "processes.command")
     expect_row(mark, family="processes.commands", family_title="Commands", group="work", click="unfold", process=True)
     expect_label_button_runs(mark, [("Stop", "output stop {row_id}"), ("Dock", "dock add processes.output process {row_id}")])
 
@@ -117,7 +114,7 @@ def test_a_finished_process_cannot_be_docked_and_stop_and_dock_are_only_for_a_ru
     process = started_run(story, "make done")
     end_run(story, process, "a\n")
     story.expect_refusal(f"dock add processes.output process {process.id} --environment main", "has ended, so it cannot be docked", actor=story.agent)
-    mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "processes.command")
+    mark = next(entry for entry in story.registry().marks if entry.type == "processes.command")
     expect_variants_button_buttons(mark, [["queued", "running", "background"], ["running", "background"]])
 
 
@@ -129,7 +126,7 @@ def test_a_docked_output_leaves_10_seconds_after_its_process_ends_unless_kept(ne
     story.tick("s-1")
     story.run_listeners()
     story.expect_text("dock-item list --oldest", "processes.output")
-    story.container.get(Bus).run(KeepDockItem(1), user)
+    story.run_command(KeepDockItem(1), user)
     end_run(story, kept, "a\n")
     end_run(story, leaving, "b\n")
     story.advance(timedelta(seconds=11))

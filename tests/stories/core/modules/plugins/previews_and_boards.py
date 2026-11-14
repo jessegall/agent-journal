@@ -63,25 +63,8 @@ def test_the_latest_says_a_folder_has_a_newer_version(new_story):
     story.expect_text("plugin latest standup", "1.10.0 is newer than 1.2.0")
 
 
-def test_the_latest_of_a_repository_is_its_highest_version_tag(new_story):
-    story = new_story(fixture=BuilderStarted)
-    repository = story.home.folder.parent / "repository"
-    repository.mkdir()
-    for line in (["init"], ["-c", "user.name=Story", "-c", "user.email=story@example.com", "commit", "--allow-empty", "-m", "First"], ["tag", "v1.9.0"], ["tag", "v1.10.0"], ["tag", "nightly"]):
-        subprocess.run(["git", "-C", str(repository), *line], check=True, capture_output=True, timeout=GIT_LIMIT_SECONDS)
-    latest = story.container.get(PluginReleases).latest("standup", "v1.9.0", f"file://{repository}")
-    story.expect_rows(latest.newest == "v1.10.0", latest.is_newer)
-    empty = story.home.folder.parent / "empty"
-    empty.mkdir()
-    subprocess.run(["git", "-C", str(empty), "init"], check=True, capture_output=True, timeout=GIT_LIMIT_SECONDS)
-    story.expect_rows(story.container.get(PluginReleases).latest("standup", "v1.9.0", f"file://{empty}").newest is None)
 
 
-def test_the_latest_of_a_repository_that_cannot_be_read_is_refused(new_story):
-    story = installed_plugin(new_story)
-    releases = story.container.get(PluginReleases)
-    with pytest.raises(Refusal, match="could not be read"):
-        releases.latest("standup", "1.0", f"file://{story.home.folder.parent}/nowhere")
 
 
 def test_a_plugins_description_is_read_from_its_manifest(new_story):

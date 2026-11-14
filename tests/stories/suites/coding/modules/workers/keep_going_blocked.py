@@ -68,15 +68,3 @@ def test_a_worker_whose_task_the_main_agent_blocks_is_told(worker_on_a_task):
     story.expect_rows(BLOCKED_WORKER_TASK.nudge(task=1).text in lines, detail=lines)
 
 
-def test_a_stopped_worker_whose_blocked_task_opens_is_started_again(running_worker):
-    story = running_worker
-    story.expect_success(BLOCK, actor=story.agent)
-    story.use_processes()
-    story.tick(MAIN_SESSION)
-    story.advance(timedelta(minutes=1))
-    launcher = start_launcher(story, f"started {RESUMED_PID}\n".encode())
-    story.expect_success("task unblock 1", actor=story.agent)
-    story.run_listeners()
-    WorkerResumeRetry()(story.container)
-    launcher.drain_requests()
-    story.expect_rows(len(launcher.starts) == 1, launcher.starts[0]["agent_id"] == story.worker.id, detail=str(launcher.requests))

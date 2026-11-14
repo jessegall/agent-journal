@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 from tests.stories.core.support.agent_labels import agent_number
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 from core.modules.messages.models.message import Message
@@ -71,7 +72,7 @@ def merger_agent(story):
 
 @pytest.mark.parametrize("failure", ["limit", "outage", "sandbox", "no main agent", "unexpected error"])
 def test_when_the_merger_cannot_start_the_main_agent_hears_what_waits(new_story, monkeypatch, failure):
-    story, _, worker, started = queued_story(new_story, monkeypatch)
+    story, _, worker, started = queued_story(new_story)
     reached = []
 
     def fail(*_args):
@@ -99,7 +100,7 @@ def test_when_the_merger_cannot_start_the_main_agent_hears_what_waits(new_story,
 
 
 def test_a_merge_waits_until_a_main_agent_returns(new_story, monkeypatch):
-    story, repository, worker, started = queued_story(new_story, monkeypatch)
+    story, repository, worker, started = queued_story(new_story)
     story.expect_success(f"agent end {story.agent.id}", actor=story.agent)
     ended(story, started[0], 0)
     main = hook_agent(story, story.hook("new-main", HookSamples.session_start()))
@@ -114,7 +115,7 @@ def test_a_merge_waits_until_a_main_agent_returns(new_story, monkeypatch):
 
 
 def test_a_retry_that_fails_again_does_not_repeat_the_line_once_the_main_agent_has_read_it(new_story, monkeypatch):
-    story, repository, worker, started = queued_story(new_story, monkeypatch)
+    story, repository, worker, started = queued_story(new_story)
     story.expect_success(f"agent end {story.agent.id}", actor=story.agent)
     ended(story, started[0], 0)
     main = hook_agent(story, story.hook("new-main", HookSamples.session_start()))
@@ -133,12 +134,12 @@ def test_a_retry_that_fails_again_does_not_repeat_the_line_once_the_main_agent_h
 
 
 @pytest.mark.parametrize("merger_enabled", [True, False])
-def test_delivery_with_only_checked_proofs_reaches_the_merger_or_main_agent(new_story, monkeypatch, merger_enabled):
+def test_delivery_with_only_checked_proofs_reaches_the_merger_or_main_agent(new_story, merger_enabled):
     story = new_story(fixture=OpenTaskOrchestrator)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success(f"setting set {MERGER_ENABLED} {str(merger_enabled).lower()} --project", actor=story.user)
     repository = repository_environment(story)
-    started = recording_launch(monkeypatch)
+    started = recorded_test_launches(story)
     worker = dispatched_worker(story)
     repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
     story.expect_success(PROOF, actor=worker)
@@ -166,8 +167,8 @@ def test_only_the_merger_runs_its_commands(new_story):
     story.expect_refusal('merger pass 1 "odd"', "only the merger runs this", actor=story.agent)
 
 
-def test_the_mergers_merge_waits_its_turn_in_the_queue_as_a_worker_operation(new_story, monkeypatch):
-    story, repository, worker, started = queued_story(new_story, monkeypatch)
+def test_the_mergers_merge_waits_its_turn_in_the_queue_as_a_worker_operation(new_story):
+    story, repository, worker, started = queued_story(new_story)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
@@ -180,8 +181,8 @@ def test_the_mergers_merge_waits_its_turn_in_the_queue_as_a_worker_operation(new
     story.expect_text("merger next", agent_label(story, worker.id), actor=actor)
 
 
-def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent_is_nudged_once(new_story, monkeypatch):
-    story, repository, worker, started = queued_story(new_story, monkeypatch)
+def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent_is_nudged_once(new_story):
+    story, repository, worker, started = queued_story(new_story)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
@@ -207,8 +208,8 @@ def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent
     story.expect_text(f"agent-line list --agent {worker.id}", "Fix the merged code", actor=worker)
 
 
-def test_the_merger_and_a_worker_message_each_other_but_two_workers_do_not(new_story, monkeypatch):
-    story, repository, worker, started = queued_story(new_story, monkeypatch)
+def test_the_merger_and_a_worker_message_each_other_but_two_workers_do_not(new_story):
+    story, repository, worker, started = queued_story(new_story)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
@@ -224,7 +225,7 @@ def test_the_merger_and_a_worker_message_each_other_but_two_workers_do_not(new_s
     story.expect_refusal(f'message send "Hello" --to agent:{agent_number(story, second_agent.id)}', "not yours to message", actor=worker)
 
 
-def test_a_workers_report_goes_to_the_merger_and_the_merger_tells_the_main_agent_what_it_must_act_on(new_story, monkeypatch):
+def test_a_workers_report_goes_to_the_merger_and_the_merger_tells_the_main_agent_what_it_must_act_on(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
@@ -267,7 +268,7 @@ def expect_merger_lines(notices, expected):
 @pytest.mark.real_git
 def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkeypatch):
     monkeypatch.setattr(ClaudeCodeProvider, "session_matches_folder", lambda _provider, _folder, _session: True)
-    story, repository, worker, started = queued_story(new_story, monkeypatch)
+    story, repository, worker, started = queued_story(new_story)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
@@ -306,8 +307,8 @@ def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkey
         story.home.socket("launcher").unlink(missing_ok=True)
 
 
-def test_the_merger_pass_shows_the_reason_on_the_worker_mark(new_story, monkeypatch):
-    story, repository, worker, started = queued_story(new_story, monkeypatch)
+def test_the_merger_pass_shows_the_reason_on_the_worker_mark(new_story):
+    story, repository, worker, started = queued_story(new_story)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
@@ -323,8 +324,8 @@ def test_the_merger_pass_shows_the_reason_on_the_worker_mark(new_story, monkeypa
     story.expect_rows(len(marks) == 2, marks[0].detail == reason, marks[1].detail == "Another decision", marks[0].target_id == worker.id)
 
 
-def ended_merger_lines(new_story, monkeypatch, end) -> tuple[object, str]:
-    story, repository, worker, started = queued_story(new_story, monkeypatch)
+def ended_merger_lines(new_story, end) -> tuple[object, str]:
+    story, repository, worker, started = queued_story(new_story)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
@@ -340,18 +341,18 @@ def ended_merger_lines(new_story, monkeypatch, end) -> tuple[object, str]:
 
 
 @pytest.mark.parametrize("exit_code, fault", [(0, False), (137, True)])
-def test_the_merger_whose_program_exits_without_a_report_does_not_notify_the_main_agent(new_story, monkeypatch, exit_code, fault):
-    story, lines = ended_merger_lines(new_story, monkeypatch, lambda story, merger: story.expect_success(f"agent exited {merger.id} {exit_code}", actor=merger))
+def test_the_merger_whose_program_exits_without_a_report_does_not_notify_the_main_agent(new_story, exit_code, fault):
+    story, lines = ended_merger_lines(new_story, lambda story, merger: story.expect_success(f"agent exited {merger.id} {exit_code}", actor=merger))
     story.expect_rows(expected_nudge(HELPER_PROGRAM_FAULT).matches_text(lines) == fault)
 
 
-def test_the_merger_whose_session_ends_without_a_report_does_not_notify_the_main_agent(new_story, monkeypatch):
-    story, lines = ended_merger_lines(new_story, monkeypatch, lambda story, merger: story.end_session(merger))
+def test_the_merger_whose_session_ends_without_a_report_does_not_notify_the_main_agent(new_story):
+    story, lines = ended_merger_lines(new_story, lambda story, merger: story.end_session(merger))
     story.expect_rows(not expected_nudge(HELPER_PROGRAM_FAULT).matches_text(lines))
 
 
-def test_a_worker_left_to_the_main_agent_is_not_reported_as_stopped(new_story, monkeypatch):
-    story, repository, worker, started = queued_story(new_story, monkeypatch)
+def test_a_worker_left_to_the_main_agent_is_not_reported_as_stopped(new_story):
+    story, repository, worker, started = queued_story(new_story)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
@@ -366,7 +367,7 @@ def test_a_worker_left_to_the_main_agent_is_not_reported_as_stopped(new_story, m
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has stopped")
 
 
-def test_long_merger_lines_wait_until_the_output_is_read_whole(new_story, monkeypatch):
+def test_long_merger_lines_wait_until_the_output_is_read_whole(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
@@ -399,8 +400,8 @@ def test_the_merger_is_told_to_read_a_merge_that_moved_to_the_background_before_
     story.expect_rows("journal output read <n> --summary" in profile.body, "never tell the main agent a merge is unconfirmed while its output still runs" in profile.body)
 
 
-def test_a_merge_the_merger_starts_runs_in_the_foreground_and_is_reported_once_and_confirmed_by_next(new_story, monkeypatch):
-    story, repository, worker, started = queued_story(new_story, monkeypatch)
+def test_a_merge_the_merger_starts_runs_in_the_foreground_and_is_reported_once_and_confirmed_by_next(new_story):
+    story, repository, worker, started = queued_story(new_story)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
@@ -421,8 +422,8 @@ def test_a_merge_the_merger_starts_runs_in_the_foreground_and_is_reported_once_a
     story.expect_rows(len(merged_worker_lines(story, worker)) == 1, not any("could not be confirmed" in row.text for row in story.story_rows(Message, session_agent_id=merger.id)))
 
 
-def test_explaining_a_merge_runs_the_merge_inside_the_explanation_without_the_transaction_error(new_story, monkeypatch):
-    story, repository, worker, started = queued_story(new_story, monkeypatch)
+def test_explaining_a_merge_runs_the_merge_inside_the_explanation_without_the_transaction_error(new_story):
+    story, repository, worker, started = queued_story(new_story)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
@@ -453,8 +454,8 @@ def test_a_planner_helper_ending_starts_no_merger(new_story):
     story.expect_rows(merger_agent(story) is None, len(story.story_rows(MergerLine)) == 0)
 
 
-def test_a_worker_the_merger_ended_without_taking_in_is_named_to_the_main_agent_after_the_wait(new_story, monkeypatch):
-    story, repository, worker, started = queued_story(new_story, monkeypatch)
+def test_a_worker_the_merger_ended_without_taking_in_is_named_to_the_main_agent_after_the_wait(new_story):
+    story, repository, worker, started = queued_story(new_story)
     repository.checkout(ENVIRONMENT_BRANCH)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
@@ -474,8 +475,8 @@ def test_a_worker_the_merger_ended_without_taking_in_is_named_to_the_main_agent_
     story.expect_rows(reminder in story.run(main_lines).output_text)
 
 
-def test_a_worker_the_merger_passes_on_is_named_to_the_main_agent_with_its_merge_waiting_and_named_again_after_the_wait(new_story, monkeypatch):
-    story, repository, worker, started = queued_story(new_story, monkeypatch)
+def test_a_worker_the_merger_passes_on_is_named_to_the_main_agent_with_its_merge_waiting_and_named_again_after_the_wait(new_story):
+    story, repository, worker, started = queued_story(new_story)
     repository.checkout(ENVIRONMENT_BRANCH)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:

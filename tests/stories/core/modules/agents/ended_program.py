@@ -6,7 +6,6 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.caller.process_row import ProcessRow
-from engine.command.bus import Bus
 from engine.process.leftover_process import LeftoverProcess
 from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from engine.time.timestamp import Timestamp
@@ -79,7 +78,7 @@ def test_a_main_agent_that_ended_itself_gets_no_stop(new_story):
 def test_a_program_stop_waits_for_its_own_round_and_holds_no_ordinary_listener(new_story):
     story = new_story(fixture=UserJoined)
     worker_id, launcher = started_agent(story, "worker")
-    story.container.get(Bus).run(EndAgent(worker_id), story.user, environment_id=story.row(Agent, worker_id).environment_id)
+    story.run_command(EndAgent(worker_id), story.user, environment_id=story.row(Agent, worker_id).environment_id)
     runner = story.container.get(CommitListenerRunner)
     runner.run_ordinary()
     story.expect_rows(stops(launcher) == [], detail=str(launcher.requests))

@@ -37,8 +37,8 @@ def test_76a_the_opening_text_of_a_worker_names_proof_start_and_commit_and_no_de
     story.expect_rows("journal worker deliver" not in opening, "worker next judges" not in opening, not [word for word in ("this group", "the group", "group of", "batch") if word in opening.lower()], detail=opening)
 
 
-def test_76d_the_lines_a_worker_hears_at_a_failed_test_and_after_its_last_commit_say_commit_and_not_hand_in(new_story, monkeypatch):
-    worker = unplanned_worker(new_story, monkeypatch)
+def test_76d_the_lines_a_worker_hears_at_a_failed_test_and_after_its_last_commit_say_commit_and_not_hand_in(new_story):
+    worker = unplanned_worker(new_story)
     worker.prove_commit(TEST_LINE)
     worker.story.run_listeners()
     committed_line = worker.status_line()
@@ -48,8 +48,8 @@ def test_76d_the_lines_a_worker_hears_at_a_failed_test_and_after_its_last_commit
     worker.story.expect_rows("hand" not in committed_line, "deliver" not in committed_line, detail=committed_line)
 
 
-def test_204_the_old_name_worker_deliver_answers_with_the_command_that_took_its_place(new_story, monkeypatch):
-    worker = unplanned_worker(new_story, monkeypatch)
+def test_204_the_old_name_worker_deliver_answers_with_the_command_that_took_its_place(new_story):
+    worker = unplanned_worker(new_story)
     refused = worker.story.run("worker deliver --wait --differences none", actor=worker.worker)
     worker.story.expect_rows(refused.code != 0, "journal worker deliver is gone: use journal worker commit" in refused.output_text, detail=refused.output_text)
 

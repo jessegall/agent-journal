@@ -47,7 +47,7 @@ class WorkerWithMerger:
 
 
 @pytest.fixture
-def worker_with_merger(new_story, monkeypatch):
+def worker_with_merger(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)

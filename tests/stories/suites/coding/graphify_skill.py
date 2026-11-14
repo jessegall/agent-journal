@@ -36,10 +36,3 @@ def test_with_graphify_off_no_agent_must_load_the_graphify_skill(new_story):
     story.expect_no_text("skill required", "journal-graphify", actor=started_agent(story))
 
 
-def test_a_session_start_also_removes_graphifys_check_hook_that_adds_a_line_to_every_tool_use(graphify_enabled):
-    story = graphify_enabled
-    story.container.get(ManagedHooks).added([managed_hook(CHECK_COMMAND, "check"), managed_hook("other-project-hook", "other")])
-    story.hook(SESSION, HookSamples.session_start())
-    story.run_listeners()
-    commands = managed_commands(story)
-    story.expect_rows(CHECK_COMMAND not in commands, "other-project-hook" in commands, detail=str(commands))

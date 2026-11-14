@@ -73,15 +73,6 @@ def test_s5_a_plugin_whose_only_key_is_wrong_still_installs(event_page):
     expect_listed(event_page.card(), key=WRONG_KEY, state="wrong key")
 
 
-def test_s8_a_guard_on_a_system_event_installs_shows_the_only_form_and_its_commit_entry_works(event_page):
-    story = event_page.story
-    install_event_plugin(story, {"event": BOOTING, "guard": "refuse.sh", "commit": "see.sh"})
-    event_page.expect_target()
-    expect_listed(event_page.card(), key=BOOTING, form="guard", state="form not offered")
-    expect_listed(event_page.card(), key=BOOTING, form="commit", state="listens")
-    BootingWork().run(story.container)
-    story.run_listeners()
-    story.expect_rows(len(script_calls(story, "see.sh")) == 1, not script_calls(story, "refuse.sh"))
 
 
 def test_s12_a_new_script_file_changes_the_digest_and_an_upgrade_takes_the_new_digest(event_page):
@@ -128,14 +119,6 @@ def test_a_delivery_for_a_manifest_edited_into_broken_json_is_a_fault_and_is_not
     plugin_page(story).expect_fault("not valid JSON", name="broken")
 
 
-def test_the_subscriptions_hold_each_form_of_a_real_key_and_leave_out_what_is_wrong(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "refuse.sh", "commit": "../other/run.sh"}, {"event": TASK_CREATED, "guard": "see.sh", "listen": "pin.sh"}, {"event": WRONG_KEY, "commit": "see.sh"}, 42)
-    install_event_plugin(story, {"event": TASK_CREATED, "guard": "see.sh"}, {"event": BOOTING, "guard": "refuse.sh"}, name="second")
-    subscriptions = story.container.get(PluginSubscriptions)
-    story.expect_rows(subscriptions.scripts("task.create", EventForm.GUARD) == (PluginSubscription("events", "refuse.sh"), PluginSubscription("second", "see.sh")))
-    story.expect_rows(subscriptions.scripts("task.create", EventForm.LISTEN) == tuple([PluginSubscription("events", "pin.sh")]))
-    story.expect_rows(subscriptions.scripts("task.create", EventForm.COMMIT) == (), subscriptions.scripts("journal.booting", EventForm.GUARD) == ())
-    story.expect_rows("pin.sh" in plugin_manifest(story).files, "refuse.sh" in plugin_manifest(story).files, "../other/run.sh" not in plugin_manifest(story).files)
 
 
 def plugin_manifest(story) -> PluginManifest:

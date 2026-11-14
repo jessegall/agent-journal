@@ -123,7 +123,7 @@ def test_the_tool_of_a_running_chain_names_the_part_that_runs_now(pending_test_c
 
 def test_the_tool_of_a_chain_names_the_part_that_began_and_not_one_that_waits(pending_test_chain):
     story, process = pending_test_chain
-    story.container.get(Bus).run(StartProcessPart(process.id, 2), story.agent, environment_id=process.environment_id)
+    story.run_command(StartProcessPart(process.id, 2), story.agent, environment_id=process.environment_id)
     story.expect_text("usage tool --environment main", "Bash pytest -q", actor=story.user)
 
 

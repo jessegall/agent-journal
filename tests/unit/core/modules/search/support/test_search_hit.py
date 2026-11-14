@@ -28,3 +28,16 @@ def test_a_kept_hit_keeps_its_title_and_body():
     hit = SearchHit.matched(Note(id=3, created_at=SAVED_AT, title="Shared layouts", abstract="Five layouts", outcome="Built"), ["layouts"])
     assert SearchHit.restored(hit.stored()) == hit
     assert hit.body == "Five layouts\n\nBuilt"
+
+
+@dataclass(frozen=True, kw_only=True)
+class StatedNote(Note):
+    """A note that has a state, as a task has."""
+
+    state: str = "cancelled"
+
+
+def test_a_hit_carries_the_state_of_a_row_that_has_one_and_keeps_it():
+    hit = SearchHit.matched(StatedNote(id=3, created_at=SAVED_AT, title="Shared layouts", abstract="Five layouts"), ["layouts"])
+    assert hit.state == "cancelled" and SearchHit.restored(hit.stored()) == hit
+    assert SearchHit.matched(Note(id=4, created_at=SAVED_AT, title="Shared layouts", abstract="Five layouts"), ["layouts"]).state == ""

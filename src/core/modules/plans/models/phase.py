@@ -12,7 +12,7 @@ from core.modules.tasks.models.task import Task
 class Phase(Positioned, Assignable):
     """One step of a plan, at its place in the plan's order, with what is true when it is done. Only a phase
     flagged as a checkpoint takes a test command of its own; a command an older journal stored on another
-    phase is kept. One actor holds a phase, and its assignment also assigns the tasks placed in it."""
+    phase is kept. A checkpoint waits for a person to approve it only when it was made with person_check; one without waits for nobody. One actor holds a phase, and its assignment also assigns the tasks placed in it."""
 
     model_name = "phase"
     cli_name = "phase"
@@ -27,6 +27,7 @@ class Phase(Positioned, Assignable):
     goal: str = ""
     checkpoint: bool = False
     test_command: str = ""
+    person_check: bool = False
 
     def is_test_refused(self, previous: "Phase | None") -> bool:
         is_new_command = previous is None or previous.test_command != self.test_command

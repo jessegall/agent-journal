@@ -25,7 +25,7 @@ def test_no_driver_command_moves_an_agent_into_or_out_of_a_state(new_story):
 
 def test_a_shell_line_that_writes_the_database_leaves_the_due_skill_state_open(new_story):
     story = new_story(DUE, fixture=SkillsDueAgent)
-    story.hook("s-1", DATABASE_WRITE)
+    story.expect_hook_refusal("s-1", DATABASE_WRITE, "database file is changed only by the journal's commands")
     story.run_listeners()
     story.expect_rows("skills.load-required (agent_skill:" in in_place(story), detail=in_place(story))
 
@@ -35,3 +35,11 @@ def test_reading_the_due_skills_is_the_way_out_and_the_state_shows_closed(new_st
     story.expect_rows("skills.load-required (agent_skill:" in in_place(story), detail=in_place(story))
     read_every_due_skill(story)
     story.expect_rows("skills.load-required" not in in_place(story), detail=in_place(story))
+
+
+def test_a_read_only_look_at_the_database_is_allowed_and_a_redirect_into_it_is_refused(new_story):
+    story = new_story(DUE, fixture=SkillsDueAgent)
+    read = HookSamples.shell("sqlite3 -readonly .journal/version-5.db 'SELECT 1'", ShellPart("sqlite3", CommandCategory.READ, ["-readonly", ".journal/version-5.db", "SELECT 1"]))
+    story.expect_hook_allowed("s-1", read)
+    redirect = HookSamples.shell("echo x > .journal/version-5.db", ShellPart("echo", CommandCategory.READ, ["x"]), redirects=[".journal/version-5.db"])
+    story.expect_hook_refusal("s-1", redirect, "database file is changed only by the journal's commands")

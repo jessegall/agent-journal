@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
@@ -65,8 +66,8 @@ def test_ending_a_worker_opens_the_task_waiting_on_it(new_story):
     story.expect_success(f"task show {task_id}", "state: open", actor=story.agent)
 
 
-def test_a_worker_waiting_for_tests_does_not_open_the_task_even_if_its_session_ends(new_story, monkeypatch):
-    story, _, worker, processes = queued_story(new_story, monkeypatch)
+def test_a_worker_waiting_for_tests_does_not_open_the_task_even_if_its_session_ends(new_story):
+    story, _, worker, processes = queued_story(new_story)
     task_id = waiting_task(story, worker)
     story.end_session(worker)
     story.expect_success(f"task show {task_id}", "state: blocked", actor=story.agent)
@@ -74,17 +75,17 @@ def test_a_worker_waiting_for_tests_does_not_open_the_task_even_if_its_session_e
     story.expect_success(f"task show {task_id}", "state: open", actor=story.agent)
 
 
-def test_a_failed_test_keeps_the_task_waiting_for_the_workers_correction(new_story, monkeypatch):
-    story, _, worker, processes = queued_story(new_story, monkeypatch)
+def test_a_failed_test_keeps_the_task_waiting_for_the_workers_correction(new_story):
+    story, _, worker, processes = queued_story(new_story)
     task_id = waiting_task(story, worker)
     ended(story, processes[0], 1)
     story.expect_success(f"task show {task_id}", "state: blocked", actor=story.agent)
 
 
-def test_a_worker_ending_while_its_tests_run_with_a_task_it_has_not_started_keeps_the_wait_blocked(new_story, monkeypatch):
+def test_a_worker_ending_while_its_tests_run_with_a_task_it_has_not_started_keeps_the_wait_blocked(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
-    processes = recording_launch(monkeypatch)
+    processes = recorded_test_launches(story)
     second_id = story.new_row_id('task make "Second job" --brief "Finish the second job" --environment main', actor=story.agent)
     worker = dispatched_worker(story, f"worker dispatch --test-command python=pytest --model sonnet 1 {second_id}")
     task_id = waiting_task(story, worker)
@@ -163,8 +164,8 @@ def test_the_command_help_and_task_skill_name_worker_waits(new_story):
     story.expect_text("skill show journal-dispatching-workers", "--on worker:<number>", actor=story.agent)
 
 
-def test_a_worker_that_committed_and_queued_its_tests_keeps_the_task_waiting_through_a_restart_of_its_session(new_story, monkeypatch):
-    story, _, worker, processes = queued_story(new_story, monkeypatch)
+def test_a_worker_that_committed_and_queued_its_tests_keeps_the_task_waiting_through_a_restart_of_its_session(new_story):
+    story, _, worker, processes = queued_story(new_story)
     task_id = waiting_task(story, worker)
     story.run_listeners()
     story.expect_success(f"task show {task_id}", "state: blocked", actor=story.agent)

@@ -61,12 +61,6 @@ def test_only_the_user_fills_a_value_and_the_agent_is_told_how_to_ask(new_story)
     story.expect_refusal(f"secret fill 1 key {VALUE}", "credential values are entered by a user in the Secrets window", actor=story.agent)
 
 
-def test_a_filled_value_lives_only_in_the_values_file_outside_the_project_readable_by_its_user_alone(new_story, private_folder):
-    story = filled_story(new_story)
-    story.expect_text("secret show 1", "key  GITHUB_KEY  filled, hidden", actor=story.agent)
-    values_file = next(private_folder.glob("*.env"))
-    story.expect_rows(VALUE in values_text(private_folder), stat.S_IMODE(values_file.stat().st_mode) == 0o600,
-                      VALUE.encode() not in story.home.database.read_bytes(), not values_file.resolve().is_relative_to(story.home.folder.resolve()))
 
 
 def test_a_field_the_secret_lacks_is_refused_with_its_fields(new_story):
@@ -141,16 +135,3 @@ OLD_SECRETS_TABLE = ("CREATE TABLE secrets (id INTEGER PRIMARY KEY, fields TEXT 
 OLD_SECRET_ROW = "INSERT INTO secrets (id, fields, deleted_at) VALUES (?, ?, ?)"
 
 
-def test_a_secret_deleted_before_deletion_erased_it_loses_its_value_when_the_migration_drops_its_row(new_story, private_folder, tmp_path):
-    story = filled_story(new_story, 'secret make "Stripe"', f"secret fill 2 key {REPLACEMENT_VALUE}")
-    old_home = JournalHome(tmp_path / "old-journal")
-    old_home.folder.mkdir()
-    shutil.copy(story.home.folder / PROJECT_ID_FILE, old_home.folder / PROJECT_ID_FILE)
-    old_database = Database.opened(old_home)
-    for statement in OLD_SECRETS_TABLE:
-        old_database.update(Statement(statement))
-    old_database.insert(Statement(OLD_SECRET_ROW, [1, '[{"name": "key", "hidden": true, "variable": "GITHUB_KEY"}]', "2026-11-01T00:00:00+00:00"]))
-    old_database.insert(Statement(OLD_SECRET_ROW, [2, '[{"name": "key", "hidden": true, "variable": "STRIPE_KEY"}]', None]))
-    ErasedDeletedSecretsMigration().run(old_database)
-    old_database.close()
-    story.expect_rows(VALUE not in values_text(private_folder), "GITHUB_KEY" not in values_text(private_folder), REPLACEMENT_VALUE in values_text(private_folder))

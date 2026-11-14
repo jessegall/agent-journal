@@ -67,7 +67,8 @@ class RunnerRewriteRule(DriverRule):
         if sandbox and agent_type.separate_folder and agent_type.access is Access.WRITING and folder is None:
             return RuleAnswer.refused(SANDBOX_FOLDER_MISSING.nudge())
         read_folders = self.project_reads.folders(self.checkouts.checkout(hook.agent_id).project_root) if folder is not None else ()
-        run = replace(decided, read_command=shell.is_readonly, shell_sandbox=sandbox, folder=folder, read_folders=read_folders)
+        writable_folders = self.project_reads.writable_folders() if folder is not None else ()
+        run = replace(decided, read_command=shell.is_readonly, shell_sandbox=sandbox, folder=folder, read_folders=read_folders, writable_folders=writable_folders)
         return RuleAnswer.allowed().running(StartProcess.build(hook, shell, run)).rewriting_after_commands(lambda results: self.tool_input(hook, shell, run, results))
 
     def tool_input(self, hook: AgentHook, shell: ShellLine, run: ForegroundRun, results: Sequence[object]) -> Mapping[str, object]:

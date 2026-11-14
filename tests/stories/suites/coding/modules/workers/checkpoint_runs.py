@@ -91,7 +91,7 @@ def checkpoint_worker(new_story, monkeypatch, *test_lines: str) -> StoryWorker:
     """A worker of a started plan whose phase Build is a checkpoint with a test of its own; it committed tasks
     1, 2 and 3 of that phase with the given test lines."""
     sole_branch_runs(monkeypatch)
-    worker = dispatched_story_worker(planned_story(new_story, build_test=BUILD_TEST), PHASE_DISPATCH, monkeypatch)
+    worker = dispatched_story_worker(planned_story(new_story, build_test=BUILD_TEST), PHASE_DISPATCH)
     commit_tasks(worker, *test_lines)
     return worker
 
@@ -118,7 +118,7 @@ def ended_plan(new_story, monkeypatch) -> StoryWorker:
     sole_branch_runs(monkeypatch)
     story = planned_story(new_story)
     story.container.get(Database).update(Statement("UPDATE phases SET test_command = ? WHERE id = 1", [BUILD_TEST]))
-    worker = dispatched_story_worker(story, PLAN_DISPATCH, monkeypatch)
+    worker = dispatched_story_worker(story, PLAN_DISPATCH)
     commit_tasks(worker, TEST_LINE, SECOND_TEST_LINE, TEST_LINE, SECOND_TEST_LINE)
     merge(worker)
     return worker

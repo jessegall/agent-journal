@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 import json
 
 from engine.database.database import Database
@@ -22,9 +23,9 @@ def expect_reason(story, worker, reason):
     assert next(row["reason"] for row in rows if row["agent_id"] == worker.id) == reason
 
 
-def test_a_worker_wait_reason_follows_tests_proof_check_and_merge(new_story, monkeypatch):
+def test_a_worker_wait_reason_follows_tests_proof_check_and_merge(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    launches = recording_launch(monkeypatch)
+    launches = recorded_test_launches(story)
     repository = repository_environment(story)
     story.expect_success('task edit 1 --brief "- the total\n- the review"', actor=story.agent)
     worker = dispatched_worker(story)

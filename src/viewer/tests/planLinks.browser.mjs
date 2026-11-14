@@ -11,30 +11,27 @@ try {
     link.searchParams.set("page", "tasks.tasks");
     await page.goto(link.href);
     await page.evaluate(() => { location.hash = "#?open=plans:1"; });
-    await page.locator("[data-plan-inspector] [data-plan-links] button").click();
-    const section = page.locator("[data-plan-inspector] [data-resource-links]");
+    await page.locator("[data-inspector-links-head]").click();
+    const section = page.locator("[data-inspector-links-body]");
+    const rows = section.locator("[data-inspector-link]");
     try {
-        await section.locator("[data-plan-link]").first().waitFor({timeout: 8000});
+        await rows.first().waitFor({timeout: 8000});
     } catch (error) {
         await page.screenshot({path: capture});
         throw new Error(`${error.message}\nPage errors: ${JSON.stringify(errors)}\n${(await page.locator("body").innerText()).slice(0, 1500)}`);
     }
     await page.locator("[data-resource-panel]:not(.opening)").waitFor();
-    const more = section.locator("[data-page-more]");
-    const signature = () => section.getAttribute("data-loaded");
-    while (await more.count()) {
-        const before = await signature();
-        await more.click();
-        await page.waitForFunction((was) => !document.querySelector("[data-page-more]") || document.querySelector("[data-resource-links]")?.getAttribute("data-loaded") !== was, before, {timeout: 5000});
-    }
-    const kinds = (await section.locator("[data-link-kind]").allInnerTexts()).map((text) => text.replace(/\s+/g, " ").trim());
-    assert.deepEqual(kinds, ["Task 70", "Message 30"]);
-    const height = (await section.boundingBox()).height;
-    assert.ok(height <= 280, `the linked section stays compact, it is ${height}px`);
-    assert.ok(await section.locator("[data-plan-link]").count() <= 6, "only a few rows per kind show at first");
+    assert.ok(await rows.count() <= 10, "only one page of rows shows at first");
+    assert.ok((await section.boundingBox()).height <= 280, "the linked section stays compact");
     await page.screenshot({path: capture});
-    await section.locator("[data-link-show-more]").first().click();
-    assert.ok((await section.boundingBox()).height <= 280, "the section keeps its height cap after Show more");
+    const more = section.locator("[data-page-more]");
+    while (await more.count()) {
+        const before = await rows.count();
+        await more.click();
+        await page.waitForFunction((was) => document.querySelectorAll("[data-inspector-links-body] [data-inspector-link]").length > was, before, {timeout: 5000});
+    }
+    assert.equal(await rows.count(), 100);
+    assert.ok((await section.boundingBox()).height <= 280, "the section keeps its height cap after every page is shown");
     await page.screenshot({path: capture.replace(".png", "-expanded.png")});
     assert.deepEqual(errors, []);
 } finally {

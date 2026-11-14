@@ -119,7 +119,7 @@ def test_own_messages_after_a_clear_come_from_the_session_it_ended(new_story, tm
     saved_transcript(tmp_path, monkeypatch, "s-1", reply_rows(1, 3))
     story = new_story(fixture=ClaudeTranscriptAgent)
     story.hook("s-1", HookSamples.sample("session_end").with_fields(launch="s-1").with_raw({"reason": "clear"}))
-    story.container.get(Bus).run(BindAgentSession(story.agent.id, "s-2"), Actor.core())
+    story.run_command(BindAgentSession(story.agent.id, "s-2"), Actor.core())
     story.expect_text("usage own-messages", "reply-01", "reply-03", actor=story.agent)
 
 

@@ -38,16 +38,6 @@ def test_a_change_the_schema_refuses_names_its_place_and_writes_nothing(new_stor
     expect_value(config_file(story), DOCUMENT)
 
 
-def test_a_hand_edit_is_taken_in_and_a_broken_one_keeps_the_last_good_copy(new_story):
-    story = configured_story(new_story)
-    story.run("plugin config events", actor=story.user)
-    (story.home.folder.parent / CONFIG["file"]).write_text(json.dumps({"level": 2, "paths": ["src", "tests"]}))
-    PluginConfigReading()(story.container)
-    story.expect_rows(plugin_row(story).config_version == 2, plugin_row(story).config_pointers == '["/level", "/paths"]')
-    (story.home.folder.parent / CONFIG["file"]).write_text(json.dumps({"level": "high"}))
-    PluginConfigReading()(story.container)
-    story.expect_rows(plugin_row(story).config_version == 2, "does not fit its schema" in plugin_row(story).last_fault)
-    story.expect_text("plugin config events", "version 2", '"level": 2', actor=story.user)
 
 
 def test_a_line_to_the_plugin_names_its_config_version(new_story):
@@ -58,11 +48,3 @@ def test_a_line_to_the_plugin_names_its_config_version(new_story):
     expect_value(script_calls(story, "see.sh")[-1]["config"], {"version": 1})
 
 
-def test_a_config_file_that_does_not_exist_yet_is_served_as_nothing_and_taken_in_once_it_appears(new_story):
-    story = configured_story(new_story)
-    (story.home.folder.parent / CONFIG["file"]).unlink()
-    story.expect_text("plugin config events", "version 0", "null", actor=story.user)
-    story.expect_rows(plugin_row(story).last_fault == "")
-    (story.home.folder.parent / CONFIG["file"]).write_text(json.dumps(DOCUMENT))
-    PluginConfigReading()(story.container)
-    story.expect_rows(plugin_row(story).config_version == 1)

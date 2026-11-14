@@ -1,1 +1,3 @@
 tests/stories/core/modules/settings/fresh_container_settings.py::test_a_fresh_container_does_not_load_the_settings_table_again -> integration tests/integration/core/modules/settings/test_fresh_container_settings.py::test_a_fresh_container_does_not_load_the_settings_table_again
+tests/stories/core/modules/settings/managed_scans.py::test_scan_imports_every_program_and_finds_new_hooks -> integration tests/integration/core/modules/settings/test_managed_scans.py::test_scan_imports_every_program_and_finds_new_hooks
+tests/stories/core/modules/settings/managed_scans.py::test_give_back_restores_disabled_hooks_and_records_both_actions -> integration tests/integration/core/modules/settings/test_managed_scans.py::test_give_back_restores_disabled_hooks_and_records_both_actions

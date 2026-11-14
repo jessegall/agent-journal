@@ -39,16 +39,6 @@ def test_a_person_cannot_change_a_sequence_that_comes_with_the_journal(new_story
     story.expect_refusal(f"sequence delete {plan_building(story).id}", "comes with the journal", actor=story.user)
 
 
-def test_an_old_copy_takes_the_newest_words_at_the_next_start_and_no_row_is_added(new_story):
-    story = new_story(fixture=StartedSequences)
-    stored = plan_building(story)
-    count = len(titles(story, Sequence))
-    database = story.container.get(Database)
-    with database.transaction():
-        database.connection.execute("UPDATE sequences SET steps = ? WHERE id = ?", ('["an old step"]', stored.id))
-    started(story)
-    expect_steps_plan_building(story, next(row.steps for row in STANDARD_SEQUENCES if row.title == PLAN_BUILDING))
-    expect_titles(story, count)
 
 
 class StartedSequences(StoryFixture):

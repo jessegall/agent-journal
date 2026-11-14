@@ -1,3 +1,4 @@
+from core.modules.processes.models.reader_request import ReaderRequest
 import pytest
 
 from engine.actor.actor import Actor
@@ -75,4 +76,4 @@ def test_nothing_to_judge_does_not_make_a_good_reader_poor(reader_sample_story):
     story.run_command(MoveProcess(process.id), reader_worker(story), 1)
     end_run(story, process, "Nothing to judge\n")
     worker_run(story, "custom-check run", CommandCategory.CHECK)
-    story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists())
+    story.expect_rows(not story.row_exists(ReaderRequest, completed_at=None))

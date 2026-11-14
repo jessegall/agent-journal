@@ -10,7 +10,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import c
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
 
-def test_a_merger_start_on_another_program_reviews_and_a_worker_merge_retire_no_agent(new_story, monkeypatch):
+def test_a_merger_start_on_another_program_reviews_and_a_worker_merge_retire_no_agent(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     repository = repository_environment(story)
@@ -18,7 +18,7 @@ def test_a_merger_start_on_another_program_reviews_and_a_worker_merge_retire_no_
     repository.checkout(ENVIRONMENT_BRANCH)
     request_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
-    ended_merger(story, monkeypatch)
+    ended_merger(story)
     story.expect_success(PROGRAM_SAVE.format(program="codex"), actor=story.user)
     merger_launch(story)
     launches(story, START_REVIEW.format(plan=5))

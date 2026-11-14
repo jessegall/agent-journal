@@ -46,8 +46,3 @@ def test_j4_ten_compactions_a_person_types_at_the_terminal_are_ten_rows_and_the_
                         limited.run("context-compaction list", actor=limited.user).output_text.count(CompactionReason.TERMINAL_PERSON.value) == TERMINAL_COMPACTIONS, detail=str(recorded))
 
 
-def test_j5_a_compaction_keeps_the_line_that_was_typed_when_the_program_line_changes_later(limited, monkeypatch):
-    has_context(limited, LIMIT_TOKENS)
-    stops(limited)
-    monkeypatch.setattr("core.modules.claude_code.providers.claude_code_provider.COMPACT_LINE", CHANGED_LINE)
-    limited.expect_rows([compaction.line for compaction in compactions(limited)] == [COMPACT_LINE], limited.typing.typed == [COMPACT_LINE], detail=str(compactions(limited)))

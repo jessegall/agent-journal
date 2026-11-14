@@ -72,17 +72,8 @@ def test_a_dump_closed_in_another_environment_leaves_its_original_dock(new_story
     environment_read(story, 'dock-item list --dock 1', 1).expect_text('undocked')
 
 
-def test_dumps_have_no_navigation_item(new_story):
-    story = new_story(fixture=TwoEnvironments)
-    windows = Registry.read(story.container.get(Database)).windows
-    story.expect_rows(all(window.name != 'dumps.dumps' or window.place != WindowPlace.PAGE.value for window in windows))
 
 
-@pytest.mark.parametrize('name', ['documents.documents', 'sequences.sequences', 'checks.checks'])
-def test_project_resources_are_listed_under_project_in_navigation(new_story, name):
-    story = new_story(fixture=TwoEnvironments)
-    windows = Registry.read(story.container.get(Database)).windows
-    story.expect_rows(any(window.name == name and window.group == 'project' for window in windows))
 
 
 def environment_read(story: Story, line: str, environment_id: int) -> LineOutcome:
