@@ -1,7 +1,7 @@
 import pytest
 
-from tests.stories.suites.coding.modules.workers.checkpoint_failures import end_run, failure_lines, produce_output
-from tests.stories.suites.coding.modules.workers.checkpoint_runs import commit_tasks, merge, run_lines, sole_branch_runs
+from tests.stories.suites.coding.modules.workers.checkpoint_failures import end_run, failure_lines, output_id, produce_output
+from tests.stories.suites.coding.modules.workers.checkpoint_runs import branch_runs, commit_tasks, merge, run_lines
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story
 
 PHASE_TEST = "pytest tests/phase"
@@ -14,7 +14,7 @@ TEST_LIMIT = 25
 @pytest.fixture
 def listed_phase_test(new_story, monkeypatch) -> StoryWorker:
     """A checkpoint whose own test is a pytest run of 60 tests in three files: its listing ran and passed, so its parts run."""
-    sole_branch_runs(monkeypatch)
+    branch_runs(monkeypatch)
     worker = dispatched_story_worker(planned_story(new_story, build_test=PHASE_TEST), PHASE_DISPATCH, monkeypatch)
     commit_tasks(worker, TEST_LINE, "", SECOND_TEST_LINE)
     merge(worker)
@@ -33,7 +33,8 @@ def test_a_phase_test_of_sixty_tests_runs_as_three_parts_of_at_most_twenty_five(
                                         detail=str(run_lines(listed_phase_test)))
 
 
-def test_a_failure_in_the_second_part_fails_the_checkpoint_naming_its_files(listed_phase_test):
-    end_run(listed_phase_test, part_lines(listed_phase_test)[1])
+def test_a_failure_in_the_second_part_fails_the_checkpoint_naming_its_output(listed_phase_test):
+    failing_part = part_lines(listed_phase_test)[1]
+    end_run(listed_phase_test, failing_part)
     lines = failure_lines(listed_phase_test)
-    listed_phase_test.story.expect_rows(bool(lines) and PHASE_FILES[1] in " ".join(lines), detail=str(lines))
+    listed_phase_test.story.expect_rows(bool(lines) and f"output {output_id(listed_phase_test, failing_part)}:" in " ".join(lines), detail=str(lines))

@@ -26,7 +26,6 @@ class Clock:
         thread.join(limit_seconds)
 
     def poll(self, has_happened: Callable[[], bool], limit_seconds: float, pause_seconds: float) -> bool:
-        HELD_WRITE_TURN.refuse_wait("a poll")
         ends_at = self.epoch_seconds() + limit_seconds
         while not has_happened():
             if self.epoch_seconds() >= ends_at:
