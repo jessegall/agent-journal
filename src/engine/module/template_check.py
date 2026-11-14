@@ -13,7 +13,7 @@ class TemplateCheck:
         owners: defaultdict[str, list[str]] = defaultdict(list[str])
         problems: list[str] = []
         for module in modules:
-            for template in module.templates:
+            for template in module.template_declarations():
                 owners[template.title].append(module.name)
                 problems.extend(f"the module {module.name}'s template {template.title} targets {target}, "
                                 "which is neither a model nor the first word of a command"

@@ -86,7 +86,7 @@ class Module:
     tick_handlers: ClassVar[list[TickHandler]] = []
     ask_topics: ClassVar[list[AskTopic]] = []
     docks: ClassVar[list[DockDeclaration]] = []
-    templates: ClassVar[list[TemplateDeclaration]] = []
+    templates: ClassVar[list[TemplateDeclaration | type[TemplateDeclaration]]] = []
     buttons: ClassVar[list[ButtonDeclaration]] = []
     button_slots: ClassVar[list[str]] = []
     inspectors: ClassVar[list[InspectorDeclaration]] = []
@@ -130,6 +130,11 @@ class Module:
     @classmethod
     def group_declarations(cls) -> list[AgentGroup]:
         return [group.declared() if isinstance(group, type) else group for group in cls.agent_groups]
+
+    # a template written as a class gives its declaration; an inline declaration is its own
+    @classmethod
+    def template_declarations(cls) -> list[TemplateDeclaration]:
+        return [template.declared() if isinstance(template, type) else template for template in cls.templates]
 
     @classmethod
     def declared_buttons(cls) -> list[ButtonDeclaration]:

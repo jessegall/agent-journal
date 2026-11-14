@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from engine.types.class_fields import class_fields
+
 
 @dataclass(frozen=True, kw_only=True)
 class TemplateDeclaration:
@@ -11,3 +13,8 @@ class TemplateDeclaration:
     purpose: str = ""
     parts: tuple[str, ...] = ()
     commands: tuple[str, ...] = ()
+
+    # a template written as a class in its own file sets the fields as class attributes
+    @classmethod
+    def declared(cls) -> "TemplateDeclaration":
+        return TemplateDeclaration(**class_fields(cls, TemplateDeclaration))

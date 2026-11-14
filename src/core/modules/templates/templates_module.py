@@ -1,7 +1,7 @@
+from core.modules.templates.templates.templates_templates import TEMPLATES_TEMPLATES
 from core.modules.templates.skills.declarations.templates_skills import TEMPLATES_SKILLS
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
-from engine.template.template_declaration import TemplateDeclaration
 from engine.viewer.window_search import WindowSearch
 from engine.viewer.window_extension import WindowExtension
 from core.modules.templates.support.template_searcher import TemplateSearcher
@@ -33,8 +33,7 @@ class TemplatesModule(Module):
     at each phase end."""
 
     name = "journal.core.templates"
-    templates = [TemplateDeclaration(title="General critique", targets=tuple(["plan"]), purpose="critique",
-                                     brief="Read it as a whole and say what you would change, and why.")]
+    templates = TEMPLATES_TEMPLATES
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.drivers", "journal.core.messages", "journal.core.documents", "journal.core.plans", "journal.core.agents", "journal.core.skills"]
     skills = TEMPLATES_SKILLS

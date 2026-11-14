@@ -9,7 +9,7 @@ from suites.coding.migrations.m005_main_driver import MainDriverMigration
 from suites.coding.migrations.m009_prune_file_edits import PruneFileEditsMigration
 from suites.coding.support.shipped_profiles import HELPER_PROFILES
 from suites.coding.support.coding_nudges import CODING_NUDGES
-from suites.coding.support.coding_templates import CODING_TEMPLATES
+from suites.coding.templates.coding_templates import CODING_TEMPLATES
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
 from suites.coding.models.file_edit import FileEdit

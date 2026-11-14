@@ -163,7 +163,7 @@ class ModuleSync:
             marks=self.marks(modules),
             nudges=self.nudges(modules),
             docks=self.docks(modules),
-            templates=tuple(TemplateEntry(module.name, declaration) for module in modules for declaration in module.templates),
+            templates=tuple(TemplateEntry(module.name, declaration) for module in modules for declaration in module.template_declarations()),
             buttons=self.buttons(modules),
             button_slots=self.button_slots(modules),
             inspectors=self.inspectors(modules),
