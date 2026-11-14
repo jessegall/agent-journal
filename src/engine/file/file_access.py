@@ -250,12 +250,14 @@ class FileAccess:
             current = waiting.pop()
             try:
                 status = current.lstat()
-                children = sorted(current.iterdir())
+                with os.scandir(current) as listed:
+                    children = sorted(listed, key=lambda entry: entry.name)
             except (FileNotFoundError, NotADirectoryError, PermissionError):
                 continue
             if (status.st_dev, status.st_ino) in entered:
                 continue
             entered.add((status.st_dev, status.st_ino))
+            # the listing carries each entry's type, so telling folders from files reads nothing more from disk
             folder_names = [child.name for child in children if child.is_dir(follow_symlinks=False)]
             file_names = [child.name for child in children if not child.is_dir(follow_symlinks=False)]
             yield current, folder_names, file_names
