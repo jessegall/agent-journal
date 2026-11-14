@@ -104,14 +104,14 @@ class OldWait(Overlay):
 
     exclusive = True
 
-    def open_rows(self, agent_id: int) -> Sequence[OpenRow]:
+    def open_agent_rows(self, agent_id: int) -> Sequence[OpenRow]:
         return [OpenRow("wait", 1, at(10))]
 
 
 class NewRun(Overlay):
     """A sequence run opened after the wait."""
 
-    def open_rows(self, agent_id: int) -> Sequence[OpenRow]:
+    def open_agent_rows(self, agent_id: int) -> Sequence[OpenRow]:
         return [OpenRow("sequence_run", 2, at(20))]
 
 

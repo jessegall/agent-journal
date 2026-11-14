@@ -12,7 +12,7 @@ class Layers:
         self.registry, self.container = registry, container
 
     def active(self, agent_id: int, driver: str) -> list[Layer]:
-        layers = [Layer(entry, row) for entry in self.registry.driver_overlays(driver) for row in self.overlay(entry).open_rows(agent_id)]
+        layers = [Layer(entry, row) for entry in self.registry.driver_overlays(driver) for row in self.overlay(entry).open_agent_rows(agent_id)]
         return sorted(layers, key=lambda layer: (layer.row.opened_at, layer.overlay.position, layer.row.row_id), reverse=True)
 
     def overlay(self, entry: OverlayEntry) -> Overlay:

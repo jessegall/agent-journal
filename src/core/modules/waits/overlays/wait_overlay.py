@@ -21,6 +21,6 @@ class WaitOverlay(Overlay):
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
-    def open_rows(self, agent_id: int) -> Sequence[OpenRow]:
+    def open_agent_rows(self, agent_id: int) -> Sequence[OpenRow]:
         waits = self.queries.query(Wait).filter(session_agent_id=agent_id, state=WaitState.OPEN, type=WaitType.ROWS).get()
         return [OpenRow("wait", wait.id, wait.opened_at) for wait in waits]

@@ -18,6 +18,6 @@ class OverviewOverlay(Overlay):
     def __init__(self, blocks: OverviewBlocks) -> None:
         self.blocks = blocks
 
-    def open_rows(self, agent_id: int) -> Sequence[OpenRow]:
+    def open_agent_rows(self, agent_id: int) -> Sequence[OpenRow]:
         block = self.blocks.oldest_open(agent_id)
         return [OpenRow("agent_block", block.id, block.creation_timestamp())] if block is not None else []

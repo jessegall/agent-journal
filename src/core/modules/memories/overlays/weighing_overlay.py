@@ -16,5 +16,5 @@ class WeighingOverlay(Overlay):
     def __init__(self, marks: MarkTracker) -> None:
         self.marks = marks
 
-    def open_rows(self, agent_id: int) -> Sequence[OpenRow]:
+    def open_agent_rows(self, agent_id: int) -> Sequence[OpenRow]:
         return [OpenRow("memory_mark", mark.id, mark.opened_at) for mark in self.marks.open_marks(agent_id)]
