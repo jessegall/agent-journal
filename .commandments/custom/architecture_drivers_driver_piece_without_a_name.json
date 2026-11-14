@@ -17,6 +17,12 @@
                     },
                     {
                         "extendsAny": "Driver"
+                    },
+                    {
+                        "extendsAny": "AgentState"
+                    },
+                    {
+                        "extendsAny": "DeferredRule"
                     }
                 ]
             },
@@ -42,12 +48,15 @@
         "reject": [
             {
                 "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)engine/driver/(states/[a-z_]+|agent_state|deferred_rule|overlay)\\.py$"
             }
         ]
     },
     "sin": {
         "name": "driver-piece-without-a-name",
-        "description": "A suite, driver, driver rule or overlay declares no name, so it cannot be found, listed, switched or recorded.",
+        "description": "A suite, driver, driver rule, overlay, agent state or deferred rule declares no name, so it cannot be found, listed, switched or recorded.",
         "rule": "Give it name = \"<module>.<what it is>\" as a class attribute.",
         "skill": "drivers-architecture"
     }

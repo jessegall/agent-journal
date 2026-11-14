@@ -1,4 +1,6 @@
 from engine.command.bus import Bus
+from engine.driver.agent_state import AgentState
+from engine.driver.deferred_rule import DeferredRule
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
@@ -43,3 +45,39 @@ class SampleCountdown(DriverRule):
         used = self.calls.tool_call_count(hook.agent_id, hook.timestamp)
         # @righteous architecture_drivers_countdown_outside_block_until
         return RuleAnswer.allowed().running(StartTask(used))
+
+
+class SampleStartedState(AgentState):
+    name = "samples.started"
+
+    def __init__(self, bus: Bus, tasks: TaskQuery) -> None:
+        self.bus, self.tasks = bus, tasks
+
+    def open_rows(self, hook):
+        # @sin architecture_drivers_rule_runs_a_command
+        self.bus.run(StartTask(1))
+        # @righteous architecture_drivers_rule_runs_a_command
+        return self.tasks.started(hook.agent_id)
+
+
+class SampleReadingState(AgentState):
+    name = "samples.reading"
+
+    def open_rows(self, hook):
+        # @sin architecture_drivers_rule_builds_its_reader
+        tasks = TaskQuery(None, None)
+        # @righteous architecture_drivers_rule_builds_its_reader
+        return tasks.started(hook.agent_id) if tasks else ()
+
+
+class SampleDeferred(DeferredRule):
+    name = "samples.deferred"
+
+    def __init__(self, bus: Bus) -> None:
+        self.bus = bus
+
+    def after(self, call):
+        # @sin architecture_drivers_rule_runs_a_command
+        self.bus.run(StartTask(call.id))
+        # @righteous architecture_drivers_rule_runs_a_command
+        return [StartTask(call.id)]

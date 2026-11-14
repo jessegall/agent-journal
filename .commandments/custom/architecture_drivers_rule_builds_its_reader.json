@@ -43,6 +43,14 @@
                     {
                         "extendsAny": "Overlay",
                         "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "AgentState",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "DeferredRule",
+                        "of": "enclosingType"
                     }
                 ]
             }
@@ -76,7 +84,7 @@
     },
     "sin": {
         "name": "rule-builds-its-reader",
-        "description": "A driver rule or an overlay builds its own database, container or query instead of being handed one, so it reads outside the hook's transaction and its connection.",
+        "description": "A driver rule, an overlay, an agent state's opener or a deferred rule builds its own database, container or query instead of being handed one, so it reads outside the hook's transaction and its connection.",
         "rule": "Name the query the rule reads in its constructor; the container hands in the one the hook runs on.",
         "skill": "drivers-architecture"
     }

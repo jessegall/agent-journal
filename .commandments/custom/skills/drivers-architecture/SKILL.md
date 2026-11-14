@@ -14,19 +14,20 @@ each piece keeps to its place.
 
 ## When it fires
 
-- **`rule-runs-a-command`** - a driver rule or an overlay calls `run`, `dispatch`, `save`, `delete` or a database
+- **`rule-runs-a-command`** - a driver rule, an overlay, an agent state's opener or a deferred rule calls `run`, `dispatch`, `save`, `delete` or a database
   write itself. A rule only answers: it hands a command to `RuleAnswer` with `running(command)` or
   `ending_layer(command)`, and the hook record runs each command alone in its own savepoint.
-- **`rule-builds-its-reader`** - a driver rule or an overlay constructs a `Database`, a `Container`, `Queries`
+- **`rule-builds-its-reader`** - a driver rule, an overlay, an agent state's opener or a deferred rule constructs a `Database`, a `Container`, `Queries`
   or a query class. Name the query it needs in its constructor, `def __init__(self, tasks: TaskQuery)`, and
   the container hands it in.
 - **`driver-base-imports-a-module`** - a file of `engine/driver/` imports from `core/modules/` or
   `suites/`. The base is what every module builds on; what it needs from a module is an interface in the
   base that the module binds, as `HookHistory` and `HookRoute` are.
-- **`driver-piece-without-a-name`** - a suite, driver, driver rule or overlay declares no `name`. Every piece is
+- **`driver-piece-without-a-name`** - a suite, driver, driver rule, overlay, agent state or deferred rule declares no `name`. Every piece is
   found, listed, switched and recorded by its name: give it `name = "<module>.<what it is>"`.
 - **`agent-keeps-a-stack`** - the agent model declares a `stack`, `states` or `state` field. Overlays are worked
-  out from open rows on every hook and nothing about where the agent stands is stored on the agent.
+  out from open rows on every hook and nothing about where the agent stands is stored on the agent. An agent
+  state is the same: a shape over rows the journal already has, worked out by its opener, never a table of its own.
 - **`launcher-stop-outside-agent-program`** - code asks `LauncherLink` to stop a program. End the agent's row instead:
   `EndedAgentProgramListener` stops the program through `AgentProgram` when another ended it, and an agent that ended
   itself gets no stop.

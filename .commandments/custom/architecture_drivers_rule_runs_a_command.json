@@ -24,6 +24,14 @@
                     {
                         "extendsAny": "Overlay",
                         "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "AgentState",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "DeferredRule",
+                        "of": "enclosingType"
                     }
                 ]
             }
@@ -39,7 +47,7 @@
     },
     "sin": {
         "name": "rule-runs-a-command",
-        "description": "A driver rule or an overlay runs a command or writes a row itself, so the write skips the hook call's transaction, its savepoint and its record.",
+        "description": "A driver rule, an overlay, an agent state's opener or a deferred rule runs a command or writes a row itself, so the write skips the hook call's transaction, its savepoint and its record.",
         "rule": "A rule only answers: it hands the commands it wants run to RuleAnswer with running() or ending_layer(), and the hook record runs each one alone.",
         "skill": "drivers-architecture"
     }
