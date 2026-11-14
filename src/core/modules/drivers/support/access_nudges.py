@@ -24,7 +24,7 @@ NATIVE_SUBAGENT_WITHOUT_LAUNCH = NudgeDeclaration("drivers.native_subagent_no_la
 PANIC_FILE = NudgeDeclaration("drivers.panic_file", NudgeType.SAFETY_REFUSAL, "The panic file is only for a journal that does not answer: it answers you, so report what is wrong instead")
 PRIVATE_CORPUS = NudgeDeclaration("drivers.private_corpus", NudgeType.SAFETY_REFUSAL, "The private command corpus is only read or run in its sandboxed go test: say in your report what you need")
 
-DATABASE_FILE = NudgeDeclaration("drivers.database_file", NudgeType.SAFETY_REFUSAL, "The journal's database file is changed only by the journal's commands: find the command for what you want with journal --help, or say in your report what is missing", full_text=True)
+DATABASE_FILE = NudgeDeclaration("drivers.database_file", NudgeType.SAFETY_REFUSAL, "The journal's database changes only through journal commands: find yours with journal --help, or report what is missing", full_text=True)
 
 SKIP_NEEDS_APPROVAL = NudgeDeclaration("drivers.skip_waits_for_approval", NudgeType.STEERING, "agent:{agent} confirmed a skip that needs your answer: refusal-skip:{refusal}", turn_limited=False)
 SKIP_APPROVED = NudgeDeclaration("drivers.skip_approved", NudgeType.STEERING, "Skip refusal-skip:{refusal} approved: try again", turn_limited=False)

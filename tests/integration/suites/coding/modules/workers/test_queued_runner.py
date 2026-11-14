@@ -16,8 +16,8 @@ from suites.coding.modules.workers.models.worker_operation import WorkerOperatio
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.integration.support.go_build import GoBuild
 from tests.stories.server.support.server_client import server_story
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import (
 from tests.integration.support.fixture_journal import FixtureJournal
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import (
     CART_CHANGE, FIRST_PROOF, dispatched_worker, repository_environment,
 )
 
