@@ -136,3 +136,7 @@ export {default as ReaderTimeline} from "./ReaderTimeline.vue";
 export {default as ReaderLinks} from "./ReaderLinks.vue";
 // the reader's markdown is the text display the rest of the viewer draws text with
 export {default as Markdown} from "../src/kit/TextDisplay.vue";
+export {default as PageCard} from "./PageCard.vue";
+export {default as CardPage} from "./CardPage.vue";
+export {default as TableLayout} from "./TableLayout.vue";
+export {default as CreateDialog} from "./CreateDialog.vue";
