@@ -1,0 +1,1 @@
+tests/stories/core/modules/docking/dock_models.py::test_the_migration_makes_the_dock_of_every_environment_that_has_none -> integration tests/integration/core/modules/docking/migrations/test_docks_of_existing_environments.py::test_the_migration_makes_the_dock_of_every_environment_that_has_none
