@@ -7,9 +7,9 @@ export const sourceOf = (skill) => (skill.module?.startsWith("plugin:") ? "plugi
 export const requiredWords = (skill) => (skill.required ? (skill.agents === "main" ? "Main agent" : "Every agent") : "");
 
 export const skillFilters = [
+    {key: "source", label: "Group", options: SOURCES, get: sourceOf},
     {key: "required", label: "Required", options: [["required", "Required"], ["optional", "Not required"]], get: (skill) => (skill.required ? "required" : "optional")},
-    {key: "read", label: "Read by the main agent", options: [["read", "Read"], ["unread", "Not read"]], get: (skill) => (skill.read ? "read" : "unread")},
-    {key: "source", label: "Source", options: SOURCES, get: sourceOf},
+    {key: "read", label: "Read now", options: [["read", "Read"], ["unread", "Not read"]], get: (skill) => (skill.read ? "read" : "unread")},
 ];
 
 // the list is grouped by where a skill comes from, in that order

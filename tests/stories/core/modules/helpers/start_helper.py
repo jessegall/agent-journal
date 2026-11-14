@@ -129,7 +129,7 @@ def test_a_helper_starts_no_helper(new_story):
     story = new_story(fixture=StartedHelper)
     helper_id = running_helper(story)
     fake_launcher(story)
-    story.expect_refusal(START, "say in your report what should be done next", actor=Actor(helper_id, ActorType.AGENT))
+    story.expect_refusal(START, "A read-only helper may not run helper start", actor=Actor(helper_id, ActorType.AGENT))
 
 
 def test_a_person_s_start_has_the_main_agent_as_parent(new_story):

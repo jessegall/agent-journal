@@ -106,8 +106,8 @@ def test_s45_fixture_actors_are_distinct_agents_that_are_all_refused_a_person_on
     expect_value((len({actor.id for actor in actors.values()}), list(actors)), (5, ["main", "worker", "helper", "merger", "designer"]))
     story.expect_text(f"agent show {agent_number(story, actors['merger'].id)}", f"{MERGER_PROFILE.name}", actor=story.user)
     story.expect_text(f"agent show {agent_number(story, actors['designer'].id)}", f"{DESIGNER_PROFILE.name}", actor=story.user)
-    for actor in actors.values():
-        story.expect_refusal(f"setting set {AUTO_MODE_SETTING} off --environment main --reason 'a story asks'", "A user was asked", actor=actor)
+    for role, actor in actors.items():
+        story.expect_refusal(f"setting set {AUTO_MODE_SETTING} off --environment main --reason 'a story asks'", "A user was asked" if role == "main" else "may not run setting set", actor=actor)
     story.expect_success(f"setting show {AUTO_MODE_SETTING} --environment main", "value: True", actor=story.user)
 
 

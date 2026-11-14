@@ -87,3 +87,15 @@ test("test_reader_tabs_and_facts: the reader shows its title, facts and tabs wit
     expect(element.querySelector("[data-body]").textContent).toBe("links");
     expect(element.querySelector("[data-primary]")).not.toBeNull();
 });
+
+test("test_open_first_chooses_the_first_row_when_the_address_names_none: a page that opens its first row shows it in the reader", async () => {
+    const chosen = ref(null);
+    const element = document.createElement("div");
+    document.body.append(element);
+    createApp({
+        render: () => h(ListReaderLayout, {items: ITEMS, openFirst: true, chosen: chosen.value, "onUpdate:chosen": (id) => (chosen.value = id), listWidth: 460}, {reader: ({item}) => h("p", {"data-read": ""}, item.title)}),
+    }).mount(element);
+    await settle();
+    expect(chosen.value).toBe(1);
+    expect(element.querySelector("[data-read]").textContent).toBe("Journal");
+});

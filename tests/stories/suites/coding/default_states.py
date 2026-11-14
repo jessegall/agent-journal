@@ -19,7 +19,9 @@ def test_a_coding_main_agent_has_the_where_you_stand_default_at_the_bottom_of_it
 
 
 def listed_types(story) -> dict[str, dict]:
-    return {state["name"]: state for state in json.loads(story.run("driver state-types --json", actor=story.agent).output_text)}
+    answer = json.loads(story.run("driver state-types --json", actor=story.agent).output_text)
+    states = answer if isinstance(answer, list) else answer.get("rows", answer.get("value", []))
+    return {state["name"]: state for state in states}
 
 
 def test_a_worker_gets_the_worker_defaults_and_not_the_main_ones(new_story):

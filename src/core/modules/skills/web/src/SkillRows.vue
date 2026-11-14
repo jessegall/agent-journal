@@ -30,7 +30,7 @@ watch(opened, () => (draft.value = null));
       <SkillText :skill="text" :failure="openFailure" :back="false" />
     </template>
     <template v-else>
-      <ListReaderLayout v-model:chosen="chosen" :items="items" :list-width="LIST_WIDTH" :place="place" empty-title="No skills are installed" pick-line="Choose a skill to read what it says" data-skills-catalogue>
+      <ListReaderLayout v-model:chosen="chosen" :items="items" :list-width="LIST_WIDTH" :place="place" empty-title="No skills are installed" pick-line="Choose a skill to read what it says" open-first data-skills-catalogue>
           <template #top>
               <PageHeader title="Skills" :count="skills.length" />
               <FilterBar v-model="filter" v-model:words="words" :fields="skillFilters" :rows="skills" :shown="shown.length" placeholder="Find a skill" />

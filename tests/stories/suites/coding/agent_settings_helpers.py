@@ -59,10 +59,10 @@ def test_the_counts_list_the_worker_and_the_read_only_helpers_with_a_row_for_eac
     _, tab = helpers
     rows = tab.limits()
     profiles = tab.profiles()
-    expect_value(set(rows), {"worker", "helper"})
-    expect_value((profiles[f"{MERGER_PROFILE.name}"]["group"], profiles[f"{DESIGNER_PROFILE.name}"]["group"], profiles[f"{RESEARCHER_PROFILE.name}"]["group"]), ("merger", "designer", "helpers"))
+    expect_value(set(rows), {"worker", "helper", "merger"})
+    expect_value((profiles[f"{DESIGNER_PROFILE.name}"]["group"], profiles[f"{RESEARCHER_PROFILE.name}"]["group"]), ("designer", "helpers"))
     expect_value_4(all(isinstance(row["running"], int) and isinstance(row["kept"], int) for row in (*rows.values(), *profiles.values())))
-    expect_value((rows["worker"]["running"], rows["helper"]["running"]), (1, 3))
+    expect_value((rows["worker"]["running"], rows["helper"]["running"] + rows["merger"]["running"]), (1, 3))
 
 
 def test_a_type_whose_running_count_reaches_its_limit_is_full(helpers):
