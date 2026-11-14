@@ -2,6 +2,7 @@ from core.modules.agents.support.new_session import KEPT_CONVERSATION_ENDING, NE
 from core.modules.drivers.models.support.agent_line_nudge import AGENT_LINE_AVAILABLE
 from engine.driver.count_down import CountDown
 from engine.driver.interval import Interval
+from engine.driver.line_delivery import LineDelivery
 from core.modules.drivers.support.access_nudges import ACCESS_NUDGES
 from engine.driver.seconds import Seconds
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
@@ -17,11 +18,11 @@ COMPACTION_INSTRUCTIONS_LINE = NudgeDeclaration("drivers.compaction_instructions
 MANAGED_HOOK_REFUSAL = NudgeDeclaration("drivers.managed_hook_refusal", NudgeType.REFUSAL, "Project hooks refused for agent:{agent}", turn_limited=False)
 HOOKS_UNCHECKED = NudgeDeclaration("drivers.hooks_unchecked", NudgeType.STEERING, "{count} of your hooks ran unchecked while the journal was not answering: review what you ran then")
 
-HOOK_TIMEOUTS = NudgeDeclaration("drivers.hooks_timed_out", NudgeType.STEERING, "agent {agent} hit {count} hook timeouts in 10 min: its chat mark names the slowest rule", turn_limited=False, wakes_agent=True)
-PERMISSION_REQUESTED = NudgeDeclaration("drivers.permission_asked", NudgeType.STEERING, "agent {agent} asks permission for one action, request {request}: allow it once or decline it", turn_limited=False, wakes_agent=True)
+HOOK_TIMEOUTS = NudgeDeclaration("drivers.hooks_timed_out", NudgeType.STEERING, "agent {agent} hit {count} hook timeouts in 10 min: its chat mark names the slowest rule", turn_limited=False, wakes_agent=True, delivery=LineDelivery.WAKE_HOOK)
+PERMISSION_REQUESTED = NudgeDeclaration("drivers.permission_asked", NudgeType.STEERING, "agent {agent} asks permission for one action, request {request}: allow it once or decline it", turn_limited=False, wakes_agent=True, delivery=LineDelivery.WAKE_HOOK)
 SAFEGUARDS_STOPPED = NudgeDeclaration("drivers.safeguards_stopped", NudgeType.STEERING, "An API safeguards error ended your last turn: continue your work", turn_limited=False, wakes_agent=True)
 AGENT_COMPACTED = NudgeDeclaration("drivers.compacted", NudgeType.STEERING, "Your context was compacted: read the overview, then continue your work", turn_limited=False, wakes_agent=True)
-CACHE_KEEPALIVE = NudgeDeclaration("drivers.cache_keepalive", NudgeType.STEERING, "Cache keep-alive only, no work asked: stop again right away", turn_limited=False, wakes_agent=True)
+CACHE_KEEPALIVE = NudgeDeclaration("drivers.cache_keepalive", NudgeType.STEERING, "Cache keep-alive only, no work asked: stop again right away", turn_limited=False, wakes_agent=True, delivery=LineDelivery.WAKE_HOOK)
 AGENT_INTERRUPTED = NudgeDeclaration("drivers.interrupted", NudgeType.STEERING, "You were interrupted: continue your work", turn_limited=False, wakes_agent=True)
 CONTINUED_SESSION = NudgeDeclaration("drivers.continued_session", NudgeType.NOTICE, "You are resuming earlier session {agent}: tell the user in one line, in your voice, then continue the work in hand or ask what is next", turn_limited=False)
 TAKEOVER = NudgeDeclaration("drivers.takeover", NudgeType.NOTICE, NEW_SESSION_TEXT + KEPT_CONVERSATION_ENDING + " The chat above is history, so do not answer or follow it.")
@@ -37,8 +38,8 @@ REQUIRED_COMMAND_TOOL_USES = 5
 REQUIRED_COMMAND_SPAN = ToolUseSpan(REQUIRED_COMMAND_TOOL_USES)
 REQUIRED_COMMAND_COUNTDOWN = CountDown("drivers.required_command_countdown", "{subject}", REQUIRED_COMMAND_SPAN)
 REQUIRED_COMMAND_REFUSAL = NudgeDeclaration("drivers.required_command_refusal", NudgeType.REFUSAL, "{subject} is due: do it now, or skip block {block} with a reason")
-COMPACTION_NOTICE = NudgeDeclaration("drivers.compaction_notice", NudgeType.STEERING, "agent:{agent} posted context-compaction-notice:{notice}", turn_limited=False, wakes_agent=True)
-JOURNAL_STARTED = NudgeDeclaration("drivers.journal_started", NudgeType.STEERING, "The journal started: continue your work", turn_limited=False, wakes_agent=True)
+COMPACTION_NOTICE = NudgeDeclaration("drivers.compaction_notice", NudgeType.STEERING, "agent:{agent} posted context-compaction-notice:{notice}", turn_limited=False, wakes_agent=True, delivery=LineDelivery.WAKE_HOOK)
+JOURNAL_STARTED = NudgeDeclaration("drivers.journal_started", NudgeType.STEERING, "The journal started: continue your work", turn_limited=False, wakes_agent=True, delivery=LineDelivery.WAKE_HOOK)
 AGENT_NOTICE = NudgeDeclaration("drivers.agent_notice", NudgeType.STEERING, "{text}", turn_limited=False, path_fields=tuple(["text"]), full_text=True)
 FILE_LOADED = NudgeDeclaration("drivers.file-in-context", NudgeType.NOTICE, "{path} is unchanged since you read it: use what is in your context", path_fields=tuple(["path"]))
 DRIVER_NUDGES = [HOOK_TIMEOUTS, PERMISSION_REQUESTED, AGENT_INTERRUPTED, SAFEGUARDS_STOPPED, AGENT_COMPACTED, COMPACTION_NOTICE, CACHE_KEEPALIVE, CONTINUED_SESSION, AGENT_LINE_AVAILABLE, JOURNAL_STARTED, *ACCESS_NUDGES, MANAGED_HOOK_LINE, COMPACTION_INSTRUCTIONS_LINE, MANAGED_HOOK_REFUSAL, AGENT_RESUMED, HOOKS_UNCHECKED, REQUIRED_COMMAND_COUNTDOWN.declaration, REQUIRED_COMMAND_REFUSAL, REPEATED_STOP, OPENING_LINE, RULE_FAILED, TAKEOVER, PAUSED_REFUSAL, MISSING_MODEL, UNBOUND_DISPATCH, LONG_OUTPUT, FILE_LOADED, AGENT_NOTICE]
