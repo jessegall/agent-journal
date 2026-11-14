@@ -48,6 +48,8 @@ SETTINGS_FILE = ".journal-settings.json"
 STOP_LIMIT_SECONDS = 1
 
 
+PROJECT_MARK_CHARACTERS = 12
+
 class PluginProgram:
     """Runs a plugin event through its service or a time-limited process."""
 
@@ -191,4 +193,11 @@ class PluginProgram:
         passed = {variable: os.environ[variable] for variable in PASSED_VARIABLES if variable in os.environ}
         code, data, journal = self.folders.code(plugin_name).resolve(), self.folders.data(plugin_name).resolve(), self.home.folder.resolve()
         return {**passed, "PATH": f"{journal / 'bin'}:{LoginPath(self.home).value()}", "JOURNAL_ROOT": str(journal.parent), "JOURNAL_ENV": environment, "JOURNAL_PLUGIN": plugin_name,
-                "JOURNAL_PLUGIN_DIR": str(code), "JOURNAL_PLUGIN_DATA": str(data), PLUGIN_TOKEN_VARIABLE: self.scripts.token(plugin_name), "JOURNAL_SETTINGS": str(self.settings_path(plugin_name, environment))}
+                "JOURNAL_PLUGIN_DIR": str(code), "JOURNAL_PLUGIN_DATA": str(data), "JOURNAL_PLUGIN_CACHE": str(self.cache_folder(plugin_name)),
+                PLUGIN_TOKEN_VARIABLE: self.scripts.token(plugin_name), "JOURNAL_SETTINGS": str(self.settings_path(plugin_name, environment))}
+
+    # a folder of the user's own cache, which a worker's sandbox lets it write, for what a plugin can build again (a
+    # type checker's cache); its data folder lies in the main checkout, which the sandbox never lets a worker write
+    def cache_folder(self, plugin_name: str) -> Path:
+        project = hashlib.sha256(str(self.home.folder.resolve()).encode()).hexdigest()[:PROJECT_MARK_CHARACTERS]
+        return Path.home() / ".cache" / "agent-journal" / "plugins" / project / plugin_name
