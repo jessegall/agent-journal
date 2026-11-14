@@ -4,7 +4,7 @@ import time
 from pathlib import Path
 
 from engine.module.python_source_folders import python_source_folders
-from engine.testing.cache.schema_inputs import SchemaInputs
+from engine.module.schema_inputs import SchemaInputs
 from engine.testing.seeds.base_seed_switch import BaseSeedSwitch
 from engine.testing.cache.folder_stat import FolderStat
 
