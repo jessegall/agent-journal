@@ -334,9 +334,10 @@ class ProcessesModule(Module):
     marks = PROCESS_MARKS
     bindings = {WatchedRuns: MonitoredRuns, WaitTargets: ProcessWaitTargets, RunOwners: ProcessRunOwners, RunPlacement: ProcessRunPlacement, RunPauses: AgentRunPauses, RequestRecords: ProcessRowWrapper, PersonClasses: StoredExecutionClasses}
     docks = PROCESS_DOCKS
-    window_extensions = [WindowExtension(name, reads=["queue list", "output page"], events=["output.*"],
-                                         tabs=[WindowTab("processes", "Processes", "queue list", component="/modules/journal.core.processes/agent-processes.js")])
-                         for name in ("agents.agents", "agents.helpers")]
+    window_extensions = [*(WindowExtension(name, reads=["queue list", "output page"], events=["output.*"],
+                                           tabs=[WindowTab("processes", "Processes", "queue list", component="/modules/journal.core.processes/agent-processes.js")])
+                           for name in ("agents.agents", "agents.helpers")),
+                         WindowExtension("agents.agents", runs=["process lift-hold"])]
     windows = [WindowDeclaration("processes.outputs", "Commands", "outputs.js", WindowLoading.COMPONENT, skeleton=PROCESSES_OUTPUTS_SKELETON, search=WindowSearch(ProcessSearcher, "Search the commands"), icon=WindowIcon.TERMINAL, reads=WINDOW_READS,
                                  keys=[WindowKey("runs", "process feed", arguments=["session-agent-id"], events=WINDOW_EVENTS),
                                        WindowKey("marks", "unreadable-mark list", events=["unreadable_mark.*"])], runs=WINDOW_RUNS, events=[*WINDOW_EVENTS, "unreadable_mark.*"]),
@@ -350,6 +351,5 @@ class ProcessesModule(Module):
                WindowDeclaration("processes.queue-body", "Process queue", "queue-body.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.TERMINAL, skeleton=[SkeletonPart.line()],
                                  reads=["queue list", "output page", "queue-class list", "queue-class preview"],
                                  runs=["setting set", "queue-class set", "queue-class add", "queue-class reset", "queue-class remove", "queue-class preset"], events=["output.*"])]
-    window_extensions = [WindowExtension("agents.agents", runs=["process lift-hold"])]
     inspectors = [QUEUE_INSPECTOR]
     seeders = [ProcessesSeeder]
