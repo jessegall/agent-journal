@@ -1,0 +1,1 @@
+tests/stories/core/modules/chat/mark_removal.py::test_deleting_an_environment_deletes_its_marks -> integration tests/integration/core/modules/chat/test_mark_removal.py::test_deleting_an_environment_deletes_its_marks

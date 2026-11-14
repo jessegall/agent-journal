@@ -1,0 +1,3 @@
+tests/stories/core/modules/search/search_mark.py::test_a_search_in_a_chain_has_its_mark_too -> integration tests/integration/core/modules/search/test_search_mark.py::test_a_search_in_a_chain_has_its_mark_too
+tests/stories/core/modules/search/search_mark.py::test_a_search_uses_what_its_mark_read_once_and_reads_the_rows_itself_after_that -> integration tests/integration/core/modules/search/test_search_mark.py::test_a_search_uses_what_its_mark_read_once_and_reads_the_rows_itself_after_that
+tests/stories/core/modules/search/search_mark.py::test_the_mark_opens_to_the_rows_found_each_with_its_noun_number_and_passage -> integration tests/integration/core/modules/search/test_search_mark.py::test_the_mark_opens_to_the_rows_found_each_with_its_noun_number_and_passage
