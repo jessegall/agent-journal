@@ -18,6 +18,5 @@ class RecordAssignDecisionHandler(Handler[RecordAssignDecision, tuple[AssignDeci
         self.queries, self.rules = queries, rules
 
     def handle(self, command: RecordAssignDecision, context: Context) -> tuple[AssignDecision, ...]:
-        batch = DecisionBatch()
         tasks = {task.id: task for task in self.queries.query(Task).find_many(command.task_ids)}
-        return tuple(self.rules.decide(tasks[task_id], batch, context) for task_id in command.task_ids)
+        return tuple(self.rules.decide_many([tasks[task_id] for task_id in command.task_ids], DecisionBatch(), context))

@@ -15,8 +15,7 @@ class SwitchAssignRuleSubcommand(Subcommand[SwitchAssignRule, AssignRule]):
     cli_name = "assign-rule"
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("rule_id", type=int)
-        RuleArguments.add_revision(parser)
+        RuleArguments.add_revised_rule(parser)
 
     def command(self, arguments: Namespace, caller: Caller) -> SwitchAssignRule:
         return SwitchAssignRule(arguments.rule_id, enabled=self.enabled, revision=arguments.revision)

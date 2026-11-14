@@ -37,6 +37,7 @@ from core.modules.assign_rules.commands.record_assign_decision.record_assign_dec
 from core.modules.assign_rules.migrations.m001_assign_rules import AssignRulesMigration
 from core.modules.assign_rules.migrations.m002_decision_indexes import DecisionIndexesMigration
 from core.modules.assign_rules.migrations.m003_rule_target_agent import RuleTargetAgentMigration
+from core.modules.assign_rules.migrations.m004_enabled_rule_index import EnabledRuleIndexMigration
 from core.modules.assign_rules.models.assign_decision import AssignDecision
 from core.modules.assign_rules.models.assign_rule import AssignRule
 from core.modules.assign_rules.models.assign_rule_condition import AssignRuleCondition
@@ -57,7 +58,7 @@ class AssignRulesModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.plans", "journal.core.assignments"]
     models = [ModelDeclaration(AssignRule, excluded_subcommands=EXCLUDED_WRITES), ModelDeclaration(AssignRuleCondition, excluded_subcommands=EXCLUDED_WRITES), ModelDeclaration(AssignDecision, excluded_subcommands=EXCLUDED_WRITES)]
-    migrations = [AssignRulesMigration, DecisionIndexesMigration, RuleTargetAgentMigration]
+    migrations = [AssignRulesMigration, DecisionIndexesMigration, RuleTargetAgentMigration, EnabledRuleIndexMigration]
     listeners = [AutoAssignTaskListener, AutoAssignTagListener, AgentStartRetryListener]
     handlers = [RecordAssignDecisionHandler, JudgeTaskHandler, RecordFailedDecisionHandler, JudgeSkippedTasksHandler, MakeAssignRuleHandler, EditAssignRuleHandler, MoveAssignRuleHandler, SwitchAssignRuleHandler, DeleteAssignRuleHandler,
                 ApplyAssignRuleHandler, MoveRuleTasksHandler, ReturnRuleTasksHandler]

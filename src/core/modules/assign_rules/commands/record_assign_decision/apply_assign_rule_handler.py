@@ -23,9 +23,10 @@ class ApplyAssignRuleHandler(Handler[ApplyAssignRule, RuleTaskList]):
     def handle(self, command: ApplyAssignRule, context: Context) -> RuleTaskList:
         AssignRulePersonGuard.require_person(context)
         self.revision.check(command.revision)
-        listed = self.rule_tasks.applied(self.rows.required(AssignRule, command.rule_id))
+        listing = DecisionBatch()
+        listed = self.rule_tasks.applied(self.rows.required(AssignRule, command.rule_id), listing)
         if command.is_confirmed:
-            batch = DecisionBatch()
+            batch = listing.restarted()
             for rule_task in listed:
-                self.rules.decide(rule_task.task, batch, context)
+                self.rules.judged(rule_task.task, rule_task.facts, batch, context)
         return RuleTaskList(command.rule_id, listed, command.is_confirmed)

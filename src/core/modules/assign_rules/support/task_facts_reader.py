@@ -9,18 +9,17 @@ from core.modules.assign_rules.models.enums.creator_type import CreatorType
 from core.modules.assign_rules.models.support.task_facts import TaskFacts
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.tasks.models.task import Task
-from core.modules.tasks.models.task_tag import TaskTag
+from core.modules.tasks.support.task_tags import TaskTags
 
 PLAN_TASKS_REASON = "the plan of each task judged is read in one query"
-TAGS_REASON = "the tags of each task judged are read in one query"
 
 
 class TaskFactsReader:
     """Reads what a rule's conditions need to know about tasks: their text, score, tags, creator and plan, with
     one query for each of those over all the tasks asked about."""
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, queries: Queries, task_tags: TaskTags) -> None:
+        self.queries, self.task_tags = queries, task_tags
 
     def read(self, task: Task) -> TaskFacts:
         return self.read_many([task])[0]
@@ -28,9 +27,7 @@ class TaskFactsReader:
     def read_many(self, tasks: Sequence[Task]) -> list[TaskFacts]:
         task_ids = [task.id for task in tasks]
         plan_ids = {plan_task.task_id: plan_task.plan_id for plan_task in self.queries.query(PlanTask).where_in("task_id", task_ids).every_row(PLAN_TASKS_REASON)}
-        tags: dict[int, list[str]] = {}
-        for tag in self.queries.query(TaskTag).where_in("task_id", task_ids).every_row(TAGS_REASON):
-            tags.setdefault(tag.task_id, []).append(tag.word)
+        tags = self.task_tags.words(task_ids)
         creator_types = self.creator_types([task.creator_id for task in tasks])
         return [TaskFacts(title=task.title, brief=task.brief, complexity=task.complexity, priority=task.priority, tags=tuple(tags.get(task.id, [])),
                           creator_type=creator_types[task.creator_id], creator_id=task.creator_id, plan_id=plan_ids.get(task.id)) for task in tasks]

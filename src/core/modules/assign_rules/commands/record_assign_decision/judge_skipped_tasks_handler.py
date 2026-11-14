@@ -36,8 +36,8 @@ class JudgeSkippedTasksHandler(Handler[JudgeSkippedTasks, int]):
         first_rules = self.first_rule_times()
         if not first_rules:
             return 0
-        retry_ids = self.decisions.retried_task_ids(MOST_RETRIED_TASKS)
-        tasks = [*self.queries.query(Task).find_many(retry_ids), *self.undecided_tasks(min(first_rules.values()))]
+        retried = self.tasks.where_in("id", self.decisions.retried_task_ids()).oldest().take(MOST_RETRIED_TASKS)
+        tasks = [*retried, *self.undecided_tasks(min(first_rules.values()))]
         environment_tasks: dict[int, list[int]] = {}
         for task in tasks:
             if task.environment_id in first_rules and task.creation_timestamp().text >= first_rules[task.environment_id]:

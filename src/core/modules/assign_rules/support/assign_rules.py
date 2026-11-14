@@ -1,18 +1,23 @@
+from collections.abc import Sequence
 from typing import TypeGuard
 
 from engine.command.context import Context
+from engine.database.kept_rows import KeptRows
 from engine.driver.nudger import Nudger
 from engine.enums.agent_role import AgentRole
 from engine.errors.refusal import Refusal
 from engine.query.queries import Queries
+from engine.query.query import Query
 from engine.repository.repository import Repository
 from core.modules.assign_rules.models.assign_decision import AssignDecision
 from core.modules.assign_rules.models.assign_rule import AssignRule
+from core.modules.assign_rules.models.assign_rule_condition import AssignRuleCondition
 from core.modules.assign_rules.models.enums.decision_outcome import DecisionOutcome
 from core.modules.assign_rules.models.support.task_facts import TaskFacts
 from core.modules.assign_rules.support.assign_rules_mode import AssignRulesMode
 from core.modules.assign_rules.support.assign_rules_nudges import RULE_NUDGE_SOURCE, RULE_TASK_NUDGE
 from core.modules.assign_rules.support.decision_note import DecisionNote
+from core.modules.assign_rules.support.enabled_rules import EnabledRules
 from core.modules.assign_rules.support.rule_conditions import RuleConditions
 from core.modules.assign_rules.support.rule_mark import RuleMark
 from core.modules.assign_rules.support.targets.decision_batch import DecisionBatch
@@ -24,6 +29,7 @@ from core.modules.tasks.models.enums.task_state import UNSTARTED_STATES
 from core.modules.tasks.models.task import Task
 
 RULES_REASON = "a task is judged against every enabled rule of its environment"
+DECISIONS_REASON = "the decisions about the tasks judged together are read in one query"
 
 
 class AssignRules:
@@ -35,24 +41,39 @@ class AssignRules:
     task hears so. While the mode does not assign, the winner is recorded as a dry run."""
 
     def __init__(self, queries: Queries, facts_reader: TaskFactsReader, repository: Repository, mode: AssignRulesMode, targets: RuleTargets,
-                 conditions: RuleConditions, assignments: Assignments, nudger: Nudger) -> None:
+                 conditions: RuleConditions, assignments: Assignments, nudger: Nudger, kept: KeptRows) -> None:
         self.queries, self.facts_reader, self.repository, self.mode, self.targets = queries, facts_reader, repository, mode, targets
-        self.conditions, self.assignments, self.nudger = conditions, assignments, nudger
+        self.conditions, self.assignments, self.nudger, self.kept = conditions, assignments, nudger, kept
 
     def has_enabled_rules(self) -> bool:
         return self.queries.query(AssignRule).filter(enabled=True).exists()
 
     def stored_decision(self, task: Task) -> AssignDecision | None:
-        return self.queries.query(AssignDecision).filter(task_id=task.id).first()
+        decision = self.queries.query(AssignDecision).filter(task_id=task.id)
+        return self.kept.read(decision, decision.first, name="assign_rules.stored_decision")
+
+    def keep_tasks(self, tasks: Sequence[Task]) -> list[TaskFacts]:
+        task_ids = [task.id for task in tasks]
+        self.assignments.keep_rows(Task, task_ids)
+        loaded = tuple(self.queries.query(AssignDecision).where_in("task_id", task_ids).every_row(DECISIONS_REASON))
+        for task in tasks:
+            decision = self.queries.query(AssignDecision).filter(task_id=task.id)
+            self.kept.read(decision, lambda task=task: next((row for row in loaded if row.task_id == task.id), None), name="assign_rules.stored_decision")
+        return self.facts_reader.read_many(tasks)
 
     def decide(self, task: Task, batch: DecisionBatch, context: Context) -> AssignDecision:
+        return self.decide_many([task], batch, context)[0]
+
+    def decide_many(self, tasks: Sequence[Task], batch: DecisionBatch, context: Context) -> list[AssignDecision]:
+        return [self.judged(task, facts, batch, context) for task, facts in zip(tasks, self.keep_tasks(tasks))]
+
+    def judged(self, task: Task, facts: TaskFacts, batch: DecisionBatch, context: Context) -> AssignDecision:
         stored = self.stored_decision(task)
         if self.is_given(stored):
             return stored
         unfree = self.unfree(task)
         if unfree is not None:
             return self.record(task, stored, unfree.outcome, None, None, unfree.reason, context)
-        facts = self.facts_reader.read(task)
         rules = self.matching_rules(facts)
         if not rules and facts.plan_id is not None:
             return self.record(task, stored, DecisionOutcome.PLANNED, None, None, self.planned_reason(facts), context)
@@ -124,10 +145,10 @@ class AssignRules:
         self.give(task, rule, actor_id, context)
         return self.record(task, self.stored_decision(task), DecisionOutcome.ASSIGNED, rule, actor_id, f"rule {rule.id} moved it to {rule.target_name}", context)
 
-    def choose_rule(self, task: Task, batch: DecisionBatch) -> AssignRule | None:
+    def choose_rule(self, task: Task, facts: TaskFacts, batch: DecisionBatch) -> AssignRule | None:
         if self.is_given(self.stored_decision(task)) or self.unfree(task) is not None:
             return None
-        for rule in self.matching_rules(self.facts_reader.read(task)):
+        for rule in self.matching_rules(facts):
             usable = self.targets.usable(rule, batch)
             if usable.actor_id is not None:
                 batch.give(usable.actor_id)
@@ -148,9 +169,16 @@ class AssignRules:
         return self.record(task, stored, DecisionOutcome.ASSIGNED, rule, usable.actor_id, "; ".join([*skipped, f"rule {rule.id} applied: given to {rule.target_name}{target_note}", *later_matches]), context)
 
     def matching_rules(self, facts: TaskFacts) -> list[AssignRule]:
-        rules = sorted(self.queries.query(AssignRule).filter(enabled=True).every_row(RULES_REASON), key=lambda rule: rule.position)
-        lines = self.conditions.rule_lines(rules)
-        return [rule for rule in rules if all(line.matches(facts) for line in lines[rule.id]) and (facts.plan_id is None or any(line.is_plan_condition for line in lines[rule.id]))]
+        return self.enabled_rules().matching(facts)
+
+    def enabled_rules(self) -> EnabledRules:
+        rules = self.queries.query(AssignRule).filter(enabled=True)
+        conditions = self.queries.query(AssignRuleCondition).where_in("rule_id", self.queries.query(AssignRule).filter(enabled=True).select_columns("id"))
+        return self.kept.read_spanning([rules, conditions], lambda: self.loaded_rules(rules), name="assign_rules.enabled")
+
+    def loaded_rules(self, rules: Query[AssignRule]) -> EnabledRules:
+        ordered = tuple(sorted(rules.every_row(RULES_REASON), key=lambda rule: rule.position))
+        return EnabledRules(ordered, self.conditions.rule_lines(ordered))
 
     def record_failure(self, task: Task, reason: str, context: Context) -> AssignDecision:
         return self.record(task, self.stored_decision(task), DecisionOutcome.FAILED, None, None, reason, context)

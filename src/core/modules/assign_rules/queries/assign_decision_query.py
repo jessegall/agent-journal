@@ -30,8 +30,8 @@ class AssignDecisionQuery(Query[AssignDecision]):
     def matched_rule_ids(self, rule_ids: Sequence[int]) -> set[int]:
         return {int(rule_id) for rule_id in self.matching(Among(RULE_COLUMN, rule_ids)).group_by(RULE_COLUMN).count_by() if isinstance(rule_id, int)}
 
-    def retried_task_ids(self, most: int) -> list[int]:
-        return [decision.task_id for decision in self.filter(outcome=DecisionOutcome.SKIPPED).where_not_null(RULE_COLUMN).oldest().take(most)]
+    def retried_task_ids(self) -> Query[AssignDecision]:
+        return self.filter(outcome=DecisionOutcome.SKIPPED).where_not_null(RULE_COLUMN).select_columns("task_id")
 
     def oldest_given(self, open_task_ids: Query) -> dict[int, int]:
         oldest: dict[int, int] = {}
