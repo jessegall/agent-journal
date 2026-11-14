@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from suites.coding.modules.workers.support.work_units import WorkUnits
 from suites.coding.support.worker_test_rule import WORKER_TEST_RULE
 from pathlib import Path
@@ -76,6 +77,9 @@ class WorkerCommand:
     def launched(self, worker: Agent, worktree: Worktree, environment: Environment, session: SessionStart, brief: str) -> LaunchCommand:
         if not worker.program_model.strip():
             raise Refusal(f"{AgentLabel.labelled(worker).text} has no recorded model", "dispatch a worker with --model <model>")
+        # writing the program's server file into a removed worktree would make its folder again
+        if worktree.removed_at is not None or not FileAccess.is_dir(worktree.folder):
+            raise Refusal(f"the worktree {worktree.folder} of {AgentLabel.labelled(worker).text} is removed", "dispatch the work again, which cuts a new worktree")
         files = self.servers.write_folder(Path(worktree.folder))
         self.libraries.exclude(worktree.folder, [str(path) for path in files])
         return self.helpers.launched(worker, session, brief)
