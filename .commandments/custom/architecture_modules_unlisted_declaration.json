@@ -1,0 +1,56 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "child": {
+                    "field": "bases",
+                    "nameLike": "*Declaration"
+                }
+            },
+            {
+                "topLevel": true
+            },
+            {
+                "not": {
+                    "referredFrom": {
+                        "all": [
+                            {
+                                "any": [
+                                    {
+                                        "field": "elts"
+                                    },
+                                    {
+                                        "field": "keys"
+                                    },
+                                    {
+                                        "field": "values"
+                                    }
+                                ]
+                            },
+                            {
+                                "fileMatches": "_(module|suite)\\.py$"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/(core/modules|suites|tunnels|engine)/"
+            }
+        ]
+    },
+    "sin": {
+        "name": "unlisted-declaration",
+        "description": "A declaration class that no module or suite lists, so the journal never loads it.",
+        "rule": "List the declaration in the module that owns it, or remove the class. Today's sources are allowed while plan 1113 converts them.",
+        "skill": "module-registration"
+    }
+}

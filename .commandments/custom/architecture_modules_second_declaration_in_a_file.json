@@ -1,0 +1,59 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "child": {
+                    "field": "bases",
+                    "nameLike": "*Declaration"
+                }
+            },
+            {
+                "topLevel": true
+            },
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "kind": "Module"
+                        },
+                        {
+                            "count": {
+                                "child": {
+                                    "all": [
+                                        {
+                                            "is": "type-declaration"
+                                        },
+                                        {
+                                            "child": {
+                                                "field": "bases",
+                                                "nameLike": "*Declaration"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "atLeast": 2
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/(core/modules|suites|tunnels|engine)/"
+            }
+        ]
+    },
+    "sin": {
+        "name": "second-declaration-in-a-file",
+        "description": "A file holds several declaration classes, so a module cannot import each from its own file.",
+        "rule": "One declaration class to a file, named for the class: move each into a file of its own. Today's sources are allowed while plan 1113 converts them.",
+        "skill": "module-registration"
+    }
+}

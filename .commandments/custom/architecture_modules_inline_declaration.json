@@ -4,14 +4,44 @@
     "find": {
         "select": "call",
         "where": [
-            {"fileMatches": "_(module|suite)\\.py$"},
-            {"field": "elts"},
-            {"inside": {"is": "type-declaration"}},
-            {"not": {"inside": {"is": "function"}}}
+            {
+                "fileMatches": "_(module|suite)\\.py$"
+            },
+            {
+                "field": "elts"
+            },
+            {
+                "inside": {
+                    "is": "type-declaration"
+                }
+            },
+            {
+                "not": {
+                    "inside": {
+                        "is": "function"
+                    }
+                }
+            }
         ],
         "reject": [
-            {"testCode": true},
-            {"fileMatches": "^src/(core/modules|suites)/"}
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/(core/modules|suites|tunnels)/"
+            },
+            {
+                "all": [
+                    {
+                        "name": "ModelDeclaration"
+                    },
+                    {
+                        "arguments": {
+                            "atMost": 1
+                        }
+                    }
+                ]
+            }
         ]
     },
     "sin": {

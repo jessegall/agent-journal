@@ -1,0 +1,90 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "assignment",
+        "where": [
+            {
+                "fileMatches": "_(module|suite)\\.py$"
+            },
+            {
+                "inside": {
+                    "is": "type-declaration"
+                }
+            },
+            {
+                "not": {
+                    "inside": {
+                        "is": "function"
+                    }
+                }
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "any": [
+                                {
+                                    "field": "elts"
+                                },
+                                {
+                                    "field": "keys"
+                                },
+                                {
+                                    "field": "values"
+                                }
+                            ]
+                        },
+                        {
+                            "any": [
+                                {
+                                    "is": "call"
+                                },
+                                {
+                                    "is": "literal"
+                                },
+                                {
+                                    "kind": "Tuple"
+                                }
+                            ]
+                        },
+                        {
+                            "not": {
+                                "all": [
+                                    {
+                                        "name": "ModelDeclaration"
+                                    },
+                                    {
+                                        "arguments": {
+                                            "atMost": 1
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/(core/modules|suites|tunnels)/"
+            },
+            {
+                "child": {
+                    "field": "targets",
+                    "name": "dependencies"
+                }
+            }
+        ]
+    },
+    "sin": {
+        "name": "list-entry-not-a-class",
+        "description": "A module or suite attribute lists a call, a literal or a tuple instead of the names of classes.",
+        "rule": "A module lists class names: make each entry a class in its own file and list that class. A short ModelDeclaration(Model) with no other argument stays, and dependencies name other modules by their keys. The modules of today are allowed while plan 1113 converts them, and the allowance shrinks with each conversion.",
+        "skill": "module-registration"
+    }
+}

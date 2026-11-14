@@ -31,8 +31,13 @@ def reached(before: str, after: str) -> list[str]:
 
 
 def run_tests(folder: Path, targets: list[str]) -> list[str]:
-    finished = subprocess.run([*PYTEST, *targets], cwd=folder, capture_output=True, text=True, check=False)
-    return failed_tests(finished.stdout)
+    # the output streams through, so the runner sees a busy run and the failures show as they happen
+    with subprocess.Popen([*PYTEST, *targets], cwd=folder, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as run:
+        lines = []
+        for line in run.stdout:
+            sys.stdout.write(line)
+            lines.append(line)
+    return failed_tests("".join(lines))
 
 
 def failed_before(before: str, names: list[str]) -> list[str]:
@@ -52,7 +57,7 @@ def main(before: str, after: str) -> int:
     folders = reached(before, after)
     failed_after = run_tests(Path("."), folders) if folders else []
     broken = broken_tests(failed_after, failed_before(before, failed_after)) if failed_after else []
-    print("\n".join(broken))
+    print("\n".join(["the merge broke these tests:", *broken] if broken else ["the merge broke no test"]))
     return 1 if broken else 0
 
 
