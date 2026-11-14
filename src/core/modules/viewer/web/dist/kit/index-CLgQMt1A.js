@@ -13334,7 +13334,7 @@ const c6 = (e, t, n, a) => ia(e.label, n, { row_id: a, id: a }) || Q$(t, n, a), 
       e.abstract ? (r(), d("p", b6, v(e.abstract), 1)) : k("", !0)
     ]));
   }
-}, Eu = /* @__PURE__ */ H(k6, [["__scopeId", "data-v-d65ef53f"]]), w6 = {
+}, Eu = /* @__PURE__ */ H(k6, [["__scopeId", "data-v-172f09ac"]]), w6 = {
   class: "inspector-head",
   "data-inspector-head": ""
 }, $6 = { class: "inspector-icons" }, x6 = { class: "inspector-icons-start" }, S6 = {
@@ -13468,7 +13468,7 @@ const c6 = (e, t, n, a) => ia(e.label, n, { row_id: a, id: a }) || Q$(t, n, a), 
       }, null, 8, ["title", "abstract"])
     ]));
   }
-}, E6 = /* @__PURE__ */ H(A6, [["__scopeId", "data-v-f7878e15"]]), O6 = {
+}, E6 = /* @__PURE__ */ H(A6, [["__scopeId", "data-v-8886850d"]]), O6 = {
   class: "section field-grid",
   "data-resource-fields": ""
 }, T6 = { class: "field-name" }, I6 = {
@@ -15912,7 +15912,7 @@ const iC = ["aria-selected", "data-tab", "onPointerdown", "onAuxclick", "onKeydo
       ne(f.$slots, "default", {}, void 0, !0)
     ], 2));
   }
-}, uT = /* @__PURE__ */ H(dC, [["__scopeId", "data-v-6b328f63"]]), cT = Fu(() => import("./VoiceFigure-Dzsygw6u.js").then((e) => e.V)), dT = "1.2.0", fT = "3.5";
+}, uT = /* @__PURE__ */ H(dC, [["__scopeId", "data-v-6b328f63"]]), cT = Fu(() => import("./VoiceFigure-DHAwqaTx.js").then((e) => e.V)), dT = "1.2.0", fT = "3.5";
 export {
   Nm as $,
   Ie as A,
