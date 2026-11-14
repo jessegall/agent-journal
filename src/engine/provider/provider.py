@@ -58,6 +58,9 @@ class Provider(ABC):
     plain_output_events: ClassVar[Sequence[HookEventName]] = ()
     # the most characters of a hook's text the program reads whole; 0 when it reads any length
     additional_context_limit: ClassVar[int] = 0
+    # the fields of a hook entry the program honours, and the output fields of a hook's answer it reads
+    hook_entry_fields: ClassVar[frozenset[str]] = frozenset({"async"})
+    hook_output_fields: ClassVar[frozenset[str]] = frozenset({"continue", "stopReason"})
     matcher_style: ClassVar[MatcherStyle] = MatcherStyle.REGEX
     default_hook_seconds: ClassVar[int] = 600
     session_end_limit_seconds: ClassVar[int] = 3

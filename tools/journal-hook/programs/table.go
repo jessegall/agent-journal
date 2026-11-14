@@ -34,6 +34,9 @@ type Program struct {
 	WakeAnswer string `json:"wake_answer"`
 	// WakeSeconds is the timeout of the program's wake hook entry, 0 when it has none.
 	WakeSeconds int `json:"wake_seconds"`
+	// EntryFields are the fields of a hook entry the program honours, OutputFields the fields of an answer it reads.
+	EntryFields  []string `json:"entry_fields"`
+	OutputFields []string `json:"output_fields"`
 }
 
 // Table is every agent program the hook knows: the shipped ones, with the project's own laid over them.
@@ -69,6 +72,16 @@ func (program Program) AcceptsLines(event string) bool {
 // event that takes no lines as instructions, such as a compaction summary's.
 func (program Program) TakesPlainOutput(event string) bool {
 	return contains(program.PlainOutput, event)
+}
+
+// HonoursEntryField says the program honours this field of a hook entry, such as "if" or "async".
+func (program Program) HonoursEntryField(name string) bool {
+	return contains(program.EntryFields, name)
+}
+
+// PassesOutputField says the program reads this field of a hook's answer, such as "continue".
+func (program Program) PassesOutputField(name string) bool {
+	return contains(program.OutputFields, name)
 }
 
 func contains(names []string, name string) bool {

@@ -102,6 +102,10 @@ class ClaudeCodeProvider(Provider):
     session_end_limit_seconds = 60
     # Claude Code saves an additionalContext text over 10,000 characters to a file and shows a preview (report 1468)
     additional_context_limit = 10_000
+    # the hook entry and output fields the hooks page names (report 1468); updatedToolOutput, suppressOriginalPrompt and
+    # sessionTitle are read only on their own events (PostToolUse, UserPromptSubmit, SessionStart)
+    hook_entry_fields = frozenset({"if", "args", "shell", "async", "asyncRewake", "onFailure", "statusMessage"})
+    hook_output_fields = frozenset({"continue", "stopReason", "updatedToolOutput", "suppressOriginalPrompt", "sessionTitle", "terminalSequence"})
     wake_hook = WakeHook("Stop", WakeAnswer.EXIT_WITH_STDERR, {"async": True, "asyncRewake": True}, WAKE_TIMEOUT_SECONDS)
     refusals = {HookEventName.PRE_TOOL_USE: RefusalStyle.DENY, HookEventName.PROMPT: RefusalStyle.BLOCK, HookEventName.STOP: RefusalStyle.BLOCK}
     skills_folder = ".claude/skills"

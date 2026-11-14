@@ -81,3 +81,19 @@ func TestTheTableReadsTheWakeAnswer(t *testing.T) {
 		t.Fatalf("claude wakes by %q and codex by %q", table.Programs["claude"].WakeAnswer, table.Programs["codex"].WakeAnswer)
 	}
 }
+
+func TestHonoursEntryField(t *testing.T) {
+	table := LoadTable("")
+	claude, codex := table.Programs["claude"], table.Programs["codex"]
+	if !claude.HonoursEntryField("if") || !claude.HonoursEntryField("asyncRewake") || codex.HonoursEntryField("if") || !codex.HonoursEntryField("async") {
+		t.Fatalf("claude honours %v and codex %v", claude.EntryFields, codex.EntryFields)
+	}
+}
+
+func TestPassesOutputField(t *testing.T) {
+	table := LoadTable("")
+	claude, codex := table.Programs["claude"], table.Programs["codex"]
+	if !claude.PassesOutputField("updatedToolOutput") || codex.PassesOutputField("updatedToolOutput") || !codex.PassesOutputField("continue") {
+		t.Fatalf("claude reads %v and codex %v", claude.OutputFields, codex.OutputFields)
+	}
+}

@@ -21,3 +21,20 @@ def test_claude_reads_names_or_regex_and_codex_reads_regex():
     programs = json.loads(SHIPPED_TABLE.read_text())["programs"]
     assert {name: (program["matcher_style"], program["default_hook_seconds"], program["session_end_limit_seconds"])
             for name, program in programs.items()} == {"claude": ("names_or_regex", 600, 60), "codex": ("regex", 600, 3)}
+
+
+def shipped_fields(name: str, field: str) -> set[str]:
+    return set(json.loads(SHIPPED_TABLE.read_text())["programs"][name][field])
+
+
+def test_claude_honours_if_args_shell_async_async_rewake_and_on_failure():
+    assert {"if", "args", "shell", "async", "asyncRewake", "onFailure"} <= shipped_fields("claude", "entry_fields")
+
+
+def test_codex_honours_only_async():
+    assert shipped_fields("codex", "entry_fields") == {"async"}
+
+
+def test_the_output_fields_differ_by_program():
+    assert shipped_fields("codex", "output_fields") == {"continue", "stopReason"}
+    assert {"updatedToolOutput", "suppressOriginalPrompt", "sessionTitle", "terminalSequence"} <= shipped_fields("claude", "output_fields")
