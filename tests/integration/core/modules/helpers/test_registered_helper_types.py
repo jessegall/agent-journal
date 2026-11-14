@@ -52,3 +52,33 @@ def test_the_helper_and_the_worker_are_registered_as_before_the_classes(journal)
                   run_limit_key="journal.suites.coding.workers.worker-run-limit", kept_limit_key="journal.suites.coding.workers.worker-kept-limit",
                   profile_limits_key="", job_command=["worker", "send"], job_task_flag="--task", line="Writes the code of a task in a separate worktree.")
     expect_fields(journal, "merger", module="journal.suites.coding.workers")
+
+
+def expect_behaviours(journal, key: str, **answers: bool) -> None:
+    behaviours = registered(journal)[key]["behaviours"]
+    assert {name: behaviours.get(name) for name in answers} == answers, behaviours
+
+
+def expect_suite_lines(journal, suite: str, *texts: str) -> None:
+    shown = journal.run(f"suite show {suite}")
+    assert all(text in shown.text for text in texts), shown.text
+
+
+def test_opening_the_worker_class_shows_its_key_access_driver_roster_and_limits(journal):
+    expect_suite_lines(journal, "coding", "worker: coding.worker")
+    expect_fields(journal, "worker", access="writing", roster={"text": "suites.coding.modules.workers.bindings.worker_roster:WorkerRoster"},
+                  run_limit_key="journal.suites.coding.workers.worker-run-limit", kept_limit_key="journal.suites.coding.workers.worker-kept-limit")
+    expect_behaviours(journal, "worker", takes_tasks=True, takes_prompts=True, takes_marks=True, runs_plugins=True, dispatches=True)
+
+
+def test_the_suites_list_no_roles_per_behaviour_and_a_worker_still_takes_its_work(journal):
+    suites = {entry["name"]: entry for entry in json.loads(Registry.read(journal.database).entries_text())["suites"]}
+    assert "agent_policy" not in suites["coding"] and "defaults" not in suites["coding"]
+    expect_behaviours(journal, "worker", takes_tasks=True, takes_prompts=True, takes_marks=True, runs_plugins=True, dispatches=True)
+    expect_behaviours(journal, "helper", takes_tasks=False, takes_prompts=False, takes_marks=True, runs_plugins=False, dispatches=False)
+
+
+def test_the_cores_own_helper_type_is_written_the_same_way_as_the_worker(journal):
+    expect_suite_lines(journal, "coding", "helper: coding.helper", "merger: coding.helper")
+    expect_fields(journal, "helper", access="read-only", run_limit_key=HELPER_RUN_LIMIT, kept_limit_key=HELPER_KEPT_LIMIT)
+    expect_behaviours(journal, "helper", takes_marks=True, runs_saved_commands=True)
