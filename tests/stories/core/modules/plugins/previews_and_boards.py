@@ -8,7 +8,6 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
-from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.plugins.support.plugin_manifest import PluginManifest
@@ -187,7 +186,7 @@ def test_a_failed_setup_leaves_the_old_code(new_story):
     story = installed_plugin(new_story)
     (story.folder / "journal-plugin.json").write_text(json.dumps({**MANIFEST, "version": "1.3.0", "setup": [{"name": "broken", "run": "false"}]}))
     story.expect_refusal("plugin upgrade standup --yes --reason 'a story asks'", "A user was asked", actor=story.agent)
-    request = story.container.get(Queries).query(ApprovalRequest).first()
+    request = story.first_row(ApprovalRequest)
     with viewer_client(story) as viewer:
         viewer.refusal("messages.chat", ["approval", "accept", str(request.id)], "broken")
     story.expect_rows(story.row(ApprovalRequest, request.id).state is ApprovalState.FAILED)

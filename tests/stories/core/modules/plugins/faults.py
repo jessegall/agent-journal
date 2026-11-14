@@ -1,6 +1,5 @@
 from engine.command.bus import Bus
 from engine.enums.command_category import CommandCategory
-from engine.query.queries import Queries
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.models.plugin import Plugin
 from engine.testing.examples.hook_samples import HookSamples
@@ -22,7 +21,7 @@ def test_the_record_says_what_a_plugin_did_and_its_last_fault(new_story):
 
 def test_a_fault_that_does_not_count_keeps_the_count_and_shows_its_text(new_story):
     story = installed_story(new_story)
-    plugin_id = story.container.get(Queries).query(Plugin).first().id
+    plugin_id = story.first_row(Plugin).id
     story.container.get(Bus).run(RecordPluginFault(plugin_id, STOPPED_TEXT, False), story.user)
-    plugin = story.container.get(Queries).query(Plugin).first()
+    plugin = story.first_row(Plugin)
     story.expect_rows(plugin.fault_count == 0, plugin.last_fault == STOPPED_TEXT, plugin.failing is False)

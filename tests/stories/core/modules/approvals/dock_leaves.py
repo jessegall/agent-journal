@@ -1,6 +1,5 @@
 from engine.command.bus import Bus
 from engine.command.close_user_approval import CloseUserApproval
-from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState
@@ -25,7 +24,7 @@ def decide(story, request, decision: str) -> None:
 def test_an_accepted_approval_and_a_refused_one_leave_the_dock(pending_setting):
     story, request = pending_setting
     rule_id = story.new_row_id('rule make "Name every file plainly"', actor=story.agent)
-    refused = story.container.get(Queries).query(ApprovalRequest).newest().first()
+    refused = story.newest_row(ApprovalRequest)
     story.expect_rows(docked_cards(story, request) == 1, docked_cards(story, refused) == 1, refused.id != request.id)
     decide(story, request, "accept")
     decide(story, refused, "refuse")

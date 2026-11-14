@@ -211,7 +211,7 @@ def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent
     story.expect_rows(len(merged_lines) == 1, merged_lines[0].wakes_agent, not any("could not be confirmed" in row.text for row in story.story_rows(Message, session_agent_id=merger.id)))
     story.expect_success(f'merger findings {agent_number(story, worker.id)} "Fix the merged code"', actor=actor)
     story.run_listeners()
-    mark = story.container.get(Queries).query(ChatMark).filter(text=f"The merger sent Worker {agent_number(story, worker.id)} back").first()
+    mark = story.first_row(ChatMark, text=f"The merger sent Worker {agent_number(story, worker.id)} back")
     story.expect_rows(mark.detail == "Fix the merged code")
     story.expect_text(f"agent-line list --agent {worker.id}", "Fix the merged code", actor=worker)
 
@@ -254,15 +254,15 @@ def test_a_workers_report_goes_to_the_merger_and_the_merger_tells_the_main_agent
     merger = Actor(merger_agent(story).id, ActorType.AGENT)
     story.expect_text("merger next", "reports: Converted the window", actor=merger)
     story.expect_success('merger tell "Worker asks which reader to keep" --tried "Read the brief" --option "The first" --option "The second" --recommend "The first"', actor=merger)
-    reported_message = story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).first()
-    line = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).newest().first()
+    reported_message = story.first_row(Message, session_agent_id=merger.id)
+    line = story.newest_row(AgentLine, session_agent_id=story.agent.id)
     story.expect_rows(reported_message is not None, line.state is AgentLineState.WAITING, line.wakes_agent, f"in message:{reported_message.id}" in line.text,
                       "Worker asks which reader to keep" not in line.text, detail=f"{line.state} {line.text}")
     story.expect_text(f"message read {reported_message.id}", "Worker asks which reader to keep", actor=story.agent)
 
     story.expect_success(f'merger findings {agent_number(story, worker.id)} "The tax is added twice"', actor=merger)
     expect_marks_text(story, f"The merger sent Worker {agent_number(story, worker.id)} back")
-    mark = story.container.get(Queries).query(ChatMark).filter(text=f"The merger sent Worker {agent_number(story, worker.id)} back").first()
+    mark = story.first_row(ChatMark, text=f"The merger sent Worker {agent_number(story, worker.id)} back")
     story.expect_rows(mark.detail == "The tax is added twice")
 
 
@@ -414,7 +414,7 @@ def test_long_merger_lines_wait_until_the_output_is_read_whole(new_story, monkey
     request = CallerRequest({"JOURNAL_AGENT_SESSION": merger.session, "JOURNAL_PROCESS": str(process.id)}, str(repository.folder))
     output = story.run_requested("merger next", request)
     output.expect_code(0)
-    line = story.container.get(Queries).query(MergerLine).first()
+    line = story.first_row(MergerLine)
     story.expect_rows(line.read_at is None, line.read_output_id == process.id)
     end_run(story, process, output.output_text)
     story.expect_success(f"output read {process.id} --all", actor=story.agent)
@@ -544,8 +544,8 @@ def test_the_merger_started_by_an_ended_main_session_tells_the_main_agent_that_r
     story.expect_success(f"agent end {story.agent.id}", actor=story.user)
     running_main = Actor(story.new_row_id("agent start s-new-main claude main --environment main"), ActorType.AGENT)
     story.expect_success('merger tell "Worker 4 asks which reader to keep" --tried "Read the brief" --option "The first" --option "The second" --recommend "The first"', actor=merger)
-    message = story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).first()
-    line = story.container.get(Queries).query(AgentLine).filter(session_agent_id=running_main.id).newest().first()
+    message = story.first_row(Message, session_agent_id=merger.id)
+    line = story.newest_row(AgentLine, session_agent_id=running_main.id)
     story.expect_rows(message is not None, line is not None and f"in message:{message.id}" in line.text, detail=str(line))
     story.expect_text(f"message read {message.id}", "Worker 4 asks which reader to keep", actor=running_main)
 

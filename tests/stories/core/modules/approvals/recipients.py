@@ -4,7 +4,6 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.phone.models.phone_code import PhoneCode
@@ -29,7 +28,7 @@ def helper_request(new_story):
     story = new_story(fixture=UserBuilder)
     helper = Actor(story.new_row_id(f"agent start help-shop claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
     story.expect_refusal("phone pair --reason needed", "main agent was asked", actor=helper)
-    approval = story.container.get(Queries).query(ApprovalRequest).filter(requester_id=helper.id).first()
+    approval = story.first_row(ApprovalRequest, requester_id=helper.id)
     return HelperApproval(story, helper, approval)
 
 

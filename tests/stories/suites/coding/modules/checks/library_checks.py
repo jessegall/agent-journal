@@ -6,7 +6,6 @@ import pytest
 from engine.actor.actor import Actor
 from engine.command.context import Context
 from engine.check.periodic_checks import PeriodicChecks
-from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.library.models.enums.copy_state import CopyState
 from core.modules.library.models.library_copy import LibraryCopy
@@ -45,7 +44,7 @@ def story_with_check(new_story, server: SharedServerBinary, tokens, title: str, 
 
 
 def copy_state(story: Story, item_id: int) -> CopyState:
-    return story.container.get(Queries).query(LibraryCopy).filter(share="check", item_id=item_id).first().state
+    return story.first_row(LibraryCopy, share="check", item_id=item_id).state
 
 
 def test_a_check_arrives_stopped_and_never_runs_until_a_person_starts_it(new_story, shared_server):
@@ -67,7 +66,7 @@ def test_a_changed_command_of_a_started_check_waits_and_the_old_command_goes_on_
     story.expect_text("check start 1", "check 1 started", actor=story.user)
     change_check(server, tokens.admin, item_id, 1, **check_fields("Started and changed", "echo new", "Says new", 1))
     story.expect_text("library sync", "1 copies followed, 1 changed.", actor=story.agent)
-    waiting = story.container.get(Queries).query(LibraryCopy).filter(share="check").first()
+    waiting = story.first_row(LibraryCopy, share="check")
     story.expect_rows(waiting.state is CopyState.REVIEW, waiting.note == COMMAND_CHANGED, story.row(Check, 1).command == "echo old", story.row(Check, 1).brief == "Says old")
     story.expect_text("check run 1", "check 1 passed", actor=story.user)
     story.expect_rows("old" in story.row(Check, 1).last_output)
@@ -87,7 +86,7 @@ def test_a_check_removed_from_this_journal_leaves_and_the_item_stays_in_the_libr
     story, item_id = story_with_check(new_story, server, tokens, "Removed here")
     story.expect_text("check remove 1", "check 1", actor=story.user)
     story.expect_text("library sync", "Reached the library", actor=story.agent)
-    story.expect_rows(story.container.get(Queries).query(LibraryCopy).filter(share="check", item_id=item_id).first() is None,
+    story.expect_rows(story.first_row(LibraryCopy, share="check", item_id=item_id) is None,
                       server.send(tokens.admin, "GET", f"/items/check/{item_id}")[1]["version"] == 1)
 
 
@@ -104,7 +103,7 @@ def test_the_check_of_a_task_wait_cannot_be_shared(new_story, shared_server):
     story = connected(new_story, server, tokens.editor)
     story.run('task make "Cart" --environment main')
     story.expect_success("task block 1 --until 'false' --every 2", "state: blocked")
-    waiting = story.container.get(Queries).query(Check).first()
+    waiting = story.first_row(Check)
     story.expect_rows(waiting.task_wait_id is not None)
     story.expect_refusal(f"library share check {waiting.id}", f"check {waiting.id} cannot be shared: this check belongs to a task's wait", actor=story.user)
 

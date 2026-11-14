@@ -10,7 +10,6 @@ from tests.stories.support.story_checks import expect_value
 from engine.actor.actor import Actor
 from engine.enums.command_category import CommandCategory
 from engine.journal.journal_home import LAUNCHER_SOCKET
-from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.models.process import Process
@@ -114,7 +113,7 @@ def test_the_test_of_a_proof_over_the_limit_is_stopped_like_the_workers_own_run(
     repository.changed(worker.id, "cart.py", "TOTAL = 2\n")
     story.expect_success('proof make 1 --task 1 "cart.py:1, its story" --test "python tests/cart.py"', actor=worker)
     story.expect_success(COMMIT, actor=worker)
-    proof = story.container.get(Queries).query(Proof).filter(task_id=1).first()
+    proof = story.first_row(Proof, task_id=1)
     story.expect_rows(proof is not None and proof.process_id is not None, detail=str(proof))
     story.container.get(OutputFolder).write_output(proof.process_id, 1, "collected 8 items\n")
     OutputReading()(story.container)

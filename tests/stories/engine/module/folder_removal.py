@@ -11,7 +11,6 @@ from engine.database.database import Database
 from engine.registry.registry import Registry
 from engine.caller.process_table import ProcessTable
 from engine.testing.fakes.fixed_process_table import FixedProcessTable
-from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 from tests.stories.core.support.fixtures import UserJoined
@@ -85,7 +84,7 @@ def test_a_person_accepts_the_agents_module_removal_from_the_dock(installed_note
     story = installed_notes
     code, text = execute_removal(story, {"JOURNAL_AGENT_SESSION": "s-1"})
     story.expect_rows(code == 1, "A user was asked in the dock" in text)
-    request = story.container.get(Queries).query(ApprovalRequest).first()
+    request = story.first_row(ApprovalRequest)
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(request.id)])
     story.expect_rows(not (story.home.modules_folder / source_folder.name).exists())

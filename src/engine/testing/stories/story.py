@@ -200,6 +200,12 @@ class Story:
     def story_rows(self, model: type[M], **values: object) -> tuple[M, ...]:
         return tuple(self.container.get(Queries).query(model).filter(**values).matching(Minimum(ID_COLUMN, 1)).every_row(STORY_ROWS_REASON))
 
+    def first_row(self, model: type[M], **values: object) -> M | None:
+        return self.container.get(Queries).query(model).filter(**values).first()
+
+    def newest_row(self, model: type[M], **values: object) -> M | None:
+        return self.container.get(Queries).query(model).filter(**values).newest().first()
+
     def run_command(self, command: Command[R], actor: Actor, environment_id: int) -> R:
         return self.container.get(Bus).run(command, actor, environment_id=environment_id)
 

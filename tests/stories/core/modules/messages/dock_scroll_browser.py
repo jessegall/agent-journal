@@ -1,4 +1,3 @@
-from engine.query.queries import Queries
 from core.modules.documents.models.doc import Doc
 from core.modules.docking.models.dock_item import DockItem
 from tests.stories.core.support.fixtures import UserJoined
@@ -16,6 +15,6 @@ def test_a_new_dock_keeps_the_chat_at_the_readers_position(new_story):
         for _ in range(10):
             expect_browser(server, 'dockScroll.browser.mjs', [])
             for title in ('First dock', 'Second dock'):
-                doc = story.container.get(Queries).query(Doc).filter(title=title).newest().first()
-                item = story.container.get(Queries).query(DockItem).filter(target_model="doc", target_id=doc.id).newest().first()
+                doc = story.newest_row(Doc, title=title)
+                item = story.newest_row(DockItem, target_model="doc", target_id=doc.id)
                 story.expect_success(f"dock remove {item.id}", actor=story.user)

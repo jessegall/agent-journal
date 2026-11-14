@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pytest
 
-from engine.query.queries import Queries
 from core.modules.library.models.library_copy import LibraryCopy
 from tests.stories.core.modules.library.support.stored_text import stored_texts
 from tests.stories.core.modules.secrets.support.private_home import private_folder
@@ -36,5 +35,5 @@ def test_a_person_connects_reads_searches_and_shares_from_the_teams_page(new_sto
         row_number = made.output_text.split(":")[0].split()[1]
         with server_story(story) as server:
             expect_browser(server, "teams.browser.mjs", [shared.address, token, WORD, row_number])
-        copy = story.container.get(Queries).query(LibraryCopy).filter(share="doc", row_id=int(row_number)).first()
+        copy = story.first_row(LibraryCopy, share="doc", row_id=int(row_number))
         story.expect_rows(copy is not None, token not in stored_texts(story))

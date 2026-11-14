@@ -11,7 +11,6 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.listener.commit.commit_listener_runner import CommitListenerRunner
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.agents.testing.fake_launcher import FakeLauncher
@@ -90,7 +89,7 @@ def test_a_start_makes_a_read_only_helper_under_the_main_agent(new_story):
 def test_a_start_keeps_a_job_with_the_whole_brief(new_story):
     story = new_story(fixture=StartedHelper)
     helper_id = running_helper(story)
-    job = story.container.get(Queries).query(HelperJob).filter(helper_id=helper_id).first()
+    job = story.first_row(HelperJob, helper_id=helper_id)
     story.expect_rows(job.brief == "How does the queue hold a run?", job.profile == f"{RESEARCHER_PROFILE.name}", job.session_agent_id == story.agent.id)
 
 

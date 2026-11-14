@@ -132,7 +132,7 @@ def test_a_blocked_task_waits_with_an_idle_worker_and_is_sent_to_it_when_it_open
     previous = len(assignment_marks(story))
     story.expect_rows(assignee_of(story, story.row(Task, 3)) == worker.id, story.container.get(WorktreeQuery).worker_worktree(worker.id) is None)
     story.expect_success('task cancel 2 --reason "Not needed"', actor=story.agent)
-    operation = story.container.get(Queries).query(WorkerOperation).newest().first()
+    operation = story.newest_row(WorkerOperation)
     story.expect_rows(operation.worker_id == worker.id, "--task 3 --wait" in operation.line, operation.creator_id == story.agent.id,
                       detail=f"{operation.line} by {operation.creator_id}")
     outcome = run_operation(story, operation)
@@ -188,5 +188,5 @@ def test_an_open_task_given_to_an_ended_worker_with_a_blocked_task_is_sent_to_it
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
     task = story.new_row_id('task make "Next work" --environment main', actor=story.agent)
     story.expect_success(f"worker send {agent_number(story, worker.id)} --task {task}", actor=story.agent)
-    operation = story.container.get(Queries).query(WorkerOperation).newest().first()
+    operation = story.newest_row(WorkerOperation)
     story.expect_rows(operation is not None and operation.worker_id == worker.id and f"--task {task} --wait" in operation.line, detail=str(operation))

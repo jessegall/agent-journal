@@ -6,7 +6,6 @@ import pytest
 
 from suites.coding.modules.workers.support.worktree_git import STASH_MESSAGE, WorktreeGit
 from suites.coding.modules.workers.models.worktree import Worktree
-from engine.query.queries import Queries
 
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, FIRST_PROOF, dispatched_worker, repository_environment
@@ -145,7 +144,7 @@ def test_a_hand_in_leaves_another_workers_stash_untouched(new_story):
     story.expect_success('task make "Another job" --environment main', actor=story.agent)
     sibling = dispatched_worker(story, "worker dispatch --test-command python=pytest --model sonnet 2")
     repository.changed(sibling.id, "sibling.py", "OTHER = 1\n")
-    worktree = story.container.get(Queries).query(Worktree).filter(session_agent_id=sibling.id).first()
+    worktree = story.first_row(Worktree, session_agent_id=sibling.id)
     stash = story.container.get(WorktreeGit).stash(worktree)
 
     story.expect_success(COMMIT, actor=worker)
@@ -192,7 +191,7 @@ def test_two_worktrees_rebasing_at_once_each_keep_their_own_files(new_story):
     worker = moved_base_worker(story, repository)
     sibling = sibling_worker(story, repository)
     repository.changed(worker.id, "notes.py", "NOTE = 1\n")
-    worktrees = [story.container.get(Queries).query(Worktree).filter(session_agent_id=agent.id).first() for agent in (worker, sibling)]
+    worktrees = [story.first_row(Worktree, session_agent_id=agent.id) for agent in (worker, sibling)]
     with ThreadPoolExecutor(2) as pool:
         list(pool.map(story.container.get(WorktreeGit).rebase, worktrees))
 

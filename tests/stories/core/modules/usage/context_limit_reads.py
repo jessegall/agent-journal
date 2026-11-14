@@ -2,7 +2,6 @@ import json
 import os
 
 from engine.journal.journal_home import JournalHome
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_CATEGORIES, CONTEXT_LIMIT_TOKENS, ContextShare
 from tests.stories.core.modules.usage.support.status_files import save_status_file
@@ -57,5 +56,5 @@ def test_the_card_and_every_other_read_give_the_percent_of_the_agents_own_cap(ne
     story = new_story(fixture=UserJoined)
     story.expect_success(f"setting set {CONTEXT_LIMIT_CATEGORIES} main:300000 --project", actor=story.user)
     row = reported(story, "true", 400000)
-    agent = story.container.get(Queries).query(Agent).first()
+    agent = story.first_row(Agent)
     expect_value((agent.role, row["context_percent"], story.container.get(ContextShare).agent_percent(agent)), ("main", 82, 82))

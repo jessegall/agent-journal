@@ -4,7 +4,6 @@ from datetime import timedelta
 from engine.actor.actor import Actor
 from engine.file.file_access import FileAccess
 from engine.journal.journal_home import LAUNCHER_SOCKET
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.models.enums.agent_activity import AgentActivity
 from core.modules.drivers.commands.record_agent_notice.record_agent_notice import RecordAgentNotice
@@ -45,7 +44,7 @@ def read_agent(story: Story) -> Agent:
 def waiting_line(story: Story) -> AgentLine:
     story.run_command(RecordAgentNotice(story.agent.id, "A message arrived", "messages.idle"), Actor.core(), 1)
     story.run_listeners()
-    return story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, source="messages.idle").newest().first()
+    return story.newest_row(AgentLine, session_agent_id=story.agent.id, source="messages.idle")
 
 
 def test_agents_of_a_program_at_its_usage_limit_are_marked_and_get_no_lines_until_it_starts_again(new_story):

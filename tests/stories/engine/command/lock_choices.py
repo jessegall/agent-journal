@@ -3,7 +3,6 @@ import sqlite3
 import pytest
 
 from engine.database.database import Database
-from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from core.modules.pins.models.pin import Pin
@@ -39,7 +38,7 @@ def test_an_unlocked_command_allows_another_connection_to_write_while_it_reads(n
     monkeypatch.setattr(ReadUnlockedPinsHandler, "handle", count_pins_during_write)
     story.expect_success("lock-sample read --environment main", "1", actor=story.user)
     story.expect_rows(observed == [1])
-    story.expect_rows(story.container.get(Queries).query(Pin).first().title == "Concurrent pin")
+    story.expect_rows(story.first_row(Pin).title == "Concurrent pin")
     story.expect_rows(story.container.get(Database).nested == [])
 
 

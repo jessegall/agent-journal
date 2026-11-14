@@ -34,15 +34,10 @@ tests/stories/core/modules/approvals/approvals.py
 tests/stories/core/modules/approvals/dock_leaves.py
 tests/stories/core/modules/approvals/legacy_settings.py
 tests/stories/core/modules/approvals/many_approvals.py
-tests/stories/core/modules/approvals/other_actions.py
-tests/stories/core/modules/approvals/person_actions.py
-tests/stories/core/modules/approvals/recipients.py
 tests/stories/core/modules/approvals/recovery.py
 tests/stories/core/modules/approvals/restart_recovery.py
-tests/stories/core/modules/approvals/secret_approvals.py
 tests/stories/core/modules/approvals/source_approvals.py
 tests/stories/core/modules/assign_rules/matching.py
-tests/stories/core/modules/assignments/assigning.py
 tests/stories/core/modules/chat/exception_marks.py
 tests/stories/core/modules/chat/mark_reading.py
 tests/stories/core/modules/chat/mark_removal.py
@@ -124,7 +119,6 @@ tests/stories/core/modules/helpers/lifetime_reviewers_limits.py
 tests/stories/core/modules/helpers/occupant_rotation.py
 tests/stories/core/modules/helpers/program_split.py
 tests/stories/core/modules/helpers/program_states.py
-tests/stories/core/modules/helpers/read_only_access.py
 tests/stories/core/modules/helpers/rotation_mid_job.py
 tests/stories/core/modules/helpers/start_helper.py
 tests/stories/core/modules/helpers/story_kit.py
@@ -141,7 +135,6 @@ tests/stories/core/modules/library/browsing.py
 tests/stories/core/modules/library/connecting.py
 tests/stories/core/modules/library/copies.py
 tests/stories/core/modules/library/lookup.py
-tests/stories/core/modules/library/people.py
 tests/stories/core/modules/library/sequence_share.py
 tests/stories/core/modules/library/sharing.py
 tests/stories/core/modules/library/sync_back.py
@@ -154,9 +147,7 @@ tests/stories/core/modules/memories/marks.py
 tests/stories/core/modules/memories/memory_delivery_owners.py
 tests/stories/core/modules/memories/memory_holders.py
 tests/stories/core/modules/memories/removed_memories.py
-tests/stories/core/modules/messages/agent_messages.py
 tests/stories/core/modules/messages/delivery.py
-tests/stories/core/modules/messages/dock_scroll_browser.py
 tests/stories/core/modules/messages/lost_hooks.py
 tests/stories/core/modules/messages/message_links_browser.py
 tests/stories/core/modules/messages/message_targets_through_the_server.py
@@ -187,7 +178,6 @@ tests/stories/core/modules/plugins/login_path.py
 tests/stories/core/modules/plugins/plugin_calls.py
 tests/stories/core/modules/plugins/plugin_config.py
 tests/stories/core/modules/plugins/plugin_queue_reads.py
-tests/stories/core/modules/plugins/plugins.py
 tests/stories/core/modules/plugins/previews_and_boards.py
 tests/stories/core/modules/plugins/queued_cards.py
 tests/stories/core/modules/plugins/reaches.py
@@ -254,7 +244,6 @@ tests/stories/core/modules/secrets/secret_buttons_browser.py
 tests/stories/core/modules/secrets/secret_run.py
 tests/stories/core/modules/secrets/secrets.py
 tests/stories/core/modules/sequences/listener_reads.py
-tests/stories/core/modules/sequences/marks.py
 tests/stories/core/modules/sequences/sequences.py
 tests/stories/core/modules/sequences/standard_rows.py
 tests/stories/core/modules/setting_requests/setting_requests.py
@@ -382,7 +371,6 @@ tests/stories/suites/coding/modules/workers/kept_workers.py
 tests/stories/suites/coding/modules/workers/large_units.py
 tests/stories/suites/coding/modules/workers/lasting_workers.py
 tests/stories/suites/coding/modules/workers/launch_failures.py
-tests/stories/suites/coding/modules/workers/main_agent_told.py
 tests/stories/suites/coding/modules/workers/main_task_handoff.py
 tests/stories/suites/coding/modules/workers/managed_hooks.py
 tests/stories/suites/coding/modules/workers/mcp_servers.py
@@ -390,7 +378,6 @@ tests/stories/suites/coding/modules/workers/merge.py
 tests/stories/suites/coding/modules/workers/merge_ask_misuse.py
 tests/stories/suites/coding/modules/workers/merge_asks.py
 tests/stories/suites/coding/modules/workers/merge_followup_plan.py
-tests/stories/suites/coding/modules/workers/merge_guard.py
 tests/stories/suites/coding/modules/workers/merger.py
 tests/stories/suites/coding/modules/workers/merger_cases.py
 tests/stories/suites/coding/modules/workers/merger_corrections.py
@@ -414,7 +401,6 @@ tests/stories/suites/coding/modules/workers/program_choice_review.py
 tests/stories/suites/coding/modules/workers/project_presets.py
 tests/stories/suites/coding/modules/workers/project_worktrees.py
 tests/stories/suites/coding/modules/workers/proof_any_task.py
-tests/stories/suites/coding/modules/workers/protected_folders.py
 tests/stories/suites/coding/modules/workers/pruned_runs.py
 tests/stories/suites/coding/modules/workers/published_files_commit.py
 tests/stories/suites/coding/modules/workers/queued_commands.py
@@ -466,7 +452,6 @@ tests/stories/suites/coding/modules/workers/worker_compaction_restart.py
 tests/stories/suites/coding/modules/workers/worker_context.py
 tests/stories/suites/coding/modules/workers/worker_context_limit.py
 tests/stories/suites/coding/modules/workers/worker_guidance.py
-tests/stories/suites/coding/modules/workers/worker_helper_stop.py
 tests/stories/suites/coding/modules/workers/worker_lines.py
 tests/stories/suites/coding/modules/workers/worker_no_readers.py
 tests/stories/suites/coding/modules/workers/worker_overview_card.py

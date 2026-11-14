@@ -1,7 +1,6 @@
 import json
 import pytest
 
-from engine.query.queries import Queries
 from core.modules.approvals.commands.answer_approval.answer_approval_handler import AnswerApprovalHandler
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_state import ApprovalState
@@ -19,7 +18,7 @@ from tests.stories.suites.coding.modules.workers.support.program_split import vi
 def phone_request(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_refusal("phone pair --reason needed", "A user was asked in the dock", actor=story.agent)
-    return story, story.container.get(Queries).query(ApprovalRequest).first()
+    return story, story.first_row(ApprovalRequest)
 
 
 @pytest.fixture
@@ -37,7 +36,7 @@ def test_a_second_decision_cannot_run_the_action_again(phone_request, phone_view
 
 def test_a_missing_open_card_is_restored_after_a_registry_refresh(phone_request, phone_viewer):
     story, request = phone_request
-    item = story.container.get(Queries).query(DockItem).filter(target_model="approval", target_id=request.id).first()
+    item = story.first_row(DockItem, target_model="approval", target_id=request.id)
     phone_viewer.value("messages.chat", ["dock", "remove", str(item.id)])
     story.expect_sync_success(UPGRADE)
     story.run_listeners()
@@ -51,7 +50,7 @@ def test_a_failed_action_ends_the_request_failed_with_its_reason_and_is_not_offe
         viewer.value("viewer.shell", ["viewer-layout", "save", "--suite", "notes", "--page", "home", "--layout", "{}"])
     line = "viewer-layout save --suite notes --page home --layout '{}' --base-version 1 --reason needed --environment main"
     story.expect_refusal(line, "A user was asked in the dock", actor=story.agent)
-    request = story.container.get(Queries).query(ApprovalRequest).first()
+    request = story.first_row(ApprovalRequest)
     with viewer_client(story) as viewer:
         viewer.value("viewer.shell", ["viewer-layout", "save", "--suite", "notes", "--page", "home", "--layout", '{"root":"changed"}'])
         viewer.refusal("messages.chat", ["approval", "accept", str(request.id)], "the requested action failed")

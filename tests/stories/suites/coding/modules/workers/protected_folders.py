@@ -4,7 +4,6 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.enums.command_category import CommandCategory
 from engine.enums.command_effect import CommandEffect
-from engine.query.queries import Queries
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from core.modules.approvals.models.approval_request import ApprovalRequest
@@ -46,7 +45,7 @@ def test_only_the_main_agent_can_ask_a_person_to_change_the_list(protected_worke
     line = f"setting set {SETTING} '[\"other.py\"]' --project"
     story.expect_refusal(line, "A worker may not run setting set", actor=worker)
     story.expect_refusal(f"{line} --reason needed", "A user was asked in the dock", actor=story.agent)
-    approval = story.container.get(Queries).query(ApprovalRequest).first()
+    approval = story.first_row(ApprovalRequest)
     story.expect_rows(approval is not None, approval.arguments[:3] == ("setting", "set", SETTING))
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(approval.id)])

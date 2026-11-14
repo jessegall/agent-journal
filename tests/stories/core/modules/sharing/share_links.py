@@ -48,8 +48,8 @@ def test_an_agent_only_asks_nothing_opens_and_the_person_is_told(new_story):
     expect_row(requested, token=None)
     expect_row(requested, link=None)
     story.expect_success("share show 1", "state: waiting", actor=story.user)
-    approval = story.container.get(Queries).query(ApprovalRequest).filter(arguments=("share", "accept", "1")).first()
-    dock = story.container.get(Queries).query(DockItem).filter(target_model=ApprovalRequest.model_name, target_id=approval.id).first()
+    approval = story.first_row(ApprovalRequest, arguments=("share", "accept", "1"))
+    dock = story.first_row(DockItem, target_model=ApprovalRequest.model_name, target_id=approval.id)
     story.expect_rows(dock is not None)
 
 

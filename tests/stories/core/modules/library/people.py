@@ -5,7 +5,6 @@ from pathlib import Path
 import pytest
 
 from engine.testing.stories.story import Story
-from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.core.modules.library.support.copy_stories import connected, shared_server
 from tests.stories.core.modules.library.support.stored_text import stored_texts
@@ -111,7 +110,7 @@ def test_the_viewer_accepts_a_team_user_request_and_receives_the_token_only_once
     server, tokens = shared_server
     story = connected(new_story, server, tokens.admin)
     story.expect_refusal("library-user add ConsentTess --role edit --reason needed", "A user was asked in the dock", actor=story.agent)
-    approval = story.container.get(Queries).query(ApprovalRequest).first()
+    approval = story.first_row(ApprovalRequest)
     with viewer_client(story) as viewer:
         answer = viewer.value("messages.chat", ["approval", "accept", str(approval.id)])
     token_text = next(line for line in answer["viewer_output"].splitlines() if line.startswith("token (shown once): ")).split(": ", 1)[1]

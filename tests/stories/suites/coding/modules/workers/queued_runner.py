@@ -10,7 +10,6 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.caller.caller_request import SESSION_VARIABLE
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.process import Process
 from engine.testing.stories.story import Story
@@ -78,7 +77,7 @@ def test_a_queued_worker_command_runs_through_the_real_runner_and_cli(worker_run
                               env={**variables, SESSION_VARIABLE: agent.session}, cwd=story.home.project_folder)
     story.expect_rows(accepted.returncode == 0, "command accepted" in accepted.stdout,
                       detail=accepted.stdout + accepted.stderr)
-    operation = story.container.get(Queries).query(WorkerOperation).filter(worker_id=worker.id).newest().first()
+    operation = story.newest_row(WorkerOperation, worker_id=worker.id)
     story.expect_rows(spawned.wait(20), detail="the queued command did not start its runner")
     story.expect_rows(len(children) == 1, children[0].wait(timeout=20) == 0)
     process = story.row(Process, operation.process_id)

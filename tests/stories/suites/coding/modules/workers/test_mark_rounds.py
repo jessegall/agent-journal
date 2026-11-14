@@ -3,7 +3,6 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.database.database import Database
 from engine.database.statement import Statement
-from engine.query.queries import Queries
 from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.chat.models.enums.chat_mark_state import ChatMarkState
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
@@ -24,7 +23,7 @@ def test_a_second_test_round_of_the_same_task_gets_its_own_mark(new_story, monke
     story.expect_success("worker commit --wait --differences none", actor=worker)
     story.run_listeners()
     ended(story, started[0], 0)
-    first = story.container.get(Queries).query(ChatMark).filter(key="worker-tests:1:1").first()
+    first = story.first_row(ChatMark, key="worker-tests:1:1")
     story.expect_rows(first is not None, first.state is ChatMarkState.ENDED)
 
     story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Add the tax test"', actor=story.agent)

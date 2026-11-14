@@ -2,7 +2,6 @@ import json
 from pathlib import Path
 
 from engine.file.file_access import FileAccess
-from engine.query.queries import Queries
 from core.modules.processes.models.process import Process
 from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.commands.prune_file_edits import prune_file_edits_handler
@@ -32,7 +31,7 @@ def test_a_scan_of_a_shell_line_keeps_each_file_for_the_agent_of_its_process(new
     story = install_runner(new_story(fixture=BuilderStarted))
     repository = repository_environment(story)
     story.hook("s-1", HookSamples.shell("python3 -", ShellPart("python3", "process", ["-"])).with_raw({"cwd": str(repository.folder)}))
-    process_id = story.container.get(Queries).query(Process).newest().first().id
+    process_id = story.newest_row(Process).id
     report = story.home.folder / "scan-report.json"
     report.write_text(json.dumps({"folder": str(repository.folder), "changes": [
         {"diff": {"path": "fresh.py", "existed": False, "lines_added": 2, "lines_removed": 0}, "rows": []},

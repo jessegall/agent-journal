@@ -4,7 +4,6 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from core.modules.agents.support.report_nudges import EMPTY_REPORT_TEXT
 from core.modules.messages.models.message import Message
 from core.modules.drivers.ticks.end_silent_helpers_tick import EndSilentHelpersTick
@@ -52,7 +51,7 @@ def reported(new_story, helper_fixture, text):
 
 
 def helper_report(story):
-    return story.container.get(Queries).query(Message).filter(session_agent_id=helper_agent(story).id).first()
+    return story.first_row(Message, session_agent_id=helper_agent(story).id)
 
 
 def test_the_agent_card_reads_reports_through_the_viewer(new_story):

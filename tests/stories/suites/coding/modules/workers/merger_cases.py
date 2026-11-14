@@ -7,7 +7,6 @@ import pytest
 import suites.coding.modules.workers as workers_package
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
 from engine.testing.stories.story import Story
 from suites.coding.modules.workers.commands.record_worker_refusal.record_worker_refusal import RecordWorkerRefusal
@@ -56,7 +55,7 @@ class MergerCase:
         return outcome.output_text
 
     def refused_at_hand_in(self, text: str) -> None:
-        worktree = self.story.container.get(Queries).query(Worktree).filter(session_agent_id=self.worker.id).first()
+        worktree = self.story.first_row(Worktree, session_agent_id=self.worker.id)
         self.story.run_command(RecordWorkerRefusal(worktree.id, text), self.worker, 1)
 
     def main_lines(self) -> str:
@@ -235,7 +234,7 @@ def test_the_merger_text_names_the_ladder_and_the_case_book(case):
 
 
 def logs_read_at(story: Story, worker: Actor) -> str | None:
-    return story.container.get(Queries).query(Worktree).filter(session_agent_id=worker.id).first().logs_read_at
+    return story.first_row(Worktree, session_agent_id=worker.id).logs_read_at
 
 
 def test_the_merger_reads_the_logs_of_a_worker_that_delivered_and_they_count_as_read(new_story, monkeypatch):

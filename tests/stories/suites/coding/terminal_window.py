@@ -1,5 +1,4 @@
 from engine.enums.command_category import CommandCategory
-from engine.query.queries import Queries
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.examples.hook_samples import HookSamples
@@ -12,7 +11,7 @@ from tests.stories.server.support.server_client import server_story
 def test_the_card_of_a_journal_line_shows_what_that_line_printed(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
     reply = story.hook("s-1", HookSamples.shell("journal task list", ShellPart("journal", CommandCategory.JOURNAL, ["task", "list"], subcommand="task")))
-    process = story.container.get(Queries).query(Process).newest().first()
+    process = story.newest_row(Process)
     story.container.get(OutputFolder).write_output(process.id, 1, "10 passed\n")
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))

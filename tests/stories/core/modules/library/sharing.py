@@ -3,7 +3,6 @@ from dataclasses import dataclass
 
 import pytest
 
-from engine.query.queries import Queries
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.support.doc_library_share import DocLibraryShare
 from core.modules.library.models.library_copy import LibraryCopy
@@ -55,7 +54,7 @@ def server_item(server: SharedServerBinary, token: str, item_id: int) -> dict[st
 
 
 def copied_row(story: Story, row_id: int) -> LibraryCopy:
-    return story.container.get(Queries).query(LibraryCopy).filter(share="doc", row_id=row_id).first()
+    return story.first_row(LibraryCopy, share="doc", row_id=row_id)
 
 
 def shared(story: Story, server: SharedServerBinary, token: str, title: str) -> tuple[int, int]:

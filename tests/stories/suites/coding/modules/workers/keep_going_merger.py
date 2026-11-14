@@ -125,7 +125,7 @@ def merger_with_ended_main(new_story, monkeypatch):
 
 
 def newest_main_agent_id(story) -> int:
-    return story.container.get(Queries).query(Agent).filter(role=AgentRole.MAIN).newest().first().id
+    return story.newest_row(Agent, role=AgentRole.MAIN).id
 
 
 def test_a_tell_with_no_main_agent_running_reaches_the_next_main_agent(merger_with_ended_main):

@@ -7,7 +7,6 @@ import json
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.enums.command_category import CommandCategory
-from engine.query.queries import Queries
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from core.modules.drivers.rules.repeated_stop_release_rule import STOP_REFUSAL_COUNT
@@ -103,7 +102,7 @@ def test_a_stuck_worker_tells_its_main_agent_at_once_and_shows_a_mark_in_the_mai
     story.expect_success('wait stuck "the build tool is missing"', actor=worker)
     story.run_listeners()
     story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(MERGER_LINE_AVAILABLE, line=1), "workers.help-request")
-    help_request = story.container.get(Queries).query(MergerLine).first()
+    help_request = story.first_row(MergerLine)
     story.expect_rows(help_request.worker_id == worker.id, "is stuck on task:1" in help_request.text, help_request.outcome is AskOutcome.FORWARDED, detail=str(help_request))
     story.expect_text("chat-mark list --environment 1", f"Worker {agent_number(story, worker.id)} is stuck: the build tool is missing")
     story.expect_text(f"chat-mark show {stop_mark(story, 'help request')}", "Tasks left: task 1", "Task 1: ", "Last words: The build tool is gone from the path", f"target_id: {worker.id}", "outcome: warned")

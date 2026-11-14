@@ -1,4 +1,3 @@
-from engine.query.queries import Queries
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.close_claimed_worktree_tasks.close_claimed_worktree_tasks_handler import MERGED_TEXT
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -10,7 +9,7 @@ from tests.stories.suites.coding.modules.workers.test_queue import ended, queued
 
 
 def merged_manually(story, repository: MemoryRepository) -> Worktree:
-    worktree = story.container.get(Queries).query(Worktree).first()
+    worktree = story.first_row(Worktree)
     history = repository.history
     history.branches[ENVIRONMENT_BRANCH] = history.branches[worktree.branch]
     repository.files().write(history.tip(ENVIRONMENT_BRANCH).tree)

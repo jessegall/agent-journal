@@ -7,7 +7,6 @@ import shlex
 import subprocess
 from engine.journal.journal_home import LAUNCHER_SOCKET
 from engine.provider.program_hooks import ProgramHooks
-from engine.query.queries import Queries
 from core.modules.codex.providers.codex_provider import CodexProvider
 from core.modules.codex.providers.support.codex_trust import CodexTrust
 from core.modules.drivers.models.hook_call import HookCall
@@ -199,7 +198,7 @@ def test_helper_send_on_an_out_program_says_until_when_resume_keeps_its_job(star
     story.expect_success(f'agent end {helper_id}', actor=story.user)
     story.run_listeners()
     helper = story.row(Agent, helper_id)
-    job = story.container.get(Queries).query(HelperJob).filter(helper_id=helper_id).newest().first()
+    job = story.newest_row(HelperJob, helper_id=helper_id)
     story.expect_rows(helper.ended_at is not None, job.ended_at is None, len(launcher.starts) == 0)
     story.advance(timedelta(minutes=16))
     story.container.get(HelperResume).resume(helper, job.brief)

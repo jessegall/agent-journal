@@ -7,7 +7,7 @@ from tests.stories.core.support.coding_fixtures import ReadTaskBuilder
 
 def test_compaction_removes_links_to_deleted_task_reads(new_story):
     story = new_story(fixture=ReadTaskBuilder)
-    read = story.container.get(Queries).query(TaskRead).filter(session_agent_id=story.agent.id).first()
+    read = story.first_row(TaskRead, session_agent_id=story.agent.id)
     story.expect_success(f'doc make "Reading" --abstract "Notes" --body "Text" --about task_read:{read.id}', actor=story.agent)
     links = story.container.get(Queries).query(Link).filter(target_model="task_read", target_id=read.id)
     story.expect_rows(links.exists())

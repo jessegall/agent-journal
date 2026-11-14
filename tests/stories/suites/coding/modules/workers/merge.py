@@ -15,7 +15,6 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from engine.enums.actor_type import ActorType
 from datetime import timedelta
 
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
@@ -182,7 +181,7 @@ def test_a_task_sent_to_a_merged_worker_opens_a_worktree_and_resumes_it(new_stor
     task = story.new_row_id('task make "Add the tax" --brief "The work after the merge" --environment main', actor=story.agent)
     story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task {task}", actor=story.agent)
     story.run_listeners()
-    worktree = story.container.get(Queries).query(Worktree).filter(session_agent_id=worker.id).first()
+    worktree = story.first_row(Worktree, session_agent_id=worker.id)
     story.expect_rows(worktree is not None)
     story.expect_text(f"task show {worktree.task_id}", "Add the tax", "state: started", f"holder_id: {worker.id}", actor=story.agent)
     launcher.expect_started(worker.id, worker_session(story, worker), repository.worktree_folder(worker.id))
@@ -319,7 +318,7 @@ def test_long_worker_logs_are_marked_read_only_after_the_saved_output_is_read_wh
     request = CallerRequest({"JOURNAL_AGENT_SESSION": "s-1", "JOURNAL_PROCESS": str(process.id)}, str(repository.folder))
     outcome = story.run_requested(f"worker logs {agent_number(story, worker.id)}", request)
     outcome.expect_code(0)
-    worktree = story.container.get(Queries).query(Worktree).filter(session_agent_id=worker.id).first()
+    worktree = story.first_row(Worktree, session_agent_id=worker.id)
     story.expect_rows(worktree.logs_read_at is None, worktree.logs_output_id == process.id)
     end_run(story, process, outcome.output_text)
     story.expect_success(f"output read {process.id} --summary", actor=story.agent)
@@ -338,7 +337,7 @@ def test_long_worker_logs_are_marked_read_only_after_the_saved_output_is_read_wh
     story.expect_rows(worktree.logs_read_at is None)
     story.expect_success(f"output read {reader.id} --all", actor=story.agent)
     worktree = story.row(Worktree, worktree.id)
-    output = story.container.get(Queries).query(Output).filter(process_id=process.id).first()
+    output = story.first_row(Output, process_id=process.id)
     story.expect_rows(worktree.logs_read_at is not None, worktree.logs_output_id is None, output.fully_read_at is not None)
 
 
@@ -350,7 +349,7 @@ def test_redirected_worker_logs_do_not_mark_the_logs_read(new_story):
     piped = ShellPart("journal", CommandCategory.JOURNAL, ["worker", "logs", str(worker.id)], subcommand="worker", pipe_target=1)
     sink = ShellPart("cat", CommandCategory.READ, [])
     story.expect_hook_refusal("s-1", HookSamples.shell(f"journal worker logs {agent_number(story, worker.id)} && cat", piped, sink), expected_nudge(READ_COMMAND_OUTPUT))
-    worktree = story.container.get(Queries).query(Worktree).filter(session_agent_id=worker.id).first()
+    worktree = story.first_row(Worktree, session_agent_id=worker.id)
     story.expect_rows(worktree.logs_read_at is None)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_rows(story.row(Worktree, worktree.id).logs_read_at is not None)
@@ -373,7 +372,7 @@ def test_reading_one_task_does_not_mark_other_tasks_logs_as_read(new_story):
     story.expect_success("worker commit --wait --differences none", actor=worker)
     request_merge(story, worker)
     story.expect_success(f"worker logs {agent_number(story, worker.id)} --task {task_id}", actor=story.agent)
-    worktree = story.container.get(Queries).query(Worktree).filter(session_agent_id=worker.id).first()
+    worktree = story.first_row(Worktree, session_agent_id=worker.id)
     story.expect_rows(worktree.logs_read_at is None)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_rows(story.row(Worktree, worktree.id).logs_read_at is not None)

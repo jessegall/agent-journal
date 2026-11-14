@@ -2,7 +2,6 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.chat.support.mark_samples import expect_absent_marks_text, expect_marks_text
@@ -50,7 +49,7 @@ def test_giving_up_a_sequence_shows_a_mark(new_story):
 @pytest.mark.parametrize("action", ["finish", "abandon"])
 def test_another_agent_ending_a_sequence_shows_no_mark(new_story, action):
     story = new_story(fixture=HelperActiveRelease)
-    helper = Actor(story.container.get(Queries).query(Agent).filter(session="s-2").first().id, ActorType.AGENT)
+    helper = Actor(story.first_row(Agent, session="s-2").id, ActorType.AGENT)
     if action == "finish":
         story.expect_success("sequence next", actor=helper)
         story.expect_success("sequence follow", actor=helper)

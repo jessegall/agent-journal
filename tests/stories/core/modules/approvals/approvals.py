@@ -2,7 +2,6 @@ from typing import NamedTuple
 
 import pytest
 
-from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState
@@ -33,7 +32,7 @@ class PendingRule(NamedTuple):
 def pending_setting(new_story):
     story = new_story(fixture=UserBuilder)
     story.expect_refusal(CHANGE_SETTING, "A user was asked in the dock", actor=story.agent)
-    request = story.container.get(Queries).query(ApprovalRequest).first()
+    request = story.first_row(ApprovalRequest)
     story.expect_rows(request is not None)
     return PendingSetting(story, request)
 
@@ -42,7 +41,7 @@ def pending_setting(new_story):
 def proposed_rule(new_story):
     story = new_story(fixture=UserBuilder)
     rule_id = story.new_row_id('rule make "Name every file plainly"', actor=story.agent)
-    request = story.container.get(Queries).query(ApprovalRequest).first()
+    request = story.first_row(ApprovalRequest)
     story.expect_rows(request is not None, request.requester_id == story.agent.id)
     return PendingRule(story, rule_id, request)
 
@@ -81,7 +80,7 @@ def test_an_agent_can_never_decide_a_docked_request(pending_setting, decision):
 
 def test_an_agent_cannot_hide_a_pending_approval(pending_setting):
     story, request = pending_setting
-    item = story.container.get(Queries).query(DockItem).filter(target_model="approval", target_id=request.id).first()
+    item = story.first_row(DockItem, target_model="approval", target_id=request.id)
     story.expect_refusal(f"dock remove {item.id}", "an agent cannot change a card waiting for a user", actor=story.agent)
     story.expect_text(f"approval show {request.id}", "state: open")
 

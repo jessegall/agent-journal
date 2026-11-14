@@ -24,7 +24,7 @@ def test_an_expected_listener_refusal_is_logged_once_without_an_exception_mark(n
 def test_one_listener_key_follows_a_mark_that_ends_and_comes_back(new_story):
     story = new_story(PATH, fixture=OpenTask)
     story.run_listeners()
-    first = story.container.get(Queries).query(ChatMark).filter(key=KEY).first()
+    first = story.first_row(ChatMark, key=KEY)
     story.expect_rows(first.state is ChatMarkState.SHOWN)
     story.expect_success("task start 1", actor=story.agent)
     story.expect_success('task close 1 --outcome "Done"', actor=story.agent)

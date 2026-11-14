@@ -3,7 +3,6 @@ import shutil
 
 from tests.stories.core.modules.plugins.support.plugin_samples import MANIFEST, sample_plugin_folder
 from tests.stories.core.support.fixtures import UserJoined
-from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
@@ -42,7 +41,7 @@ def test_without_yes_an_install_only_shows_what_it_would_install(new_story):
 def test_an_agent_proposes_a_plugin_and_the_user_installs_it(new_story):
     story = plugin_story(new_story)
     story.expect_refusal(f'plugin propose {story.plugin_folder} --why "judges the code" --reason needed', "A user was asked in the dock", actor=story.agent)
-    request = story.container.get(Queries).query(ApprovalRequest).first()
+    request = story.first_row(ApprovalRequest)
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(request.id)])
     story.expect_text("plugin list", "sample", "on", "1.0.0")
@@ -51,7 +50,7 @@ def test_an_agent_proposes_a_plugin_and_the_user_installs_it(new_story):
 def test_an_agent_installs_disables_enables_configures_and_removes_a_plugin(new_story):
     story = plugin_story(new_story)
     story.expect_refusal(f"plugin install {story.plugin_folder} --yes --reason needed", "A user was asked in the dock", actor=story.agent)
-    request = story.container.get(Queries).query(ApprovalRequest).first()
+    request = story.first_row(ApprovalRequest)
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(request.id)])
     for line in ("plugin disable sample", "plugin enable sample", "plugin configure sample level 2", "plugin remove sample"):
@@ -86,7 +85,7 @@ def test_a_standing_yes_installs_a_plugin_again_though_the_install_has_a_prepare
     # inside the transaction that asked for it
     story = plugin_story(new_story)
     story.expect_refusal(f"plugin install {story.plugin_folder} --yes --reason 'to judge the code'", "A user was asked in the dock", actor=story.agent)
-    request = story.container.get(Queries).query(ApprovalRequest).first()
+    request = story.first_row(ApprovalRequest)
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(request.id), "--always", "same"])
     story.expect_success("plugin remove sample", actor=story.user)

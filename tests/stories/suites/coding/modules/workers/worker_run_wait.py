@@ -3,7 +3,6 @@ import subprocess
 import pytest
 
 from engine.enums.command_category import CommandCategory
-from engine.query.queries import Queries
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.runner_binary import RunnerBinary
@@ -59,7 +58,7 @@ def worker_command(worker, sample=BUILD_SHELL) -> str:
 
 
 def newest_run(story) -> Process:
-    return story.container.get(Queries).query(Process).newest().first()
+    return story.newest_row(Process)
 
 
 def end_run_during_wait(story, text: str, exit_code: int = 0, after_sleeps: int = 1) -> None:
@@ -115,7 +114,7 @@ def test_a_workers_own_test_line_is_refused_and_starts_no_run(worker, launches):
 def test_the_commands_card_in_the_workers_chat_shows_what_its_named_test_printed(worker):
     line = f"journal {TEST_RUN}"
     reply = worker.run_line(line, ShellPart("journal", CommandCategory.JOURNAL, TEST_RUN.split(), subcommand="worker"))
-    process = worker.story.container.get(Queries).query(Process).filter(line=line).first()
+    process = worker.story.first_row(Process, line=line)
     worker.story.container.get(OutputFolder).write_output(process.id, 1, "10 passed\n")
     with server_story(worker.story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))

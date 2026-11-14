@@ -5,7 +5,6 @@ import pytest
 
 from engine.command.bus import Bus
 from engine.command.context import Context
-from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.documents.models.doc import Doc
 from suites.coding.modules.checks.models.check import Check
@@ -153,7 +152,7 @@ def test_a_check_that_was_removed_from_this_journal_loses_its_copy(new_story, sh
     story.expect_text(f"library get check {item['id']} --read", "is now check 1", actor=story.user)
     story.expect_text("check remove 1", "check 1", actor=story.user)
     story.expect_text("library sync", "Reached the library", actor=story.agent)
-    story.expect_rows(story.container.get(Queries).query(LibraryCopy).filter(share="check", item_id=item["id"]).first() is None)
+    story.expect_rows(story.first_row(LibraryCopy, share="check", item_id=item["id"]) is None)
 
 
 def test_a_local_edit_made_during_a_round_is_seen_by_the_next_round(new_story, shared_server, monkeypatch):
@@ -197,7 +196,7 @@ def test_a_server_that_nobody_answers_at_is_noted_once_and_the_next_round_tries_
     with SharedServerBinary(tmp_path) as server:
         story = connected(new_story, server, server.new_user("Ada", "admin"))
     story.expect_text("library sync", "Did not reach the library.", actor=story.agent)
-    failure = story.container.get(Queries).query(LibraryConnection).first().failure
+    failure = story.first_row(LibraryConnection).failure
     story.expect_rows(bool(failure))
     stored_text = stored_texts(story)
     story.expect_text("library sync", "Did not reach the library.", actor=story.agent)

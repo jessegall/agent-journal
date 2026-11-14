@@ -15,7 +15,6 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.plugins.support.plugin_program import SETTINGS_FILE
 from core.modules.skills.support.loaded_skills import LoadedSkills
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 from engine.database.database import Database
@@ -350,7 +349,7 @@ def test_a_plugin_an_agent_installs_through_the_persons_approval_has_its_service
     FileAccess.write(manifest_path, json.dumps(manifest))
     story.expect_refusal(f"plugin install {folder} --yes --reason needed", "A user was asked in the dock", actor=story.agent)
     with viewer_client(story) as viewer:
-        viewer.value("messages.chat", ["approval", "accept", str(story.container.get(Queries).query(ApprovalRequest).first().id)])
+        viewer.value("messages.chat", ["approval", "accept", str(story.first_row(ApprovalRequest).id)])
     services, processes = story.container.get(PluginServices), ServiceProcesses()
     try:
         services.follow(processes)
@@ -398,7 +397,7 @@ def test_a_service_that_fails_again_and_again_is_tried_after_a_growing_pause_and
             story.advance(timedelta(minutes=11))
             failed_round(story)
         story.run_listeners()
-        story.expect_rows(story.container.get(Queries).query(Plugin).first().fault_count == 1)
+        story.expect_rows(story.first_row(Plugin).fault_count == 1)
         rewritten_service(story, SERVICE)
         failed_round(story)
         story.advance(timedelta(minutes=11))
@@ -421,7 +420,7 @@ def test_a_service_that_cannot_start_does_not_stop_the_round_and_is_told_once(ne
         story.run_listeners()
         story.expect_rows(("served", "answers") not in story.processes.running)
         story.expect_text("plugin list", "keeps failing to run: it could not start", actor=story.user)
-        story.expect_rows(story.container.get(Queries).query(Plugin).first().fault_count == 1)
+        story.expect_rows(story.first_row(Plugin).fault_count == 1)
     finally:
         story.processes.close()
 

@@ -1,6 +1,5 @@
 from tests.stories.core.support.agent_labels import agent_number
 from core.modules.messages.models.message import Message
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.examples.hook_samples import HookSamples
@@ -28,7 +27,7 @@ def worker_with_helper(new_story):
 
 
 def read_helper(story, worker):
-    return story.container.get(Queries).query(Agent).filter(parent_id=worker.id, role="helper").first()
+    return story.first_row(Agent, parent_id=worker.id, role="helper")
 
 
 def test_a_worker_may_stop_while_its_helper_works(new_story):
@@ -47,7 +46,7 @@ def test_a_helpers_report_keeps_the_workers_task_and_worktree(new_story):
     stop = HookSamples.stop()
     story.hook(read_helper(story, worker).session, stop.with_raw({**stop.body["raw"], "last_assistant_message": "The cart adds tax twice."}))
     story.expect_text(f"agent-line list --agent {worker.id}", expected_nudge(PARENT_REPORT))
-    story.expect_rows(story.container.get(Queries).query(Message).newest().first().text == "The cart adds tax twice.")
+    story.expect_rows(story.newest_row(Message).text == "The cart adds tax twice.")
     story.expect_text("worker-worktree show 1", "state: cut")
     story.expect_text("task show 1", "state: started")
 

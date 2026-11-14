@@ -9,7 +9,6 @@ from engine.enums.command_category import CommandCategory
 from engine.enums.command_effect import CommandEffect
 from engine.enums.tool_type import ToolType
 from core.modules.drivers.support.access_nudges import ENDED_AGENT, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, UNJUDGED_LINE
-from engine.query.queries import Queries
 from core.modules.documents.models.report import Report
 from engine.testing.expectations.expect_reply import expect_reply_allowed
 from core.modules.agents.testing.fake_launcher import FakeLauncher
@@ -128,7 +127,7 @@ REPORT_TEXT = "Run `rm -rf a` in $HOME and \"tests/stories/core/a.py\" with pyth
 def test_a_long_report_holding_program_names_is_filed_whole(new_story):
     story = new_story(fixture=StartedHelper)
     story.expect_success(f'report make Findings --abstract "What was read" --body {shlex.quote(REPORT_TEXT)} --environment main', actor=story.agent)
-    story.expect_rows(len(REPORT_TEXT) > 60000, story.container.get(Queries).query(Report).filter(title="Findings").first().body == REPORT_TEXT)
+    story.expect_rows(len(REPORT_TEXT) > 60000, story.first_row(Report, title="Findings").body == REPORT_TEXT)
 
 
 def test_an_ended_helper_is_refused_its_next_tool_and_writes_no_second_report(new_story):

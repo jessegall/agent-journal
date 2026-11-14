@@ -12,7 +12,6 @@ from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from engine.query.queries import Queries
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.skills.models.agent_skill import AgentSkill
@@ -78,7 +77,7 @@ def rules_plugin(new_story, **manifest):
 
 
 def rules_state(story):
-    return story.container.get(Queries).query(AgentSkill).filter(skill="sample-rules").first().state
+    return story.first_row(AgentSkill, skill="sample-rules").state
 
 
 def start_service_socket(path: Path, lines: list[str]) -> socket.socket:
@@ -140,7 +139,7 @@ def test_s44_a_skill_the_plugin_does_not_publish_is_ignored(new_story):
     scanned_edit(story, "s-1", "cart.py")
     story.run_listeners()
     story.expect_rows(len(script_calls(story, "asks.sh")) == 1)
-    story.expect_rows(story.container.get(Queries).query(AgentSkill).filter(skill="not-published-here").first() is None)
+    story.expect_rows(story.first_row(AgentSkill, skill="not-published-here") is None)
 
 
 @pytest.mark.real_git

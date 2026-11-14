@@ -1,6 +1,5 @@
 import pytest
 
-from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.secrets.models.secret import Secret
 from tests.stories.core.modules.secrets.support.secret_fixtures import SecretMade
@@ -24,7 +23,7 @@ def pending_program(secret_story, request):
     outcome = story.run(request.param, actor=story.agent)
     story.expect_rows("user was asked in the dock" in outcome.output_text)
     story.run_listeners()
-    request = story.container.get(Queries).query(ApprovalRequest).first()
+    request = story.first_row(ApprovalRequest)
     story.expect_rows(request is not None, detail=outcome.output_text)
     story.expect_rows(request.arguments == ("secret", "allow", "1", "head"))
     return story, request

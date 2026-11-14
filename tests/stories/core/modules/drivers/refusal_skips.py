@@ -9,7 +9,6 @@ from engine.enums.tool_type import ToolType
 from engine.guard.errors.guard_refusal import GuardRefusal
 from engine.errors.refusal import Refusal
 from engine.log.refusal_log import RefusalLog
-from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.processes.commands.start_process.start_process import PartSpec, StartProcess
 from core.modules.processes.models.process import Process
@@ -115,7 +114,7 @@ def test_a_safety_refusal_has_no_skip(new_story):
 def test_a_main_agent_at_five_skips_loses_the_skip_and_the_person_is_told_and_gives_it_back(new_story):
     story = new_story(fixture=UserBuilder)
     guard_skips(story, story.agent, 5)
-    approval = story.container.get(Queries).query(ApprovalRequest).first()
+    approval = story.first_row(ApprovalRequest)
     story.expect_rows(approval is not None, "skipped 5 refusals" in approval.text)
     story.expect_refusal(GUARD_SKIP, "A user was asked in the dock", actor=story.agent)
     with viewer_client(story) as viewer:

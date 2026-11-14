@@ -4,7 +4,6 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
-from engine.query.queries import Queries
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from core.modules.approvals.commands.answer_approval.answer_approval_handler import AnswerApprovalHandler
@@ -40,7 +39,7 @@ class ApprovalInProgress(StoryFixture):
     parent = ApprovalRequested
 
     def steps(self, story: Story) -> None:
-        request = story.container.get(Queries).query(ApprovalRequest).first()
+        request = story.first_row(ApprovalRequest)
         with viewer_client(story):
             BootingWork().run(story.container)
             story.advance(timedelta(seconds=1))
@@ -94,14 +93,14 @@ def docked_requests(story) -> list[DockItem]:
 
 def test_a_claim_from_a_stopped_server_is_reopened_at_once(new_story):
     story = new_story(fixture=ServerRestarted)
-    request = story.container.get(Queries).query(ApprovalRequest).first()
+    request = story.first_row(ApprovalRequest)
     expect_value(story.container.get(Bus).run(RecoverApprovals(), Actor.core()), 1)
     story.expect_rows(story.row(ApprovalRequest, request.id).state is ApprovalState.OPEN)
 
 
 def test_accepting_a_request_left_running_by_a_restart_runs_it_without_the_running_error(new_story):
     story = new_story(fixture=ServerRestarted)
-    request = story.container.get(Queries).query(ApprovalRequest).first()
+    request = story.first_row(ApprovalRequest)
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(request.id)])
     story.expect_rows(story.row(ApprovalRequest, request.id).state is ApprovalState.ACCEPTED)

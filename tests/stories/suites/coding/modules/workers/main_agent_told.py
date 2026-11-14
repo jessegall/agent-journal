@@ -2,7 +2,6 @@ from datetime import timedelta
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
@@ -37,7 +36,7 @@ def test_a_workers_report_is_typed_to_an_idle_main_agent(new_story):
 def test_a_workers_report_says_it_wakes_the_main_agent_and_stays_visible(new_story):
     story, worker = story_with_worker(new_story)
     report(story, worker)
-    line = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).newest().first()
+    line = story.newest_row(AgentLine, session_agent_id=story.agent.id)
     expect_wakes_agent_proof(line)
     expect_outcome_with(line, "reported in message")
 

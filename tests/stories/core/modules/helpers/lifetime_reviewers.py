@@ -7,7 +7,6 @@ from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.drivers.models.helper_job import HelperJob
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import read_jobs, resumable_session
 from tests.stories.core.modules.helpers.program_split import helper_split_story, helper_viewer
@@ -194,5 +193,5 @@ def test_fresh_with_a_reason_while_a_reviewer_is_idle_makes_a_second_agent_and_k
     story = idle_reviewer
     launches(story, f"{START_REVIEW.format(plan=6)} --fresh '{NEW_AGENT_REASON}'")
     current = reviewers(story)
-    job = story.container.get(Queries).query(HelperJob).filter(helper_id=current[1].id).first()
+    job = story.first_row(HelperJob, helper_id=current[1].id)
     story.expect_rows(len(current) == 2, current[1].number > current[0].number, job.new_agent_reason == NEW_AGENT_REASON, detail=str(current))

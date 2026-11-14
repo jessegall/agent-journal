@@ -2,7 +2,6 @@ from datetime import timedelta
 
 from engine.driver.hook_route import HookRoute
 from engine.driver.program_lockdown import ProgramLockdown
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.helpers.support.program_states import ProgramStates
@@ -126,7 +125,7 @@ def test_a_program_a_person_starts_by_hand_is_stopped_at_its_first_hook_and_gets
     story = lockdown_story(new_story)
     report(story, 55)
     reply = story.hook("s-new", HookSamples.session_start())
-    story.expect_rows(reply.halt.startswith(STOP_LINE), story.container.get(Queries).query(Agent).filter(session="s-new").first() is None)
+    story.expect_rows(reply.halt.startswith(STOP_LINE), story.first_row(Agent, session="s-new") is None)
 
 
 def test_a_window_whose_reset_passed_does_not_stop_anything(new_story):

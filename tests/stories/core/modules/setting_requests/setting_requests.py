@@ -44,7 +44,7 @@ def test_the_request_shows_the_old_value_new_value_and_reason_in_the_dock(settin
 def test_the_person_decides_the_setting_from_the_shared_dock(pending_setting, setting_viewer, decision, value):
     story, request_id, project = pending_setting
     setting_viewer.value("messages.chat", ["approval", decision, str(request_id)])
-    setting = story.container.get(Queries).query(Setting).filter(key=SETTING).first()
+    setting = story.first_row(Setting, key=SETTING)
     story.expect_rows((setting is not None and json.loads(setting.value)) is value)
     if value:
         story.expect_rows(setting.environment_id == (None if project else 1), setting.creator_id == story.user.id)

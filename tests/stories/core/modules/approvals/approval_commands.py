@@ -4,7 +4,6 @@ import json
 import pytest
 
 from engine.command.bus import Bus
-from engine.query.queries import Queries
 from core.modules.drivers.commands.resume_agent.resume_agent import ResumeAgent
 from core.modules.agents.models.agent import Agent
 from core.modules.approvals.models.approval_request import ApprovalRequest
@@ -28,7 +27,7 @@ class ResumeRequested(StoryFixture):
 @pytest.fixture
 def resume_approval(new_story):
     story = new_story(fixture=ResumeRequested)
-    approval = story.container.get(Queries).query(ApprovalRequest).first()
+    approval = story.first_row(ApprovalRequest)
     story.expect_rows(approval is not None)
     return story, approval
 

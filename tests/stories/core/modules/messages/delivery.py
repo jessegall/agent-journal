@@ -9,7 +9,6 @@ from engine.command.bus import Bus
 from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.module.module_actors import ModuleActors
-from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
@@ -254,7 +253,7 @@ def test_a_line_whose_typing_breaks_goes_to_the_next_hook(new_story):
 
 def test_a_line_left_in_typing_by_a_stopped_server_waits_again_when_the_journal_starts(untyped_idle_message):
     story = untyped_idle_message
-    line = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, state=AgentLineState.WAITING).newest().first()
+    line = story.newest_row(AgentLine, session_agent_id=story.agent.id, state=AgentLineState.WAITING)
     story.run(f"agent-line claim {line.id}", actor=story.user)
     story.expect_text(f"agent-line list --agent {story.agent.id} --state typing", "New message 1", actor=story.user)
     BootingWork().run(story.container)
@@ -264,7 +263,7 @@ def test_a_line_left_in_typing_by_a_stopped_server_waits_again_when_the_journal_
 
 def test_a_line_left_in_typing_by_a_stopped_server_for_a_message_read_meanwhile_is_not_given_after_the_journal_starts(untyped_idle_message):
     story = untyped_idle_message
-    line = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, state=AgentLineState.WAITING).newest().first()
+    line = story.newest_row(AgentLine, session_agent_id=story.agent.id, state=AgentLineState.WAITING)
     story.run(f"agent-line claim {line.id}", actor=story.user)
     story.expect_success("message read 1", actor=story.agent)
     BootingWork().run(story.container)

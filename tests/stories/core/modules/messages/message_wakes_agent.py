@@ -5,7 +5,6 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.journal.journal_home import LAUNCHER_SOCKET
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.drivers.models.agent_line import AgentLine
@@ -37,14 +36,14 @@ def program_starts_so_far(story) -> list[dict[str, object]]:
 
 
 def helper_row(story) -> Agent:
-    return story.container.get(Queries).query(Agent).filter(id=story.helper.id).first()
+    return story.first_row(Agent, id=story.helper.id)
 
 
 def test_a_message_to_an_idle_agent_is_a_line_that_wakes_it_and_starts_no_second_program(helper_story):
     story = helper_story
     story.advance(timedelta(minutes=20))
     story.expect_success(MESSAGE.format(number=agent_number(story, story.helper.id)), actor=story.agent)
-    line = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.helper.id).newest().first()
+    line = story.newest_row(AgentLine, session_agent_id=story.helper.id)
     story.expect_rows(line.wakes_agent, program_starts_so_far(story) == [], detail=str(story.launcher.requests))
 
 

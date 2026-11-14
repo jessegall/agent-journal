@@ -8,7 +8,6 @@ from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import Model
 from engine.model.view_model import ViewModel
 from engine.module.module_finder import ModuleFinder
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.task import Task
 from engine.testing.examples.hook_samples import HookSamples
@@ -25,7 +24,7 @@ STATED_EXCEPTIONS = {"Setting", "SecretSetting", "Reader", "JournalException", "
 
 
 def staging_agent(story):
-    return Actor(story.container.get(Queries).query(Agent).filter(session="s-2").first().id, ActorType.AGENT)
+    return Actor(story.first_row(Agent, session="s-2").id, ActorType.AGENT)
 
 
 def staging_worker(story):

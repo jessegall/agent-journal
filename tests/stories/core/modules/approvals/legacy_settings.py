@@ -1,6 +1,5 @@
 import pytest
 
-from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.questions.models.question import Question
@@ -15,7 +14,7 @@ def restored_question(new_story):
     story = new_story(MODULE, fixture=LegacySettingQuestion)
     story.expect_sync_success(UPGRADE)
     story.run_listeners()
-    request = story.container.get(Queries).query(ApprovalRequest).first()
+    request = story.first_row(ApprovalRequest)
     story.expect_rows(request is not None, "old request" in request.why)
     return story, request
 

@@ -8,7 +8,6 @@ from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
 from engine.database.database import Database
 from engine.database.statement import Statement
-from engine.query.queries import Queries
 from core.modules.agents.commands.record_agent_process.record_agent_process import RecordAgentProcess
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.models.agent_line import AgentLine
@@ -37,7 +36,7 @@ def test_a_resumed_workers_job_is_entered_once(new_story, monkeypatch, entered_d
         return original_run(bus, command, *arguments, **options)
 
     def record_launch(launcher, agent, environment, command):
-        job = story.container.get(Queries).query(AgentLine).filter(session_agent_id=agent.id, source=WORKER_JOB_SOURCE).newest().first()
+        job = story.newest_row(AgentLine, session_agent_id=agent.id, source=WORKER_JOB_SOURCE)
         job_ids.append(job.id)
         story.run_command(RecordAgentProcess(agent.id, 123456789), Actor.core(), environment.id)
         if entered_during_hand:

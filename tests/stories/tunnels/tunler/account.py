@@ -1,6 +1,5 @@
 import json
 
-from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 
 from engine.enums.tunnel_state import TunnelState
@@ -121,7 +120,7 @@ def test_only_a_person_logs_in_or_changes_tunler(new_story):
 def test_a_person_accepts_a_tunler_logout_request_in_the_viewer(new_story, monkeypatch):
     story, client = account_story(new_story)
     story.expect_refusal("tunler logout --reason needed", "A user was asked in the dock", actor=story.agent)
-    approval = story.container.get(Queries).query(ApprovalRequest).first()
+    approval = story.first_row(ApprovalRequest)
     monkeypatch.setattr(TunlerClient, "logout", lambda self: client.logout())
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(approval.id)])

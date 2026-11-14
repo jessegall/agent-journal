@@ -4,7 +4,6 @@ import pytest
 
 from engine.actor.actor import CORE_ACTOR_ID
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord
 from tests.stories.core.modules.assignments.support.assignable_samples import DEPOT, DepotModule
 from tests.stories.core.modules.assignments.support.assignment_fixtures import CratesAndActors, worker
@@ -46,7 +45,7 @@ def test_assigning_to_an_actor_that_does_not_exist_is_refused_and_writes_nothing
 
 
 def test_assigning_to_a_module_or_core_actor_is_refused(depot):
-    module_actor_id = depot.container.get(Queries).query(ActorRecord).filter(type=ActorType.MODULE, name=DepotModule.name).first().id
+    module_actor_id = depot.first_row(ActorRecord, type=ActorType.MODULE, name=DepotModule.name).id
     depot.expect_refusal(assign_line(CORE_ACTOR_ID), "which receives no work", actor=depot.user)
     depot.expect_refusal(assign_line(module_actor_id), "which receives no work", actor=depot.user)
 

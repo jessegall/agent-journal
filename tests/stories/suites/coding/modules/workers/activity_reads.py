@@ -9,7 +9,6 @@ from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
 from engine.enums.command_category import CommandCategory
 from engine.module.performance_tools import PerformanceTools
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput
@@ -113,7 +112,7 @@ def test_five_workers_read_their_running_outputs_within_the_tick_limit(four_work
 
 def test_a_tick_reads_again_if_the_output_changes_after_its_batch_read(four_workers):
     story = four_workers
-    worker = story.container.get(Queries).query(Agent).filter(parent_id=story.agent.id, role="worker").first()
+    worker = story.first_row(Agent, parent_id=story.agent.id, role="worker")
     bus = story.container.get(Bus)
     process = bus.run(StartProcess(worker.id, None, "make build", "/work/main", CommandCategory.BUILD, 30, [PartSpec("make build", "make")]), Actor(worker.id, ActorType.AGENT), environment_id=1)
     folder = story.container.get(OutputFolder)

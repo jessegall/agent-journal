@@ -12,7 +12,6 @@ from engine.testing.examples.hook_samples import HookSamples
 from server.work.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_value
-from engine.query.queries import Queries
 from engine.registry.registry import Registry
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
@@ -90,7 +89,7 @@ def test_a_shipped_profile_names_its_own_model_for_each_program_whatever_the_set
 def test_only_a_person_can_save_a_profile_and_its_effective_model_is_listed(new_story):
     story = new_story(fixture=UserBuilder)
     story.expect_refusal(SAVE_PROFILE, "A user was asked in the dock", actor=story.agent)
-    request = story.container.get(Queries).query(ApprovalRequest).first()
+    request = story.first_row(ApprovalRequest)
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(request.id)])
     story.expect_text("profile list", "critic  helper  sonnet  used 0", actor=story.user)

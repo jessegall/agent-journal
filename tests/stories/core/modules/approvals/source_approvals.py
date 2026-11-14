@@ -1,6 +1,5 @@
 import pytest
 
-from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.modules.docking.queries.dock_item_query import DockItemQuery
@@ -38,7 +37,7 @@ def test_a_person_approves_the_ready_plan_on_its_card_and_a_registry_change_asks
 def waiting_trigger(new_story):
     story = new_story(fixture=UserBuilder)
     story.expect_success('trigger make "deploy" "Check the release notes" --environment main', actor=story.agent)
-    request = story.container.get(Queries).query(ApprovalRequest).first()
+    request = story.first_row(ApprovalRequest)
     story.expect_rows(request is not None)
     return story, request
 
@@ -61,7 +60,7 @@ def test_a_waiting_trigger_uses_the_shared_dock(waiting_trigger, trigger_viewer,
 def waiting_share(new_story):
     story = new_story(fixture=PhasesPlan)
     story.new_row_id("share make plans:1 --environment main", actor=story.agent)
-    request = story.container.get(Queries).query(ApprovalRequest).filter(arguments=("share", "accept", "1")).first()
+    request = story.first_row(ApprovalRequest, arguments=("share", "accept", "1"))
     story.expect_rows(request is not None)
     return story, request
 

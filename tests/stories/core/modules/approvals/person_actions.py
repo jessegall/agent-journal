@@ -3,7 +3,6 @@ from typing import NamedTuple
 import pytest
 
 from engine.model.model import Model
-from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.phone.models.phone_code import PhoneCode
 from core.modules.viewer.models.person_preset import PersonPreset
@@ -38,7 +37,7 @@ def pending_person_action(person_story, request):
     story = person_story
     action = request.param
     story.expect_refusal(action.line, "A user was asked in the dock", actor=story.agent)
-    approval = story.container.get(Queries).query(ApprovalRequest).first()
+    approval = story.first_row(ApprovalRequest)
     story.expect_rows(approval is not None, approval.required_person_id is None)
     return story, approval, action.model
 
@@ -52,7 +51,7 @@ def action_viewer(pending_person_action):
 def test_accepting_builds_the_row_with_the_real_persons_identity(pending_person_action, action_viewer):
     story, approval, model = pending_person_action
     action_viewer.value("messages.chat", ["approval", "accept", str(approval.id)])
-    row = story.container.get(Queries).query(model).first()
+    row = story.first_row(model)
     story.expect_rows(row is not None, row.person_id == story.user.id, row.creator_id == story.user.id)
 
 
@@ -62,9 +61,9 @@ def pending_rename(person_story):
     story.new_row_id('actor make user "Bob"')
     with viewer_client(story) as viewer:
         viewer.value("viewer.shell", ["person-preset", "save", "--page", "home", "--name", "Mine", "--shape", SHAPE])
-    preset = story.container.get(Queries).query(PersonPreset).first()
+    preset = story.first_row(PersonPreset)
     story.expect_refusal(f"person-preset rename {preset.id} --name Review --reason needed", "A user was asked in the dock", actor=story.agent)
-    request = story.container.get(Queries).query(ApprovalRequest).first()
+    request = story.first_row(ApprovalRequest)
     story.expect_rows(request.required_person_id == story.user.id)
     return story, request, preset
 

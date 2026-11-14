@@ -2,7 +2,6 @@ import json
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.messages.models.message import Message
@@ -19,7 +18,7 @@ def helper_actor(story) -> Actor:
 
 
 def sender_name(story, agent_id: int) -> Message:
-    return story.container.get(Queries).query(Message).filter(session_agent_id=agent_id).newest().first()
+    return story.newest_row(Message, session_agent_id=agent_id)
 
 
 def test_a_main_agent_messages_its_own_helper_and_the_helper_is_told_the_message(new_story):
@@ -48,7 +47,7 @@ def test_a_stopped_receiver_is_woken_by_the_line(new_story):
     story = new_story(fixture=StartedHelper)
     helper = helper_actor(story)
     story.expect_success(f'message send "Wake up" --to agent:{agent_number(story, helper.id)} --environment main', actor=story.agent)
-    line = story.container.get(Queries).query(AgentLine).filter(session_agent_id=helper.id).newest().first()
+    line = story.newest_row(AgentLine, session_agent_id=helper.id)
     story.expect_rows(line is not None, line.wakes_agent)
 
 
@@ -79,6 +78,6 @@ def test_a_main_agents_reply_to_a_helper_names_that_helper_as_its_recipient(new_
 def test_a_main_agents_reply_to_a_person_names_no_recipient(new_story):
     story = new_story(fixture=StartedHelper)
     story.expect_success('message send "Fix the cart" --environment main', actor=story.user)
-    requested = story.container.get(Queries).query(Message).filter(creator_id=story.user.id).newest().first()
+    requested = story.newest_row(Message, creator_id=story.user.id)
     story.expect_success(f'message reply {requested.id} "On it"', actor=story.agent)
     story.expect_rows(sender_name(story, story.agent.id).recipient == "")

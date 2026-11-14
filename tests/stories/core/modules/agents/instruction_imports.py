@@ -1,5 +1,4 @@
 from engine.journal.journal_home import JournalHome
-from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from engine.testing.examples.hook_samples import HookSamples
 from server.work.booting_work import BootingWork
@@ -21,7 +20,7 @@ def doubled_import(story):
 def test_a_doubled_import_asks_the_person_and_their_accept_removes_the_extra_line(new_story):
     story = new_story(fixture=UserJoined)
     claude = doubled_import(story)
-    approval = story.container.get(Queries).query(ApprovalRequest).newest().first()
+    approval = story.newest_row(ApprovalRequest)
     expect_value(approval.text, "CLAUDE.md puts AGENTS.md into every context more than once. Remove the extra import line?")
     story.expect_success(f"approval accept {approval.id} --environment main", actor=story.user)
     story.run_listeners()
@@ -51,4 +50,4 @@ def test_a_journal_start_asks_about_a_doubled_import_too(new_story):
     (project / "CLAUDE.md").write_text("@AGENTS.md\n@AGENTS.md\n")
     BootingWork().run(story.container)
     story.run_listeners()
-    expect_value(story.container.get(Queries).query(ApprovalRequest).newest().first().arguments, ("instruction-import", "remove", "CLAUDE.md", "AGENTS.md"))
+    expect_value(story.newest_row(ApprovalRequest).arguments, ("instruction-import", "remove", "CLAUDE.md", "AGENTS.md"))

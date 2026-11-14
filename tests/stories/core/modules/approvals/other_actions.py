@@ -2,7 +2,6 @@ import json
 
 import pytest
 
-from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.mcp.models.mcp_server import McpServer
@@ -25,10 +24,10 @@ def approval_story(new_story):
 def test_a_person_adds_an_agents_mcp_server_request_in_the_viewer(approval_story):
     story = approval_story
     story.expect_refusal("mcp add shop https://mcp.shop.example/mcp --reason needed", "A user was asked in the dock", actor=story.agent)
-    request = story.container.get(Queries).query(ApprovalRequest).first()
+    request = story.first_row(ApprovalRequest)
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(request.id)])
-    server = story.container.get(Queries).query(McpServer).first()
+    server = story.first_row(McpServer)
     story.expect_rows(server.name == "shop", server.creator_id == story.user.id)
 
 
@@ -36,10 +35,10 @@ def test_a_person_changes_the_shared_server_address_through_the_same_dock(approv
     story = approval_story
     key = f"{ADDRESS_SETTING}"
     story.expect_refusal(f"setting set {key} https://shared.example --project --reason needed", "A user was asked in the dock", actor=story.agent)
-    request = story.container.get(Queries).query(ApprovalRequest).first()
+    request = story.first_row(ApprovalRequest)
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(request.id)])
-    setting = story.container.get(Queries).query(Setting).filter(key=key).first()
+    setting = story.first_row(Setting, key=key)
     story.expect_rows(json.loads(setting.value) == "https://shared.example", setting.creator_id == story.user.id)
 
 
@@ -47,7 +46,7 @@ def test_a_person_changes_the_shared_server_address_through_the_same_dock(approv
 def pending_template(new_story):
     story = new_story(fixture=SendingTemplates)
     story.expect_refusal(CRITIQUE, "A user was asked in the dock", actor=story.agent)
-    request = story.container.get(Queries).query(ApprovalRequest).newest().first()
+    request = story.newest_row(ApprovalRequest)
     return story, request
 
 
@@ -72,7 +71,7 @@ def test_a_template_becomes_a_person_request_only_after_acceptance(pending_templ
 def pending_memory_read(new_story, request):
     story = new_story(fixture=MainAndWorkerMemories)
     story.expect_refusal(request.param, "A user was asked in the dock", actor=story.agent)
-    approval = story.container.get(Queries).query(ApprovalRequest).first()
+    approval = story.first_row(ApprovalRequest)
     return story, approval
 
 
@@ -92,4 +91,4 @@ def test_a_private_memory_view_is_returned_only_to_the_deciding_person(pending_m
 def test_an_agent_running_a_stopped_check_is_refused_and_no_approval_is_asked(new_story):
     story = new_story(fixture=StoppedCheck)
     story.expect_refusal("check run 1", "check 1 is stopped", actor=story.agent)
-    story.expect_rows(story.container.get(Queries).query(ApprovalRequest).first() is None)
+    story.expect_rows(story.first_row(ApprovalRequest) is None)

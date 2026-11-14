@@ -4,7 +4,6 @@ from datetime import timedelta
 
 import pytest
 
-from engine.query.queries import Queries
 from core.modules.documents.models.doc import Doc
 from suites.coding.modules.checks.models.check import Check
 from core.modules.library.models.enums.copy_state import CopyState
@@ -219,7 +218,7 @@ def test_a_failure_of_the_server_leaves_every_other_copy_as_it_was_and_the_next_
     story.expect_rows(all(stored_copy(story, copy).state is CopyState.SYNCED and stored_copy(story, copy).base_version == 1 for copy in (first, second, unedited_copy)),
                       server_item(server, tokens.admin, second)["version"] == 1)
     monkeypatch.setattr(client, "update", real_update)
-    connection = story.container.get(Queries).query(LibraryConnection).first()
+    connection = story.first_row(LibraryConnection)
     if connection.stopped:
         story.expect_rows(connection.stopped == failure.reason)
         story.expect_text("library status", failure.reason, actor=story.agent)
@@ -249,7 +248,7 @@ def test_a_day_offline_sends_every_change_when_the_network_returns(new_story, sh
     monkeypatch.setattr(client, "state", real_state)
     story.expect_text("library sync", "Reached the library. 2 copies followed, 2 changed.", actor=story.agent)
     story.expect_rows(server_item(server, tokens.admin, first)["fields"]["body"] == "Edited offline.", server_item(server, tokens.admin, second)["fields"]["body"] == "Edited later offline.",
-                      copy_line(story, first).endswith("Status: In sync"), story.container.get(Queries).query(LibraryConnection).first().failure == "")
+                      copy_line(story, first).endswith("Status: In sync"), story.first_row(LibraryConnection).failure == "")
 
 
 def test_a_round_cut_off_in_the_middle_is_finished_by_the_next_round_without_sending_twice(new_story, shared_server, monkeypatch):
@@ -295,7 +294,7 @@ def test_a_new_server_version_that_must_be_read_first_waits_for_a_person(new_sto
     story.expect_text("check start 1", "check 1 started", actor=story.user)
     server.send(tokens.admin, "PUT", f"/items/check/{item['id']}", {"fields": {**fields, "command": "echo changed"}}, {"If-Match": '"1"'})
     story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
-    copy = story.container.get(Queries).query(LibraryCopy).filter(share="check").first()
+    copy = story.first_row(LibraryCopy, share="check")
     story.expect_rows(copy.state is CopyState.REVIEW, copy.note == COMMAND_CHANGED, story.row(Check, 1).command == "echo hello", copy.server_version == 2)
     story.expect_text("library copies", "Status: New version to read", COMMAND_CHANGED, actor=story.agent)
 
@@ -369,7 +368,7 @@ def command_review(new_story, server: SharedServerBinary, tokens, title: str) ->
     story.expect_text("check start 1", "check 1 started", actor=story.user)
     server.send(tokens.admin, "PUT", f"/items/check/{item['id']}", {"fields": {**fields, "command": "echo changed"}}, {"If-Match": '"1"'})
     story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
-    copy = story.container.get(Queries).query(LibraryCopy).filter(share="check").first()
+    copy = story.first_row(LibraryCopy, share="check")
     assert copy.state is CopyState.REVIEW
     return story, copy
 
