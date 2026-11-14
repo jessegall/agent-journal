@@ -1,4 +1,5 @@
 from engine.file.file_access import FileAccess
+import gc
 import os
 from collections.abc import Callable, Generator
 import time
@@ -16,7 +17,6 @@ from engine.testing.runs.run_durations import RunDurations
 from engine.testing.runs.run_size import RunSize
 from engine.testing.runs.full_run_record import FullRunRecord
 from engine.testing.runs.full_run_records import FullRunRecords
-from engine.testing.stories.story import Story
 from engine.testing.selection.test_map import TestMap
 from engine.testing.selection.test_map_recorder import TestMapRecorder
 from engine.testing.selection.affected_tests import AffectedTests
@@ -28,7 +28,11 @@ from engine.testing.stories.story_steps import StorySteps
 from engine.testing.stories.story_budget import BUDGET_MARKER, POINTS_BUDGET, StoryBudget
 from engine.testing.cache.template_cache import TemplateCache
 from engine.testing.templates.temp_folders import TempFolders
-from engine.testing.templates.template_databases import TemplateDatabases
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from engine.testing.stories.story import Story
+    from engine.testing.templates.template_databases import TemplateDatabases
 
 STORY_OVERLAP = pytest.StashKey[StoryOverlap]()
 STORY_RUNS = pytest.StashKey[list[StorySteps]]()
@@ -134,12 +138,19 @@ def pytest_configure_node(node: object) -> None:
     worker_input[RECORDS_MAP_KEY] = RECORDER in getattr(node, "config").stash
 
 
+# the modules and tests collected at start live as long as the run, so later collections need not scan them
+def pytest_collection_finish(session: pytest.Session) -> None:
+    gc.freeze()
+
+
 def pytest_itemcollected(item: pytest.Item) -> None:
     item.stash[STORY_RUNS] = []
 
 
 @pytest.fixture(scope="session")
-def templates() -> Generator[TemplateDatabases]:
+def templates() -> Generator["TemplateDatabases"]:
+    # imported here so a unit run never loads the story kit, which costs every runner its start
+    from engine.testing.templates.template_databases import TemplateDatabases
     TemplateDatabases.remove_stale_working_folders(time.time())
     databases = TemplateDatabases(run_template_folder())
     yield databases
@@ -147,12 +158,12 @@ def templates() -> Generator[TemplateDatabases]:
 
 
 @pytest.fixture
-def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.FixtureRequest) -> Generator[Callable[..., Story]]:
+def new_story(templates: "TemplateDatabases", tmp_path: Path, request: pytest.FixtureRequest) -> Generator[Callable[..., "Story"]]:
     overlap = request.config.stash[STORY_OVERLAP]
     item: pytest.Item = getattr(request, "node")
     created = item.stash[STORY_RUNS]
 
-    def started(*modules: str, fixture: type[StoryFixture] | None = None, environment: str | None = None) -> Story:
+    def started(*modules: str, fixture: type[StoryFixture] | None = None, environment: str | None = None) -> "Story":
         story = templates.story(tmp_path / "journal", modules, fixture)
         story.environment = environment
         story.use_fixture_environment(fixture.line_environment() if fixture else None)

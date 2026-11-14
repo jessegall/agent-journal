@@ -6,14 +6,13 @@ from pathlib import Path
 
 import pytest
 
-from engine.testing.stories.story import Story
 from engine.listener.commit.listener_set import ListenerSet
-from tests.stories.support.program_states import bind_ready_programs
-from tests.stories.suites.coding.modules.workers.support.memory_git.git_choice import REAL_GIT
 from core.modules.plugins.support.machine_runs import MACHINE_FOLDER_VARIABLE
 
 pytest_plugins = ["engine.testing.pytest_wiring.pytest_plugin"]
 STORY_SUPPORT_FOLDER = "support"
+# tests that open a story journal; a unit test never does, so it never loads the story kit
+STORY_TEST_FOLDERS = ("stories", "integration")
 REAL_PROGRAM_FLAG = "--real-program"
 REAL_PROGRAM_MARK = "real_program"
 REAL_PROGRAMS = ("claude", "codex")
@@ -124,8 +123,17 @@ def program_config_folder(request: pytest.FixtureRequest, monkeypatch: pytest.Mo
     monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path_factory.mktemp("claude-config")))
 
 
+def opens_stories(request: pytest.FixtureRequest) -> bool:
+    return any(folder in request.node.path.parts for folder in STORY_TEST_FOLDERS)
+
+
 @pytest.fixture(autouse=True)
-def story_program_readiness(monkeypatch):
+def story_program_readiness(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> None:
+    if not opens_stories(request):
+        return
+    # imported here so a unit run never loads the story kit, which costs every runner its start
+    from engine.testing.stories.story import Story
+    from tests.stories.support.program_states import bind_ready_programs
     opened = Story.opened
 
     def ready_story(cls, home, state):
@@ -138,6 +146,10 @@ def story_program_readiness(monkeypatch):
 
 @pytest.fixture(autouse=True)
 def story_git_choice(request: pytest.FixtureRequest) -> Generator[None]:
+    if not opens_stories(request):
+        yield
+        return
+    from tests.stories.suites.coding.modules.workers.support.memory_git.git_choice import REAL_GIT
     token = REAL_GIT.set(request.node.get_closest_marker(REAL_GIT_MARK) is not None)
     yield
     REAL_GIT.reset(token)

@@ -5,7 +5,10 @@ from pathlib import Path
 from typing import ClassVar
 
 from engine.file.file_access import FileAccess
-from engine.testing.stories.story import Story
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from engine.testing.stories.story import Story
 
 SEVERAL_ENVIRONMENTS = ""
 
