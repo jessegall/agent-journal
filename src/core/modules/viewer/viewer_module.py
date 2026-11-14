@@ -44,7 +44,7 @@ SHELL_RUNS = ["doc comment", "report comment", "plan comment", "task comment", "
 SHELL_READS = ["scheduled-job list", "agent environments", "agent main", "output list", "pin list", "agent-skill list", "doc inspect", "report inspect", "doc comments", "report comments", "plan comments", "task comments", "template list", "doc revisions", "doc revision", "link list", "phone list", "agent controls", "agent programs", "update check", "task inspect", "task graph", "plan place", "plan inspect", "plan timeline", "environment list", "environment show", "agent list", "agent show", "agent people", "setting list", "setting show", "viewer-layout current",
                "window permissions", "suite current", "suite layout", "suite presets", "person-preset list", "event list", "task list", "question list", "usage show", "usage bars", "usage agent", "usage agents", "usage tool", "usage inspector", "plan show", "plan outline", "plan board", "task board", "phase list", "phase-task list", "task show", "task-log list", "task-dependency list",
                "doc show", "report show", "question show", "suggestion show", "message show", "memory show", "rule show", "approval show", "process show", "output show", "review show", "sequence show",
-               "template show", "dump show", "skill show", "usage fitness", "memory-keyword list", "output peek", "output page", "queue inspect", "queue list"]
+               "template show", "dump show", "skill show", "usage fitness", "memory-keyword list", "output peek", "output page", "queue inspect", "queue list", "queue-class list", "queue-class preview"]
 
 
 class ViewerModule(Module):

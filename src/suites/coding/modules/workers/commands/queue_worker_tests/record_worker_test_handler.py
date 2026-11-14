@@ -18,6 +18,7 @@ from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import Proo
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.support.blocked_unit_notice import BlockedUnitNotice
 from suites.coding.modules.workers.support.checkpoint_results import CheckpointResults
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
@@ -48,8 +49,8 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
     disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, repository: Repository, main_agent_line: MergerInbox, nudger: Nudger, rows: EventRows, plans: TaskPlans, failures: WorkerTestFailures, settings: SettingValues,
-                 guidance: WorkerGuidance, numbers: RowNumbers, checkpoint_results: CheckpointResults, proofs: ProofQuery) -> None:
-        self.proofs = proofs
+                 guidance: WorkerGuidance, numbers: RowNumbers, checkpoint_results: CheckpointResults, proofs: ProofQuery, blocked_unit: BlockedUnitNotice) -> None:
+        self.proofs, self.blocked_unit = proofs, blocked_unit
         self.numbers, self.checkpoint_results, self.guidance = numbers, checkpoint_results, guidance
         self.failures, self.settings = failures, settings
         self.queries, self.repository, self.main_agent_line, self.nudger = queries, repository, main_agent_line, nudger
@@ -88,6 +89,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         if current.state is WorktreeState.CUT:
             if completed and not failed:
                 self.nudger.send(current.session_agent_id, WORKER_COMMIT_PASSED, LINE_SOURCE, context, line=self.guidance.line(current.session_agent_id))
+                self.blocked_unit.send(current.session_agent_id, completed, context)
             return waiting
         if not waiting:
             self.pass_worktree(current, context)

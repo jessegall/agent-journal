@@ -28,7 +28,7 @@ def test_new_migrations_leave_a_database_copy_to_go_back_to(home, monkeypatch):
 def test_a_listed_module_that_refuses_the_new_core_fails_the_proof_on_the_empty_database(tmp_path):
     journal = JournalHome(tmp_path)
     journal.module_list.write_text(json.dumps(["tests.unit.engine.module.test_module_order:FutureCoreModule"]))
-    with pytest.raises(ModuleError, match="needs core"):
+    with pytest.raises(ModuleError, match="needs engine"):
         SuccessorProof(journal).run()
 
 

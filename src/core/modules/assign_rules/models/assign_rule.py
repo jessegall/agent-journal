@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
+from engine.database.constraint_refusals import ENVIRONMENT_COLUMN
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.positioned import Positioned
 from core.modules.assign_rules.models.enums.rule_target import RuleTarget
 
-ENVIRONMENT_COLUMN = "environment_id"
 
 
 @dataclass(frozen=True, kw_only=True)

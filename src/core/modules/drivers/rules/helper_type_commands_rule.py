@@ -1,6 +1,7 @@
 from collections.abc import Sequence
 
 from engine.cli.subcommand_lookup import SubcommandLookup
+from core.modules.drivers.rules.access_rule import HELP_FLAG
 from engine.driver.agent_hook import AgentHook
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.shell_line import ShellLine
@@ -17,7 +18,6 @@ from core.modules.agents.support.base_commands import BASE_COMMANDS
 from core.modules.drivers.support.access_nudges import HELPER_TYPE_CATEGORY
 from core.modules.drivers.support.type_command_check import TypeCommandCheck
 
-HELP_FLAG = "--help"
 
 
 class HelperTypeCommandsRule(DriverRule):

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
 MINUTE_SECONDS = 60
+HOUR_SECONDS = 3600
 MILLISECONDS = 1000
 
 
