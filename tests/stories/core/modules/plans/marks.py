@@ -26,6 +26,15 @@ class ApprovedPlan(StoryFixture):
         story.run("plan approve 1 --environment main", actor=story.user)
 
 
+class ReadyPlan(StoryFixture):
+    parent = UserJoined
+
+    def steps(self, story):
+        story.run(lines.NEW_PLAN)
+        story.run("plan ready 1")
+        story.run_listeners()
+
+
 def started_plan(new_story):
     return new_story(fixture=ApprovedPlan)
 
@@ -79,10 +88,7 @@ def test_a_plan_made_shows_a_mark_that_opens_the_plan(new_story):
 
 
 def test_a_plan_card_follows_where_the_plan_stands(new_story):
-    story = new_story(fixture=UserJoined)
-    story.run(lines.NEW_PLAN)
-    story.run("plan ready 1")
-    story.run_listeners()
+    story = new_story(fixture=ReadyPlan)
     story.expect_text("dock-item list", "plans.waiting", "docked")
     story.run("plan approve 1 --environment main", actor=story.user)
     story.run("plan start 1", actor=story.agent)
@@ -98,3 +104,13 @@ def running_plan(new_story):
     story = started_plan(new_story)
     story.run("plan start 1", actor=story.agent)
     return story
+
+
+def test_a_ready_plan_card_the_user_dismissed_stays_gone_after_the_modules_sync(new_story):
+    story = new_story(fixture=ReadyPlan)
+    story.expect_text("dock-item list", "plans.waiting", "docked")
+    story.expect_success("dock remove 2 --environment main", actor=story.user)
+    code, output_text = story.synced()
+    story.expected(code == 0, f"module sync gave {code}: {output_text}")
+    story.run_listeners()
+    story.expect_absent("dock-item list", "docked")
