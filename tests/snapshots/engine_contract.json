@@ -2770,6 +2770,13 @@
         "for_hook(self, hook: AgentHook) -> StateBoard"
       ]
     },
+    "driver.states.open_blocks.OpenBlocks": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "open_rows(self, agent_id: int, nudge_keys: Sequence[str]) -> Sequence[OpenRow]"
+      ]
+    },
     "driver.stop_blockers.StopBlockers": {
       "bases": [],
       "fields": [],
@@ -2934,6 +2941,7 @@
       "fields": [],
       "methods": [
         "is_priority_zero(self) -> bool",
+        "default_timeout_seconds(self) -> int | None",
         "is_backgroundable(self) -> bool",
         "reads_files(self) -> bool",
         "accesses_files(self) -> bool",
@@ -5715,6 +5723,26 @@
         "preset_problems(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]",
         "rule_owners(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]",
         "unknown_hooks(self, rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]"
+      ]
+    },
+    "module.suite_import_check.SuiteImportCheck": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "internal_areas(self) -> frozenset[str]",
+        "refusals(self, folder: Path) -> tuple[SuiteRefusal, ...]",
+        "imported_names(node: ast.AST) -> tuple[str, ...]"
+      ]
+    },
+    "module.suite_import_check.SuiteRefusal": {
+      "bases": [],
+      "fields": [
+        "file: str",
+        "line: int",
+        "reason: str"
+      ],
+      "methods": [
+        "text(self) -> str"
       ]
     },
     "module.suite_list.SuiteList": {
@@ -10264,5 +10292,5 @@
       ]
     }
   },
-  "engine_version": "5.0.0"
+  "engine_version": "5.1.0"
 }
