@@ -7,7 +7,7 @@ def test_a_walk_counts_every_entry_it_lists(tmp_path):
         (tmp_path / name).write_text(name)
     with FileTally.counting() as counts:
         list(FileAccess.walk(tmp_path))
-    assert counts["listed entry"] == 3
+    assert counts.kinds["listed entry"] == 3
 
 
 def test_checks_and_reads_are_counted_apart(tmp_path):
@@ -16,11 +16,17 @@ def test_checks_and_reads_are_counted_apart(tmp_path):
     with FileTally.counting() as counts:
         FileAccess.exists(file)
         FileAccess.read(file)
-    assert counts["read"] == 1 and counts["check"] >= 2
+    assert counts.kinds["read"] == 1 and counts.kinds["check"] >= 2
 
 
 def test_nothing_is_counted_outside_a_tally(tmp_path):
     FileAccess.exists(tmp_path)
     with FileTally.counting() as counts:
         pass
-    assert sum(counts.values()) == 0
+    assert counts.total == 0
+
+
+def test_each_call_is_counted_at_the_line_that_asked_for_it(tmp_path):
+    with FileTally.counting() as counts:
+        FileAccess.exists(tmp_path)
+    assert all(origin.startswith("tests/unit/engine/file/test_file_tally.py:") or "test_file_tally.py:" in origin for origin in counts.origins), counts.origins

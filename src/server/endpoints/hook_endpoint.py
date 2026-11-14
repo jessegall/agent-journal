@@ -3,7 +3,6 @@ import sqlite3
 import traceback
 from engine.serving.server_files import ServerFiles
 from time import perf_counter
-from collections import Counter
 from collections.abc import Mapping
 
 from engine.database.database import Database
@@ -12,7 +11,7 @@ from engine.database.request_watch import RequestWatch
 from engine.enums.log_level import LogLevel
 from engine.enums.process_type import ProcessType
 from engine.file.file_access import FileAccess
-from engine.file.file_tally import FileTally
+from engine.file.file_tally import FileCalls, FileTally
 from engine.process.door.request_records import REFUSED_HOOK_EXIT_CODE
 from core.modules.processes.support.request_log import RequestLog
 from core.modules.processes.support.request_log_entry import RequestLogEntry
@@ -52,6 +51,9 @@ SERVER_UPDATING = "the journal is updating: your line is held; try it again once
 
 
 HOOK_FILE_CALL_LIMIT = 200
+
+TOP_ORIGINS = 3
+
 
 class HookEndpoint:
     """Answers POST /hook: reads a hook's object, prepared or raw, and runs it through the hook
@@ -151,12 +153,12 @@ class HookEndpoint:
             return self.failure(sender, error)
 
     # a hook that touches more files than a hook may is logged with its counts, as its database points are
-    def log_file_calls(self, event: HookEvent, file_calls: Counter[str]) -> None:
-        total = sum(file_calls.values())
-        if total <= HOOK_FILE_CALL_LIMIT:
+    def log_file_calls(self, event: HookEvent, file_calls: FileCalls) -> None:
+        if file_calls.total <= HOOK_FILE_CALL_LIMIT:
             return
-        counts = ", ".join(f"{count} {kind}" for kind, count in file_calls.most_common())
-        self.context.files.log_line(f"hook {event.event.value} made {total} file system calls ({counts}), over the {HOOK_FILE_CALL_LIMIT} a hook may make", LogLevel.WARNING)
+        counts = ", ".join(f"{count} {kind}" for kind, count in file_calls.kinds.most_common())
+        origins = ", ".join(f"{count} at {origin}" for origin, count in file_calls.origins.most_common(TOP_ORIGINS))
+        self.context.files.log_line(f"hook {event.event.value} made {file_calls.total} file system calls ({counts}; most {origins}), over the {HOOK_FILE_CALL_LIMIT} a hook may make", LogLevel.WARNING)
 
     def event(self, data: object, program: str, headers: Mapping[str, str], providers: Providers) -> HookEvent:
         if is_raw_body(data):
