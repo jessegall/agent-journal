@@ -312,7 +312,6 @@ tests/stories/core/modules/usage/agent_rows.py
 tests/stories/core/modules/usage/codex_agent_facts.py
 tests/stories/core/modules/usage/codex_effort.py
 tests/stories/core/modules/usage/context_limit_reads.py
-tests/stories/core/modules/usage/read_counts.py
 tests/stories/core/modules/usage/usage.py
 tests/stories/core/modules/viewer/avatar_window.py
 tests/stories/core/modules/viewer/inspector_sections.py
