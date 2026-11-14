@@ -20,11 +20,11 @@ def bind_ready_programs(story):
     states.ready_programs.return_value = tuple(ready)
     readiness_type = importlib.import_module('core.modules.helpers.support.program_readiness').ProgramReadiness
     states.readiness.return_value = readiness_type(ready)
-    story.bind(states_type, states)
+    story.replace(states_type, states)
 
 
 def real_program_states(story):
     if importlib.util.find_spec(STATES_MODULE) is None:
         return
     states_type = importlib.import_module(STATES_MODULE).ProgramStates
-    story.bind(states_type, story.container.constructed(states_type))
+    story.rebuild(states_type)

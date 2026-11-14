@@ -12,7 +12,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 
 def test_a_workers_shell_uses_its_registered_worktree(new_story):
     story = install_runner(new_story(fixture=OpenTaskOrchestrator))
-    story.bind(ShellSandbox, ShellSandbox(story.home))
+    story.replace(ShellSandbox, ShellSandbox(story.home))
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     session = worker_session(story, worker)

@@ -49,6 +49,11 @@ class Container:
     def bind(self, class_type: type[T], instance: T) -> None:
         self.instances[class_type] = instance
 
+    # builds the implementation anew for the class, as a replacement
+    def rebuild(self, class_type: type[T], implementation: type[T]) -> None:
+        self.build_places.pop(implementation, None)
+        self.replace(class_type, self.constructed(implementation))
+
     # every instance built on the old one is forgotten with its build, so the next get builds it on the replacement
     def replace(self, class_type: type[T], instance: T) -> None:
         checked: dict[type, bool] = {class_type: True}

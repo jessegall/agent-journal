@@ -12,5 +12,5 @@ def test_a_helper_start_runs_the_sandbox_check(sandbox_story):
 @pytest.fixture
 def sandbox_story(new_story):
     story = new_story(fixture=MainEnvironment)
-    story.bind(ShellSandbox, ShellSandbox(story.home))
+    story.replace(ShellSandbox, ShellSandbox(story.home))
     return story

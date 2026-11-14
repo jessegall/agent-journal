@@ -11,7 +11,7 @@ from core.modules.skills.support.start_skills import SESSION_START_KEY
 def test_each_program_names_how_it_loads_a_required_skill(new_story):
     story = environment(new_story)
     story.run(f'setting make {SESSION_START_KEY} \'["journal-notes"]\'')
-    story.bind(SkillRequirement, SkillRequirement())
+    story.replace(SkillRequirement, SkillRequirement())
     start(story)
     drain_countdown(story, HookSamples.edit('src/cart.py'), 'journal-notes')
     story.expect_hook_refusal('s-1', HookSamples.edit('src/cart.py'), 'load this first with the Skill tool: journal-notes')

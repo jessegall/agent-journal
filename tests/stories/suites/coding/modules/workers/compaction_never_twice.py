@@ -228,7 +228,7 @@ class MissingLauncherTyping(RecordedTyping):
 def test_f2_a_missing_launcher_is_tried_once_and_not_again_at_every_stop(new_story):
     story = new_story(fixture=LimitEnabled)
     story.typing = MissingLauncherTyping()
-    story.bind(TerminalTyping, story.typing)
+    story.replace(TerminalTyping, story.typing)
     has_context(story, LIMIT_TOKENS)
     for _ in range(STOPS_WITHOUT_LAUNCHER):
         story.advance(OVERLONG)

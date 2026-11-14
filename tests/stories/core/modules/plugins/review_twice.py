@@ -46,7 +46,7 @@ def test_s83_a_refusal_after_a_command_orphans_a_process_leaves_it_running(refus
     story = refusing_story
     process = moved_run(story)
     group = Mock(spec=ProcessGroup)
-    story.bind(ProcessGroup, group)
+    story.replace(ProcessGroup, group)
     bus = story.container.get(Bus)
     with pytest.raises(Refusal):
         bus.run(OrphanProcessRow(process.id, True), story.agent)

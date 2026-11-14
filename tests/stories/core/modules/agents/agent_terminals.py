@@ -42,7 +42,7 @@ class FakeTyping(TerminalTyping):
 def test_a_person_types_a_line_in_a_running_agents_terminal(new_story):
     story = new_story(fixture=UserJoined)
     typing = FakeTyping()
-    story.bind(TerminalTyping, typing)
+    story.replace(TerminalTyping, typing)
     story.expect_success(f'agent type {story.agent.id} "ls -la"', f"typed in the terminal of {agent_label(story, story.agent.id)}", actor=story.user)
     story.expect_rows(typing.typed == [(story.agent.id, "ls -la")])
 
@@ -50,7 +50,7 @@ def test_a_person_types_a_line_in_a_running_agents_terminal(new_story):
 def test_an_empty_line_and_an_ended_agent_are_refused(new_story):
     story = new_story(fixture=UserJoined)
     typing = FakeTyping()
-    story.bind(TerminalTyping, typing)
+    story.replace(TerminalTyping, typing)
     story.expect_refusal(f'agent type {story.agent.id} " "', "give the line to type", actor=story.agent)
     story.expect_success(f"agent end {story.agent.id}", actor=story.user)
     story.expect_refusal(f'agent type {story.agent.id} "ls"', "has ended", actor=story.user)
@@ -105,7 +105,7 @@ def test_a_resumed_session_reads_and_types_in_the_terminal_of_the_launch_it_runs
     terminal_file.parent.mkdir(parents=True)
     terminal_file.write_text("1\tready\n")
     typing = FakeTyping()
-    story.bind(TerminalTyping, typing)
+    story.replace(TerminalTyping, typing)
     story.expect_success(f"agent terminal {agent_number(story, story.agent.id)}", "1  ready")
     story.expect_success(f'agent type {story.agent.id} "ls"', actor=story.user)
     story.expect_rows(typing.typed == [(launch_id, "ls")])

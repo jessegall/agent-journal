@@ -28,7 +28,7 @@ def journal_line(line: str, program: str):
 
 def planner_story(new_story, program: str = "claude"):
     story = new_story(fixture=BuilderStarted)
-    story.bind(SkillRequirement, SkillRequirement())
+    story.replace(SkillRequirement, SkillRequirement())
     story.run("skill write")
     if program != "claude":
         agent = story.container.get(Queries).query(Agent).find(story.agent.id)

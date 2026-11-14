@@ -33,9 +33,9 @@ def report_window(story: Story, percent: int) -> None:
 
 def limited_story(new_story) -> Story:
     story = new_story(fixture=BuilderStarted)
-    story.bind(ProgramStates, story.container.constructed(ProgramStates))
-    story.bind(ProgramLockdown, story.container.constructed(UsageLockdown))
-    story.bind(TerminalTyping, story.container.constructed(TerminalTyping))
+    story.rebuild(ProgramStates)
+    story.rebuild(ProgramLockdown, UsageLockdown)
+    story.rebuild(TerminalTyping)
     return story
 
 
