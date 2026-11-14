@@ -15,6 +15,8 @@ const props = defineProps({
     emptyTitle: {type: String, default: "Nothing here yet"},
     pickLine: {type: String, default: "No row chosen"},
     place: {type: Function, default: null},
+    // a page that wants its first row read at once, with no row named by the address
+    openFirst: Boolean,
 });
 const chosen = defineModel("chosen", {type: [String, Number], default: null});
 const current = computed(() => props.items.find((item) => item.id === chosen.value) ?? null);
@@ -44,6 +46,7 @@ watch(() => props.items.length, () => {
     if (chosen.value !== null) return;
     const wanted = props.items.find((item) => String(item.id) === route.value.row);
     if (wanted) chosen.value = wanted.id;
+    else if (props.openFirst && props.items.length) chosen.value = props.items[0].id;
 }, {immediate: true});
 </script>
 

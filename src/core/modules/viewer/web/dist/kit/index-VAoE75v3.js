@@ -15422,7 +15422,9 @@ const gM = /* @__PURE__ */ hM(vM), yM = ["width", "height", "viewBox"], bM = ["w
     listWidth: { type: Number, default: 360 },
     emptyTitle: { type: String, default: "Nothing here yet" },
     pickLine: { type: String, default: "No row chosen" },
-    place: { type: Function, default: null }
+    place: { type: Function, default: null },
+    // a page that wants its first row read at once, with no row named by the address
+    openFirst: Boolean
   }, {
     chosen: { type: [String, Number], default: null },
     chosenModifiers: {}
@@ -15444,7 +15446,7 @@ const gM = /* @__PURE__ */ hM(vM), yM = ["width", "height", "viewBox"], bM = ["w
     return fe(() => t.items.length, () => {
       if (n.value !== null) return;
       const f = t.items.find((m) => String(m.id) === fa.value.row);
-      f && (n.value = f.id);
+      f ? n.value = f.id : t.openFirst && t.items.length && (n.value = t.items[0].id);
     }, { immediate: !0 }), (f, m) => (r(), d("div", xM, [
       ne(f.$slots, "top", {}, void 0, !0),
       h("div", SM, [
@@ -15510,7 +15512,7 @@ const gM = /* @__PURE__ */ hM(vM), yM = ["width", "height", "viewBox"], bM = ["w
       ])
     ]));
   }
-}, nI = /* @__PURE__ */ z(AM, [["__scopeId", "data-v-3c136269"]]), EM = {
+}, nI = /* @__PURE__ */ z(AM, [["__scopeId", "data-v-957c8008"]]), EM = {
   class: "reader",
   "data-reader": ""
 }, OM = {
@@ -16570,7 +16572,7 @@ const OC = {
       ])
     ]));
   }
-}, vI = /* @__PURE__ */ z(dA, [["__scopeId", "data-v-b494c444"]]), gI = zu(() => import("./VoiceFigure-B-czdBHW.js").then((e) => e.V)), yI = "1.2.0", bI = "3.5";
+}, vI = /* @__PURE__ */ z(dA, [["__scopeId", "data-v-b494c444"]]), gI = zu(() => import("./VoiceFigure-CcbIw4iE.js").then((e) => e.V)), yI = "1.2.0", bI = "3.5";
 export {
   Dm as $,
   Ie as A,
