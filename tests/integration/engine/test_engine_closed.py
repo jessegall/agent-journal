@@ -9,7 +9,7 @@ PREVIOUS_FOLDERS = ("src/core/base", "tests/unit/core/base", "tests/stories/core
 PREVIOUS_NAME = re.compile(r"core[./]base\b")
 SEARCHED = ("src", "tests", "scripts", "docs", "pyrightconfig.json", ".commandments", "install.sh", "deploy")
 STORIES_OF_THE_MOVES = {
-    "tests/unit/engine/test_areas_moved.py", "tests/unit/engine/test_loose_files.py", "tests/stories/engine/errors/errors_moved.py",
+    "tests/unit/engine/test_areas_moved.py", "tests/unit/engine/test_loose_files.py", "tests/unit/engine/errors/test_errors_moved.py",
     "tests/integration/engine/test_engine_closed.py", "tests/unit/engine/map/test_tidy_rules.py", "tests/integration/engine/map/test_tidy_rules.py",
 }
 DETECTOR_OF_THE_REMOVED_FOLDER = (
