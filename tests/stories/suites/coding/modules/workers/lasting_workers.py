@@ -149,7 +149,7 @@ def test_a_worker_whose_worktree_was_merged_stays_kept_and_idle_with_its_memorie
     story.expect_text("memory list", MEMORY_TEXT, actor=story.worker)
     story.expect_text(f"worker status {worker.number}", f"worker {worker.number} is idle", "no worktree", actor=story.agent)
     story.expect_text(f"agent show {worker.number} --environment main", f"number: {worker.number}", "role: worker", actor=story.agent)
-    story.expect_rows(worker.retired_at is None, worker.ended_at is not None, story.container.get(WorktreeQuery).worker_worktree(worker.id) is None, len(worker_rows(story)) == 1)
+    story.expect_rows(worker.retired_at is None, worker.ended_at is not None, story.first_row(Worktree, session_agent_id=worker.id) is None, len(worker_rows(story)) == 1)
 
 
 def test_a_task_sent_to_a_merged_worker_cuts_a_second_worktree_from_the_current_branch_and_its_status_shows_it(merged_worker):
@@ -166,10 +166,10 @@ def test_a_task_sent_to_a_merged_worker_cuts_a_second_worktree_from_the_current_
 
 def test_a_cold_worker_with_an_open_worktree_starts_its_new_session_in_the_same_folder_and_branch_and_its_uncommitted_file_stays(stopped_worker):
     story = stopped_worker
-    opened = story.container.get(WorktreeQuery).worker_worktree(story.worker.id)
+    opened = story.first_row(Worktree, session_agent_id=story.worker.id)
     uncommitted_file = Path(opened.folder) / "tax.py"
     uncommitted_file.write_text(UNCOMMITTED_TEXT)
     worker, request = with_job(story, COLD_IDLE_SECONDS // 60, 20)
-    current = story.container.get(WorktreeQuery).worker_worktree(worker.id)
+    current = story.first_row(Worktree, session_agent_id=worker.id)
     story.expect_rows(story.row(Agent, worker.id).session != worker.session, request["folder"] == opened.folder, current.id == opened.id, current.folder == opened.folder,
                       current.branch == opened.branch, uncommitted_file.read_text() == UNCOMMITTED_TEXT, len(worktree_rows(story, worker.id)) == 1, detail=str(request))

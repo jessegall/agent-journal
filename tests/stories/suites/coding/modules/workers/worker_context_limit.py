@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.models.worktree import Worktree
 from tests.stories.core.support.agent_labels import agent_number
 import json
 
@@ -11,7 +12,6 @@ from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ENABLED, 
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.usage.support.status_files import save_status_file
-from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment, worker_session
@@ -101,7 +101,7 @@ def test_a_worker_past_the_limit_at_an_interim_commit_is_told_to_stop_and_may_st
     limit_enabled(story)
     has_context(story, worker, LIMIT)
     story.expect_success(COMMIT, actor=worker)
-    story.expect_rows(story.container.get(WorktreeQuery).worker_worktree(worker.id).stop_requested_at is not None)
+    story.expect_rows(story.first_row(Worktree, session_agent_id=worker.id).stop_requested_at is not None)
     story.expect_text("task show 2", "state: started", actor=story.agent)
     session = worker_session(story, worker)
     story.expect_hook_allowed(session, HookSamples.sample("post_tool_use"), "stop now")
@@ -114,5 +114,5 @@ def test_a_worker_under_the_limit_at_an_interim_commit_goes_on_and_may_not_stop(
     limit_enabled(story)
     has_context(story, worker, LIMIT - 1)
     story.expect_success(COMMIT, actor=worker)
-    story.expect_rows(story.container.get(WorktreeQuery).worker_worktree(worker.id).stop_requested_at is None)
+    story.expect_rows(story.first_row(Worktree, session_agent_id=worker.id).stop_requested_at is None)
     story.expect_hook_refusal(worker_session(story, worker), HookSamples.stop(), "task")

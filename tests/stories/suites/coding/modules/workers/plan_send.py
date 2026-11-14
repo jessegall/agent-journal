@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.models.worktree import Worktree
 from tests.stories.core.modules.tasks.support.holder_assignee_check import assignee_of
 from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 from tests.stories.core.support.agent_labels import agent_number
@@ -13,7 +14,6 @@ from core.modules.processes.support.queued_process_launch import QueuedProcessLa
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
-from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.plan_steps import ready_plan
@@ -130,7 +130,7 @@ def test_a_blocked_task_waits_with_an_idle_worker_and_is_sent_to_it_when_it_open
     monkeypatch.setattr(QueuedProcessLaunch, "start", lambda *_args: None)
     story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task 3", actor=story.agent)
     previous = len(assignment_marks(story))
-    story.expect_rows(assignee_of(story, story.row(Task, 3)) == worker.id, story.container.get(WorktreeQuery).worker_worktree(worker.id) is None)
+    story.expect_rows(assignee_of(story, story.row(Task, 3)) == worker.id, story.first_row(Worktree, session_agent_id=worker.id) is None)
     story.expect_success('task cancel 2 --reason "Not needed"', actor=story.agent)
     operation = story.newest_row(WorkerOperation)
     story.expect_rows(operation.worker_id == worker.id, "--task 3 --wait" in operation.line, operation.creator_id == story.agent.id,

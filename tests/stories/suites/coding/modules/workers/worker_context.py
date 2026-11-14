@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.models.worktree import Worktree
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
 from dataclasses import dataclass
@@ -51,7 +52,7 @@ def assigned_worker(worker_scenario):
 def commit_continuing(scenario: WorkerTrail, worker: Actor, task_id: int) -> None:
     """The worker starts the task named beside its own, proves the one it had and commits that one."""
     scenario.repository.changed(worker.id, "cart.py", "TOTAL = 2\n")
-    worktree = scenario.story.container.get(WorktreeQuery).worker_worktree(worker.id)
+    worktree = scenario.story.first_row(Worktree, session_agent_id=worker.id)
     assert worktree is not None
     scenario.story.expect_success(f'proof make 1 "cart.py:1, assignment completed" --task {worktree.task_id}', actor=worker)
     scenario.story.expect_success(f"task start {task_id}", actor=worker)

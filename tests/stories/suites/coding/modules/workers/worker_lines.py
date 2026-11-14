@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.models.worktree import Worktree
 from tests.stories.core.support.agent_labels import agent_number
 from core.modules.tasks.rules.log_request_rule import LOG_REQUEST_WRITES
 from core.modules.tasks.rules.unlogged_write_rule import UNLOGGED_WRITES_CEILING
@@ -8,7 +9,6 @@ from datetime import timedelta
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
-from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from core.modules.tasks.support.task_nudges import UNLOGGED_WRITES
 from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.modules.workers.support.worker_nudges import WORKER_FILE
@@ -20,7 +20,7 @@ def test_the_main_agent_edits_no_file_in_a_workers_worktree(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
-    folder = story.container.get(WorktreeQuery).worker_worktree(worker.id).folder
+    folder = story.first_row(Worktree, session_agent_id=worker.id).folder
     story.expect_hook_refusal("s-1", HookSamples.edit(f"{folder}/cart.py"), expected_nudge(WORKER_FILE))
     story.expect_hook_allowed("s-1", HookSamples.edit("/elsewhere/cart.py"))
 

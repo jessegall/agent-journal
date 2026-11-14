@@ -346,9 +346,7 @@ tests/stories/suites/coding/modules/workers/work_units.py
 tests/stories/suites/coding/modules/workers/worker_checkpoint_runs.py
 tests/stories/suites/coding/modules/workers/worker_compaction_restart.py
 tests/stories/suites/coding/modules/workers/worker_context.py
-tests/stories/suites/coding/modules/workers/worker_context_limit.py
 tests/stories/suites/coding/modules/workers/worker_guidance.py
-tests/stories/suites/coding/modules/workers/worker_lines.py
 tests/stories/suites/coding/modules/workers/worker_no_readers.py
 tests/stories/suites/coding/modules/workers/worker_recovery.py
 tests/stories/suites/coding/modules/workers/worker_runs.py
