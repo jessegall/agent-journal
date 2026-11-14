@@ -170,7 +170,7 @@ def test_a_delivered_worker_sent_a_job_has_its_task_back_in_hand_and_a_running_o
     story.expect_text(f"agent-line list --agent {worker.id}", "Add the tax as well", "waiting")
 
 
-def test_a_job_sent_to_a_merged_worker_opens_a_worktree_and_resumes_it(new_story):
+def test_a_task_sent_to_a_merged_worker_opens_a_worktree_and_resumes_it(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
@@ -178,7 +178,8 @@ def test_a_job_sent_to_a_merged_worker_opens_a_worktree_and_resumes_it(new_story
     request_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     launcher = FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET))
-    story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Add the tax"', actor=story.agent)
+    task = story.new_row_id('task make "Add the tax" --brief "The work after the merge" --environment main', actor=story.agent)
+    story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task {task}", actor=story.agent)
     story.run_listeners()
     worktree = story.container.get(Queries).query(Worktree).filter(session_agent_id=worker.id).first()
     story.expect_rows(worktree is not None)

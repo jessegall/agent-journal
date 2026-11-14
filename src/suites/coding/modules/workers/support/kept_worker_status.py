@@ -6,14 +6,14 @@ from core.modules.agents.support.agent_label import AgentLabel
 
 @dataclass(frozen=True)
 class KeptWorkerStatus:
-    """A kept worker whose last worktree was merged or released: it stays idle until a job cuts it a new one."""
+    """A kept worker whose last worktree was merged or released: it stays idle until a task sent to it cuts it a new one."""
 
     worker: Agent
 
     @property
     def line(self) -> str:
-        return (f"{AgentLabel.labelled(self.worker).text} is idle with no worktree: journal worker send {self.worker.number} \"<job>\" "
-                "cuts a new one from the environment's branch")
+        return (f"{AgentLabel.labelled(self.worker).text} is idle with no worktree: journal worker send {self.worker.number} --task <task> "
+                "cuts a new one from the environment's branch; a text alone only wakes it")
 
     def listed(self) -> dict[str, object]:
         return {"worker_id": self.worker.id, "worker_number": self.worker.number, "current_task": None, "idle": True}
