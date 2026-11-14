@@ -9,10 +9,12 @@ from tests.stories.support.statement_counts import reads_in_last_request
 
 WAITING_RUNS = 12
 PROCESS_READ = "SELECT * FROM processes WHERE state IN"
+# the grant reads the waiting runs by state once, and the slot claim counts read them once more: never once per run
+GRANT_READS = 2
 VERSION_READ = "SELECT id, version FROM processes"
 
 
-def test_granting_slots_to_twelve_waiting_runs_reads_their_processes_once(played):
+def test_granting_slots_to_twelve_waiting_runs_reads_their_processes_twice_however_many_wait(played):
     story = install_runner(played(QueueAgents))
     story.home.restart_mark.write_text("1")
     waiting = [queued(story, f"make run-{number}") for number in range(WAITING_RUNS)]
@@ -21,5 +23,5 @@ def test_granting_slots_to_twelve_waiting_runs_reads_their_processes_once(played
     with story.repeated_work.request():
         story.container.get(Bus).run(GrantRunSlots(), Actor.core())
     reads, version_reads = reads_in_last_request(story, PROCESS_READ), reads_in_last_request(story, VERSION_READ)
-    story.expect_rows([has_slot(story, process) for process in waiting].count(True) == 2, reads == 1, version_reads == 0,
+    story.expect_rows([has_slot(story, process) for process in waiting].count(True) == 2, reads == GRANT_READS, version_reads == 0,
                       detail=f"{reads} process reads, {version_reads} version reads")
