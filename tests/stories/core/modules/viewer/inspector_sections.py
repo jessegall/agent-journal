@@ -1,8 +1,6 @@
 import json
 from pathlib import Path
 
-from engine.database.database import Database
-from engine.registry.registry import Registry
 from engine.testing.expectations.expect_row import expect_row
 from tests.stories.core.modules.viewer.support import section_modules
 from tests.stories.core.support.fixtures import MainEnvironment
@@ -135,4 +133,4 @@ def test_the_module_guide_shows_the_samples_own_declaration_and_commands_that_ex
 def test_an_agent_cannot_remove_a_module_with_a_section(plan_notes):
     answer = request_answer(plan_notes.socket_path, "POST", "/cli", {"argv": ["module", "remove", "acme.plan_notes"], "variables": {"JOURNAL_AGENT_SESSION": "s-agent"}, "folder": "/"})
     plan_notes.story.expect_rows(answer.exit_code != 0)
-    plan_notes.story.expect_rows("plan_notes.notes" in [window.name for window in Registry.read(plan_notes.story.container.get(Database)).windows])
+    plan_notes.story.expect_rows("plan_notes.notes" in [window.name for window in plan_notes.story.registry().windows])

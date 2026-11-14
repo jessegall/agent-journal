@@ -8,6 +8,7 @@ from engine.model.model import Model
 from engine.query.conditions.minimum import Minimum
 from engine.query.queries import Queries
 from engine.registry.registry import Registry
+from engine.database.database import Database
 from engine.model.tables import Tables
 from engine.subcommand.output import Output
 
@@ -19,7 +20,7 @@ M = TypeVar("M", bound=Model)
 
 class KitRows:
     """The rows a test reads for an assertion, through the journal's own queries: every row, the first, the newest,
-    whether one exists and how many, each of a model filtered by its values, and a line's output with the rows it
+    whether one exists and how many, each of a model filtered by its values, the registry, and a line's output with the rows it
     created or updated written out. A story and an integration journal read them alike."""
 
     container: Container
@@ -38,6 +39,10 @@ class KitRows:
 
     def row_count(self, model: type[M], **values: object) -> int:
         return self.container.get(Queries).query(model).filter(**values).count()
+
+    # the registry the last sync wrote: the modules' windows, marks, models and the rest
+    def registry(self) -> Registry:
+        return Registry.read(self.container.get(Database))
 
     # a line's output with every row its created and updated lines name written out, as an assertion reads its fields
     def with_touched_rows(self, output_text: str) -> str:

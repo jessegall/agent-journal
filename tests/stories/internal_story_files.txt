@@ -68,7 +68,6 @@ tests/stories/core/modules/library/sharing.py
 tests/stories/core/modules/library/teams_browser.py
 tests/stories/core/modules/mcp/upgrade.py
 tests/stories/core/modules/memories/compaction_mark.py
-tests/stories/core/modules/memories/marks.py
 tests/stories/core/modules/messages/delivery.py
 tests/stories/core/modules/messages/lost_hooks.py
 tests/stories/core/modules/overview/overview.py
@@ -113,7 +112,6 @@ tests/stories/core/modules/profiles/module_profiles.py
 tests/stories/core/modules/profiles/profile_storage.py
 tests/stories/core/modules/profiles/suite_declarations.py
 tests/stories/core/modules/project_rules/memory_rules.py
-tests/stories/core/modules/questions/marks.py
 tests/stories/core/modules/reviews/review_assignment.py
 tests/stories/core/modules/secrets/secret_buttons_browser.py
 tests/stories/core/modules/secrets/secret_run.py
@@ -136,8 +134,6 @@ tests/stories/core/modules/updates/updates.py
 tests/stories/core/modules/usage/agent_inspector_reads.py
 tests/stories/core/modules/usage/agent_rows.py
 tests/stories/core/modules/usage/usage.py
-tests/stories/core/modules/viewer/inspector_sections.py
-tests/stories/engine/chat/mark_removal.py
 tests/stories/engine/command/lock_choices.py
 tests/stories/engine/database/large_journal_reads.py
 tests/stories/engine/driver/rule_history_races.py
@@ -145,7 +141,6 @@ tests/stories/engine/errors/errors_moved.py
 tests/stories/engine/file/file_access.py
 tests/stories/engine/hosting/hosted_story.py
 tests/stories/engine/module/agent_types.py
-tests/stories/engine/module/folder_removal.py
 tests/stories/engine/module/listener_cleanup.py
 tests/stories/engine/query_scans.py
 tests/stories/engine/repeated_calls.py

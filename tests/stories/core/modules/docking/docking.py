@@ -7,7 +7,6 @@ from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.scope.scopes import Scopes
 from engine.database.database import Database
-from engine.registry.registry import Registry
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from engine.errors.refusal import Refusal
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
@@ -97,7 +96,7 @@ def test_an_agent_undocks_an_item_a_person_kept(kept_dock):
 
 def test_the_chat_window_reads_the_dock_and_follows_its_events(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
-    window = Registry.read(story.container.get(Database)).window("messages.chat")
+    window = story.registry().window("messages.chat")
     expect_reads_window_with(window, "dock-item main")
     expect_events_window_with(window, "dock_item.*")
     WindowStory(story).expect_window_allowed("messages.chat", "dock-item main")

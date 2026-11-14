@@ -2,8 +2,6 @@ import pytest
 
 from datetime import timedelta
 
-from engine.database.database import Database
-from engine.registry.registry import Registry
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.chat.support.mark_samples import mark_count, expect_mark_count
 from tests.stories.core.support.coding_fixtures import BuilderStarted
@@ -83,7 +81,7 @@ def test_a_failed_command_shows_no_memory_mark(fact_memory):
 
 def test_memory_marks_fold_in_the_declarations_words_from_three(new_story):
     story = new_story(fixture=BuilderStarted)
-    mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "memories.memory")
+    mark = next(entry for entry in story.registry().marks if entry.type == "memories.memory")
     expect_row(mark, family_title="Memories", grouping="family", group_label="{family}: {count} updates", click="open row")
 
 
@@ -101,7 +99,7 @@ def test_a_reminder_given_back_shows_a_reminded_mark_of_the_reminders_family(new
     story.run('memory make "Always run the tests before a commit" --keywords cart --environment main', actor=story.user)
     story.expect_hook_allowed("s-1", CART_EDIT, "memory:1 applies now")
     story.run_listeners()
-    mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "memories.reminder")
+    mark = next(entry for entry in story.registry().marks if entry.type == "memories.reminder")
     expect_marks_text(story, "Reminded the agent: Always run the tests before a commit")
     expect_row(mark, family="memories.reminders")
 

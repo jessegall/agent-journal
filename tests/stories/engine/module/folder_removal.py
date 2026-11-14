@@ -7,8 +7,6 @@ import pytest
 
 from engine.caller.caller_request import CallerRequest
 from engine.cli.line_run import LineRun
-from engine.database.database import Database
-from engine.registry.registry import Registry
 from engine.caller.process_table import ProcessTable
 from engine.testing.fakes.fixed_process_table import FixedProcessTable
 from core.modules.approvals.models.approval_request import ApprovalRequest
@@ -51,7 +49,7 @@ def test_a_person_removes_the_folder_buttons_templates_and_allowances(installed_
     code, text = execute_removal(installed_notes, {"USER": "Ada"})
     installed_notes.expect_rows(code == 0, "removed module folder.notes" in text,
                                not (installed_notes.home.modules_folder / source_folder.name).exists())
-    registry = Registry.read(installed_notes.container.get(Database))
+    registry = installed_notes.registry()
     installed_notes.expect_rows(all(button.module != "folder.notes" for button in registry.buttons),
                                all(template.module != "folder.notes" for template in registry.templates))
     code, text = installed_notes.synced()

@@ -9557,6 +9557,7 @@
         "newest_row(self, model: type[M]) -> M | None",
         "row_exists(self, model: type[M]) -> bool",
         "row_count(self, model: type[M]) -> int",
+        "registry(self) -> Registry",
         "with_touched_rows(self, output_text: str) -> str"
       ]
     },
