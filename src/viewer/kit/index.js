@@ -51,6 +51,7 @@ export {default as SidePanel} from "../src/kit/SidePanel.vue";
 export {default as TextArea} from "../src/kit/TextArea.vue";
 export {default as TextInput} from "../src/kit/TextInput.vue";
 export {default as StateBadge} from "./StateBadge.vue";
+export {default as PageHeader} from "./PageHeader.vue";
 export {default as StateRows} from "./StateRows.vue";
 export {default as MarkHost} from "../src/chat/MarkHost.vue";
 export {default as MarkBody} from "../src/chat/MarkBody.vue";

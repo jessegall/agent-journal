@@ -54,6 +54,15 @@
     --on-danger: #17181b;
     --danger-soft: #d98c8c;
     --created: #6cc08b;
+    /* one spacing scale, and the edge every header, tab band and body shares */
+    --s1: 4px;
+    --s2: 8px;
+    --s3: 12px;
+    --s4: 16px;
+    --s5: 20px;
+    --s6: 24px;
+    --s8: 32px;
+    --inset: 16px;
     --font: "Geist", -apple-system, "Segoe UI", system-ui, sans-serif;
     --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
     --add-bg: oklch(0.62 0.1 150 / 0.1);
