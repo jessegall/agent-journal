@@ -29,6 +29,8 @@ from suites.coding.modules.workers.commands.record_merge_request.record_merge_re
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 from core.modules.agents.support.agent_label import AgentLabel
 from engine.cli.row_numbers import RowNumbers
+from core.modules.plans.commands.record_checkpoints.record_checkpoints import RecordCheckpoints
+from core.modules.plans.support.task_plans import TaskPlans
 from suites.coding.modules.workers.support.work_units import WorkUnits
 from suites.coding.modules.workers.support.merge_return_text import merge_return_line
 
@@ -43,8 +45,8 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     disabled_scopes = [ActorScope]
 
     def __init__(self, rows: EventRows, worktrees: WorktreeQuery, checks: MergeChecks, git: WorktreeGit, environments: EnvironmentRows, bus: Bus, followups: MergeFollowups, log_lines: WorkerLogLines, queued_start: WorkerQueuedStart, numbers: RowNumbers,
-                 units: WorkUnits) -> None:
-        self.numbers, self.units = numbers, units
+                 units: WorkUnits, plans: TaskPlans) -> None:
+        self.numbers, self.units, self.plans = numbers, units, plans
         self.log_lines, self.queued_start = log_lines, queued_start
         self.rows, self.worktrees, self.checks, self.git = rows, worktrees, checks, git
         self.environments, self.bus, self.followups = environments, bus, followups
@@ -110,8 +112,15 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     def removed(self, environment: Environment, merged: Worktree, context: Context) -> MergeOutcome:
         self.git.remove(environment.folder, merged)
         removal = self.bus.run_with_context(RecordWorktreeRemoval(merged.id), context)
+        self.record_checkpoints(merged, environment, context)
         self.queued_start.start(merged.session_agent_id, context)
         return MergeOutcome(removal, ())
+
+    # the windows its commits passed are recorded before the worker's next task starts, which the checkpoint guard refuses while one is unpassed
+    def record_checkpoints(self, merged: Worktree, environment: Environment, context: Context) -> None:
+        phase = self.plans.find_phase(merged.task_id)
+        if phase is not None:
+            self.bus.run(RecordCheckpoints(phase.plan_id), Actor.core(), environment_id=environment.id)
 
     def refused_merge(self, worktree: Worktree, environment: Environment, target_commit: str, context: Context) -> str:
         branch_commit = self.git.tip(environment.folder, worktree.branch)
