@@ -41,7 +41,8 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
         self.worktrees, self.proofs, self.affected, self.git = worktrees, proofs, affected, git
 
     def handle(self, command: StartWorkerTests, context: Context) -> None:
-        worktrees = {worktree.id: worktree for worktree in self.worktrees.all_worktrees()}
+        # a worktree removed without its merge has no folder to test in, so its proofs never hold the others back
+        worktrees = {worktree.id: worktree for worktree in self.worktrees.all_worktrees() if worktree.merged_at is not None or worktree.removed_at is None}
         proofs = [proof for proof in self.proofs.test_rows() if proof.worktree_id in worktrees]
         running = {proof.worktree_id for proof in proofs if proof.state is ProofState.RUNNING}
         queued = [proof for proof in proofs if proof.state is ProofState.QUEUED]
