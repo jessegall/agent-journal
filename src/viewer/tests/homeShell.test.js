@@ -21,7 +21,7 @@ function drawn(component, props) {
 }
 
 const page = (name, title, group = "project") => ({name, title, group});
-const WINDOWS = [page("documents.documents", "Documents"), page("checks.checks", "Checks"), page("project-rules.rules", "Rules"), page("secrets.secrets", "Secrets")];
+const WINDOWS = [page("documents.page", "Documents"), page("checks.checks", "Checks"), page("project-rules.rules", "Rules"), page("secrets.secrets", "Secrets")];
 const ENVIRONMENTS = [{id: 5, name: "development", folder: "/work/agent-journal", branch: "version-5"}, {id: 2, name: "main", folder: "/work/agent-journal", branch: ""}];
 
 test("the sidebar head shows the project's name and the current environment's branch and number", () => {
@@ -43,10 +43,10 @@ test("the group titles are plain words with no arrow", () => {
 });
 
 test("a sidebar row shows the count its window's count line answered", () => {
-    const counts = {"checks.checks": {count: 1, warm: false}, "project-rules.rules": {count: 1, warm: false}, "secrets.secrets": {count: 2, warm: false}, "documents.documents": {count: 4, warm: false}};
+    const counts = {"checks.checks": {count: 1, warm: false}, "project-rules.rules": {count: 1, warm: false}, "secrets.secrets": {count: 2, warm: false}, "documents.page": {count: 4, warm: false}};
     const {element} = drawn(SidebarPages, {windows: WINDOWS, environments: ENVIRONMENTS, current: "development", counts});
     const countOf = (name) => element.querySelector(`[data-sidebar-window="${name}"] .item-count`).textContent;
-    expect([countOf("documents.documents"), countOf("checks.checks"), countOf("project-rules.rules"), countOf("secrets.secrets")]).toEqual(["4", "1", "1", "2"]);
+    expect([countOf("documents.page"), countOf("checks.checks"), countOf("project-rules.rules"), countOf("secrets.secrets")]).toEqual(["4", "1", "1", "2"]);
 });
 
 test("a count line counts the rows of a list: the total of a paged answer, every row of an unpaged one", async () => {

@@ -1,3 +1,4 @@
+import errno
 from engine.file.file_access import FileAccess
 import gc
 import os
@@ -55,5 +56,16 @@ class WorkingJournal(StoryJournal):
 
     def is_file_open(self) -> bool:
         file_status = FileAccess.stat(self.file)
-        descriptors = [path.name for path in FileAccess.iterdir(DESCRIPTOR_FOLDER) if FileAccess.exists(path)]
-        return any(os.path.samestat(os.fstat(int(name)), file_status) for name in descriptors)
+        return any(os.path.samestat(status, file_status) for status in self.descriptor_states())
+
+    # a descriptor closed while the folder is read, by another thread or the listing itself, is gone when asked and holds no file
+    @staticmethod
+    def descriptor_states() -> list[os.stat_result]:
+        states: list[os.stat_result] = []
+        for path in FileAccess.iterdir(DESCRIPTOR_FOLDER):
+            try:
+                states.append(os.fstat(int(path.name)))
+            except OSError as error:
+                if error.errno != errno.EBADF:
+                    raise
+        return states

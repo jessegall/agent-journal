@@ -7,6 +7,7 @@ from core.modules.tasks.models.declarations.task_read_model_declaration import T
 from core.modules.tasks.docks.tasks_docks import TASKS_DOCKS
 from core.modules.tasks.skills.declarations.tasks_skills import TASKS_SKILLS
 from core.modules.tasks.states.where_you_stand import WhereYouStand
+from core.modules.tasks.states.started_task import StartedTask
 from core.modules.tasks.commands.repair_task_states.repair_task_states_handler import RepairTaskStatesHandler
 from core.modules.tasks.ticks.task_state_sweep import SCAN_SECONDS as TASK_SWEEP_SECONDS, TaskStateSweep
 from engine.ticker.tick_handler import TickHandler
@@ -77,7 +78,6 @@ from core.modules.tasks.commands.reset_task_reads.reset_task_reads_handler impor
 from core.modules.tasks.listeners.task_brief_assigned_listener import TaskBriefAssignedListener
 from core.modules.tasks.listeners.task_brief_compaction_listener import TaskBriefCompactionListener
 from core.modules.tasks.support.block_conditions.task_brief_read import TaskBriefRead
-from core.modules.tasks.rules.task_name_rule import TaskNameRule
 from core.modules.tasks.rules.unopenable_block_rule import UnopenableBlockRule
 from core.modules.tasks.rules.wait_description_rule import WaitDescriptionRule
 from core.modules.tasks.commands.task_board.task_board_subcommand import TaskBoardSubcommand
@@ -95,18 +95,13 @@ from core.modules.tasks.guards.visible_dependency_guard import VisibleDependency
 from core.modules.tasks.guards.user_wait_guard import UserWaitGuard
 from core.modules.tasks.guards.assigned_task_start_guard import AssignedTaskStartGuard
 from core.modules.tasks.listeners.dependency_remover_listener import DependencyRemoverListener
-from core.modules.tasks.rules.unlogged_write_rule import UnloggedWriteRule
-from core.modules.tasks.rules.log_request_rule import LogRequestRule
 from core.modules.tasks.migrations.m001_tasks import TasksTablesMigration
 from core.modules.tasks.migrations.m002_paused_tasks_blocked import PausedTasksBlockedMigration
 from core.modules.tasks.migrations.m003_task_state_index import TaskStateIndexMigration
 from core.modules.tasks.migrations.m016_all_environments_task_state_index import AllEnvironmentsTaskStateIndexMigration
 from core.modules.tasks.models.task_card import TaskCard
-from core.modules.tasks.rules.inactive_task_reminder_rule import InactiveTaskReminderRule
-from core.modules.tasks.rules.task_summary_line_rule import TaskSummaryLineRule
 from core.modules.tasks.rules.task_filed_rule import TaskFiledRule
 from core.modules.tasks.rules.task_start_rule import TaskStartRule
-from core.modules.tasks.rules.task_return_line_rule import TaskReturnLineRule
 from core.modules.tasks.commands.make_task_log.make_task_log_subcommand import MakeTaskLogSubcommand
 from core.modules.tasks.upgrade.tasks_move import TasksMove
 from core.modules.tasks.commands.remove_task_dependency.remove_task_dependency_handler import RemoveTaskDependencyHandler
@@ -142,7 +137,7 @@ class TasksModule(Module):
     nudges = TASK_NUDGES
     settings = TASK_SETTINGS
     requires_engine = ">=5,<6"
-    agent_states = [WhereYouStand]
+    agent_states = [WhereYouStand, StartedTask]
     block_conditions = [TaskStopped, TaskStarted, TaskClosed, StartedTaskExists, TaskLogged, TaskBriefRead, TaskBlocksReviewed]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking", "journal.core.settings", "journal.core.assignments"]
     bindings = {AgentTaskReads: RowAgentTaskReads}
@@ -160,7 +155,7 @@ class TasksModule(Module):
     marks = TASK_MARKS
     former_event_keys = {"core.tasks.task.drop_hold": "core.tasks.task.release_holder"}
     docks = TASKS_DOCKS
-    driver_rules = [TaskFiledRule, TaskStartRule, TaskReturnReminderRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, AutoModeTaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
+    driver_rules = [TaskFiledRule, TaskStartRule, TaskReturnReminderRule, WaitDescriptionRule, UnopenableBlockRule, TaskStopRule, AutoModeTaskStopRule, BlockedWorkRule]
     windows = TASKS_WINDOWS
     inspectors = [TASK_INSPECTOR]
     seeders = [TasksSeeder]

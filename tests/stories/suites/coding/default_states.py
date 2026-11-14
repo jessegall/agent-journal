@@ -1,5 +1,3 @@
-import json
-
 from tests.stories.core.modules.drivers.support.default_state_modules import PATH
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import BuilderStartedWithoutPlainWords
@@ -18,12 +16,6 @@ def test_a_coding_main_agent_has_the_where_you_stand_default_at_the_bottom_of_it
     story.expect_rows("tasks.where-you-stand (agent:" in placed and "since" in placed, detail=shown)
 
 
-def listed_types(story) -> dict[str, dict]:
-    answer = json.loads(story.run("driver state-types --json", actor=story.agent).output_text)
-    states = answer if isinstance(answer, list) else answer.get("rows", answer.get("value", []))
-    return {state["name"]: state for state in states}
-
-
 def test_a_worker_gets_the_worker_defaults_and_not_the_main_ones(new_story):
     story = new_story(fixture=BuilderStartedWithoutPlainWords)
     worker = story.new_row_id(f"agent start s-2 claude worker --parent {story.agent.id} --environment main")
@@ -31,10 +23,10 @@ def test_a_worker_gets_the_worker_defaults_and_not_the_main_ones(new_story):
     story.expect_rows("workers.worker-log-due" in shown, "tasks.where-you-stand" not in shown, detail=shown)
 
 
-def test_a_default_state_gates_no_rule_so_adding_it_changes_nothing(new_story):
+def test_the_worker_default_gates_the_rules_only_a_worker_hears_but_not_the_protected_folder_rule(new_story):
     story = new_story(fixture=BuilderStartedWithoutPlainWords)
-    types = listed_types(story)
-    story.expect_rows(types["tasks.where-you-stand"]["rules"] == "(none)", types["workers.worker-log-due"]["rules"] == "(none)", detail=str(types))
+    shown = story.run("driver state-types", actor=story.agent).output_text
+    story.expect_rows("workers.stop-once-delivered on stop" in shown, "workers.named-tests-only on pre_tool_use" in shown, "workers.protected-folder" not in shown, detail=shown)
 
 
 def test_a_joining_suite_adds_its_defaults_to_the_suite_it_joins(new_story):

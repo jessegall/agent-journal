@@ -33,12 +33,12 @@ from core.modules.skills.listeners.skill_request_save_listener import SkillReque
 from core.modules.skills.listeners.start_skills_listener import StartSkillsListener
 from core.modules.skills.migrations.m001_skills import SkillsTablesMigration
 from core.modules.skills.migrations.m002_skill_requests import SkillRequestsTableMigration
-from core.modules.skills.rules.command_skill_rule import CommandSkillRule
 from core.modules.skills.rules.profile_skill_first_rule import ProfileSkillFirstRule
 from core.modules.skills.commands.record_kept_skills.record_kept_skills_handler import RecordKeptSkillsHandler
 from core.modules.skills.states.kept_skills_record import KeptSkillsRecord
 from core.modules.skills.states.skill_block_countdown import SkillBlockCountdown
 from core.modules.skills.states.skill_load_required import SkillLoadRequired
+from core.modules.skills.states.skill_command_run import SkillCommandRun
 from core.modules.skills.rules.unread_skill_stop_rule import UnreadSkillStopRule
 from core.modules.skills.seeders.skills_seeder import SkillsSeeder
 from core.modules.skills.support.skill_marks import SKILL_MARKS
@@ -70,8 +70,8 @@ class SkillsModule(Module):
     handlers = [SaveProfileHandler, SetRequiredSkillHandler, RequireSkillHandler, LoadSkillHandler, RecordKeptSkillsHandler, ResetSkillsHandler, RequestSkillHandler]
     listeners = [SkillPublishListener, SkillReadListener, SkillPartReadListener, CommandSkillListener, KeptSkillsListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener, SkillRequestSaveListener]
     marks = SKILL_MARKS
-    driver_rules = [LoadedSkillRule, ProfileSkillFirstRule, UnreadSkillStopRule, CommandSkillRule]
-    agent_states = [SkillLoadRequired, SkillBlockCountdown, KeptSkillsRecord]
+    driver_rules = [LoadedSkillRule, ProfileSkillFirstRule, UnreadSkillStopRule]
+    agent_states = [SkillLoadRequired, SkillCommandRun, SkillBlockCountdown, KeptSkillsRecord]
     windows = SKILLS_WINDOWS
     inspectors = [SKILL_INSPECTOR]
     seeders = [SkillsSeeder]

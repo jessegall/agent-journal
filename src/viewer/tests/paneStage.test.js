@@ -375,8 +375,8 @@ test("the offer answered Side by side splits the pane, and answered Add as tab j
     expect(tabsIn(tabbed.store, holder(tabbed.store, "a.chat"))).toEqual(["a.chat", "a.spare"]);
 });
 
-test("a tab shows its window's count line, runs again on one of the window's events, and shows the warm count marked", async () => {
-    const answers = [{count: 3, warm: false}, {count: 4, warm: true}];
+test("a tab shows the number its window's count line lists and runs it again on one of the window's events", async () => {
+    const answers = [{rows: [], page: 1, size: 0, total: 3}, {rows: [{id: 1}, {id: 2}, {id: 3}, {id: 4}]}];
     vi.stubGlobal("fetch", perLine(async (url, init) => {
         const body = JSON.parse(init?.body || "{}");
         const counting = body.line?.join(" ") === "task count";
@@ -390,7 +390,6 @@ test("a tab shows its window's count line, runs again on one of the window's eve
     subscriptions.dispatch({event: "task.create"});
     await settled();
     expect(number().textContent).toBe("4");
-    expect(number().classList.contains("hot")).toBe(true);
 });
 
 const OPTIONS = [
