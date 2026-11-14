@@ -1,39 +1,39 @@
-if (!document.getElementById("window-styles-a37d38ed0c88")) { const style = document.createElement("style"); style.id = "window-styles-a37d38ed0c88"; style.textContent = ".sections[data-v-bc1a9b84]{display:flex;flex-direction:column;gap:18px}.section[data-v-bc1a9b84]{display:flex;flex-direction:column;gap:10px}.label[data-v-bc1a9b84]{color:var(--text-4);font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}.lead[data-v-bc1a9b84]{margin:0;color:var(--text-2);font-size:12.5px;line-height:1.55}.field[data-v-bc1a9b84]{display:flex;flex-direction:column;gap:5px;color:var(--text-2);font-size:12.5px;font-weight:500}.line[data-v-bc1a9b84]{display:flex;align-items:center;gap:8px}.line[data-v-bc1a9b84]>:first-child{flex:1;min-width:0}.value[data-v-bc1a9b84]{box-sizing:border-box;width:100%;height:30px;padding:0 9px;border:1px solid var(--border-2);border-radius:7px;outline:none;background:var(--bg);color:var(--text);font:inherit;font-weight:400}.value[data-v-bc1a9b84]:focus{border-color:var(--accent)}.chips[data-v-bc1a9b84]{display:flex;flex-wrap:wrap;gap:6px}.chip[data-v-bc1a9b84]{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:6px;background:var(--chip);color:var(--text-2);font-family:var(--mono);font-size:11.5px}.muted[data-v-bc1a9b84]{color:var(--text-3);font-size:12.5px}.proposal[data-v-bc1a9b84]{display:flex;flex-wrap:wrap;align-items:center;gap:10px;color:var(--text-2);font-size:12.5px}code[data-v-bc1a9b84]{padding:1px 6px;border-radius:5px;background:var(--chip);font-family:var(--mono);font-size:11.5px}.refusal[data-v-bc1a9b84]{margin:0;color:var(--danger);font-size:12.5px}.sections[data-v-8301a7e5]{display:flex;flex-direction:column;gap:14px}.choice[data-v-8301a7e5]{display:flex;flex-direction:column;gap:5px}.question[data-v-8301a7e5]{color:var(--text-2);font-size:12.5px;font-weight:500}.types[data-v-8301a7e5]{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}.type[data-v-8301a7e5]{display:flex;flex-direction:column;gap:3px;padding:10px;border:1px solid var(--border-2);border-radius:10px;background:var(--bg);color:var(--text-3);font:inherit;text-align:left;cursor:pointer}.type b[data-v-8301a7e5]{color:var(--text);font-size:13px;font-weight:600}.type span[data-v-8301a7e5]{font-size:11.5px;line-height:1.4}.type.picked[data-v-8301a7e5]{border-color:var(--accent);background:var(--accent-dim);color:var(--accent-text)}.type.picked b[data-v-8301a7e5]{color:var(--accent-text)}.line[data-v-8301a7e5]{margin:0;color:var(--text-2);font-size:12.5px;line-height:1.55}.refusal[data-v-8301a7e5]{margin:0;color:var(--danger);font-size:12.5px}.lead[data-v-7c08cf49]{max-width:640px;margin:0;color:var(--text-3);font-size:12.5px;line-height:1.55}.meta[data-v-7c08cf49]{margin:0;overflow:hidden;color:var(--text-3);font-size:12px;text-overflow:ellipsis;white-space:nowrap}.failure[data-v-7c08cf49]{margin:0;color:var(--danger);font-size:12.5px}\n"; document.head.appendChild(style); }
-import { computed as E, ref as f, reactive as X, openBlock as n, createBlock as F, unref as a, withCtx as u, createElementVNode as o, createElementBlock as m, createCommentVNode as I, Fragment as U, renderList as L, toDisplayString as A, withDirectives as Z, vModelDynamic as h, createVNode as c, withModifiers as H, createTextVNode as V, normalizeClass as ee } from "vue";
-import { Dialog as W, Btn as _, Icon as B, TextInput as x, copying as te, deleteItem as le, useWindow as ae, CardPage as se, ActionsMenu as oe, removed as ne } from "@journal/window-kit";
+if (!document.getElementById("window-styles-6dc54b2ac0e6")) { const style = document.createElement("style"); style.id = "window-styles-6dc54b2ac0e6"; style.textContent = ".sections[data-v-bc1a9b84]{display:flex;flex-direction:column;gap:18px}.section[data-v-bc1a9b84]{display:flex;flex-direction:column;gap:10px}.label[data-v-bc1a9b84]{color:var(--text-4);font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}.lead[data-v-bc1a9b84]{margin:0;color:var(--text-2);font-size:12.5px;line-height:1.55}.field[data-v-bc1a9b84]{display:flex;flex-direction:column;gap:5px;color:var(--text-2);font-size:12.5px;font-weight:500}.line[data-v-bc1a9b84]{display:flex;align-items:center;gap:8px}.line[data-v-bc1a9b84]>:first-child{flex:1;min-width:0}.value[data-v-bc1a9b84]{box-sizing:border-box;width:100%;height:30px;padding:0 9px;border:1px solid var(--border-2);border-radius:7px;outline:none;background:var(--bg);color:var(--text);font:inherit;font-weight:400}.value[data-v-bc1a9b84]:focus{border-color:var(--accent)}.chips[data-v-bc1a9b84]{display:flex;flex-wrap:wrap;gap:6px}.chip[data-v-bc1a9b84]{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:6px;background:var(--chip);color:var(--text-2);font-family:var(--mono);font-size:11.5px}.muted[data-v-bc1a9b84]{color:var(--text-3);font-size:12.5px}.proposal[data-v-bc1a9b84]{display:flex;flex-wrap:wrap;align-items:center;gap:10px;color:var(--text-2);font-size:12.5px}code[data-v-bc1a9b84]{padding:1px 6px;border-radius:5px;background:var(--chip);font-family:var(--mono);font-size:11.5px}.refusal[data-v-bc1a9b84]{margin:0;color:var(--danger);font-size:12.5px}.sections[data-v-8301a7e5]{display:flex;flex-direction:column;gap:14px}.choice[data-v-8301a7e5]{display:flex;flex-direction:column;gap:5px}.question[data-v-8301a7e5]{color:var(--text-2);font-size:12.5px;font-weight:500}.types[data-v-8301a7e5]{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}.type[data-v-8301a7e5]{display:flex;flex-direction:column;gap:3px;padding:10px;border:1px solid var(--border-2);border-radius:10px;background:var(--bg);color:var(--text-3);font:inherit;text-align:left;cursor:pointer}.type b[data-v-8301a7e5]{color:var(--text);font-size:13px;font-weight:600}.type span[data-v-8301a7e5]{font-size:11.5px;line-height:1.4}.type.picked[data-v-8301a7e5]{border-color:var(--accent);background:var(--accent-dim);color:var(--accent-text)}.type.picked b[data-v-8301a7e5]{color:var(--accent-text)}.line[data-v-8301a7e5]{margin:0;color:var(--text-2);font-size:12.5px;line-height:1.55}.refusal[data-v-8301a7e5]{margin:0;color:var(--danger);font-size:12.5px}.lead[data-v-0833ef9e]{max-width:640px;margin:0;color:var(--text-3);font-size:12.5px;line-height:1.55}.meta[data-v-0833ef9e]{margin:0;overflow:hidden;color:var(--text-3);font-size:12px;text-overflow:ellipsis;white-space:nowrap}.failure[data-v-0833ef9e]{margin:0;color:var(--danger);font-size:12.5px}\n"; document.head.appendChild(style); }
+import { computed as E, ref as f, reactive as X, openBlock as o, createBlock as D, unref as a, withCtx as u, createElementVNode as n, createElementBlock as m, createCommentVNode as I, Fragment as U, renderList as P, toDisplayString as A, withDirectives as Z, vModelDynamic as h, createVNode as c, withModifiers as H, createTextVNode as V, normalizeClass as ee } from "vue";
+import { Dialog as W, Btn as _, Icon as B, TextInput as x, copying as te, deleteItem as le, useWindow as ae, CardPage as se, ActionsMenu as oe, Skeleton as ne, removed as re } from "@journal/window-kit";
 const M = (s, N) => {
   const r = s.__vccOpts || s;
   for (const [b, w] of N)
     r[b] = w;
   return r;
-}, re = { class: "sections" }, ie = {
+}, ie = { class: "sections" }, de = {
   key: 0,
   class: "lead"
-}, de = { class: "section" }, ue = ["for"], ce = { class: "line" }, pe = ["id", "onUpdate:modelValue", "type", "placeholder", "data-secret-value"], ve = { class: "section" }, me = {
+}, ue = { class: "section" }, ce = ["for"], pe = { class: "line" }, ve = ["id", "onUpdate:modelValue", "type", "placeholder", "data-secret-value"], me = { class: "section" }, fe = {
   key: 0,
   class: "chips"
-}, fe = {
+}, ye = {
   key: 1,
   class: "muted"
-}, ye = { class: "section" }, ke = {
+}, ke = { class: "section" }, we = {
   key: 0,
   class: "muted"
-}, we = {
+}, ge = {
   key: 1,
   class: "proposal"
-}, ge = { class: "section" }, be = {
+}, be = { class: "section" }, Ce = {
   key: 1,
   class: "refusal",
   role: "alert"
-}, Ce = {
+}, $e = {
   __name: "SecretDialog",
   props: { row: { type: Object, required: !0 }, run: { type: Function, required: !0 } },
   emits: ["close"],
   setup(s, { emit: N }) {
-    const r = s, b = N, w = String(r.row.id), C = E(() => r.row.secret_type === "custom"), y = f(r.row.title), g = f(r.row.brief), $ = X({}), k = f(r.row.fields.map((d) => ({ ...d, added: !1 }))), S = f([]), D = f(""), p = f([...r.row.programs]), v = f([...r.row.proposed]), t = f(""), i = f(r.row.helpers), T = f(""), R = f(!1), j = (d) => r.row.filled.includes(d.name), Y = (d) => j(d) ? "Leave blank to keep the saved credential" : "Paste or type your credential";
+    const r = s, b = N, w = String(r.row.id), C = E(() => r.row.secret_type === "custom"), y = f(r.row.title), g = f(r.row.brief), $ = X({}), k = f(r.row.fields.map((d) => ({ ...d, added: !1 }))), S = f([]), F = f(""), p = f([...r.row.programs]), v = f([...r.row.proposed]), t = f(""), i = f(r.row.helpers), T = f(""), L = f(!1), j = (d) => r.row.filled.includes(d.name), Y = (d) => j(d) ? "Leave blank to keep the saved credential" : "Paste or type your credential";
     function G() {
-      const d = D.value.trim();
-      !d || k.value.some((e) => e.name === d) || (k.value = [...k.value, { name: d, hidden: !0, added: !0 }], D.value = "");
+      const d = F.value.trim();
+      !d || k.value.some((e) => e.name === d) || (k.value = [...k.value, { name: d, hidden: !0, added: !0 }], F.value = "");
     }
     function J(d) {
       k.value = k.value.filter((e) => e.name !== d.name), d.added || (S.value = [...S.value, d.name]), delete $[d.name];
@@ -54,17 +54,17 @@ const M = (s, N) => {
       ];
     }
     async function Q() {
-      R.value = !0;
+      L.value = !0;
       for (const d of K()) {
         const e = await r.run(d);
         if (!e.ok) {
-          T.value = e.error, R.value = !1;
+          T.value = e.error, L.value = !1;
           return;
         }
       }
       b("close");
     }
-    return (d, e) => (n(), F(a(W), {
+    return (d, e) => (o(), D(a(W), {
       padded: "",
       title: s.row.title,
       onClose: e[7] || (e[7] = (l) => b("close"))
@@ -80,7 +80,7 @@ const M = (s, N) => {
         }),
         c(a(_), {
           variant: "primary",
-          disabled: R.value || !y.value.trim(),
+          disabled: L.value || !y.value.trim(),
           "data-secret-save": "",
           onClick: Q
         }, {
@@ -91,19 +91,19 @@ const M = (s, N) => {
         }, 8, ["disabled"])
       ]),
       default: u(() => [
-        o("div", re, [
-          s.row.waiting ? (n(), m("p", ie, "The agent requested these credentials. Add them below, then save.")) : I("", !0),
-          o("section", de, [
-            e[9] || (e[9] = o("span", { class: "label" }, "Credentials", -1)),
-            (n(!0), m(U, null, L(k.value, (l) => (n(), m("div", {
+        n("div", ie, [
+          s.row.waiting ? (o(), m("p", de, "The agent requested these credentials. Add them below, then save.")) : I("", !0),
+          n("section", ue, [
+            e[9] || (e[9] = n("span", { class: "label" }, "Credentials", -1)),
+            (o(!0), m(U, null, P(k.value, (l) => (o(), m("div", {
               key: l.name,
               class: "field"
             }, [
-              o("label", {
+              n("label", {
                 for: `secret-${l.name}`
-              }, A(l.name), 9, ue),
-              o("div", ce, [
-                Z(o("input", {
+              }, A(l.name), 9, ce),
+              n("div", pe, [
+                Z(n("input", {
                   id: `secret-${l.name}`,
                   "onUpdate:modelValue": (O) => $[l.name] = O,
                   class: "value",
@@ -111,10 +111,10 @@ const M = (s, N) => {
                   autocomplete: "off",
                   placeholder: Y(l),
                   "data-secret-value": l.name
-                }, null, 8, pe), [
+                }, null, 8, ve), [
                   [h, $[l.name]]
                 ]),
-                C.value ? (n(), F(a(_), {
+                C.value ? (o(), D(a(_), {
                   key: 0,
                   variant: "icon",
                   title: `Remove the field ${l.name}`,
@@ -131,15 +131,15 @@ const M = (s, N) => {
                 }, 8, ["title", "data-secret-field-remove", "onClick"])) : I("", !0)
               ])
             ]))), 128)),
-            C.value ? (n(), m("form", {
+            C.value ? (o(), m("form", {
               key: 0,
               class: "line",
               "data-secret-field-add": "",
               onSubmit: H(G, ["prevent"])
             }, [
               c(a(x), {
-                modelValue: D.value,
-                "onUpdate:modelValue": e[0] || (e[0] = (l) => D.value = l),
+                modelValue: F.value,
+                "onUpdate:modelValue": e[0] || (e[0] = (l) => F.value = l),
                 label: "Add a field"
               }, null, 8, ["modelValue"]),
               c(a(_), {
@@ -153,22 +153,22 @@ const M = (s, N) => {
               })
             ], 32)) : I("", !0)
           ]),
-          o("section", ve, [
-            e[12] || (e[12] = o("span", { class: "label" }, "Allowed programs", -1)),
-            p.value.length ? (n(), m("div", me, [
-              (n(!0), m(U, null, L(p.value, (l) => (n(), m("span", {
+          n("section", me, [
+            e[12] || (e[12] = n("span", { class: "label" }, "Allowed programs", -1)),
+            p.value.length ? (o(), m("div", fe, [
+              (o(!0), m(U, null, P(p.value, (l) => (o(), m("span", {
                 key: l,
                 class: "chip",
                 "data-secret-program": ""
               }, A(l), 1))), 128))
-            ])) : (n(), m("span", fe, "No programs have access to this secret yet.")),
-            (n(!0), m(U, null, L(v.value, (l) => (n(), m("div", {
+            ])) : (o(), m("span", ye, "No programs have access to this secret yet.")),
+            (o(!0), m(U, null, P(v.value, (l) => (o(), m("div", {
               key: l,
               class: "proposal"
             }, [
-              o("span", null, [
+              n("span", null, [
                 e[10] || (e[10] = V("The agent proposed ", -1)),
-                o("code", null, A(l), 1)
+                n("code", null, A(l), 1)
               ]),
               c(a(_), {
                 small: "",
@@ -182,7 +182,7 @@ const M = (s, N) => {
                 _: 2
               }, 1032, ["data-secret-allow", "onClick"])
             ]))), 128)),
-            o("form", {
+            n("form", {
               class: "line",
               "data-secret-program-add": "",
               onSubmit: e[2] || (e[2] = H((l) => z(t.value), ["prevent"]))
@@ -204,10 +204,10 @@ const M = (s, N) => {
               }, 8, ["disabled"])
             ], 32)
           ]),
-          o("section", ye, [
-            e[15] || (e[15] = o("span", { class: "label" }, "Helpers", -1)),
-            i.value ? (n(), m("span", ke, "Helpers can use this secret too.")) : (n(), m("div", we, [
-              e[14] || (e[14] = o("span", null, "Helpers cannot use it.", -1)),
+          n("section", ke, [
+            e[15] || (e[15] = n("span", { class: "label" }, "Helpers", -1)),
+            i.value ? (o(), m("span", we, "Helpers can use this secret too.")) : (o(), m("div", ge, [
+              e[14] || (e[14] = n("span", null, "Helpers cannot use it.", -1)),
               c(a(_), {
                 small: "",
                 bordered: "",
@@ -221,8 +221,8 @@ const M = (s, N) => {
               })
             ]))
           ]),
-          o("section", ge, [
-            e[16] || (e[16] = o("span", { class: "label" }, "Title and note", -1)),
+          n("section", be, [
+            e[16] || (e[16] = n("span", { class: "label" }, "Title and note", -1)),
             c(a(x), {
               modelValue: y.value,
               "onUpdate:modelValue": e[4] || (e[4] = (l) => y.value = l),
@@ -236,21 +236,21 @@ const M = (s, N) => {
               "data-secret-note": ""
             }, null, 8, ["modelValue"])
           ]),
-          T.value ? (n(), m("p", be, A(T.value), 1)) : I("", !0)
+          T.value ? (o(), m("p", Ce, A(T.value), 1)) : I("", !0)
         ])
       ]),
       _: 1
     }, 8, ["title"]));
   }
-}, $e = /* @__PURE__ */ M(Ce, [["__scopeId", "data-v-bc1a9b84"]]), Ve = { class: "sections" }, _e = { class: "choice" }, Ae = {
+}, Ve = /* @__PURE__ */ M($e, [["__scopeId", "data-v-bc1a9b84"]]), _e = { class: "sections" }, Ae = { class: "choice" }, Se = {
   class: "types",
   role: "radiogroup",
   "aria-label": "Type of secret"
-}, Se = ["aria-checked", "data-secret-type", "onClick"], Ne = {
+}, Ne = ["aria-checked", "data-secret-type", "onClick"], De = {
   key: 1,
   class: "refusal",
   role: "alert"
-}, De = {
+}, Fe = {
   __name: "SecretNewDialog",
   props: { run: { type: Function, required: !0 } },
   emits: ["close"],
@@ -259,13 +259,13 @@ const M = (s, N) => {
       { key: "api key", icon: "key", title: "API key", line: "One hidden value, such as a token." },
       { key: "login", icon: "lock", title: "Login", line: "A username and a password." },
       { key: "custom", icon: "rows", title: "Custom", line: "Fields you name yourself." }
-    ], b = s, w = N, C = f(r[0].key), y = f(""), g = f(""), $ = f(""), k = f(""), S = E(() => C.value === "custom"), D = E(() => y.value.trim() && (!S.value || $.value.trim()));
+    ], b = s, w = N, C = f(r[0].key), y = f(""), g = f(""), $ = f(""), k = f(""), S = E(() => C.value === "custom"), F = E(() => y.value.trim() && (!S.value || $.value.trim()));
     async function p() {
       const v = S.value ? ["--field", $.value.trim()] : [], t = g.value.trim() ? ["--brief", g.value.trim()] : [], i = await b.run(["secret", "make", y.value.trim(), "--type", C.value, ...v, ...t]);
       if (i.ok) return w("close");
       k.value = i.error;
     }
-    return (v, t) => (n(), F(a(W), {
+    return (v, t) => (o(), D(a(W), {
       padded: "",
       title: "New secret",
       onClose: t[4] || (t[4] = (i) => w("close"))
@@ -281,7 +281,7 @@ const M = (s, N) => {
         }),
         c(a(_), {
           variant: "primary",
-          disabled: !D.value,
+          disabled: !F.value,
           "data-secret-create": "",
           onClick: p
         }, {
@@ -292,11 +292,11 @@ const M = (s, N) => {
         }, 8, ["disabled"])
       ]),
       default: u(() => [
-        o("div", Ve, [
-          o("div", _e, [
-            t[5] || (t[5] = o("span", { class: "question" }, "What type of secret is it?", -1)),
-            o("div", Ae, [
-              (n(), m(U, null, L(r, (i) => o("button", {
+        n("div", _e, [
+          n("div", Ae, [
+            t[5] || (t[5] = n("span", { class: "question" }, "What type of secret is it?", -1)),
+            n("div", Se, [
+              (o(), m(U, null, P(r, (i) => n("button", {
                 key: i.key,
                 type: "button",
                 class: ee(["type", { picked: C.value === i.key }]),
@@ -309,9 +309,9 @@ const M = (s, N) => {
                   name: i.icon,
                   size: 16
                 }, null, 8, ["name"]),
-                o("b", null, A(i.title), 1),
-                o("span", null, A(i.line), 1)
-              ], 10, Se)), 64))
+                n("b", null, A(i.title), 1),
+                n("span", null, A(i.line), 1)
+              ], 10, Ne)), 64))
             ])
           ]),
           c(a(x), {
@@ -326,31 +326,31 @@ const M = (s, N) => {
             label: "Note for the agent",
             "data-secret-new-note": ""
           }, null, 8, ["modelValue"]),
-          S.value ? (n(), F(a(x), {
+          S.value ? (o(), D(a(x), {
             key: 0,
             modelValue: $.value,
             "onUpdate:modelValue": t[2] || (t[2] = (i) => $.value = i),
             label: "First field name",
             "data-secret-first-field": ""
           }, null, 8, ["modelValue"])) : I("", !0),
-          t[6] || (t[6] = o("p", { class: "line" }, "After creating the secret, select Add credentials to save your key or login.", -1)),
-          k.value ? (n(), m("p", Ne, A(k.value), 1)) : I("", !0)
+          t[6] || (t[6] = n("p", { class: "line" }, "After creating the secret, select Add credentials to save your key or login.", -1)),
+          k.value ? (o(), m("p", De, A(k.value), 1)) : I("", !0)
         ])
       ]),
       _: 1
     }));
   }
-}, Fe = /* @__PURE__ */ M(De, [["__scopeId", "data-v-8301a7e5"]]), Ie = { "api key": "key", login: "lock", custom: "rows" }, xe = { "api key": "API key", login: "Login", custom: "Custom" }, P = "Needs credentials", q = "Ready", Ue = (s) => ({
+}, Ie = /* @__PURE__ */ M(Fe, [["__scopeId", "data-v-8301a7e5"]]), xe = { "api key": "key", login: "lock", custom: "rows" }, Ue = { "api key": "API key", login: "Login", custom: "Custom" }, R = "Needs credentials", q = "Ready", Ee = (s) => ({
   id: s.id,
   title: s.title,
-  icon: Ie[s.secret_type],
-  state: s.waiting ? P : xe[s.secret_type],
-  status: s.waiting ? P : q,
+  icon: xe[s.secret_type],
+  state: s.waiting ? R : Ue[s.secret_type],
+  status: s.waiting ? R : q,
   line: s.brief || "Note: none",
   programs: s.programs.length ? s.programs.join(", ") : "none",
   row: s
-}), Ee = [{ key: "status", label: "State", options: [[q, q], [P, P]], get: (s) => s.status }];
-function Te(s, { edit: N, remove: r }) {
+}), Te = [{ key: "status", label: "State", options: [[q, q], [R, R]], get: (s) => s.status }];
+function Pe(s, { edit: N, remove: r }) {
   return [
     { label: s.row.waiting ? "Add credentials" : "Replace value", group: "open", run: N },
     { label: "Copy name", group: "copy", run: ({ say: b }) => te(s.title, s.title, b) },
@@ -358,26 +358,26 @@ function Te(s, { edit: N, remove: r }) {
     le({ word: "Delete", name: s.title, remove: r, erase: !0 })
   ];
 }
-const Le = {
+const Re = {
   key: 0,
   class: "failure",
   role: "alert"
-}, Pe = {
-  key: 1,
+}, Le = {
+  key: 2,
   class: "lead"
-}, Re = ["title"], Oe = {
+}, Oe = ["title"], qe = {
   class: "meta",
   "data-secret-helpers-line": ""
-}, qe = {
+}, Be = {
   __name: "SecretRows",
   setup(s) {
-    const N = ae(), { rows: r, failure: b, loaded: w, act: C } = N.props.secrets, y = f(0), g = f(!1), $ = E(() => r.value.map(Ue)), k = E(() => r.value.find((p) => p.id === y.value) ?? null), S = (p) => Te(p, { edit: () => y.value = p.id, remove: () => C(["secret", "delete", String(p.id)], ne(p.id)) }), D = (p) => ({ head: p.title, items: S(p) });
-    return (p, v) => (n(), m(U, null, [
+    const N = ae(), { rows: r, failure: b, loaded: w, act: C } = N.props.secrets, y = f(0), g = f(!1), $ = E(() => r.value.map(Ee)), k = E(() => r.value.find((p) => p.id === y.value) ?? null), S = (p) => Pe(p, { edit: () => y.value = p.id, remove: () => C(["secret", "delete", String(p.id)], re(p.id)) }), F = (p) => ({ head: p.title, items: S(p) });
+    return (p, v) => (o(), m(U, null, [
       c(a(se), {
         title: "Secrets",
         items: $.value,
-        fields: a(Ee),
-        place: D,
+        fields: a(Te),
+        place: F,
         "empty-title": "No secrets yet",
         "data-secrets": ""
       }, {
@@ -399,18 +399,21 @@ const Le = {
           })
         ]),
         empty: u(() => [
-          a(b) ? (n(), m("p", Le, A(a(b)), 1)) : (n(), m("p", Pe, A(a(w) ? "Add a key or login to get started. Only its name will appear here." : "Loading"), 1))
+          a(b) ? (o(), m("p", Re, A(a(b)), 1)) : a(w) ? (o(), m("p", Le, "Add a key or login to get started. Only its name will appear here.")) : (o(), D(a(ne), {
+            key: 1,
+            shape: "rows"
+          }))
         ]),
         card: u(({ item: t }) => [
-          o("p", {
+          n("p", {
             class: "meta",
             "data-secret-programs": "",
             title: t.programs
-          }, "Programs: " + A(t.programs), 9, Re),
-          o("p", Oe, "Helpers: " + A(t.row.helpers ? "can use it" : "cannot use it"), 1)
+          }, "Programs: " + A(t.programs), 9, Oe),
+          n("p", qe, "Helpers: " + A(t.row.helpers ? "can use it" : "cannot use it"), 1)
         ]),
         foot: u(({ item: t }) => [
-          t.row.waiting ? (n(), F(a(_), {
+          t.row.waiting ? (o(), D(a(_), {
             key: 0,
             small: "",
             variant: "primary",
@@ -421,7 +424,7 @@ const Le = {
               V("Add credentials", -1)
             ])]),
             _: 1
-          }, 8, ["data-secret-ask", "onClick"])) : (n(), F(a(_), {
+          }, 8, ["data-secret-ask", "onClick"])) : (o(), D(a(_), {
             key: 1,
             small: "",
             bordered: "",
@@ -442,20 +445,20 @@ const Le = {
         ]),
         _: 1
       }, 8, ["items", "fields"]),
-      k.value ? (n(), F($e, {
+      k.value ? (o(), D(Ve, {
         key: k.value.id,
         row: k.value,
         run: a(C),
         onClose: v[1] || (v[1] = (t) => y.value = 0)
       }, null, 8, ["row", "run"])) : I("", !0),
-      g.value ? (n(), F(Fe, {
+      g.value ? (o(), D(Ie, {
         key: 1,
         run: a(C),
         onClose: v[2] || (v[2] = (t) => g.value = !1)
       }, null, 8, ["run"])) : I("", !0)
     ], 64));
   }
-}, ze = /* @__PURE__ */ M(qe, [["__scopeId", "data-v-7c08cf49"]]);
+}, He = /* @__PURE__ */ M(Be, [["__scopeId", "data-v-0833ef9e"]]);
 export {
-  ze as default
+  He as default
 };

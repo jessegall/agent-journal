@@ -29,7 +29,7 @@ const modeOf = (key) => {
     return value === undefined ? "default" : value === NO_CAP ? "none" : "size";
 };
 const sizeOf = (key) => Number(valueOf(key));
-const sourceOf = (key) => ({default: `Uses the size set for every agent: ${sizeText(props.defaultCap)}`, size: "Its own size", none: "Never compacted at a size"})[modeOf(key)];
+const sourceOf = (key) => ({default: `Uses the size set for every agent: ${sizeText(props.defaultCap)}`, size: "Set for this type", none: "Never compacted at a size"})[modeOf(key)];
 const startSize = () => (props.sizes.includes(props.defaultCap) ? props.defaultCap : props.sizes[0]);
 
 function give(values) {

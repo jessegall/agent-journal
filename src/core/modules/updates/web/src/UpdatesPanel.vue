@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, ListReaderLayout, PageHeader, Reader, TextDisplay, copying, useWindow} from "@journal/window-kit";
+import {Btn, ListReaderLayout, PageHeader, Reader, Skeleton, TextDisplay, copying, useWindow} from "@journal/window-kit";
 
 const view = useWindow();
 const releases = view.props.releases;
@@ -98,7 +98,7 @@ const place = (item) => ({
                 <div class="standing"><button type="button" data-update-older @click="readNotes(notesPage + 1)">Show older releases</button></div>
             </template>
         </template>
-        <template #empty>{{ releases.loaded.value ? "Installed releases appear here with their installation dates." : "" }}</template>
+        <template #empty><template v-if="releases.loaded.value">Installed releases appear here with their installation dates.</template><Skeleton v-else shape="rows" /></template>
         <template #reader="{item}">
             <Reader :title="item.title" :number="item.note ? 'Release notes' : 'Installed here'" :facts="item.note ? [{name: 'published', label: 'Published', value: new Date(item.note.published_at).toLocaleDateString()}] : [{name: 'installed', label: 'Installed', value: new Date(item.installed.created_at).toLocaleString()}]" data-update-note>
                 <template v-if="item.note">

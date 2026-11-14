@@ -11,6 +11,8 @@ const KEYS = {
     "work-screen": {line: "setting-screen show work", events: ["setting.*"]},
     "tests-screen": {line: "setting-screen show tests", events: ["setting.*"]},
     "advanced-screen": {line: "setting-screen show advanced", events: ["setting.*"]},
+    "helper-types-screen": {line: "setting-screen show helper-type", events: ["setting.*"]},
+    find: {line: "setting-screen index", events: ["setting.*"]},
     auto: {line: "setting show journal.suites.coding.auto-mode", events: ["setting.*"]},
     limits: {line: "agent limits", tab: "agents", events: ["agent.*", "setting.*"]},
 };
@@ -22,8 +24,9 @@ const MAY_MERGE = "journal.suites.coding.workers.main-agent-may-merge";
 const LIMIT_ON = "journal.core.helpers.context-limit-on";
 const LIMIT_TOKENS = "journal.core.helpers.context-limit-tokens";
 const LIMIT_ACTION = "journal.core.helpers.context-limit-action";
-const node = (key, kind, value, extra = {}) => ({key, kind, component: kind === "flag" ? "toggle" : kind, section: "Taking on work", parent: null, title: `Title of ${key}`, description: "", value, default: value, source: "default", choices: [], rule: "", requires: [], read_only: true, ...extra});
+const node = (key, node_type, value, extra = {}) => ({key, node_type, component: node_type === "flag" ? "toggle" : node_type, section: "Taking on work", parent: null, title: `Title of ${key}`, description: "", value, default: value, source: "default", choices: [], rule: "", requires: [], read_only: true, ...extra});
 const SCREENS = {
+    "helper-type": {screen: "helper-type", revision: "h1", nodes: []},
     work: {screen: "work", revision: "w1", nodes: [node(WRITES, "flag", true), node(KEEP_GOING, "flag", true, {requires: [WRITES]}), node(SENDS, "flag", true), node(MERGER, "flag", true, {requires: [SENDS]}), node(MAY_MERGE, "flag", true, {requires: [SENDS]})]},
     tests: {screen: "tests", revision: "t1", nodes: [node("journal.suites.coding.tests.example", "number", 3, {rule: JSON.stringify({rule: "number", minimum: 0, integer: true, maximum: null, exclusive: false})})]},
     advanced: {screen: "advanced", revision: "a1", nodes: [node(LIMIT_ON, "flag", false, {section: "Context size"}),
@@ -95,7 +98,7 @@ test("the agent settings tabs are the viewer's shared tabs, which have a border 
     const bar = document.querySelector("[data-agent-settings] .settings-bar");
     expect(bar.querySelector("[data-inner-tabs]")).not.toBeNull();
     expect(bar.querySelector(".segmented")).toBeNull();
-    expect([...bar.querySelectorAll("[role=tab]")].map((tab) => tab.textContent.trim())).toEqual(["Work", "Helpers", "Tests", "Advanced"]);
+    expect([...bar.querySelectorAll("[role=tab]")].map((tab) => tab.textContent.trim())).toEqual(["Work", "Helpers", "Assign", "Tests", "Advanced"]);
     expect(styleDeclarations("kit/InnerTabs.vue", ".inner-tabs")).toMatch(/border-bottom:\s*1px solid/);
     bar.querySelector("[data-tab=tests]").click();
     await settled();

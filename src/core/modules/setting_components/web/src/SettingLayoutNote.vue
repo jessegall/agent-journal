@@ -1,6 +1,6 @@
 <script setup>
 // a line under a setting that names what is set somewhere else: the names with their values, then where to change them
-defineProps({entries: {type: Array, required: true}, where: {type: String, default: "They are changed on their own screens."}});
+defineProps({entries: {type: Array, required: true}, where: {type: String, default: "They are changed on other screens."}});
 </script>
 
 <template>

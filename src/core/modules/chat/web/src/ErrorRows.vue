@@ -1,5 +1,5 @@
 <script setup>
-import {Btn, EmptyState, TimeAgo, WindowRoom, removed, useWindow} from "@journal/window-kit";
+import {Btn, EmptyState, Skeleton, TimeAgo, WindowRoom, removed, useWindow} from "@journal/window-kit";
 
 // the errors the journal recorded in its own work, newest first, each with the place it happened and what went wrong;
 // a user marks one solved, which clears it from the list
@@ -11,7 +11,8 @@ const solve = (row) => act(["journal-exception", "solve", String(row.id)], remov
 <template>
     <WindowRoom padding="0">
         <template v-if="failure"><p class="failure" role="alert" data-errors-failure>{{ failure }}</p></template>
-        <template v-else-if="loaded && !rows.length"><EmptyState title="No errors">The journal has recorded no error that is not solved.</EmptyState></template>
+        <template v-else-if="!loaded"><Skeleton shape="rows" /></template>
+        <template v-else-if="!rows.length"><EmptyState title="No errors">The journal has recorded no error that is not solved.</EmptyState></template>
         <template v-for="row in rows" :key="row.id">
             <div class="error" data-error :data-error-id="row.id">
                 <div class="head">

@@ -1,6 +1,6 @@
 if (!document.getElementById("window-styles-c94a217f9ffa")) { const style = document.createElement("style"); style.id = "window-styles-c94a217f9ffa"; style.textContent = ".plugin-guide h3[data-v-c43c5dd2]{margin:0 0 8px;color:var(--text-3);font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}.plugin-guide p[data-v-c43c5dd2],.plugin-guide li[data-v-c43c5dd2],.plugin-guide dd[data-v-c43c5dd2]{margin:0 0 12px;color:var(--text-2);font-size:12.5px}.plugin-guide dt[data-v-c43c5dd2]{font-size:12.5px;font-weight:500}.plugin-guide pre[data-v-c43c5dd2]{margin:0 0 16px;padding:10px;border-radius:6px;background:var(--hover);font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}.preview-from[data-v-e45112f7],.preview-lead[data-v-e45112f7]{margin:0 0 10px;color:var(--text-2);font-size:12.5px}.preview-row[data-v-e45112f7]{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;padding:5px 0;border-top:1px solid var(--border)}.preview-category[data-v-e45112f7]{flex:0 0 90px;color:var(--text-3);font-size:12px}.preview-command[data-v-e45112f7]{flex-basis:100%;font-size:12px;overflow-wrap:anywhere}.ask[data-v-c66b8d93]{display:flex;flex-direction:column;gap:8px}.ask-lead[data-v-c66b8d93]{margin:0 0 4px;color:var(--text-3);font-size:12.5px}.wish[data-v-c66b8d93]{padding:7px 9px;border:1px solid var(--border-2);border-radius:7px;background:var(--bg);color:var(--text);font:inherit;font-size:12.5px;resize:vertical}.wish[data-v-c66b8d93]:focus{outline:none;border-color:var(--accent)}.plugin-output-time[data-v-d48a2f91]{margin:10px 0 2px;color:var(--text-3);font-size:11px}.plugin-output[data-v-d48a2f91]{margin:0;font-size:13px;white-space:pre-wrap}.plugin-note[data-v-d48a2f91]{margin:0;color:var(--text-3);font-size:12px}.remove-lead[data-v-40655f7f]{margin:0 0 8px;color:var(--text-3);font-size:12.5px}.service-terminal[data-v-15733e57]{display:flex;flex:1;flex-direction:column;min-width:0;min-height:0;background:var(--bg-2)}.service-bar[data-v-15733e57]{flex:none;display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--raised)}.service-state[data-v-15733e57]{flex:1;min-width:0;color:var(--text-3);font-size:12px;font-variant-numeric:tabular-nums}.service-terminal[data-v-15733e57] .output-lines{flex:1;min-height:0;margin:0;padding:8px 12px;font-family:var(--mono, monospace);font-size:11.5px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}.service-failure[data-v-15733e57]{flex:none;margin:0;padding:6px 12px;color:var(--danger);font-size:12px}.runs[data-v-2a4b9489]{display:flex;flex-direction:column;gap:2px;padding-top:10px;border-top:1px solid var(--border)}.label[data-v-2a4b9489]{margin-bottom:4px;color:var(--text-4);font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}.service[data-v-2a4b9489]{display:flex;flex-direction:column;gap:1px;align-items:flex-start;box-sizing:border-box;width:100%;min-width:0;padding:5px 8px;border:0;border-radius:6px;background:none;font:inherit;text-align:left;cursor:pointer}.service[data-v-2a4b9489]:hover{background:var(--hover)}.service-name[data-v-2a4b9489],.service-state[data-v-2a4b9489]{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.service-name[data-v-2a4b9489]{color:var(--text);font-size:12.5px;font-weight:500}.service-state[data-v-2a4b9489]{color:var(--text-3);font-size:12px;font-variant-numeric:tabular-nums}.plugin-settings[data-v-be462efa]{display:flex;flex-direction:column;gap:14px}.plugin-settings-head[data-v-be462efa]{display:flex;gap:10px;align-items:center}.plugin-settings-version[data-v-be462efa]{padding:1px 7px;border-radius:6px;background:var(--chip);color:var(--text-2);font-size:11.5px}.plugin-settings-on[data-v-be462efa]{display:inline-flex;gap:8px;align-items:center;margin-left:auto;color:var(--text-3);font-size:12.5px}.plugin-settings-line[data-v-be462efa]{margin:0;color:var(--text-2);font-size:13px;line-height:1.5}.plugin-output[data-v-2825ff7b]{margin:0 0 6px;font-size:13px;white-space:pre-wrap}.plugin-note[data-v-2825ff7b]{margin:0;color:var(--text-3);font-size:12px}.plugins[data-v-974621d6]{display:flex;flex-direction:column;height:100%;min-height:0}.install[data-v-974621d6]{flex:none;max-width:640px;padding:8px var(--inset) 0}.lead[data-v-974621d6]{flex:none;max-width:640px;margin:0;padding:6px var(--inset);color:var(--text-3);font-size:12.5px;line-height:1.55}.asked[data-v-974621d6]{margin:0;padding:0 var(--inset);color:var(--accent-text);font-size:12.5px}.none[data-v-974621d6]{margin:0;color:var(--text-3);font-size:12.5px}.none strong[data-v-974621d6]{display:block;margin-bottom:4px;color:var(--text-2);font-size:14px;font-weight:500}.plugin-note[data-v-974621d6]{margin:0;color:var(--text-3);font-size:12px}.plugin-fault[data-v-974621d6]{margin:0;padding:0 var(--inset);color:var(--danger);font-size:12px}\n"; document.head.appendChild(style); }
 import { openBlock as o, createBlock as C, unref as p, withCtx as v, createElementVNode as a, createTextVNode as h, toDisplayString as m, createElementBlock as f, Fragment as j, renderList as I, createCommentVNode as b, createVNode as k, useModel as se, withModifiers as ie, withDirectives as Te, vModelText as Pe, mergeModels as Ie, ref as S, computed as q, watch as oe } from "vue";
-import { Dialog as N, Btn as O, TextInput as re, useWindow as ue, usePoll as Ne, OutputLines as xe, Switch as de, CardPage as Re, ActionsMenu as _e, Skeleton as Ee, Icon as Ue, Dashboard as De, copying as Le, runChanged as qe } from "@journal/window-kit";
+import { Dialog as N, Btn as O, TextInput as re, useWindow as ue, usePoll as Ne, OutputLines as _e, Switch as de, CardPage as xe, ActionsMenu as Re, Skeleton as Ee, Icon as Ue, Dashboard as De, copying as Le, runChanged as qe } from "@journal/window-kit";
 import { useSettingsDraft as Fe, SettingsScreen as Ve, ChangeFoot as Je } from "@journal/setting-components";
 function We(s, t, u) {
   const g = new URL(s);
@@ -462,7 +462,7 @@ const T = (s, t) => {
         }))
       ]),
       c.value || i.value ? (o(), f("p", yt, m(c.value || i.value), 1)) : b("", !0),
-      k(p(xe), {
+      k(p(_e), {
         lines: g.value,
         empty: "No service output yet."
       }, null, 8, ["lines"])
@@ -516,16 +516,16 @@ function Q(s) {
 `) : u == null ? "" : String(u);
 }
 const Tt = (s) => Q(s) === "true", Pt = "Settings", It = ["flag", "number", "choice", "list"], pe = "secret", Nt = (s) => `plugin.${s}`;
-function xt(s) {
+function _t(s) {
   return s.type === "flag" ? Tt(s) : s.type === "list" ? Q(s).split(`
 `).filter(Boolean) : Q(s);
 }
-function Rt(s) {
+function xt(s) {
   return s.filter((t) => t.type !== pe).map((t) => ({
     key: t.key,
     title: t.title,
     description: t.help,
-    kind: It.includes(t.type) ? t.type : "text",
+    node_type: It.includes(t.type) ? t.type : "text",
     section: t.group || Pt,
     parent: t.parent || null,
     source: "",
@@ -533,14 +533,14 @@ function Rt(s) {
     rule: null,
     choices: t.choices,
     requires: [],
-    value: xt(t)
+    value: _t(t)
   }));
 }
 function le(s, t) {
-  const u = Rt(t);
+  const u = xt(t);
   return [{ screen: Nt(s), revision: JSON.stringify(u.map((g) => [g.key, g.value])), nodes: u }];
 }
-function _t(s, t) {
+function Rt(s, t) {
   return s.slice(s.indexOf("--revision") + 2).map((g) => {
     var $;
     const i = g.indexOf("="), c = g.slice(0, i), r = g.slice(i + 1), y = (($ = t.find((d) => d.key === c)) == null ? void 0 : $.type) === "list";
@@ -562,7 +562,7 @@ const Et = (s) => s.filter((t) => t.type === pe), Ut = {
   props: { plugin: { type: Object, required: !0 }, description: { type: String, default: "" }, settings: { type: Array, required: !0 }, save: { type: Function, required: !0 } },
   emits: ["close", "toggle"],
   setup(s, { emit: t }) {
-    const u = s, g = t, i = Fe({ run: (y) => u.save(_t(y, u.settings)), reload: async () => {
+    const u = s, g = t, i = Fe({ run: (y) => u.save(Rt(y, u.settings)), reload: async () => {
     } }), c = q(() => le(u.plugin.name, u.settings).flatMap((y) => y.nodes)), r = q(() => Et(u.settings));
     return oe(() => u.settings, (y) => i.load(le(u.plugin.name, y)), { immediate: !0 }), (y, $) => (o(), C(p(N), {
       padded: "",
@@ -695,11 +695,11 @@ const Et = (s) => s.filter((t) => t.type === pe), Ut = {
     const { rows: u, failure: g, loaded: i, load: c } = t.props.plugins, { rows: r } = t.props.dashboards, y = (e) => r.value.find((n) => n.plugin === e.name), { rows: $ } = t.props.descriptions, d = (e) => {
       var n;
       return ((n = $.value.find((l) => l.plugin === e.name)) == null ? void 0 : n.description) ?? "";
-    }, { rows: w } = t.props.services, A = (e) => w.value.filter((n) => n.plugin === e.name), _ = S(""), E = S(""), F = S(!1), V = S(""), G = S(""), H = S(!1), U = S(null), Z = S([]), M = S(""), J = q(() => u.value.find((e) => e.name === M.value) ?? null), K = (e) => W(["plugin", e.enabled ? "disable" : "enable", e.name], { target: e, fields: { enabled: !e.enabled } });
+    }, { rows: w } = t.props.services, A = (e) => w.value.filter((n) => n.plugin === e.name), R = S(""), E = S(""), F = S(!1), V = S(""), G = S(""), H = S(!1), U = S(null), Z = S([]), M = S(""), J = q(() => u.value.find((e) => e.name === M.value) ?? null), K = (e) => W(["plugin", e.enabled ? "disable" : "enable", e.name], { target: e, fields: { enabled: !e.enabled } });
     async function W(e, n = null) {
-      _.value = "";
+      R.value = "";
       const l = await qe(n, e, t.run);
-      return _.value = l.ok ? "" : l.error, l.ok && c(), l.ok;
+      return R.value = l.ok ? "" : l.error, l.ok && c(), l.ok;
     }
     const D = S(null), Y = S(!1), z = S(!1);
     async function ce() {
@@ -712,41 +712,41 @@ const Et = (s) => s.filter((t) => t.type === pe), Ut = {
         z.value = !1;
       }
       const n = t.props[e];
-      _.value = n.failure.value, D.value = n.failure.value ? null : n.data.value;
+      R.value = n.failure.value, D.value = n.failure.value ? null : n.data.value;
     }
     async function ge() {
       const e = await W(["plugin", "install", D.value.source, "--yes"]);
       D.value = null, e && (E.value = "");
     }
-    const x = S({});
+    const _ = S({});
     async function ve(e) {
       const n = `latest.${e.name}`;
       await t.reload(n);
       const l = t.props[n];
-      x.value = { ...x.value, [e.name]: l.failure.value ? { line: l.failure.value, is_newer: !1 } : l.data.value };
+      _.value = { ..._.value, [e.name]: l.failure.value ? { line: l.failure.value, is_newer: !1 } : l.data.value };
     }
     const L = S(null);
     async function ee(e) {
       const n = await t.run(["plugin", "upgrade", e.name]);
-      _.value = n.ok ? "" : n.error, L.value = n.ok ? n.value : null;
+      R.value = n.ok ? "" : n.error, L.value = n.ok ? n.value : null;
     }
     async function fe() {
       const e = L.value.name;
-      L.value = null, await W(["plugin", "upgrade", e, "--yes"]) && (x.value = { ...x.value, [e]: { line: `${e} is upgraded; its running services start again within a minute`, is_newer: !1 } });
+      L.value = null, await W(["plugin", "upgrade", e, "--yes"]) && (_.value = { ..._.value, [e]: { line: `${e} is upgraded; its running services start again within a minute`, is_newer: !1 } });
     }
     function me(e) {
       t.links.files && window.location.assign(We(window.location.href, e, t.links.files));
     }
     const P = S(null);
     function he(e) {
-      const { title: n, events: l } = y(e), R = l != null && l.length ? "dashboard" : "dashboard-poll";
-      t.state[`${R}.plugin`] = e.name, P.value = { title: n, events: l ?? [], key: R };
+      const { title: n, events: l } = y(e), x = l != null && l.length ? "dashboard" : "dashboard-poll";
+      t.state[`${x}.plugin`] = e.name, P.value = { title: n, events: l ?? [], key: x };
     }
     oe(P, (e, n, l) => {
       if (t.state.tab = e ? e.key : "list", !e) return;
       t.props[e.key].loaded.value && t.reload(e.key);
-      const R = t.follow(e.events, () => t.reload(e.key));
-      R && l(R);
+      const x = t.follow(e.events, () => t.reload(e.key));
+      x && l(x);
     });
     async function ye() {
       const e = [G.value.trim(), V.value.trim() && `Build it in ${V.value.trim()}.`].filter(Boolean).join(" ");
@@ -762,7 +762,7 @@ const Et = (s) => s.filter((t) => t.type === pe), Ut = {
       const n = `settings.${e.name}`;
       await t.reload(n);
       const l = t.props[n];
-      _.value = l.failure.value, M.value = l.failure.value ? "" : e.name, Z.value = l.failure.value ? [] : l.data.value.settings;
+      R.value = l.failure.value, M.value = l.failure.value ? "" : e.name, Z.value = l.failure.value ? [] : l.data.value.settings;
     }
     async function $e(e) {
       let n = { ok: !0 };
@@ -791,7 +791,7 @@ const Et = (s) => s.filter((t) => t.type === pe), Ut = {
       return [
         { label: e.row.enabled ? "Turn off" : "Turn on", group: "open", run: () => K(e.row) },
         { label: "Check for updates", group: "own", run: () => ve(e.row) },
-        { label: "Update", group: "own", disabled: !((n = x.value[e.row.name]) != null && n.is_newer), reason: "Check for updates first, or it is up to date", run: () => ee(e.row) },
+        { label: "Update", group: "own", disabled: !((n = _.value[e.row.name]) != null && n.is_newer), reason: "Check for updates first, or it is up to date", run: () => ee(e.row) },
         { label: "Log", group: "own", run: () => be(e.row) },
         ...y(e.row) ? [{ label: y(e.row).title, group: "own", run: () => he(e.row) }] : [],
         { label: "Copy name", group: "copy", run: ({ say: l }) => Le(e.row.name, e.row.name, l) },
@@ -830,10 +830,10 @@ const Et = (s) => s.filter((t) => t.type === pe), Ut = {
         }, 8, ["modelValue"])
       ], 32),
       n[18] || (n[18] = a("p", { class: "lead" }, "A plugin runs as you, with your files and your network. Check shows every command it would run before anything runs, and it installs at that exact commit.", -1)),
-      _.value ? (o(), f("p", Xt, m(_.value), 1)) : b("", !0),
+      R.value ? (o(), f("p", Xt, m(R.value), 1)) : b("", !0),
       X.value ? (o(), f("p", Qt, m(X.value), 1)) : b("", !0),
       H.value ? (o(), f("p", Zt, "Sent to the agent; its answer comes in the chat.")) : b("", !0),
-      k(p(Re), {
+      k(p(xe), {
         title: "Plugins",
         items: je.value,
         fields: Oe,
@@ -871,7 +871,7 @@ const Et = (s) => s.filter((t) => t.type === pe), Ut = {
           k(p(de), {
             on: l.row.enabled,
             title: l.row.enabled ? "Turn it off" : "Turn it on",
-            onChange: (R) => K(l.row)
+            onChange: (x) => K(l.row)
           }, null, 8, ["on", "title", "onChange"])
         ]),
         card: v(({ item: l }) => [
@@ -879,14 +879,14 @@ const Et = (s) => s.filter((t) => t.type === pe), Ut = {
             plugin: l.row.name,
             services: A(l.row)
           }, null, 8, ["plugin", "services"]),
-          x.value[l.row.name] ? (o(), f(j, { key: 0 }, [
-            a("span", nn, m(x.value[l.row.name].line), 1),
-            x.value[l.row.name].is_newer ? (o(), C(p(O), {
+          _.value[l.row.name] ? (o(), f(j, { key: 0 }, [
+            a("span", nn, m(_.value[l.row.name].line), 1),
+            _.value[l.row.name].is_newer ? (o(), C(p(O), {
               key: 0,
               small: "",
               variant: "primary",
               "data-plugin-upgrade": "",
-              onClick: (R) => ee(l.row)
+              onClick: (x) => ee(l.row)
             }, {
               default: v(() => [...n[16] || (n[16] = [
                 h("See what changes", -1)
@@ -899,7 +899,7 @@ const Et = (s) => s.filter((t) => t.type === pe), Ut = {
           k(p(O), {
             small: "",
             "data-plugin-settings": "",
-            onClick: (R) => te(l.row)
+            onClick: (x) => te(l.row)
           }, {
             default: v(() => [...n[17] || (n[17] = [
               h("Settings", -1)
@@ -908,7 +908,7 @@ const Et = (s) => s.filter((t) => t.type === pe), Ut = {
           }, 8, ["onClick"])
         ]),
         "card-actions": v(({ item: l }) => [
-          k(p(_e), {
+          k(p(Re), {
             items: ne(l),
             head: l.title
           }, null, 8, ["items", "head"])

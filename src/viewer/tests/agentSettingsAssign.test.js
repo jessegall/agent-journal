@@ -113,7 +113,7 @@ test("Apply now lists the tasks first and changes them only once the person conf
     const before = boardReads(reads);
     element.querySelector("[data-assign-confirm]").click();
     await settled();
-    expect(runs[1]).toEqual(["assign-rule", "apply", "7", "--confirm", "--revision", "r1", "--environment", "main"]);
+    expect(runs[1]).toEqual(["assign-rule", "apply", "7", "--change", "--revision", "r1", "--environment", "main"]);
     expect(element.querySelector("[data-assign-listing]")).toBeNull();
     expect(boardReads(reads)).toBeGreaterThan(before);
 });
