@@ -9,7 +9,13 @@ from engine.enums.actor_type import ActorType
 from engine.journal.journal_home import JournalHome
 from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from engine.query.queries import Queries
+from core.modules.skills.support.skill_catalogue import SkillCatalogue
+from core.modules.skills.support.unread_skills import UnreadSkills
+from engine.enums.command_category import CommandCategory
+from engine.enums.tool_type import ToolType
+from engine.testing.examples.shell_part import ShellPart
 from engine.testing.examples.hook_sample import HookSample
+from engine.testing.examples.hook_samples import HookSamples
 from engine.time.clock import Clock
 from tests.integration.support.integration_journal import MAIN_ENVIRONMENT, IntegrationJournal
 
@@ -71,6 +77,16 @@ class FixtureJournal:
     # binds the instance for the type, as a story replaces one of the story kit's own bindings
     def replace(self, kind: type, instance: object) -> None:
         self.container.bind(kind, instance)
+
+    # what an agent does after its session starts: it reads the overview and reads the file of each skill it must load,
+    # through its program's Read tool, so the journal's own blocks and refusals lift as they do for a real agent
+    def reads_what_it_must(self, session: str) -> None:
+        self.hook(session, HookSamples.shell("journal overview", ShellPart("journal", CommandCategory.JOURNAL, ["overview"], subcommand="overview")))
+        self.run("overview", actor=self.agent)
+        skills = {skill.folder: skill.path for skill in self.container.get(SkillCatalogue).skills()}
+        for name in self.container.get(UnreadSkills).unread(self.agent.id):
+            self.hook(session, HookSamples.sample("pre_tool_use", {"name": "Read", "category": ToolType.READ, "files": [skills[name]], "diff": None}))
+        self.run_listeners()
 
     def row(self, model: type, row_id: int):
         return self.container.get(Queries).query(model).find(row_id)

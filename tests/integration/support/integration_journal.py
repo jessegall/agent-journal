@@ -2,6 +2,7 @@ import io
 import json
 import shlex
 from dataclasses import dataclass
+from typing import cast
 from uuid import uuid4
 
 from core.modules import DEFAULT_MODULES
@@ -53,7 +54,8 @@ class IntegrationJournal:
         fired_at_ms = int(self.container.get(Clock).timestamp().value.timestamp() * 1000)
         firing = f"integration-{uuid4().hex}" if sample.firing == SAMPLE_FIRING else sample.firing
         event = HookEvent.parsed(sample.with_fields(session=session, firing=firing, fired_at_ms=fired_at_ms).body)
-        return self.container.get(HookRoute).answer(event)
+        with cast(RepeatedWork, self.database.repeated_work).request():
+            return self.container.get(HookRoute).answer(event)
 
     # lines run from now on read this clock, as a test that needs rows written at one moment asks
     def with_clock(self, clock: Clock) -> None:
