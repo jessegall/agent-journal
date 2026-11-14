@@ -145,6 +145,7 @@ export {vContext} from "./vContext.js";
 export {copying, deleteItem, short} from "../src/domain/contextItems.js";
 export {default as EditorTabs} from "./EditorTabs.vue";
 export {default as ActionsMenu} from "./ActionsMenu.vue";
+export {default as TextList} from "./TextList.vue";
 export {default as CommentCard} from "./CommentCard.vue";
 export {default as CommentRail} from "./CommentRail.vue";
 export {default as CommentBox} from "./CommentBox.vue";
