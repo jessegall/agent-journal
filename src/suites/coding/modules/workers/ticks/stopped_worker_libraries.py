@@ -14,9 +14,9 @@ STOPPED_SECONDS = 15 * 60
 
 
 class StoppedWorkerLibraries:
-    """Removes the library folders a worktree copied in once its worker has been stopped for 15 minutes: the
-    source and the worker's changes stay, and a send to the worker copies the libraries back. Linked libraries
-    cost nothing and stay."""
+    """Removes the library folders a worktree linked or copied in once its worker has been stopped for 15 minutes,
+    so no scan of the worktree walks them: the source and the worker's changes stay, and a send to the worker links
+    and copies the libraries back."""
 
     def __call__(self, container: Container) -> bool:
         stamp = container.get(Clock).timestamp()
@@ -25,11 +25,11 @@ class StoppedWorkerLibraries:
         workers = {worker.id: worker for worker in queries.query(Agent).find_many(list(dict.fromkeys(row.session_agent_id for row in worktrees)))}
         dropped = False
         for worktree in worktrees:
-            copies = json.loads(worktree.library_copies)
+            links, copies = json.loads(worktree.library_links), json.loads(worktree.library_copies)
             worker = workers[worktree.session_agent_id]
-            if not copies or worktree.libraries_dropped_at is not None or worker.ended_at is None or worker.ended_at.elapsed_seconds(stamp) < STOPPED_SECONDS:
+            if not (links or copies) or worktree.libraries_dropped_at is not None or worker.ended_at is None or worker.ended_at.elapsed_seconds(stamp) < STOPPED_SECONDS:
                 continue
-            libraries.drop(worktree.folder, copies)
+            libraries.drop(worktree.folder, links, copies)
             bus.run(RecordWorktreeLibraries(worktree.id, True), Actor.core(), environment_id=worktree.environment_id)
             dropped = True
         return dropped

@@ -27,7 +27,7 @@ class WorktreeLibraries:
             if FileAccess.is_symlink(Path(worktree.folder) / name):
                 FileAccess.unlink(Path(worktree.folder) / name)
         self.libraries.place(source, worktree.folder, [name for name in names if name not in copies], ())
-        self.libraries.restore(source, worktree.folder, [name for name in names if name in copies])
+        self.libraries.restore(source, worktree.folder, (), [name for name in names if name in copies])
         return names
 
     def absent(self, worktree: Worktree, source: str, copies: tuple[str, ...]) -> tuple[str, ...]:
