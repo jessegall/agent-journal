@@ -1,24 +1,12 @@
-from tests.stories.server.support.server_fixtures import person_server
 
-import pytest
 
 import os
 
 from engine.hosting.server_restart_state import RESTART_LIMIT_SECONDS
-from engine.version.journal_version import JOURNAL_VERSION
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
 from engine.serving.server_files import ServerFiles
-from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.server.support.server_client import server_story
 
 DEAD_PID = 999999
-
-
-def test_the_session_route_answers_a_person_cookie_with_its_kind_and_person(person_server):
-    story = person_server
-    cookie = story.expect_viewer_login(story.viewer_key("Ada"))
-    story.expect_viewer_status("/api/session", 200, cookie, text='"type": "person"')
-    story.expect_viewer_status("/api/session", 200, cookie, text=f'"journal_version": "{JOURNAL_VERSION}"')
 
 
 def test_the_session_route_answers_no_cookie_with_401(person_server):

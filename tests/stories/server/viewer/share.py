@@ -69,14 +69,6 @@ def read(plan: str, window: str = PLAN_WINDOW) -> dict[str, object]:
     return {"window": window, "line": ["plan", "show", plan], "environment": "main"}
 
 
-def test_opening_a_link_gives_a_share_session_that_works_again_until_the_link_ends(shared_plan_link):
-    story, ((_, share)) = shared_plan_link
-    first = opened(story, share)
-    story.expect_viewer_status("/api/session", 200, first, text='"type": "share"')
-    second = opened(story, share)
-    story.expect_viewer_status("/api/session", 200, second, text='"type": "share"')
-
-
 def test_the_session_route_tells_the_shell_which_row_the_link_shows_and_when_it_ends(shared_plan_link):
     story, ((_, share)) = shared_plan_link
     visitor = opened(story, share)
@@ -125,13 +117,6 @@ def test_a_dead_link_page_clears_the_share_cookie_a_visitor_holds(shared_plan_li
     _, headers, _ = viewer_answer(story.viewer_port(), "/viewer/share/not-a-link", visitor, "")
     expect_headers_with(headers, "Set-Cookie", "", f"{story.cookie_name("journal_share")}=;")
     expect_cookie_headers_with(headers, "Max-Age=0")
-
-
-def test_a_revoked_link_ends_the_sessions_it_opened(shared_plan_link):
-    story, ((_, share)) = shared_plan_link
-    visitor = opened(story, share)
-    revoke(story, share)
-    story.expect_viewer_status("/api/session", 401, visitor)
 
 
 def test_a_share_session_reads_the_shared_plan_and_its_phases_as_the_person_who_made_the_link_and_no_other_plan(shared_plan_link):

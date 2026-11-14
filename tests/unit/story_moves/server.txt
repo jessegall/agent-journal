@@ -1,0 +1,4 @@
+tests/stories/server/viewer_session.py::test_the_session_route_answers_a_person_cookie_with_its_kind_and_person -> repeat tests/unit/server/viewer/test_session_route.py::test_a_person_session_answers_its_kind_and_person
+tests/stories/server/server_routes.py::test_a_write_sent_with_a_timing_leaves_one_log_line_with_every_stamp_in_order -> repeat tests/unit/server/endpoints/test_cli_endpoint.py::test_the_answer_stamps_the_timing_the_request_carries
+tests/stories/server/viewer_socket.py::test_a_hosted_viewer_refuses_a_request_naming_another_host -> repeat tests/unit/server/viewer/test_local_door.py::test_a_request_under_any_other_address_is_refused
+tests/stories/server/viewer_login.py::test_a_request_naming_another_host_is_refused_even_with_the_cookie -> repeat tests/unit/server/viewer/test_local_door.py::test_a_request_under_any_other_address_is_refused

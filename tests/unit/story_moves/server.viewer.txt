@@ -1,0 +1,2 @@
+tests/stories/server/viewer/share.py::test_opening_a_link_gives_a_share_session_that_works_again_until_the_link_ends -> repeat tests/unit/server/viewer/test_viewer_login.py::test_a_link_opens_a_share_session_again_and_again_naming_its_share_and_end
+tests/stories/server/viewer/share.py::test_a_revoked_link_ends_the_sessions_it_opened -> repeat tests/unit/server/viewer/test_viewer_login.py::test_a_revoked_or_unknown_link_opens_no_session

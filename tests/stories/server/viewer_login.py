@@ -1,9 +1,6 @@
-from tests.stories.server.support.server_fixtures import person_server
 
 import pytest
 
-from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.server.support.server_client import request_answer, server_story
 from core.modules.project_rules.support.rule_settings import RULE_APPROVAL_SETTING
 
 FOREIGN_HOST = "journal.example.com"
@@ -47,12 +44,6 @@ def test_the_cookie_opens_the_viewer_shell_with_its_import_map(person_server):
     story.expect_viewer_headers("/viewer/kit/window-kit.js", cookie, {"Content-Type": "text/javascript"})
 
 
-def test_a_request_naming_another_host_is_refused_even_with_the_cookie(person_server):
-    story = person_server
-    cookie = story.expect_viewer_login(story.viewer_key("Ada"))
-    story.expect_viewer_status("/viewer/", 403, cookie, host=FOREIGN_HOST)
-
-
 def test_a_worker_gets_no_viewer_key(person_server):
     story = person_server
     story.story.expect_success("agent start s-9 claude worker --environment main")
@@ -90,6 +81,3 @@ def main_agent_key(story) -> str:
 def test_a_viewer_key_request_that_is_not_an_object_is_refused(person_server):
     story = person_server
     story.expect_viewer_key_refusal(["Ada"], 400, "a caller request is an object")
-
-
-
