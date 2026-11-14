@@ -65,10 +65,10 @@ test("the links are read again when a link or comment changes, never on a timer"
     expect(timer).not.toHaveBeenCalled();
     expect(held.keyReads).toEqual([{only: [], state: {}}]);
     await follows[0].heard({event: "share_link.update"});
-    await new Promise((resolve) => setTimeout(resolve, 70));
-    expect(held.keyReads.at(-1)).toEqual({only: ["shares"], state: {}});
+    await vi.waitFor(() => expect(held.keyReads.at(-1)).toEqual({only: ["shares"], state: {}}));
+    const reads = held.keyReads.length;
     await follows[0].heard({event: "share_comment.make"});
-    await new Promise((resolve) => setTimeout(resolve, 70));
+    await vi.waitFor(() => expect(held.keyReads.length).toBeGreaterThan(reads));
     expect(held.keyReads.at(-1)).toEqual({only: ["shares"], state: {}});
     expect(held.read).not.toHaveBeenCalled();
     timer.mockRestore();
