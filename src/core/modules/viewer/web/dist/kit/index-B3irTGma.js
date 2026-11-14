@@ -8921,7 +8921,7 @@ const i2 = { class: "filter-ways" }, r2 = { class: "filter-count" }, u2 = {
       _: 1
     }, 8, ["model-value", "placeholder"]));
   }
-}, Nr = /* @__PURE__ */ z(_2, [["__scopeId", "data-v-dadc2f55"]]), M2 = { class: "title" }, C2 = { class: "state" }, A2 = {
+}, Nr = /* @__PURE__ */ z(_2, [["__scopeId", "data-v-c20a74ef"]]), M2 = { class: "title" }, C2 = { class: "state" }, A2 = {
   __name: "StateRows",
   props: {
     term: { type: String, required: !0 },
@@ -15425,7 +15425,8 @@ const vM = /* @__PURE__ */ mM(pM), gM = ["width", "height", "viewBox"], yM = ["w
     listWidth: { type: Number, default: 360 },
     emptyTitle: { type: String, default: "Nothing here yet" },
     pickLine: { type: String, default: "No row chosen" },
-    place: { type: Function, default: null }
+    place: { type: Function, default: null },
+    openFirst: { type: Boolean, default: !1 }
   }, {
     chosen: { type: [String, Number], default: null },
     chosenModifiers: {}
@@ -15446,7 +15447,7 @@ const vM = /* @__PURE__ */ mM(pM), gM = ["width", "height", "viewBox"], yM = ["w
     }
     return fe(() => t.items.length, () => {
       if (n.value !== null) return;
-      const f = t.items.find((m) => String(m.id) === ma.value.row);
+      const f = t.items.find((m) => String(m.id) === ma.value.row) ?? (t.openFirst ? t.items[0] : void 0);
       f && (n.value = f.id);
     }, { immediate: !0 }), (f, m) => (r(), d("div", $M, [
       ne(f.$slots, "top", {}, void 0, !0),
@@ -15513,7 +15514,7 @@ const vM = /* @__PURE__ */ mM(pM), gM = ["width", "height", "viewBox"], yM = ["w
       ])
     ]));
   }
-}, aI = /* @__PURE__ */ z(CM, [["__scopeId", "data-v-3c136269"]]), AM = {
+}, aI = /* @__PURE__ */ z(CM, [["__scopeId", "data-v-f289d5b7"]]), AM = {
   class: "reader",
   "data-reader": ""
 }, EM = {
@@ -16568,7 +16569,7 @@ const EC = {
       ])
     ]));
   }
-}, gI = /* @__PURE__ */ z(cA, [["__scopeId", "data-v-b494c444"]]), yI = zu(() => import("./VoiceFigure-xa-TM6M9.js").then((e) => e.V)), bI = "1.2.0", kI = "3.5";
+}, gI = /* @__PURE__ */ z(cA, [["__scopeId", "data-v-b494c444"]]), yI = zu(() => import("./VoiceFigure-CO8wsexy.js").then((e) => e.V)), bI = "1.2.0", kI = "3.5";
 export {
   Dm as $,
   Ie as A,

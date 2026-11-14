@@ -59,9 +59,9 @@ const X = [["journal", "From the journal"], ["plugin", "From a plugin"], ["proje
   var a;
   return (a = e.module) != null && a.startsWith("plugin:") ? "plugin" : e.shipped ? "journal" : "project";
 }, ee = (e) => e.required ? e.agents === "main" ? "Main agent" : "Every agent" : "", Z = [
+  { key: "source", label: "Group", options: X, get: Y },
   { key: "required", label: "Required", options: [["required", "Required"], ["optional", "Not required"]], get: (e) => e.required ? "required" : "optional" },
-  { key: "read", label: "Read by the main agent", options: [["read", "Read"], ["unread", "Not read"]], get: (e) => e.read ? "read" : "unread" },
-  { key: "source", label: "Source", options: X, get: Y }
+  { key: "read", label: "Read now", options: [["read", "Read"], ["unread", "Not read"]], get: (e) => e.read ? "read" : "unread" }
 ], Me = (e) => [...e].sort((a, t) => X.findIndex(([u]) => u === Y(a)) - X.findIndex(([u]) => u === Y(t)) || a.folder.localeCompare(t.folder)).map((a) => ({ id: a.folder, title: a.folder, desc: a.description, group: ge[Y(a)], row: a })), me = (e, a) => e.filter((t) => (t.skills ?? []).includes(a)), Pe = (e, a) => e.filter((t) => (t.required_skills ?? []).includes(a)), Fe = (e, { require: a }) => [
   { label: e.required ? "Turn off" : "Turn on", group: "own", run: ({ say: t }) => a(e.folder, e.required ? "none" : "all").then(() => t(e.required ? `${e.folder} is no longer required` : `${e.folder} is required at the start`)) },
   { label: "Copy name", group: "copy", run: ({ say: t }) => qe(e.folder, "", t) }
@@ -874,6 +874,7 @@ const vt = {
       place: p,
       "empty-title": "No skills are installed",
       "pick-line": "Choose a skill to read what it says",
+      "open-first": "",
       "data-skills-catalogue": ""
     }, {
       top: j(() => [
@@ -931,7 +932,7 @@ const vt = {
       _: 1
     }, 8, ["chosen", "items"]));
   }
-}, jl = /* @__PURE__ */ I(Nl, [["__scopeId", "data-v-fa882c72"]]);
+}, jl = /* @__PURE__ */ I(Nl, [["__scopeId", "data-v-f5e6c428"]]);
 export {
   jl as S
 };
