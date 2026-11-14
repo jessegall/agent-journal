@@ -111,7 +111,7 @@ def test_a_worker_at_its_usage_limit_keeps_the_limit_while_it_is_idle_and_starts
     UsageLimitMarker()(story.container)
     limit_ends_at = story.row(Agent, worker.id).usage_limit_ends_at
     launches.clear()
-    story.expect_success(f"agent end {worker.id}", actor=story.worker)
+    story.end_session(story.worker)
     story.run_listeners()
     story.advance(timedelta(seconds=COLD_IDLE_SECONDS))
     for _ in range(TICKS):

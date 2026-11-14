@@ -160,7 +160,7 @@ def resumed_running_worker(running_recovery, request):
 
 @pytest.fixture
 def nested_recovery(recovery):
-    recovery.story.expect_success(f"agent end {recovery.worker.id}", actor=recovery.worker)
+    recovery.story.end_session(recovery.worker)
     recovery.launches.clear()
     recovery.launch_hook = lambda: recovery.story.expect_success(
         f'worker send --wait {agent_number(recovery.story, recovery.worker.id)} "Continue the assigned task"', actor=recovery.story.agent)
@@ -211,7 +211,7 @@ def test_worker_send_does_not_resume_a_session_whose_process_is_still_active(rec
     recovery.process_running = True
     recovery.story.expect_success(f"agent edit {agent_number(recovery.story, recovery.worker.id)} --pid {WORKER_PID}")
     recovery.story.expect_text(f"agent show {agent_number(recovery.story, recovery.worker.id)}", f"pid: {WORKER_PID}")
-    recovery.story.expect_success(f"agent end {recovery.worker.id}", actor=recovery.worker)
+    recovery.story.end_session(recovery.worker)
     recovery.story.expect_text(f"agent show {agent_number(recovery.story, recovery.worker.id)}", f"pid: {WORKER_PID}")
     recovery.advance(121)
     recovery.story.expect_success(f'worker send --wait {agent_number(recovery.story, recovery.worker.id)} "Go on with task 1"', actor=recovery.story.agent)
@@ -311,7 +311,7 @@ def test_a_silent_main_agent_is_not_woken_for_open_tasks_with_auto_mode_off(reco
 def test_a_stopped_worker_with_work_is_reported_after_fifteen_minutes_and_every_five_minutes(recovery, monkeypatch):
     story, worker = recovery.story, recovery.worker
     monkeypatch.setattr(recovery, "request", lambda *_args: b"failed\n")
-    story.expect_success(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     recovery.advance(14 * 60)
     story.tick("s-1")
     story.expect_rows(recovery.stopped_lines() == 0)
@@ -341,7 +341,7 @@ def test_a_delivery_without_tests_passed_is_reported_as_stopped(recovery):
     story.expect_success("proof check 1", actor=story.agent)
     story.expect_success("worker commit --wait --differences none", actor=worker)
     story.container.get(Database).update(Statement("UPDATE worker_worktrees SET tests_passed_at = NULL, merge_ready_at = NULL WHERE session_agent_id = ?", [worker.id]))
-    story.expect_success(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     recovery.advance(20 * 60)
     story.tick("s-1")
     story.expect_rows(recovery.stopped_lines() == 1)
@@ -352,7 +352,7 @@ def test_the_stopped_worker_warning_intervals_are_settings(recovery, monkeypatch
     monkeypatch.setattr(recovery, "request", lambda *_args: b"failed\n")
     story.expect_success(f"setting set {IDLE_WORKER_MINUTES} 2 --environment main", actor=story.user)
     story.expect_success(f"setting set {IDLE_WORKER_REPEAT_MINUTES} 1 --environment main", actor=story.user)
-    story.expect_success(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     recovery.advance(2 * 60)
     story.tick("s-1")
     story.expect_rows(recovery.stopped_lines() == 1)
@@ -368,7 +368,7 @@ def test_a_stopped_worker_with_a_running_command_is_not_reported(running_command
     story.agent = worker
     start_process(story, "sleep 30", category=CommandCategory.TEST_RUN)
     story.agent = main
-    story.expect_success(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     recovery.advance(20 * 60)
     story.tick("s-1")
     story.expect_no_text(f"agent-line list --agent {main.id}", f"worker:{agent_number(story, worker.id)} has stopped")
@@ -376,7 +376,7 @@ def test_a_stopped_worker_with_a_running_command_is_not_reported(running_command
 
 def test_a_worker_waiting_for_a_place_is_not_reported_and_starts_when_a_place_frees(recovery):
     story, worker = recovery.story, recovery.worker
-    story.expect_success(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     story.expect_success(f"setting set {WORKER_RUN_LIMIT} 0 --environment main", actor=story.user)
     recovery.advance(1)
     story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Continue the task"', actor=story.agent)

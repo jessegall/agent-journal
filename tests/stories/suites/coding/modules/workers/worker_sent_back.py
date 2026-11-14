@@ -23,7 +23,7 @@ def test_a_worker_that_keeps_stopping_is_sent_back_with_its_tasks_as_often_as_it
     story.expect_success(MERGER_ON, actor=story.user)
     session = worker_session(story, story.worker)
     for _ in range(4):
-        story.run(f"agent end {story.worker.id}", actor=story.worker)
+        story.end_session(story.worker)
         story.run_listeners()
         story.hook(session, HookSamples.session_start())
     lines = worker_lines(story, story.worker.id)
@@ -35,7 +35,7 @@ def test_a_worker_that_asked_for_help_and_stops_is_answered_and_never_told_to_go
     story = case.story
     story.expect_success(HELP_REQUEST_LINE, actor=case.worker)
     story.expect_hook_allowed(worker_session(story, case.worker), HookSamples.stop())
-    story.run(f"agent end {case.worker.id}", actor=case.worker)
+    story.end_session(case.worker)
     story.expect_rows(CONTINUE_TEXT not in worker_lines(story, case.worker.id), detail=worker_lines(story, case.worker.id))
     story.expect_success(f'merger answer {questions(story)[0].id} "{ANSWER}"', actor=case.merger)
     story.expect_rows(ANSWER in case.worker_messages(), CONTINUE_TEXT not in worker_lines(story, case.worker.id), detail=worker_lines(story, case.worker.id))

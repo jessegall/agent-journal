@@ -268,8 +268,8 @@ def test_read_only_helper_tags_only_when_making_a_task(split_story):
     helper_id, _ = started(story, f'helper start {PLANNER_PROFILE.name} --brief "Plan networking" --environment main')
     helper = Actor(helper_id, ActorType.AGENT)
     task_id = story.new_row_id('task make "Network plan" --tag networking --complexity 3 --confirm --environment main', actor=helper)
-    story.expect_refusal(f'task tag {task_id} linux --confirm', 'read', actor=helper)
-    story.expect_refusal(f'task untag {task_id} networking', 'read', actor=helper)
+    story.expect_refusal(f'task tag {task_id} linux --confirm', "may not run task tag", actor=helper)
+    story.expect_refusal(f'task untag {task_id} networking', "may not run task untag", actor=helper)
 
 
 @pytest.fixture

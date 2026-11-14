@@ -52,7 +52,7 @@ def test_a_message_to_a_stopped_agent_starts_its_program_again_in_the_same_journ
     story = helper_story
     previous_stop = helper_row(story)
     resumable_session(story, previous_stop, monkeypatch)
-    story.expect_success(f"agent end {story.helper.id}", actor=story.helper)
+    story.end_session(story.helper)
     story.advance(timedelta(minutes=5))
     story.expect_success(MESSAGE.format(number=agent_number(story, story.helper.id)), actor=story.agent)
     starts = program_starts(story)
@@ -64,7 +64,7 @@ def test_a_message_to_a_stopped_agent_whose_session_has_gone_cold_starts_a_new_p
     previous_stop = helper_row(story)
     resumable_session(story, previous_stop, monkeypatch)
     story.expect_success('memory make "The cart rounds half up" --weight 5', actor=story.helper)
-    story.expect_success(f"agent end {story.helper.id}", actor=story.helper)
+    story.end_session(story.helper)
     full_status(story, previous_stop.session, 40, 0.0)
     story.advance(timedelta(minutes=61))
     story.expect_success(MESSAGE.format(number=agent_number(story, story.helper.id)), actor=story.agent)
@@ -75,7 +75,7 @@ def test_a_message_to_a_stopped_agent_whose_session_has_gone_cold_starts_a_new_p
 
 def test_a_message_to_a_retired_agent_is_refused_and_wakes_nothing(helper_story):
     story = helper_story
-    story.expect_success(f"agent end {story.helper.id}", actor=story.helper)
+    story.end_session(story.helper)
     story.expect_success(f'agent retire {agent_number(story, story.helper.id)} --reason "its job is done"')
     story.expect_refusal(MESSAGE.format(number=agent_number(story, story.helper.id)), "is retired", actor=story.agent)
     story.expect_rows(program_starts_so_far(story) == [], detail=str(story.launcher.requests))

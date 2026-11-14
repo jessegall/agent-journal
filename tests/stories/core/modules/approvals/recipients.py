@@ -45,7 +45,7 @@ def test_a_helpers_request_is_addressed_to_its_main_agent_and_has_no_person_card
 
 def test_only_the_addressed_main_agent_can_relay_the_request(helper_request):
     story, helper, approval = helper_request
-    story.expect_refusal(f"approval relay {approval.id}", "only the main agent", actor=helper)
+    story.expect_refusal(f"approval relay {approval.id}", "may not run approval relay", actor=helper)
     story.expect_success(f"approval relay {approval.id}", actor=story.agent)
     saved = story.container.get(Queries).query(ApprovalRequest).find(approval.id)
     items = tuple(story.container.get(Queries).query(DockItem).filter(target_model="approval", target_id=approval.id, state=DockItemState.DOCKED).every_row(TEST_ROWS_REASON))

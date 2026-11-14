@@ -344,7 +344,7 @@ def test_a_worker_waiting_for_tests_or_merge_is_not_reported_as_stopped(new_stor
 
     story, repository, worker, started = queued_story(new_story, monkeypatch)
     story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
-    story.expect_success(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     story.advance(timedelta(minutes=20))
     story.tick("s-1")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has stopped")

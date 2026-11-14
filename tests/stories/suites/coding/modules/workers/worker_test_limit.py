@@ -162,7 +162,7 @@ def test_a_stopped_worker_is_started_again_with_the_count_and_limit(new_story):
     story.run(f"setting set {ProcessSetting.READERS_FORCED.key} off --environment main")
     process = story.container.get(Bus).run(StartProcess.single_part(worker.id, "pytest tests/restart.py", "/work", CommandCategory.TEST_RUN, 30), worker, environment_id=1)
     story.run(f"process background {process.id}", actor=worker)
-    story.run(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     story.run_listeners()
     launcher = FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET), answer=b"started\n")
     story.container.get(OutputFolder).write_output(process.id, 1, "collected 8 items\n")

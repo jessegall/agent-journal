@@ -44,7 +44,7 @@ def test_a_worker_that_asked_then_started_a_run_and_stopped_is_woken_when_the_ru
     story.expect_success(REQUEST, actor=worker)
     story.advance(timedelta(minutes=1))
     run, bus = start_background_run(story, worker)
-    story.run(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     bus.run(EndProcess(run.id, 1, 10, 1), worker, environment_id=1)
     expect_run_ended_line(story, worker, run)
 

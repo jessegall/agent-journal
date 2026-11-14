@@ -10,7 +10,7 @@ STOPPED = "stopped with task:1 left"
 def stopped_worker(story):
     repository_environment(story)
     worker = dispatched_worker(story)
-    story.expect_success(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     return worker
 
 

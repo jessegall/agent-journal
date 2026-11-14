@@ -43,7 +43,7 @@ def test_a_paused_worker_is_passed_over_for_a_kind_and_kept_as_the_one_named(new
 
 def test_an_ended_worker_is_skipped_since_a_task_cannot_be_assigned_to_it(new_story):
     story = new_story(fixture=SonnetWorkerAndFreeTask)
-    story.run(f"agent end {story.helper.id}", actor=story.helper)
+    story.end_session(story.helper)
     rule_id = title_rule(story, worker_flags(story, story.helper))
     expect_decision(story, "skipped", None, f"rule {rule_id} skipped", "has ended")
 

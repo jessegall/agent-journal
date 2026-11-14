@@ -18,5 +18,7 @@ class WorkerCommands(CommandAllowList):
                             "doc show", "doc list", "report show", "report list", "output read", "output title", "reader draft", "helper run", "skill write",
                             "search find", "refusal skip", "refusal confirm", "refusal withdraw", "task block", "task unblock", "task focus",
                             "task test", "task tag", "task make", "wait stuck", "task tags", "task graph",
-                            "alias list", "command-type list", "reader list")
+                            "alias list", "command-type list", "reader list", "plugin file", "reader add", "plan focus", "task release", "task retest", "task close",
+                            "task comments", "helper-grant show", "agent-line list", "agent-line show", "process holds", "output watch", "wait end",
+                            "skill require", "helper send", "helper stop")
     classes: Sequence[JournalLineClass] = ()

@@ -62,7 +62,7 @@ def test_a_person_editing_an_agents_number_is_refused_and_nothing_changes(new_st
 def test_an_agent_changing_its_own_number_is_refused_and_nothing_is_written(new_story):
     story = new_story(fixture=UserBuilder)
     worker = Actor(started_worker(story, "s-9", "main", story.agent.id), ActorType.AGENT)
-    story.expect_refusal(f"agent edit {worker.id} --number 1", NUMBER_REFUSAL, actor=worker)
+    story.expect_refusal(f"agent edit {worker.id} --number 1", "may not run agent edit", actor=worker)
     story.expect_refusal(f"agent edit {story.agent.id} --number 9", NUMBER_REFUSAL, actor=story.agent)
     story.expect_rows(shown(story, worker.id)["number"] == 2, shown(story, story.agent.id)["number"] == 1)
 

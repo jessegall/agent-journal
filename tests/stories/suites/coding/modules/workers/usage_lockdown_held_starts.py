@@ -61,7 +61,7 @@ def test_a_worker_that_ends_with_its_task_unfinished_is_not_restarted_on_any_of_
     story.expect_success(LIMIT, actor=owner)
     report(story, 55)
     launches.clear()
-    story.expect_success(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     story.run_listeners()
     story.advance(timedelta(seconds=1))
     waiting = waiting_lines(story, worker)

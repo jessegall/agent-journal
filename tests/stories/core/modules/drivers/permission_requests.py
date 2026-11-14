@@ -55,4 +55,4 @@ def test_a_declined_request_leaves_the_helper_refused(new_story):
 def test_the_asker_cannot_answer_its_own_request(new_story):
     story, session, helper = helper_story(new_story)
     story.expect_success(f'permission ask {DESIGN} --reason "save the design page, please"', actor=helper)
-    story.expect_refusal("permission allow 1", "only the main agent", actor=helper)
+    story.expect_refusal("permission allow 1", "may not run permission allow", actor=helper)

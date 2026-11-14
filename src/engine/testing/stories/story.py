@@ -17,6 +17,8 @@ from uuid import uuid4
 from typing import TypeVar, cast
 from datetime import timedelta
 from engine.actor.actor import Actor
+from core.modules.agents.commands.end_agent.end_agent import EndAgent
+from core.modules.agents.models.agent import Agent
 from engine.sandbox.shell_sandbox import ShellSandbox
 from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
 from engine.cli.console import Console
@@ -200,6 +202,11 @@ class Story:
 
     def run_command(self, command: Command[R], actor: Actor, environment_id: int) -> R:
         return self.container.get(Bus).run(command, actor, environment_id=environment_id)
+
+    # the session end hook ends the agent as itself, with no journal line, so no command list judges it
+    def end_session(self, agent: Actor) -> None:
+        self.steps.append(f"end session of agent {agent.id}")
+        self.run_command(EndAgent(agent.id), agent, self.container.get(Queries).query(Agent).find(agent.id).environment_id)
 
     def expect_agent_group(self, helper_type: str, profile: str, group: str) -> None:
         self.checked(f"agent group of {helper_type} {profile}")

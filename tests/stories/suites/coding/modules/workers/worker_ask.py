@@ -210,7 +210,7 @@ def test_a_person_cannot_ask(asking):
 
 def test_a_helper_cannot_ask(asking):
     helper = asking.story.run_command(StartAgent("s-helper", "claude", Helper.key, asking.story.agent.id, profile=f"{RESEARCHER_PROFILE.name}"), Actor.core(), 1)
-    asking.story.expect_refusal(f'worker ask "{QUESTION}"', "journal worker ask is for workers", actor=Actor(helper.id, ActorType.AGENT))
+    asking.story.expect_refusal(f'worker ask "{QUESTION}"', "may not run worker ask", actor=Actor(helper.id, ActorType.AGENT))
 
 
 def test_a_worker_with_no_task_cannot_ask(asking):

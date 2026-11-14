@@ -172,7 +172,7 @@ def test_a_main_agents_exit_leaves_its_row(new_story):
 
 def test_a_helper_that_ends_with_its_job_open_tells_the_parent(new_story):
     story = new_story(fixture=StartedHelper)
-    story.expect_success(f"agent end {helper_agent(story).id}", actor=Actor(helper_agent(story).id, ActorType.AGENT))
+    story.end_session(Actor(helper_agent(story).id, ActorType.AGENT))
     story.run_listeners()
     story.expect_text(f"message read {helper_report(story).id}", EMPTY_REPORT_TEXT)
     story.expect_no_text(LINES.format(agent=story.agent.id), EMPTY_REPORT_TEXT)
