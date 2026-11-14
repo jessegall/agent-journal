@@ -26,8 +26,8 @@ class TwoWorkersFourTasks(StoryFixture):
 
 
 @pytest.fixture
-def workshop(journal_with):
-    return FixtureJournal.played(journal_with(), TwoWorkersFourTasks)
+def workshop(played):
+    return played(TwoWorkersFourTasks)
 
 
 def worker_w(story: FixtureJournal) -> Actor:

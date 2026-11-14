@@ -71,6 +71,12 @@ class TemplateDatabases:
     def synced_home(self, folder: Path, modules: tuple[str, ...] = ()) -> JournalHome:
         return self.copy(self.template(modules, None), folder)
 
+    # a journal home copied from a story fixture's template, built once and kept like a story's, with the actors the
+    # fixture made: an integration test starts from a fixture's state without replaying its lines
+    def fixture_home(self, folder: Path, fixture: type[StoryFixture], modules: tuple[str, ...] = ()) -> tuple[JournalHome, StoryState]:
+        template = self.template(modules, fixture)
+        return self.copy(template, folder), template.state
+
     def free_journal(self, template: Template) -> WorkingJournal:
         journals = self.working_journals.setdefault(template.home.database, [])
         free = next((journal for journal in journals if not journal.is_taken), None)

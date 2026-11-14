@@ -18,13 +18,13 @@ INSPECT_READS_ALLOWED = 3
 
 
 @pytest.fixture
-def started_task(journal_with) -> FixtureJournal:
-    return FixtureJournal.played(journal_with(), StartedTaskBuilder)
+def started_task(played) -> FixtureJournal:
+    return played(StartedTaskBuilder)
 
 
 @pytest.fixture
-def checkpoint_plan(journal_with) -> FixtureJournal:
-    return FixtureJournal.played(journal_with(), CheckpointPlan)
+def checkpoint_plan(played) -> FixtureJournal:
+    return played(CheckpointPlan)
 
 
 def read_selects(played: FixtureJournal, line: str) -> list[str]:

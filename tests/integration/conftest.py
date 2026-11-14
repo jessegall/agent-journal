@@ -5,6 +5,7 @@ import pytest
 
 from engine.journal.journal_home import JournalHome
 from engine.testing.templates.template_databases import TemplateDatabases
+from tests.integration.support.fixture_journal import FixtureJournal
 from tests.integration.support.integration_journal import IntegrationJournal
 from tests.integration.support.upgraded_journal import UpgradedJournal
 
@@ -46,3 +47,20 @@ def journal_with(templates: TemplateDatabases, tmp_path: Path) -> Generator[Call
 @pytest.fixture
 def upgraded(journal_with) -> UpgradedJournal:
     return UpgradedJournal.upgraded(journal_with())
+
+
+# makes journals copied from a story fixture's template, built once and cached as the stories' are, with the agent and
+# user the fixture made: played(StartedTaskBuilder), or played(CheckpointPlan, "tests.samples:NotesModule")
+@pytest.fixture
+def played(templates: TemplateDatabases, tmp_path: Path) -> Generator[Callable[..., FixtureJournal]]:
+    opened: list[IntegrationJournal] = []
+
+    def make(fixture: type, *modules: str) -> FixtureJournal:
+        home, state = templates.fixture_home(tmp_path / f"played-{len(opened)}", fixture, tuple(modules))
+        journal = IntegrationJournal(home)
+        opened.append(journal)
+        return FixtureJournal(journal, state.agent, state.user)
+
+    yield make
+    for journal in opened:
+        journal.close()

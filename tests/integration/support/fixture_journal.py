@@ -28,25 +28,13 @@ class FixtureLine:
 
 @dataclass
 class FixtureJournal:
-    """An integration journal with no environment on which a chain of story fixtures is played, line by line as the
-    story kit plays it, so a mechanical story moved to tests/integration starts from the same state. A person's
-    line runs in the main environment and an agent's in its own, as in a story."""
+    """An integration journal copied from a story fixture's template, with the agent and user that fixture made, so a
+    mechanical story moved to tests/integration starts from the same state. A person's line runs in the main
+    environment and an agent's in its own, as in a story."""
 
     journal: IntegrationJournal
     agent: Actor = field(default_factory=Actor.core)
     user: Actor = field(default_factory=Actor.core)
-
-    @staticmethod
-    def played(journal: IntegrationJournal, fixture: type) -> "FixtureJournal":
-        played = FixtureJournal(journal)
-        chain = []
-        while fixture is not None:
-            chain.insert(0, fixture)
-            fixture = fixture.parent
-        for step in chain:
-            if "steps" in step.__dict__:
-                step().steps(played)
-        return played
 
     @property
     def home(self) -> JournalHome:
