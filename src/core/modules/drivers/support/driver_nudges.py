@@ -13,6 +13,9 @@ from engine.driver.rule_outcome import RULE_FAILED
 REPEATED_STOP = NudgeDeclaration("drivers.repeated_stop", NudgeType.STEERING, "Your stop was refused 5 times in a row: report what is holding it")
 OPENING_LINE = NudgeDeclaration("drivers.opening_line", NudgeType.NOTICE, '{text}', turn_limited=False)
 MANAGED_HOOK_LINE = NudgeDeclaration("drivers.managed_hook_line", NudgeType.NOTICE, "{line}", turn_limited=False)
+# a project hook that runs in the background and ends with exit code 2 wakes its agent with its own text, up to 800 characters
+PROJECT_HOOK_WOKE = NudgeDeclaration("drivers.project_hook_woke", NudgeType.NOTICE, "project hook {hook} woke you: {text}", turn_limited=False, wakes_agent=True,
+                                     delivery=LineDelivery.WAKE_HOOK, full_text=True)
 # the program's instructions for a compaction summary, given whole: the rule cuts them at the program's own limit
 COMPACTION_INSTRUCTIONS_LINE = NudgeDeclaration("drivers.compaction_instructions", NudgeType.NOTICE, BARE_TEMPLATE, turn_limited=False, full_text=True)
 MANAGED_HOOK_REFUSAL = NudgeDeclaration("drivers.managed_hook_refusal", NudgeType.REFUSAL, "Project hooks refused for agent:{agent}", turn_limited=False)
@@ -42,4 +45,4 @@ COMPACTION_NOTICE = NudgeDeclaration("drivers.compaction_notice", NudgeType.STEE
 JOURNAL_STARTED = NudgeDeclaration("drivers.journal_started", NudgeType.STEERING, "The journal started: continue your work", turn_limited=False, wakes_agent=True, delivery=LineDelivery.WAKE_HOOK)
 AGENT_NOTICE = NudgeDeclaration("drivers.agent_notice", NudgeType.STEERING, "{text}", turn_limited=False, path_fields=tuple(["text"]), full_text=True)
 FILE_LOADED = NudgeDeclaration("drivers.file-in-context", NudgeType.NOTICE, "{path} is unchanged since you read it: use what is in your context", path_fields=tuple(["path"]))
-DRIVER_NUDGES = [HOOK_TIMEOUTS, PERMISSION_REQUESTED, AGENT_INTERRUPTED, SAFEGUARDS_STOPPED, AGENT_COMPACTED, COMPACTION_NOTICE, CACHE_KEEPALIVE, CONTINUED_SESSION, AGENT_LINE_AVAILABLE, JOURNAL_STARTED, *ACCESS_NUDGES, MANAGED_HOOK_LINE, COMPACTION_INSTRUCTIONS_LINE, MANAGED_HOOK_REFUSAL, AGENT_RESUMED, HOOKS_UNCHECKED, REQUIRED_COMMAND_COUNTDOWN.declaration, REQUIRED_COMMAND_REFUSAL, REPEATED_STOP, OPENING_LINE, RULE_FAILED, TAKEOVER, PAUSED_REFUSAL, MISSING_MODEL, UNBOUND_DISPATCH, LONG_OUTPUT, FILE_LOADED, AGENT_NOTICE]
+DRIVER_NUDGES = [HOOK_TIMEOUTS, PERMISSION_REQUESTED, AGENT_INTERRUPTED, SAFEGUARDS_STOPPED, AGENT_COMPACTED, COMPACTION_NOTICE, CACHE_KEEPALIVE, CONTINUED_SESSION, AGENT_LINE_AVAILABLE, JOURNAL_STARTED, *ACCESS_NUDGES, MANAGED_HOOK_LINE, COMPACTION_INSTRUCTIONS_LINE, PROJECT_HOOK_WOKE, MANAGED_HOOK_REFUSAL, AGENT_RESUMED, HOOKS_UNCHECKED, REQUIRED_COMMAND_COUNTDOWN.declaration, REQUIRED_COMMAND_REFUSAL, REPEATED_STOP, OPENING_LINE, RULE_FAILED, TAKEOVER, PAUSED_REFUSAL, MISSING_MODEL, UNBOUND_DISPATCH, LONG_OUTPUT, FILE_LOADED, AGENT_NOTICE]

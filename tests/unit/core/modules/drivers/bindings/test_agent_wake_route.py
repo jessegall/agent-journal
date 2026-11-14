@@ -3,6 +3,7 @@ from types import SimpleNamespace
 
 from core.modules.drivers.bindings.agent_wake_route import AgentWakeRoute
 from core.modules.drivers.commands.claim_agent_line.claim_agent_line import ClaimAgentLine
+from core.modules.drivers.commands.record_agent_nudge.record_agent_nudge import RecordAgentNudge
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.support.wake_delivery import WakeDelivery
@@ -18,7 +19,8 @@ WAKING = SimpleNamespace(id=7, session_agent_id=3, wakes_agent=True, delivery=Li
 
 
 def agent(role: str = "main", launched: bool = False, session: str = "s-1", program: str = "claude"):
-    return SimpleNamespace(id=3, program=program, session=session, is_main=role == "main", is_launched_helper=role != "main" and launched, ended_at=None)
+    return SimpleNamespace(id=3, program=program, session=session, is_main=role == "main", is_launched_helper=role != "main" and launched, ended_at=None,
+                           environment_id=1)
 
 
 class SessionAgents:
@@ -89,7 +91,7 @@ def route(tmp_path, row=None, lines=(), locked: bool = False) -> tuple[AgentWake
     home, bus = JournalHome(tmp_path), RecordedBus()
     delivery = WakeDelivery(bus, BetweenTurns(), home, FixedClock())  # type: ignore[arg-type]
     wake = AgentWakeRoute(SessionAgents(row if row is not None else agent()), WakePrograms(), Lockdowns(locked), delivery, WaitingLines(lines), home,  # type: ignore[arg-type]
-                          DriverActors())  # type: ignore[arg-type]
+                          DriverActors(), bus)  # type: ignore[arg-type]
     return wake, bus
 
 
@@ -150,3 +152,16 @@ def test_confirm_enters_the_line(tmp_path):
     assert not wake.received(answer.line_id, "another token")
     assert wake.received(answer.line_id, answer.token)
     assert [type(command) for command in bus.commands] == [ClaimAgentLine, EnterAgentLine]
+
+
+def test_a_project_hook_line_becomes_a_wake_line_for_the_agent(tmp_path):
+    wake, bus = route(tmp_path)
+    assert wake.line(WakeAsk("claude", "s-1", "", ""), "watch", "the build broke")
+    [command] = bus.commands
+    assert isinstance(command, RecordAgentNudge) and command.agent_id == 3 and command.nudge.text == "project hook watch woke you: the build broke"
+    assert command.nudge.declaration.delivery is LineDelivery.WAKE_HOOK
+
+
+def test_a_project_hook_line_for_a_helper_is_refused(tmp_path):
+    wake, bus = route(tmp_path, agent(role="helper"))
+    assert not wake.line(WakeAsk("claude", "s-1", "", ""), "watch", "the build broke") and bus.commands == []

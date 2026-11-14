@@ -31,3 +31,9 @@ class WakeEndpoint:
     def received(self, line_id: int, token: str) -> bool:
         with self.context.hook_database.used(ExecutionPriority.IMMEDIATE, self.context.hook_limit_seconds, "", "wake") as database:
             return synced_database_container(self.context.home, database).get(WakeRoute).received(line_id, token)
+
+    def line(self, data: object) -> bool:
+        ask = WakeAsk.parsed(data)
+        fields = data if isinstance(data, dict) else {}
+        with self.context.hook_database.used(ExecutionPriority.IMMEDIATE, self.context.hook_limit_seconds, ask.session, "wake") as database:
+            return synced_database_container(self.context.home, database).get(WakeRoute).line(ask, str(fields.get("hook", "")), str(fields.get("text", "")))

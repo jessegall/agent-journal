@@ -152,6 +152,9 @@ class RequestHandler(BaseHTTPRequestHandler):
         if route == "/wake/received":
             self.answer_wake_received(body)
             return
+        if route == "/wake/line":
+            self.answer_wake_line(body)
+            return
         if route == "/handover":
             self.answer_handover(parse_qs(query).get("tag", [""])[0])
             return
@@ -177,6 +180,14 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.answer_status(NO_CONTENT_STATUS)
             return
         self.answer_json(reply.status, reply.json())
+
+    def answer_wake_line(self, body: bytes) -> None:
+        try:
+            left = WakeEndpoint(self.journal_server().context).line(json.loads(body or b"{}"))
+        except (HookEventError, json.JSONDecodeError) as error:
+            self.answer_json(400, {"error": str(error)})
+            return
+        self.answer_json(200 if left else 410, {})
 
     def answer_wake_received(self, body: bytes) -> None:
         try:

@@ -16,5 +16,8 @@ class WakeRoute:
     def received(self, line_id: int, token: str) -> bool:
         return False
 
+    def line(self, ask: WakeAsk, hook: str, text: str) -> bool:
+        return False
+
     def live_waiters(self) -> int:
         return 0

@@ -3,7 +3,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"testing"
@@ -83,5 +85,73 @@ func TestAnAsyncHookReturnsNoRunForTheServer(t *testing.T) {
 	root, hook := asyncProject(t, "true", 10)
 	if runs := runManaged([]ManagedHook{hook}, nil, "claude", programs.LoadTable("").Programs["claude"], root); len(runs) != 0 {
 		t.Fatalf("an async hook gave the server %+v", runs)
+	}
+}
+
+// rewakeProject is a project with one asyncRewake hook of the program that runs command, and the body file of its run.
+func rewakeProject(t *testing.T, program, command string) (string, string) {
+	t.Helper()
+	root := t.TempDir()
+	text := fmt.Sprintf(`{"version":1,"hooks":[{"id":"watch","program":%q,"event":"PostToolUse","command":%q,"timeout":5,"state":"on","fields":{"asyncRewake":true}}]}`, program, command)
+	writeFile(t, filepath.Join(root, ".journal", "hooks", "managed.json"), text)
+	bodyFile := filepath.Join(t.TempDir(), "body")
+	writeFile(t, bodyFile, `{"session_id":"s-1"}`)
+	return root, bodyFile
+}
+
+// keptWakeLines puts a server in place of the journal's that keeps every wake line posted to it.
+func keptWakeLines(t *testing.T, transport http.RoundTripper) *[]map[string]string {
+	t.Helper()
+	posted := &[]map[string]string{}
+	original := wakeLineTransport
+	wakeLineTransport = func(string) http.RoundTripper {
+		if transport != nil {
+			return transport
+		}
+		return fakeTransport(func(request *http.Request) (*http.Response, error) {
+			var fields map[string]string
+			json.NewDecoder(request.Body).Decode(&fields)
+			*posted = append(*posted, fields)
+			return answer(http.StatusOK, "{}")(request)
+		})
+	}
+	t.Cleanup(func() { wakeLineTransport = original })
+	return posted
+}
+
+func TestAsyncRewakeExitTwoPostsItsStderr(t *testing.T) {
+	posted := keptWakeLines(t, nil)
+	root, bodyFile := rewakeProject(t, "claude", "printf 'the build broke' >&2; exit 2")
+	detachedRun("claude", root, "watch", bodyFile)
+	if len(*posted) != 1 || (*posted)[0]["text"] != "the build broke" || (*posted)[0]["hook"] != "watch" || (*posted)[0]["session"] != "s-1" {
+		t.Fatalf("the wake lines posted are %+v", *posted)
+	}
+}
+
+func TestAsyncRewakeOtherExitCodesPostNothing(t *testing.T) {
+	posted := keptWakeLines(t, nil)
+	for _, command := range []string{"printf fine >&2; exit 0", "printf broke >&2; exit 1"} {
+		root, bodyFile := rewakeProject(t, "claude", command)
+		detachedRun("claude", root, "watch", bodyFile)
+	}
+	if len(*posted) != 0 {
+		t.Fatalf("a hook that did not exit 2 posted %+v", *posted)
+	}
+}
+
+func TestAsyncRewakeWithNoServerDropsTheLine(t *testing.T) {
+	keptWakeLines(t, unreachable)
+	root, bodyFile := rewakeProject(t, "claude", "printf broke >&2; exit 2")
+	if code := detachedRun("claude", root, "watch", bodyFile); code != 0 {
+		t.Fatalf("the detached run with no server exited %d", code)
+	}
+}
+
+func TestAsyncRewakeIsIgnoredForAProgramThatDoesNotHonourIt(t *testing.T) {
+	posted := keptWakeLines(t, nil)
+	root, bodyFile := rewakeProject(t, "codex", "printf broke >&2; exit 2")
+	detachedRun("codex", root, "watch", bodyFile)
+	if len(*posted) != 0 || isAsync(ManagedHook{Fields: map[string]any{"asyncRewake": true}}, programs.LoadTable("").Programs["codex"]) {
+		t.Fatalf("codex honoured asyncRewake: %+v", *posted)
 	}
 }

@@ -13,7 +13,8 @@ const refusedWithoutReason = "Hook refused without a reason"
 
 // projectHooksOnly runs the project's hooks in a session the journal does not handle, a plain program started in the
 // project or an actor the journal skips, since their settings entries now live with the journal; it answers from
-// them alone, as the program would have without the journal.
+// them alone, as the program would have without the journal. A background hook runs detached there too, and an
+// asyncRewake one that ends with exit code 2 wakes nothing, since no journal holds the session.
 func projectHooksOnly(programName, root string, stdin io.Reader, stdout, stderr io.Writer) int {
 	hooks := LoadManaged(filepath.Join(root, ".journal", "hooks", "managed.json"))
 	if len(hooks) == 0 {
