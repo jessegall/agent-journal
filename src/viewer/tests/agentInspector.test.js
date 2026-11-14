@@ -19,7 +19,7 @@ const inspection = (overrides) => ({id: 12, started_by: "Ada, the main agent", l
 function inspectorAnswer(answers) {
     const part = (start) => answers[Object.keys(answers).find((key) => key.startsWith(start))];
     return {agent: part("agent show"), facts: part("usage agents")?.rows[0] ?? null, inspection: part("usage agent "), tool: part("usage tool") ?? {},
-        helpers: part("agent list --parent")?.total ?? 0, skills: part("agent-skill list")?.total ?? 0, points: part("worker-worktree points")?.points ?? [], programs: part("agent programs")?.rows ?? []};
+        helpers: part("agent list --parent")?.total ?? 0, skills: part("agent-skill list")?.total ?? 0, points: part("worker-worktree points")?.points ?? [], programs: part("agent programs")?.rows ?? [], states: part("states")?.states ?? []};
 }
 
 // one read the way the viewer sends it: the answers are the ones of the reads, found by the start of the line
@@ -254,4 +254,28 @@ test("an inspected agent shows the bar the agents window shows, one component fo
     expect(element.querySelector("[data-information-bar]")).not.toBeNull();
     expect(element.textContent).not.toContain("NaN");
     expect(element.querySelector('[data-fact="usage"]')).toBeNull();
+});
+
+const state = (name, tier, rows) => ({name, tier, rows, since: before(5 * MINUTE)});
+
+test("an agent in no state has no states band", async () => {
+    const {element} = opened(WORKER);
+    await settle();
+    expect(element.querySelector("[data-agent-open-state]")).toBeNull();
+});
+
+test("an agent in one state shows its name, tier and where it was read from, on one line", async () => {
+    const {element} = opened({...WORKER, states: {states: [state("messages.unread-countdown", "stack", ["agent_block:812"])]}});
+    await settle();
+    expect(texts(element, "[data-agent-open-state]")).toHaveLength(1);
+    expect(text(element, "[data-agent-open-state] .name")).toBe("messages.unread-countdown");
+    expect(text(element, "[data-agent-open-state] .tier")).toBe("stack");
+    expect(element.querySelector("[data-agent-open-state]").title).toContain("agent_block:812");
+});
+
+test("two states of two tiers are drawn in the order the journal gave them", async () => {
+    const {element} = opened({...WORKER, states: {states: [state("messages.unread-countdown", "stack", ["agent_block:812"]), state("skills.load-required", "in place", ["agent_skill:3"])]}});
+    await settle();
+    expect(texts(element, "[data-agent-open-state] .name")).toEqual(["messages.unread-countdown", "skills.load-required"]);
+    expect(texts(element, "[data-agent-open-state] .tier")).toEqual(["stack", "in place"]);
 });

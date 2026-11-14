@@ -1,4 +1,6 @@
+from core.modules.drivers.commands.support.agent_state_listing import AgentStateListing
 from core.modules.drivers.support.context_compactions import ContextCompactions
+from engine.time.clock import Clock
 from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 from dataclasses import asdict
@@ -27,8 +29,8 @@ class UsageInspectorSubcommand(ReadSubcommand[AgentInspectorAnswer]):
     name = "inspector"
     environment_refusal = "the agent is shown for one environment"
 
-    def __init__(self, queries: Queries, inspection: UsageAgentSubcommand, facts: UsageAgentsSubcommand, tool: UsageToolSubcommand, programs: AgentProgramsSubcommand, points: AgentBriefPoints, compactions: ContextCompactions) -> None:
-        self.compactions = compactions
+    def __init__(self, queries: Queries, inspection: UsageAgentSubcommand, facts: UsageAgentsSubcommand, tool: UsageToolSubcommand, programs: AgentProgramsSubcommand, points: AgentBriefPoints, compactions: ContextCompactions, listing: AgentStateListing, clock: Clock) -> None:
+        self.compactions, self.listing, self.clock = compactions, listing, clock
         self.queries, self.inspection, self.facts, self.tool, self.programs, self.points = queries, inspection, facts, tool, programs, points
 
     def arguments(self, parser: ArgumentParser) -> None:
@@ -41,10 +43,11 @@ class UsageInspectorSubcommand(ReadSubcommand[AgentInspectorAnswer]):
                                     ToolFacts() if agent.ended_at else self.tool.read(Namespace(agent=agent.id), caller),
                                     self.queries.query(Agent).filter(parent_id=agent.id).count(),
                                     self.queries.query(AgentSkill).filter(session_agent_id=agent.id, state=AgentSkillState.LOADED).count(),
-                                    self.points.brief_points(agent.id), self.programs.read(Namespace(), caller), self.compactions.newest(agent.id))
+                                    self.points.brief_points(agent.id), self.programs.read(Namespace(), caller), self.compactions.newest(agent.id),
+                                    () if agent.ended_at else tuple(self.listing.open_states(agent, self.clock.timestamp())))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, AgentInspectorAnswer):
             output.write(f"{AgentLabel.labelled(value.agent).text}, {value.helpers} helpers, {value.skills} skills loaded", {
                 "agent": {**output.values(value.agent), **output.properties(value.agent)}, "facts": value.facts.json() if value.facts else None, "inspection": value.inspection.json(),
-                "compaction": value.compaction.json() if value.compaction is not None else None, "tool": asdict(value.tool), "helpers": value.helpers, "skills": value.skills, "points": list(value.points), "programs": value.programs.json()["rows"]})
+                "compaction": value.compaction.json() if value.compaction is not None else None, "tool": asdict(value.tool), "helpers": value.helpers, "skills": value.skills, "points": list(value.points), "programs": value.programs.json()["rows"], "states": [asdict(state) for state in value.states]})
