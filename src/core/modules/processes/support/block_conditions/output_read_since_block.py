@@ -10,4 +10,4 @@ class OutputReadSinceBlock(ProcessCondition):
 
     def is_true(self, check: BlockCheck) -> bool:
         output = check.container.get(OutputQuery).process(int(self.text)).first()
-        return output is None or (output.read_at is not None and output.read_at.value >= check.opened_at.value)
+        return output is None or (output.last_read_at is not None and output.last_read_at.value >= check.opened_at.value)

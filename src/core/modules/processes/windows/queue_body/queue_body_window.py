@@ -16,5 +16,5 @@ class QueueBodyWindow(Window):
     icon = WindowIcon.TERMINAL
     skeleton = [SkeletonPart.line()]
     reads = ["queue list", "output page", "queue-class list", "queue-class preview"]
-    runs = ["setting set", "queue-class set", "queue-class add", "queue-class reset", "queue-class remove", "queue-class preset"]
+    runs = ["setting set", "queue halt", "queue resume", "queue-class set", "queue-class add", "queue-class reset", "queue-class remove", "queue-class preset"]
     events = ["output.*"]

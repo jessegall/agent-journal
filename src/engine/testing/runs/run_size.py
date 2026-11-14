@@ -1,10 +1,10 @@
+from engine.text.pytest_line import PytestLine
 from engine.text.run_target import RunTarget
 from engine.file.file_access import FileAccess
 import re
 from collections.abc import Iterable, Iterator
 from pathlib import Path
 
-FULL_SUITE = "tests"
 UNIT_FOLDER = "unit"
 TEST_FUNCTION = re.compile(r"^\s*(?:async\s+)?def test_", re.MULTILINE)
 
@@ -18,7 +18,7 @@ class RunSize:
         self.targets, self.limit = tuple(targets), limit
 
     def is_full_suite(self) -> bool:
-        return all(target.rstrip("/") == FULL_SUITE for target in self.targets)
+        return PytestLine.is_full_suite(self.targets)
 
     # A run of the whole suite names no part of it: no path but the tests folder, and no filter on names, marks or last failures.
     def is_full_run(self, name_filter: str, mark_filter: str, deselected: Iterable[str], only_last_failed: bool) -> bool:

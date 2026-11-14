@@ -6,6 +6,7 @@ from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_reach import WorktreeReach
+from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
@@ -19,8 +20,8 @@ class CheckpointFolders:
     environment's branch, owned by the worker merged last in the window, or by the main agent when no worker's
     work is in it, over the files the last merge changed."""
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, git: WorktreeGit, environments: EnvironmentRows, agents: AgentRows, kept: KeptRows) -> None:
-        self.queries, self.worktrees, self.git, self.kept = queries, worktrees, git, kept
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, git: WorktreeGit, environments: EnvironmentRows, agents: AgentRows, kept: KeptRows) -> None:
+        self.queries, self.worktrees, self.proofs, self.git, self.kept = queries, worktrees, proofs, git, kept
         self.environments, self.agents = environments, agents
 
     def checkout(self, reach: CheckpointReach) -> str:
@@ -56,6 +57,8 @@ class CheckpointFolders:
         links = self.queries.query(WorktreeReach).filter(reach_id=reach.id)
         return self.kept.read(links, links.first, name="workers.reach_link")
 
+    # the worktrees, oldest first, that merged a task of the reach; only the worktrees of the workers that proved its tasks are read
     def merged_worktrees(self, reach: CheckpointReach) -> tuple[Worktree, ...]:
         task_ids = set(reach.tasks())
-        return tuple(worktree for worktree in self.worktrees.all_worktrees() if task_ids.intersection(worktree.merged_tasks()))
+        worktrees = self.worktrees.worker_worktrees_of(self.proofs.task_worktree_ids(reach.tasks()))
+        return tuple(worktree for worktree in worktrees if task_ids.intersection(worktree.merged_tasks()))

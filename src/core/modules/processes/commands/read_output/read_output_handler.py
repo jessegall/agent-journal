@@ -14,7 +14,7 @@ from core.modules.processes.commands.read_output.support.repeat_reads import Rep
 
 
 class ReadOutputHandler(Handler[ReadOutput, OutputLines]):
-    """Reads an output in the way asked and notes when it was first read; a later read writes nothing. An agent's
+    """Reads an output in the way asked and notes when it was first and when it was last read. An agent's
     read of a run still going answers the asks to look at it."""
 
     command = ReadOutput
@@ -36,10 +36,10 @@ class ReadOutputHandler(Handler[ReadOutput, OutputLines]):
     def mark_read(self, kept: Output, command: ReadOutput, lines: list[str], context: Context) -> None:
         read_at = context.timestamp if kept.read_at is None else kept.read_at
         if not self.is_full_read(command, kept):
-            self.repository.update(kept, context, read_at=read_at)
+            self.repository.update(kept, context, read_at=read_at, last_read_at=context.timestamp)
             return
         pending = self.delivery.pending("\n".join(lines), {"lines": lines}, command.reader_process_id, command.json_output, context)
-        self.repository.update(kept, context, read_at=read_at, fully_read_at=context.timestamp if pending is None else None, full_read_output_id=pending)
+        self.repository.update(kept, context, read_at=read_at, last_read_at=context.timestamp, fully_read_at=context.timestamp if pending is None else None, full_read_output_id=pending)
 
     def is_full_read(self, command: ReadOutput, output: Output) -> bool:
         return command.all and output.ended_at is not None and self.texts.is_complete(command.process_id)

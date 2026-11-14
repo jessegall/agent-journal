@@ -1,23 +1,28 @@
 <script setup>
 import {computed, ref} from "vue";
+import ProcessQueueBand from "./ProcessQueueBand.vue";
+import ExecutionLane from "./ExecutionLane.vue";
+import {span} from "../format/time.js";
 
-// every lane of the journal: its room in use against its capacity, what runs and what waits in it and why, and how long
-// each priority waited over the last hour
-const props = defineProps({execution: {type: Object, required: true}});
+// every lane of the journal as its own block, in the order instant, short, long, then how long each priority waited over
+// the last hour; the class and starter filters hide rows only, the lanes' strips and counts stay whole
+const props = defineProps({execution: {type: Object, required: true}, environment: {type: String, required: true}, pausable: Boolean});
+const emit = defineEmits(["pause", "resume"]);
 const className = ref("");
 const starter = ref("");
-const classes = computed(() => [...new Set(props.execution.lanes.flatMap((lane) => [...lane.running, ...lane.waiting].map((entry) => entry.class)))].sort());
-const starters = computed(() => [...new Set(props.execution.lanes.flatMap((lane) => [...lane.running, ...lane.waiting].map((entry) => entry.starter)))].sort());
+const entries = computed(() => props.execution.lanes.flatMap((lane) => [...lane.running, ...lane.waiting]));
+const runningCount = computed(() => props.execution.lanes.reduce((count, lane) => count + lane.running.length, 0));
+const classes = computed(() => [...new Set(entries.value.map((entry) => entry.class))].sort());
+const starters = computed(() => [...new Set(entries.value.map((entry) => entry.starter))].sort());
 const kept = (entry) => (!className.value || entry.class === className.value) && (!starter.value || entry.starter === starter.value);
-const lanes = computed(() => props.execution.lanes.map((lane) => ({...lane, running: lane.running.filter(kept), waiting: lane.waiting.filter(kept)})));
+const shownCount = computed(() => entries.value.filter(kept).length);
 const waits = computed(() => props.execution.waits.filter((wait) => wait.runs));
-const titled = (lane) => `${lane.lane[0].toUpperCase()}${lane.lane.slice(1)} lane`;
-const seconds = (value) => (value < 60 ? `${value} s` : `${Math.round(value / 60)} min`);
 </script>
 
 <template>
     <section class="lanes" data-execution-lanes>
-        <div class="filters">
+        <div class="tools">
+            <span class="sum" data-lanes-count>{{ runningCount }} running · {{ entries.length - runningCount }} waiting<template v-if="className || starter"> · showing {{ shownCount }} of {{ entries.length }}</template></span>
             <label>Class <select v-model="className" data-lanes-class><option value="">Every class</option><template v-for="name in classes" :key="name">
   <option :value="name">{{ name }}</option>
 </template></select></label>
@@ -25,35 +30,19 @@ const seconds = (value) => (value < 60 ? `${value} s` : `${Math.round(value / 60
   <option :value="name">{{ name }}</option>
 </template></select></label>
         </div>
-        <template v-for="lane in lanes" :key="lane.lane">
-          <div class="lane" :data-lane="lane.lane">
-              <h2>{{ titled(lane) }} <span class="room" :class="{over: lane.over_capacity}">{{ lane.used }} of {{ lane.capacity }} in use<template v-if="lane.over_capacity">, over capacity</template><template v-if="lane.halted">, halted</template></span></h2>
-              <template v-if="!lane.running.length && !lane.waiting.length">
-                <p class="empty">Nothing runs or waits here.</p>
-              </template>
-              <ul>
-                  <template v-for="(entry, index) in lane.running" :key="`run:${index}`">
-                    <li :class="{child: entry.parent_line}" data-lane-entry="running">
-                        <span class="line">{{ entry.line }}</span>
-                        <span class="facts">{{ entry.class }}, {{ entry.priority }}, {{ entry.starter }}, running {{ seconds(entry.seconds) }}<template v-if="entry.parent_line">, for {{ entry.parent_line }}</template></span>
-                    </li>
-                  </template>
-                  <template v-for="(entry, index) in lane.waiting" :key="`wait:${index}`">
-                    <li class="waiting" data-lane-entry="waiting">
-                        <span class="line">{{ entry.line }}</span>
-                        <span class="facts">{{ entry.class }}, {{ entry.priority }}, {{ entry.starter }}, waiting {{ seconds(entry.seconds) }}: {{ entry.reason }}<template v-if="entry.raised_from">. Raised from {{ entry.raised_from }}</template></span>
-                    </li>
-                  </template>
-              </ul>
-          </div>
+        <template v-for="lane in execution.lanes" :key="lane.lane">
+            <ExecutionLane :lane="lane" :kept="kept" :environment="environment" :pausable="pausable && lane.lane === 'long'" @pause="emit('pause', $event)" @resume="emit('resume')" />
         </template>
-        <div class="waits" data-lanes-waits>
-            <h2>Waits over the last hour</h2>
+        <div data-lanes-waits>
+            <ProcessQueueBand icon="clock">Waits, last hour</ProcessQueueBand>
             <template v-if="!waits.length">
-              <p class="empty">No run started in the last hour.</p>
+                <p class="empty">No run started in the last hour.</p>
             </template>
-            <template v-for="wait in waits" :key="wait.priority">
-              <p class="wait">{{ wait.priority }}: {{ wait.runs }} started, longest wait {{ seconds(wait.longest_seconds) }}, average {{ seconds(wait.average_seconds) }}</p>
+            <template v-else>
+                <table class="waits">
+                    <thead><tr><th scope="col">Priority</th><th scope="col">Started</th><th scope="col">Longest wait</th><th scope="col">Average wait</th></tr></thead>
+                    <tbody><template v-for="wait in waits" :key="wait.priority"><tr><td>{{ wait.priority }}</td><td>{{ wait.runs }}</td><td>{{ span(wait.longest_seconds, true) }}</td><td>{{ span(wait.average_seconds, true) }}</td></tr></template></tbody>
+                </table>
             </template>
         </div>
     </section>
@@ -61,16 +50,14 @@ const seconds = (value) => (value < 60 ? `${value} s` : `${Math.round(value / 60
 
 <style scoped>
 .lanes { border-top: 1px solid var(--border); }
-.filters { display: flex; flex-wrap: wrap; gap: 12px; padding: 8px 14px; color: var(--text-3); font-size: 12px; }
-.filters select { margin-left: 4px; font: inherit; }
-.lane, .waits { padding: 8px 14px; border-top: 1px solid var(--border); }
-h2 { margin: 0 0 4px; color: var(--text); font-size: 12px; font-weight: 600; }
-.room { margin-left: 6px; color: var(--text-3); font-weight: 400; }
-.room.over { color: var(--danger); }
-ul { margin: 0; padding: 0; list-style: none; }
-li { display: flex; flex-direction: column; padding: 4px 0; font-size: 12px; }
-li.child { padding-left: 14px; }
-.line { color: var(--text); font-family: var(--mono, monospace); overflow-wrap: anywhere; }
-.facts, .empty, .wait { margin: 0; color: var(--text-3); font-size: 12px; }
-.waiting .facts { color: var(--text-2); }
+.tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid var(--border); }
+.sum { flex: 1; min-width: 140px; color: var(--text-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+.tools label { display: flex; align-items: center; gap: 6px; color: var(--text-3); font-size: 12px; }
+.tools select { font: inherit; }
+.empty { margin: 0; padding: 8px 14px; color: var(--text-3); font-size: 12px; }
+.waits { width: calc(100% - 28px); margin: 6px 14px 16px; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+.waits th { padding: 5px 0; border-bottom: 1px solid var(--border); color: var(--text-3); font-weight: 500; text-align: right; }
+.waits td { padding: 5px 0; border-bottom: 1px solid color-mix(in oklab, var(--border) 70%, transparent); color: var(--text-2); text-align: right; }
+.waits th:first-child, .waits td:first-child { text-align: left; }
+.waits td:first-child { color: var(--text); }
 </style>

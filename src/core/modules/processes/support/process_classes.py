@@ -33,6 +33,8 @@ class ProcessClasses:
             return self.classes.match(ExecutionSubject(ExecutionSource.GRAPHIFY, starter, category=command.category, line=command.line))
         if command.is_journal_merge:
             return self.classes.match(ExecutionSubject(ExecutionSource.SHELL_LINE, starter, category=command.category, process_type=ProcessType.MERGE, line=command.line))
+        if command.reaches_full_suite:
+            return self.classes.match(ExecutionSubject(ExecutionSource.SHELL_LINE, starter, category=command.category, process_type=ProcessType.FULL_TEST_RUN, line=command.line))
         # a part of unknown category says nothing of the line, which then takes the category the start names
         recorded = [part.category for part in command.parts if part.category is not CommandCategory.UNKNOWN]
         return self.for_categories(recorded or [command.category], command.line, agent)

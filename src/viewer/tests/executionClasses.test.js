@@ -41,7 +41,18 @@ test("the class table renders its rows with where each comes from", async () => 
     expect(rows[2].textContent).toContain("^npm run e2e");
     expect(rows[1].querySelector("[data-class-reset]")).not.toBeNull();
     expect(rows[2].querySelector("[data-class-remove]")).not.toBeNull();
-    expect(document.body.querySelector('[data-lane-setting="journal.core.processes.lane-capacity-long"]').value).toBe("8");
+    expect(document.body.querySelector('[data-lane-setting="journal.core.processes.lane-capacity-long"]').textContent).toBe("8");
+});
+
+test("each lane's limit is a stepper that saves one more or one fewer", async () => {
+    const read = vi.fn(async () => ({ok: true, value: TABLE}));
+    await mounted(read);
+    document.body.querySelector('[aria-labelledby="journal.core.processes.lane-capacity-long"] [aria-label="One more"]').click();
+    await settle();
+    expect(read).toHaveBeenCalledWith(["setting", "set", "journal.core.processes.lane-capacity-long", "9"]);
+    document.body.querySelector('[aria-labelledby="journal.core.processes.lane-capacity-long"] [aria-label="One fewer"]').click();
+    await settle();
+    expect(read).toHaveBeenCalledWith(["setting", "set", "journal.core.processes.lane-capacity-long", "7"]);
 });
 
 test("an edited row sends the set line and reads the table again", async () => {

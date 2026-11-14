@@ -30,29 +30,34 @@ class ExecutionStatus:
     def lanes(self) -> list[LaneLoad]:
         limits, running = self.classes.lane_limits(), self.slots.running()
         lanes = self.tickets.lanes_of_rows(running)
+        kinds = {process.id: process.plugin or process.category.value for process in running}
         loads = [self.instant_lane()]
         for lane in (ExecutionLane.SHORT, ExecutionLane.LONG):
             lane_tickets = lanes[lane]
             is_halted = self.halt.is_halted and lane is ExecutionLane.LONG
             loads.append(LaneLoad(lane.value, sum(ticket.execution_class.slot_cost for ticket in lane_tickets.running), limits.capacity(lane),
-                                  ExecutionOrder(limits).capacity_exceeded(lane_tickets.running), is_halted,
-                                  tuple(self.entry(ticket) for ticket in lane_tickets.running), tuple(self.entry(ticket, self.reason(ticket, lane)) for ticket in lane_tickets.waiting)))
+                                  ExecutionOrder(limits).capacity_exceeded(lane_tickets.running),
+                                  tuple(self.entry(ticket, kinds[ticket.run_id]) for ticket in lane_tickets.running),
+                                  tuple(self.entry(ticket, kinds[ticket.run_id], self.reason(ticket, lane)) for ticket in lane_tickets.waiting),
+                                  self.halt.halt_type if is_halted else "", self.halt.reason if is_halted else ""))
         return loads
 
     def instant_lane(self) -> LaneLoad:
         loading = InstantLaneReading.shared(self.home)
         entries = [(bool(entry["is_running"]), LaneEntry(str(entry["line"]), str(entry["class"]), str(entry["priority"]), str(entry["starter"]), float(str(entry["seconds"])),
-                                                         "" if entry["is_running"] else "waits for room", parent_line=str(entry["parent_line"]))) for entry in loading.entries()]
+                                                         int(str(entry["slot_cost"])), str(entry["class"]),
+                                                         reason="" if entry["is_running"] else "waits for room", parent_line=str(entry["parent_line"]))) for entry in loading.entries()]
         running = tuple(entry for is_running, entry in entries if is_running)
-        return LaneLoad(ExecutionLane.INSTANT.value, len(running), loading.capacity, running=running, waiting=tuple(entry for is_running, entry in entries if not is_running))
+        return LaneLoad(ExecutionLane.INSTANT.value, sum(entry.slot_cost for entry in running), loading.capacity, running=running, waiting=tuple(entry for is_running, entry in entries if not is_running))
 
-    def entry(self, ticket: ExecutionTicket, reason: str = "") -> LaneEntry:
+    def entry(self, ticket: ExecutionTicket, kind: str, reason: str = "") -> LaneEntry:
         raised = ticket.first_priority.label if ticket.priority != ticket.first_priority else ""
-        return LaneEntry(ticket.line, ticket.execution_class.name, ticket.priority.label, ticket.starter.label, ticket.entered_at.elapsed_seconds(self.clock.timestamp()), reason, raised)
+        return LaneEntry(ticket.line, ticket.execution_class.name, ticket.priority.label, ticket.starter.label, ticket.entered_at.elapsed_seconds(self.clock.timestamp()),
+                         ticket.execution_class.slot_cost, kind, ticket.run_id, reason, raised)
 
     def reason(self, ticket: ExecutionTicket, lane: ExecutionLane) -> str:
         if ticket.has_open_reader_request:
             return "waits for a reader"
         if self.halt.is_halted and lane is ExecutionLane.LONG:
-            return "the long lane is halted"
+            return "the long lane is paused"
         return "waits for room"
