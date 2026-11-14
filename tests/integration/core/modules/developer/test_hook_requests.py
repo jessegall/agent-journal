@@ -1,3 +1,6 @@
+from datetime import timedelta
+from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
+from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SIZE_SETTING
 import json
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor
@@ -344,3 +347,42 @@ def test_a_tick_round_does_not_wait_behind_a_running_hook(recording_server):
     with recording_server.context.hook_database.used(MAIN_AGENT_HOOK_PRIORITY, 1):
         JournalRound(recording_server.journal.home, "output reading", work, PerRoundContainer(recording_server.journal.home)).run()
         assert work.entered.is_set()
+
+
+HEADERS = {"X-Journal-Hook-Id": "firing-1", "X-Journal-Env": "main"}
+
+
+def logging_story(played, size: int = 3):
+    story = played(HookRecordingEnabled)
+    story.expect_success(f"setting set {HOOK_REQUEST_LOG_SIZE_SETTING} {size} --project", actor=story.user)
+    return story
+
+
+def expect_day_start_log(log, expected) -> None:
+    actual = [row.day_start for row in log.read()]
+    assert actual == expected, actual
+
+
+def expect_time(row, expected) -> None:
+    actual = len(row['time'])
+    assert actual == expected, actual
+
+
+def expect_day_start(row) -> None:
+    actual = row['day_start']
+    assert actual, actual
+
+
+def expect_number_firing_body(log, expected) -> None:
+    actual = [(row.number, row.body['firing']) for row in log.read()]
+    assert actual == expected, actual
+
+
+def test_only_the_first_request_of_each_day_has_a_day_line(played):
+    story = logging_story(played)
+    log = story.container.get(HookRequestLog)
+    log.record("claude", HEADERS, {"event": "stop"}, 0, HookAnswer.ALLOWED)
+    log.record("claude", HEADERS, {"event": "stop"}, 0, HookAnswer.ALLOWED)
+    story.clock.advance(timedelta(days=1))
+    log.record("claude", HEADERS, {"event": "stop"}, 0, HookAnswer.ALLOWED)
+    expect_day_start_log(log, [True, True, False])

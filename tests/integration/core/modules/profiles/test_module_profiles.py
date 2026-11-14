@@ -1,3 +1,6 @@
+import json
+from core.modules.profiles.support.profile_files import ProfileFiles
+from tests.stories.core.support.fixtures import UserJoined
 
 from engine.enums.occupant import Occupant
 from engine.registry.registry import Registry
@@ -69,3 +72,17 @@ def test_a_change_to_the_base_reaches_a_profile_built_on_it_with_its_own_lines_a
     journal.expect_sync_success(f"{MODULES}:ChangedBase")
     based = Registry.read(journal.database).profile("sample-based").profile
     assert based.body == 'Read the files twice.\n\nAnswer in one line.'
+
+
+MODULES = "tests.stories.core.modules.profiles.support.profile_modules"
+
+
+def test_a_module_that_is_no_suite_registers_a_profile_and_keeps_its_origin(played):
+    story = played(UserJoined)
+    story.expect_sync_success(f"{MODULES}:ProfileModule")
+    story.container.get(ProfileFiles).publish()
+    rows = json.loads(story.run("profile list --json").output_text)["rows"]
+    profile = next(row for row in rows if row["name"] == "module-reader")
+    story.expect_rows(profile["agent_type"] == "helper", profile["module"] == "sample.profiles", profile["shipped"])
+    registered = story.registry().profile("module-reader")
+    story.expect_rows(registered.module == "sample.profiles", registered.profile.body == "Read the files.")

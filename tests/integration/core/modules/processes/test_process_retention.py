@@ -1,3 +1,7 @@
+from core.modules.processes.models.reader_request import ReaderRequest
+from engine.testing.stories.story_fixture import StoryFixture
+from tests.stories.core.modules.processes.support.reader_block_fixtures import worker_run
+from tests.stories.core.support.coding_fixtures import UserBuilder
 import pytest
 
 from core.modules.processes.commands.end_process.end_process import EndProcess
@@ -104,3 +108,31 @@ def test_pruning_twenty_ended_runs_at_once_reads_each_table_that_names_them_once
     tables = ("worker_operations", "merger_lines", "worker_worktrees", "trigger_action_runs", "reader_requests")
     reads = {table: sum(1 for statement in statements if statement.lstrip().upper().startswith("SELECT") and f"FROM {table} " in statement) for table in tables}
     assert acted.container.get(Queries).query(Process).count() == 2 and all(count <= READS_BESIDE_THE_PRUNING + 1 for count in reads.values()), reads
+
+
+TEST_ROWS_REASON = "the test reads every row it checks"
+
+
+READS_BESIDE_THE_PRUNING = 1
+
+
+class ProcessLog(StoryFixture):
+    """The process log keeps two ended runs beside its running commands."""
+
+    parent = UserBuilder
+
+    def steps(self, story):
+        story.run(f"setting set {ProcessSetting.PROCESSES_KEPT.key} 2 --environment main", actor=story.user)
+
+
+def test_a_reader_request_loses_its_sample_when_the_sample_is_removed(played):
+    story = played(ProcessLog)
+    story.run("agent start s-reader claude worker --environment main")
+    sample = worker_run(story, "custom-build sample")
+    end_run(story, sample, "sample\n")
+    ended_run(story, "make second", "second\n")
+    ended_run(story, "make third", "third\n")
+    queries = story.container.get(Queries)
+    requests = tuple(queries.query(ReaderRequest).every_row(TEST_ROWS_REASON))
+    story.expect_rows(not queries.query(Process).filter(id=sample.id).exists(),
+                      len(requests) == 1, requests[0].sample_process_id is None)

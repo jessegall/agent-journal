@@ -1,0 +1,1 @@
+tests/stories/engine/setting/shared_group.py::test_a_sync_keeps_working_when_the_module_that_owns_a_placed_group_is_removed -> integration tests/integration/engine/setting/test_shared_group.py::test_a_sync_keeps_working_when_the_module_that_owns_a_placed_group_is_removed

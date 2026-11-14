@@ -1,0 +1,271 @@
+from core.modules.processes.models.reader_request import ReaderRequest
+from suites.coding.modules.workers.models.worktree import Worktree
+from dataclasses import replace
+from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
+import pytest
+from pathlib import Path
+from unittest.mock import patch
+
+from engine.database.database import Database
+from tests.stories.support.story_checks import expect_value
+
+from engine.actor.actor import Actor
+from engine.enums.command_category import CommandCategory
+from engine.journal.journal_home import LAUNCHER_SOCKET
+from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.processes.commands.start_process.start_process import StartProcess
+from core.modules.processes.models.process import Process
+from core.modules.processes.models.enums.process_state import ProcessState
+from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.ticks.output_reading import OutputReading
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.examples.shell_part import ShellPart
+from engine.testing.stories.story_fixture import StoryFixture
+from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
+from tests.stories.core.modules.processes.support.process_samples import install_runner
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
+from core.modules.agents.testing.fake_launcher import FakeLauncher
+from suites.coding.modules.workers.bindings.worker_test_listings import WorkerTestListings
+from suites.coding.modules.workers.models.proof import Proof
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
+from engine.testing.expectations.expect_reply import expect_reply_refusal
+from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
+from core.modules.processes.models.enums.process_setting import ProcessSetting
+from tests.integration.support.fixture_journal import FixtureJournal
+
+
+
+class TestLimitSetup(StoryFixture):
+    """A worker whose own runs may include at most five tests, and which may fill the long lane alone."""
+
+    parent = ForcedReaders
+
+    def steps(self, story: FixtureJournal) -> None:
+        story.run(f"setting set {WORKER_TEST_LIMIT} 5 --environment main")
+        story.run(f"setting set {ProcessSetting.READERS_FORCED.key} off --environment main")
+        story.expect_success(f"setting set {ProcessSetting.STARTER_CAP_PERCENT.key} 100 --environment main")
+
+
+@pytest.fixture
+def limited_run(played):
+    story = played(TestLimitSetup)
+    install_runner(story)
+    process = worker_run(story, "pytest tests/cart.py", CommandCategory.TEST_RUN)
+    return story, process
+
+
+def test_the_limit_defaults_to_25_and_an_environments_value_wins(played):
+    story = played(ForcedReaders)
+    story.expect_success(f"setting show {WORKER_TEST_LIMIT}", "value: 25")
+    story.run(f"setting set {WORKER_TEST_LIMIT} 10 --environment main")
+    story.expect_success(f"setting show {WORKER_TEST_LIMIT} --environment main", "value: 10")
+
+
+def test_a_run_over_the_limit_is_stopped_when_its_collected_line_is_read(limited_run):
+    story, process = limited_run
+    story.step("run printed", process.id, 1, "collected 8 items\n")
+    OutputReading()(story.container)
+    story.expect_rows(story.row(Process, process.id).state is ProcessState.STOPPED)
+    lines = tuple(story.story_rows(AgentLine, session_agent_id=process.session_agent_id, source="processes.worker-test-limit"))
+    story.expect_rows(len(lines) == 1, "8 tests" in lines[0].text, "5" in lines[0].text)
+
+
+def test_a_run_through_a_reader_with_no_count_is_counted_by_the_stock_reader_of_its_program(played):
+    story = played(TestLimitSetup)
+    install_runner(story)
+    story.expect_success('reader add worker-pytest --commands "pytest tests/*" --lines "collected" --summary "passed" --title "Python tests"', actor=story.agent)
+    process = worker_run(story, "pytest tests/cart.py", CommandCategory.TEST_RUN)
+    story.expect_rows("--collect-only" in story.container.get(WorkerTestListings).line(process))
+
+
+def test_a_go_test_of_a_worker_is_counted(played):
+    story = played(TestLimitSetup)
+    install_runner(story)
+    process = worker_run(story, "go test ./classify", CommandCategory.TEST_RUN)
+    story.expect_rows('-list "$pattern"' in story.container.get(WorkerTestListings).line(process), "pattern=." in story.container.get(WorkerTestListings).line(process))
+
+
+@pytest.mark.parametrize("limit,count", [(5, 4), (0, 8)])
+def test_a_run_under_the_limit_and_a_limit_of_zero_go_on(limited_run, limit, count):
+    story, process = limited_run
+    story.run(f"setting set {WORKER_TEST_LIMIT} {limit} --environment main")
+    story.step("run printed", process.id, 1, f"collected {count} items\n")
+    OutputReading()(story.container)
+    story.expect_rows(story.row(Process, process.id).state is ProcessState.RUNNING)
+
+
+class ProofLimitSetup(StoryFixture):
+    """The orchestrator's task 1 is open, its workers may run at most five tests a command, and readers are not
+    forced."""
+
+    parent = OpenTaskOrchestrator
+
+    def steps(self, story: FixtureJournal) -> None:
+        story.run(f"setting set {WORKER_TEST_LIMIT} 5 --environment main")
+        story.run(f"setting set {ProcessSetting.READERS_FORCED.key} off --environment main")
+
+
+def test_the_test_of_a_proof_over_the_limit_is_stopped_like_the_workers_own_run(played):
+    story = played(ProofLimitSetup)
+    repository = repository_environment(story)
+    worker = dispatched_worker(story)
+    repository.changed(worker.id, "cart.py", "TOTAL = 2\n")
+    story.expect_success('proof make 1 --task 1 "cart.py:1, its story" --test "python tests/cart.py"', actor=worker)
+    story.expect_success(COMMIT, actor=worker)
+    proof = story.first_row(Proof, task_id=1)
+    story.expect_rows(proof is not None and proof.process_id is not None, detail=str(proof))
+    story.step("run printed", proof.process_id, 1, "collected 8 items\n")
+    OutputReading()(story.container)
+    story.expect_rows(story.row(Process, proof.process_id).state is ProcessState.STOPPED)
+
+
+def test_a_run_the_journal_starts_for_no_task_such_as_a_checkpoint_is_not_limited(played):
+    story = played(TestLimitSetup)
+    worker = reader_worker(story)
+    actor = Actor.core()
+    process = story.run_command(StartProcess.single_part(worker.id, "pytest tests/proof.py", "/work", CommandCategory.TEST_RUN, 30), actor, 1)
+    story.step("run printed", process.id, 1, "collected 100 items\n")
+    OutputReading()(story.container)
+    story.expect_rows(story.row(Process, process.id).state is ProcessState.RUNNING)
+
+
+def test_a_proof_naming_whole_story_folders_over_the_limit_is_stopped_with_its_count(played):
+    story = played(TestLimitSetup)
+    worker = reader_worker(story)
+    task_id = story.new_row_id('task make "Cart totals" --brief "Prove the cart totals" --environment main', actor=story.agent)
+    start = StartProcess.single_part(worker.id, "pytest tests/stories/core tests/stories/suites", "/work", CommandCategory.TEST_RUN, 30)
+    process = story.run_command(replace(start, owner_agent_id=worker.id, task_id=task_id), Actor.core(), 1)
+    story.step("run printed", process.id, 1, "collected 300 items\n")
+    OutputReading()(story.container)
+    story.expect_rows(story.row(Process, process.id).state is ProcessState.STOPPED)
+    lines = tuple(story.story_rows(AgentLine, session_agent_id=worker.id, source="processes.worker-test-limit"))
+    story.expect_rows(len(lines) == 1, "300 tests" in lines[0].text, "limit 5" in lines[0].text, detail=str([line.text for line in lines]))
+
+
+def test_stopping_from_the_output_tick_keeps_the_count_and_ends_the_output(limited_run):
+    story, process = limited_run
+    story.step("run printed", process.id, 1, "collected 6 items\n")
+    story.expect_rows(OutputReading()(story.container))
+    story.expect_text(f"output show {process.id}", "test_count: 6", "ended_at:", actor=story.agent)
+    story.expect_rows(story.row(Process, process.id).state is ProcessState.STOPPED)
+
+
+def test_a_stopped_worker_is_started_again_with_the_count_and_limit(played):
+    story = played(OpenTaskOrchestrator)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    story.run(f"setting set {WORKER_TEST_LIMIT} 5 --environment main")
+    story.run(f"setting set {ProcessSetting.READERS_FORCED.key} off --environment main")
+    process = story.run_command(StartProcess.single_part(worker.id, "pytest tests/restart.py", "/work", CommandCategory.TEST_RUN, 30), worker, 1)
+    story.run(f"process background {process.id}", actor=worker)
+    story.end_session(worker)
+    story.run_listeners()
+    launcher = FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET), answer=b"started\n")
+    story.step("run printed", process.id, 1, "collected 8 items\n")
+    OutputReading()(story.container)
+    story.run_listeners()
+    worktree = story.first_row(Worktree, session_agent_id=worker.id)
+    launcher.expect_started(worker.id, worker_session(story, worker), Path(worktree.folder))
+    story.expect_rows("8 tests" in str(launcher.requests[0]["command"]), "limit 5" in str(launcher.requests[0]["command"]))
+
+
+def test_a_queued_run_takes_its_spot_at_once_while_its_listing_is_still_counting(limited_run):
+    story, process = limited_run
+    folder = story.container.get(OutputFolder)
+    story.run_command(GrantRunSlots(), story.agent, 1)
+    story.expect_rows(story.step("run holds a slot", process.id), folder.count_status(process.id) is None, story.row(Process, process.id).state is ProcessState.RUNNING)
+    story.run_command(GrantRunSlots(), story.agent, 1)
+    story.expect_rows(story.row(Process, process.id).state is ProcessState.RUNNING, not folder.is_count_claimed(process.id))
+
+
+def test_a_run_over_the_limit_by_its_listing_is_stopped_when_its_count_arrives(limited_run):
+    story, process = limited_run
+    story.run_command(GrantRunSlots(), story.agent, 1)
+    story.expect_rows(story.step("run holds a slot", process.id))
+    story.step("run counted", process.id, "\nJOURNAL_COUNT_PART_1\ncollected 8 items\n", 0)
+    story.run_command(GrantRunSlots(), story.agent, 1)
+    lines = tuple(story.story_rows(AgentLine, session_agent_id=process.session_agent_id, source="processes.worker-test-limit"))
+    story.expect_rows(story.row(Process, process.id).state is ProcessState.STOPPED, len(lines) == 1, "8 tests" in lines[0].text)
+    story.expect_text(f"output show {process.id}", "test_count: 8", actor=story.agent)
+
+
+def test_a_grant_over_many_queued_worker_runs_reads_no_output(limited_run):
+    story, _ = limited_run
+    for number in range(12):
+        worker_run(story, f"pytest tests/cart_{number}.py", CommandCategory.TEST_RUN)
+    database = story.container.get(Database)
+    with patch.object(database, "rows", wraps=database.rows) as reads:
+        story.run_command(GrantRunSlots(), story.agent, 1)
+    output_reads = [call for call in reads.call_args_list if "FROM outputs " in call.args[0].sql]
+    expect_value(len(output_reads), 0)
+
+
+def test_a_run_under_the_limit_by_its_listing_goes_on_with_its_count(limited_run):
+    story, process = limited_run
+    folder = story.container.get(OutputFolder)
+    story.run_command(GrantRunSlots(), story.agent, 1)
+    story.step("run counted", process.id, "\nJOURNAL_COUNT_PART_1\ncollected 4 items\n", 0)
+    story.run_command(GrantRunSlots(), story.agent, 1)
+    story.expect_rows(story.row(Process, process.id).state is ProcessState.RUNNING, folder.is_count_claimed(process.id))
+    story.expect_text(f"output show {process.id}", "test_count: 4", actor=story.agent)
+
+
+@pytest.mark.parametrize("status", [0, 1, 143])
+def test_a_listing_without_a_known_count_stops_the_run(limited_run, status):
+    story, process = limited_run
+    story.run_command(GrantRunSlots(), story.agent, 1)
+    story.step("run counted", process.id, "no number\n" if status == 0 else "collected 100 items\n", status)
+    story.run_command(GrantRunSlots(), story.agent, 1)
+    lines = tuple(story.story_rows(AgentLine, session_agent_id=process.session_agent_id, source="processes.worker-test-limit"))
+    story.expect_rows(story.row(Process, process.id).state is ProcessState.STOPPED,
+                      len(lines) == 1, "could not count" in lines[0].text)
+    story.expect_rows("save a reader that counts the tests" in lines[0].text, "journal reader draft" in lines[0].text, "--about tests" in lines[0].text, detail=lines[0].text)
+
+
+def test_a_listing_that_printed_nothing_is_a_killed_run_and_asks_for_no_reader_while_one_that_printed_no_number_still_does(limited_run):
+    story, process = limited_run
+    story.step("run counted", process.id, "", 143)
+    story.run_command(GrantRunSlots(), story.agent, 1)
+    story.expect_rows(story.row_count(ReaderRequest, completed_at=None) == 0, story.row(Process, process.id).state is not ProcessState.STOPPED)
+    second_run = worker_run(story, "pytest tests/totals.py", CommandCategory.TEST_RUN)
+    story.run_command(GrantRunSlots(), story.agent, 1)
+    story.step("run counted", second_run.id, "no number\n", 0)
+    story.run_command(GrantRunSlots(), story.agent, 1)
+    story.expect_rows(story.row_count(ReaderRequest, completed_at=None) == 1, story.row(Process, second_run.id).state is ProcessState.STOPPED)
+
+
+def test_a_worker_stopped_for_an_unknown_count_adds_a_counting_reader_and_its_next_run_starts(played):
+    story = played(TestLimitSetup)
+    install_runner(story)
+    folder = story.container.get(OutputFolder)
+    stopped = worker_run(story, "pytest tests/cart.py", CommandCategory.TEST_RUN)
+    story.run_command(GrantRunSlots(), story.agent, 1)
+    story.step("run counted", stopped.id, "no number\n", 0)
+    story.run_command(GrantRunSlots(), story.agent, 1)
+    story.expect_rows(story.row(Process, stopped.id).state is ProcessState.STOPPED)
+    story.expect_success('reader add counted-cart --commands "pytest tests/*" --title "Cart tests" --lines "passed" --summary "passed" --count "([0-9]+) tests" '
+                         '--progress "\\[([0-9]+)%\\]" --count-command "{part} --collect-only -q"', actor=reader_worker(story))
+    started = worker_run(story, "pytest tests/cart.py", CommandCategory.TEST_RUN)
+    story.expect_rows("--collect-only -q" in story.container.get(WorkerTestListings).line(started))
+    story.run_command(GrantRunSlots(), story.agent, 1)
+    story.step("run counted", started.id, "\nJOURNAL_COUNT_PART_1\n3 tests\n", 0)
+    story.run_command(GrantRunSlots(), story.agent, 1)
+    story.expect_rows(story.row(Process, started.id).state is ProcessState.RUNNING, folder.is_count_claimed(started.id))
+
+
+def test_a_worker_test_tool_with_no_reader_runs_once_so_a_reader_can_be_drawn_from_its_output(played):
+    story = played(TestLimitSetup)
+    install_runner(story)
+    process = worker_run(story, "unknown-test tests/cart", CommandCategory.TEST_RUN)
+    story.expect_rows(story.row(Process, process.id).state is ProcessState.RUNNING)
+
+
+def test_a_listing_that_fails_shows_why_in_the_output_summary(limited_run):
+    story, process = limited_run
+    story.run_command(GrantRunSlots(), story.agent, 1)
+    story.step("run counted", process.id, "zsh: no such file: vitest\n", 1)
+    story.run_command(GrantRunSlots(), story.agent, 1)
+    lines = tuple(story.story_rows(AgentLine, session_agent_id=process.session_agent_id, source="processes.worker-test-limit"))
+    story.expect_rows(len(lines) == 1, f"Output {process.id} stopped" in lines[0].text)
+    story.expect_text(f"output read {process.id} --summary", "no such file: vitest", actor=reader_worker(story))

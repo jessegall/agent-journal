@@ -1,0 +1,1 @@
+tests/stories/engine/hosting/hosted_story.py::test_a_story_started_hosted_reports_hosting_on_with_the_file_it_wrote -> integration tests/integration/engine/hosting/test_hosted_story.py::test_a_story_started_hosted_reports_hosting_on_with_the_file_it_wrote

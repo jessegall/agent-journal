@@ -1,6 +1,6 @@
+from core.modules.plugins.support.login_path import FALLBACK_FOLDERS, LoginPath
 import subprocess
 
-from core.modules.plugins.support.login_path import LoginPath
 from tests.stories.support.story_checks import expect_answers, expect_value
 
 
@@ -54,3 +54,20 @@ def test_a_failed_read_keeps_no_answer_and_the_clock_reads_again(journal, monkey
     login_path.fill_missing()
     expect_login_path(login_path, "/from/the/shell")
     expect_answers(started, 1)
+
+
+def test_before_any_read_the_usual_folders_answer_and_no_shell_starts(played, monkeypatch):
+    story = played()
+    started = counted_shells(monkeypatch, "/from/the/shell")
+    expect_split_login_path(story, ":", list(FALLBACK_FOLDERS))
+    expect_value(started, [])
+
+
+def test_a_round_that_reads_the_shell_for_each_event_and_starts_plugins_reads_the_file_once(played, monkeypatch):
+    story = played()
+    counted_shells(monkeypatch, "/from/the/shell")
+    login_path = LoginPath(story.home)
+    with story.repeated_work.request():
+        for _ in range(3):
+            login_path.read_shell()
+            expect_login_path(login_path, "/from/the/shell")

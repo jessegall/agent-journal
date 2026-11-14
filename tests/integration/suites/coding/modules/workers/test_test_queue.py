@@ -1,0 +1,470 @@
+from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
+from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
+from tests.stories.core.support.agent_labels import agent_number
+from suites.coding.modules.workers.models.merger_line import MergerLine
+import json
+import subprocess
+from pathlib import Path
+from datetime import timedelta
+import pytest
+
+from engine.actor.actor import Actor
+from engine.enums.actor_type import ActorType
+from core.modules.processes.models.process import Process
+from core.modules.processes.commands.end_process.end_process import EndProcess
+from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
+from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
+from core.modules.processes.support.runner_binary import RunnerBinary
+from core.modules.processes.errors.missing_runner_error import MissingRunnerError
+from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK
+from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_marks_text
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
+from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+from tests.stories.support.story_checks import expect_absent_value, expect_answers, expect_value, expect_value_with
+from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_PASSED
+from engine.testing.expectations.expected_nudge import expected_nudge
+from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
+from suites.coding.modules.workers.support.worker_settings import PROJECT_TEST_COMMAND
+
+PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "python tests/cart.py"'
+PIPED_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "python tests/cart.py | tail -3"'
+REDIRECTED_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "python tests/cart.py > out.txt"'
+TAILED_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "journal pytest-run tests/cart.py --tail 5"'
+
+
+def recording_launch(monkeypatch) -> list[int]:
+    started: list[int] = []
+    for method in ("start", "start_waited"):
+        monkeypatch.setattr(WorkerTestLaunch, method, lambda _launch, process, _line, _session: started.append(process.id))
+    return started
+
+
+def queued_story(played):
+    story = played(OpenTaskOrchestrator)
+    started = recorded_test_launches(story)
+    repository = repository_environment(story)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.expect_success(PROOF, actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
+    story.run_listeners()
+    return story, repository, worker, started
+
+
+def ended(story, process_id: int, code: int) -> None:
+    owner = Actor(story.row(Process, process_id).session_agent_id, ActorType.AGENT)
+    story.run_command(EndProcess(process_id, code, 0, 0), owner, 1)
+    story.run_listeners()
+
+
+def test_a_proof_refuses_a_test_with_a_pipe_or_a_redirect(played):
+    story = played(OpenTaskOrchestrator)
+    recorded_test_launches(story)
+    repository_environment(story)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    story.expect_refusal(PIPED_PROOF, "without a pipe, a redirect or a reading flag", actor=worker)
+    story.expect_refusal(REDIRECTED_PROOF, "without a pipe, a redirect or a reading flag", actor=worker)
+    story.expect_refusal(TAILED_PROOF, "without a pipe, a redirect or a reading flag", actor=worker)
+
+
+def test_the_last_delivery_queues_the_tests_and_the_journal_starts_them(played):
+    story, _, worker, started = queued_story(played)
+    expect_answers(started, 1)
+    story.expect_text("proof show 1", "state: running", "test_command: pytest tests/cart.py", actor=story.agent)
+    expect_marks_text(story, "queued")
+    queue = json.loads(story.run("queue list --environment 1 --json").output_text)
+    story.expect_rows(queue["total"] == 1, queue["rows"][0]["owner_agent_id"] == worker.id,
+                      queue["rows"][0]["output_id"] == started[0])
+    story.expect_rows(queue["running"][0]["owner_agent_id"] == worker.id, queue["running"][0]["task_id"] == 1)
+
+
+def test_all_tests_passing_checks_the_proofs_and_tells_the_main_agent_and_the_merge_goes_through(played):
+    story, repository, worker, started = queued_story(played)
+    story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
+    ended(story, started[0], 0)
+    story.expect_text("proof show 1", "state: checked", actor=story.agent)
+    expect_marks_text(story, "passed")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(WORKER_TESTS_PASSED), actor=story.agent)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    request_merge(story, worker)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
+    repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", CART_CHANGE)
+
+
+def test_a_failed_test_goes_back_to_the_worker_and_its_next_delivery_runs_it_again(played):
+    story, repository, worker, started = queued_story(played)
+    ended(story, started[0], 1)
+    story.expect_text("proof show 1", "state: short", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {worker.id}", f"Your tests failed, output {started[0]}")
+    story.expect_text("worker-worktree show 1", "state: cut", actor=story.agent)
+    repository.changed(worker.id, "cart.py", "TOTAL = 4\n")
+    story.expect_success(PROOF, actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
+    story.run_listeners()
+    expect_answers(started, 2)
+    story.expect_text("proof show 1", "state: running", actor=story.agent)
+
+
+
+def test_an_orphaned_proof_returns_to_the_worker_and_runs_again_at_delivery(played):
+    story, _, worker, started = queued_story(played)
+    orphaned_process_id = started[0]
+    story.run_command(OrphanProcess(orphaned_process_id), Actor.core(), 1)
+    story.run_listeners()
+    story.expect_text("proof show 1", "state: short", actor=story.agent)
+    story.expect_text("task show 1", "state: started", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {worker.id}", f"Your tests failed, output {orphaned_process_id}")
+    story.expect_success(PROOF, actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
+    story.run_listeners()
+    expect_answers(started, 2)
+    story.expect_rows(started[1] != orphaned_process_id)
+    story.expect_text("proof show 1", "state: running", f"process_id: {started[1]}", actor=story.agent)
+    ended(story, started[1], 0)
+    story.expect_text("proof show 1", "state: checked", actor=story.agent)
+    story.expect_text("task show 1", "state: completed", actor=story.agent)
+
+def mixed_proof_story(played):
+    story = played(OpenTaskOrchestrator)
+    started = recorded_test_launches(story)
+    repository = repository_environment(story)
+    story.expect_success('task edit 1 --brief "- the total\n- the tax"', actor=story.agent)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.expect_success(PROOF, actor=worker)
+    story.expect_success('proof make 2 --task 1 "cart.py:1, looked at it"', actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
+    story.run_listeners()
+    return story, repository, worker, started
+
+
+def test_passed_tests_with_a_proof_with_no_test_ask_for_the_check_not_the_merge(played):
+    story, repository, worker, started = mixed_proof_story(played)
+    ended(story, started[0], 0)
+    lines = story.run(f"agent-line list --agent {story.agent.id}")
+    lines.expect_text(PROOF_CHECK.nudge(worker=agent_number(story, worker.id), task=1, proofs="2").text)
+    lines.expect_no_text(f"journal worker merge {agent_number(story, worker.id)}")
+    expect_marks_text(story, "passed")
+    story.expect_success("proof check 2", actor=story.agent)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    request_merge(story, worker)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
+
+
+def test_a_task_with_an_unchecked_proof_stays_in_testing_after_its_tests_pass(played):
+    story, _, _, started = mixed_proof_story(played)
+    ended(story, started[0], 0)
+    story.expect_text("task show 1", "state: testing", actor=story.agent)
+
+
+def test_a_proof_with_no_test_still_waits_for_the_main_agents_check(played):
+    story = played(OpenTaskOrchestrator)
+    started = recorded_test_launches(story)
+    repository = repository_environment(story)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.expect_success('proof make 1 --task 1 "cart.py:1, looked at it"', actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
+    story.run_listeners()
+    expect_absent_value(started)
+    story.expect_text("proof show 1", "state: shown", actor=story.agent)
+
+
+def test_picked_tests_run_after_proof_tests_on_the_rebased_worktree(played):
+    story = played(OpenTaskOrchestrator)
+    started = recorded_test_launches(story)
+    repository = repository_environment(story)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    repository.committed("pick.py", "import sys\nfrom pathlib import Path\nassert 'cart.py' in sys.argv\nassert Path('base.txt').read_text() == 'rebased\\n'\nprint('tests/other test.py')\n", "Picker")
+    repository.committed("run_tests.py", "import sys\nfrom pathlib import Path\nassert sys.argv[1:] == ['tests/other test.py']\nassert Path('base.txt').read_text() == 'rebased\\n'\n", "Tests")
+    story.expect_success(f'setting set {AFFECTED_TESTS_COMMAND} "python3 pick.py" --environment main')
+    story.expect_success(f'setting set {PROJECT_TEST_COMMAND} "python3 run_tests.py" --environment main')
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    repository.committed("base.txt", "rebased\n", "Base change")
+    story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "go on" --test-command "probe=python3 -c"', actor=story.agent)
+    story.expect_success('proof make 1 --task 1 "cart.py:1, the cart story" --test "probe \'from pathlib import Path; assert Path(\\\"base.txt\\\").exists()\' tests/cart.py"', actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
+    story.run_listeners()
+    run_test_process(story, started[0])
+    picker = story.row(Process, started[1])
+    story.expect_rows("pick.py" in picker.line, "cart.py" in picker.line,
+                      (repository.worktree_folder(worker.id) / "base.txt").read_text() == "rebased\n")
+    run_test_process(story, picker.id)
+    first_answer = story.row(Process, started[2])
+    story.expect_rows(first_answer.line == "python3 run_tests.py 'tests/other test.py'")
+    run_test_process(story, first_answer.id)
+    story.expect_text("task show 1", "state: completed", actor=story.agent)
+
+
+def run_test_process(story, process_id):
+    process = story.row(Process, process_id)
+    completed = subprocess.run(process.line, shell=True, cwd=process.folder, capture_output=True, text=True, timeout=30, check=False)
+    story.step("run printed", process_id, 1, completed.stdout)
+    ended(story, process_id, completed.returncode)
+
+
+def affected_test_story(played):
+    story = played(OpenTaskOrchestrator)
+    started = recorded_test_launches(story)
+    repository = repository_environment(story)
+    story.expect_success(f'setting set {AFFECTED_TESTS_COMMAND} "python3 pick.py" --environment main')
+    story.expect_success(f'setting set {PROJECT_TEST_COMMAND} "python3 -m pytest -q" --environment main')
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.expect_success(PROOF, actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
+    story.run_listeners()
+    ended(story, started[0], 0)
+    return story, repository, worker, started
+
+
+def test_a_failed_picker_returns_the_work_with_its_output(played):
+    story, _, worker, started = affected_test_story(played)
+    ended(story, started[1], 1)
+    story.expect_text("worker-worktree show 1", "state: cut", actor=story.agent)
+    story.expect_text("task show 1", "state: started", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {worker.id}", f"Your tests failed, output {started[1]}")
+
+
+def test_a_failed_picked_test_returns_the_work_with_its_output(played):
+    story, _, worker, started = affected_test_story(played)
+    story.step("run printed", started[1], 1, "tests/other.py\n")
+    ended(story, started[1], 0)
+    ended(story, started[2], 1)
+    story.expect_text("worker-worktree show 1", "state: cut", actor=story.agent)
+    story.expect_text("task show 1", "state: started", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {worker.id}", f"Your tests failed, output {started[2]}")
+
+
+def test_a_failed_picker_runs_again_at_the_next_hand_in(played):
+    story, repository, worker, started = affected_test_story(played)
+    ended(story, started[1], 1)
+    repository.changed(worker.id, "cart.py", "TOTAL = 4\n")
+    story.expect_success("worker commit --wait --differences none", actor=worker)
+    story.run_listeners()
+    story.expect_rows(len(started) == 3)
+    story.step("run printed", started[2], 1, "tests/other.py\n")
+    ended(story, started[2], 0)
+    ended(story, started[3], 0)
+    story.expect_text("task show 1", "state: completed", actor=story.agent)
+
+
+def test_an_empty_picker_result_finishes_without_an_extra_test(played):
+    story, _, _, started = affected_test_story(played)
+    ended(story, started[1], 0)
+    story.expect_rows(len(started) == 2)
+    story.expect_text("task show 1", "state: completed", actor=story.agent)
+
+
+def test_picked_tests_run_when_the_proof_has_no_test_command(played):
+    story = played(OpenTaskOrchestrator)
+    started = recorded_test_launches(story)
+    repository = repository_environment(story)
+    story.expect_success(f'setting set {AFFECTED_TESTS_COMMAND} "python3 pick.py" --environment main')
+    story.expect_success(f'setting set {PROJECT_TEST_COMMAND} "python3 -m pytest" --environment main')
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.expect_success('proof make 1 --task 1 "cart.py:1, checked the cart"', actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
+    story.run_listeners()
+    story.expect_rows(len(started) == 1)
+    story.step("run printed", started[0], 1, "tests/cart.py\n")
+    ended(story, started[0], 0)
+    ended(story, started[1], 0)
+    story.expect_text("proof show 1", "state: shown", actor=story.agent)
+    story.expect_text("task show 1", "state: testing", actor=story.agent)
+
+
+@pytest.mark.parametrize("setting", ("affected-tests-command", "project-test-command"))
+def test_a_single_setting_does_not_run_the_picker(played, setting):
+    story = played(OpenTaskOrchestrator)
+    started = recorded_test_launches(story)
+    repository = repository_environment(story)
+    story.expect_success(f'setting set journal.suites.coding.workers.{setting} "python3 command.py" --environment main')
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.expect_success(PROOF, actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
+    story.run_listeners()
+    ended(story, started[0], 0)
+    story.expect_rows(len(started) == 1)
+    story.expect_text("task show 1", "state: completed", actor=story.agent)
+
+
+def expect_cwd_options(options, expected) -> None:
+    actual = options['cwd']
+    assert actual == expected, actual
+
+
+def test_three_failed_hand_ins_of_a_task_give_the_main_agent_a_line_the_worker_never_sees(played):
+    story, repository, worker, started = queued_story(played)
+    for attempt in range(2):
+        ended(story, started[attempt], 1)
+        repository.changed(worker.id, "cart.py", f"TOTAL = {attempt + 10}\n")
+        story.expect_success(PROOF, actor=worker)
+        story.expect_success("worker commit --wait --differences none", actor=worker)
+        story.run_listeners()
+    ended(story, started[2], 1)
+    story.expect_rows("failed 3 hand-ins" not in story.run("task overview 1", actor=worker).output_text)
+    repository.changed(worker.id, "cart.py", "TOTAL = 9\n")
+    story.expect_success(PROOF, actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
+    story.run_listeners()
+    ended(story, started[3], 0)
+    story.expect_text(f"worker logs {agent_number(story, worker.id)}", "! failed 3 hand-ins", actor=story.agent)
+
+
+def test_every_third_failed_hand_in_in_a_row_puts_a_line_before_the_merger(played):
+    story, repository, worker, started = queued_story(played)
+    for attempt in range(2):
+        ended(story, started[attempt], 1)
+        repository.changed(worker.id, "cart.py", f"TOTAL = {attempt + 10}\n")
+        story.expect_success(PROOF, actor=worker)
+        story.expect_success("worker commit --wait --differences none", actor=worker)
+        story.run_listeners()
+    expect_value(review_lines(story), [])
+    ended(story, started[2], 1)
+    expect_value(review_lines(story), [f"worker:{agent_number(story, worker.id)} failed 3 hand-ins in a row on task:1: work out where it goes wrong and tell it"])
+
+
+def review_lines(story) -> list[str]:
+    return [line.text for line in story.story_rows(MergerLine) if "in a row" in line.text]
+
+
+def test_a_worker_waiting_for_tests_or_merge_is_not_reported_as_stopped(played):
+    from datetime import timedelta
+
+    story, repository, worker, started = queued_story(played)
+    story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
+    story.end_session(worker)
+    story.advance(timedelta(minutes=20))
+    story.tick("s-1")
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has stopped")
+    ended(story, started[0], 0)
+    story.advance(timedelta(minutes=20))
+    story.tick("s-1")
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has stopped")
+
+
+def test_a_queued_proof_survives_the_workers_first_hook_on_a_freshly_started_server_and_counts(played):
+    from engine.testing.examples.hook_samples import HookSamples
+    from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session
+    story, _, worker, started = queued_story(played)
+    session = worker_session(story, worker)
+    story.hook(session, HookSamples.session_start())
+    story.hook(session, HookSamples.tick())
+    story.run_listeners()
+    story.expect_text("process show " + str(started[0]), "state: running", actor=story.agent)
+    story.expect_text("proof show 1", "state: running", actor=story.agent)
+    ended(story, started[0], 0)
+    story.expect_text("proof show 1", "state: checked", actor=story.agent)
+
+
+def test_a_queued_proof_whose_runner_never_started_is_launched_again_and_counts(played):
+    from suites.coding.modules.workers.ticks.worker_tests.unlaunched_worker_test_runs import UnlaunchedWorkerTestRuns
+    story, _, _, started = queued_story(played)
+    expect_answers(started, 1)
+    story.advance(timedelta(seconds=40))
+    UnlaunchedWorkerTestRuns()(story.container)
+    expect_answers(started, 2)
+    expect_answers(set(started), 1)
+    story.expect_text("proof show 1", "state: running", actor=story.agent)
+    ended(story, started[0], 0)
+    story.expect_text("proof show 1", "state: checked", actor=story.agent)
+
+
+def ended_with_nothing_recorded(story, monkeypatch, process_id: int, code: int) -> None:
+    """The process ends while the listener that records its test does not run, as when a listener before it failed."""
+    from suites.coding.modules.workers.listeners.worker_test_end_listener import WorkerTestEndListener
+    with monkeypatch.context() as failed_listener:
+        failed_listener.setattr(WorkerTestEndListener, "ended", lambda listener, process, logged: None)
+        ended(story, process_id, code)
+    story.expect_text("proof show 1", "state: running", actor=story.agent)
+
+
+def stalled_tick(story) -> None:
+    from suites.coding.modules.workers.ticks.worker_tests.stalled_worker_test_runs import StalledWorkerTestRuns
+    StalledWorkerTestRuns()(story.container)
+    story.run_listeners()
+
+
+@pytest.fixture
+def unrecorded_end(played, monkeypatch):
+    story, _, _, started = queued_story(played)
+    ended_with_nothing_recorded(story, monkeypatch, started[0], 0)
+    return story, started[0]
+
+
+def test_a_running_proof_whose_process_ended_with_nothing_recorded_is_recorded_by_the_tick_after_a_minute(unrecorded_end):
+    story, _ = unrecorded_end
+    stalled_tick(story)
+    story.expect_text("proof show 1", "state: running", actor=story.agent)
+    story.advance(timedelta(minutes=2))
+    stalled_tick(story)
+    story.expect_text("proof show 1", "state: checked", actor=story.agent)
+
+
+def test_a_running_proof_whose_process_is_gone_leaves_running_as_lost(unrecorded_end):
+    story, process_id = unrecorded_end
+    story.expect_success(f"process delete {process_id}", actor=story.user)
+    stalled_tick(story)
+    story.expect_text("proof show 1", "state: short", f"lost: process {process_id} is gone with no result recorded", actor=story.agent)
+
+
+@pytest.mark.real_git
+def test_the_picked_tests_run_on_the_work_merged_into_a_base_that_moved_after_the_hand_in_and_a_failure_returns_the_work(played):
+    story = played(OpenTaskOrchestrator)
+    started = recorded_test_launches(story)
+    repository = repository_environment(story, real_git=True)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    repository.committed("pick.py", "print('tests/other.py')\n", "Picker")
+    story.expect_success(f'setting set {AFFECTED_TESTS_COMMAND} "python3 pick.py" --environment main')
+    story.expect_success(f'setting set {PROJECT_TEST_COMMAND} "python3 -m pytest -q" --environment main')
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.expect_success(PROOF, actor=worker)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    repository.committed("base.txt", "moved\n", "Base change")
+    base_tip = repository.tip(ENVIRONMENT_BRANCH)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
+    story.run_listeners()
+    ended(story, started[0], 0)
+    picker_folder = Path(story.row(Process, started[1]).folder)
+    story.step("run printed", started[1], 1, "tests/other.py\n")
+    ended(story, started[1], 0)
+    selected = story.row(Process, started[2])
+    story.expect_rows(picker_folder != repository.worktree_folder(worker.id), (picker_folder / "base.txt").read_text() == "moved\n",
+                      (picker_folder / "cart.py").read_text() == CART_CHANGE, selected.folder == str(picker_folder))
+    ended(story, selected.id, 1)
+    story.expect_text("worker-worktree show 1", "state: cut", actor=story.agent)
+    story.expect_text("task show 1", "state: started", actor=story.agent)
+    repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
+
+
+def test_a_release_of_the_worker_ends_the_proof_test_that_waited_or_ran_for_its_worktree(played):
+    story, _, worker, _ = queued_story(played)
+    story.expect_success(f'worker release {agent_number(story, worker.id)} --abandon "the worker is gone"', actor=story.agent)
+    story.run_listeners()
+    story.expect_text("proof show 1", "state: short", "was abandoned or removed while this test waited or ran", actor=story.agent)
+
+
+def test_a_worker_whose_commit_passed_with_every_other_task_of_its_unit_blocked_is_told_to_the_main_agent(played):
+    story = played(OpenTaskOrchestrator)
+    started = recorded_test_launches(story)
+    repository = repository_environment(story)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    second = story.new_row_id('task make "Later work" --brief "Waits on the main agent" --environment main', actor=story.agent)
+    story.expect_success(f"worker send {agent_number(story, worker.id)} --task {second}", actor=story.agent)
+    story.expect_success(f'task block {second} --reason "waits on the main agent engine task"', actor=worker)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.expect_success(PROOF, actor=worker)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
+    story.run_listeners()
+    ended(story, started[0], 0)
+    story.expect_text("agent-line show 5", "committed task:1; every task left in its unit is blocked", actor=story.agent)
