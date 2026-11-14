@@ -65,3 +65,13 @@ def test_a_walk_reads_with_key_greater_than_last_and_never_with_offset(entries: 
     rows = list(entries.every_row(WALK_REASON))
     assert len(rows) == 60 and len(statements_run) == 2
     assert "id > ?" in statements_run[1] and not any("OFFSET" in sql for sql in statements_run)
+
+
+def test_a_walk_keeps_the_callers_order_with_empty_values_last_when_descending(entries: Query[LogEntry]):
+    table = Tables().table(LogEntry)
+    for number in range(60):
+        entries.database.insert(TableStatements(table).insert(table.row(LogEntry(title=f"Shelved {number}", shelf_id=number % 4 or None), table.columns), FIXED_TIME))
+    rows = list(entries.order_by("shelf_id", "desc").every_row(WALK_REASON))
+    shelved = [row for row in rows if row.shelf_id is not None]
+    expected = sorted(shelved, key=lambda row: (-row.shelf_id, row.id)) + sorted((row for row in rows if row.shelf_id is None), key=lambda row: row.id)
+    assert len(rows) == len({row.id for row in rows}) == 67 and [row.id for row in rows] == [row.id for row in expected]

@@ -17,6 +17,7 @@ from engine.query.conditions.among import Among
 from engine.query.conditions.column_equal import ColumnEqual
 from engine.query.conditions.equal import Equal
 from engine.query.conditions.exists import Exists
+from engine.query.conditions.after_row import AfterRow
 from engine.query.conditions.greater import Greater
 from engine.query.conditions.is_null import IsNull
 from engine.query.conditions.less import Less
@@ -35,6 +36,7 @@ from engine.query.errors.query_limit_error import QueryLimitError
 from engine.model.table import Table
 from engine.query.errors.unknown_table_error import UnknownTableError
 from engine.query.join import Join
+from engine.query.order import Order
 from engine.query.errors.unknown_operator_error import UnknownOperatorError
 from engine.query.errors.unnamed_column_error import UnnamedColumnError
 from engine.query.errors.column_type_error import ColumnTypeError
@@ -206,7 +208,7 @@ class Query(Generic[M]):
             self.checked_qualified(column)
         else:
             self.checked(column)
-        return self.with_select(self.select.ordered(column, direction == "desc"))
+        return self.with_select(self.select.ordered(self.qualified(column), direction == "desc"))
 
     def join(self, model: type[Model], first: str, operator: str, second: str) -> Self:
         return self.joining(model, first, operator, second, False)
@@ -218,7 +220,9 @@ class Query(Generic[M]):
         if operator not in OPERATORS:
             raise UnknownOperatorError(f"unknown operator {operator}; use one of {' '.join(OPERATORS)}")
         table = self.tables.table(model)
-        query = self.with_select(self.select.joined(Join(table.name, is_outer, first, operator, second)))
+        select = self.select.joined(Join(table.name, is_outer, first, operator, second))
+        # a joined read gives rows of this query's model, so it reads this table's columns unless it names others
+        query = self.with_select(select.column(f"{self.table.name}.*") if select.columns == "*" else select)
         query.joined_tables = (*self.joined_tables, table)
         query.checked_qualified(first, second)
         if owner := self.database.row_owner:
@@ -284,7 +288,7 @@ class Query(Generic[M]):
         limit = self.select.limit or DEFAULT_LIMIT_ROWS
         select = self.select.sliced(limit + 1, 0).named(limit + 1)
         if not select.orders and self.table.has_key_column():
-            select = select.ordered(self.table.key, False)
+            select = select.ordered(self.qualified(self.table.key), False)
         rows = self.rows(select)
         if len(rows) > limit:
             self.database.report_cut(self.scoped(select).statement().sql, limit)
@@ -315,16 +319,33 @@ class Query(Generic[M]):
             raise QueryLimitError("every_row needs a key column to read in order")
         return self.walked(self.table.key)
 
+    # every row in the caller's order, a page at a time: by one column of the caller's and then the key, each page
+    # starting after the last row of the one before, so no row is read twice or left out
     def walked(self, key: str) -> Iterator[M]:
-        start = replace(self.select, orders=(), limit=0, offset=0).ordered(key, False)
-        last: object = None
+        key_column = self.qualified(key)
+        key_orders = [order for order in self.select.orders if order.column == key_column]
+        orders = [order for order in self.select.orders if order.column != key_column]
+        if len(orders) > 1:
+            raise QueryLimitError("every_row keeps one order column besides the key")
+        key_descending = bool(key_orders) and key_orders[0].descending
+        start = replace(self.select, orders=(), limit=0, offset=0)
+        for order in orders:
+            start = start.ordered(order.column, order.descending)
+        start = start.ordered(key_column, key_descending).walk_paged()
+        last: M | None = None
         while True:
-            select = start if last is None else start.matching(Greater(key, last))
+            select = start if last is None else start.matching(self.after(last, orders[0] if orders else None, key, key_descending))
             rows = self.rows(select.sliced(WALK_ROWS, 0).named(WALK_ROWS))
             yield from rows
             if len(rows) < WALK_ROWS:
                 return
-            last = getattr(rows[-1], key)
+            last = rows[-1]
+
+    def after(self, row: M, order: Order | None, key: str, key_descending: bool) -> Condition:
+        key_column, key_value = self.qualified(key), getattr(row, key)
+        if order is None:
+            return Less(key_column, key_value) if key_descending else Greater(key_column, key_value)
+        return AfterRow(order.column, order.descending, getattr(row, order.column.rpartition(".")[2]), key_column, key_value, key_descending)
 
     # The select with the scope of the read applied, as a kept read compares it.
     def kept_select(self) -> Select:
@@ -364,6 +385,10 @@ class Query(Generic[M]):
             return []
         return [self.typed(self.table.row_model(row)) for row in self.database.rows(select.statement())]
 
+    # a column of this query's own table, named with the table once the query joins another, so it is never ambiguous
+    def qualified(self, column: str) -> str:
+        return f"{self.table.name}.{column}" if self.joined_tables and "." not in column else column
+
     def scoped(self, select: Select) -> Select:
         owner = self.database.row_owner
         if issubclass(self.model, EnvironmentScoped) and (owner is None or owner.environment_id is None) and not self.database.environment_scope_passed and not self.reads_every_environment:
@@ -374,7 +399,7 @@ class Query(Generic[M]):
     def scope_conditions(self, select: Select) -> Select:
         owner = self.database.row_owner
         if issubclass(self.model, Removable) and not self.shows_removed:
-            select = select.matching(IsNull(REMOVED_COLUMN))
+            select = select.matching(IsNull(self.qualified(REMOVED_COLUMN)))
         if owner is not None and issubclass(self.model, EnvironmentScoped):
             select = self.environment_rows(select, owner)
         if issubclass(self.model, AgentScoped):
@@ -384,15 +409,15 @@ class Query(Generic[M]):
     def session_rows(self, select: Select, owner: RowOwner | None) -> Select:
         if owner is None or self.database.read_actor_id is None or self.model.shared_rows or not self.table.has_column(SESSION_COLUMN):
             return select
-        return select.matching(SessionRows(owner, self.table.has_nullable_column(SESSION_COLUMN)))
+        return select.matching(SessionRows(owner, self.table.has_nullable_column(SESSION_COLUMN), self.qualified(SESSION_COLUMN)))
 
     def environment_rows(self, select: Select, owner: RowOwner) -> Select:
-        return select if owner.environment_id is None else select.matching(Equal(ENVIRONMENT_COLUMN, owner.environment_id))
+        return select if owner.environment_id is None else select.matching(Equal(self.qualified(ENVIRONMENT_COLUMN), owner.environment_id))
 
     def owner_rows(self, select: Select, owner: RowOwner | None) -> Select:
         if owner is None or owner.agent is None:
             return select
-        return select.matching(IsNull(AGENT_COLUMN)) if owner.is_main else select.matching(Equal(AGENT_COLUMN, owner.agent))
+        return select.matching(IsNull(self.qualified(AGENT_COLUMN))) if owner.is_main else select.matching(Equal(self.qualified(AGENT_COLUMN), owner.agent))
 
     def typed(self, row: Model | ViewModel) -> M:
         if isinstance(row, self.model):

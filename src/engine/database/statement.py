@@ -6,13 +6,14 @@ from dataclasses import dataclass, field
 @dataclass(frozen=True)
 class Statement:
     """SQL text together with the values for its placeholders, the reason it may scan a table and the reason
-    it may load a whole table past the read limit."""
+    it may load a whole table past the read limit, and whether it reads one page of a walk over every row."""
 
     sql: str
     parameters: Sequence[object] = ()
     scan_reason: str | None = field(default=None, compare=False)
     full_table_reason: str | None = field(default=None, compare=False)
     declared_limit_rows: int | None = field(default=None, compare=False)
+    is_walk_page: bool = field(default=False, compare=False)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "parameters", tuple(self.parameters))

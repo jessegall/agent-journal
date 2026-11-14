@@ -41,13 +41,13 @@ def test_join_writes_join_on(entries: Query[LogEntry]):
 
 def test_left_join_writes_left_join(entries: Query[LogEntry]):
     assert saved(entries.left_join(SampleAgent, "agents.id", "=", "log_entries.shelf_id")) == Statement(
-        "SELECT * FROM log_entries LEFT JOIN agents ON agents.id = log_entries.shelf_id")
+        "SELECT log_entries.* FROM log_entries LEFT JOIN agents ON agents.id = log_entries.shelf_id")
 
 
 def test_a_join_to_an_environment_scoped_model_adds_its_environment_condition(entries: Query[LogEntry]):
     entries.database.row_owner = RowOwner(agent=None, environment_id=5)
     assert saved(entries.join(Desk, "desks.shelf_id", "=", "log_entries.shelf_id")) == Statement(
-        "SELECT * FROM log_entries JOIN desks ON desks.shelf_id = log_entries.shelf_id WHERE desks.environment_id = ?", [5])
+        "SELECT log_entries.* FROM log_entries JOIN desks ON desks.shelf_id = log_entries.shelf_id WHERE desks.environment_id = ?", [5])
 
 
 def test_order_by_desc_then_oldest_orders_by_priority_desc_then_id_asc(entries: Query[LogEntry]):
@@ -72,3 +72,9 @@ def test_page_two_gives_25_rows_and_the_total(entries: Query[LogEntry]):
 def test_group_by_count_by_gives_a_dict_of_counts(entries: Query[LogEntry]):
     assert entries.group_by("shelf_id").count_by() == {None: 4, 3: 3}
     assert entries.where_in("id", []).group_by("shelf_id").count_by() == {}
+
+
+def test_a_scoped_join_names_its_own_scope_columns_and_key_order_with_its_table_and_reads_its_own_rows(entries: Query[LogEntry]):
+    entries.database.row_owner = RowOwner(agent=None, environment_id=5)
+    desks = Query(entries.database, Tables(), Desk).join(SampleAgent, "agents.id", "=", "desks.shelf_id").oldest()
+    assert saved(desks) == Statement("SELECT desks.* FROM desks JOIN agents ON agents.id = desks.shelf_id WHERE desks.environment_id = ? ORDER BY desks.id ASC", [5])
