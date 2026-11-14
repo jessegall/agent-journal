@@ -284,7 +284,6 @@ tests/stories/core/modules/settings/project_hooks.py
 tests/stories/core/modules/sharing/share_links.py
 tests/stories/core/modules/skills/agent_skills.py
 tests/stories/core/modules/skills/due.py
-tests/stories/core/modules/skills/event_reads.py
 tests/stories/core/modules/skills/kept_skills_record.py
 tests/stories/core/modules/skills/marks.py
 tests/stories/core/modules/skills/publish_at_start.py

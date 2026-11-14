@@ -483,7 +483,6 @@ tests/stories/core/modules/sharing/share_links.py
 tests/stories/core/modules/skills/agent_skills.py
 tests/stories/core/modules/skills/boot_files.py
 tests/stories/core/modules/skills/due.py
-tests/stories/core/modules/skills/event_reads.py
 tests/stories/core/modules/skills/hook_file_calls.py
 tests/stories/core/modules/skills/kept_after_compaction.py
 tests/stories/core/modules/skills/loaded_twice.py

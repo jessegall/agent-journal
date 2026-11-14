@@ -10,8 +10,8 @@ from tests.stories.core.support.coding_fixtures import CodingEnvironment
 from tests.stories.support.story_checks import expect_value
 
 
-def test_an_event_no_skill_names_reads_no_skill_file_and_no_table(new_story):
-    story = new_story(DUE, fixture=CodingEnvironment)
+def test_an_event_no_skill_names_reads_no_skill_file_and_no_table(played):
+    story = played(CodingEnvironment, DUE)
     plugin_skill = story.home.project_folder / ".agents/skills/sample-plugin/SKILL.md"
     plugin_skill.parent.mkdir(parents=True)
     plugin_skill.write_text("---\nplugin: sample\ndescription: Sample plugin skill\n---\nRead the sample.\n")

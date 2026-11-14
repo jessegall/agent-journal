@@ -1,0 +1,1 @@
+tests/stories/core/modules/skills/event_reads.py::test_an_event_no_skill_names_reads_no_skill_file_and_no_table -> integration tests/integration/core/modules/skills/test_event_reads.py::test_an_event_no_skill_names_reads_no_skill_file_and_no_table
