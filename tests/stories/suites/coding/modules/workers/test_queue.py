@@ -3,6 +3,7 @@ from tests.stories.core.support.agent_labels import agent_number
 from suites.coding.modules.workers.models.merger_line import MergerLine
 import json
 import subprocess
+from pathlib import Path
 from datetime import timedelta
 import pytest
 
@@ -419,3 +420,33 @@ def test_a_running_proof_whose_process_is_gone_leaves_running_as_lost(unrecorded
     story.expect_success(f"process delete {process_id}", actor=story.user)
     stalled_tick(story)
     story.expect_text("proof show 1", "state: short", f"lost: process {process_id} is gone with no result recorded", actor=story.agent)
+
+
+@pytest.mark.real_git
+def test_the_picked_tests_run_on_the_work_merged_into_a_base_that_moved_after_the_hand_in_and_a_failure_returns_the_work(new_story, monkeypatch):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    started = recording_launch(monkeypatch)
+    repository = repository_environment(story, real_git=True)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    repository.committed("pick.py", "print('tests/other.py')\n", "Picker")
+    story.expect_success(f'setting set {AFFECTED_TESTS_COMMAND} "python3 pick.py" --environment main')
+    story.expect_success(f'setting set {PROJECT_TEST_COMMAND} "python3 -m pytest -q" --environment main')
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.expect_success(PROOF, actor=worker)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    repository.committed("base.txt", "moved\n", "Base change")
+    base_tip = repository.tip(ENVIRONMENT_BRANCH)
+    story.expect_success("worker commit --wait --differences none", actor=worker)
+    story.run_listeners()
+    ended(story, started[0], 0)
+    picker_folder = Path(story.container.get(Queries).query(Process).find(started[1]).folder)
+    story.container.get(OutputFolder).write_output(started[1], 1, "tests/other.py\n")
+    ended(story, started[1], 0)
+    selected = story.container.get(Queries).query(Process).find(started[2])
+    story.expect_rows(picker_folder != repository.worktree_folder(worker.id), (picker_folder / "base.txt").read_text() == "moved\n",
+                      (picker_folder / "cart.py").read_text() == CART_CHANGE, selected.folder == str(picker_folder))
+    ended(story, selected.id, 1)
+    story.expect_text("worker-worktree show 1", "state: cut", actor=story.agent)
+    story.expect_text("task show 1", "state: started", actor=story.agent)
+    repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)

@@ -38,6 +38,9 @@ class MemoryWorktreeGit(WorktreeGit):
     def commit_checkout(self, worktree: Worktree, commit: str) -> str:
         return worktree.folder
 
+    def merged_checkout(self, worktree: Worktree) -> str:
+        return worktree.folder
+
     def is_test_checkout_current(self, worktree: Worktree) -> bool:
         return True
 
@@ -342,6 +345,9 @@ class MemoryWorktreeGit(WorktreeGit):
         names = {change.relative for change in tracked}
         untracked = tuple(WorktreeFileChange(name, FileStatus.ADDED) for name in sorted(working) if name not in committed and name not in names)
         return (*tracked, *untracked)
+
+    def committed_files(self, worktree: Worktree) -> tuple[str, ...]:
+        return tuple(change.relative for change in TreeChanges(self.history.commits[worktree.base_commit].tree, self.committed_tree(worktree.folder)).tracked_changes())
 
     def has_commit(self, folder: str, commit: str) -> bool:
         return self.history.resolves(commit)

@@ -138,6 +138,16 @@ class WorktreeGit:
     def commit_checkout(self, worktree: Worktree, commit: str) -> str:
         return self.detached_checkout(worktree.folder, self.test_folder(worktree), commit, self.library_names(worktree))
 
+    # The worktree's own test checkout with its last commit merged into the tip of its base branch, as the merge would
+    # leave it; a merge that clashes leaves the checkout at the worker's commit, for the merge itself to report.
+    def merged_checkout(self, worktree: Worktree) -> str:
+        commit = self.head_commit(worktree.folder)
+        folder = self.detached_checkout(worktree.folder, self.test_folder(worktree), self.tip(worktree.folder, worktree.base_branch), self.library_names(worktree))
+        if self.git(folder, GIT_LIMIT_SECONDS, "merge", "--no-commit", "--no-ff", commit).returncode == 0:
+            return folder
+        self.git(folder, GIT_LIMIT_SECONDS, "merge", "--abort")
+        return self.commit_checkout(worktree, commit)
+
     def base_checkout(self, environment: Environment, name: str) -> str:
         commit = self.tip(environment.folder, environment.branch)
         return self.detached_checkout(environment.folder, self.base_folder(environment, name), commit, self.dependency_folders(environment.folder))
@@ -675,6 +685,11 @@ class WorktreeGit:
 
     def changed_files(self, worktree: Worktree) -> tuple[str, ...]:
         return tuple(change.relative for change in self.file_changes(worktree.folder, worktree.base_commit))
+
+    # The files the worktree's commits changed since it was cut, so no file waiting uncommitted is among them.
+    def committed_files(self, worktree: Worktree) -> tuple[str, ...]:
+        listing = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-status", "-M", "-z", worktree.base_commit, "HEAD").stdout
+        return tuple(change.relative for change in self.tracked_changes(listing))
 
     def comparison(self, worktree: Worktree) -> WorktreeChanges:
         base = self.merge_base(worktree.folder, worktree.base_branch, worktree.branch)
