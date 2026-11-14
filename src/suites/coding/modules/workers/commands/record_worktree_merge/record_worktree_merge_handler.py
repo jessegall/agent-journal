@@ -31,7 +31,8 @@ CLASH_SHORTFALL = "the merge clashed on {files}: settle them and prove it again"
 
 
 class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
-    """Closes the worker's delivered tasks once git has merged its worktree, or restarts its task with the
+    """Closes the worker's delivered tasks that have a proof of their own in the worktree once git has merged it, and
+    names the others it leaves open, or restarts its task with the
     files that clashed. The proofs of the worktree go short when it clashes, as for a failed test. A task of a started plan is closed with the checkpoint its tests run at. The worker's
     ask that waited for this merge is merged with it."""
 
@@ -48,7 +49,10 @@ class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
         task = self.rows.required(Task, worktree.task_id)
         if command.conflicts:
             return MergeOutcome(self.returned(worktree, task, command.conflicts, context), command.conflicts)
-        delivered_tasks = self.delivered_tasks(worktree, task)
+        testing_tasks = self.delivered_tasks(worktree, task)
+        proven_ids = {proof.task_id for proof in self.proofs.worktree_rows(worktree.id)}
+        delivered_tasks = [delivered for delivered in testing_tasks if delivered.id in proven_ids]
+        left_open = tuple(delivered.id for delivered in testing_tasks if delivered.id not in proven_ids)
         task_ids = [delivered.id for delivered in delivered_tasks]
         reasons = dict.fromkeys(task_ids, command.reason) if command.reason else self.wait_text.merged_reasons(worktree, task_ids)
         for delivered in delivered_tasks:
@@ -58,7 +62,7 @@ class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
             self.repository.save_change(waiting_request, waiting_request.moved(MergeAskLifecycle.merge), context)
         merged = replace(worktree.merge(context.timestamp, context.actor), commit_before_merge=command.commit_before_merge, commit_after_merge=command.commit_after_merge,
                          merged_task_ids=worktree.with_merged([delivered.id for delivered in delivered_tasks]))
-        return MergeOutcome(self.repository.save_change(worktree, merged, context), ())
+        return MergeOutcome(self.repository.save_change(worktree, merged, context), (), left_open=left_open)
 
     def delivered_tasks(self, worktree: Worktree, task: Task) -> list[Task]:
         delivered = tuple(self.queries.query(Task).matching(TaskQuery.assignee(worktree.session_agent_id)).filter(state=TaskState.TESTING).every_row(UNIT_TASKS_REASON))

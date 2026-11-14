@@ -9,7 +9,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 
 
 class GoneWorktreeProofsListener(CommitListener[Moved[Worktree]]):
-    """Ends the queued and running proof tests of a worktree once it is abandoned or removed."""
+    """Ends the queued and running proof tests of a worktree once it is abandoned or removed; the tests of a merged worktree go on, as its checkpoint runs them."""
 
     name = "workers.gone-worktree-proofs"
     moves = [WorktreeLifecycle.abandon, WorktreeLifecycle.remove]
@@ -19,4 +19,6 @@ class GoneWorktreeProofsListener(CommitListener[Moved[Worktree]]):
 
     def handle(self, event: Moved[Worktree], logged: LoggedEvent) -> None:
         worktree = event.row
+        if worktree.merged_at is not None:
+            return
         self.bus.run(EndWorktreeProofs(worktree.id), Actor.core(), cause_id=logged.id, environment_id=worktree.environment_id)

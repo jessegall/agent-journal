@@ -203,10 +203,12 @@ class Story:
     def run_command(self, command: Command[R], actor: Actor, environment_id: int) -> R:
         return self.container.get(Bus).run(command, actor, environment_id=environment_id)
 
-    # the session end hook ends the agent as itself, with no journal line, so no command list judges it
+    # the session end hook ends the agent as itself, with no journal line, so no command list judges it; its commit
+    # listeners run after it, as they do after a line
     def end_session(self, agent: Actor) -> None:
         self.steps.append(f"end session of agent {agent.id}")
         self.run_command(EndAgent(agent.id), agent, self.container.get(Queries).query(Agent).find(agent.id).environment_id)
+        self.run_listeners()
 
     def expect_agent_group(self, helper_type: str, profile: str, group: str) -> None:
         self.checked(f"agent group of {helper_type} {profile}")

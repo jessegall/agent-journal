@@ -29,6 +29,10 @@ from engine.registry.registry import Registry
 from engine.driver.state_board import StateBoard
 from engine.driver.state_boards import StateBoards
 from engine.enums.state_tier import StateTier
+from engine.driver.agent_state import AgentState
+from engine.driver.layer import Layer
+from engine.registry.agent_state_entry import AgentStateEntry
+from engine.time.timestamp import Timestamp
 from engine.scope.scopes import Scopes
 
 
@@ -51,10 +55,13 @@ class DriverRules:
         active = [layer for layer in self.layers.active(hook.agent_id, hook.driver) if suite is None or suite.is_overlay_included(layer.overlay.name)]
         patterned = self.registry.driver_rules(hook.driver, hook.role, hook.hook_name)
         allowed = [entry for entry in patterned if entry.claims_essential and self.allowances.allowed(entry.name)]
+        board = self.boards.for_hook(hook)
         critical = self.registry.tier_states(hook.driver, int(StateTier.CRITICAL))
-        critical_rules = {rule for state in critical for rule in state.rules}
-        added = [entry for entry in patterned if entry not in allowed and entry.name not in critical_rules and (suite is None or suite.is_rule_included(entry.owner, entry.drivers, hook.driver))]
-        walk = Walk([layer.row.ref for layer in active])
+        stacked = board.stack(hook.driver)
+        tier_rules = {rule for state in [*critical, *(layer.overlay for layer in stacked)] for rule in state.rules}
+        added = [entry for entry in patterned if entry not in allowed and entry.name not in tier_rules and (suite is None or suite.is_rule_included(entry.owner, entry.drivers, hook.driver))]
+        layers = self.newest_first([*active, *stacked])
+        walk = Walk([layer.row.ref for layer in layers])
         calls: list[RuleCall] = []
         if hook.is_main_stop:
             calls = [RuleCall(entry, hook) for entry in [*self.registry.essential_rules(hook.driver, hook.hook_name), *allowed]]
@@ -63,7 +70,6 @@ class DriverRules:
         for entry in [*self.registry.essential_rules(hook.driver, hook.hook_name), *allowed]:
             if self.switches.enabled(entry.name) and walk.record(entry, "", self.outcome(entry, hook)):
                 return self.complete_checks(walk, hook, calls)
-        board = self.boards.for_hook(hook)
         # a critical state's rules come right after the essential ones, and no exclusive layer silences them
         for state in critical:
             if not self.switches.enabled(state.name) or not board.is_open(state):
@@ -71,16 +77,16 @@ class DriverRules:
             for entry in self.registry.state_rules(state.name, hook.hook_name):
                 if self.switches.enabled(entry.name) and walk.record(entry, state.name, self.outcome(entry, hook)):
                     return self.complete_checks(walk, hook, calls, board)
-        for layer in active:
-            layer_hook = replace(hook, layer=layer.row)
-            for entry in self.registry.overlay_rules(layer.overlay.name, hook.hook_name):
+        for layer in layers:
+            layer_hook, ref = replace(hook, layer=layer.row), self.layer_ref(layer)
+            for entry in self.layer_rules(layer, hook.hook_name):
                 if not self.switches.enabled(entry.name):
                     continue
                 if walk.is_silenced:
-                    walk.record_silenced(entry, layer.row.ref)
-                elif walk.record(entry, layer.row.ref, self.outcome(entry, layer_hook)):
-                    return self.complete_checks(walk, hook, calls)
-            walk.leave_layer(layer, layer.overlay.path.checked_class(Overlay))
+                    walk.record_silenced(entry, ref)
+                elif walk.record(entry, ref, self.outcome(entry, layer_hook)):
+                    return self.complete_checks(walk, hook, calls, board)
+            walk.leave_layer(layer, self.layer_class(layer))
         for entry in added:
             if not self.switches.enabled(entry.name):
                 continue
@@ -93,6 +99,32 @@ class DriverRules:
             elif walk.record(entry, "", self.outcome(entry, hook)):
                 return self.complete_checks(walk, hook, calls, board)
         return self.complete_checks(walk, hook, calls, board)
+
+    # the overlays and the open stack states in one stack, newest first, a substate directly above its parent
+    @staticmethod
+    def newest_first(layers: list[Layer]) -> list[Layer]:
+        parents = {layer.overlay.name: layer for layer in layers if not isinstance(layer.overlay, AgentStateEntry) or not layer.overlay.parent}
+
+        def placed(layer: Layer) -> tuple[Timestamp, int, int, int]:
+            base = parents.get(layer.overlay.parent, layer) if isinstance(layer.overlay, AgentStateEntry) and layer.overlay.parent else layer
+            return base.row.opened_at, base.overlay.position, base.row.row_id, int(base is not layer)
+        return sorted(layers, key=placed, reverse=True)
+
+    # a stack state is recorded under its own name, an overlay under its open row
+    @staticmethod
+    def layer_ref(layer: Layer) -> str:
+        return layer.overlay.name if isinstance(layer.overlay, AgentStateEntry) else layer.row.ref
+
+    def layer_rules(self, layer: Layer, hook_name: str) -> list[DriverRuleEntry]:
+        if isinstance(layer.overlay, AgentStateEntry):
+            return self.registry.state_rules(layer.overlay.name, hook_name)
+        return self.registry.overlay_rules(layer.overlay.name, hook_name)
+
+    @staticmethod
+    def layer_class(layer: Layer) -> type[Overlay] | type[AgentState]:
+        if isinstance(layer.overlay, AgentStateEntry):
+            return layer.overlay.path.checked_class(AgentState)
+        return layer.overlay.path.checked_class(Overlay)
 
     # the name of the agent state that gates the rule when that state is switched on and closed for this hook
     def closed_gate(self, entry: DriverRuleEntry, board: StateBoard) -> str:
@@ -142,6 +174,8 @@ class DriverRules:
                 checks.extend(record.stop_check for record in answers.rules if record.layer == state.name)
                 continue
             checks.extend(StopCheck(entry.name, "allowed", f"{state.name} is not open", False) for entry in self.registry.state_rules(state.name, hook.hook_name))
+        stacked = {layer.overlay.name for layer in board.stack(hook.driver)}
+        checks.extend(record.stop_check for record in answers.rules if record.layer in stacked)
         return checks
 
     def skippable(self, answer: RuleAnswer, entry: DriverRuleEntry, hook: AgentHook) -> RuleAnswer:

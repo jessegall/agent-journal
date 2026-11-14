@@ -4,6 +4,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.driver.rule_record import RuleRecord
 from engine.driver.layer import Layer
 from engine.driver.overlay import Overlay
+from engine.driver.agent_state import AgentState
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.rule_answers import RuleAnswers
 from engine.driver.rule_outcome import RAISED, SILENCED, RuleOutcome
@@ -39,7 +40,7 @@ class Walk:
     def record_silenced(self, entry: DriverRuleEntry, layer: str) -> None:
         self.rules.append(RuleRecord(entry.name, layer, SILENCED, history=entry.history))
 
-    def leave_layer(self, layer: Layer, overlay: type[Overlay]) -> None:
+    def leave_layer(self, layer: Layer, overlay: type[Overlay] | type[AgentState]) -> None:
         if not self.layers or self.layers[0] == layer.row.ref:
             self.delays_lines = overlay.delays_lines and not self.has_ended_layer
         self.is_silenced = self.is_silenced or (overlay.exclusive and not self.has_ended_layer)

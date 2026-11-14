@@ -2133,6 +2133,10 @@
       "fields": [],
       "methods": [
         "ask(self, hook: AgentHook) -> RuleAnswers",
+        "newest_first(layers: list[Layer]) -> list[Layer]",
+        "layer_ref(layer: Layer) -> str",
+        "layer_rules(self, layer: Layer, hook_name: str) -> list[DriverRuleEntry]",
+        "layer_class(layer: Layer) -> type[Overlay] | type[AgentState]",
         "closed_gate(self, entry: DriverRuleEntry, board: StateBoard) -> str",
         "complete_checks(self, walk: Walk, hook: AgentHook, calls: list[RuleCall], board: StateBoard | None) -> RuleAnswers",
         "critical_checks(self, answers: RuleAnswers, hook: AgentHook, board: StateBoard) -> list[StopCheck]",
@@ -2918,7 +2922,7 @@
         "record(self, entry: DriverRuleEntry, layer: str, outcome: RuleOutcome) -> bool",
         "record_gated(self, entry: DriverRuleEntry, state: str) -> None",
         "record_silenced(self, entry: DriverRuleEntry, layer: str) -> None",
-        "leave_layer(self, layer: Layer, overlay: type[Overlay]) -> None",
+        "leave_layer(self, layer: Layer, overlay: type[Overlay] | type[AgentState]) -> None",
         "silences(self, rule: type[DriverRule]) -> bool",
         "answers(self, states: Sequence[StateRecord]) -> RuleAnswers"
       ]
@@ -9235,6 +9239,14 @@
         "bytes(folder: Path) -> int"
       ]
     },
+    "testing.cache.schema_inputs.SchemaInputs": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "hash(source_folders: tuple[Path, ...]) -> str",
+        "files(root: Path) -> list[Path]"
+      ]
+    },
     "testing.cache.template_cache.TemplateCache": {
       "bases": [],
       "fields": [],
@@ -9370,6 +9382,18 @@
       "fields": [],
       "methods": [
         "add(self, seconds: float) -> None"
+      ]
+    },
+    "testing.runs.run_durations.RunDurations": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "read(file: Path) -> 'RunDurations'",
+        "add(self, test_id: str, seconds: float) -> None",
+        "write(self, file: Path) -> None",
+        "slowest_lines(self, count: int) -> list[str]",
+        "folder_lines(self) -> list[str]",
+        "report(self) -> str"
       ]
     },
     "testing.runs.run_size.RunSize": {
@@ -9716,6 +9740,10 @@
         "linked_home(self, template: Template, journal: WorkingJournal, folder: Path) -> JournalHome",
         "template(self, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Template",
         "shared_template(self, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Template",
+        "variants(self, name: str) -> list[Path]",
+        "current_variant(self, name: str) -> Path | None",
+        "build_variant(self, name: str, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Path",
+        "drop_unused_variants(self, variants: list[Path]) -> None",
         "usable_folder(self, folder: Path, name: str) -> Path",
         "template_key(modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> list[object]",
         "locked(path: Path) -> Generator[None]",
@@ -9723,6 +9751,18 @@
         "fixture_template(self, folder: Path, modules: tuple[str, ...], fixture: type[StoryFixture]) -> Template",
         "copy(self, template: Template, folder: Path) -> JournalHome",
         "copy_lists(template: Template, home: JournalHome) -> None"
+      ]
+    },
+    "testing.templates.touched_code.TouchedCode": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "recording(self) -> Generator[None]",
+        "note_call(self, frame: FrameType, event: str, argument: object) -> None",
+        "hashes(self) -> dict[str, str]",
+        "write(self, folder: Path, inherited: Path | None) -> None",
+        "read(folder: Path) -> dict[str, str]",
+        "is_unchanged(self, folder: Path) -> bool"
       ]
     },
     "testing.testing_area.TestingArea": {
@@ -10612,5 +10652,5 @@
       ]
     }
   },
-  "engine_version": "5.2.0"
+  "engine_version": "5.3.0"
 }

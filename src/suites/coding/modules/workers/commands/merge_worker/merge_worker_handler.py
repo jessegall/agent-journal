@@ -98,7 +98,7 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         if followup is not None:
             return self.finished_merge(worktree, environment, followup, command, context)
         merge_outcome = self.bus.run_with_context(RecordWorktreeMerge(worktree.id, (), commit_before_merge, commit_after_merge), context)
-        return self.removed(environment, merge_outcome.worktree, context)
+        return self.removed(environment, merge_outcome, context)
 
     def merged_name(self, worktree: Worktree, task: Task) -> str:
         merged = [task_id for task_id in self.units.unit(worktree.session_agent_id).task_ids if task_id not in worktree.merged_tasks()] or [task.id]
@@ -107,14 +107,15 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     def finished_merge(self, worktree: Worktree, environment: Environment, followup: MergeFollowup, command: MergeWorker, context: Context) -> MergeOutcome:
         self.followups.run(followup, command.reconciled, context)
         merge_outcome = self.bus.run_with_context(RecordWorktreeMerge(worktree.id, (), followup.previous_commit, followup.commit_after), context)
-        return self.removed(environment, merge_outcome.worktree, context)
+        return self.removed(environment, merge_outcome, context)
 
-    def removed(self, environment: Environment, merged: Worktree, context: Context) -> MergeOutcome:
+    def removed(self, environment: Environment, merge_outcome: MergeOutcome, context: Context) -> MergeOutcome:
+        merged = merge_outcome.worktree
         self.record_checkpoints(merged, environment, context)
         self.git.remove(environment.folder, merged)
         removal = self.bus.run_with_context(RecordWorktreeRemoval(merged.id), context)
         self.queued_start.start(merged.session_agent_id, context)
-        return MergeOutcome(removal, ())
+        return MergeOutcome(removal, (), left_open=merge_outcome.left_open)
 
     # the windows its commits passed are recorded before the worker's next task starts, which the checkpoint guard refuses while one is unpassed
     def record_checkpoints(self, merged: Worktree, environment: Environment, context: Context) -> None:

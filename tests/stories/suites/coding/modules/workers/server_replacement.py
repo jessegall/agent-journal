@@ -17,7 +17,8 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import C
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 RUNNER_SOURCE = Path(__file__).resolve().parents[6] / "tools" / "journal-run"
-WAIT_SECONDS = 40
+# the bound on waiting for the proof: above the new server's relaunch of a run whose first launch did not start (30 s grace and a 15 s tick)
+WAIT_SECONDS = 90
 
 
 def installed_runner(story) -> None:

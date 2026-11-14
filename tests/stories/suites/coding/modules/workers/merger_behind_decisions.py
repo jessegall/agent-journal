@@ -32,11 +32,11 @@ class MergerBeside(StoryFixture):
     parent = OpenTaskOrchestrator
 
     def steps(self, story) -> None:
-        merger_change(story, story.new_row_id(f"agent start {MERGER_SESSION} claude helper --parent {story.agent.id} --environment main", actor=story.user))
+        merger_change(story, story.new_row_id(f"agent start {MERGER_SESSION} claude merger --parent {story.agent.id} --environment main", actor=story.user))
 
 
 def merger(story) -> Actor:
-    rows = json.loads(story.run("agent list --role helper --json").output_text)["rows"]
+    rows = json.loads(story.run("agent list --role merger --json").output_text)["rows"]
     return Actor(next(row["id"] for row in rows if row["session"] == MERGER_SESSION), ActorType.AGENT)
 
 
