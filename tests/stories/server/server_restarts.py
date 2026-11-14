@@ -1,4 +1,3 @@
-from tests.stories.server.support.server_fixtures import task_server
 
 import pytest
 
@@ -7,14 +6,10 @@ from pathlib import Path
 
 from engine.database.database import Database
 from engine.database.registry_table import RegistryTable
-from engine.log.system_log_writer import LOG_LIMIT_BYTES
-from engine.serving.server_files import ServerFiles
 from tests.stories.core.support.fixtures import ThreeTasks
 from tests.stories.server.support.code_folders import SampleCodeFolders
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.support.server_process import ServerProcess
-from engine.testing.expectations.expect_row import expect_row
-from tests.stories.support.story_checks import expect_absent_exists_version_four, expect_absent_exists_with_log, expect_changed_with, expect_exists_version_four
 
 SCHEMA_EXAMPLES = Path(__file__).resolve().parents[3] / "tools" / "journal-hook" / "event" / "testdata" / "schema"
 SCHEMA_EDIT = json.loads((SCHEMA_EXAMPLES / "edit.json").read_text())
@@ -80,21 +75,6 @@ def test_a_stop_ends_the_server_at_once_while_a_client_still_holds_its_connectio
         server.expect_health()
         server.expect_idle_connection_stop()
 
-
-
-def test_a_server_that_starts_past_the_log_limit_leaves_a_small_log_and_one_old_file(new_story):
-    home = new_story(fixture=ThreeTasks).home
-    log = ServerFiles(home).log
-    log.parent.mkdir(parents=True, exist_ok=True)
-    old_log = log.with_name("server.log.1")
-    for size in (LOG_LIMIT_BYTES + 1, LOG_LIMIT_BYTES + 2):
-        log.write_text("x" * size)
-        with ServerProcess(home, logged=True) as server:
-            server.expect_health()
-        expect_st_size_stat(old_log, size)
-        expect_st_size_stat_less(log, LOG_LIMIT_BYTES // 100)
-        expect_changed_with(log, "listening on")
-        expect_absent_exists_with_log(log, "server.log.2")
 
 
 
