@@ -43,7 +43,7 @@ class StoppedWorkerRule(DriverRule):
             return RuleAnswer.allowed()
         wait_seconds = self.settings.minutes(MERGER_WAIT_MINUTES).count
         stopped = [worker for worker in self.started_work.stopped_workers() if worker.ended_at is not None and worker.ended_at.elapsed_seconds(hook.timestamp) >= wait_seconds]
-        with_tasks = {worker.id for worker in self.started_work.stopped_with_tasks()}
+        with_tasks = {worker.id for worker in self.started_work.with_tasks(stopped)}
         named = [nudge for nudge in map(self.nudge, [worker for worker in stopped if worker.id in with_tasks]) if nudge is not None]
         named_keys = {nudge.key for nudge in named}
         asking = [self.asking_nudge(worker) for worker in stopped if self.escalations.is_open(worker.id) and not self.stop.was_stopped(worker)]
