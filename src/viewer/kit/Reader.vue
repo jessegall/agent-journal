@@ -3,6 +3,7 @@ import {computed, watch} from "vue";
 import ResourceFields from "../src/resource/ResourceFields.vue";
 import ResourceHeading from "../src/resource/ResourceHeading.vue";
 import InnerTabs from "./InnerTabs.vue";
+import TabBody from "./TabBody.vue";
 
 // the right side of a list-and-reader page: the head (its number and agent chip, the title and its abstract, then the primary button and the
 // Actions menu at the right edge), the tabs under it, a Facts block and then the body of the open tab. The title and abstract are ResourceHeading,
@@ -51,7 +52,7 @@ const counts = computed(() => Object.fromEntries(props.tabs.filter((tab) => tab.
             <template v-if="facts.length">
                 <ResourceFields :fields="facts" @peek="emit('peek', $event)" />
             </template>
-            <slot :tab="open" />
+            <TabBody :tab="active"><slot :tab="open" /></TabBody>
         </div>
     </article>
 </template>

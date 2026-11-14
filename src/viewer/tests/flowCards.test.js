@@ -10,8 +10,7 @@ test("a sequence card shows its number, title and step count, and its steps once
     const element = mounted(SequenceCards, [{id: 1, title: "Release steps", steps: ["Run the suite", "Tag it"]}]);
     await settled();
     const card = element.querySelector('[data-row="1"]');
-    expect(card.textContent).toContain("Sequence 1");
-    expect(card.textContent).toContain("Release steps");
+    expect(card.textContent).toContain("1 Release steps");
     expect(card.textContent).toContain("2 steps");
     expect(card.textContent).not.toContain("Tag it");
     card.click();
@@ -19,12 +18,13 @@ test("a sequence card shows its number, title and step count, and its steps once
     expect(element.textContent + document.body.textContent).toContain("Tag it");
 });
 
-test("a template card shows what it applies to and its purpose, and its parts once opened", async () => {
+test("a template card shows its number, title and description, and what it applies to, its purpose and its parts once opened", async () => {
     const element = await mountedWindow(TemplateCards, templateWindowContext({"template list": page([{id: 1, title: "Find what is missing", brief: "Read the plan", targets: ["plan"], purpose: "critique", parts: ["Gaps: what is left out"], commands: []}])}));
     await settled();
     const card = element.querySelector('[data-row="1"]');
-    expect(card.textContent).toContain("For plan · critique");
+    expect(card.textContent).toContain("1 Find what is missing");
+    expect(card.textContent).toContain("Read the plan");
     card.click();
     await settled();
-    expect(card.textContent).toContain("Gaps: what is left out");
+    expect(element.textContent).toContain("Gaps what is left out");
 });

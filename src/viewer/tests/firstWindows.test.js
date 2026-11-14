@@ -81,18 +81,18 @@ test("the plans window shows each plan's title and state", async () => {
 });
 
 test("the agents window shows each helper's role", async () => {
-    const rows = page([{id: 6, role: "worker", session: "s-3", program: "claude"}, {id: 7, role: "helper", session: "s-4", program: "claude"}]);
+    const rows = page([{id: 6, number: 6, role: "worker", session: "s-3", program: "claude"}, {id: 7, number: 7, role: "helper", session: "s-4", program: "claude"}]);
     const text = await drawn(AgentList, agentContext({"agent cards": rows}));
-    expect(text).toContain("Worker6");
-    expect(text).toContain("Helper");
+    expect(text).toContain("worker 6");
+    expect(text).toContain("helper 7");
 });
 
 test("the helpers window lists every agent but the main one", async () => {
-    const rows = page([{id: 2, role: "main", session: "s-1", program: "claude"}, {id: 5, role: "helper", session: "s-1/a", program: "claude"}, {id: 6, role: "worker", session: "w-1", program: "claude"}]);
+    const rows = page([{id: 2, number: 2, role: "main", session: "s-1", program: "claude"}, {id: 5, number: 5, role: "helper", session: "s-1/a", program: "claude"}, {id: 6, number: 6, role: "worker", session: "w-1", program: "claude"}]);
     const windowContext = agentContext({"agent cards": page(rows.value.rows.filter((row) => row.role !== "main"))});
     const text = await drawn(SubagentList, windowContext);
-    expect(text).toContain("Helper5");
-    expect(text).toContain("Worker6");
+    expect(text).toContain("helper 5");
+    expect(text).toContain("worker 6");
     expect(text).not.toContain("Main agent");
 });
 

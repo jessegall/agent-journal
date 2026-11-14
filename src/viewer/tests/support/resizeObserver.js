@@ -4,5 +4,5 @@ globalThis.ResizeObserver ??= class {
     disconnect() {}
 };
 
-// jsdom cannot scroll, so a component that brings a row into view finds the call there and nothing moves
-Element.prototype.scrollIntoView ??= function scrollIntoView() {};
+// jsdom cannot scroll, so a component that brings a row into view finds the call there and nothing moves; a test that runs in node has no Element
+if (globalThis.Element) Element.prototype.scrollIntoView ??= function scrollIntoView() {};
