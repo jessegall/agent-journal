@@ -265,6 +265,7 @@ tests/stories/core/modules/messages/dock_scroll_browser.py
 tests/stories/core/modules/messages/lost_hooks.py
 tests/stories/core/modules/messages/marks.py
 tests/stories/core/modules/messages/message_links_browser.py
+tests/stories/core/modules/messages/message_targets_through_the_server.py
 tests/stories/core/modules/messages/message_wakes_agent.py
 tests/stories/core/modules/messages/peer_messages.py
 tests/stories/core/modules/messages/reactions.py
@@ -439,6 +440,7 @@ tests/stories/core/modules/processes/worker_outputs.py
 tests/stories/core/modules/processes/worker_reader.py
 tests/stories/core/modules/profiles/helper_lifetime.py
 tests/stories/core/modules/profiles/module_profiles.py
+tests/stories/core/modules/profiles/profile_storage.py
 tests/stories/core/modules/profiles/profile_titles.py
 tests/stories/core/modules/profiles/profiles.py
 tests/stories/core/modules/profiles/suite_declarations.py
@@ -481,6 +483,7 @@ tests/stories/core/modules/sequences/step_refused_commands.py
 tests/stories/core/modules/sequences/support/step_blocks.py
 tests/stories/core/modules/sequences/support/upgraded_row_sequences.py
 tests/stories/core/modules/setting_requests/setting_requests.py
+tests/stories/core/modules/setting_requests/setting_requests_through_the_viewer.py
 tests/stories/core/modules/settings/fresh_container_settings.py
 tests/stories/core/modules/settings/kept_settings.py
 tests/stories/core/modules/settings/managed_hooks.py
@@ -709,11 +712,8 @@ tests/stories/server/boot_files.py
 tests/stories/server/developer_hook_requests.py
 tests/stories/server/launch_stop.py
 tests/stories/server/library_client.py
-tests/stories/server/message_targets.py
-tests/stories/server/profile_storage.py
 tests/stories/server/server_hooks.py
 tests/stories/server/server_ticks.py
-tests/stories/server/setting_requests.py
 tests/stories/server/support/alias_hook.py
 tests/stories/server/support/client_binary.py
 tests/stories/server/support/launch_terminal.py
