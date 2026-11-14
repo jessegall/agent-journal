@@ -725,7 +725,6 @@ tests/stories/server/viewer/request_funnel_routes.py
 tests/stories/server/viewer_chat_declarations.py
 tests/stories/server/viewer_hook_events.py
 tests/stories/server/viewer_read_counts.py
-tests/stories/server/viewer_session.py
 tests/stories/suites/coding/agent_settings_window.py
 tests/stories/suites/coding/assigned_tasks.py
 tests/stories/suites/coding/coding_module_shape.py
