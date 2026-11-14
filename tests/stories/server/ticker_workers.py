@@ -114,7 +114,7 @@ def test_the_tick_worker_count_is_three_by_default(new_story):
 
 def test_the_tick_worker_count_follows_its_setting(new_story):
     story = new_story(fixture=UserJoined)
-    story.expect_success(f"setting make {TICK_WORKERS_KEY} 5")
+    story.expect_success(f"setting set {TICK_WORKERS_KEY} 5 --project")
     container = synced_container(story.home)
     worker_count = Ticker.worker_count(container)
     container.get(Database).close()

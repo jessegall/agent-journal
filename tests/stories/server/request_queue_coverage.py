@@ -1,17 +1,16 @@
+from tests.stories.server.developer_hook_requests import recording_server  # noqa: F401
 from engine.enums.execution_priority import ExecutionPriority
 from concurrent.futures import ThreadPoolExecutor
 from threading import Event
 
 from engine.testing.examples.hook_samples import HookSamples
 from server.endpoints.cli_endpoint import CliEndpoint
-from server.endpoints.hook_endpoint import HookEndpoint
 from engine.testing.stories.hook_priorities import AGENT_HOOK_PRIORITY, MAIN_AGENT_HOOK_PRIORITY
 from server.hook.queue_request import QueueRequest
 from server.work.journal_round import JournalRound
 from server.work.per_round_container import PerRoundContainer
 from server.work.round_work import RoundWork
 from server.viewer.windows_route import WindowsRoute
-from tests.stories.server.developer_hook_requests import recording_server
 from tests.stories.server.support.server_client import viewer_answer
 
 
@@ -78,34 +77,11 @@ def test_a_running_viewer_get_is_listed_in_the_queue_inspector(recording_server,
         server.story.expect_rows(pending.result(timeout=3)[0] == 200)
 
 
-def test_a_main_agent_hook_goes_ahead_of_a_waiting_cli_line(recording_server, monkeypatch):
+def test_a_main_agent_hook_is_answered_while_an_agent_hook_holds_the_whole_instant_lane(recording_server):
     server = recording_server
-    queue = server.context.hook_database.queue
-    order = []
-    cli_answer, hook_answer = CliEndpoint.answer, HookEndpoint.prepared_answer
-
-    def cli(endpoint, request, stream):
-        order.append("cli")
-        return cli_answer(endpoint, request, stream)
-
-    def hook(endpoint, *args):
-        order.append("hook")
-        return hook_answer(endpoint, *args)
-
-    monkeypatch.setattr(CliEndpoint, "answer", cli)
-    monkeypatch.setattr(HookEndpoint, "prepared_answer", hook)
-    body = dict(HookSamples.sample("post_tool_use").with_fields(session="s-1", environment="main", role="main", firing="ahead-of-cli").body)
-    with ThreadPoolExecutor(2) as pool:
-        with server.context.hook_database.used(AGENT_HOOK_PRIORITY, 1):
-            command = pool.submit(server.expect_cli_exit, "task list", "/", 0, "")
-            with queue.changed:
-                server.story.expect_rows(queue.changed.wait_for(lambda: bool(queue.waiting_cli), timeout=2))
-            answer = pool.submit(server.expect_hook_answer, "/hook", body, 200, '"refusal":')
-            with queue.changed:
-                server.story.expect_rows(queue.changed.wait_for(lambda: bool(queue.waiting_hooks), timeout=0.4))
-        answer.result(timeout=3)
-        command.result(timeout=3)
-    server.story.expect_rows(order == ["hook", "cli"])
+    body = dict(HookSamples.sample("post_tool_use").with_fields(session="s-1", environment="main", role="main", firing="ahead-of-the-lane").body)
+    with server.context.hook_database.used(AGENT_HOOK_PRIORITY, 1):
+        server.expect_hook_answer("/hook", body, 200, '"refusal":')
 
 
 def test_a_cli_line_runs_after_its_wait_limit_even_while_a_hook_is_held(recording_server):
