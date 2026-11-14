@@ -15,16 +15,17 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.queries.worker_operation_query import WorkerOperationQuery
 from suites.coding.modules.workers.support.behind_checks import BehindChecks
-from suites.coding.modules.workers.support.behind_nudges import MAIN_AGENT_STALE_WORKTREE, FAST_FORWARDED, STALE_SOURCE
-from suites.coding.modules.workers.support.worker_settings import MAIN_UPDATE_COMMITS
+from suites.coding.modules.workers.support.behind_nudges import MAIN_AGENT_STALE_WORKTREE, FAST_FORWARDED, STALE_SOURCE, UPDATE_ORDERED
+from suites.coding.modules.workers.support.worker_settings import FORCED_UPDATE_COMMITS, MAIN_UPDATE_COMMITS
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 
 class CheckWorktreeBehindHandler(Handler[CheckWorktreeBehind, BehindRoute]):
     """Counts the worktree's commits behind its base once, before the transaction opens, since git runs, and
     opens a check when it is far enough behind. A worktree with nothing of its own and no command of its
-    worker running is moved onto the base at once and its worker told; one at the set number of commits goes
-    to the main agent; any other waits for the merger, which the look starts once for all its checks."""
+    worker running is moved onto the base at once and its worker told; one at the forced number of commits
+    is ordered to update at once, with no one to judge it; one at the set number goes to the main agent; any
+    other waits for the merger, which the look starts once for all its checks."""
 
     command = CheckWorktreeBehind
     disabled_scopes = [ActorScope]
@@ -58,6 +59,11 @@ class CheckWorktreeBehindHandler(Handler[CheckWorktreeBehind, BehindRoute]):
             self.repository.save_change(worktree, worktree.updated(self.tip), context)
             self.nudger.send(worktree.session_agent_id, FAST_FORWARDED, STALE_SOURCE, context)
             return BehindRoute.FAST_FORWARDED
+        forced = self.settings.number(FORCED_UPDATE_COMMITS)
+        if forced > 0 and self.behind >= forced:
+            self.repository.save_change(check, check.ordered(context.actor.id, f"{self.behind} commits behind, at least {forced}"), context)
+            self.nudger.send(worktree.session_agent_id, UPDATE_ORDERED, STALE_SOURCE, context, count=self.behind)
+            return BehindRoute.UPDATE_ORDERED
         target_main = self.settings.number(MAIN_UPDATE_COMMITS)
         if target_main > 0 and self.behind >= target_main:
             self.repository.save_change(check, check.escalated(f"{self.behind} commits behind, at least {target_main}"), context)

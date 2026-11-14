@@ -1,6 +1,6 @@
 from datetime import timedelta
 from dataclasses import dataclass, field
-from typing import cast
+from typing import TypeVar, cast
 
 from engine.actor.actor import Actor
 from engine.container.container import Container
@@ -10,6 +10,11 @@ from engine.enums.actor_type import ActorType
 from engine.journal.journal_home import JournalHome
 from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from engine.query.queries import Queries
+from engine.command.bus import Bus
+from engine.command.command import Command
+from engine.testing.expectations.text_match import ExpectedText, contains_text
+from core.modules.agents.commands.end_agent.end_agent import EndAgent
+from core.modules.agents.models.agent import Agent
 from engine.testing.stories.kit_rows import KitRows
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.unread_skills import UnreadSkills
@@ -20,6 +25,8 @@ from engine.testing.examples.hook_sample import HookSample
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.fakes.manual_clock import ManualClock
 from tests.integration.support.integration_journal import MAIN_ENVIRONMENT, IntegrationJournal
+
+R = TypeVar("R")
 
 
 @dataclass(frozen=True)
@@ -134,3 +141,15 @@ class FixtureJournal(KitRows):
 
     def expect_rows(self, *conditions: bool, detail: str = "") -> None:
         assert all(conditions), detail
+
+    def expect_refusal(self, line: str, reason: ExpectedText, actor: Actor | None = None) -> None:
+        answer = self.run(line, actor)
+        assert answer.code == 1 and contains_text(answer.output_text, reason), (line, reason, answer)
+
+    def run_command(self, command: Command[R], actor: Actor, environment_id: int | None = None) -> R:
+        return self.container.get(Bus).run(command, actor, environment_id=environment_id)
+
+    # the session end hook ends the agent as itself, with no journal line; its commit listeners run after it
+    def end_session(self, agent: Actor) -> None:
+        self.run_command(EndAgent(agent.id), agent, self.container.get(Queries).query(Agent).find(agent.id).environment_id)
+        self.run_listeners()
