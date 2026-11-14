@@ -1,4 +1,4 @@
-from tests.stories.core.modules.tasks.assigned_reads import TwoWorkersFourTasks, assign, worker_w
+from tests.stories.core.modules.tasks.support.two_workers import TwoWorkersFourTasks, assign, worker_w
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED

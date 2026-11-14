@@ -3,7 +3,7 @@ import json
 import pytest
 
 from engine.testing.stories.story import Story
-from tests.stories.core.modules.tasks.assigned_reads import TwoWorkersFourTasks, assign, worker_v, worker_w
+from tests.stories.core.modules.tasks.support.two_workers import TwoWorkersFourTasks, assign, worker_v, worker_w
 
 BOARD = "task board --environment main --state open --json"
 

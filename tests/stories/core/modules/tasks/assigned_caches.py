@@ -1,7 +1,7 @@
 import pytest
 
 from core.modules.tasks.queries.task_query import TaskQuery
-from tests.stories.core.modules.tasks.assigned_reads import TwoWorkersFourTasks, assign, worker_w
+from tests.stories.core.modules.tasks.support.two_workers import TwoWorkersFourTasks, assign, worker_w
 
 
 @pytest.fixture
