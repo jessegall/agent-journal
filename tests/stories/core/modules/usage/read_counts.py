@@ -1,6 +1,6 @@
 from engine.database.actor_table import ActorTable
 from engine.database.database import Database
-from tests.integration.core.modules.usage.test_usage import HELPER_START
+from tests.stories.core.modules.usage.usage import HELPER_START
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 from tests.stories.support.story_checks import expect_visited_limit
 

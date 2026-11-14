@@ -1,5 +1,5 @@
 from tests.stories.core.support.agent_labels import agent_number
-from tests.integration.core.modules.helpers.test_helper_jobs import StartedHelper, helper_agent
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from tests.stories.core.modules.tasks.task_waits import TwoTasks, posted
 
 

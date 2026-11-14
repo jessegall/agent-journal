@@ -7,7 +7,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 
 from datetime import timedelta
 
-from tests.integration.core.modules.drivers.test_hook_durations import UserBuilder
+from tests.stories.core.modules.drivers.hook_durations import UserBuilder
 from tests.stories.support.story_checks import expect_count_output, expect_value
 
 

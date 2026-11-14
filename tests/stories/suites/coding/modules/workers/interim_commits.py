@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from engine.testing.examples.hook_samples import HookSamples
-from tests.integration.suites.coding.modules.workers.test_checkpoint_runs import merge
+from tests.stories.suites.coding.modules.workers.checkpoint_runs import merge
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.held_tasks import worker_with_tasks, prove_task, unplanned_worker_with_tasks
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker

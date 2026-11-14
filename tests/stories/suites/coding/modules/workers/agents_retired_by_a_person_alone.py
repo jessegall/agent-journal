@@ -5,7 +5,7 @@ from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.helpers.lifetime_reviewers import START_REVIEW, launches, review_job, reviewers
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.integration.suites.coding.modules.workers.test_merger_rotation import PROGRAM_SAVE, ended_merger, merger_launch
+from tests.stories.suites.coding.modules.workers.merger_rotation import PROGRAM_SAVE, ended_merger, merger_launch
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 

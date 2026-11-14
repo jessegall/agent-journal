@@ -4,7 +4,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from tests.integration.core.modules.helpers.test_helper_jobs import EndedHelper, StartedHelper, helper_agent
+from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, StartedHelper, helper_agent
 from tests.stories.core.modules.helpers.lifetime_reviewers import launches
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE

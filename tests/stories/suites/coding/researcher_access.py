@@ -4,7 +4,7 @@ from engine.enums.command_category import CommandCategory
 from engine.enums.tool_type import ToolType
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from tests.integration.core.modules.helpers.test_helper_jobs import StartedHelper, helper_agent
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 
 READ_FILE = HookSamples.shell("cat src/cart.py", ShellPart("cat", CommandCategory.READ, ["src/cart.py"]))
 WEB_READER = HookSamples.tool_use("Agent", ToolType.AGENT, [], None).with_raw({"tool_input": {"subagent_type": "web-fetch"}})

@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from engine.testing.examples.hook_samples import HookSamples
-from tests.integration.core.modules.messages.test_delivery import KeptTyping, StoppedMessagingTurn, post_message
+from tests.stories.core.modules.messages.delivery import KeptTyping, StoppedMessagingTurn, post_message
 from tests.stories.engine.driver.support.samples import SAMPLES
 
 SILENT_IN_TURN = timedelta(minutes=10)

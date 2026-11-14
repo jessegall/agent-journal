@@ -8,8 +8,8 @@ from engine.enums.tool_type import ToolType
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.fixtures import UserJoined
-from tests.integration.core.modules.helpers.test_helper_jobs import StartedHelper, helper_agent
-from tests.integration.core.modules.helpers.test_helper_reports import reported
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
+from tests.stories.core.modules.helpers.helper_reports import reported
 
 
 def shell_call(line: str, output: str = ""):

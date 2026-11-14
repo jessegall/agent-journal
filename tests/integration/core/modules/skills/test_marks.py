@@ -3,7 +3,7 @@ import pytest
 from engine.database.database import Database
 from engine.registry.registry import Registry
 from tests.stories.core.modules.chat.support.mark_samples import mark_count, marks_text, expect_mark_count, expect_marks_text
-from tests.integration.core.modules.skills.test_agent_skills import read_row
+from tests.stories.core.modules.skills.agent_skills import read_row
 from tests.stories.core.modules.skills.due import environment, start
 from core.modules.skills.support.start_skills import SESSION_START_KEY
 

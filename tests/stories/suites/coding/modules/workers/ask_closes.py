@@ -3,7 +3,7 @@ from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
 from tests.stories.core.support.agent_labels import agent_number
 from tests.integration.suites.coding.modules.workers.test_ask_ledger import ANSWER, questions
-from tests.integration.suites.coding.modules.workers.test_gone_workers import missing_program, running_worker, worker_story  # noqa: F401
+from tests.stories.suites.coding.modules.workers.gone_workers import missing_program, running_worker, worker_story  # noqa: F401
 from tests.stories.suites.coding.modules.workers.worker_ask import merger_disabled_worker  # noqa: F401
 
 __all__ = ["merger_disabled_worker", "missing_program", "running_worker", "worker_story"]

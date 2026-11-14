@@ -1,8 +1,8 @@
 from tests.integration.core.modules.helpers.test_usage_limits import report
-from tests.integration.core.modules.helpers.test_usage_lockdown import LIMIT, with_reported_usage
+from tests.stories.core.modules.helpers.usage_lockdown import LIMIT, with_reported_usage
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, repository_environment
-from tests.integration.suites.coding.modules.workers.test_usage_lockdown_held_starts import person, worker_count
+from tests.stories.suites.coding.modules.workers.usage_lockdown_held_starts import person, worker_count
 
 REFUSAL = "no program can take this worker: Claude is at your usage limit until"
 

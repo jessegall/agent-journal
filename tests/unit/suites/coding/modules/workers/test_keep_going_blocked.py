@@ -1,7 +1,7 @@
 
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
-from tests.integration.suites.coding.modules.workers.test_gone_workers import missing_program, running_worker, worker_story
+from tests.stories.suites.coding.modules.workers.gone_workers import missing_program, running_worker, worker_story
 from tests.stories.support.story_checks import expect_value_4
 
 __all__ = ["missing_program", "running_worker", "worker_story"]

@@ -2,7 +2,7 @@ from tests.stories.core.modules.processes.support.roomy_fixtures import RoomyBui
 from datetime import timedelta
 
 from engine.enums.command_category import CommandCategory
-from tests.integration.core.modules.helpers.test_helper_jobs import StartedHelper
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper
 from tests.stories.core.modules.processes.support.cadence_probe import cadence_tick, has_cadence_record, emitted, ring
 from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, moved_run, start_process
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, worker_run

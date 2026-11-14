@@ -3,7 +3,7 @@ from engine.testing.expectations.expect_reply import expect_reply_allowed
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
-from tests.integration.core.modules.helpers.test_helper_jobs import helper_agent
+from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from core.modules.drivers.support.access_nudges import LIMITED_TOOL
 from engine.testing.expectations.expected_nudge import expected_nudge
