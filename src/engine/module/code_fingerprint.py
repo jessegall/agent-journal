@@ -8,6 +8,7 @@ from typing import ClassVar
 from engine.journal.journal import Journal
 from engine.module.folder_listing import FolderListing
 from engine.module.module import Module
+from engine.module.schema_inputs import SchemaInputs
 from engine.module.source_hash import SourceHash
 from engine.version.version import ENGINE_VERSION
 
@@ -24,7 +25,8 @@ class CodeFingerprint:
     that appears, changes or is gone is a change, never an error. The folder listing of each set of folders is
     kept, so it is walked again only when a folder changed. A long running server's ticker refreshes the text,
     so a request reads the kept one and never the files; under unit tests, whose code does not change, the
-    text uses relative paths and content hashes, so identical checkouts share test templates. A module's own
+    text is the hash of the schema inputs (see SchemaInputs), so identical checkouts share test templates
+    and editing other code keeps them. A module's own
     text also counts its built window files, since it is the version
     on their addresses, which a browser keeps for a year."""
 
@@ -46,7 +48,7 @@ class CodeFingerprint:
     def test_run_text(folders: tuple[Path, ...]) -> str:
         source_hash = os.environ.get(PINNED_CODE_VARIABLE)
         if source_hash is None:
-            return SourceHash.text(folders)
+            return SchemaInputs.hash(folders)
         extra_folders = tuple(folder for folder in folders if SOURCE_FOLDER not in (folder, *folder.parents))
         return source_hash + SourceHash.text(extra_folders) if extra_folders else source_hash
 

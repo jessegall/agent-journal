@@ -8,7 +8,7 @@ import pytest
 
 from engine.database.shared_tables import SharedTables
 from engine.module.code_fingerprint import PINNED_CODE_VARIABLE
-from engine.module.source_hash import SourceHash
+from engine.module.schema_inputs import SchemaInputs
 
 from engine.registry.lazy_loading import LazyLoading
 from engine.module.python_source_folders import python_source_folders
@@ -81,7 +81,7 @@ def chooses_template_folder(config: pytest.Config) -> bool:
 def pinned_code_text() -> str:
     # The first process of a run hashes the code and its runners inherit it, so a file edited during the run changes nothing.
     if PINNED_CODE_VARIABLE not in os.environ:
-        os.environ[PINNED_CODE_VARIABLE] = SourceHash.text(python_source_folders())
+        os.environ[PINNED_CODE_VARIABLE] = SchemaInputs.hash(python_source_folders())
     return os.environ[PINNED_CODE_VARIABLE]
 
 

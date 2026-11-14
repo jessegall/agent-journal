@@ -10,6 +10,7 @@ from engine.query.queries import Queries
 from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
 from core.modules.processes.ticks.run_slot_grant import RunSlotGrant
 from suites.coding.modules.workers.models.proof import Proof
+from suites.coding.modules.workers.ticks.worker_tests.unlaunched_worker_test_runs import UnlaunchedWorkerTestRuns
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.server_client import server_story, started_server
 from tests.stories.server.support.file_changes import FileChanges
@@ -17,8 +18,9 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import C
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 RUNNER_SOURCE = Path(__file__).resolve().parents[6] / "tools" / "journal-run"
-# the bound on waiting for the proof: above the new server's relaunch of a run whose first launch did not start (30 s grace and a 15 s tick)
+# the bound on waiting for the proof, above the relaunch of a run whose first runner found the old server gone
 WAIT_SECONDS = 90
+POLL_SECONDS = 1
 
 
 def installed_runner(story) -> None:
@@ -51,7 +53,7 @@ def pending_item(story, ticks, wanted: str) -> None:
                 tick(story.container)
             story.run_listeners()
             if proof_state(story) != wanted:
-                assert changes.wait(max(0, deadline - time.monotonic())), run_report(story)
+                changes.wait(min(POLL_SECONDS, max(0, deadline - time.monotonic())))
 
 
 def test_a_queued_proof_is_started_by_the_new_server_and_counts(new_story, monkeypatch):
@@ -70,6 +72,6 @@ def test_a_queued_proof_is_started_by_the_new_server_and_counts(new_story, monke
         story.run_listeners()
         story.expect_text("proof show 1", "state: running", actor=story.agent)
     with started_server(story.home):
-        pending_item(story, (RunSlotGrant(), RunEndRecovery()), "checked")
+        pending_item(story, (RunSlotGrant(), RunEndRecovery(), UnlaunchedWorkerTestRuns()), "checked")
     story.expect_text("proof show 1", "state: checked", actor=story.agent)
     story.expect_text(f"process show {story.container.get(Queries).query(Proof).find(1).process_id}", "state: finished", "exit_code: 0", actor=story.agent)
