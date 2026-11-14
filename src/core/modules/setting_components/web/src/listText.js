@@ -1,7 +1,10 @@
 // the forms a list setting is kept and sent in, shared by every screen that draws one: the server lists a list as
-// JSON text, takes a list as JSON and a number list as comma text, and a user types one entry on each line
+// a JSON list, takes a list as JSON and a number list as comma text, and a user types one entry on each line
 
-export const listItems = (value) => (value ? JSON.parse(value) : []);
+export function listItems(value) {
+    if (Array.isArray(value)) return value;
+    return value ? JSON.parse(value) : [];
+}
 
 export const listLines = (value) => listItems(value).join("\n");
 
