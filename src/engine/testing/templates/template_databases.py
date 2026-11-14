@@ -3,7 +3,9 @@ import fcntl
 import hashlib
 import json
 import pickle
+import re
 import tempfile
+import time
 import weakref
 from collections.abc import Generator
 from contextlib import contextmanager
@@ -21,15 +23,19 @@ from engine.testing.stories.story_fixture import StoryFixture
 from engine.file.copies.file_clone import FileClone
 from engine.testing.templates.template import Template
 from engine.testing.templates.template_adaptation import STATE_FILE, TemplateAdaptation
+from engine.testing.templates.touched_code import TouchedCode
+from engine.testing.cache.folder_stat import FolderStat
 from engine.testing.stories.working_journal import WorkingJournal
 
 WORKING_FOLDER_PREFIX = "story-journals-"
 STALE_WORKING_FOLDER_SECONDS = 6 * 3600
+UNUSED_VARIANT_SECONDS = 24 * 3600
 
 
 class TemplateDatabases:
     """Migrated databases shared by test processes and kept for later runs: a template is built the first
-    time a story uses it and saved. A story runs on a working journal of its template that rolls back at
+    time a story uses it and saved as a numbered variant; a changed file its build ran (see TouchedCode) makes
+    the next story build a new variant beside it, so a runner copying from the old one is never disturbed. A story runs on a working journal of its template that rolls back at
     its end, so only a runner's first story of a template copies it."""
 
     def __init__(self, folder: Path) -> None:
@@ -85,17 +91,43 @@ class TemplateDatabases:
 
     def shared_template(self, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Template:
         name = hashlib.sha1(repr(self.template_key(modules, fixture)).encode()).hexdigest()[:16]
-        folder = self.folder / name
         with self.locked(self.folder / f"{name}.lock"):
-            if not FileAccess.is_file(folder / STATE_FILE):
-                FileAccess.rmtree(folder, ignore_errors=True)
-                built = self.fixture_template(folder, modules, fixture) if fixture else self.synced_template(folder, modules)
-                state = folder / (STATE_FILE + ".new")
-                FileAccess.write_binary(state, pickle.dumps(built.state))
-                FileAccess.replace(state, folder / STATE_FILE)
-                self.adaptation.mark(folder)
-            usable = self.usable_folder(folder, name)
+            folder = self.current_variant(name)
+            if folder is None:
+                folder = self.build_variant(name, modules, fixture)
+            FileAccess.update_timestamp(folder)
+            usable = self.usable_folder(folder, folder.name)
             return Template(JournalHome(usable), pickle.loads(FileAccess.binary(usable / STATE_FILE)))
+
+    def variants(self, name: str) -> list[Path]:
+        pattern = re.compile(re.escape(name) + r"-v(\d+)")
+        found = [folder for folder in FileAccess.glob(self.folder, f"{name}-v*") if pattern.fullmatch(folder.name)]
+        return sorted(found, key=lambda folder: int(pattern.fullmatch(folder.name).group(1)))
+
+    def current_variant(self, name: str) -> Path | None:
+        touched = TouchedCode(Path(self.adaptation.checkout))
+        return next((folder for folder in reversed(self.variants(name)) if FileAccess.is_file(folder / STATE_FILE) and touched.is_unchanged(folder)), None)
+
+    def build_variant(self, name: str, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Path:
+        older = self.variants(name)
+        folder = self.folder / f"{name}-v{int(older[-1].name.rsplit('-v', 1)[1]) + 1 if older else 1}"
+        self.drop_unused_variants(older)
+        touched = TouchedCode(Path(self.adaptation.checkout))
+        with touched.recording():
+            built = self.fixture_template(folder, modules, fixture) if fixture else self.synced_template(folder, modules)
+        touched.write(folder, self.template(modules, fixture.parent).home.folder if fixture else None)
+        state = folder / (STATE_FILE + ".new")
+        FileAccess.write_binary(state, pickle.dumps(built.state))
+        FileAccess.replace(state, folder / STATE_FILE)
+        self.adaptation.mark(folder)
+        return folder
+
+    def drop_unused_variants(self, variants: list[Path]) -> None:
+        for variant in variants:
+            if FolderStat.modified_time(variant) < time.time() - UNUSED_VARIANT_SECONDS or not FileAccess.is_file(variant / STATE_FILE):
+                FileAccess.rmtree(variant, ignore_errors=True)
+                for adapted in FileAccess.glob(self.folder, f"{variant.name}-*"):
+                    FileAccess.rmtree(adapted, ignore_errors=True)
 
     def usable_folder(self, folder: Path, name: str) -> Path:
         if self.adaptation.builder_name(folder) == self.adaptation.checkout:
