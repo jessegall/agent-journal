@@ -38,6 +38,9 @@ class MemoryWorktreeGit(WorktreeGit):
     def commit_checkout(self, worktree: Worktree, commit: str) -> str:
         return worktree.folder
 
+    def merged_checkout(self, worktree: Worktree) -> str:
+        return worktree.folder
+
     def is_test_checkout_current(self, worktree: Worktree) -> bool:
         return True
 
