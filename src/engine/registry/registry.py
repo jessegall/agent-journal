@@ -157,7 +157,7 @@ class Registry:
                                     tuple(suite.get("windows", [])), {page: loaded_layout(shape) for page, shape in suite.get("layouts", {}).items()},
                                     {page: tuple(LayoutPreset(preset["key"], preset["name"], preset["text"], loaded_layout(preset["shape"])) for preset in presets)
                                      for page, presets in suite.get("presets", {}).items()},
-                                    suite.get("task_assigner", ""), suite.get("shipped", False))
+                                    suite.get("task_assigner", ""), suite.get("shipped", False), {key: tuple(windows) for key, windows in suite.get("entrances", {}).items()})
                          for suite in entries.get("suites", [])),
             drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["opening_lines"]),
                                       tuple(driver.get("guards", [])))
@@ -218,7 +218,7 @@ class Registry:
                        "claims_essential": rule.claims_essential, "role_group": rule.role_group.value, "priority": rule.priority} for rule in self.rules],
             "suites": [{"name": suite.name, "module": suite.module, "requires": list(suite.requires), "complete_control": suite.complete_control,
                         "included_overlays": list(suite.included_overlays), "windows": list(suite.windows),
-                        "task_assigner": suite.task_assigner, "shipped": suite.shipped,
+                        "task_assigner": suite.task_assigner, "shipped": suite.shipped, "entrances": {key: list(windows) for key, windows in suite.entrances.items()},
                         "layouts": {page: stored_layout(shape) for page, shape in suite.layouts.items()},
                         "presets": {page: [{"key": preset.key, "name": preset.name, "text": preset.text, "shape": stored_layout(preset.shape)} for preset in presets]
                                     for page, presets in suite.presets.items()}} for suite in self.suites],

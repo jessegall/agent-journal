@@ -1,6 +1,7 @@
 from engine.module.suite import Suite
 from engine.module.module import Module
 from engine.viewer.preset_set import PresetSet
+from engine.viewer.entrance import Entrance
 from engine.viewer.viewer_preset import ViewerPreset
 from engine.viewer.layout_shape import tabs
 from engine.viewer.window_declaration import WindowDeclaration
@@ -152,10 +153,15 @@ class ForeignPresets(PresetSet):
     presets = [BoardPreset, ForeignChatPreset, BoardAgainPreset]
 
 
-class ForeignPresetSuite(Suite):
-    name = "presets"
+class ForeignPresetEntrance(Entrance):
+    key = "presets"
     windows = ["presets.board"]
     presets = {"home": ForeignPresets}
+
+
+class ForeignPresetSuite(Suite):
+    name = "presets"
+    entrances = [ForeignPresetEntrance]
 
 
 class ForeignPresetModule(Module):

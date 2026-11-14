@@ -79,9 +79,8 @@ class SuiteCheck:
         loaded_suites = {suite.name: suite for module in modules for suite in suites.module_suites(module)}
         problems: list[str] = []
         for suite in loaded_suites.values():
-            offered = {window for name in (suite.name, *suite.requires) if name in loaded_suites for window in loaded_suites[name].windows}
-            for page, preset_set in suite.presets.items():
-                presets = preset_set.layout_presets()
+            offered = {window for name in (suite.name, *suite.requires) if name in loaded_suites for window in loaded_suites[name].offered_windows()}
+            for page, presets in suite.offered_presets().items():
                 keys = [preset.key for preset in presets]
                 problems += [f"suite {suite.name} offers two presets keyed {key} for {page}" for key in dict.fromkeys(keys) if keys.count(key) > 1]
                 problems += [f"suite {suite.name}'s preset {preset.key} for {page} shows {window}, which the suite does not offer"

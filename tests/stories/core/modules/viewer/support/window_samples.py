@@ -1,4 +1,5 @@
 from engine.module.suite import Suite
+from engine.viewer.entrance import Entrance
 from engine.guard.guard import Guard
 from engine.model.model import Model
 from engine.module.module import Module
@@ -53,12 +54,19 @@ class NotesPresets(PresetSet):
     presets = [BoardPreset, BothPreset]
 
 
+class NotesEntrance(Entrance):
+    """The way into the notes suite: its board, summary and planner."""
+
+    key = "notes"
+    windows = ["notes.board", "notes.summary", "notes.planner"]
+    presets = {"home": NotesPresets}
+
+
 class NotesSuite(Suite):
     """A sample suite that offers the notes board."""
 
     name = "notes"
-    windows = ["notes.board", "notes.summary", "notes.planner"]
-    presets = {"home": NotesPresets}
+    entrances = [NotesEntrance]
 
 
 class NotesModule(Module):
