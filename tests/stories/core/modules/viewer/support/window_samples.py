@@ -47,7 +47,7 @@ class NotesModule(Module):
     """A sample module the journal does not ship, with one window that reads and starts tasks."""
 
     name = "notes"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.tasks", "journal.core.viewer", "journal.core.drivers"]
     guards = [NotesStartCheck]
     windows = [WindowDeclaration("notes.board", "Notes board", "board.html", WindowLoading.FRAME, skeleton=[SkeletonPart.line()], reads=["task list"], runs=["task start"]),

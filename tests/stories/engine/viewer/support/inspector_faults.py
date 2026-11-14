@@ -23,7 +23,7 @@ def action(label: str = "Start the reminder", icon: str = "start", **fields: obj
 
 class FirstModule(Module):
     name = "first"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = DEPENDENCIES
     inspectors = [InspectorDeclaration(Reminder)]
 
@@ -34,7 +34,7 @@ class SecondModule(FirstModule):
 
 class DisplayedModule(Module):
     name = "shown"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = DEPENDENCIES
     windows = [window("shown.chain", WindowPlace.SECTION), window("shown.board", WindowPlace.PANE)]
     inspectors = [InspectorDeclaration(Reminder, components=[InspectorComponent("shown.chain")], actions=[action()])]
@@ -50,7 +50,7 @@ class PaneComponentModule(DisplayedModule):
 
 class UnrelatedWindowModule(Module):
     name = "stranger"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = DEPENDENCIES
     windows = [window("stranger.chain", WindowPlace.SECTION)]
 

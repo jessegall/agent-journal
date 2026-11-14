@@ -114,7 +114,7 @@ class DocumentsModule(Module):
     time, a document's revisions, and links between rows."""
 
     name = "journal.core.documents"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.messages", "journal.core.tasks", "journal.core.plans", "journal.core.docking", "journal.core.agents", "journal.core.drivers", "journal.core.processes", "journal.core.chat"]
     skills = [SkillDeclaration("journal-documents", "Write lasting knowledge as documents and what was checked as reports; read it before the first doc or report command of a session", keywords=("document", "documents", "report"), commands=("doc", "report"))]
     nudges = [DOCUMENT_OPEN, DOCUMENT_STOP_REFUSAL]

@@ -19,7 +19,7 @@ class SearchModule(Module):
     name = "journal.core.search"
     move_reason = "version 4 search kept no rows of its own"
     seed_reason = "it reads the rows the other modules seed"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.chat", "journal.core.drivers", "journal.core.processes"]
     subcommands = [SearchFindSubcommand]
     marks = SEARCH_MARKS

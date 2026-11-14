@@ -11,7 +11,7 @@ class NotesModule(Module):
     dependencies = ["journal.core.agents"]
     helper_types = [HelperType("reader", "Reader", extends="helper")]
     profiles = [AgentProfile("journal-notes-reader", "Reads notes", "Read the notes.", agent_type="reader")]
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     seed_reason = "the module declares profiles and templates without seeding its own rows"
     move_reason = "the suite has no earlier rows"
     drivers = [NotesDriver]

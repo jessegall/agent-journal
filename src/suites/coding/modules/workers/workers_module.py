@@ -510,7 +510,7 @@ class WorkersModule(Module):
                                          key_events={"usage": ["proof.*", "worker_worktree.*"], "bars": ["proof.*", "worker_worktree.*"]})]
     nudges = [MERGE_HOOK_FAILED, UNIT_MERGE_WAITS, UNIT_MERGED, WORKER_WITHOUT_TASKS, MERGER_LINE_AVAILABLE, WORKER_MERGED, MERGER_PASSED, *WORKER_NUDGES, *STALE_NUDGES, TEST_COUNT_UNKNOWN, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL]
     seed_reason = "a worker needs a git worktree, which a scratch demo has none of"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     settings = WORKER_SETTINGS
     dependencies = ["journal.suites.coding", "journal.core.agents", "journal.core.asks", "journal.core.tasks", "journal.core.assignments", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.plugins", "journal.core.processes", "journal.core.chat", "journal.core.messages", "journal.core.documents", "journal.core.usage", "journal.core.aliases", "journal.core.viewer", "journal.core.mcp", "journal.core.waits", "journal.core.reviews", "journal.core.profiles", "journal.core.tools", "journal.core.helpers", "journal.core.plans", "journal.core.actors", "journal.core.skills", "journal.core.assign_rules"]
     buttons = [ButtonDeclaration("workers.send-job", tuple(["row.agent"]), "Send the worker a job", "worker send row:{row_id} --job={job}", icon="send", condition=ButtonCondition("working_role", tuple(["worker"])),

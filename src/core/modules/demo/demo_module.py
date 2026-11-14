@@ -13,7 +13,7 @@ class DemoModule(Module):
     name = "journal.core.demo"
     seed_reason = "it is the module that runs the seeders"
     move_reason = "version 4 had no demo rows"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors"]
     subcommands = [DemoSeedSubcommand, DemoStartSubcommand]
     tick_handlers = [TickHandler(TickInterval(seconds=15 * 60), DemoFolderPruning(), "demo folder pruning"),

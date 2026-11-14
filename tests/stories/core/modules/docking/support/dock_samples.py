@@ -24,7 +24,7 @@ class DockSampleModule(Module):
     after they end."""
 
     name = "docksample"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.docking", "journal.core.tasks"]
     docks = [DockDeclaration(SampleDockType.TASK, "task", "Task {row_id}", "task.js", most=2, leaves_after_seconds=TIMEOUT_SECONDS, reads=["task show"]),
              DockDeclaration(SampleDockType.UNTITLED, "task", "", "task.js", most=2, reads=["task show"])]

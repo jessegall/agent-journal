@@ -67,7 +67,7 @@ class DepotModule(Module):
     """A sample module with two models one actor holds, a model several hold and a model nobody can be given."""
 
     name = "acme.depot"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.assignments"]
     models = [ModelDeclaration(Crate), ModelDeclaration(Pallet), ModelDeclaration(Drum), ModelDeclaration(Shelf)]
     migrations = [DepotTables]
@@ -92,7 +92,7 @@ class UncountedModule(Module):
     """A sample module whose assignable model does not say how many actors hold a row."""
 
     name = "acme.uncounted"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.assignments"]
     models = [ModelDeclaration(Barrel)]
     migrations = [BarrelsTable]
@@ -118,6 +118,6 @@ class UnboundModule(Module):
     """A sample module that owns an assignable model and does not depend on the assignments module."""
 
     name = "acme.unbound"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     models = [ModelDeclaration(Sack)]
     migrations = [SacksTable]

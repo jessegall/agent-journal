@@ -17,5 +17,5 @@ class MemoShare(DocLibraryShare):
 
 class MemoShareModule(Module):
     name = "memoshare"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     library_shares = [MemoShare]

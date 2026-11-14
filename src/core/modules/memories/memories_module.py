@@ -79,7 +79,7 @@ class MemoriesModule(Module):
 
     name = "journal.core.memories"
     nudges = MEMORY_NUDGES
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     block_conditions = [MemoriesWeighed]
     settings = MEMORY_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.settings", "journal.core.chat", "journal.core.docking",

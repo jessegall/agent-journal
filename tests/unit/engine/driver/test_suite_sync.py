@@ -75,7 +75,7 @@ class Wait(Overlay):
 
 
 def module(name: str, dependencies: Sequence[str] = (), suites: Sequence[type[Suite]] = (), **lists: object) -> type[Module]:
-    made = type(name.capitalize(), tuple([Module]), {"name": name, "requires_core": ">=5,<6", "dependencies": dependencies, **lists})
+    made = type(name.capitalize(), tuple([Module]), {"name": name, "requires_engine": ">=5,<6", "dependencies": dependencies, **lists})
     made.sample_suites = [type(suite.__name__, tuple([suite]), {"modules": [made]}) for suite in suites]
     return made
 

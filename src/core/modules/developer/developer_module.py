@@ -44,7 +44,7 @@ class DeveloperModule(Module):
     move_reason = "request history is temporary diagnostic data"
     name = "journal.core.developer"
     seed_reason = "its settings are the user's own choice"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.settings", "journal.core.chat", "journal.core.environments", "journal.core.agents"]
     settings = DEVELOPER_SETTINGS
     models = [ModelDeclaration(PrivateDataMark, excluded_subcommands=["make", "edit", "delete"])]

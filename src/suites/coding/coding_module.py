@@ -93,7 +93,7 @@ class CodingModule(Module):
                                                 WindowTab("terminal", "Terminal", "hook-call feed", component="/modules/journal.suites.coding/terminal.js")]) for name in ("agents.agents", "agents.helpers")),
                          WindowExtension("viewer.shell", reads=["git-overview current"], keys=[WindowKey("branch", "git-overview current", reload_seconds=30)]),
                          WindowExtension("plugins.plugins", links={"files": "coding.files"})]
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     settings = [*CODING_SETTINGS, *GRAPHIFY_SETTING_VALUES]
     moves = [FileEditsMove, ViewerLayoutsMove, CodingSettingsMove]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.assignments", "journal.core.assign_rules", "journal.core.plans", "journal.core.settings", "journal.core.setting-requests", "journal.core.viewer", "journal.core.plugins", "journal.core.processes", "journal.core.messages", "journal.core.questions", "journal.core.helpers", "journal.core.tools"]

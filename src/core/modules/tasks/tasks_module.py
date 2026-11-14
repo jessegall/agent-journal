@@ -156,7 +156,7 @@ class TasksModule(Module):
     name = "journal.core.tasks"
     nudges = TASK_NUDGES
     settings = TASK_SETTINGS
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     block_conditions = [TaskStopped, TaskStarted, TaskClosed, StartedTaskExists, TaskLogged, TaskBriefRead, TaskBlocksReviewed]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking", "journal.core.settings", "journal.core.assignments"]
     bindings = {AgentTaskReads: RowAgentTaskReads}

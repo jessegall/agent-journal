@@ -16,7 +16,7 @@ class NoteCreatedListener(event_modules.NoteCreatedListener):
 
 class NotesModule(Module):
     name = event_modules.NotesModule.name
-    requires_core = event_modules.NotesModule.requires_core
+    requires_engine = event_modules.NotesModule.requires_engine
     models = [ModelDeclaration(EventNote)]
     migrations = event_modules.NotesModule.migrations
     handlers = event_modules.NotesModule.handlers

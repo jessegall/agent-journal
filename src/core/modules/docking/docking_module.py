@@ -46,7 +46,7 @@ class DockingModule(Module):
 
     name = "journal.core.docking"
     move_reason = "version 4 had no docked items, its dock was drawn from open rows"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     settings = DOCKING_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.settings"]
     models = [ModelDeclaration(Dock), ModelDeclaration(DockItem, query=DockItemQuery)]

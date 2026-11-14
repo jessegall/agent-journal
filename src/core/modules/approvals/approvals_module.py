@@ -52,7 +52,7 @@ class ApprovalsModule(Module):
     """Asks for every user-only approval through one persistent dock card."""
 
     name = "journal.core.approvals"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     move_reason = "approval requests are new in version 5"
     seed_reason = "the demo has no pending approval requests"
     dependencies = ["journal.core.agents", "journal.core.actors", "journal.core.environments", "journal.core.docking", "journal.core.viewer", "journal.core.chat", "journal.core.drivers", "journal.core.settings"]

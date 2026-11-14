@@ -143,7 +143,7 @@ class PlansModule(Module):
 
     name = "journal.core.plans"
     settings = PLAN_SETTINGS
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     block_conditions = [PlanApproved, PlanFinished, PlanContextReadCondition]
     bindings = {PlanAuthors: PlanRowAuthors, BlockReviewScope: FocusedBlockReviewScope}
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.chat", "journal.core.docking", "journal.core.drivers", "journal.core.messages", "journal.core.assignments"]

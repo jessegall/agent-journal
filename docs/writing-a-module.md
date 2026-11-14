@@ -24,7 +24,7 @@ from .audit_plan_subcommand import AuditPlanSubcommand
 
 class AcmeReviewModule(Module):
     name = "acme.review"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.plans", "journal.core.templates", "journal.core.viewer", "journal.suites.coding"]
     handlers = [AuditPlanHandler]
     subcommands = [AuditPlanSubcommand]
@@ -73,7 +73,7 @@ from engine.module.module import Module
 
 class ClerksModule(Module):
     name = "acme.clerks"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.agents"]
     helper_types = [HelperType("clerk", "Clerk")]
 ```
@@ -98,7 +98,7 @@ from engine.profile.agent_profile import AgentProfile
 
 class NotesProfilesModule(Module):
     name = "acme.notes-profiles"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.agents"]
     profiles = [AgentProfile("notes-reader", "Reads and explains notes", "Read the notes and report the findings.",
                              agent_type="helper")]
@@ -156,7 +156,7 @@ from engine.enums.window_place import WindowPlace
 
 class AcmeFindingsModule(Module):
     name = "acme.findings"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["acme.suite", "journal.core.plans", "journal.core.viewer"]
     button_slots = ["findings.row"]
     windows = [WindowDeclaration("findings.findings", "Findings", "findings.js", WindowLoading.COMPONENT,
@@ -187,7 +187,7 @@ links section. A model with no declaration still gets a small inspector that rea
 ```python
 class AcmeThingModule(Module):
     name = "acme.things"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     models = [ModelDeclaration(Thing)]
     inspectors = [InspectorDeclaration(
         Thing,
@@ -241,7 +241,7 @@ plans with no change in the plans module. Its `module.py` is:
 ```python
 class AcmePlanNotesModule(Module):
     name = "acme.plan_notes"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.plans", "journal.core.viewer", "journal.suites.coding"]
     handlers = [NotePlanHandler]
     subcommands = [NotePlanSubcommand]

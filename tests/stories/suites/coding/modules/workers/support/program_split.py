@@ -36,7 +36,7 @@ class SplitProgram(SampleProgram):
 
 class SplitProgramModule(Module):
     name = 'sample.split-program'
-    requires_core = '>=5,<6'
+    requires_engine = '>=5,<6'
     providers = [SplitProgram]
 
 
