@@ -4,7 +4,7 @@ from dataclasses import MISSING, fields, replace
 from engine.errors.refusal import Refusal
 from engine.profile.agent_profile import AgentProfile
 
-INHERITED_FIELDS = ("access", "program", "fallback_programs", "model", "codex_model", "tier", "mcp_tools", "writable_folders", "program_models", "skills", "required_skills")
+INHERITED_FIELDS = ("access", "program", "fallback_programs", "model", "codex_model", "tier", "mcp_tools", "writable_folders", "protected_folders", "program_models", "skills", "required_skills")
 UNSET_VALUES = {field.name: field.default_factory() if field.default is MISSING else field.default for field in fields(AgentProfile) if field.name in INHERITED_FIELDS}
 
 

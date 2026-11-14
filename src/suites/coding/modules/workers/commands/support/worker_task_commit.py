@@ -1,3 +1,4 @@
+from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.enums.task_state import TaskState
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
@@ -31,8 +32,9 @@ class WorkerTaskCommit:
         self.protected = protected
 
     def commit(self, worktree: Worktree, tasks: tuple[Task, ...], actor: Actor, differences: str) -> None:
+        profile = self.queries.query(Agent).find(worktree.session_agent_id).profile
         for path in self.git.uncommitted_files(worktree.folder):
-            folder = self.protected.match(worktree.folder, path)
+            folder = self.protected.match(worktree.folder, path, profile)
             if folder:
                 raise Refusal(f"{folder} is protected", AskTopic.TOOL.hint("undo the change in that folder"))
         base_commit = self.git.tip(worktree.folder, worktree.base_branch)

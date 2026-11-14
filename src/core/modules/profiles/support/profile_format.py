@@ -12,7 +12,7 @@ OCCUPANT_REFUSAL_TEXT = "occupant must be continue, when-cold or each-launch"
 
 FIELD_NAMES = {"type": "agent_type", "kind": "agent_type", "moved-from": "source_digest", "could-write": "legacy_writing"}
 FILE_NAMES = {"agent_type": "type", "source_digest": "moved-from", "legacy_writing": "could-write"}
-OVERLAID_FIELDS = ("title", "description", "body", "access", "program", "preferred_program", "fallback_programs", "model", "codex_model", "program_models", "uses_project_instructions", "injections", "tier", "mcp_tools", "writable_folders", "skills", "required_skills", "occupant")
+OVERLAID_FIELDS = ("title", "description", "body", "access", "program", "preferred_program", "fallback_programs", "model", "codex_model", "program_models", "uses_project_instructions", "injections", "tier", "mcp_tools", "writable_folders", "protected_folders", "skills", "required_skills", "occupant")
 
 
 class ProfileFormat:
@@ -121,5 +121,5 @@ SETTING_READERS: Mapping[str, Callable[[str], object]] = {
     "program_models": ProfileFormat.program_models,
     "uses_project_instructions": lambda value: ProfileFormat.switch("uses_project_instructions", value),
     "injections": ProfileFormat.injections, "tier": ProfileFormat.tier, "mcp_tools": ProfileFormat.tools,
-    "writable_folders": ProfileFormat.tools, "skills": ProfileFormat.tools, "required_skills": ProfileFormat.tools,
+    "writable_folders": ProfileFormat.tools, "protected_folders": ProfileFormat.tools, "skills": ProfileFormat.tools, "required_skills": ProfileFormat.tools,
 }
