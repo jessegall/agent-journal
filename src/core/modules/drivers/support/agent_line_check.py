@@ -10,7 +10,7 @@ from core.modules.drivers.support.type_command_check import TypeCommandCheck
 
 class AgentLineCheck(CallerLineCheck):
     """Refuses at the server a journal line the calling agent's type does not list, so a line that never passed the
-    hook is judged by the same list; a person and the main agent run every line."""
+    hook is judged by the same list; a person, the main agent and a plugin's script run every line."""
 
     def __init__(self, agents: AgentRows, commands: TypeCommandCheck) -> None:
         self.agents, self.commands = agents, commands
@@ -23,7 +23,8 @@ class AgentLineCheck(CallerLineCheck):
         if refusal is not None:
             raise Refusal(refusal.text)
 
+    # a line from a plugin's script is the plugin's, judged by what the plugin declares, not by the agent's list
     def refusal(self, caller: Caller, line: JournalLine) -> Nudge | None:
-        if caller.actor.type is not ActorType.AGENT:
+        if caller.actor.type is not ActorType.AGENT or caller.plugin_script:
             return None
         return self.commands.refusal(self.agents.find_unscoped(caller.actor.id), [line])

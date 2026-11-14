@@ -386,7 +386,7 @@ def test_a_worker_left_to_the_main_agent_is_not_reported_as_stopped(new_story, m
         story.home.socket("launcher").unlink(missing_ok=True)
     merger = Actor(merger_agent(story).id, ActorType.AGENT)
     story.expect_success(f'merger pass {agent_number(story, worker.id)} "A decision is needed"', actor=merger)
-    story.expect_success(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     story.advance(timedelta(minutes=20))
     story.tick("s-1")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has stopped")
@@ -501,7 +501,7 @@ def test_a_worker_the_merger_ended_without_taking_in_is_named_to_the_main_agent_
         launcher.server.close()
         story.home.socket("launcher").unlink(missing_ok=True)
     merger = merger_agent(story)
-    story.expect_success(f"agent end {merger.id}", actor=Actor(merger.id, ActorType.AGENT))
+    story.end_session(Actor(merger.id, ActorType.AGENT))
     story.run_listeners()
     reminder = f"worker:{agent_number(story, worker.id)} committed"
     main_lines = f"agent-line list --agent {story.agent.id}"

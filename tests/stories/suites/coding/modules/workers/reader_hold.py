@@ -107,7 +107,7 @@ def test_a_worker_with_no_reader_is_held_and_cannot_skip_the_block(new_story):
     story.expect_rows(requests.has_active_requests(worker.id, story.clock.timestamp()))
     blocks = tuple(story.container.get(Queries).query(AgentBlock).filter(session_agent_id=worker.id).every_row(TEST_ROWS_REASON))
     story.expect_rows(len(blocks) == 1, blocks[0].grace_tool_uses == 0, blocks[0].grace_seconds == 0)
-    story.expect_refusal(f'agent-block skip {blocks[0].id} --reason "skip the reader"', "cannot", actor=worker)
+    story.expect_refusal(f'agent-block skip {blocks[0].id} --reason "skip the reader"', "may not run agent-block skip", actor=worker)
     story.expect_hook_refusal("s-reader", HookSamples.shell("touch skip", ShellPart("touch", CommandCategory.EDIT, ["skip"])), "has no reader")
 
 
@@ -184,7 +184,7 @@ def test_a_stopped_worker_is_started_again_when_its_waiting_run_ends(new_story):
     bus = story.container.get(Bus)
     process = bus.run(StartProcess.single_part(worker.id, "stopped-build run", "/work", CommandCategory.BUILD, 30), worker, environment_id=1)
     story.run(f"process background {process.id}", actor=worker)
-    story.run(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     story.run_listeners()
     bus.run(EndProcess(process.id, 0, 5000, 10), worker, environment_id=1)
     story.expect_text(f"agent-line list --agent {worker.id}", f"Your run {process.id} ended", "workers.worker-job")

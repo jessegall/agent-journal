@@ -260,8 +260,8 @@ def test_the_agent_cannot_stop_on_any_step_of_the_plan_sequence(new_story, fixtu
 
 def test_making_a_plan_ready_ends_its_sequence_and_the_run_on_another_plan_stays_open(new_story):
     story = new_story(fixture=ReadyStep)
-    worker = Actor(story.new_row_id("agent start s-worker claude worker --environment main"), ActorType.AGENT)
-    story.run('plan make "Other" --environment main', actor=worker)
+    planner = Actor(story.new_row_id("agent start s-planner claude helper --environment main"), ActorType.AGENT)
+    story.run('plan make "Other" --environment main', actor=planner)
     story.run_listeners()
     story.expect_success("plan ready 1", actor=story.agent)
     story.run_listeners()

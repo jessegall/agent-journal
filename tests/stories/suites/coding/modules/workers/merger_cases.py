@@ -142,7 +142,7 @@ def test_merger_scope_of_a_worker_with_no_worktree_is_refused(case):
 
 
 def test_only_the_merger_runs_merger_scope(case):
-    case.story.expect_refusal(f"merger scope {agent_number(case.story, case.worker.id)}", MERGER_ROLE_REFUSAL, actor=case.worker)
+    case.story.expect_refusal(f"merger scope {agent_number(case.story, case.worker.id)}", "may not run merger scope", actor=case.worker)
     case.story.expect_refusal(f"merger scope {agent_number(case.story, case.worker.id)}", MERGER_ROLE_REFUSAL, actor=case.story.agent)
 
 
@@ -177,7 +177,7 @@ def test_repair_of_a_worker_with_no_worktree_is_refused(case):
 
 
 def test_only_the_merger_runs_merger_repair(case):
-    case.story.expect_refusal(f"merger repair {agent_number(case.story, case.worker.id)}", MERGER_ROLE_REFUSAL, actor=case.worker)
+    case.story.expect_refusal(f"merger repair {agent_number(case.story, case.worker.id)}", "may not run merger repair", actor=case.worker)
     case.story.expect_refusal(f"merger repair {agent_number(case.story, case.worker.id)}", MERGER_ROLE_REFUSAL, actor=case.story.agent)
 
 

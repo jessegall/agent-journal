@@ -115,6 +115,6 @@ def test_the_holds_of_an_agent_whose_session_ended_are_dropped(new_story):
     story = new_story(fixture=ForcedReaders)
     worker = reader_worker(story)
     process = worker_background_run(story)
-    story.run(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     story.run_listeners()
     story.expect_no_text(f"process holds --agent {agent_number(story, worker.id)} --environment main", f"hold on output {process.id}", actor=story.agent)

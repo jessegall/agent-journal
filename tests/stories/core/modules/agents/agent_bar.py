@@ -90,7 +90,7 @@ def test_stopping_holds_no_write_lock_and_a_session_its_hooks_ended_stays_ended(
 
     def stopped(pid: int, program: str) -> bool:
         transaction_flags.append(database.has_transaction)
-        story.expect_success(f"agent end {agent_id}", actor=Actor(agent_id, ActorType.AGENT))
+        story.end_session(Actor(agent_id, ActorType.AGENT))
         return True
 
     monkeypatch.setattr(LeftoverProcess, "stop", stopped)

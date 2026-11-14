@@ -145,8 +145,8 @@
   "worker": "refused"
  },
  "agent resume": {
-  "helper": "refused",
-  "merger": "refused",
+  "helper": "allowed",
+  "merger": "allowed",
   "worker": "refused"
  },
  "agent retire": {
@@ -282,7 +282,7 @@
  "agent-line list": {
   "helper": "allowed",
   "merger": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-line make": {
   "helper": "refused",
@@ -297,7 +297,7 @@
  "agent-line show": {
   "helper": "allowed",
   "merger": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-session list": {
   "helper": "allowed",
@@ -945,8 +945,8 @@
   "worker": "allowed"
  },
  "dock add": {
-  "helper": "refused",
-  "merger": "refused",
+  "helper": "allowed",
+  "merger": "allowed",
   "worker": "refused"
  },
  "dock delete": {
@@ -1050,6 +1050,16 @@
   "worker": "refused"
  },
  "driver show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "driver state-types": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "driver states": {
   "helper": "allowed",
   "merger": "allowed",
   "worker": "refused"
@@ -1252,7 +1262,7 @@
  "helper send": {
   "helper": "refused",
   "merger": "refused",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "helper start": {
   "helper": "refused",
@@ -1262,7 +1272,7 @@
  "helper stop": {
   "helper": "refused",
   "merger": "refused",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "helper-grant list": {
   "helper": "allowed",
@@ -1272,7 +1282,7 @@
  "helper-grant show": {
   "helper": "allowed",
   "merger": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "helper-job list": {
   "helper": "allowed",
@@ -1465,8 +1475,8 @@
   "worker": "refused"
  },
  "link remove": {
-  "helper": "refused",
-  "merger": "refused",
+  "helper": "allowed",
+  "merger": "allowed",
   "worker": "refused"
  },
  "managed-hook give-back": {
@@ -1815,9 +1825,9 @@
   "worker": "refused"
  },
  "message react": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
  },
  "message read": {
   "helper": "allowed",
@@ -1927,7 +1937,7 @@
  "output status": {
   "helper": "allowed",
   "merger": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "output stop": {
   "helper": "allowed",
@@ -1957,7 +1967,7 @@
  "output watch": {
   "helper": "refused",
   "merger": "refused",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "overview overview": {
   "helper": "allowed",
@@ -1980,9 +1990,9 @@
   "worker": "refused"
  },
  "permission ask": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
  },
  "permission decline": {
   "helper": "refused",
@@ -2095,8 +2105,8 @@
   "worker": "refused"
  },
  "phone pair": {
-  "helper": "refused",
-  "merger": "refused",
+  "helper": "allowed",
+  "merger": "allowed",
   "worker": "refused"
  },
  "phone push-key": {
@@ -2222,7 +2232,7 @@
  "plan focus": {
   "helper": "refused",
   "merger": "refused",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan inspect": {
   "helper": "allowed",
@@ -2357,7 +2367,7 @@
  "plugin file": {
   "helper": "allowed",
   "merger": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin install": {
   "helper": "refused",
@@ -2470,9 +2480,9 @@
   "worker": "refused"
  },
  "process background": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
  },
  "process card": {
   "helper": "allowed",
@@ -2490,9 +2500,9 @@
   "worker": "refused"
  },
  "process end": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
  },
  "process feed": {
   "helper": "refused",
@@ -2502,7 +2512,7 @@
  "process holds": {
   "helper": "refused",
   "merger": "refused",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "process journal_merge_fail": {
   "helper": "refused",
@@ -2525,24 +2535,24 @@
   "worker": "refused"
  },
  "process orphan": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
  },
  "process part-end": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
  },
  "process part-start": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
  },
  "process sandbox": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
  },
  "process show": {
   "helper": "allowed",
@@ -2822,7 +2832,7 @@
  "reader add": {
   "helper": "refused",
   "merger": "refused",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reader default": {
   "helper": "refused",
@@ -2965,8 +2975,8 @@
   "worker": "refused"
  },
  "reminder make": {
-  "helper": "refused",
-  "merger": "refused",
+  "helper": "allowed",
+  "merger": "allowed",
   "worker": "refused"
  },
  "reminder show": {
@@ -3320,9 +3330,9 @@
   "worker": "refused"
  },
  "sequence abandon": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
  },
  "sequence board": {
   "helper": "allowed",
@@ -3340,9 +3350,9 @@
   "worker": "refused"
  },
  "sequence follow": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
  },
  "sequence list": {
   "helper": "allowed",
@@ -3355,14 +3365,14 @@
   "worker": "refused"
  },
  "sequence next": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
  },
  "sequence run": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
  },
  "sequence show": {
   "helper": "allowed",
@@ -3372,7 +3382,7 @@
  "sequence-run list": {
   "helper": "allowed",
   "merger": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "setting delete": {
   "helper": "refused",
@@ -3527,7 +3537,7 @@
  "skill require": {
   "helper": "refused",
   "merger": "refused",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "skill required": {
   "helper": "allowed",
@@ -3647,7 +3657,7 @@
  "task close": {
   "helper": "refused",
   "merger": "refused",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task comment": {
   "helper": "allowed",
@@ -3657,7 +3667,7 @@
  "task comments": {
   "helper": "allowed",
   "merger": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task context": {
   "helper": "allowed",
@@ -3732,7 +3742,7 @@
  "task release": {
   "helper": "refused",
   "merger": "refused",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task release_holder": {
   "helper": "refused",
@@ -3752,7 +3762,7 @@
  "task retest": {
   "helper": "refused",
   "merger": "refused",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task show": {
   "helper": "allowed",
@@ -3990,8 +4000,8 @@
   "worker": "refused"
  },
  "trigger enable": {
-  "helper": "refused",
-  "merger": "refused",
+  "helper": "allowed",
+  "merger": "allowed",
   "worker": "refused"
  },
  "trigger list": {
@@ -4232,7 +4242,7 @@
  "wait end": {
   "helper": "refused",
   "merger": "refused",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "wait list": {
   "helper": "allowed",
@@ -4255,8 +4265,8 @@
   "worker": "refused"
  },
  "wait stuck": {
-  "helper": "refused",
-  "merger": "refused",
+  "helper": "allowed",
+  "merger": "allowed",
   "worker": "allowed"
  },
  "wait waiting": {

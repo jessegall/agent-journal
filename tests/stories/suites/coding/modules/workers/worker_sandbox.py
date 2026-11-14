@@ -66,7 +66,7 @@ def test_the_worker_itself_and_a_helper_cannot_switch_the_sandbox(new_story):
     worker = dispatched_worker(story)
     helper = Actor(story.new_row_id(f"agent start helper-1 claude helper --parent {worker.id} --environment main"), ActorType.AGENT)
     story.expect_refusal(f"worker sandbox {agent_number(story, worker.id)} off", "cannot switch a worker's sandbox", actor=worker)
-    story.expect_refusal(f"worker sandbox {agent_number(story, worker.id)} off", "cannot switch a worker's sandbox", actor=helper)
+    story.expect_refusal(f"worker sandbox {agent_number(story, worker.id)} off", "may not run worker sandbox", actor=helper)
     story.expect_text(f"usage agents --agent {agent_number(story, worker.id)} --json", '"sandbox_off": false', actor=story.agent)
 
 

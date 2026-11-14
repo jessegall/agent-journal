@@ -245,7 +245,7 @@ def test_a_worker_can_stop_after_hand_in_and_resumes_when_the_command_ends(worke
     story, _, worker, _ = worker_command
     story.expect_text('worker commit --differences none', "command accepted", actor=worker)
     operation = story.container.get(Queries).query(WorkerOperation).newest().first()
-    story.expect_success(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     story.expect_rows(story.row(Agent, worker.id).ended_at is not None)
     outcome = run_operation(story, operation)
     story.expect_rows(outcome.code == 0, detail=outcome.output_text)

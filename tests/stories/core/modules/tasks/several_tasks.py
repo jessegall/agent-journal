@@ -1,3 +1,5 @@
+from engine.enums.actor_type import ActorType
+from engine.actor.actor import Actor
 import pytest
 
 from datetime import timedelta
@@ -71,10 +73,11 @@ def test_a_task_that_is_open_or_is_no_task_cannot_be_focused(started_tasks):
 
 def test_a_task_another_agent_started_cannot_be_focused(new_story):
     story = new_story(fixture=HelperStarted)
-    story.run('task make "The count" --environment main', actor=story.helper)
-    story.run("task start 1", actor=story.helper)
+    worker = Actor(story.new_row_id("agent start s-worker claude worker --environment main"), ActorType.AGENT)
+    story.run('task make "The count" --environment main', actor=worker)
+    story.run("task start 1", actor=worker)
     story.expect_refusal("task focus 1", "task 1 is started by another agent", actor=story.agent)
-    story.expect_success("task focus", "you work on task 1 now: The count", actor=story.helper)
+    story.expect_success("task focus", "you work on task 1 now: The count", actor=worker)
 
 
 @pytest.fixture

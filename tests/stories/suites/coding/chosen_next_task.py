@@ -45,7 +45,7 @@ def test_the_main_agent_chooses_for_a_worker(worker_with_task):
 
 def test_a_worker_cannot_choose_for_another_agent(worker_with_task):
     story, worker, second = worker_with_task
-    story.expect_refusal(f"task next {second} --agent {agent_number(story, story.agent.id)}", "only a main agent", actor=worker)
+    story.expect_refusal(f"task next {second} --agent {agent_number(story, story.agent.id)}", "may not run task next", actor=worker)
 
 
 def test_a_task_that_belongs_to_another_agent_is_refused(worker_with_task):

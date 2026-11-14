@@ -174,7 +174,7 @@ def test_a_worker_with_queued_tasks_is_not_reported_while_its_own_tests_run(new_
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
     proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
     story.expect_success(COMMIT, actor=worker)
-    story.expect_success(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     story.advance(timedelta(minutes=20))
     story.tick("s-1")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has stopped")

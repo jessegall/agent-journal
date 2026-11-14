@@ -18,7 +18,7 @@ def test_a_new_worker_takes_over_the_open_worktree_the_tasks_and_the_plan_of_a_s
     worker = start_planned_worker(new_story, monkeypatch)
     commit_tasks_singly(worker, tuple([1]))
     worker.story.run("task start 2", actor=worker.worker)
-    worker.story.expect_success(f"agent end {worker.worker.id}", actor=worker.worker)
+    worker.story.end_session(worker.worker)
     worker.story.expect_success(TAKEOVER.format(number=agent_number(worker.story, worker.worker.id)), actor=worker.story.agent)
     new_id = open_worktree_owner(worker)
     worker.story.expect_rows(new_id != worker.worker.id, detail=str(new_id))

@@ -1,5 +1,5 @@
 from core.modules.helpers.types.helper import Helper
-from core.modules.helpers.types.reviewer_commands import ReviewerCommands
+from core.modules.drivers.support.reviewer_commands import ReviewerCommands
 from engine.helper_type.enums.journal_line_class import JournalLineClass
 from engine.helper_type.journal_line import JournalLine
 

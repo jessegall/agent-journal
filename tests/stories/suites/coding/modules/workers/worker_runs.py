@@ -57,7 +57,7 @@ def worker_with_background_run(new_story):
 def test_a_worker_that_has_open_help_request_stays_stopped_when_its_run_ends(new_story):
     story, worker, run, bus = worker_with_background_run(new_story)
     story.expect_success('wait stuck "the build tool is missing"', actor=worker)
-    story.run(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     bus.run(EndProcess(run.id, 0, 10, 1), worker, environment_id=1)
     story.expect_absent(f"agent-line list --agent {worker.id}", f"Your run {run.id} ended")
 
@@ -80,12 +80,12 @@ def test_a_worker_past_its_restarts_on_old_tasks_is_restarted_for_a_queued_task(
     set_resume_limit(story.container, 1)
     session = worker_session(story, worker)
     story.advance(timedelta(minutes=1))
-    story.run(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     story.hook(session, HookSamples.session_start())
     story.advance(timedelta(minutes=1))
     story.expect_success('task close 1 --outcome "done"', actor=worker)
     story.advance(timedelta(minutes=1))
-    story.run(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     expect_count_output_2(story, f"agent-line list --agent {worker.id}", "You ended with tasks left", 2)
 
 
@@ -108,7 +108,7 @@ def test_a_tick_reads_no_ended_worker_that_has_no_running_process(new_story):
 
 def test_with_the_merger_off_a_worker_stopped_past_the_limit_on_a_run_that_goes_on_is_named_to_the_main_agent_once(new_story):
     story, worker, run, _ = worker_with_background_run(new_story)
-    story.run(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     StoppedWorkerRuns()(story.container)
     story.expect_rows(stopped_run_texts(story) == [], detail="the limit has not gone by")
     story.advance(exceed_stopped_run_limit(story))
@@ -124,7 +124,7 @@ def test_a_paused_worker_stays_stopped_when_its_run_ends(new_story, monkeypatch)
     hands = []
     monkeypatch.setattr(AgentLauncher, "hand", lambda self, *arguments: hands.append(arguments))
     story.expect_success(f"agent pause {agent_number(story, worker.id)}", actor=story.agent)
-    story.run(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     bus.run(EndProcess(run.id, 0, 10, 1), worker, environment_id=1)
     story.run_listeners()
     WorkerResumeRetry()(story.container)
@@ -142,25 +142,25 @@ def test_a_worker_past_its_restarts_that_stops_with_a_run_going_leaves_the_main_
     session = worker_session(story, worker)
     line = f"worker:{agent_number(story, worker.id)} ended with"
     for _ in range(story.number_default(WORKER_RESUME_LIMIT) + 2):
-        story.run(f"agent end {worker.id}", actor=worker)
+        story.end_session(worker)
         story.run_listeners()
         story.hook(session, HookSamples.session_start())
     story.expect_absent(f"agent-line list --agent {story.agent.id}", line)
     bus.run(EndProcess(run.id, 0, 10, 1), worker, environment_id=1)
-    story.run(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     story.run_listeners()
     story.expect_text(f"agent-line list --agent {story.agent.id}", line)
 
 
 def stopped_twice(story, worker, session, uses_tool_after_first_stop: bool) -> None:
     story.advance(timedelta(minutes=1))
-    story.run(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     story.hook(session, HookSamples.session_start())
     story.advance(timedelta(minutes=1))
     if uses_tool_after_first_stop:
         story.hook(session, HookSamples.edit("cart.py"))
         story.advance(timedelta(minutes=1))
-    story.run(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
 
 
 def test_a_worker_that_used_a_tool_since_its_last_restart_is_started_again_past_the_restart_limit(new_story):
@@ -188,9 +188,9 @@ def test_a_worker_gets_its_restarts_anew_when_it_starts_a_task_again(new_story):
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
     story.advance(timedelta(minutes=1))
-    story.run(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     story.hook(session, HookSamples.session_start())
-    story.run(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} ended with task:1")
     story.hook(session, HookSamples.session_start())
     story.advance(timedelta(minutes=1))
@@ -198,7 +198,7 @@ def test_a_worker_gets_its_restarts_anew_when_it_starts_a_task_again(new_story):
     story.expect_success("task unblock 1", actor=worker)
     story.expect_success("task start 1", actor=worker)
     story.advance(timedelta(minutes=1))
-    story.run(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     expect_count_output_2(story, f"agent-line list --agent {worker.id}", "You ended with tasks left", 2)
 
 
@@ -230,7 +230,7 @@ def test_a_worker_is_not_held_until_it_watches_a_run_of_its_own(new_story):
 
 def test_a_worker_that_stopped_is_told_when_its_run_ends_by_a_job_that_starts_it_again(new_story):
     story, worker, run, bus = worker_with_background_run(new_story)
-    story.run(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     story.run_listeners()
     story.expect_text(f"process show {run.id}", "state: background", actor=story.agent)
     bus.run(EndProcess(run.id, 0, 10, 1), worker, environment_id=1)
@@ -241,7 +241,7 @@ def test_a_worker_that_stopped_is_told_when_its_run_ends_by_a_job_that_starts_it
 
 def test_a_worker_that_stopped_with_a_run_going_is_not_told_to_carry_on_and_shows_no_stop_mark(new_story):
     story, worker, _, _ = worker_with_background_run(new_story)
-    story.run(f"agent end {worker.id}", actor=worker)
+    story.end_session(worker)
     story.run_listeners()
     story.expect_absent(f"agent-line list --agent {worker.id}", "You ended with tasks left")
     story.expect_absent("chat-mark list --environment 1", "stopped with")

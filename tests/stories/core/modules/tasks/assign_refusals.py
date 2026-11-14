@@ -21,7 +21,7 @@ def worker_label(story) -> str:
 
 
 def test_a_worker_that_runs_task_assign_is_refused_only_a_person_or_the_main_agent_assigns(free_task):
-    free_task.expect_refusal(f"task assign {FREE_TASK} --to {agent_number(free_task, free_task.worker.id)}", "a worker cannot assign a task", actor=free_task.worker)
+    free_task.expect_refusal(f"task assign {FREE_TASK} --to {agent_number(free_task, free_task.worker.id)}", "may not run task assign", actor=free_task.worker)
     free_task.expect_rows(FREE_TASK not in task_assignees(free_task), detail=str(task_assignees(free_task)))
 
 

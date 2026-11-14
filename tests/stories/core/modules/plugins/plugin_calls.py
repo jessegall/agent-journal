@@ -73,8 +73,8 @@ def test_s58_a_slow_command_holds_no_lock(new_story):
 def test_s58_an_agent_may_not_use_plugin_run_even_naming_itself(new_story):
     story = worker_with_tools(new_story)
     recorded = recording_runner_at(story.home)
-    story.expect_refusal(f"plugin run --agent {story.worker.id} -- true", "may not use", actor=story.worker)
-    story.expect_refusal("plugin run -- true", "may not use", actor=story.worker)
+    story.expect_refusal(f"plugin run --agent {story.worker.id} -- true", "may not run plugin run", actor=story.worker)
+    story.expect_refusal("plugin run -- true", "may not run plugin run", actor=story.worker)
     story.expect_rows(not recorded.exists())
 
 

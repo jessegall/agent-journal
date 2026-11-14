@@ -200,7 +200,7 @@ def test_a_person_retiring_a_worker_with_tasks_left_leaves_the_merger_one_line_a
         story.expect_success(f'task make "Job {number}" --brief "Do job {number}" --environment main', actor=story.agent)
         story.expect_success(f"worker send --wait {agent_number(story, case.worker.id)} --task {number}", actor=story.agent)
     ask(case)
-    story.expect_success(f"agent end {case.worker.id}", actor=case.worker)
+    story.end_session(case.worker)
     story.expect_success(f'agent retire {agent_number(story, case.worker.id)} --reason "no longer needed"', actor=story.user)
     story.run_listeners()
     lines = [line.text for line in story.story_rows(MergerLine) if "ended with" in line.text]

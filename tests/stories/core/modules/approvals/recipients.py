@@ -45,7 +45,7 @@ def test_a_helpers_request_is_addressed_to_its_main_agent_and_has_no_person_card
 
 def test_only_the_addressed_main_agent_can_relay_the_request(helper_request):
     story, helper, approval = helper_request
-    story.expect_refusal(f"approval relay {approval.id}", "only the main agent", actor=helper)
+    story.expect_refusal(f"approval relay {approval.id}", "may not run approval relay", actor=helper)
     story.expect_success(f"approval relay {approval.id}", actor=story.agent)
     saved = story.container.get(Queries).query(ApprovalRequest).find(approval.id)
     items = tuple(story.container.get(Queries).query(DockItem).filter(target_model="approval", target_id=approval.id, state=DockItemState.DOCKED).every_row(TEST_ROWS_REASON))
@@ -62,7 +62,7 @@ def test_only_the_addressed_main_agent_can_relay_the_request(helper_request):
 def test_main_answers_the_helper_without_a_person_or_a_protected_action(helper_request):
     story, helper, approval = helper_request
     line = f'approval answer {approval.id} --text "Use the existing paired phone"'
-    story.expect_refusal(line, "only the main agent", actor=helper)
+    story.expect_refusal(line, "may not run approval answer", actor=helper)
     story.expect_success(line, actor=story.agent)
     saved = story.container.get(Queries).query(ApprovalRequest).find(approval.id)
     story.expect_rows(saved.state is ApprovalState.CLOSED, saved.review_answer == "Use the existing paired phone",
