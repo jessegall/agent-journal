@@ -2,7 +2,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from tests.stories.server.support.file_changes import FileChanges
+from tests.integration.support.file_changes import FileChanges
 from suites.coding.support.graphify_settings import GRAPHIFY_COMMAND
 from suites.coding.support.graphify_settings import GRAPHIFY_INSTALL_COMMAND
 

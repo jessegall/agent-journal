@@ -22,7 +22,6 @@ from engine.testing.stories.story import Story
 from tests.integration.support.server_client import ServerClient
 from tests.integration.support.server_harness import SYSTEM_CLOCK, TEST_HOOK_LIMIT_SECONDS, TEST_INSTANT_CAPACITY, TEST_STOP_LIMIT_SECONDS, TIMEOUT_SECONDS, ViewerFactory, local_viewer, raw_answer, read_answer, request_answer, running_server
 from tests.stories.server.support.story_line_route import StoryLineRoute
-from engine.testing.expectations.line_outcome import LineOutcome
 from core.modules.skills.models.agent_skill import AgentSkill
 from server.handover.code_folders import CodeFolders
 from server.door.journal_door import JournalDoor
@@ -102,14 +101,6 @@ class ServerStory(ServerClient):
     def expect_busy_timeout(self, seconds: float) -> None:
         idle_thread = ListenerThread(lambda: None, lambda error: None)
         assert CliEndpoint(self.story.home, ListenerWake(ListenerWakeRouter.waking(idle_thread)), ReportedFindings()).line_run.busy_timeout_seconds == seconds
-
-    def expect_stale_answer_released_files(self, line: str, task_listing: LineOutcome) -> None:
-        answer = request_answer(self.socket_path, "POST", "/cli", {"argv": shlex.split(line), "folder": "/"})
-        assert answer.status == 409 and "newer code" in answer.text, answer
-        assert self.story.run("task list --environment main").output_text == task_listing.output_text
-        files = ServerFiles(self.story.home)
-        assert not self.socket_path.exists() and not files.pid_file.exists() and files.acquire_lock(), "the stale server still holds its files"
-        files.release_lock()
 
     def expect_raw_request_error(self, raw_request: bytes, error_name: str) -> None:
         answer = read_answer(raw_answer(self.socket_path, raw_request))

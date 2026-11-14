@@ -3,13 +3,13 @@ from threading import Event, Thread
 
 import json
 
-from engine.database.database import Database
 from engine.database.hook_requests_table import HookRequestsTable
 from engine.enums.execution_priority import ExecutionPriority
 from engine.execution.current_execution import CurrentExecution
-from engine.testing.stories.story import Story
+from engine.testing.fakes.manual_clock import ManualClock
 from server.hook.hook_sender import AGENT_HOOK_PRIORITY, MAIN_AGENT_HOOK_PRIORITY
 from server.execution.write_turn_queue import WriteTurnQueue
+from tests.integration.support.integration_journal import IntegrationJournal
 
 WAIT_LIMIT_SECONDS = 30.0
 TURN_LIMIT_SECONDS = 3.0
@@ -18,18 +18,19 @@ WAITING_CHECK_SECONDS = 0.05
 MAIN_AGENT_HOOK = "main agent hook"
 
 
-class StoryWriteTurns(WriteTurnQueue):
-    """The server's write turn queue on a story's journal and clock, bound to the story's database. It notes
-    how many statements each turn it hands out had, the order waiting asks got the turn in, and the slow
+class WriteTurns(WriteTurnQueue):
+    """The server's write turn queue on an integration journal and a manual clock, bound to the journal's database.
+    It notes how many statements each turn it hands out had, the order waiting asks got the turn in, and the slow
     holders it logs."""
 
-    def __init__(self, story: Story) -> None:
+    def __init__(self, journal: IntegrationJournal) -> None:
         self.slow_turns: list[str] = []
-        super().__init__(story.clock, WAIT_LIMIT_SECONDS, self.slow_turns.append)
-        self.story = story
+        self.manual_clock = ManualClock()
+        super().__init__(self.manual_clock, WAIT_LIMIT_SECONDS, self.slow_turns.append)
+        self.journal = journal
         self.turn_statements: list[int] = []
         self.order: list[str] = []
-        story.container.get(Database).turns = self
+        journal.database.turns = self
 
     def release(self) -> None:
         self.turn_statements.append(self.depth.statements)
@@ -47,7 +48,7 @@ class StoryWriteTurns(WriteTurnQueue):
         holder = Thread(target=self.keep_turn, args=(turn_started, finished))
         holder.start()
         turn_started.wait(TURN_LIMIT_SECONDS)
-        self.story.run(line)
+        self.journal.run(line)
         answered_first = holder.is_alive()
         finished.set()
         holder.join()
@@ -84,12 +85,12 @@ class StoryWriteTurns(WriteTurnQueue):
 
     # Writes one row in a savepoint of a transaction, as a command dispatched inside another one does.
     def savepoint_write(self) -> None:
-        database = self.story.container.get(Database)
-        with database.transaction(), database.savepoint("story write"):
+        database = self.journal.database
+        with database.transaction(), database.savepoint("test write"):
             HookRequestsTable(database).insert(json.dumps({"body": {"event": "savepoint write"}}))
 
-    # Runs the line inside one turn held by a named class at agent priority while the story's clock moves on.
+    # Runs the line inside one turn held by a named class at agent priority while the clock moves on.
     def slow_turn_run(self, line: str, seconds: int) -> None:
-        with CurrentExecution(ExecutionPriority.AGENT, "story", line).applied(), self.write_turn():
-            self.story.run(line)
-            self.story.advance(timedelta(seconds=seconds))
+        with CurrentExecution(ExecutionPriority.AGENT, "test writer", line).applied(), self.write_turn():
+            self.journal.run(line)
+            self.manual_clock.advance(timedelta(seconds=seconds))

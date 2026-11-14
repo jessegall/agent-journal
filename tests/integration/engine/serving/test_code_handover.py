@@ -22,14 +22,13 @@ from engine.serving.code_handover import CodeHandover
 from install.update.install_journal import InstallJournal
 from engine.connection.unix_connection import UnixConnection
 from engine.serving.server_files import ServerFiles
-from tests.stories.support.story_checks import expect_value_4
-from tests.stories.server.support.server_client import request_answer
-from tests.stories.server.support.file_changes import FileChanges
+from tests.integration.support.server_harness import request_answer
+from tests.integration.support.file_changes import FileChanges
 from core.modules.updates.models.enums.update_setting import UpdateSetting
 
 pytestmark = pytest.mark.install_job
 
-SOURCE = Path(__file__).resolve().parents[3] / "src"
+SOURCE = Path(__file__).resolve().parents[4] / "src"
 START_LIMIT_SECONDS = 60
 
 
@@ -61,8 +60,7 @@ def home(tmp_path: Path, request) -> Generator[JournalHome]:
     assert InstallJournal(project, SOURCE).run() == 0
     journal = JournalHome(project / ".journal")
     if getattr(request, "param", "") == "takeover-error":
-        (journal.folder / "src" / "server" / "successor_start.py").write_text(
-            "PROOF_LIMIT_SECONDS = 180\n"
+        (journal.folder / "src" / "server" / "handover" / "successor_start.py").write_text(
             "class SuccessorStart:\n"
             "    def __init__(self, *args): pass\n"
             "    def run(self, tag): raise OSError('takeover connection failed')\n"
@@ -96,7 +94,7 @@ def test_an_update_hands_over_to_a_new_server_on_the_same_sockets_and_refuses_no
     expect_changed_pid_file_server(home, running_pid)
     expect_viewer_port_file(home, viewer_port)
     expect_symlink_folder_home(home, "src")
-    expect_value_4(statuses)
+    assert statuses
     expect_statuses(statuses, {200})
     expect_absent_exists_restart_mark(home)
     with socket.create_connection(("127.0.0.1", int(viewer_port)), timeout=5):
@@ -129,7 +127,7 @@ def test_new_code_that_fails_its_proof_leaves_the_old_server_serving(home, tmp_p
 
 
 def test_an_external_module_still_loads_after_a_server_handover(home, tmp_path):
-    source = Path(__file__).parents[1] / "engine" / "module" / "support" / "folder_sample"
+    source = Path(__file__).resolve().parents[4] / "tests" / "stories" / "engine" / "module" / "support" / "folder_sample"
     folder = tmp_path / "installed_notes"
     shutil.copytree(source, folder)
     added = request_answer(ServerFiles(home).socket, "POST", "/cli",
@@ -141,7 +139,7 @@ def test_an_external_module_still_loads_after_a_server_handover(home, tmp_path):
     expect_changed_pid_file_server(home, running_pid)
     listed = wait_for_template_list(home, tmp_path, "Folder review")
     expect_row(listed, status=200, exit_code=0)
-    expect_value_4("Folder review" in listed.text)
+    assert "Folder review" in listed.text, listed
 
 
 def wait_for_template_list(home: JournalHome, folder: Path, title: str):

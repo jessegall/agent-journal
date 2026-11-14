@@ -397,7 +397,6 @@ tests/stories/server/quiet_ticks.py
 tests/stories/server/request_log_connections.py
 tests/stories/server/request_queue_coverage.py
 tests/stories/server/server_hooks.py
-tests/stories/server/server_restarts.py
 tests/stories/server/server_ticks.py
 tests/stories/server/task_overview_writes.py
 tests/stories/server/tick_warnings.py

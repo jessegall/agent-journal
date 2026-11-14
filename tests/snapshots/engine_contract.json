@@ -9493,6 +9493,13 @@
         "steps(self, story: Story) -> None"
       ]
     },
+    "testing.stories.internal_story_files.InternalStoryFiles": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "holds(self, story_file: Path) -> bool"
+      ]
+    },
     "testing.stories.story.Story": {
       "bases": [],
       "fields": [],
@@ -9690,23 +9697,6 @@
         "checks(self) -> list[str]"
       ]
     },
-    "testing.stories.story_write_turns.StoryWriteTurns": {
-      "bases": [
-        "WriteTurnQueue"
-      ],
-      "fields": [],
-      "methods": [
-        "release(self) -> None",
-        "is_free(self) -> bool",
-        "answers_beside_writer(self, line: str) -> bool",
-        "keep_turn(self, turn_started: Event, finished: Event) -> None",
-        "hook_turn_order(self, agent_count: int) -> list[str]",
-        "request_turn(self, name: str, priority: ExecutionPriority) -> None",
-        "expect_waiters(self, count: int) -> None",
-        "savepoint_write(self) -> None",
-        "slow_turn_run(self, line: str, seconds: int) -> None"
-      ]
-    },
     "testing.stories.working_journal.WorkingJournal": {
       "bases": [
         "StoryJournal"
@@ -9759,6 +9749,7 @@
       "methods": [
         "remove_stale_working_folders(current_time: float) -> None",
         "story(self, folder: Path, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Story",
+        "synced_home(self, folder: Path, modules: tuple[str, ...]) -> JournalHome",
         "free_journal(self, template: Template) -> WorkingJournal",
         "linked_home(self, template: Template, journal: WorkingJournal, folder: Path) -> JournalHome",
         "template(self, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Template",

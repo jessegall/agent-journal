@@ -6,7 +6,7 @@ from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.browser_story import VIEWER_FOLDER
 from tests.stories.server.support.server_client import server_story
 from tests.stories.support.story_checks import expect_value
-from tests.stories.server.support.file_changes import FileChanges
+from tests.integration.support.file_changes import FileChanges
 from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 WAIT_SECONDS = 60
