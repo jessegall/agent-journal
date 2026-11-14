@@ -16,6 +16,7 @@ try {
     await menu.waitFor({state: "detached"});
     await page.waitForFunction(async () => (await navigator.clipboard.readText()) === "Copy this message");
     await page.goto(`${address}&agent=${agent}`);
+    await page.locator('[role="tab"][data-tab="coding.terminal"]').click();
     const command = page.locator("[data-terminal-command]", {hasText: "make check"}).first();
     await command.waitFor();
     await command.click({button: "right"});
