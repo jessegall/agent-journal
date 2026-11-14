@@ -115,6 +115,8 @@ def test_a_large_plan_sent_to_an_idle_worker_reads_assignments_without_repeats(n
     for number in range(2, 16):
         task = story.new_row_id(f'task make "Task {number}" --environment main', actor=story.agent)
         story.expect_success(f"phase place {task} --phase 1", actor=story.agent)
+        if number > 2:
+            story.expect_success(f"task block {task} --on task:2", actor=story.agent)
     ready_plan(story, actor=story.user)
     story.expect_success("plan approve 1 --environment main", actor=story.user)
     monkeypatch.setattr(ClaudeCodeProvider, "session_matches_folder", lambda provider, folder, session: True)
