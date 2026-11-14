@@ -2,7 +2,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "src"
-TEST_ROOTS = [ROOT / "tests" / "unit", ROOT / "tests" / "stories"]
+TEST_ROOTS = [ROOT / "tests" / "unit", ROOT / "tests" / "integration", ROOT / "tests" / "stories"]
 SCRIPTS_FOLDER = "scripts"
 HELPER_FOLDERS = {"support", "samples", "fixtures", "testdata", "web", "__pycache__"}
 

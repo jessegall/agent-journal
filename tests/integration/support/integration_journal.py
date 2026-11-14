@@ -1,0 +1,52 @@
+import io
+import json
+import shlex
+from dataclasses import dataclass
+
+from engine.actor.actor import Actor
+from engine.caller.caller import Caller
+from engine.cli.console import Console
+from engine.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
+from engine.file.file_access import FileAccess
+from engine.container.container import Container
+from engine.database.database import Database
+from engine.journal.journal_home import JournalHome
+from engine.module.journal_container import synced_database_container
+
+MAIN_ENVIRONMENT = 1
+
+
+@dataclass(frozen=True)
+class LineAnswer:
+    code: int
+    text: str
+
+
+class IntegrationJournal:
+    """A journal on a synced home that an integration test drives through its real console and database: the
+    machinery runs as it does in the server, with no story kit around it."""
+
+    def __init__(self, home: JournalHome) -> None:
+        self.home = home
+        self.database = Database.opened(home)
+        self.container: Container = synced_database_container(home, self.database)
+
+    def run(self, line: str, actor: Actor | None = None, environment_id: int | None = MAIN_ENVIRONMENT) -> LineAnswer:
+        stream = io.StringIO()
+        code = self.container.get(Console).run(shlex.split(line), Caller(actor or Actor.core(), environment_id), stream)
+        return LineAnswer(code, stream.getvalue())
+
+    # the module list gains the module and the journal syncs, as an install does; a passed sync reopens the container
+    def synced_with(self, module: str) -> LineAnswer:
+        modules = json.loads(FileAccess.read(self.home.module_list))
+        FileAccess.write(self.home.module_list, json.dumps([*modules, module]))
+        stream = io.StringIO()
+        code = self.container.get(ModuleSyncLine).run(list(SYNC_ARGV), stream)
+        if code == 0:
+            self.database.close()
+            self.database = Database.opened(self.home)
+            self.container = synced_database_container(self.home, self.database)
+        return LineAnswer(code, stream.getvalue())
+
+    def close(self) -> None:
+        self.database.close()

@@ -66,6 +66,11 @@ class TemplateDatabases:
         story.attach_journal(journal)
         return story
 
+    # a journal home with every module synced and no story around it, for the integration tests that need a real
+    # database but no story kit
+    def synced_home(self, folder: Path, modules: tuple[str, ...] = ()) -> JournalHome:
+        return self.copy(self.template(modules, None), folder)
+
     def free_journal(self, template: Template) -> WorkingJournal:
         journals = self.working_journals.setdefault(template.home.database, [])
         free = next((journal for journal in journals if not journal.is_taken), None)

@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[2]
 STORIES = ROOT / "tests" / "stories"
 LEDGER = ROOT / "tests" / "unit" / "story_moves"
 STORIES_AT_PLAN_START = 5907
-LEDGER_KINDS = ("unit", "repeat", "folded")
+LEDGER_KINDS = ("unit", "integration", "repeat", "folded")
 LEDGER_ARROW = " -> "
 
 # The stories of a removed rule are re-homed, never deleted. A commit that adds stories raises
@@ -52,7 +52,7 @@ def ledger_lines(folder: Path = LEDGER) -> list[LedgerLine]:
                 continue
             story, arrow, rest = text.partition(LEDGER_ARROW)
             kind, _, target = rest.strip().partition(" ")
-            assert arrow and kind in LEDGER_KINDS and target.strip(), f"{file.name}:{number} is no ledger line: write '<story> -> unit|repeat|folded <test>'"
+            assert arrow and kind in LEDGER_KINDS and target.strip(), f"{file.name}:{number} is no ledger line: write '<story> -> unit|integration|repeat|folded <test>'"
             lines.append(LedgerLine(file, number, story.strip(), kind, target.strip()))
     return lines
 
