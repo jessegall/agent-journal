@@ -29,6 +29,21 @@ def test_the_extra_fields_args_and_shell_are_kept():
     assert (hook.command, hook.fields) == ("node", {"args": ["check.js"], "shell": "bash"})
 
 
+def test_facts_name_each_set_field():
+    entry = {"command": "node", "args": ["check.js"], "if": "Bash(git *)", "asyncRewake": True, "onFailure": "block", "shell": "bash", "timeout": 20}
+    assert ManagedHook.found("claude", "PreToolUse", "Bash", entry, "settings.json", True, 600).facts() == [
+        "If: Bash(git *)", "In the background, wakes the agent", "Timeout: 20 s", "Blocks on failure", "Shell: bash", "Arguments"]
+
+
+def test_facts_always_show_the_timeout():
+    hook = ManagedHook.found("claude", "PostToolUse", "Edit", {"command": "lint", "async": True}, "settings.json", True, 600)
+    assert hook.facts() == ["In the background", "Timeout: 600 s"]
+
+
+def test_facts_are_empty_for_a_plain_hook_except_the_timeout():
+    assert ManagedHook.found("claude", "Stop", "", {"command": "check"}, "settings.json", True, 600).facts() == ["Timeout: 600 s"]
+
+
 def test_the_same_hook_has_the_same_id_and_keeps_extra_fields():
     hook = sample_hook()
     assert hook.id == sample_hook().id

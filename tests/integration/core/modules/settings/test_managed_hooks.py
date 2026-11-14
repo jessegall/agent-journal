@@ -54,6 +54,16 @@ def test_a_project_hook_with_a_timeout_keeps_it(played, program):
     expect_listed_timeout(played(MainEnvironment), program, {"type": "command", "command": "project-check", "timeout": 20}, 20)
 
 
+def test_the_hook_list_command_shows_if_async_and_timeout(played):
+    story = played(MainEnvironment)
+    entry = {"type": "command", "command": "project-check", "if": "Bash(git *)", "async": True, "timeout": 20}
+    ProgramHooks.store(story.home.project_folder / HOOK_FILES["claude"], {"hooks": {"PreToolUse": [{"hooks": [entry]}]}})
+    story.expect_text(f'program manage claude "{story.home.project_folder}"', "managed hooks: 1")
+    reply = story.run("managed-hook list --json")
+    assert reply.code == 0, reply.output_text
+    assert [item["facts"] for item in json.loads(reply.output_text)["managed"]] == [["If: Bash(git *)", "In the background", "Timeout: 20 s"]]
+
+
 def test_an_unknown_managed_hook_is_refused(played):
     story = played(MainEnvironment)
     story.expect_refusal('managed-hook set "unknown-hook" off 20', "unknown")
@@ -65,7 +75,7 @@ def expect_listed_timeout(story, program, entry, seconds) -> None:
     story.expect_text(f'program manage {program} "{story.home.project_folder}"', "managed hooks: 1")
     reply = story.run("managed-hook list --json")
     assert reply.code == 0, reply.output_text
-    listed = [hook["timeout"] for hook in json.loads(reply.output_text)["managed"]]
+    listed = [item["hook"]["timeout"] for item in json.loads(reply.output_text)["managed"]]
     assert listed == [seconds], listed
 
 

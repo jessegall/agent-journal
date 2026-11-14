@@ -24,6 +24,22 @@ class ManagedHook:
     effects: Sequence[HookEffect] = ()
     sources: Sequence[HookSource] = ()
 
+    def facts(self) -> list[str]:
+        """The facts of how the hook runs that a person reads beside it: the set fields of its entry and its timeout."""
+        facts = [f"If: {self.fields['if']}"] if self.fields.get("if") else []
+        if self.fields.get("asyncRewake") is True:
+            facts.append("In the background, wakes the agent")
+        elif self.fields.get("async") is True:
+            facts.append("In the background")
+        facts.append(f"Timeout: {self.timeout} s")
+        if self.fields.get("onFailure") == "block":
+            facts.append("Blocks on failure")
+        if self.fields.get("shell"):
+            facts.append(f"Shell: {self.fields['shell']}")
+        if self.fields.get("args") is not None:
+            facts.append("Arguments")
+        return facts
+
     def all_sources(self) -> tuple[HookSource, ...]:
         return (HookSource(self.source, self.tracked), *self.sources)
 

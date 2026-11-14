@@ -34,7 +34,7 @@ class ProjectHooks:
         providers = self.providers.all()
         rules = [entry.path.checked_class(DriverRule) for entry in self.providers.registry.rules]
         manager = HookManager(root, self.managed, rules)
-        return ProjectHookList(tuple(ManagedHookItem(hook, self.history.read(hook)) for hook in self.managed.all()),
+        return ProjectHookList(tuple(ManagedHookItem.of(hook, self.history.read(hook)) for hook in self.managed.all()),
                                tuple(entry for provider in providers for entry in self.journal_entries(provider)),
                                tuple(hook for provider in providers for hook in manager.unmanaged(type(provider), root)),
                                tuple(entry for provider in providers for entry in (*self.excluded(provider), *self.tracked(provider, manager), *self.journal_files(provider))),

@@ -126,6 +126,7 @@ context.follow(["hook_call.*"], coalesced(load, READ_RATES.projectHooks));
           <template v-for="item in value.managed" :key="managedKey(item)">
             <ManagedHookRow
               :hook="item.hook"
+              :facts="item.facts"
               :history="item.history"
               :disabled="readOnly || busy"
               :failure="itemFailure(item)"
