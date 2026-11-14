@@ -17,7 +17,7 @@ class DriverRule(SingleInstance):
     """The base of every driver rule: one rule about what an agent may do or reads, asked on the hooks it
     covers while a driver its patterns name drives the agent; its class docstring says the rule in plain
     words; a rule that refuses one action outright says why in single_action_refusal, since every other hold
-    is a BlockUntil. A rule with a skip window is silent for an agent that skipped it, until the window has passed."""
+    is a BlockUntil. A rule with a skip window is silent for an agent that skipped it, under its own name or the skip_name it shares with another rule, until the window has passed."""
 
     name: ClassVar[str]
     hook: ClassVar[HookEventName | HookWildcard]
@@ -35,6 +35,7 @@ class DriverRule(SingleInstance):
     start_line_rule: ClassVar[bool] = False
     single_action_refusal: ClassVar[str] = ""
     skip_window: ClassVar[Interval | None] = None
+    skip_name: ClassVar[str] = ""
     disabled_scopes: ClassVar[WholeScopes] = ()
     tools: ClassVar[Sequence[ToolType]] = ()
 

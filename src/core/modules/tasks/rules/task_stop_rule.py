@@ -22,6 +22,7 @@ class TaskStopRule(DriverRule):
     roles = [AgentRole.MAIN]
     single_action_refusal = "A stop with tasks in hand is refused, naming them all"
     skip_window = Interval(ToolUseSpan(25), Seconds(1500))
+    skip_name = "tasks.carry-on-at-stop"
 
     def __init__(self, current_tasks: CurrentTasks, runs: WatchedRuns, assigners: SuiteTaskAssigners) -> None:
         self.current_tasks, self.runs, self.assigners = current_tasks, runs, assigners

@@ -1,5 +1,7 @@
 from datetime import timedelta
 
+import pytest
+
 from engine.enums.tool_type import ToolType
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from engine.testing.examples.hook_samples import HookSamples
@@ -9,6 +11,16 @@ from core.modules.tasks.support.task_nudges import BLOCKED_TASKS
 from engine.testing.expectations.expected_nudge import expected_nudge
 
 READ = HookSamples.sample("pre_tool_use", {"name": "Read", "category": ToolType.READ, "files": ["a.py"], "shell": None, "diff": None})
+
+
+@pytest.fixture
+def skipped_stop(new_story):
+    """The agent with a task in hand was refused its stop and skipped that refusal with a reason."""
+    story = new_story(fixture=StartedTaskBuilder)
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "is in hand: continue")
+    story.advance(timedelta(seconds=1))
+    story.expect_success("refusal skip tasks.carry-on-at-stop --reason 'waiting for the price list'", actor=story.agent)
+    return story
 
 
 def test_a_builder_with_only_blocked_tasks_is_refused_at_its_first_stop_and_not_its_second(new_story):
@@ -29,11 +41,9 @@ def test_the_task_in_hand_stop_refusal_is_silent_while_a_run_of_the_agent_goes_a
     story.expect_hook_refusal("s-1", HookSamples.stop(), "is in hand: continue")
 
 
-def test_a_skip_silences_the_task_in_hand_stop_refusal_for_25_minutes_and_it_returns_after_them(new_story):
-    story = new_story(fixture=StartedTaskBuilder)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "is in hand: continue")
-    story.advance(timedelta(seconds=1))
-    story.expect_success("refusal skip tasks.carry-on-at-stop --reason 'waiting for the price list'", actor=story.agent)
+def test_a_skip_silences_the_task_in_hand_stop_refusal_for_25_minutes_and_it_returns_after_them(skipped_stop):
+    story = skipped_stop
+    story.hook("s-1", HookSamples.stop())
     story.expect_hook_allowed("s-1", HookSamples.stop())
     story.advance(timedelta(minutes=24))
     story.expect_hook_allowed("s-1", HookSamples.stop())
@@ -41,11 +51,8 @@ def test_a_skip_silences_the_task_in_hand_stop_refusal_for_25_minutes_and_it_ret
     story.expect_hook_refusal("s-1", HookSamples.stop(), "is in hand: continue")
 
 
-def test_a_skip_of_the_task_in_hand_stop_refusal_ends_after_25_tool_uses(new_story):
-    story = new_story(fixture=StartedTaskBuilder)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "is in hand: continue")
-    story.advance(timedelta(seconds=1))
-    story.expect_success("refusal skip tasks.carry-on-at-stop --reason 'waiting for the price list'", actor=story.agent)
+def test_a_skip_of_the_task_in_hand_stop_refusal_ends_after_25_tool_uses(skipped_stop):
+    story = skipped_stop
     for _ in range(25):
         story.advance(timedelta(seconds=1))
         story.hook("s-1", READ)

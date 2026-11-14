@@ -4,6 +4,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
 from engine.command.command import Command
+from engine.database.kept_rows import KeptRows
 from engine.driver.interval import Interval
 from engine.driver.refusal_skips import RefusalSkips
 from engine.driver.span_queries import SpanQueries
@@ -25,14 +26,17 @@ class TableRefusalSkips(RefusalSkips):
     held to the same checks; a user skips a guard freely. Guards that share a short flag are one skip: the
     one that refused the agent, or the first when none did."""
 
-    def __init__(self, queries: Queries, bus: Bus, registry: Registry, refusals: RefusalLog, spans: SpanQueries) -> None:
-        self.queries, self.bus, self.registry, self.refusals, self.spans = queries, bus, registry, refusals, spans
+    def __init__(self, queries: Queries, bus: Bus, registry: Registry, refusals: RefusalLog, spans: SpanQueries, kept: KeptRows) -> None:
+        self.queries, self.bus, self.registry, self.refusals, self.spans, self.kept = queries, bus, registry, refusals, spans, kept
 
     def waiting(self, agent_id: int, rule: str) -> Command[object] | None:
         skip = self.queries.query(RefusalSkip).filter(session_agent_id=agent_id, name=rule, used_at=None, cancelled_at=None, needs_approval=False).matching(HasValue("confirmed_at")).newest().first()
         return UseRefusalSkip(skip.id) if skip is not None else None
 
     def is_skipped(self, agent_id: int, rule: str, window: Interval, timestamp: Timestamp) -> bool:
+        return self.kept.scoped_current(lambda: self.skipped_within(agent_id, rule, window, timestamp), name=f"drivers.skip_window:{agent_id}:{rule}:{timestamp.text}")
+
+    def skipped_within(self, agent_id: int, rule: str, window: Interval, timestamp: Timestamp) -> bool:
         skip = self.queries.query(RefusalSkip).filter(session_agent_id=agent_id, name=rule, cancelled_at=None).newest().first()
         return skip is not None and not window.has_passed(self.spans, agent_id, skip.creation_timestamp(), timestamp)
 
