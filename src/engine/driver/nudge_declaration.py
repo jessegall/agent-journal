@@ -1,6 +1,7 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
 
+from engine.driver.block_condition import BlockCondition
 from engine.driver.interval import Interval
 from engine.driver.nudge import Nudge
 from engine.enums.nudge_type import NudgeType
@@ -17,7 +18,8 @@ CUT_END_CHARACTERS = 60
 @dataclass(frozen=True)
 class NudgeDeclaration:
     """An agent message template with delivery rules and text limits; declared path fields stay whole. A text per
-    agent role, where one is declared, takes the place of the default text for an agent of that role."""
+    agent role, where one is declared, takes the place of the default text for an agent of that role. A line that
+    requires a command about a row names the condition on that row that also closes its block."""
 
     key: str
     type: NudgeType
@@ -25,6 +27,7 @@ class NudgeDeclaration:
     interval: Interval | None = None
     turn_limited: bool = True
     required_command: str | None = None
+    closed_by: type[BlockCondition] | None = None
     plural_text: str = ""
     wakes_agent: bool = False
     path_fields: Sequence[str] = ()

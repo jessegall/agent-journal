@@ -33,3 +33,6 @@ class MonitoredRuns(WatchedRuns):
         if run is None or monitor is None or monitor.creation_timestamp().value < run.creation_timestamp().value:
             return False
         return monitor.creation_timestamp().elapsed_seconds(self.clock.timestamp()) < MONITOR_LIFE_SECONDS
+
+    def has_run(self, agent_id: int) -> bool:
+        return self.newest_run(agent_id) is not None

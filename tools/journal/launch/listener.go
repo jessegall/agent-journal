@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -174,6 +175,7 @@ func ListenVersioned(path string, starter Starter, inputs *TerminalInputs, versi
 	if err != nil {
 		return nil, err
 	}
+	pruneDeadSockets(filepath.Dir(path), previous)
 	listener, err := net.Listen("unix", path)
 	if err != nil {
 		restoreFirst(previous, path)
@@ -272,6 +274,22 @@ func setAsidePrevious(path string) ([]string, error) {
 		return nil, nil
 	}
 	return append([]string{previous}, routes...), nil
+}
+
+// pruneDeadSockets removes the sockets of older launches nobody answers on, which a launch that was killed leaves in the
+// folder; the sockets of the launches this one reaches are kept.
+func pruneDeadSockets(directory string, kept []string) {
+	names, _ := filepath.Glob(filepath.Join(directory, "l-*"))
+	for _, name := range names {
+		if slices.Contains(kept, name) {
+			continue
+		}
+		if connection, err := net.DialTimeout("unix", name, socketDialLimit); err == nil {
+			_ = connection.Close()
+			continue
+		}
+		_ = os.Remove(name)
+	}
 }
 
 func restorePrevious(previous, path string) bool {

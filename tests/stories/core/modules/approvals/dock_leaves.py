@@ -5,7 +5,9 @@ from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState
 from tests.stories.core.modules.approvals.approvals import SETTING, pending_setting
+from server.work.booting_work import BootingWork
 from tests.stories.server.support.server_client import server_story
+from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -45,4 +47,15 @@ def test_an_approval_whose_asking_request_ended_leaves_the_dock(pending_setting)
     story.container.get(Bus).run(CloseUserApproval(request.arguments), story.user, environment_id=request.environment_id)
     story.run_listeners()
     story.expect_text(f"approval show {request.id}", "state: closed")
+    story.expect_rows(docked_cards(story, request) == 0)
+
+
+def test_a_decided_approval_is_never_docked_again_and_shows_in_no_dock_before_a_viewer_opens(pending_setting):
+    story, request = pending_setting
+    decide(story, request, "accept")
+    story.run_listeners()
+    story.expect_rows(docked_cards(story, request) == 0)
+    with viewer_client(story):
+        BootingWork().run(story.container)
+    story.run_listeners()
     story.expect_rows(docked_cards(story, request) == 0)

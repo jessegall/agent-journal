@@ -14,7 +14,7 @@ BLOCKED_TASKS = NudgeDeclaration("tasks.blocked_tasks", NudgeType.REFUSAL, "Bloc
 CURRENT_TASK = NudgeDeclaration("tasks.task_in_hand", NudgeType.STEERING, 'task:{task} is in hand', turn_limited=False)
 TASK_REOPENED = NudgeDeclaration("tasks.open_again", NudgeType.STEERING, "task:{task} is open again: what it waited on has ended")
 LOG_REQUEST = CountDown("tasks.log_request", "log task {task}", WriteSpan(LOG_REQUEST_WRITES))
-STOP_TASK = NudgeDeclaration("tasks.task_at_stop", NudgeType.REFUSAL, "task:{task} is in hand: continue, or block it with a reason")
+STOP_TASK = NudgeDeclaration("tasks.task_at_stop", NudgeType.REFUSAL, "task:{task} is in hand: continue, block it, or skip this: journal refusal skip tasks.carry-on-at-stop --reason '<why>'")
 STOP_TASKS = NudgeDeclaration("tasks.tasks_at_stop", NudgeType.REFUSAL, "In hand: {tasks}: continue, or close, release or block each one")
 TASK_RETURN_REMINDER = NudgeDeclaration("tasks.task_still_held", NudgeType.STEERING, "Back to task:{task}: continue, close or release it", turn_limited=False)
 UNLOGGED_WRITES = NudgeDeclaration("tasks.unlogged_writes", NudgeType.REFUSAL, "Log task {task} now: 0 writes left")

@@ -279,21 +279,31 @@ func (tracker *Tracker) startedOutput(position int) (string, bool) {
 	return text, text != ""
 }
 
-// orphan ends a run in the foreground whose own shell has died: its group is stopped and the process is lost, so nothing is
-// left running with no one to read it; the tick that finds a lost run late is only the backstop.
+// orphan ends a run in the foreground whose own shell has died: its group is stopped, killed when it ignores that, and
+// the process is lost, so nothing is left running with no one to read it; the tick that finds a lost run late is only
+// the backstop.
 func (tracker *Tracker) orphan(stdout io.Writer) int {
-	if pid, recorded := tracker.Folder.Pid(); recorded {
+	pid, recorded := tracker.Folder.Pid()
+	if recorded {
 		_ = syscall.Kill(-pid, syscall.SIGTERM)
 	}
-	for waited := time.Duration(0); waited < 2*time.Second; waited += pollInterval {
-		if _, ended := tracker.Folder.End(); ended {
-			break
-		}
-		time.Sleep(pollInterval)
+	if !tracker.endedWithin(2*time.Second) && recorded {
+		_ = syscall.Kill(-pid, syscall.SIGKILL)
 	}
 	_ = tracker.Client.Run("process", "orphan", strconv.Itoa(tracker.Options.Process))
 	fmt.Fprintf(stdout, "the shell of process %d is dead, so the run was stopped\n", tracker.Options.Process)
 	return 1
+}
+
+// endedWithin waits until the run has ended or the time has passed, and says whether it ended.
+func (tracker *Tracker) endedWithin(limit time.Duration) bool {
+	for waited := time.Duration(0); waited < limit; waited += pollInterval {
+		if _, ended := tracker.Folder.End(); ended {
+			return true
+		}
+		time.Sleep(pollInterval)
+	}
+	return false
 }
 
 // move leaves the shell running, tells the agent where its output will be and goes on in the background.

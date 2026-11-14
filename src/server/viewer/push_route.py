@@ -1,8 +1,6 @@
 import json
 
 from server.viewer.phone_sessions import PhoneSessions
-from server.enums.session_type import SessionType
-from server.viewer.viewer_login import ViewerLogin
 from server.errors.viewer_request_error import ViewerRequestError
 
 
@@ -11,11 +9,8 @@ class PushRoute:
     with, and the subscription it gives back, which the phone module keeps on the paired phone of the session.
     A share session has no phone and gets neither."""
 
-    def __init__(self, login: ViewerLogin, phones: PhoneSessions) -> None:
-        self.login, self.phones = login, phones
-
-    def is_share(self, token: str) -> bool:
-        return self.login.session(token).type is SessionType.SHARE
+    def __init__(self, phones: PhoneSessions) -> None:
+        self.phones = phones
 
     def public_key(self) -> str:
         return self.phones.push_key()

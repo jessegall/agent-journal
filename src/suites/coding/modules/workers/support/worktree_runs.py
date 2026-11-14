@@ -27,6 +27,11 @@ class WorktreeRuns:
         passed_ids = {reach.id for reach in self.reaches(links) if reach.state is CheckpointState.PASSED}
         return {link.phase_id: link.commit_id for link in links if link.reach_id in passed_ids}
 
+    def failed_task_ids(self, worktree_id: int) -> tuple[int, ...]:
+        links = {link.reach_id: link for link in self.links(worktree_id)}
+        newest = {reach.phase_id: reach for reach in sorted(self.reaches(tuple(links.values())), key=lambda reach: reach.id)}
+        return tuple(dict.fromkeys(task_id for reach in newest.values() if reach.state is CheckpointState.FAILED for task_id in reach.tasks()))
+
     def has_merge(self, worktree_id: int) -> bool:
         return self.blocking_run(worktree_id) is not None
 
