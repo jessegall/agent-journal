@@ -49,6 +49,7 @@ const PERSON = "person";
 const opensAtOnce = browserCopy.read(SESSION_TYPE_KEY) === PERSON && location.pathname !== PAIRING_PATH && !document.querySelector(ENDED_LINK_MARK);
 if (opensAtOnce) start({type: PERSON});
 readSession().catch(() => ({})).then((answer) => {
+    globalThis.AJSplash?.ready();
     if (answer.type) browserCopy.write(SESSION_TYPE_KEY, answer.type);
     if (!opensAtOnce) start(answer);
     else if (answer.type && answer.type !== PERSON) location.reload();
