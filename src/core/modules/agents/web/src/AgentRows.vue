@@ -2,6 +2,7 @@
 import {computed, nextTick, onUnmounted, ref, watch} from "vue";
 import {Btn, EmptyState, MenuItem, MenuLabel, RowList, SearchBar, Segmented, toggleFilter, useNow, useWindow} from "@journal/window-kit";
 import AgentCard from "./AgentCard.vue";
+import {busyFirst, isWaiting} from "./agentOrder.js";
 
 // `texts` is what the window says when it is empty on each tab, {running, closed, all}, each {title, hint}: what is empty in its own terms and what brings rows
 const props = defineProps({empty: {type: String, required: true}, texts: {type: Object, default: () => ({})}});
@@ -42,8 +43,6 @@ watch([show, words, filters], () => {
 });
 setState();
 const factsOf = (row) => row.facts ?? null;
-// a working agent whose process has stopped waits on its tests, a merge or an answer: it stays listed, dimmed
-const isWaiting = (row) => row.state === "running" && Boolean(row.ended_at);
 const shown = rows;
 // an agent that ends leaves the Working tab, so it stays at the bottom of that list, faded, for five minutes first
 const LINGER_MILLISECONDS = 5 * 60 * 1000;
@@ -51,7 +50,7 @@ const now = useNow();
 const lingering = ref([]);
 const lingerIds = computed(() => new Set(lingering.value.filter((held) => now.value - held.left < LINGER_MILLISECONDS).map((held) => held.row.id)));
 const lingerRows = computed(() => lingering.value.filter((held) => lingerIds.value.has(held.row.id)).map((held) => held.row));
-const listed = computed(() => [...shown.value, ...lingerRows.value]);
+const listed = computed(() => [...busyFirst(shown.value), ...lingerRows.value]);
 let readFor = "";
 let readRows = [];
 async function keepEnded(row) {
