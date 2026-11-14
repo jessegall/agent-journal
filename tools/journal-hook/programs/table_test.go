@@ -74,3 +74,10 @@ func TestTheTableReadsMatcherStyleAndLimits(t *testing.T) {
 		}
 	}
 }
+
+func TestTheTableReadsTheWakeAnswer(t *testing.T) {
+	table := LoadTable("")
+	if table.Programs["claude"].WakeAnswer != "exit_with_stderr" || table.Programs["codex"].WakeAnswer != "" {
+		t.Fatalf("claude wakes by %q and codex by %q", table.Programs["claude"].WakeAnswer, table.Programs["codex"].WakeAnswer)
+	}
+}

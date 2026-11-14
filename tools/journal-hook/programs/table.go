@@ -29,6 +29,9 @@ type Program struct {
 	MatcherStyle           string `json:"matcher_style"`
 	DefaultHookSeconds     int    `json:"default_hook_seconds"`
 	SessionEndLimitSeconds int    `json:"session_end_limit_seconds"`
+	// WakeAnswer is how the program is woken by its wake hook: "exit_with_stderr", "block_with_reason", or empty when
+	// it has none.
+	WakeAnswer string `json:"wake_answer"`
 }
 
 // Table is every agent program the hook knows: the shipped ones, with the project's own laid over them.

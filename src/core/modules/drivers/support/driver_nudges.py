@@ -5,14 +5,15 @@ from engine.driver.interval import Interval
 from core.modules.drivers.support.access_nudges import ACCESS_NUDGES
 from engine.driver.seconds import Seconds
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
-from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.nudge_declaration import BARE_TEMPLATE, NudgeDeclaration
 from engine.enums.nudge_type import NudgeType
 from engine.driver.rule_outcome import RULE_FAILED
 
 REPEATED_STOP = NudgeDeclaration("drivers.repeated_stop", NudgeType.STEERING, "Your stop was refused 5 times in a row: report what is holding it")
 OPENING_LINE = NudgeDeclaration("drivers.opening_line", NudgeType.NOTICE, '{text}', turn_limited=False)
 MANAGED_HOOK_LINE = NudgeDeclaration("drivers.managed_hook_line", NudgeType.NOTICE, "{line}", turn_limited=False)
-COMPACTION_INSTRUCTIONS_LINE = NudgeDeclaration("drivers.compaction_instructions", NudgeType.NOTICE, "{instructions}", turn_limited=False)
+# the program's instructions for a compaction summary, given whole: the rule cuts them at the program's own limit
+COMPACTION_INSTRUCTIONS_LINE = NudgeDeclaration("drivers.compaction_instructions", NudgeType.NOTICE, BARE_TEMPLATE, turn_limited=False, full_text=True)
 MANAGED_HOOK_REFUSAL = NudgeDeclaration("drivers.managed_hook_refusal", NudgeType.REFUSAL, "Project hooks refused for agent:{agent}", turn_limited=False)
 HOOKS_UNCHECKED = NudgeDeclaration("drivers.hooks_unchecked", NudgeType.STEERING, "{count} of your hooks ran unchecked while the journal was not answering: review what you ran then")
 

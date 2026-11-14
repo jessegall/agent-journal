@@ -46,7 +46,10 @@ class ProjectHooks:
         program_hooks = ProgramHooks.journal(type(provider), hook_file)
         stored = ProgramHooks.partitioned(program_hooks.settings().get("hooks")).journal
         managed = self.managed.all()
-        return [JournalHook(provider.name, event, str(hook_file.resolve().relative_to(root)), program_hooks.entry_timeout(event, managed)) for event in stored]
+        source = str(hook_file.resolve().relative_to(root))
+        wake = provider.wake_hook
+        return [*(JournalHook(provider.name, event, source, program_hooks.entry_timeout(event, managed)) for event in stored),
+                *([JournalHook(provider.name, wake.event, source, wake.limit_seconds)] if wake is not None and wake.event in stored else [])]
 
     def excluded(self, provider: Provider) -> list[UnmanagedHook]:
         native = [entry for name in provider.hook_files for entry in self.excluded_file(provider.name, name)]

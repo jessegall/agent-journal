@@ -25,4 +25,4 @@ class CompactionInstructionsRule(DriverRule):
         instructions = self.providers.provider(hook.event.program).compaction_instructions[:INSTRUCTIONS_LIMIT]
         if not instructions:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(COMPACTION_INSTRUCTIONS_LINE.nudge(instructions=instructions))
+        return RuleAnswer.with_nudges(COMPACTION_INSTRUCTIONS_LINE.nudge(text=instructions))

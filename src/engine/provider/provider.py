@@ -30,6 +30,7 @@ from engine.provider.program_model import ProgramModel
 from engine.provider.program_server_file import ProgramServerFile
 from engine.enums.halt_style import HaltStyle
 from engine.provider.enums.matcher_style import MatcherStyle
+from engine.provider.wake_hook import WakeHook
 from engine.enums.refusal_style import RefusalStyle
 from engine.provider.session_line import SessionLine
 from engine.provider.transcript_author import AGENT_AUTHOR, USER_AUTHOR
@@ -59,6 +60,8 @@ class Provider(ABC):
     matcher_style: ClassVar[MatcherStyle] = MatcherStyle.REGEX
     default_hook_seconds: ClassVar[int] = 600
     session_end_limit_seconds: ClassVar[int] = 3
+    # the hook entry the program is woken through; None when it is woken by typing only
+    wake_hook: ClassVar[WakeHook | None] = None
     refusals: ClassVar[Mapping[HookEventName, RefusalStyle]] = {}
     tool_categories: ClassVar[Mapping[str, ToolType]]
     safe_tools: ClassVar[tuple[str, ...]] = ()

@@ -79,7 +79,8 @@
         "Task": "agent",
         "ToolSearch": "search",
         "Write": "write"
-      }
+      },
+      "wake_answer": "exit_with_stderr"
     },
     "codex": {
       "decoder": "codex",
@@ -127,7 +128,8 @@
         "request_user_input": "question",
         "view_image": "read",
         "write_file": "write"
-      }
+      },
+      "wake_answer": ""
     }
   }
 }
