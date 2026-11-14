@@ -10,7 +10,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 pytestmark = pytest.mark.real_git
 
 SECOND_JOB = 'task make "Second job" --brief "Do the second job" --environment main'
-SEND_STEPS = ["send_worktree_opened", "send_branch_start_found", "send_worktree_cut"]
+DELIVERY_STEPS = ["send_worktree_opened", "send_branch_start_found", "send_worktree_cut"]
 PREPARE_STEPS = ["prepare_dependency_folders", "prepare_libraries", "prepare_hooks", "prepare_skills", "prepare_tool_graph", "prepare_instruction_files", "prepare_worktree_commands"]
 
 
@@ -31,4 +31,4 @@ def test_a_send_to_a_merged_worker_stamps_each_step_of_its_cut_and_preparation_i
     timing.stamps[:] = Timing.started("go_start").stamps
     story.expect_success(f"worker send --wait {agent_number(story, kept.id)} --task 1", actor=story.agent)
     names = [name for name, _ in timing.stamps]
-    story.expect_rows([name for name in names if name in SEND_STEPS + PREPARE_STEPS] == SEND_STEPS + PREPARE_STEPS, detail=names)
+    story.expect_rows([name for name in names if name in DELIVERY_STEPS + PREPARE_STEPS] == DELIVERY_STEPS + PREPARE_STEPS, detail=names)

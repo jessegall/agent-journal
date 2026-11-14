@@ -8,7 +8,7 @@ from engine.setting.list_rule import ListRule
 from engine.setting.number_rule import NumberRule
 from suites.coding.support.coding_settings import WORKER_KEPT_LIMIT, WORKER_RUN_LIMIT, WORKER_TEST_LIMIT
 
-from core.modules.asks.support.ask_settings import ASK_ANSWER_MINUTES, ASK_PASS_ON_MINUTES, ASK_VISITS_LIMIT
+from core.modules.asks.support.ask_settings import QUESTION_ANSWER_MINUTES, QUESTION_FORWARD_MINUTES, QUESTION_VISITS_LIMIT
 
 MODULE_KEY = "journal.suites.coding.workers"
 DISPATCHES_WORKERS_SETTING = f"{MODULE_KEY}.main-dispatches-workers"
@@ -135,9 +135,9 @@ WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         WORKER_IDLE_HOURS: NumberRule(0, integer=False, exclusive=True),
                         IDLE_WORKER_MINUTES: NumberRule(1),
                         IDLE_WORKER_REPEAT_MINUTES: NumberRule(1),
-                        ASK_ANSWER_MINUTES: NumberRule(1),
-                        ASK_PASS_ON_MINUTES: NumberRule(1),
-                        ASK_VISITS_LIMIT: NumberRule(1),
+                        QUESTION_ANSWER_MINUTES: NumberRule(1),
+                        QUESTION_FORWARD_MINUTES: NumberRule(1),
+                        QUESTION_VISITS_LIMIT: NumberRule(1),
                         MERGER_GROUP_MESSAGE_LIMIT: NumberRule(1),
                         PHASE_TEST_DEFERRAL_LIMIT: NumberRule(1),
                         MOST_OPEN_TASKS: NumberRule(1),

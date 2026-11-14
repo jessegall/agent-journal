@@ -5,7 +5,7 @@ from engine.command.command import Command
 from engine.driver.deferred_rule import DeferredRule
 from engine.enums.hook_event_name import HookEventName
 from engine.time.timestamp import Timestamp
-from core.modules.drivers.listeners.deferred_rules_listener import DEFERRED_RULES_ONLY_RUN_COMMANDS, DeferredRulesListener
+from core.modules.drivers.listeners.deferred_rules_listener import DEFERRED_RULE_COMMAND_RUNS, DeferredRulesListener
 
 CREATED = Timestamp.parsed("2026-11-14T07:00:00+00:00")
 
@@ -71,7 +71,7 @@ def test_a_rule_that_answers_a_line_is_reported_and_runs_nothing_and_the_next_ru
     subscribed = Listening([LineRule, CommandRule])
     subscribed.hear()
     assert subscribed.ran == [Ping(1), Ping(2)]
-    assert subscribed.errors == [(["deferred rule", "samples.line"], DEFERRED_RULES_ONLY_RUN_COMMANDS)]
+    assert subscribed.errors == [(["deferred rule", "samples.line"], DEFERRED_RULE_COMMAND_RUNS)]
 
 
 def test_a_rule_that_raises_is_reported_and_passed_by_and_the_other_rules_still_run():

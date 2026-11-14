@@ -7,7 +7,7 @@ from suites.coding.modules.workers.support import worktree_git
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 LOCKED = Execution(None, 128, "", "fatal: Unable to create '/project/.git/worktrees/worker-1/index.lock': File exists.")
-DONE = Execution(None, 0, "", "")
+FINISHED = Execution(None, 0, "", "")
 
 
 class LockedExecutor:
@@ -18,7 +18,7 @@ class LockedExecutor:
 
     def execute(self, request):
         self.runs += 1
-        return LOCKED if self.runs <= self.locked_runs else DONE
+        return LOCKED if self.runs <= self.locked_runs else FINISHED
 
 
 def worktree_git_with(executor: LockedExecutor) -> WorktreeGit:

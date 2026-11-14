@@ -10,7 +10,7 @@ from core.modules.plans.docks.plans_docks import PLANS_DOCKS
 from core.modules.plans.skills.declarations.plans_skills import PLANS_SKILLS
 from core.modules.plans.commands.repair_plan_states.repair_plan_states_handler import RepairPlanStatesHandler
 from core.modules.plans.ticks.plan_state_sweep import PlanStateSweep
-from core.modules.tasks.ticks.task_state_sweep import SWEEP_SECONDS as PLAN_SWEEP_SECONDS
+from core.modules.tasks.ticks.task_state_sweep import SCAN_SECONDS as PLAN_SWEEP_SECONDS
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
 from core.modules.plans.migrations.m012_environment_index import PlanContextReadsEnvironmentIndexMigration

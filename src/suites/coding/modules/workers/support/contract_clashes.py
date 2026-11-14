@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING
 from engine.enums.process_type import ProcessType
 from engine.process.door.execution_request import ExecutionRequest
 
-SNAPSHOT_FILE = "tests/snapshots/engine_contract.json"
+ENGINE_CONTRACT_FILE = "tests/snapshots/engine_contract.json"
 VERSION_FILE = "src/engine/version/version.py"
 CONTRACT_SCRIPT = "scripts/engine_contract.py"
-CONTRACT_FILES = (SNAPSHOT_FILE, VERSION_FILE)
+CONTRACT_FILES = (ENGINE_CONTRACT_FILE, VERSION_FILE)
 VERSION_LINE = re.compile(r"ENGINE_VERSION = \((\d+), (\d+), (\d+)\)")
 SCRIPT_LIMIT_SECONDS = 120
 GIT_LIMIT_SECONDS = 60
@@ -30,9 +30,9 @@ class ContractClashes:
         if not any(path in CONTRACT_FILES for path in conflicts):
             return tuple(conflicts)
         self.keep_higher_version(folder, base_branch)
-        self.git.checked(folder, GIT_LIMIT_SECONDS, "restore", f"--source={base_branch}", "--staged", "--worktree", "--", SNAPSHOT_FILE)
+        self.git.checked(folder, GIT_LIMIT_SECONDS, "restore", f"--source={base_branch}", "--staged", "--worktree", "--", ENGINE_CONTRACT_FILE)
         self.git.executor.execute(ExecutionRequest(["python3", CONTRACT_SCRIPT], Path(folder), ProcessType.QUICK, SCRIPT_LIMIT_SECONDS))
-        self.git.checked(folder, GIT_LIMIT_SECONDS, "add", "--", SNAPSHOT_FILE, VERSION_FILE)
+        self.git.checked(folder, GIT_LIMIT_SECONDS, "add", "--", ENGINE_CONTRACT_FILE, VERSION_FILE)
         return tuple(path for path in conflicts if path not in CONTRACT_FILES)
 
     def keep_higher_version(self, folder: str, base_branch: str) -> None:

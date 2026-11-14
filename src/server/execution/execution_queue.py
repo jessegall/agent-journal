@@ -12,7 +12,7 @@ from server.errors.client_left_error import ClientLeftError
 from server.errors.lane_busy_error import LaneBusyError
 from server.execution.instant_entry import InstantEntry
 
-LOOK_AGAIN_SECONDS = 0.5
+RECHECK_SECONDS = 0.5
 
 
 @dataclass
@@ -70,7 +70,7 @@ class ExecutionQueue:
             waited = self.clock.epoch_seconds() - queued.entered_at
             if wait_limit_seconds is not None and waited >= wait_limit_seconds and not queued.ticket.priority.is_unlimited:
                 raise LaneBusyError.waited(waited, self.holders())
-            self.changed.wait(LOOK_AGAIN_SECONDS if wait_limit_seconds is None else max(0.0, min(LOOK_AGAIN_SECONDS, wait_limit_seconds - waited)))
+            self.changed.wait(RECHECK_SECONDS if wait_limit_seconds is None else max(0.0, min(RECHECK_SECONDS, wait_limit_seconds - waited)))
 
     # a waited child starts at once, since its parent holds its place; a session's tickets go one at a time and in
     # the order they asked; of the rest the one decision picks

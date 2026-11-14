@@ -10,11 +10,11 @@ from suites.coding.modules.workers.commands.report_unstarted_proofs.report_unsta
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
-from suites.coding.modules.workers.support.worker_nudges import PROOFS_NOT_STARTED
+from suites.coding.modules.workers.support.worker_nudges import UNSTARTED_PROOFS
 from suites.coding.modules.workers.ticks.worker_tests.stalled_worker_test_runs import STALLED_TESTS_TICK
 
 UNSTARTED_PROOF_SECONDS = 180
-NO_ERROR = "no error was logged"
+ERROR_FREE = "no error was logged"
 RECENT_EXCEPTIONS = 50
 REPORTED_REASON = "the lines that already told the main agent about a set of unstarted proofs are read once"
 
@@ -37,9 +37,9 @@ class ReportUnstartedProofsHandler(Handler[ReportUnstartedProofs, None]):
         source_key = f"{SOURCE_KEY_PREFIX}{','.join(map(str, unstarted))}"
         if not unstarted or self.is_reported(source_key):
             return
-        nudge = PROOFS_NOT_STARTED.nudge(proofs=", ".join(map(str, unstarted)), minutes=UNSTARTED_PROOF_SECONDS // 60, exception=self.last_error())
-        self.repository.save(MergerLine(text=nudge.text, fallback_source=PROOFS_NOT_STARTED.key, nudge_json=nudge.stored.json, source_key=source_key, read_at=context.timestamp), context)
-        self.main_line.send_nudge(nudge, PROOFS_NOT_STARTED.key, context)
+        nudge = UNSTARTED_PROOFS.nudge(proofs=", ".join(map(str, unstarted)), minutes=UNSTARTED_PROOF_SECONDS // 60, exception=self.last_error())
+        self.repository.save(MergerLine(text=nudge.text, fallback_source=UNSTARTED_PROOFS.key, nudge_json=nudge.stored.json, source_key=source_key, read_at=context.timestamp), context)
+        self.main_line.send_nudge(nudge, UNSTARTED_PROOFS.key, context)
 
     def is_reported(self, source_key: str) -> bool:
         reported = self.queries.query(MergerLine).matching(Prefix("source_key", SOURCE_KEY_PREFIX)).every_row(REPORTED_REASON)
@@ -47,4 +47,4 @@ class ReportUnstartedProofsHandler(Handler[ReportUnstartedProofs, None]):
 
     def last_error(self) -> str:
         newest = self.queries.query(JournalException).newest().take(RECENT_EXCEPTIONS)
-        return next((row.message for row in newest if row.source == STALLED_TESTS_TICK), NO_ERROR)
+        return next((row.message for row in newest if row.source == STALLED_TESTS_TICK), ERROR_FREE)

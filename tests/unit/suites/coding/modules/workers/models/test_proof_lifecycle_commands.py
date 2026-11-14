@@ -10,7 +10,7 @@ from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import Proo
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.workers_module import WorkersModule
 
-VERB = re.compile(r"journal proof (\w+) 1")
+COMMAND_WORD = re.compile(r"journal proof (\w+) 1")
 
 
 def typed_verbs() -> set[str]:
@@ -23,7 +23,7 @@ def typed_verbs() -> set[str]:
 
 @pytest.mark.parametrize("state", list(ProofState), ids=[state.value for state in ProofState])
 def test_a_refusal_of_a_proof_names_only_commands_that_exist(state):
-    labelled = set(VERB.findall(next_moves_text(ProofLifecycle.moves(), "proof", 1, state)))
+    labelled = set(COMMAND_WORD.findall(next_moves_text(ProofLifecycle.moves(), "proof", 1, state)))
     assert labelled <= typed_verbs(), f"from {state.value} the refusal names {sorted(labelled - typed_verbs())}, which are no proof commands"
 
 

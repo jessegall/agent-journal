@@ -10,7 +10,7 @@ FILE_ACCESS = SOURCE / "engine" / "file" / "file_access.py"
 PLUGIN = Path(__file__).resolve().parent / "support" / "file_access_plugin.py"
 CACHE = Path(tempfile.gettempdir()) / "journal-file-access-check"
 BYPASS = "file-access-bypass"
-PATH_ONLY_METHODS = frozenset({
+PATH_METHODS = frozenset({
     "is_dir", "is_file", "is_symlink", "mkdir", "rglob", "iterdir", "unlink", "rmdir", "symlink_to", "readlink", "read_text",
     "read_bytes", "write_text", "write_bytes", "touch", "lstat", "samefile", "hardlink_to",
 })
@@ -51,7 +51,7 @@ def is_path_only_call(node: ast.AST) -> bool:
         return False
     if dotted_name(node.func) in MODULE_FUNCTIONS:
         return True
-    return (isinstance(node.func, ast.Attribute) and node.func.attr in PATH_ONLY_METHODS
+    return (isinstance(node.func, ast.Attribute) and node.func.attr in PATH_METHODS
             and not (isinstance(node.func.value, ast.Name) and node.func.value.id == "FileAccess"))
 
 

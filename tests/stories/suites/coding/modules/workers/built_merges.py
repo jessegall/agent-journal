@@ -20,7 +20,7 @@ JOINING_BUILD = ('const fs = require("node:fs");\n'
                  'fs.mkdirSync(folder, { recursive: true });\n'
                  'const names = fs.readdirSync(sources).sort();\n'
                  'fs.writeFileSync(folder + "/chat.js", names.map((name) => fs.readFileSync(sources + "/" + name, "utf8")).join(""));\n')
-BUILD_FAILING_WHEN_BOTH_VIEWS_CHANGED = ('const fs = require("node:fs");\n'
+BUILD_FAILING_AFTER_TWO_VIEW_CHANGES = ('const fs = require("node:fs");\n'
                            'const sources = "../../app/web/src";\n'
                            'const names = fs.readdirSync(sources).sort();\n'
                            'const texts = names.map((name) => fs.readFileSync(sources + "/" + name, "utf8"));\n'
@@ -82,7 +82,7 @@ def test_two_workers_that_rebuilt_the_same_built_file_merge_one_after_the_other_
 
 def test_a_build_that_fails_after_a_built_file_clash_refuses_the_merge_and_leaves_the_checkout_clean(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    repository = built_repository(story, BUILD_FAILING_WHEN_BOTH_VIEWS_CHANGED)
+    repository = built_repository(story, BUILD_FAILING_AFTER_TWO_VIEW_CHANGES)
     worker = worker_changes_single_view(story, repository, 1, DISPATCH, 1)
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed(SOURCES[0], CHANGED_TEXTS[0], "The first view changed on the branch")

@@ -7,7 +7,7 @@ from engine.query.query import Query
 from engine.row.row_owner import RowOwner
 from tests.unit.engine.query.test_query_scoping import Shelf, database  # noqa: F401  (the shared fixture)
 
-CROSSING_REASON = "the test reads the shelves of both environments"
+ALL_ENVIRONMENTS_REASON = "the test reads the shelves of both environments"
 
 
 @pytest.fixture
@@ -27,7 +27,7 @@ def test_a_read_inside_an_environment_reads_its_rows(shelves):
 
 
 def test_a_read_that_names_why_it_crosses_every_environment_reads_them_all(shelves):
-    assert {shelf.environment_id for shelf in shelves.every_environment(CROSSING_REASON).take(20)} == {1, 2}
+    assert {shelf.environment_id for shelf in shelves.every_environment(ALL_ENVIRONMENTS_REASON).take(20)} == {1, 2}
 
 
 def test_a_skip_of_the_environment_scope_lets_the_read_pass(shelves):

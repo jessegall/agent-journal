@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from core.modules.agents.bindings.agent_caller_resolver import CHAIN_ONLY_REFUSAL
+from core.modules.agents.bindings.agent_caller_resolver import CHAIN_REQUIRED_REFUSAL
 from engine.caller.caller_request import SESSION_VARIABLE
 from server.door.hosted_journal_door import HostedJournalDoor, OWNER_REASON
 from tests.stories.core.support.coding_fixtures import BuilderStarted
@@ -51,4 +51,4 @@ def claimed_session_answer(new_story, owner_uid: int) -> str:
 
 @pytest.mark.parametrize("owner_uid, refused", [(os.getuid() + 1, True), (os.getuid(), False)], ids=["an agent of the socket group", "the journal's own user"])
 def test_only_the_hosted_journals_own_user_is_named_by_the_session_it_sends(new_story, owner_uid, refused):
-    expect_value(CHAIN_ONLY_REFUSAL in claimed_session_answer(new_story, owner_uid), refused)
+    expect_value(CHAIN_REQUIRED_REFUSAL in claimed_session_answer(new_story, owner_uid), refused)

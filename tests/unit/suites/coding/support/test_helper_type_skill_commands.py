@@ -15,9 +15,9 @@ from suites.coding.support.shipped_profiles import HELPER_SKILLS, MERGER_PROFILE
 SOURCE = Path(__file__).resolve().parents[5] / "src"
 JOURNAL_LINE = re.compile(r"journal ([a-z][a-z-]*) ([a-z][a-z-]*)")
 CLI_NAME = re.compile(r'^\s*cli_name = "([a-z-]+)"', re.MULTILINE)
-VERB_NAME = re.compile(r'^\s*name = "([a-z-]+)"', re.MULTILINE)
+COMMAND_WORD_NAME = re.compile(r'^\s*name = "([a-z-]+)"', re.MULTILINE)
 # the verbs a read-only helper's class of reading lines passes whatever the subject
-READING_VERBS = {"show", "list", "read", "overview", "context", "find", "inspect", "info", "comments", "status", "next", "logs", "graph", "tags", "current", "board", "outline", "timeline"}
+READ_COMMANDS = {"show", "list", "read", "overview", "context", "find", "inspect", "info", "comments", "status", "next", "logs", "graph", "tags", "current", "board", "outline", "timeline"}
 
 # the commands a type's skills and profile text name that its list refuses, with the reason: a skill every agent loads
 # also names what the main agent or a person runs, and the lists of the helper types leave those out on purpose
@@ -44,7 +44,7 @@ def journal_commands() -> set[tuple[str, str]]:
     commands: set[tuple[str, str]] = set()
     for path in SOURCE.rglob("*_subcommand.py"):
         text = path.read_text(errors="ignore")
-        subjects, verbs = CLI_NAME.findall(text), VERB_NAME.findall(text)
+        subjects, verbs = CLI_NAME.findall(text), COMMAND_WORD_NAME.findall(text)
         commands.update((subject, verb) for subject in subjects for verb in verbs)
     for path in SOURCE.rglob("*.py"):
         text = path.read_text(errors="ignore")
@@ -67,7 +67,7 @@ def refused_by(commands: CommandAllowList, labelled: set[str], is_loading: bool)
     refused = []
     for line in sorted(labelled):
         subject, verb = line.split(" ")
-        if subject in commands.groups or line in commands.lines or (is_loading and verb in READING_VERBS):
+        if subject in commands.groups or line in commands.lines or (is_loading and verb in READ_COMMANDS):
             continue
         refused.append(line)
     return refused

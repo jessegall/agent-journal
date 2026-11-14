@@ -32,7 +32,7 @@ from suites.coding.support.shipped_profiles import MERGER_PROFILE
 TEST_ROWS_REASON = "the test reads every row it checks"
 
 MERGER_ROLE_REFUSAL = "only the merger runs this"
-WORKER_TELL_REFUSAL = "A worker may not run merger tell"
+WORKER_NOTICE_REFUSAL = "A worker may not run merger tell"
 LOG_REVIEW_REFUSAL = "reviews no worker's logs"
 LOG_LINE = "The cart total rounds down"
 FULL_SUITE = "pytest"
@@ -201,7 +201,7 @@ def test_a_tell_without_every_part_is_refused_with_the_shape(case, line):
 
 def test_only_the_merger_tells(case):
     case.story.expect_refusal(MERGER_QUESTION, MERGER_ROLE_REFUSAL, actor=case.story.agent)
-    case.story.expect_refusal(MERGER_QUESTION, WORKER_TELL_REFUSAL, actor=case.worker)
+    case.story.expect_refusal(MERGER_QUESTION, WORKER_NOTICE_REFUSAL, actor=case.worker)
 
 
 def test_a_tell_shows_a_mark_in_the_chat(case):

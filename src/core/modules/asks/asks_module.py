@@ -13,7 +13,7 @@ from core.modules.asks.guards.agent_stack_guard import AgentStackGuard
 from core.modules.asks.guards.question_times_guard import QuestionTimesGuard
 from core.modules.asks.migrations.m003_ask_setting_keys import AskSettingKeysMigration
 from core.modules.asks.migrations.m004_environment_indexes import AsksEnvironmentIndexesMigration
-from core.modules.asks.support.ask_settings import ASK_SETTINGS
+from core.modules.asks.support.ask_settings import QUESTION_SETTINGS
 from core.modules.asks.listeners.ask_stack_listener import AskStackListener
 from core.modules.asks.support.helper_ask_facts import HelperAskFacts
 
@@ -28,7 +28,7 @@ class AsksModule(Module):
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.settings", "journal.core.tasks"]
     models = [AskModelDeclaration, AskStepModelDeclaration, AskStackModelDeclaration]
     migrations = [AsksTablesMigration, AskStacksTableMigration, AskSettingKeysMigration, AsksEnvironmentIndexesMigration]
-    settings = ASK_SETTINGS
+    settings = QUESTION_SETTINGS
     ask_topics = [AskTopic("general", "go on with anything the task still holds, or stop")]
     bindings = {AskFacts: HelperAskFacts}
     guards = [AgentStackGuard, QuestionTimesGuard]

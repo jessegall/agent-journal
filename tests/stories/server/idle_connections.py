@@ -10,7 +10,7 @@ from tests.stories.server.support.server_client import server_story
 
 IDLE_LIMIT_SECONDS = 0.5
 READ_LIMIT_SECONDS = 5.0
-HELD_SECONDS = 1.5
+KEPT_OPEN_SECONDS = 1.5
 SESSION = "s-1"
 CONNECTION_COUNT = 40
 
@@ -49,7 +49,7 @@ def test_a_kept_connection_answers_each_request_and_closes_after_the_last(idle_s
 def test_a_line_held_longer_than_the_idle_limit_is_answered_not_cut(idle_server):
     writer = sqlite3.connect(idle_server.story.home.database, timeout=0, autocommit=True, check_same_thread=False)
     writer.execute("BEGIN IMMEDIATE")
-    release = threading.Timer(HELD_SECONDS, writer.execute, ["ROLLBACK"])
+    release = threading.Timer(KEPT_OPEN_SECONDS, writer.execute, ["ROLLBACK"])
     release.start()
     try:
         answer = idle_server.run_as('task log 1 "held past the idle limit"', SESSION)

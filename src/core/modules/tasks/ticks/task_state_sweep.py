@@ -3,7 +3,7 @@ from engine.command.bus import Bus
 from engine.container.container import Container
 from core.modules.tasks.commands.repair_task_states.repair_task_states import RepairTaskStates
 
-SWEEP_SECONDS = 3600
+SCAN_SECONDS = 3600
 
 
 class TaskStateSweep:

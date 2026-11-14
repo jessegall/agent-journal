@@ -27,7 +27,7 @@ from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
 from suites.coding.modules.workers.support.work_units import UNIT_TASKS_REASON
 
-CLASH_SHORTFALL = "the merge clashed on {files}: settle them and prove it again"
+CONFLICT_SHORTFALL = "the merge clashed on {files}: settle them and prove it again"
 
 
 class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
@@ -72,7 +72,7 @@ class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
         files = ", ".join(conflicts)
         for proof in self.proofs.worktree_rows(worktree.id):
             if proof.state is not ProofState.SHORT:
-                self.repository.save_change(proof, proof.moved(ProofLifecycle.short, shortfall=CLASH_SHORTFALL.format(files=files)), context)
+                self.repository.save_change(proof, proof.moved(ProofLifecycle.short, shortfall=CONFLICT_SHORTFALL.format(files=files)), context)
         self.advance.restart_task(worktree, task, context)
         self.nudger.send(worktree.session_agent_id, WORKER_MERGE_CONFLICT, MERGE_CONFLICT_SOURCE, context, branch=worktree.base_branch, lines=files, line=self.guidance.conflict_line(task, files))
         return self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context)

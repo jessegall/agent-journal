@@ -11,7 +11,7 @@ from core.modules.tasks.support.task_waits import TaskWaits
 
 TASK_TARGET = "tasks:"
 ENDED_TASK_STATES = (TaskState.COMPLETED, TaskState.CANCELLED)
-HELD_OPEN_REASON = "every open task that still names a holder is repaired"
+KEPT_OPEN_REASON = "every open task that still names a holder is repaired"
 
 
 class RepairTaskStatesHandler(Handler[RepairTaskStates, int]):
@@ -36,7 +36,7 @@ class RepairTaskStatesHandler(Handler[RepairTaskStates, int]):
         return len(stale)
 
     def open_task_holders(self, context: Context) -> int:
-        kept = tuple(self.queries.query(Task).filter(state=TaskState.OPEN).matching(HasValue("holder_id")).every_row(HELD_OPEN_REASON))
+        kept = tuple(self.queries.query(Task).filter(state=TaskState.OPEN).matching(HasValue("holder_id")).every_row(KEPT_OPEN_REASON))
         for task in kept:
             self.repository.update(task, context, holder_id=None)
             self.log(task.id, f"the holder it kept while open was cleared (agent {task.holder_id})", context)
