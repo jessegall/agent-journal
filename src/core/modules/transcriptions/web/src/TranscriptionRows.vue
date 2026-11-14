@@ -60,9 +60,15 @@ const place = (item) => ({
                 </template>
             </PageHeader>
             <FilterBar v-model="filter" v-model:words="words" :fields="[]" :rows="listed" :shown="shown.length" placeholder="Search transcriptions" />
-            <p v-if="notice" class="note" data-transcription-notice>{{ notice }}</p>
-            <p v-if="actionFailure" class="note failed" role="alert">{{ actionFailure }}</p>
-            <p v-if="failure" class="note failed" role="alert">{{ failure }}</p>
+            <template v-if="notice">
+              <p class="note" data-transcription-notice>{{ notice }}</p>
+            </template>
+            <template v-if="actionFailure">
+              <p class="note failed" role="alert">{{ actionFailure }}</p>
+            </template>
+            <template v-if="failure">
+              <p class="note failed" role="alert">{{ failure }}</p>
+            </template>
             <template v-if="drafting">
                 <form class="form" data-transcription-form @submit.prevent="make">
                     <input v-model="draft.title" placeholder="Title" aria-label="Title">

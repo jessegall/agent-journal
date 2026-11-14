@@ -104,17 +104,31 @@ onUnmounted(() => {
 
 <template>
     <MenuPanel class="context-menu" role="menu" data-context-menu :point="at" :gap="0" :min-width="196" :max-width="320" :aria-label="head" @close="emit('close', false)" @keydown="onKey" @contextmenu.prevent>
-        <p v-if="head && !depth" class="context-head" data-context-head>{{ head }}</p>
-        <template v-for="entry in entries" :key="entry.key">
-            <hr v-if="entry.separator" class="context-separator" role="separator" data-context-separator />
-            <MenuItem v-else role="menuitem" :class="{'context-danger': entry.danger, 'context-armed': armed === entry.key}" :disabled="entry.disabled" :aria-haspopup="entry.children ? 'menu' : undefined" :title="entry.disabled ? entry.reason : undefined" :data-menu-item="entry.key" @click="choose(entry, $event.currentTarget)" @mouseenter="hover(entry, $event.currentTarget)">
-                <span class="context-label">{{ armed === entry.key ? entry.armedLabel ?? `${entry.label}: click again` : entry.label }}</span>
-                <span v-if="entry.disabled" class="context-note" data-context-reason>{{ entry.reason }}</span>
-                <span v-else-if="entry.children" class="context-note" aria-hidden="true">›</span>
-                <kbd v-else-if="entry.keys" class="context-note">{{ entry.keys }}</kbd>
-            </MenuItem>
+        <template v-if="head && !depth">
+          <p class="context-head" data-context-head>{{ head }}</p>
         </template>
-        <ContextMenu v-if="sub" :depth="depth + 1" :at="sub.at" :items="sub.items" @close="subClosed" />
+        <template v-for="entry in entries" :key="entry.key">
+            <template v-if="entry.separator">
+              <hr class="context-separator" role="separator" data-context-separator />
+            </template>
+            <template v-else>
+              <MenuItem role="menuitem" :class="{'context-danger': entry.danger, 'context-armed': armed === entry.key}" :disabled="entry.disabled" :aria-haspopup="entry.children ? 'menu' : undefined" :title="entry.disabled ? entry.reason : undefined" :data-menu-item="entry.key" @click="choose(entry, $event.currentTarget)" @mouseenter="hover(entry, $event.currentTarget)">
+                  <span class="context-label">{{ armed === entry.key ? entry.armedLabel ?? `${entry.label}: click again` : entry.label }}</span>
+                  <template v-if="entry.disabled">
+                    <span class="context-note" data-context-reason>{{ entry.reason }}</span>
+                  </template>
+                  <template v-else-if="entry.children">
+                    <span class="context-note" aria-hidden="true">›</span>
+                  </template>
+                  <template v-else-if="entry.keys">
+                    <kbd class="context-note">{{ entry.keys }}</kbd>
+                  </template>
+              </MenuItem>
+            </template>
+        </template>
+        <template v-if="sub">
+          <ContextMenu :depth="depth + 1" :at="sub.at" :items="sub.items" @close="subClosed" />
+        </template>
     </MenuPanel>
 </template>
 

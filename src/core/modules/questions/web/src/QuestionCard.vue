@@ -43,58 +43,62 @@ async function elaborate() {
 </script>
 
 <template>
-    <QuestionWindowCard v-if="window" :row="row" @changed="emit('changed')" />
-    <section v-else :class="['question', {flush}]" :data-state="shown().state" data-question-card>
-        <header class="question-head">
-            <template v-if="flush">
-                <i class="question-dot" data-question-dot />
-            </template>
-            <p class="question-label">Question {{ row.id }}</p>
-            <TimeAgo class="question-time" :at="row.created_at" data-question-time />
-        </header>
-        <button type="button" class="question-open" :data-question-open="row.id" @click="peekRef(`questions:${row.id}`)">{{ row.text }}</button>
-        <template v-if="row.context">
-            <p class="question-context" data-question-context>{{ row.context }}</p>
-        </template>
-        <template v-if="shown().state !== 'open'">
-            <p class="question-closed" data-question-settled>
-                <template v-if="shown().state === 'answered'"><template v-if="flush"><b class="question-answered">Answered:</b> <span class="question-answer">{{ shown().answer }}</span></template><template v-else>Answered: {{ shown().answer }}</template></template>
-                <template v-else>Closed</template>
-            </p>
-        </template>
-        <template v-else>
-            <div class="question-options">
-                <template v-for="option in row.options" :key="option">
-                    <button type="button" :class="['question-option', {recommended: option === row.recommended}]" :data-question-option="option" @click="answer(option)">
-                        <template v-if="flush">
-                            <i class="question-ring" />
-                        </template>
-                        <template v-if="option === row.recommended && !flush">
-                            <span class="question-tag">Recommended</span>
-                        </template>
-                        <span class="question-option-text">{{ option }}</span>
-                        <template v-if="option === row.recommended && flush">
-                            <span class="question-chip">Recommended</span>
-                        </template>
-                    </button>
-                </template>
-            </div>
-            <form class="question-form" @submit.prevent="sendTyped">
-                <template v-if="flush">
-                    <TextInput v-model="typed" class="question-input" placeholder="Or answer in your own words…" />
-                    <span class="question-buttons"><QuestionActions :elaborated="elaborated" @close="close" @elaborate="elaborate" @answer="sendTyped" /></span>
-                </template>
-                <template v-else>
-                    <TextInput v-model="typed" placeholder="Or answer in your own words…">
-                        <template #end><QuestionActions :elaborated="elaborated" @close="close" @elaborate="elaborate" @answer="sendTyped" /></template>
-                    </TextInput>
-                </template>
-            </form>
-        </template>
-        <template v-if="refusal">
-            <p class="question-failure" role="alert" data-question-failure>{{ refusal }}</p>
-        </template>
-    </section>
+    <template v-if="window">
+      <QuestionWindowCard :row="row" @changed="emit('changed')" />
+    </template>
+    <template v-else>
+      <section :class="['question', {flush}]" :data-state="shown().state" data-question-card>
+          <header class="question-head">
+              <template v-if="flush">
+                  <i class="question-dot" data-question-dot />
+              </template>
+              <p class="question-label">Question {{ row.id }}</p>
+              <TimeAgo class="question-time" :at="row.created_at" data-question-time />
+          </header>
+          <button type="button" class="question-open" :data-question-open="row.id" @click="peekRef(`questions:${row.id}`)">{{ row.text }}</button>
+          <template v-if="row.context">
+              <p class="question-context" data-question-context>{{ row.context }}</p>
+          </template>
+          <template v-if="shown().state !== 'open'">
+              <p class="question-closed" data-question-settled>
+                  <template v-if="shown().state === 'answered'"><template v-if="flush"><b class="question-answered">Answered:</b> <span class="question-answer">{{ shown().answer }}</span></template><template v-else>Answered: {{ shown().answer }}</template></template>
+                  <template v-else>Closed</template>
+              </p>
+          </template>
+          <template v-else>
+              <div class="question-options">
+                  <template v-for="option in row.options" :key="option">
+                      <button type="button" :class="['question-option', {recommended: option === row.recommended}]" :data-question-option="option" @click="answer(option)">
+                          <template v-if="flush">
+                              <i class="question-ring" />
+                          </template>
+                          <template v-if="option === row.recommended && !flush">
+                              <span class="question-tag">Recommended</span>
+                          </template>
+                          <span class="question-option-text">{{ option }}</span>
+                          <template v-if="option === row.recommended && flush">
+                              <span class="question-chip">Recommended</span>
+                          </template>
+                      </button>
+                  </template>
+              </div>
+              <form class="question-form" @submit.prevent="sendTyped">
+                  <template v-if="flush">
+                      <TextInput v-model="typed" class="question-input" placeholder="Or answer in your own words…" />
+                      <span class="question-buttons"><QuestionActions :elaborated="elaborated" @close="close" @elaborate="elaborate" @answer="sendTyped" /></span>
+                  </template>
+                  <template v-else>
+                      <TextInput v-model="typed" placeholder="Or answer in your own words…">
+                          <template #end><QuestionActions :elaborated="elaborated" @close="close" @elaborate="elaborate" @answer="sendTyped" /></template>
+                      </TextInput>
+                  </template>
+              </form>
+          </template>
+          <template v-if="refusal">
+              <p class="question-failure" role="alert" data-question-failure>{{ refusal }}</p>
+          </template>
+      </section>
+    </template>
 </template>
 
 <style scoped>

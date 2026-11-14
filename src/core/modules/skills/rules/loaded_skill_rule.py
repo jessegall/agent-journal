@@ -32,4 +32,4 @@ class LoadedSkillRule(DriverRule):
         loaded = [skill.folder for skill in self.catalogue.skills() if skill.folder in folders and self.rows.is_loaded(hook.agent_id, skill.folder, skill.digest)]
         if not loaded:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(LOADED_SKILL_REFUSAL.nudge(skill=loaded[0]))
+        return RuleAnswer.refused(LOADED_SKILL_REFUSAL.nudge(name=loaded[0]))

@@ -23,6 +23,7 @@ STALLED_RUNS_REASON = "the run of every proof still shown as running is looked a
 RUNNING_CHECKPOINT_TESTS_REASON = "every test of a checkpoint run still shown as running is looked at"
 CHECKPOINT_RUNS_REASON = "the runs and checkpoints of those tests are read in one query each"
 ENDED_GRACE_SECONDS = 60
+STALLED_TESTS_TICK = "stalled worker tests"
 
 
 class StalledWorkerTestRuns:

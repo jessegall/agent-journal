@@ -1,4 +1,4 @@
-if (!document.getElementById("window-styles-be7f9fe700e1")) { const style = document.createElement("style"); style.id = "window-styles-be7f9fe700e1"; style.textContent = ".note[data-v-361b4c8c]{margin:0;color:var(--text-3);font-size:12.5px}.checked[data-v-361b4c8c]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-7ec83dea73a3")) { const style = document.createElement("style"); style.id = "window-styles-7ec83dea73a3"; style.textContent = ".note[data-v-bbecf187]{margin:0;color:var(--text-3);font-size:12.5px}.checked[data-v-bbecf187]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
 import { openBlock as i, createBlock as p, unref as a, ref as C, computed as b, watch as V, createElementBlock as v, Fragment as L, createVNode as f, withCtx as m, createCommentVNode as g, createTextVNode as y, toDisplayString as E } from "vue";
 import { copying as G, useWindow as F, CreateDialog as O, added as K, CardPage as W, ActionsMenu as z, Btn as h, Skeleton as U, TimeAgo as H, Icon as J, removed as j } from "@journal/window-kit";
 const S = "Connected", I = "Failed", N = "Suggested", w = "Installed", Q = [{ key: "status", label: "State", options: [[S, S], [I, I]], get: (e) => e.status }], X = (e) => e.url || [e.command, ...e.args].join(" "), Y = (e) => (e ?? "").replace(/:\s*journal .*$/, ""), Z = (e, s) => e.standing === "needs its key" || /^(needs|missing)/.test(s ?? "");
@@ -219,7 +219,7 @@ const de = {
       }, null, 8, ["row"])) : g("", !0)
     ], 64));
   }
-}, he = /* @__PURE__ */ ue(ve, [["__scopeId", "data-v-361b4c8c"]]);
+}, he = /* @__PURE__ */ ue(ve, [["__scopeId", "data-v-bbecf187"]]);
 export {
   he as default
 };

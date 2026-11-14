@@ -46,9 +46,13 @@ const pick = (option) => {
         <header class="head">
             <button type="button" class="number" :title="`Question ${row.id}`" :data-question-open="row.id" @click="peekRef(`questions:${row.id}`)">{{ row.id }}</button>
             <AgentBadge :name="askerOf(row)" chip data-question-agent />
-            <button v-if="plan" type="button" class="plan" data-question-plan @click="peekRef(`plans:${plan}`)">Plan {{ plan }}</button>
+            <template v-if="plan">
+              <button type="button" class="plan" data-question-plan @click="peekRef(`plans:${plan}`)">Plan {{ plan }}</button>
+            </template>
             <span class="grow" />
-            <ActionsMenu v-if="shown.state === 'open'" :items="items()" :head="`Question ${row.id}`" label="More" />
+            <template v-if="shown.state === 'open'">
+              <ActionsMenu :items="items()" :head="`Question ${row.id}`" label="More" />
+            </template>
             <time class="time" :datetime="row.created_at" data-question-time>{{ clockOf(row.created_at) }}</time>
         </header>
         <p class="text">{{ row.text }}</p>
@@ -56,13 +60,17 @@ const pick = (option) => {
             <p class="settled" data-question-settled>{{ shown.state === "answered" ? shown.answer : "Closed" }}</p>
         </template>
         <template v-else>
-            <p v-if="row.context" class="context" data-question-context>{{ row.context }}</p>
+            <template v-if="row.context">
+              <p class="context" data-question-context>{{ row.context }}</p>
+            </template>
             <div class="options" role="radiogroup" aria-label="Options">
                 <template v-for="option in row.options" :key="option">
                     <button type="button" role="radio" class="option" :aria-checked="picked === option && !typed.trim()" :data-question-option="option" @click="pick(option)">
                         <i class="ring" />
                         <span class="option-text">{{ option }}</span>
-                        <span v-if="option === row.recommended" class="star" aria-label="Recommended" data-question-recommended>★</span>
+                        <template v-if="option === row.recommended">
+                          <span class="star" aria-label="Recommended" data-question-recommended>★</span>
+                        </template>
                     </button>
                 </template>
             </div>
@@ -71,7 +79,9 @@ const pick = (option) => {
                 <Btn variant="primary" small type="submit" data-question-answer :disabled="!chosen">Answer</Btn>
             </form>
         </template>
-        <p v-if="refusal" class="failure" role="alert" data-question-failure>{{ refusal }}</p>
+        <template v-if="refusal">
+          <p class="failure" role="alert" data-question-failure>{{ refusal }}</p>
+        </template>
     </section>
 </template>
 

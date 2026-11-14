@@ -101,8 +101,12 @@ const place = (item) => ({
         <template #empty>{{ releases.loaded.value ? "Installed releases appear here with their installation dates." : "" }}</template>
         <template #reader="{item}">
             <Reader :title="item.title" :number="item.note ? 'Release notes' : 'Installed here'" :facts="item.note ? [{name: 'published', label: 'Published', value: new Date(item.note.published_at).toLocaleDateString()}] : [{name: 'installed', label: 'Installed', value: new Date(item.installed.created_at).toLocaleString()}]" data-update-note>
-                <TextDisplay v-if="item.note" :text="item.note.text" />
-                <p v-else class="detail">This release was installed on this journal.</p>
+                <template v-if="item.note">
+                  <TextDisplay :text="item.note.text" />
+                </template>
+                <template v-else>
+                  <p class="detail">This release was installed on this journal.</p>
+                </template>
             </Reader>
         </template>
     </ListReaderLayout>

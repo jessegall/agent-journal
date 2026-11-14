@@ -40,7 +40,9 @@ const {refusal, run} = useRunLine(load);
         <div class="teams" data-teams>
             <PageHeader title="Teams">
                 <template v-if="isLinked" #primary>
-                    <Btn v-if="canWrite" small variant="primary" data-library-share-submit @click="sharing = true">Share</Btn>
+                    <template v-if="canWrite">
+                      <Btn small variant="primary" data-library-share-submit @click="sharing = true">Share</Btn>
+                    </template>
                     <Btn small data-teams-sync @click="run(['library', 'sync'])">Sync</Btn>
                 </template>
             </PageHeader>
@@ -52,7 +54,9 @@ const {refusal, run} = useRunLine(load);
             </template>
             <template v-if="shared">
                 <p class="teams-note" data-library-shared>{{ shared.line }}</p>
-                <p v-if="shared.warning" class="teams-note failure" role="alert" data-library-warning>{{ shared.warning }}</p>
+                <template v-if="shared.warning">
+                  <p class="teams-note failure" role="alert" data-library-warning>{{ shared.warning }}</p>
+                </template>
             </template>
             <template v-if="status?.is_connected">
                 <div class="teams-header" data-teams-header>

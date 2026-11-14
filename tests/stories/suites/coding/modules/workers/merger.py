@@ -1,4 +1,5 @@
 from tests.stories.core.support.agent_labels import agent_number
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 from core.modules.messages.models.message import Message
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 import pytest
@@ -550,7 +551,7 @@ def test_the_merger_started_by_an_ended_main_session_tells_the_main_agent_that_r
 
 
 OVERSIGHT_SETTING = "journal.suites.coding.workers.oversight-profiles"
-OVERSEEING_PROFILE = "journal-researcher"
+OVERSEEING_PROFILE = RESEARCHER_PROFILE.name
 
 
 def test_a_profile_set_to_oversee_reads_worker_logs_and_the_merges_waiting_without_marking_them_read(new_story):

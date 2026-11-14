@@ -16,16 +16,22 @@ defineProps({
 <template>
     <article class="page-card" data-page-card>
         <header class="page-card-head">
-            <span v-if="icon" class="page-card-mark" aria-hidden="true"><Icon :name="icon" :size="16" /></span>
+            <template v-if="icon">
+              <span class="page-card-mark" aria-hidden="true"><Icon :name="icon" :size="16" /></span>
+            </template>
             <span class="page-card-names">
                 <h3 class="page-card-title" :title="title">{{ title }}</h3>
                 <p class="page-card-state" data-card-state>{{ state || "—" }}</p>
             </span>
-            <span v-if="$slots.corner" class="page-card-corner" data-card-corner><slot name="corner" /></span>
+            <template v-if="$slots.corner">
+              <span class="page-card-corner" data-card-corner><slot name="corner" /></span>
+            </template>
         </header>
         <p class="page-card-line" data-card-line :title="line">{{ line || "—" }}</p>
         <slot />
-        <p v-if="fault" class="page-card-fault" role="alert" data-card-fault>{{ fault }}</p>
+        <template v-if="fault">
+          <p class="page-card-fault" role="alert" data-card-fault>{{ fault }}</p>
+        </template>
         <footer class="page-card-foot" data-card-foot>
             <slot name="foot" />
             <span class="page-card-grow" />

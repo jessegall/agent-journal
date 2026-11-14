@@ -1,4 +1,4 @@
-if (!document.getElementById("window-styles-c701c5eefc2f")) { const style = document.createElement("style"); style.id = "window-styles-c701c5eefc2f"; style.textContent = ".failure[data-v-1500ba47]{margin:0;padding:4px var(--inset);color:var(--bad, var(--text-2));font-size:12px}.cover[data-v-1500ba47],.arrived[data-v-1500ba47],.standing[data-v-1500ba47]{display:flex;align-items:center;gap:10px;padding:6px var(--inset);font-size:13px}.line[data-v-1500ba47]{flex:1}.detail[data-v-1500ba47]{margin:0;padding:4px var(--inset);color:var(--text-3);font-size:12px}button[data-v-1500ba47]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-bf90dce16127")) { const style = document.createElement("style"); style.id = "window-styles-bf90dce16127"; style.textContent = ".failure[data-v-6c1a87b1]{margin:0;padding:4px var(--inset);color:var(--bad, var(--text-2));font-size:12px}.cover[data-v-6c1a87b1],.arrived[data-v-6c1a87b1],.standing[data-v-6c1a87b1]{display:flex;align-items:center;gap:10px;padding:6px var(--inset);font-size:13px}.line[data-v-6c1a87b1]{flex:1}.detail[data-v-6c1a87b1]{margin:0;padding:4px var(--inset);color:var(--text-3);font-size:12px}button[data-v-6c1a87b1]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
 import { computed as h, ref as d, watch as S, openBlock as o, createBlock as C, unref as n, withCtx as c, createVNode as x, createElementBlock as i, createTextVNode as R, toDisplayString as g, createCommentVNode as p, createElementVNode as _ } from "vue";
 import { useWindow as j, ListReaderLayout as E, Reader as O, TextDisplay as q, PageHeader as A, Btn as U, copying as H } from "@journal/window-kit";
 const W = (y, a) => {
@@ -154,7 +154,7 @@ const W = (y, a) => {
       _: 1
     }, 8, ["chosen", "items"]));
   }
-}, ae = /* @__PURE__ */ W(Z, [["__scopeId", "data-v-1500ba47"]]);
+}, ae = /* @__PURE__ */ W(Z, [["__scopeId", "data-v-6c1a87b1"]]);
 export {
   ae as default
 };

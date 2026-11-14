@@ -184,15 +184,15 @@ test("an agent's memory has Open, Weigh, Copy text, Edit and Remove with an Undo
     expect(menuAt(gone.querySelector("[data-memory]")).labels).toEqual(["Open", "Weigh", "Copy text", "Edit", "Bring it back"]);
 });
 
-test("a row of a table has Open, Copy number and Copy row", async () => {
+test("a row of a table has Open, Copy number and Copy line", async () => {
     const opened = [];
     const element = appended(DataTable, {columns: ["Id", "Command"], rows: [{cells: ["41", "make check"], open: "output:41"}, {cells: ["42", "make site"]}], onOpen: (ref) => opened.push(ref)});
     const [first, second] = element.querySelectorAll(".table-row:not(.head)");
     const menu = menuAt(first);
-    expect(menu.labels).toEqual(["Open", "Copy number", "Copy row"]);
+    expect(menu.labels).toEqual(["Open", "Copy number", "Copy line"]);
     await menu.choose("Open");
     await menu.choose("Copy number");
-    await menu.choose("Copy row");
+    await menu.choose("Copy line");
     expect(opened).toEqual(["output:41"]);
     expect(copied).toEqual(["41", "41 make check"]);
     expect(menuAt(second).byLabel("Open").disabled).toBe(true);

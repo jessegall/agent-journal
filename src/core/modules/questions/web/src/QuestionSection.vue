@@ -12,9 +12,13 @@ const open = ref(true);
         <button type="button" class="bar" :aria-expanded="open" @click="open = !open">
             <Icon name="chevronRight" :size="12" :facing="open ? 'down' : 'right'" />
             <span class="bar-title">{{ title }}</span>
-            <span v-if="count !== null" class="bar-count" data-question-count>{{ count }}</span>
+            <template v-if="count !== null">
+              <span class="bar-count" data-question-count>{{ count }}</span>
+            </template>
         </button>
-        <div v-if="open" class="cards"><slot /></div>
+        <template v-if="open">
+          <div class="cards"><slot /></div>
+        </template>
     </section>
 </template>
 

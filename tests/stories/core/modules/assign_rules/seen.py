@@ -34,7 +34,7 @@ def test_why_says_a_rule_gives_a_task_once(new_story):
 def test_the_main_agent_hears_that_a_rule_gave_it_a_task(new_story):
     story = new_story(fixture=TwoPersonRules)
     task_id = new_task(story, '"Fix the migration script"')
-    story.expect_text(f"agent-line list --agent {story.agent.id} {ENVIRONMENT}", f"task:{task_id} is yours by rule {MIGRATION_RULE}", actor=story.user)
+    story.expect_text(f"agent-line list --agent {story.agent.id} {ENVIRONMENT}", f"task:{task_id} is yours by assign-rule:{MIGRATION_RULE}", actor=story.user)
 
 
 def test_the_assignments_of_an_agent_name_the_rule_of_each_task(new_story):

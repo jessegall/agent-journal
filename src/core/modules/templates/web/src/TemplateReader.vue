@@ -36,7 +36,9 @@ const facts = computed(() => [
         </template>
         <ReaderSection title="Its parts">
             <template v-for="part in template.parts" :key="part">
-                <p class="part" data-template-part><strong>{{ partWords(part).heading }}</strong><span v-if="partWords(part).body">{{ ` ${partWords(part).body}` }}</span></p>
+                <p class="part" data-template-part><strong>{{ partWords(part).heading }}</strong><template v-if="partWords(part).body">
+  <span>{{ ` ${partWords(part).body}` }}</span>
+</template></p>
             </template>
             <template v-if="!template.parts.length"><p class="part">None</p></template>
         </ReaderSection>

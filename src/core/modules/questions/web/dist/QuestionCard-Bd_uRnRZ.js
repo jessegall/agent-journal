@@ -1,4 +1,4 @@
-import { openBlock as t, createElementBlock as o, Fragment as b, createVNode as k, unref as a, withCtx as B, createTextVNode as x, toDisplayString as u, ref as g, computed as I, withDirectives as F, normalizeClass as M, createElementVNode as l, createCommentVNode as m, createBlock as N, renderList as W, withModifiers as j } from "vue";
+import { openBlock as t, createElementBlock as o, Fragment as k, createVNode as f, unref as a, withCtx as B, createTextVNode as x, toDisplayString as u, ref as g, computed as I, withDirectives as F, normalizeClass as M, createElementVNode as l, createCommentVNode as m, createBlock as N, renderList as W, withModifiers as j } from "vue";
 import { Btn as S, peekRef as T, useWindow as L, AgentBadge as P, ActionsMenu as G, TextInput as R, vContext as H, TimeAgo as J } from "@journal/window-kit";
 import { _ as z } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const U = {
@@ -6,33 +6,33 @@ const U = {
   props: { elaborated: Boolean },
   emits: ["close", "elaborate", "answer"],
   setup(e) {
-    return (f, n) => (t(), o(b, null, [
-      k(a(S), {
+    return (b, n) => (t(), o(k, null, [
+      f(a(S), {
         small: "",
         "data-question-close": "",
-        onClick: n[0] || (n[0] = (v) => f.$emit("close"))
+        onClick: n[0] || (n[0] = (v) => b.$emit("close"))
       }, {
         default: B(() => [...n[3] || (n[3] = [
           x("Close", -1)
         ])]),
         _: 1
       }),
-      k(a(S), {
+      f(a(S), {
         small: "",
         disabled: e.elaborated,
         "data-question-elaborate": "",
-        onClick: n[1] || (n[1] = (v) => f.$emit("elaborate"))
+        onClick: n[1] || (n[1] = (v) => b.$emit("elaborate"))
       }, {
         default: B(() => [
           x(u(e.elaborated ? "Asked to elaborate" : "Elaborate"), 1)
         ]),
         _: 1
       }, 8, ["disabled"]),
-      k(a(S), {
+      f(a(S), {
         variant: "primary",
         small: "",
         "data-question-answer": "",
-        onClick: n[2] || (n[2] = (v) => f.$emit("answer"))
+        onClick: n[2] || (n[2] = (v) => b.$emit("answer"))
       }, {
         default: B(() => [...n[4] || (n[4] = [
           x("Answer", -1)
@@ -42,10 +42,10 @@ const U = {
     ], 64));
   }
 }, Me = (e) => e.state === "open", K = (e) => e ? new Date(e).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: !1 }) : "", X = (e) => e.agent_name || `Agent ${e.session_agent_id}`, Y = (e) => e.row_model === "plan" ? e.row_id : null;
-function Z(e, { elaborate: f, close: n, elaborated: v }) {
+function Z(e, { elaborate: b, close: n, elaborated: v }) {
   return [
     { label: "Open", group: "open", run: () => T(`questions:${e.id}`) },
-    { label: v ? "Asked to elaborate" : "Elaborate", group: "own", disabled: v, reason: "Already asked", run: f },
+    { label: v ? "Asked to elaborate" : "Elaborate", group: "own", disabled: v, reason: "Already asked", run: b },
     { label: "Close", group: "own", run: n }
   ];
 }
@@ -75,8 +75,8 @@ const _ = ["data-state"], ee = { class: "head" }, te = ["title", "data-question-
   __name: "QuestionWindowCard",
   props: { row: { type: Object, required: !0 } },
   emits: ["changed"],
-  setup(e, { emit: f }) {
-    const n = e, v = f, Q = L(), y = g(""), h = g(""), $ = g(null), q = g(""), A = g(!1), w = I(() => ({ ...n.row, ...$.value })), p = I(() => h.value.trim() || y.value), V = Y(n.row);
+  setup(e, { emit: b }) {
+    const n = e, v = b, Q = L(), y = g(""), h = g(""), $ = g(null), q = g(""), A = g(!1), w = I(() => ({ ...n.row, ...$.value })), p = I(() => h.value.trim() || y.value), V = Y(n.row);
     async function O(C, r) {
       $.value = C, q.value = "";
       const c = await Q.run(r);
@@ -105,7 +105,7 @@ const _ = ["data-state"], ee = { class: "head" }, te = ["title", "data-question-
           "data-question-open": e.row.id,
           onClick: r[0] || (r[0] = (c) => a(T)(`questions:${e.row.id}`))
         }, u(e.row.id), 9, te),
-        k(a(P), {
+        f(a(P), {
           name: a(X)(e.row),
           chip: "",
           "data-question-agent": ""
@@ -131,10 +131,10 @@ const _ = ["data-state"], ee = { class: "head" }, te = ["title", "data-question-
         }, u(a(K)(e.row.created_at)), 9, oe)
       ]),
       l("p", ne, u(e.row.text), 1),
-      w.value.state !== "open" ? (t(), o("p", se, u(w.value.state === "answered" ? w.value.answer : "Closed"), 1)) : (t(), o(b, { key: 1 }, [
+      w.value.state !== "open" ? (t(), o("p", se, u(w.value.state === "answered" ? w.value.answer : "Closed"), 1)) : (t(), o(k, { key: 1 }, [
         e.row.context ? (t(), o("p", ae, u(e.row.context), 1)) : m("", !0),
         l("div", le, [
-          (t(!0), o(b, null, W(e.row.options, (c) => (t(), o("button", {
+          (t(!0), o(k, null, W(e.row.options, (c) => (t(), o("button", {
             key: c,
             type: "button",
             role: "radio",
@@ -152,13 +152,13 @@ const _ = ["data-state"], ee = { class: "head" }, te = ["title", "data-question-
           class: "form",
           onSubmit: j(E, ["prevent"])
         }, [
-          k(a(R), {
+          f(a(R), {
             modelValue: h.value,
             "onUpdate:modelValue": r[2] || (r[2] = (c) => h.value = c),
             placeholder: "Other",
             "aria-label": "Other answer"
           }, null, 8, ["modelValue"]),
-          k(a(S), {
+          f(a(S), {
             variant: "primary",
             small: "",
             type: "submit",
@@ -177,11 +177,11 @@ const _ = ["data-state"], ee = { class: "head" }, te = ["title", "data-question-
       [a(H), () => ({ head: `Question ${e.row.id}`, items: s() })]
     ]);
   }
-}, we = /* @__PURE__ */ z(ce, [["__scopeId", "data-v-32aba95b"]]), me = ["data-state"], ve = { class: "question-head" }, qe = {
+}, we = /* @__PURE__ */ z(ce, [["__scopeId", "data-v-89f4149f"]]), me = ["data-state"], ve = { class: "question-head" }, qe = {
   key: 0,
   class: "question-dot",
   "data-question-dot": ""
-}, be = { class: "question-label" }, ke = ["data-question-open"], fe = {
+}, ke = { class: "question-label" }, fe = ["data-question-open"], be = {
   key: 0,
   class: "question-context",
   "data-question-context": ""
@@ -207,8 +207,8 @@ const _ = ["data-state"], ee = { class: "head" }, te = ["title", "data-question-
   __name: "QuestionCard",
   props: { row: { type: Object, required: !0 }, flush: Boolean, window: Boolean },
   emits: ["changed"],
-  setup(e, { emit: f }) {
-    const n = e, v = f, Q = L(), y = g(""), h = g(null), $ = g(""), q = g(!1);
+  setup(e, { emit: b }) {
+    const n = e, v = b, Q = L(), y = g(""), h = g(null), $ = g(""), q = g(!1);
     async function A(d, i) {
       h.value = d, $.value = "";
       const s = await Q.run(i);
@@ -237,8 +237,8 @@ const _ = ["data-state"], ee = { class: "head" }, te = ["title", "data-question-
     }, [
       l("header", ve, [
         e.flush ? (t(), o("i", qe)) : m("", !0),
-        l("p", be, "Question " + u(e.row.id), 1),
-        k(a(J), {
+        l("p", ke, "Question " + u(e.row.id), 1),
+        f(a(J), {
           class: "question-time",
           at: e.row.created_at,
           "data-question-time": ""
@@ -249,23 +249,23 @@ const _ = ["data-state"], ee = { class: "head" }, te = ["title", "data-question-
         class: "question-open",
         "data-question-open": e.row.id,
         onClick: i[1] || (i[1] = (s) => a(T)(`questions:${e.row.id}`))
-      }, u(e.row.text), 9, ke),
-      e.row.context ? (t(), o("p", fe, u(e.row.context), 1)) : m("", !0),
+      }, u(e.row.text), 9, fe),
+      e.row.context ? (t(), o("p", be, u(e.row.context), 1)) : m("", !0),
       w().state !== "open" ? (t(), o("p", ye, [
-        w().state === "answered" ? (t(), o(b, { key: 0 }, [
-          e.flush ? (t(), o(b, { key: 0 }, [
+        w().state === "answered" ? (t(), o(k, { key: 0 }, [
+          e.flush ? (t(), o(k, { key: 0 }, [
             i[4] || (i[4] = l("b", { class: "question-answered" }, "Answered:", -1)),
             i[5] || (i[5] = x()),
             l("span", he, u(w().answer), 1)
-          ], 64)) : (t(), o(b, { key: 1 }, [
+          ], 64)) : (t(), o(k, { key: 1 }, [
             x("Answered: " + u(w().answer), 1)
           ], 64))
-        ], 64)) : (t(), o(b, { key: 1 }, [
+        ], 64)) : (t(), o(k, { key: 1 }, [
           x("Closed")
         ], 64))
-      ])) : (t(), o(b, { key: 2 }, [
+      ])) : (t(), o(k, { key: 2 }, [
         l("div", $e, [
-          (t(!0), o(b, null, W(e.row.options, (s) => (t(), o("button", {
+          (t(!0), o(k, null, W(e.row.options, (s) => (t(), o("button", {
             key: s,
             type: "button",
             class: M(["question-option", { recommended: s === e.row.recommended }]),
@@ -282,15 +282,15 @@ const _ = ["data-state"], ee = { class: "head" }, te = ["title", "data-question-
           class: "question-form",
           onSubmit: j(O, ["prevent"])
         }, [
-          e.flush ? (t(), o(b, { key: 0 }, [
-            k(a(R), {
+          e.flush ? (t(), o(k, { key: 0 }, [
+            f(a(R), {
               modelValue: y.value,
               "onUpdate:modelValue": i[2] || (i[2] = (s) => y.value = s),
               class: "question-input",
               placeholder: "Or answer in your own words…"
             }, null, 8, ["modelValue"]),
             l("span", Ve, [
-              k(U, {
+              f(U, {
                 elaborated: q.value,
                 onClose: V,
                 onElaborate: E,
@@ -304,7 +304,7 @@ const _ = ["data-state"], ee = { class: "head" }, te = ["title", "data-question-
             placeholder: "Or answer in your own words…"
           }, {
             end: B(() => [
-              k(U, {
+              f(U, {
                 elaborated: q.value,
                 onClose: V,
                 onElaborate: E,
@@ -318,7 +318,7 @@ const _ = ["data-state"], ee = { class: "head" }, te = ["title", "data-question-
       $.value ? (t(), o("p", Oe, u($.value), 1)) : m("", !0)
     ], 10, me));
   }
-}, Ne = /* @__PURE__ */ z(Qe, [["__scopeId", "data-v-c37bedaf"]]);
+}, Ne = /* @__PURE__ */ z(Qe, [["__scopeId", "data-v-94470536"]]);
 export {
   Ne as Q,
   Me as i
