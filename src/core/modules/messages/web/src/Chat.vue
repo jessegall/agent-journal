@@ -4,7 +4,7 @@ import {useComposerHeight} from "./composerHeight.js";
 import ChatPins from "./ChatPins.vue";
 import DumpForm from "./DumpForm.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
-import {READ_RATES, coalesced, Btn, DockStack, FeedPaginator, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, reachMessages, openInChat, patched, removed, shownMarks, useWindow, withDayLines} from "@journal/window-kit";
+import {avatarWindowOpen, useChatFigure, Btn, DockStack, FeedPaginator, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, reachMessages, openInChat, patched, removed, shownMarks, useWindow, withDayLines} from "@journal/window-kit";
 
 const view = useWindow();
 const {rows: messages, failure, loaded, load, loadLatest, older, act} = view.props.messages;
@@ -31,23 +31,8 @@ watch(messages, () => {
 });
 const rows = computed(() => withDayLines(foldedMarks(interleaved([...messages.value, ...outgoing.value.filter((echo) => !landed(echo))], marks.value), markDeclaration)));
 const quoteOf = (message) => messages.value.find((row) => row.id === message.parent_id)?.text ?? "";
-// the tool the agent has in hand, read each time a hook call lands, empty until it begins the next
-// the figure is the one the pane names, or by default the voice the user chose, shown as the figure settings say: always, only while the agent works, or never
-const voice = computed(() => (view.props["voice-profile"].loaded.value ? {profile: settingOf("voice-profile"), avatar: settingOf("voice-avatar"), avatar_shown: settingOf("voice-avatar-shown")} : null));
-const voiceFigure = () => {
-    if (!voice.value?.avatar || voice.value.avatar_shown === "never") return "";
-    return voice.value.avatar_shown === "working" && !runningTool.value ? "" : voice.value.profile;
-};
-const figureVoice = computed(() => {
-    const chosen = view.option("figure").value;
-    if (chosen === "voice") return voiceFigure();
-    return chosen && chosen !== "none" ? chosen : "";
-});
-const runningTool = ref("");
-const waitingFor = ref("");
-const thinking = ref(false);
-const asking = ref(false);
-const heardAt = ref(Date.now() / 1000);
+// the figure is the one the pane names, or by default the voice the user chose; an avatar window on the page carries it instead
+const {figureVoice, figureHere, shownVoice, runningTool, waitingFor, thinking, asking, heardAt, commandShown} = useChatFigure(view, {chosen: () => view.option("figure").value, held: () => avatarWindowOpen.value});
 // a face put on a message already in the chat is answered by the figure; faces on messages that page in are not
 const facesOf = (row) => JSON.parse(row.reactions || "[]").map((face) => `${face.actor_type}:${face.emoji}`);
 const FACES_KEPT = 20;
@@ -64,37 +49,6 @@ watch(faceSignature, () => {
     if (landed.length) newFaces.value = [...newFaces.value, ...landed].slice(-FACES_KEPT);
     seenFaces = new Map(rows.map((row) => [row.id, facesOf(row)]));
 }, {immediate: true});
-// the figure stays on the page until its exit has played once it should go, and is put on the page only when it should be there
-const figureHere = computed(() => Boolean(figureVoice.value));
-const shownVoice = ref("");
-watch(figureVoice, (chosen) => {
-    if (chosen) shownVoice.value = chosen;
-}, {immediate: true});
-const toolRunning = ref(false);
-const commandShown = ref(false);
-let fadeTimer = 0;
-// a finished command stays on the strip for five seconds and then gives way to the thinking word; a running one stays as long as it runs
-const COMMAND_LINGER_MS = 5000;
-const {data: toolProp, failure: toolFailure} = view.props.tool;
-watch([toolProp, toolFailure], () => {
-    const tool = toolFailure.value ? {} : (toolProp.value ?? {});
-    const changed = (tool.tool ?? "") !== runningTool.value || Boolean(tool.running) !== toolRunning.value;
-    if (changed) {
-        clearTimeout(fadeTimer);
-        commandShown.value = Boolean(tool.tool);
-        if (tool.tool && !tool.running) fadeTimer = setTimeout(() => { commandShown.value = false; }, COMMAND_LINGER_MS);
-    }
-    toolRunning.value = Boolean(tool.running);
-    runningTool.value = tool.tool ?? "";
-    waitingFor.value = tool.wait_target ?? "";
-    thinking.value = Boolean(tool.thinking);
-    asking.value = Boolean(tool.asking);
-});
-heardAt.value = Date.now() / 1000;
-view.follow(["hook_call.*", "dock_item.*", "process_part.*"], coalesced(() => {
-    heardAt.value = Date.now() / 1000;
-    view.reload("tool");
-}, READ_RATES.runningTool));
 const FOLD_AFTER_MS = 500;
 const ECHO_SLACK_MS = 2000;
 const FOOT_PIXELS = 40;

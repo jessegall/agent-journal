@@ -20,7 +20,7 @@ from engine.driver.nudger import Nudger
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_JOINS
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
-from core.modules.tasks.models.task import TASK_TITLE_LIMIT_CHARACTERS, Task
+from core.modules.tasks.models.task import Task
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.commands.record_worktree_libraries.record_worktree_libraries import RecordWorktreeLibraries
@@ -34,7 +34,6 @@ from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree im
 from suites.coding.modules.workers.commands.record_worktree_cut.record_worktree_cut import RecordWorktreeCut
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 from suites.coding.modules.workers.commands.switch_worker_sandbox.switch_worker_sandbox import SwitchWorkerSandbox
-from suites.coding.modules.workers.commands.send_worker.make_worker_job import MakeWorkerJob
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -53,7 +52,6 @@ from core.modules.messages.support.work_sources import WorkSources
 from suites.coding.modules.workers.bindings.worker_task_sources import WorkerTaskSources
 from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSource
 from core.modules.agents.support.agent_label import AgentLabel
-from engine.cli.row_numbers import RowNumbers
 
 
 class SendWorkerHandler(Handler[SendWorker, Model]):
@@ -63,8 +61,8 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
     runs_once = True
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources, kept_tasks: KeptWorkerTasks, environments: EnvironmentRows, settings: SettingValues, scopes: Scopes, admission: AgentAdmission, libraries: LibraryFolders, release: StartedTaskRelease, numbers: RowNumbers, timing: Timing, places: WorkerPlaces) -> None:
-        self.numbers, self.timing, self.places = numbers, timing, places
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources, kept_tasks: KeptWorkerTasks, environments: EnvironmentRows, settings: SettingValues, scopes: Scopes, admission: AgentAdmission, libraries: LibraryFolders, release: StartedTaskRelease, timing: Timing, places: WorkerPlaces) -> None:
+        self.timing, self.places = timing, places
         self.admission, self.libraries, self.release = admission, libraries, release
         self.rows, self.worktrees, self.repository, self.git, self.nudger = rows, worktrees, repository, git, nudger
         self.advance, self.bus, self.missing_agents = advance, bus, missing_agents
@@ -95,7 +93,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
         self.check_session(worker)
         if command.task_ids:
             self.kept_tasks.check_tasks(command.task_ids, actor.id, worker.id)
-        if self.worktrees.newest_worktree(worker.id) is None:
+        if command.task_ids and self.worktrees.newest_worktree(worker.id) is None:
             raise Refusal(f"{AgentLabel.labelled(worker).text} has no worktree", "journal worker dispatch <task> starts a new one")
 
     def prepare(self, command: SendWorker, actor: Actor) -> None:
@@ -105,11 +103,6 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
         self.check_session(worker)
         self.remove_merged(worker, actor)
         task_ids = command.task_ids
-        if not task_ids and self.worktrees.worker_worktree(worker.id) is None:
-            self.kept_tasks.check_recut(worker)
-            title = command.job.strip().splitlines()[0][:TASK_TITLE_LIMIT_CHARACTERS]
-            task = self.bus.run(MakeWorkerJob(title, command.job), actor, environment_id=worker.environment_id)
-            task_ids = tuple([task.id])
         self.task_ids = task_ids
         if task_ids:
             read = self.release.released(self.kept_tasks.read_tasks(task_ids), actor, worker.environment_id)
@@ -166,6 +159,12 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
             self.bus.run(CancelWorkerOpening(opened.id, retain_agent=True), actor, environment_id=worker.environment_id)
             raise
 
+    def woken(self, command: SendWorker, context: Context) -> Model:
+        """A text job for a worker with no work in a worktree files no task: the text reaches it as a message, which wakes it."""
+        self.repository.save(Message(creator_id=context.actor.id, type=MessageType.PEER, text=command.job, read_at=context.timestamp, delivered_at=context.timestamp,
+                                     recipient=WorkerRecipient.text(command.worker_id)), context)
+        return self.nudger.send_text(command.worker_id, command.job, WORKER_JOB_SOURCE, context)
+
     def inform_joined(self, worker_id: int, context: Context) -> None:
         for task_id in self.task_ids:
             self.nudger.send(worker_id, WORKER_TASK_JOINS, WORKER_TASK_JOINS.key, context, task=task_id)
@@ -179,7 +178,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
         if worktree is None and self.task_ids:
             return self.kept_tasks.waiting(self.rows.required(Agent, command.worker_id), self.task_ids, context)
         if worktree is None:
-            raise Refusal(f"{AgentLabel.labelled_row(command.worker_id, self.numbers, "worker").text} has no worktree", "journal worker dispatch <task> starts a new one")
+            return self.woken(command, context)
         worker = self.rows.required(Agent, command.worker_id)
         if not command.sandboxed:
             worker = self.bus.run_with_context(SwitchWorkerSandbox(worker.id, False), context)

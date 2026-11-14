@@ -75,6 +75,14 @@ class WorkerQuestions:
         if lines:
             self.close(lines[0], outcome, text, context)
 
+    def forwarded_lines(self, worker_id: int) -> tuple[MergerLine, ...]:
+        return tuple(self.queries.query(MergerLine).filter(worker_id=worker_id, outcome=AskOutcome.FORWARDED).oldest().get())
+
+    def settle_forwarded(self, worker_id: int, outcome: AskOutcome, text: str, context: Context) -> None:
+        """The questions that went to the main agent end once it answered or what they asked for happened."""
+        for line in self.forwarded_lines(worker_id):
+            self.record(line, outcome, text, context)
+
     def close_worker_lines(self, worker_id: int, reason: str, context: Context) -> None:
         for line in self.worker_lines(worker_id):
             self.record(line, AskOutcome.MOOT, reason, context)
@@ -95,7 +103,7 @@ class WorkerQuestions:
             self.record(line, AskOutcome.MOOT, reason, context)
 
     def record(self, line: MergerLine, outcome: AskOutcome, text: str, context: Context) -> MergerLine:
-        if line.outcome is not None and line.closed_at is not None:
+        if line.outcome not in (None, AskOutcome.FORWARDED) and line.closed_at is not None:
             raise Refusal(f"line {line.id} is settled: {line.outcome.description()} at {line.closed_at.value.strftime(CLOCK_FORMAT)}")
         closed = self.repository.save_change(line, replace(line, outcome=outcome, closed_at=context.timestamp), context)
         wait = self.queries.query(Wait).filter(id=line.wait_id).first() if line.wait_id is not None else None
