@@ -94,7 +94,6 @@ tests/stories/core/modules/drivers/countdowns.py
 tests/stories/core/modules/drivers/deferred_queue.py
 tests/stories/core/modules/drivers/foreign_runs.py
 tests/stories/core/modules/drivers/hook_call_indexes.py
-tests/stories/core/modules/drivers/hook_call_scans.py
 tests/stories/core/modules/drivers/hook_durations.py
 tests/stories/core/modules/drivers/hook_points.py
 tests/stories/core/modules/drivers/hook_timeouts.py

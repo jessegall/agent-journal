@@ -2,6 +2,7 @@ import io
 import json
 import shlex
 from dataclasses import dataclass
+from uuid import uuid4
 
 from core.modules import DEFAULT_MODULES
 from engine.actor.actor import Actor
@@ -12,9 +13,14 @@ from engine.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
 from engine.file.file_access import FileAccess
 from engine.container.container import Container
 from engine.database.database import Database
+from engine.driver.hook_event import HookEvent
+from engine.driver.hook_reply import HookReply
+from engine.driver.hook_route import HookRoute
 from engine.journal.journal_home import JournalHome
 from engine.module.journal_container import synced_database_container
 from engine.registry.registry import Registry
+from engine.testing.examples.hook_sample import HookSample
+from engine.testing.examples.hook_samples import SAMPLE_FIRING
 from engine.time.clock import Clock
 
 MAIN_ENVIRONMENT = 1
@@ -39,6 +45,13 @@ class IntegrationJournal:
         stream = io.StringIO()
         code = self.container.get(Console).run(shlex.split(line), Caller(actor or Actor.core(), environment_id), stream)
         return LineAnswer(code, stream.getvalue())
+
+    # the agent program of the session fires the sample hook, answered through the real hook route
+    def hook(self, session: str, sample: HookSample) -> HookReply:
+        fired_at_ms = int(self.container.get(Clock).timestamp().value.timestamp() * 1000)
+        firing = f"integration-{uuid4().hex}" if sample.firing == SAMPLE_FIRING else sample.firing
+        event = HookEvent.parsed(sample.with_fields(session=session, firing=firing, fired_at_ms=fired_at_ms).body)
+        return self.container.get(HookRoute).answer(event)
 
     # lines run from now on read this clock, as a test that needs rows written at one moment asks
     def with_clock(self, clock: Clock) -> None:
