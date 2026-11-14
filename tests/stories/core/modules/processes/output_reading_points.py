@@ -26,5 +26,6 @@ def test_a_tick_that_reads_twenty_grown_runs_is_within_its_limit_and_reports_no_
     for run in runs:
         story.container.get(OutputFolder).write_output(run.id, 1, "line\n")
     OutputReading()(story.container)
+    story.run_listeners()
     slow_ticks = [row for row in story.story_rows(JournalException) if row.source == CLOCK_TICK_SOURCE and "points" in row.message]
     story.expected(not slow_ticks, f"a slow tick was reported: {[row.message for row in slow_ticks]}")

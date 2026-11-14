@@ -5,6 +5,7 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 
 VISIBLE_PARTS_REASON = "every part of the runs asked about decides how each run shows"
+KEPT_PARTS = "processes.visible_parts"
 
 class RunVisibility:
     """Uses declared command visibility to choose the chat mark and output card."""
@@ -36,7 +37,12 @@ class RunVisibility:
 
     def parts(self, process_id: int) -> tuple[ProcessPart, ...]:
         parts = self.queries.query(ProcessPart).filter(process_id=process_id).oldest()
-        return self.kept.read(parts, lambda: tuple(parts.every_row(VISIBLE_PARTS_REASON)), name="processes.visible_parts")
+        return self.kept.read(parts, lambda: tuple(parts.every_row(VISIBLE_PARTS_REASON)), name=KEPT_PARTS)
+
+    # The parts of every run asked about, read once and kept, so each run's mark reads its own from memory.
+    def keep_parts(self, process_ids: tuple[int, ...]) -> None:
+        for process_id, parts in self.processes_parts(process_ids).items():
+            self.kept.read(self.queries.query(ProcessPart).filter(process_id=process_id).oldest(), lambda parts=parts: parts, name=KEPT_PARTS)
 
     def processes_parts(self, process_ids: tuple[int, ...]) -> dict[int, tuple[ProcessPart, ...]]:
         parts: dict[int, list[ProcessPart]] = {process_id: [] for process_id in process_ids}

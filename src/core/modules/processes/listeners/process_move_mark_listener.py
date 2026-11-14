@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 from engine.event.logged_event import LoggedEvent
 from engine.event.moved import Moved
 from core.modules.processes.listeners.process_mark_listener import ProcessMarkListener
@@ -11,6 +13,9 @@ class ProcessMoveMarkListener(ProcessMarkListener[Moved[Process]]):
 
     name = "processes.move-mark"
     moves = tuple([ProcessLifecycle.background])
+
+    def prepare(self, events: Sequence[LoggedEvent]) -> None:
+        self.keep_parts_of(events)
 
     def handle(self, event: Moved[Process], logged: LoggedEvent) -> None:
         self.show(event.row, logged)
