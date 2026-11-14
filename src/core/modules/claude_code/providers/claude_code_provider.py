@@ -102,6 +102,8 @@ class ClaudeCodeProvider(Provider):
     plain_output_events = [HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.COMPACT]
     matcher_style = MatcherStyle.NAMES_OR_REGEX
     session_end_limit_seconds = 60
+    # Claude Code saves an additionalContext text over 10,000 characters to a file and shows a preview (report 1468)
+    additional_context_limit = 10_000
     wake_hook = WakeHook("Stop", WakeAnswer.EXIT_WITH_STDERR, {"async": True, "asyncRewake": True}, WAKE_TIMEOUT_SECONDS)
     refusals = {HookEventName.PRE_TOOL_USE: RefusalStyle.DENY, HookEventName.PROMPT: RefusalStyle.BLOCK, HookEventName.STOP: RefusalStyle.BLOCK}
     skills_folder = ".claude/skills"

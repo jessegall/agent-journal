@@ -57,6 +57,8 @@ class Provider(ABC):
     matchers: ClassVar[Mapping[str, str]] = {}
     line_events: ClassVar[Sequence[HookEventName]]
     plain_output_events: ClassVar[Sequence[HookEventName]] = ()
+    # the most characters of a hook's text the program reads whole; 0 when it reads any length
+    additional_context_limit: ClassVar[int] = 0
     matcher_style: ClassVar[MatcherStyle] = MatcherStyle.REGEX
     default_hook_seconds: ClassVar[int] = 600
     session_end_limit_seconds: ClassVar[int] = 3
