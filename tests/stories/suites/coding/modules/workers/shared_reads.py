@@ -99,8 +99,7 @@ def test_an_approved_plan_stop_shares_several_pending_workers(pending_workers, p
     pending_viewer.server.expect_hook_answer("/hook", dict(sample.body), 200, '"refusal":')
     records = pending_viewer.value("drivers.hook-calls", ["hook-call", "stops", "--session-agent-id", str(story.agent.id)])
     checks = {check["rule"]: check for check in records["rows"][0]["stop_checks"]}
-    story.expect_rows(checks["workers.approved-plan-at-stop"]["reason"] == "no new worker can start",
-                      not pending_viewer.server.context.reported_findings.keys)
+    story.expect_rows("workers.approved-plan-at-stop" not in checks, not pending_viewer.server.context.reported_findings.keys)
 
 
 def test_one_request_reads_the_pending_work_once_inside_and_outside_a_worker_scope(pending_workers):

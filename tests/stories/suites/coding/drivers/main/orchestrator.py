@@ -9,7 +9,6 @@ from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.plan_steps import ready_plan
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
-from suites.coding.support.coding_nudges import OPEN_TASKS_WAIT
 from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.support.coding_nudges import TASK_ASSIGNMENT
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
@@ -51,22 +50,22 @@ def test_tasks_a_running_worker_has_queued_let_the_main_agent_stop(new_story):
     story.expect_hook_allowed("s-1", HookSamples.stop())
 
 
-def test_an_open_task_no_worker_has_holds_the_main_agent_at_stop(new_story):
+def test_an_open_task_no_worker_has_lets_the_main_agent_stop_with_no_worker_line(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     story.run('task make "Third job" --brief "Do the third job" --environment main', actor=story.agent)
     story.run("worker dispatch --test-command python=pytest 1 2 --model sonnet", actor=story.agent)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), expected_nudge(OPEN_TASKS_WAIT, tasks=3))
+    story.expect_hook_allowed("s-1", HookSamples.stop())
 
 
-def test_tasks_a_released_worker_gave_back_hold_the_main_agent_at_stop(new_story):
+def test_tasks_a_released_worker_gave_back_let_the_main_agent_stop_with_no_worker_line(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     worker = dispatched_worker(story, "worker dispatch --test-command python=pytest 1 2 --model sonnet")
     story.expect_success(f'worker release {agent_number(story, worker.id)} "wrong job"', actor=story.agent)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), expected_nudge(OPEN_TASKS_WAIT, tasks=1))
+    story.expect_hook_allowed("s-1", HookSamples.stop())
 
 
 class ReadyPlanTaskOrchestrator(StoryFixture):
@@ -100,16 +99,16 @@ def test_a_task_of_a_plan_under_review_lets_the_main_agent_stop(new_story):
     story.expect_hook_allowed("s-1", HookSamples.stop())
 
 
-def test_an_undelegated_task_of_an_approved_plan_holds_the_main_agent_at_stop(new_story):
+def test_an_undelegated_task_of_an_approved_plan_lets_the_main_agent_stop_with_no_worker_line(new_story):
     story = new_story(fixture=ReadyPlanTaskOrchestrator)
     story.expect_success("plan approve 1 --environment main", "state: approved", actor=story.user)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "plan:1 is approved and a worker slot is free")
+    story.expect_hook_allowed("s-1", HookSamples.stop())
 
 
-def test_a_loose_open_task_holds_the_main_agent_at_stop_beside_a_ready_plan(new_story):
+def test_a_loose_open_task_lets_the_main_agent_stop_beside_a_ready_plan(new_story):
     story = new_story(fixture=ReadyPlanTaskOrchestrator)
     story.run('task make "Loose job" --brief "Do the loose job" --environment main', actor=story.agent)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), expected_nudge(OPEN_TASKS_WAIT, tasks=3))
+    story.expect_hook_allowed("s-1", HookSamples.stop())
 
 
 def test_tasks_queued_with_a_worker_whose_row_ended_but_whose_worktree_is_open_let_the_main_agent_stop(new_story):

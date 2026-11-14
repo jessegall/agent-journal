@@ -9,10 +9,6 @@ WORKER_COMMAND_TYPE = NudgeDeclaration("coding.worker_command_type", NudgeType.R
 MAIN_HELPER_BAN = NudgeDeclaration("coding.main_starts_no_helpers", NudgeType.REFUSAL, "The main agent starts no read-only helpers here: {then}")
 MAIN_CODE_EDIT_REFUSED = NudgeDeclaration("coding.main_writes_no_code", NudgeType.REFUSAL, "The main agent writes no code here: send the work to a worker")
 TASK_ASSIGNMENT = NudgeDeclaration("coding.task_is_yours", NudgeType.REFUSAL, 'task:{task} is yours now')
-OPEN_TASKS_WAIT = NudgeDeclaration("coding.open_tasks_wait", NudgeType.REFUSAL, "Open tasks wait for a worker: {tasks}")
-
-FREE_WORKER_PLACE = NudgeDeclaration("coding.free_worker_place", NudgeType.REFUSAL, "{count} worker slots are free and these tasks can go to a worker: {tasks}. Send them or say why not, then you may stop")
-
 UNFINISHED_TASKS = NudgeDeclaration("coding.unfinished_tasks", NudgeType.REFUSAL, "Tasks {tasks} are yours and unfinished: start one, block it on what it waits for, or say why you stop")
 
 INTRODUCTION_NUDGE = NudgeDeclaration("coding.introduce_yourself", NudgeType.STEERING, "Introduce yourself in the chat in one or two lines, then ask what to do unless the user already asked")
@@ -21,4 +17,4 @@ WORKER_FULL_TEST_RUN = NudgeDeclaration("coding.worker_full_test_run", NudgeType
 GIT_RESTRICTION = NudgeDeclaration("drivers.no_git", NudgeType.SAFETY_REFUSAL, "This driver runs no git commands")
 FULL_TEST_RESTRICTION = NudgeDeclaration("drivers.no_full_test_run", NudgeType.SAFETY_REFUSAL, "Run only the tests of changed files: name the test files, not the full suite", turn_limited=False)
 FAILED_FULL_RUN = NudgeDeclaration("processes.failed_full_run", NudgeType.REFUSAL, "Your last full test run failed: rerun the failed tests by name first", turn_limited=False)
-CODING_NUDGES = [GIT_RESTRICTION, FULL_TEST_RESTRICTION, FAILED_FULL_RUN, WORKER_FULL_TEST_RUN, INTRODUCTION_NUDGE, WAITING_ITEMS, WORKER_TASK_STARTED, WORKER_TASK_UNSTARTED, WORKER_GIT_BAN, WORKER_COMMAND_TYPE, MAIN_HELPER_BAN, MAIN_CODE_EDIT_REFUSED, TASK_ASSIGNMENT, OPEN_TASKS_WAIT, FREE_WORKER_PLACE, UNFINISHED_TASKS]
+CODING_NUDGES = [GIT_RESTRICTION, FULL_TEST_RESTRICTION, FAILED_FULL_RUN, WORKER_FULL_TEST_RUN, INTRODUCTION_NUDGE, WAITING_ITEMS, WORKER_TASK_STARTED, WORKER_TASK_UNSTARTED, WORKER_GIT_BAN, WORKER_COMMAND_TYPE, MAIN_HELPER_BAN, MAIN_CODE_EDIT_REFUSED, TASK_ASSIGNMENT, UNFINISHED_TASKS]
