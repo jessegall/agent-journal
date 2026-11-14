@@ -46,6 +46,8 @@ class Suite:
         pages = dict.fromkeys(page for entrance in cls.entrances for page in entrance.presets)
         return {page: tuple(preset for entrance in cls.entrances if page in entrance.presets for preset in entrance.presets[page].layout_presets()) for page in pages}
 
+    # entrances that share a key are one way in, whose windows several modules declare
     @classmethod
     def entrance_windows(cls) -> dict[str, tuple[str, ...]]:
-        return {entrance.key: entrance.window_names() for entrance in cls.entrances}
+        return {key: tuple(dict.fromkeys(name for entrance in cls.entrances if entrance.key == key for name in entrance.window_names()))
+                for key in dict.fromkeys(entrance.key for entrance in cls.entrances)}

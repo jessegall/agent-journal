@@ -11,6 +11,8 @@ from suites.coding.modules.checks.checks_module import ChecksModule
 from suites.coding.modules.workers.workers_module import WorkersModule
 from suites.coding.support.coding_suite_name import CODING_SUITE_NAME
 from suites.coding.entrances.admin_entrance import AdminEntrance
+from suites.coding.modules.workers.entrances.workers_admin_entrance import WorkersAdminEntrance
+from suites.coding.modules.checks.entrances.checks_admin_entrance import ChecksAdminEntrance
 
 
 class CodingSuite(Suite):
@@ -22,5 +24,5 @@ class CodingSuite(Suite):
     name = CODING_SUITE_NAME
     modules = [CodingModule, WorkersModule, ChecksModule]
     task_assigner = NextTask
-    entrances = [AdminEntrance]
+    entrances = [AdminEntrance, WorkersAdminEntrance, ChecksAdminEntrance]
     default_states = [DefaultState(WhereYouStand, AgentKind.ROLE, AgentRole.MAIN), DefaultState(WorkerLogDue, AgentKind.HELPER_TYPE, Worker.key)]
