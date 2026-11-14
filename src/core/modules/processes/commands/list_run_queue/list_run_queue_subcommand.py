@@ -75,12 +75,14 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
             "running": running, "waiting": waiting, "recent": recent, "recent_total": query.filter(section=QueueSection.RECENT).count()}
         queue_runs = tuple(self.queue_runs.query().every_row(QUEUE_REASON))
         number, size = max(1, arguments.page), min(MAX_PAGE_SIZE, max(1, arguments.limit))
-        return ProcessQueuePage(Page(queue_runs[(number - 1) * size:number * size], number, size, len(queue_runs)), inspector, self.lane_lines(arguments.class_name, arguments.starter))
+        return ProcessQueuePage(Page(queue_runs[(number - 1) * size:number * size], number, size, len(queue_runs)), inspector, *self.lanes(arguments.class_name, arguments.starter))
 
-    # a filter keeps the lane headings and the lines of runs and waits whose class or starter it names
-    def lane_lines(self, class_name: str, starter: str) -> tuple[str, ...]:
+    # the lanes read once, as lines and as JSON; a filter keeps the lane headings and the lines of runs and waits whose
+    # class or starter it names
+    def lanes(self, class_name: str, starter: str) -> tuple[tuple[str, ...], dict[str, object]]:
+        snapshot = self.status.snapshot()
         wanted = [text for text in (f"({class_name}, " if class_name else "", f", {starter}" if starter else "") if text]
-        return tuple(line for line in self.status.lines() if not line.startswith("  ") or all(text in line for text in wanted))
+        return tuple(line for line in snapshot.lines() if not line.startswith("  ") or all(text in line for text in wanted)), snapshot.json()
 
     @staticmethod
     def agent_rows(query: Query[ProcessQueueRow], agent_id: int) -> Query[ProcessQueueRow]:

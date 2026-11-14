@@ -45,6 +45,7 @@ class HookDatabase:
         self.databases = [Database.shared(home, turns) for _ in range(min(running_hooks_count, RUNNING_HOOKS_COUNT))]
         self.free_databases = list(self.databases)
         self.queue = ServerQueue(running_hooks_count)
+        self.instant_capacity = running_hooks_count
         log = SystemLogWriter(home, Clock())
         self.executions = ExecutionQueue(ExecutionOrder(instant_limits(running_hooks_count)), Clock(), lambda text: log.write(LogLevel.WARNING, f"an execution failed: {text}", LogSource.SERVER))
         self.queue.viewer_tickets = ViewerTickets(self.executions, ExecutionPriorities(SessionStarters.shared(home)), Clock(), self.queue.viewer_wait_limit_seconds)

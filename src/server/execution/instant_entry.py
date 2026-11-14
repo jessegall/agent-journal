@@ -14,6 +14,11 @@ class InstantEntry:
     owner: str
     waited_seconds: float
 
+    def reading(self) -> dict[str, object]:
+        parent = self.ticket.parent
+        return {"line": self.ticket.line, "class": self.ticket.execution_class.name, "priority": self.ticket.priority.label, "starter": self.ticket.starter.label,
+                "seconds": self.waited_seconds, "is_running": self.is_running, "parent_line": parent.line if parent is not None else ""}
+
     @property
     def described(self) -> str:
         return f"{self.ticket.execution_class.name} at {self.ticket.priority.name.lower()}: {self.ticket.line}"

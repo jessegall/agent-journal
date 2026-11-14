@@ -5,6 +5,7 @@ import Skeleton from "../kit/Skeleton.vue";
 import ProcessQueueControls from "./ProcessQueueControls.vue";
 import ProcessQueueRun from "./ProcessQueueRun.vue";
 import ProcessQueueBand from "./ProcessQueueBand.vue";
+import ExecutionLanes from "./ExecutionLanes.vue";
 
 const RECENT_PAGE = 20;
 
@@ -53,6 +54,7 @@ onMounted(load);
             <template v-if="failure"><p class="failure" role="alert" data-resource-failure>{{ failure }}</p></template>
             <template v-if="queue">
                 <template v-if="!agent"><ProcessQueueControls :queue="queue" :read="read" @saved="load" /></template>
+                <template v-if="queue.execution && !agent"><ExecutionLanes :execution="queue.execution" /></template>
                 <TransitionGroup name="queue" tag="div" class="queue-list">
                     <template v-for="item in items" :key="item.key">
                         <template v-if="item.run"><ProcessQueueRun :run="item.run" :environment="queue.environment_name" :position="item.position" :read="read" :expanded="open.includes(item.run.id)" @toggle="toggle(item.run.id)" /></template>
