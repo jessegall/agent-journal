@@ -6,6 +6,7 @@ import FilterBar from "./FilterBar.vue";
 import PageCard from "./PageCard.vue";
 import PageHeader from "./PageHeader.vue";
 import {applyFilter, defaultFilter} from "./toggleFilter.js";
+import {vContext} from "./vContext.js";
 
 // a page of cards: its header, the filter bar, then the cards in a grid that fills the width, none narrower than 300 px.
 // Each item is drawn as a PageCard from its own fields; a page puts the card's corner, foot and actions in the slots, and groups under headings.
@@ -14,6 +15,7 @@ const props = defineProps({
     items: {type: Array, required: true},
     fields: {type: Array, default: () => []},
     emptyTitle: {type: String, default: "Nothing here yet"},
+    place: {type: Function, default: null},
 });
 const value = ref(defaultFilter(props.fields));
 const words = ref("");
@@ -44,7 +46,7 @@ const clear = () => {
                 <p v-if="group" class="card-page-group">{{ group }}</p>
                 <div class="card-page-grid">
                     <template v-for="item in inGroup(group)" :key="item.id">
-                        <PageCard :title="item.title" :icon="item.icon" :state="item.state" :line="item.line" :fault="item.fault" :data-row="item.id">
+                        <PageCard v-context="place ? () => place(item) : null" :title="item.title" :icon="item.icon" :state="item.state" :line="item.line" :fault="item.fault" :data-row="item.id">
                             <template v-if="$slots.corner" #corner><slot name="corner" :item="item" /></template>
                             <template v-if="$slots.foot" #foot><slot name="foot" :item="item" /></template>
                             <template v-if="$slots['card-actions']" #actions><slot name="card-actions" :item="item" /></template>

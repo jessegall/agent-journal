@@ -1,6 +1,7 @@
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 import {pluginWindowContext} from "./support/pluginWindowContext.js";
+import {choose} from "./support/cardMenu.js";
 import PluginRows from "../../core/modules/plugins/web/src/PluginRows.vue";
 import {fileAddress} from "../../core/modules/plugins/web/src/fileAddress.js";
 
@@ -84,13 +85,12 @@ test("a dashboard's file row opens the Files window at the row's line, or at the
     expect(fileAddress("http://journal.test/viewer/?page=plugins&line=9", {path: "src/a.py"}, "coding.files")).toBe("http://journal.test/viewer/?page=coding.files&file=src%2Fa.py");
 });
 
+const ITEMS = {"[data-plugin-latest]": "Check for updates", "[data-plugin-remove]": "Remove"};
 const fromMenu = async (element, item) => {
     document.body.append(element);
-    element.querySelector("[data-plugin-more] button, button[data-plugin-more]").click();
-    await settle();
-    document.querySelector(item).click();
-    await settle();
+    await choose(element.querySelector('[data-row="1"]'), ITEMS[item]);
 };
+const fromCard = (element, label) => choose(element.querySelector('[data-row="1"]'), label);
 
 test.each([true, false])("a plugin switch changes before the answer and returns on refusal, enabled=%s", async (enabled) => {
     let reply;
@@ -139,10 +139,7 @@ test("a newer release shows what changes and upgrades only from there", async ()
 
 test("a plugin that declares a dashboard offers it and says when nothing is written yet", async () => {
     const {element} = await drawn();
-    const button = element.querySelector("[data-plugin-board]");
-    expect(button.textContent).toContain("Sins board");
-    button.click();
-    await settle();
+    await fromCard(element, "Sins board");
     expect(document.body.textContent).toContain("sins has written nothing on its dashboard yet.");
 });
 
@@ -222,7 +219,7 @@ test("a plugin's settings are drawn with the shared setting components for their
 async function recordDrawn(answer) {
     const window = pluginWindowContext({"plugin record": answer, "plugin list": page([PLUGIN])});
     const element = await mounted(PluginRows, window);
-    element.querySelector("[data-plugin-record]").click();
+    await fromCard(element, "Log");
     await settle();
     return {element, window};
 }
@@ -258,7 +255,7 @@ test("what a plugin did names the services it keeps running", async () => {
 test("a card says what the plugin is for and which of its services run", async () => {
     const {element} = await drawn();
     await settle();
-    expect(element.querySelector("[data-plugin-description]").textContent).toBe("Judges the code");
+    expect(element.querySelector("[data-card-line]").textContent).toBe("Judges the code");
     expect(element.querySelector('[data-plugin-service="sins a"]').textContent).toContain("running, process 12");
     expect(element.querySelector('[data-plugin-service="sins b"]').textContent).toContain("stopped");
 });
