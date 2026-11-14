@@ -1,3 +1,4 @@
+from engine.execution.current_execution import CurrentExecution
 from pathlib import Path
 
 import pytest
@@ -62,3 +63,12 @@ def test_a_run_inside_a_write_turn_starts_at_once(tmp_path):
 def test_stopped_server_admission_never_waits(tmp_path):
     with ExecutionAdmission(JournalHome(tmp_path)).admitted(PlacedRun(GIT_STATUS, None, False)) as admitted:
         assert admitted is None
+
+
+def test_a_plugin_script_run_by_a_listener_event_is_an_execution_with_a_class_and_lane(tmp_path):
+    door = admission(tmp_path)
+    event = ExecutionPriorities(SessionStarters(JournalHome(tmp_path))).event_ticket("task.created", Clock().timestamp())
+    script = PlacedRun(ExecutionRequest(["/plugins/sample/listen.sh"], Path("/plugins/sample"), ProcessType.PLUGIN, 60), None, False)
+    with CurrentExecution(event.priority, "event", event.line, event).applied(), door.admitted(script):
+        ticket = door.queue.read()[0].ticket
+    assert (ticket.execution_class.name, ticket.execution_class.lane, ticket.parent) == ("journal short git", ExecutionLane.SHORT, event)
