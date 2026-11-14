@@ -62,7 +62,7 @@ def test_only_the_addressed_main_agent_can_relay_the_request(helper_request):
 def test_main_answers_the_helper_without_a_person_or_a_protected_action(helper_request):
     story, helper, approval = helper_request
     line = f'approval answer {approval.id} --text "Use the existing paired phone"'
-    story.expect_refusal(line, "only the main agent", actor=helper)
+    story.expect_refusal(line, "may not run approval answer", actor=helper)
     story.expect_success(line, actor=story.agent)
     saved = story.container.get(Queries).query(ApprovalRequest).find(approval.id)
     story.expect_rows(saved.state is ApprovalState.CLOSED, saved.review_answer == "Use the existing paired phone",

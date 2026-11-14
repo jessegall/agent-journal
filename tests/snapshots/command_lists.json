@@ -1054,6 +1054,16 @@
   "merger": "allowed",
   "worker": "refused"
  },
+ "driver state-types": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "driver states": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
  "dump board": {
   "helper": "allowed",
   "merger": "allowed",
