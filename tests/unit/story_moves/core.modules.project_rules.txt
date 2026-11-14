@@ -1,0 +1,2 @@
+tests/stories/core/modules/project_rules/memory_rules.py::test_permanent_memories_become_rules_once_and_leave_the_memories -> integration tests/integration/core/modules/project_rules/test_memory_rules.py::test_permanent_memories_become_rules_once_and_leave_the_memories
+tests/stories/core/modules/project_rules/memory_rules.py::test_a_memory_for_no_environment_cannot_be_made -> integration tests/integration/core/modules/project_rules/test_memory_rules.py::test_a_memory_for_no_environment_cannot_be_made
