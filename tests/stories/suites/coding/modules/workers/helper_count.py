@@ -7,7 +7,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import r
 from tests.stories.suites.coding.modules.workers.test_queue import recording_launch
 
 
-def test_a_worker_between_runs_with_work_left_counts_as_a_helper(new_story, monkeypatch):
+def test_a_worker_between_runs_with_work_left_counts_as_a_helper(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     recorded_test_launches(story)
     repository_environment(story)

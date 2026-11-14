@@ -115,7 +115,7 @@ def test_s39_configured_merger_checks_are_listed_after_the_merge_with_the_commit
     story.expect_text("task show 1", "state: completed", actor=story.agent)
 
 
-def test_manual_merge_keeps_mechanical_judging(new_story, monkeypatch):
+def test_manual_merge_keeps_mechanical_judging(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)

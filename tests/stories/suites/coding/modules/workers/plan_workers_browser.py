@@ -8,7 +8,7 @@ from tests.stories.suites.coding.modules.workers.test_queue import recording_lau
 from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 
-def test_a_delegated_plan_shows_its_agent_on_the_plan_bar_the_plan_page_the_tasks_and_the_agent_card(new_story, monkeypatch):
+def test_a_delegated_plan_shows_its_agent_on_the_plan_bar_the_plan_page_the_tasks_and_the_agent_card(new_story):
     story = planned_story(new_story)
     recorded_test_launches(story)
     worker = Actor(story.new_row_id('worker dispatch --test-command python=pytest --model sonnet --plan 1 --phase 1 --name "Lady Lovelace"', actor=story.agent), ActorType.AGENT)

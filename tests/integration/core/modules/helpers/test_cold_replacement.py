@@ -40,11 +40,11 @@ def test_a_helper_silent_for_three_hours_with_a_small_context_resumes_its_sessio
 
 
 
-def test_a_helper_past_the_context_limit_is_replaced_at_its_next_job_and_its_history_says_context_limit(cooling, monkeypatch):
+def test_a_helper_past_the_context_limit_is_replaced_at_its_next_job_and_its_history_says_context_limit(cooling):
     cooling.expect_success(f"setting set {CONTEXT_LIMIT_ENABLED} true --project", actor=cooling.user)
     cooling.expect_success(f"setting set {CONTEXT_LIMIT_TOKENS} {LIMIT_TOKENS} --project", actor=cooling.user)
     helper = helper_agent(cooling)
-    resumable_session(cooling, helper, monkeypatch)
+    resumable_session(cooling, helper)
     save_status_file(cooling, helper.session, {"context_window": {"total_input_tokens": LIMIT_TOKENS}})
     request = launched_job(cooling)
     rows = session_rows(cooling)

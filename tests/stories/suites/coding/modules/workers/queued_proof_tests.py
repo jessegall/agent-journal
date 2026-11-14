@@ -15,7 +15,7 @@ from tests.stories.suites.coding.modules.workers.test_queue import PROOF, record
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 
-def test_a_proof_test_waits_in_the_queue_until_the_run_holding_the_spot_ends(new_story, monkeypatch):
+def test_a_proof_test_waits_in_the_queue_until_the_run_holding_the_spot_ends(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     recorded_test_launches(story)
     story.expect_success(f"setting set {ProcessSetting.LANE_CAPACITY_LONG.key} {RUN_SLOT_COST} --environment main", actor=story.user)

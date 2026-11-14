@@ -71,7 +71,7 @@ def test_the_moment_a_task_is_assigned_to_a_worker_status_the_next_task_start_an
     story.expect_text(f"task show {receipt}", "state: started", actor=story.agent)
 
 
-def test_a_task_assigned_to_worker_a_is_not_offered_to_worker_b_whatever_its_priority(played, monkeypatch):
+def test_a_task_assigned_to_worker_a_is_not_offered_to_worker_b_whatever_its_priority(played):
     story, first, second = story_with_two_workers(played)
     urgent = story.new_row_id('task make "Urgent job" --priority critical --environment main', actor=story.agent)
     story.expect_success(f"task assign {urgent} --to {agent_number(story, first.id)}", actor=story.agent)

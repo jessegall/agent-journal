@@ -103,7 +103,7 @@ class ExitedHelper(StoryFixture):
 
 def test_a_resumed_helper_reports_its_next_job_the_same_way(new_story, monkeypatch):
     story = new_story(fixture=EndedHelper)
-    resumable_session(story, helper_agent(story), monkeypatch)
+    resumable_session(story, helper_agent(story))
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_success(f'helper send {agent_number(story, helper_agent(story).id)} "{JOB}"', actor=story.agent)
     story.run_listeners()
@@ -114,13 +114,13 @@ def test_a_resumed_helper_reports_its_next_job_the_same_way(new_story, monkeypat
     story.expect_rows(len(jobs) == 2, jobs[1].returned == "The listener side is fine.")
 
 
-def test_two_jobs_in_a_row_that_end_without_a_report_both_close(new_story, monkeypatch):
+def test_two_jobs_in_a_row_that_end_without_a_report_both_close(new_story):
     # merger helper 709 on 8 November: its program exited with job 411 unreported, and again at 03:30:55 with job 412,
     # whose report was held as a repeat of the first, so the job stayed open and no merger started again
     story = new_story(fixture=ExitedHelper)
     helper = helper_agent(story)
     story.expect_text(f"message read {helper_report(story).id}", "", actor=story.agent)
-    resumable_session(story, helper, monkeypatch)
+    resumable_session(story, helper)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_success(f'helper send {agent_number(story, helper.id)} "{JOB}"', actor=story.agent)
     story.run_listeners()

@@ -132,10 +132,10 @@ def agents_window_server(new_story):
         yield server, cookie
 
 
-def test_agent_tabs_read_working_idle_and_retired_through_the_viewer(agents_window_server, monkeypatch):
+def test_agent_tabs_read_working_idle_and_retired_through_the_viewer(agents_window_server):
     server, cookie = agents_window_server
     helper = helper_agent(server.story)
-    resumable_session(server.story, helper, monkeypatch)
+    resumable_session(server.story, helper)
     def read(*arguments):
         return server.viewer_line_value(cookie, {"window": "agents.agents", "environment": "main", "line": ["agent", "cards", *arguments]})
     options = read("--options")

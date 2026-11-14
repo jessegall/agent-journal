@@ -21,7 +21,7 @@ TILL_START = START_ROTATING.replace("src/cart.py", "src/till.py")
 @pytest.fixture
 def rotating(new_story, monkeypatch):
     story = story_with_profile_file(new_story, EndedEachLaunchHelper)
-    resumable_session(story, helper_agent(story), monkeypatch)
+    resumable_session(story, helper_agent(story))
     return story
 
 

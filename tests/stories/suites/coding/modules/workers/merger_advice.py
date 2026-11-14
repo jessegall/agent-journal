@@ -133,7 +133,7 @@ class AdvisedWorker:
 
 
 @pytest.fixture
-def advising(new_story, monkeypatch):
+def advising(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     return AdvisedWorker(merger_case(story, repository_environment(story)))
 

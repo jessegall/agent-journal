@@ -106,7 +106,7 @@ def test_a_newer_server_version_does_not_overwrite_a_read_only_edit_and_is_asked
     story.expect_rows(len(fetched) == 1, kept.state is CopyState.DENIED, kept.server_version == 2, "Admin text." in kept.server_fields, story.row(Doc, copy.row_id).body == "Edited by a reader.")
 
 
-def test_a_role_raised_to_edit_compares_a_waiting_edit_with_a_newer_server_version(played, shared_server, monkeypatch):
+def test_a_role_raised_to_edit_compares_a_waiting_edit_with_a_newer_server_version(played, shared_server):
     server, tokens = shared_server
     story = connected(played, server, server.new_user("Noor", "read"))
     copy = made_copy(story, server, tokens.admin, "Garnet role raised newer")

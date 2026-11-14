@@ -59,7 +59,7 @@ def ended(story, process_id: int, code: int) -> None:
     story.run_listeners()
 
 
-def test_a_proof_refuses_a_test_with_a_pipe_or_a_redirect(new_story, monkeypatch):
+def test_a_proof_refuses_a_test_with_a_pipe_or_a_redirect(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     recorded_test_launches(story)
     repository_environment(story)
@@ -161,7 +161,7 @@ def test_a_task_with_an_unchecked_proof_stays_in_testing_after_its_tests_pass(ne
     story.expect_text("task show 1", "state: testing", actor=story.agent)
 
 
-def test_a_proof_with_no_test_still_waits_for_the_main_agents_check(new_story, monkeypatch):
+def test_a_proof_with_no_test_still_waits_for_the_main_agents_check(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     started = recorded_test_launches(story)
     repository = repository_environment(story)
@@ -174,7 +174,7 @@ def test_a_proof_with_no_test_still_waits_for_the_main_agents_check(new_story, m
     story.expect_text("proof show 1", "state: shown", actor=story.agent)
 
 
-def test_picked_tests_run_after_proof_tests_on_the_rebased_worktree(new_story, monkeypatch):
+def test_picked_tests_run_after_proof_tests_on_the_rebased_worktree(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     started = recorded_test_launches(story)
     repository = repository_environment(story)
@@ -262,7 +262,7 @@ def test_an_empty_picker_result_finishes_without_an_extra_test(new_story, monkey
     story.expect_text("task show 1", "state: completed", actor=story.agent)
 
 
-def test_picked_tests_run_when_the_proof_has_no_test_command(new_story, monkeypatch):
+def test_picked_tests_run_when_the_proof_has_no_test_command(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     started = recorded_test_launches(story)
     repository = repository_environment(story)
@@ -418,7 +418,7 @@ def test_a_running_proof_whose_process_is_gone_leaves_running_as_lost(unrecorded
 
 
 @pytest.mark.real_git
-def test_the_picked_tests_run_on_the_work_merged_into_a_base_that_moved_after_the_hand_in_and_a_failure_returns_the_work(new_story, monkeypatch):
+def test_the_picked_tests_run_on_the_work_merged_into_a_base_that_moved_after_the_hand_in_and_a_failure_returns_the_work(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     started = recorded_test_launches(story)
     repository = repository_environment(story, real_git=True)
@@ -454,7 +454,7 @@ def test_a_release_of_the_worker_ends_the_proof_test_that_waited_or_ran_for_its_
     story.expect_text("proof show 1", "state: short", "was abandoned or removed while this test waited or ran", actor=story.agent)
 
 
-def test_a_worker_whose_commit_passed_with_every_other_task_of_its_unit_blocked_is_told_to_the_main_agent(new_story, monkeypatch):
+def test_a_worker_whose_commit_passed_with_every_other_task_of_its_unit_blocked_is_told_to_the_main_agent(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     started = recorded_test_launches(story)
     repository = repository_environment(story)

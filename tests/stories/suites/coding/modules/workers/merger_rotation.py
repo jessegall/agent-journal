@@ -59,7 +59,7 @@ def ended_merger(story, monkeypatch) -> Agent:
     merger = mergers(story)[0]
     story.expect_success(f"agent end {merger.id}", actor=story.agent)
     story.run_listeners()
-    resumable_session(story, merger, monkeypatch)
+    resumable_session(story, merger)
     return merger
 
 

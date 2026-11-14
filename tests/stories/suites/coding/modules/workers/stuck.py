@@ -257,7 +257,7 @@ def test_two_environments_of_one_checkout_dispatch_side_by_side_on_branches_of_t
     repository.expect_branch_tip(repository.worker_branch(side_worker_id, "side"), repository.tip(ENVIRONMENT_BRANCH))
 
 
-def test_a_stuck_worker_reaches_the_merger_and_not_the_main_agent(new_story, monkeypatch):
+def test_a_stuck_worker_reaches_the_merger_and_not_the_main_agent(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)

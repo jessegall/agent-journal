@@ -36,7 +36,7 @@ def test_548_a_launcher_whose_process_runs_and_is_slow_to_answer_is_not_replaced
     story = slow_launcher
     started_launchers: list[str] = []
     monkeypatch.setattr(LauncherService, "start", lambda service: started_launchers.append("launcher") or False)
-    resumable_session(story, helper_agent(story), monkeypatch)
+    resumable_session(story, helper_agent(story))
     story.expect_success(f'helper send {agent_number(story, helper_agent(story).id)} "{JOB}"', actor=story.agent)
     story.run_listeners()
     story.expect_rows(started_launchers == [], story.home.socket(LAUNCHER_SOCKET).exists(), detail=f"launchers started: {started_launchers}, the socket file is there: {story.home.socket(LAUNCHER_SOCKET).exists()}")

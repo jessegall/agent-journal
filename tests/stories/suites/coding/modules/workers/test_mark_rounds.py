@@ -12,7 +12,7 @@ from tests.stories.suites.coding.modules.workers.test_queue import ended, record
 
 
 
-def test_a_second_test_round_of_the_same_task_gets_its_own_mark(new_story, monkeypatch):
+def test_a_second_test_round_of_the_same_task_gets_its_own_mark(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     started = recorded_test_launches(story)
     repository = repository_environment(story)

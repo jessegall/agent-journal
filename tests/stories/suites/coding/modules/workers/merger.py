@@ -225,7 +225,7 @@ def test_the_merger_and_a_worker_message_each_other_but_two_workers_do_not(new_s
     story.expect_refusal(f'message send "Hello" --to agent:{agent_number(story, second_agent.id)}', "not yours to message", actor=worker)
 
 
-def test_a_workers_report_goes_to_the_merger_and_the_merger_tells_the_main_agent_what_it_must_act_on(new_story, monkeypatch):
+def test_a_workers_report_goes_to_the_merger_and_the_merger_tells_the_main_agent_what_it_must_act_on(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
@@ -367,7 +367,7 @@ def test_a_worker_left_to_the_main_agent_is_not_reported_as_stopped(new_story, m
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has stopped")
 
 
-def test_long_merger_lines_wait_until_the_output_is_read_whole(new_story, monkeypatch):
+def test_long_merger_lines_wait_until_the_output_is_read_whole(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)

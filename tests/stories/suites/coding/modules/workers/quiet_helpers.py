@@ -164,7 +164,7 @@ def test_a_worker_stopped_for_good_with_its_job_sent_before_is_not_named(new_sto
 
 def expect_waiting_job_name(story, helper, monkeypatch) -> None:
     story.end_session(Actor(helper.id, ActorType.AGENT))
-    resumable_session(story, helper, monkeypatch)
+    resumable_session(story, helper)
     story.advance(minutes(1))
     launcher = FakeLauncher.accepting(story.home.socket("launcher"), answer=b"running\n")
     story.expect_success(f'helper send {agent_number(story, helper.id)} "Read the cart"', actor=story.agent)

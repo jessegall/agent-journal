@@ -82,7 +82,7 @@ def test_a_failed_test_keeps_the_task_waiting_for_the_workers_correction(new_sto
     story.expect_success(f"task show {task_id}", "state: blocked", actor=story.agent)
 
 
-def test_a_worker_ending_while_its_tests_run_with_a_task_it_has_not_started_keeps_the_wait_blocked(new_story, monkeypatch):
+def test_a_worker_ending_while_its_tests_run_with_a_task_it_has_not_started_keeps_the_wait_blocked(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     processes = recorded_test_launches(story)

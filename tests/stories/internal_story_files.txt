@@ -52,16 +52,13 @@ tests/stories/core/modules/helpers/cold_sessions.py
 tests/stories/core/modules/helpers/helper_jobs.py
 tests/stories/core/modules/helpers/helper_reports.py
 tests/stories/core/modules/helpers/helper_window.py
-tests/stories/core/modules/helpers/job_marks.py
 tests/stories/core/modules/helpers/kept_agents.py
 tests/stories/core/modules/helpers/lifetime_combinations.py
 tests/stories/core/modules/helpers/lifetime_cost.py
-tests/stories/core/modules/helpers/lifetime_reviewers.py
 tests/stories/core/modules/helpers/lifetime_reviewers_limits.py
 tests/stories/core/modules/helpers/occupant_rotation.py
 tests/stories/core/modules/helpers/program_split.py
 tests/stories/core/modules/helpers/program_states.py
-tests/stories/core/modules/helpers/rotation_mid_job.py
 tests/stories/core/modules/helpers/start_helper.py
 tests/stories/core/modules/helpers/story_kit.py
 tests/stories/core/modules/helpers/unstarted_job_starts.py
@@ -70,7 +67,6 @@ tests/stories/core/modules/helpers/usage_limits.py
 tests/stories/core/modules/helpers/usage_lockdown.py
 tests/stories/core/modules/helpers/usage_lockdown_end.py
 tests/stories/core/modules/helpers/usage_lockdown_settings.py
-tests/stories/core/modules/helpers/usage_lockdown_starts.py
 tests/stories/core/modules/helpers/usage_lockdown_typing.py
 tests/stories/core/modules/library/connecting.py
 tests/stories/core/modules/library/copies.py
@@ -84,7 +80,6 @@ tests/stories/core/modules/memories/marks.py
 tests/stories/core/modules/messages/delivery.py
 tests/stories/core/modules/messages/lost_hooks.py
 tests/stories/core/modules/messages/message_links_browser.py
-tests/stories/core/modules/messages/message_wakes_agent.py
 tests/stories/core/modules/overview/overview.py
 tests/stories/core/modules/plan_reviews/critique_button.py
 tests/stories/core/modules/plan_reviews/review_state.py
@@ -199,7 +194,6 @@ tests/stories/suites/coding/modules/workers/git_outside_writes.py
 tests/stories/suites/coding/modules/workers/gone_workers.py
 tests/stories/suites/coding/modules/workers/group_stop.py
 tests/stories/suites/coding/modules/workers/hand_in_rebase.py
-tests/stories/suites/coding/modules/workers/helper_count.py
 tests/stories/suites/coding/modules/workers/hoarding_and_claims.py
 tests/stories/suites/coding/modules/workers/important_lines.py
 tests/stories/suites/coding/modules/workers/interrupted_cut.py
@@ -217,7 +211,6 @@ tests/stories/suites/coding/modules/workers/merge_ask_misuse.py
 tests/stories/suites/coding/modules/workers/merge_asks.py
 tests/stories/suites/coding/modules/workers/merge_followup_plan.py
 tests/stories/suites/coding/modules/workers/merger.py
-tests/stories/suites/coding/modules/workers/merger_cases.py
 tests/stories/suites/coding/modules/workers/merger_corrections.py
 tests/stories/suites/coding/modules/workers/merger_rotation.py
 tests/stories/suites/coding/modules/workers/model_identity.py
@@ -229,7 +222,6 @@ tests/stories/suites/coding/modules/workers/phase_test_runs.py
 tests/stories/suites/coding/modules/workers/phase_unfinished.py
 tests/stories/suites/coding/modules/workers/plan_over_workers.py
 tests/stories/suites/coding/modules/workers/plan_send.py
-tests/stories/suites/coding/modules/workers/plan_workers_browser.py
 tests/stories/suites/coding/modules/workers/program_choice.py
 tests/stories/suites/coding/modules/workers/program_choice_review.py
 tests/stories/suites/coding/modules/workers/published_files_commit.py

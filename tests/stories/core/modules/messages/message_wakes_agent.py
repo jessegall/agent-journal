@@ -47,10 +47,10 @@ def test_a_message_to_an_idle_agent_is_a_line_that_wakes_it_and_starts_no_second
     story.expect_rows(line.wakes_agent, program_starts_so_far(story) == [], detail=str(story.launcher.requests))
 
 
-def test_a_message_to_a_stopped_agent_starts_its_program_again_in_the_same_journal_session(helper_story, monkeypatch):
+def test_a_message_to_a_stopped_agent_starts_its_program_again_in_the_same_journal_session(helper_story):
     story = helper_story
     previous_stop = helper_row(story)
-    resumable_session(story, previous_stop, monkeypatch)
+    resumable_session(story, previous_stop)
     story.end_session(story.helper)
     story.advance(timedelta(minutes=5))
     story.expect_success(MESSAGE.format(number=agent_number(story, story.helper.id)), actor=story.agent)
@@ -58,10 +58,10 @@ def test_a_message_to_a_stopped_agent_starts_its_program_again_in_the_same_journ
     story.expect_rows(len(starts) == 1, starts[0]["session"] == previous_stop.session, "--resume" in starts[0]["command"], helper_row(story).id == previous_stop.id, detail=str(story.launcher.requests))
 
 
-def test_a_message_to_a_stopped_agent_whose_session_has_gone_cold_starts_a_new_program_under_the_same_agent(helper_story, monkeypatch):
+def test_a_message_to_a_stopped_agent_whose_session_has_gone_cold_starts_a_new_program_under_the_same_agent(helper_story):
     story = helper_story
     previous_stop = helper_row(story)
-    resumable_session(story, previous_stop, monkeypatch)
+    resumable_session(story, previous_stop)
     story.expect_success('memory make "The cart rounds half up" --weight 5', actor=story.helper)
     story.end_session(story.helper)
     full_status(story, previous_stop.session, 40, 0.0)

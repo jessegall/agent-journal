@@ -18,7 +18,7 @@ RUNNING = "the tests of task 1 are running"
 
 
 @pytest.fixture
-def two_tasks(new_story, monkeypatch):
+def two_tasks(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     started = recorded_test_launches(story)
     repository = repository_environment(story)
@@ -99,7 +99,7 @@ def test_the_tick_starts_no_test_of_a_proof_shown_again_after_it_was_sent_back_a
     story.expect_text("proof show 1", "state: running", actor=story.agent)
 
 
-def test_with_nothing_to_run_and_a_proof_left_to_check_the_worker_goes_on(new_story, monkeypatch):
+def test_with_nothing_to_run_and_a_proof_left_to_check_the_worker_goes_on(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     recorded_test_launches(story)
     repository = repository_environment(story)

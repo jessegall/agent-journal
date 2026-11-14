@@ -65,7 +65,7 @@ def test_a_clash_stops_the_hand_in_and_leaves_the_markers_until_the_worker_settl
     expect_tip(story, repository, worker)
 
 
-def test_a_proof_runs_on_the_rebased_code(new_story, monkeypatch):
+def test_a_proof_runs_on_the_rebased_code(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     launches = recorded_test_launches(story)
     repository = repository_environment(story)

@@ -22,7 +22,7 @@ SESSION_START = HookSamples.session_start()
 
 
 @pytest.fixture
-def visiting(new_story, monkeypatch):
+def visiting(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     return merger_case(story, repository_environment(story))
 

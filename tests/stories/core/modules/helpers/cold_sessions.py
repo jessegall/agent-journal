@@ -53,7 +53,7 @@ def test_the_person_sets_the_cache_lifetime(ended_helper, minutes, cold):
 
 def with_job(story, monkeypatch, minutes, percent):
     helper = helper_agent(story)
-    resumable_session(story, helper, monkeypatch)
+    resumable_session(story, helper)
     aged(story, minutes, percent)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"), answer=b"started 701\n")
     story.expect_success(f'helper send {agent_number(story, helper.id)} "{JOB}"', actor=story.agent)
@@ -111,9 +111,9 @@ def limited_helper(ended_helper):
     return ended_helper
 
 
-def test_a_limited_helper_starts_a_new_session_when_it_is_sent_a_job(limited_helper, monkeypatch):
+def test_a_limited_helper_starts_a_new_session_when_it_is_sent_a_job(limited_helper):
     story, helper = limited_helper, helper_agent(limited_helper)
-    resumable_session(story, helper, monkeypatch)
+    resumable_session(story, helper)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"), answer=b"started 701\n")
     story.expect_success(f'helper send {agent_number(story, helper.id)} "{JOB}"', actor=story.agent)
     story.run_listeners()

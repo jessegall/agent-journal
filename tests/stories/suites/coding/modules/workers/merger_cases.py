@@ -91,7 +91,7 @@ def merger_case(story: Story, repository: GitRepository, dispatch: str = DISPATC
 
 
 @pytest.fixture
-def case(new_story, monkeypatch):
+def case(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     return merger_case(story, repository_environment(story))
 
@@ -104,7 +104,7 @@ def own_files(case):
 
 
 @pytest.fixture
-def linked(new_story, monkeypatch):
+def linked(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     repository.library("node_modules", LIBRARY_FILE, LIBRARY_TEXT)
@@ -112,7 +112,7 @@ def linked(new_story, monkeypatch):
 
 
 @pytest.fixture
-def copied(new_story, monkeypatch):
+def copied(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     repository.library("vendor", LIBRARY_FILE, LIBRARY_TEXT)
@@ -141,7 +141,7 @@ def test_only_the_merger_runs_merger_scope(case):
 
 
 @pytest.mark.real_git
-def test_merger_scope_reads_a_real_judge_refusal(new_story, monkeypatch):
+def test_merger_scope_reads_a_real_judge_refusal(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success(f"plugin install {judge_plugin_folder(story.home.folder.parent)} --yes", actor=story.user)
@@ -232,7 +232,7 @@ def logs_read_at(story: Story, worker: Actor) -> str | None:
     return story.first_row(Worktree, session_agent_id=worker.id).logs_read_at
 
 
-def test_the_merger_reads_the_logs_of_a_worker_that_delivered_and_they_count_as_read(new_story, monkeypatch):
+def test_the_merger_reads_the_logs_of_a_worker_that_delivered_and_they_count_as_read(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     worker = delivered_worker(story, repository_environment(story))
     story.expect_success(f'task log 1 "{LOG_LINE}"', actor=worker)

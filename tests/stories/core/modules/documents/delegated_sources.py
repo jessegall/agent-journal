@@ -60,7 +60,7 @@ def test_resumed_helper_does_not_reuse_previous_request(scenario, monkeypatch):
     helper_plan(scenario, helper_id, "First sourced helper assignment")
     scenario.expect_link("message:2", "plan:2", "about")
     scenario.story.expect_success(f"agent end {helper_id}")
-    resumable_session(scenario.story, helper_agent(scenario.story), monkeypatch)
+    resumable_session(scenario.story, helper_agent(scenario.story))
     scenario.requested_command("message clear-work-source")
     scenario.command(f'helper send {agent_number(scenario.story, helper_id)} "A separate unsourced job"')
     scenario.story.hook(helper_agent(scenario.story).session, HookSamples.session_start())

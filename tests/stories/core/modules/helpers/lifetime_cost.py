@@ -1,3 +1,5 @@
+from core.modules.claude_code.providers.claude_code_provider import CONFIG_VARIABLE
+import os
 import json
 import shutil
 
@@ -47,16 +49,16 @@ def launch_of_the_last_job(story) -> str:
     return next(row for row in rows if row["id"] == helper_agent(story).id)["occupant_launch"]
 
 
-def test_a_person_reads_the_jobs_on_new_and_resumed_sessions_and_their_cost_with_no_word_on_which_is_cheaper(steady, monkeypatch):
+def test_a_person_reads_the_jobs_on_new_and_resumed_sessions_and_their_cost_with_no_word_on_which_is_cheaper(steady):
     first = helper_agent(steady)
-    resumable_session(steady, first, monkeypatch)
+    resumable_session(steady, first)
     reported_cost(steady, first.session, 1.0)
     finished_job(steady)
     reported_cost(steady, first.session, 1.5)
-    shutil.rmtree(steady.home.folder.parent / "claude-config")
+    shutil.rmtree(os.environ[CONFIG_VARIABLE])
     finished_job(steady)
     second = helper_agent(steady)
-    resumable_session(steady, second, monkeypatch)
+    resumable_session(steady, second)
     reported_cost(steady, second.session, 2.0)
     finished_job(steady)
     reported_cost(steady, second.session, 2.5)
@@ -78,7 +80,7 @@ def test_a_later_launch_of_an_each_launch_profile_costs_what_its_first_did(new_s
 
 def test_a_person_who_sets_a_profile_to_each_launch_sees_its_next_job_marked_fresh_in_the_agents_list(steady, monkeypatch):
     first_launch = launch_of_the_last_job(steady)
-    resumable_session(steady, helper_agent(steady), monkeypatch)
+    resumable_session(steady, helper_agent(steady))
     finished_job(steady)
     resumed = launch_of_the_last_job(steady)
     steady.expect_success(LAUNCH_ROTATION_SAVE, actor=steady.user)

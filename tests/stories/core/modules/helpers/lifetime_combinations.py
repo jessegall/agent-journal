@@ -42,11 +42,11 @@ def test_a_continue_helper_whose_conversation_is_missing_starts_a_new_session_an
     steady.expect_rows(helper_agent(steady).id == helper.id, helper_agent(steady).session != helper.session, UNAVAILABLE_TEXT in command, detail=command)
 
 
-def test_a_continue_helper_past_the_context_limit_still_gets_a_new_session(steady, monkeypatch):
+def test_a_continue_helper_past_the_context_limit_still_gets_a_new_session(steady):
     steady.expect_success(f"setting set {CONTEXT_LIMIT_ENABLED} true --project", actor=steady.user)
     steady.expect_success(f"setting set {CONTEXT_LIMIT_TOKENS} {LIMIT_TOKENS} --project", actor=steady.user)
     helper = helper_agent(steady)
-    resumable_session(steady, helper, monkeypatch)
+    resumable_session(steady, helper)
     save_status_file(steady, helper.session, {"context_window": {"total_input_tokens": LIMIT_TOKENS}})
     request = launched_job(steady)
     steady.expect_rows(helper_agent(steady).session != helper.session, "--resume" not in request["command"], detail=str(request["command"][-4:]))

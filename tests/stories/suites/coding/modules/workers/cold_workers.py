@@ -51,7 +51,7 @@ def test_a_cold_worker_starts_a_new_session_and_keeps_its_agent_and_worktree(sto
 
 @pytest.mark.parametrize("minutes, percent", [(49, 100), (50, 19), (0, 0)], ids=["warm", "small and under an hour", "just stopped"])
 def test_a_worker_idle_under_an_hour_that_is_warm_or_small_resumes_its_own_session(stopped_worker, monkeypatch, minutes, percent):
-    resumable_session(stopped_worker, stopped_worker.row(Agent, stopped_worker.worker.id), monkeypatch)
+    resumable_session(stopped_worker, stopped_worker.row(Agent, stopped_worker.worker.id))
     worker, request = with_job(stopped_worker, minutes, percent)
     stopped_worker.expect_rows(stopped_worker.row(Agent, worker.id).session == worker.session, "--resume" in request["command"], worker.session in request["command"], detail=str(request))
 

@@ -23,7 +23,7 @@ def expect_reason(story, worker, reason):
     assert next(row["reason"] for row in rows if row["agent_id"] == worker.id) == reason
 
 
-def test_a_worker_wait_reason_follows_tests_proof_check_and_merge(new_story, monkeypatch):
+def test_a_worker_wait_reason_follows_tests_proof_check_and_merge(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     launches = recorded_test_launches(story)
     repository = repository_environment(story)

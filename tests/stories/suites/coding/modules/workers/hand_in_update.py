@@ -15,7 +15,7 @@ from tests.stories.suites.coding.modules.workers.test_queue import PROOF, record
 
 
 @pytest.fixture
-def running_delivery(new_story, monkeypatch):
+def running_delivery(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     recorded_test_launches(story)
     repository = repository_environment(story)

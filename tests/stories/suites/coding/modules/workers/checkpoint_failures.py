@@ -107,7 +107,7 @@ def test_182_a_failed_own_test_goes_to_the_task_whose_proof_names_the_failing_pa
     story.expect_rows(reach["failed_task_ids"] == "1", f"output {output_id(worker, BUILD_TEST)}" in " | ".join(failure_lines(worker)), detail=f"{reach} | {worker.worker_lines()}")
 
 
-def test_183_a_failure_that_names_no_task_goes_to_the_task_completed_last_and_the_merger_gets_a_line(running_checkpoint, monkeypatch):
+def test_183_a_failure_that_names_no_task_goes_to_the_task_completed_last_and_the_merger_gets_a_line(running_checkpoint):
     worker, story = running_checkpoint, running_checkpoint.story
     story.expect_success(MERGER_ON, actor=story.user)
     produce_output(worker, BUILD_TEST, "FAILED tests/receipts.py::test_print - assert 3 == 4\n")
