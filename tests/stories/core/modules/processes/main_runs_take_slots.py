@@ -10,11 +10,11 @@ def story_with_main_runs(new_story, main_runs: int = 1):
     return story, runs
 
 
-def test_a_main_agents_run_starts_at_once_while_a_worker_run_waits_for_a_place(new_story):
+def test_a_main_agents_test_run_waits_for_room_in_the_long_lane_like_a_workers(new_story):
     story, _ = story_with_main_runs(new_story, main_runs=2)
     worker_run = queued(story, "make one")
     main_run = start_process(story, "make main 2", category=CommandCategory.TEST_RUN)
-    story.expect_rows(waits(story, worker_run), not waits(story, main_run), detail="the main agent's run waited behind a worker's")
+    story.expect_rows(waits(story, worker_run), waits(story, main_run), detail="a test run started past the long lane's capacity")
 
 
 def test_a_main_agents_run_that_ends_gives_its_place_back_to_the_queue(new_story):
