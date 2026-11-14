@@ -404,7 +404,6 @@ tests/stories/core/modules/processes/reading_shadow.py
 tests/stories/core/modules/processes/repeat_reads.py
 tests/stories/core/modules/processes/repeated_exits.py
 tests/stories/core/modules/processes/request_reader.py
-tests/stories/core/modules/processes/request_rows.py
 tests/stories/core/modules/processes/run_cadence.py
 tests/stories/core/modules/processes/run_cadence_failures.py
 tests/stories/core/modules/processes/run_cadence_nudges.py
