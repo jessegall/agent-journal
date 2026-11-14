@@ -371,7 +371,6 @@ tests/stories/core/modules/processes/output_reading_points.py
 tests/stories/core/modules/processes/output_timeout.py
 tests/stories/core/modules/processes/priority_waits.py
 tests/stories/core/modules/processes/process_feed.py
-tests/stories/core/modules/processes/process_model.py
 tests/stories/core/modules/processes/process_queue_read.py
 tests/stories/core/modules/processes/process_retention.py
 tests/stories/core/modules/processes/progress_listing.py
