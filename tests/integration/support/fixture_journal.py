@@ -1,7 +1,9 @@
 from dataclasses import dataclass, field
+from typing import cast
 
 from engine.actor.actor import Actor
 from engine.container.container import Container
+from engine.database.repeated_work import RepeatedWork
 from engine.driver.hook_reply import HookReply
 from engine.enums.actor_type import ActorType
 from engine.journal.journal_home import JournalHome
@@ -61,6 +63,14 @@ class FixtureJournal:
 
     def hook(self, session: str, sample: HookSample) -> HookReply:
         return self.journal.hook(session, sample)
+
+    @property
+    def repeated_work(self) -> RepeatedWork:
+        return cast(RepeatedWork, self.journal.database.repeated_work)
+
+    # binds the instance for the type, as a story replaces one of the story kit's own bindings
+    def replace(self, kind: type, instance: object) -> None:
+        self.container.bind(kind, instance)
 
     def row(self, model: type, row_id: int):
         return self.container.get(Queries).query(model).find(row_id)

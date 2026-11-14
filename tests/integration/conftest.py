@@ -55,7 +55,10 @@ def upgraded(journal_with) -> UpgradedJournal:
 def played(templates: TemplateDatabases, tmp_path: Path) -> Generator[Callable[..., FixtureJournal]]:
     opened: list[IntegrationJournal] = []
 
-    def make(fixture: type, *modules: str) -> FixtureJournal:
+    # played(Fixture, module, ...) or, as a story helper calls new_story, played(module, ..., fixture=Fixture)
+    def make(*arguments, fixture: type | None = None) -> FixtureJournal:
+        modules = arguments if fixture is not None else arguments[1:]
+        fixture = fixture if fixture is not None else arguments[0]
         home, state = templates.fixture_home(tmp_path / f"played-{len(opened)}", fixture, tuple(modules))
         journal = IntegrationJournal(home)
         opened.append(journal)
