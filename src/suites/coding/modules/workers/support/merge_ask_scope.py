@@ -1,4 +1,3 @@
-from suites.coding.modules.workers.support.worktree_git import SHORT_ID_CHARACTERS
 from engine.errors.refusal import Refusal
 from engine.query.queries import Queries
 from core.modules.plans.models.enums.checkpoint_state import CheckpointState
@@ -51,8 +50,7 @@ class MergeAskScope:
 
     def part(self, worktree: Worktree, unit: WorkUnit, last_task: str) -> MergeAskPart:
         if not last_task:
-            # the branch's tip, which holds an update's merge of the base on top of the last task commit
-            return MergeAskPart(worktree, unit, self.range.git.tip(worktree.folder, worktree.branch)[:SHORT_ID_CHARACTERS], unit.task_ids, True)
+            return MergeAskPart(worktree, unit, self.range.branch_tip(worktree), unit.task_ids, True)
         commit = self.range.task_commit(worktree, int(last_task)) if self.range.is_task_number(last_task) else last_task
         if commit is None:
             committed = self.range.leading_tasks(worktree, worktree.branch)
@@ -65,7 +63,7 @@ class MergeAskScope:
     # the base branch changed none of the files the asked work changed, so its checkpoint tests ran on the code the
     # merge makes for those files; a base that moves on elsewhere never holds the ask up
     def check_base(self, worktree: Worktree, part: MergeAskPart) -> None:
-        shared = self.range.git.base_changes_on_own_files(worktree.folder, worktree.base_branch, part.commit_id)
+        shared = self.range.base_changes_on_own_files(worktree, part.commit_id)
         if not shared:
             return
         raise Refusal(f"{worktree.base_branch} changed {len(shared)} of the files your work changed, such as {shared[0]}", "run journal worker update, commit, let the checkpoint tests run on it, and ask again")

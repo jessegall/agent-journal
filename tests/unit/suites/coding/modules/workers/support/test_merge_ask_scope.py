@@ -92,6 +92,12 @@ class SampleRange(WorkerMergeRange):
     def task_commit(self, worktree, task_id):
         return self.commits.get(task_id)
 
+    def branch_tip(self, worktree):
+        return worktree.commit_short_id
+
+    def base_changes_on_own_files(self, worktree, commit):
+        return ()
+
     def is_branch_commit(self, worktree, commit):
         return commit in self.commits.values()
 
