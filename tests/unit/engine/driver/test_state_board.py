@@ -8,6 +8,7 @@ from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.driver.open_row import OpenRow
 from engine.driver.state_board import FAILED_OPENER_TABLE, StateBoard
 from engine.driver.state_record import StateRecord
+from engine.driver.states.agent_row_state import AgentRowState
 from engine.registry.agent_state_entry import AgentStateEntry
 from engine.time.timestamp import Timestamp
 
@@ -214,3 +215,16 @@ def test_a_closed_parent_never_runs_its_substates_opener():
     assert not made.is_open(child)
     assert made.stack("builder") == []
     assert "OldSubstate" not in OPENS
+
+
+class WorkerDefault(AgentRowState):
+    name = "samples.worker-default"
+
+
+def test_a_default_state_is_open_on_the_agents_row_while_the_agent_carries_it_and_closed_once_removed():
+    carried = board([entry(WorkerDefault)])
+    carried.hook.anchor, carried.hook.defaults = OpenRow("agent", 7, EARLY), ("samples.worker-default",)
+    assert carried.open_rows(entry(WorkerDefault)) == (OpenRow("agent", 7, EARLY),)
+    removed = board([entry(WorkerDefault)])
+    removed.hook.anchor, removed.hook.defaults = OpenRow("agent", 7, EARLY), ()
+    assert not removed.is_open(entry(WorkerDefault))

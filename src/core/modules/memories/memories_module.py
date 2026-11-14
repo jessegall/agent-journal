@@ -1,3 +1,5 @@
+from core.modules.memories.windows.extensions.agents_memories_extension import AgentsMemoriesExtension
+from core.modules.memories.windows.extensions.helpers_memories_extension import HelpersMemoriesExtension
 from core.modules.memories.models.declarations.memory_model_declaration import MemoryModelDeclaration
 from core.modules.memories.models.declarations.memory_delivery_model_declaration import MemoryDeliveryModelDeclaration
 from core.modules.memories.models.declarations.memory_mark_model_declaration import MemoryMarkModelDeclaration
@@ -16,8 +18,6 @@ from core.modules.memories.support.memory_nudges import MEMORY_NUDGES
 from engine.module.model_declaration import ModelDeclaration
 from core.modules.memories.commands.memory_counts.memory_counts_subcommand import MemoryCountsSubcommand
 from core.modules.memories.commands.memory_page.memory_page_subcommand import MemoryPageSubcommand
-from engine.viewer.window_key import WindowKey
-from engine.enums.key_loading import KeyLoading
 from engine.module.module import Module
 from core.modules.memories.guards.agent_scope_guard import AgentScopeGuard
 from core.modules.memories.guards.keyword_scope_guard import KeywordScopeGuard
@@ -62,8 +62,6 @@ from core.modules.memories.support.memory_settings import MEMORY_SETTINGS
 from core.modules.memories.seeders.memories_seeder import MemoriesSeeder
 from core.modules.memories.support.block_conditions.memories_weighed import MemoriesWeighed
 from core.modules.memories.support.memory_inspector import MEMORY_INSPECTOR
-from engine.viewer.window_extension import WindowExtension
-from engine.viewer.window_tab import WindowTab
 
 
 class MemoriesModule(Module):
@@ -92,9 +90,6 @@ class MemoriesModule(Module):
     marks = MEMORY_MARKS
     docks = MEMORIES_DOCKS
     windows = MEMORIES_WINDOWS
-    window_extensions = [WindowExtension(name, reads=["memory page"], runs=["memory weigh", "memory edit", "memory remove", "memory restore"], events=["memory.*"], keys=[
-        WindowKey("agent-memories.*", "memory page --agent {id} --state active --order weight --limit 100", tab="memories", events=["memory.*"], loading=KeyLoading.REQUESTED),
-        WindowKey("agent-removed-memories.*", "memory page --agent {id} --removed --state removed --order weight --limit 100", tab="memories", events=["memory.*"], loading=KeyLoading.REQUESTED),
-    ], tabs=[WindowTab("memories", "Memories", "memory page", count_field="memories", component="/modules/journal.core.memories/agent-memories.js")]) for name in ("agents.agents", "agents.helpers")]
+    window_extensions = [AgentsMemoriesExtension, HelpersMemoriesExtension]
     inspectors = [MEMORY_INSPECTOR]
     seeders = [MemoriesSeeder]

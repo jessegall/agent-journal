@@ -1,3 +1,4 @@
+from core.modules.plans.windows.extensions.chat_running_agents_extension import ChatRunningAgentsExtension
 from core.modules.plans.windows.plans_windows import PLANS_WINDOWS
 from core.modules.plans.models.declarations.plan_model_declaration import PlanModelDeclaration
 from core.modules.plans.models.declarations.phase_task_model_declaration import PhaseTaskModelDeclaration
@@ -71,7 +72,6 @@ from core.modules.plans.models.plan_outline_task import PlanOutlineTask
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.support.plan_shared_rows import PlanSharedRows
 from engine.module.module import Module
-from engine.viewer.window_extension import WindowExtension
 from engine.module.model_declaration import ModelDeclaration
 from core.modules.plans.models.phase import Phase
 from core.modules.plans.upgrade.plans_move import PlansMove
@@ -149,7 +149,7 @@ class PlansModule(Module):
     driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule, PlanContextRule]
     agent_states = [PlanFocusDue]
     docks = PLANS_DOCKS
-    window_extensions = [WindowExtension("messages.chat", reads=["agent running"])]
+    window_extensions = [ChatRunningAgentsExtension]
     buttons = [ButtonDeclaration("plans.approve", WAITING_PLAN_SLOTS, "Approve", "plan approve {row_id}",
                                  icon="check", primary=True, condition=ButtonCondition("state", tuple(["ready"])),
                                  tip="Approve the plan; the agent starts it", menu_label="Other ways to approve",

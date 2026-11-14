@@ -6,6 +6,7 @@ from core.modules.tasks.models.declarations.task_block_renewal_model_declaration
 from core.modules.tasks.models.declarations.task_read_model_declaration import TaskReadModelDeclaration
 from core.modules.tasks.docks.tasks_docks import TASKS_DOCKS
 from core.modules.tasks.skills.declarations.tasks_skills import TASKS_SKILLS
+from core.modules.tasks.states.where_you_stand import WhereYouStand
 from core.modules.tasks.commands.repair_task_states.repair_task_states_handler import RepairTaskStatesHandler
 from core.modules.tasks.ticks.task_state_sweep import SWEEP_SECONDS as TASK_SWEEP_SECONDS, TaskStateSweep
 from engine.ticker.tick_handler import TickHandler
@@ -141,6 +142,7 @@ class TasksModule(Module):
     nudges = TASK_NUDGES
     settings = TASK_SETTINGS
     requires_engine = ">=5,<6"
+    agent_states = [WhereYouStand]
     block_conditions = [TaskStopped, TaskStarted, TaskClosed, StartedTaskExists, TaskLogged, TaskBriefRead, TaskBlocksReviewed]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking", "journal.core.settings", "journal.core.assignments"]
     bindings = {AgentTaskReads: RowAgentTaskReads}

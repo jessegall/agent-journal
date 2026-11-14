@@ -1,3 +1,6 @@
+from core.modules.processes.windows.extensions.agents_processes_extension import AgentsProcessesExtension
+from core.modules.processes.windows.extensions.helpers_processes_extension import HelpersProcessesExtension
+from core.modules.processes.windows.extensions.agents_lift_hold_extension import AgentsLiftHoldExtension
 from core.modules.processes.windows.processes_windows import PROCESSES_WINDOWS
 from core.modules.processes.models.declarations.request_run_model_declaration import RequestRunModelDeclaration
 from core.modules.processes.models.declarations.reader_request_model_declaration import ReaderRequestModelDeclaration
@@ -112,8 +115,6 @@ from core.modules.processes.support.process_nudges import PROCESS_NUDGES
 from engine.driver.watched_runs import WatchedRuns
 from core.modules.processes.support.monitored_runs import MonitoredRuns
 from engine.module.module import Module
-from engine.viewer.window_extension import WindowExtension
-from engine.viewer.window_tab import WindowTab
 from core.modules.processes.upgrade.processes_move import ProcessesMove
 from core.modules.processes.commands.end_process.end_process_handler import EndProcessHandler
 from core.modules.processes.commands.end_process_part.end_process_part_handler import EndProcessPartHandler
@@ -309,10 +310,7 @@ class ProcessesModule(Module):
     marks = PROCESS_MARKS
     bindings = {WatchedRuns: MonitoredRuns, WaitTargets: ProcessWaitTargets, RunOwners: ProcessRunOwners, RunPlacement: ProcessRunPlacement, RunPauses: AgentRunPauses, RequestRecords: ProcessRowWrapper, PersonClasses: StoredExecutionClasses}
     docks = PROCESSES_DOCKS
-    window_extensions = [*(WindowExtension(name, reads=["queue list", "output page"], events=["output.*"],
-                                           tabs=[WindowTab("processes", "Processes", "queue list", component="/modules/journal.core.processes/agent-processes.js")])
-                           for name in ("agents.agents", "agents.helpers")),
-                         WindowExtension("agents.agents", runs=["process lift-hold"])]
+    window_extensions = [AgentsProcessesExtension, HelpersProcessesExtension, AgentsLiftHoldExtension]
     windows = PROCESSES_WINDOWS
     inspectors = [QUEUE_INSPECTOR]
     seeders = [ProcessesSeeder]
