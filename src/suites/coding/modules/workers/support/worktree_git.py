@@ -156,6 +156,15 @@ class WorktreeGit:
         commit = self.tip(environment.folder, environment.branch)
         return self.detached_checkout(environment.folder, self.base_folder(environment, name), commit, self.dependency_folders(environment.folder))
 
+    # a checkout of the environment's branch made under a name, such as the one a plan's checkpoint runs test in, is taken away with its git record
+    def remove_base_checkout(self, environment: Environment, name: str) -> None:
+        folder = self.base_folder(environment, name)
+        if not FileAccess.exists(Path(folder)):
+            return
+        self.git(environment.folder, GIT_LIMIT_SECONDS, "worktree", "remove", "--force", folder)
+        FileAccess.rmtree(folder, ignore_errors=True)
+        self.git(environment.folder, GIT_LIMIT_SECONDS, "worktree", "prune")
+
     @staticmethod
     def base_folder(environment: Environment, name: str) -> str:
         return str(Path(environment.folder) / WORKTREES_FOLDER / f"{environment.name}-tests" / name)
