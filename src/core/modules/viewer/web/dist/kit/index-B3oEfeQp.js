@@ -16005,38 +16005,39 @@ const iC = ["aria-selected", "data-tab", "onPointerdown", "onAuxclick", "onKeydo
   __name: "CommentBox",
   props: { count: { type: Number, default: 0 }, quote: { type: String, default: "" }, placeholder: { type: String, default: "Comment on this file, or pick lines first" }, sending: Boolean },
   emits: ["send", "show", "clear-quote"],
-  setup(e, { emit: t }) {
-    const n = e, a = t, s = _(!1), o = _(""), l = _(null);
-    he(() => n.quote, (c) => c && i());
-    async function i() {
-      var c;
-      s.value = !0, await Ne(), (c = l.value) == null || c.focus();
+  setup(e, { expose: t, emit: n }) {
+    const a = e, s = n, o = _(!1), l = _(""), i = _(null);
+    he(() => a.quote, (f) => f && u());
+    async function u() {
+      var f;
+      o.value = !0, await Ne(), (f = i.value) == null || f.focus();
     }
-    function u() {
-      const c = o.value.trim();
-      !c || n.sending || (a("send", c), o.value = "", s.value = !1);
+    t({ openBox: u });
+    function c() {
+      const f = l.value.trim();
+      !f || a.sending || (s("send", f), l.value = "", o.value = !1);
     }
-    return (c, f) => (r(), d("div", MC, [
+    return (f, m) => (r(), d("div", MC, [
       h("div", CC, [
-        s.value ? (r(), d("form", {
+        o.value ? (r(), d("form", {
           key: 0,
           class: "box-form",
-          onSubmit: ye(u, ["prevent"]),
+          onSubmit: ye(c, ["prevent"]),
           onKeydown: [
-            f[3] || (f[3] = Ue(ye((m) => s.value = !1, ["stop"]), ["esc"])),
-            Ue(ye(u, ["meta", "prevent"]), ["enter"]),
-            Ue(ye(u, ["ctrl", "prevent"]), ["enter"])
+            m[3] || (m[3] = Ue(ye((p) => o.value = !1, ["stop"]), ["esc"])),
+            Ue(ye(c, ["meta", "prevent"]), ["enter"]),
+            Ue(ye(c, ["ctrl", "prevent"]), ["enter"])
           ]
         }, [
           e.quote ? (r(), d("div", EC, [
-            f[5] || (f[5] = h("b", null, "On", -1)),
+            m[5] || (m[5] = h("b", null, "On", -1)),
             h("span", OC, v(e.quote), 1),
             h("button", {
               type: "button",
               class: "box-quote-clear",
               title: "Whole file",
               "aria-label": "Whole file",
-              onClick: f[0] || (f[0] = (m) => a("clear-quote"))
+              onClick: m[0] || (m[0] = (p) => s("clear-quote"))
             }, [
               C(ie, {
                 name: "close",
@@ -16046,20 +16047,20 @@ const iC = ["aria-selected", "data-tab", "onPointerdown", "onAuxclick", "onKeydo
           ])) : k("", !0),
           we(h("textarea", {
             ref_key: "field",
-            ref: l,
-            "onUpdate:modelValue": f[1] || (f[1] = (m) => o.value = m),
+            ref: i,
+            "onUpdate:modelValue": m[1] || (m[1] = (p) => l.value = p),
             placeholder: "Comment",
             "aria-label": "Comment",
             "data-box-field": ""
           }, null, 512), [
-            [Ye, o.value]
+            [Ye, l.value]
           ]),
           h("div", TC, [
             C(me, {
               small: "",
-              onClick: f[2] || (f[2] = (m) => s.value = !1)
+              onClick: m[2] || (m[2] = (p) => o.value = !1)
             }, {
-              default: L(() => [...f[6] || (f[6] = [
+              default: L(() => [...m[6] || (m[6] = [
                 V("Cancel", -1)
               ])]),
               _: 1
@@ -16067,11 +16068,11 @@ const iC = ["aria-selected", "data-tab", "onPointerdown", "onAuxclick", "onKeydo
             C(me, {
               small: "",
               variant: "primary",
-              disabled: !o.value.trim() || e.sending,
+              disabled: !l.value.trim() || e.sending,
               "data-box-send": "",
-              onClick: u
+              onClick: c
             }, {
-              default: L(() => [...f[7] || (f[7] = [
+              default: L(() => [...m[7] || (m[7] = [
                 V("Send", -1)
               ])]),
               _: 1
@@ -16082,7 +16083,7 @@ const iC = ["aria-selected", "data-tab", "onPointerdown", "onAuxclick", "onKeydo
             type: "button",
             class: "box-open",
             "data-box-open": "",
-            onClick: i
+            onClick: u
           }, [
             C(ie, {
               name: "chat",
@@ -16096,7 +16097,7 @@ const iC = ["aria-selected", "data-tab", "onPointerdown", "onAuxclick", "onKeydo
             title: "Comments",
             "aria-label": "Show the comments",
             "data-box-count": "",
-            onClick: f[4] || (f[4] = (m) => a("show"))
+            onClick: m[4] || (m[4] = (p) => s("show"))
           }, {
             default: L(() => [
               C(ie, {
@@ -16111,7 +16112,7 @@ const iC = ["aria-selected", "data-tab", "onPointerdown", "onAuxclick", "onKeydo
       ])
     ]));
   }
-}, BT = /* @__PURE__ */ H(BC, [["__scopeId", "data-v-068adc28"]]), RT = Fu(() => import("./VoiceFigure-KfqmzEck.js").then((e) => e.V)), NT = "1.2.0", LT = "3.5";
+}, BT = /* @__PURE__ */ H(BC, [["__scopeId", "data-v-b494c444"]]), RT = Fu(() => import("./VoiceFigure-CKOLnvrZ.js").then((e) => e.V)), NT = "1.2.0", LT = "3.5";
 export {
   Nm as $,
   Ie as A,
