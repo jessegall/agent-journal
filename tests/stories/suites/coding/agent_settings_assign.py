@@ -9,7 +9,8 @@ from tests.stories.core.modules.assign_rules.support.decision_seeds import Assig
 from tests.stories.core.modules.assign_rules.support.rule_steps import SonnetWorkerAndFreeTask
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OrchestratorWithPerson
-from tests.stories.server.support.server_client import SYSTEM_CLOCK, server_story, viewer_answer
+from tests.stories.server.support.server_client import SYSTEM_CLOCK, server_story
+from tests.integration.support.server_harness import viewer_answer
 from tests.stories.server.window_data_route import window_data
 
 WINDOW = "coding.agent-settings"

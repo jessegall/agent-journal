@@ -2,7 +2,8 @@ import base64
 import http.client
 import json
 
-from tests.stories.server.support.server_client import ServerStory, server_story, viewer_answer
+from tests.stories.server.support.server_client import ServerStory, server_story
+from tests.integration.support.server_harness import viewer_answer
 from tests.stories.server.viewer.share import plan_server
 from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_lines, expect_value, expect_value_with, expect_value_without

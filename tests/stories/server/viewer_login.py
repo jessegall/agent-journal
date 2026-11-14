@@ -1,3 +1,4 @@
+from tests.stories.server.support.server_fixtures import person_server  # noqa: F401
 
 import pytest
 

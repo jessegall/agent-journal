@@ -15,7 +15,8 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
 from tests.stories.server.support.browser_story import expect_browser
-from tests.stories.server.support.server_client import server_story, viewer_answer
+from tests.stories.server.support.server_client import server_story
+from tests.integration.support.server_harness import viewer_answer
 from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_value
 from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING

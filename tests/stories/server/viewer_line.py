@@ -5,7 +5,8 @@ import pytest
 import json
 
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.server.support.server_client import server_story, viewer_answer
+from tests.stories.server.support.server_client import server_story
+from tests.integration.support.server_harness import viewer_answer
 from tests.stories.support.story_checks import expect_value, expect_value_with
 
 

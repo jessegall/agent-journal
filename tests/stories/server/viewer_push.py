@@ -5,7 +5,7 @@ import pytest
 import json
 
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.server.support.server_client import viewer_answer
+from tests.integration.support.server_harness import viewer_answer
 from tests.stories.server.viewer_pairing import PAIR_LINE, paired_code
 from tests.stories.server.support.server_client import server_story
 from tests.stories.support.story_checks import expect_value

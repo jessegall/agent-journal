@@ -10,7 +10,8 @@ from tests.stories.core.modules.helpers.helper_reports import helper_report, sto
 from tests.stories.core.modules.messages.peer_messages import ENVELOPE, hook_with, queued, transcript_with
 from tests.stories.suites.coding.modules.workers.worker_context import worker_scenario, dispatch
 from tests.stories.core.modules.documents.support.trail_fixtures import attach_image
-from tests.stories.server.support.server_client import server_story, viewer_answer as http_answer
+from tests.stories.server.support.server_client import server_story
+from tests.integration.support.server_harness import viewer_answer as http_answer
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.documents.support.trail_fixtures import LinkedTrail, Scenario
 from tests.stories.core.modules.documents.support.trail_fixtures import ImageScenario

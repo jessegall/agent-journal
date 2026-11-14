@@ -1,3 +1,4 @@
+from tests.stories.server.support.hosted_viewer import agent_server, hosted_server, socket_path  # noqa: F401
 import pytest
 
 from server.door.hosted_journal_door import OWNER_REASON

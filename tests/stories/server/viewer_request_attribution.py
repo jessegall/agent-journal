@@ -7,7 +7,8 @@ from unittest.mock import patch
 import pytest
 
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
-from tests.stories.server.support.server_client import server_story, viewer_answer
+from tests.stories.server.support.server_client import server_story
+from tests.integration.support.server_harness import viewer_answer
 from tests.stories.support.story_checks import expect_value
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from engine.enums.hook_answer import HookAnswer

@@ -20,7 +20,8 @@ from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import ended_run, moved_run, started_run
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.server.support.server_client import server_story, viewer_answer
+from tests.stories.server.support.server_client import server_story
+from tests.integration.support.server_harness import viewer_answer
 from tests.stories.support.story_checks import expect_greater, expect_value
 from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING
 from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SIZE_SETTING

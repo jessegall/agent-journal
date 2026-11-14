@@ -55,7 +55,7 @@ def test_a_line_held_longer_than_the_idle_limit_is_answered_not_cut(idle_server)
     idle_server.start_agent(SESSION)
     made = idle_server.run_as('task make "Hold the line" --brief "A task to log on"', SESSION)
     assert made.exit_code == 0, made
-    writer = sqlite3.connect(idle_server.journal.home.database, timeout=0, autocommit=True, check_same_thread=False)
+    writer = sqlite3.connect(idle_server.journal.home.database, timeout=READ_LIMIT_SECONDS, autocommit=True, check_same_thread=False)
     writer.execute("BEGIN IMMEDIATE")
     release = threading.Timer(KEPT_OPEN_SECONDS, writer.execute, ["ROLLBACK"])
     release.start()

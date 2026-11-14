@@ -1,3 +1,4 @@
+from tests.stories.server.support.server_fixtures import task_server  # noqa: F401
 
 
 from engine.cli.console import REFUSED_CODE

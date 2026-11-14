@@ -7,7 +7,8 @@ from engine.testing.expectations.expect_row import expect_row
 from tests.stories.core.modules.drivers.support.module_memberships import PATH as SUITES
 from tests.stories.core.modules.viewer.support.coding_acme_buttons_module import PATH as BUTTONS
 from tests.stories.core.modules.viewer.support.acme_buttons_module import RUNS
-from tests.stories.server.support.server_client import server_story, viewer_answer
+from tests.stories.server.support.server_client import server_story
+from tests.integration.support.server_harness import viewer_answer
 from tests.stories.server.viewer.share import PlanAndPersonFixture, opened, shared_link
 from tests.stories.support.story_checks import expect_value
 

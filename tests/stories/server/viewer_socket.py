@@ -1,3 +1,4 @@
+from tests.stories.server.support.hosted_viewer import hosted_server, local_server, socket_path  # noqa: F401
 
 from server.viewer.viewer_listener import ViewerListener
 from tests.stories.server.support.hosted_viewer import session_cookie, socket_answer

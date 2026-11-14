@@ -4,7 +4,8 @@ import pytest
 
 from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story
 from tests.stories.fixtures.version_four import SHARE_TOKEN
-from tests.stories.server.support.server_client import server_story, viewer_answer
+from tests.stories.server.support.server_client import server_story
+from tests.integration.support.server_harness import viewer_answer
 from tests.stories.support.story_checks import expect_startswith_listed, expect_value, expect_value_with
 
 PAIR_LINE = {"window": "phone.phones", "line": ["phone", "pair"], "environment": "main"}

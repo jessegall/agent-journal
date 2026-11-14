@@ -9,7 +9,7 @@ from server.work.rounds.journal_round import JournalRound
 from server.work.rounds.per_round_container import PerRoundContainer
 from server.work.rounds.round_work import RoundWork
 from server.viewer.windows_route import WindowsRoute
-from tests.stories.server.support.server_client import viewer_answer
+from tests.integration.support.server_harness import viewer_answer
 
 
 ROUND_START_LIMIT_SECONDS = 10

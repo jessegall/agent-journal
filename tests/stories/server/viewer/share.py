@@ -11,7 +11,8 @@ from tests.stories.core.support import story_lines as lines
 from engine.testing.stories.story_fixture import StoryFixture
 from engine.testing.stories.story import Story
 from tests.stories.core.support.fixtures import TasksPlan
-from tests.stories.server.support.server_client import ServerStory, server_story, viewer_answer
+from tests.stories.server.support.server_client import ServerStory, server_story
+from tests.integration.support.server_harness import viewer_answer
 from tests.stories.support.story_checks import expect_id_cancelled, expect_value_line, expect_value_without
 from tests.stories.server.window_data_route import window_data
 

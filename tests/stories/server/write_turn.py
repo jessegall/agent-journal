@@ -5,7 +5,8 @@ import pytest
 from engine.testing.stories.story_write_turns import MAIN_AGENT_HOOK, StoryWriteTurns
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.server.support.server_client import server_story, viewer_answer
+from tests.stories.server.support.server_client import server_story
+from tests.integration.support.server_harness import viewer_answer
 
 SLOW_SECONDS = 2
 

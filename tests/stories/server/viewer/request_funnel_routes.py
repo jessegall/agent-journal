@@ -7,7 +7,8 @@ import pytest
 
 from server.viewer.line_route import LineRoute
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
-from tests.stories.server.support.server_client import server_story, viewer_answer
+from tests.stories.server.support.server_client import server_story
+from tests.integration.support.server_harness import viewer_answer
 from core.modules.developer.support.developer_settings import REPEATED_WORK_SETTING
 
 SLOW_SECONDS = 0.3

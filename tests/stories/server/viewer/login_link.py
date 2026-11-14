@@ -5,7 +5,8 @@ import pytest
 
 from server.enums.session_type import SessionType
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.server.support.server_client import server_story, viewer_answer
+from tests.stories.server.support.server_client import server_story
+from tests.integration.support.server_harness import viewer_answer
 
 
 def link_path(link: str) -> str:
