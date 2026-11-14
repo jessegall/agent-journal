@@ -13,12 +13,12 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 LISTING_SAMPLE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, []))
 
 
-def heard_story(new_story, heard: list[object]):
+def heard_story(new_story, received: list[object]):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     folder = sample_plugin_folder(story.home.folder.parent)
     manifest = json.loads((folder / "journal-plugin.json").read_text())
-    (folder / "journal-plugin.json").write_text(json.dumps({**manifest, "hears": heard}))
+    (folder / "journal-plugin.json").write_text(json.dumps({**manifest, "hears": received}))
     story.run(f"plugin install {folder} --yes", actor=story.user)
     return story
 

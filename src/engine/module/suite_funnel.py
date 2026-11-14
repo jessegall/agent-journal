@@ -20,7 +20,7 @@ class SuiteFunnel:
                              AgentKind.HELPER_TYPE: frozenset(helper_type_keys)}
 
     def entries(self, suite: type[Suite]) -> tuple[DefaultStateEntry, ...]:
-        joining = [default for other in self.suites.suites if other.joins == suite.name for default in other.default_states]
+        joining = [default for second in self.suites.suites if second.joins == suite.name for default in second.default_states]
         return tuple(self.entry(suite, default) for default in [*suite.default_states, *joining])
 
     def entry(self, suite: type[Suite], default: DefaultState) -> DefaultStateEntry:

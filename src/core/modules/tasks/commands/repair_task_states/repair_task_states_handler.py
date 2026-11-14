@@ -36,11 +36,11 @@ class RepairTaskStatesHandler(Handler[RepairTaskStates, int]):
         return len(stale)
 
     def open_task_holders(self, context: Context) -> int:
-        held = tuple(self.queries.query(Task).filter(state=TaskState.OPEN).matching(HasValue("holder_id")).every_row(HELD_OPEN_REASON))
-        for task in held:
+        kept = tuple(self.queries.query(Task).filter(state=TaskState.OPEN).matching(HasValue("holder_id")).every_row(HELD_OPEN_REASON))
+        for task in kept:
             self.repository.update(task, context, holder_id=None)
             self.log(task.id, f"the holder it kept while open was cleared (agent {task.holder_id})", context)
-        return len(held)
+        return len(kept)
 
     def log(self, task_id: int, line: str, context: Context) -> None:
         self.repository.save(TaskLog(task_id=task_id, creator_id=context.actor.id, line=f"repaired by the state sweep: {line}"), context)

@@ -52,7 +52,7 @@ class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
         testing_tasks = self.delivered_tasks(worktree, task)
         proven_ids = {proof.task_id for proof in self.proofs.worktree_rows(worktree.id)}
         delivered_tasks = [delivered for delivered in testing_tasks if delivered.id in proven_ids]
-        left_open = tuple(delivered.id for delivered in testing_tasks if delivered.id not in proven_ids)
+        remaining_open = tuple(delivered.id for delivered in testing_tasks if delivered.id not in proven_ids)
         task_ids = [delivered.id for delivered in delivered_tasks]
         reasons = dict.fromkeys(task_ids, command.reason) if command.reason else self.wait_text.merged_reasons(worktree, task_ids)
         for delivered in delivered_tasks:
@@ -62,7 +62,7 @@ class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
             self.repository.save_change(waiting_request, waiting_request.moved(MergeAskLifecycle.merge), context)
         merged = replace(worktree.merge(context.timestamp, context.actor), commit_before_merge=command.commit_before_merge, commit_after_merge=command.commit_after_merge,
                          merged_task_ids=worktree.with_merged([delivered.id for delivered in delivered_tasks]))
-        return MergeOutcome(self.repository.save_change(worktree, merged, context), (), left_open=left_open)
+        return MergeOutcome(self.repository.save_change(worktree, merged, context), (), left_open=remaining_open)
 
     def delivered_tasks(self, worktree: Worktree, task: Task) -> list[Task]:
         delivered = tuple(self.queries.query(Task).matching(TaskQuery.assignee(worktree.session_agent_id)).filter(state=TaskState.TESTING).every_row(UNIT_TASKS_REASON))

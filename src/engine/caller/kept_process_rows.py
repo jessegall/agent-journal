@@ -46,8 +46,8 @@ class KeptProcessRows:
 
     # a chain that stops at a pid the kept table lacks would end early, so such a chain reads the table again
     def reaches_the_root(self, pid: int) -> bool:
-        seen: set[int] = set()
-        while pid in self.kept and pid not in seen:
-            seen.add(pid)
+        viewed: set[int] = set()
+        while pid in self.kept and pid not in viewed:
+            viewed.add(pid)
             pid = self.kept[pid].parent_pid
-        return pid in seen or pid <= 1
+        return pid in viewed or pid <= 1

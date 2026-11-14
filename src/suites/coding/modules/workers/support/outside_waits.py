@@ -39,10 +39,10 @@ class OutsideWaits:
         return None if None in blockers else blockers[0]
 
     def first_unattended(self, task_id: int, waits: dict[int, set[int]], unit_ids: set[int], unattended: dict[int, Task]) -> Task | None:
-        seen, pending = {task_id}, [task_id]
+        viewed, pending = {task_id}, [task_id]
         while pending:
-            for dependency_id in sorted(waits.get(pending.pop(), set()) - seen):
-                seen.add(dependency_id)
+            for dependency_id in sorted(waits.get(pending.pop(), set()) - viewed):
+                viewed.add(dependency_id)
                 if dependency_id in unattended:
                     return unattended[dependency_id]
                 if dependency_id in unit_ids:

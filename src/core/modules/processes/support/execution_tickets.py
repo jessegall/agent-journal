@@ -59,9 +59,9 @@ class ExecutionTickets:
     def execution_class(self, process: Process, starter: ExecutionStarter, kind_classes: dict[tuple[str, str], ExecutionClass]) -> ExecutionClass:
         if process.plugin and (process.plugin, process.run_name) in kind_classes:
             return kind_classes[(process.plugin, process.run_name)]
-        named = self.classes.named(process.execution_class) if process.execution_class else None
-        if named is not None:
-            return named
+        labelled = self.classes.named(process.execution_class) if process.execution_class else None
+        if labelled is not None:
+            return labelled
         source = ExecutionSource.PLUGIN_PROGRAM if process.plugin else ExecutionSource.SHELL_LINE
         return self.classes.match(ExecutionSubject(source, starter, category=process.category, plugin_name=process.plugin, plugin_kind=process.run_name, line=process.line))
 

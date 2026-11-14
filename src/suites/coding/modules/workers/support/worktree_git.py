@@ -297,8 +297,8 @@ class WorktreeGit:
         folders = built.folders(conflicts)
         if folders:
             self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rm", "-r", "-f", "--ignore-unmatch", "--", *folders)
-        settled = ContractClashes(self).settled(worktree.folder, worktree.base_branch, conflicts)
-        source_conflicts = built.remainder(self.without_instruction_conflicts(worktree, settled))
+        resolved = ContractClashes(self).settled(worktree.folder, worktree.base_branch, conflicts)
+        source_conflicts = built.remainder(self.without_instruction_conflicts(worktree, resolved))
         if not source_conflicts:
             self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "--no-edit")
         return source_conflicts

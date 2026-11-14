@@ -66,7 +66,7 @@ def test_an_old_launch_socket_nobody_answers_on_goes_while_a_live_one_and_a_youn
         home, clock = JournalHome(Path(short) / "j"), Clock()
         home.folder.mkdir()
         dead, _ = launch_socket(home.folder, "l-dead", False)
-        young, _ = launch_socket(home.folder, "l-young", False)
+        recent, _ = launch_socket(home.folder, "l-young", False)
         alive, listener = launch_socket(home.folder, "l-alive", True)
         for path in (dead, alive):
             aged(path, clock, 2 * 3600)

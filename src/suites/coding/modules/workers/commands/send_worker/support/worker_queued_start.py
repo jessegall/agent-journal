@@ -35,6 +35,6 @@ class WorkerQueuedStart:
         main_agent = MainAgentFinder.latest(self.queries)
         if blocker is None or main_agent is None:
             return
-        held = ", ".join(f"task:{task.id}" for task in waiting)
-        text = f"{self.labels.text(worker_id)} has only {held}, and all wait on task:{blocker.id}, which no worker works on: {self.labels.task_label(blocker)} must do it"
+        kept = ", ".join(f"task:{task.id}" for task in waiting)
+        text = f"{self.labels.text(worker_id)} has only {kept}, and all wait on task:{blocker.id}, which no worker works on: {self.labels.task_label(blocker)} must do it"
         self.nudger.send_text(main_agent.id, text, OUTSIDE_WAIT_SOURCE, replace(context, actor=Actor.core()))

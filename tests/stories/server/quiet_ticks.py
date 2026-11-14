@@ -22,12 +22,12 @@ def test_a_plugin_queue_folder_is_read_again_only_after_it_changed(new_story):
     story = installed_story(new_story)
     queue = story.home.folder / "plugin-data" / "sample" / "queue"
     queue.mkdir(parents=True, exist_ok=True)
-    reading = PluginCardReading()
+    loading = PluginCardReading()
     with patch.object(PluginQueue, "claim_cards", autospec=True, side_effect=lambda plugin_queue: (claim for claim in ())) as claims:
-        reading(story.container)
-        reading(story.container)
+        loading(story.container)
+        loading(story.container)
         assert claims.call_count == 1
         (queue / "1.json").write_text("{}")
         os.utime(queue, ns=(LATER_NS, LATER_NS))
-        reading(story.container)
+        loading(story.container)
         assert claims.call_count == 2

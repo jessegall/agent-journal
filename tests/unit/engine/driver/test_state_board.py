@@ -166,8 +166,8 @@ def test_a_flag_free_stack_state_runs_only_on_a_hook_its_rules_hear():
 
 def test_a_flagged_stack_state_runs_on_every_hook_and_the_order_of_the_layers_run_stays():
     entries = [entry(CountedState, 1), entry(FlaggedState, 2), entry(LateState, 3)]
-    heard = {"samples.counted": {"pre_tool_use": ["samples.tool-rule"]}, "samples.late": {"stop": ["samples.stop-rule"]}}
-    assert [layer.overlay.name for layer in board(entries, rules_by_state=heard).stack("builder")] == ["samples.flagged", "samples.counted"]
+    received = {"samples.counted": {"pre_tool_use": ["samples.tool-rule"]}, "samples.late": {"stop": ["samples.stop-rule"]}}
+    assert [layer.overlay.name for layer in board(entries, rules_by_state=received).stack("builder")] == ["samples.flagged", "samples.counted"]
 
 
 class LateParent(LateState):

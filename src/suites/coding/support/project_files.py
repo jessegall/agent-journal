@@ -68,9 +68,9 @@ class ProjectFiles:
     def grepped(self, terms: str) -> ProjectFileRows:
         if len(terms.strip()) < LEAST_TEXT_LETTERS:
             raise Refusal(f"search for at least {LEAST_TEXT_LETTERS} letters", "give two letters or more")
-        found = self.git.output("git", "grep", "-n", "-I", "-i", "-F", "-e", terms.strip())
+        matched = self.git.output("git", "grep", "-n", "-I", "-i", "-F", "-e", terms.strip())
         rows = []
-        for line in (found or "").splitlines()[:TEXT_ROW_COUNT]:
+        for line in (matched or "").splitlines()[:TEXT_ROW_COUNT]:
             path, number, text = line.split(":", 2)
             rows.append({"id": path, "name": Path(path).name, "folder": False, "size": 0, "line": int(number), "text": text.strip()[:TEXT_CUT]})
         return ProjectFileRows(rows)

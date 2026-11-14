@@ -40,11 +40,11 @@ class ExecutionStatus:
         return loads
 
     def instant_lane(self) -> LaneLoad:
-        reading = InstantLaneReading.shared(self.home)
+        loading = InstantLaneReading.shared(self.home)
         entries = [(bool(entry["is_running"]), LaneEntry(str(entry["line"]), str(entry["class"]), str(entry["priority"]), str(entry["starter"]), float(str(entry["seconds"])),
-                                                         "" if entry["is_running"] else "waits for room", parent_line=str(entry["parent_line"]))) for entry in reading.entries()]
+                                                         "" if entry["is_running"] else "waits for room", parent_line=str(entry["parent_line"]))) for entry in loading.entries()]
         running = tuple(entry for is_running, entry in entries if is_running)
-        return LaneLoad(ExecutionLane.INSTANT.value, len(running), reading.capacity, running=running, waiting=tuple(entry for is_running, entry in entries if not is_running))
+        return LaneLoad(ExecutionLane.INSTANT.value, len(running), loading.capacity, running=running, waiting=tuple(entry for is_running, entry in entries if not is_running))
 
     def entry(self, ticket: ExecutionTicket, reason: str = "") -> LaneEntry:
         raised_from = ticket.first_priority.label if ticket.priority != ticket.first_priority else ""

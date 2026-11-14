@@ -11,8 +11,8 @@ FREE_TASK = SimpleNamespace(id=40)
 
 
 class Rows:
-    def found(self, held: list[object]) -> "Rows":
-        self.held = held
+    def found(self, kept: list[object]) -> "Rows":
+        self.held = kept
         return self
 
     def first(self):
@@ -23,8 +23,8 @@ class Rows:
 
 
 class Tasks:
-    def __init__(self, assigned=(), held=(), testing=()) -> None:
-        self.assigned, self.held, self.testing = list(assigned), list(held), list(testing)
+    def __init__(self, assigned=(), kept=(), testing=()) -> None:
+        self.assigned, self.held, self.testing = list(assigned), list(kept), list(testing)
 
     def unfinished_assigned(self, worker_id):
         return tuple(self.assigned)
@@ -67,7 +67,7 @@ def test_a_worker_with_no_task_is_given_the_free_task():
     assert given(Tasks()) == [FREE_TASK.id]
 
 
-@pytest.mark.parametrize("tasks", [Tasks(assigned=[SimpleNamespace(id=1, state=TaskState.OPEN)]), Tasks(held=[SimpleNamespace(id=2, state=TaskState.STARTED)]),
+@pytest.mark.parametrize("tasks", [Tasks(assigned=[SimpleNamespace(id=1, state=TaskState.OPEN)]), Tasks(kept=[SimpleNamespace(id=2, state=TaskState.STARTED)]),
                                    Tasks(testing=[SimpleNamespace(id=3, state=TaskState.TESTING)])], ids=["assigned", "held started", "waiting for tests"])
 def test_a_worker_that_still_has_a_task_is_given_none(tasks):
     assert given(tasks) == []

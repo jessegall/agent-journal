@@ -73,7 +73,7 @@ def test_a_rule_pushes_a_countdown_by_its_answer_alone_and_the_hook_record_write
         return answer(rule, hook)
 
     monkeypatch.setattr(UnreadMessageWriteRule, "answer", watched)
-    before = len(story.story_rows(AgentBlock))
+    previous = len(story.story_rows(AgentBlock))
     story.hook("s-1", LONG_LISTING)
     after = [block for block in story.story_rows(AgentBlock) if block.closed_at is None]
-    story.expect_rows(rows_at_answer == [before], len(after) == before + 1, detail=f"{rows_at_answer} {before} {len(after)}")
+    story.expect_rows(rows_at_answer == [previous], len(after) == previous + 1, detail=f"{rows_at_answer} {previous} {len(after)}")

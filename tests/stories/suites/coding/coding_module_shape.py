@@ -23,8 +23,8 @@ def test_583_a_reader_of_the_coding_module_sees_one_name_per_list_and_few_import
 
 def test_584_the_registry_holds_every_window_skill_and_group_of_the_coding_module_and_a_sync_keeps_it_equal(new_story):
     story = new_story(fixture=CodingEnvironment)
-    held = registry(story)
-    windows, skills, groups = {window.name for window in held.windows}, {skill.folder for skill in held.skills}, {group.key for group in held.agent_groups}
+    kept = registry(story)
+    windows, skills, groups = {window.name for window in kept.windows}, {skill.folder for skill in kept.skills}, {group.key for group in kept.agent_groups}
     story.expect_rows({window.name for window in CodingModule.window_declarations()} <= windows, {skill.folder for skill in CodingModule.skill_declarations()} <= skills,
                       {group.key for group in CodingModule.group_declarations()} <= groups, detail=str(groups))
     saved = saved_registry(story)
@@ -36,8 +36,8 @@ def test_584_the_registry_holds_every_window_skill_and_group_of_the_coding_modul
 def test_585_a_new_suite_written_in_the_coding_modules_shape_loads_and_registers(new_story):
     story = new_story(fixture=CodingEnvironment)
     story.expect_sync_success(f"{SAMPLES}:ShopSuite")
-    held = registry(story)
-    story.expect_rows("sample-shop.stock" in {window.name for window in held.windows}, held.suite("sample-shop").entrances["shop"] == ("sample-shop.stock", "messages.chat"))
+    kept = registry(story)
+    story.expect_rows("sample-shop.stock" in {window.name for window in kept.windows}, kept.suite("sample-shop").entrances["shop"] == ("sample-shop.stock", "messages.chat"))
 
 
 def test_371_after_the_declarations_became_classes_a_sync_writes_the_same_registry(new_story):

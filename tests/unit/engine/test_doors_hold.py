@@ -57,10 +57,10 @@ def judged(sin: str, folder: Path) -> subprocess.CompletedProcess[str]:
 
 @pytest.mark.parametrize("sin", sorted(RULES))
 def test_the_rule_finds_nothing_in_the_journals_code_and_judged_it_all(sin: str):
-    result = judged(sin, CHECKOUT / "src")
-    output = result.stdout + result.stderr
+    outcome = judged(sin, CHECKOUT / "src")
+    output = outcome.stdout + outcome.stderr
     judged_count = JUDGED_FILES.search(output)
-    assert result.returncode == 0 and judged_count is not None, f"{sin} found something or could not run (exit {result.returncode}):\n{output}"
+    assert outcome.returncode == 0 and judged_count is not None, f"{sin} found something or could not run (exit {outcome.returncode}):\n{output}"
     assert int(judged_count.group(1)) >= LEAST_JUDGED_FILES, f"{sin} judged only {judged_count.group(1)} files:\n{output}"
 
 
@@ -70,7 +70,7 @@ def test_the_rule_catches_every_kind_it_names(sin: str, tmp_path: Path):
     sample_file = tmp_path / "src" / "engine" / "sample.py"
     sample_file.parent.mkdir(parents=True)
     sample_file.write_text(sample)
-    result = judged(sin, tmp_path)
-    output = result.stdout + result.stderr
-    caught = {int(line) for line in re.findall(r"sample\.py:(\d+)", output)}
-    assert result.returncode == 1 and caught == set(lines), f"{sin} caught lines {sorted(caught)}, not {list(lines)} (exit {result.returncode}):\n{output}"
+    outcome = judged(sin, tmp_path)
+    output = outcome.stdout + outcome.stderr
+    trapped = {int(line) for line in re.findall(r"sample\.py:(\d+)", output)}
+    assert outcome.returncode == 1 and trapped == set(lines), f"{sin} caught lines {sorted(trapped)}, not {list(lines)} (exit {outcome.returncode}):\n{output}"

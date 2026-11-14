@@ -34,10 +34,10 @@ class ExecutionPresets:
         self.core_count = core_count
 
     def preset(self, name: str) -> ExecutionPreset:
-        chosen = next((preset for preset in PRESETS if preset.name == name), None)
-        if chosen is None:
+        selected = next((preset for preset in PRESETS if preset.name == name), None)
+        if selected is None:
             raise Refusal(f"{name} is no preset", f"name one of {', '.join(preset.name for preset in PRESETS)}")
-        return chosen
+        return selected
 
     def lines(self) -> list[str]:
         cores = self.core_count()

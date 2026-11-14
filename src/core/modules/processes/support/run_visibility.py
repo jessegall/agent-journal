@@ -55,7 +55,7 @@ class RunVisibility:
         parts: dict[int, list[ProcessPart]] = {process_id: [] for process_id in process_ids}
         for part in rows.every_row(VISIBLE_PARTS_REASON):
             parts[part.process_id].append(part)
-        return {process_id: tuple(found) for process_id, found in parts.items()}
+        return {process_id: tuple(matched) for process_id, matched in parts.items()}
 
     def is_visible(self, process: Process) -> bool:
         return self.visible_part(process) is not None

@@ -19,9 +19,9 @@ class ViewerTickets:
     @contextmanager
     def admitted(self, line: str, window: WindowPriority = WindowPriority.NORMAL, is_hidden: bool = False) -> Generator[None]:
         ticket = self.priorities.viewer_ticket(line, window, self.clock.timestamp(), is_hidden)
-        with ExitStack() as held:
+        with ExitStack() as kept:
             try:
-                ticket = held.enter_context(self.queue.admitted(ticket, wait_limit_seconds=self.wait_limit_seconds)).ticket
+                ticket = kept.enter_context(self.queue.admitted(ticket, wait_limit_seconds=self.wait_limit_seconds)).ticket
             except LaneBusyError:
                 pass
             with CurrentExecution(ticket.priority, "viewer", line, ticket).applied():

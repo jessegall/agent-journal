@@ -21,8 +21,8 @@ class PluginFolderTimes:
             return True
         return False
 
-    def looked(self, plugin: str, left_unclaimed: bool) -> None:
-        if left_unclaimed:
+    def looked(self, plugin: str, remaining_unclaimed: bool) -> None:
+        if remaining_unclaimed:
             self.unclaimed.add(plugin)
         else:
             self.unclaimed.discard(plugin)

@@ -16,10 +16,10 @@ def classes_in(path: str) -> list[str]:
 def test_363_each_coding_window_is_a_class_alone_in_its_file_and_the_registry_holds_what_it_declares(new_story):
     story = new_story(fixture=CodingEnvironment)
     registered = {window.name: window for window in Registry.read(story.container.get(Database)).windows}
-    alone = all(classes_in(inspect.getfile(window)) == [window.__name__] for window in CODING_WINDOWS)
+    single = all(classes_in(inspect.getfile(window)) == [window.__name__] for window in CODING_WINDOWS)
     equal = all((registered[window.name].title, registered[window.name].entry, tuple(registered[window.name].reads)) ==
                 (window.declaration().title, window.declaration().entry, tuple(window.declaration().reads)) for window in CODING_WINDOWS)
-    story.expect_rows(alone, equal, detail=str(sorted(registered)))
+    story.expect_rows(single, equal, detail=str(sorted(registered)))
 
 
 def test_364_each_key_of_a_coding_window_is_a_class_alone_in_its_own_file(new_story):

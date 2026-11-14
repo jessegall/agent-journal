@@ -74,16 +74,16 @@ class ExecutionOrder:
 
     @staticmethod
     def is_class_full(ticket: ExecutionTicket, running: Sequence[ExecutionTicket]) -> bool:
-        return sum(1 for other in running if other.execution_class.name == ticket.execution_class.name) >= ticket.execution_class.class_limit
+        return sum(1 for second in running if second.execution_class.name == ticket.execution_class.name) >= ticket.execution_class.class_limit
 
     def is_under_starter_cap(self, ticket: ExecutionTicket, running: Sequence[ExecutionTicket]) -> bool:
-        held: Counter[ExecutionStarter] = Counter()
-        for other in running:
-            held[other.starter] += other.execution_class.slot_cost
-        return self.fits(held[ticket.starter], ticket.execution_class.slot_cost, self.limits.starter_cap(ticket.execution_class.lane))
+        kept: Counter[ExecutionStarter] = Counter()
+        for second in running:
+            kept[second.starter] += second.execution_class.slot_cost
+        return self.fits(kept[ticket.starter], ticket.execution_class.slot_cost, self.limits.starter_cap(ticket.execution_class.lane))
 
     # a limit caps what a starter or a priority piles up: with nothing running one run may always start, even one
     # costing more than its share, and a run that costs nothing piles nothing up
     @staticmethod
-    def fits(held: int, cost: int, limit: int) -> bool:
-        return held == 0 or cost == 0 or held + cost <= limit
+    def fits(kept: int, cost: int, limit: int) -> bool:
+        return kept == 0 or cost == 0 or kept + cost <= limit

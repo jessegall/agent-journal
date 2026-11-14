@@ -101,8 +101,8 @@ class TemplateDatabases:
 
     def variants(self, name: str) -> list[Path]:
         pattern = re.compile(re.escape(name) + r"-v(\d+)")
-        found = [folder for folder in FileAccess.glob(self.folder, f"{name}-v*") if pattern.fullmatch(folder.name)]
-        return sorted(found, key=lambda folder: int(pattern.fullmatch(folder.name).group(1)))
+        matched = [folder for folder in FileAccess.glob(self.folder, f"{name}-v*") if pattern.fullmatch(folder.name)]
+        return sorted(matched, key=lambda folder: int(pattern.fullmatch(folder.name).group(1)))
 
     def current_variant(self, name: str) -> Path | None:
         touched = TouchedCode(Path(self.adaptation.checkout))

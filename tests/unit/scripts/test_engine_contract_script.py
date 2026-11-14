@@ -6,8 +6,8 @@ PINNED = {"model.Model": {"bases": [], "fields": ["id: int"], "methods": ["save(
 
 
 def test_the_snapshot_holds_the_live_contract_or_the_version_moved_by_the_rule():
-    snapshot = json.loads(SNAPSHOT.read_text())
-    assert needed_move(snapshot["classes"], contract(), snapshot["engine_version"], engine_version()) is None
+    copy = json.loads(SNAPSHOT.read_text())
+    assert needed_move(copy["classes"], contract(), copy["engine_version"], engine_version()) is None
 
 
 def test_a_removed_field_without_a_major_move_is_refused():

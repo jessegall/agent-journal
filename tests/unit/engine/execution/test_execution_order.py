@@ -126,21 +126,21 @@ def test_raised_ticket_still_counts_as_first_priority():
 
 def test_reserved_past_wait_takes_next_room():
     overdue = replace(ticket(RESERVED, starter=starter(2), entered_second=5), raised_at=seconds_after_start(0))
-    fresh = ticket(RESERVED, starter=starter(3), entered_second=3)
+    new = ticket(RESERVED, starter=starter(3), entered_second=3)
     full = [ticket(AGENT, starter=starter(10 + number)) for number in range(11)]
-    assert ORDER.starting([fresh, overdue], full, seconds_after_start(4), False) == (overdue,)
+    assert ORDER.starting([new, overdue], full, seconds_after_start(4), False) == (overdue,)
 
 
 def test_starter_cap_holds_while_other_starter_starts():
-    held = [ticket(AGENT, starter=starter(1)) for _ in range(6)]
-    capped, other = ticket(AGENT, starter=starter(1)), ticket(AGENT, starter=starter(2))
-    assert list(ExecutionOrder(DEFAULT_LANE_LIMITS).starting([capped, other], held, CHECK_TIME, False)) == [other]
+    kept = [ticket(AGENT, starter=starter(1)) for _ in range(6)]
+    capped, second = ticket(AGENT, starter=starter(1)), ticket(AGENT, starter=starter(2))
+    assert list(ExecutionOrder(DEFAULT_LANE_LIMITS).starting([capped, second], kept, CHECK_TIME, False)) == [second]
 
 
 def test_a_run_that_costs_nothing_passes_a_full_starter_cap():
-    held = [ticket(AGENT, starter=starter(1)) for _ in range(6)]
+    kept = [ticket(AGENT, starter=starter(1)) for _ in range(6)]
     free = ticket(AGENT, slot_cost=0, starter=starter(1))
-    assert list(ExecutionOrder(DEFAULT_LANE_LIMITS).starting([free], held, CHECK_TIME, False)) == [free]
+    assert list(ExecutionOrder(DEFAULT_LANE_LIMITS).starting([free], kept, CHECK_TIME, False)) == [free]
 
 
 def test_class_at_limit_does_not_block_a_build_behind():

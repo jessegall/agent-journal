@@ -37,9 +37,9 @@ class SessionStarters:
             role = ActorTable(self.connection()).session_role(session)
             if role is None:
                 return ExecutionStarter(StarterType.MAIN_AGENT)
-            found = ExecutionStarter(StarterType.MAIN_AGENT) if role == AgentRole.MAIN else ExecutionStarter(StarterType.HELPER, agent_role=role)
-            self.known[session] = found
-            return found
+            matched = ExecutionStarter(StarterType.MAIN_AGENT) if role == AgentRole.MAIN else ExecutionStarter(StarterType.HELPER, agent_role=role)
+            self.known[session] = matched
+            return matched
 
     def role(self, session: str) -> str:
         starter = self.starter(session)

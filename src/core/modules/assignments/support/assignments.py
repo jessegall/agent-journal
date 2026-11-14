@@ -102,12 +102,12 @@ class Assignments:
     # takes the row when it starts again.
     def assign_kept(self, row: Assignable, actor_id: int, context: Context, *, cascade: bool = True, override: bool = False) -> Cascade:
         current = self.assignments(row)
-        held = next((assignment for assignment in current if assignment.actor_id == actor_id), None)
-        if held is not None:
+        kept = next((assignment for assignment in current if assignment.actor_id == actor_id), None)
+        if kept is not None:
             if row.takes_actors is ActorCount.SEVERAL:
                 raise RepeatedAssignmentRefusal(row.model_name, row.id, actor_id)
             # a row the actor holds already passes an override on to the children given to someone else
-            return self.cascaded(row, held, frozenset(), CascadeWalk(context, override), Cascade()) if cascade and override else Cascade()
+            return self.cascaded(row, kept, frozenset(), CascadeWalk(context, override), Cascade()) if cascade and override else Cascade()
         replaced = current if row.takes_actors is ActorCount.SINGLE else ()
         inherited_ids = self.dependent_ids(replaced)
         for previous in replaced:

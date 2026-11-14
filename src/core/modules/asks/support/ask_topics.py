@@ -14,7 +14,7 @@ class AskTopics:
 
     def named(self, key: str) -> AskTopic:
         topics = self.all()
-        found = next((topic for topic in topics if topic.key == key), None)
-        if found is None:
+        matched = next((topic for topic in topics if topic.key == key), None)
+        if matched is None:
             raise Refusal(f"there is no topic {key}", f"topics: {', '.join(topic.key for topic in topics)}")
-        return found
+        return matched

@@ -14,8 +14,8 @@ class PlanStartState(HookTriggeredState):
 def hook_running(*commands: str) -> SimpleNamespace:
     """A hook whose shell line runs these journal commands; it answers only what the state asks of it."""
 
-    def running(*named: str) -> tuple[str, ...]:
-        return tuple(command for command in commands if any(command.startswith(name) for name in named))
+    def running(*labelled: str) -> tuple[str, ...]:
+        return tuple(command for command in commands if any(command.startswith(name) for name in labelled))
 
     return SimpleNamespace(agent_id=7, timestamp=OPENED, event=SimpleNamespace(tool=SimpleNamespace(shell=SimpleNamespace(parts_running_journal_command=running))))
 

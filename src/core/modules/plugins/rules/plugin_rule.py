@@ -98,13 +98,13 @@ class PluginRule(DriverRule):
         commands.extend(RecordPluginFault(plugin.id, f"its queue file {name} is not JSON") for name in read.unreadable)
 
     # an event for a tool its hears entry leaves out, or within its interval since the last delivery, starts nothing
-    def is_wanted(self, plugin: Plugin, heard: HeardEvent, event: PluginEvent) -> bool:
-        if heard.tools and not heard.accepts_tool(event.data["tool"] if "tool" in event.data else None):
+    def is_wanted(self, plugin: Plugin, received: HeardEvent, event: PluginEvent) -> bool:
+        if received.tools and not received.accepts_tool(event.data["tool"] if "tool" in event.data else None):
             return False
-        if not heard.every_minutes:
+        if not received.every_minutes:
             return True
         last = self.queries.query(PluginDelivery).filter(plugin_id=plugin.id, event=event.name).newest().first()
-        return last is None or last.creation_timestamp().elapsed_minutes(self.clock.timestamp()) >= heard.every_minutes
+        return last is None or last.creation_timestamp().elapsed_minutes(self.clock.timestamp()) >= received.every_minutes
 
     @staticmethod
     def reaches(hook: AgentHook, manifest: PluginManifest, event: str) -> bool:

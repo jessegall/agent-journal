@@ -29,13 +29,13 @@ def start(line: str, *categories: CommandCategory, plugin: str = "", run_name: s
 
 
 def test_worker_grep_row_is_short_agent():
-    chosen = CHOICE.chosen(start("grep x", CommandCategory.SEARCH), WORKER)
-    assert (chosen.lane, chosen.priority) == (ExecutionLane.SHORT, ExecutionPriority.AGENT)
+    selected = CHOICE.chosen(start("grep x", CommandCategory.SEARCH), WORKER)
+    assert (selected.lane, selected.priority) == (ExecutionLane.SHORT, ExecutionPriority.AGENT)
 
 
 def test_worker_pytest_row_is_long_agent():
-    chosen = CHOICE.chosen(start("pytest", CommandCategory.TEST_RUN), WORKER)
-    assert (chosen.lane, chosen.priority, chosen.slot_cost) == (ExecutionLane.LONG, ExecutionPriority.AGENT, 4)
+    selected = CHOICE.chosen(start("pytest", CommandCategory.TEST_RUN), WORKER)
+    assert (selected.lane, selected.priority, selected.slot_cost) == (ExecutionLane.LONG, ExecutionPriority.AGENT, 4)
 
 
 def test_main_agent_read_row_is_immediate_and_not_queued():
@@ -47,10 +47,10 @@ def test_helper_pytest_waits_at_agent():
 
 
 def test_mixed_line_takes_longest_lane_and_highest_cost():
-    chosen = CHOICE.chosen(start("ls && npm install && pytest", CommandCategory.READ, CommandCategory.PACKAGE, CommandCategory.TEST_RUN), WORKER)
-    assert (chosen.lane, chosen.slot_cost) == (ExecutionLane.LONG, 4)
+    selected = CHOICE.chosen(start("ls && npm install && pytest", CommandCategory.READ, CommandCategory.PACKAGE, CommandCategory.TEST_RUN), WORKER)
+    assert (selected.lane, selected.slot_cost) == (ExecutionLane.LONG, 4)
 
 
 def test_plugin_row_keeps_the_plugin_class():
-    chosen = CHOICE.chosen(start("sample check", CommandCategory.CHECK, plugin="sample", run_name="merge"), WORKER)
-    assert chosen.name == "sample merge"
+    selected = CHOICE.chosen(start("sample check", CommandCategory.CHECK, plugin="sample", run_name="merge"), WORKER)
+    assert selected.name == "sample merge"

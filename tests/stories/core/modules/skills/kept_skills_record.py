@@ -62,12 +62,12 @@ def test_a_tool_use_before_the_record_answers_from_the_transcript_and_one_after_
     story = new_story(DUE, fixture=CompactingClaude)
     raw = compacted_session(story, tmp_path)
     reads = Reads(monkeypatch)
-    before = story.hook("s-1", tool_use(raw, "pre_tool_use"))
+    previous = story.hook("s-1", tool_use(raw, "pre_tool_use"))
     from_transcript = reads.count
     story.hook("s-1", tool_use(raw, "post_tool_use"))
     story.run_listeners()
     after = story.hook("s-1", tool_use(raw, "pre_tool_use"))
     expect_due(story, "journal-chores")
     story.expect_rows(from_transcript >= 1, reads.count == from_transcript,
-                      "journal-notes" not in str(before.lines), "journal-notes" not in str(after.lines), not before.refusal, not after.refusal,
-                      detail=f"{from_transcript} {reads.count} {before.lines} {after.lines}")
+                      "journal-notes" not in str(previous.lines), "journal-notes" not in str(after.lines), not previous.refusal, not after.refusal,
+                      detail=f"{from_transcript} {reads.count} {previous.lines} {after.lines}")

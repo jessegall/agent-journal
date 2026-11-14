@@ -20,4 +20,4 @@ class ShippedTexts:
     @staticmethod
     def profile(name: str, values: Mapping[str, str]) -> str:
         text = FileAccess.read(RESOURCES / "profiles" / f"{name}.md")
-        return PLACEHOLDER.sub(lambda found: values[found.group(1)], text)
+        return PLACEHOLDER.sub(lambda matched: values[matched.group(1)], text)

@@ -77,18 +77,18 @@ def test_with_the_switch_of_the_state_off_its_rule_is_asked_on_every_hook_again(
 
 def test_an_opener_that_raises_leaves_its_rule_asked_and_the_hook_answered(new_story, monkeypatch):
     story = new_story(fixture=BuilderStartedWithoutPlainWords)
-    asked = []
+    requested = []
     answer = PlanFocusRule.answer
 
     def broken(state, hook):
         raise RuntimeError("the opener broke")
 
     def counted_answer(focus_rule, hook):
-        asked.append(hook.hook_name)
+        requested.append(hook.hook_name)
         return answer(focus_rule, hook)
 
     monkeypatch.setattr(PlanFocusDue, "open_rows", broken)
     monkeypatch.setattr(PlanFocusRule, "answer", counted_answer)
     story.hook("s-1", HookSamples.prompt("go on"))
     rows = recorded(story, LISTING)
-    story.expect_rows(FOCUS_RULE in rows, len(asked) == 1, detail=f"{asked}, {rows}")
+    story.expect_rows(FOCUS_RULE in rows, len(requested) == 1, detail=f"{requested}, {rows}")

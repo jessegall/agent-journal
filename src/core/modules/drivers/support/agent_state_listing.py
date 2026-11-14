@@ -74,13 +74,13 @@ class AgentStateListing:
         actor = self.loader.loaded(agent)
         tick = HookEvent.tick(agent.program, agent.session, "", 0, str(agent.id), "")
         board = self.boards.for_hook(AgentHook.of_actor(replace(tick, event=HookEventName.PRE_TOOL_USE), actor, now))
-        found: list[OpenState] = []
+        matched: list[OpenState] = []
         for tier, label in TIER_LABELS:
             for entry in self.registry.tier_states(actor.driver, int(tier)) if tier is not None else []:
                 rows = board.open_rows(entry)
                 if rows:
-                    found.append(OpenState(label, entry.name, tuple(row.ref for row in rows), min(row.opened_at.text for row in rows)))
-        return found
+                    matched.append(OpenState(label, entry.name, tuple(row.ref for row in rows), min(row.opened_at.text for row in rows)))
+        return matched
 
     @staticmethod
     def tier_line(states: list[OpenState]) -> str:

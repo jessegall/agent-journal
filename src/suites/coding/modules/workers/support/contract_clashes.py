@@ -41,5 +41,5 @@ class ContractClashes:
 
     @staticmethod
     def version(text: str) -> tuple[int, ...]:
-        found = VERSION_LINE.search(text)
-        return tuple(int(number) for number in found.groups()) if found is not None else (0, 0, 0)
+        matched = VERSION_LINE.search(text)
+        return tuple(int(number) for number in matched.groups()) if matched is not None else (0, 0, 0)

@@ -62,30 +62,30 @@ class Listening:
 
 
 def test_the_commands_a_deferred_rule_answers_are_each_run():
-    listening = Listening([CommandRule])
-    listening.hear()
-    assert listening.ran == [Ping(1), Ping(2)] and listening.errors == []
+    subscribed = Listening([CommandRule])
+    subscribed.hear()
+    assert subscribed.ran == [Ping(1), Ping(2)] and subscribed.errors == []
 
 
 def test_a_rule_that_answers_a_line_is_reported_and_runs_nothing_and_the_next_rule_still_runs():
-    listening = Listening([LineRule, CommandRule])
-    listening.hear()
-    assert listening.ran == [Ping(1), Ping(2)]
-    assert listening.errors == [(["deferred rule", "samples.line"], DEFERRED_RULES_ONLY_RUN_COMMANDS)]
+    subscribed = Listening([LineRule, CommandRule])
+    subscribed.hear()
+    assert subscribed.ran == [Ping(1), Ping(2)]
+    assert subscribed.errors == [(["deferred rule", "samples.line"], DEFERRED_RULES_ONLY_RUN_COMMANDS)]
 
 
 def test_a_rule_that_raises_is_reported_and_passed_by_and_the_other_rules_still_run():
-    listening = Listening([RaisingRule, CommandRule])
-    listening.hear()
-    assert listening.ran == [Ping(1), Ping(2)] and listening.errors == [(["deferred rule", "samples.raising"], "broke")]
+    subscribed = Listening([RaisingRule, CommandRule])
+    subscribed.hear()
+    assert subscribed.ran == [Ping(1), Ping(2)] and subscribed.errors == [(["deferred rule", "samples.raising"], "broke")]
 
 
 def test_a_rule_switched_off_and_a_closed_state_run_nothing():
-    switched = Listening([CommandRule], off=("samples.commands",))
-    switched.hear()
+    toggled = Listening([CommandRule], off=("samples.commands",))
+    toggled.hear()
     closed = Listening([CommandRule], open_state=False)
     closed.hear()
-    assert (switched.ran, closed.ran) == ([], [])
+    assert (toggled.ran, closed.ran) == ([], [])
 
 
 def test_the_listener_runs_after_the_other_listeners_and_hears_a_created_hook_call_once_per_event():
