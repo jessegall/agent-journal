@@ -5,8 +5,8 @@ from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.support.story_checks import expect_value
 
 
-def test_the_skill_inspector_declares_its_body_component(new_story):
-    registry = Registry.read(new_story(fixture=MainEnvironment).container.get(Database))
+def test_the_skill_inspector_declares_its_body_component(played):
+    registry = Registry.read(played(MainEnvironment).container.get(Database))
     declaration = next(entry.declaration for entry in registry.inspectors if entry.declaration.model is AgentSkill)
     expect_value([component.window for component in declaration.components], ["skills.skill-body"])
     expect_value((declaration.links, declaration.width.value), (None, "medium"))

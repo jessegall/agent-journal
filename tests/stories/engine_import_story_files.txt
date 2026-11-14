@@ -492,7 +492,6 @@ tests/stories/core/modules/skills/publish_at_start.py
 tests/stories/core/modules/skills/rules.py
 tests/stories/core/modules/skills/skill_commands.py
 tests/stories/core/modules/skills/skill_file_stats.py
-tests/stories/core/modules/skills/skill_inspector.py
 tests/stories/core/modules/skills/skill_listeners.py
 tests/stories/core/modules/skills/skill_registry.py
 tests/stories/core/modules/skills/skills_page_browser.py
@@ -501,7 +500,6 @@ tests/stories/core/modules/skills/start_distribution.py
 tests/stories/core/modules/skills/start_settings.py
 tests/stories/core/modules/skills/support/skill_samples.py
 tests/stories/core/modules/skills/support/skills_page_fixture.py
-tests/stories/core/modules/tasks/added_state.py
 tests/stories/core/modules/tasks/assign_refusals.py
 tests/stories/core/modules/tasks/block_reviews.py
 tests/stories/core/modules/tasks/board_counts.py
