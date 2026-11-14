@@ -9,6 +9,13 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
 
 UPDATE = "worker update --wait"
+
+
+def expect_clash(story, worker: Actor, *texts: str) -> None:
+    """An update that stops on clashes ends with a code that is not 0 and names what it printed."""
+    story.checked(UPDATE)
+    outcome = story.run(UPDATE, worker)
+    story.expected(outcome.code == 1 and all(text in outcome.output_text for text in texts), f"{UPDATE} did not stop on a clash naming {texts}: {outcome.code} {outcome.output_text}")
 MARKER = "<<<<<<<"
 
 
@@ -19,13 +26,13 @@ def diverge_cart(repository: GitRepository, worker: Actor) -> None:
 
 def s36_a_function_changed_on_both_sides_leaves_markers(story, repository: GitRepository, worker: Actor) -> None:
     diverge_cart(repository, worker)
-    story.expect_text(UPDATE, f"The update clashes with {ENVIRONMENT_BRANCH} in cart.py: settle the markers, then go on.", actor=worker)
+    story.expect_refusal(UPDATE, f"The update clashes with {ENVIRONMENT_BRANCH} in 1 file, cart.py: settle the markers, then go on.", actor=worker)
     story.expect_rows(MARKER in (repository.worktree_folder(worker.id) / "cart.py").read_text())
 
 
 def s38_a_failed_rebase_falls_back_to_a_merge_of_the_base(story, repository: GitRepository, worker: Actor) -> None:
     diverge_cart(repository, worker)
-    story.expect_text(UPDATE, "The update clashes", actor=worker)
+    expect_clash(story, worker, "The update clashes")
     merging = repository.git("rev-parse", "--verify", "--quiet", "MERGE_HEAD", folder=repository.worktree_folder(worker.id)).returncode == 0
     story.expect_rows(merging)
 
@@ -33,12 +40,12 @@ def s38_a_failed_rebase_falls_back_to_a_merge_of_the_base(story, repository: Git
 def s39_uncommitted_changes_wait_in_a_named_stash_while_markers_are_settled(story, repository: GitRepository, worker: Actor) -> None:
     diverge_cart(repository, worker)
     (repository.worktree_folder(worker.id) / "shop.py").write_text("SHOP = 2\n")
-    story.expect_text(UPDATE, "The update clashes", "Your uncommitted changes stay in stash", "until your next commit puts them back", actor=worker)
+    expect_clash(story, worker, "The update clashes", "Your uncommitted changes stay in stash", "until your next commit puts them back")
 
 
 def s40_the_next_commit_commits_the_settled_merge(story, repository: GitRepository, worker: Actor) -> None:
     diverge_cart(repository, worker)
-    story.expect_text(UPDATE, "The update clashes", actor=worker)
+    expect_clash(story, worker, "The update clashes")
     (repository.worktree_folder(worker.id) / "cart.py").write_text("def total():\n    return 3\n")
     story.expect_success('proof make 1 --task 1 "cart.py:1, the settled total"', actor=worker)
     story.run('worker commit --wait --differences "settled the update merge"', actor=worker)
@@ -48,7 +55,7 @@ def s40_the_next_commit_commits_the_settled_merge(story, repository: GitReposito
 
 def s41_open_markers_refuse_a_second_update(story, repository: GitRepository, worker: Actor) -> None:
     diverge_cart(repository, worker)
-    story.expect_text(UPDATE, "The update clashes", actor=worker)
+    expect_clash(story, worker, "The update clashes")
     story.expect_refusal(UPDATE, "conflict markers remain in cart.py", actor=worker)
 
 
@@ -81,7 +88,7 @@ def s52_the_commit_of_the_settled_merge_puts_the_kept_changes_back(story, reposi
     folder = repository.worktree_folder(worker.id)
     diverge_cart(repository, worker)
     (folder / "shop.py").write_text("SHOP = 2\n")
-    story.expect_text(UPDATE, "Your uncommitted changes stay in stash", actor=worker)
+    expect_clash(story, worker, "Your uncommitted changes stay in stash")
     (folder / "cart.py").write_text("def total():\n    return 3\n")
     story.expect_success('proof make 1 --task 1 "cart.py:1, the settled total"', actor=worker)
     story.run('worker commit --wait --differences "settled the update merge"', actor=worker)
@@ -97,7 +104,7 @@ def s53_changes_that_clash_with_the_rebased_tree_are_named_and_kept(story, repos
     story.expect_text(UPDATE, f"Your worktree is on {ENVIRONMENT_BRANCH} at ", actor=worker)
     (folder / "cart.py").write_text("TOTAL = 5\n")
     committed_on(repository, base, "cart.py", "TOTAL = 2\n", "The base changes the total")
-    story.expect_text(UPDATE, f"The update clashes with {ENVIRONMENT_BRANCH} in cart.py", actor=worker)
+    story.expect_refusal(UPDATE, f"The update clashes with {ENVIRONMENT_BRANCH} in 1 file, cart.py", actor=worker)
     text, stashes = (folder / "cart.py").read_text(), repository.git("stash", "list", folder=folder).stdout
     story.expect_rows(MARKER in text, "TOTAL = 5" in text, repository.worker_branch(worker.id) in stashes, detail=f"{text}\n{stashes}")
 

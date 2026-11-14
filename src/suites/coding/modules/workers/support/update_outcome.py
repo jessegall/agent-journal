@@ -17,7 +17,7 @@ class UpdateOutcome:
             return [f"already up to date with {self.base_branch}"]
         if self.outcome is UpdateResult.UPDATED:
             return [f"Your worktree is on {self.base_branch} at {self.update.base_commit[:10]}. Go on."]
-        lines = [f"The update clashes with {self.base_branch} in {', '.join(self.update.conflicts)}: settle the markers, then go on. Your next commit carries the settled files."]
+        lines = [f"The update clashes with {self.base_branch} in {len(self.update.conflicts)} {'file' if len(self.update.conflicts) == 1 else 'files'}, {', '.join(self.update.conflicts)}: settle the markers, then go on. Your next commit carries the settled files."]
         if self.update.stash_id:
             lines.append(f"Your uncommitted changes stay in stash {self.update.stash_id} until your next commit puts them back on the settled merge.")
         return lines
