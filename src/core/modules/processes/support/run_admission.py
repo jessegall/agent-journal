@@ -15,11 +15,14 @@ class RunAdmission:
     def __init__(self, queries: Queries, visibility: RunVisibility) -> None:
         self.queries, self.visibility = queries, visibility
 
+    # a merge the journal runs itself never waits for a reader, so its parts are not read
     def waiting_parts(self, waiting: Sequence[Process]) -> dict[int, tuple[ProcessPart, ...]]:
-        return self.visibility.processes_parts(tuple(process.id for process in waiting))
+        return self.visibility.processes_parts(tuple(process.id for process in waiting if not process.is_journal_merge))
 
     # a run whose parts are not written yet waits for them as for a reader
     def waits_for_reader(self, process: Process, parts: Sequence[ProcessPart], current_time: Timestamp) -> bool:
+        if process.is_journal_merge:
+            return False
         if not parts:
             return True
         requests = self.queries.query(ReaderRequest).find_many([part.reader_request_id for part in parts if part.reader_request_id is not None])

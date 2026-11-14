@@ -31,7 +31,9 @@ class ProcessClasses:
             return replace(plugin_class, name=f"{command.plugin} {command.run_name}") if command.run_name and not plugin_class.plugin else plugin_class
         if command.is_journal_merge:
             return self.classes.match(ExecutionSubject(ExecutionSource.SHELL_LINE, starter, category=command.category, process_type=ProcessType.MERGE, line=command.line))
-        return self.for_categories([part.category for part in command.parts] or [command.category], command.line, agent)
+        # a part of unknown category says nothing of the line, which then takes the category the start names
+        known = [part.category for part in command.parts if part.category is not CommandCategory.UNKNOWN]
+        return self.for_categories(known or [command.category], command.line, agent)
 
     # the class of an agent's shell line by the categories of its parts: its longest lane and highest cost
     def for_categories(self, categories: Sequence[CommandCategory], line: str, agent: Agent) -> ExecutionClass:
