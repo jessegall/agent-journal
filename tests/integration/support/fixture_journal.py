@@ -12,7 +12,10 @@ from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from engine.query.queries import Queries
 from engine.command.bus import Bus
 from engine.command.command import Command
-from engine.testing.expectations.text_match import ExpectedText, contains_text
+from engine.testing.expectations.text_match import ExpectedText, contains_line, contains_text
+from core.modules.settings.support.setting_catalogue import SettingCatalogue
+from core.modules.settings.support.setting_reader import SettingReader
+from engine.setting.errors.setting_type_error import SettingTypeError
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.models.agent import Agent
 from engine.testing.stories.kit_rows import KitRows
@@ -36,8 +39,8 @@ class FixtureLine:
     code: int
     output_text: str
 
-    def expect_text(self, *texts: str) -> None:
-        assert all(text in self.output_text for text in texts), self.output_text
+    def expect_text(self, *texts: ExpectedText) -> None:
+        assert all(contains_text(self.output_text, text) for text in texts), self.output_text
 
     def expect_no_text(self, text: str) -> None:
         assert text not in self.output_text, self.output_text
@@ -45,7 +48,7 @@ class FixtureLine:
 
 @dataclass
 class FixtureJournal(KitRows):
-    """An integration journal copied from a story fixture's template, with the agent and user that fixture made, so a
+    """An integration journal copied from a story fixture's template, with the agent, user and helper that fixture made, so a
     mechanical story moved to tests/integration starts from the same state. A person's line runs in the main
     environment and an agent's in its own, as in a story."""
 
@@ -54,6 +57,7 @@ class FixtureJournal(KitRows):
     replacements: dict[type, object]
     agent: Actor = field(default_factory=Actor.core)
     user: Actor = field(default_factory=Actor.core)
+    helper: Actor = field(default_factory=Actor.core)
 
     @property
     def home(self) -> JournalHome:
@@ -120,9 +124,9 @@ class FixtureJournal(KitRows):
     def tick(self, session: str) -> HookReply:
         return self.hook(session, HookSamples.tick())
 
-    def expect_no_text(self, line: str, *texts: str, actor: Actor | None = None) -> None:
+    def expect_no_text(self, line: str, *texts: ExpectedText, actor: Actor | None = None) -> None:
         answer = self.run(line, actor)
-        assert all(text not in answer.output_text for text in texts), (line, answer)
+        assert not any(contains_text(answer.output_text, text) for text in texts), (line, answer)
 
     def row(self, model: type, row_id: int):
         return self.container.get(Queries).query(model).find(row_id)
@@ -130,13 +134,13 @@ class FixtureJournal(KitRows):
     def run_listeners(self) -> None:
         self.container.get(CommitListenerRunner).run()
 
-    def expect_success(self, line: str, *texts: str, actor: Actor | None = None) -> FixtureLine:
+    def expect_success(self, line: str, *texts: ExpectedText, actor: Actor | None = None) -> FixtureLine:
         answer = self.run(line, actor)
         written = self.with_touched_rows(answer.output_text)
-        assert answer.code == 0 and all(text in written for text in texts), (line, answer)
+        assert answer.code == 0 and all(contains_text(written, text) for text in texts), (line, answer)
         return answer
 
-    def expect_text(self, line: str, *texts: str, actor: Actor | None = None) -> None:
+    def expect_text(self, line: str, *texts: ExpectedText, actor: Actor | None = None) -> None:
         self.run(line, actor).expect_text(*texts)
 
     def expect_rows(self, *conditions: bool, detail: str = "") -> None:
@@ -153,3 +157,35 @@ class FixtureJournal(KitRows):
     def end_session(self, agent: Actor) -> None:
         self.run_command(EndAgent(agent.id), agent, self.container.get(Queries).query(Agent).find(agent.id).environment_id)
         self.run_listeners()
+
+    def expect_usage_error(self, line: str, actor: Actor | None = None) -> None:
+        answer = self.run(line, actor)
+        assert answer.code == 2, (line, answer)
+
+    def expect_absent(self, line: str, *absent_lines: str, actor: Actor | None = None) -> None:
+        answer = self.run(line, actor)
+        printed = answer.output_text.splitlines()
+        assert answer.code == 0 and not [absent for absent in absent_lines if absent in printed], (line, absent_lines, answer)
+
+    def expect_hook_allowed(self, session: str, sample: HookSample, *expected_lines: ExpectedText) -> None:
+        reply = self.hook(session, sample)
+        missing = [line for line in expected_lines if not contains_line(reply.lines, line)]
+        assert reply.refusal == "" and not missing, (sample.action, missing, reply)
+
+    def expect_hook_refusal(self, session: str, sample: HookSample, reason: ExpectedText) -> None:
+        reply = self.hook(session, sample)
+        assert contains_text(reply.refusal, reason), (sample.action, reason, reply)
+
+    def expect_hook_silent(self, session: str, sample: HookSample) -> None:
+        reply = self.hook(session, sample)
+        assert reply.refusal == "" and not reply.lines, (sample.action, reply)
+
+    def expect_absent_hook_line(self, session: str, sample: HookSample, line: ExpectedText) -> None:
+        reply = self.hook(session, sample)
+        assert not contains_line(reply.lines, line), (sample.action, line, reply)
+
+    def number_default(self, key: str) -> int:
+        default = SettingReader.default(self.container.get(SettingCatalogue).value(key))
+        if not isinstance(default, int) or isinstance(default, bool):
+            raise SettingTypeError(f"{key} declares {default!r}, not a whole number")
+        return default

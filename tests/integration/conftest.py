@@ -80,7 +80,7 @@ def played(templates: TemplateDatabases, tmp_path: Path) -> Generator[Callable[.
         # the fixture's rows were written on the story clock, so the journal goes on from that same moment
         clock = ManualClock()
         journal.with_clock(clock)
-        return FixtureJournal(journal, clock, replacements, state.agent, state.user)
+        return FixtureJournal(journal, clock, replacements, state.agent, state.user, state.helper)
 
     yield make
     for journal in opened:
