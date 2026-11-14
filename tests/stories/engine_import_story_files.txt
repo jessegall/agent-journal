@@ -161,9 +161,7 @@ tests/stories/core/modules/drivers/managed_answers.py
 tests/stories/core/modules/drivers/managed_failures.py
 tests/stories/core/modules/drivers/managed_history.py
 tests/stories/core/modules/drivers/managed_sweep.py
-tests/stories/core/modules/drivers/module_memberships.py
 tests/stories/core/modules/drivers/named_hook_changes.py
-tests/stories/core/modules/drivers/nudge_types_upgrade.py
 tests/stories/core/modules/drivers/nudges.py
 tests/stories/core/modules/drivers/open_blocks.py
 tests/stories/core/modules/drivers/outward_lines.py
