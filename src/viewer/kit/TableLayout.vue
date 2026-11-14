@@ -19,6 +19,7 @@ const value = ref(defaultFilter(props.fields));
 const words = ref("");
 const shown = computed(() => applyFilter(props.rows, props.fields, value.value, words.value, props.columns.map((column) => column.key)));
 const labels = computed(() => props.columns.map((column) => column.label));
+const widths = computed(() => (props.columns.some((column) => column.width) ? props.columns.map((column) => column.width ?? "1fr") : []));
 // a row with a mark is chosen in place through pick, as the request log shows the chosen request beside its table
 const open = (row) => row.ref ?? (props.pick && row.mark !== undefined ? String(row.mark) : "");
 const lines = computed(() => shown.value.map((row) => ({cells: props.columns.map((column) => row[column.key] ?? ""), open: open(row), tone: row.tone ?? "", mark: row.mark, active: props.active !== "" && row.mark === props.active})));
@@ -29,7 +30,7 @@ const opens = (ref) => (props.pick ? props.pick(ref) : peekRef(ref));
     <div class="table-layout" data-table-layout>
         <FilterBar v-model="value" v-model:words="words" :fields="fields" :rows="rows" :shown="shown.length" />
         <div class="table-layout-body">
-            <DataTable :columns="labels" :rows="lines" :empty="empty" @open="opens" />
+            <DataTable :columns="labels" :widths="widths" :rows="lines" :empty="empty" @open="opens" />
         </div>
     </div>
 </template>

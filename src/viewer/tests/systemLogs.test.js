@@ -74,3 +74,14 @@ test("the buttons and the dropdowns of the system logs are the kit's", async () 
     for (const marker of ["data-log-source", "data-log-level"]) expect(element.querySelector(`[${marker}] [data-drop-head]`)).not.toBeNull();
     expect(element.querySelector("select")).toBeNull();
 });
+
+test("a log line is shown whole under the table when clicked, and the message column takes the room left", async () => {
+    const long = "hook pre_tool_use made 252 file system calls ".repeat(8).trim();
+    const window = context({"developer system-logs": listing(long)});
+    const element = await mounted(SystemLogs, window);
+    const row = element.querySelector(".table-row:not(.head)");
+    expect(row.style.gridTemplateColumns).toBe("11rem 6rem 6rem 1fr");
+    row.click();
+    await settle();
+    expect(element.querySelector("[data-log-line]").textContent).toBe(long);
+});

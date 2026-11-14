@@ -3,9 +3,10 @@ import {computed} from "vue";
 import {copying, short} from "../domain/contextItems.js";
 import {vContext} from "../../kit/vContext.js";
 
-const props = defineProps({columns: {type: Array, required: true}, rows: {type: Array, required: true}, empty: {type: String, default: ""}});
+const props = defineProps({columns: {type: Array, required: true}, rows: {type: Array, required: true}, empty: {type: String, default: ""}, widths: {type: Array, default: () => []}});
 const emit = defineEmits(["open"]);
-const grid = computed(() => ({gridTemplateColumns: `2fr repeat(${Math.max(0, props.columns.length - 1)}, 1fr)`}));
+// a table that names its column widths gets them; otherwise the first column takes twice the room of the others
+const grid = computed(() => ({gridTemplateColumns: props.widths.length ? props.widths.join(" ") : `2fr repeat(${Math.max(0, props.columns.length - 1)}, 1fr)`}));
 // the menu of a right click on a row: open it where it opens, copy its first cell (its number) or the whole row
 const place = (row) => {
     const line = row.cells.join(" ").replace(/\s+/g, " ").trim();

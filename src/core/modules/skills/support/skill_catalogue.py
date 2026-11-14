@@ -14,7 +14,7 @@ from engine.skill.skill_digest import SkillDigest
 from engine.skill.skill_contents import FRONT_MATTER_MARK
 
 PLUGIN_KEY = "plugin"
-KEPT_SECONDS = 5
+KEPT_SECONDS = 60
 
 
 class SkillCatalogue:
