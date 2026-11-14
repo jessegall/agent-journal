@@ -1,0 +1,6 @@
+from suites.coding.windows.extensions.agents_file_edits_extension import AgentsFileEditsExtension
+from suites.coding.windows.extensions.helpers_file_edits_extension import HelpersFileEditsExtension
+from suites.coding.windows.extensions.plugins_files_extension import PluginsFilesExtension
+from suites.coding.windows.extensions.shell_branch_extension import ShellBranchExtension
+
+CODING_WINDOW_EXTENSIONS = [AgentsFileEditsExtension, HelpersFileEditsExtension, ShellBranchExtension, PluginsFilesExtension]

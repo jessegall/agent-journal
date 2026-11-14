@@ -1,15 +1,8 @@
-from engine.viewer.window_read_search import WindowReadSearch
+from core.modules.search.windows.search_windows import SEARCH_WINDOWS
 from engine.module.module import Module
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
-from engine.viewer.window_key import WindowKey
-from engine.enums.key_loading import KeyLoading
-from engine.enums.window_place import WindowPlace
 from core.modules.search.commands.search_find.search_find_subcommand import SearchFindSubcommand
 from core.modules.search.listeners.search_mark_listener import SearchMarkListener
 from core.modules.search.support.search_marks import SEARCH_MARKS
-from core.modules.search.support.skeletons import SEARCH_SEARCH_SKELETON
 
 
 class SearchModule(Module):
@@ -24,4 +17,4 @@ class SearchModule(Module):
     subcommands = [SearchFindSubcommand]
     marks = SEARCH_MARKS
     listeners = [SearchMarkListener]
-    windows = [WindowDeclaration("search.search", "Search", "search.js", WindowLoading.COMPONENT, skeleton=SEARCH_SEARCH_SKELETON, place=WindowPlace.PAGE, icon=WindowIcon.SEARCH, reads=["search find"], keys=[WindowKey("results", "search find {terms} --split-terms", arguments=["model"], loading=KeyLoading.REQUESTED)], search=WindowReadSearch("search find", "Search the journal"))]
+    windows = SEARCH_WINDOWS

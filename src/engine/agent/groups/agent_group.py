@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from engine.types.class_fields import class_fields
+
 
 @dataclass(frozen=True)
 class AgentGroup:
@@ -11,3 +13,8 @@ class AgentGroup:
     label: str
     agent_type: str
     profiles: tuple[str, ...] = ()
+
+    # a group written as a class in its own file sets the fields as class attributes
+    @classmethod
+    def declared(cls) -> "AgentGroup":
+        return AgentGroup(**class_fields(cls, AgentGroup))

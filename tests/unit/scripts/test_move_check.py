@@ -20,13 +20,13 @@ def test_a_registry_that_differs_only_in_the_moved_path_has_no_differences():
 def test_any_other_registry_change_is_named():
     recorded = json.dumps({"handlers": {"Run": "core.former.sample:Run"}, "guards": []})
     current = json.dumps({"handlers": {"Run": "engine.errors.sample:Run"}, "guards": ["extra"]})
-    assert script.registry_differences(recorded, current, MOVES) == ["registry entry guards changed"]
+    assert script.registry_differences(recorded, current, MOVES) == ["guards: changed"]
 
 
 def test_a_longer_module_name_is_not_taken_for_the_moved_one():
     recorded = json.dumps({"handlers": {"Run": "core.former.sample_list:Run"}})
     current = json.dumps({"handlers": {"Run": "engine.errors.sample_list:Run"}})
-    assert script.registry_differences(recorded, current, MOVES) == ["registry entry handlers changed"]
+    assert script.registry_differences(recorded, current, MOVES) == ["handlers Run: changed"]
 
 
 def test_the_fingerprints_of_the_source_are_not_compared():

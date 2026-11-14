@@ -1,5 +1,5 @@
 from engine.template.template_declaration import TemplateDeclaration
-from suites.coding.support.coding_templates import TESTING
+from suites.coding.templates.template_words import TESTING
 
 WORKER_TARGETS = tuple(["worker"])
 WORKER_TEMPLATES = [

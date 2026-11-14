@@ -15,7 +15,7 @@ VERB = re.compile(r"journal proof (\w+) 1")
 
 def typed_verbs() -> set[str]:
     """The words a user can type after journal proof: the commands the module writes itself and the move commands the journal builds."""
-    declaration = next(declaration for declaration in WorkersModule.models if declaration.model is Proof)
+    declaration = next(declaration for declaration in WorkersModule.model_declarations() if declaration.model is Proof)
     built = {move.name for move in ProofLifecycle.moves()} - set(declaration.excluded_subcommands)
     written = {subcommand.name for subcommand in WorkersModule.subcommands if getattr(subcommand, "cli_name", "") == "proof"}
     return built | written

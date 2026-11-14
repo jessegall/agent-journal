@@ -1,5 +1,5 @@
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from engine.registry.default_state_entry import DefaultStateEntry
 from engine.viewer.layout_preset import LayoutPreset
@@ -10,7 +10,8 @@ from engine.viewer.layout_shape import LayoutShape
 class SuiteEntry:
     """A registered suite: its name, the module that ships it, the suites it requires, whether it takes complete
     control, the other modules' overlays it includes, its viewer windows, its default layouts and its layout
-    presets per page, and the states it gives agents by default, its joining suites' included."""
+    presets per page, the windows of each of its entrances, and the states it gives agents by default, its joining
+    suites' included."""
 
     name: str
     module: str
@@ -22,6 +23,7 @@ class SuiteEntry:
     presets: Mapping[str, Sequence[LayoutPreset]]
     task_assigner: str = ""
     shipped: bool = False
+    entrances: Mapping[str, Sequence[str]] = field(default_factory=dict[str, Sequence[str]])
     default_states: Sequence[DefaultStateEntry] = ()
 
     def is_overlay_included(self, overlay: str) -> bool:

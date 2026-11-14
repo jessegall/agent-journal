@@ -1,0 +1,3 @@
+from core.modules.plan_reviews.skills.declarations.journal_plan_review_applying import JournalPlanReviewApplying
+
+PLAN_REVIEWS_SKILLS = [JournalPlanReviewApplying]

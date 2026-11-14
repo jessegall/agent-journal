@@ -1,0 +1,4 @@
+from suites.coding.listeners.full_test_run_listener import FullTestRunListener
+from suites.coding.listeners.graphify_hook_removal_listener import GraphifyHookRemovalListener
+
+CODING_LISTENERS = [FullTestRunListener, GraphifyHookRemovalListener]

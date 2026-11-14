@@ -1,4 +1,5 @@
-from engine.module.model_declaration import ModelDeclaration
+from core.modules.usage.windows.usage_windows import USAGE_WINDOWS
+from core.modules.usage.models.declarations.statistic_model_declaration import StatisticModelDeclaration
 from core.modules.usage.models.agent_listing import AgentListing
 from core.modules.usage.models.agent_counts import AgentCounts
 from core.modules.usage.models.agent_filter_options_view import AgentFilterOptionsView
@@ -8,12 +9,6 @@ from core.modules.usage.commands.agent_limits.agent_limits_subcommand import Age
 from core.modules.usage.commands.set_profile_limits.set_profile_limits_handler import SetProfileLimitsHandler
 from core.modules.usage.commands.set_profile_limits.set_profile_limits_subcommand import SetProfileLimitsSubcommand
 from engine.module.module import Module
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_key import WindowKey
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
-from engine.enums.window_place import WindowPlace
-from engine.enums.window_shows import WindowShows
 from core.modules.usage.commands.usage_agents.usage_agents_subcommand import UsageAgentsSubcommand
 from core.modules.usage.commands.statistic_list.statistic_list_subcommand import StatisticListSubcommand
 from core.modules.usage.commands.usage_bars.usage_bars_subcommand import UsageBarsSubcommand
@@ -26,9 +21,7 @@ from core.modules.usage.commands.usage_inspector.usage_inspector_subcommand impo
 from core.modules.usage.listeners.ended_agent_status_listener import EndedAgentStatusListener
 from core.modules.usage.migrations.m001_statistics import StatisticsTableMigration
 from core.modules.usage.models.agent_card import AgentCard
-from core.modules.usage.models.statistic import Statistic
 from core.modules.usage.upgrade.statistics_move import StatisticsMove
-from core.modules.usage.support.skeletons import USAGE_USAGE_SKELETON, USAGE_COST_SKELETON, USAGE_FITNESS_SKELETON, USAGE_MACHINE_SKELETON, USAGE_CONTEXT_SKELETON
 
 
 from core.modules.usage.commands.count_profile_use.count_profile_use_handler import CountProfileUseHandler
@@ -42,15 +35,11 @@ class UsageModule(Module):
     seed_reason = "usage is what the agent programs report, which a demo has none of"
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.agents", "journal.core.environments", "journal.core.tasks", "journal.core.questions", "journal.core.drivers", "journal.core.messages", "journal.core.waits", "journal.core.plans", "journal.core.processes", "journal.core.settings", "journal.core.actors", "journal.core.schedules", "journal.core.skills", "journal.core.profiles", "journal.core.assignments"]
-    models = [ModelDeclaration(Statistic, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
+    models = [StatisticModelDeclaration]
     migrations = [StatisticsTableMigration]
     views = [AgentCard, AgentListing, AgentFilterOptionsView, AgentCounts]
     listeners = [EndedAgentStatusListener]
     moves = [StatisticsMove]
     handlers = [CountProfileUseHandler, SetProfileLimitsHandler]
     subcommands = [ProfileListSubcommand, AgentLimitsSubcommand, SetProfileLimitsSubcommand, AgentCardsSubcommand, AgentTipSubcommand, UsageAgentsSubcommand, UsageFitnessSubcommand, UsageShowSubcommand, UsageBarsSubcommand, UsageToolSubcommand, UsageOwnMessagesSubcommand, UsageAgentSubcommand, UsageInspectorSubcommand, StatisticListSubcommand]
-    windows = [WindowDeclaration("usage.usage", "Usage", "usage.js", WindowLoading.COMPONENT, skeleton=USAGE_USAGE_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show", "usage-limit list"], runs=["usage-limit set", "usage-limit delete"], events=["usage_limit.*"], keys=[WindowKey("usage", "usage show", reload_seconds=30), WindowKey("limits", "usage-limit list", events=["usage_limit.*"])]),
-               WindowDeclaration("usage.cost", "Cost", "cost.js", WindowLoading.COMPONENT, skeleton=USAGE_COST_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"], keys=[WindowKey("usage", "usage show", reload_seconds=30)]),
-               WindowDeclaration("usage.fitness", "Fitness", "fitness.js", WindowLoading.COMPONENT, skeleton=USAGE_FITNESS_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, shows=WindowShows.SELECTED_AGENT, reads=["usage fitness"], keys=[WindowKey("fitness", "usage fitness", arguments=["agent"])]),
-               WindowDeclaration("usage.load", "Load", "load.js", WindowLoading.COMPONENT, skeleton=USAGE_MACHINE_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, shows=WindowShows.SELECTED_AGENT, reads=["usage fitness"], keys=[WindowKey("fitness", "usage fitness", arguments=["agent"])]),
-               WindowDeclaration("usage.context", "Context", "context.js", WindowLoading.COMPONENT, skeleton=USAGE_CONTEXT_SKELETON, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"], keys=[WindowKey("usage", "usage show", reload_seconds=30)])]
+    windows = USAGE_WINDOWS

@@ -15,9 +15,9 @@ class SkillCheck:
     model."""
 
     def problems(self, modules: Sequence[type[Module]], events: Sequence[str]) -> tuple[str, ...]:
-        problems = list(NameGroups.duplicates([("skills", [skill.folder for module in modules for skill in module.skills])]))
+        problems = list(NameGroups.duplicates([("skills", [skill.folder for module in modules for skill in module.skill_declarations()])]))
         for module in modules:
-            for skill in module.skills:
+            for skill in module.skill_declarations():
                 name = f"the skill {skill.folder}"
                 if not skill.folder.startswith(FOLDER_PREFIX):
                     problems.append(f"{name} does not start with {FOLDER_PREFIX}")

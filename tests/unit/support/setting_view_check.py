@@ -24,7 +24,7 @@ class SettingViewCheck:
         self.project_folder, self.modules, self.allowed = project_folder, modules, allowed
 
     def declared_keys(self) -> frozenset[str]:
-        return frozenset(entry.key for module in self.modules for entry in SettingTree().entries(module.name, module.settings))
+        return frozenset(entry.key for module in self.modules for entry in SettingTree().entries(module.name, module.setting_nodes()))
 
     def view_files(self) -> Iterable[Path]:
         for path in sorted((self.project_folder / "src").rglob("*")):
@@ -49,5 +49,5 @@ class SettingViewCheck:
         return [path for path in self.allowed if not (self.project_folder / path).is_file()]
 
     def component_failures(self) -> list[str]:
-        entries: list[SettingEntry] = [entry for module in self.modules for entry in SettingTree().entries(module.name, module.settings) if entry.type in {category.value for category in SettingType}]
+        entries: list[SettingEntry] = [entry for module in self.modules for entry in SettingTree().entries(module.name, module.setting_nodes()) if entry.type in {category.value for category in SettingType}]
         return [f"{entry.key} is a {entry.type}, which the component {entry.source_component().value} cannot draw" for entry in entries if entry.type not in {category.value for category in entry.source_component().categories()}]

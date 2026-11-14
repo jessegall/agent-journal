@@ -1,10 +1,8 @@
-from engine.chat.dock_declaration import DockDeclaration
 from engine.enums.mark_click import MarkClick
 from engine.chat.mark_declaration import MarkDeclaration
 from engine.chat.mark_family import MarkFamily
 from engine.enums.mark_group import MarkGroup
 from engine.enums.mark_grouping import MarkGrouping
-from core.modules.memories.models.enums.memory_dock_type import MemoryDockType
 from core.modules.memories.models.enums.memory_mark_type import MemoryMarkType
 from core.modules.memories.models.enums.memory_mark_variant import MemoryMarkVariant
 
@@ -20,4 +18,3 @@ MEMORY_MARKS = [
                     grouping=MarkGrouping.NONE, full_width=True),
 ]
 
-MEMORY_DOCKS = [DockDeclaration(MemoryDockType.MEMORY, "bulb", "{row_title}", "memory-dock.js", most=6, reads=["memory show"])]

@@ -1,4 +1,6 @@
-from engine.module.model_declaration import ModelDeclaration
+from core.modules.assign_rules.models.declarations.assign_rule_model_declaration import AssignRuleModelDeclaration
+from core.modules.assign_rules.models.declarations.assign_rule_condition_model_declaration import AssignRuleConditionModelDeclaration
+from core.modules.assign_rules.models.declarations.assign_decision_model_declaration import AssignDecisionModelDeclaration
 from engine.module.module import Module
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
@@ -38,14 +40,10 @@ from core.modules.assign_rules.migrations.m001_assign_rules import AssignRulesMi
 from core.modules.assign_rules.migrations.m002_decision_indexes import DecisionIndexesMigration
 from core.modules.assign_rules.migrations.m003_rule_target_agent import RuleTargetAgentMigration
 from core.modules.assign_rules.migrations.m004_enabled_rule_index import EnabledRuleIndexMigration
-from core.modules.assign_rules.models.assign_decision import AssignDecision
-from core.modules.assign_rules.models.assign_rule import AssignRule
-from core.modules.assign_rules.models.assign_rule_condition import AssignRuleCondition
 from core.modules.assign_rules.support.assign_rules_nudges import ASSIGN_RULES_NUDGES
 from core.modules.assign_rules.support.rules.rule_assignment_reasons import RuleAssignmentReasons
 from core.modules.assignments.support.assignment_reasons import AssignmentReasons
 
-EXCLUDED_WRITES = ["make", "edit", "delete"]
 
 
 class AssignRulesModule(Module):
@@ -57,7 +55,7 @@ class AssignRulesModule(Module):
     move_reason = "version 4 has no assign rules"
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.plans", "journal.core.assignments"]
-    models = [ModelDeclaration(AssignRule, excluded_subcommands=EXCLUDED_WRITES), ModelDeclaration(AssignRuleCondition, excluded_subcommands=EXCLUDED_WRITES), ModelDeclaration(AssignDecision, excluded_subcommands=EXCLUDED_WRITES)]
+    models = [AssignRuleModelDeclaration, AssignRuleConditionModelDeclaration, AssignDecisionModelDeclaration]
     migrations = [AssignRulesMigration, DecisionIndexesMigration, RuleTargetAgentMigration, EnabledRuleIndexMigration]
     listeners = [AutoAssignTaskListener, AutoAssignTagListener, AgentStartRetryListener]
     handlers = [RecordAssignDecisionHandler, JudgeTaskHandler, RecordFailedDecisionHandler, JudgeSkippedTasksHandler, MakeAssignRuleHandler, EditAssignRuleHandler, MoveAssignRuleHandler, SwitchAssignRuleHandler, DeleteAssignRuleHandler,

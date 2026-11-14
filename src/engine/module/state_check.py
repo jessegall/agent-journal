@@ -15,7 +15,7 @@ class StateCheck:
     added by a module that depends on its model's module."""
 
     def problems(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
-        owners = {declaration.model: module for module in modules for declaration in module.models}
+        owners = {declaration.model: module for module in modules for declaration in module.model_declarations()}
         problems: list[str] = []
         for model, module in owners.items():
             if issubclass(model, StateHolder):

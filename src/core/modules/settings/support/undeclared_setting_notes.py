@@ -11,6 +11,6 @@ class UndeclaredSettingNotes(SyncNotes):
         self.undeclared = undeclared
 
     def lines(self, modules: tuple[type[Module], ...]) -> list[str]:
-        entries = [entry for module in modules for entry in SettingTree().entries(module.name, module.settings)]
+        entries = [entry for module in modules for entry in SettingTree().entries(module.name, module.setting_nodes())]
         reports = {report.key: report for report in self.undeclared.found(entries)}
         return [f"setting {report.key} ({report.module}) {report.reason}" for report in reports.values()]

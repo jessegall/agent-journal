@@ -47,6 +47,6 @@ def test_the_feed_lists_only_the_rows_with_the_ids_asked_for(new_story):
 
 def test_the_chat_window_reads_both_paged_keys_by_ids(new_story):
     story = new_story(fixture=UserJoined)
-    window = next(window for window in MessagesModule.windows if window.name == "messages.chat")
+    window = next(window for window in MessagesModule.window_declarations() if window.name == "messages.chat")
     keys = {key.name: key for key in window.keys}
     story.expect_rows("ids" in keys["messages"].arguments, "ids" in keys["marks"].arguments, keys["messages"].listed()["reads_ids"], keys["marks"].listed()["reads_ids"])

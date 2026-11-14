@@ -19,7 +19,7 @@ def test_no_skill_or_nudge_of_the_plans_module_names_a_review_or_a_critique(new_
     story = new_story(fixture=MainEnvironment)
     skills = (CHECKOUT / "src/core/modules/plans/skills").rglob("*.md")
     texts = [path.read_text().lower() for path in skills] + [nudge.text.lower() for nudge in PlansModule.nudges]
-    texts += [f"{skill.folder} {skill.description} {' '.join(skill.keywords)}".lower() for skill in PlansModule.skills]
+    texts += [f"{skill.folder} {skill.description} {' '.join(skill.keywords)}".lower() for skill in PlansModule.skill_declarations()]
     story.expect_rows(all(word not in text for text in texts for word in REVIEW_TERMS))
 
 
