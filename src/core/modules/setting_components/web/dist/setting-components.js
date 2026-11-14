@@ -969,7 +969,11 @@ const jn = /* @__PURE__ */ Object.assign({ name: "SettingsNodeRow" }, {
       }, 1032, ["section-key", "title"]))), 128))
     ]));
   }
-}, me = (e) => e ? JSON.parse(e) : [], la = (e) => me(e).join(`
+};
+function me(e) {
+  return Array.isArray(e) ? e : e ? JSON.parse(e) : [];
+}
+const la = (e) => me(e).join(`
 `), oa = (e) => e.split(`
 `).map((a) => a.trim()).filter(Boolean), Mn = (e, a) => a ? e.join(",") : JSON.stringify(e);
 function ia(e, a) {
