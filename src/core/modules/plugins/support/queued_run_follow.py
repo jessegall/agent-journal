@@ -34,7 +34,7 @@ class QueuedRunFollow:
                 stated = queue_position
             has_ended = process.ended_at is not None
             page = self.folder.page_after(process_id, offset, has_ended)
-            for line in page.lines:
+            for line in page.shown_lines(output):
                 output.line(line)
             offset = page.last_byte
             if has_ended and offset >= page.total:

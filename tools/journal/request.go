@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"os"
 )
 
@@ -18,6 +19,7 @@ type CliRequest struct {
 	Variables       map[string]string `json:"variables"`
 	Folder          string            `json:"folder"`
 	DeadlineSeconds *float64          `json:"deadline_seconds,omitempty"`
+	Terminal        bool              `json:"terminal,omitempty"`
 }
 
 // NewCliRequest builds the request for a command line from this process's own variables and folder.
@@ -32,6 +34,18 @@ func NewCliRequest(argv []string, lookup func(string) (string, bool), folder str
 		argv = []string{}
 	}
 	return CliRequest{Argv: argv, Variables: variables, Folder: folder}
+}
+
+// WritingTo marks the request as one whose answer a terminal shows, when stdout is a character device, so the
+// server may keep a run's colour codes.
+func (request CliRequest) WritingTo(stdout io.Writer) CliRequest {
+	file, isFile := stdout.(*os.File)
+	if !isFile {
+		return request
+	}
+	status, err := file.Stat()
+	request.Terminal = err == nil && status.Mode()&os.ModeCharDevice != 0
+	return request
 }
 
 // Body is the request's JSON.

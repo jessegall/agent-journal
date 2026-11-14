@@ -16,6 +16,7 @@ class CallerRequest:
     folder: str = ""
     pid: int = 0
     trusts_variables: bool = True
+    is_terminal: bool = False
 
     @property
     def process_id(self) -> int | None:
@@ -26,9 +27,9 @@ class CallerRequest:
     def parsed(cls, data: object) -> "CallerRequest":
         if not is_mapping(data):
             raise CallerRequestError(f"a caller request is an object, not {data!r}")
-        variables, folder, pid = data.get("variables", {}), data.get("folder", ""), data.get("pid", 0)
+        variables, folder, pid, is_terminal = data.get("variables", {}), data.get("folder", ""), data.get("pid", 0), data.get("terminal", False)
         if not is_mapping(variables) or not all(isinstance(key, str) and isinstance(value, str) for key, value in variables.items()):
             raise CallerRequestError("variables names each variable with its text")
-        if not isinstance(folder, str) or not isinstance(pid, int):
-            raise CallerRequestError("folder is a text and pid a number")
-        return cls({str(key): str(value) for key, value in variables.items()}, folder, pid)
+        if not isinstance(folder, str) or not isinstance(pid, int) or not isinstance(is_terminal, bool):
+            raise CallerRequestError("folder is a text, pid a number and terminal true or false")
+        return cls({str(key): str(value) for key, value in variables.items()}, folder, pid, is_terminal=is_terminal)

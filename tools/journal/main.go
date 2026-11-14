@@ -100,7 +100,7 @@ func Run(requestTiming *timing.Timing, argv []string, stdout, stderr io.Writer) 
 		fmt.Fprintln(stderr, "standard input could not be read:", inputErr)
 		return 1
 	}
-	request := NewCliRequest(argv, os.LookupEnv, WorkingFolder())
+	request := NewCliRequest(argv, os.LookupEnv, WorkingFolder()).WritingTo(stdout)
 	if len(argv) == 1 && argv[0] == "viewer" {
 		return ViewerLink(client, request, stdout, stderr)
 	}

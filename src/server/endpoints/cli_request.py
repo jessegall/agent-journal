@@ -26,5 +26,6 @@ class CliRequest:
         deadline_seconds = data.get("deadline_seconds")
         if deadline_seconds is not None and not isinstance(deadline_seconds, (int, float)):
             raise CliRequestError("deadline_seconds is a number of seconds")
-        caller = CallerRequest.parsed({"variables": data.get("variables", {}), "folder": data.get("folder", ""), "pid": pid})
+        caller = CallerRequest.parsed({"variables": data.get("variables", {}), "folder": data.get("folder", ""), "pid": pid,
+                                     "terminal": data.get("terminal", False)})
         return cls(argv, caller, Deadline.timeout(deadline_seconds) if deadline_seconds is not None else None, timing)
