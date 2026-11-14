@@ -1,3 +1,4 @@
+from engine.command.bus import Bus
 import json
 
 import pytest
@@ -17,7 +18,7 @@ QUEUE_PLAN = Statement("EXPLAIN QUERY PLAN SELECT id FROM processes WHERE enviro
 
 
 def advance(story, process):
-    story.run_command(ReadNewOutput(process.id), Actor.core(), 1)
+    story.container.get(Bus).run(ReadNewOutput(process.id), Actor.core(), environment_id=1)
 
 
 def read_row(story, process):
@@ -25,8 +26,8 @@ def read_row(story, process):
 
 
 @pytest.fixture
-def read_run(new_story):
-    story = install_runner(new_story(fixture=UserBuilder))
+def read_run(played):
+    story = install_runner(played(UserBuilder))
     story.expect_success(COUNTING_READER, actor=story.agent)
     process = moved_run(story, "cart-suite run")
     story.step("run printed", process.id, 1, FIRST_OUTPUT)
@@ -53,7 +54,7 @@ def test_a_reader_after_a_cut_starts_again_and_counts_only_what_is_kept(read_run
     story.expect_rows(read["read_offset"] == len(CUT_OUTPUT), read["read_lines"] == 2)
 
 
-def test_the_finished_list_reads_the_newest_ended_runs_by_its_index(new_story):
-    story = install_runner(new_story(fixture=UserBuilder))
+def test_the_finished_list_reads_the_newest_ended_runs_by_its_index(played):
+    story = install_runner(played(UserBuilder))
     plan = json.dumps([dict(row) for row in story.container.get(Database).rows(QUEUE_PLAN)])
     story.expect_rows("processes_environment_ended" in plan, "TEMP B-TREE" not in plan)

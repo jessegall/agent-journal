@@ -12,8 +12,8 @@ PROCESS_READ = "SELECT * FROM processes WHERE id IN"
 VERSION_READ = "SELECT id, version FROM processes"
 
 
-def test_granting_slots_to_twelve_waiting_runs_reads_their_processes_once(new_story):
-    story = install_runner(new_story(fixture=QueueAgents))
+def test_granting_slots_to_twelve_waiting_runs_reads_their_processes_once(played):
+    story = install_runner(played(QueueAgents))
     story.home.restart_mark.write_text("1")
     waiting = [queued(story, f"make run-{number}") for number in range(WAITING_RUNS)]
     story.home.restart_mark.unlink()

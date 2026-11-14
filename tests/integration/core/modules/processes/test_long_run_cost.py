@@ -8,8 +8,8 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_value_with
 
 
-def test_a_long_run_hook_does_not_scan_old_parts(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
+def test_a_long_run_hook_does_not_scan_old_parts(played):
+    story = install_runner(played(BuilderStarted))
     old = start_process(story, " && ".join(f"echo old-{number}" for number in range(500)))
     end_run(story, old, "done\n")
     start_process(story, "make build", category=CommandCategory.BUILD)

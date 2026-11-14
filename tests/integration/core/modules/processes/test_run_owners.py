@@ -17,8 +17,8 @@ RUN_LINE = "echo from-main"
 MERGE_LINE = "echo merged"
 
 
-def test_a_run_lands_on_its_own_environments_main_agent_and_a_merge_keeps_a_process_row_with_its_output(new_story, tmp_path: Path):
-    story = new_story(fixture=UserJoined)
+def test_a_run_lands_on_its_own_environments_main_agent_and_a_merge_keeps_a_process_row_with_its_output(played, tmp_path: Path):
+    story = played(UserJoined)
     main_agent = story.new_row_id("agent start s-main claude main --environment main", actor=story.user)
     story.expect_success("environment make web /work/web", actor=story.user)
     web_agent = story.new_row_id("agent start s-web claude main --environment web", actor=story.user)

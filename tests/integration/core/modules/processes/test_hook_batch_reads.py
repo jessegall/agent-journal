@@ -8,8 +8,8 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 
-def test_a_hook_reads_running_outputs_and_parts_together(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
+def test_a_hook_reads_running_outputs_and_parts_together(played):
+    story = install_runner(played(BuilderStarted))
     for number in range(12):
         process = start_process(story, f"make build-{number}", category=CommandCategory.BUILD)
         story.expect_success(f"dock add processes.output process {process.id} --environment main", actor=story.agent)

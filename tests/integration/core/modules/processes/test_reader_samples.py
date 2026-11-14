@@ -16,8 +16,8 @@ def kept_runs(story) -> None:
         end_run(story, start_process(story, f"make part-{number}", category=CommandCategory.BUILD), "built\n")
 
 
-def test_a_sample_is_found_in_its_environment_only(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
+def test_a_sample_is_found_in_its_environment_only(played):
+    story = install_runner(played(BuilderStarted))
     kept_runs(story)
     parts = story.container.get(ProcessPartQuery)
     scopes = story.container.get(Scopes)
@@ -27,8 +27,8 @@ def test_a_sample_is_found_in_its_environment_only(new_story):
         story.expect_rows(not parts.kept_samples(["make part-3*"]).page(1, 1).rows)
 
 
-def test_a_command_with_no_sample_reads_no_part_row_into_python(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
+def test_a_command_with_no_sample_reads_no_part_row_into_python(played):
+    story = install_runner(played(BuilderStarted))
     kept_runs(story)
     database = story.container.get(Database)
     start = database.repeated_work.points()
