@@ -65,10 +65,19 @@ class Query(Generic[M]):
         self.joined_tables: tuple[Table[Model], ...] = ()
         self.select = Select(self.table.name)
         self.shows_removed = False
+        self.reads_every_environment = False
 
     def with_removed(self) -> Self:
         query = copy(self)
         query.shows_removed = True
+        return query
+
+    # a read of environment-scoped rows outside any environment, on purpose and with its reason (task 8897)
+    def every_environment(self, reason: str) -> Self:
+        if not reason.strip():
+            raise QueryLimitError("say why the read crosses every environment")
+        query = copy(self)
+        query.reads_every_environment = True
         return query
 
     def find(self, row_id: int) -> M:
@@ -356,6 +365,13 @@ class Query(Generic[M]):
         return [self.typed(self.table.row_model(row)) for row in self.database.rows(select.statement())]
 
     def scoped(self, select: Select) -> Select:
+        owner = self.database.row_owner
+        if issubclass(self.model, EnvironmentScoped) and (owner is None or owner.environment_id is None) and not self.database.environment_scope_passed and not self.reads_every_environment:
+            self.database.report_unscoped_read(self.table.name)
+        return self.scope_conditions(select)
+
+    # the conditions the scope in force adds to a select, for a read or for a key that names the read
+    def scope_conditions(self, select: Select) -> Select:
         owner = self.database.row_owner
         if issubclass(self.model, Removable) and not self.shows_removed:
             select = select.matching(IsNull(REMOVED_COLUMN))
