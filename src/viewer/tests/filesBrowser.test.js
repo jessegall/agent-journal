@@ -1,9 +1,13 @@
 import {afterEach, expect, test} from "vitest";
-import {mounted, settle, typeInto} from "./support/windowContext.js";
+import {mounted, settle, typeInto, unmountAll} from "./support/windowContext.js";
 import {projectFilesWindowContext} from "./support/projectFilesWindowContext.js";
 import ProjectFiles from "../../suites/coding/web/src/ProjectFiles.vue";
 
-afterEach(() => (document.body.innerHTML = ""));
+afterEach(() => {
+    unmountAll();
+    document.body.innerHTML = "";
+    history.replaceState(null, "", "/?");
+});
 
 const row = (id, extra = {}) => ({id, name: id.split("/").at(-1), folder: false, size: 0, git: "", ...extra});
 const later = (ms = 200) => new Promise((resolve) => setTimeout(resolve, ms));

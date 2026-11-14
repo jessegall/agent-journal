@@ -1,10 +1,13 @@
 import {computed, onMounted, onUnmounted, reactive, ref, watch} from "vue";
+import {useFilesTabs} from "./filesTabs.js";
 
 const TYPING = new Set(["INPUT", "TEXTAREA", "SELECT"]);
 // a menu or a dialog that is open keeps the page's keys to itself
 const LAYERS = '[role="dialog"][aria-modal="true"], [data-context-menu]';
 const SEARCH_AFTER_MS = 150;
 const LEAST_TEXT_LETTERS = 2;
+// the Files window the person used last gets the page keys, even when the chat was used after it
+let lastUsed = null;
 
 // The state of the Files page: the project tree (a folder is read when it is first opened), the file shown and where the person has been (back and forward),
 // and the one search palette, for file names or for text. Every read goes through the window; opening a file reloads the file key only.
@@ -19,6 +22,9 @@ export function useFilesBrowser(view) {
     const query = ref("");
     const hits = ref([]);
     const chosen = ref(0);
+    const token = Symbol("files window");
+    const kept = useFilesTabs();
+    const tabs = kept.tabs;
 
     // the rows of a folder, or null while they are being read; the project's own are the window's first key
     const rowsOf = (folder) => (folder ? folders[folder]?.rows ?? null : root.loaded.value ? root.rows.value : null);
@@ -48,6 +54,7 @@ export function useFilesBrowser(view) {
     }
 
     function open(path, lineNumber = 0, remember = true) {
+        if (!tabs.value.includes(path)) tabs.value = [...tabs.value, path];
         if (remember && current.value && path !== current.value) {
             history.back.push(current.value);
             history.forward.length = 0;
@@ -77,6 +84,18 @@ export function useFilesBrowser(view) {
     function leaveFile() {
         current.value = "";
     }
+
+    // closing the tab of the file shown shows its neighbour, or no file when it was the last
+    function closeTab(path) {
+        const at = tabs.value.indexOf(path);
+        tabs.value = tabs.value.filter((tab) => tab !== path);
+        if (path !== current.value) return;
+        const next = tabs.value[Math.min(at, tabs.value.length - 1)];
+        if (next) open(next, 0, false);
+        else leaveFile();
+    }
+    kept.watchTabs(current);
+    if (tabs.value.length) open(tabs.value.includes(kept.shown) ? kept.shown : tabs.value[tabs.value.length - 1], 0, false);
 
     // the palette: what it finds is read as the words are typed
     const canSearch = () => (palette.value === "text" ? query.value.trim().length >= LEAST_TEXT_LETTERS : query.value.trim().length > 0);
@@ -121,7 +140,7 @@ export function useFilesBrowser(view) {
 
     // page keys, only while no menu or dialog is open and never while typing: T searches files, Ctrl or Command and Shift and F text, [ and ] go back and forward
     function pressed(event) {
-        if (view.visible?.value === false || document.querySelector(LAYERS) || TYPING.has(event.target?.tagName) || event.target?.isContentEditable) return;
+        if (lastUsed !== token || view.visible?.value === false || document.querySelector(LAYERS) || TYPING.has(event.target?.tagName) || event.target?.isContentEditable) return;
         const bare = !event.metaKey && !event.ctrlKey && !event.altKey;
         if (event.key.toLowerCase() === "t" && bare) {
             event.preventDefault();
@@ -132,8 +151,15 @@ export function useFilesBrowser(view) {
         } else if (event.key === "[" && bare) back();
         else if (event.key === "]" && bare) forward();
     }
-    onMounted(() => document.addEventListener("keydown", pressed));
-    onUnmounted(() => document.removeEventListener("keydown", pressed));
+    const markUsed = () => (lastUsed = token);
+    onMounted(() => {
+        lastUsed ??= token;
+        document.addEventListener("keydown", pressed);
+    });
+    onUnmounted(() => {
+        if (lastUsed === token) lastUsed = null;
+        document.removeEventListener("keydown", pressed);
+    });
 
-    return {rowsOf, failureOf, opened, toggle, reveal, open, back, forward, leaveFile, current, line, history, palette, query, shownHits, chosen, choose, openChosen, openPalette, readFolder};
+    return {tabs, closeTab, markUsed, rowsOf, failureOf, opened, toggle, reveal, open, back, forward, leaveFile, current, line, history, palette, query, shownHits, chosen, choose, openChosen, openPalette, readFolder};
 }

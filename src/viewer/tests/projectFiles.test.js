@@ -1,9 +1,13 @@
 import {afterEach, expect, test} from "vitest";
-import {mounted, settle} from "./support/windowContext.js";
+import {mounted, settle, unmountAll} from "./support/windowContext.js";
 import {projectFilesWindowContext} from "./support/projectFilesWindowContext.js";
 import ProjectFiles from "../../suites/coding/web/src/ProjectFiles.vue";
 
-afterEach(() => (document.body.innerHTML = ""));
+afterEach(() => {
+    unmountAll();
+    document.body.innerHTML = "";
+    history.replaceState(null, "", "/?");
+});
 
 const row = (id, folder = false) => ({id, name: id.split("/").at(-1), folder, size: 0, git: ""});
 
