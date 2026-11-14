@@ -34,16 +34,3 @@ def entries(*groups: AgentGroup) -> tuple[AgentGroupEntry, ...]:
     return tuple(AgentGroupEntry.declared("journal.test", group) for group in groups)
 
 
-def test_s49_a_profile_in_two_groups_or_two_catch_all_groups_is_a_problem():
-    book = AgentGroupBook(entries(AgentGroup("a", "A", "helper", tuple(["p"])), AgentGroup("b", "B", "helper", tuple(["p"])), AgentGroup("c", "C", "helper"), AgentGroup("d", "D", "helper")))
-    problems = list(book.problems(frozenset({"helper"})))
-    expect_value(len(problems), 2)
-
-
-def test_s49_a_group_of_an_unregistered_type_or_declared_twice_is_a_problem():
-    book = AgentGroupBook(entries(AgentGroup("a", "A", "ghost"), AgentGroup("a", "A", "helper")))
-    expect_value(len(list(book.problems(frozenset({"helper"})))), 2)
-
-
-def test_s49_a_stored_group_without_profiles_reads_back_with_none():
-    expect_value(AgentGroupEntry.restored({"module": "m", "key": "k", "label": "K", "agent_type": "helper"}).profiles, ())

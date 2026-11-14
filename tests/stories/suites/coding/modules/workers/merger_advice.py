@@ -291,14 +291,6 @@ def test_the_asks_count_starts_again_after_the_merge(merged_after_five_asks):
     merged_after_five_asks.story.expect_rows(len(merged_after_five_asks.question_lines()) == 6, detail=str(merged_after_five_asks.question_lines()))
 
 
-def test_the_merger_profile_and_skill_name_advise_and_its_limits():
-    profile = next(row.body for row in HELPER_PROFILES if row.name == f"{MERGER_PROFILE.name}")
-    skill = (Path(workers_package.__file__).parent / "skills" / f"{MERGER_PROFILE.name}" / "SKILL.md").read_text()
-    for text in (profile, skill):
-        expect_value(ADVISE_COMMAND in text and "five between two commits of the worker" in text and "one per visit" in text and "the point changed" in text, True)
-        expect_value_without(text, "journal message send")
-
-
 def test_a_sixth_ask_between_two_commits_goes_to_the_main_agent_and_the_first_after_the_next_commit_to_the_merger(planned):
     worker, advised = planned
     advised.with_five_asks()

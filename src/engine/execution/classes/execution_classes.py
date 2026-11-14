@@ -20,9 +20,9 @@ class ExecutionClasses:
         self.person = person
 
     def match(self, subject: ExecutionSubject) -> ExecutionClass:
-        own = next((execution_class for execution_class in self.person.classes() if self.is_person_match(execution_class, subject)), None)
-        if own is not None:
-            return own
+        personal = next((execution_class for execution_class in self.person.classes() if self.is_person_match(execution_class, subject)), None)
+        if personal is not None:
+            return personal
         return next(row.execution_class for row in BUILTIN_CLASSES if row.holds(subject))
 
     # the class a stored run names, the person's before the built-in one; none for a name nobody declares any more

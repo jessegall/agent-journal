@@ -19,7 +19,6 @@ from engine.testing.stories.story_fixture import StoryFixture
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.server_client import server_story
-from tests.stories.server.window_data_route import window_data
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, delivered_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
@@ -74,16 +73,16 @@ def waiting_place(new_story, monkeypatch, request):
 
 
 def expect_working(server, cookie, worker_id, status):
-    code, data = window_data(server, cookie, keys="agents", window="agents.agents", query="environment=main&agents.show=running&agents.roles=worker")
+    code, data = server.window_data(cookie, keys="agents", window="agents.agents", query="environment=main&agents.show=running&agents.roles=worker")
     rows = data["keys"]["agents"]["value"]["rows"]
     matching = [row for row in rows if row["id"] == worker_id]
     assert code == 200 and len(matching) == 1, data
     assert matching[0]["facts"]["work_status"] == status, matching
-    code, settings = window_data(server, cookie, keys="limits", window="coding.agent-settings")
+    code, settings = server.window_data(cookie, keys="limits", window="coding.agent-settings")
     assert code == 200, settings
     limits = settings["keys"]["limits"]["value"]["rows"]
     assert next(row for row in limits if row["key"] == "worker")["running"] == 1, limits
-    code, shell = window_data(server, cookie, keys="usage", window="viewer.shell")
+    code, shell = server.window_data(cookie, keys="usage", window="viewer.shell")
     agents = shell["keys"]["usage"]["value"]["agents"]
     assert code == 200 and next(row for row in agents if row["id"] == worker_id)["work_status"] == status, shell
 

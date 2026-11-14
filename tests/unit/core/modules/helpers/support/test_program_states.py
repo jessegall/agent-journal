@@ -15,7 +15,7 @@ from core.modules.helpers.support.program_states import ProgramStates
 
 @pytest.fixture
 def readiness():
-    now = Timestamp(datetime(2026, 11, 6, 9, tzinfo=timezone.utc))
+    current_time = Timestamp(datetime(2026, 11, 6, 9, tzinfo=timezone.utc))
     provider = Mock(name='sample')
     provider.name = 'sample'
     provider.journal_trust.return_value = HookTrust.READY
@@ -28,13 +28,13 @@ def readiness():
     scopes.opened.return_value = nullcontext()
     settings.number.return_value = 95
     statuses.newest_status.return_value = SimpleNamespace(windows=())
-    clock.timestamp.return_value = now
+    clock.timestamp.return_value = current_time
     kept_rows, limits = Mock(), Mock()
     limits.reached_limit_ends.return_value = None
     kept_rows.read.side_effect = lambda source, loader, **kwargs: loader()
     states = ProgramStates(providers, programs, queries, settings, statuses, clock, agents, scopes, kept_rows, limits, Mock())
     return SimpleNamespace(states=states, provider=provider, providers=providers, programs=programs,
-                           queries=queries, settings=settings, statuses=statuses, clock=clock, now=now)
+                           queries=queries, settings=settings, statuses=statuses, clock=clock, now=current_time)
 
 
 def test_missing_executable_is_out_before_trust(readiness):

@@ -29,10 +29,10 @@ class HookSender:
     # itself off as the main agent
     @classmethod
     def parsed(cls, data: object, main_limit_seconds: float = HOOK_LIMIT_SECONDS, agent_limit_seconds: float = AGENT_HOOK_LIMIT_SECONDS,
-               stop_limit_seconds: float = STOP_LIMIT_SECONDS, *, role_of: Callable[[str], str]) -> "HookSender":
+               stop_limit_seconds: float = STOP_LIMIT_SECONDS, *, role_name: Callable[[str], str]) -> "HookSender":
         fields: Mapping[object, object] = data if is_mapping(data) else {}
         session = str(fields.get("session", fields.get("session_id", "")))
-        role = role_of(session)
+        role = role_name(session)
         event_name = str(fields.get("event", fields.get("hook_event_name", "hook")))
         normalized_name = event_name.replace("_", "").casefold()
         event = next((event for event in HookEventName if event.value.replace("_", "").casefold() == normalized_name), None)

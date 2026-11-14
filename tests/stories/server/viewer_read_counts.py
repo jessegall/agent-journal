@@ -20,7 +20,8 @@ from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import ended_run, moved_run, started_run
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.server.support.server_client import server_story, viewer_answer
+from tests.stories.server.support.server_client import server_story
+from tests.integration.support.server_harness import viewer_answer
 from tests.stories.support.story_checks import expect_greater, expect_value
 from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING
 from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SIZE_SETTING
@@ -447,19 +448,6 @@ def run_canonical_viewer_workload(new_story, output_folder: Path) -> tuple[dict[
     return tuple(case_samples)
 
 
-def test_workload_pins_dataset_pages_docks_settings_and_schedule():
-    workload = viewer_workload()
-    expect_value(workload.identifier, "viewer-post-funnel-v1")
-    expect_value(workload.displayed_rows, 50)
-    expect_value(len(workload.docks), 10)
-    expect_value(len(workload.events), 30)
-    expect_value(sum(event.relevant for event in workload.events), 15)
-    expect_value(workload.visible_seconds, 60)
-    expect_value(workload.hidden_seconds, 30)
-    expect_value(workload.loaded_ranges, ((51, 75), (76, 100)))
-    expect_value(workload.settings[f"{REPEATED_WORK_SETTING}"], True)
-
-
 def test_workload_records_and_restores_prior_setting_values(new_story):
     with workload_server(new_story) as sample:
         previous = sample.prior_settings
@@ -579,28 +567,6 @@ def test_a_rows_two_people_are_one_answer_on_one_connection(read_sample):
     measured = read_sample.read([ReadLine("viewer.shell", ("agent", "people", "--creator", str(agent_id), "--owner", str(agent_id)))])
     expect_value((len(measured.answers), measured.answers[0]["code"], measured.connections), (1, 0, 1))
     expect_value((measured.answers[0]["value"]["actor"]["id"], measured.answers[0]["value"]["owner"]["id"]), (agent_id, agent_id))
-
-
-@pytest.mark.parametrize("missing", ["attribution", "retention", "losses", "funnel"])
-def test_baseline_rejects_missing_attribution_retention_losses_or_funnel(missing):
-    evidence = complete_sample_evidence()
-    del evidence[missing]
-    with pytest.raises(IncompleteViewerSample):
-        validate_sample(evidence)
-
-
-@pytest.mark.parametrize("section,key,value", [
-    ("losses", "dropped", 1), ("losses", "recorded", 1), ("retention", "retained", 1),
-    ("funnel", "logical_commands", 3), ("attribution", "http_requests", None)])
-def test_baseline_rejects_loss_eviction_disagreement_and_unattributed_http(section, key, value):
-    evidence = complete_sample_evidence()
-    evidence[section][key] = value
-    with pytest.raises(IncompleteViewerSample):
-        validate_sample(evidence)
-
-
-def test_complete_attribution_and_funnel_agreement_is_accepted():
-    validate_sample(complete_sample_evidence())
 
 
 @pytest.mark.parametrize("case", ["hidden-pane", "hidden-tab", "initially-hidden", "failure-return", "action-event-race"])

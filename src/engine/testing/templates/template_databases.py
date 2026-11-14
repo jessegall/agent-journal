@@ -34,9 +34,10 @@ UNUSED_VARIANT_SECONDS = 24 * 3600
 
 class TemplateDatabases:
     """Migrated databases shared by test processes and kept for later runs: a template is built the first
-    time a story uses it and saved as a numbered variant; a changed file its build ran (see TouchedCode) makes
-    the next story build a new variant beside it, so a runner copying from the old one is never disturbed. A story runs on a working journal of its template that rolls back at
-    its end, so only a runner's first story of a template copies it."""
+    time a story uses it and saved as a numbered variant; a changed file its build ran (see TouchedCode)
+    makes the next story build a new variant beside it, so a runner copying from the old one is never
+    disturbed. A story runs on a working journal of its template that rolls back at its end, so only a
+    runner's first story of a template copies it."""
 
     def __init__(self, folder: Path) -> None:
         self.folder = folder
@@ -64,6 +65,11 @@ class TemplateDatabases:
         story = Story.opened(self.linked_home(template, journal, folder), template.state)
         story.attach_journal(journal)
         return story
+
+    # a journal home with every module synced and no story around it, for the integration tests that need a real
+    # database but no story kit
+    def synced_home(self, folder: Path, modules: tuple[str, ...] = ()) -> JournalHome:
+        return self.copy(self.template(modules, None), folder)
 
     def free_journal(self, template: Template) -> WorkingJournal:
         journals = self.working_journals.setdefault(template.home.database, [])
@@ -101,8 +107,8 @@ class TemplateDatabases:
 
     def variants(self, name: str) -> list[Path]:
         pattern = re.compile(re.escape(name) + r"-v(\d+)")
-        found = [folder for folder in FileAccess.glob(self.folder, f"{name}-v*") if pattern.fullmatch(folder.name)]
-        return sorted(found, key=lambda folder: int(pattern.fullmatch(folder.name).group(1)))
+        matched = [folder for folder in FileAccess.glob(self.folder, f"{name}-v*") if pattern.fullmatch(folder.name)]
+        return sorted(matched, key=lambda folder: int(pattern.fullmatch(folder.name).group(1)))
 
     def current_variant(self, name: str) -> Path | None:
         touched = TouchedCode(Path(self.adaptation.checkout))

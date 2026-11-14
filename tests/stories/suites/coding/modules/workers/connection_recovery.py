@@ -22,7 +22,8 @@ from engine.testing.stories.story import Story
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.core.modules.processes.support.process_samples import start_process
 from tests.stories.core.support import story_lines as lines
-from tests.stories.server.support.server_client import server_story, viewer_answer
+from tests.stories.server.support.server_client import server_story
+from tests.integration.support.server_harness import viewer_answer
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import story_repository

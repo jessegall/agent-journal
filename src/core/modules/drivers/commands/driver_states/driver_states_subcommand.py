@@ -9,8 +9,8 @@ from core.modules.drivers.support.agent_state_listing import AgentStateListing, 
 
 
 class DriverStatesSubcommand(ReadSubcommand[AgentStates]):
-    """`journal driver states <agent>`: the states the agent is in as a hook of now would find them, by tier, each with
-    the rows that hold it open and since when; a tier with no open state says (none)."""
+    """`journal driver states <agent>`: the states the agent is in as a hook of now would find them, by
+    tier, each with the rows that hold it open and since when; a tier with no open state says (none)."""
 
     cli_name = "driver"
     name = "states"

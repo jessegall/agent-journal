@@ -20,8 +20,8 @@ def code_folder(tmp_path, name: str = "sample"):
 
 
 class CountedChecks:
-    def __init__(self, result=None) -> None:
-        self.count, self.result = 0, result
+    def __init__(self, outcome=None) -> None:
+        self.count, self.result = 0, outcome
 
     def __call__(self) -> PluginRunCheck:
         self.count += 1

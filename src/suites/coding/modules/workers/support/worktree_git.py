@@ -20,7 +20,7 @@ from engine.time.polled_wait import PolledWait
 from core.modules.environments.models.environment import Environment
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.support.base_commit import NAME_SEPARATOR, BaseCommit
-from suites.coding.modules.workers.support.contract_clashes import ContractClashes
+from suites.coding.modules.workers.support.contract_clashes import GIT_LIMIT_SECONDS, ContractClashes
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_update import WorktreeUpdate
 from engine.enums.file_status import FileStatus
@@ -33,7 +33,6 @@ from suites.coding.modules.workers.support.worker_folder_runs import WorkerFolde
 from suites.coding.modules.workers.support.merge_builds import MergeBuilds
 from suites.coding.support.worktree_checkouts import WORKTREES_FOLDER
 
-GIT_LIMIT_SECONDS = 60
 # another git of the worktree, such as the merge of the same worktree, holds its index for a while
 INDEX_LOCK_WAIT = PolledWait(limit_seconds=30, pause_seconds=0.5)
 INDEX_LOCK_TEXT = "index.lock"
@@ -123,8 +122,8 @@ class WorktreeGit:
     # the files the base branch changed since the commit left it that the commit changed too
     def base_changes_on_own_files(self, folder: str, base_branch: str, commit: str) -> tuple[str, ...]:
         base_side = self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", f"{commit}...{base_branch}").stdout.split()
-        own_side = set(self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", f"{base_branch}...{commit}").stdout.split())
-        return tuple(name for name in base_side if name in own_side)
+        personal_side = set(self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", f"{base_branch}...{commit}").stdout.split())
+        return tuple(name for name in base_side if name in personal_side)
 
     def is_ancestor(self, folder: str, ancestor: str, commit: str) -> bool:
         return self.git(folder, GIT_LIMIT_SECONDS, "merge-base", "--is-ancestor", ancestor, commit).returncode == 0
@@ -297,8 +296,8 @@ class WorktreeGit:
         folders = built.folders(conflicts)
         if folders:
             self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rm", "-r", "-f", "--ignore-unmatch", "--", *folders)
-        settled = ContractClashes(self).settled(worktree.folder, worktree.base_branch, conflicts)
-        source_conflicts = built.remainder(self.without_instruction_conflicts(worktree, settled))
+        resolved = ContractClashes(self).settled(worktree.folder, worktree.base_branch, conflicts)
+        source_conflicts = built.remainder(self.without_instruction_conflicts(worktree, resolved))
         if not source_conflicts:
             self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "--no-edit")
         return source_conflicts

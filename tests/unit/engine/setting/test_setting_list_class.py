@@ -8,7 +8,7 @@ from engine.setting.setting_group import SettingGroup
 from engine.setting.setting_list import SettingList
 from engine.setting.setting_value import SettingValue
 
-SHELF_GROUP = SettingGroup("shelves", "Shelves", "How the shelves are kept", children=(SettingValue("height", "Height", "How high a shelf is", SettingType.NUMBER, default=2),))
+SHELF_GROUP = SettingGroup("shelves", "Shelves", "How the shelves are kept", children=tuple([SettingValue("height", "Height", "How high a shelf is", SettingType.NUMBER, default=2)]))
 
 
 class ShopDockType(StrEnum):

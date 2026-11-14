@@ -1,3 +1,4 @@
+from core.modules.drivers.support.safeguards_stop import ERROR_FIELDS
 from collections.abc import Mapping
 
 from suites.coding.modules.workers.types.worker import Worker
@@ -10,11 +11,10 @@ from engine.scope.actor_scope import ActorScope
 from suites.coding.modules.workers.commands.compact_agent_context.compact_agent_context import CompactAgentContext
 from suites.coding.support.context_limit_check import ContextLimitCheck
 
-ERROR_FIELDS = ("error", "error_details", "last_assistant_message")
 FULL_CONTEXT_TEXTS = ("prompt is too long", "context window", "context length")
 # the error value Claude Code gives a prompt that is too long (report 1458); it also comes for a PDF too large, a bad
 # credential and more, so it never decides alone: another value rules a full context out, and the words decide
-CONTEXT_FULL_ERROR_VALUES = ("invalid_request",)
+CONTEXT_FULL_ERROR_VALUES = tuple(["invalid_request"])
 
 
 class ContextFullErrorCompactionRule(DriverRule):

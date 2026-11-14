@@ -71,7 +71,7 @@ class HookEndpoint:
     def answer(self, data: object, program: str, headers: Mapping[str, str]) -> HookReply:
         started_at = perf_counter()
         sender = HookSender.parsed(data, self.context.hook_limit_seconds, self.context.agent_hook_limit_seconds, self.context.stop_limit_seconds,
-                                   role_of=SessionStarters.shared(self.context.home).role)
+                                   role_name=SessionStarters.shared(self.context.home).role)
         files = ServerFiles(self.context.home)
         if not files.phase().runs_programs:
             files.block_session(sender.session)
@@ -156,7 +156,7 @@ class HookEndpoint:
     def log_file_calls(self, event: HookEvent, file_calls: FileCalls) -> None:
         if file_calls.total <= HOOK_FILE_CALL_LIMIT:
             return
-        counts = ", ".join(f"{count} {kind}" for kind, count in file_calls.kinds.most_common())
+        counts = ", ".join(f"{count} {category}" for category, count in file_calls.kinds.most_common())
         origins = ", ".join(f"{count} at {origin}" for origin, count in file_calls.origins.most_common(TOP_ORIGINS))
         self.context.files.log_line(f"hook {event.event.value} made {file_calls.total} file system calls ({counts}; most {origins}), over the {HOOK_FILE_CALL_LIMIT} a hook may make", LogLevel.WARNING)
 

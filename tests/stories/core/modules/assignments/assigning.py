@@ -57,5 +57,5 @@ def test_assigning_to_an_ended_agent_is_refused(depot):
 
 
 def test_a_worker_that_runs_assign_is_refused(depot):
-    depot.expect_refusal(assign_line(depot.user.id), "cannot assign a row", actor=worker(depot))
+    depot.expect_refusal(assign_line(depot.user.id), "A worker may not run assign", actor=worker(depot))
     depot.expect_rows('"subject_model"' not in assignment_rows(depot), detail=assignment_rows(depot))

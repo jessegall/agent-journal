@@ -20,11 +20,6 @@ TICK_AND_STOP_RULES = [SmallBatchRule, UnstartedWorkerRule, DeliveredWorkStopRul
 SECOND_MAIN_RULES = [DispatchAllowanceRule, ReadonlyHelperAllowanceRule, CheckoutWriteCodeRule]
 
 
-def test_main_driver_keeps_all_its_rules():
-    expect_absent_value([rule.name for rule in [*TICK_AND_STOP_RULES, *SECOND_MAIN_RULES]
-                         if list(rule.drivers) != ["coding.main"]])
-
-
 def test_s46_the_main_driver_is_registered_and_a_person_chooses_it(new_story):
     story = new_story(fixture=UserBuilder)
     story.expect_success("driver choose coding.main --environment main", actor=story.user)

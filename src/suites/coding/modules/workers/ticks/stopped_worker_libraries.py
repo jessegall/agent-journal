@@ -14,9 +14,9 @@ STOPPED_SECONDS = 15 * 60
 
 
 class StoppedWorkerLibraries:
-    """Removes the library folders a worktree linked or copied in once its worker has been stopped for 15 minutes,
-    so no scan of the worktree walks them: the source and the worker's changes stay, and a send to the worker links
-    and copies the libraries back."""
+    """Removes the library folders a worktree linked or copied in once its worker has been stopped for 15
+    minutes, so no scan of the worktree walks them: the source and the worker's changes stay, and a send to
+    the worker links and copies the libraries back."""
 
     def __call__(self, container: Container) -> bool:
         stamp = container.get(Clock).timestamp()

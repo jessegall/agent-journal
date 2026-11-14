@@ -11,11 +11,18 @@ from tests.unit.suites.coding.modules.workers.support.test_behind_checks import 
 from tests.unit.suites.coding.modules.workers.test_update_reminders import ORDERED_AT, Lines, NoMarkers, Numbers, Rows, Settings, Store
 
 
+class LoadingKeptRows:
+    """Kept reads that load each time."""
+
+    def read(self, source, loader, *, name):
+        return loader()
+
+
 def test_raising_the_threshold_above_an_open_check_opens_no_new_one_and_leaves_the_open_one():
     settings = LookSettings()
     settings.values[STALE_CHECK_COMMITS] = 5
     opened = check(State.OPEN, behind=3)
-    checks = BehindChecks(Queries(WorktreeBehindCheck=[opened]), settings)
+    checks = BehindChecks(Queries(WorktreeBehindCheck=[opened]), settings, LoadingKeptRows())
     assert checks.opens(worktree(), 4) is False and opened.state is State.OPEN
 
 

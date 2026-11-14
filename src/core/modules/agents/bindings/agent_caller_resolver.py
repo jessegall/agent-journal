@@ -22,7 +22,7 @@ LOGIN_VARIABLE = "USER"
 
 
 PLUGIN_VARIABLE = "JOURNAL_PLUGIN"
-CHAIN_ONLY_REFUSAL = "a hosted journal knows its caller by its chain of processes, and no agent of the journal started this command"
+CHAIN_REQUIRED_REFUSAL = "a hosted journal knows its caller by its chain of processes, and no agent of the journal started this command"
 
 
 class AgentCallerResolver(CallerResolver):
@@ -40,7 +40,7 @@ class AgentCallerResolver(CallerResolver):
         if chain_agent is not None:
             return Caller(Actor(chain_agent.id, ActorType.AGENT), chain_agent.environment_id, self.plugin_script(request, steps))
         if not request.trusts_variables:
-            raise UsageError(CHAIN_ONLY_REFUSAL)
+            raise UsageError(CHAIN_REQUIRED_REFUSAL)
         session_agent = self.session_agent(request)
         if session_agent is not None:
             return Caller(Actor(session_agent.id, ActorType.AGENT), session_agent.environment_id)

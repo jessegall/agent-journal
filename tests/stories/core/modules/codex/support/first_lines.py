@@ -14,7 +14,7 @@ from core.modules.processes.support.streaming_hints import StreamingHints
 from core.modules.drivers.models.hook_call import HookCall
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.hook_agents import hook_agent
-from tests.stories.server.support.go_build import GoBuild
+from tests.integration.support.go_build import GoBuild
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment, dispatched_worker, worker_session
 

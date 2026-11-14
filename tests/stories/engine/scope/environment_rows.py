@@ -212,12 +212,6 @@ def test_the_event_of_a_row_holds_the_environment_of_the_row_when_a_job_writes_i
     story.expect_rows(log.event(log.newest_id()).environment_id == 2)
 
 
-def test_a_job_outside_any_request_reads_every_environment(new_story):
-    story = new_story(fixture=TwoWorkingEnvironments)
-    titles = {task.title for task in story.story_rows(Task)}
-    story.expect_rows(MAIN_TITLE in titles, STAGING_TITLE in titles)
-
-
 def test_a_scoped_read_leaves_no_scope_behind_on_a_refusal(new_story):
     story = new_story(fixture=TwoWorkingEnvironments)
     story.run(f"task show {MAIN_TASK} --environment staging", actor=story.user)

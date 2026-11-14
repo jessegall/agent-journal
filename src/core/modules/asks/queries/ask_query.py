@@ -22,8 +22,8 @@ class AskQuery(Query[Ask]):
     def open_of(self, asker_id: int) -> list[Ask]:
         return self.filter(asker_id=asker_id).matching(IsNull("closed_at")).oldest().get()
 
-    def steps(self, ask_id: int) -> list[AskStep]:
-        return self.step_rows().filter(ask_id=ask_id).oldest().get()
+    def steps(self, question_id: int) -> list[AskStep]:
+        return self.step_rows().filter(ask_id=question_id).oldest().get()
 
     def open_at_level(self, profile: str) -> list[AskStep]:
         return self.open_steps().filter(profile=profile).oldest().get()

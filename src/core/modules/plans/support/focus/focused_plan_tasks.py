@@ -19,12 +19,12 @@ def empty_step() -> Task | None:
 
 
 class FocusedPlanTasks:
-    """Picks the task an agent takes next for its plan focus: a ready task of the focused plan or an open task
-    the plan waits on, whichever the most plan tasks wait on. Only tasks the agent may take are picked. It
-    reads every row of the agent's environment, whatever the scope of its caller, so a task reserved for
-    nobody is seen. An agent with no focus is given nothing. It can also go on, after a step the caller names, to
-    the started plans that are not the focus, oldest first, and pick the next task of the first one that has a task
-    reserved for nobody."""
+    """Picks the task an agent takes next for its plan focus: a ready task of the focused plan or an open
+    task the plan waits on, whichever the most plan tasks wait on. Only tasks the agent may take are
+    picked. It reads every row of the agent's environment, whatever the scope of its caller, so a task
+    reserved for nobody is seen. An agent with no focus is given nothing. It can also go on, after a step
+    the caller names, to the started plans that are not the focus, oldest first, and pick the next task of
+    the first one that has a task reserved for nobody."""
 
     def __init__(self, focus: PlanFocus, tasks: TaskQuery, scopes: Scopes) -> None:
         self.focus, self.tasks, self.scopes = focus, tasks, scopes

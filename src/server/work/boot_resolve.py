@@ -7,7 +7,8 @@ from core.modules.developer.support.developer_settings import PREVENT_LAZY_LOADI
 
 class BootResolve:
     """With the developer setting Prevent lazy loading on, a kept container builds every handler, guard and
-    listener of its registry when it boots and is then sealed, so a class built later stops with LateResolveError."""
+    listener of its registry when it boots and is then sealed, so a class built later stops with
+    LateResolveError."""
 
     @staticmethod
     def sealed(container: Container) -> None:

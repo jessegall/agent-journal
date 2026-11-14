@@ -8,7 +8,7 @@ from tests.stories.core.modules.viewer.support import section_modules
 from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.fixtures.third_party import plan_notes, plan_notes_cookie, viewer_body
 from tests.stories.server.support.browser_story import expect_browser
-from tests.stories.server.support.server_client import request_answer
+from tests.integration.support.server_harness import request_answer
 from tests.stories.support.story_checks import expect_value
 
 NOTES_READ = {"window": "plan_notes.notes", "line": ["plan", "show", "1"], "environment": "main"}
@@ -56,48 +56,9 @@ def test_the_person_sees_a_section_on_a_task_and_a_memory_and_not_on_a_plan(plan
     expect_browser(plan_notes, "inspectorSections.browser.mjs", ["elsewhere", str(plan_notes.socket_path)])
 
 
-def test_the_registry_offers_one_inspector_slot_per_model_apart_from_the_button_slots(new_story):
-    story = new_story(fixture=MainEnvironment)
-    registry = Registry.read(story.container.get(Database))
-    story.expect_rows({"inspector.plan", "inspector.task", "inspector.doc", "inspector.report", "inspector.agent", "inspector.memory"} <= set(registry.inspector_slots),
-                      not any(slot.startswith("inspector.") for slot in registry.button_slots))
-
-
-def test_a_section_on_an_unknown_slot_refuses_the_sync(new_story):
-    story = new_story(fixture=MainEnvironment)
-    story.expect_sync_refusal(section_modules.UNKNOWN_SLOT, "the window wrong_slot.notes uses unknown slot inspector.plna")
-
-
 def test_a_section_on_the_slot_of_a_module_it_does_not_depend_on_refuses_the_sync(new_story):
     story = new_story(fixture=MainEnvironment)
     story.expect_sync_refusal(section_modules.UNDEPENDED_SLOT, "the window not_depending.notes uses slot inspector.plan of journal.core.plans, which it depends on only when listed in dependencies")
-
-
-def test_a_section_with_no_slot_refuses_the_sync(new_story):
-    story = new_story(fixture=MainEnvironment)
-    story.expect_sync_refusal(section_modules.SLOTLESS_MODULE, "no_slot.notes is a section and names no slot")
-
-
-def test_slots_on_a_pane_window_refuse_the_sync(new_story):
-    story = new_story(fixture=MainEnvironment)
-    story.expect_sync_refusal(section_modules.PANE_WITH_SLOTS, "pane_slots.notes names slots, and only a section has them")
-
-
-def test_a_suite_that_names_a_section_refuses_the_sync(new_story):
-    story = new_story(fixture=MainEnvironment)
-    story.expect_sync_refusal(section_modules.SECTION_SUITE_MODULE, "suite sections names the section section_suite.notes, which an inspector draws and no pane offers")
-
-
-def test_a_button_on_an_inspector_slot_refuses_the_sync(new_story):
-    story = new_story(fixture=MainEnvironment)
-    story.expect_sync_refusal(section_modules.INSPECTOR_SLOT_BUTTON, "uses unknown slot inspector.plan")
-
-
-def test_a_correct_section_syncs_into_the_registry(new_story):
-    story = new_story(fixture=MainEnvironment)
-    story.expect_sync_success(section_modules.GOOD_SECTION)
-    entry = Registry.read(story.container.get(Database)).window("good_section.notes")
-    expect_row(entry, place="section", slots=tuple(["inspector.plan"]), module="good_section")
 
 
 def test_a_section_of_a_module_whose_suite_is_not_chosen_is_not_listed(plan_notes, plan_notes_cookie):

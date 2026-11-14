@@ -4,8 +4,9 @@ from dataclasses import dataclass, field
 
 @dataclass(frozen=True)
 class LaneEntry:
-    """One execution of a lane as a person reads it: its line, class, priority and starter, how long it has run or
-    waited, why it waits, the priority it was raised from, and the line of the execution it is a waited child of."""
+    """One execution of a lane as a person reads it: its line, class, priority and starter, how long it has
+    run or waited, why it waits, the priority it was raised from, and the line of the execution it is a
+    waited child of."""
 
     line: str
     class_name: str
@@ -57,14 +58,14 @@ class ExecutionSnapshot:
     waits: tuple[PriorityWait, ...]
 
     def lane(self, lane: str) -> LaneLoad:
-        return next(load for load in self.lanes if load.lane == lane)
+        return next(read for read in self.lanes if read.lane == lane)
 
     def lines(self) -> list[str]:
         waited = [wait for wait in self.waits if wait.count]
-        return [*(line for load in self.lanes for line in load.lines()), "waits over the last hour:" if waited else "waits over the last hour: no run started",
+        return [*(line for read in self.lanes for line in read.lines()), "waits over the last hour:" if waited else "waits over the last hour: no run started",
                 *(f"  {wait.described}" for wait in waited)]
 
     def json(self) -> dict[str, object]:
-        return {"lanes": [load.json() for load in self.lanes],
+        return {"lanes": [read.json() for read in self.lanes],
                 "waits": [{"priority": wait.priority.label, "runs": wait.count, "longest_seconds": round(wait.longest_seconds), "average_seconds": round(wait.average_seconds)}
                           for wait in self.waits]}

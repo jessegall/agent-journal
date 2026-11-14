@@ -24,7 +24,7 @@ class FileCalls:
         return sum(self.kinds.values())
 
 
-ACTIVE_TALLY: ContextVar[FileCalls | None] = ContextVar("file_tally", default=None)
+ACTIVE_COUNTS: ContextVar[FileCalls | None] = ContextVar("file_tally", default=None)
 
 
 class FileTally:
@@ -35,15 +35,15 @@ class FileTally:
     @contextmanager
     def counting() -> Iterator[FileCalls]:
         calls = FileCalls()
-        token = ACTIVE_TALLY.set(calls)
+        token = ACTIVE_COUNTS.set(calls)
         try:
             yield calls
         finally:
-            ACTIVE_TALLY.reset(token)
+            ACTIVE_COUNTS.reset(token)
 
     @staticmethod
     def note(kind: str, amount: int = 1) -> None:
-        calls = ACTIVE_TALLY.get()
+        calls = ACTIVE_COUNTS.get()
         if calls is None:
             return
         calls.kinds[kind] += amount

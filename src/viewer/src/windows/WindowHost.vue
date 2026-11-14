@@ -70,7 +70,9 @@ onUnmounted(() => {
     props.subscriptions.stopAll(props.name);
 });
 
+// a window that fails says where in the console, so a failure seen in one browser can be traced
 onErrorCaptured((error) => {
+    console.error(`window ${props.name} failed`, error);
     failure.value = error instanceof Error ? error.message : String(error);
     props.subscriptions.stopAll(props.name);
     return false;

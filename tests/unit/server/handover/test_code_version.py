@@ -50,6 +50,7 @@ def test_a_servers_requests_read_what_the_ticker_found(monkeypatch):
     monkeypatch.setattr(CodeFingerprint, "kept_texts", {})
     first = fingerprint.text([])
     monkeypatch.setattr(SourceHash, "text", staticmethod(lambda folders: "read again"))
+    monkeypatch.setattr(CodeFingerprint, "test_run_text", staticmethod(lambda folders: "read again"))
     assert fingerprint.text([]) == first
     new_text = fingerprint.selected_text("read again", [])
     assert fingerprint.refreshed([]) == new_text

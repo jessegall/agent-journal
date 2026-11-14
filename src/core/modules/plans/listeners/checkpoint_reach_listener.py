@@ -20,8 +20,8 @@ CHANGED_TASKS_REASON = "every changed task may reach a checkpoint of its plan"
 
 class CheckpointReachListener(CommitListener[Moved[Task]]):
     """A task of a started plan that is closed or cancelled may complete the window of a checkpoint: the
-    checkpoints of its plan are looked at once for the closed tasks of one commit; the runner prepares the events of each
-    environment in turn, so each preparation adds to the places the earlier ones found."""
+    checkpoints of its plan are looked at once for the closed tasks of one commit; the runner prepares the
+    events of each environment in turn, so each preparation adds to the places the earlier ones found."""
 
     name = "plans.checkpoint-reach"
     moves = (TaskLifecycle.close, TaskLifecycle.cancel)

@@ -32,19 +32,19 @@ class SuiteImportCheck:
 
     def refusals(self, folder: Path) -> tuple[SuiteRefusal, ...]:
         internal = self.internal_areas()
-        found: list[SuiteRefusal] = []
+        matched: list[SuiteRefusal] = []
         for file in sorted(FileAccess.rglob(folder, "*.py")):
             for node in ast.walk(ast.parse(FileAccess.read(file))):
                 for name in self.imported_names(node):
                     parts = name.split(".")
                     if len(parts) > 1 and parts[0] == "engine" and parts[1] in internal:
-                        found.append(SuiteRefusal(str(file.relative_to(folder)), node.lineno, f"imports {name}, an internal area of the engine: use its contract areas"))
-        return tuple(found)
+                        matched.append(SuiteRefusal(str(file.relative_to(folder)), node.lineno, f"imports {name}, an internal area of the engine: use its contract areas"))
+        return tuple(matched)
 
     @staticmethod
     def imported_names(node: ast.AST) -> tuple[str, ...]:
         if isinstance(node, ast.ImportFrom) and node.module:
-            return (node.module,)
+            return tuple([node.module])
         if isinstance(node, ast.Import):
             return tuple(alias.name for alias in node.names)
         return ()

@@ -20,7 +20,8 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent, resumable_session
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper as ReportedHelper
-from tests.stories.server.support.server_client import server_story, viewer_answer
+from tests.stories.server.support.server_client import server_story
+from tests.integration.support.server_harness import viewer_answer
 from tests.stories.server.support.browser_story import expect_browser
 from engine.provider.context_window import ContextWindow
 from core.modules.helpers.support.profile_model import ProfileModel

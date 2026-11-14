@@ -7,7 +7,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.fixtures import LeadStarted
 from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.server.support.server_client import server_story
-from tests.stories.server.support.viewer_events import expect_event
+from tests.integration.support.viewer_events import expect_event
 from tests.stories.support.story_checks import expect_value, expect_value_with
 
 

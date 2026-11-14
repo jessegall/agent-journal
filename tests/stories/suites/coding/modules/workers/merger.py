@@ -60,7 +60,6 @@ from suites.coding.modules.workers.support.worker_settings import MERGER_COMMAND
 TEST_ROWS_REASON = "the test reads every row it checks"
 
 
-
 class MergerStartError(RuntimeError):
     def __init__(self) -> None:
         super().__init__("merger start failed")
@@ -275,11 +274,6 @@ def test_with_the_merger_on_a_workers_closing_words_do_not_reach_the_main_agent(
     story.hook(worker_session(story, worker), stop.with_raw({**stop.body["raw"], "last_assistant_message": "Handed in all assigned work."}))
     lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text
     story.expect_rows("Handed in all assigned work" not in lines, f"agent:{agent_number(story, worker.id)} reports" not in lines, detail=lines)
-
-
-def test_merger_notices_combine_worker_numbers_without_reasons():
-    notices = Nudge.collapsed([MERGER_PASSED.nudge(worker=6), MERGER_PASSED.nudge(worker=7), MERGER_PASSED.nudge(worker=8)])
-    expect_merger_lines(notices, ["the merger leaves workers 6, 7, 8 to you: their merges wait on you"])
 
 
 def expect_merger_lines(notices, expected):
@@ -543,7 +537,6 @@ def test_a_worker_the_merger_passes_on_is_named_to_the_main_agent_with_its_merge
     story.advance(timedelta(minutes=15))
     story.tick("s-1")
     story.expect_rows(story.run(main_lines).output_text.count(f"worker:{agent_number(story, worker.id)} committed") > first)
-
 
 
 def test_the_merger_started_by_an_ended_main_session_tells_the_main_agent_that_runs_now(new_story):

@@ -40,7 +40,7 @@ class PlaceRows:
         return [SimpleNamespace(id=task_id, task_id=task_id, plan_id=PLACES[task_id], creation_timestamp=lambda: PLACED_AT) for task_id in self.task_ids if task_id in PLACES]
 
 
-HOMES = itertools.count()
+HOME_FOLDERS = itertools.count()
 
 
 def hook(line_numbers=()):
@@ -56,7 +56,7 @@ def rule(started=(), answered_at=None, explicit_id=None, focus_id=1, source=Focu
     focus = SimpleNamespace(explicit_plan_id=lambda agent: explicit_id, overview=lambda agent: overview)
     history = SimpleNamespace(last_answer=lambda name, hook: answered_at)
     queries = SimpleNamespace(query=lambda model: PlaceRows(plan_count=len(plan_ids)))
-    return PlanFocusRule(queries, focus, NewFocusPlaces(queries, tasks, history), home or JournalHome(Path(f"/journals/{next(HOMES)}")))
+    return PlanFocusRule(queries, focus, NewFocusPlaces(queries, tasks, history), home or JournalHome(Path(f"/journals/{next(HOME_FOLDERS)}")))
 
 
 def texts(answer):

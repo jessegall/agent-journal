@@ -10,8 +10,9 @@ ORIGIN_FRAMES = 3
 
 
 class UnscopedReads:
-    """A developer inventory, off unless JOURNAL_UNSCOPED_READS_LOG names a file: each read of environment-scoped rows
-    with no environment in force and no declared skip adds a line with the table and the calling lines (task 8897)."""
+    """A developer inventory, off unless JOURNAL_UNSCOPED_READS_LOG names a file: each read of
+    environment-scoped rows with no environment in force and no declared skip adds a line with the table
+    and the calling lines (task 8897)."""
 
     @staticmethod
     def record(table_name: str) -> None:

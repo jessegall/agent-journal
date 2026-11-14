@@ -21,15 +21,15 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.support.actor_loader import ActorLoader
 
-DEFERRED_RULES_ONLY_RUN_COMMANDS = "deferred rules only run commands"
+DEFERRED_RULE_COMMAND_RUNS = "deferred rules only run commands"
 
 
 class DeferredRulesListener(CommitListener[Created[HookCall]]):
-    """Runs the deferred rules of an agent's open deferred states once the hook's answer is stored, from the stored hook
-    call: each command a rule answers is dispatched on its own. The agent never waits for it, the next hook reads what
-    the commands wrote, and the listener cursor is the queue, so after a restart each stored call runs once. A rule
-    that answers anything but commands is reported and passed by, nothing of it reaches the agent; a rule that raises is
-    reported and the other rules still run."""
+    """Runs the deferred rules of an agent's open deferred states once the hook's answer is stored, from
+    the stored hook call: each command a rule answers is dispatched on its own. The agent never waits for
+    it, the next hook reads what the commands wrote, and the listener cursor is the queue, so after a
+    restart each stored call runs once. A rule that answers anything but commands is reported and passed
+    by, nothing of it reaches the agent; a rule that raises is reported and the other rules still run."""
 
     name = "drivers.deferred-rules"
     run_order = 900
@@ -59,7 +59,7 @@ class DeferredRulesListener(CommitListener[Created[HookCall]]):
             try:
                 commands = self.container.get(entry.path.checked_class(DeferredRule)).after(call)
                 if not self.are_commands(commands):
-                    self.errors.reported(["deferred rule", entry.name], ValueError(DEFERRED_RULES_ONLY_RUN_COMMANDS), call.environment_id)
+                    self.errors.reported(["deferred rule", entry.name], ValueError(DEFERRED_RULE_COMMAND_RUNS), call.environment_id)
                     continue
                 for command in commands:
                     self.bus.run(command, Actor.core(), cause_id=logged.id, environment_id=call.environment_id)

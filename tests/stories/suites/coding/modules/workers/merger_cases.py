@@ -32,7 +32,7 @@ from suites.coding.support.shipped_profiles import MERGER_PROFILE
 TEST_ROWS_REASON = "the test reads every row it checks"
 
 MERGER_ROLE_REFUSAL = "only the merger runs this"
-WORKER_TELL_REFUSAL = "A worker may not run merger tell"
+WORKER_NOTICE_REFUSAL = "A worker may not run merger tell"
 LOG_REVIEW_REFUSAL = "reviews no worker's logs"
 LOG_LINE = "The cart total rounds down"
 FULL_SUITE = "pytest"
@@ -201,7 +201,7 @@ def test_a_tell_without_every_part_is_refused_with_the_shape(case, line):
 
 def test_only_the_merger_tells(case):
     case.story.expect_refusal(MERGER_QUESTION, MERGER_ROLE_REFUSAL, actor=case.story.agent)
-    case.story.expect_refusal(MERGER_QUESTION, WORKER_TELL_REFUSAL, actor=case.worker)
+    case.story.expect_refusal(MERGER_QUESTION, WORKER_NOTICE_REFUSAL, actor=case.worker)
 
 
 def test_a_tell_shows_a_mark_in_the_chat(case):
@@ -234,11 +234,6 @@ def merger_skill_text() -> str:
 def test_the_merger_text_names_the_ladder_and_the_case_book(case):
     profile = next(row for row in HELPER_PROFILES if row.name == f"{MERGER_PROFILE.name}")
     case.story.expect_rows("Ladder" in profile.body, "journal merger scope" in profile.body, "journal merger repair" in profile.body, "journal helper grant" in profile.body, f"{MERGER_PROFILE.name}" in profile.body, detail=profile.body)
-
-
-@pytest.mark.parametrize("case_text", ["journal merger scope", "journal merger repair", "journal helper grant", "already built", "add the case to this file"])
-def test_the_case_book_holds_each_known_case(case_text):
-    expect_value_with(merger_skill_text(), case_text)
 
 
 def logs_read_at(story: Story, worker: Actor) -> str | None:

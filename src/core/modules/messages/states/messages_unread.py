@@ -10,8 +10,8 @@ from core.modules.messages.rules.unread_message_write_rule import UnreadMessageW
 
 
 class MessagesUnread(AgentState):
-    """An agent was told of a message it has not read: the oldest such message opens the state, and the rule that counts
-    its tool uses down to a hold is asked in its own place only then."""
+    """An agent was told of a message it has not read: the oldest such message opens the state, and the
+    rule that counts its tool uses down to a hold is asked in its own place only then."""
 
     name = "messages.unread"
     tier = StateTier.IN_PLACE

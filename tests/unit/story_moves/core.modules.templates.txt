@@ -1,0 +1,1 @@
+tests/stories/core/modules/templates/review_skill.py::test_a_helper_that_made_the_plan_must_read_the_skill_when_the_critique_report_arrives -> repeat tests/stories/core/modules/plan_reviews/review_skill.py::test_a_helper_that_made_the_plan_must_read_the_skill_when_the_critique_report_arrives

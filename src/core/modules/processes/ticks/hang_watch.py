@@ -42,7 +42,7 @@ class HangWatch:
 
     @staticmethod
     def is_waiting(process: Process, running: tuple[Process, ...]) -> bool:
-        return process.line.startswith(JOURNAL_LINE_START) and any(other.is_queue_run and other.session_agent_id == process.session_agent_id and other.id > process.id for other in running)
+        return process.line.startswith(JOURNAL_LINE_START) and any(second.is_queue_run and second.session_agent_id == process.session_agent_id and second.id > process.id for second in running)
 
     @staticmethod
     def limits(container: Container, environment_id: int) -> HangLimits:

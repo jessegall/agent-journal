@@ -57,4 +57,4 @@ class TouchedCode:
 
     def is_unchanged(self, folder: Path) -> bool:
         touched = self.read(folder)
-        return all((content := SourceHash.file_hash(self.checkout / name)) is not None and content.hex() == known for name, known in touched.items())
+        return all((content := SourceHash.file_hash(self.checkout / name)) is not None and content.hex() == recorded for name, recorded in touched.items())

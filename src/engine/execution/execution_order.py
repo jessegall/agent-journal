@@ -20,12 +20,12 @@ class ExecutionOrder:
     def starting(self, waiting: Sequence[ExecutionTicket], running: Sequence[ExecutionTicket], current_time: Timestamp,
                  is_halted: bool) -> tuple[ExecutionTicket, ...]:
         occupied_slots, started = OccupiedSlots.counted(running), list[ExecutionTicket]()
-        running_now = list(running)
+        running_current = list(running)
         for ticket in sorted(self.raised(waiting, current_time, is_halted), key=lambda ticket: self.place(ticket, current_time)):
-            if not self.may_start(ticket, occupied_slots, running_now, is_halted):
+            if not self.may_start(ticket, occupied_slots, running_current, is_halted):
                 continue
             occupied_slots = occupied_slots.with_ticket(ticket)
-            running_now.append(ticket)
+            running_current.append(ticket)
             started.append(ticket)
         return tuple(started)
 
@@ -58,8 +58,8 @@ class ExecutionOrder:
 
     # a reserved ticket past its longest wait takes the next room before anything but immediate
     def place(self, ticket: ExecutionTicket, current_time: Timestamp) -> tuple[int, int, Timestamp]:
-        is_overdue = ticket.priority is ExecutionPriority.RESERVED and ticket.raised_at.elapsed_seconds(current_time) >= self.longest_wait(ticket)
-        return -ticket.priority, 0 if is_overdue else 1, ticket.entered_at
+        is_late = ticket.priority is ExecutionPriority.RESERVED and ticket.raised_at.elapsed_seconds(current_time) >= self.longest_wait(ticket)
+        return -ticket.priority, 0 if is_late else 1, ticket.entered_at
 
     def may_start(self, ticket: ExecutionTicket, occupied_slots: OccupiedSlots, running: Sequence[ExecutionTicket], is_halted: bool) -> bool:
         if ticket.priority.is_unlimited:
@@ -69,18 +69,18 @@ class ExecutionOrder:
         lane, cost = ticket.execution_class.lane, ticket.execution_class.slot_cost
         has_room = occupied_slots.slot_units + cost <= self.limits.capacity(lane)
         running_limit = self.limits.priority_limit(lane, ticket.first_priority).running_limit
-        is_under_priority_limit = self.fits(occupied_slots.first_priority_units(ticket.first_priority), cost, running_limit)
-        return has_room and is_under_priority_limit and self.is_under_starter_cap(ticket, running)
+        fits_priority_limit = self.fits(occupied_slots.first_priority_units(ticket.first_priority), cost, running_limit)
+        return has_room and fits_priority_limit and self.is_under_starter_cap(ticket, running)
 
     @staticmethod
     def is_class_full(ticket: ExecutionTicket, running: Sequence[ExecutionTicket]) -> bool:
-        return sum(1 for other in running if other.execution_class.name == ticket.execution_class.name) >= ticket.execution_class.class_limit
+        return sum(1 for second in running if second.execution_class.name == ticket.execution_class.name) >= ticket.execution_class.class_limit
 
     def is_under_starter_cap(self, ticket: ExecutionTicket, running: Sequence[ExecutionTicket]) -> bool:
-        held: Counter[ExecutionStarter] = Counter()
-        for other in running:
-            held[other.starter] += other.execution_class.slot_cost
-        return self.fits(held[ticket.starter], ticket.execution_class.slot_cost, self.limits.starter_cap(ticket.execution_class.lane))
+        kept: Counter[ExecutionStarter] = Counter()
+        for second in running:
+            kept[second.starter] += second.execution_class.slot_cost
+        return self.fits(kept[ticket.starter], ticket.execution_class.slot_cost, self.limits.starter_cap(ticket.execution_class.lane))
 
     # a limit caps what a starter or a priority piles up: with nothing running one run may always start, even one
     # costing more than its share, and a run that costs nothing piles nothing up

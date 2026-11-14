@@ -19,9 +19,9 @@ FAILED_OPENER_TABLE = "failed-opener"
 
 
 class StateBoard:
-    """Which agent states are open for one hook's agent, worked out only when asked and once per opener: a state of
-    another driver or a role it does not apply to is closed, and a state whose opener raises is reported once and
-    counts as open, so a fault never silences the rules it gates."""
+    """Which agent states are open for one hook's agent, worked out only when asked and once per opener: a
+    state of another driver or a role it does not apply to is closed, and a state whose opener raises is
+    reported once and counts as open, so a fault never silences the rules it gates."""
 
     def __init__(self, registry: Registry, container: Container, errors: ErrorLog, system_log: SystemLogWriter, hook: AgentHook,
                  elapsed: Callable[[], float] = perf_counter) -> None:
@@ -35,7 +35,14 @@ class StateBoard:
         parent = self.registry.agent_state(entry.parent) if entry.parent else None
         if parent is not None and not self.is_open(parent):
             return False
-        return bool(self.open_rows(entry))
+        return not self.is_removed(entry) and bool(self.open_rows(entry))
+
+    # a default state counts as closed while the state its suite named to take it away is open, and comes back when that closes
+    def is_removed(self, entry: AgentStateEntry) -> bool:
+        if entry.name not in self.hook.removed_while:
+            return False
+        remover = self.registry.agent_state(self.hook.removed_while[entry.name])
+        return remover is not None and self.is_open(remover)
 
     def open_rows(self, entry: AgentStateEntry) -> Sequence[OpenRow]:
         if not entry.covers(self.hook.driver):

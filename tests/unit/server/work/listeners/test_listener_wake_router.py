@@ -15,24 +15,24 @@ class SampleThread:
 class SampleSet:
     """The event names a thread's listeners hear."""
 
-    def __init__(self, *heard: str) -> None:
-        self.heard = set(heard)
+    def __init__(self, *received: str) -> None:
+        self.heard = set(received)
 
     def matches(self, name: str) -> bool:
         return name in self.heard
 
 
-def routed(written_names: list[str], *pairs) -> None:
-    written = WrittenEvents()
-    for name in written_names:
-        written.add(name)
-    ListenerWakeRouter(written, [(thread, lambda listener_set=listener_set: listener_set) for thread, listener_set in pairs]).wake()  # type: ignore[misc]
+def routed(saved_names: list[str], *pairs) -> None:
+    saved = WrittenEvents()
+    for name in saved_names:
+        saved.add(name)
+    ListenerWakeRouter(saved, [(thread, lambda listener_set=listener_set: listener_set) for thread, listener_set in pairs]).wake()  # type: ignore[misc]
 
 
 def test_a_written_name_wakes_only_the_threads_whose_set_matches():
-    hearing, deaf = SampleThread(), SampleThread()
-    routed(["core.tasks.task.created"], (hearing, SampleSet("core.tasks.task.created")), (deaf, SampleSet("core.plans.plan.created")))
-    assert (hearing.wakes, deaf.wakes) == (1, 0)
+    receiving, deaf = SampleThread(), SampleThread()
+    routed(["core.tasks.task.created"], (receiving, SampleSet("core.tasks.task.created")), (deaf, SampleSet("core.plans.plan.created")))
+    assert (receiving.wakes, deaf.wakes) == (1, 0)
 
 
 def test_no_written_names_wakes_nothing():

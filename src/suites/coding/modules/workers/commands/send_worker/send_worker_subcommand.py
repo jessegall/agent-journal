@@ -26,7 +26,7 @@ from suites.coding.modules.workers.support.worker_test_names import WorkerTestNa
 from core.modules.agents.support.agent_label import AgentLabel
 
 
-TAKE_RULE = "only the main agent takes a task from the worker that holds it"
+CLAIM_RULE = "only the main agent takes a task from the worker that holds it"
 
 
 class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
@@ -66,7 +66,7 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
         if arguments.plan is not None and arguments.task:
             raise Refusal("a send takes tasks or a plan, not both", "drop the task numbers or drop --plan")
         if arguments.take and not self.agents.is_main(caller.actor.id):
-            raise Refusal(TAKE_RULE, "ask the main agent to move the task")
+            raise Refusal(CLAIM_RULE, "ask the main agent to move the task")
         commands = WorkerTestCommandEntry.parsed(arguments.test_command)
         with self.scopes.opened(caller.read_actor_id, caller.environment_id):
             task_ids = self.plan_tasks.task_ids(arguments.plan, arguments.phase) if arguments.plan is not None else tuple(arguments.task)

@@ -63,5 +63,6 @@ class ProfileFields:
         profile_lines = {"name": self.name, "agent_type": self.agent_type, "module_text": self.module_text, "module": self.module,
                "source_digest": self.source_digest, "legacy_writing": "true" if self.writable else ""}
         body = self.settings.get("body", "")
-        lines = {**{name: value for name, value in self.settings.items() if name != "body" or value == ""}, **{name: value for name, value in profile_lines.items() if value}}
+        set_settings = {name: value for name, value in self.settings.items() if value is not None and (name != "body" or value == "")}
+        lines = {**set_settings, **{name: value for name, value in profile_lines.items() if value}}
         return ProfileFormat.text(lines, str(body))

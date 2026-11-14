@@ -16,7 +16,8 @@ from suites.coding.windows.work_mode.keys.count_agents_key import CountAgentsKey
 
 
 class WorkModeWindow(Window):
-    """The work mode control in the header: the work settings, auto mode, the agents' limits and their settings screens."""
+    """The work mode control in the header: the work settings, auto mode, the agents' limits and their
+    settings screens."""
 
     name = "coding.work-mode"
     title = "Work mode"

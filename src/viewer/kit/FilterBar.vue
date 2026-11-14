@@ -82,9 +82,14 @@ watch(() => [props.fields.length, props.modelValue], () => fit(), {flush: "post"
     flex-wrap: nowrap;
 }
 
+/* the words field keeps its own width and the chips have the rest of the bar, so a chip moves to More only when the bar is full */
+.filter-bar :deep(.search-bar-control) {
+    flex: 0 1 220px;
+}
+
 .filter-chips {
     display: flex;
-    flex: 0 1 auto;
+    flex: 1 1 auto;
     gap: var(--s2);
     min-width: 0;
     overflow: hidden;

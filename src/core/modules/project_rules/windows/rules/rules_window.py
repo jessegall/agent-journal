@@ -18,6 +18,7 @@ class RulesWindow(Window):
     group = "project"
     icon = WindowIcon.RULE
     reads = ["rule list"]
+    count = "rule list"
     runs = ["rule approve", "rule deny", "rule edit", "rule remove"]
     events = ["rule.*"]
     keys = [RulesKey]

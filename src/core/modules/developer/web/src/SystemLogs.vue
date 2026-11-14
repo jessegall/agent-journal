@@ -14,9 +14,12 @@ const level = ref("");
 const page = ref(1);
 const paused = ref(false);
 const {data: listing, failure, loaded, reload} = usePausedProp(view, "logs", paused, {rows: [], total: 0, size: 50});
-const COLUMNS = [{key: "time", label: "Time"}, {key: "source", label: "Source"}, {key: "level", label: "Level"}, {key: "message", label: "Message"}];
+const COLUMNS = [{key: "time", label: "Time", width: "11rem"}, {key: "source", label: "Source", width: "6rem"}, {key: "level", label: "Level", width: "6rem"}, {key: "message", label: "Message", width: "1fr"}];
 const TONES = {error: "danger", critical: "danger", warning: "warn"};
 const lines = computed(() => listing.value.rows.map((line) => ({mark: line.id, time: dated(line.recorded_at), source: labelOf(SOURCES, line.source), level: labelOf(LEVELS, line.level), message: line.text, tone: TONES[line.level] ?? ""})));
+// a click on a line shows it whole under the table
+const picked = ref("");
+const pickedLine = computed(() => listing.value.rows.find((line) => String(line.id) === picked.value) ?? null);
 const pages = computed(() => Math.max(1, Math.ceil(listing.value.total / listing.value.size)));
 function setFlags() {
     view.state["logs.page"] = String(page.value);
@@ -50,7 +53,8 @@ usePoll(() => loaded.value && load(), () => !paused.value && view.visible.value,
                 <Btn small data-log-pause :aria-pressed="paused" @click="togglePause">{{ paused ? 'Resume' : 'Pause' }}</Btn>
             </div>
             <template v-if="failure"><p role="alert">{{ failure }}</p></template>
-            <TableLayout class="scroll" :columns="COLUMNS" :rows="lines" :empty="failure ? '' : 'No log lines found.'" data-log-table />
+            <TableLayout class="scroll" :columns="COLUMNS" :rows="lines" :empty="failure ? '' : 'No log lines found.'" :pick="(mark) => (picked = mark)" :active="pickedLine ? pickedLine.id : ''" data-log-table />
+            <pre v-if="pickedLine" class="picked" data-log-line>{{ pickedLine.text }}</pre>
             <nav aria-label="Log pages"><Btn small data-log-previous :disabled="page <= 1 || paused" @click="page--">Previous</Btn><span>Page {{ page }} of {{ pages }}</span><Btn small data-log-next :disabled="page >= pages || paused" @click="page++">Next</Btn></nav>
         </section>
     </WindowRoom>
@@ -63,5 +67,6 @@ usePoll(() => loaded.value && load(), () => !paused.value && view.visible.value,
 .toolbar label { display: flex; align-items: center; gap: 6px; }
 .toolbar button { margin-left: auto; }
 .scroll { flex: 1; min-height: 0; }
+.picked { flex: none; max-height: 40%; overflow: auto; margin: 0; padding: 10px 12px; border-top: 1px solid var(--border); white-space: pre-wrap; word-break: break-word; font: 12px var(--mono, monospace); }
 nav { justify-content: center; border-top: 1px solid var(--border); }
 </style>

@@ -10,7 +10,8 @@ from engine.cli.line_run import LineRun
 from engine.testing.stories.story import Story
 from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.server.support.server_client import ServerStory, server_story, viewer_answer
+from tests.stories.server.support.server_client import ServerStory, server_story
+from tests.integration.support.server_harness import viewer_answer
 from tests.stories.support.story_checks import expect_value, expect_value_with
 
 

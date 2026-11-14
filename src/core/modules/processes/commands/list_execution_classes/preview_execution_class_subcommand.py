@@ -6,7 +6,7 @@ from engine.errors.refusal import Refusal
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.processes.support.execution_class_preview import ExecutionClassPreview
 
-NO_MATCH = "no recent line would have matched"
+UNMATCHED = "no recent line would have matched"
 
 
 @dataclass(frozen=True)
@@ -16,14 +16,15 @@ class ClassPreview:
     matched: tuple[str, ...]
 
     def lines(self) -> list[str]:
-        return [f"{len(self.matched)} recent lines would have matched:", *self.matched] if self.matched else [NO_MATCH]
+        return [f"{len(self.matched)} recent lines would have matched:", *self.matched] if self.matched else [UNMATCHED]
 
     def json(self) -> dict[str, object]:
         return {"lines": list(self.matched)}
 
 
 class PreviewExecutionClassSubcommand(ReadSubcommand[ClassPreview]):
-    """`journal queue-class preview --pattern <pattern> | --plugin <name>`: the five newest lines a class would have matched."""
+    """`journal queue-class preview --pattern <pattern> | --plugin <name>`: the five newest lines a class
+    would have matched."""
 
     cli_name = "queue-class"
     name = "preview"

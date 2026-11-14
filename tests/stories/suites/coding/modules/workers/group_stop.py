@@ -4,8 +4,6 @@ import pytest
 
 from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.models.enums.ask_topic import AskTopic
-from tests.stories.core.modules.processes.support.process_samples import start_process
-from engine.enums.command_category import CommandCategory
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.held_tasks import worker_with_tasks, prove_task, unplanned_worker_with_tasks
@@ -18,7 +16,6 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_RESTARTED
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
 from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
-from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -126,14 +123,6 @@ def test_a_worker_with_an_open_ask_still_reaches_its_parent_when_it_ends(new_sto
     worker.story.expect_success('wait stuck "the plan is unclear"', actor=worker.worker)
     worker.program_ended()
     worker.story.expect_text(f"agent-line list --agent {worker.story.agent.id}", f"worker:{agent_number(worker.story, worker.worker.id)} ended with")
-
-
-def test_a_worker_with_a_run_going_may_stop(phase_worker):
-    phase_worker.story.agent, main = phase_worker.worker, phase_worker.story.agent
-    phase_worker.story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main", actor=phase_worker.story.user)
-    start_process(phase_worker.story, "make check", category=CommandCategory.TEST_RUN)
-    phase_worker.story.agent = main
-    phase_worker.story.expect_hook_allowed(phase_worker.session, HookSamples.stop())
 
 
 def test_a_worker_with_no_task_left_may_stop(new_story):

@@ -11,8 +11,8 @@ from core.modules.skills.support.unread_skills import UnreadSkills
 
 
 class SkillLoadRequired(AgentState):
-    """An agent has a skill due that it must still read: the first one it must read opens the state, and the rule that
-    holds its tools until the skill is read is asked in its own place only then."""
+    """An agent has a skill due that it must still read: the first one it must read opens the state, and
+    the rule that holds its tools until the skill is read is asked in its own place only then."""
 
     name = "skills.load-required"
     tier = StateTier.IN_PLACE

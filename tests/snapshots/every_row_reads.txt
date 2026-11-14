@@ -245,8 +245,6 @@ src/suites/coding/modules/workers/support/affected_test_rows.py:the queue of aff
 src/suites/coding/modules/workers/support/behind_check_closing.py:every behind check of the worktree is weighed
 src/suites/coding/modules/workers/support/behind_checks.py:every behind check of the worktree is weighed
 src/suites/coding/modules/workers/support/behind_checks.py:every worktree that is cut is checked for how far behind it is
-src/suites/coding/modules/workers/support/behind_decisions.py:every behind check of the worktree is weighed
-src/suites/coding/modules/workers/support/behind_facts_reader.py:every behind check of the worktree is weighed
 src/suites/coding/modules/workers/support/blocked_unit_notice.py:the tasks left in a worker's unit are looked at for one that is not blocked
 src/suites/coding/modules/workers/support/checkpoint_listing.py:a checkpoint looks for the reader that lists the tests of its own test
 src/suites/coding/modules/workers/support/checkpoint_results.py:a checkpoint result counts every test of its reach

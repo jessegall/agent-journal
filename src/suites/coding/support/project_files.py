@@ -68,9 +68,9 @@ class ProjectFiles:
     def grepped(self, terms: str) -> ProjectFileRows:
         if len(terms.strip()) < LEAST_TEXT_LETTERS:
             raise Refusal(f"search for at least {LEAST_TEXT_LETTERS} letters", "give two letters or more")
-        found = self.git.output("git", "grep", "-n", "-I", "-i", "-F", "-e", terms.strip())
+        matched = self.git.output("git", "grep", "-n", "-I", "-i", "-F", "-e", terms.strip())
         rows = []
-        for line in (found or "").splitlines()[:TEXT_ROW_COUNT]:
+        for line in (matched or "").splitlines()[:TEXT_ROW_COUNT]:
             path, number, text = line.split(":", 2)
             rows.append({"id": path, "name": Path(path).name, "folder": False, "size": 0, "line": int(number), "text": text.strip()[:TEXT_CUT]})
         return ProjectFileRows(rows)
@@ -83,5 +83,5 @@ class ProjectFiles:
         data = FileAccess.binary(place)
         if b"\0" in data[:8000]:
             raise Refusal(f"{path} is not text", "it can only be opened outside the viewer")
-        letter, moved_from = self.changes().get(path, ("", ""))
-        return ProjectFileText(path, data[:SHOWN_BYTES].decode(errors="replace"), len(data) > SHOWN_BYTES, letter, moved_from)
+        letter, prior_position = self.changes().get(path, ("", ""))
+        return ProjectFileText(path, data[:SHOWN_BYTES].decode(errors="replace"), len(data) > SHOWN_BYTES, letter, prior_position)

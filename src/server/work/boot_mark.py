@@ -6,9 +6,9 @@ from engine.journal.journal_home import JournalHome
 
 
 class BootMark:
-    """The hidden .booting file a server keeps in the journal's home while it boots: cleared at every start, so a
-    crash never leaves one behind, and removed when the boot ends. A second boot of one journal in one process is
-    refused."""
+    """The hidden .booting file a server keeps in the journal's home while it boots: cleared at every
+    start, so a crash never leaves one behind, and removed when the boot ends. A second boot of one journal
+    in one process is refused."""
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home

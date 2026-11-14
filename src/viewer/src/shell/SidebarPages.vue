@@ -12,9 +12,9 @@ import {placeOnHome} from "../windows/placeOnHome.js";
 import {moveToPage} from "../shownPage.js";
 import Skeleton from "../kit/Skeleton.vue";
 
-// the left sidebar as version 4 drew it: a header with the project's mark, then Home and the windows the suite offers in one
-// foldable group, each opening where a click on it says, a count beside a window that has one, then the environments
-// with the current one marked and the version at the foot
+// the left sidebar: a header with the project's mark, its name and the current environment's branch and number, then Home
+// and the windows the suite offers in foldable groups, each opening where a click on it says, a count beside a window that
+// has one, then the environments with the current one marked and the version at the foot
 const props = defineProps({
     windows: {type: Array, default: () => []},
     environments: {type: Array, default: () => []},
@@ -44,6 +44,9 @@ const shownWindows = computed(() => (props.windows.length ? props.windows : last
 const shownEnvironments = computed(() => (props.environments.length ? props.environments : lastEnvironments.value));
 watch(() => props.windows, (windows) => windows.length && (lastWindows.value = windows), {immediate: true});
 watch(() => props.environments, (environments) => environments.length && (lastEnvironments.value = environments), {immediate: true});
+// the line under the project's name: the current environment's branch, when it stays on one, and its number
+const currentEnvironment = computed(() => shownEnvironments.value.find((environment) => environment.name === props.current));
+const environmentLine = computed(() => (currentEnvironment.value ? [currentEnvironment.value.branch, `environment ${currentEnvironment.value.id}`].filter(Boolean).join(" · ") : ""));
 // the windows in the design's groups and order; Settings is the foot's row
 const sections = computed(() => sidebarSections(shownWindows.value));
 const scrolling = computed(() => sections.value.filter((section) => section.key !== "foot"));
@@ -113,7 +116,12 @@ function fold(key) {
     <aside :class="['sidebar', {mini}]" data-sidebar>
         <div class="sidebar-head">
             <span class="sidebar-logo">A</span>
-            <span class="sidebar-name">{{ project }}</span>
+            <span class="sidebar-title">
+                <span class="sidebar-name">{{ project }}</span>
+                <template v-if="environmentLine">
+                    <span class="sidebar-environment" data-sidebar-environment>{{ environmentLine }}</span>
+                </template>
+            </span>
         </div>
         <div class="sidebar-scroll">
             <template v-if="!shownWindows.length">
@@ -122,7 +130,7 @@ function fold(key) {
             <template v-for="section in scrolling" :key="section.key">
                 <template v-if="section.title">
                     <button type="button" class="fold-head" :data-fold="section.key" @click="fold(section.key)">
-                        {{ section.title }}<Icon :name="folded.has(section.key) ? 'right' : 'down'" :size="12" />
+                        {{ section.title }}
                     </button>
                 </template>
                 <template v-if="!folded.has(section.key)">
@@ -130,12 +138,12 @@ function fold(key) {
                         <a v-context="homePlace" :class="['item', {active: !open}]" :href="homeAddress()" @click="openHome"><Icon name="home" :size="14" /><span class="item-title">Home</span></a>
                     </template>
                     <template v-for="window in section.windows" :key="window.name">
-                        <SidebarRow :page="window" :active="window.name === open" :address="pageOf(window.name)" :count="counts[window.name]" :place="() => pagePlace(window)" @go="go($event, window)" />
+                        <SidebarRow :page="window" :active="window.name === open" :address="pageOf(window.name)" :count="counts[window.name]?.count" :place="() => pagePlace(window)" @go="go($event, window)" />
                     </template>
                 </template>
             </template>
             <button type="button" class="fold-head" data-fold="environments" @click="fold('environments')">
-                Environments<Icon :name="folded.has('environments') ? 'right' : 'down'" :size="12" />
+                Environments
             </button>
             <template v-if="!folded.has('environments')">
                 <template v-if="run">
@@ -173,7 +181,7 @@ function fold(key) {
     width: 52px;
 }
 
-.sidebar.mini .sidebar-name,
+.sidebar.mini .sidebar-title,
 .sidebar.mini .fold-head,
 .sidebar.mini :deep(.item-title),
 .sidebar.mini :deep(.item-count),
@@ -210,9 +218,20 @@ function fold(key) {
     font-weight: 600;
 }
 
+.sidebar-title {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
 .sidebar-name {
     font-size: 14px;
     font-weight: 600;
+}
+
+.sidebar-environment {
+    color: var(--text-3);
+    font-size: 11px;
 }
 
 .sidebar-scroll {
@@ -228,14 +247,16 @@ function fold(key) {
 .fold-head {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     margin-top: 14px;
     padding: 4px 8px;
     border: 0;
     background: none;
     color: var(--text-3);
     font: inherit;
-    font-size: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     cursor: pointer;
 }
 

@@ -16,7 +16,7 @@ const props = defineProps({
     pickLine: {type: String, default: "No row chosen"},
     place: {type: Function, default: null},
     // a page that wants its first row read at once, with no row named by the address
-    openFirst: Boolean,
+    openFirst: {type: Boolean, default: false},
 });
 const chosen = defineModel("chosen", {type: [String, Number], default: null});
 const current = computed(() => props.items.find((item) => item.id === chosen.value) ?? null);
@@ -41,12 +41,12 @@ function keyed(event) {
     step(STEPS[event.key]);
 }
 
-// the row the address names is chosen once the list has it, which for a page that reads its rows is after it is drawn
+// the row the address names is chosen once the list has it, which for a page that reads its rows is after it is drawn; a page that opens its first row
+// has it chosen when the address names none
 watch(() => props.items.length, () => {
     if (chosen.value !== null) return;
-    const wanted = props.items.find((item) => String(item.id) === route.value.row);
+    const wanted = props.items.find((item) => String(item.id) === route.value.row) ?? (props.openFirst ? props.items[0] : undefined);
     if (wanted) chosen.value = wanted.id;
-    else if (props.openFirst && props.items.length) chosen.value = props.items[0].id;
 }, {immediate: true});
 </script>
 

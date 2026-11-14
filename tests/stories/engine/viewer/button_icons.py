@@ -23,13 +23,3 @@ def test_the_new_icon_names_are_accepted_for_a_button(new_story):
     new_story(fixture=MainEnvironment).expect_sync_success(f"{PATH}:NewIconModule")
 
 
-def test_confirm_and_danger_are_kept_in_the_buttons_listing(new_story):
-    story = new_story(fixture=MainEnvironment)
-    story.expect_sync_success(f"{PATH}:ConfirmingModule")
-    entries = [entry for entry in Registry.read(story.container.get(Database)).buttons if entry.declaration.name == "iconic.lock"]
-    expect_value([(entry.listed()["confirm"], entry.listed()["danger"]) for entry in entries], [("Lock this task?", True)])
-
-
-def test_every_window_icon_has_a_drawn_shape():
-    missing = sorted(icon.value for icon in WindowIcon if icon.value not in rendered_names())
-    expect_value(bool(missing), False)

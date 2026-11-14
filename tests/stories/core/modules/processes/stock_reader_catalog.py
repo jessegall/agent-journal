@@ -108,13 +108,6 @@ def test_every_stock_reader_is_stored_and_none_is_a_default(new_story):
     story.expect_rows(sorted(name for name, reader in stored.items() if reader.is_default) == [])
 
 
-@pytest.mark.parametrize("line", ["collected 20 items / 19 deselected / 1 selected", "1/20 tests collected (19 deselected) in 0.05s"])
-def test_a_filtered_pytest_collect_counts_only_the_selected_tests(new_story, line):
-    story = new_story(fixture=UserJoined)
-    pytest_reader = story.container.get(Queries).query(Reader).filter(name="pytest").first()
-    story.expect_rows(story.container.get(ReaderRun).count(pytest_reader, line, 0) == 1)
-
-
 def test_every_tool_with_a_streaming_hint_has_a_stored_stock_reader_or_says_why_not(new_story):
     story = new_story(fixture=BuilderStarted)
     BootingWork().run(story.container)

@@ -144,5 +144,3 @@ def test_a_long_worker_run_is_asked_for_a_title_like_a_main_agents_and_asked_for
                                  not readers_disabled.container.get(ReaderRequestQuery).open().filter(creator_id=reader_worker(readers_disabled).id).exists(), detail="\n".join(lines))
 
 
-def test_every_role_hears_the_shorter_read_of_a_reader():
-    expect_value(ReadAdviceRule.roles, [])

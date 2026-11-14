@@ -63,8 +63,8 @@ def test_person_row_overrides_a_built_in_class():
 
 
 def test_person_pattern_row_matches_a_line():
-    own = ExecutionClassRow(name="docs build", lane=ExecutionLane.LONG, slot_cost=2, priority=ExecutionPriority.BACKGROUND, line_pattern=r"^make docs")
-    assert ExecutionClasses(stored(own)).match(line("make docs", CommandCategory.BUILD)).priority is ExecutionPriority.BACKGROUND
+    personal = ExecutionClassRow(name="docs build", lane=ExecutionLane.LONG, slot_cost=2, priority=ExecutionPriority.BACKGROUND, line_pattern=r"^make docs")
+    assert ExecutionClasses(stored(personal)).match(line("make docs", CommandCategory.BUILD)).priority is ExecutionPriority.BACKGROUND
 
 
 def test_lane_limits_follow_the_settings():
@@ -73,8 +73,8 @@ def test_lane_limits_follow_the_settings():
 
 
 def test_no_rows_gives_the_built_in_table():
-    built_in = next(row.execution_class for row in BUILTIN_CLASSES if row.execution_class.name == "test, build or check")
-    assert ExecutionClasses(stored()).match(line("pytest", CommandCategory.TEST_RUN)) == built_in
+    builtin = next(row.execution_class for row in BUILTIN_CLASSES if row.execution_class.name == "test, build or check")
+    assert ExecutionClasses(stored()).match(line("pytest", CommandCategory.TEST_RUN)) == builtin
 
 
 def test_row_with_cost_above_capacity_is_refused():

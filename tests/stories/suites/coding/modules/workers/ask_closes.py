@@ -15,8 +15,8 @@ def test_a_text_send_to_a_worker_with_nothing_assigned_files_no_task_and_wakes_i
     tasks = len(story.story_rows(Task))
     story.expect_success(f'worker send --wait {agent_number(story, story.worker.id)} "Look at the tax rounding"', actor=story.agent)
     story.expect_rows(len(story.story_rows(Task)) == tasks, detail=str([task.title for task in story.story_rows(Task)]))
-    sent = [(str(message.type), message.recipient, message.text) for message in story.story_rows(Message)]
-    story.expect_rows(("peer", f"worker {story.worker.id}", "Look at the tax rounding") in sent, detail=str(sent))
+    delivered = [(str(message.type), message.recipient, message.text) for message in story.story_rows(Message)]
+    story.expect_rows(("peer", f"worker {story.worker.id}", "Look at the tax rounding") in delivered, detail=str(delivered))
 
 
 def test_a_question_that_went_to_the_main_agent_is_answered_once_the_main_agent_sends_its_answer(merger_disabled_worker):

@@ -37,7 +37,7 @@ class CodingModule(Module):
     requires_engine = ">=5,<6"
     settings = CODING_SETTING_LISTS
     moves = CODING_MOVES
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.assignments", "journal.core.assign_rules", "journal.core.plans", "journal.core.settings", "journal.core.setting-requests", "journal.core.viewer", "journal.core.plugins", "journal.core.processes", "journal.core.messages", "journal.core.questions", "journal.core.helpers", "journal.core.tools"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.assignments", "journal.core.assign_rules", "journal.core.plans", "journal.core.settings", "journal.core.setting-requests", "journal.core.viewer", "journal.core.plugins", "journal.core.processes", "journal.core.messages", "journal.core.questions", "journal.core.helpers", "journal.core.tools", "journal.core.developer", "journal.core.documents", "journal.core.dumps", "journal.core.library", "journal.core.mcp", "journal.core.memories", "journal.core.profiles", "journal.core.project-rules", "journal.core.reminders", "journal.core.schedules", "journal.core.search", "journal.core.secrets", "journal.core.sequences", "journal.core.sharing", "journal.core.skills", "journal.core.templates", "journal.core.transcriptions", "journal.core.triggers", "journal.core.tunnel", "journal.core.updates", "journal.core.usage"]
     drivers = CODING_DRIVERS
     skills = CODING_SKILLS
     models = CODING_MODELS

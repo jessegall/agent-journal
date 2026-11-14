@@ -83,7 +83,7 @@ def test_the_registry_keeps_its_agent_states_and_finds_a_rules_gate():
     entry = AgentStateEntry("samples.loading", DottedPath("tests.samples.LoadingState"), "samples", 1, int(StateTier.STACK), ("*",), "", ("samples.first",), ())
     registry = Registry("states", {}, {}, {}, (), (), agent_states=tuple([entry]))
     restored = Registry.parsed("states", registry.entries_text())
-    assert restored.agent_states == (entry,)
+    assert restored.agent_states == tuple([entry])
     assert restored.rule_gate("samples.first") == entry and restored.rule_gate("samples.second") is None
     assert json.loads(registry.entries_text())["agent_states"][0]["rules"] == ["samples.first"]
 
@@ -161,7 +161,7 @@ def deferred_refusal(state) -> str:
 
 def test_a_deferred_state_records_its_deferred_rules_under_it_with_their_hook_and_drivers():
     entries = DriverEntries().deferred_rules([module(agent_states=[DeferredState])])
-    assert [(entry.name, entry.state, entry.hook, tuple(entry.drivers)) for entry in entries] == [("samples.deferred", "samples.deferred-state", "stop", ("coding.main",))]
+    assert [(entry.name, entry.state, entry.hook, tuple(entry.drivers)) for entry in entries] == [("samples.deferred", "samples.deferred-state", "stop", tuple(["coding.main"]))]
 
 
 def test_a_deferred_rule_in_a_state_that_is_not_deferred_is_refused():
@@ -177,8 +177,8 @@ def test_a_deferred_rule_that_declares_a_refusal_is_refused():
 
 
 def test_the_registry_keeps_its_deferred_rule_entries_and_returns_a_states_rules_for_a_hook():
-    entry = DeferredRuleEntry("samples.deferred", DottedPath("tests.samples.SampleDeferred"), "samples.deferred-state", "stop", ("coding.main",))
+    entry = DeferredRuleEntry("samples.deferred", DottedPath("tests.samples.SampleDeferred"), "samples.deferred-state", "stop", tuple(["coding.main"]))
     registry = Registry("states", {}, {}, {}, (), (), deferred_rule_entries=tuple([entry]))
     restored = Registry.parsed("states", registry.entries_text())
-    assert restored.deferred_rule_entries == (entry,)
+    assert restored.deferred_rule_entries == tuple([entry])
     assert restored.deferred_rules("samples.deferred-state", "stop") == [entry] and restored.deferred_rules("samples.deferred-state", "pre_tool_use") == []

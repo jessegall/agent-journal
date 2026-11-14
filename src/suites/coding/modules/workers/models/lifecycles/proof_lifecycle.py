@@ -5,9 +5,9 @@ from suites.coding.modules.workers.models.enums.proof_state import ProofState
 
 class ProofLifecycle(Lifecycle):
     """A proof is shown, then judged: committed and queued to run its test, checked or sent back short. A
-    committed proof is shown again when its worker proves the same point again, as after a clash that took the commit. A
-    short or checked proof of a task that a failed checkpoint returned goes with the task to the worktree
-    the task is worked in again, in the state it has."""
+    committed proof is shown again when its worker proves the same point again, as after a clash that took
+    the commit. A short or checked proof of a task that a failed checkpoint returned goes with the task to
+    the worktree the task is worked in again, in the state it has."""
 
     states = ProofState
     initial = [ProofState.SHOWN]

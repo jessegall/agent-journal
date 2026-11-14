@@ -7,7 +7,6 @@ from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
-from tests.stories.server.window_data_route import window_data
 
 
 def test_the_card_of_a_journal_line_shows_what_that_line_printed(new_story):
@@ -18,5 +17,5 @@ def test_the_card_of_a_journal_line_shows_what_that_line_printed(new_story):
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         key = f"terminal-output.{reply.hook_call_id}"
-        status, output = window_data(server, cookie, keys=key, window="agents.agents")
+        status, output = server.window_data(cookie, keys=key, window="agents.agents")
         story.expect_rows(status == 200, output["keys"][key]["code"] == 0, output["keys"][key]["value"]["lines"] == ["10 passed"], detail=str(output["keys"][key]))

@@ -108,10 +108,10 @@ def test_one_request_reads_the_pending_work_once_inside_and_outside_a_worker_sco
     worker = story.container.get(Queries).query(Agent).find(workers[0].id)
     scopes = story.container.get(Scopes)
     with story.repeated_work.request():
-        outside = dict(work.pending())
+        external = dict(work.pending())
         with scopes.row_scope(worker):
             inside = dict(work.pending())
-    story.expect_rows(outside == inside, len(outside) == len(workers), detail=f"{outside} {inside}")
+    story.expect_rows(external == inside, len(external) == len(workers), detail=f"{external} {inside}")
 
 
 def test_one_request_reads_the_pending_work_once_when_another_connection_writes_during_the_read(pending_workers, monkeypatch):

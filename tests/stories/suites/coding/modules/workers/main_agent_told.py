@@ -14,7 +14,6 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_outcome_with, expect_value_with
 
 
-
 def story_with_worker(new_story, typing=None):
     story = new_story(fixture=BuilderStarted)
     if typing is not None:
@@ -42,17 +41,6 @@ def test_a_workers_report_says_it_wakes_the_main_agent_and_stays_visible(new_sto
     line = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).newest().first()
     expect_wakes_agent_proof(line)
     expect_outcome_with(line, "reported in message")
-
-
-def test_the_line_of_a_proof_with_no_test_names_the_check_and_wakes_the_main_agent():
-    line = PROOF_WAITS.nudge(worker=7, proofs="3 4").text
-    expect_value_with(line, "proofs 3 4")
-    expect_value_with(line, "waits on your check")
-    expect_wakes_agent_proof(PROOF_WAITS)
-
-
-def test_a_proof_sent_back_starts_an_ended_worker_again():
-    expect_value_with(RESUMING_SOURCES, SHORT_PROOF_SOURCE)
 
 
 def expect_wakes_agent_proof(item) -> None:

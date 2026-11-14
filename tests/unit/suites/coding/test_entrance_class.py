@@ -42,8 +42,22 @@ class TwoEntrancesSuite(Suite):
     entrances = [FirstEntrance, SecondEntrance]
 
 
-def test_the_coding_suite_holds_only_its_admin_entrance():
-    assert CodingSuite.entrances == [AdminEntrance] and "windows" not in vars(CodingSuite) and "layouts" not in vars(CodingSuite)
+def test_the_coding_suite_holds_only_its_admin_entrance_with_the_parts_its_modules_add():
+    assert {entrance.key for entrance in CodingSuite.entrances} == {AdminEntrance.key} and "windows" not in vars(CodingSuite) and "layouts" not in vars(CodingSuite)
+
+
+class SecondFirstEntrance(Entrance):
+    key = "first"
+    windows = ["plans.plans", "messages.chat"]
+
+
+class SharedKeySuite(Suite):
+    name = "shared"
+    entrances = [FirstEntrance, SecondFirstEntrance]
+
+
+def test_entrances_that_share_a_key_are_one_way_in_with_the_windows_of_both():
+    assert SharedKeySuite.entrance_windows() == {"first": ("messages.chat", "tasks.tasks", "plans.plans")}
 
 
 def test_a_suite_offers_the_windows_of_its_entrances_once_each_in_order():
@@ -55,5 +69,5 @@ def test_the_first_entrance_gives_a_page_its_default_layout_and_a_later_one_adds
 
 
 def test_the_presets_and_windows_of_each_entrance_are_kept_by_its_key():
-    assert TwoEntrancesSuite.offered_presets() == {"home": (TasksPreset.layout_preset(),)}
+    assert TwoEntrancesSuite.offered_presets() == {"home": tuple([TasksPreset.layout_preset()])}
     assert TwoEntrancesSuite.entrance_windows() == {"first": ("messages.chat", "tasks.tasks"), "second": ("tasks.tasks", "plans.plans")}

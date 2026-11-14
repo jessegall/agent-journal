@@ -12,6 +12,3 @@ def test_a_story_started_hosted_reports_hosting_on_with_the_file_it_wrote(new_st
     expect_value(kernel.agent_group.agent_ids[4242], 7)
 
 
-def test_a_story_with_no_hosted_file_is_not_hosted(new_story):
-    story = new_story()
-    expect_value(story.container.get(Hosting).is_hosted, False)

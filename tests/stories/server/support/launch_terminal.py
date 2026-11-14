@@ -9,7 +9,7 @@ import threading
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
-from tests.stories.server.support.go_build import GoBuild
+from tests.integration.support.go_build import GoBuild
 
 ROOT = Path(__file__).resolve().parents[4]
 SCREEN_WAIT_SECONDS = 30

@@ -15,8 +15,9 @@ MODULE_NAME = "journal.core.asks"
 
 
 class AskStackListener(CommitListener[Changed[AskStack]]):
-    """Keeps one stack in force and one waiting per topic: a stack that comes into force ends the one it replaces, a
-    new waiting stack ends the older waiting one, and a waiting stack is asked of the user in the approval dock."""
+    """Keeps one stack in force and one waiting per topic: a stack that comes into force ends the one it
+    replaces, a new waiting stack ends the older waiting one, and a waiting stack is asked of the user in
+    the approval dock."""
 
     name = "asks.stack-approval"
     disabled_scopes = [ActorScope, EnvironmentScope]

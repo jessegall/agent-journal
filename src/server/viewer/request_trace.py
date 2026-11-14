@@ -35,11 +35,13 @@ SETTINGS_REFRESH_SECONDS = 5.0
 
 
 class RequestTrace:
-    """The developer's trace of the requests the server answers: the body, timing and attribution of each hook,
-    command and viewer request, appended to the request trace file while the developer request log setting is on and
-    written to the hook requests table by a tick, so a busy database drops no row. The one request log of every run is RequestLog of the processes module; this trace adds the detail a
-    developer reads. Records requests without waiting for a database writer; a request counts as attempted and
-    as recorded or dropped under one hold of the lock, so the status never shows a request half counted."""
+    """The developer's trace of the requests the server answers: the body, timing and attribution of each
+    hook, command and viewer request, appended to the request trace file while the developer request log
+    setting is on and written to the hook requests table by a tick, so a busy database drops no row. The
+    one request log of every run is RequestLog of the processes module; this trace adds the detail a
+    developer reads. Records requests without waiting for a database writer; a request counts as attempted
+    and as recorded or dropped under one hold of the lock, so the status never shows a request half
+    counted."""
 
     def __init__(self, home: JournalHome, clock: Clock) -> None:
         self.home, self.clock = home, clock

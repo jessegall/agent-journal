@@ -19,21 +19,21 @@ class Settings:
 
 def test_services_lists_only_round_state_instances():
     container = Container()
-    seen, settings = container.get(EventBuffer), container.get(Settings)
-    assert list(container.get(RoundStates).services()) == [seen] and settings not in container.get(RoundStates).services()
+    viewed, settings = container.get(EventBuffer), container.get(Settings)
+    assert list(container.get(RoundStates).services()) == [viewed] and settings not in container.get(RoundStates).services()
 
 
 def test_services_builds_nothing_new():
     container = Container()
-    before = set(container.instances)
+    previous = set(container.instances)
     container.get(RoundStates).services()
-    assert set(container.instances) - before == {RoundStates}
+    assert set(container.instances) - previous == {RoundStates}
 
 
 def test_reset_is_called_on_each_listed_service_once():
     container = Container()
-    seen = container.get(EventBuffer)
-    container.bind(RoundState, seen)
-    seen.events.append("task.start")
+    viewed = container.get(EventBuffer)
+    container.bind(RoundState, viewed)
+    viewed.events.append("task.start")
     container.get(RoundStates).reset()
-    assert (seen.events, seen.reset_count) == ([], 1)
+    assert (viewed.events, viewed.reset_count) == ([], 1)

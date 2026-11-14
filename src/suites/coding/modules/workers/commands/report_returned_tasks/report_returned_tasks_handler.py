@@ -15,7 +15,8 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_PHASE_TES
 
 class ReportReturnedTasksHandler(Handler[ReportReturnedTasks, None]):
     """The proofs of the tasks a worker got back from a failed checkpoint move to its new worktree, so the
-    short one is handed in again there, and the worker gets one line with the outputs of the failed tests and the commands they ran."""
+    short one is handed in again there, and the worker gets one line with the outputs of the failed tests
+    and the commands they ran."""
 
     command = ReportReturnedTasks
     disabled_scopes = [ActorScope]

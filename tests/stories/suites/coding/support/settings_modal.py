@@ -1,4 +1,3 @@
-from tests.stories.server.window_data_route import window_data
 from tests.stories.suites.coding.support.main_controls_fixture import PersonViewer
 from suites.coding.modules.workers.support.worker_settings import DISPATCHES_WORKERS_SETTING
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
@@ -50,6 +49,6 @@ class Modal:
         return next(node for node in self.screen(name)["nodes"] if node["node_type"] == category and not node["requires"])
 
     def window_keys(self, keys: str, window: str = WINDOW, query: str = "environment=main") -> dict[str, object]:
-        status, answer = window_data(self.server, self.cookie, keys=keys, window=window, query=query)
+        status, answer = self.server.window_data(self.cookie, keys=keys, window=window, query=query)
         assert status == 200, (status, answer)
         return answer["keys"]

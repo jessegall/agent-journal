@@ -1,3 +1,4 @@
+from engine.registry.deferred_rule_entry import ANY_HOOK
 from engine.enums.rule_priority import RulePriority
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -7,7 +8,6 @@ from engine.dotted_path.dotted_path import DottedPath
 from engine.registry.driver_patterns import DriverPatterns
 from engine.agent.enums.role_group import RoleGroup
 
-ANY_HOOK = "*"
 
 
 @dataclass(frozen=True)

@@ -17,7 +17,8 @@ from engine.provider.program_model import ProgramModel
 from engine.provider.providers import Providers
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.server.support.server_client import server_story, viewer_answer
+from tests.stories.server.support.server_client import server_story
+from tests.integration.support.server_harness import viewer_answer
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.unit.engine.samples.program_sample import SampleProgram
 from tests.stories.support.program_states import real_program_states

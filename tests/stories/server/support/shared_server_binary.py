@@ -11,7 +11,7 @@ from collections.abc import Mapping
 from functools import cached_property
 from pathlib import Path
 
-from tests.stories.server.support.go_build import GoBuild
+from tests.integration.support.go_build import GoBuild
 from tests.stories.server.support.tls_files import TlsFiles
 
 READY_TIMEOUT_SECONDS = 30

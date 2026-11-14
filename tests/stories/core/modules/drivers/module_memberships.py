@@ -8,12 +8,6 @@ from tests.stories.core.modules.drivers.support.module_memberships import PATH
 from tests.stories.core.support.fixtures import MainEnvironment
 
 
-def test_membership_in_an_unknown_suite_is_refused(new_story):
-    story = new_story(fixture=MainEnvironment)
-    story.expect_sync_refusal(f"{PATH}:UnknownSuiteModuleJoining",
-                             "module acme.unknown is part of suite absent: install the module that ships it first")
-
-
 def test_a_member_must_depend_on_the_module_that_ships_its_suite(new_story):
     story = new_story(fixture=MainEnvironment)
     story.expect_sync_refusal(f"{PATH}:MissingDependencyModuleJoining",

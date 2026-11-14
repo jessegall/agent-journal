@@ -1,12 +1,10 @@
 from pathlib import PurePosixPath
 
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
-from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.support.behind_facts import BehindFacts
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
-from suites.coding.modules.workers.support.behind_checks import CHECKS_REASON
+from suites.coding.modules.workers.support.behind_checks import BehindChecks
 
 
 
@@ -15,8 +13,8 @@ class BehindFactsReader:
     and the worker both changed are the overlap; the other base files in the folders of the worker's files are
     listed apart and never counted as overlap."""
 
-    def __init__(self, git: WorktreeGit, queries: Queries) -> None:
-        self.git, self.queries = git, queries
+    def __init__(self, git: WorktreeGit, checks: BehindChecks) -> None:
+        self.git, self.checks = git, checks
 
     def read(self, worktree: Worktree, worker: Agent) -> BehindFacts:
         tip = self.git.tip(worktree.folder, worktree.base_branch)
@@ -31,5 +29,5 @@ class BehindFactsReader:
                            uncommitted, worker.program, worker.program_model, self.earlier_decisions(worktree), tip)
 
     def earlier_decisions(self, worktree: Worktree) -> tuple[str, ...]:
-        checks = self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).every_row(CHECKS_REASON)
+        checks = self.checks.worktree_checks(worktree)
         return tuple(f"{check.commits_lagging} behind, {check.state}{': ' + check.reason if check.reason else ''}" for check in checks if not check.is_undecided())

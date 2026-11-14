@@ -7,7 +7,8 @@ from suites.coding.support.project_files import ProjectFiles
 
 
 class ProjectFileGrepSubcommand(ReadSubcommand[ProjectFileRows]):
-    """`journal project-file grep <words>`: the lines of the tracked text files of the project that hold the words, with their file and line number."""
+    """`journal project-file grep <words>`: the lines of the tracked text files of the project that hold
+    the words, with their file and line number."""
 
     row_line = "{id}:{line}: {text}"
     empty_line = "nothing found"

@@ -112,5 +112,15 @@ export function useSettingsDraft({run, reload}) {
         }
     }
 
-    return {draft, load, fill, value: (key) => draft[key], set: (key, value) => { draft[key] = value; }, isChanged, changes, errors, visible, dirty, stale, canSave, reason, pending, failure, apply, reset: rebase};
+    // a list setting is handed out as a list in every case; a held value of another form is named once in the console,
+    // so what wrote it can be found
+    function value(key) {
+        const node = nodeOf(key);
+        const held = draft[key];
+        if (node === undefined || !isList(node) || Array.isArray(held)) return held;
+        console.error(`the settings draft holds ${key} as ${JSON.stringify(held)}, not as a list`);
+        return Array.isArray(node.value) ? [...node.value] : [];
+    }
+
+    return {draft, load, fill, value, set: (key, value) => { draft[key] = value; }, isChanged, changes, errors, visible, dirty, stale, canSave, reason, pending, failure, apply, reset: rebase};
 }

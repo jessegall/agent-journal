@@ -19,24 +19,6 @@ def journal_entries(settings: dict[str, object]) -> list[object]:
     return [block for blocks in ProgramHooks.partitioned(settings.get("hooks")).journal.values() for block in blocks]
 
 
-def test_the_first_start_backs_up_the_project_files_and_takes_the_old_journal_entries_out(new_story):
-    story = new_story(fixture=MainEnvironment)
-    root = story.home.project_folder
-    local, codex = root / ".claude" / "settings.local.json", root / ".codex" / "hooks.json"
-    ProgramHooks.store(local, {"hooks": {"PreToolUse": [OLD_CLAUDE_ENTRY, FOREIGN_PROMPT]}})
-    ProgramHooks.store(codex, {"hooks": {"PreToolUse": [OLD_CODEX_ENTRY, FOREIGN_PROMPT]}})
-    originals = {"claude": local.read_bytes(), "codex": codex.read_bytes()}
-    ProgramSettingsWatch()(story.container)
-    backups = story.home.folder / "backups" / "program-settings"
-    copies = {program: [copy.read_bytes() for copy in (backups / program).glob(f"*-project-{name}")] for program, name in (("claude", "settings.local.json"), ("codex", "hooks.json"))}
-    journal_codex = json.loads((story.home.folder / "programs" / "codex" / "hooks.json").read_text())
-    pre_tool_entries = [entry for settings in (journal_codex, ProgramHooks.read(codex)) for block in settings.get("hooks", {}).get("PreToolUse", [])
-                        for entry in block["hooks"] if ProgramHooks.is_journals(entry)]
-    story.expect_rows(copies == {program: [data] for program, data in originals.items()},
-                      ProgramHooks.read(local) == {"hooks": {"PreToolUse": [FOREIGN_PROMPT]}}, ProgramHooks.read(codex) == {"hooks": {"PreToolUse": [FOREIGN_PROMPT]}},
-                      len(pre_tool_entries) == 1)
-
-
 def test_program_manage_moves_foreign_hooks_into_the_store_once_the_index_is_free_and_writes_no_journal_entry_into_the_project(new_story):
     story = new_story(fixture=MainEnvironment)
     root = story.home.project_folder

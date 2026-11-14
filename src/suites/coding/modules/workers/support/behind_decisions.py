@@ -2,12 +2,11 @@ from collections.abc import Callable
 
 from engine.cli.row_numbers import RowNumbers
 from engine.errors.refusal import Refusal
-from engine.query.queries import Queries
 from core.modules.agents.support.agent_label import AgentLabel
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.behind_checks import CHECKS_REASON
+from suites.coding.modules.workers.support.behind_checks import BehindChecks
 
 WITHOUT_OPEN_CHECK = "no open check for this worker"
 
@@ -16,8 +15,8 @@ class BehindDecisions:
     """Finds the check of a worker that waits for a decision: its worktree in this environment and its open check,
     or one the merger passed; anything else is refused by name."""
 
-    def __init__(self, worktrees: WorktreeQuery, queries: Queries, numbers: RowNumbers) -> None:
-        self.worktrees, self.queries, self.numbers = worktrees, queries, numbers
+    def __init__(self, worktrees: WorktreeQuery, checks: BehindChecks, numbers: RowNumbers) -> None:
+        self.worktrees, self.checks, self.numbers = worktrees, checks, numbers
 
     def decidable(self, worker_id: int) -> tuple[Worktree, WorktreeBehindCheck]:
         return self.found(worker_id, WorktreeBehindCheck.is_undecided)
@@ -39,4 +38,4 @@ class BehindDecisions:
         return worktree
 
     def check(self, worktree: Worktree, wanted: Callable[[WorktreeBehindCheck], bool]) -> WorktreeBehindCheck | None:
-        return next((row for row in reversed(tuple(self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).every_row(CHECKS_REASON))) if wanted(row)), None)
+        return next((row for row in reversed(self.checks.worktree_checks(worktree)) if wanted(row)), None)

@@ -13,9 +13,9 @@ from core.modules.plugins.support.plugin_folder_times import PluginFolderTimes
 
 
 class PluginCardReading:
-    """Claims the cards in every plugin's queue whose folder changed since the last look, so a mark shows as soon
-    as its answer is written; the line for the agent stays queued for the agent's next hook, the only moment it
-    can arrive."""
+    """Claims the cards in every plugin's queue whose folder changed since the last look, so a mark shows
+    as soon as its answer is written; the line for the agent stays queued for the agent's next hook, the
+    only moment it can arrive."""
 
     def __call__(self, container: Container) -> bool:
         queries, bus, times = container.get(Queries), container.get(Bus), container.get(PluginFolderTimes)
@@ -25,15 +25,15 @@ class PluginCardReading:
             queue = PluginQueue(container.get(PluginFolders).data(plugin.name))
             if not times.has_news(plugin.name, queue.folder):
                 continue
-            left_unclaimed = False
+            remaining_unclaimed = False
             with closing(queue.claim_cards()) as claims:
                 for claim in claims:
                     agent = queries.query(Agent).filter(id=claim.answer.agent_id).first()
                     if agent is None:
-                        left_unclaimed = True
+                        remaining_unclaimed = True
                         continue
                     bus.run(AddPluginOutput(plugin.id, agent.id, claim.answer.output), Actor.core(), environment_id=agent.environment_id)
                     claim.remove_cards()
                     outputs_added += 1
-            times.looked(plugin.name, left_unclaimed)
+            times.looked(plugin.name, remaining_unclaimed)
         return outputs_added > 0

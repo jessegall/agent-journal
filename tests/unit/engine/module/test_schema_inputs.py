@@ -12,10 +12,10 @@ def sample_source(tmp_path):
 
 
 def changed_hash(root, file):
-    before = SchemaInputs.hash((root,))
+    previous = SchemaInputs.hash(tuple([root]))
     file.write_text("VALUE = 2\n")
     SourceHash.file_hash.cache_clear()
-    return before != SchemaInputs.hash((root,))
+    return previous != SchemaInputs.hash(tuple([root]))
 
 
 def test_a_change_to_command_code_leaves_the_schema_hash_as_it_was(tmp_path):

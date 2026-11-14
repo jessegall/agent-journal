@@ -15,7 +15,7 @@ from server.work.listeners.listener_wake_router import ListenerWakeRouter
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.story_line_route import StoryLineRoute
 from tests.stories.server.support.server_client import server_story
-from tests.stories.server.viewer.attachments import IMAGE_BYTES, uploaded
+from tests.integration.support.viewer_files import IMAGE_BYTES, uploaded
 from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
 
 TEST_ROWS_REASON = "the test reads every row it checks"

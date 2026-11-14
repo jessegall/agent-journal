@@ -2,9 +2,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "src"
-TEST_ROOTS = [ROOT / "tests" / "unit", ROOT / "tests" / "stories"]
+TEST_ROOTS = [ROOT / "tests" / "unit", ROOT / "tests" / "integration", ROOT / "tests" / "stories"]
 SCRIPTS_FOLDER = "scripts"
-HELPER_FOLDERS = {"support", "samples", "fixtures", "testdata", "web", "__pycache__"}
+HELPER_FOLDERS = {"support", "samples", "fixtures", "testdata", "web", "story_moves", "__pycache__"}
 
 
 def test_every_test_folder_has_the_same_path_under_src():

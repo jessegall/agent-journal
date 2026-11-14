@@ -27,9 +27,9 @@ def test_the_state_is_asked_in_place_and_gates_the_unread_write_rule():
 
 
 def test_with_no_delivered_unread_message_the_state_is_closed_and_the_rule_answers_allowed_alone():
-    nothing = delivered_unread([])
-    assert MessagesUnread(nothing).open_rows(HOOK) == []
-    assert UnreadMessageWriteRule(nothing).answer(HOOK) == RuleAnswer.allowed()
+    none = delivered_unread([])
+    assert MessagesUnread(none).open_rows(HOOK) == []
+    assert UnreadMessageWriteRule(none).answer(HOOK) == RuleAnswer.allowed()
 
 
 def test_with_a_delivered_unread_message_the_state_opens_with_the_oldest():

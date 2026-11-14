@@ -16,7 +16,6 @@ from tests.stories.core.support.coding_fixtures import OrchestratorWithPerson
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.stories.suites.coding.modules.workers.support.phase_steps import dispatched_story_worker
 from tests.stories.server.support.server_client import server_story
-from tests.stories.server.window_data_route import window_data
 from tests.stories.support.story_checks import expect_value, expect_value_with, expect_value_without
 
 REAL_START_WAITED = WorkerTestLaunch.start_waited
@@ -121,7 +120,7 @@ def test_the_commands_card_in_the_workers_chat_shows_what_its_named_test_printed
     with server_story(worker.story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         key = f"terminal-output.{reply.hook_call_id}"
-        status, output = window_data(server, cookie, keys=key, window="agents.agents")
+        status, output = server.window_data(cookie, keys=key, window="agents.agents")
         worker.story.expect_rows(status == 200, output["keys"][key]["value"]["lines"] == ["10 passed"], detail=str(output["keys"][key]))
 
 

@@ -10,8 +10,8 @@ specification.loader.exec_module(load)
 NOW = datetime(2026, 11, 14, 12, 0, tzinfo=timezone.utc)
 
 
-def row(queued_minutes_ago: float, waited_seconds: float | None, line: str = "pytest tests") -> dict:
-    queued = NOW - timedelta(minutes=queued_minutes_ago)
+def row(queued_minutes_old: float, waited_seconds: float | None, line: str = "pytest tests") -> dict:
+    queued = NOW - timedelta(minutes=queued_minutes_old)
     started = None if waited_seconds is None else queued + timedelta(seconds=waited_seconds)
     return {"queued_at": queued.isoformat(), "started_at": None if started is None else started.isoformat(), "line": line}
 

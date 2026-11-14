@@ -8,7 +8,7 @@ LONG_BRIEF_TERMS = 20_000
 
 def test_a_worker_that_makes_a_rule_is_refused(new_story):
     story = new_story(fixture=PersonRulesAndWorker)
-    story.expect_refusal(rule_line("any"), PERSON_REFUSAL, actor=story.helper)
+    story.expect_refusal(rule_line("any"), "A worker may not run assign-rule make", actor=story.helper)
     story.expect_rows(len(rule_places(story)) == 2)
 
 
@@ -29,8 +29,10 @@ def test_the_main_agent_and_a_worker_read_and_try_rules(new_story):
     story = new_story(fixture=PersonRulesAndWorker)
     for agent in (story.agent, story.helper):
         story.expect_text(f"assign-rule list {ENVIRONMENT}", "main", actor=agent)
-        story.expect_text(f"assign-rule show {COMPLEXITY_RULE} {ENVIRONMENT}", "position: 1", actor=agent)
-        story.expect_text(f"assign-rule try 1 --rule {MIGRATION_RULE} {ENVIRONMENT}", f"rule {MIGRATION_RULE} does not match task 1", actor=agent)
+    story.expect_text(f"assign-rule show {COMPLEXITY_RULE} {ENVIRONMENT}", "position: 1", actor=story.agent)
+    story.expect_text(f"assign-rule try 1 --rule {MIGRATION_RULE} {ENVIRONMENT}", f"rule {MIGRATION_RULE} does not match task 1", actor=story.agent)
+    story.expect_refusal(f"assign-rule show {COMPLEXITY_RULE} {ENVIRONMENT}", "A worker may not run assign-rule show", actor=story.helper)
+    story.expect_refusal(f"assign-rule try 1 --rule {MIGRATION_RULE} {ENVIRONMENT}", "A worker may not run assign-rule try", actor=story.helper)
 
 
 def test_there_is_no_pattern_language_and_a_long_phrase_is_refused(new_story):

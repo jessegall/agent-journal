@@ -57,30 +57,31 @@ class StateType:
 
 
 class AgentStateListing:
-    """Lists the states an agent is in and the kinds of state the journal knows, read from the registry and the agent's
-    state board, so a tier a later phase fills is listed from the registry and never from a fixed list."""
+    """Lists the states an agent is in and the kinds of state the journal knows, read from the registry and
+    the agent's state board, so a tier a later phase fills is listed from the registry and never from a
+    fixed list."""
 
     def __init__(self, registry: Registry, boards: StateBoards, loader: ActorLoader) -> None:
         self.registry, self.boards, self.loader = registry, boards, loader
 
-    def states(self, agent: Agent, now: Timestamp) -> AgentStates:
+    def states(self, agent: Agent, current_time: Timestamp) -> AgentStates:
         actor = self.loader.loaded(agent)
-        open_states = self.open_states(agent, now)
+        open_states = self.open_states(agent, current_time)
         lines = [self.tier_line([state for state in open_states if state.tier == label]) if tier is not None else NONE for tier, label in TIER_LABELS]
         return AgentStates(f"agent {agent.number}", actor.driver, actor.role, *lines)
 
     # The open states of an agent as a hook of now finds them, tier by tier in the order of the tiers, each state in its place.
-    def open_states(self, agent: Agent, now: Timestamp) -> list[OpenState]:
+    def open_states(self, agent: Agent, current_time: Timestamp) -> list[OpenState]:
         actor = self.loader.loaded(agent)
         tick = HookEvent.tick(agent.program, agent.session, "", 0, str(agent.id), "")
-        board = self.boards.for_hook(AgentHook.of_actor(replace(tick, event=HookEventName.PRE_TOOL_USE), actor, now))
-        found: list[OpenState] = []
+        board = self.boards.for_hook(AgentHook.of_actor(replace(tick, event=HookEventName.PRE_TOOL_USE), actor, current_time))
+        matched: list[OpenState] = []
         for tier, label in TIER_LABELS:
             for entry in self.registry.tier_states(actor.driver, int(tier)) if tier is not None else []:
                 rows = board.open_rows(entry)
                 if rows:
-                    found.append(OpenState(label, entry.name, tuple(row.ref for row in rows), min(row.opened_at.text for row in rows)))
-        return found
+                    matched.append(OpenState(label, entry.name, tuple(row.ref for row in rows), min(row.opened_at.text for row in rows)))
+        return matched
 
     @staticmethod
     def tier_line(states: list[OpenState]) -> str:

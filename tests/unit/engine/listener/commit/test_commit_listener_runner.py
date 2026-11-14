@@ -322,9 +322,9 @@ def test_a_listener_over_the_time_limit_runs_no_more_events_and_keeps_its_cursor
     container.get(Bus).run(MakeItem(title="Emma"), AGENT)
     runner = container.get(CommitListenerRunner)
     runner.run()
-    held_cursor = cursor(container, NewItemPause.name)
+    kept_cursor = cursor(container, NewItemPause.name)
     runner.run()
-    assert (HANDLED, runner.held_listeners, cursor(container, NewItemPause.name)) == (["pause 1"], {NewItemPause.name}, held_cursor)
+    assert (HANDLED, runner.held_listeners, cursor(container, NewItemPause.name)) == (["pause 1"], {NewItemPause.name}, kept_cursor)
 
 
 def test_with_no_time_limit_a_slow_listener_runs_every_event(tmp_path, monkeypatch):
@@ -360,8 +360,8 @@ def test_a_lagging_cursor_asks_each_distinct_name_once(tmp_path, monkeypatch):
     container = container_with(tmp_path, PausedItemCounter)
     for number in range(40):
         container.get(Bus).run(MakeItem(title=f"Book {number}"), AGENT)
-    asked: list[str] = []
+    requested: list[str] = []
     matches = EventPattern.matches
-    monkeypatch.setattr(EventPattern, "matches", lambda pattern, name: asked.append(name) or matches(pattern, name))
+    monkeypatch.setattr(EventPattern, "matches", lambda pattern, name: requested.append(name) or matches(pattern, name))
     container.get(CommitListenerRunner).run()
-    assert len(asked) == len(set(asked))
+    assert len(requested) == len(set(requested))

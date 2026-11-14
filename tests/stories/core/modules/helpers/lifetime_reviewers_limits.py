@@ -8,7 +8,7 @@ from tests.stories.core.modules.helpers.helper_jobs import read_jobs, resumable_
 from tests.stories.core.modules.helpers.lifetime_reviewers import START_REVIEW, StartedReviewer, idle_reviewer, launches, refusal_text, review_job, reviewers
 from tests.stories.core.modules.helpers.support.rotating_helper import installed_program_checks, real_program_states
 from tests.stories.core.support.coding_fixtures import UserBuilder
-from tests.stories.server.profile_storage import boot, profile_path, save_profile_file
+from tests.stories.core.modules.profiles.profile_storage import boot, profile_path, save_profile_file
 from suites.coding.support.shipped_profiles import PLAN_REVIEWER_PROFILE
 
 TEST_ROWS_REASON = "the test reads every row it checks"

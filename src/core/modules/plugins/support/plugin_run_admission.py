@@ -9,7 +9,7 @@ from core.modules.processes.support.process_type_admission import ProcessTypeAdm
 from core.modules.plugins.support.plugin_run_rule import PluginRunRule
 
 
-PLUGIN_KIND_COST = 4
+PLUGIN_CLASS_COST = 4
 
 
 class PluginRunAdmission(ProcessTypeAdmission):
@@ -42,6 +42,6 @@ class PluginRunAdmission(ProcessTypeAdmission):
 
     # a plugin's kind runs in the long lane at normal, as many at once as its manifest's setting allows
     def kind_classes(self) -> dict[tuple[str, str], ExecutionClass]:
-        return {(plugin, category): ExecutionClass(f"{plugin} {category}", ExecutionLane.LONG, PLUGIN_KIND_COST, ExecutionPriority.NORMAL,
+        return {(plugin, category): ExecutionClass(f"{plugin} {category}", ExecutionLane.LONG, PLUGIN_CLASS_COST, ExecutionPriority.NORMAL,
                                                    rule.limit if rule.limit is not None else UNLIMITED, plugin=plugin)
                 for (plugin, category, _), rule in self.rules.items()}

@@ -36,19 +36,19 @@ def test_ticket_released_when_handler_ends_or_raises(tmp_path):
 
 def test_each_listener_event_is_its_own_ticket(tmp_path):
     tickets = round_tickets(tmp_path)
-    held = []
+    kept = []
     for event in ("task.created", "task.updated"):
         with tickets.event_turn(event):
-            held.extend((entry.ticket.line, entry.ticket.execution_class.name) for entry in tickets.queue.read())
-    assert held == [("task.created", "listener event"), ("task.updated", "listener event")] and tickets.queue.read() == ()
+            kept.extend((entry.ticket.line, entry.ticket.execution_class.name) for entry in tickets.queue.read())
+    assert kept == [("task.created", "listener event"), ("task.updated", "listener event")] and tickets.queue.read() == ()
 
 
 def test_fourth_background_tick_waits_even_with_room(tmp_path):
     priorities = ExecutionPriorities(SessionStarters(JournalHome(tmp_path)))
-    now = Clock().timestamp()
-    running = [priorities.tick_ticket(f"handler {number}", now) for number in range(3)]
-    fourth = priorities.tick_ticket("handler 4", now)
-    assert ExecutionOrder(DEFAULT_LANE_LIMITS).starting([fourth], running, now, False) == ()
+    current_time = Clock().timestamp()
+    running = [priorities.tick_ticket(f"handler {number}", current_time) for number in range(3)]
+    fourth = priorities.tick_ticket("handler 4", current_time)
+    assert ExecutionOrder(DEFAULT_LANE_LIMITS).starting([fourth], running, current_time, False) == ()
 
 
 def test_background_tick_raised_to_normal_after_ten_seconds(tmp_path):

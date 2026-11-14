@@ -10,8 +10,8 @@ from engine.registry.default_state_entry import DefaultStateEntry
 
 
 class SuiteFunnel:
-    """Takes in at sync the default states a suite and the suites that join it declare, refusing one that names a state
-    no module registers or a role, driver or helper type nothing registers."""
+    """Takes in at sync the default states a suite and the suites that join it declare, refusing one that
+    names a state no module registers or a role, driver or helper type nothing registers."""
 
     def __init__(self, suites: SuiteList, state_names: Sequence[str], driver_names: Sequence[str], helper_type_keys: Sequence[str]) -> None:
         self.suites = suites
@@ -20,7 +20,7 @@ class SuiteFunnel:
                              AgentKind.HELPER_TYPE: frozenset(helper_type_keys)}
 
     def entries(self, suite: type[Suite]) -> tuple[DefaultStateEntry, ...]:
-        joining = [default for other in self.suites.suites if other.joins == suite.name for default in other.default_states]
+        joining = [default for second in self.suites.suites if second.joins == suite.name for default in second.default_states]
         return tuple(self.entry(suite, default) for default in [*suite.default_states, *joining])
 
     def entry(self, suite: type[Suite], default: DefaultState) -> DefaultStateEntry:

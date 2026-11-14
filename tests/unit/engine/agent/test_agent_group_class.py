@@ -26,4 +26,4 @@ def test_a_module_gives_the_declarations_of_its_group_classes_beside_its_inline_
 
 def test_the_coding_module_lists_its_four_groups_as_classes_with_the_designer_on_its_profile():
     assert [group.key for group in CodingModule.group_declarations()] == ["workers", "merger", "designer", "helpers"]
-    assert DesignerGroup.declared().profiles == ("journal-designer",)
+    assert DesignerGroup.declared().profiles == tuple(["journal-designer"])

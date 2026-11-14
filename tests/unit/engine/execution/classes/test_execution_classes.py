@@ -68,8 +68,8 @@ def test_mixed_line_takes_longest_lane_and_highest_cost():
 
 
 def test_person_pattern_class_wins():
-    own = ExecutionClass("slow suite", ExecutionLane.LONG, 8, ExecutionPriority.NORMAL, line_pattern=r"^pytest tests/stories")
-    assert ExecutionClasses(SamplePersonClasses(own)).match(line(WORKER, CommandCategory.TEST_RUN, "pytest tests/stories -x")) == own
+    personal = ExecutionClass("slow suite", ExecutionLane.LONG, 8, ExecutionPriority.NORMAL, line_pattern=r"^pytest tests/stories")
+    assert ExecutionClasses(SamplePersonClasses(personal)).match(line(WORKER, CommandCategory.TEST_RUN, "pytest tests/stories -x")) == personal
 
 
 def test_plugin_named_like_a_journal_kind_keeps_its_class():

@@ -46,9 +46,9 @@ def test_the_answer_of_a_hook_is_stored_before_its_deferred_command_runs(new_sto
     story = new_story(fixture=QueueAgent)
     reply = story.hook("s-1", LISTING)
     stored = story.container.get(Queries).query(HookCall).find(reply.hook_call_id)
-    noted_before = list(NOTES)
+    logged_previous = list(NOTES)
     story.run_listeners()
-    story.expect_rows(stored.hook == HookEventName.POST_TOOL_USE, noted_before == [], NOTES == ["noted"], detail=f"{noted_before} {NOTES}")
+    story.expect_rows(stored.hook == HookEventName.POST_TOOL_USE, logged_previous == [], NOTES == ["noted"], detail=f"{logged_previous} {NOTES}")
 
 
 def test_a_deferred_command_stored_before_a_restart_runs_once_after_it(new_story):

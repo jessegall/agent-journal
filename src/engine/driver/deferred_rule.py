@@ -10,9 +10,10 @@ from engine.enums.hook_wildcard import HookWildcard
 
 
 class DeferredRule(SingleInstance):
-    """A rule of a deferred state: it is asked after the hook's answer is sent, with the hook call the journal stored
-    for it, and answers the commands to run then. It cannot refuse or rewrite, since the answer is gone, so it
-    declares no single-action refusal. It takes the stored row, not the hook, because a hook cannot be rebuilt from it."""
+    """A rule of a deferred state: it is asked after the hook's answer is sent, with the hook call the
+    journal stored for it, and answers the commands to run then. It cannot refuse or rewrite, since the
+    answer is gone, so it declares no single-action refusal. It takes the stored row, not the hook, because
+    a hook cannot be rebuilt from it."""
 
     name: ClassVar[str]
     hook: ClassVar[HookEventName | HookWildcard]

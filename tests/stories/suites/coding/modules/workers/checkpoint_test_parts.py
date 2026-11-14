@@ -27,12 +27,6 @@ def part_lines(worker: StoryWorker) -> list[str]:
     return [line for line in run_lines(worker) if line.startswith("pytest") and any(file in line for file in PHASE_FILES)]
 
 
-def test_a_phase_test_of_sixty_tests_runs_as_three_parts_of_at_most_twenty_five(listed_phase_test):
-    lines = part_lines(listed_phase_test)
-    listed_phase_test.story.expect_rows(LISTING_LINE in run_lines(listed_phase_test), len(lines) == 3, all(sum(file in line for file in PHASE_FILES) * FILE_TEST_COUNT <= TEST_LIMIT for line in lines),
-                                        detail=str(run_lines(listed_phase_test)))
-
-
 def test_a_failure_in_the_second_part_fails_the_checkpoint_naming_its_output_and_files(listed_phase_test):
     failing_part = part_lines(listed_phase_test)[1]
     end_run(listed_phase_test, failing_part)

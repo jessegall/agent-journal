@@ -12,9 +12,10 @@ PERSON = ExecutionStarter(StarterType.PERSON)
 
 
 class SessionStarters:
-    """Who started a hook or a command, found by the server from the agents table by its session, never taken
-    from what the sender says: each session is read once on a connection of its own and kept. A session no agent
-    row has yet counts as the main agent, so the first hook of a new session passes, and is read again next time."""
+    """Who started a hook or a command, found by the server from the agents table by its session, never
+    taken from what the sender says: each session is read once on a connection of its own and kept. A
+    session no agent row has yet counts as the main agent, so the first hook of a new session passes, and
+    is read again next time."""
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home
@@ -37,9 +38,9 @@ class SessionStarters:
             role = ActorTable(self.connection()).session_role(session)
             if role is None:
                 return ExecutionStarter(StarterType.MAIN_AGENT)
-            found = ExecutionStarter(StarterType.MAIN_AGENT) if role == AgentRole.MAIN else ExecutionStarter(StarterType.HELPER, agent_role=role)
-            self.known[session] = found
-            return found
+            matched = ExecutionStarter(StarterType.MAIN_AGENT) if role == AgentRole.MAIN else ExecutionStarter(StarterType.HELPER, agent_role=role)
+            self.known[session] = matched
+            return matched
 
     def role(self, session: str) -> str:
         starter = self.starter(session)

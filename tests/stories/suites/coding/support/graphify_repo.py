@@ -2,7 +2,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from tests.stories.server.support.file_changes import FileChanges
+from tests.integration.support.file_changes import FileChanges
 from suites.coding.support.graphify_settings import GRAPHIFY_COMMAND
 from suites.coding.support.graphify_settings import GRAPHIFY_INSTALL_COMMAND
 
@@ -57,11 +57,11 @@ class GraphifyRepo:
     def poll_refresh(self) -> None:
         self.wait(self.folder / "graphify-out", lambda: self.refreshed() == self.head() and not (self.folder / "graphify-out/.journal-running").is_file())
 
-    def age_graph(self, now: float, seconds: int) -> None:
+    def age_graph(self, current_time: float, seconds: int) -> None:
         for name in (".journal-refresh", ".journal-clustered"):
             path = self.folder / "graphify-out" / name
             if path.is_file():
-                os.utime(path, (now - seconds, now - seconds))
+                os.utime(path, (current_time - seconds, current_time - seconds))
 
     def arguments(self) -> list[str]:
         return [line.split(" ", 1)[1] for line in self.calls.read_text().splitlines()] if self.calls.is_file() else []

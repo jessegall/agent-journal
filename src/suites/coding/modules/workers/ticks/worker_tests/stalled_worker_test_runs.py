@@ -31,12 +31,13 @@ STALLED_TESTS_TICK = "stalled worker tests"
 
 
 class StalledWorkerTestRuns:
-    """Every minute, tests no run holds are moved along: a running test whose process ended a minute ago with
-    nothing recorded, or whose process is gone, is recorded from how it ended or as lost; a proof of a task in
-    testing whose test nothing queued, as after a proof edit, is queued, or committed in a started plan; and a
-    queued test a server update left behind is started, also one of a merged worktree, which its plan's checkpoint runs. A test that has run longer than the stuck limit,
-    whatever its process is doing, is ended and recorded as failed, and the worker and the merger are told. A test
-    of a checkpoint run whose process is gone, or ended a minute ago unheard, is recorded the same way."""
+    """Every minute, tests no run holds are moved along: a running test whose process ended a minute ago
+    with nothing recorded, or whose process is gone, is recorded from how it ended or as lost; a proof of a
+    task in testing whose test nothing queued, as after a proof edit, is queued, or committed in a started
+    plan; and a queued test a server update left behind is started, also one of a merged worktree, which
+    its plan's checkpoint runs. A test that has run longer than the stuck limit, whatever its process is
+    doing, is ended and recorded as failed, and the worker and the merger are told. A test of a checkpoint
+    run whose process is gone, or ended a minute ago unheard, is recorded the same way."""
 
     def __call__(self, container: Container) -> None:
         bus = container.get(Bus)

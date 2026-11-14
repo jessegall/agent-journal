@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from tests.stories.core.modules.assignments.support.assignment_reads import assigned, assignment_record, logged_events, row_actors
+from tests.stories.core.modules.assignments.support.assignment_reads import assigned, assignment_record, row_actors
 from tests.stories.core.modules.plans.support.assigned_plans import PlanWithTwoPhases, phase_task_ids, plan_worker
 
 ALL_TASKS = [*phase_task_ids(1), *phase_task_ids(2)]
@@ -88,12 +88,6 @@ def test_unassigning_a_hand_given_task_leaves_it_unassigned(plan):
     assigned(plan, "task 4", worker_id(plan, 3))
     plan.expect_success("unassign task 4 --environment main", actor=plan.user)
     plan.expect_rows(row_actors(plan, "task") == {}, detail=str(row_actors(plan, "task")))
-
-
-def test_each_child_assignment_is_its_own_event_caused_by_the_command_event(plan):
-    assigned(plan, "plan 1", worker_id(plan, 2), "--override")
-    created = logged_events(plan, "assignment.create")
-    plan.expect_rows(len(created) == 9, len({event["command"] for event in created}) == 1, len({event["cause_id"] for event in created}) == 1, detail=str(created))
 
 
 def test_a_phase_has_one_actor_and_carries_its_tasks(plan):

@@ -39,9 +39,9 @@ def depends_on(class_type: type, checked: dict[type, bool]) -> bool:
 
 
 class Container:
-    """Creates the objects the journal needs and hands each one out, creating it only once; a module may name
-    the class that stands in for an interface of the core. A sealed container builds no handler, listener, guard
-    or rule it did not build before it was sealed."""
+    """Creates the objects the journal needs and hands each one out, creating it only once; a module may
+    name the class that stands in for an interface of the core. A sealed container builds no handler,
+    listener, guard or rule it did not build before it was sealed."""
 
     def __init__(self) -> None:
         self.instances: dict[type, object] = {Container: self}

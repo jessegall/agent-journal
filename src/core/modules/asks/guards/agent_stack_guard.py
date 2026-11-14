@@ -18,6 +18,6 @@ class AgentStackGuard(Guard[Changed[AskStack]]):
         if isinstance(event, Deleted) or context.actor.type is not ActorType.AGENT:
             return
         old, new = event.old_row, event.row
-        comes_into_force = not new.needs_approval and new.ended_at is None and (old is None or old.needs_approval)
-        if comes_into_force:
+        becomes_active = not new.needs_approval and new.ended_at is None and (old is None or old.needs_approval)
+        if becomes_active:
             raise UserApprovalRefusal(f"Use the question stack {new.id} for {new.topic}?", ("ask-stack", "approve", str(new.id)))

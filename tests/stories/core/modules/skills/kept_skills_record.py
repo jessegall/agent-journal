@@ -8,15 +8,16 @@ from tests.stories.core.modules.skills.kept_after_compaction import CompactingCl
 
 
 class Reads:
-    """How often the read-first rule went to the transcript for the skills the program put back, counted while hooks run."""
+    """How often the read-first rule went to the transcript for the skills the program put back, counted
+    while hooks run."""
 
     def __init__(self, monkeypatch) -> None:
         self.count = 0
-        not_kept = SkillReadFirstRule.not_kept
+        discarded = SkillReadFirstRule.not_kept
 
         def counted(rule, hook, names):
             self.count += 1
-            return not_kept(rule, hook, names)
+            return discarded(rule, hook, names)
 
         monkeypatch.setattr(SkillReadFirstRule, "not_kept", counted)
 
@@ -62,12 +63,12 @@ def test_a_tool_use_before_the_record_answers_from_the_transcript_and_one_after_
     story = new_story(DUE, fixture=CompactingClaude)
     raw = compacted_session(story, tmp_path)
     reads = Reads(monkeypatch)
-    before = story.hook("s-1", tool_use(raw, "pre_tool_use"))
+    previous = story.hook("s-1", tool_use(raw, "pre_tool_use"))
     from_transcript = reads.count
     story.hook("s-1", tool_use(raw, "post_tool_use"))
     story.run_listeners()
     after = story.hook("s-1", tool_use(raw, "pre_tool_use"))
     expect_due(story, "journal-chores")
     story.expect_rows(from_transcript >= 1, reads.count == from_transcript,
-                      "journal-notes" not in str(before.lines), "journal-notes" not in str(after.lines), not before.refusal, not after.refusal,
-                      detail=f"{from_transcript} {reads.count} {before.lines} {after.lines}")
+                      "journal-notes" not in str(previous.lines), "journal-notes" not in str(after.lines), not previous.refusal, not after.refusal,
+                      detail=f"{from_transcript} {reads.count} {previous.lines} {after.lines}")

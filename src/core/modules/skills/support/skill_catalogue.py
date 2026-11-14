@@ -1,4 +1,5 @@
 from engine.skill.skill_contents import SkillContents
+from engine.execution.current_execution import CurrentExecution
 from engine.file.file_access import FileAccess
 from engine.file.versions.file_version import FileVersion
 from functools import lru_cache
@@ -14,13 +15,15 @@ from engine.skill.skill_digest import SkillDigest
 from engine.skill.skill_contents import FRONT_MATTER_MARK
 
 PLUGIN_KEY = "plugin"
-KEPT_SECONDS = 5
+CATALOGUE_CHECK_SECONDS = 60
+HOOK_PERIOD = -1
 
 
 class SkillCatalogue:
-    """Lists module skills and skills installed in the project's program folders. One request reads the skill files
-    once, and again only when a program folder changes. The skills of the program folders are kept across requests for
-    a few seconds, so a hook checks each skill file at most once in that time; a file edited in place shows after it."""
+    """Lists module skills and skills installed in the project's program folders. One request reads the
+    skill files once, and again only when a program folder changes. The skills of the program folders are
+    kept across requests for a few seconds, so a hook checks each skill file at most once in that time; a
+    file edited in place shows after it."""
 
     def __init__(self, registry: Registry, home: JournalHome, providers: Providers, request_values: RequestValues, clock: Clock) -> None:
         self.registry, self.home, self.providers, self.request_values, self.clock = registry, home, providers, request_values, clock
@@ -47,7 +50,9 @@ class SkillCatalogue:
 
     def plugin_skills(self) -> list[SkillEntry]:
         folders = tuple(self.home.project_folder / program_folder for program_folder in reversed(self.providers.skill_folders()))
-        period = int(self.clock.timestamp().value.timestamp() // KEPT_SECONDS)
+        # shortcut: a hook reuses the skills read for these folder versions and never checks each skill file, so a
+        # SKILL.md edited in place reaches hooks once a skill is added or removed; a tick-driven refresh would close that
+        period = HOOK_PERIOD if CurrentExecution.read().is_hook else int(self.clock.timestamp().value.timestamp() // CATALOGUE_CHECK_SECONDS)
         return list(SkillCatalogue.kept_plugin_skills(folders, tuple(self.folder_version(folder) for folder in folders), period))
 
     @staticmethod

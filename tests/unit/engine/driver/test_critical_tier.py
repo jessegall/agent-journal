@@ -48,7 +48,7 @@ class ClosedCritical(OpenCritical):
 
 
 def critical(state: type[AgentState], position: int, rules: Sequence[str]) -> AgentStateEntry:
-    return AgentStateEntry(state.name, DottedPath.class_path(state), "samples", position, int(StateTier.CRITICAL), ("*",), "", tuple(rules))
+    return AgentStateEntry(state.name, DottedPath.class_path(state), "samples", position, int(StateTier.CRITICAL), tuple(["*"]), "", tuple(rules))
 
 
 def answered(tmp_path, rules: Sequence[DriverRuleEntry], states: Sequence[AgentStateEntry], overlays: Sequence[type[Overlay]] = ()):

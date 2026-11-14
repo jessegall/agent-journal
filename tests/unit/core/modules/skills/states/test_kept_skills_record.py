@@ -18,7 +18,7 @@ from core.modules.skills.support.kept_skill_mark import KeptSkillMark
 
 CREATED = Timestamp.parsed("2026-11-14T07:00:00+00:00")
 HOOK = SimpleNamespace(agent_id=7, event=SimpleNamespace(transcript=HookTranscript("claude", "f1", "/t.jsonl")))
-LOAD = LoadSkill(7, "journal-notes", "digest")
+READ_STEP = LoadSkill(7, "journal-notes", "digest")
 
 
 def due_skill() -> AgentSkill:
@@ -65,12 +65,12 @@ def test_a_record_is_for_one_session_and_compaction_only():
 
 def test_the_handler_loads_each_kept_due_skill_once_and_marks_the_agent_recorded():
     dispatched, saved = [], []
-    kept = SimpleNamespace(loads=lambda agent_id, transcript, due: [LOAD] if due == ["journal-notes"] else [])
+    kept = SimpleNamespace(loads=lambda agent_id, transcript, due: [READ_STEP] if due == ["journal-notes"] else [])
     bus = SimpleNamespace(dispatch=lambda command, context: dispatched.append(command))
     repository = SimpleNamespace(save_metadata=lambda stored, metadata, context: saved.append(metadata) or stored)
     handler = RecordKeptSkillsHandler(unread([due_skill()]), kept, SimpleNamespace(find=lambda agent_id: agent()), bus, repository)
     handler.handle(RecordKeptSkills(7, "claude", "f1", "/t.jsonl"), SimpleNamespace())
-    assert dispatched == [LOAD] and saved == [KeptSkillMark.recorded(agent())]
+    assert dispatched == [READ_STEP] and saved == [KeptSkillMark.recorded(agent())]
 
 
 def test_with_nothing_due_the_handler_reads_no_transcript_and_still_marks_the_record():
@@ -83,9 +83,9 @@ def test_with_nothing_due_the_handler_reads_no_transcript_and_still_marks_the_re
 
 def test_the_read_first_rule_answers_the_same_from_the_transcript_before_the_record_and_from_the_rows_after():
     required = SimpleNamespace(is_required=True)
-    before = SkillReadFirstRule(unread([due_skill()]), None, required, SimpleNamespace(is_recorded=lambda agent_id: False, loads=lambda agent_id, transcript, due: [LOAD]))
+    previous = SkillReadFirstRule(unread([due_skill()]), None, required, SimpleNamespace(is_recorded=lambda agent_id: False, loads=lambda agent_id, transcript, due: [READ_STEP]))
     after = SkillReadFirstRule(unread([]), None, required, SimpleNamespace(is_recorded=lambda agent_id: True, loads=Untouched().loads))
-    assert before.answer(HOOK) == after.answer(HOOK) == RuleAnswer.allowed()
+    assert previous.answer(HOOK) == after.answer(HOOK) == RuleAnswer.allowed()
 
 
 def test_after_the_record_the_read_first_rule_does_not_read_the_transcript_for_a_skill_still_due():

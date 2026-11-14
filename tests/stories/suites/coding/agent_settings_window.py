@@ -1,7 +1,6 @@
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
-from tests.stories.server.window_data_route import window_data
 from tests.stories.suites.coding.support.main_controls_fixture import MainControlsActors, agent_actors, person_viewer
 from tests.stories.support.story_checks import expect_value
 from engine.database.database import Database
@@ -30,7 +29,7 @@ def viewer_person(new_story):
 def test_s49_fixture_person_changes_a_control_through_the_viewer_line_route_and_reads_it_back(viewer_person):
     _, viewer = viewer_person
     viewer.set_setting(AUTO_MODE, "false")
-    status, auto = window_data(viewer.server, viewer.cookie, keys="auto", window="coding.work-mode")
+    status, auto = viewer.server.window_data(viewer.cookie, keys="auto", window="coding.work-mode")
     expect_value((status, auto["keys"]["auto"]["value"]["value"]), (200, False))
 
 
@@ -38,7 +37,7 @@ def test_s45_fixture_a_refused_agent_write_leaves_the_value_the_person_sees(new_
     story = new_story(fixture=MainControlsActors)
     story.expect_refusal(f"setting set {AUTO_MODE} off --environment main --reason 'a story asks'", "A user was asked", actor=story.agent)
     with person_viewer(story) as viewer:
-        status, auto = window_data(viewer.server, viewer.cookie, keys="auto", window="coding.work-mode")
+        status, auto = viewer.server.window_data(viewer.cookie, keys="auto", window="coding.work-mode")
         expect_value((status, auto["keys"]["auto"]["value"]["value"]), (200, True))
 
 
@@ -47,12 +46,12 @@ def test_s01_fixture_a_person_change_in_one_story_is_not_seen_by_the_next(new_st
     story.expect_success(f"setting set {AUTO_MODE} off --environment main", actor=story.user)
     story.expect_success("task list --environment main", actor=story.user)
     with person_viewer(story) as viewer:
-        status, auto = window_data(viewer.server, viewer.cookie, keys="auto", window="coding.work-mode")
+        status, auto = viewer.server.window_data(viewer.cookie, keys="auto", window="coding.work-mode")
         expect_value((status, auto["keys"]["auto"]["value"]["value"]), (200, False))
 
 
 def limit_rows(viewer):
-    status, answer = window_data(viewer.server, viewer.cookie, keys="limits", window="coding.agent-settings", query="environment=main&tab=agents")
+    status, answer = viewer.server.window_data(viewer.cookie, keys="limits", window="coding.agent-settings", query="environment=main&tab=agents")
     expect_value((status, answer["keys"]["limits"]["code"]), (200, 0))
     return answer["keys"]["limits"]["value"]["rows"]
 
@@ -72,7 +71,7 @@ def test_s51_agent_details_are_paged(new_story):
     story = new_story(fixture=MainControlsActors)
     story.expect_success("agent cards --show all --reusable --environment main", actor=story.agent)
     with person_viewer(story) as viewer:
-        status, answer = window_data(viewer.server, viewer.cookie, keys="count-agents", window="coding.agent-settings",
+        status, answer = viewer.server.window_data(viewer.cookie, keys="count-agents", window="coding.agent-settings",
                                      query="environment=main&count-agents.role=helper&count-agents.page=1")
         cards = answer["keys"]["count-agents"]
         expect_value((status, cards["code"], cards["value"]["total"] >= 3, len(cards["value"]["rows"]) <= 25), (200, 0, True, True))
@@ -83,7 +82,7 @@ ORCHESTRATOR_LINE = ["work-settings", "preset", "orchestrator"]
 
 
 def active_work_row(viewer) -> dict:
-    status, answer = window_data(viewer.server, viewer.cookie, keys="work", window=WINDOW)
+    status, answer = viewer.server.window_data(viewer.cookie, keys="work", window=WINDOW)
     assert (status, answer["keys"]["work"]["code"]) == (200, 0), answer["keys"]["work"]
     return answer["keys"]["work"]["value"]
 

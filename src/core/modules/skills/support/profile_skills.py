@@ -38,8 +38,8 @@ class ProfileSkills:
 
     # the profile's skills are worked out once, and the answer asks them for any number of folders
     def refused(self, profile: AgentProfile) -> Callable[[str], bool]:
-        known, given = {skill.folder for skill in self.catalogue.skills()}, set(self.folders(profile))
-        return lambda folder: folder in known and folder not in given
+        recorded, given = {skill.folder for skill in self.catalogue.skills()}, set(self.folders(profile))
+        return lambda folder: folder in recorded and folder not in given
 
     def rows(self, profile: AgentProfile) -> tuple[ProfileSkill, ...]:
         listed, locked = set(self.folders(profile)), set(self.start_folders())

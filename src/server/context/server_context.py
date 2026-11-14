@@ -21,11 +21,10 @@ IDLE_CONNECTION_SECONDS = 30
 @dataclass(frozen=True)
 class ServerContext:
     """What every request of one server shares: the journal's folder, the code the server started with, its
-    files, when it started, the wakes of its listener threads, the database connection its hooks share, the viewer's
-    listener, the findings of repeated work it has reported (the viewer's lines share them), the door its
-    socket's requests pass, how long a hook
-    waits for another writer, how far its hooks have read each session file, and how long a kept connection may
-    sit idle before the server closes it."""
+    files, when it started, the wakes of its listener threads, the database connection its hooks share, the
+    viewer's listener, the findings of repeated work it has reported (the viewer's lines share them), the
+    door its socket's requests pass, how long a hook waits for another writer, how far its hooks have read
+    each session file, and how long a kept connection may sit idle before the server closes it."""
 
     home: JournalHome
     code_version: CodeVersion

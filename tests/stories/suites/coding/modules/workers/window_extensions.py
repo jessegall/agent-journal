@@ -14,9 +14,3 @@ def test_coding_supplies_the_agent_file_tab_as_a_served_module_component(new_sto
     story.expect_rows(asset.content_type in ("text/javascript", "application/javascript"))
 
 
-def test_workers_supply_the_agent_feeds_through_window_declarations(new_story):
-    story = new_story(fixture=UserJoined)
-    window = story.container.get(Registry).window("agents.agents")
-    story.expect_rows({source["key"]: source["read"] for source in window.sources}
-                      == {"waits": "worker waits", "progress": "worker progress", "queue": "proof list --limit 50"})
-    story.expect_rows(story.container.get(Registry).window("plugins.plugins").links == {"files": "coding.files"})

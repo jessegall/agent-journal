@@ -7,9 +7,9 @@ from engine.viewer.window import Window
 
 
 class Entrance:
-    """One way into a suite's viewer: its key, the windows it offers (each a window class, or a name until the
-    window is one), the default layout of each page and the presets each page offers. A second way in is a second
-    class beside the first."""
+    """One way into a suite's viewer: its key, the windows it offers (each a window class, or a name until
+    the window is one), the default layout of each page and the presets each page offers. A second way in
+    is a second class beside the first."""
 
     key: ClassVar[str]
     windows: ClassVar[Sequence[type[Window] | str]] = []

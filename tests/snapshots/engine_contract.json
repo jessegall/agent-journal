@@ -1313,6 +1313,7 @@
         "rows(self, statement: Statement) -> list[sqlite3.Row]",
         "check_read_limit(self, statement: Statement, count: int) -> None",
         "report_cut(self, sql: str, limit: int) -> None",
+        "report_unscoped_read(self, table_name: str) -> None",
         "query_plan(self, statement: Statement) -> tuple[str, ...]",
         "is_partial_index(self, name: str) -> bool",
         "defer_checkpoints(self) -> None",
@@ -1917,7 +1918,8 @@
         "control_return: bool",
         "access: str",
         "anchor: OpenRow | None",
-        "defaults: Sequence[str]"
+        "defaults: Sequence[str]",
+        "removed_while: Mapping[str, str]"
       ],
       "methods": [
         "of_actor(cls, event: HookEvent, actor: LoadedActor, timestamp: Timestamp) -> 'AgentHook'",
@@ -2363,7 +2365,8 @@
         "suite: str",
         "driver: str",
         "anchor: OpenRow",
-        "defaults: Sequence[str]"
+        "defaults: Sequence[str]",
+        "removed_while: Mapping[str, str]"
       ],
       "methods": []
     },
@@ -2764,6 +2767,7 @@
       "fields": [],
       "methods": [
         "is_open(self, entry: AgentStateEntry) -> bool",
+        "is_removed(self, entry: AgentStateEntry) -> bool",
         "open_rows(self, entry: AgentStateEntry) -> Sequence[OpenRow]",
         "stack(self, driver: str) -> list[Layer]",
         "substates_above_parents(layers: list[Layer]) -> list[Layer]",
@@ -3600,6 +3604,15 @@
       ],
       "fields": [],
       "methods": []
+    },
+    "errors.unscoped_read_error.UnscopedReadError": {
+      "bases": [
+        "AssertionError"
+      ],
+      "fields": [],
+      "methods": [
+        "read(cls, table_name: str) -> 'UnscopedReadError'"
+      ]
     },
     "errors.wrong_instance_error.WrongInstanceError": {
       "bases": [
@@ -5059,6 +5072,7 @@
         "wide_folders(self) -> list[str]",
         "deep_files(self) -> list[str]",
         "layer_depth(self, path: Path) -> int",
+        "counted_entries(self, folder: Path) -> list[Path]",
         "entries(self, folder: Path) -> list[Path]",
         "is_judged(self, path: Path) -> bool",
         "relative(self, path: Path) -> str"
@@ -6381,7 +6395,8 @@
         "injections: Mapping[str, bool]",
         "skills: tuple[str, ...]",
         "required_skills: tuple[str, ...]",
-        "default_fields: tuple[str, ...]"
+        "default_fields: tuple[str, ...]",
+        "removed_states: tuple[str, ...]"
       ],
       "methods": [
         "display_title(self) -> str",
@@ -7706,6 +7721,7 @@
       "fields": [],
       "methods": [
         "with_removed(self) -> Self",
+        "every_environment(self, reason: str) -> Self",
         "find(self, row_id: int) -> M",
         "kept_first(self) -> M | None",
         "kept_exists(self) -> bool",
@@ -7753,6 +7769,7 @@
         "with_select(self, select: Select) -> Self",
         "rows(self, select: Select) -> list[M]",
         "scoped(self, select: Select) -> Select",
+        "scope_conditions(self, select: Select) -> Select",
         "session_rows(self, select: Select, owner: RowOwner | None) -> Select",
         "environment_rows(self, select: Select, owner: RowOwner) -> Select",
         "owner_rows(self, select: Select, owner: RowOwner | None) -> Select",
@@ -8769,7 +8786,7 @@
       "bases": [],
       "fields": [],
       "methods": [
-        "record(model: type[Model]) -> None"
+        "record(table_name: str) -> None"
       ]
     },
     "seed.demo.Demo": {
@@ -9480,6 +9497,13 @@
         "steps(self, story: Story) -> None"
       ]
     },
+    "testing.stories.internal_story_files.InternalStoryFiles": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "holds(self, story_file: Path) -> bool"
+      ]
+    },
     "testing.stories.story.Story": {
       "bases": [],
       "fields": [],
@@ -9677,23 +9701,6 @@
         "checks(self) -> list[str]"
       ]
     },
-    "testing.stories.story_write_turns.StoryWriteTurns": {
-      "bases": [
-        "WriteTurnQueue"
-      ],
-      "fields": [],
-      "methods": [
-        "release(self) -> None",
-        "is_free(self) -> bool",
-        "answers_beside_writer(self, line: str) -> bool",
-        "keep_turn(self, turn_started: Event, finished: Event) -> None",
-        "hook_turn_order(self, agent_count: int) -> list[str]",
-        "request_turn(self, name: str, priority: ExecutionPriority) -> None",
-        "expect_waiters(self, count: int) -> None",
-        "savepoint_write(self) -> None",
-        "slow_turn_run(self, line: str, seconds: int) -> None"
-      ]
-    },
     "testing.stories.working_journal.WorkingJournal": {
       "bases": [
         "StoryJournal"
@@ -9746,6 +9753,7 @@
       "methods": [
         "remove_stale_working_folders(current_time: float) -> None",
         "story(self, folder: Path, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Story",
+        "synced_home(self, folder: Path, modules: tuple[str, ...]) -> JournalHome",
         "free_journal(self, template: Template) -> WorkingJournal",
         "linked_home(self, template: Template, journal: WorkingJournal, folder: Path) -> JournalHome",
         "template(self, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Template",
@@ -10662,5 +10670,5 @@
       ]
     }
   },
-  "engine_version": "5.3.0"
+  "engine_version": "5.0.0"
 }

@@ -22,8 +22,8 @@ def hours(count: int) -> timedelta:
 
 
 def next_hour_start(story) -> timedelta:
-    now = story.clock.timestamp().value
-    return timedelta(minutes=60 - now.minute, seconds=-now.second)
+    current_time = story.clock.timestamp().value
+    return timedelta(minutes=60 - current_time.minute, seconds=-current_time.second)
 
 
 def idle_hours(story) -> int:

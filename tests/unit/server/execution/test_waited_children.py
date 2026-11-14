@@ -27,11 +27,11 @@ def door(tmp_path) -> tuple[TicketAdmission, ExecutionPriorities]:
 
 # immediate tickets fill each lane to its capacity, since they never wait
 def full_lanes(admission: TicketAdmission, priorities: ExecutionPriorities, running: ExitStack) -> None:
-    now = Clock().timestamp()
+    current_time = Clock().timestamp()
     for number in range(DEFAULT_LANE_LIMITS.capacity(ExecutionLane.SHORT)):
-        running.enter_context(admission.queue.admitted(replace(priorities.journal_run_ticket(f"git log {number}", now), priority=ExecutionPriority.IMMEDIATE)))
+        running.enter_context(admission.queue.admitted(replace(priorities.journal_run_ticket(f"git log {number}", current_time), priority=ExecutionPriority.IMMEDIATE)))
     for number in range(DEFAULT_LANE_LIMITS.capacity(ExecutionLane.INSTANT)):
-        running.enter_context(admission.queue.admitted(priorities.release_ticket(f"release {number}", now)))
+        running.enter_context(admission.queue.admitted(priorities.release_ticket(f"release {number}", current_time)))
 
 
 def under(ticket):

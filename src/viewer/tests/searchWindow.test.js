@@ -12,7 +12,7 @@ async function search(answer, words = "cart total") {
     const element = await mounted(SearchWindow, window);
     element.querySelector("[data-search-input]").value = words;
     element.querySelector("[data-search-input]").dispatchEvent(new Event("input"));
-    element.querySelector("[data-search-go]").click();
+    element.querySelector("[data-search-input]").dispatchEvent(new KeyboardEvent("keydown", {key: "Enter", bubbles: true}));
     await settle();
     return {element, window};
 }
@@ -22,7 +22,7 @@ test("typing terms shows the hits with their excerpt and the total", async () =>
     expect(window.reads).toEqual([`search find cart total --split-terms`]);
     const rows = [...element.querySelectorAll("[data-reader-row]")];
     expect(rows.map((row) => [row.dataset.row, row.textContent.includes("Round the cart total to cents") || row.textContent.includes("How the cart counts money")])).toEqual([["task:7", true], ["doc:2", true]]);
-    expect([...element.querySelectorAll(".list-reader-group")].map((group) => group.textContent)).toEqual(["Task", "Doc"]);
+    expect([...element.querySelectorAll(".list-reader-group")].map((group) => group.textContent)).toEqual(["Tasks", "Documents"]);
     expect(element.querySelector("[data-total]").textContent).toBe("2 results match all these words: cart total");
 });
 
@@ -77,4 +77,38 @@ test("a search where no row holds every word says so in one line and lists the c
     expect(element.querySelector("[data-closest]").textContent).toBe("No result holds all these words: cart euros, these hold most of them, the closest first");
     expect(element.querySelector("[data-total]")).toBeNull();
     expect(element.querySelectorAll("[data-reader-row]")).toHaveLength(2);
+});
+
+test("a row shows its title, what matched and its reference, and the reader reads the rest of the row", async () => {
+    const hits = [{cli_name: "doc", id: 1402, title: "Viewer v5: shared layouts", body: "The viewer draws every page from **five layouts**.", excerpt: "Viewer v5: shared layouts The viewer draws"}, {cli_name: "memory", id: 812, title: "The comment box floats everywhere", body: "", excerpt: "The comment box floats everywhere"}];
+    const {element} = await search({hits, total: 2}, "comment box");
+    expect([...element.querySelectorAll(".list-reader-group")].map((group) => group.textContent)).toEqual(["Documents", "Memories"]);
+    const row = element.querySelector('[data-row="doc:1402"]');
+    expect(row.querySelector(".list-row-title").textContent).toBe("Viewer v5: shared layouts");
+    expect(row.querySelector("[data-search-reference]").textContent).toBe("Document 1402");
+    row.click();
+    await settle();
+    const reader = element.querySelector("[data-search-reader]");
+    expect(reader.textContent).toContain("Document 1402");
+    expect(reader.querySelector("strong").textContent).toBe("five layouts");
+});
+
+test("the search runs a moment after the typing stops, with no button to press", async () => {
+    const window = context({"search find": {ok: true, value: HITS}}, null, KEYS);
+    const element = await mounted(SearchWindow, window);
+    expect(element.querySelector("[data-search-go]")).toBeNull();
+    element.querySelector("[data-search-input]").value = "cart";
+    element.querySelector("[data-search-input]").dispatchEvent(new Event("input"));
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    await settle();
+    expect(window.reads).toEqual(["search find cart --split-terms"]);
+});
+
+test("the search field clears with its button, and an empty search says what to type", async () => {
+    const {element} = await search(HITS);
+    element.querySelector("[data-search-clear]").click();
+    await settle();
+    expect(element.querySelector("[data-search-input]").value).toBe("");
+    expect(element.querySelectorAll("[data-reader-row]")).toHaveLength(0);
+    expect(element.querySelector("[data-search-empty]").textContent).toContain("Type words to find documents, tasks, memories");
 });

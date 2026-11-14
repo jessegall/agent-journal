@@ -12,10 +12,10 @@ from server.execution.execution_queue import ExecutionQueue
 
 
 class TicketAdmission:
-    """The server's tickets for the journal's own runs: a merge waits in the long lane as its row, every other run
-    takes a short lane ticket of the journal's own class for as long as it runs. A run of a hook or command is its
-    waited child, listed under it and started at once; a run asked for inside a write turn starts at once too, since
-    its wait would hold every other writer."""
+    """The server's tickets for the journal's own runs: a merge waits in the long lane as its row, every
+    other run takes a short lane ticket of the journal's own class for as long as it runs. A run of a hook
+    or command is its waited child, listed under it and started at once; a run asked for inside a write
+    turn starts at once too, since its wait would hold every other writer."""
 
     def __init__(self, queue: ExecutionQueue, priorities: ExecutionPriorities, clock: Clock) -> None:
         self.queue, self.priorities, self.clock = queue, priorities, clock

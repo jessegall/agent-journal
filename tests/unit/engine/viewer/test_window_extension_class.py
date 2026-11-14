@@ -39,7 +39,7 @@ class ShopModule(Module):
 
 
 def test_an_extension_class_gives_the_extension_the_inline_call_gave():
-    inline = WindowExtension("shop.shelves", reads=["stock list"], keys=(WindowKey("stock.*", "stock list --shelf {id}", page_size=20),), tabs=[WindowTab("stock", "Stock", "stock list")])
+    inline = WindowExtension("shop.shelves", reads=["stock list"], keys=tuple([WindowKey("stock.*", "stock list --shelf {id}", page_size=20)]), tabs=[WindowTab("stock", "Stock", "stock list")])
     assert ShelvesStockExtension.declared() == inline
 
 

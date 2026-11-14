@@ -1,0 +1,1 @@
+tests/stories/engine/scope/environment_rows.py::test_a_job_outside_any_request_reads_every_environment -> repeat tests/stories/engine/scope/environment_scope.py::test_a_job_outside_any_request_reads_every_environment

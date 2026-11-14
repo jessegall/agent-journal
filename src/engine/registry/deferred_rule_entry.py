@@ -10,8 +10,8 @@ ANY_HOOK = "*"
 
 @dataclass(frozen=True)
 class DeferredRuleEntry:
-    """A registered deferred rule: its name and class, the deferred state it belongs to, the hook it runs after and the
-    drivers and roles it covers."""
+    """A registered deferred rule: its name and class, the deferred state it belongs to, the hook it runs
+    after and the drivers and roles it covers."""
 
     name: str
     path: DottedPath

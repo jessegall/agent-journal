@@ -12,9 +12,9 @@ PLAN_START_TABLE = "plan-start"
 
 
 class PlanFocusDue(AgentState):
-    """An agent started a plan task since the focus rule last answered it, or starts a plan with this very command: the
-    rule that names the agent's plan focus is asked in its own place only then. It opens exactly where the rule's first
-    return would not stop it."""
+    """An agent started a plan task since the focus rule last answered it, or starts a plan with this very
+    command: the rule that names the agent's plan focus is asked in its own place only then. It opens
+    exactly where the rule's first return would not stop it."""
 
     name = "plans.focus-due"
     tier = StateTier.IN_PLACE

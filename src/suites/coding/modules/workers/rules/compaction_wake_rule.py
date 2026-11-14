@@ -14,9 +14,9 @@ WAKE_WAIT_SECONDS = 10
 
 class CompactionWakeRule(DriverRule):
     """A tick wakes an agent left sitting at its prompt by a compaction, since a /compact typed into its
-    terminal does not start a new turn when it ends, once the compaction is ten seconds old and no tool call has
-    followed it, so an agent already working again is not told to read the overview. It wakes the agent once: the
-    compaction records the wake, whoever typed it."""
+    terminal does not start a new turn when it ends, once the compaction is ten seconds old and no tool
+    call has followed it, so an agent already working again is not told to read the overview. It wakes the
+    agent once: the compaction records the wake, whoever typed it."""
 
     name = "workers.compaction-wake"
     hook = HookEventName.TICK

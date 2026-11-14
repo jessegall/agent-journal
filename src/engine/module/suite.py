@@ -14,12 +14,12 @@ if TYPE_CHECKING:
 
 class Suite:
     """The base of every suite: a swappable set of drivers above the core, each driving the helper type it
-    names, with the modules it lists (its own module first), the suites it requires, whether it takes complete
-    control, the other modules' overlays it then includes, its entrances (each the viewer windows its
-    environments show, the default layout of each viewer page, per driver where one is named, and the layouts it
-    offers per page in the picker), the kinds of helper it registers and the states it gives agents by default. A suite that joins another is no suite to pick: a plugin
-    ships one to add its modules to that suite, whose environments alone run them, so no module names a suite
-    itself."""
+    names, with the modules it lists (its own module first), the suites it requires, whether it takes
+    complete control, the other modules' overlays it then includes, its entrances (each the viewer windows
+    its environments show, the default layout of each viewer page, per driver where one is named, and the
+    layouts it offers per page in the picker), the kinds of helper it registers and the states it gives
+    agents by default. A suite that joins another is no suite to pick: a plugin ships one to add its
+    modules to that suite, whose environments alone run them, so no module names a suite itself."""
 
     name: ClassVar[str]
     modules: ClassVar[Sequence[type[Module]]] = []
@@ -46,6 +46,8 @@ class Suite:
         pages = dict.fromkeys(page for entrance in cls.entrances for page in entrance.presets)
         return {page: tuple(preset for entrance in cls.entrances if page in entrance.presets for preset in entrance.presets[page].layout_presets()) for page in pages}
 
+    # entrances that share a key are one way in, whose windows several modules declare
     @classmethod
     def entrance_windows(cls) -> dict[str, tuple[str, ...]]:
-        return {entrance.key: entrance.window_names() for entrance in cls.entrances}
+        return {key: tuple(dict.fromkeys(name for entrance in cls.entrances if entrance.key == key for name in entrance.window_names()))
+                for key in dict.fromkeys(entrance.key for entrance in cls.entrances)}

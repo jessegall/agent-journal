@@ -8,7 +8,7 @@ from core.modules.tasks.docks.tasks_docks import TASKS_DOCKS
 from core.modules.tasks.skills.declarations.tasks_skills import TASKS_SKILLS
 from core.modules.tasks.states.where_you_stand import WhereYouStand
 from core.modules.tasks.commands.repair_task_states.repair_task_states_handler import RepairTaskStatesHandler
-from core.modules.tasks.ticks.task_state_sweep import SWEEP_SECONDS as TASK_SWEEP_SECONDS, TaskStateSweep
+from core.modules.tasks.ticks.task_state_sweep import SCAN_SECONDS as TASK_SWEEP_SECONDS, TaskStateSweep
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
 from core.modules.agents.support.agent_task_reads import AgentTaskReads

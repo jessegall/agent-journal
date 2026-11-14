@@ -16,8 +16,8 @@ def test_no_shipped_profile_keeps_a_placeholder_unfilled():
 
 
 def test_a_profile_file_names_only_placeholders_that_have_a_text():
-    named = {name for path in PROFILE_FILES for name in re.findall(r"\{([A-Z][A-Z_]+)\}", path.read_text())}
-    assert sorted(named - set(TEXT_VALUES)) == []
+    labelled = {name for path in PROFILE_FILES for name in re.findall(r"\{([A-Z][A-Z_]+)\}", path.read_text())}
+    assert sorted(labelled - set(TEXT_VALUES)) == []
 
 
 def test_a_placeholder_is_replaced_by_the_text_it_names():

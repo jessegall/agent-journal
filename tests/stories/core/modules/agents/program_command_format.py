@@ -25,6 +25,6 @@ def test_a_launch_names_the_managed_settings_file_that_blocks_hooks(new_story, m
     story = new_story(fixture=MainEnvironment)
     managed_file = tmp_path / "managed-settings.json"
     managed_file.write_text(json.dumps({"allowManagedHooksOnly": True}))
-    monkeypatch.setattr(ManagedHooks, "files", (managed_file,))
+    monkeypatch.setattr(ManagedHooks, "files", tuple([managed_file]))
     story.expect_refusal(f'program command claude "{story.home.project_folder}" --launch launch-1 --format json',
                          f"Claude Code's managed settings in {managed_file} allow only managed hooks, so the journal's hooks would not run")

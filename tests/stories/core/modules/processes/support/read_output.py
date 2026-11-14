@@ -3,7 +3,7 @@ import shlex
 import subprocess
 
 from tests.stories.server.support.alias_hook import AliasHook
-from tests.stories.server.support.go_build import GoBuild
+from tests.integration.support.go_build import GoBuild
 
 
 class ReadOutput:

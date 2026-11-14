@@ -91,7 +91,7 @@ class DriverEntries:
         for _, state, parent in declared:
             if not parent:
                 continue
-            parents = {other_parent for _, other, other_parent in declared if other is state}
+            parents = {second_parent for _, second, second_parent in declared if second is state}
             if len(parents) > 1 and "" in parents:
                 raise ModuleError(f"the substate {state.name} of {parent} is also listed as an agent state of its own")
             if len(parents) > 1:
@@ -103,7 +103,7 @@ class DriverEntries:
         return [(owner, state, parent), *(entry for substate in state.substates for entry in self.with_substates(owner, substate, state.name))]
 
     def state_tree(self, states: Sequence[type[AgentState]]) -> list[type[AgentState]]:
-        return [found for state in states for found in (state, *self.state_tree(state.substates))]
+        return [matched for state in states for matched in (state, *self.state_tree(state.substates))]
 
     @staticmethod
     def check_states(entries: Sequence[AgentStateEntry], module_rules: set[str]) -> None:
@@ -115,9 +115,9 @@ class DriverEntries:
         gated_twice = next((rule for rule in gated if gated.count(rule) > 1), None)
         if gated_twice is not None:
             raise ModuleError(f"the rule {gated_twice} is gated by two agent states")
-        both = next((rule for rule in gated if rule in module_rules), None)
-        if both is not None:
-            raise ModuleError(f"the rule {both} is both in an agent state and among a module's driver rules")
+        pair = next((rule for rule in gated if rule in module_rules), None)
+        if pair is not None:
+            raise ModuleError(f"the rule {pair} is both in an agent state and among a module's driver rules")
 
     def rules(self, modules: Sequence[type[Module]]) -> tuple[DriverRuleEntry, ...]:
         declared: list[DriverRuleEntry] = []

@@ -517,7 +517,7 @@
  "assign-rule list": {
   "helper": "allowed",
   "merger": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assign-rule make": {
   "helper": "refused",
@@ -807,7 +807,7 @@
  "command-type make": {
   "helper": "refused",
   "merger": "refused",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "command-type show": {
   "helper": "allowed",
@@ -1312,7 +1312,7 @@
  "hook-call show": {
   "helper": "allowed",
   "merger": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "hook-call stops": {
   "helper": "allowed",
@@ -1807,7 +1807,7 @@
  "message edit": {
   "helper": "refused",
   "merger": "refused",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "message feed": {
   "helper": "refused",
@@ -1942,7 +1942,7 @@
  "output stop": {
   "helper": "allowed",
   "merger": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "output timeout": {
   "helper": "refused",
@@ -2867,7 +2867,7 @@
  "reader unreadable": {
   "helper": "refused",
   "merger": "refused",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reader-request list": {
   "helper": "allowed",
@@ -3407,7 +3407,7 @@
  "setting request": {
   "helper": "refused",
   "merger": "refused",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "setting set": {
   "helper": "refused",

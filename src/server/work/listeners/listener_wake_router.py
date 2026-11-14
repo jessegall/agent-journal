@@ -6,12 +6,12 @@ from server.work.listeners.listener_thread import ListenerThread
 
 
 class ListenerWakeRouter:
-    """Wakes only the listener threads that hear an event the calling thread wrote, never reading the database; a
-    thread that has not built its listeners yet is woken for any name, so it can learn them. A write outside the
-    server is still met by each thread's own period."""
+    """Wakes only the listener threads that hear an event the calling thread wrote, never reading the
+    database; a thread that has not built its listeners yet is woken for any name, so it can learn them. A
+    write outside the server is still met by each thread's own period."""
 
-    def __init__(self, written: WrittenEvents, threads: Sequence[tuple[ListenerThread, Callable[[], ListenerSet | None]]]) -> None:
-        self.written, self.threads = written, threads
+    def __init__(self, saved: WrittenEvents, threads: Sequence[tuple[ListenerThread, Callable[[], ListenerSet | None]]]) -> None:
+        self.written, self.threads = saved, threads
 
     # one thread woken by any name written, for a server that runs every listener on one thread
     @classmethod

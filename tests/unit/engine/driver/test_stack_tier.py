@@ -36,7 +36,7 @@ class SubStack(AgentState):
 
 
 def stack(state: type[AgentState], position: int, rules: Sequence[str], parent: str = "") -> AgentStateEntry:
-    return AgentStateEntry(state.name, DottedPath.class_path(state), "samples", position, int(StateTier.STACK), ("*",), parent, tuple(rules))
+    return AgentStateEntry(state.name, DottedPath.class_path(state), "samples", position, int(StateTier.STACK), tuple(["*"]), parent, tuple(rules))
 
 
 def test_an_open_stack_state_asks_its_rules_under_its_own_name_in_the_stack(tmp_path):

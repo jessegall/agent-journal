@@ -20,8 +20,8 @@ class HeldIndexLock(ProcessExecutor):
     """Runs every git step for real, except that the first steps marking files skip-worktree find the worktree's
     index.lock held by another git of it, as the merge of that worktree holds it."""
 
-    def __init__(self, executor: ProcessExecutor, held_steps: int) -> None:
-        self.executor, self.held_steps, self.refused_steps = executor, held_steps, 0
+    def __init__(self, executor: ProcessExecutor, kept_steps: int) -> None:
+        self.executor, self.held_steps, self.refused_steps = executor, kept_steps, 0
 
     def execute(self, request):
         if SKIP_WORKTREE in request.line and self.refused_steps < self.held_steps:
@@ -35,7 +35,7 @@ def test_a_worker_whose_worktree_index_is_locked_starts_once_the_lock_has_gone(n
     repository = repository_environment(story, real_git=True)
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("CLAUDE.md", "The project's own briefing.\n", "the project's Claude file")
-    lock = HeldIndexLock(story.container.get(ProcessExecutor), held_steps=2)
+    lock = HeldIndexLock(story.container.get(ProcessExecutor), kept_steps=2)
     story.bind(WorktreeGit, WorktreeGit(story.container.get(WorkerFolderRuns), lock, story.container.get(MergeBuilds)))
     worker = dispatched_worker(story)
     expect_value(lock.refused_steps, 2)

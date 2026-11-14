@@ -22,6 +22,9 @@ class NoChecks:
     def every_row(self, reason: str) -> list[object]:
         return []
 
+    def worktree_checks(self, worktree) -> tuple:
+        return ()
+
 
 def worker() -> Agent:
     return Agent(id=7, creator_id=1, session="s-7", program="claude", role="worker", program_model="sonnet")
@@ -29,15 +32,15 @@ def worker() -> Agent:
 
 def facts(tmp_path, worker_files: dict[str, str], base_files: dict[str, str], uncommitted: dict[str, str] | None = None):
     repository, worktree = cut_worktree(tmp_path)
-    own = SampleRepository(worktree_folder(worktree))
+    personal = SampleRepository(worktree_folder(worktree))
     for name, text in worker_files.items():
-        (own.folder / name).parent.mkdir(parents=True, exist_ok=True)
-        own.committed(name, text, f"Worker changes {name}")
+        (personal.folder / name).parent.mkdir(parents=True, exist_ok=True)
+        personal.committed(name, text, f"Worker changes {name}")
     for name, text in base_files.items():
         (repository.folder / name).parent.mkdir(parents=True, exist_ok=True)
         repository.committed(name, text, f"Base changes {name}")
     for name, text in (uncommitted or {}).items():
-        (own.folder / name).write_text(text)
+        (personal.folder / name).write_text(text)
     return BehindFactsReader(WorktreeGit(None, plain_executor(), declared_merge_builds()), NoChecks()).read(worktree, worker())
 
 

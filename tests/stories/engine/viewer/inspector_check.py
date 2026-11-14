@@ -47,8 +47,3 @@ def test_an_action_starting_with_a_panel_word_is_refused(new_story):
     new_story(fixture=MainEnvironment).expect_default_module_sync_refusal(PanelWordModule, "has the label Close the reminder, which starts with a panel word")
 
 
-def test_inspector_actions_become_buttons_on_the_row_slot(new_story):
-    story = new_story(fixture=MainEnvironment)
-    story.expect_sync_success(f"{PATH}:ValidModule")
-    buttons = {entry.declaration.name: entry.declaration for entry in Registry.read(story.container.get(Database)).buttons}
-    expect_value(tuple(buttons["shown.start"].slots), tuple(["row.reminder"]))

@@ -14,7 +14,7 @@ def problems(commands: WorkerCommands) -> list[str]:
 
 
 def test_the_worker_declares_the_operation_line_the_journal_runs_under_it():
-    assert Worker.journal_runs == (WORKER_OPERATION_RUN,)
+    assert Worker.journal_runs == tuple([WORKER_OPERATION_RUN])
 
 
 def test_the_workers_list_passes_the_check_of_the_lines_the_journal_runs_under_it():

@@ -57,8 +57,8 @@ def test_proof_move_refusal():
     checked = PROOF.moved(ProofLifecycle.check)
     guard_checked(PROOF, checked)
     guard_checked(checked, checked.moved(ProofLifecycle.short, shortfall="the rounding has no test"))
-    assert refusal(checked, checked.moved(ProofLifecycle.revise)) == "proof 1 is checked, so it cannot revise: from checked it can only go on with journal proof short 1, journal proof return_checked 1"
-    assert refusal(PROOF, PROOF.moved(ProofLifecycle.revise)) == "proof 1 is shown, so it cannot revise: from shown it can only go on with journal proof commit 1, journal proof queue 1, journal proof check 1, journal proof short 1"
+    assert refusal(checked, checked.moved(ProofLifecycle.revise)) == "proof 1 is checked, so it cannot revise: from checked it can only go on with journal proof short 1"
+    assert refusal(PROOF, PROOF.moved(ProofLifecycle.revise)) == "proof 1 is shown, so it cannot revise: from shown it can only go on with journal proof check 1, journal proof short 1"
 
 
 def test_a_proof_is_committed_from_shown_queued_from_committed_and_a_short_one_is_shown_again_before_its_next_commit():

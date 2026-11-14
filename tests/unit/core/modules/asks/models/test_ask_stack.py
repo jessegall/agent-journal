@@ -28,11 +28,11 @@ def test_parent_listed_refused():
 
 
 def test_per_level_minutes_parsed():
-    assert stack({"profile": "overseer", "answer_minutes": 5, "pass_minutes": 8}).levels() == (AskLevel("overseer", 5, 8),)
+    assert stack({"profile": "overseer", "answer_minutes": 5, "pass_minutes": 8}).levels() == tuple([AskLevel("overseer", 5, 8)])
 
 
 def test_level_without_minutes_uses_defaults():
-    assert stack({"profile": "overseer"}).levels() == (AskLevel("overseer", None, None),)
+    assert stack({"profile": "overseer"}).levels() == tuple([AskLevel("overseer", None, None)])
 
 
 def test_pass_shorter_than_answer_refused():

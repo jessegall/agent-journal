@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 from types import SimpleNamespace
 
-from tests.stories.server.support.go_build import GoBuild
+from tests.integration.support.go_build import GoBuild
 from tests.install.support import TIMEOUT_SECONDS
 from tests.stories.core.modules.plugins.support.event_stories import EVENT_SCRIPTS, REFUSAL, SECOND_JOB_TITLE, TASK_CREATED, WINDOW, PluginPage, plugin_data, script_calls
 from tests.stories.core.modules.plugins.support.plugin_samples import event_plugin_folder

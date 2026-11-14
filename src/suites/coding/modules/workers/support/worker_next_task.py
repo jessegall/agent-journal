@@ -10,11 +10,11 @@ from suites.coding.support.rule_reserved_tasks import RuleReservedTasks
 
 
 class WorkerNextTask:
-    """The task a worker takes next of those it may start: open, waiting on nothing and behind no checkpoint
-    that has not passed. The plan's order is a suggestion: the first by priority and place in the plan goes
-    first, whatever phase the plan is at. A task the worker was told to take next goes before that, then the
-    next task of the worker's plan focus, then a task an assign rule gave it. The focus only changes the order: a
-    worker with nothing to take in its focus takes its other tasks."""
+    """The task a worker takes next of those it may start: open, waiting on nothing and behind no
+    checkpoint that has not passed. The plan's order is a suggestion: the first by priority and place in
+    the plan goes first, whatever phase the plan is at. A task the worker was told to take next goes before
+    that, then the next task of the worker's plan focus, then a task an assign rule gave it. The focus only
+    changes the order: a worker with nothing to take in its focus takes its other tasks."""
 
     def __init__(self, tasks: TaskQuery, plan_order: PlanTaskOrder, choices: NextTaskChoices, focused: FocusedPlanTasks, queries: Queries, open_tasks: WorkerOpenTasks,
                  rule_tasks: RuleReservedTasks) -> None:

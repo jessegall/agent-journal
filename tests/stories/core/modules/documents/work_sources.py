@@ -13,8 +13,8 @@ from engine.registry.registry import Registry
 from core.modules.tasks.models.task import Task
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.modules.documents.support.trail_fixtures import Scenario, feature, pending, read_source_ids, selected_scenario as scenario, scenario as unselected_scenario, viewer_answer
-from tests.stories.server.support.go_build import GoBuild
-from tests.stories.server.support.client_binary import ROOT
+from tests.integration.support.go_build import GoBuild
+from tests.integration.support.client_binary import ROOT
 from tests.stories.server.support.server_client import server_story
 from tests.stories.core.support.agent_labels import agent_number
 @pytest.fixture

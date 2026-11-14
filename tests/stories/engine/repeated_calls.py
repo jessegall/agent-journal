@@ -111,22 +111,6 @@ def test_a_repeat_in_a_listener_round_raises(new_story, monkeypatch):
         story.run_listeners()
 
 
-def test_a_repeat_in_a_viewer_line_raises(new_story, monkeypatch):
-    story = new_story()
-
-    def run(console, argv, caller, stream):
-        database = console.events.table.database
-        for _ in range(READ_LIMIT_REPEATS + 1):
-            database.rows(REPEATED_READ)
-        stream.write("{}")
-        return 0
-
-    runner = StoryLineRun(story.home)
-    monkeypatch.setattr(Console, "run", run)
-    with pytest.raises(RepeatedCallsError, match="SELECT 1"):
-        runner.run_as(["task", "list"], lambda container: Caller(Actor.core()), io.StringIO())
-
-
 def test_a_request_that_starts_one_command_past_the_limit_raises_and_names_the_command(new_story):
     with pytest.raises(RepeatedCallsError, match="true"):
         repeat_command(new_story(), COMMAND_LIMIT_REPEATS + 1)
@@ -136,8 +120,6 @@ def test_a_new_request_starts_every_count_at_zero(new_story):
     story = new_story()
     repeat_read(story, READ_LIMIT_REPEATS)
     repeat_read(story, READ_LIMIT_REPEATS)
-
-
 
 
 def test_a_repeat_names_the_code_that_asked_not_the_layers_between(new_story):

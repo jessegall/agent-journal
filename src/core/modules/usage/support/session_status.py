@@ -10,10 +10,10 @@ WINDOW_TITLES = {"five_hour": "5 hours", "seven_day": "7 days"}
 
 @dataclass(frozen=True)
 class SessionStatus:
-    """What an agent program's status line last reported for a session: its model, its effort, the percent of
-    its context in use, what the session cost so far and the plan's windows; a session with no report has none
-    of them, and a cost no report gave stays unknown, not zero. The program's own model and effort are what the
-    agent's program says when the status line gave none."""
+    """What an agent program's status line last reported for a session: its model, its effort, the percent
+    of its context in use, what the session cost so far and the plan's windows; a session with no report
+    has none of them, and a cost no report gave stays unknown, not zero. The program's own model and effort
+    are what the agent's program says when the status line gave none."""
 
     model: str = ""
     cost_dollars: float | None = None

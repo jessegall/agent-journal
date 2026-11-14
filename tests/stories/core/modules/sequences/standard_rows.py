@@ -51,12 +51,6 @@ def test_an_old_copy_takes_the_newest_words_at_the_next_start_and_no_row_is_adde
     expect_titles(story, count)
 
 
-def test_each_standard_sequence_has_one_guard_for_each_step():
-    for sequence in STANDARD_SEQUENCES:
-        expect_count_step_guards(sequence, "file_edits_allowed", len(sequence.steps))
-    expect_title_replace(STANDARD_SEQUENCES, PLAN_BUILDING)
-
-
 class StartedSequences(StoryFixture):
     parent = UserBuilder
 

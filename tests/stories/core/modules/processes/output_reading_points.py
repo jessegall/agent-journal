@@ -14,9 +14,9 @@ def test_each_tick_after_the_first_with_twenty_five_quiet_runs_stays_under_fifty
     story = new_story(fixture=DevelopmentToolsEnabled)
     for number in range(RUNNING_COUNT):
         started_run(story, f"make test-{number}")
-    reading = OutputReading()
-    reading(story.container)
-    cost = story.tick_handler_points(reading)
+    loading = OutputReading()
+    loading(story.container)
+    cost = story.tick_handler_points(loading)
     story.expected(cost is not None and cost.total < TICK_LIMIT_POINTS, f"the tick cost {cost.line() if cost is not None else 'nothing measured'}")
 
 

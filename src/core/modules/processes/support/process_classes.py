@@ -34,8 +34,8 @@ class ProcessClasses:
         if command.is_journal_merge:
             return self.classes.match(ExecutionSubject(ExecutionSource.SHELL_LINE, starter, category=command.category, process_type=ProcessType.MERGE, line=command.line))
         # a part of unknown category says nothing of the line, which then takes the category the start names
-        known = [part.category for part in command.parts if part.category is not CommandCategory.UNKNOWN]
-        return self.for_categories(known or [command.category], command.line, agent)
+        recorded = [part.category for part in command.parts if part.category is not CommandCategory.UNKNOWN]
+        return self.for_categories(recorded or [command.category], command.line, agent)
 
     # the class of an agent's shell line by the categories of its parts: its longest lane and highest cost
     def for_categories(self, categories: Sequence[CommandCategory], line: str, agent: Agent) -> ExecutionClass:

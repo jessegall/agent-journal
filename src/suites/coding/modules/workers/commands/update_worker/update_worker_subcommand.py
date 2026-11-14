@@ -16,7 +16,7 @@ from suites.coding.modules.workers.support.worker_run_answer import WorkerRunAns
 
 WORKER_WORKTREE_RULE = "a worker updates only its own worktree"
 MAIN_AGENT_ORDER = "the main agent orders the update"
-CLASH_CODE = 1
+CONFLICT_CODE = 1
 
 
 class UpdateWorkerSubcommand(Subcommand[Command[object], UpdateOutcome]):
@@ -52,4 +52,4 @@ class UpdateWorkerSubcommand(Subcommand[Command[object], UpdateOutcome]):
 
     # an update that stops on clashes ends the line with a code that is not 0
     def after_listeners(self, value: object, output: Output) -> int:
-        return CLASH_CODE if isinstance(value, UpdateOutcome) and value.outcome is UpdateResult.CONFLICTS else SUCCESS_CODE
+        return CONFLICT_CODE if isinstance(value, UpdateOutcome) and value.outcome is UpdateResult.CONFLICTS else SUCCESS_CODE

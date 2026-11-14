@@ -126,21 +126,21 @@ def test_raised_ticket_still_counts_as_first_priority():
 
 def test_reserved_past_wait_takes_next_room():
     overdue = replace(ticket(RESERVED, starter=starter(2), entered_second=5), raised_at=seconds_after_start(0))
-    fresh = ticket(RESERVED, starter=starter(3), entered_second=3)
+    new = ticket(RESERVED, starter=starter(3), entered_second=3)
     full = [ticket(AGENT, starter=starter(10 + number)) for number in range(11)]
-    assert ORDER.starting([fresh, overdue], full, seconds_after_start(4), False) == (overdue,)
+    assert ORDER.starting([new, overdue], full, seconds_after_start(4), False) == tuple([overdue])
 
 
 def test_starter_cap_holds_while_other_starter_starts():
-    held = [ticket(AGENT, starter=starter(1)) for _ in range(6)]
-    capped, other = ticket(AGENT, starter=starter(1)), ticket(AGENT, starter=starter(2))
-    assert list(ExecutionOrder(DEFAULT_LANE_LIMITS).starting([capped, other], held, CHECK_TIME, False)) == [other]
+    kept = [ticket(AGENT, starter=starter(1)) for _ in range(6)]
+    capped, second = ticket(AGENT, starter=starter(1)), ticket(AGENT, starter=starter(2))
+    assert list(ExecutionOrder(DEFAULT_LANE_LIMITS).starting([capped, second], kept, CHECK_TIME, False)) == [second]
 
 
 def test_a_run_that_costs_nothing_passes_a_full_starter_cap():
-    held = [ticket(AGENT, starter=starter(1)) for _ in range(6)]
+    kept = [ticket(AGENT, starter=starter(1)) for _ in range(6)]
     free = ticket(AGENT, slot_cost=0, starter=starter(1))
-    assert list(ExecutionOrder(DEFAULT_LANE_LIMITS).starting([free], held, CHECK_TIME, False)) == [free]
+    assert list(ExecutionOrder(DEFAULT_LANE_LIMITS).starting([free], kept, CHECK_TIME, False)) == [free]
 
 
 def test_class_at_limit_does_not_block_a_build_behind():
@@ -163,8 +163,8 @@ def test_halted_lane_starts_none_and_counts_no_wait():
 
 
 def test_immediate_ceiling_is_flagged_not_refused():
-    many = [ticket(IMMEDIATE, starter=starter(number)) for number in range(65)]
-    assert ORDER.over_ceiling(many) and started_tickets([ticket(IMMEDIATE)], many) != []
+    several = [ticket(IMMEDIATE, starter=starter(number)) for number in range(65)]
+    assert ORDER.over_ceiling(several) and started_tickets([ticket(IMMEDIATE)], several) != []
 
 
 def test_nothing_waits_forever_under_a_steady_stream():
@@ -182,4 +182,4 @@ def test_nothing_waits_forever_under_a_steady_stream():
 def test_a_starter_with_nothing_running_starts_a_run_costing_more_than_its_cap():
     small_lane = replace(DEFAULT_LANE_LIMITS, capacities={**DEFAULT_LANE_LIMITS.capacities, ExecutionLane.LONG: 4}, starter_caps={**DEFAULT_LANE_LIMITS.starter_caps, ExecutionLane.LONG: 2})
     test_run = ticket(ExecutionPriority.AGENT, ExecutionLane.LONG, slot_cost=4)
-    assert ExecutionOrder(small_lane).starting([test_run], [], seconds_after_start(0), False) == (test_run,)
+    assert ExecutionOrder(small_lane).starting([test_run], [], seconds_after_start(0), False) == tuple([test_run])

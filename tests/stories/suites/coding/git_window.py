@@ -1,7 +1,6 @@
 import pytest
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
-from tests.stories.server.window_data_route import window_data
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 
 
@@ -14,11 +13,11 @@ def test_the_git_window_reads_its_keys_together_then_pages_only_commits(new_stor
     repository.git("commit", "--allow-empty", "-m", "The next change")
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
-        status, answer = window_data(server, cookie, window="coding.git", query="environment=main&commits.limit=1")
+        status, answer = server.window_data(cookie, window="coding.git", query="environment=main&commits.limit=1")
         story.expect_rows(status == 200, set(answer["keys"]) == {"branches", "commits", "pulls"},
                           all(key_answer["code"] == 0 for key_answer in answer["keys"].values()),
                           answer["keys"]["commits"]["value"]["rows"][0]["subject"] == "The next change",
                           not answer["keys"]["commits"]["value"]["is_last_page"])
-        status, older = window_data(server, cookie, keys="commits", window="coding.git", query="environment=main&commits.limit=1&commits.skip=1")
+        status, older = server.window_data(cookie, keys="commits", window="coding.git", query="environment=main&commits.limit=1&commits.skip=1")
         story.expect_rows(status == 200, set(older["keys"]) == {"commits"}, older["keys"]["commits"]["value"]["is_last_page"],
                           older["keys"]["commits"]["value"]["rows"][0]["subject"] == "The first commit")

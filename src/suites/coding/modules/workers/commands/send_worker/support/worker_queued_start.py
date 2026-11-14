@@ -19,8 +19,8 @@ class WorkerQueuedStart:
     main agent's next batch; a worker left with only tasks that wait on a task nobody works on is named to the
     main agent with that task."""
 
-    def __init__(self, tasks: TaskQuery, bus: Bus, queries: Queries, outside_waits: OutsideWaits, labels: AssigneeLabel, nudger: Nudger) -> None:
-        self.tasks, self.bus, self.queries, self.outside_waits, self.labels, self.nudger = tasks, bus, queries, outside_waits, labels, nudger
+    def __init__(self, tasks: TaskQuery, bus: Bus, queries: Queries, external_waits: OutsideWaits, labels: AssigneeLabel, nudger: Nudger) -> None:
+        self.tasks, self.bus, self.queries, self.outside_waits, self.labels, self.nudger = tasks, bus, queries, external_waits, labels, nudger
 
     def start(self, worker_id: int, context: Context) -> None:
         queued_ids = tuple(task.id for task in self.tasks.assigned_ready(worker_id))
@@ -35,6 +35,6 @@ class WorkerQueuedStart:
         main_agent = MainAgentFinder.latest(self.queries)
         if blocker is None or main_agent is None:
             return
-        held = ", ".join(f"task:{task.id}" for task in waiting)
-        text = f"{self.labels.text(worker_id)} has only {held}, and all wait on task:{blocker.id}, which no worker works on: {self.labels.task_label(blocker)} must do it"
+        kept = ", ".join(f"task:{task.id}" for task in waiting)
+        text = f"{self.labels.text(worker_id)} has only {kept}, and all wait on task:{blocker.id}, which no worker works on: {self.labels.task_label(blocker)} must do it"
         self.nudger.send_text(main_agent.id, text, OUTSIDE_WAIT_SOURCE, replace(context, actor=Actor.core()))

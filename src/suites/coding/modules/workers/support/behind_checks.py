@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from engine.setting.setting_values import SettingValues
 from engine.time.timestamp import Timestamp
@@ -21,7 +22,8 @@ class BehindChecks:
     last look, and a check only at the set number of commits behind, with none open, and after a check left
     alone only once the worktree fell the recheck number of commits further behind."""
 
-    def __init__(self, queries: Queries, settings: SettingValues) -> None:
+    def __init__(self, queries: Queries, settings: SettingValues, kept: KeptRows) -> None:
+        self.kept = kept
         self.queries, self.settings = queries, settings
 
     def is_enabled(self) -> bool:
@@ -42,11 +44,16 @@ class BehindChecks:
     def opens(self, worktree: Worktree, commits_lagging: int) -> bool:
         if commits_lagging < self.settings.number(STALE_CHECK_COMMITS):
             return False
-        checks = tuple(reversed(tuple(self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).every_row(CHECKS_REASON))))
+        checks = tuple(reversed(self.worktree_checks(worktree)))
         if any(check.state in ACTIVE_STATES for check in checks):
             return False
         remaining = next((check for check in checks if check.state is BehindCheckState.IGNORED), None)
         return remaining is None or commits_lagging >= remaining.commits_lagging + self.settings.number(STALE_RECHECK_COMMITS)
 
     def is_passable(self, worktree: Worktree) -> bool:
-        return any(check.is_passable() for check in self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).every_row(CHECKS_REASON))
+        return any(check.is_passable() for check in self.worktree_checks(worktree))
+
+    # one read per request: a command that weighs the checks and its handler that decides on them share it
+    def worktree_checks(self, worktree: Worktree) -> tuple[WorktreeBehindCheck, ...]:
+        checks = self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id)
+        return self.kept.read(checks, lambda: tuple(checks.every_row(CHECKS_REASON)), name="workers.worktree_behind_checks")

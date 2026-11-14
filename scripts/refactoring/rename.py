@@ -222,6 +222,20 @@ class NamingRules:
             return re.compile("^(" + "|".join(re.escape(str(name)) for name in names) + ")$")
         return None
 
+    # the kinds a rename's old name can stand for, from its form alone: a banned new name is refused before mypy reads
+    # the code, when it is banned for every kind the form allows
+    def early_refusal(self, old: str, new: str) -> str:
+        if old.startswith("*"):
+            kinds = ["parameter", "local"]
+        elif ":" in old:
+            kinds = ["parameter", "local"]
+        elif "." not in old and old[:1].isupper():
+            kinds = ["class"]
+        else:
+            kinds = ["method", "member", "module"]
+        refusals = [self.refusal(kind, new) for kind in kinds]
+        return f"{old} -> {new}: refused: {refusals[0]}" if all(refusals) else ""
+
     def refusal(self, name_type: str, name: str) -> str:
         for pattern, rejects in self.patterns[SELECTORS[name_type]]:
             match = pattern.search(name)
@@ -630,7 +644,12 @@ def main(arguments: list[str]) -> int:
     if not pairs:
         print(__doc__)
         return 2
-    renamer = Renamer(Project(root), NamingRules(root))
+    rules = NamingRules(root)
+    early = [line for old, new in pairs if (line := rules.early_refusal(old, new))]
+    if early:
+        print("\n".join(early) + "\nnothing written: a new name is banned, found before reading the code")
+        return 1
+    renamer = Renamer(Project(root), rules)
     plans: list[Plan] = []
     for old, new in pairs:
         plan = renamer.plan(old, new)

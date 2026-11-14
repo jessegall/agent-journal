@@ -156,7 +156,7 @@ def test_migrated_comment_opens_original_target(old_release_scenario):
     scenario.story.expect_rows(scenario.person("viewer.shell", "doc", "show", "1")["id"] == 1)
 
 
-def test_plan_start_pointer_is_read_before_work(new_story):
+def test_a_plan_started_in_the_viewer_points_the_agent_to_a_context_with_its_messages(new_story):
     scenario = Scenario(new_story(fixture=ApprovedTrailPlan))
     scenario.person("viewer.shell", "plan", "start", "1")
     scenario.tick()

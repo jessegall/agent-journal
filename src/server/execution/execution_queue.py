@@ -12,7 +12,7 @@ from server.errors.client_left_error import ClientLeftError
 from server.errors.lane_busy_error import LaneBusyError
 from server.execution.instant_entry import InstantEntry
 
-LOOK_AGAIN_SECONDS = 0.5
+RECHECK_SECONDS = 0.5
 
 
 @dataclass
@@ -27,10 +27,10 @@ class QueuedTicket:
 
 
 class ExecutionQueue:
-    """The server's instant lane, kept in memory: a hook, command or viewer request starts when the one decision
-    gives it room, the immediate ones at once; a session runs one ticket at a time, in the order it asked; a ticket
-    leaves the lane on any exit, an exception included, and when its client has gone; a wait past its limit is
-    refused, naming what held the lane."""
+    """The server's instant lane, kept in memory: a hook, command or viewer request starts when the one
+    decision gives it room, the immediate ones at once; a session runs one ticket at a time, in the order
+    it asked; a ticket leaves the lane on any exit, an exception included, and when its client has gone; a
+    wait past its limit is refused, naming what held the lane."""
 
     def __init__(self, order: ExecutionOrder, clock: Clock, crash_log: Callable[[str], None] = lambda text: None) -> None:
         self.order, self.clock, self.crash_log = order, clock, crash_log
@@ -70,7 +70,7 @@ class ExecutionQueue:
             waited = self.clock.epoch_seconds() - queued.entered_at
             if wait_limit_seconds is not None and waited >= wait_limit_seconds and not queued.ticket.priority.is_unlimited:
                 raise LaneBusyError.waited(waited, self.holders())
-            self.changed.wait(LOOK_AGAIN_SECONDS if wait_limit_seconds is None else max(0.0, min(LOOK_AGAIN_SECONDS, wait_limit_seconds - waited)))
+            self.changed.wait(RECHECK_SECONDS if wait_limit_seconds is None else max(0.0, min(RECHECK_SECONDS, wait_limit_seconds - waited)))
 
     # a waited child starts at once, since its parent holds its place; a session's tickets go one at a time and in
     # the order they asked; of the rest the one decision picks
@@ -78,10 +78,10 @@ class ExecutionQueue:
         if queued.ticket.parent is not None:
             return True
         busy_owners = {running.owner for running in self.running if running.owner}
-        first_of_owner = {}
+        earliest_owner = {}
         for waiting in self.waiting:
-            first_of_owner.setdefault(waiting.owner, waiting)
-        eligible = [waiting for waiting in self.waiting if not waiting.owner or (waiting.owner not in busy_owners and first_of_owner[waiting.owner] is waiting)]
+            earliest_owner.setdefault(waiting.owner, waiting)
+        eligible = [waiting for waiting in self.waiting if not waiting.owner or (waiting.owner not in busy_owners and earliest_owner[waiting.owner] is waiting)]
         if queued not in eligible:
             return False
         starting = self.order.starting([waiting.ticket for waiting in eligible], [running.ticket for running in self.running], self.clock.timestamp(), False)

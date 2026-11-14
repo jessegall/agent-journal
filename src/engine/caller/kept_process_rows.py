@@ -10,9 +10,9 @@ KEPT_SECONDS = 2.0
 
 
 class KeptProcessRows:
-    """The process table kept for a moment and shared by every request of the process, so a burst of commands runs
-    ps once instead of once each. The table is read again when it is older than KEPT_SECONDS, when the asking pid or
-    a parent on its chain is not in it, or when the table's way of reading changed."""
+    """The process table kept for a moment and shared by every request of the process, so a burst of
+    commands runs ps once instead of once each. The table is read again when it is older than KEPT_SECONDS,
+    when the asking pid or a parent on its chain is not in it, or when the table's way of reading changed."""
 
     def __init__(self, clock: Clock) -> None:
         self.clock = clock
@@ -46,8 +46,8 @@ class KeptProcessRows:
 
     # a chain that stops at a pid the kept table lacks would end early, so such a chain reads the table again
     def reaches_the_root(self, pid: int) -> bool:
-        seen: set[int] = set()
-        while pid in self.kept and pid not in seen:
-            seen.add(pid)
+        viewed: set[int] = set()
+        while pid in self.kept and pid not in viewed:
+            viewed.add(pid)
             pid = self.kept[pid].parent_pid
-        return pid in seen or pid <= 1
+        return pid in viewed or pid <= 1

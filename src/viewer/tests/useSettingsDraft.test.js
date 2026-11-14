@@ -191,3 +191,12 @@ test("a list the journal sends as JSON text is held as its entries", async () =>
     await draft.apply();
     expect(run.mock.calls.at(-1)[0].at(-1)).toBe('spelled=["a","b","c"]');
 });
+
+test("a list setting is handed out as a list even when the draft was given another form, and the console names it", () => {
+    const {draft} = drafted();
+    const named = vi.spyOn(console, "error").mockImplementation(() => {});
+    draft.set("names", "a, b");
+    expect(draft.value("names")).toEqual(["a", "b"]);
+    expect(named).toHaveBeenCalledWith('the settings draft holds names as "a, b", not as a list');
+    named.mockRestore();
+});

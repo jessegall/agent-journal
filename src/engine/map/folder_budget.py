@@ -9,6 +9,10 @@ STANDARD_FOLDERS = {
     "bindings", "commands", "conditions", "drivers", "enums", "errors", "expressions", "guards", "listeners", "migrations", "models", "modules", "overlays",
     "providers", "rules", "suites", "tunnels", "upgrade",
 }
+# a folder of one thing's declarations, such as a window's keys: a list of equals, at the level of the thing it declares for
+DECLARATION_FOLDERS = {"keys", "declarations"}
+# the folders a module keeps its parts in: a module's own folder is the list of them, so they are not counted against its width
+MODULE_PART_FOLDERS = {"docks", "entrances", "queries", "seeders", "settings", "skills", "support", "templates", "ticks", "windows"}
 SKIPPED_FOLDERS = {"__pycache__", "node_modules", "dist", "web", "viewer"}
 LAYER_ROOT_PARTS = {"engine": 1, "server": 1, "install": 1, "core": 3, "tunnels": 2}
 SUITE_ROOT_PARTS, SUITE_MODULE_ROOT_PARTS = 2, 4
@@ -35,7 +39,7 @@ class FolderBudget:
     def wide_folders(self) -> list[str]:
         folders = [self.source, *(folder for folder in sorted(FileAccess.rglob(self.source, "*")) if FileAccess.is_dir(folder) and self.is_judged(folder))]
         return [f"{self.relative(folder)} holds more than {WIDTH_LIMIT_ENTRIES} entries" for folder in folders
-                if folder.name not in STANDARD_FOLDERS and folder != self.source / "engine" and len(self.entries(folder)) > WIDTH_LIMIT_ENTRIES]
+                if folder.name not in STANDARD_FOLDERS | DECLARATION_FOLDERS and folder != self.source / "engine" and len(self.counted_entries(folder)) > WIDTH_LIMIT_ENTRIES]
 
     def deep_files(self) -> list[str]:
         files = [path for path in sorted(FileAccess.rglob(self.source, "*.py")) if self.is_judged(path) and path.name != "__init__.py"]
@@ -43,9 +47,16 @@ class FolderBudget:
 
     def layer_depth(self, path: Path) -> int:
         parts = path.relative_to(self.source).parts
+        set_parent = 1 if path.parent.name in DECLARATION_FOLDERS else 0
         if parts[0] == "suites":
-            return len(parts) - (SUITE_MODULE_ROOT_PARTS if len(parts) > 2 and parts[2] == "modules" else SUITE_ROOT_PARTS)
-        return len(parts) - LAYER_ROOT_PARTS.get(parts[0], 1)
+            return len(parts) - set_parent - (SUITE_MODULE_ROOT_PARTS if len(parts) > 2 and parts[2] == "modules" else SUITE_ROOT_PARTS)
+        return len(parts) - set_parent - LAYER_ROOT_PARTS.get(parts[0], 1)
+
+    def counted_entries(self, folder: Path) -> list[Path]:
+        entries = self.entries(folder)
+        if folder.parent.name != "modules":
+            return entries
+        return [path for path in entries if path.name not in STANDARD_FOLDERS | MODULE_PART_FOLDERS]
 
     def entries(self, folder: Path) -> list[Path]:
         return [path for path in FileAccess.iterdir(folder) if path.name not in SKIPPED_FOLDERS and path.name != "__init__.py" and (FileAccess.is_dir(path) or path.suffix == ".py")]

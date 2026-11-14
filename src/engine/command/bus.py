@@ -34,8 +34,8 @@ class Bus:
         if self.database.has_transaction:
             raise TransactionError(f"{command.label()} was run at the top inside a transaction: dispatch it with the context instead")
         handler = self.handler(command)
-        handler.prepare(command, actor)
         with self.scopes.command_scope(handler.disabled_scopes, actor, environment_id):
+            handler.prepare(command, actor)
             runs = self.create_deferred_runs(command, handler, plugin_script)
             if not command.lock:
                 with self.database.savepoint(command.label()):

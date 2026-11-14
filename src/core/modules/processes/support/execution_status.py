@@ -13,9 +13,9 @@ from core.modules.processes.support.stored_execution_classes import StoredExecut
 
 
 class ExecutionStatus:
-    """The instant, short and long lanes as a person reads them: each lane's load against its capacity, what runs,
-    what waits and why, and the waits of the last hour; the instant lane as the server holds it and the others from
-    the process rows, so reading it takes no write turn."""
+    """The instant, short and long lanes as a person reads them: each lane's load against its capacity,
+    what runs, what waits and why, and the waits of the last hour; the instant lane as the server holds it
+    and the others from the process rows, so reading it takes no write turn."""
 
     def __init__(self, slots: RunSlots, tickets: ExecutionTickets, classes: StoredExecutionClasses, halt: RunQueueHalt, clock: Clock, waits: PriorityWaits, home: JournalHome) -> None:
         self.slots, self.tickets, self.classes, self.halt, self.clock, self.waits, self.home = slots, tickets, classes, halt, clock, waits, home
@@ -40,15 +40,15 @@ class ExecutionStatus:
         return loads
 
     def instant_lane(self) -> LaneLoad:
-        reading = InstantLaneReading.shared(self.home)
+        loading = InstantLaneReading.shared(self.home)
         entries = [(bool(entry["is_running"]), LaneEntry(str(entry["line"]), str(entry["class"]), str(entry["priority"]), str(entry["starter"]), float(str(entry["seconds"])),
-                                                         "" if entry["is_running"] else "waits for room", parent_line=str(entry["parent_line"]))) for entry in reading.entries()]
+                                                         "" if entry["is_running"] else "waits for room", parent_line=str(entry["parent_line"]))) for entry in loading.entries()]
         running = tuple(entry for is_running, entry in entries if is_running)
-        return LaneLoad(ExecutionLane.INSTANT.value, len(running), reading.capacity, running=running, waiting=tuple(entry for is_running, entry in entries if not is_running))
+        return LaneLoad(ExecutionLane.INSTANT.value, len(running), loading.capacity, running=running, waiting=tuple(entry for is_running, entry in entries if not is_running))
 
     def entry(self, ticket: ExecutionTicket, reason: str = "") -> LaneEntry:
-        raised_from = ticket.first_priority.label if ticket.priority != ticket.first_priority else ""
-        return LaneEntry(ticket.line, ticket.execution_class.name, ticket.priority.label, ticket.starter.label, ticket.entered_at.elapsed_seconds(self.clock.timestamp()), reason, raised_from)
+        raised = ticket.first_priority.label if ticket.priority != ticket.first_priority else ""
+        return LaneEntry(ticket.line, ticket.execution_class.name, ticket.priority.label, ticket.starter.label, ticket.entered_at.elapsed_seconds(self.clock.timestamp()), reason, raised)
 
     def reason(self, ticket: ExecutionTicket, lane: ExecutionLane) -> str:
         if ticket.has_open_reader_request:

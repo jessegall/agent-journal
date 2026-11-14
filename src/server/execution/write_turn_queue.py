@@ -28,31 +28,31 @@ class WriteTurnQueue(WriteTurns):
 
     def acquire(self) -> None:
         execution = CurrentExecution.read()
-        now = self.clock.epoch_seconds()
-        new_ask = WaitingAsk(execution, execution.priority, next(self.numbers), threading.current_thread(), now, now)
+        current_time = self.clock.epoch_seconds()
+        new_question = WaitingAsk(execution, execution.priority, next(self.numbers), threading.current_thread(), current_time, current_time)
         with self.changed:
-            self.waiting.append(new_ask)
+            self.waiting.append(new_question)
             try:
-                self.wait_turn(new_ask)
+                self.wait_turn(new_question)
             finally:
-                self.waiting.remove(new_ask)
+                self.waiting.remove(new_question)
                 self.changed.notify_all()
-            self.holder, self.turn_started_at = new_ask, self.clock.epoch_seconds()
+            self.holder, self.turn_started_at = new_question, self.clock.epoch_seconds()
 
-    def wait_turn(self, new_ask: WaitingAsk) -> None:
+    def wait_turn(self, new_question: WaitingAsk) -> None:
         while True:
             current_time = self.clock.epoch_seconds()
             if self.holder is not None and not self.holder.thread.is_alive():
                 self.holder = None
             for waiting in self.waiting:
                 waiting.raise_priority(current_time)
-            if self.holder is None and new_ask is min(self.waiting, key=lambda waiting: waiting.place):
+            if self.holder is None and new_question is min(self.waiting, key=lambda waiting: waiting.place):
                 return
-            waited = current_time - new_ask.requested_at
-            if waited >= self.wait_limit_seconds and not new_ask.priority.is_unlimited:
+            waited = current_time - new_question.requested_at
+            if waited >= self.wait_limit_seconds and not new_question.priority.is_unlimited:
                 raise WriteTurnBusyError.waited(waited, [self.holder_text()])
             # an unlimited ask looks again each second for a holder whose thread died, never a negative time that spins
-            limit_delay = HOLDER_CHECK_SECONDS if new_ask.priority.is_unlimited else self.wait_limit_seconds - waited
+            limit_delay = HOLDER_CHECK_SECONDS if new_question.priority.is_unlimited else self.wait_limit_seconds - waited
             self.changed.wait(min(limit_delay, min(waiting.raise_delay(current_time) for waiting in self.waiting)))
 
     # the ask that holds the turn, or, between two holders, the earlier ask the turn goes to next

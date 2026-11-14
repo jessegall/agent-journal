@@ -13,7 +13,7 @@ from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.ticks.worker_tests.unlaunched_worker_test_runs import UnlaunchedWorkerTestRuns
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.server_client import server_story, started_server
-from tests.stories.server.support.file_changes import FileChanges
+from tests.integration.support.file_changes import FileChanges
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 

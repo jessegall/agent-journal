@@ -1,6 +1,6 @@
 <script setup>
-import {computed, ref} from "vue";
-import {Btn, Dialog, ListReaderLayout, Reader, SearchBar, Skeleton, copying, peekRef, tableOfWord, useWindow} from "@journal/window-kit";
+import {computed, onUnmounted, ref, watch} from "vue";
+import {Btn, Dialog, ListReaderLayout, Markdown, Reader, SearchBar, Skeleton, copying, peekRef, tableOfWord, titleOfWord, useWindow} from "@journal/window-kit";
 
 const context = useWindow();
 const terms = ref("");
@@ -13,11 +13,14 @@ const chosen = ref(null);
 // the models a search can be narrowed to: those the last answer held and those already picked
 const models = computed(() => [...new Set([...(answer.value?.hits || []).map((hit) => hit.cli_name), ...picked.value])].sort());
 
-const kindOf = (name) => name.charAt(0).toUpperCase() + name.slice(1);
-// the results are grouped by kind, and under a kind a row says only its number and what matched
-const items = computed(() => (answer.value?.hits || []).map((hit) => ({id: `${hit.cli_name}:${hit.id}`, title: `${hit.cli_name} ${hit.id}`, desc: hit.excerpt, group: kindOf(hit.cli_name), hit})));
+// a kind's name over its group is the plural of its name in words: Documents, Tasks, Memories
+const groupOf = (name) => titleOfWord(name).replace(/y$/, "ie") + "s";
+const referenceOf = (hit) => `${titleOfWord(hit.cli_name)} ${hit.id}`;
+// the results are grouped by kind; a row says the row's title, what matched and its reference
+const items = computed(() => (answer.value?.hits || []).map((hit) => ({id: `${hit.cli_name}:${hit.id}`, title: hit.title || referenceOf(hit), desc: hit.excerpt, group: groupOf(hit.cli_name), hit})));
 
 async function find() {
+    clearTimeout(typing);
     const words = terms.value.trim().split(/\s+/).filter(Boolean);
     if (!words.length) return void (answer.value = null);
     searching.value = true;
@@ -31,6 +34,16 @@ async function find() {
     failure.value = result.failure.value;
     answer.value = failure.value ? null : result.data.value;
 }
+
+// the search runs a moment after the typing stops, and at once on Enter or when the field is cleared
+const TYPING_PAUSE_MS = 300;
+let typing = null;
+watch(terms, (words) => {
+    clearTimeout(typing);
+    if (!words.trim()) return void find();
+    typing = setTimeout(find, TYPING_PAUSE_MS);
+}, {flush: "sync"});
+onUnmounted(() => clearTimeout(typing));
 
 function toggle(model) {
     const next = new Set(picked.value);
@@ -58,11 +71,9 @@ const place = (item) => ({
 </script>
 
 <template>
-    <ListReaderLayout v-model:chosen="chosen" :items="items" :list-width="420" :place="place" :empty-title="answer ? 'No match' : 'Search'" pick-line="No result chosen" data-search>
+    <ListReaderLayout v-model:chosen="chosen" :items="items" :list-width="420" :place="place" :empty-title="answer ? 'No match' : 'Search the journal'" pick-line="No result chosen" data-search>
         <template #top>
-            <SearchBar v-model="terms" placeholder="Search" @keydown.enter.prevent="find">
-                <Btn variant="primary" small data-search-go @click="find">Search</Btn>
-            </SearchBar>
+            <SearchBar v-model="terms" placeholder="Search" @keydown.enter.prevent="find" />
             <template v-if="models.length">
                 <div class="search-chips">
                     <template v-for="model in models" :key="model">
@@ -88,14 +99,17 @@ const place = (item) => ({
                 </Dialog>
             </template>
         </template>
+        <template #line="{item}">
+            <span class="search-line"><span>{{ item.desc }}</span><span class="search-reference" data-search-reference>{{ referenceOf(item.hit) }}</span></span>
+        </template>
         <template #empty>
             <template v-if="searching"><Skeleton shape="rows" /></template>
-            <template v-else-if="!answer">Type words and press Enter. A result holds every word.</template>
+            <template v-else-if="!answer"><span data-search-empty>Type words to find documents, tasks, memories and every other row. A result holds every word.</span></template>
         </template>
         <template #reader="{item}">
-            <Reader :title="item.title" :number="kindOf(item.hit.cli_name)" :facts="answer.closest ? [{name: 'holds', label: 'Holds', value: item.hit.matched_tokens.join(', ')}] : []" data-search-reader>
+            <Reader :title="item.title" :number="referenceOf(item.hit)" :facts="answer.closest ? [{name: 'holds', label: 'Holds', value: item.hit.matched_tokens.join(', ')}] : []" data-search-reader>
                 <template #primary><Btn small variant="primary" data-search-open @click="openHit(item.hit)">Open</Btn></template>
-                <p class="search-text" data-search-text>{{ item.hit.excerpt }}</p>
+                <Markdown :text="item.hit.body || item.hit.excerpt" data-search-text />
             </Reader>
         </template>
     </ListReaderLayout>
@@ -127,6 +141,23 @@ const place = (item) => ({
 .search-text {
     margin: 0;
     white-space: pre-wrap;
+}
+
+.search-line {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.search-line > span:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.search-reference {
+    color: var(--accent);
+    font-size: 11px;
 }
 
 .search-note {

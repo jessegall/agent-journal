@@ -22,9 +22,10 @@ TERMINALS_FOLDER = "terminals"
 
 
 class PruneRuntimeFoldersHandler(Handler[PruneRuntimeFolders, int]):
-    """Removes a file scan state folder untouched for three days, since a scan touches its folder each time, and
-    the terminal log of an agent that ended, once the log is three days old, and a socket of an older program launch that
-    nothing answers on, left in the journal folder by a launch that was killed, once it is an hour old."""
+    """Removes a file scan state folder untouched for three days, since a scan touches its folder each
+    time, and the terminal log of an agent that ended, once the log is three days old, and a socket of an
+    older program launch that nothing answers on, left in the journal folder by a launch that was killed,
+    once it is an hour old."""
 
     command = PruneRuntimeFolders
     runs_once = True

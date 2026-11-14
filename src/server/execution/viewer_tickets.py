@@ -10,8 +10,9 @@ from server.execution.execution_queue import ExecutionQueue
 
 
 class ViewerTickets:
-    """A viewer request's ticket of the instant lane, at its window's priority: the first window at once, the rest
-    in the lane's order. A request that waits past its limit runs all the same, as a viewer request always has."""
+    """A viewer request's ticket of the instant lane, at its window's priority: the first window at once,
+    the rest in the lane's order. A request that waits past its limit runs all the same, as a viewer
+    request always has."""
 
     def __init__(self, queue: ExecutionQueue, priorities: ExecutionPriorities, clock: Clock, wait_limit_seconds: float) -> None:
         self.queue, self.priorities, self.clock, self.wait_limit_seconds = queue, priorities, clock, wait_limit_seconds
@@ -19,9 +20,9 @@ class ViewerTickets:
     @contextmanager
     def admitted(self, line: str, window: WindowPriority = WindowPriority.NORMAL, is_hidden: bool = False) -> Generator[None]:
         ticket = self.priorities.viewer_ticket(line, window, self.clock.timestamp(), is_hidden)
-        with ExitStack() as held:
+        with ExitStack() as kept:
             try:
-                ticket = held.enter_context(self.queue.admitted(ticket, wait_limit_seconds=self.wait_limit_seconds)).ticket
+                ticket = kept.enter_context(self.queue.admitted(ticket, wait_limit_seconds=self.wait_limit_seconds)).ticket
             except LaneBusyError:
                 pass
             with CurrentExecution(ticket.priority, "viewer", line, ticket).applied():

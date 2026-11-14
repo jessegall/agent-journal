@@ -16,7 +16,7 @@ from core.modules.processes.models.process import Process
 from engine.testing.stories.story import Story
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.server.support.go_build import GoBuild
+from tests.integration.support.go_build import GoBuild
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import (
     CART_CHANGE, FIRST_PROOF, dispatched_worker, repository_environment,

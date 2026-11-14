@@ -8,10 +8,10 @@ from engine.viewer.layout_shape import LayoutShape
 
 @dataclass(frozen=True)
 class SuiteEntry:
-    """A registered suite: its name, the module that ships it, the suites it requires, whether it takes complete
-    control, the other modules' overlays it includes, its viewer windows, its default layouts and its layout
-    presets per page, the windows of each of its entrances, and the states it gives agents by default, its joining
-    suites' included."""
+    """A registered suite: its name, the module that ships it, the suites it requires, whether it takes
+    complete control, the other modules' overlays it includes, its viewer windows, its default layouts and
+    its layout presets per page, the windows of each of its entrances, and the states it gives agents by
+    default, its joining suites' included."""
 
     name: str
     module: str

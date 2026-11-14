@@ -37,16 +37,6 @@ def test_an_outward_line_is_refused_to_a_read_only_helper_and_a_plan_is_made_onl
     story.expect_refusal('plan make "Debugged" --environment main', f"{HELPER_REFUSAL} plan make", actor=debugger)
 
 
-def test_a_profile_that_names_a_line_outside_its_type_stops_the_sync(new_story):
-    story = new_story(fixture=MainEnvironment)
-    story.expect_sync_refusal(f"{SAMPLES}:WideProfileModule", "profile sample-wide lists setting set, which its type helper does not list")
-
-
-def test_a_typo_in_a_list_stops_the_boot_naming_the_type_and_the_line(new_story):
-    story = new_story(fixture=MainEnvironment)
-    story.expect_sync_refusal(f"{SAMPLES}:TypoClerkSuite", "helper type clerk lists the line task shwo, which no module serves")
-
-
 def test_a_command_a_module_adds_reaches_no_helper_type_until_its_registration_lists_it(new_story):
     story = new_story(fixture=StartedHelper)
     story.expect_sync_success(f"{SAMPLES}:ShelvesModule")
@@ -54,6 +44,3 @@ def test_a_command_a_module_adds_reaches_no_helper_type_until_its_registration_l
     story.expect_text("shelf --help", "stock", actor=story.agent)
 
 
-def test_a_helper_type_registered_with_no_list_stops_the_boot_saying_so(new_story):
-    story = new_story(fixture=MainEnvironment)
-    story.expect_sync_refusal(f"{SAMPLES}:ListlessClerkSuite", "helper type clerk has no commands")

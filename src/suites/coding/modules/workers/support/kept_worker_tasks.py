@@ -37,8 +37,8 @@ class KeptWorkerTasks:
 
     def __init__(self, queries: Queries, repository: Repository, worktrees: WorktreeQuery, git: WorktreeGit, nudger: Nudger,
                  environments: EnvironmentRows, sources: WorkSources, copies: WorkerTaskCopies,
-                 proof_queue: WorkerProofQueue, scopes: Scopes, kept: KeptRows, dependency_waits: DependencyWaits, assignments: WorkerAssignments, reservations: MainReservedTasks, task_assignments: Assignments, assigned_worker_tasks: AssignedWorkerTasks, outside_waits: OutsideWaits) -> None:
-        self.task_assignments, self.assigned_worker_tasks, self.outside_waits = task_assignments, assigned_worker_tasks, outside_waits
+                 proof_queue: WorkerProofQueue, scopes: Scopes, kept: KeptRows, dependency_waits: DependencyWaits, assignments: WorkerAssignments, reservations: MainReservedTasks, task_assignments: Assignments, assigned_worker_tasks: AssignedWorkerTasks, external_waits: OutsideWaits) -> None:
+        self.task_assignments, self.assigned_worker_tasks, self.outside_waits = task_assignments, assigned_worker_tasks, external_waits
         self.queries, self.repository, self.worktrees, self.git, self.nudger = queries, repository, worktrees, git, nudger
         self.environments, self.sources, self.copies, self.proof_queue = environments, sources, copies, proof_queue
         self.scopes = scopes
