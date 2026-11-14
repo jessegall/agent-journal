@@ -79,3 +79,18 @@ test("a refused environment says why and stays open", async () => {
     expect(document.body.textContent).toContain("that name is taken");
     expect(made).toEqual([]);
 });
+
+test("a plain click on Home moves in place, so the viewer does not load again and its splash stays away", () => {
+    history.replaceState(null, "", "?environment=main&page=secrets.secrets");
+    const element = drawn(SidebarPages, {windows, environments: [], current: "main", open: "secrets.secrets"});
+    const home = [...element.querySelectorAll("a")].find((link) => link.textContent.trim() === "Home");
+    const click = new MouseEvent("click", {bubbles: true, cancelable: true, button: 0});
+    home.dispatchEvent(click);
+    expect(click.defaultPrevented).toBe(true);
+    expect(location.search).toBe("?environment=main");
+});
+
+test("the sidebar's header names the project it is given", () => {
+    const element = drawn(SidebarPages, {windows, environments: [], current: "main", project: "agent-journal"});
+    expect(element.textContent).toContain("agent-journal");
+});

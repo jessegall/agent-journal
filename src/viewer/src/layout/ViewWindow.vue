@@ -16,6 +16,7 @@ import ResourcePanel from "../resource/ResourcePanel.vue";
 import ToastArea from "../kit/ToastArea.vue";
 import {usePageToasts} from "../composables/toasts.js";
 import {pageTitle} from "../domain/sidebarNav.js";
+import {useProjectName} from "../composables/projectName.js";
 
 const props = defineProps({
     environment: {type: String, required: true},
@@ -47,6 +48,7 @@ function followHistory() {
     if (named) page.value = named;
 }
 const environments = ref([]);
+const project = useProjectName(environments, props.environment);
 const mainAgent = ref(null);
 const agentAsked = ref(false);
 onMounted(async () => {
@@ -74,11 +76,11 @@ watchEffect(() => {
         <ToastArea :toasts="toasts" />
         <template v-if="catalogue.offered.length">
             <template v-if="standalone">
-                <SidebarPages :journal-version="journalVersion" :windows="catalogue.pages.value" :environments="environments" :current="environment" :open="page" :navigate="navigate" :layout-line="shellLine" />
+                <SidebarPages :project="project" :journal-version="journalVersion" :windows="catalogue.pages.value" :environments="environments" :current="environment" :open="page" :navigate="navigate" :layout-line="shellLine" />
             </template>
             <div class="view-window-main">
                 <template v-if="standalone">
-                    <Breadcrumb :environment="environment" :page="pageTitle(page, catalogue.window(page)?.title || page)" />
+                    <Breadcrumb :environment="environment" :project="project" :page="pageTitle(page, catalogue.window(page)?.title || page)" />
                 </template>
                 <template v-else>
                     <div class="view-window-bar">

@@ -9,6 +9,7 @@ import {sidebarSections} from "../domain/sidebarNav.js";
 import {copying} from "../domain/contextItems.js";
 import {openFileInspector} from "../route.js";
 import {placeOnHome} from "../windows/placeOnHome.js";
+import {moveToPage} from "../shownPage.js";
 import Skeleton from "../kit/Skeleton.vue";
 
 // the left sidebar as version 4 drew it: a header with the project's mark, then Home and the windows the suite offers in one
@@ -70,7 +71,14 @@ const pagePlace = (page) => {
     };
     return {...place, items: [...place.items, {label: "Place on Home", group: "own", run: placeIt}]};
 };
-const homePlace = () => rowPlace("Home", `?environment=${props.current}`, () => location.assign(`?environment=${props.current}`));
+const homeAddress = () => `?environment=${encodeURIComponent(props.current)}`;
+const homePlace = () => rowPlace("Home", homeAddress(), () => moveToPage(homeAddress()));
+// Home is drawn in place like every other row: a full load would play the opening splash again
+function openHome(event) {
+    if (!isPlainClick(event)) return;
+    event.preventDefault();
+    moveToPage(homeAddress());
+}
 const environmentPlace = (name) => rowPlace(name, `?environment=${name}`, () => openEnvironment(name));
 
 const isPlainClick = (event) => event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
@@ -119,7 +127,7 @@ function fold(key) {
                 </template>
                 <template v-if="!folded.has(section.key)">
                     <template v-if="section.key === 'pages'">
-                        <a v-context="homePlace" :class="['item', {active: !open}]" :href="`?environment=${current}`"><Icon name="home" :size="14" /><span class="item-title">Home</span></a>
+                        <a v-context="homePlace" :class="['item', {active: !open}]" :href="homeAddress()" @click="openHome"><Icon name="home" :size="14" /><span class="item-title">Home</span></a>
                     </template>
                     <template v-for="window in section.windows" :key="window.name">
                         <SidebarRow :page="window" :active="window.name === open" :address="pageOf(window.name)" :count="counts[window.name]" :place="() => pagePlace(window)" @go="go($event, window)" />
