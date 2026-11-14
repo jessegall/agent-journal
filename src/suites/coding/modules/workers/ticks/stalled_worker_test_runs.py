@@ -38,12 +38,13 @@ class StalledWorkerTestRuns:
         worktrees = container.get(WorktreeQuery)
         environments = {worktree.id: worktree.environment_id for worktree in worktrees.open_worktrees()}
         self.record_ended(container, [proof for proof in container.get(ProofQuery).test_rows() if proof.state is ProofState.RUNNING and proof.worktree_id in environments], environments)
-        self.record_ended_checkpoint_tests(container)
         bus.run(QueueStalledTests(), Actor.core())
         worktree_environments = {worktree.id: worktree.environment_id for worktree in worktrees.all_worktrees()}
         queued = {worktree_environments[proof.worktree_id] for proof in container.get(ProofQuery).test_rows() if proof.state is ProofState.QUEUED and proof.worktree_id in worktree_environments}
         for environment_id in queued:
             bus.run(StartWorkerTests(), Actor.core(), environment_id=environment_id)
+        # last, so a checkpoint test that cannot be recorded never holds the proofs of other workers back
+        self.record_ended_checkpoint_tests(container)
 
     @staticmethod
     def record_ended(container: Container, running: list[Proof], environments: dict[int, int]) -> None:
