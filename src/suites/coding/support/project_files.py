@@ -43,15 +43,21 @@ class ProjectFiles:
             raise Refusal(f"{folder} is no folder", "name a folder of the project")
         entries = [entry for entry in FileAccess.iterdir(place) if entry.name not in HIDDEN_NAMES]
         ordered = sorted(entries, key=lambda entry: (not FileAccess.is_dir(entry), entry.name.lower()))
-        letters = self.changed_letters()
-        return ProjectFileRows([{"id": str(entry.relative_to(root)), "name": entry.name, "folder": FileAccess.is_dir(entry), "size": FileAccess.stat(entry).st_size if FileAccess.is_file(entry) else 0, "git": letters.get(str(entry.relative_to(root)), "")} for entry in ordered])
+        changed = self.changes()
+        return ProjectFileRows([{"id": str(entry.relative_to(root)), "name": entry.name, "folder": FileAccess.is_dir(entry), "size": FileAccess.stat(entry).st_size if FileAccess.is_file(entry) else 0, "git": changed.get(str(entry.relative_to(root)), ("", ""))[0]} for entry in ordered])
 
-    def changed_letters(self) -> dict[str, str]:
-        """The git letter of each changed path: M changed, A new, D deleted, R moved, ? not tracked; nothing where git cannot say."""
+    def changes(self) -> dict[str, tuple[str, str]]:
+        """Each changed path with its git letter (M changed, A new, D deleted, R moved, ? not tracked) and, for a moved file, the path it came from; nothing where git cannot say."""
         status = self.git.output("git", "status", "--porcelain")
         if status is None:
             return {}
-        return {line[3:].split(" -> ")[-1].rstrip("/"): "?" if line.startswith("??") else line[:2].strip()[0] for line in status.splitlines() if len(line) > 3}
+        changed = {}
+        for line in status.splitlines():
+            if len(line) <= 3:
+                continue
+            old, arrow, new = line[3:].partition(" -> ")
+            changed[(new if arrow else old).rstrip("/")] = ("?" if line.startswith("??") else line[:2].strip()[0], old if arrow else "")
+        return changed
 
     def found(self, terms: str) -> ProjectFileRows:
         wanted = terms.lower().split()
@@ -77,4 +83,5 @@ class ProjectFiles:
         data = FileAccess.binary(place)
         if b"\0" in data[:8000]:
             raise Refusal(f"{path} is not text", "it can only be opened outside the viewer")
-        return ProjectFileText(path, data[:SHOWN_BYTES].decode(errors="replace"), len(data) > SHOWN_BYTES)
+        letter, moved_from = self.changes().get(path, ("", ""))
+        return ProjectFileText(path, data[:SHOWN_BYTES].decode(errors="replace"), len(data) > SHOWN_BYTES, letter, moved_from)

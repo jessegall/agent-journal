@@ -116,7 +116,7 @@ class CodingModule(Module):
                                  keys=[WindowKey("branches", "git-overview branches", arguments=["skip", "limit"]),
                                        WindowKey("commits", "git-overview commits", arguments=["skip", "limit"]),
                                        WindowKey("pulls", "git-overview pulls")]),
-               WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, skeleton=CODING_FILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file grep", "project-file show"], search=WindowReadSearch("project-file find", "Find a file in the project"),
+               WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, skeleton=CODING_FILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file grep", "project-file show", "file-edit list"], search=WindowReadSearch("project-file find", "Find a file in the project"),
                                  keys=[WindowKey("entries", "project-file list {folder}"),
                                        WindowKey("matches", "project-file find {words}", loading=KeyLoading.REQUESTED),
                                        WindowKey("file", "project-file show {path}", loading=KeyLoading.REQUESTED)]),

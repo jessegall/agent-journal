@@ -25,6 +25,9 @@ export function useFilesBrowser(view) {
     const token = Symbol("files window");
     const kept = useFilesTabs();
     const tabs = kept.tabs;
+    const selection = kept.selection;
+    // the agent that edited the file shown last, when the journal has an edit of it
+    const editor = ref(0);
 
     // the rows of a folder, or null while they are being read; the project's own are the window's first key
     const rowsOf = (folder) => (folder ? folders[folder]?.rows ?? null : root.loaded.value ? root.rows.value : null);
@@ -53,7 +56,21 @@ export function useFilesBrowser(view) {
         return Promise.all([...next].map(readFolder));
     }
 
+    // a click on a line number picks the line; with Shift it stretches the pick to a range
+    function pick(number, stretch) {
+        const now = selection.value;
+        selection.value = stretch && now ? {from: Math.min(now.from, number), to: Math.max(now.to, number)} : {from: number, to: number};
+    }
+
+    async function findEditor(path) {
+        editor.value = 0;
+        const answer = await view.read(["file-edit", "list", "--search", path, "--limit", "20"]);
+        const edit = answer.ok ? answer.value.rows.find((row) => row.path === path) : null;
+        if (path === current.value) editor.value = edit?.session_agent_id ?? 0;
+    }
+
     function open(path, lineNumber = 0, remember = true) {
+        if (path !== current.value) selection.value = null;
         if (!tabs.value.includes(path)) tabs.value = [...tabs.value, path];
         if (remember && current.value && path !== current.value) {
             history.back.push(current.value);
@@ -65,6 +82,7 @@ export function useFilesBrowser(view) {
         view.state["file.path"] = path;
         view.reload("file");
         reveal(path);
+        findEditor(path);
     }
 
     function back() {
@@ -95,7 +113,11 @@ export function useFilesBrowser(view) {
         else leaveFile();
     }
     kept.watchTabs(current);
-    if (tabs.value.length) open(tabs.value.includes(kept.shown) ? kept.shown : tabs.value[tabs.value.length - 1], 0, false);
+    if (tabs.value.length) {
+        const restored = selection.value;
+        open(tabs.value.includes(kept.shown) ? kept.shown : tabs.value[tabs.value.length - 1], 0, false);
+        selection.value = restored;
+    }
 
     // the palette: what it finds is read as the words are typed
     const canSearch = () => (palette.value === "text" ? query.value.trim().length >= LEAST_TEXT_LETTERS : query.value.trim().length > 0);
@@ -161,5 +183,5 @@ export function useFilesBrowser(view) {
         document.removeEventListener("keydown", pressed);
     });
 
-    return {tabs, closeTab, markUsed, rowsOf, failureOf, opened, toggle, reveal, open, back, forward, leaveFile, current, line, history, palette, query, shownHits, chosen, choose, openChosen, openPalette, readFolder};
+    return {tabs, closeTab, selection, pick, editor, markUsed, rowsOf, failureOf, opened, toggle, reveal, open, back, forward, leaveFile, current, line, history, palette, query, shownHits, chosen, choose, openChosen, openPalette, readFolder};
 }
