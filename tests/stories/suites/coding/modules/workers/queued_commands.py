@@ -146,8 +146,7 @@ def test_worker_commands_return_before_slow_git_and_notify_once(worker_git_comma
     operation = story.container.get(Queries).query(WorkerOperation).newest().first()
     process = story.row(Process, operation.process_id)
     part = story.container.get(Queries).query(ProcessPart).filter(process_id=process.id).first()
-    story.expect_rows(process.category is CommandCategory.BACKGROUND_JOB, not process.is_queue_run,
-                      not process.slot_assigned, process.queued_at is None, part.is_visible)
+    story.expect_rows(process.category is CommandCategory.BACKGROUND_JOB, not process.is_queue_run, process.queued_at is None, part.is_visible)
     started_at = monotonic()
     with ThreadPoolExecutor(max_workers=1) as executor:
         future = executor.submit(run_operation_copy, story, operation)

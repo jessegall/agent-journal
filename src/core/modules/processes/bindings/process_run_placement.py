@@ -44,16 +44,17 @@ class ProcessRunPlacement(RunPlacement):
             return PlacedRun(request, None, True, None, owner.environment_id)
         command = StartProcess.single_part(agent_id, request.text, str(request.folder), request.process_type.category, int(request.limit_seconds), part_category=request.process_type.value)
         process = self.bus.run(command, Actor.core(), environment_id=owner.environment_id)
-        return PlacedRun(request, process.id, True, agent_id, owner.environment_id)
+        return PlacedRun(request, process.id, True, agent_id, owner.environment_id, is_waiting=process.queued_at is not None)
 
     def main_agent_id(self, environment_id: int) -> int | None:
         main = self.agents.environment_main_agent(environment_id)
         return None if main is None else main.id
 
-    # a merge waits until the grant has started its row, which happens when no other merge runs
+    # a merge whose row the start left queued waits until the grant has started it, which happens when no other merge runs
     def admitted(self, run: PlacedRun) -> AbstractContextManager[None]:
-        if run.process_id is not None:
-            self.clock.poll(lambda: self.is_started(run.process_id), MERGE_WAIT_SECONDS, MERGE_POLL_SECONDS)
+        if run.is_waiting and run.process_id is not None:
+            process_id = run.process_id
+            self.clock.poll(lambda: self.is_started(process_id), MERGE_WAIT_SECONDS, MERGE_POLL_SECONDS)
         return nullcontext()
 
     def is_started(self, process_id: int) -> bool:
