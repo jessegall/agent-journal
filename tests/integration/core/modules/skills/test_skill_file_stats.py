@@ -2,6 +2,7 @@ import pytest
 
 from engine.enums.command_category import CommandCategory
 from engine.file.file_access import FileAccess
+from engine.file.file_tally import FileTally
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
@@ -52,3 +53,16 @@ def test_a_journal_line_makes_one_pass_over_the_skill_files_and_checks_each_at_m
     skill_files = len(started_story.container.get(SkillCatalogue).plugin_skills())
     # the skills of the program folders are kept for a few seconds, so a pass reads each skill file once at most
     started_story.expect_rows(counts.passes == 1, counts.stats <= skill_files)
+
+
+# a handful: a version check of each program skill folder for each request the hook makes, however many rules ask
+# for the skills
+CATALOGUE_CALL_LIMIT = 6
+
+
+def test_a_journal_line_checks_the_skill_folders_once_however_many_rules_ask_for_the_skills(started_story):
+    started_story.hook("s-1", JOURNAL_LINE)
+    with FileTally.counting() as calls:
+        started_story.hook("s-1", JOURNAL_LINE)
+    catalogue = {origin: count for origin, count in calls.origins.items() if "skill_catalogue" in origin}
+    started_story.expect_rows(0 < sum(catalogue.values()) <= CATALOGUE_CALL_LIMIT, detail=str(catalogue))
