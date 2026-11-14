@@ -29,6 +29,8 @@ class ProcessClasses:
             plugin_class = self.classes.match(ExecutionSubject(ExecutionSource.PLUGIN_PROGRAM, starter, category=command.category, plugin_name=command.plugin,
                                                               plugin_kind=command.run_name, line=command.line))
             return replace(plugin_class, name=f"{command.plugin} {command.run_name}") if command.run_name and not plugin_class.plugin else plugin_class
+        if command.is_graphify:
+            return self.classes.match(ExecutionSubject(ExecutionSource.GRAPHIFY, starter, category=command.category, line=command.line))
         if command.is_journal_merge:
             return self.classes.match(ExecutionSubject(ExecutionSource.SHELL_LINE, starter, category=command.category, process_type=ProcessType.MERGE, line=command.line))
         # a part of unknown category says nothing of the line, which then takes the category the start names

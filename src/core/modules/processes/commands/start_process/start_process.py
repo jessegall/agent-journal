@@ -39,6 +39,11 @@ class StartProcess(Command[Process]):
     def is_journal_merge(self) -> bool:
         return self.run_name == ProcessType.MERGE.value
 
+    # a Graphify update the journal starts: it waits in the long lane on the Graphify class
+    @property
+    def is_graphify(self) -> bool:
+        return self.run_name == ProcessType.GRAPHIFY.value
+
     @classmethod
     def single_part(cls, agent_id: int, line: str, folder: str, category: CommandCategory, limit_seconds: int, plugin: str = "", part_category: str = "") -> "StartProcess":
         return cls(agent_id, None, line, folder, category, limit_seconds, [PartSpec(line, line.split()[0], False, category)], plugin=plugin, run_name=part_category)

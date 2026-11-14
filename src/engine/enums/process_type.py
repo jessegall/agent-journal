@@ -18,6 +18,7 @@ class ProcessType(StrEnum):
     SHELL = "shell"
     MERGE = "merge"
     PLUGIN = "plugin"
+    GRAPHIFY = "graphify"
 
     @property
     def is_priority_zero(self) -> bool:
@@ -42,4 +43,5 @@ class ProcessType(StrEnum):
 
 PROCESS_CATEGORIES = {ProcessType.HOOK: CommandCategory.JOURNAL, ProcessType.READ: CommandCategory.READ, ProcessType.EDIT: CommandCategory.EDIT,
                    ProcessType.SEARCH: CommandCategory.SEARCH, ProcessType.JOURNAL: CommandCategory.JOURNAL, ProcessType.QUICK: CommandCategory.PROCESS,
-                   ProcessType.SHELL: CommandCategory.PROCESS, ProcessType.MERGE: CommandCategory.VERSION_CONTROL, ProcessType.PLUGIN: CommandCategory.CHECK}
+                   ProcessType.SHELL: CommandCategory.PROCESS, ProcessType.MERGE: CommandCategory.VERSION_CONTROL, ProcessType.PLUGIN: CommandCategory.CHECK,
+                   ProcessType.GRAPHIFY: CommandCategory.BACKGROUND_JOB}

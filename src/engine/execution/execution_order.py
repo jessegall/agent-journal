@@ -69,7 +69,9 @@ class ExecutionOrder:
         lane, cost = ticket.execution_class.lane, ticket.execution_class.slot_cost
         has_room = occupied_slots.slot_units + cost <= self.limits.capacity(lane)
         running_limit = self.limits.priority_limit(lane, ticket.first_priority).running_limit
-        is_under_priority_limit = occupied_slots.first_priority_units(ticket.first_priority) + cost <= running_limit
+        # like a starter's cap, a priority with nothing running may always start one run, even one costing more than its share
+        held_by_priority = occupied_slots.first_priority_units(ticket.first_priority)
+        is_under_priority_limit = held_by_priority == 0 or held_by_priority + cost <= running_limit
         return has_room and is_under_priority_limit and self.is_under_starter_cap(ticket, running)
 
     @staticmethod
