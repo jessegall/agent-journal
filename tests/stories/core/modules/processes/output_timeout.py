@@ -107,3 +107,16 @@ def test_time_waiting_in_the_queue_does_not_consume_the_timeout(new_story):
     story.advance(timedelta(seconds=10))
     timeout_tick(story)
     story.expect_rows(story.container.get(Queries).query(Process).find(waiting.id).state is ProcessState.STOPPED)
+
+
+def test_a_search_run_with_no_timeout_of_its_own_is_stopped_after_a_minute_and_reads_as_stopped(new_story):
+    story = new_story(fixture=UserBuilder)
+    process = start_process(story, "grep -r token /big", category=CommandCategory.SEARCH)
+    story.expect_rows(story.container.get(Queries).query(Process).find(process.id).timeout_seconds == 60)
+    story.advance(timedelta(seconds=59))
+    timeout_tick(story)
+    story.expect_success(f"process show {process.id}", "state: running", actor=story.agent)
+    story.advance(timedelta(seconds=1))
+    timeout_tick(story)
+    story.expect_success(f"process show {process.id}", "state: stopped", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "timed out", actor=story.agent)
