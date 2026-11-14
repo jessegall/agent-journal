@@ -6,7 +6,7 @@ from core.modules.assign_rules.models.enums.condition_field import ConditionFiel
 from core.modules.assign_rules.models.enums.condition_operator import ConditionOperator
 from core.modules.assign_rules.models.support.condition_checks import check_condition
 from core.modules.assign_rules.models.support.task_facts import TaskFacts
-from core.modules.assign_rules.support.rule_limits import RuleLimits
+from core.modules.assign_rules.support.rules.rule_limits import RuleLimits
 from core.modules.tasks.models.support.task_complexity import TaskComplexity
 from core.modules.tasks.models.support.task_priority import PRIORITY_LEVELS
 from core.modules.tasks.models.task_tag import TAG_WORD

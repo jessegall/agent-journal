@@ -5,7 +5,7 @@ from engine.subcommand.output import Output
 from engine.subcommand.render_value import render_value
 from engine.subcommand.subcommand import Subcommand
 from core.modules.assign_rules.commands.record_assign_decision.apply_assign_rule import ApplyAssignRule
-from core.modules.assign_rules.support.rule_arguments import RuleArguments
+from core.modules.assign_rules.support.rules.rule_arguments import RuleArguments
 from core.modules.assign_rules.support.rule_tasks.rule_task_list import RuleTaskList
 
 

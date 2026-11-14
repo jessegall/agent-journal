@@ -4,7 +4,7 @@ from engine.errors.refusal import Refusal
 from engine.listener.rows.event_rows import EventRows
 from engine.repository.repository import Repository
 from core.modules.assign_rules.commands.switch_assign_rule.switch_assign_rule import SwitchAssignRule
-from core.modules.assign_rules.support.rule_revision import RuleRevision
+from core.modules.assign_rules.support.rules.rule_revision import RuleRevision
 from core.modules.assign_rules.models.assign_rule import AssignRule
 
 

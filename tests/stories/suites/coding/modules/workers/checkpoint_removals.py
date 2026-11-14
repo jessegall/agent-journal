@@ -8,7 +8,7 @@ from engine.testing.expectations.expect_reply import expect_reply_allowed, expec
 from suites.coding.modules.workers.commands.make_proof.make_proof import MakeProof
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 from suites.coding.modules.workers.models.proof import Proof
-from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
+from suites.coding.modules.workers.ticks.worker_tests.stalled_worker_test_runs import StalledWorkerTestRuns
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import CART_COMMAND, commit_tasks, merge, task_proofs, rows, run_lines
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story

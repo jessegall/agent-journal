@@ -18,7 +18,7 @@ from engine.testing.fakes.manual_clock import ManualClock
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_state import StoryState
 from engine.testing.stories.story_fixture import StoryFixture
-from engine.file.file_clone import FileClone
+from engine.file.copies.file_clone import FileClone
 from engine.testing.templates.template import Template
 from engine.testing.templates.template_adaptation import STATE_FILE, TemplateAdaptation
 from engine.testing.stories.working_journal import WorkingJournal

@@ -2,8 +2,8 @@ from collections.abc import Mapping, Sequence
 
 from engine.query.queries import Queries
 from core.modules.assign_rules.models.assign_rule import AssignRule
-from core.modules.assign_rules.support.rule_conditions import RuleConditions
-from core.modules.assign_rules.support.rule_mark import RuleMark
+from core.modules.assign_rules.support.rules.rule_conditions import RuleConditions
+from core.modules.assign_rules.support.rules.rule_mark import RuleMark
 from core.modules.assignments.models.assignment import Assignment
 from core.modules.assignments.support.assignment_reason import AssignmentReason
 from core.modules.assignments.support.assignment_reasons import AssignmentReasons

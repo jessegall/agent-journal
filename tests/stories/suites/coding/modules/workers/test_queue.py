@@ -369,7 +369,7 @@ def test_a_queued_proof_survives_the_workers_first_hook_on_a_freshly_started_ser
 
 
 def test_a_queued_proof_whose_runner_never_started_is_launched_again_and_counts(new_story, monkeypatch):
-    from suites.coding.modules.workers.ticks.unlaunched_worker_test_runs import UnlaunchedWorkerTestRuns
+    from suites.coding.modules.workers.ticks.worker_tests.unlaunched_worker_test_runs import UnlaunchedWorkerTestRuns
     story, _, _, started = queued_story(new_story, monkeypatch)
     expect_answers(started, 1)
     story.advance(timedelta(seconds=40))
@@ -391,7 +391,7 @@ def ended_with_nothing_recorded(story, monkeypatch, process_id: int, code: int) 
 
 
 def stalled_tick(story) -> None:
-    from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
+    from suites.coding.modules.workers.ticks.worker_tests.stalled_worker_test_runs import StalledWorkerTestRuns
     StalledWorkerTestRuns()(story.container)
     story.run_listeners()
 

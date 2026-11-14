@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from core.modules.assign_rules.support.rule_mark import RuleMark
+from core.modules.assign_rules.support.rules.rule_mark import RuleMark
 from core.modules.assignments.support.assignments import Assignments
 from core.modules.tasks.models.task import Task
 

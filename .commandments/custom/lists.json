@@ -1314,7 +1314,7 @@
         "src/core/modules/claude_code/providers/support/claude_peer_notes.py"
     ],
     "file_reads_conflicts_stream_lines": [
-        "src/engine/file/conflict_files.py"
+        "src/engine/file/copies/conflict_files.py"
     ],
     "file_reads_shell_handoff_streams_child_output": [
         "src/engine/cli/shell_handoff.py"

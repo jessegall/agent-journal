@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
 from engine.subcommand.read_subcommand import ReadSubcommand
-from core.modules.assign_rules.support.rule_arguments import CONDITION_HELP, RuleArguments
+from core.modules.assign_rules.support.rules.rule_arguments import CONDITION_HELP, RuleArguments
 from core.modules.assign_rules.support.task_facts_reader import TaskFactsReader
 from core.modules.assign_rules.support.trial.recent_matches import RECENT_TASKS, RecentMatches
 from core.modules.tasks.models.task import Task

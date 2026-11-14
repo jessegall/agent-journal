@@ -9,7 +9,7 @@ from functools import lru_cache
 from engine.file.versions.file_version import FileVersion
 from pathlib import Path, PurePosixPath
 
-from engine.file.conflict_files import ConflictFiles
+from engine.file.copies.conflict_files import ConflictFiles
 from engine.enums.process_type import ProcessType
 from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.process.door.execution_request import ExecutionRequest

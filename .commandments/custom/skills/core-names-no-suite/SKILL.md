@@ -43,7 +43,7 @@ These files may name the words, each for its reason:
   `src/engine/text/run_target.py`, `aliases/seeders/aliases_seeder.py`. Test run is a command type the shell
   classifier gives any line, and a stock reader names its tool.
 - Git as the program and the version control the engine reads: `src/engine/git/`, `src/engine/provider/hook_manager.py`,
-  `src/engine/provider/provider.py`, `codex/providers/codex_provider.py`, `src/engine/file/conflict_files.py`,
+  `src/engine/provider/provider.py`, `codex/providers/codex_provider.py`, `src/engine/file/copies/conflict_files.py`,
   `src/engine/instruction/instruction_imports.py`, `src/engine/checkout/checkout.py`, `src/engine/enums/checkout_type.py`,
   `src/engine/enums/window_icon.py`, `src/core/modules/plugins/` (a plugin is fetched and compared with git),
   `developer/support/private_data_pass.py`, `secrets/support/secret_programs.py` (git as a program that needs a

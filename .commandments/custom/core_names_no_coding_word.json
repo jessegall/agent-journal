@@ -77,7 +77,7 @@
                 "fileMatches": "(^|/)src/core/modules/codex/providers/codex_provider\\.py$"
             },
             {
-                "fileMatches": "(^|/)src/engine/file/conflict_files\\.py$"
+                "fileMatches": "(^|/)src/engine/file/copies/conflict_files\\.py$"
             },
             {
                 "fileMatches": "(^|/)src/engine/instruction/instruction_imports\\.py$"

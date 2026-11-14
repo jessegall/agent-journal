@@ -1,7 +1,7 @@
 from engine.file.file_access import FileAccess
 import gc
 import os
-from engine.file.file_clone import FileClone
+from engine.file.copies.file_clone import FileClone
 from pathlib import Path
 
 from engine.database.database import Database

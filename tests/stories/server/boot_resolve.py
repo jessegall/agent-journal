@@ -4,7 +4,7 @@ from core.modules.developer.support.developer_settings import PREVENT_LAZY_LOADI
 from engine.command.command import Command
 from engine.command.handler import Handler
 from engine.errors.late_resolve_error import LateResolveError
-from server.work.kept_round_container import KeptRoundContainer
+from server.work.rounds.kept_round_container import KeptRoundContainer
 from tests.stories.core.support.fixtures import UserJoined
 
 

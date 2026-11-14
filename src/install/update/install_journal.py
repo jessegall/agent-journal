@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 from engine.time.clock import Clock
-from engine.file.code_copy import CodeCopy
+from engine.file.copies.code_copy import CodeCopy
 from engine.version.code_versions import CodeVersions
 from engine.errors.refusal import Refusal
 from engine.journal.journal_home import HOME_VARIABLE, JournalHome

@@ -7,8 +7,8 @@ from engine.log.error_log import ErrorLog
 from engine.log.system_log_writer import SystemLogWriter
 from engine.journal.journal_home import JournalHome
 from engine.listener.round_yield import RoundYield
-from server.work.round_container import RoundContainer
-from server.work.round_work import RoundWork
+from server.work.rounds.round_container import RoundContainer
+from server.work.rounds.round_work import RoundWork
 
 
 class JournalRound:

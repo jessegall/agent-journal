@@ -5,7 +5,7 @@ import os
 from functools import cache
 from pathlib import Path
 
-from engine.file.code_copy import IGNORED
+from engine.file.copies.code_copy import IGNORED
 from engine.version.version import ENGINE_VERSION
 
 

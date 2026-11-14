@@ -18,9 +18,9 @@ from core.modules.assign_rules.support.board.board_target import BoardTarget
 from core.modules.assign_rules.support.board.rule_activity import RuleActivity
 from core.modules.assign_rules.support.board.waiting_task import WaitingTask
 from core.modules.assign_rules.support.condition_line import ConditionLine
-from core.modules.assign_rules.support.rule_conditions import RuleConditions
-from core.modules.assign_rules.support.rule_revision import RuleRevision
-from core.modules.assign_rules.support.rule_warnings import RuleWarnings
+from core.modules.assign_rules.support.rules.rule_conditions import RuleConditions
+from core.modules.assign_rules.support.rules.rule_revision import RuleRevision
+from core.modules.assign_rules.support.rules.rule_warnings import RuleWarnings
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 

@@ -42,7 +42,7 @@ from core.modules.assign_rules.models.assign_decision import AssignDecision
 from core.modules.assign_rules.models.assign_rule import AssignRule
 from core.modules.assign_rules.models.assign_rule_condition import AssignRuleCondition
 from core.modules.assign_rules.support.assign_rules_nudges import ASSIGN_RULES_NUDGES
-from core.modules.assign_rules.support.rule_assignment_reasons import RuleAssignmentReasons
+from core.modules.assign_rules.support.rules.rule_assignment_reasons import RuleAssignmentReasons
 from core.modules.assignments.support.assignment_reasons import AssignmentReasons
 
 EXCLUDED_WRITES = ["make", "edit", "delete"]

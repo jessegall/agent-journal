@@ -4,10 +4,10 @@ from engine.errors.refusal import Refusal
 from engine.listener.rows.event_rows import EventRows
 from engine.repository.repository import Repository
 from core.modules.assign_rules.commands.edit_assign_rule.edit_assign_rule import EditAssignRule
-from core.modules.assign_rules.support.rule_revision import RuleRevision
+from core.modules.assign_rules.support.rules.rule_revision import RuleRevision
 from core.modules.assign_rules.models.assign_rule import AssignRule
-from core.modules.assign_rules.support.rule_conditions import RuleConditions
-from core.modules.assign_rules.support.rule_limits import RuleLimits
+from core.modules.assign_rules.support.rules.rule_conditions import RuleConditions
+from core.modules.assign_rules.support.rules.rule_limits import RuleLimits
 
 
 class EditAssignRuleHandler(Handler[EditAssignRule, AssignRule]):

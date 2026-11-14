@@ -4,7 +4,7 @@ from engine.caller.caller import Caller
 from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
 from core.modules.assign_rules.commands.delete_assign_rule.delete_assign_rule import DeleteAssignRule
-from core.modules.assign_rules.support.rule_arguments import RuleArguments
+from core.modules.assign_rules.support.rules.rule_arguments import RuleArguments
 
 
 class DeleteAssignRuleSubcommand(Subcommand[DeleteAssignRule, None]):

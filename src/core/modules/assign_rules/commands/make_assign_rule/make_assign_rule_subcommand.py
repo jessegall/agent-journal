@@ -4,7 +4,7 @@ from engine.caller.caller import Caller
 from engine.subcommand.subcommand import Subcommand
 from core.modules.assign_rules.commands.make_assign_rule.make_assign_rule import MakeAssignRule
 from core.modules.assign_rules.models.assign_rule import AssignRule
-from core.modules.assign_rules.support.rule_arguments import RuleArguments
+from core.modules.assign_rules.support.rules.rule_arguments import RuleArguments
 
 
 class MakeAssignRuleSubcommand(Subcommand[MakeAssignRule, AssignRule]):

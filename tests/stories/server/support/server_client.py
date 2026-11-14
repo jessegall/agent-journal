@@ -44,8 +44,8 @@ from server.request.journal_server import JournalServer
 from engine.serving.server_limits import DRAIN_LIMIT_SECONDS
 from server.context.server_context import IDLE_CONNECTION_SECONDS, ServerContext
 from server.hook.hook_database import HookDatabase
-from server.work.journal_round import JournalRound
-from server.work.kept_round_container import KeptRoundContainer
+from server.work.rounds.journal_round import JournalRound
+from server.work.rounds.kept_round_container import KeptRoundContainer
 from server.work.listeners.listener_thread import ListenerThread
 from server.work.listeners.listener_wake_router import ListenerWakeRouter
 from server.work.listeners.listener_wake import ListenerWake

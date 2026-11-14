@@ -5,7 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from engine.file.code_copy import CodeCopy
+from engine.file.copies.code_copy import CodeCopy
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from engine.seed.demo import DEMO_ENVIRONMENT

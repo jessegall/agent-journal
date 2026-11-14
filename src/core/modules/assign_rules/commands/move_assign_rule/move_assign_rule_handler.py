@@ -2,7 +2,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.listener.rows.event_rows import EventRows
 from core.modules.assign_rules.commands.move_assign_rule.move_assign_rule import MoveAssignRule
-from core.modules.assign_rules.support.rule_revision import RuleRevision
+from core.modules.assign_rules.support.rules.rule_revision import RuleRevision
 from core.modules.assign_rules.models.assign_rule import ENVIRONMENT_COLUMN, AssignRule
 from core.modules.plans.support.positions import Positions
 

@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from core.modules.assign_rules.models.enums.condition_field import ConditionField
 from core.modules.assign_rules.models.enums.condition_operator import ConditionOperator
 from core.modules.assign_rules.support.condition_line import ConditionLine
-from core.modules.assign_rules.support.rule_warnings import RuleWarnings
+from core.modules.assign_rules.support.rules.rule_warnings import RuleWarnings
 from core.modules.tasks.models.support.task_complexity import TaskComplexity
 from suites.coding.modules.workers.support.worker_routes import WorkerRoutes
 

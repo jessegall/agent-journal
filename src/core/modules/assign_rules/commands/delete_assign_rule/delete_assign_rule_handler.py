@@ -3,9 +3,9 @@ from engine.command.handler import Handler
 from engine.listener.rows.event_rows import EventRows
 from engine.repository.repository import Repository
 from core.modules.assign_rules.commands.delete_assign_rule.delete_assign_rule import DeleteAssignRule
-from core.modules.assign_rules.support.rule_revision import RuleRevision
+from core.modules.assign_rules.support.rules.rule_revision import RuleRevision
 from core.modules.assign_rules.models.assign_rule import ENVIRONMENT_COLUMN, AssignRule
-from core.modules.assign_rules.support.rule_conditions import RuleConditions
+from core.modules.assign_rules.support.rules.rule_conditions import RuleConditions
 from core.modules.plans.support.positions import Positions
 
 

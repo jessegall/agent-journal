@@ -10,7 +10,7 @@ from suites.coding.modules.workers.listeners.support.worker_test_starts import W
 from suites.coding.modules.workers.support.checkpoint_listing import CheckpointListing
 from suites.coding.modules.workers.support.checkpoint_runner import CheckpointRunner
 from suites.coding.modules.workers.support.worker_run_windows import WorkerRunWindows
-from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
+from suites.coding.modules.workers.ticks.worker_tests.stalled_worker_test_runs import StalledWorkerTestRuns
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE

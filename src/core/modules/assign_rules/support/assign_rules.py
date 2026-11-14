@@ -17,10 +17,10 @@ from core.modules.assign_rules.models.support.task_facts import TaskFacts
 from core.modules.assign_rules.support.assign_rules_mode import AssignRulesMode
 from core.modules.assign_rules.support.assign_rules_nudges import RULE_NUDGE_SOURCE, RULE_TASK_NUDGE
 from core.modules.assign_rules.support.decision_note import DecisionNote
-from core.modules.assign_rules.support.enabled_rules import EnabledRules
-from core.modules.assign_rules.support.environment_rules import EnvironmentRules
-from core.modules.assign_rules.support.rule_conditions import RuleConditions
-from core.modules.assign_rules.support.rule_mark import RuleMark
+from core.modules.assign_rules.support.rules.enabled_rules import EnabledRules
+from core.modules.assign_rules.support.rules.environment_rules import EnvironmentRules
+from core.modules.assign_rules.support.rules.rule_conditions import RuleConditions
+from core.modules.assign_rules.support.rules.rule_mark import RuleMark
 from core.modules.assign_rules.support.targets.decision_batch import DecisionBatch
 from core.modules.assign_rules.support.targets.rule_targets import RuleTargets
 from core.modules.assign_rules.support.targets.usable import Usable

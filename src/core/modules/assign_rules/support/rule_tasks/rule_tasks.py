@@ -4,7 +4,7 @@ from engine.query.queries import Queries
 from core.modules.assign_rules.models.assign_rule import AssignRule
 from core.modules.assign_rules.models.support.task_facts import TaskFacts
 from core.modules.assign_rules.support.assign_rules import AssignRules
-from core.modules.assign_rules.support.rule_mark import RULE_KEY, RULES_MODULE
+from core.modules.assign_rules.support.rules.rule_mark import RULE_KEY, RULES_MODULE
 from core.modules.assign_rules.support.rule_tasks.rule_task import RuleTask
 from core.modules.assign_rules.support.targets.decision_batch import DecisionBatch
 from core.modules.assignments.models.assignment import Assignment
