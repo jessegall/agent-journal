@@ -129,3 +129,10 @@ export {default as QrCode} from "../src/kit/QrCode.vue";
 export {default as WindowRoom} from "./WindowRoom.vue";
 
 export {toggleFilter} from "./toggleFilter.js";
+export {default as ListReaderLayout} from "./ListReaderLayout.vue";
+export {default as Reader} from "./Reader.vue";
+export {default as ReaderSection} from "./ReaderSection.vue";
+export {default as ReaderTimeline} from "./ReaderTimeline.vue";
+export {default as ReaderLinks} from "./ReaderLinks.vue";
+// the reader's markdown is the text display the rest of the viewer draws text with
+export {default as Markdown} from "../src/kit/TextDisplay.vue";

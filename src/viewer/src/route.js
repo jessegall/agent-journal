@@ -45,6 +45,7 @@ export const route = computed(() => {
         q: params.get("q") || "",
         sub: params.get("sub") || "",
         tab: params.get("tab") || "",
+        row: params.get("row") || "",
         plugin: params.get("plugin") || "",
         install: params.get("install") || "",
         line: Number(params.get("line") || 0),
@@ -85,6 +86,14 @@ export function opening(stack, sub = "") {
     const parts = [...kept, ...(stack.length ? [`open=${stack.map(entry).join(",")}`] : []), ...(sub ? [`sub=${sub}`] : [])].join("&");
     // each row opened or closed is a step of the browser's history, so back and forward walk the panel
     location.hash = `#${path}${parts ? `?${parts}` : ""}`;
+}
+
+// the row a list-and-reader page has chosen, kept in the address so a reload keeps it; stepping through rows replaces the address rather than filling the history
+export function chooseRow(id) {
+    const [path, query = ""] = location.hash.replace(/^#/, "").split("?");
+    const params = new URLSearchParams(query);
+    params.set("row", String(id));
+    location.replace(`#${path}?${params}`);
 }
 
 const inChat = {};
