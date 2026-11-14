@@ -13,6 +13,7 @@ from engine.module.source_hash import SourceHash
 from engine.registry.lazy_loading import LazyLoading
 from engine.module.python_source_folders import python_source_folders
 from engine.testing.runs.run_cpu import RunCpu
+from engine.testing.runs.run_durations import RunDurations
 from engine.testing.runs.run_size import RunSize
 from engine.testing.runs.full_run_record import FullRunRecord
 from engine.testing.runs.full_run_records import FullRunRecords
@@ -32,6 +33,7 @@ RUN_FOLDER = pytest.StashKey[Path]()
 CALL_PASSED = pytest.StashKey[bool]()
 RUN_START = pytest.StashKey[float]()
 RUN_CPU = pytest.StashKey[RunCpu]()
+RUN_DURATIONS = pytest.StashKey[RunDurations]()
 FULL_RUN = pytest.StashKey[FullRunRecord]()
 FIXTURE_SUMMARY = pytest.StashKey[str]()
 CPU_SECONDS_KEY = "journal_cpu_seconds"
@@ -94,6 +96,7 @@ def pytest_configure(config: pytest.Config) -> None:
     LazyLoading.disabled = True
     config.stash[RUN_START] = time.monotonic()
     config.stash[RUN_CPU] = RunCpu()
+    config.stash[RUN_DURATIONS] = RunDurations()
     config.addinivalue_line("markers", f"{BUDGET_MARKER}(points, reason): a story that may cost more than the default budget, and why")
     config.stash[STORY_OVERLAP] = StoryOverlap()
     if config.option.basetemp is None and not hasattr(config, "workerinput"):
@@ -140,6 +143,11 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo[None]) ->
     if report.when == "call":
         item.stash[CALL_PASSED] = report.passed
     return report
+
+
+def pytest_report_teststatus(report: pytest.TestReport, config: pytest.Config) -> None:
+    # The one hook that gets a report and the config, and the controller of a run with -n hears every runner's reports in it.
+    config.stash[RUN_DURATIONS].add(report.nodeid, report.duration)
 
 
 @pytest.hookimpl(wrapper=True)
@@ -203,6 +211,7 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
         record = FullRunRecord(session.testscollected, session.testsfailed, time.monotonic() - session.config.stash[RUN_START], session.config.stash[RUN_CPU].seconds)
         session.config.stash[FULL_RUN] = record
         FullRunRecords.add(record)
+        session.config.stash[RUN_DURATIONS].write()
     lines = [*overlap.report_lines(is_full_run), *fixture_rule_lines(session.config, overlap)]
     if not lines:
         return

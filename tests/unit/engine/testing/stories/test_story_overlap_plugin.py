@@ -1,3 +1,4 @@
+import json
 import re
 
 import pytest
@@ -51,10 +52,13 @@ def test_a_run_of_the_whole_suite_prints_its_wall_and_cpu_seconds_in_its_summary
     record = tmp_path / "runtime" / "full-test-runs.jsonl"
     record.parent.mkdir()
     monkeypatch.setenv("JOURNAL_FULL_RUN_RECORD", str(record))
+    durations = tmp_path / "runtime" / "full-test-durations.json"
+    monkeypatch.setenv("JOURNAL_FULL_RUN_DURATIONS", str(durations))
     pytester.makepyfile(**{"tests/test_plain": "def test_plain():\n    assert sum(range(100000)) > 0\n"})
     pytest_run = pytester.runpytest_subprocess("tests", "-q", "-n", "2", "--maxschedchunk=1")
     assert "wall seconds," in pytest_run.stdout.str() and "cpu seconds in the test runners" in pytest_run.stdout.str()
     assert '"cpu_seconds": ' in record.read_text()
+    assert list(json.loads(durations.read_text())) == ["tests/test_plain.py::test_plain"]
 
 
 def test_stories_of_no_fixture_are_counted_and_do_not_fail_a_run_that_only_counts(pytester, monkeypatch):

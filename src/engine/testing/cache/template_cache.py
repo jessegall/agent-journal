@@ -3,9 +3,8 @@ import os
 import time
 from pathlib import Path
 
-from engine.module.code_fingerprint import CORE_FOLDER
 from engine.module.python_source_folders import python_source_folders
-from engine.module.source_hash import SourceHash
+from engine.testing.cache.schema_inputs import SchemaInputs
 from engine.testing.seeds.base_seed_switch import BaseSeedSwitch
 from engine.testing.cache.folder_stat import FolderStat
 
@@ -19,21 +18,18 @@ HASH_CHARACTERS = 16
 
 
 class TemplateCache:
-    """Shares complete story templates between every checkout of a project, keyed on their python sources (the
-    viewer's sources are no part of a template, so editing them rebuilds nothing), and when a new one is
-    made removes the ones unused for a day and then the least recently used until the cache is under its
-    size limit, never one a running suite holds (each process leaves a lease named for its process number);
-    a cache already pruned within the hour is left alone. The templates are kept for the source code and
-    the stories' support folders; a story file's own fixtures are in each template's key, so editing a
-    story rebuilds only the templates of the fixtures it defines."""
+    """Shares complete story templates between every checkout of a project, in a folder keyed on the schema
+    inputs only (migrations, models, seeders and module manifests: see SchemaInputs), so editing any other
+    code leaves the folder as it was and each template checks the code its own build ran (see TouchedCode).
+    When a new folder is made it removes the ones unused for a day and then the least recently used until
+    the cache is under its size limit, never one a running suite holds (each process leaves a lease named
+    for its process number); a cache already pruned within the hour is left alone."""
 
     def __init__(self, root: Path = CACHE_FOLDER, limit_bytes: int = CACHE_LIMIT_BYTES) -> None:
         self.root, self.limit_bytes = root, limit_bytes
 
     def folder(self) -> Path:
-        checkout = CORE_FOLDER.parent.parent.resolve()
-        support_folders = tuple(sorted(folder for folder in FileAccess.rglob(checkout / "tests", "support") if FileAccess.is_dir(folder)))
-        source_hash = SourceHash.text((*python_source_folders(), *support_folders))
+        source_hash = SchemaInputs.hash(python_source_folders())
         current = self.root / f"{source_hash[:HASH_CHARACTERS]}{BaseSeedSwitch.folder_suffix()}"
         is_new = not FileAccess.is_dir(current)
         FileAccess.mkdir(current, parents=True, exist_ok=True)
