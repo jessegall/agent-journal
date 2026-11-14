@@ -119,13 +119,10 @@ class CodexProvider(Provider):
         model = [] if launch.names_flag("-m") or launch.names_flag("--model") else ["-m", launch.model]
         effort = [] if launch.effort else self.effort_arguments(launch.model)
         arguments = [self.executable, "--no-daemon", *model, *effort, *permission, *self.journal_instructions(launch.folder), *launch.program_arguments, *launch.session.arguments(self), *launch.prompt_arguments]
-        return LaunchCommand(arguments, launch.folder, self.variables(launch.root, launch.variables))
+        return LaunchCommand(arguments, launch.folder, self.launch_command_variables(launch.root, launch.variables, self.keys.all()))
 
     def launch_variables(self, home: JournalHome) -> Mapping[str, str]:
         return {HOME_VARIABLE: str(home.program_folder(self.name))}
-
-    def variables(self, root: Path, given: Mapping[str, str]) -> dict[str, str]:
-        return {**given, **self.keys.all(), **self.launch_variables(JournalHome(root / JOURNAL_FOLDER))}
 
     @staticmethod
     def journal_instructions(folder: Path) -> list[str]:
@@ -137,7 +134,7 @@ class CodexProvider(Provider):
     def helper_command(self, launch: HelperLaunch) -> LaunchCommand:
         arguments = [self.executable, "exec", *launch.session.arguments(self), "--json", "--dangerously-bypass-approvals-and-sandbox",
                      "--dangerously-bypass-hook-trust", "-m", launch.model, *self.effort_arguments(launch.model), launch.brief]
-        return LaunchCommand(arguments, launch.folder, self.variables(launch.root, launch.variables))
+        return LaunchCommand(arguments, launch.folder, self.launch_command_variables(launch.root, launch.variables, self.keys.all()))
 
     def effort_arguments(self, model: str) -> list[str]:
         effort = self.efforts.effort(MODEL_EFFORTS, model)

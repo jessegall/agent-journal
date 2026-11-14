@@ -13,7 +13,7 @@ from engine.driver.hook_event import HookEvent
 from engine.enums.hook_event_name import HookEventName
 from engine.enums.tool_type import ToolType
 from engine.profile.agent_profile import AgentProfile
-from engine.journal.journal_home import JournalHome
+from engine.journal.journal_home import JOURNAL_FOLDER, JournalHome
 from engine.provider.control_group import ControlGroup
 from engine.provider.helper_launch import HelperLaunch
 from engine.provider.helper_outcome import HelperOutcome
@@ -219,6 +219,9 @@ class Provider(ABC):
 
     def launch_variables(self, home: JournalHome) -> Mapping[str, str]:
         return {}
+
+    def launch_command_variables(self, root: Path, given: Mapping[str, str], keys: Mapping[str, str]) -> dict[str, str]:
+        return {**given, **keys, **self.launch_variables(JournalHome(root / JOURNAL_FOLDER))}
 
     def journal_hook_file(self, home: JournalHome) -> Path:
         return home.project_folder / self.hook_file.path

@@ -52,7 +52,7 @@ def provider(tmp_path: Path) -> ClaudeCodeProvider:
 def test_a_session_runs_claude_with_its_model_and_its_new_session_id(provider):
     command = provider.session_command(Launch(ROOT, FOLDER, "sonnet", "launch-1", SessionStart("s-1"), VARIABLES))
     assert (list(command.arguments), command.folder, dict(command.variables), command.session) == (
-        ["claude", *SETTINGS, "--model", "sonnet", "--effort", "high", "--dangerously-skip-permissions", "--session-id", "s-1"], FOLDER, VARIABLES, "s-1")
+        ["claude", *SETTINGS, "--model", "sonnet", "--effort", "high", "--dangerously-skip-permissions", "--session-id", "s-1"], FOLDER, {**VARIABLES, "CLAUDE_CODE_STOP_HOOK_BLOCK_CAP": "1000000"}, "s-1")
 
 
 def test_a_session_starts_on_opus_and_the_person_s_own_flags_win(provider):

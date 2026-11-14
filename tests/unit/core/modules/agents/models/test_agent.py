@@ -1,3 +1,4 @@
+from engine.enums.access import Access
 from core.modules.agents.models.agent import Agent
 from engine.time.timestamp import Timestamp
 
@@ -17,7 +18,7 @@ def test_the_main_agent_shows_as_the_main_agent_running_or_not():
 
 def test_a_helper_with_a_profile_is_kept_until_it_is_retired_and_no_other_role_is():
     point = Timestamp.parsed("2026-01-01T00:00:00+00:00")
-    helper = Agent(id=41, creator_id=1, session="s-2", program="claude", role="helper", profile="journal-researcher", ended_at=point)
+    helper = Agent(id=41, creator_id=1, session="s-2", program="claude", role="helper", profile="journal-researcher", access=Access.READ, ended_at=point)
     assert helper.is_kept_helper
     assert not helper.retired(point, "its job is done", 1).is_kept_helper
     assert not Agent(id=42, creator_id=1, session="s-3", program="claude", role="helper").is_kept_helper
