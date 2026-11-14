@@ -52,6 +52,10 @@ from engine.enums.agent_setting import AgentSetting
 from engine.journal.journal_home import JOURNAL_FOLDER
 
 CONFIG_VARIABLE = "CLAUDE_CONFIG_DIR"
+STOP_CAP_VARIABLE = "CLAUDE_CODE_STOP_HOOK_BLOCK_CAP"
+# Claude Code ends a turn after 8 stop-hook refusals without a tool call; the journal's own release rule lets a helper go
+# after 5, below that, so lifting the cap for every agent it launches needs no role check (report 1458)
+STOP_HOOK_BLOCK_CAP = 1_000_000
 RUNTIME_SETTING_KEYS = {AgentSetting.COMPACT_WINDOW: "autoCompactWindow"}
 RUNTIME_SETTING_RANGES = {AgentSetting.COMPACT_WINDOW: (100_000, 1_000_000)}
 SYNTHETIC_MODEL = "<synthetic>"
@@ -121,6 +125,9 @@ class ClaudeCodeProvider(Provider):
     def __init__(self, folders: ProgramFolders, keys: ServerKeys, efforts: ModelEfforts) -> None:
         super().__init__(folders)
         self.keys, self.efforts = keys, efforts
+
+    def launch_variables(self, home: JournalHome) -> Mapping[str, str]:
+        return {STOP_CAP_VARIABLE: str(STOP_HOOK_BLOCK_CAP)}
 
     def skill_instruction(self, skill: str, path: Path) -> str:
         return f"load this first with the Skill tool: {skill}"
