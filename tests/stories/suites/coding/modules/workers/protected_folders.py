@@ -44,7 +44,7 @@ def test_a_main_agent_may_edit_a_protected_path(protected_worker):
 def test_only_the_main_agent_can_ask_a_person_to_change_the_list(protected_worker):
     story, _, worker = protected_worker
     line = f"setting set {SETTING} '[\"other.py\"]' --project"
-    story.expect_refusal(line, "only the main agent can ask", actor=worker)
+    story.expect_refusal(line, "A worker may not run setting set", actor=worker)
     story.expect_refusal(f"{line} --reason needed", "A user was asked in the dock", actor=story.agent)
     approval = story.container.get(Queries).query(ApprovalRequest).first()
     story.expect_rows(approval is not None, approval.arguments[:3] == ("setting", "set", SETTING))

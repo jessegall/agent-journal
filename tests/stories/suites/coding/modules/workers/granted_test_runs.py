@@ -13,7 +13,7 @@ from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_T
 OUT_OF_RUNS_REFUSAL = "No test runs left"
 GRANT = "helper grant {worker} pytest tests/cart.py"
 RUN = "helper run pytest tests/cart.py"
-GRANT_REFUSAL = "only a user or the main agent"
+GRANT_REFUSAL = "A worker may not run helper grant"
 
 
 @pytest.fixture
