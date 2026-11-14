@@ -1,3 +1,4 @@
+from suites.coding.support.shipped_profiles import WORKER_PROFILE
 import re
 
 from suites.coding.support.shipped_profiles import HELPER_PROFILES, TEXT_VALUES, WORKER_PROFILES
@@ -21,4 +22,4 @@ def test_a_profile_file_names_only_placeholders_that_have_a_text():
 
 
 def test_a_placeholder_is_replaced_by_the_text_it_names():
-    assert TEXT_VALUES["WORKER_RULES"] in ShippedTexts.profile("journal-worker", TEXT_VALUES)
+    assert TEXT_VALUES["WORKER_RULES"] in ShippedTexts.profile(WORKER_PROFILE.name, TEXT_VALUES)

@@ -1,3 +1,5 @@
+from suites.coding.support.coding_settings import COMMAND_TYPES
+from core.modules.drivers.support.driver_settings import AUTOMATIC_APPROVAL
 import re
 from pathlib import Path
 
@@ -14,7 +16,6 @@ from tests.stories.core.support.fixtures import MainEnvironment
 
 SOURCE = Path(__file__).resolve().parents[5] / "src"
 SAMPLES = "tests.stories.core.modules.helpers.support.command_list_samples"
-COMMAND_TYPES = "journal.suites.coding.worker-command-types"
 WORKER_SKILLS = ("core/modules/skills/skills/journal/SKILL.md", "core/modules/skills/skills/journal-etiquette/SKILL.md", "core/modules/tasks/skills/journal-tasks/SKILL.md",
                  "core/modules/processes/skills/journal-shell/SKILL.md", "suites/coding/modules/workers/skills/journal-worker/SKILL.md")
 MAIN_AGENT_LINES = frozenset(["alias add", "alias skip", "command-type make", "reader add", "reader readable", "reader unreadable", "reader-request waive", "plan focus",
@@ -38,9 +39,9 @@ def test_help_shows_a_worker_only_the_verbs_it_may_run_and_a_refused_verb_names_
 
 def test_a_compound_line_is_refused_whole_naming_its_refused_part(worker_story):
     story, worker = worker_story
-    line = HookSamples.shell("journal task show 1 && journal setting set journal.core.helpers.accept-every-approval true",
+    line = HookSamples.shell(f"journal task show 1 && journal setting set {AUTOMATIC_APPROVAL} true",
                              ShellPart("journal", CommandCategory.JOURNAL, ["task", "show", "1"], subcommand="task"),
-                             ShellPart("journal", CommandCategory.JOURNAL, ["setting", "set", "journal.core.helpers.accept-every-approval", "true"], subcommand="setting"))
+                             ShellPart("journal", CommandCategory.JOURNAL, ["setting", "set", AUTOMATIC_APPROVAL, "true"], subcommand="setting"))
     story.expect_hook_refusal(WORKER_SESSION, line.with_fields(event="pre_tool_use"), "A worker may not run setting set")
 
 
