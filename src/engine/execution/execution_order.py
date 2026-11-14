@@ -5,8 +5,8 @@ from dataclasses import replace
 from engine.enums.execution_priority import ExecutionPriority
 from engine.execution.execution_starter import ExecutionStarter
 from engine.execution.execution_ticket import ExecutionTicket
-from engine.execution.lane_limits import LaneLimits
-from engine.execution.occupied_slots import OccupiedSlots
+from engine.execution.limits.lane_limits import LaneLimits
+from engine.execution.limits.occupied_slots import OccupiedSlots
 from engine.time.timestamp import Timestamp
 
 

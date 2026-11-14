@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from engine.enums.execution_lane import ExecutionLane
 from engine.enums.execution_priority import ExecutionPriority
-from engine.execution.execution_class import UNLIMITED, ExecutionClass
+from engine.execution.classes.execution_class import UNLIMITED, ExecutionClass
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from core.modules.environments.models.environment import Environment

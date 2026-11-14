@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from engine.execution.execution_class import ExecutionClass
+from engine.execution.classes.execution_class import ExecutionClass
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.process_type_admission import ProcessTypeAdmission
 

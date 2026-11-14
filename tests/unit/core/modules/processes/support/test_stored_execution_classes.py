@@ -6,9 +6,9 @@ from engine.enums.execution_priority import ExecutionPriority
 from engine.enums.execution_source import ExecutionSource
 from engine.enums.starter_type import StarterType
 from engine.errors.refusal import Refusal
-from engine.execution.builtin_classes import BUILTIN_CLASSES
-from engine.execution.execution_class import ExecutionClass
-from engine.execution.execution_classes import ExecutionClasses
+from engine.execution.classes.builtin_classes import BUILTIN_CLASSES
+from engine.execution.classes.execution_class import ExecutionClass
+from engine.execution.classes.execution_classes import ExecutionClasses
 from engine.execution.execution_starter import ExecutionStarter
 from engine.execution.execution_subject import ExecutionSubject
 from core.modules.processes.models.enums.process_setting import ProcessSetting

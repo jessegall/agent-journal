@@ -4,7 +4,7 @@ from dataclasses import replace
 from engine.enums.execution_lane import ExecutionLane
 from engine.enums.execution_priority import ExecutionPriority
 from engine.errors.refusal import Refusal
-from engine.execution.execution_class import UNLIMITED, ExecutionClass
+from engine.execution.classes.execution_class import UNLIMITED, ExecutionClass
 
 
 class ExecutionClassOptions:

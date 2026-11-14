@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.command.command import Command
-from engine.execution.execution_class import ExecutionClass
+from engine.execution.classes.execution_class import ExecutionClass
 
 
 @dataclass(frozen=True)

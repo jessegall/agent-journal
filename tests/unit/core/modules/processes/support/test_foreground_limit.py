@@ -10,8 +10,8 @@ from core.modules.processes.support.part_command import PartCommand
 from core.modules.processes.support.run_waits import RunWaits
 from core.modules.processes.support.process_classes import ProcessClasses
 from core.modules.agents.models.agent import Agent
-from engine.execution.execution_classes import ExecutionClasses
-from engine.execution.person_classes import PersonClasses
+from engine.execution.classes.execution_classes import ExecutionClasses
+from engine.execution.classes.person_classes import PersonClasses
 
 
 class Settings:

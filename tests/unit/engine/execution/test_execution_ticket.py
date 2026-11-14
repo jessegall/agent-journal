@@ -4,7 +4,7 @@ import pytest
 
 from engine.enums.execution_lane import ExecutionLane
 from engine.enums.execution_priority import ExecutionPriority
-from engine.execution.execution_class import ExecutionClass
+from engine.execution.classes.execution_class import ExecutionClass
 from tests.unit.engine.execution.tickets import seconds_after_start, ticket
 
 TEST_RUN = ExecutionClass("test run", ExecutionLane.LONG, 4, ExecutionPriority.AGENT)

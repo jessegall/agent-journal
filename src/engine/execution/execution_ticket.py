@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.enums.execution_priority import ExecutionPriority
-from engine.execution.execution_class import ExecutionClass
+from engine.execution.classes.execution_class import ExecutionClass
 from engine.execution.execution_starter import ExecutionStarter
 from engine.time.timestamp import Timestamp
 

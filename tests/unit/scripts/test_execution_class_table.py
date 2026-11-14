@@ -2,8 +2,8 @@ import importlib.util
 from pathlib import Path
 
 from engine.enums.execution_lane import ExecutionLane
-from engine.execution.builtin_classes import BUILTIN_CLASSES
-from engine.execution.default_lane_limits import DEFAULT_LANE_LIMITS
+from engine.execution.classes.builtin_classes import BUILTIN_CLASSES
+from engine.execution.limits.default_lane_limits import DEFAULT_LANE_LIMITS
 
 SCRIPT = Path(__file__).resolve().parents[3] / "scripts" / "execution_class_table.py"
 

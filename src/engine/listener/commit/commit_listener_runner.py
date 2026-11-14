@@ -37,7 +37,7 @@ SLOW_LISTENER_SECONDS = 0.5
 PROGRAM_STOP_RUN_ORDER = 500
 PLUGIN_RUN_ORDER = 1000
 LISTENER_TIME_LIMIT_SETTING = "journal.core.developer.tools.listener-time-limit"
-LISTENER_TIME_LIMIT_ON_SETTING = f"{LISTENER_TIME_LIMIT_SETTING}-on"
+LISTENER_TIME_LIMIT_ON_SETTING = "journal.core.developer.tools.listener-time-limit-on"
 
 
 class CommitListenerRunner(RoundState):

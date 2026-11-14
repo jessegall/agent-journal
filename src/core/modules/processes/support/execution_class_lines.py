@@ -1,5 +1,5 @@
-from engine.execution.builtin_classes import BUILTIN_CLASSES
-from engine.execution.execution_class import UNLIMITED, ExecutionClass
+from engine.execution.classes.builtin_classes import BUILTIN_CLASSES
+from engine.execution.classes.execution_class import UNLIMITED, ExecutionClass
 from engine.query.queries import Queries
 from core.modules.processes.models.execution_class_row import ExecutionClassRow
 from core.modules.processes.support.stored_execution_classes import STORED_CLASSES_REASON

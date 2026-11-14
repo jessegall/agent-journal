@@ -1,5 +1,5 @@
 from engine.errors.refusal import Refusal
-from engine.execution.execution_class import ExecutionClass
+from engine.execution.classes.execution_class import ExecutionClass
 
 
 class ExecutionClassCostError(Refusal):

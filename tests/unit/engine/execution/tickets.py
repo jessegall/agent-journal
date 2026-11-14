@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from engine.enums.execution_lane import ExecutionLane
 from engine.enums.execution_priority import ExecutionPriority
 from engine.enums.starter_type import StarterType
-from engine.execution.execution_class import ExecutionClass
+from engine.execution.classes.execution_class import ExecutionClass
 from engine.execution.execution_starter import ExecutionStarter
 from engine.execution.execution_ticket import ExecutionTicket
 from engine.time.timestamp import Timestamp

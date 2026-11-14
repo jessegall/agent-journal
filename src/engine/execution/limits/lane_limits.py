@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from engine.enums.execution_lane import ExecutionLane
 from engine.enums.execution_priority import ExecutionPriority
-from engine.execution.priority_limit import PriorityLimit
+from engine.execution.limits.priority_limit import PriorityLimit
 
 
 @dataclass(frozen=True)

@@ -1,3 +1,4 @@
+from engine.database.database_busy import DatabaseBusy
 import sqlite3
 import traceback
 from engine.serving.server_files import ServerFiles
@@ -95,7 +96,7 @@ class HookEndpoint:
         except HookDatabaseBusyError as error:
             self.context.files.log_line(f"delivery reset for hook call {reply.hook_call_id} will retry at the next hook: {error}", LogLevel.WARNING)
         except sqlite3.OperationalError as error:
-            if error.sqlite_errorcode != sqlite3.SQLITE_BUSY:
+            if not DatabaseBusy.is_busy(error):
                 raise
             self.context.files.log_line(f"delivery reset for hook call {reply.hook_call_id} will retry at the next hook: {error}", LogLevel.WARNING)
 
@@ -131,7 +132,7 @@ class HookEndpoint:
             self.timing.stamp("route_ready")
             return route.answer(event)
         except sqlite3.OperationalError as error:
-            if error.sqlite_errorcode == sqlite3.SQLITE_BUSY:
+            if DatabaseBusy.is_busy(error):
                 return self.unchecked(sender, error)
             return self.failure(sender, error)
         except Exception as error:

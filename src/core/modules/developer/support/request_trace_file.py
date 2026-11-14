@@ -1,3 +1,4 @@
+from engine.database.database_busy import DatabaseBusy
 import json
 import sqlite3
 from collections.abc import Sequence
@@ -12,7 +13,6 @@ from core.modules.developer.support.trace_row import TraceRow
 
 TRACE_FILE_NAME = "request-trace.log"
 CLAIMED_TRACE_FILE_NAME = "request-trace.taken"
-BUSY_CODES = (sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED)
 
 
 class RequestTraceFile:
@@ -41,7 +41,7 @@ class RequestTraceFile:
                         entry.write(table)
                     table.trim(size)
             except sqlite3.OperationalError as failure:
-                if failure.sqlite_errorcode not in BUSY_CODES:
+                if not DatabaseBusy.is_busy(failure):
                     raise
                 return
         self.lines.archive()

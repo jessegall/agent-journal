@@ -1,8 +1,8 @@
 from engine.enums.execution_lane import ExecutionLane
 from engine.enums.execution_priority import ExecutionPriority
-from engine.execution.execution_class import UNLIMITED
-from engine.execution.lane_limits import LaneLimits
-from engine.execution.priority_limit import PriorityLimit
+from engine.execution.classes.execution_class import UNLIMITED
+from engine.execution.limits.lane_limits import LaneLimits
+from engine.execution.limits.priority_limit import PriorityLimit
 from engine.time.timestamp import MINUTE_SECONDS
 
 # the only place the default load numbers of doc 1266 are written

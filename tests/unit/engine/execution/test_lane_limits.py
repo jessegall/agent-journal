@@ -1,8 +1,8 @@
 from engine.enums.execution_lane import ExecutionLane
 from engine.enums.execution_priority import ExecutionPriority
-from engine.execution.default_lane_limits import DEFAULT_LANE_LIMITS
-from engine.execution.execution_class import UNLIMITED
-from engine.execution.priority_limit import PriorityLimit
+from engine.execution.limits.default_lane_limits import DEFAULT_LANE_LIMITS
+from engine.execution.classes.execution_class import UNLIMITED
+from engine.execution.limits.priority_limit import PriorityLimit
 
 DOCUMENT_TABLE = {
     ExecutionLane.INSTANT: [(3, 10), (6, 3), (12, 1), (16, 0.5)],

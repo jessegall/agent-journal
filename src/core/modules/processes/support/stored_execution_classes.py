@@ -1,11 +1,11 @@
 from dataclasses import replace
 
 from engine.enums.execution_lane import ExecutionLane
-from engine.execution.default_lane_limits import DEFAULT_LANE_LIMITS
-from engine.execution.execution_class import ExecutionClass
-from engine.execution.execution_classes import ExecutionClasses
-from engine.execution.lane_limits import LaneLimits
-from engine.execution.person_classes import PersonClasses
+from engine.execution.limits.default_lane_limits import DEFAULT_LANE_LIMITS
+from engine.execution.classes.execution_class import ExecutionClass
+from engine.execution.classes.execution_classes import ExecutionClasses
+from engine.execution.limits.lane_limits import LaneLimits
+from engine.execution.classes.person_classes import PersonClasses
 from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from core.modules.processes.models.enums.process_setting import ProcessSetting

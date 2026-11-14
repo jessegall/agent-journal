@@ -1,3 +1,4 @@
+from engine.database.database_busy import DatabaseBusy
 from engine.file.file_access import FileAccess
 import os
 import sqlite3
@@ -18,8 +19,6 @@ from engine.time.clock import Clock
 from server.work.round_container import RoundContainer
 
 BACKGROUND_BUSY_TIMEOUT_SECONDS = 60.0
-PRIMARY_ERROR_CODE_MASK = 0xFF
-BUSY_ERROR_CODES = frozenset({sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED})
 
 
 def background_container(home: JournalHome, turns: WriteTurns | None = None) -> Container:
@@ -77,7 +76,7 @@ class KeptRoundContainer(RoundContainer):
         self.log(f"kept container rolled back a transaction the round {work_name} left open")
 
     def failed(self, error: BaseException, work_name: str) -> None:
-        if not isinstance(error, sqlite3.DatabaseError) or is_busy_error(error):
+        if not isinstance(error, sqlite3.DatabaseError) or DatabaseBusy.is_busy(error):
             return
         self.close_with_reason(f"{work_name}: {error}")
 
@@ -102,6 +101,3 @@ class KeptRoundContainer(RoundContainer):
         self.container.get(Database).close()
         self.container = None
 
-
-def is_busy_error(error: sqlite3.DatabaseError) -> bool:
-    return isinstance(error, sqlite3.OperationalError) and error.sqlite_errorcode & PRIMARY_ERROR_CODE_MASK in BUSY_ERROR_CODES

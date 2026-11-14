@@ -17,7 +17,7 @@ from core.modules.processes.migrations.m080_execution_classes import ExecutionCl
 from core.modules.processes.migrations.m081_long_lane_capacity import LongLaneCapacityMigration
 from core.modules.processes.models.execution_class_row import ExecutionClassRow
 from core.modules.processes.support.stored_execution_classes import StoredExecutionClasses
-from engine.execution.person_classes import PersonClasses
+from engine.execution.classes.person_classes import PersonClasses
 from core.modules.processes.migrations.m078_process_execution_priority import ProcessExecutionPriorityMigration
 from core.modules.processes.migrations.m075_process_run_names import ProcessRunNamesMigration
 from core.modules.processes.models.request_run import RequestRun

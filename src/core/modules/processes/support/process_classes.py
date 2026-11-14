@@ -7,8 +7,8 @@ from engine.enums.agent_role import AgentRole
 from engine.enums.execution_source import ExecutionSource
 from engine.enums.process_type import ProcessType
 from engine.enums.starter_type import StarterType
-from engine.execution.execution_class import ExecutionClass
-from engine.execution.execution_classes import ExecutionClasses
+from engine.execution.classes.execution_class import ExecutionClass
+from engine.execution.classes.execution_classes import ExecutionClasses
 from engine.execution.execution_starter import ExecutionStarter
 from engine.execution.execution_subject import ExecutionSubject
 from core.modules.agents.models.agent import Agent

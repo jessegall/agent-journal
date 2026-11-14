@@ -1,3 +1,4 @@
+from engine.database.database_busy import DatabaseBusy
 import sqlite3
 from contextlib import contextmanager
 from dataclasses import asdict
@@ -31,9 +32,6 @@ from server.viewer.request_trace_settings import RequestTraceSettings
 
 SETTINGS_REFRESH_SECONDS = 5.0
 
-
-def is_database_busy(error: sqlite3.Error) -> bool:
-    return getattr(error, "sqlite_errorcode", 0) & 0xff in (sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED)
 
 
 class RequestTrace:
@@ -95,7 +93,7 @@ class RequestTrace:
             if argv[:1] == ["setting"] or self.last_refreshed_at is None or perf_counter() - self.last_refreshed_at >= SETTINGS_REFRESH_SECONDS:
                 self.refresh(container)
         except sqlite3.Error as error:
-            if not is_database_busy(error):
+            if not DatabaseBusy.is_busy(error):
                 self.system_log.write(LogLevel.WARNING, f"request log settings could not be refreshed: {error}", LogSource.SERVER)
 
     def status(self) -> dict[str, object]:
@@ -157,7 +155,7 @@ class RequestTrace:
                 self.counts["recorded" if recorded else "disabled"] += 1
             except sqlite3.Error as error:
                 self.counts["dropped"] += 1
-                if not is_database_busy(error):
+                if not DatabaseBusy.is_busy(error):
                     self.system_log.write(LogLevel.WARNING, f"request recording failed: {error}", LogSource.SERVER)
             finally:
                 self.recording_ms += (perf_counter() - started_at) * 1000

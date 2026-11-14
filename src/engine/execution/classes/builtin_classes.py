@@ -4,8 +4,8 @@ from engine.enums.execution_priority import ExecutionPriority
 from engine.enums.execution_source import ExecutionSource
 from engine.enums.process_type import ProcessType
 from engine.enums.starter_type import StarterType
-from engine.execution.builtin_class import BuiltinClass
-from engine.execution.execution_class import ExecutionClass
+from engine.execution.classes.builtin_class import BuiltinClass
+from engine.execution.classes.execution_class import ExecutionClass
 
 # the only place the built-in classes of doc 1266 are written; the first row that holds a subject gives its class
 INSTANT, SHORT, LONG = ExecutionLane.INSTANT, ExecutionLane.SHORT, ExecutionLane.LONG

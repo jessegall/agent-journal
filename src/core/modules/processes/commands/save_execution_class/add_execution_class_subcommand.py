@@ -4,7 +4,7 @@ from engine.caller.caller import Caller
 from engine.enums.execution_lane import ExecutionLane
 from engine.enums.execution_priority import ExecutionPriority
 from engine.errors.refusal import Refusal
-from engine.execution.execution_class import ExecutionClass
+from engine.execution.classes.execution_class import ExecutionClass
 from engine.subcommand.subcommand import Subcommand
 from core.modules.processes.commands.save_execution_class.save_execution_class import SaveExecutionClass
 from core.modules.processes.support.execution_class_options import ExecutionClassOptions

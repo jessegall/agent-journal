@@ -228,7 +228,7 @@ def test_a_waiting_viewer_request_names_its_priority():
 
 
 def test_a_hook_writes_with_its_agents_priority():
-    with ServerQueue().hook_turn(QueuePriority.AGENT_HOOK, WAIT_SECONDS):
+    with ServerQueue().hook_turn(AGENT_HOOK_PRIORITY, WAIT_SECONDS):
         assert CurrentExecution.read().priority is ExecutionPriority.RESERVED
 
 

@@ -7,12 +7,12 @@ from engine.database.write_turns import WriteTurns
 from engine.enums.execution_lane import ExecutionLane
 from engine.enums.execution_priority import ExecutionPriority
 from engine.enums.starter_type import StarterType
-from engine.execution.default_lane_limits import DEFAULT_LANE_LIMITS
-from engine.execution.execution_class import ExecutionClass
+from engine.execution.limits.default_lane_limits import DEFAULT_LANE_LIMITS
+from engine.execution.classes.execution_class import ExecutionClass
 from engine.execution.execution_order import ExecutionOrder
 from engine.execution.execution_starter import ExecutionStarter
 from engine.execution.execution_ticket import ExecutionTicket
-from engine.execution.lane_limits import LaneLimits
+from engine.execution.limits.lane_limits import LaneLimits
 from engine.journal.journal_home import JournalHome
 from engine.time.clock import Clock
 from server.execution.execution_queue import ExecutionQueue

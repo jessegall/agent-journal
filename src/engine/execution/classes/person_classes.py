@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from engine.execution.execution_class import ExecutionClass
+from engine.execution.classes.execution_class import ExecutionClass
 
 
 class PersonClasses(ABC):

@@ -1,4 +1,4 @@
-from engine.execution.person_classes import PersonClasses
+from engine.execution.classes.person_classes import PersonClasses
 from dataclasses import replace
 from datetime import datetime, timezone
 
@@ -6,7 +6,7 @@ from engine.enums.command_category import CommandCategory
 from engine.enums.execution_lane import ExecutionLane
 from engine.enums.execution_priority import ExecutionPriority
 from engine.enums.starter_type import StarterType
-from engine.execution.execution_classes import ExecutionClasses
+from engine.execution.classes.execution_classes import ExecutionClasses
 from engine.time.clock import Clock
 from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
