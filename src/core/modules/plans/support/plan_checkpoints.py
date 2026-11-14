@@ -63,7 +63,7 @@ class PlanCheckpoints:
     def is_end_passed(self, plan_id: int) -> bool:
         return self.windows(plan_id).is_end_passed(self.passed_phase_ids(plan_id))
 
-    def record(self, plan_id: int, context: Context) -> None:
+    def record(self, plan_id: int, context: Context, passes_only: bool = False) -> None:
         windows = self.windows(plan_id)
         if not windows.phases:
             return
@@ -83,7 +83,7 @@ class PlanCheckpoints:
                 continue
             if not completed and checkpoint.id not in passed:
                 self.repository.save(CheckpointPass(creator_id=context.actor.id, plan_id=plan_id, phase_id=checkpoint.id, passed_at=context.timestamp), context)
-            if completed and run_tasks.get(checkpoint.id) != completed:
+            if completed and not passes_only and run_tasks.get(checkpoint.id) != completed:
                 self.repository.save(CheckpointReach.started(context.actor.id, plan_id, checkpoint.id, completed), context)
 
     @staticmethod

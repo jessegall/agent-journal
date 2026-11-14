@@ -264,21 +264,18 @@ def test_an_approved_plan_does_not_hold_a_stop_when_no_new_worker_can_start(new_
 
 
 
-def test_a_plain_job_after_merge_starts_a_task_and_keeps_the_worktree_links(new_story):
+def test_a_plain_job_after_merge_files_no_task_and_reaches_the_worker_as_a_line(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
-    repository.library("node_modules", "index.js", "module.exports = 1\n")
-    worker = checked_worker(story, repository, "worker dispatch --test-command python=pytest --model sonnet 1 --library-link node_modules")
+    worker = checked_worker(story, repository, "worker dispatch --test-command python=pytest --model sonnet 1")
     repository.checkout(ENVIRONMENT_BRANCH)
     request_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     session = worker_session(story, worker)
+    tasks = len(story.story_rows(Task))
     story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Fix the findings"', actor=story.agent)
-    worktree = story.container.get(WorktreeQuery).worker_worktree(worker.id)
-    story.expect_text(f"task show {worktree.task_id}", "Fix the findings", "state: started", f"holder_id: {worker.id}", actor=story.agent)
+    story.expect_rows(len(story.story_rows(Task)) == tasks, worker_session(story, worker) == session, detail=str([task.title for task in story.story_rows(Task)]))
     story.expect_text(f"agent-line list --agent {worker.id}", "Fix the findings", actor=worker)
-    story.expect_rows(worker_session(story, worker) == session)
-    repository.expect_link(worker.id, "node_modules")
 
 
 def test_retire_hides_the_lines_still_waiting_for_the_worker(new_story):
