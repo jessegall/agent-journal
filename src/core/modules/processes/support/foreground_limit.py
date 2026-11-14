@@ -20,8 +20,9 @@ class ForegroundLimit:
     that went past the limit in an earlier run, else the seconds the settings give, fewer for the
     main agent while the user waits on a message; a line that runs an alias is judged by the command
     under the alias, as the hook classified it, and read by the alias's reader. The test runs and
-    builds of a line keep more of their output. A queued line of an agent with a wait of its own
-    holds the call for that wait."""
+    builds of a line keep more of their output. A line of only reading, writing and searching never waits in a lane;
+    another line waits for its slot in the foreground at least as long as its foreground limit, and a queued line of
+    an agent with a wait of its own holds the call for that wait."""
 
     def __init__(self, settings: ProcessSettings, background: BackgroundCommands, processes: ProcessQuery, messages: MessageQuery, waits: RunWaits,
                  agents: AgentRows, classes: ProcessClasses) -> None:
@@ -36,8 +37,7 @@ class ForegroundLimit:
         line_class = self.classes.for_categories([command.category for command in part_commands], shell.display_text, self.agents.find(agent_id))
         in_lane = not line_class.priority.is_unlimited and all(command.category is not CommandCategory.JOURNAL for command in part_commands)
         if all(not command.category.is_backgroundable for command in part_commands):
-            return ForegroundRun(0, self.background.includes(shell), part_commands=part_commands, most_output_bytes=self.output_limit(ProcessSetting.MOST_OUTPUT_MEGABYTES),
-                                 queued=in_lane, queue_wait_seconds=self.settings.integer(ProcessSetting.QUEUE_WAIT_SECONDS))
+            return ForegroundRun(0, self.background.includes(shell), part_commands=part_commands, most_output_bytes=self.output_limit(ProcessSetting.MOST_OUTPUT_MEGABYTES))
         seconds = self.seconds_allowed(agent_id)
         is_long = self.processes.has_moved_run(tuple(dict.fromkeys(part.text for part in shell.pipeline_heads)), seconds)
         reader_ids = {options.reader_id for options in alias_runs if options.reader_id is not None}
@@ -45,7 +45,8 @@ class ForegroundLimit:
         has_long_part = any(part.classification.category.is_long_running or self.background.is_long_alias(part, shell) for part in shell.parts)
         output_setting = ProcessSetting.MOST_TEST_OUTPUT_MEGABYTES if has_long_part else ProcessSetting.MOST_OUTPUT_MEGABYTES
         queued = in_lane
-        background, queue_wait = self.background.includes(shell) or is_long, self.settings.integer(ProcessSetting.QUEUE_WAIT_SECONDS)
+        # a line that waits for its slot keeps the foreground at least as long as it could run there, so a short build is not moved for its wait
+        background, queue_wait = self.background.includes(shell) or is_long, max(self.settings.integer(ProcessSetting.QUEUE_WAIT_SECONDS), seconds)
         wait = self.waits.seconds(agent_id) if queued else None
         if wait is not None:
             seconds, background, queue_wait = wait, wait == 0, wait

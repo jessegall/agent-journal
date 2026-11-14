@@ -57,9 +57,9 @@ def test_plain_journal_command_is_admitted_and_absent_from_queue(new_story):
 def test_queue_foreground_wait_defaults_to_five_seconds_and_can_change(new_story):
     story = install_runner(new_story(fixture=AdmissionQueue))
     story.expect_text(f"setting show {ProcessSetting.QUEUE_WAIT_SECONDS.key} --environment main", "value: 5", actor=story.user)
-    story.expect_success(f"setting set {ProcessSetting.QUEUE_WAIT_SECONDS.key} 2 --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.QUEUE_WAIT_SECONDS.key} 30 --environment main", actor=story.user)
     reply = story.hook("s-1", HookSamples.shell("make package", ShellPart("make", CommandCategory.BUILD, ["package"])))
-    story.expect_rows("JOURNAL_RUN_QUEUE_WAIT=2" in str(reply.updated_input))
+    story.expect_rows("JOURNAL_RUN_QUEUE_WAIT=30" in str(reply.updated_input))
 
 
 def test_plain_journal_hook_never_waits_even_while_worker_queue_is_halted(new_story):

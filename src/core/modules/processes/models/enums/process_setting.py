@@ -21,7 +21,7 @@ class ProcessSetting(Enum):
     WAITING_FOREGROUND_SECONDS = SettingValue("foreground-while-waiting", "Seconds while a message waits",
                                               "Seconds a command runs in the foreground while your message is waiting.", SettingType.NUMBER, default=10)
     QUEUE_WAIT_SECONDS = SettingValue("queue-wait-seconds", "Seconds to wait for a run slot",
-                                     "Seconds a queued command waits before continuing in the background.", SettingType.NUMBER, default=5)
+                                     "Seconds a queued command waits, at least its foreground seconds, before continuing in the background.", SettingType.NUMBER, default=5)
     ORPHAN_SECONDS = SettingValue("orphan-seconds", "Run inactivity limit (seconds)", "Seconds without activity before a run is marked as lost.",
                                   SettingType.NUMBER, default=90)
     MISSING_RUNNER_SECONDS = SettingValue("lost-runner-seconds", "Seconds before a run is lost", "Seconds after the last sign of a run whose runner process is gone before the run is marked as lost.",
