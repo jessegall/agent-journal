@@ -7,7 +7,7 @@ import pytest
 
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.browser_story import expect_browser_at
-from tests.stories.server.support.server_client import request_answer
+from tests.integration.support.server_harness import request_answer
 from tests.stories.support.story_checks import expect_value_with
 from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 

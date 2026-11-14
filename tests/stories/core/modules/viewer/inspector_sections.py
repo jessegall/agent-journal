@@ -8,7 +8,7 @@ from tests.stories.core.modules.viewer.support import section_modules
 from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.fixtures.third_party import plan_notes, plan_notes_cookie, viewer_body
 from tests.stories.server.support.browser_story import expect_browser
-from tests.stories.server.support.server_client import request_answer
+from tests.integration.support.server_harness import request_answer
 from tests.stories.support.story_checks import expect_value
 
 NOTES_READ = {"window": "plan_notes.notes", "line": ["plan", "show", "1"], "environment": "main"}

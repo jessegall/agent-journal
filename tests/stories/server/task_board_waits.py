@@ -1,7 +1,6 @@
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.server_client import server_story
-from tests.stories.server.window_data_route import window_data
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 
 
@@ -21,7 +20,7 @@ def test_the_board_reports_which_blocked_tasks_open_automatically(new_story):
         tasks.append(task)
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
-        status, answer = window_data(server, cookie, keys="board", window="tasks.tasks")
+        status, answer = server.window_data(cookie, keys="board", window="tasks.tasks")
         groups = answer["keys"]["board"]["value"]["groups"]
         rows = {row["id"]: row for group in groups for row in group["rows"]}
         story.expect_rows(status == 200, all(not rows[task]["automatic"] for task in (tasks[0], tasks[1], tasks[-1])),

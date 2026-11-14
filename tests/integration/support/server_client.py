@@ -47,6 +47,18 @@ class ServerClient:
     def request(self, method: str, route: str, body: object = None, headers: dict[str, str] | None = None) -> ServerAnswer:
         return request_answer(self.socket_path, method, route, body, headers)
 
+    # the data of one viewer window: every key it shows, or only the keys named, read through /api/window
+    def window_data(self, cookie: str, keys: str = "", window: str = "messages.chat", query: str = "environment=main") -> tuple[int, dict[str, object]]:
+        connection = http.client.HTTPConnection("127.0.0.1", self.viewer_port(), timeout=TIMEOUT_SECONDS)
+        headers = {"Cookie": cookie, "Host": f"127.0.0.1:{self.viewer_port()}"}
+        if window:
+            headers["x-journal-window"] = window
+        if keys:
+            headers["x-journal-data-only"] = keys
+        connection.request("GET", f"/api/window?{query}", headers=headers)
+        response = connection.getresponse()
+        return response.status, json.loads(response.read())
+
     def viewer_line_value(self, cookie: str, body: dict[str, object]) -> dict[str, object]:
         status, _, answer = viewer_answer(self.viewer_port(), "/api/line", cookie, "", body)
         answered = json.loads(answer)

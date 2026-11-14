@@ -11,7 +11,6 @@ from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OrchestratorWithPerson
 from tests.stories.server.support.server_client import SYSTEM_CLOCK, server_story
 from tests.integration.support.server_harness import viewer_answer
-from tests.stories.server.window_data_route import window_data
 
 WINDOW = "coding.agent-settings"
 
@@ -40,7 +39,7 @@ class AssignTab:
     cookie: str
 
     def board(self) -> dict:
-        status, answer = window_data(self.server, self.cookie, keys="assign", window=WINDOW)
+        status, answer = self.server.window_data(self.cookie, keys="assign", window=WINDOW)
         assert status == 200 and answer["keys"]["assign"]["code"] == 0, answer
         return answer["keys"]["assign"]["value"]
 

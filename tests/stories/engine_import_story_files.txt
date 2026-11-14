@@ -717,11 +717,8 @@ tests/stories/server/server_ticks.py
 tests/stories/server/setting_requests.py
 tests/stories/server/support/alias_hook.py
 tests/stories/server/support/client_binary.py
-tests/stories/server/support/code_folders.py
-tests/stories/server/support/hosted_viewer.py
 tests/stories/server/support/launch_terminal.py
 tests/stories/server/support/server_client.py
-tests/stories/server/support/server_process.py
 tests/stories/server/support/story_line_route.py
 tests/stories/server/support/viewer_events.py
 tests/stories/server/task_overview_writes.py
@@ -736,7 +733,6 @@ tests/stories/server/viewer_line_rows.py
 tests/stories/server/viewer_read_counts.py
 tests/stories/server/viewer_request_attribution.py
 tests/stories/server/viewer_session.py
-tests/stories/server/window_data_route.py
 tests/stories/suites/coding/agent_settings_window.py
 tests/stories/suites/coding/assigned_tasks.py
 tests/stories/suites/coding/coding_module_shape.py
@@ -947,7 +943,6 @@ tests/stories/suites/coding/task_assigners.py
 tests/stories/suites/coding/terminal_window.py
 tests/stories/suites/coding/windows_as_classes.py
 tests/stories/suites/coding/windows_open_at_foot_browser.py
-tests/stories/support/listener_builds.py
 tests/stories/support/program_states.py
 tests/stories/support/registry_compare.py
 tests/stories/support/story_checks.py

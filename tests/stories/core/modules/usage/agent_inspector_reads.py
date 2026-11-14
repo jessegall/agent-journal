@@ -8,7 +8,6 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.server_client import server_story
-from tests.stories.server.window_data_route import window_data
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 
 
@@ -45,7 +44,7 @@ def test_inspector_card_keeps_its_read_budget(forty_task_inspector, monkeypatch)
         return rows
 
     monkeypatch.setattr(Database, 'rows', measured_rows)
-    status, answer = window_data(server, cookie, keys=f'card.{worker}', window='agents.agents')
+    status, answer = server.window_data(cookie, keys=f'card.{worker}', window='agents.agents')
     row = answer['keys'][f'card.{worker}']['value']['rows'][0]
     server.story.expect_rows(status == 200, len(row['facts']['tasks']) == 40,
                              sum(count for _, count in loaded) <= 150,

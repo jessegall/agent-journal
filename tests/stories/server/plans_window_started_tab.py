@@ -3,11 +3,10 @@ from datetime import timedelta
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.core.support.plan_steps import started_plan
 from tests.stories.server.support.server_client import server_story
-from tests.stories.server.window_data_route import window_data
 
 
 def started_ids(server, cookie: str) -> list[int]:
-    status, answer = window_data(server, cookie, keys="started", window="plans.plans")
+    status, answer = server.window_data(cookie, keys="started", window="plans.plans")
     assert status == 200 and answer["keys"]["started"]["code"] == 0, answer
     value = answer["keys"]["started"]["value"]
     return [value["started_total"]] + [plan["id"] for plan in value["plans"]]

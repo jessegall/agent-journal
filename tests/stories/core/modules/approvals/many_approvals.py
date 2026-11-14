@@ -10,7 +10,6 @@ from server.viewer.line_route import LineRoute
 from tests.stories.core.modules.approvals.support.legacy_setting_requests import UPGRADE
 from tests.stories.core.modules.approvals.recovery import phone_request, phone_viewer
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder, UserBuilder
-from tests.stories.server.window_data_route import window_data
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
 TEST_ROWS_REASON = "the test reads every row it checks"
@@ -73,7 +72,7 @@ def test_many_docked_approvals_use_one_read_through_the_viewer_route(pending_req
         return original(route, container, window, argv, person_id, environment, shared)
 
     monkeypatch.setattr(LineRoute, "run_line", recorded)
-    status, answer = window_data(pending_viewer.server, pending_viewer.cookie, keys=",".join(f"dock.{item.id}" for item in items))
+    status, answer = pending_viewer.server.window_data(pending_viewer.cookie, keys=",".join(f"dock.{item.id}" for item in items))
     story.expect_rows(status == 200, len(answer["keys"]) == 12, reads == [["approval", "pending"]],
                       all(len(outcome["value"]["rows"]) == 12 for outcome in answer["keys"].values()))
 

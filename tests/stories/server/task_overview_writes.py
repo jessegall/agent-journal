@@ -7,7 +7,8 @@ from core.modules.tasks.models.task_read import TaskRead
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
-from tests.stories.server.support.server_client import request_answer, server_story
+from tests.stories.server.support.server_client import server_story
+from tests.integration.support.server_harness import request_answer
 
 WORKERS_COUNT = 6
 
