@@ -293,10 +293,9 @@ class Story:
 
     # a step a module offers stories, such as a run printing its output, asked for by the name the module gives it
     def step(self, name: str, *arguments: object) -> object:
-        step = next(step for module in ModuleFinder(self.home).modules() for step in module.story_steps if step.name == name)
         self.steps.append(f"step {name} {arguments!r}")
         with self.repeated_work.request():
-            return step().run(self.container, *arguments)
+            return ModuleFinder(self.home).story_step(name).run(self.container, *arguments)
 
     def run_tick_handler(self, label: str) -> None:
         handler = next(handler for module in ModuleFinder(self.home).modules() for handler in module.tick_handlers if handler.label == label)

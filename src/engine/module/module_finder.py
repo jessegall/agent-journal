@@ -9,6 +9,7 @@ from engine.journal.journal_home import JournalHome
 from engine.dotted_path.dotted_path import DottedPath
 from engine.module.suite import Suite
 from engine.module.module import Module
+from engine.module.story_step import StoryStep
 from engine.module.errors.module_error import ModuleError
 from engine.module.suite_list import SuiteList
 from engine.module.version_requirement import VersionRequirement
@@ -30,6 +31,10 @@ class ModuleFinder:
     def modules(self) -> tuple[type[Module], ...]:
         plugin_modules = (module for path in self.plugin_paths() for module in self.entry_modules(self.loaded_entry(DottedPath(path)), path))
         return tuple(dict.fromkeys((*self.default_modules(), *plugin_modules)))
+
+    # the step of that name a module offers its stories
+    def story_step(self, name: str) -> StoryStep:
+        return next(step for module in self.modules() for step in module.story_steps if step.name == name)()
 
     def default_modules(self) -> tuple[type[Module], ...]:
         return tuple(dict.fromkeys(module for path in DEFAULT_MODULE_LISTS for module in self.listed_modules(path)))

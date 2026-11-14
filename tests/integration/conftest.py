@@ -5,6 +5,7 @@ import pytest
 
 from engine.journal.journal_home import JournalHome
 from engine.testing.templates.template_databases import TemplateDatabases
+from engine.testing.fakes.manual_clock import ManualClock
 from tests.integration.support.fixture_journal import FixtureJournal
 from tests.integration.support.integration_journal import IntegrationJournal
 from tests.integration.support.upgraded_journal import UpgradedJournal
@@ -62,7 +63,10 @@ def played(templates: TemplateDatabases, tmp_path: Path) -> Generator[Callable[.
         home, state = templates.fixture_home(tmp_path / f"played-{len(opened)}", fixture, tuple(modules))
         journal = IntegrationJournal(home)
         opened.append(journal)
-        return FixtureJournal(journal, state.agent, state.user)
+        # the fixture's rows were written on the story clock, so the journal goes on from that same moment
+        clock = ManualClock()
+        journal.with_clock(clock)
+        return FixtureJournal(journal, clock, state.agent, state.user)
 
     yield make
     for journal in opened:

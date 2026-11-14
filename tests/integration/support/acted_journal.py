@@ -32,6 +32,10 @@ class ActedJournal:
     def home(self) -> JournalHome:
         return self.journal.home
 
+    # a step a module offers for a part of the world no command makes, such as a run printing its output
+    def step(self, name: str, *arguments: object) -> object:
+        return self.journal.step(name, *arguments)
+
     def run(self, line: str, actor: Actor | None = None) -> LineAnswer:
         return self.journal.run(line, actor)
 

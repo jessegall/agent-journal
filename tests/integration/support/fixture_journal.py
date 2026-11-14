@@ -1,3 +1,4 @@
+from datetime import timedelta
 from dataclasses import dataclass, field
 from typing import cast
 
@@ -16,7 +17,7 @@ from engine.enums.tool_type import ToolType
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.examples.hook_sample import HookSample
 from engine.testing.examples.hook_samples import HookSamples
-from engine.time.clock import Clock
+from engine.testing.fakes.manual_clock import ManualClock
 from tests.integration.support.integration_journal import MAIN_ENVIRONMENT, IntegrationJournal
 
 
@@ -41,6 +42,7 @@ class FixtureJournal:
     environment and an agent's in its own, as in a story."""
 
     journal: IntegrationJournal
+    clock: ManualClock
     agent: Actor = field(default_factory=Actor.core)
     user: Actor = field(default_factory=Actor.core)
 
@@ -52,10 +54,6 @@ class FixtureJournal:
     def container(self) -> Container:
         return self.journal.container
 
-    @property
-    def clock(self) -> Clock:
-        return self.container.get(Clock)
-
     def run(self, line: str, actor: Actor | None = None, environment_id: int | None = None) -> FixtureLine:
         caller_environment = environment_id or (None if actor is not None and actor.type is ActorType.AGENT else MAIN_ENVIRONMENT)
         if "environment make" in line:
@@ -63,6 +61,9 @@ class FixtureJournal:
         with self.journal.database.repeated_work.request():
             answer = self.journal.run(line, actor, caller_environment)
         return FixtureLine(answer.code, answer.text)
+
+    def advance(self, duration: timedelta) -> None:
+        self.clock.advance(duration)
 
     def new_row_id(self, line: str, actor: Actor | None = None) -> int:
         return self.journal.new_row_id(line, actor)
@@ -87,6 +88,10 @@ class FixtureJournal:
         for name in self.container.get(UnreadSkills).unread(self.agent.id):
             self.hook(session, HookSamples.sample("pre_tool_use", {"name": "Read", "category": ToolType.READ, "files": [skills[name]], "diff": None}))
         self.run_listeners()
+
+    # a step a module offers for a part of the world no command makes, such as a run printing its output
+    def step(self, name: str, *arguments: object) -> object:
+        return self.journal.step(name, *arguments)
 
     def row(self, model: type, row_id: int):
         return self.container.get(Queries).query(model).find(row_id)

@@ -4571,7 +4571,8 @@
     "journal.journal_home.JournalHome": {
       "bases": [],
       "fields": [
-        "folder: Path"
+        "folder: Path",
+        "container_setup: Callable[[Container], None] | None"
       ],
       "methods": [
         "project_folder(self) -> Path",
@@ -5698,6 +5699,7 @@
         "agent_groups: ClassVar[list[AgentGroup | type[AgentGroup]]]",
         "profiles: ClassVar[list[AgentProfile]]",
         "providers: ClassVar[list[type[Provider]]]",
+        "story_steps: ClassVar[list[type[StoryStep]]]",
         "settings: ClassVar[Sequence[SettingNode | type[SettingList]]]",
         "tunnels: ClassVar[list[type[Tunnel]]]",
         "shared_rows: ClassVar[list[type[SharedRows]]]",
@@ -5768,6 +5770,7 @@
       "fields": [],
       "methods": [
         "modules(self) -> tuple[type[Module], ...]",
+        "story_step(self, name: str) -> StoryStep",
         "default_modules(self) -> tuple[type[Module], ...]",
         "listed_modules(self, path: DottedPath) -> tuple[type[Module], ...]",
         "listed_entries(self, path: DottedPath) -> tuple[object, ...]",
@@ -5936,6 +5939,15 @@
       "methods": [
         "names(self) -> set[str]",
         "problems(self, names: Sequence[str], subject_id: int) -> tuple[str, ...]"
+      ]
+    },
+    "module.story_step.StoryStep": {
+      "bases": [],
+      "fields": [
+        "name: ClassVar[str]"
+      ],
+      "methods": [
+        "run(self, container: Container) -> object"
       ]
     },
     "module.suite.Suite": {
@@ -9572,6 +9584,7 @@
         "hook(self, session: str, sample: HookSample) -> HookReply",
         "repeated_work(self) -> RepeatedWork",
         "run_listeners(self) -> None",
+        "step(self, name: str) -> object",
         "run_tick_handler(self, label: str) -> None",
         "tick(self, session: str) -> HookReply",
         "busy_database(self) -> Generator[None]",
@@ -10703,5 +10716,5 @@
       ]
     }
   },
-  "engine_version": "5.1.0"
+  "engine_version": "5.0.0"
 }

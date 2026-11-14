@@ -2,6 +2,7 @@
 import {computed, nextTick, onUnmounted, ref, watch} from "vue";
 import {Btn, EmptyState, MenuItem, MenuLabel, RowList, SearchBar, Segmented, toggleFilter, useNow, useWindow} from "@journal/window-kit";
 import AgentCard from "./AgentCard.vue";
+import {busyFirst, isWaiting} from "./agentOrder.js";
 
 // `texts` is what the window says when it is empty on each tab, {running, closed, all}, each {title, hint}: what is empty in its own terms and what brings rows
 const props = defineProps({empty: {type: String, required: true}, texts: {type: Object, default: () => ({})}});
@@ -49,7 +50,7 @@ const now = useNow();
 const lingering = ref([]);
 const lingerIds = computed(() => new Set(lingering.value.filter((held) => now.value - held.left < LINGER_MILLISECONDS).map((held) => held.row.id)));
 const lingerRows = computed(() => lingering.value.filter((held) => lingerIds.value.has(held.row.id)).map((held) => held.row));
-const listed = computed(() => [...shown.value, ...lingerRows.value]);
+const listed = computed(() => [...busyFirst(shown.value), ...lingerRows.value]);
 let readFor = "";
 let readRows = [];
 async function keepEnded(row) {
@@ -174,7 +175,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
         </EmptyState></template>
         <template v-else><RowList moves :leaves-at-once="changing" :rows="visible" :failure="failure" :loaded="loaded" :more="!openRow && more" :older="older" :empty="emptyText.title" :hint="emptyText.hint" :searching="searching">
             <template #default="{row}">
-                <div :class="['agent-row', {lingering: lingerIds.has(row.id) && row.id !== openId}]" :data-agent-row="row.id" :data-agent-lingering="lingerIds.has(row.id) ? '' : null">
+                <div :class="['agent-row', {lingering: lingerIds.has(row.id) && row.id !== openId, waiting: isWaiting(row) && row.id !== openId}]" :data-agent-row="row.id" :data-agent-lingering="lingerIds.has(row.id) ? '' : null" :data-agent-waiting="isWaiting(row) ? '' : null">
                     <AgentCard :row="row" :facts="factsOf(row)" :progress="progressOf(row)" :wait-reason="waitReasonOf(row)" :open="row.id === openId" @toggle="toggle(row)" />
                 </div>
             </template>
@@ -235,7 +236,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     min-height: 0;
 }
 
-.agent-row.lingering { opacity: 0.5; }
+.agent-row.lingering, .agent-row.waiting { opacity: 0.5; }
 
 .agent-row {
     position: relative;

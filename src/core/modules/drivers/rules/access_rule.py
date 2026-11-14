@@ -33,6 +33,12 @@ HELP_FLAG = "--help"
 RUN_STOP_LINE = "output stop"
 
 
+# a profile names the tools its agents may use beside reading, an MCP tool or a program's own one such as Artifact,
+# but a named program tool never writes files: a write stays bound to the profile's writable folders
+def is_named_tool(tool: Tool, named_tools: tuple[str, ...]) -> bool:
+    return tool.name in named_tools and (tool.name.startswith(MCP_PREFIX) or not tool.category.writes_files)
+
+
 class AccessRule(ReadonlyRule):
     """An agent with read-only access reads, searches and runs the journal lines its type lists, on every
     program and under every overlay; a line no one can judge, a stop of a run it did not start and an edit of
@@ -109,7 +115,7 @@ class AccessRule(ReadonlyRule):
     def is_listed(self, hook: AgentHook, tool: Tool) -> bool:
         if tool.name in self.providers.provider(hook.event.program).safe_tools:
             return True
-        return tool.name.startswith(MCP_PREFIX) and tool.name in self.profile_tools(hook.agent_id)
+        return is_named_tool(tool, self.profile_tools(hook.agent_id))
 
     def is_writable(self, hook: AgentHook, tool: Tool) -> bool:
         if not tool.category.writes_files or not tool.files:

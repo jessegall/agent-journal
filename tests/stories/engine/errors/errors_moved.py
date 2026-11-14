@@ -14,7 +14,7 @@ MOVED_ERRORS = ("block_refusal", "deadline_passed_error", "duration_error", "mis
                 "server_files_error", "unbound_value_error", "user_approval_refusal", "wrong_instance_error")
 FIRST_MOVED_ERROR = "code_version_missing_error"
 MOVED_ENUM_COUNT = 13
-SAMPLE_SOURCE = "src/core/base/sample_error.py"
+SAMPLE_SOURCE = "src/core/old_place/sample_error.py"
 SAMPLE_TARGET = "src/engine/errors/sample_error.py"
 SAMPLE_CLASS = "class SampleError(Exception):\n    pass\n"
 REGISTRY_PATH = "engine.caller.caller_resolver"

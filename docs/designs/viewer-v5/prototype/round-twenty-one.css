@@ -1,0 +1,106 @@
+/* Round twenty-one (doc 1303): the process queue by lane. Every colour is a viewer token (styles.css, palette.css). Rows keep round nine's dots,
+   kind, time and chevron, and round sixteen's 30 px height; empty rows are one row high (round nineteen). */
+.q21 { --q21-inner: color-mix(in oklab, var(--border) 70%, transparent); }
+
+/* the toolbar: counts and the two filters */
+.q21-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px var(--inset); border-bottom: 1px solid var(--border); flex: none; }
+.q21-sum { flex: 1; min-width: 140px; color: var(--text-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+.q21-tools label { display: flex; align-items: center; gap: 6px; color: var(--text-3); font-size: 12px; }
+.q21-tools select.qbox { height: 26px; font-size: 12px; }
+
+/* the three lane tiles */
+.q21-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-bottom: 1px solid var(--border); flex: none; }
+.q21-tile { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 10px var(--inset) 11px; border: 0; background: none; color: var(--text); text-align: left; }
+.q21-tile + .q21-tile { border-left: 1px solid var(--border); }
+.q21-tile:hover { background: var(--hover); }
+.q21-tile:focus-visible { outline: 0; box-shadow: inset 0 0 0 1px var(--accent); }
+.q21-tile small { display: flex; align-items: center; gap: 6px; color: var(--text-3); font-size: 11px; white-space: nowrap; }
+.q21-tile b { font-size: 18px; font-weight: 600; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.q21-tile b span { color: var(--text-3); font-size: 12px; font-weight: 400; }
+.q21-meter { display: block; height: 4px; margin: 4px 0 2px; overflow: hidden; border-radius: 2px; background: var(--chip); }
+.q21-meter i { display: block; height: 100%; border-radius: 2px; background: var(--accent); transition: width .4s cubic-bezier(.2, .9, .25, 1); }
+.q21-meter.warn i { background: var(--tone-warn); }
+.q21-meter.bad i { background: var(--danger); }
+.q21-tile-sub { color: var(--text-4); font-size: 11px; }
+.q21-tile-sub.on { color: var(--text-2); }
+
+/* one lane: a sticky head, what goes in it, the paused or held note, the slot strip, then its rows */
+.q21-lane { border-bottom: 1px solid var(--border); }
+.q21-lane.stopped { box-shadow: inset 3px 0 0 var(--tone-warn); }
+.q21-head { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 8px; height: 34px; margin: 0; padding: 0 12px 0 var(--inset); border-bottom: 1px solid var(--border); background: var(--side); color: var(--text); font-size: 12.5px; font-weight: 600; }
+.q21-use { color: var(--text-3); font-size: 12px; font-weight: 400; font-variant-numeric: tabular-nums; }
+.q21-use b { color: var(--text); font-weight: 600; }
+.q21-chip { display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+.q21-chip.warn { background: color-mix(in oklab, var(--tone-warn) 15%, transparent); color: var(--tone-warn); }
+.q21-chip.bad { background: color-mix(in oklab, var(--danger) 15%, transparent); color: var(--danger); }
+.q21-what { margin: 0; padding: 8px var(--inset) 0; color: var(--text-3); font-size: 12px; }
+.q21-note { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; margin: 8px var(--inset) 0; padding: 8px 10px; border-radius: 6px; background: color-mix(in oklab, var(--tone-warn) 10%, transparent); color: var(--text-2); font-size: 12px; line-height: 1.5; animation: r8-drop .18s ease-out both; }
+.q21-note > svg { flex: none; margin-top: 2px; color: var(--tone-warn); }
+.q21-note > span { flex: 1; min-width: 200px; }
+.q21-note b { color: var(--tone-warn); font-weight: 600; }
+form.q21-note { align-items: center; }
+form.q21-note > svg { margin-top: 0; }
+.q21-reason.qbox { flex: 1; min-width: 160px; height: 26px; font-size: 12px; }
+
+/* the slot strip: one cell per slot; a run fills the cells it takes; stopped, the free cells are hatched */
+.q21-strip { display: flex; gap: 3px; height: 15px; margin: 10px var(--inset); }
+.q21-seg { flex: 1; min-width: 0; overflow: hidden; border: 1.5px solid var(--border-3); border-radius: 3px; color: #fff; font: 500 9.5px/12px var(--font); font-style: normal; text-align: center; white-space: nowrap; }
+.q21-seg.on { border-color: var(--accent); background: var(--accent); animation: q9-pop .3s cubic-bezier(.2, .9, .25, 1.4) both; }
+.q21-seg.over { border-color: var(--danger); background: var(--danger); }
+.q21-lane.stopped .q21-seg:not(.on):not(.over) { border-color: color-mix(in oklab, var(--tone-warn) 50%, transparent); background: repeating-linear-gradient(135deg, color-mix(in oklab, var(--tone-warn) 32%, transparent) 0 2px, transparent 2px 5px); }
+.q21-strip.fine { gap: 2px; height: 11px; }
+.q21-strip.fine .q21-seg { border-width: 1px; border-radius: 2px; }
+
+/* the Running and Waiting heads inside a lane: the reason a line waits is said once, at the right */
+.q21-sub { display: flex; align-items: center; gap: 6px; margin: 0; padding: 6px var(--inset) 4px; color: var(--text-2); font-size: 11px; font-weight: 500; }
+.q21-sub span { color: var(--text-4); font-weight: 400; }
+.q21-sub .why { margin-left: auto; color: var(--text-3); }
+.q21-lane.stopped .q21-sub .why { color: var(--tone-warn); }
+
+/* rows: lead, kind, command with its marks, what it takes, who, time, chevron */
+.q21-run { border-top: 1px solid var(--q21-inner); }
+.q21-line { display: grid; grid-template-columns: 14px 58px minmax(0, 1fr) 52px 96px 64px 12px; align-items: center; gap: 10px; width: 100%; height: 30px; padding: 0 12px 0 var(--inset); border: 0; background: none; color: var(--text); text-align: left; }
+button.q21-line:hover { background: var(--hover); }
+.q21-line:focus-visible { outline: 0; box-shadow: inset 0 0 0 1px var(--accent); }
+.q21-run.open > .q21-line { background: var(--raised); }
+.q21-run.open .q9-chev { transform: rotate(180deg); color: var(--text-2); }
+.q21-cmd { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.q21-cmd .txt { overflow: hidden; font: 12px var(--mono); text-overflow: ellipsis; white-space: nowrap; }
+.q21-cmd em { flex: none; height: 16px; padding: 0 5px; border-radius: 4px; background: var(--chip); color: var(--text-2); font-size: 10.5px; font-style: normal; line-height: 16px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.q21-cmd em.up { color: var(--accent-text); }
+.q21-cmd em.bad { color: var(--danger); }
+.q21-cost { color: var(--text-4); font-size: 11px; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.q21-who { display: flex; justify-content: flex-end; min-width: 0; overflow: hidden; color: var(--text-3); font-size: 11.5px; text-overflow: ellipsis; white-space: nowrap; }
+.q21-who.link { cursor: pointer; }
+.q21-who.link:hover { color: var(--accent-text); }
+.q21-facts { padding: 8px var(--inset) 10px 40px; border-top: 1px solid var(--q21-inner); background: var(--bg-2); animation: r8-drop .18s ease-out both; }
+.q21-facts dl { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 3px 12px; margin: 0; font-size: 12px; }
+.q21-facts dt { color: var(--text-3); }
+.q21-facts dd { margin: 0; color: var(--text-2); overflow-wrap: anywhere; }
+.q21-facts dd .q21-who { justify-content: flex-start; }
+.q21-out { margin-top: 6px; font-size: 12px; }
+.q21-empty { border-top: 1px solid var(--q21-inner); border-bottom: 0; }
+.q21-lane > .q21-empty:first-of-type { border-top: 0; }
+
+/* finished lately: lead, lane, kind, command, who, took, when */
+.q21-run.done .q21-line { grid-template-columns: 14px 50px 58px minmax(0, 1fr) 96px 64px 56px; }
+.q21-run.done .q21-cmd .txt { color: var(--text-2); }
+.q9-section > .q21-run.done:first-of-type { border-top: 0; }
+.q21-lane-word { color: var(--text-3); font-size: 11px; }
+
+/* the waits of the last hour */
+.q21-waits { width: calc(100% - 2 * var(--inset)); margin: 6px var(--inset) 16px; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+.q21-waits th { padding: 5px 0; border-bottom: 1px solid var(--border); color: var(--text-3); font-weight: 500; text-align: right; }
+.q21-waits td { padding: 5px 0; border-bottom: 1px solid var(--q21-inner); color: var(--text-2); text-align: right; }
+.q21-waits th:first-child, .q21-waits td:first-child { text-align: left; }
+.q21-waits td:first-child { color: var(--text); }
+
+@media (prefers-reduced-motion: reduce) { .q21-seg.on, .q21-note, .q21-facts { animation: none; } .q21-meter i { transition: none; } }
+/* narrow: who drops from the rows (the folded facts still name it) */
+@media (max-width: 620px) {
+  .q21-line { grid-template-columns: 14px 46px minmax(0, 1fr) 44px 56px 12px; }
+  .q21-line > .q21-who { display: none; }
+  .q21-run.done .q21-line { grid-template-columns: 14px 44px minmax(0, 1fr) 56px 56px; }
+  .q21-run.done .q9-kind { display: none; }
+  .q21-tile { padding-inline: 12px; }
+}
