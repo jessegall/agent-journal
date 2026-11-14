@@ -314,7 +314,6 @@ tests/stories/core/modules/tasks/state_sweep.py
 tests/stories/core/modules/tasks/task_brief_first.py
 tests/stories/core/modules/tasks/task_context.py
 tests/stories/core/modules/tasks/task_records.py
-tests/stories/core/modules/templates/module_templates.py
 tests/stories/core/modules/templates/origin.py
 tests/stories/core/modules/templates/sending.py
 tests/stories/core/modules/third_party.py

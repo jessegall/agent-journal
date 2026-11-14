@@ -538,7 +538,6 @@ tests/stories/core/modules/tasks/task_start_with_one_in_hand.py
 tests/stories/core/modules/tasks/task_tags.py
 tests/stories/core/modules/tasks/task_waits.py
 tests/stories/core/modules/templates/active_templates.py
-tests/stories/core/modules/templates/module_templates.py
 tests/stories/core/modules/templates/origin.py
 tests/stories/core/modules/templates/sending.py
 tests/stories/core/modules/templates/support/acme_review/module.py
