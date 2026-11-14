@@ -13,6 +13,7 @@ export function ownerName(row, agents) {
 export const memoryFilters = (rows, agents) => [
     {key: "state", label: "State", options: [["active", "Active"], ["removed", "Removed"]], get: (row) => row.state, default: ["active"]},
     {key: "agent", label: "Agent", options: optionsOf(rows, (row) => ownerName(row, agents)), get: (row) => ownerName(row, agents)},
+    {key: "task", label: "Task", options: optionsOf(rows, (row) => (row.task_id ? `Task ${row.task_id}` : "No task")), get: (row) => (row.task_id ? `Task ${row.task_id}` : "No task")},
 ];
 
 export const stateWords = (row) => wordLabel(row.state);

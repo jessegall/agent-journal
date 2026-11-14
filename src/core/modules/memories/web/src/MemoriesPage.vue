@@ -27,11 +27,10 @@ const emptyTitle = computed(() => (memories.rows.value.length ? "No memory here 
 </script>
 
 <template>
-    <ListReaderLayout v-model:chosen="chosen" :items="items" :list-width="LIST_WIDTH" :place="place" :empty-title="emptyTitle" pick-line="Choose a memory" data-memories>
+    <ListReaderLayout v-model:chosen="chosen" :items="items" :list-width="LIST_WIDTH" :place="place" :empty-title="emptyTitle" pick-line="Choose a memory" open-first data-memories>
         <template #top>
             <PageHeader title="Memories" :count="memories.total.value" />
             <FilterBar v-model="filter" v-model:words="words" :fields="fields" :rows="memories.rows.value" :shown="shown.length" placeholder="Search memories" />
-            <div class="columns" aria-hidden="true"><span class="columns-memory">Memory</span><span>Task</span></div>
             <template v-if="memories.hasMore.value">
                 <p class="more" data-memories-more>Showing {{ memories.rows.value.length }} of {{ memories.total.value }} <Btn small bordered @click="memories.more()">Show more</Btn></p>
             </template>
@@ -55,18 +54,6 @@ const emptyTitle = computed(() => (memories.rows.value.length ? "No memory here 
 </template>
 
 <style scoped>
-.columns {
-    display: flex;
-    gap: var(--s3);
-    padding: 4px 16px;
-    color: var(--text-3);
-    font-size: 11px;
-}
-
-.columns-memory {
-    flex: 1;
-}
-
 .more {
     margin: 0;
     padding: 4px 16px;
