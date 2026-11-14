@@ -1,4 +1,3 @@
-from server.execution.session_starters import SessionStarters
 import argparse
 import faulthandler
 import math
@@ -31,6 +30,7 @@ from engine.performance.timing_log import TimingLog
 from engine.module.code_fingerprint import CodeFingerprint
 from engine.module.module_finder import ModuleFinder
 from engine.database.reported_findings import ReportedFindings
+from server.execution.session_starters import SessionStarters
 from server.work.booting_work import BootingWork
 from server.work.code_sync_work import CodeSyncWork
 from server.handover.code_version import CodeVersion
@@ -249,7 +249,7 @@ def main(argv: list[str]) -> int:
         viewer.stop()
         deadline = time.monotonic() + STOP_LIMIT_SECONDS
         for thread in threads:
-            Clock().join(thread, deadline - time.monotonic())
+            thread.join(deadline - time.monotonic())
         ticker.stop(deadline - time.monotonic())
         server.context.request_trace.close()
         hook_database.close()

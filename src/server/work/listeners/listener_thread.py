@@ -1,3 +1,4 @@
+from engine.time.clock import Clock
 import threading
 from collections.abc import Callable
 
@@ -51,7 +52,7 @@ class ListenerThread:
 
     def join(self, limit_seconds: float) -> None:
         if self.thread.is_alive():
-            self.thread.join(max(0.0, limit_seconds))
+            Clock().join(self.thread, max(0.0, limit_seconds))
 
     # Ends the thread after the round it runs, waiting at most STOP_LIMIT_SECONDS for that round; a round still
     # running then is left to die with the server, whose writes SQLite rolls back.
