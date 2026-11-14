@@ -16,6 +16,7 @@ from engine.process.door.execution_request import ExecutionRequest
 from engine.process.door.process_executor import ProcessExecutor
 from engine.instruction.instruction_imports import INSTRUCTION_FILES
 from engine.errors.refusal import Refusal
+from engine.time.polled_wait import PolledWait
 from core.modules.environments.models.environment import Environment
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.support.base_commit import NAME_SEPARATOR, BaseCommit
@@ -32,6 +33,9 @@ from suites.coding.modules.workers.support.merge_builds import MergeBuilds
 from suites.coding.support.worktree_checkouts import WORKTREES_FOLDER
 
 GIT_LIMIT_SECONDS = 60
+# another git of the worktree, such as the merge of the same worktree, holds its index for a while
+INDEX_LOCK_WAIT = PolledWait(limit_seconds=30, pause_seconds=0.5)
+INDEX_LOCK_TEXT = "index.lock"
 CHECKOUT_LIMIT_SECONDS = 300
 BUILD_LIMIT_SECONDS = 300
 WORKTREE_EXCLUDE_FILE = "journal-exclude"
@@ -737,6 +741,9 @@ class WorktreeGit:
 
     def checked(self, folder: str, limit_seconds: int, *arguments: str) -> subprocess.CompletedProcess[str]:
         finished = self.git(folder, limit_seconds, *arguments)
+        if self.is_index_locked(finished):
+            raise Refusal(f"the worktree {folder} is busy: another git of it held its index.lock for {INDEX_LOCK_WAIT.limit_seconds:.0f} seconds",
+                          "start it again once that git has ended")
         if finished.returncode != 0:
             raise Refusal(f"git {' '.join(arguments[:2])} failed in {folder}", (finished.stderr or finished.stdout).strip())
         return finished
@@ -759,7 +766,23 @@ class WorktreeGit:
                 return argument
         return ""
 
+    # a step that finds the index locked by another git of the worktree runs again once the lock has gone, within a bounded wait
     def git(self, folder: str, limit_seconds: int, *arguments: str) -> subprocess.CompletedProcess[str]:
+        attempts = [self.git_once(folder, limit_seconds, *arguments)]
+        if self.is_index_locked(attempts[0]):
+            INDEX_LOCK_WAIT.poll(lambda: not self.is_index_locked(self.attempted(attempts, self.git_once(folder, limit_seconds, *arguments))))
+        return attempts[-1]
+
+    @staticmethod
+    def attempted(attempts: list[subprocess.CompletedProcess[str]], finished: subprocess.CompletedProcess[str]) -> subprocess.CompletedProcess[str]:
+        attempts.append(finished)
+        return finished
+
+    @staticmethod
+    def is_index_locked(finished: subprocess.CompletedProcess[str]) -> bool:
+        return finished.returncode != 0 and INDEX_LOCK_TEXT in (finished.stderr or "")
+
+    def git_once(self, folder: str, limit_seconds: int, *arguments: str) -> subprocess.CompletedProcess[str]:
         line = ["git", "-C", folder, *arguments]
         category = ProcessType.MERGE if self.changes_branches(arguments) else ProcessType.QUICK
         try:
