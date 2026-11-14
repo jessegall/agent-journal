@@ -32,12 +32,16 @@ def proc_row(stat_text: str, boot_seconds: float, tick_rate_hertz: int) -> Proce
     return ProcessRow(int(pid_text), int(fields[1]), Timestamp(datetime.fromtimestamp(started_seconds, timezone.utc)))
 class ProcessTable:
     """The machine's running processes, read once: from ps on macOS, from /proc on Linux; with their command
-    lines, from ps on both."""
+    lines, from ps on both. A shell sandbox that refuses ps, as a sandboxed agent's line run without the server
+    is, sees no processes: its caller is then named by its variables alone."""
 
     def rows(self) -> list[ProcessRow]:
         if sys.platform.startswith("linux"):
             return self.proc_rows()
-        finished = subprocess.run(PS_LINE, capture_output=True, text=True, timeout=PS_TIMEOUT_SECONDS, env=PS_ENVIRONMENT)
+        try:
+            finished = subprocess.run(PS_LINE, capture_output=True, text=True, timeout=PS_TIMEOUT_SECONDS, env=PS_ENVIRONMENT)
+        except PermissionError:
+            return []
         return ps_rows(finished.stdout)
 
     def commands(self) -> list[ProcessCommand]:
