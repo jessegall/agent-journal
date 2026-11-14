@@ -3,7 +3,6 @@ from typing import ClassVar
 
 from engine.agent.enums.role_group import RoleGroup
 from engine.driver.agent_hook import AgentHook
-from engine.driver.deferred_rule import DeferredRule
 from engine.driver.driver_rule import DriverRule
 from engine.driver.open_row import OpenRow
 from engine.enums.state_tier import StateTier
@@ -18,7 +17,7 @@ class AgentState:
     drivers: ClassVar[Sequence[str]] = ["*"]
     role_group: ClassVar[RoleGroup] = RoleGroup.ANY
     rules: ClassVar[Sequence[type[DriverRule]]] = []
-    deferred: ClassVar[Sequence[type[DeferredRule]]] = []
+    deferred: ClassVar[Sequence[type]] = []
     listeners: ClassVar[Sequence[type]] = []
     substates: ClassVar[Sequence[type["AgentState"]]] = []
     exclusive: ClassVar[bool] = False

@@ -2049,6 +2049,20 @@
         "line_at(self, remaining: int) -> Nudge | None"
       ]
     },
+    "driver.deferred_rule.DeferredRule": {
+      "bases": [
+        "SingleInstance"
+      ],
+      "fields": [
+        "name: ClassVar[str]",
+        "hook: ClassVar[HookEventName | HookWildcard]",
+        "drivers: ClassVar[Sequence[str]]",
+        "role_group: ClassVar[RoleGroup]"
+      ],
+      "methods": [
+        "after(self, call: HookCallLike) -> Sequence[Command[object]]"
+      ]
+    },
     "driver.diff_count.DiffCount": {
       "bases": [],
       "fields": [
@@ -2199,6 +2213,8 @@
       "fields": [],
       "methods": [
         "id(self) -> int",
+        "session_agent_id(self) -> int",
+        "transcript(self) -> HookTranscript",
         "refusal(self) -> str",
         "lines(self) -> str",
         "updated_input(self) -> str",
@@ -4400,7 +4416,8 @@
         "line: ClassVar[str]",
         "command_types_setting: ClassVar[str]",
         "behaviours: ClassVar[HelperBehaviours]",
-        "commands: ClassVar[CommandAllowList]"
+        "commands: ClassVar[CommandAllowList]",
+        "journal_runs: ClassVar[tuple[str, ...]]"
       ],
       "methods": [
         "bases(cls) -> tuple[str, ...]",
@@ -5431,6 +5448,8 @@
         "drivers(self, modules: Sequence[type[Module]]) -> tuple[DriverEntry, ...]",
         "overlays(self, modules: Sequence[type[Module]]) -> tuple[OverlayEntry, ...]",
         "agent_states(self, modules: Sequence[type[Module]]) -> tuple[AgentStateEntry, ...]",
+        "deferred_rules(self, modules: Sequence[type[Module]]) -> tuple[DeferredRuleEntry, ...]",
+        "check_deferred(state: type[AgentState]) -> None",
         "check_substates(declared: Sequence[tuple[str, type[AgentState], str]]) -> None",
         "with_substates(self, owner: str, state: type[AgentState], parent: str) -> list[tuple[str, type[AgentState], str]]",
         "state_tree(self, states: Sequence[type[AgentState]]) -> list[type[AgentState]]",
@@ -5469,6 +5488,7 @@
         "owner(module: type[Module], suites: SuiteList) -> str",
         "declaration_problems(self, module: type[Module], declaration: type[HelperType], claimed: dict[str, str], owner: str) -> list[str]",
         "list_problems(name: str, commands: CommandAllowList, lines: Mapping[str, Set[JournalLineClass]]) -> Iterator[str]",
+        "run_problems(name: str, commands: CommandAllowList, journal_runs: Sequence[str], lines: Mapping[str, Set[JournalLineClass]]) -> Iterator[str]",
         "inheritance_problems(self, module: str, declaration: type[HelperType], book: HelperTypeBook) -> list[str]"
       ]
     },
@@ -7866,6 +7886,21 @@
         "matches(self, role: str, driver: str, helper_type: str) -> bool"
       ]
     },
+    "registry.deferred_rule_entry.DeferredRuleEntry": {
+      "bases": [],
+      "fields": [
+        "name: str",
+        "path: DottedPath",
+        "state: str",
+        "hook: str",
+        "drivers: Sequence[str]",
+        "role_group: RoleGroup"
+      ],
+      "methods": [
+        "covers_hook(self, hook_name: str) -> bool",
+        "covers(self, driver: str) -> bool"
+      ]
+    },
     "registry.dock_entry.DockEntry": {
       "bases": [],
       "fields": [
@@ -8192,6 +8227,7 @@
         "bindings: dict[str, DottedPath]",
         "overlays: tuple[OverlayEntry, ...]",
         "agent_states: tuple[AgentStateEntry, ...]",
+        "deferred_rule_entries: tuple[DeferredRuleEntry, ...]",
         "rules: tuple[DriverRuleEntry, ...]",
         "suites: tuple[SuiteEntry, ...]",
         "drivers: tuple[DriverEntry, ...]",
@@ -8238,6 +8274,7 @@
         "hook_rules(self, hook_name: str) -> list[DriverRuleEntry]",
         "gates(self) -> dict[str, AgentStateEntry]",
         "rule_gate(self, rule_name: str) -> AgentStateEntry | None",
+        "deferred_rules(self, state_name: str, hook_name: str) -> list[DeferredRuleEntry]",
         "tier_states(self, driver: str, tier: int) -> list[AgentStateEntry]",
         "default_states(self, suite_name: str, role: str, driver: str, helper_type: str) -> tuple[DefaultStateEntry, ...]",
         "agent_state(self, name: str) -> AgentStateEntry | None",
@@ -10488,5 +10525,5 @@
       ]
     }
   },
-  "engine_version": "5.1.0"
+  "engine_version": "5.2.0"
 }

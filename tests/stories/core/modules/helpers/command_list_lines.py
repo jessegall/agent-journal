@@ -5,6 +5,7 @@ from pathlib import Path
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
+from suites.coding.modules.workers.types.worker import Worker
 from tests.stories.core.modules.helpers.support.journal_hook_lines import journal_hook_line
 from tests.stories.core.modules.helpers.support.list_workers import WORKER_SESSION, worker_story
 
@@ -65,3 +66,10 @@ def test_a_worker_runs_every_journal_line_its_skills_name_for_it(worker_story):
     story, worker = worker_story
     for group, subcommand_name in skill_lines():
         story.expect_text(f"{group} --help", f"  {subcommand_name}", actor=worker)
+
+
+def test_a_worker_runs_every_journal_line_the_journal_runs_under_it(worker_story):
+    story, worker = worker_story
+    for line in Worker.journal_runs:
+        group, verb = line.split(" ")
+        story.expect_text(f"{group} --help", f"  {verb}", actor=worker)
