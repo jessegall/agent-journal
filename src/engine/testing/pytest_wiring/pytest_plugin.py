@@ -148,8 +148,11 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo[None]) ->
     return report
 
 
-def pytest_report_teststatus(report: pytest.TestReport, config: pytest.Config) -> None:
+def pytest_report_teststatus(report: pytest.TestReport | pytest.CollectReport, config: pytest.Config) -> None:
     # The one hook that gets a report and the config, and the controller of a run with -n hears every runner's reports in it.
+    # A file that fails to import sends its collection report here too, and that report has no duration.
+    if isinstance(report, pytest.CollectReport):
+        return
     config.stash[RUN_DURATIONS].add(report.nodeid, report.duration)
 
 

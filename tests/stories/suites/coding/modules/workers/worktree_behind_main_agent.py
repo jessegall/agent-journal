@@ -76,6 +76,21 @@ def s46_the_main_agent_leaves_a_passed_worker_alone(story, repository, worker: A
     story.expect_rows([(check.state, check.reason) for check in checks(story)] == [(BehindCheckState.IGNORED, "it merges tomorrow")], detail=str(checks(story)))
 
 
+def s49_a_worktree_at_the_forced_count_is_ordered_to_update(story, repository, worker: Actor) -> None:
+    setting(story, "forced-update-commits", 1)
+    diverge_file(repository, worker, CLASHING_FILE, CLASHING_FILE)
+    stale_check(story)
+    story.expect_rows(expected_nudge(UPDATE_ORDERED).matches_text(worker_lines(story, worker)), [check.state for check in checks(story)] == [BehindCheckState.ORDERED],
+                      detail=worker_lines(story, worker))
+
+
+def s50_the_merger_cannot_leave_a_worktree_at_the_forced_count(story, repository, worker: Actor) -> None:
+    diverge_file(repository, worker, CLASHING_FILE, CLASHING_FILE)
+    stale_check(story)
+    setting(story, "forced-update-commits", 1)
+    story.expect_refusal(f'merger leave {agent_number(story, worker.id)} --why "it merges tomorrow"', "never left", actor=merger(story))
+
+
 def s47_releasing_the_worker_closes_its_open_check_as_gone(story, repository, worker: Actor) -> None:
     diverge_file(repository, worker, CLASHING_FILE, CLASHING_FILE)
     stale_check(story)
@@ -107,6 +122,7 @@ def g60_a_worker_naming_another_worker_is_refused(story, repository, worker: Act
 
 CASES: list[Callable[..., None]] = [s42_markers_still_open_after_the_wait_reach_the_merger_to_advise_once, s43_advice_that_did_not_help_is_passed_to_the_main_agent_with_the_reason,
                                     s45_the_main_agent_orders_the_update_as_the_merger_would, s46_the_main_agent_leaves_a_passed_worker_alone,
+                                    s49_a_worktree_at_the_forced_count_is_ordered_to_update, s50_the_merger_cannot_leave_a_worktree_at_the_forced_count,
                                     s47_releasing_the_worker_closes_its_open_check_as_gone, s48_no_step_of_an_update_asks_the_person_anything,
                                     f52_an_ordered_update_not_run_is_reminded_twice_then_the_merger_hears, g60_a_worker_naming_another_worker_is_refused]
 
