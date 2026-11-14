@@ -4,7 +4,7 @@ const OTHER_SECTION = "Settings";
 const DRAWN_TYPES = ["flag", "number", "choice", "list"];
 const SECRET = "secret";
 
-export const screenName = (plugin) => `plugin.${plugin}`;
+const screenName = (plugin) => `plugin.${plugin}`;
 
 function valueOf(setting) {
     if (setting.type === "flag") return isOn(setting);
@@ -14,12 +14,12 @@ function valueOf(setting) {
 
 // a plugin's settings as the nodes a settings screen draws: the section of a node is the group of its setting and its
 // kind is the type of its setting; a secret is no node, since no command sets it
-export function settingNodes(settings) {
+function settingNodes(settings) {
     return settings.filter((setting) => setting.type !== SECRET).map((setting) => ({
         key: setting.key,
         title: setting.title,
         description: setting.help,
-        kind: DRAWN_TYPES.includes(setting.type) ? setting.type : "text",
+        node_type: DRAWN_TYPES.includes(setting.type) ? setting.type : "text",
         section: setting.group || OTHER_SECTION,
         parent: setting.parent || null,
         source: "",

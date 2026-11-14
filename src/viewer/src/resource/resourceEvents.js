@@ -10,7 +10,7 @@ function resourceFollow() {
     const subscriptions = inject(RESOURCE_SUBSCRIPTIONS, null);
     if (subscriptions) return (patterns, heard) => subscriptions.follow("resources", patterns, heard);
     const context = inject(WINDOW_CONTEXT, null);
-    if (context) return (patterns, heard) => context.subscriptions.follow(context.window, patterns, heard);
+    if (context?.subscriptions) return (patterns, heard) => context.subscriptions.follow(context.window, patterns, heard);
     const unconnected = new WindowSubscriptions();
     return (patterns, heard) => unconnected.follow("resources", patterns, heard);
 }

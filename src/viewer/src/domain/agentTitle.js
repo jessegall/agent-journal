@@ -13,7 +13,7 @@ export const agentNumber = (agent) => `${agent.role} ${agent.number}`;
 
 // the name of an agent as the server builds it (src/engine/agent/agent_name.py): its role and number, such as Worker 848,
 // and Main agent for the main agent; tests/fixtures/agent_names.json holds the names both sides must print
-export const agentName = (agent) => (agent.role === MAIN_ROLE ? MAIN_NAME : `${capital(agent.role)} ${agent.number}`);
+const agentName = (agent) => (agent.role === MAIN_ROLE ? MAIN_NAME : `${capital(agent.role)} ${agent.number}`);
 
 // the one way the viewer names an agent: the title is its profile's name (Planner, Worker senior, Merger) or its role when it has
 // no profile, and the subtext is its role with its number (worker 848); a given name and a row id are never shown

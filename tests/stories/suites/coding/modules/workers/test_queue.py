@@ -447,3 +447,10 @@ def test_the_picked_tests_run_on_the_work_merged_into_a_base_that_moved_after_th
     story.expect_text("worker-worktree show 1", "state: cut", actor=story.agent)
     story.expect_text("task show 1", "state: started", actor=story.agent)
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
+
+
+def test_a_release_of_the_worker_ends_the_proof_test_that_waited_or_ran_for_its_worktree(new_story, monkeypatch):
+    story, _, worker, _ = queued_story(new_story, monkeypatch)
+    story.expect_success(f'worker release {agent_number(story, worker.id)} --abandon "the worker is gone"', actor=story.agent)
+    story.run_listeners()
+    story.expect_text("proof show 1", "state: short", "was abandoned or removed while this test waited or ran", actor=story.agent)

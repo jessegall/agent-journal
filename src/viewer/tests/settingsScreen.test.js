@@ -4,7 +4,7 @@ import {SettingSectionList, SettingsScreen, sectionsOf, useSettingsDraft} from "
 import {drawnSettingComponent} from "./support/settingComponent.js";
 
 const NUMBER_RULE = JSON.stringify({rule: "number", minimum: 2, integer: true, maximum: null, exclusive: false});
-const node = (key, kind, component, value, extra = {}) => ({key, kind, component, section: "First", parent: null, title: `Title of ${key}`, description: `About ${key}.`, value, default: value, source: "default", choices: [], rule: "", requires: [], read_only: true, ...extra});
+const node = (key, node_type, component, value, extra = {}) => ({key, node_type, component, section: "First", parent: null, title: `Title of ${key}`, description: `About ${key}.`, value, default: value, source: "default", choices: [], rule: "", requires: [], read_only: true, ...extra});
 
 function screenOf(nodes) {
     const draft = useSettingsDraft({run: vi.fn(async () => ({ok: true})), reload: vi.fn(async () => {})});

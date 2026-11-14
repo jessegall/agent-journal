@@ -8,6 +8,7 @@ from engine.database.statement import Statement
 from core.modules.processes.models.enums.process_state import ProcessState
 from suites.coding.modules.workers.listeners.support.worker_test_starts import WorkerTestStarts
 from suites.coding.modules.workers.support.checkpoint_listing import CheckpointListing
+from suites.coding.modules.workers.support.checkpoint_runner import CheckpointRunner
 from suites.coding.modules.workers.support.worker_run_windows import WorkerRunWindows
 from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
 from tests.stories.core.support.agent_labels import agent_number
@@ -236,3 +237,14 @@ def test_194_the_proof_tests_of_a_run_a_server_update_left_queued_are_started_by
     StalledWorkerTestRuns()(worker.story.container)
     worker.story.run_listeners()
     worker.story.expect_rows(unstarted_count == 1, len(worker.started) == 3, rows(worker, REACHES)[0]["state"] == "running", detail=f"{unstarted_count}, {run_lines(worker)}")
+
+
+def test_a_running_reach_whose_tests_were_never_made_has_them_started_by_the_sweep(new_story, monkeypatch):
+    worker = checkpoint_worker(new_story, monkeypatch, "", "", "")
+    with monkeypatch.context() as failed_start:
+        failed_start.setattr(CheckpointRunner, "start", lambda runner, reach, context: None)
+        merge(worker)
+    worker.story.expect_rows(not worker.started, rows(worker, REACHES)[0]["state"] == "running")
+    StalledWorkerTestRuns()(worker.story.container)
+    worker.story.run_listeners()
+    worker.story.expect_rows(BUILD_TEST in run_lines(worker), rows(worker, REACHES)[0]["state"] == "running", detail=str(run_lines(worker)))

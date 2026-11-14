@@ -4,7 +4,7 @@ import {drawnSettingComponent} from "./support/settingComponent.js";
 
 test("the note names each type with its value and says where they are changed", () => {
     const note = drawnSettingComponent(SettingLayoutNote, {entries: [{name: "Researcher", value: "150k"}, {name: "Debugger", value: "no cap"}]});
-    expect(note.element.textContent.replace(/\s+/g, " ").trim()).toBe("Researcher 150k, Debugger no cap. They are changed on their own screens.");
+    expect(note.element.textContent.replace(/\s+/g, " ").trim()).toBe("Researcher 150k, Debugger no cap. They are changed on other screens.");
 });
 
 test("the note says its own words about where when it is given them", () => {

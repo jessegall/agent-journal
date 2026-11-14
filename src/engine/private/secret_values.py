@@ -20,6 +20,7 @@ class SecretValues:
 
     def __init__(self, folder: PrivateFolder) -> None:
         self.folder = folder
+        self.writes = 0
 
     def values(self) -> dict[str, str]:
         path = self.folder.file(VALUES_SUFFIX)
@@ -76,9 +77,11 @@ class SecretValues:
         return frozenset(FileAccess.read(path).split())
 
     def write(self, values: dict[str, str]) -> None:
+        self.writes += 1
         self.write_file(self.folder.made_file(VALUES_SUFFIX), HEADER + "".join(f"{name}={json.dumps(value)}\n" for name, value in values.items()))
 
     def write_shown(self, names: set[str]) -> None:
+        self.writes += 1
         self.write_file(self.folder.made_file(SHOWN_SUFFIX), "".join(f"{name}\n" for name in sorted(names)))
 
     @staticmethod

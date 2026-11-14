@@ -50,7 +50,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
                                                line=command.line, folder=command.folder, category=command.category,
                                                limit_seconds=command.limit_seconds, is_full_test_run=command.is_full_test_run,
                                                queued_at=context.timestamp if waits else None, started_at=None if waits else context.timestamp, plugin=command.plugin, run_name=command.run_name, is_queue_run=bool(command.plugin) or any(part.category.is_queued for part in command.parts) and all(part.category.is_queued or part.category is CommandCategory.JOURNAL for part in command.parts),
-                                               owner_agent_id=command.owner_agent_id, task_id=command.task_id, timeout_seconds=min(timeouts, default=None), priority=priority,
+                                               owner_agent_id=command.owner_agent_id, task_id=command.task_id, timeout_seconds=min(timeouts, default=command.category.default_timeout_seconds), priority=priority,
                                                execution_class=execution_class.name, first_priority=priority), context)
         readers = self.readers.all() if command.category.has_reader else ()
         layers = self.readers.layers()
