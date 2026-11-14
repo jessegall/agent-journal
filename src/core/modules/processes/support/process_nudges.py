@@ -1,6 +1,7 @@
 from core.modules.processes.models.enums.pressure_level import PressureLevel
 from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
 from engine.driver.interval import Interval
+from engine.driver.line_delivery import LineDelivery
 from engine.driver.seconds import Seconds
 from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.enums.nudge_type import NudgeType
@@ -35,14 +36,14 @@ READER_REQUEST_REFUSAL = NudgeDeclaration("processes.reader_request_refusal", Nu
 READER_BLOCK = NudgeDeclaration("processes.reader_block", NudgeType.REFUSAL, "Output {output} has no reader, request {request}: run journal reader draft {request} --save, or mark it unreadable",
                                 full_text=True)
 OUTPUT_CHECK = NudgeDeclaration("processes.output_check", NudgeType.STEERING, "Output {output} has run {minutes} min: check it is doing its work",
-                                required_command="journal output confirm {output}", wakes_agent=True, turn_limited=False)
-OUTPUT_ENDED = NudgeDeclaration("processes.output_ended", NudgeType.STEERING, "Output {output} ended", turn_limited=False, wakes_agent=True)
+                                required_command="journal output confirm {output}", wakes_agent=True, delivery=LineDelivery.WAKE_HOOK, turn_limited=False)
+OUTPUT_ENDED = NudgeDeclaration("processes.output_ended", NudgeType.STEERING, "Output {output} ended", turn_limited=False, wakes_agent=True, delivery=LineDelivery.WAKE_HOOK)
 OUTPUT_TIMEOUT = NudgeDeclaration("processes.output_timed_out", NudgeType.STEERING,
-                                  "Output {output} timed out after {seconds}s and was stopped: its output is kept", wakes_agent=True)
+                                  "Output {output} timed out after {seconds}s and was stopped: its output is kept", wakes_agent=True, delivery=LineDelivery.WAKE_HOOK)
 OUTPUT_STOPPED = NudgeDeclaration("processes.output_stopped", NudgeType.STEERING, "Output {output} was stopped partway: its output is kept, read what it printed so far")
-HUNG_RUN = NudgeDeclaration("processes.hung_run", NudgeType.STEERING, "Output {output} printed nothing for {seconds}s and was stopped: its output is kept", wakes_agent=True)
+HUNG_RUN = NudgeDeclaration("processes.hung_run", NudgeType.STEERING, "Output {output} printed nothing for {seconds}s and was stopped: its output is kept", wakes_agent=True, delivery=LineDelivery.WAKE_HOOK)
 RUN_CHECK = NudgeDeclaration("processes.look_at_run", NudgeType.STEERING, "Output {output} printed nothing for {seconds}s but uses CPU: read it, and stop it if it hangs",
-                               wakes_agent=True)
+                               wakes_agent=True, delivery=LineDelivery.WAKE_HOOK)
 DRAFT_READY = NudgeDeclaration("processes.draft_ready", NudgeType.STEERING, "No reader reads {name} yet; a draft fits output {output}: review and save it", required_command="journal reader add {name}")
 READER_FAILED = NudgeDeclaration("processes.reader_failed", NudgeType.STEERING, "Reader {reader} failed on output {output}; the full output stays readable")
 READER_DRAFT = NudgeDeclaration("processes.draft_a_reader", NudgeType.STEERING, "No reader reads {name} yet: draft one", required_command="journal reader add {name}")
@@ -86,7 +87,7 @@ SILENT_SAVED_PACKAGES = NudgeDeclaration("processes.silent_saved_packages", Nudg
 SILENT_SAVED_FAILURE = NudgeDeclaration("processes.silent_saved_failure", NudgeType.STEERING, "Saved command {name} failed without printing anything: fix its line",
                                         interval=Interval(SILENT_RUN_INTERVAL))
 RUN_FROZEN = NudgeDeclaration("processes.run_frozen", NudgeType.STEERING, "Output {output} printed nothing for {seconds}s and uses no CPU: read it, or it is stopped at {limit}s",
-                              wakes_agent=True)
+                              wakes_agent=True, delivery=LineDelivery.WAKE_HOOK)
 RUN_SPARSE = NudgeDeclaration("processes.run_sparse", NudgeType.NOTICE, "Output {output} prints about once every {seconds}s, too sparse for a reader: {hint}",
                               plural_text="outputs {output} print too seldom for a reader to follow: {hint}", id_field="output")
 STALLED_RUN = NudgeDeclaration("processes.stalled_run", NudgeType.NOTICE, "Output {output} has written nothing for {seconds}s and is still running: {hint}",
