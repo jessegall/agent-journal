@@ -1939,7 +1939,8 @@
       ],
       "methods": [
         "open_rows(self, hook: AgentHook) -> Sequence[OpenRow]",
-        "opener_key(self) -> str"
+        "opener_key(self) -> str",
+        "has_flag(cls) -> bool"
       ]
     },
     "driver.block_check.BlockCheck": {
@@ -2738,6 +2739,7 @@
         "is_open(self, entry: AgentStateEntry) -> bool",
         "open_rows(self, entry: AgentStateEntry) -> Sequence[OpenRow]",
         "stack(self, driver: str) -> list[Layer]",
+        "is_asked_on_this_hook(self, entry: AgentStateEntry) -> bool",
         "applies_to_role(self, state: AgentState) -> bool",
         "timed_rows(self, entry: AgentStateEntry, state: AgentState, key: str) -> Sequence[OpenRow]",
         "outcome(rows: Sequence[OpenRow]) -> str",

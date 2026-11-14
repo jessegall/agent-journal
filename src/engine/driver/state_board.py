@@ -51,8 +51,16 @@ class StateBoard:
         return rows
 
     def stack(self, driver: str) -> list[Layer]:
-        layers = [Layer(entry, row) for entry in self.registry.tier_states(driver, int(StateTier.STACK)) for row in self.open_rows(entry)]
+        entries = [entry for entry in self.registry.tier_states(driver, int(StateTier.STACK)) if self.is_asked_on_this_hook(entry)]
+        layers = [Layer(entry, row) for entry in entries for row in self.open_rows(entry)]
         return sorted(layers, key=lambda layer: (layer.row.opened_at, layer.overlay.position, layer.row.row_id), reverse=True)
+
+    # a flag reaches the rules beneath the state on any hook, so a flagged state is opened on every one; a state with
+    # every flag off is opened only on a hook its own rules hear, and counts as closed on the others
+    def is_asked_on_this_hook(self, entry: AgentStateEntry) -> bool:
+        if entry.path.checked_class(AgentState).has_flag():
+            return True
+        return bool(self.registry.state_rules(entry.name, self.hook.hook_name))
 
     # the role check rules use (Registry.driver_rules): the facts of the hook agent's helper type
     def applies_to_role(self, state: AgentState) -> bool:

@@ -52,6 +52,11 @@ class RaisingState(AgentState):
         raise RuntimeError("opener broke")
 
 
+class FlaggedState(LateState):
+    name = "samples.flagged"
+    delays_lines = True
+
+
 class MainOnlyState(CountedState):
     name = "samples.main-only"
     role_group = RoleGroup.PROMPT
@@ -82,10 +87,11 @@ class Ticks:
         return self.values.pop(0)
 
 
-def board(entries=(), role="main", elapsed=None, errors=None, log=None) -> StateBoard:
+def board(entries=(), role="main", elapsed=None, errors=None, log=None, hook_name="pre_tool_use", rules_by_state=None) -> StateBoard:
     registry = SimpleNamespace(agent_state=lambda name: None, suite=lambda name: None, helper_type_book=lambda: HelperTypeBook(),
-                               tier_states=lambda driver, tier: [state for state in entries if state.covers(driver)])
-    hook = SimpleNamespace(driver="builder", role=role, suite="", hook_name="pre_tool_use", environment_id=5, timestamp=LATE, agent_id=7)
+                               tier_states=lambda driver, tier: [state for state in entries if state.covers(driver)],
+                               state_rules=lambda name, hook: (rules_by_state or {}).get(name, {}).get(hook, []) if rules_by_state is not None else ["heard"])
+    hook = SimpleNamespace(driver="builder", role=role, suite="", hook_name=hook_name, environment_id=5, timestamp=LATE, agent_id=7)
     errors = errors or SimpleNamespace(reported=lambda argv, error, environment_id=None: None)
     return StateBoard(registry, Container(), errors, log or Log(), hook, elapsed or Ticks(*([0.0] * 20)))
 
@@ -147,3 +153,17 @@ def test_a_failed_opener_is_recorded_as_failed():
     checked = board(errors=SimpleNamespace(reported=lambda *arguments: None))
     checked.is_open(entry(RaisingState))
     assert checked.state_records()[0].outcome == FAILED_OPENER_TABLE
+
+
+def test_a_flag_free_stack_state_runs_only_on_a_hook_its_rules_hear():
+    OPENS.clear()
+    stop_only = {"samples.counted": {"stop": ["samples.stop-rule"]}}
+    assert board([entry(CountedState)], rules_by_state=stop_only).stack("builder") == []
+    assert OPENS == []
+    assert [layer.overlay.name for layer in board([entry(CountedState)], hook_name="stop", rules_by_state=stop_only).stack("builder")] == ["samples.counted"]
+
+
+def test_a_flagged_stack_state_runs_on_every_hook_and_the_order_of_the_layers_run_stays():
+    entries = [entry(CountedState, 1), entry(FlaggedState, 2), entry(LateState, 3)]
+    heard = {"samples.counted": {"pre_tool_use": ["samples.tool-rule"]}, "samples.late": {"stop": ["samples.stop-rule"]}}
+    assert [layer.overlay.name for layer in board(entries, rules_by_state=heard).stack("builder")] == ["samples.flagged", "samples.counted"]
