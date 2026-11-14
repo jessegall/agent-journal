@@ -113,8 +113,6 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
         self.free_task.give_next(context.actor.id, context)
         unit = self.units.unit(context.actor.id)
         worktree = self.repository.save_change(committed, self.moved_worktree(committed, open_tasks, tasks, unit, context), context)
-        if open_tasks:
-            self.compaction.stop_after_task(context.actor.id)
         submission = self.proof_queue.submit_ready(worktree, tasks, context)
         if submission is Submission.UNTESTED:
             self.results.finish(worktree, context)
@@ -133,7 +131,8 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
     def moved_worktree(self, worktree: Worktree, open_tasks: tuple[Task, ...], tasks: tuple[Task, ...], unit: WorkUnit, context: Context) -> Worktree:
         if open_tasks or unit.has_several_tasks:
             next_task_id = open_tasks[0].id if open_tasks else tasks[-1].id
-            return worktree.moved(WorktreeLifecycle.advance, task_id=next_task_id, commit_count=worktree.commit_count + 1)
+            stop_requested_at = context.timestamp if open_tasks and self.compaction.is_over_limit(context.actor.id) else None
+            return worktree.moved(WorktreeLifecycle.advance, task_id=next_task_id, commit_count=worktree.commit_count + 1, stop_requested_at=stop_requested_at)
         return worktree.moved(WorktreeLifecycle.deliver, delivered_at=context.timestamp, logs_read_at=None, logs_output_id=None, tests_passed_at=None, returned_at=None,
                               merge_ready_at=self.proof_queue.merge_ready_time(tasks[0], context), commit_count=worktree.commit_count + 1)
 
