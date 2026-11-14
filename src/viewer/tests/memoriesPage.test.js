@@ -7,7 +7,7 @@ import {menuEntries} from "../src/composables/contextMenu.js";
 import {context, mounted, page, settle, typeInto, unmountAll} from "./support/windowContext.js";
 import MemoriesPage from "../../core/modules/memories/web/src/MemoriesPage.vue";
 import AgentMemories from "../../core/modules/memories/web/src/AgentMemories.vue";
-import {memoryItems} from "../../core/modules/memories/web/src/memoryItems.js";
+import {memoryItems} from "../../core/modules/memories/web/src/MemoryRow.js";
 import {memoryFilters} from "../../core/modules/memories/web/src/memoryWords.js";
 
 const memory = (id, extra = {}) => ({id, text: `Memory words ${id}`, weight: 5, state: "active", agent_id: null, task_id: null, reason: "", created_at: "2026-11-01T10:00:00Z", ...extra});

@@ -1,8 +1,8 @@
 <script setup>
-import {computed, onUnmounted, ref, watch} from "vue";
-import {Btn, DocumentBody, Icon, Segmented, Skeleton, SearchBar, TimeAgo, peekRef, steppedItem, useWindow} from "@journal/window-kit";
-import {documentRead} from "./documentRead.js";
+import {computed, ref} from "vue";
+import {Btn, Icon, Segmented, Skeleton, SearchBar, TimeAgo, peekRef, useWindow} from "@journal/window-kit";
 import {grouped, searched, sorted} from "./libraryGroups.js";
+import {useLibrary} from "./useLibrary.js";
 
 const LIBRARIES = [
     {key: "doc", label: "Documents"},
@@ -17,67 +17,21 @@ const ORDERS = [
     {key: "title", label: "A to Z"},
 ];
 
-// the page reads a document beside its sidebar; the window lists rows only, and a row opens that document's inspector in place
-const props = defineProps({reader: {type: Boolean, default: false}});
+// the window lists rows only, and a row opens that document's inspector in place
 const TABLES = {doc: "docs", report: "reports"};
-const opened = props.reader ? (new URLSearchParams(globalThis.location.search).get("doc") ?? "").split(":") : [];
-const term = ref(["doc", "report"].includes(opened[0]) ? opened[0] : "doc");
+const term = ref("doc");
 const state = ref("open");
 const order = ref("newest");
 const words = ref("");
-const chosen = ref(Number(opened[1]) || null);
 const view = useWindow();
-view.state["library.type"] = term.value;
-view.state["library.state"] = state.value;
-const library = view.props.library;
-const rows = ref([]);
-const total = ref(0);
-const {failure, loaded} = library;
-watch(library.data, (value) => {
-    rows.value = value.rows;
-    total.value = value.total;
-}, {once: true});
+const {rows, total, failure, loaded, load, more} = useLibrary(view, term, state);
 const drafting = ref(false);
 const draft = ref({title: "", abstract: "", body: ""});
 const refusal = ref("");
 const groups = computed(() => grouped(sorted(searched(rows.value, words.value), order.value), order.value));
 const label = computed(() => (term.value === "doc" ? "Document" : "Report"));
 
-// the first page of the type chosen, in one read; a page more is asked for before the lowest number held
-async function load() {
-    const type = term.value;
-    const shown = state.value;
-    view.state["library.type"] = type;
-    view.state["library.state"] = shown;
-    delete view.state["library.before"];
-    const refreshed = await view.reload("library");
-    if (type !== term.value || shown !== state.value) return;
-    rows.value = refreshed && !failure.value ? library.data.value.rows : [];
-    total.value = refreshed && !failure.value ? library.data.value.total : 0;
-    loaded.value = true;
-}
-
-async function more() {
-    const type = term.value;
-    const shown = state.value;
-    view.state["library.before"] = String(Math.min(...rows.value.map((row) => row.id)));
-    const refreshed = await view.reload("library");
-    delete view.state["library.before"];
-    if (!refreshed || failure.value) return;
-    if (type === term.value && shown === state.value) rows.value = [...rows.value, ...library.data.value.rows];
-}
-
-// a row is read beside the list on the page, and in an inspector over the page it is on in the window
-const read = documentRead(view);
-function open(row) {
-    if (props.reader) chosen.value = row.id;
-    else peekRef(`${TABLES[term.value]}:${row.id}`);
-}
-
-const openChosen = () => {
-    const row = shownRows.value.find((held) => held.id === chosen.value);
-    if (row) open(row);
-};
+const open = (row) => peekRef(`${TABLES[term.value]}:${row.id}`);
 
 async function create() {
     const {title, abstract, body} = draft.value;
@@ -90,26 +44,6 @@ async function create() {
     load();
 }
 
-const shownRows = computed(() => groups.value.flatMap((group) => group.rows));
-
-function step(by) {
-    if (!shownRows.value.length) return;
-    chosen.value = steppedItem(shownRows.value.map((row) => row.id), chosen.value, by);
-}
-
-function closeOrClear() {
-    if (chosen.value) chosen.value = null;
-    else words.value = "";
-}
-
-watch([term, state], () => {
-    chosen.value = null;
-    rows.value = [];
-    loaded.value = false;
-    load();
-});
-const stopFollowing = view.follow(["doc.*", "report.*"], load);
-onUnmounted(() => stopFollowing?.());
 </script>
 
 <template>
@@ -135,7 +69,7 @@ onUnmounted(() => stopFollowing?.());
             </form>
         </template>
         <div class="library-body">
-            <div class="library-list" tabindex="0" data-library-list @keydown.down.prevent="step(1)" @keydown.up.prevent="step(-1)" @keydown.esc="closeOrClear" @keydown.enter.self="!reader && openChosen()">
+            <div class="library-list" data-library-list>
                 <template v-if="!loaded">
                     <Skeleton shape="cards" />
                 </template>
@@ -153,7 +87,7 @@ onUnmounted(() => stopFollowing?.());
                         <h3 class="library-group">{{ group.title }}</h3>
                     </template>
                     <template v-for="row in group.rows" :key="row.id">
-                        <button type="button" :class="['library-row', {chosen: row.id === chosen}]" :data-row="row.id" @click="open(row)">
+                        <button type="button" class="library-row" :data-row="row.id" @click="open(row)">
                             <Icon name="file" class="library-icon" />
                             <span class="library-text">
                                 <span class="library-title">{{ row.title }}</span>
@@ -168,16 +102,6 @@ onUnmounted(() => stopFollowing?.());
                     <button type="button" class="library-more" @click="more">Show more</button>
                 </template>
             </div>
-            <template v-if="reader">
-                <div class="library-reader" data-library-reader>
-                    <template v-if="chosen">
-                        <DocumentBody :key="`${term}:${chosen}`" :term="term" :id="chosen" :read="read" />
-                    </template>
-                    <template v-else>
-                        <p class="reader-empty-title">Choose a {{ label.toLowerCase() }} to read it here</p>
-                    </template>
-                </div>
-            </template>
         </div>
     </div>
 </template>
@@ -213,7 +137,7 @@ onUnmounted(() => stopFollowing?.());
 .library-body {
     display: grid;
     flex: 1;
-    grid-template-columns: v-bind("reader ? 'minmax(240px, 2fr) 3fr' : '1fr'");
+    grid-template-columns: 1fr;
     min-height: 0;
 }
 
@@ -244,8 +168,7 @@ onUnmounted(() => stopFollowing?.());
     cursor: pointer;
 }
 
-.library-row:hover,
-.library-row.chosen {
+.library-row:hover {
     background: var(--hover);
 }
 
@@ -283,32 +206,6 @@ onUnmounted(() => stopFollowing?.());
     font-size: 12px;
 }
 
-.library-reader {
-    overflow-y: auto;
-    padding: 20px 28px;
-}
-
-.reader-title {
-    margin: 0 0 6px;
-    font-size: 20px;
-}
-
-.reader-abstract {
-    margin: 0 0 18px;
-    color: var(--text-2);
-}
-
-.reader-empty {
-    margin-top: 120px;
-    text-align: center;
-}
-
-.reader-empty-title {
-    margin: 0 0 6px;
-    font-weight: 500;
-}
-
-.reader-empty-text,
 .library-more {
     margin: 8px 12px;
     color: var(--muted);

@@ -2,7 +2,7 @@
 import {computed, ref} from "vue";
 import {peekRef, useWindow, vContext, wordLabel} from "@journal/window-kit";
 import MemoryEdit from "./MemoryEdit.vue";
-import {memoryItems} from "./memoryItems.js";
+import {memoryItems} from "./MemoryRow.js";
 
 // one memory in a list: its title Memory and its number, its text smaller and muted under it, then its state and weight with a mark of ten steps, the task it belongs to and the reason it was removed
 const HIGHEST_WEIGHT = 10;

@@ -3,7 +3,7 @@ import {computed, ref} from "vue";
 import {Btn, FilterBar, ListReaderLayout, PageHeader, Skeleton, applyFilter, defaultFilter, useWindow} from "@journal/window-kit";
 import MemoryEdit from "./MemoryEdit.vue";
 import MemoryReader from "./MemoryReader.vue";
-import {READER_WEIGHTS, memoryItems} from "./memoryItems.js";
+import {READER_WEIGHTS, memoryItems} from "./MemoryRow.js";
 import {memoryFilters, ownerName} from "./memoryWords.js";
 import {usePagedRead} from "./usePagedRead.js";
 
