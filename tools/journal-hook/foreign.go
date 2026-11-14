@@ -82,9 +82,17 @@ func managedVariables(program, root string) []string {
 
 func runManaged(hooks []ManagedHook, body []byte, program string, row programs.Program, root string) []ForeignRun {
 	variables := managedVariables(program, root)
-	runs := make([]ForeignRun, len(hooks))
+	var waited []ManagedHook
+	for _, hook := range hooks {
+		if isAsync(hook, row) {
+			startDetached(hook, body, program, root)
+			continue
+		}
+		waited = append(waited, hook)
+	}
+	runs := make([]ForeignRun, len(waited))
 	var group sync.WaitGroup
-	for index, hook := range hooks {
+	for index, hook := range waited {
 		group.Add(1)
 		hook.Timeout = runLimit(hook, row)
 		name, arguments := commandFor(hook, row)

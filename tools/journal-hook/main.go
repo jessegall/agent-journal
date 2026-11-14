@@ -34,6 +34,9 @@ func main() {
 		fmt.Println("journal-hook " + version)
 		return
 	}
+	if len(os.Args) == 6 && os.Args[1] == "--detached-run" {
+		os.Exit(detachedRun(os.Args[2], os.Args[3], os.Args[4], os.Args[5]))
+	}
 	if len(os.Args) == 3 && os.Args[1] == "--status" {
 		KeepStatus(os.Stdin, os.Args[2])
 		return
