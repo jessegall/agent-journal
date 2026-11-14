@@ -4,6 +4,7 @@ import shlex
 from dataclasses import dataclass
 
 from engine.actor.actor import Actor
+from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
 from engine.cli.console import Console
 from engine.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
@@ -35,6 +36,14 @@ class IntegrationJournal:
         stream = io.StringIO()
         code = self.container.get(Console).run(shlex.split(line), Caller(actor or Actor.core(), environment_id), stream)
         return LineAnswer(code, stream.getvalue())
+
+    def new_row_id(self, line: str, actor: Actor | None = None) -> int:
+        answer = self.run(f"{line} --json", actor)
+        assert answer.code == 0, f"{line} gave {answer.code}: {answer.text}"
+        return int(json.loads(answer.text.splitlines()[0])["id"])
+
+    def make_user(self, name: str = "Ada") -> Actor:
+        return Actor(self.new_row_id(f'actor make user "{name}"'), ActorType.USER)
 
     # the module list gains the module and the journal syncs, as an install does; a passed sync reopens the container
     def synced_with(self, module: str) -> LineAnswer:
