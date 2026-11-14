@@ -64,6 +64,8 @@ export {default as DockStack} from "../src/chat/DockStack.vue";
 export {default as FigureFloors} from "../src/chat/FigureFloors.vue";
 // the figure and its three.js load only when a chat shows one, so no other window pays for them
 export const VoiceFigure = defineAsyncComponent(() => import("../src/chat/VoiceFigure.vue"));
+export {useChatFigure} from "../src/composables/chatFigure.js";
+export {avatarWindowOpen, holdAvatarWindow} from "../src/figure/avatarWindow.js";
 export {fetchDockDeclarations} from "../src/domain/dockRegistry.js";
 export {shownMarks} from "../src/domain/markFamilies.js";
 export {foldedMarks, interleaved, reachMessages} from "../src/domain/chatTimeline.js";

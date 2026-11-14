@@ -7,6 +7,7 @@ export default windowBuild({
     entries: {
         "chat": here("./src/chat.js"),
         attachments: here("./src/attachments.js"),
+        avatar: here("./src/avatar.js"),
     },
     outDir: here("./dist"),
 });

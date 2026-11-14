@@ -100,7 +100,7 @@ from core.modules.messages.support.message_marks import MESSAGE_MARKS
 from core.modules.messages.seeders.messages_seeder import MessagesSeeder
 from core.modules.messages.support.block_conditions.messages_read import MessagesRead
 from core.modules.messages.support.block_conditions.messages_answered import MessagesAnswered
-from core.modules.messages.support.skeletons import MESSAGES_ATTACHMENTS_SKELETON, MESSAGES_CHAT_SKELETON
+from core.modules.messages.support.skeletons import MESSAGES_ATTACHMENTS_SKELETON, MESSAGES_AVATAR_SKELETON, MESSAGES_CHAT_SKELETON
 from engine.module.model_declaration import ALL_SUBCOMMANDS
 from core.modules.messages.models.message_work_source import MessageWorkSource
 from core.modules.messages.listeners.new_session_work_source_listener import NewSessionWorkSourceListener
@@ -138,6 +138,12 @@ class MessagesModule(Module):
     agent_states = [MessagesUnread, UnreadCountdown]
     subcommands = [MessageConversationsSubcommand, AgentReportsSubcommand, UnreadReportsSubcommand, AttachmentListSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand, ChooseWorkSourceSubcommand, ClearWorkSourceSubcommand, WorkSourceSubcommand]
     windows = [WindowDeclaration("messages.attachments", "Attachments", "attachments.js", WindowLoading.COMPONENT, skeleton=MESSAGES_ATTACHMENTS_SKELETON, group="project", icon=WindowIcon.FILE, reads=["attachment list"], keys=[WindowKey("attachments", "attachment list", arguments=["category", "skip", "search"])], search=WindowReadSearch("attachment list", "Search file names and their messages", ("name", "message_text"))),
+               WindowDeclaration("messages.avatar", "Avatar", "avatar.js", WindowLoading.COMPONENT, skeleton=MESSAGES_AVATAR_SKELETON, icon=WindowIcon.SPEECH, reads=["setting show", "usage tool", "hook-call feed", "dock-item main", "process-part list"],
+                                 events=["hook_call.*", "dock_item.*", "process_part.*", "setting.*"],
+                                 keys=[WindowKey("voice-profile", "setting show journal.core.voices.profile", events=["setting.*"]),
+                                       WindowKey("voice-avatar", "setting show journal.core.voices.avatar", events=["setting.*"]),
+                                       WindowKey("voice-avatar-shown", "setting show journal.core.voices.avatar-shown", events=["setting.*"]),
+                                       WindowKey("tool", "usage tool", reload_seconds=5, loading=KeyLoading.AFTER_WINDOW)]),
                WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, request_priority=WindowPriority.FIRST, skeleton=MESSAGES_CHAT_SKELETON, icon=WindowIcon.SPEECH, reads=["question show", "link list", "link receipts", "task show", "message feed", "message show", "chat-mark main", "chat-mark show", "dock-item main", "dock-item read", "process card", "pin list", "agent main", "usage tool", "hook-call feed", "output peek", "output page", "output list", "process-part list", "setting show"], runs=["message send", "message reply", "message comment", "message react", "message edit", "message delete", "link remove", "pin make", "pin close", "agent type", "dump make", "dock remove", "dock keep", "dock unkeep", "developer record-mark-motion"],
                                  events=["message.*", "chat_mark.*", "dock_item.*", "pin.*", "hook_call.*", "process_part.*", "setting.*", "question.*"],
                                  keys=[WindowKey("messages", "message feed", events=["message.*"], arguments=["limit", "before-id", "after-id", "ids"], page_size=50),

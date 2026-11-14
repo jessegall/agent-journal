@@ -21,3 +21,8 @@ MESSAGES_CHAT_SKELETON = [
     SkeletonPart.grow(),
     SkeletonPart.stack([SkeletonPart.line(SkeletonSize.SMALL, "30%"), SkeletonPart.block(108)], spacing=10, padding="0 12px 8px"),
 ]
+
+MESSAGES_AVATAR_SKELETON = [
+    SkeletonPart.grow(),
+    SkeletonPart.stack([SkeletonPart.block(96, "96px")], spacing=10, padding="0 12px 12px"),
+]
