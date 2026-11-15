@@ -13,17 +13,17 @@ TOOL_HOOK_LINES = 3
 
 @dataclass(frozen=True)
 class DeliveredLines:
-    """The waiting lines a hook gives the agent: none on a tick or a hook whose program cannot carry lines,
-    which reach no agent, or while the newest layer delays lines, three on a tool hook, all of them on any
-    other; the rest stay waiting. A text the rules already give, or an earlier line gives, is delivered
-    once."""
+    """The waiting lines a hook gives the agent: none on a tick, a hook whose program cannot carry lines or a
+    stop that is allowed, which reach no agent, three on a tool hook, all of them on any other, a refused stop
+    carrying them in its reason; the rest stay waiting. A text the answer already gives, or an earlier line
+    gives, is delivered once."""
 
     rows: Sequence[AgentLine]
     excluded: Sequence[str] = ()
 
     @classmethod
     def chosen(cls, event: HookEvent, answers: RuleAnswers, waiting: Sequence[AgentLine]) -> "DeliveredLines":
-        if answers.delays_lines or event.event == HookEventName.TICK or not event.accepts_lines:
+        if answers.delays_lines or event.event == HookEventName.TICK or not event.accepts_lines or (event.event == HookEventName.STOP and not answers.refusal):
             return cls([])
         pending = {row.id: row.nudge for row in waiting}
         groups = Nudge.collapsed(pending.values())

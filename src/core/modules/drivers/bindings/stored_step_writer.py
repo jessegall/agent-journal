@@ -1,4 +1,7 @@
 from core.modules.drivers.support.effect_commands import EffectCommands
+from core.modules.drivers.support.nudge_log import NudgeLog
+from core.modules.drivers.support.required_commands import RequiredCommands
+from core.modules.drivers.commands.support.line_history_writer import LineHistoryWriter
 from core.modules.drivers.support.answer_basis_rows import AnswerBasisRows
 from engine.enums.closer_role import CloserRole
 import json
@@ -48,8 +51,9 @@ class StoredStepWriter(StepWriter):
     wake. A step outside a hook that changed nothing runs only its unconditional effects."""
 
     def __init__(self, queries: Queries, repository: Repository, bus: Bus, database: Database, grant_store: GrantLedger, nudger: Nudger, stacks: AnswerBasisRows,
-                 effect_commands: EffectCommands) -> None:
-        self.nudger, self.stacks, self.effect_commands = nudger, stacks, effect_commands
+                 effect_commands: EffectCommands, nudge_log: NudgeLog, history: LineHistoryWriter, required_commands: RequiredCommands) -> None:
+        self.nudger, self.stacks, self.effect_commands, self.nudge_log, self.history = nudger, stacks, effect_commands, nudge_log, history
+        self.required_commands = required_commands
         self.grant_store = grant_store
         self.queries, self.repository, self.bus, self.database = queries, repository, bus, database
 
@@ -82,8 +86,15 @@ class StoredStepWriter(StepWriter):
 
     # a line the program cannot carry at this event waits in today's line queue for the agent's next event that can
     def queue_waiting_lines(self, view: AgentView, record: DecisionRecord, context: Context) -> None:
-        for line in record.waiting_lines:
-            self.nudger.send_nudge(view.agent.agent_id, line.said(), line.source_key or line.key, context)
+        agent_id = view.agent.agent_id
+        said = [(line, line.said()) for line in record.waiting_lines]
+        held = self.nudge_log.held_back(agent_id, [nudge for _, nudge in said], context.timestamp)
+        queued = [(line, nudge) for line, nudge in said if (nudge.key, nudge.text) not in held]
+        for line, nudge in queued:
+            self.nudger.send_nudge(agent_id, nudge, line.source_key or line.key, context)
+        self.nudge_log.write_said(agent_id, [nudge for _, nudge in queued], context)
+        self.required_commands.open(agent_id, [nudge for _, nudge in queued], context)
+        self.history.record_said(agent_id, [line.source_key for line, _ in queued if line.source_key], context)
 
     # the grants that passed a refusing policy are spent in this write, and a journal command leaves its receipt
     def spend_grants(self, record: DecisionRecord, context: Context) -> None:

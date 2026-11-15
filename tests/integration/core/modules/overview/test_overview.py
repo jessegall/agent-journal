@@ -19,6 +19,7 @@ from tests.stories.core.modules.messages.delivery import KeptTyping, MessagingSe
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value, expect_value_with, expect_value_without
 from core.modules.overview.nudges.overview_line_nudge import OverviewLineNudge
+from core.modules.messages.nudges.new_message_nudge import NewMessageNudge
 from core.modules.overview.nudges.overview_refusal_nudge import OverviewRefusalNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
 from core.modules.overview.support.overview_settings import COMMANDS_KEY
@@ -74,12 +75,12 @@ def overview_story(played):
     return story
 
 
-def test_after_a_session_start_nothing_passes_before_the_overview_but_reading_a_skill(played):
+def test_after_a_session_start_nothing_passes_before_the_overview_but_a_skill_read_and_a_shell_read(played):
     story = overview_story(played)
     story.hook("s-1", HookSamples.session_start())
     story.run_listeners()
     story.expect_hook_refusal("s-1", EDIT, expected_nudge(OverviewRefusalNudge.declared()))
-    story.expect_hook_refusal("s-1", LISTING, expected_nudge(OverviewRefusalNudge.declared()))
+    story.expect_hook_allowed("s-1", LISTING)
     story.expect_hook_refusal("s-1", JOURNAL_LINE, expected_nudge(OverviewRefusalNudge.declared()))
     repeated = story.hook("s-1", EDIT).refusal
     story.expect_rows(expected_nudge(OverviewRefusalNudge.declared()).matches_text(repeated), "refusal skip" not in repeated, detail=repeated)
@@ -140,10 +141,10 @@ def compacted(played):
     return story, typing, compaction_lines, start_lines
 
 
-def test_a_whole_compaction_is_given_the_summary_instructions_and_tells_the_agent_only_to_run_the_overview(compacted):
+def test_a_whole_compaction_is_given_the_summary_instructions_and_the_start_after_it_only_the_overview_and_its_message(compacted):
     story, _, compaction_lines, start_lines = compacted
     expect_value(list(compaction_lines), [ClaudeCodeProvider.compaction_instructions])
-    expect_value(list(start_lines), [OverviewLineNudge.declared().nudge().text])
+    expect_value(list(start_lines), [NewMessageNudge.declared().nudge(message=1).text, OverviewLineNudge.declared().nudge().text])
     story.expect_hook_silent("s-1", SKILL_READ)
     story.expect_hook_refusal("s-1", EDIT, expected_nudge(OverviewRefusalNudge.declared()))
     story.expect_hook_allowed("s-1", OVERVIEW_HOOK)

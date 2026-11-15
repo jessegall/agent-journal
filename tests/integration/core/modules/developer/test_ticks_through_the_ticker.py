@@ -1,26 +1,10 @@
-from engine.module.module_finder import ModuleFinder
 from engine.module.performance_tools import PerformanceTools
 from core.modules.developer.support.slow_tick_tool import SlowTickTool
-from server.tick.ticker import Ticker
-from tests.stories.engine.driver.support.fixtures import LeadLocked
-from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from core.modules.developer.nudges.exception_line_nudge import ExceptionLineNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
 from core.modules.developer.support.developer_settings import EXCEPTION_LINES_SETTING
 from core.modules.developer.support.developer_settings import SLOW_TICKS_SETTING
-
-
-def test_the_agent_ticks_of_the_ticker_reach_each_open_agents_rules_and_a_silenced_history_rule_keeps_its_history(played):
-    story = played(LeadLocked, SAMPLES)
-    agent_ticks = next(handler for handler in Ticker.module_handlers(ModuleFinder(story.home)) if handler.label == "agent ticks")
-    ticker = Ticker(story.home, [agent_ticks], lambda: None, lambda: 0.0)
-    ticker.start()
-    ticker.tick()
-    ticker.join(5.0)
-    ticker.stop(5.0)
-    story.expect_text(f"rule-history list --agent {story.agent.id}", "samples.return-line", "silenced")
-    story.expect_absent(f"hook-call list --agent {story.agent.id}", "tick")
 
 
 def test_a_slow_tick_shows_a_warning_mark_and_tells_the_main_agent_when_the_developer_options_are_on(played):

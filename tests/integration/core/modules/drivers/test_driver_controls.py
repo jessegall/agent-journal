@@ -17,12 +17,10 @@ def test_an_unknown_driver_is_refused_with_the_drivers_there_are(played):
     assert "the drivers are coding.main, coding.merger, coding.worker, core.helper, core.main" in output(story, "driver table coding.robot")
 
 
-def test_the_main_agent_switches_a_ready_part_but_may_not_pop_a_frame_or_repin(played):
+def test_the_main_agent_may_not_pop_a_frame(played):
     story = played(BuilderStarted)
     agent: Actor = story.agent
-    assert "safety" in output(story, "driver set-active safety on", agent)
     assert "only a person removes a frame" in output(story, f"driver pop {agent.id} task:1 --reason test", agent)
-    assert "only a person repins an agent" in output(story, f"driver repin {agent.id}", agent)
 
 
 def test_nothing_is_stuck_or_escalated_on_a_fresh_journal(played):

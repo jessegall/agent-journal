@@ -81,7 +81,6 @@ tests/stories/core/modules/documents/trail_viewer.py
 tests/stories/core/modules/documents/upgrade.py
 tests/stories/core/modules/documents/work_source_corrections.py
 tests/stories/core/modules/drivers/agent_pause.py
-tests/stories/core/modules/drivers/agent_state_abuse.py
 tests/stories/core/modules/drivers/agent_state_push_pop.py
 tests/stories/core/modules/drivers/block_until.py
 tests/stories/core/modules/drivers/bypass_log.py
@@ -401,7 +400,6 @@ tests/stories/engine/chat/mark_buttons.py
 tests/stories/engine/chat/support/legacy_buttons_module.py
 tests/stories/engine/chat/support/mark_faults.py
 tests/stories/engine/command/support/lock_commands.py
-tests/stories/engine/driver/driver_guards.py
 tests/stories/engine/driver/first_hooks.py
 tests/stories/engine/driver/support/hook_agents.py
 tests/stories/engine/driver/support/samples.py

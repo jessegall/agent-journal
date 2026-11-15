@@ -2,6 +2,7 @@ from collections.abc import Mapping, Sequence
 
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.task import Task
+from core.modules.tasks.queries.task_query import TaskQuery
 from engine.agent_machine.needs.agent_reference import AgentReference
 from engine.agent_machine.needs.block_plan import BlockPlan
 from engine.agent_machine.needs.need import Need
@@ -30,16 +31,19 @@ MAIN_STOP_RANK = ""
 
 
 class MainStopNeeds(NeedSource):
-    """A main agent's work at a stop (doc 1310 sections 4.11 and 10.5): with no task
+    """A main agent's work at a stop (doc 1310 sections 4.11 and 10.5), none while it waits: with no task
     started and one it may act on, Working(handed task), whose always-effect starts it, at a stop and, while keep
-    going is on, off a hook; with unfinished tasks of its own and no wait, Working(own open tasks), whose stop is
-    held once for each set of those tasks, unless the stop is the one that compacts its context."""
+    going is on, off a hook; with unfinished tasks of its own and none started, Working(own open tasks), whose stop is
+    held once for each set of those tasks, unless the stop is the one that compacts its context; a started task holds
+    the stop with its own frame."""
     state_type = Working
     rank = MAIN_STOP_RANK
     agent_types = ["main"]
 
-    def __init__(self, work: AvailableWork, options: CodingMainOptions, unfinished_work: MainAgentWork, assigner: NextTask, notices: StopNotices, clock: Clock) -> None:
+    def __init__(self, work: AvailableWork, options: CodingMainOptions, unfinished_work: MainAgentWork, assigner: NextTask, notices: StopNotices, clock: Clock,
+                 tasks: TaskQuery) -> None:
         self.work, self.options, self.unfinished_work, self.assigner, self.notices, self.clock = work, options, unfinished_work, assigner, notices, clock
+        self.tasks = tasks
 
     def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]:
         is_stop = question.event is not None and question.event.event is HookEventName.STOP
@@ -49,6 +53,8 @@ class MainStopNeeds(NeedSource):
         return {agent_id: frames for agent_id, frames in needs.items() if frames}
 
     def working(self, agent_id: int, is_stop: bool) -> list[Need | BlockPlan]:
+        if agent_id in self.unfinished_work.waiting_agents([agent_id], self.clock.timestamp()):
+            return []
         handed = self.work.answer(agent_id).assigned_task
         if handed is not None:
             reason = Reason(MAIN_STOP_KEY, DecisionClass.HOLD, MAIN_STOP_RANK, TaskAssignmentNudge.declared().nudge(task=handed.id).text)
@@ -57,10 +63,10 @@ class MainStopNeeds(NeedSource):
         return self.own_tasks(agent_id) if is_stop else []
 
     def own_tasks(self, agent_id: int) -> list[Need | BlockPlan]:
-        if self.work.is_stop_compacting(agent_id):
+        if self.work.is_stop_compacting(agent_id) or self.tasks.started_tasks(agent_id):
             return []
         task_ids = self.assigner.agent_tasks([agent_id]).get(agent_id, ())
-        if not task_ids or agent_id in self.unfinished_work.waiting_agents([agent_id], self.clock.timestamp()):
+        if not task_ids:
             return []
         text = UnfinishedTasksNudge.declared().nudge(tasks=", ".join(str(task_id) for task_id in task_ids)).text
         remains = not self.notices.has_notice(agent_id, text, UNFINISHED_TASKS_TEXT)

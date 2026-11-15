@@ -20,7 +20,7 @@ from core.modules.tasks.models.task import Task
 
 BLOCKED_STATES = (TaskState.OPEN, TaskState.BLOCKED)
 ACTIVE_STATES = (TaskState.STARTED, TaskState.TESTING)
-
+NAMED_TASKS_REASON = "the tasks one shell line ends, a few at most; a number with no task is no task"
 
 class PlanTaskEndLines(EventLineSource):
     """A task the main agent has ended tells it the phase that ended, and a plan with nothing left that can
@@ -37,7 +37,8 @@ class PlanTaskEndLines(EventLineSource):
     def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
         shell = event.tool.shell if event.tool is not None else None
         numbers = shell.journal_command_numbers("task close", "task cancel", "task block", "task release") if shell is not None else ()
-        ended = [task for task in self.queries.query(Task).find_many(numbers) if task.state is not TaskState.STARTED]
+        named = self.queries.query(Task).matching(Among("id", tuple(numbers))).every_row(NAMED_TASKS_REASON) if numbers else []
+        ended = [task for task in named if task.state is not TaskState.STARTED]
         if not ended:
             return []
         return [*(nudge for task in ended for nudge in self.plan_nudges(task.id, agent_id))]

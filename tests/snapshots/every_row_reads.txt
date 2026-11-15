@@ -151,6 +151,7 @@ src/core/modules/plans/commands/repair_plan_states/repair_plan_states_handler.py
 src/core/modules/plans/commands/repair_plan_states/repair_plan_states_handler.py:every started plan is checked for a failed checkpoint run its finished tasks left behind
 src/core/modules/plans/guards/one_task_phase_guard.py:the check counts the phases of every task of the plan
 src/core/modules/plans/lines/plan_state_lines.py:every plan whose state changed since the last answer is told to the agent
+src/core/modules/plans/lines/plan_task_end_lines.py:the tasks one shell line ends, a few at most; a number with no task is no task
 src/core/modules/plans/listeners/cancel_open_plan_tasks_listener.py:a cancelled plan cancels every open task it holds
 src/core/modules/plans/listeners/checkpoint_reach_listener.py:every changed task may reach a checkpoint of its plan
 src/core/modules/plans/support/focus/focused_plan_tasks.py:the free task with the highest priority is chosen among every ready task
@@ -341,6 +342,7 @@ src/suites/coding/modules/workers/listeners/worker_process_removal_listener.py:r
 src/suites/coding/modules/workers/needs/delivered_work_stop_needs.py:the main agent checks every proof a worker delivered
 src/suites/coding/modules/workers/needs/merge_job_needs.py:the merges the mergers of one step started that have not ended, one or two each
 src/suites/coding/modules/workers/policies/dispatch/worker_reuse_policy.py:every open worktree is checked for a worker that knows the files of the new tasks
+src/suites/coding/modules/workers/policies/dispatch/worker_reuse_policy.py:the tasks one dispatch line names, a few at most; a number with no task is no task
 src/suites/coding/modules/workers/queries/proof_query.py:every proof of the worktree or tasks asked about counts
 src/suites/coding/modules/workers/queries/proof_query.py:every proof of the worktree or tasks asked about counts
 src/suites/coding/modules/workers/queries/proof_query.py:every proof of the worktree or tasks asked about counts

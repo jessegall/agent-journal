@@ -27,7 +27,7 @@ def test_a_builder_with_only_blocked_tasks_is_told_them_at_its_first_stop_and_no
     story.run("task block 1 --reason 'waits for the price list'")
     story.expect_hook_allowed("s-1", HookSamples.stop())
     story.expect_hook_allowed("s-1", HookSamples.stop())
-    story.expect_success(f"agent-line list --agent {story.agent.id} --state waiting", "tasks.blocked-work-at-stop", actor=story.user)
+    story.expect_text(f"agent-line list --agent {story.agent.id} --state waiting", "tasks.blocked-work-at-stop", actor=story.user)
     story.expect_rows(story.run(f"agent-line list --agent {story.agent.id} --state waiting", actor=story.user).output_text.count("tasks.blocked-work-at-stop") == 1)
 
 

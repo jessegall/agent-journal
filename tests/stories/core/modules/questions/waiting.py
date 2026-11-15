@@ -1,6 +1,5 @@
 from tests.stories.core.support.agent_labels import agent_number
 from engine.testing.examples.hook_samples import HookSamples
-from tests.stories.core.support import story_lines as lines
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.engine.driver.support.hook_agents import hook_agent
@@ -57,10 +56,10 @@ def test_closing_ends_the_wait(new_story):
     story.expect_success("wait show 1", "state: ended")
 
 
-def test_an_agent_that_asked_stays_under_the_wait_overlay_in_its_driver_run(new_story):
+def test_an_agent_that_asked_may_stop_and_stays_waiting_on_its_stack(new_story):
     story = new_story(fixture=BuilderQuestion)
-    story.hook("s-1", HookSamples.stop())
-    story.expect_text(lines.SECOND_HOOK_CALL, "layers: wait:1")
+    story.expect_hook_allowed("s-1", HookSamples.stop())
+    story.expect_text(f"driver stack {story.agent.id}", "Waiting wait:1")
 
 
 def test_a_late_answer_is_told_to_the_agent_once(new_story):

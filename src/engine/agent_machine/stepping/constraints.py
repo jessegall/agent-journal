@@ -47,9 +47,14 @@ class Constraints:
             return []
         return [Reason(PAUSE_KEY, DecisionClass.REFUSE, PAUSE_RANK, paused.refusal_text)]
 
-    # Paused lets through reads, searches and a line made only of journal message (doc 1310 section 4.2, point 1)
+    # Paused lets through reads, searches and a line made only of journal message, a journal command nested in a read
+    # counting as the command it runs (doc 1310 section 4.2, point 1)
     @staticmethod
     def pause_refuses(tool: Tool) -> bool:
+        message_arguments = tuple(MESSAGE_COMMAND.split()[1:])
+        journal_lines = tool.shell.journal_argument_lines() if tool.shell is not None else ()
+        if any(line[:len(message_arguments)] != message_arguments for line in journal_lines):
+            return True
         if tool.is_readonly:
             return False
         return tool.shell is None or not tool.shell.has_only_parts(lambda part: BlockExemptions.names(part, MESSAGE_COMMAND))

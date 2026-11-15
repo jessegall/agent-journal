@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from dataclasses import replace
 
 from engine.command.context import Context
@@ -16,7 +17,10 @@ class LineHistoryWriter:
         self.repository, self.histories = repository, histories
 
     def record(self, agent_id: int, answers: RuleAnswers, context: Context) -> None:
-        spoken = list(dict.fromkeys(record.name for record in answers.rules if record.outcome in SPOKEN_OUTCOMES))
+        self.record_said(agent_id, [record.name for record in answers.rules if record.outcome in SPOKEN_OUTCOMES], context)
+
+    def record_said(self, agent_id: int, source_keys: Sequence[str], context: Context) -> None:
+        spoken = list(dict.fromkeys(source_keys))
         stored = self.histories.rows(agent_id) if spoken else {}
         for key in spoken:
             row = stored.get(key)

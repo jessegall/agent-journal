@@ -22,7 +22,7 @@ class LineSource(ABC):
     key: ClassVar[str] = ""
     # the group of agent types it holds for, read from the helper types
     role_group: ClassVar[RoleGroup] = RoleGroup.ANY
-    # a line of a session's start, which a resumed session does not get
+    # a line of a session's start, which a resumed session and the start after a compaction do not get (doc 1310 section 7.1, row 4)
     start_line: ClassVar[bool] = False
     carrier: ClassVar[LineCarrier] = LineCarrier.NOW
     category: ClassVar[LineCategory] = LineCategory.INFORMATION

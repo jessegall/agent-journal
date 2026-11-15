@@ -2,13 +2,14 @@ from core.modules.drivers.nudges.agent_compacted_nudge import AgentCompactedNudg
 from core.modules.drivers.nudges.cache_keepalive_nudge import CacheKeepaliveNudge
 from core.modules.drivers.nudges.compaction_notice_nudge import CompactionNoticeNudge
 from core.modules.drivers.nudges.hook_timeouts_nudge import HookTimeoutsNudge
+from core.modules.drivers.nudges.journal_started_nudge import JournalStartedNudge
 from core.modules.drivers.nudges.permission_requested_nudge import PermissionRequestedNudge
 from core.modules.drivers.nudges.safeguards_stopped_nudge import SafeguardsStoppedNudge
 from engine.enums.line_delivery import LineDelivery
 
 
 def test_the_driver_nudges_that_wake_an_idle_agent_use_the_wake_hook():
-    nudges = [declaration.declared() for declaration in (HookTimeoutsNudge, PermissionRequestedNudge, CacheKeepaliveNudge, CompactionNoticeNudge)]
+    nudges = [declaration.declared() for declaration in (HookTimeoutsNudge, PermissionRequestedNudge, CacheKeepaliveNudge, CompactionNoticeNudge, JournalStartedNudge)]
     assert all(nudge.wakes_agent and nudge.delivery is LineDelivery.WAKE_HOOK for nudge in nudges)
 
 

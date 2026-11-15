@@ -17,7 +17,7 @@ from tests.stories.support.story_checks import expect_updated_input_reply
 def test_a_failed_project_hook_never_refuses_and_keeps_its_diagnostic_and_outcome(new_story, exit_code, timed_out, terminal, sample):
     story = new_story(SAMPLES, fixture=LeadStarted)
     runs = [{"id": "project-check", "exit_code": exit_code, "stdout": '{"decision":"block","reason":"ignored"}',
-             "stderr": "details", "milliseconds": 1000, "timed_out": timed_out, "answer": {"terminal": terminal}}]
+             "stderr": "details", "milliseconds": 1000, "timed_out": timed_out, "on_failure": "", "answer": {"terminal": terminal}}]
     hook = sample.with_fields(firing="failed-managed-hook", foreign=runs)
     reply = story.hook("s-1", hook)
     expect_reply_allowed(reply)

@@ -18,12 +18,12 @@ def declare_wait(story, wait: str) -> None:
 
 
 @pytest.mark.parametrize("wait", WAITS)
-def test_in_auto_mode_a_stop_with_a_started_task_is_refused_while_a_wait_is_open(new_story, wait):
+def test_in_auto_mode_a_stop_with_a_started_task_is_allowed_while_a_wait_is_open(new_story, wait):
     story = new_story(fixture=StartedTaskBuilder)
     story.run(f"setting set {AUTO_MODE_SETTING} on --environment main")
     declare_wait(story, wait)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), f"{CurrentTaskNudge.declared().nudge(task=1).text}: continue")
-    story.expect_hook_refusal("s-1", HookSamples.stop(), f"{CurrentTaskNudge.declared().nudge(task=1).text}: continue")
+    story.expect_hook_allowed("s-1", HookSamples.stop())
+    story.expect_hook_allowed("s-1", HookSamples.stop())
 
 
 def test_in_auto_mode_a_stop_with_a_started_task_is_refused_without_a_wait(new_story):
@@ -36,7 +36,6 @@ def test_in_auto_mode_a_stop_with_a_started_task_is_refused_without_a_wait(new_s
 def test_in_auto_mode_the_stop_is_allowed_once_the_task_is_blocked_completed_or_cancelled(new_story, move):
     story = new_story(fixture=StartedTaskBuilder)
     story.run(f"setting set {AUTO_MODE_SETTING} on --environment main")
-    story.run(WAITS["stuck report"], actor=story.agent)
     story.expect_hook_refusal("s-1", HookSamples.stop(), f"{CurrentTaskNudge.declared().nudge(task=1).text}: continue")
     story.run(move, actor=story.agent)
     story.expect_hook_silent("s-1", HookSamples.stop())

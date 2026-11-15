@@ -18,6 +18,7 @@ from suites.coding.modules.workers.support.dispatch_arguments import DISPATCH_AR
 
 KEPT_WORK_STATES = (WorktreeState.CUT, WorktreeState.DELIVERED)
 
+DISPATCHED_TASKS_REASON = "the tasks one dispatch line names, a few at most; a number with no task is no task"
 REUSE_REASON = "every open worktree is checked for a worker that knows the files of the new tasks"
 
 NEW_WORKER_FLAG = "--fresh"
@@ -47,7 +48,8 @@ class WorkerReusePolicy(EventPolicy):
 
     def worker_with_files(self, part: Part) -> int | None:
         task_ids = [int(argument) for argument in part.arguments[2:] if argument.isdigit()]
-        paths = PathMentions.found(" ".join(task.brief for task in self.queries.query(Task).find_many(task_ids)))
+        tasks = self.queries.query(Task).matching(Among("id", tuple(task_ids))).every_row(DISPATCHED_TASKS_REASON)
+        paths = PathMentions.found(" ".join(task.brief for task in tasks))
         if not paths:
             return None
         # only a worktree that still holds its work, cut or delivered, can hold the files; a merged or removed one does not

@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from dataclasses import replace
 
 from engine.command.context import Context
@@ -23,7 +24,9 @@ class NudgeLog:
         self.spans = spans
 
     def skipped_lines(self, agent_id: int, answers: RuleAnswers, timestamp: Timestamp) -> frozenset[tuple[str, str]]:
-        lines = answers.line_nudges
+        return self.held_back(agent_id, answers.line_nudges, timestamp)
+
+    def held_back(self, agent_id: int, lines: Sequence[Nudge], timestamp: Timestamp) -> frozenset[tuple[str, str]]:
         if not lines:
             return frozenset()
         turn_start = self.turn_start(agent_id)
@@ -47,7 +50,10 @@ class NudgeLog:
         return record if record is not None else NudgeRecord(session_agent_id=agent_id, creator_id=0, key=nudge.key, text=nudge.text)
 
     def write(self, agent_id: int, answers: RuleAnswers, context: Context) -> None:
-        nudges = tuple(record for nudge in (*answers.delivered_nudges, *answers.refusal_nudges) for record in nudge.records)
+        self.write_said(agent_id, (*answers.delivered_nudges, *answers.refusal_nudges), context)
+
+    def write_said(self, agent_id: int, said: Sequence[Nudge], context: Context) -> None:
+        nudges = tuple(record for nudge in said for record in nudge.records)
         if not nudges:
             return
         records = self.records.nudge_rows(agent_id, nudges)
