@@ -39,7 +39,7 @@ DRIVERS_SETTINGS = [
                  SettingType.NUMBER, default=1000, scope=SettingScope.PROJECT),
     SettingValue("handover-retries", "Handover retries", "How many times a helper's report that could not be saved is tried again.", SettingType.NUMBER,
                  default=3, scope=SettingScope.PROJECT),
-    SettingValue("capability-proofs", "Program capability proofs", "The proofs that an installed agent program supports a part of the new driver's answer.",
+    SettingValue("capability-proofs", "Program capability proofs", "The proofs that an installed agent program supports a part of the journal's answer.",
                  SettingType.LIST, default=(), scope=SettingScope.PROJECT, person_set=True, is_driving=True),
 ]
 SKIPS_NEED_APPROVAL = "journal.core.helpers.skips-need-approval"

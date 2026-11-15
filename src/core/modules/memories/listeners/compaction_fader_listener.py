@@ -12,7 +12,7 @@ class CompactionFaderListener(SaveListener[Changed[ContextCompaction]]):
     """An agent's memories each lose one weight once a compaction of its context has really ended, which is
     when the agent's session starts again after it and before the agent is given its memories. A compaction
     that was only asked for, started and cancelled, or failed lowers nothing, and one compaction lowers once.
-    A listener and not a contribution, so a frame that holds the agent, such as a wait, never stops the
+    A listener and not a contribution of the machine, so a frame that holds the agent, such as a wait, never stops the
     fading."""
 
     name = "memories.compaction-fader"

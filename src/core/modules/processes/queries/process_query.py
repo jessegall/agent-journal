@@ -26,7 +26,7 @@ DOCK_ITEMS_TABLE = "dock_items"
 
 
 class ProcessQuery(Query[Process]):
-    """Reads processes, with the filters the processes module and its rules use by name."""
+    """Reads processes, with the filters the processes module and its contributions use by name."""
 
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, Process)

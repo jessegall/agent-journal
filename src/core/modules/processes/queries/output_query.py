@@ -20,7 +20,7 @@ PROCESS_OUTPUTS_REASON = "the output of every process asked about is read"
 
 
 class OutputQuery(Query[Output]):
-    """Reads outputs, with the filters the processes module and its rules use by name."""
+    """Reads outputs, with the filters the processes module and its contributions use by name."""
 
     def __init__(self, database: Database, tables: Tables, cached: KeptRows) -> None:
         super().__init__(database, tables, Output)

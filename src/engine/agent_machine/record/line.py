@@ -16,7 +16,7 @@ class Line:
     category: LineCategory
     interval_key: str
     carrier: LineCarrier
-    # the old rule the source that gave it answers for, whose history records when it last spoke
+    # the key of the source that gave it, whose history records when it last spoke
     source_key: str = ""
     # the nudge it was made from, whose interval, record keys and required command the line keeps when it is said
     nudge: Nudge | None = field(default=None, compare=False)

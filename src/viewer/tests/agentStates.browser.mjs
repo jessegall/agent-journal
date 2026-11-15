@@ -14,9 +14,9 @@ try {
     await states.first().waitFor();
     const names = await states.locator(".name").allTextContents();
     assert.ok(names.includes(name), JSON.stringify(names));
-    const tiers = await states.locator(".tier").allTextContents();
-    assert.equal(tiers.length, names.length, JSON.stringify(tiers));
-    assert.ok(tiers.every((tier) => tier.length > 0), JSON.stringify(tiers));
+    const stateTypes = await states.locator(".state-type").allTextContents();
+    assert.equal(stateTypes.length, names.length, JSON.stringify(stateTypes));
+    assert.ok(stateTypes.every((stateType) => stateType.length > 0), JSON.stringify(stateTypes));
     assert.deepEqual(errors, []);
 } finally {
     await browser.close();

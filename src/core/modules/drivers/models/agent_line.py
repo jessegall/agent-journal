@@ -18,7 +18,7 @@ PRUNABLE_LINE_STATES = (AgentLineState.DELIVERED, AgentLineState.ENTERED, AgentL
 @dataclass(frozen=True, kw_only=True)
 class AgentLine(Prunable, SessionPrivate, Model):
     """A line the journal has for an agent, kept as a row until a hook gives it or the server types it, with
-    the rule or listener that wrote it."""
+    the line source or listener that wrote it."""
 
     kept_rows = 20000
 

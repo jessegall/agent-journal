@@ -14,5 +14,5 @@ class RecordHookCall(Command[HookReply]):
     event: HookEvent
     agent_id: int
     answers: RuleAnswers
-    # the new driver's step, saved in this write, while some of its slices answer the agent
+    # the machine's step, saved in this write
     step: AssembledStep | None = None

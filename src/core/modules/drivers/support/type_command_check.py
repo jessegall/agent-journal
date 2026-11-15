@@ -14,7 +14,7 @@ from core.modules.profiles.support.profile_files import ProfileFiles
 class TypeCommandCheck:
     """Whether an agent may run journal lines: a helper runs its type's list, narrowed by its profile's list
     when the profile declares one, beside the base list every helper has; the main agent runs every line.
-    The hook rule and the server both ask it."""
+    The command policy and the server both ask it."""
 
     def __init__(self, types: HelperTypeBook, profiles: ProfileFiles) -> None:
         self.types, self.profiles = types, profiles

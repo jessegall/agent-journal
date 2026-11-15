@@ -9,7 +9,7 @@ from core.modules.processes.queries.conditions.watch_progress_due import WatchPr
 
 
 class WatchQuery(Query[Watch]):
-    """Reads watches, with the filters the processes module and its rules use by name."""
+    """Reads watches, with the filters the processes module and its contributions use by name."""
 
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, Watch)

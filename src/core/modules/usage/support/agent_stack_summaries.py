@@ -12,7 +12,7 @@ PAGE_STACKS_REASON = "one page of agent cards reads the stacks of its own agents
 
 
 class AgentStackSummaries:
-    """What the new driver knows of the agents on one page of cards, read in two batched queries: the top
+    """What the agent machine knows of the agents on one page of cards, read in two batched queries: the top
     frame of each stack, its refusal counts and its open escalation; an agent with no stack yet has no
     summary."""
 

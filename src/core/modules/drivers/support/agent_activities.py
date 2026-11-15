@@ -5,11 +5,11 @@ from engine.query.queries import Queries
 from core.modules.drivers.conditions.agent_family import AgentFamily
 from core.modules.drivers.models.agent_activity import AgentActivity
 
-OPEN_FAMILY_REASON = "The open agents of one family, which the agent limits bound; every rule of the hook reads them from this one load."
+OPEN_FAMILY_REASON = "The open agents of one family, which the agent limits bound; every source of the step reads them from this one load."
 
 
 class AgentActivities:
-    """The activity rows of an agent and of the open agents of its family, shared by all rules evaluating one hook."""
+    """The activity rows of an agent and of the open agents of its family, shared by every source of one step."""
 
     def __init__(self, queries: Queries, request_values: RequestValues) -> None:
         self.queries, self.request_values = queries, request_values

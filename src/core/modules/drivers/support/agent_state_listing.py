@@ -11,7 +11,7 @@ class OpenState:
     """One frame of an agent's stack, for a screen: its state, the need that holds it open and the row that need
     is about, with since when."""
 
-    tier: str
+    state: str
     name: str
     rows: tuple[str, ...]
     since: str

@@ -297,8 +297,8 @@ from core.modules.drivers.migrations.m075_agent_line_histories import AgentLineH
 
 
 class DriversModule(Module):
-    """Keeps every hook's decision, the lines waiting for agents and the rules' history, and answers hooks
-    through the suites, drivers and rules of the installed modules."""
+    """Keeps every hook's decision, the lines waiting for agents and each line source's history, and answers
+    hooks through the agent machine, with the suites, drivers and contributions of the installed modules."""
 
     name = "journal.core.drivers"
     transforms = [ProjectHookTransform]

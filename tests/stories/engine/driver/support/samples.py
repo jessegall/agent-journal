@@ -81,7 +81,7 @@ class EditLocksTable(Migration):
 
 @dataclass(frozen=True)
 class SampleNumber(Command[int]):
-    """A sample command whose result, 7, a rule puts in the tool's new input."""
+    """A sample command whose result is 7."""
 
 
 class SampleNumberHandler(Handler[SampleNumber, int]):

@@ -77,7 +77,7 @@ def test_with_nothing_due_nothing_is_refused(new_story):
     story.expect_hook_allowed("s-1", HookSamples.stop())
 
 
-def test_a_silenced_rule_refuses_nothing_while_the_agent_waits(new_story):
+def test_a_skill_hold_refuses_no_stop_while_the_agent_waits(new_story):
     story = new_story(SAMPLES, DUE, fixture=LeadStarted)
     story.run("task make \"The review\" --environment main")
     story.run("wait on 'the review' --target tasks:1", actor=story.agent)

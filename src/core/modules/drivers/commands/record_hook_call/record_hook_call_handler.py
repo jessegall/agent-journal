@@ -60,10 +60,10 @@ OVERFLOW_SOURCE = "drivers.overflow"
 
 
 class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
-    """Keeps the answers of a hook's rules in one transaction: their history and the hook call, logs the rules
-    that refused a stop in one short line, gives the agent its waiting lines, and runs each command the
-    rules returned alone, so a refused one rolls back by itself; a tick's lines wait for the agent's next
-    hook."""
+    """Keeps the answer of a hook's step in one transaction: its line history and the hook call, logs the
+    checks that refused a stop in one short line, gives the agent its waiting lines, and runs each command the
+    step returned alone, so a refused one rolls back by itself; a minute step's lines wait for the agent's
+    next hook."""
 
     command = RecordHookCall
     runs_once = True
@@ -186,7 +186,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
             return answers.updated_input
         return build([command_value for rule, _, command_value in outcomes if rule == rewriter.name])
 
-    # the input the new driver runs an admitted action with: the one its effects built, such as the runner's line, or
+    # the input the machine runs an admitted action with: the one its effects built, such as the runner's line, or
     # else the transforms' rewrite; nothing when the old walk still rewrote it
     @staticmethod
     def machine_input(command: RecordHookCall, commit: StepCommit | None) -> Mapping[str, object]:

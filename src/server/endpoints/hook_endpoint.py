@@ -59,7 +59,7 @@ class HookEndpoint:
     """Answers POST /hook: reads a hook's object, prepared or raw, and runs it through the hook
     route on a synced journal over the connection the server's hooks share, waiting for another
     writer up to the hook limit, which leaves the client time to hear the answer. A stale registry,
-    a wait past the limit or a fault outside the rules lets the hook through with one line, except a
+    a wait past the limit or a fault outside the step lets the hook through with one line, except a
     stop, which is refused, since a stop the journal cannot check may leave work open, and a tool of
     a helper, which never runs unchecked; a fault goes to the server log. The request log
     takes no time from other hooks: a record that has to wait is dropped. A hook whose client left before

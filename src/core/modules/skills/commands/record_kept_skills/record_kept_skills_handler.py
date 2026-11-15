@@ -12,7 +12,7 @@ from core.modules.skills.support.unread_skills import UnreadSkills
 
 
 class RecordKeptSkillsHandler(Handler[RecordKeptSkills, Agent]):
-    """Reads the kept skills once with the reader the rule already uses, loads each due one, then marks the agent's
+    """Reads the kept skills once with the reader the skill needs already use, loads each due one, then marks the agent's
     session and compaction as recorded."""
 
     command = RecordKeptSkills

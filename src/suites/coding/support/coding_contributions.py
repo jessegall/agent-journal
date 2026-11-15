@@ -6,7 +6,7 @@ from suites.coding.lines.introduction_lines import IntroductionLines
 from suites.coding.lines.waiting_items_lines import WaitingItemsLines
 from suites.coding.needs.worker_task_start_needs import WorkerTaskStartNeeds
 
-# what the coding suite's own module gives the agent machine beside its old rules
+# what the coding suite's own module gives the agent machine
 CODING_NEEDS = [WorkerTaskStartNeeds]
 CODING_LINES = [GraphifySearchLines, IntroductionLines, WaitingItemsLines]
 CODING_POLICIES = [FailedFullRunPolicy, GraphifySearchPolicy, WorkerFullTestRunPolicy]
