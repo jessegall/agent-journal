@@ -80,11 +80,11 @@ class DeclarationCheck:
         return [*unknown, *unused]
 
     def key_refusals(self) -> list[DeclarationRefusal]:
-        owners: dict[str, list[str]] = {}
+        owners: dict[tuple[str, str], list[str]] = {}
         for module in self.modules:
             for entry in module.contributions:
-                owners.setdefault(entry.key, []).append(module.name)
-        doubled = [DeclarationRefusal(", ".join(names), key, "a contribution key is declared once") for key, names in owners.items() if len(names) > 1]
+                owners.setdefault((entry.kind, entry.key), []).append(module.name)
+        doubled = [DeclarationRefusal(", ".join(names), key, f"a {kind} key is declared once") for (kind, key), names in owners.items() if len(names) > 1]
         slots: dict[tuple[str, str], list[str]] = {}
         for module in self.modules:
             for entry in module.contributions:

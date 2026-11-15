@@ -53,7 +53,7 @@ def test_the_sample_declarations_compile_clean() -> None:
     (ContributionDeclaration("messages.read", ContributionKind.BLOCK_CONDITION), "declares the ends it may take"),
     (ContributionDeclaration("messages.answered", ContributionKind.BLOCK_CONDITION, ends=(HoldEnd.SATISFIED,)), "names the command lines that satisfy it"),
     (ContributionDeclaration("messages.ranked", ContributionKind.POLICY, "messages.nowhere"), "no driver lists the rank key messages.nowhere"),
-    (SHOW, "a contribution key is declared once"),
+    (SHOW, "a policy key is declared once"),
 ])
 def test_each_misuse_is_refused_with_its_fix(contribution: ContributionDeclaration, fix: str) -> None:
     assert any(fix in text for text in fixes(contribution)), fixes(contribution)
