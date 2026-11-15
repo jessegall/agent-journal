@@ -339,6 +339,16 @@
   "merger": "allowed",
   "worker": "allowed"
  },
+ "agent-line-history list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-line-history show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
  "agent-session list": {
   "helper": "allowed",
   "merger": "allowed",
@@ -3450,21 +3460,6 @@
   "worker": "refused"
  },
  "rule show": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
- "rule-history delete": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
- },
- "rule-history list": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
- "rule-history show": {
   "helper": "allowed",
   "merger": "allowed",
   "worker": "refused"

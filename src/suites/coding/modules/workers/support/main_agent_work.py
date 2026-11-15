@@ -8,8 +8,7 @@ from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.reviews.models.enums.review_state import ReviewState
 from core.modules.reviews.models.review import Review
-from core.modules.waits.models.enums.wait_state import WaitState
-from core.modules.waits.models.wait import Wait
+from core.modules.waits.support.open_waits import OpenWaits
 from suites.coding.modules.workers.models.enums.proof_state import TEST_WAITING_STATES
 from suites.coding.modules.workers.models.proof import Proof
 
@@ -20,12 +19,12 @@ class MainAgentWork:
     """Whether an agent waits on something of its own, read one way by the main agent's stop rule and by the lines
     that wake silent agents: a run, a wait, a proof's test, a review or a reader request."""
 
-    def __init__(self, queries: Queries, processes: ProcessQuery) -> None:
-        self.queries, self.processes = queries, processes
+    def __init__(self, queries: Queries, processes: ProcessQuery, open_waits: OpenWaits) -> None:
+        self.queries, self.processes, self.open_waits = queries, processes, open_waits
 
     def waiting_agents(self, agent_ids: Sequence[int], timestamp: Timestamp) -> set[int]:
         waiting = {row.session_agent_id for row in self.processes.running().every_row(WAITING_WORK_REASON)}
-        waiting.update(row.session_agent_id for row in self.queries.query(Wait).matching(Among("session_agent_id", agent_ids)).filter(state=WaitState.OPEN).every_row(WAITING_WORK_REASON))
+        waiting.update(row.session_agent_id for row in self.open_waits.of(agent_ids))
         waiting.update(row.creator_id for row in self.queries.query(Proof).matching(Among("creator_id", agent_ids)).matching(Among("state", TEST_WAITING_STATES)).every_row(WAITING_WORK_REASON))
         waiting.update(row.requester_id for row in self.queries.query(Review).matching(Among("state", [ReviewState.QUEUED, ReviewState.REVIEWING])).every_row(WAITING_WORK_REASON))
         waiting.update(row.creator_id for row in self.queries.query(ReaderRequest).matching(Among("creator_id", agent_ids)).filter(completed_at=None)

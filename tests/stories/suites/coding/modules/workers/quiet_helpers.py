@@ -80,7 +80,7 @@ def test_the_inactive_line_wakes_the_main_agent(new_story):
     story.expect_rows(line.wakes_agent)
 
 
-def test_a_worker_that_never_made_a_call_is_named_with_the_command_for_its_log_and_wakes_the_main_agent(new_story):
+def test_a_worker_that_never_made_a_call_is_named_and_wakes_the_main_agent_and_once_ended_is_not_named_again(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
@@ -88,6 +88,10 @@ def test_a_worker_that_never_made_a_call_is_named_with_the_command_for_its_log_a
     story.tick(MAIN_SESSION)
     line = next(row for row in story.story_rows(AgentLine, session_agent_id=story.agent.id) if f"worker:{agent_number(story, worker.id)} made no call" in row.text)
     story.expect_rows(line.wakes_agent, f"worker:{agent_number(story, worker.id)} made no call" in line.text)
+    story.expect_success(f"agent end {worker.id}")
+    story.advance(minutes(grace(story)))
+    story.tick(MAIN_SESSION)
+    story.expect_rows(line_count(story, f"worker:{agent_number(story, worker.id)} used no tool") == 0)
 
 
 def test_the_inactive_line_of_a_worker_with_a_queued_run_says_so(new_story):
@@ -128,16 +132,6 @@ def test_a_helper_that_ended_is_not_named(new_story):
     story.advance(minutes(grace(story)))
     story.tick(MAIN_SESSION)
     story.expect_rows(line_count(story, f"helper:{agent_number(story, story.helper.id)} used no tool") == 0)
-
-
-def test_a_worker_that_ended_is_not_named(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository_environment(story)
-    worker = dispatched_worker(story)
-    story.expect_success(f"agent end {worker.id}")
-    story.advance(minutes(grace(story)))
-    story.tick(MAIN_SESSION)
-    story.expect_rows(line_count(story, f"worker:{agent_number(story, worker.id)} used no tool") == 0)
 
 
 def test_the_setting_sets_how_long_a_helper_is_quiet_before_it_is_named(new_story):

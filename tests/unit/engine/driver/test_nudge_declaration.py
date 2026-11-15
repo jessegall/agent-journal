@@ -39,7 +39,7 @@ def test_stored_required_commands_and_plain_text_stay_separate():
 
 
 def test_a_declaration_defaults_to_terminal_typing():
-    from engine.driver.line_delivery import LineDelivery
+    from engine.enums.line_delivery import LineDelivery
     from engine.driver.nudge_declaration import NudgeDeclaration
     from engine.enums.nudge_type import NudgeType
     assert NudgeDeclaration("sample.line", NudgeType.NOTICE, "a line").delivery is LineDelivery.TERMINAL_TYPING

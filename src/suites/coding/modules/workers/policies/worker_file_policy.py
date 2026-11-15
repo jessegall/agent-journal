@@ -6,7 +6,7 @@ from engine.cli.agent_number import AGENT_MODEL_NAME
 from pathlib import Path
 
 from engine.enums.agent_role import AgentRole
-from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
+from suites.coding.modules.workers.support.worker_worktrees import WorkerWorktrees
 from suites.coding.modules.workers.nudges.worker_file_nudge import WorkerFileNudge
 
 

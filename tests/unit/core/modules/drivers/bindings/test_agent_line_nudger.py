@@ -1,7 +1,7 @@
 from types import SimpleNamespace
 
 from core.modules.drivers.bindings.agent_line_nudger import AgentLineNudger
-from engine.driver.line_delivery import LineDelivery
+from engine.enums.line_delivery import LineDelivery
 from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.enums.nudge_type import NudgeType
 

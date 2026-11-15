@@ -7,7 +7,7 @@ from engine.driver.hook_event import HookEvent
 from engine.enums.hook_event_name import HookEventName
 from core.modules.memories.commands.open_memory_mark.open_memory_mark import OpenMemoryMark
 from core.modules.memories.lines.open_mark_lines import OPEN_MARK_KEY
-from core.modules.memories.support.reached_mark import ReachedMark
+from core.modules.memories.support.marks.reached_mark import ReachedMark
 
 
 class OpenMarkEffect(EventEffect):

@@ -30,6 +30,7 @@ from engine.caller.caller_request import CallerRequest
 from engine.caller.process_table import ProcessTable
 from engine.caller.process_row import ProcessRow
 from engine.time.clock import Clock
+from engine.time.polled_wait import PolledWait
 from engine.container.container import Container
 from engine.database.points import Points
 from engine.module.performance_tools import PerformanceTools
@@ -97,6 +98,7 @@ COMMITTING_JOURNAL = StoryJournal()
 
 # how long a story's wake ask waits for a line, so a story never waits the 25 seconds a real ask does
 STORY_WAKE_SECONDS = 0.2
+WAKE_LINE_PAUSE_SECONDS = 0.1
 
 
 class Story(KitRows):
@@ -321,6 +323,16 @@ class Story(KitRows):
         with self.repeated_work.request():
             first = route.answer(WakeAsk(program, session, launch, token))
         return route.waited(first, STORY_WAKE_SECONDS) if first.is_waiting else first
+
+    def wake_line(self, session: str, limit_seconds: float) -> WakeReply:
+        answers: list[WakeReply] = []
+
+        def has_line() -> bool:
+            answers.append(self.wake_ask(session))
+            return bool(answers[-1].line)
+
+        PolledWait(limit_seconds, WAKE_LINE_PAUSE_SECONDS).poll(has_line)
+        return answers[-1]
 
     def wake_received(self, answer: WakeReply) -> bool:
         self.steps.append(f"wake received {answer.line_id}")

@@ -3,7 +3,6 @@ tests/stories/core/modules/agents/agent_kind_controls.py
 tests/stories/core/modules/agents/ended_program.py
 tests/stories/core/modules/developer/read_limit_setting.py
 tests/stories/core/modules/documents/work_source_corrections.py
-tests/stories/core/modules/drivers/agent_state_shapes.py
 tests/stories/core/modules/drivers/hook_durations.py
 tests/stories/core/modules/drivers/hooks_through_the_server.py
 tests/stories/core/modules/drivers/removed_choices.py

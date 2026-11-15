@@ -1,3 +1,4 @@
+from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.agent_line import AgentLine
@@ -9,15 +10,16 @@ from core.modules.processes.nudges.reader_request_nudge import ReaderRequestNudg
 class ReaderRequestNotices:
     """Tracks reader request notices sent to an idle main agent."""
 
-    def __init__(self, queries: Queries, records: NudgeRecords) -> None:
-        self.queries, self.records = queries, records
+    def __init__(self, queries: Queries, records: NudgeRecords, kept: KeptRows) -> None:
+        self.queries, self.records, self.kept = queries, records, kept
 
     @staticmethod
     def source(request_id: int) -> str:
         return f"processes.reader-request.{request_id}"
 
     def has_recent_notice(self, agent_id: int, request_id: int, current_time: Timestamp) -> bool:
-        last_line = self.queries.query(AgentLine).filter(session_agent_id=agent_id, source=self.source(request_id)).newest().first()
+        lines = self.queries.query(AgentLine).filter(session_agent_id=agent_id, source=self.source(request_id)).newest()
+        last_line = self.kept.read(lines, lines.first, name="processes.reader-request-notice")
         record = self.records.newest_row(agent_id, f"{ReaderRequestNudge.declared().key}.{request_id}")
         timestamps = [last_line.creation_timestamp()] if last_line is not None else []
         if record is not None and record.last_delivered_at is not None:

@@ -104,7 +104,7 @@ class Provider(ABC):
     @classmethod
     def capabilities(cls) -> Capabilities:
         denial = AnswerEncoding.JSON_DECISION if HookEventName.PRE_TOOL_USE in cls.refusals else AnswerEncoding.STDERR_EXIT_TWO
-        derived = [*(Capability(CapabilityPart.LINES, event, CapabilityProof.IMPLEMENTED_HERE) for event in cls.line_events),
+        derived = [*(Capability(CapabilityPart.LINES, event, CapabilityProof.IMPLEMENTED_HERE) for event in dict.fromkeys((*cls.line_events, *cls.plain_output_events))),
                    *(Capability(CapabilityPart.HALT, event, CapabilityProof.IMPLEMENTED_HERE) for event in cls.halts),
                    *(Capability(CapabilityPart.STOP_REFUSAL, event, CapabilityProof.IMPLEMENTED_HERE, encoding=AnswerEncoding.BLOCK)
                      for event in cls.refusals if event is HookEventName.STOP),

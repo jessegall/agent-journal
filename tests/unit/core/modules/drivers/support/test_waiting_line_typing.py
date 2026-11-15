@@ -7,7 +7,7 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.support.waiting_line_typing import WaitingLineTyping
 from core.modules.drivers.support.wake_delivery import WakeDelivery
 from core.modules.drivers.support.wake_waiters import WakeWaiters
-from engine.driver.line_delivery import LineDelivery
+from engine.enums.line_delivery import LineDelivery
 from engine.journal.journal_home import JournalHome
 from engine.time.timestamp import Timestamp
 

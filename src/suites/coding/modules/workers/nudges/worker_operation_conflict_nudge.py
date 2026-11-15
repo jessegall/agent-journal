@@ -1,4 +1,4 @@
-from engine.driver.line_delivery import LineDelivery
+from engine.enums.line_delivery import LineDelivery
 from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.enums.nudge_type import NudgeType
 
@@ -7,7 +7,6 @@ class WorkerOperationConflictNudge(NudgeDeclaration):
     """The nudge workers.operation_conflict."""
 
     key = "workers.operation_conflict"
-
     delivery = LineDelivery.WAKE_HOOK
     type = NudgeType.STEERING
     text = 'worker:{worker} has a merge conflict: output {output}'

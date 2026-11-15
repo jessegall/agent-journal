@@ -31,15 +31,11 @@ src/suites/coding/modules/workers/support holds more than 12 entries
 src/suites/coding/support holds more than 12 entries
 src/core/modules/agents/commands/remove_instruction_import/support/instruction_import_question.py sits more than 3 levels below its layer
 src/core/modules/aliases/commands/set_alias_silence/support/alias_silence.py sits more than 3 levels below its layer
-src/core/modules/drivers/commands/wake_interrupted_agent/support/interrupted_agents.py sits more than 3 levels below its layer
 src/core/modules/helpers/commands/cold_sessions/support/cold_session.py sits more than 3 levels below its layer
 src/core/modules/messages/commands/unread_reports/support/unread_reports.py sits more than 3 levels below its layer
 src/core/modules/plugins/commands/plugin_path/support/checkout_path.py sits more than 3 levels below its layer
 src/core/modules/processes/commands/read_output/support/output_texts.py sits more than 3 levels below its layer
 src/core/modules/processes/commands/read_output/support/repeat_reads.py sits more than 3 levels below its layer
 src/core/modules/skills/commands/load_skill/support/kept_skills.py sits more than 3 levels below its layer
-src/suites/coding/drivers/worker/rules/worker_full_test_run_rule.py sits more than 3 levels below its layer
-src/suites/coding/drivers/worker/rules/worker_git_rule.py sits more than 3 levels below its layer
-src/suites/coding/drivers/worker/rules/worker_task_start_rule.py sits more than 3 levels below its layer
 src/suites/coding/modules/workers/commands/send_worker/support/inactive_worker_send.py sits more than 3 levels below its layer
 src/suites/coding/modules/workers/commands/send_worker/support/worker_queued_start.py sits more than 3 levels below its layer

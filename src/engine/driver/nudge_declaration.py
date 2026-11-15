@@ -3,7 +3,7 @@ from dataclasses import dataclass, field, replace
 
 from engine.driver.block_condition import BlockCondition
 from engine.driver.interval import Interval
-from engine.driver.line_delivery import LineDelivery
+from engine.enums.line_delivery import LineDelivery
 from engine.driver.nudge import Nudge
 from engine.enums.nudge_type import NudgeType
 from engine.driver.stored_nudge import StoredNudge

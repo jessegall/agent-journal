@@ -45,7 +45,7 @@ class StoredStepWriter(StepWriter):
     compared first and a change writes nothing; then the stack row and its moves, the blocks opened from
     plans and closed, the escalation, the unconditional effects each in its own savepoint, the admission
     effects when the step admits (a required one that fails raises and rolls everything back), and the
-    wake. A step outside a hook that changed nothing writes nothing."""
+    wake. A step outside a hook that changed nothing runs only its unconditional effects."""
 
     def __init__(self, queries: Queries, repository: Repository, bus: Bus, database: Database, grant_store: GrantLedger, nudger: Nudger, stacks: AnswerBasisRows,
                  effect_commands: EffectCommands) -> None:
@@ -60,7 +60,8 @@ class StoredStepWriter(StepWriter):
             return StepCommit.conflict()
         record = step.record
         if hook_call_id is None and not self.has_changes(row, view, step):
-            return StepCommit.saved(None, ())
+            failures, _ = self.run_effects(record.unconditional_effects, view, record, False, context)
+            return StepCommit.saved(None, tuple(failures))
         row = self.saved_stack(row, view, step, context)
         for move in record.moves:
             self.repository.save(AgentStackMove(session_agent_id=view.agent.agent_id, move_type=move.move_type, frame_key=f"{move.frame_key.state_name}:{move.frame_key.generation}" if move.frame_key is not None else "",

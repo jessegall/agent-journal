@@ -57,7 +57,7 @@
                 "testCode": true
             },
             {
-                "fileMatches": "(^|/)core/modules/plugins/rules/plugin_rule\\.py$"
+                "fileMatches": "(^|/)core/modules/plugins/effects/plugin_effect\\.py$"
             }
         ]
     },

@@ -2475,6 +2475,7 @@
     "fields": [
       "creator_id",
       "delivered_at",
+      "delivery",
       "hook_call_id",
       "repeats_without_hook",
       "session_agent_id",
@@ -2493,6 +2494,7 @@
     "fields": [
       "creator_id",
       "delivered_at",
+      "delivery",
       "hook_call_id",
       "repeats_without_hook",
       "session_agent_id",
@@ -2511,6 +2513,7 @@
     "fields": [
       "creator_id",
       "delivered_at",
+      "delivery",
       "hook_call_id",
       "repeats_without_hook",
       "session_agent_id",
@@ -2529,6 +2532,7 @@
     "fields": [
       "creator_id",
       "delivered_at",
+      "delivery",
       "hook_call_id",
       "repeats_without_hook",
       "session_agent_id",
@@ -2547,6 +2551,7 @@
     "fields": [
       "creator_id",
       "delivered_at",
+      "delivery",
       "hook_call_id",
       "repeats_without_hook",
       "session_agent_id",
@@ -2565,6 +2570,7 @@
     "fields": [
       "creator_id",
       "delivered_at",
+      "delivery",
       "hook_call_id",
       "repeats_without_hook",
       "session_agent_id",
@@ -2583,6 +2589,7 @@
     "fields": [
       "creator_id",
       "delivered_at",
+      "delivery",
       "hook_call_id",
       "repeats_without_hook",
       "session_agent_id",
@@ -2601,6 +2608,7 @@
     "fields": [
       "creator_id",
       "delivered_at",
+      "delivery",
       "hook_call_id",
       "repeats_without_hook",
       "session_agent_id",
@@ -2608,6 +2616,42 @@
       "state",
       "text",
       "wakes_agent"
+    ]
+  },
+  "core.drivers.agent_line_history.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "last_said_at",
+      "session_agent_id",
+      "source_key"
+    ]
+  },
+  "core.drivers.agent_line_history.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "last_said_at",
+      "session_agent_id",
+      "source_key"
+    ]
+  },
+  "core.drivers.agent_line_history.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "last_said_at",
+      "session_agent_id",
+      "source_key"
     ]
   },
   "core.drivers.agent_stack.created": {
@@ -2621,7 +2665,6 @@
       "frame_schema",
       "frames",
       "permission_changes",
-      "pinned_slices",
       "session_agent_id",
       "stop_refusals",
       "table_digest",
@@ -2639,7 +2682,6 @@
       "frame_schema",
       "frames",
       "permission_changes",
-      "pinned_slices",
       "session_agent_id",
       "stop_refusals",
       "table_digest",
@@ -2657,7 +2699,6 @@
       "frame_schema",
       "frames",
       "permission_changes",
-      "pinned_slices",
       "session_agent_id",
       "stop_refusals",
       "table_digest",
@@ -2758,48 +2799,6 @@
       "causes",
       "served_at",
       "session_agent_id"
-    ]
-  },
-  "core.drivers.agent_subject.created": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "frame_key",
-      "generation",
-      "session_agent_id",
-      "subject_id",
-      "subject_model"
-    ]
-  },
-  "core.drivers.agent_subject.deleted": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "frame_key",
-      "generation",
-      "session_agent_id",
-      "subject_id",
-      "subject_model"
-    ]
-  },
-  "core.drivers.agent_subject.updated": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "frame_key",
-      "generation",
-      "session_agent_id",
-      "subject_id",
-      "subject_model"
     ]
   },
   "core.drivers.agent_wake.created": {
@@ -3013,102 +3012,6 @@
       "key",
       "subject",
       "used_count"
-    ]
-  },
-  "core.drivers.driver_comparison.created": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "difference_key",
-      "difference_state",
-      "event_text",
-      "hook_call_id",
-      "is_replayable",
-      "new_answer",
-      "old_answer",
-      "session_agent_id",
-      "slice_name"
-    ]
-  },
-  "core.drivers.driver_comparison.deleted": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "difference_key",
-      "difference_state",
-      "event_text",
-      "hook_call_id",
-      "is_replayable",
-      "new_answer",
-      "old_answer",
-      "session_agent_id",
-      "slice_name"
-    ]
-  },
-  "core.drivers.driver_comparison.updated": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "difference_key",
-      "difference_state",
-      "event_text",
-      "hook_call_id",
-      "is_replayable",
-      "new_answer",
-      "old_answer",
-      "session_agent_id",
-      "slice_name"
-    ]
-  },
-  "core.drivers.driver_comparison_stack.created": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "frames",
-      "plans",
-      "session_agent_id",
-      "stop_refusals",
-      "tool_refusals"
-    ]
-  },
-  "core.drivers.driver_comparison_stack.deleted": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "frames",
-      "plans",
-      "session_agent_id",
-      "stop_refusals",
-      "tool_refusals"
-    ]
-  },
-  "core.drivers.driver_comparison_stack.updated": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "frames",
-      "plans",
-      "session_agent_id",
-      "stop_refusals",
-      "tool_refusals"
     ]
   },
   "core.drivers.driver_epoch.created": {
@@ -3909,51 +3812,6 @@
       "counts",
       "creator_id",
       "key",
-      "session_agent_id"
-    ]
-  },
-  "core.drivers.rule_history.created": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "creator_id",
-      "last_answer_at",
-      "last_due_outcome",
-      "layer",
-      "rule",
-      "session_agent_id"
-    ]
-  },
-  "core.drivers.rule_history.deleted": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "creator_id",
-      "last_answer_at",
-      "last_due_outcome",
-      "layer",
-      "rule",
-      "session_agent_id"
-    ]
-  },
-  "core.drivers.rule_history.updated": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "creator_id",
-      "last_answer_at",
-      "last_due_outcome",
-      "layer",
-      "rule",
       "session_agent_id"
     ]
   },

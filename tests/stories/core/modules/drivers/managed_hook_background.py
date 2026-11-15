@@ -1,5 +1,3 @@
-import time
-
 import pytest
 
 from engine.testing.examples.hook_samples import HookSamples
@@ -7,8 +5,7 @@ from tests.stories.core.modules.drivers.support.managed_hook_runs import context
 from tests.stories.suites.coding.modules.workers.context_limit import SESSION, LimitEnabled
 
 HELPER_SESSION = "s-helper"
-# a background hook ends on its own time, so a story asks for its line a few times
-WAKE_ASKS = 40
+WAKE_ASK_LIMIT_SECONDS = 4
 
 
 @pytest.fixture
@@ -18,12 +15,7 @@ def runs(new_story):
 
 
 def woken_line(story, session: str = SESSION):
-    for _ in range(WAKE_ASKS):
-        answer = story.wake_ask(session)
-        if answer.line:
-            return answer
-        time.sleep(0.1)
-    return answer
+    return story.wake_line(session, WAKE_ASK_LIMIT_SECONDS)
 
 
 def test_an_async_hooks_output_never_reaches_the_answer(runs):

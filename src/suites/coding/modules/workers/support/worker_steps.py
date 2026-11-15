@@ -1,3 +1,4 @@
+from engine.request.request_values import RequestValues
 from suites.coding.modules.workers.models.affected_test import AffectedTest
 from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
 from engine.query.queries import Queries
@@ -26,8 +27,8 @@ class WorkerSteps:
     """Which fixed point of its round a worker is at, read from the rows the journal keeps."""
 
     def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, next_task: WorkerNextTask, stop: WorkerStop, queries: Queries, staging: WorkerStaging, units: WorkUnits,
-                 runs: WorktreeRuns) -> None:
-        self.staging, self.units, self.runs = staging, units, runs
+                 runs: WorktreeRuns, request_values: RequestValues) -> None:
+        self.staging, self.units, self.runs, self.request_values = staging, units, runs, request_values
         self.tasks, self.worktrees, self.proofs = tasks, worktrees, proofs
         self.next_task, self.stop, self.queries = next_task, stop, queries
 
@@ -71,7 +72,11 @@ class WorkerSteps:
         staging = worker_round.staging
         return WorkerStep.COMMIT if staging is not None and staging.ready else WorkerStep.BUILD
 
+    # read once a request: a worker's stop and its test-run policy ask it in one step
     def has_open_failure(self, worktree: Worktree) -> bool:
+        return self.request_values.read(f"workers.open-failure:{worktree.id}", lambda: 0, lambda: self.failure_open(worktree))
+
+    def failure_open(self, worktree: Worktree) -> bool:
         if self.proofs.has_short_proof(worktree.id):
             return True
         first_answer = self.queries.query(AffectedTest).filter(worktree_id=worktree.id).newest().first()

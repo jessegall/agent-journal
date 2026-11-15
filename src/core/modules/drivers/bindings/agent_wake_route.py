@@ -1,5 +1,5 @@
 from engine.command.bus import Bus
-from engine.driver.line_delivery import LineDelivery
+from engine.enums.line_delivery import LineDelivery
 from engine.driver.program_lockdown import ProgramLockdown
 from engine.driver.wake_ask import WakeAsk
 from engine.driver.wake_reply import WakeReply
@@ -8,19 +8,21 @@ from engine.journal.journal_home import JournalHome
 from engine.module.module_actors import ModuleActors
 from engine.provider.providers import Providers
 from engine.query.queries import Queries
+from engine.time.clock import Clock
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.commands.record_agent_nudge.record_agent_nudge import RecordAgentNudge
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.models.enums.wake_outcome import WakeOutcome
-from core.modules.drivers.support.driver_nudges import PROJECT_HOOK_WOKE
+from core.modules.drivers.nudges.project_hook_woke_nudge import ProjectHookWokeNudge
 from core.modules.drivers.support.driver_settings import MODULE_KEY
 from core.modules.drivers.support.wake_delivery import WakeDelivery
 from core.modules.drivers.support.wake_waiters import WakeWaiters
 
 PROJECT_HOOK_SOURCE = "drivers.project-hook"
 PROJECT_HOOK_TEXT_CHARACTERS = 800
+WAKE_POLL_SECONDS = 0.05
 WAKING_LINES_REASON = "a wake ask offers every line that waits to wake its agent, oldest first"
 
 
@@ -30,9 +32,9 @@ class AgentWakeRoute(WakeRoute):
     registered, cancelling an older one, and given at once a line that already waits to wake it; else it waits."""
 
     def __init__(self, agents: AgentRows, providers: Providers, lockdown: ProgramLockdown, delivery: WakeDelivery, queries: Queries, home: JournalHome,
-                 actors: ModuleActors, bus: Bus) -> None:
+                 actors: ModuleActors, bus: Bus, clock: Clock) -> None:
         self.agents, self.providers, self.lockdown, self.delivery, self.queries, self.bus = agents, providers, lockdown, delivery, queries, bus
-        self.waiters, self.actors = WakeWaiters.shared(home), actors
+        self.waiters, self.actors, self.clock = WakeWaiters.shared(home), actors, clock
 
     def answer(self, ask: WakeAsk) -> WakeReply:
         agent = self.asking_agent(ask)
@@ -52,7 +54,8 @@ class AgentWakeRoute(WakeRoute):
         waiter = self.waiters.waiter(waiting.agent_id, waiting.token)
         if waiter is None:
             return WakeReply.gone()
-        outcome = self.waiters.wait(waiter, seconds).outcome
+        self.clock.poll(lambda: not waiter.is_live, seconds, WAKE_POLL_SECONDS)
+        outcome = self.waiters.forget_ended(waiter).outcome
         if outcome is WakeOutcome.GIVEN:
             return WakeReply.given(waiter.text, waiter.line_id, waiter.token)
         return WakeReply.nothing() if outcome is WakeOutcome.NOTHING else WakeReply.gone()
@@ -65,7 +68,7 @@ class AgentWakeRoute(WakeRoute):
         agent = self.asking_agent(ask)
         if agent is None or not (agent.is_main or agent.is_launched_helper):
             return False
-        nudge = PROJECT_HOOK_WOKE.nudge(hook=hook, text=text[:PROJECT_HOOK_TEXT_CHARACTERS])
+        nudge = ProjectHookWokeNudge.declared().nudge(hook=hook, text=text[:PROJECT_HOOK_TEXT_CHARACTERS])
         self.bus.run(RecordAgentNudge(agent.id, nudge, PROJECT_HOOK_SOURCE), self.actors.actor(MODULE_KEY), environment_id=agent.environment_id)
         return True
 

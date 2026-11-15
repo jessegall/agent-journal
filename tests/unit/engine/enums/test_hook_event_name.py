@@ -11,14 +11,14 @@ SCHEMA = Path(__file__).parents[4] / "tools" / "journal-hook" / "event" / "hook_
 STOP_BODY = {"version": HOOK_EVENT_VERSION, "program": "claude", "event": "stop", "session": "s-1", "firing": "f-1", "fired_at_ms": 1, "actor": "agent", "environment": "main",
              "helper": "", "tool": None, "prompt": None, "raw": {}, "accepts_lines": True, "launch": "", "foreign": []}
 EVENT_NAMES = ["pre_tool_use", "post_tool_use", "post_tool_use_failure", "prompt", "stop", "stop_failure", "session_start", "session_end", "compact",
-               "message_display", "tick"]
+               "compact_end", "message_display", "tick"]
 
 
 def schema_properties() -> dict[str, dict[str, object]]:
     return json.loads(SCHEMA.read_text())["properties"]
 
 
-def test_the_hook_events_are_the_eleven_names_of_every_program():
+def test_the_hook_events_are_the_twelve_names_of_every_program():
     assert [name.value for name in HookEventName] == EVENT_NAMES
 
 

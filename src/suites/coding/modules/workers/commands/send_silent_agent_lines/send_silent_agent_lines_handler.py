@@ -20,6 +20,7 @@ from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.commands.send_silent_agent_lines.send_silent_agent_lines import SendSilentAgentLines
 from suites.coding.modules.workers.commands.report_silent_agent.report_silent_agent import ReportSilentAgent
 from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.support.main_agent_work import MainAgentWork
 from suites.coding.modules.workers.support.worker_job import SILENT_AGENT_SOURCE, RESUMING_SOURCES
@@ -54,8 +55,8 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
     disabled_scopes = [ActorScope]
 
     def __init__(self, home: JournalHome, queries: Queries, settings: SettingValues,
-                 work: MainAgentWork, nudger: Nudger, bus: Bus, stop: WorkerStop, main_line: MainAgentLine, places: WorkerPlaces, task_query: TaskQuery, agent_rows: AgentRows, inbox: MergerInbox, questions: WorkerQuestions, assigner: NextTask) -> None:
-        self.assigner = assigner
+                 work: MainAgentWork, nudger: Nudger, bus: Bus, stop: WorkerStop, main_line: MainAgentLine, places: WorkerPlaces, task_query: TaskQuery, agent_rows: AgentRows, inbox: MergerInbox, questions: WorkerQuestions, assigner: NextTask, worktree_query: WorktreeQuery) -> None:
+        self.assigner, self.worktree_query = assigner, worktree_query
         self.task_query,self.agent_rows, self.inbox, self.questions = task_query, agent_rows, inbox, questions
         self.home, self.queries, self.settings = home, queries, settings
         self.work, self.nudger, self.bus, self.stop, self.main_line, self.places = work, nudger, bus, stop, main_line, places
@@ -66,7 +67,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         activities = {row.id: row for row in self.queries.query(AgentActivity).matching(Among("id", agent_ids)).every_row(CHECKED_AGENTS_REASON)}
         working = set(self.assigner.agent_tasks(agent_ids))
         tasks_remain = self.task_query.delegation_candidates().exists()
-        worktrees = tuple(self.queries.query(Worktree).every_row(SILENT_AGENTS_REASON))
+        worktrees = tuple(self.worktree_query.open_worktrees())
         workers = {row.session_agent_id for row in worktrees}
         excluded = self.work.waiting_agents(agent_ids, context.timestamp)
         self.report_idle_workers(context, agents, activities, working, worktrees, excluded)

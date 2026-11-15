@@ -11,8 +11,7 @@ from engine.agent_stack.subject_reference import SubjectReference
 from engine.enums.wait_mode import WaitMode
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
-from core.modules.waits.models.enums.wait_state import WaitState
-from core.modules.waits.models.wait import Wait
+from core.modules.waits.support.open_waits import OpenWaits
 from core.modules.waits.models.wait_target import WaitTarget
 
 OPEN_WAITS_REASON = "the open waits of the agents one step reads, and their rows, a few each"
@@ -26,11 +25,11 @@ class WaitNeeds(NeedSource):
     state_type = Waiting
     rank = ""
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, queries: Queries, open_waits: OpenWaits) -> None:
+        self.queries, self.open_waits = queries, open_waits
 
     def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]:
-        waits = list(self.queries.query(Wait).matching(Among("session_agent_id", [agent.agent_id for agent in agents])).filter(state=WaitState.OPEN).every_row(OPEN_WAITS_REASON))
+        waits = self.open_waits.of([agent.agent_id for agent in agents])
         targets = list(self.queries.query(WaitTarget).matching(Among("wait_id", [wait.id for wait in waits])).filter(resolved_at=None).every_row(OPEN_WAITS_REASON)) if waits else []
         needs: dict[int, list[Need | BlockPlan]] = {}
         for wait in waits:

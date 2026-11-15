@@ -3,16 +3,29 @@ from engine.command.context import Context
 from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
+from engine.request.request_values import RequestValues
+from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.plan_context_read import PlanContextRead
 
 
 class PlanContextDelivery:
-    """Finds actual execution starts and records each agent's successful context read."""
+    """Finds actual execution starts, the oldest started plan whose start an agent has not read, and records each
+    agent's successful context read."""
 
-    def __init__(self, events: EventLog, queries: Queries, repository: Repository, kept: KeptRows) -> None:
+    def __init__(self, events: EventLog, queries: Queries, repository: Repository, kept: KeptRows, request_values: RequestValues) -> None:
         self.events, self.queries, self.repository = events, queries, repository
-        self.kept = kept
+        self.kept, self.request_values = kept, request_values
+
+    def unread_plan(self, agent_id: int) -> int | None:
+        return self.request_values.read(f"plans.unread-context:{agent_id}", lambda: 0, lambda: self.first_unread_plan(agent_id))
+
+    def first_unread_plan(self, agent_id: int) -> int | None:
+        for plan in self.queries.query(Plan).filter(state=PlanState.STARTED).oldest().get():
+            event_id = self.start_event(plan)
+            if event_id is not None and not self.has_read(plan.id, event_id, agent_id):
+                return plan.id
+        return None
 
     def start_event(self, plan: Plan) -> int | None:
         event = self.kept.read_newest(self.queries.query(Plan).filter(id=plan.id), lambda: self.events.latest_row("plans", plan.id, ("plan.start", "plan.unblock")),

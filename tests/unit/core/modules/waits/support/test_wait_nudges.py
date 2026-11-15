@@ -1,6 +1,7 @@
-from core.modules.waits.support.wait_nudges import WAIT_ENDED
-from engine.driver.line_delivery import LineDelivery
+from core.modules.waits.nudges.wait_ended_nudge import WaitEndedNudge
+from engine.enums.line_delivery import LineDelivery
 
 
 def test_the_wait_over_nudge_uses_the_wake_hook():
-    assert WAIT_ENDED.wakes_agent and WAIT_ENDED.delivery is LineDelivery.WAKE_HOOK
+    nudge = WaitEndedNudge.declared()
+    assert nudge.wakes_agent and nudge.delivery is LineDelivery.WAKE_HOOK

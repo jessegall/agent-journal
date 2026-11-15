@@ -1,4 +1,4 @@
-from core.modules.drivers.commands.support.required_commands import RequiredCommands
+from core.modules.drivers.support.required_commands import RequiredCommands
 from collections.abc import Mapping, Sequence
 
 from engine.agent_machine.needs.agent_reference import AgentReference

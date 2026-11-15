@@ -18,7 +18,6 @@ DETECTORS = (
     "architecture_processes_pressure_outside_the_enforcer",
     "architecture_processes_reading_nudge_outside_the_notices",
     "architecture_processes_nudge_carries_row_data",
-    "architecture_processes_main_only_rule_without_reason",
     "architecture_processes_run_shown_by_category_outside_run_visibility",
     "architecture_processes_reader_chosen_outside_reader_layers",
     "architecture_processes_unreadable_mark_outside_unreadable_marks",

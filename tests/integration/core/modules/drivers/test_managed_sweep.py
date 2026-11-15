@@ -1,7 +1,6 @@
 import pytest
 
 from engine.provider.managed_hooks import ManagedHooks
-from engine.provider.enums.hook_effect import HookEffect
 from engine.provider.program_hooks import ProgramHooks
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import MainEnvironment
@@ -23,7 +22,6 @@ def test_session_start_imports_a_hook_added_after_launch(played, program, name):
     expect_answers(hooks, 1)
     expect_command_hooks(hooks, "added-check")
     expect_program_hooks_2(hooks, program)
-    expect_effects_hooks_with(hooks, HookEffect.OVERLAPS)
     expect_program_hooks(folder, name, {"hooks": {}})
 
 
@@ -46,11 +44,6 @@ def expect_absent_exists_project_folder(story, text) -> None:
 def expect_absent_exists_with_suffix(story, text) -> None:
     actual = story.home.managed_hooks_file.with_suffix(text).exists()
     assert not actual, actual
-
-
-def expect_effects_hooks_with(hooks, expected) -> None:
-    actual = hooks[0].effects
-    assert expected in actual, actual
 
 
 def expect_changed_program_hooks(folder, name, expected) -> None:

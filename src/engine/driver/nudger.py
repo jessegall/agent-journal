@@ -1,4 +1,4 @@
-from engine.driver.line_delivery import LineDelivery
+from engine.enums.line_delivery import LineDelivery
 from abc import ABC, abstractmethod
 
 from engine.command.context import Context

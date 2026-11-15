@@ -1,6 +1,6 @@
 from core.modules.drivers.models.agent_line import AgentLine
 from engine.command.context import Context
-from engine.driver.line_delivery import LineDelivery
+from engine.enums.line_delivery import LineDelivery
 from engine.driver.nudge import Nudge
 from engine.driver.nudger import Nudger
 from engine.repository.repository import Repository

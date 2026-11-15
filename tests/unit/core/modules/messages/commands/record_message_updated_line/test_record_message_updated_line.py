@@ -3,7 +3,7 @@ from types import SimpleNamespace
 from core.modules.messages.commands.record_message_updated_line.record_message_updated_line import RecordMessageUpdatedLine
 from core.modules.messages.commands.record_message_updated_line.record_message_updated_line_handler import RecordMessageUpdatedLineHandler
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
-from engine.driver.line_delivery import LineDelivery
+from engine.enums.line_delivery import LineDelivery
 
 MESSAGE = SimpleNamespace(id=12, type=next(iter(PERSON_MESSAGE_TYPES)), read_at="2026-11-15T09:00:00+00:00")
 

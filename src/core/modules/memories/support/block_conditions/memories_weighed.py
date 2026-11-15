@@ -1,6 +1,6 @@
 from engine.driver.block_check import BlockCheck
 from engine.driver.block_condition import BlockCondition
-from core.modules.memories.support.mark_tracker import MarkTracker
+from core.modules.memories.support.marks.mark_tracker import MarkTracker
 
 
 class MemoriesWeighed(BlockCondition):

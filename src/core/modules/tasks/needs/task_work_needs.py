@@ -32,7 +32,6 @@ TASK_STOP_RULE = "tasks.carry-on-at-stop"
 TASK_STOP_SKIP_WINDOW = Interval(ToolUseSpan(25), Seconds(1500))
 # a Working frame is ordered by its push time, never by a rank key
 TASK_RANK = ""
-TASK_SUBJECT = "task"
 ENDED_TASKS_REASON = "the ended tasks whose frames one step takes off one agent's stack, a few at most"
 TASK_ENDS = {TaskState.COMPLETED: FrameEnd.CLOSED, TaskState.CANCELLED: FrameEnd.CANCELLED}
 
@@ -60,7 +59,7 @@ class TaskWorkNeeds(NeedSource):
         remains = self.holds_stop(agent_id)
         reason = Reason(TASK_STOP_RULE, DecisionClass.HOLD, TASK_RANK, self.stop_text(started))
         return [Need(Working(WorkReference(WorkType.TASK, task.id, f"task {task.id}"), remains, reason), TASK_RANK,
-                     NeedKey("Working", SubjectReference(TASK_SUBJECT, task.id), f"task:{task.id}")) for task in started]
+                     NeedKey("Working", SubjectReference(Task.model_name, task.id), f"task:{task.id}")) for task in started]
 
     # the tasks in hand hold the agent's stop unless a run of its goes, its suite lets it stop with them, or it skipped
     # the stop refusal within the last 25 tool uses or 25 minutes, as today's tasks.carry-on-at-stop lets it
@@ -72,9 +71,9 @@ class TaskWorkNeeds(NeedSource):
 
     # a task's frame leaves closed when the task completed and cancelled when it was cancelled, which is no progress
     def ends(self, subjects: Sequence[SubjectReference]) -> Mapping[SubjectReference, FrameEnd]:
-        task_ids = [subject.row_id for subject in subjects if subject.model == TASK_SUBJECT]
+        task_ids = [subject.row_id for subject in subjects if subject.model == Task.model_name]
         tasks = self.queries.query(Task).matching(Among("id", task_ids)).every_row(ENDED_TASKS_REASON) if task_ids else []
-        return {SubjectReference(TASK_SUBJECT, task.id): TASK_ENDS[task.state] for task in tasks if task.state in TASK_ENDS}
+        return {SubjectReference(Task.model_name, task.id): TASK_ENDS[task.state] for task in tasks if task.state in TASK_ENDS}
 
     @staticmethod
     def stop_text(started: Sequence[Task]) -> str:

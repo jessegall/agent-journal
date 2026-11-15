@@ -47,9 +47,6 @@
                 "file": "src/core/modules/aliases/commands/set_alias_silence/support/alias_silence.py"
             },
             {
-                "file": "src/core/modules/drivers/commands/wake_interrupted_agent/support/interrupted_agents.py"
-            },
-            {
                 "file": "src/core/modules/helpers/commands/cold_sessions/support/cold_session.py"
             },
             {
@@ -66,18 +63,6 @@
             },
             {
                 "file": "src/core/modules/skills/commands/load_skill/support/kept_skills.py"
-            },
-            {
-                "file": "src/suites/coding/drivers/worker/rules/worker_command_type_rule.py"
-            },
-            {
-                "file": "src/suites/coding/drivers/worker/rules/worker_full_test_run_rule.py"
-            },
-            {
-                "file": "src/suites/coding/drivers/worker/rules/worker_git_rule.py"
-            },
-            {
-                "file": "src/suites/coding/drivers/worker/rules/worker_task_start_rule.py"
             },
             {
                 "file": "src/suites/coding/modules/workers/commands/send_worker/support/inactive_worker_send.py"

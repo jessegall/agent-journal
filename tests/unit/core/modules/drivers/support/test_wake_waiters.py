@@ -1,5 +1,3 @@
-import threading
-import time
 from datetime import datetime, timezone
 
 from core.modules.drivers.models.enums.wake_outcome import WakeOutcome
@@ -13,44 +11,33 @@ def test_a_second_waiter_cancels_the_first():
     waiters = WakeWaiters()
     first = waiters.register(3, "first")
     second = waiters.register(3, "second")
-    assert waiters.wait(first, 0).outcome is WakeOutcome.CANCELLED
+    assert waiters.forget_ended(first).outcome is WakeOutcome.CANCELLED
     assert second.is_live and waiters.has_waiter(3)
 
 
-def test_an_offer_wakes_the_waiting_thread():
+def test_an_offer_gives_the_waiter_its_line_and_the_ended_waiter_is_forgotten():
     waiters = WakeWaiters()
     waiter = waiters.register(3, "token")
-    outcomes: list[WakeOutcome] = []
-    thread = threading.Thread(target=lambda: outcomes.append(waiters.wait(waiter, 5).outcome))
-    thread.start()
-    time.sleep(0.05)
     assert waiters.offer(3, "[journal] go on", 7, GIVEN_AT)
-    thread.join(1)
-    assert outcomes == [WakeOutcome.GIVEN] and (waiter.text, waiter.line_id) == ("[journal] go on", 7)
-    assert not waiters.has_waiter(3)
+    assert waiters.forget_ended(waiter).outcome is WakeOutcome.GIVEN and (waiter.text, waiter.line_id) == ("[journal] go on", 7)
+    assert not waiters.has_waiter(3) and waiters.waiter(3, "token") is None
 
 
-def test_a_wait_with_no_offer_returns_nothing_after_its_time():
+def test_a_waiter_with_no_offer_stays_live_and_kept():
     waiters = WakeWaiters()
-    started = time.monotonic()
-    assert waiters.wait(waiters.register(3, "token"), 0.05).outcome is WakeOutcome.NOTHING
-    assert time.monotonic() - started >= 0.05 and waiters.has_waiter(3)
+    assert waiters.forget_ended(waiters.register(3, "token")).outcome is WakeOutcome.NOTHING
+    assert waiters.has_waiter(3)
 
 
 def test_an_offer_with_no_waiter_is_refused():
     assert not WakeWaiters().offer(3, "[journal] go on", 7, GIVEN_AT)
 
 
-def test_cancel_wakes_the_wait_with_cancelled():
+def test_cancel_ends_the_waiter_with_cancelled():
     waiters = WakeWaiters()
     waiter = waiters.register(3, "token")
-    outcomes: list[WakeOutcome] = []
-    thread = threading.Thread(target=lambda: outcomes.append(waiters.wait(waiter, 5).outcome))
-    thread.start()
-    time.sleep(0.05)
     waiters.cancel(3)
-    thread.join(1)
-    assert outcomes == [WakeOutcome.CANCELLED] and not waiters.has_waiter(3)
+    assert waiter.outcome is WakeOutcome.CANCELLED and not waiters.has_waiter(3)
 
 
 def test_the_same_token_asking_again_keeps_its_waiter():
@@ -63,4 +50,4 @@ def test_a_line_given_between_two_asks_reaches_the_next_ask():
     waiter = waiters.register(3, "token")
     waiters.offer(3, "[journal] go on", 7, GIVEN_AT)
     again = waiters.register(3, "token")
-    assert again is waiter and waiters.wait(again, 0).outcome is WakeOutcome.GIVEN
+    assert again is waiter and waiters.forget_ended(again).outcome is WakeOutcome.GIVEN

@@ -1,4 +1,4 @@
-from core.modules.drivers.commands.support.required_commands import RequiredCommands
+from core.modules.drivers.support.required_commands import RequiredCommands
 from core.modules.processes.support.block_conditions.output_read_since_block import OutputReadSinceBlock
 from core.modules.processes.support.block_conditions.output_titled import OutputTitled
 from core.modules.processes.nudges.run_name_nudge import RunNameNudge

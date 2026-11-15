@@ -1,3 +1,4 @@
+from engine.provider.enums.matcher_style import MatcherStyle
 from types import SimpleNamespace
 
 import pytest
@@ -18,15 +19,15 @@ from engine.provider.managed_hook import ManagedHook
 def test_labels_follow_the_programs_event_capabilities(event, matcher, expected):
     provider = SimpleNamespace(refusals={HookEventName.PRE_TOOL_USE: RefusalStyle.DENY, HookEventName.STOP: RefusalStyle.BLOCK},
                                rewrites={HookEventName.PRE_TOOL_USE: {"run_in_background": False}},
-                               line_events=[HookEventName.PRE_TOOL_USE, HookEventName.SESSION_START])
-    hook = ManagedHook.found("sample", "NativeEvent", matcher, {"command": "check"}, "settings.json", False)
+                               line_events=[HookEventName.PRE_TOOL_USE, HookEventName.SESSION_START], matcher_style=MatcherStyle.REGEX)
+    hook = ManagedHook.found("sample", "NativeEvent", matcher, {"command": "check"}, "settings.json", False, 600)
     assert HookEffect.detected(hook, provider, event) == expected
 
 
 def test_a_program_with_no_native_rewrite_or_refusal_gets_no_such_labels():
     provider = SimpleNamespace(refusals={HookEventName.STOP: RefusalStyle.BLOCK}, rewrites={},
-                               line_events=[HookEventName.PRE_TOOL_USE])
-    hook = ManagedHook.found("sample", "PreToolUse", "Bash", {"command": "check"}, "settings.json", False)
+                               line_events=[HookEventName.PRE_TOOL_USE], matcher_style=MatcherStyle.REGEX)
+    hook = ManagedHook.found("sample", "PreToolUse", "Bash", {"command": "check"}, "settings.json", False, 600)
     assert HookEffect.detected(hook, provider, HookEventName.PRE_TOOL_USE) == ["adds_lines"]
 
 

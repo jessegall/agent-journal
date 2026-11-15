@@ -5,6 +5,7 @@ from datetime import timedelta
 
 from engine.enums.command_category import CommandCategory
 from core.modules.agents.support.terminal_typing import TerminalTyping
+from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from core.modules.overview.support.overview_blocks import OverviewBlocks
 from core.modules.overview.support.overview_first import OverviewFirst
 from core.modules.skills.support.main_agent_skills import MainAgentSkills
@@ -139,9 +140,9 @@ def compacted(played):
     return story, typing, compaction_lines, start_lines
 
 
-def test_a_whole_compaction_tells_the_agent_only_to_run_the_overview(compacted):
+def test_a_whole_compaction_is_given_the_summary_instructions_and_tells_the_agent_only_to_run_the_overview(compacted):
     story, _, compaction_lines, start_lines = compacted
-    expect_value(list(compaction_lines), [])
+    expect_value(list(compaction_lines), [ClaudeCodeProvider.compaction_instructions])
     expect_value(list(start_lines), [OverviewLineNudge.declared().nudge().text])
     story.expect_hook_silent("s-1", SKILL_READ)
     story.expect_hook_refusal("s-1", EDIT, expected_nudge(OverviewRefusalNudge.declared()))

@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from engine.driver.line_delivery import LineDelivery
+from engine.enums.line_delivery import LineDelivery
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.query.queries import Queries

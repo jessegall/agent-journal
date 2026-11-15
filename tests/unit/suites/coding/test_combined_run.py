@@ -5,7 +5,7 @@ from tests.stories.support.story_checks import expect_value
 COMBINED_RUN = (
     "tests/stories/suites/coding/main_controls.py", "tests/stories/suites/coding/settings_access.py", "tests/stories/suites/coding/agent_settings_window.py",
     "tests/unit/suites/coding/test_main_openings.py", "tests/stories/suites/coding/main_settings_migration.py", "tests/stories/suites/coding/main_driver_migration.py",
-    "tests/stories/suites/coding/main_driver_registration.py", "tests/stories/suites/coding/work_settings.py", "tests/stories/suites/coding/policy_setting_writes.py",
+    "tests/stories/suites/coding/work_settings.py", "tests/stories/suites/coding/policy_setting_writes.py",
     "tests/stories/suites/coding/policy_request_approval.py", "tests/stories/suites/coding/policy_environment_refresh.py", "tests/stories/suites/coding/refusal_texts.py",
     "tests/stories/core/modules/agents/agent_kind_controls.py", "tests/stories/core/modules/agents/agent_groups.py", "tests/integration/core/modules/agents/test_agent_limits.py",
     "tests/integration/suites/coding/modules/workers/test_worker_testing_controls.py", "tests/integration/suites/coding/modules/workers/test_merge_followup_plan.py",

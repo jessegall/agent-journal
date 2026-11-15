@@ -1,6 +1,6 @@
 from engine.agent.enums.role_group import RoleGroup
 from core.modules.memories.support.memory_nudges import WEIGH_COUNTDOWN
-from core.modules.memories.support.reached_mark import ReachedMark
+from core.modules.memories.support.marks.reached_mark import ReachedMark
 from engine.enums.hook_event_name import HookEventName
 from collections.abc import Mapping, Sequence
 
@@ -14,7 +14,7 @@ from engine.enums.closer_role import CloserRole
 from engine.setting.setting_values import SettingValues
 from core.modules.memories.nudges.weigh_first_nudge import WeighFirstNudge
 from core.modules.memories.support.block_conditions.memories_weighed import MemoriesWeighed
-from core.modules.memories.support.mark_tracker import MarkTracker
+from core.modules.memories.support.marks.mark_tracker import MarkTracker
 from core.modules.memories.support.memory_settings import MARK_TOOL_USES_SETTING, MARKS_SETTING
 
 MARK_RANK = "memories.mark"

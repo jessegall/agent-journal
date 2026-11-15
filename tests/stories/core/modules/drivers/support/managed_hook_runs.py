@@ -3,7 +3,6 @@ import subprocess
 from collections.abc import Mapping
 from contextlib import contextmanager
 
-from engine.provider.program_hooks import ProgramHooks
 from tests.integration.support.go_build import GoBuild
 from tests.stories.server.support.server_client import server_story
 
@@ -22,7 +21,9 @@ class ManagedHookRuns:
         self.binary = GoBuild.built("journal-hook", self.root / "journal-hook")
 
     def managed(self, hooks: Mapping[str, list[object]]) -> None:
-        ProgramHooks.store(self.story.home.project_folder / ".claude/settings.json", {"hooks": hooks})
+        settings = self.story.home.project_folder / ".claude/settings.json"
+        settings.parent.mkdir(parents=True, exist_ok=True)
+        settings.write_text(json.dumps({"hooks": hooks}, indent=2) + "\n")
         self.story.expect_text(f'program manage claude "{self.story.home.project_folder}"', "managed hooks:")
 
     def answer(self, body: Mapping[str, object], session: str = "s-1") -> subprocess.CompletedProcess[str]:

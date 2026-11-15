@@ -17,7 +17,7 @@ ALLOWED_PLACEHOLDERS = frozenset({"approval", "recipient", "code", "plugin", "ta
     "path", "instruction", "reader", "rule", "seconds", "sequence", "shape", "skills", "state", "step", "subject", "task", "tasks", "transcription", "url", "wait", "worker", "workers", "writes", "hint", "items", "hint", "then", "grant", "processor", "plans", "focus", "waits", "notice", "merge_ask", "committed", "failed", "helper_type", "groups",
 })
 # Static driver instructions, runtime rule diagnostics and the words a managed hook, a foreign hook or a plugin step printed have no stored resource.
-FOREIGN_TEMPLATES = frozenset({"OpeningLineNudge", "ManagedHookLineNudge", "AgentNoticeNudge"})
+FOREIGN_TEMPLATES = frozenset({"OpeningLineNudge", "ManagedHookLineNudge", "AgentNoticeNudge", "ProjectHookWokeNudge", "CompactionInstructionsNudge"})
 
 def source_files() -> list[Path]:
     return [path for folder in ("src/core", "src/suites") for path in (ROOT / folder).rglob("*.py")]

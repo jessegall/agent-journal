@@ -1,3 +1,5 @@
+from engine.request.request_values import RequestValues
+from suites.coding.modules.workers.support.worker_unit_stop_answer import WorkerUnitStopAnswer
 from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.driver.nudge import Nudge
@@ -24,29 +26,30 @@ class WorkerUnitStop:
     due, or else, it hears what to do now. With no task left it is told of each task of its that is blocked."""
 
     def __init__(self, tasks: TaskQuery, processes: ProcessQuery, requests: ReaderRequestQuery, clock: Clock, agents: AgentRows, compaction: WorkerCompaction,
-                 guidance: WorkerGuidance, numbers: RowNumbers) -> None:
+                 guidance: WorkerGuidance, numbers: RowNumbers, request_values: RequestValues) -> None:
         self.tasks, self.processes, self.requests, self.clock, self.agents = tasks, processes, requests, clock, agents
-        self.compaction, self.guidance, self.numbers = compaction, guidance, numbers
+        self.compaction, self.guidance, self.numbers, self.request_values = compaction, guidance, numbers, request_values
 
     # the text that holds the worker's stop now, or nothing when it may stop
     def refusal(self, agent_id: int) -> str | None:
-        if self.compaction.is_after_task(agent_id) or self.requests.has_active_requests(agent_id, self.clock.timestamp()):
-            return None
-        point = self.guidance.point(agent_id)
-        if point.step is WorkerStep.MERGE_DUE:
-            return WorkerTaskStartedNudge.declared().nudge(line=point.line).text
-        has_task = bool(point.round.started) or point.round.following is not None
-        if not has_task or point.step.may_stop():
-            return None
-        if self.processes.agent(agent_id).running().exists() or self.agents.running_with_read_access(agent_id):
-            return None
-        return WorkerTaskStartedNudge.declared().nudge(line=f"{point.line} {HELP_COMMAND_TEXT}").text
+        return self.answer(agent_id).refusal
 
     def blocked_lines(self, agent_id: int) -> list[Nudge]:
+        return list(self.answer(agent_id).blocked_lines)
+
+    # read once a request: the stop's need and its lines of one step ask the same rows
+    def answer(self, agent_id: int) -> WorkerUnitStopAnswer:
+        return self.request_values.read(f"workers.unit-stop:{agent_id}", lambda: 0, lambda: self.answered(agent_id))
+
+    def answered(self, agent_id: int) -> WorkerUnitStopAnswer:
         if self.compaction.is_after_task(agent_id) or self.requests.has_active_requests(agent_id, self.clock.timestamp()):
-            return []
+            return WorkerUnitStopAnswer(None, ())
         point = self.guidance.point(agent_id)
-        if point.step is WorkerStep.MERGE_DUE or point.round.started or point.round.following is not None:
-            return []
-        blocked = self.tasks.assignee_tasks(agent_id).filter(state=TaskState.BLOCKED).every_row(UNIT_TASKS_REASON)
-        return [WorkerTaskBlockedNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, agent_id), task=row.id) for row in blocked]
+        if point.step is WorkerStep.MERGE_DUE:
+            return WorkerUnitStopAnswer(WorkerTaskStartedNudge.declared().nudge(line=point.line).text, ())
+        if not point.round.started and point.round.following is None:
+            blocked = self.tasks.assignee_tasks(agent_id).filter(state=TaskState.BLOCKED).every_row(UNIT_TASKS_REASON)
+            return WorkerUnitStopAnswer(None, tuple(WorkerTaskBlockedNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, agent_id), task=row.id) for row in blocked))
+        if point.step.may_stop() or self.processes.agent(agent_id).running().exists() or self.agents.running_with_read_access(agent_id):
+            return WorkerUnitStopAnswer(None, ())
+        return WorkerUnitStopAnswer(WorkerTaskStartedNudge.declared().nudge(line=f"{point.line} {HELP_COMMAND_TEXT}").text, ())

@@ -36,7 +36,7 @@ from core.modules.drivers.commands.record_hook_call.record_hook_call import Reco
 from core.modules.drivers.commands.support.context_line_split import ContextLineSplit
 from core.modules.drivers.commands.support.delivered_lines import DeliveredLines
 from core.modules.drivers.commands.support.compaction_end_percent import CompactionEndPercent
-from core.modules.drivers.commands.support.required_commands import RequiredCommands
+from core.modules.drivers.support.required_commands import RequiredCommands
 from core.modules.drivers.support.nudge_log import NudgeLog
 from core.modules.drivers.commands.support.one_move_per_row import OneMovePerRow
 from core.modules.drivers.commands.support.line_history_writer import LineHistoryWriter
@@ -88,6 +88,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         self.timing.stamp("history_recorded")
         self.compaction_end.finish_compaction(command.event, agent, context)
         if command.event.event == HookEventName.TICK and not (answers.refusal or answers.lines or answers.commands):
+            if command.step is not None:
+                self.steps.save(command.step.view, command.step.step, None, context)
             return HookReply.allowed()
         waiting = self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING).every_row(WAITING_LINES_REASON)
         handed_lines = DeliveredLines.chosen(command.event, answers, tuple(waiting))

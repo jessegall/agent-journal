@@ -10,7 +10,7 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.support.line_typing import LineTyping
 from core.modules.drivers.support.wake_delivery import WakeDelivery
-from engine.driver.line_delivery import LineDelivery
+from engine.enums.line_delivery import LineDelivery
 from engine.query.conditions.greater import Greater
 
 WAITING_LINES_REASON = "a release types every line that waited for the agent, oldest first"

@@ -14,7 +14,6 @@
             {"file": "src/core/modules/agents/listeners/ended_agent_program_listener.py"},
             {"file": "src/core/modules/drivers/bindings/agent_hook_route.py"},
             {"file": "src/core/modules/helpers/listeners/helper_program_listener.py"},
-            {"file": "src/core/modules/helpers/rules/unstarted_helper_rule.py"},
             {"file": "src/suites/coding/modules/workers/support/worker_folder_runs.py"},
             {"file": "src/suites/coding/modules/workers/support/worker_resume.py"},
             {"file": "src/suites/coding/modules/workers/support/worker_sessions.py"},

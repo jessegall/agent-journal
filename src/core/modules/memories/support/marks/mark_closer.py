@@ -1,7 +1,7 @@
 from engine.enums.actor_type import ActorType
 from engine.command.context import Context
 from engine.repository.repository import Repository
-from core.modules.memories.support.mark_tracker import MarkTracker
+from core.modules.memories.support.marks.mark_tracker import MarkTracker
 
 
 class MarkCloser:

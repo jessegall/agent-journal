@@ -53,17 +53,17 @@ def test_the_cadence_notices_use_only_the_output_the_seconds_the_limit_the_hint_
 def waking_process_nudges():
     from engine.driver.nudge_declaration import NudgeDeclaration
     from core.modules.processes.support import process_nudges
-    declared = [value for value in vars(process_nudges).values() if isinstance(value, NudgeDeclaration)]
+    declared = [value.declared() for value in vars(process_nudges).values() if isinstance(value, type) and issubclass(value, NudgeDeclaration) and value is not NudgeDeclaration]
     return [nudge for nudge in declared if nudge.wakes_agent]
 
 
 def test_every_process_nudge_that_wakes_an_agent_uses_the_wake_hook():
-    from engine.driver.line_delivery import LineDelivery
+    from engine.enums.line_delivery import LineDelivery
     waking = waking_process_nudges()
     assert len(waking) == 6 and all(nudge.delivery is LineDelivery.WAKE_HOOK for nudge in waking)
 
 
 def test_the_process_nudge_text_is_unchanged():
     from dataclasses import replace
-    from engine.driver.line_delivery import LineDelivery
+    from engine.enums.line_delivery import LineDelivery
     assert all(replace(nudge, delivery=LineDelivery.TERMINAL_TYPING).text == nudge.text for nudge in waking_process_nudges())

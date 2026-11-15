@@ -6,7 +6,7 @@ from engine.driver.hook_event import HookEvent
 from engine.driver.nudge import Nudge
 from engine.enums.hook_event_name import HookEventName
 from core.modules.memories.nudges.weigh_memories_nudge import WeighMemoriesNudge
-from core.modules.memories.support.reached_mark import ReachedMark
+from core.modules.memories.support.marks.reached_mark import ReachedMark
 
 OPEN_MARK_KEY = "memories.open-mark"
 

@@ -38,7 +38,7 @@
                 "testCode": true
             },
             {
-                "fileMatches": "processes/rules/runner_rewrite_rule\\.py$"
+                "fileMatches": "processes/effects/runner_start_effect\\.py$"
             },
             {
                 "fileMatches": "engine/driver/refusal_line\\.py$"
@@ -49,7 +49,7 @@
             {
                 "all": [
                     {
-                        "fileMatches": "modules/drivers/rules/foreign_hooks_rule\\.py$"
+                        "fileMatches": "modules/drivers/support/decision_(assembler|fallbacks)\\.py$"
                     },
                     {
                         "name": "RuleAnswer"

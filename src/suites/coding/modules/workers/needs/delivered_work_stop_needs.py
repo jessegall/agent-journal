@@ -15,7 +15,7 @@ from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.nudges.proof_check_nudge import ProofCheckNudge
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
-from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
+from suites.coding.modules.workers.support.worker_worktrees import WorkerWorktrees
 from suites.coding.modules.workers.support.block_conditions.delivered_proofs_checked import DeliveredProofsChecked
 
 DELIVERED_WORK_STOP_KEY = "workers.delivered-work-at-stop"

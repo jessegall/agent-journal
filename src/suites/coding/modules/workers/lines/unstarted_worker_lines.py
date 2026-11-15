@@ -15,7 +15,7 @@ from core.modules.drivers.models.agent_activity import AgentActivity
 from core.modules.drivers.support.agent_activities import AgentActivities
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.nudges.worker_unstarted_nudge import WorkerUnstartedNudge
-from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
+from suites.coding.modules.workers.support.worker_worktrees import WorkerWorktrees
 from suites.coding.modules.workers.support.worker_settings import UNSTARTED_WORKER_SECONDS
 
 

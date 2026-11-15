@@ -45,7 +45,7 @@ class ListlessStocker(HelperType):
 def problems(declaration: type[HelperType]) -> tuple[str, ...]:
     suite = type("ShelvesSuite", tuple([Suite]), {"name": "shelves", "modules": [ShelvesModule], "helper_types": [declaration]})
     listed = SuiteList(tuple([suite]))
-    return HelperTypeCheck().problems(listed.modules(), (), listed)
+    return HelperTypeCheck().problems(listed.modules(), listed)
 
 
 def listing(commands: CommandAllowList) -> tuple[str, ...]:

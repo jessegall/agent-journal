@@ -1,5 +1,4 @@
 from datetime import timedelta
-from pathlib import Path
 
 import pytest
 
@@ -7,8 +6,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story_fixture import StoryFixture
 from engine.testing.stories.story import Story
-from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 LISTING = HookSamples.shell("ls", ShellPart("ls", "read", []))
 LONG_LISTING = HookSamples.shell("ls -l", ShellPart("ls", "read", ["-l"]))
@@ -43,18 +41,3 @@ class MessageUnread(StoryFixture):
     def steps(self, story):
         story.expect_success('message send "Read me" --environment main', actor=story.user)
         story.hook("s-1", HookSamples.prompt("Carry on"))
-
-
-def test_an_open_message_block_does_not_open_the_skill_countdown_state(new_story):
-    story = new_story(fixture=MessageUnread)
-    story.hook("s-1", LISTING)
-    shown = story.run(f"driver states {agent_number(story, story.agent.id)}", actor=story.agent).output_text
-    story.expect_rows("messages.unread-countdown" in shown, "skills.skill-block" not in shown, detail=shown)
-
-
-def test_the_coding_suite_adds_its_own_shape_and_core_and_the_engine_never_name_it(new_story):
-    story = new_story(fixture=BuilderStarted)
-    story.expect_text("driver state-types", "workers.worker-log-due", "journal.suites.coding.workers", actor=story.agent)
-    source = Path(__file__).resolve().parents[5] / "src"
-    naming = [file for folder in ("core", "engine") for file in (source / folder).rglob("*.py") if "WorkerLogDue" in file.read_text() or "worker-log-due" in file.read_text()]
-    story.expect_rows(naming == [], detail=str(naming))

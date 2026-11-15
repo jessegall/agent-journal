@@ -5,6 +5,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from engine.file.file_access import FileAccess
+from engine.file.kept_bytes import KeptBytes
 from engine.file.versions.file_version import FileVersion
 from engine.types.type_guards import is_mapping
 
@@ -21,7 +22,7 @@ class JsonSettings:
     @staticmethod
     @lru_cache(maxsize=128)
     def loaded(path: Path, version: FileVersion) -> dict[str, object]:
-        loaded: object = json.loads(FileAccess.read(path) or "{}")
+        loaded: object = json.loads(KeptBytes.kept(path, version).decode() or "{}")
         return {str(key): value for key, value in loaded.items()} if is_mapping(loaded) else {}
 
     @staticmethod

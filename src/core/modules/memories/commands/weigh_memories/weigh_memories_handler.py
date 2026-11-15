@@ -4,7 +4,7 @@ from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from core.modules.memories.models.memory import Memory
-from core.modules.memories.support.mark_closer import MarkCloser
+from core.modules.memories.support.marks.mark_closer import MarkCloser
 from core.modules.memories.commands.weigh_memories.weigh_memories import WeighMemories
 
 

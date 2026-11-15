@@ -29,8 +29,7 @@ def test_shipped_types_restore_their_access_inheritance_and_worker_roster(played
                       worker.roster is not None)
     story.expect_rows(story.container.get(worker.roster.loaded()).available(1) == ())
     registry = Registry.read(story.container.get(Database))
-    story.expect_rows(all(driver.role in registry.role_names for driver in registry.drivers),
-                      all(role in registry.role_names for rule in registry.rules for role in rule.roles))
+    story.expect_rows(all(driver.role in registry.role_names for driver in registry.drivers))
 
 
 

@@ -180,7 +180,6 @@
         "escalation: Escalation | None",
         "settings: Mapping[str, object]",
         "is_resting: bool",
-        "pinned_slices: tuple[str, ...]",
         "table_digest: str",
         "work_stop: WorkStop",
         "responder: Responder",
@@ -371,7 +370,6 @@
         "includes_steps: ClassVar[bool]",
         "agent_types: ClassVar[Sequence[str]]",
         "role_group: ClassVar[RoleGroup]",
-        "replaced_rules: ClassVar[Sequence[str]]",
         "timing: ClassVar[EffectTiming]",
         "is_required: ClassVar[bool]",
         "completes_work: ClassVar[bool]",
@@ -399,9 +397,7 @@
       "bases": [
         "LineSource"
       ],
-      "fields": [
-        "key: str"
-      ],
+      "fields": [],
       "methods": [
         "lines(self, question: Question, view: AgentView) -> Sequence[Line]",
         "nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]"
@@ -427,9 +423,9 @@
         "events: ClassVar[Sequence[HookEventName]]",
         "includes_steps: ClassVar[bool]",
         "agent_types: ClassVar[Sequence[str]]",
+        "key: ClassVar[str]",
         "role_group: ClassVar[RoleGroup]",
         "start_line: ClassVar[bool]",
-        "replaced_rules: ClassVar[Sequence[str]]",
         "carrier: ClassVar[LineCarrier]",
         "category: ClassVar[LineCategory]",
         "interval_key: ClassVar[str]"
@@ -447,7 +443,6 @@
         "rank: ClassVar[str]",
         "agent_types: ClassVar[Sequence[str]]",
         "role_group: ClassVar[RoleGroup]",
-        "replaced_rules: ClassVar[Sequence[str]]",
         "is_safety: ClassVar[bool]",
         "judges_stops: ClassVar[bool]",
         "grant_types: ClassVar[Sequence[GrantType]]",
@@ -476,22 +471,12 @@
         "line(self, text: str) -> ShellLine"
       ]
     },
-    "agent_machine.contracts.slice_answers.SliceAnswers": {
-      "bases": [
-        "ABC"
-      ],
-      "fields": [],
-      "methods": [
-        "answers(self, agent_id: int, slice_name: str) -> bool"
-      ]
-    },
     "agent_machine.contracts.transform.Transform": {
       "bases": [
         "ABC"
       ],
       "fields": [
-        "slot: ClassVar[TransformSlot]",
-        "replaced_rules: ClassVar[Sequence[str]]"
+        "slot: ClassVar[TransformSlot]"
       ],
       "methods": [
         "applied(self, question: Question, view: AgentView) -> Rewrite"
@@ -642,7 +627,6 @@
         "rank: ClassVar[str]",
         "agent_types: ClassVar[Sequence[str]]",
         "role_group: ClassVar[RoleGroup]",
-        "replaced_rules: ClassVar[Sequence[str]]",
         "subject_models: ClassVar[Sequence[str]]"
       ],
       "methods": [
@@ -707,7 +691,6 @@
       "bases": [],
       "fields": [
         "table_digest: str",
-        "slices: tuple[str, ...]",
         "need_keys: tuple[NeedKey, ...]",
         "block_ids: tuple[int, ...]",
         "grant_ids: tuple[int, ...]"
@@ -735,11 +718,10 @@
         "agent_type: str",
         "profile: str",
         "driver_name: str",
-        "pinned_slices: tuple[str, ...]",
         "child_agent: str"
       ],
       "methods": [
-        "identified(cls, event: HookEvent, session_generation: int, agent_id: int, environment_id: int, agent_type: str, profile: str, driver_name: str, pinned_slices: tuple[str, ...]) -> 'EventIdentity'"
+        "identified(cls, event: HookEvent, session_generation: int, agent_id: int, environment_id: int, agent_type: str, profile: str, driver_name: str) -> 'EventIdentity'"
       ]
     },
     "agent_machine.record.intent.Intent": {
@@ -3124,43 +3106,13 @@
         "role: str",
         "driver: str",
         "timestamp: Timestamp",
-        "layer: OpenRow | None",
         "suite: str",
-        "control_return: bool",
-        "access: str",
-        "anchor: OpenRow | None",
-        "defaults: Sequence[str]",
-        "removed_while: Mapping[str, str]",
-        "machine_answered_rules: frozenset[str]"
+        "access: str"
       ],
       "methods": [
         "of_actor(cls, event: HookEvent, actor: LoadedActor, timestamp: Timestamp) -> 'AgentHook'",
         "hook_name(self) -> str",
-        "layer_ref(self) -> str",
         "is_main_stop(self) -> bool"
-      ]
-    },
-    "driver.agent_state.AgentState": {
-      "bases": [],
-      "fields": [
-        "name: ClassVar[str]",
-        "tier: ClassVar[StateTier]",
-        "drivers: ClassVar[Sequence[str]]",
-        "role_group: ClassVar[RoleGroup]",
-        "rules: ClassVar[Sequence[type[DriverRule]]]",
-        "deferred: ClassVar[Sequence[type]]",
-        "listeners: ClassVar[Sequence[type]]",
-        "substates: ClassVar[Sequence[type['AgentState']]]",
-        "exclusive: ClassVar[bool]",
-        "allows_wakes: ClassVar[bool]",
-        "delays_lines: ClassVar[bool]",
-        "delays_notices: ClassVar[bool]",
-        "pauses_agent: ClassVar[bool]"
-      ],
-      "methods": [
-        "open_rows(self, hook: AgentHook) -> Sequence[OpenRow]",
-        "opener_key(self) -> str",
-        "has_flag(cls) -> bool"
       ]
     },
     "driver.block_check.BlockCheck": {
@@ -3185,23 +3137,6 @@
         "has_target(self, container: Container) -> bool",
         "is_true(self, check: BlockCheck) -> bool"
       ]
-    },
-    "driver.block_until.OpenHold": {
-      "bases": [
-        "Command[object]"
-      ],
-      "fields": [
-        "agent_id: int",
-        "nudge: Nudge",
-        "condition: BlockCondition",
-        "after: Interval | None",
-        "countdown: Nudge | None",
-        "blocks_stop: bool",
-        "strict: bool",
-        "is_skippable: bool",
-        "countdown_limit: int"
-      ],
-      "methods": []
     },
     "driver.classification.Classification": {
       "bases": [],
@@ -3267,20 +3202,6 @@
         "line_at(self, remaining: int) -> Nudge | None"
       ]
     },
-    "driver.deferred_rule.DeferredRule": {
-      "bases": [
-        "SingleInstance"
-      ],
-      "fields": [
-        "name: ClassVar[str]",
-        "hook: ClassVar[HookEventName | HookWildcard]",
-        "drivers: ClassVar[Sequence[str]]",
-        "role_group: ClassVar[RoleGroup]"
-      ],
-      "methods": [
-        "after(self, call: HookCallLike) -> Sequence[Command[object]]"
-      ]
-    },
     "driver.diff_count.DiffCount": {
       "bases": [],
       "fields": [
@@ -3299,8 +3220,6 @@
         "name: ClassVar[str]",
         "suite_name: ClassVar[str]",
         "role: ClassVar[str]",
-        "rules: ClassVar[Sequence[type[DriverRule]]]",
-        "agent_states: ClassVar[Sequence[type[AgentState]]]",
         "guards: ClassVar[Sequence[type[Guard[Never]]]]",
         "opening_lines: ClassVar[Sequence[str]]"
       ],
@@ -3312,53 +3231,6 @@
       ],
       "fields": [],
       "methods": []
-    },
-    "driver.driver_rule.DriverRule": {
-      "bases": [
-        "SingleInstance"
-      ],
-      "fields": [
-        "name: ClassVar[str]",
-        "hook: ClassVar[HookEventName | HookWildcard]",
-        "drivers: ClassVar[Sequence[str]]",
-        "roles: ClassVar[Sequence[str]]",
-        "role_group: ClassVar[RoleGroup]",
-        "priority: ClassVar[RulePriority]",
-        "essential: ClassVar[bool]",
-        "exempt: ClassVar[bool]",
-        "history: ClassVar[bool]",
-        "overlay_proof: ClassVar[bool]",
-        "is_pause_skipped: ClassVar[bool]",
-        "wakes_agent: ClassVar[bool]",
-        "is_notice: ClassVar[bool]",
-        "start_line_rule: ClassVar[bool]",
-        "single_action_refusal: ClassVar[str]",
-        "skip_window: ClassVar[Interval | None]",
-        "skip_name: ClassVar[str]",
-        "disabled_scopes: ClassVar[WholeScopes]",
-        "tools: ClassVar[Sequence[ToolType]]"
-      ],
-      "methods": [
-        "answer(self, hook: AgentHook) -> RuleAnswer"
-      ]
-    },
-    "driver.driver_rules.DriverRules": {
-      "bases": [],
-      "fields": [],
-      "methods": [
-        "ask(self, hook: AgentHook) -> RuleAnswers",
-        "newest_first(layers: list[Layer]) -> list[Layer]",
-        "layer_ref(layer: Layer) -> str",
-        "layer_rules(self, layer: Layer, hook_name: str) -> list[DriverRuleEntry]",
-        "layer_class(layer: Layer) -> type[Overlay] | type[AgentState]",
-        "closed_gate(self, entry: DriverRuleEntry, board: StateBoard) -> str",
-        "complete_checks(self, walk: Walk, hook: AgentHook, calls: list[RuleCall], board: StateBoard | None) -> RuleAnswers",
-        "critical_checks(self, answers: RuleAnswers, hook: AgentHook, board: StateBoard) -> list[StopCheck]",
-        "skippable(self, answer: RuleAnswer, entry: DriverRuleEntry, hook: AgentHook) -> RuleAnswer",
-        "is_active_rule(self, entry: DriverRuleEntry, hook: AgentHook) -> bool",
-        "outcome(self, entry: DriverRuleEntry, hook: AgentHook) -> RuleOutcome",
-        "rule_outcome(self, entry: DriverRuleEntry, hook: AgentHook) -> RuleOutcome"
-      ]
     },
     "driver.enums.foreign_outcome.ForeignOutcome": {
       "bases": [
@@ -3392,13 +3264,6 @@
         "detected(cls) -> 'OldHookRunnerError'"
       ]
     },
-    "driver.essential_allowances.EssentialAllowances": {
-      "bases": [],
-      "fields": [],
-      "methods": [
-        "allowed(self, rule: str) -> bool"
-      ]
-    },
     "driver.foreign_answer.ForeignAnswer": {
       "bases": [],
       "fields": [
@@ -3422,7 +3287,8 @@
         "stderr: str",
         "milliseconds: int",
         "timed_out: bool",
-        "answer: Mapping[str, object]"
+        "answer: Mapping[str, object]",
+        "on_failure: str"
       ],
       "methods": [
         "parsed(cls, data: object) -> 'ForeignRun'",
@@ -3476,6 +3342,7 @@
         "is_launch_clear_end(self) -> bool",
         "is_check_required(self) -> bool",
         "is_checked_role(role: str) -> bool",
+        "has_background_work(self) -> bool",
         "is_interrupt(self) -> bool",
         "is_continuing(self) -> bool",
         "displayed_part(self) -> str",
@@ -3483,19 +3350,6 @@
         "is_final_display(self) -> bool",
         "is_monitor_tool(self) -> bool",
         "tool_input(self) -> Mapping[object, object]"
-      ]
-    },
-    "driver.hook_history.HookHistory": {
-      "bases": [],
-      "fields": [],
-      "methods": [
-        "control_return(self, key: RuleHistoryKey) -> bool",
-        "answer_time(self, key: RuleHistoryKey) -> Timestamp | None",
-        "last_answer(self, rule_name: str, hook: AgentHook) -> Timestamp | None",
-        "has_answer_after(self, rule_name: str, hook: AgentHook, start_at: Timestamp) -> bool",
-        "has_recent_answer(self, rule_name: str, hook: AgentHook, span: Seconds) -> bool",
-        "row(self, key: RuleHistoryKey) -> object | None",
-        "clear(self) -> None"
       ]
     },
     "driver.hook_limits.HookLimits": {
@@ -3559,22 +3413,6 @@
         "seconds(self) -> int"
       ]
     },
-    "driver.layer.Layer": {
-      "bases": [],
-      "fields": [
-        "overlay: OverlayEntry | AgentStateEntry",
-        "row: OpenRow"
-      ],
-      "methods": []
-    },
-    "driver.layers.Layers": {
-      "bases": [],
-      "fields": [],
-      "methods": [
-        "active(self, agent_id: int, driver: str) -> list[Layer]",
-        "overlay(self, entry: OverlayEntry) -> Overlay"
-      ]
-    },
     "driver.loaded_actor.LoadedActor": {
       "bases": [],
       "fields": [
@@ -3583,10 +3421,7 @@
         "role: str",
         "access: str",
         "suite: str",
-        "driver: str",
-        "anchor: OpenRow",
-        "defaults: Sequence[str]",
-        "removed_while: Mapping[str, str]"
+        "driver: str"
       ],
       "methods": []
     },
@@ -3642,6 +3477,7 @@
         "closed_by: type[BlockCondition] | None",
         "plural_text: str",
         "wakes_agent: bool",
+        "delivery: LineDelivery",
         "path_fields: Sequence[str]",
         "repeats_without_hook: bool",
         "id_field: str | None",
@@ -3668,29 +3504,25 @@
       "methods": [
         "send(self, agent_id: int, declaration: NudgeDeclaration, source: str, context: Context) -> Model",
         "send_nudge(self, agent_id: int, nudge: Nudge, source: str, context: Context, wakes_agent: bool) -> Model",
-        "send_text(self, agent_id: int, text: str, source: str, context: Context, wakes_agent: bool, repeats_without_hook: bool) -> Model"
+        "send_text(self, agent_id: int, text: str, source: str, context: Context, wakes_agent: bool, repeats_without_hook: bool, delivery: LineDelivery) -> Model"
       ]
     },
-    "driver.open_row.OpenRow": {
-      "bases": [],
-      "fields": [
-        "table: str",
-        "row_id: int",
-        "opened_at: Timestamp"
-      ],
-      "methods": [
-        "ref(self) -> str"
-      ]
-    },
-    "driver.overlay.Overlay": {
+    "driver.open_hold.OpenHold": {
       "bases": [
-        "AgentState"
+        "Command[object]"
       ],
-      "fields": [],
-      "methods": [
-        "open_rows(self, hook: AgentHook) -> Sequence[OpenRow]",
-        "open_agent_rows(self, agent_id: int) -> Sequence[OpenRow]"
-      ]
+      "fields": [
+        "agent_id: int",
+        "nudge: Nudge",
+        "condition: BlockCondition",
+        "after: Interval | None",
+        "countdown: Nudge | None",
+        "blocks_stop: bool",
+        "strict: bool",
+        "is_skippable: bool",
+        "countdown_limit: int"
+      ],
+      "methods": []
     },
     "driver.part.Part": {
       "bases": [],
@@ -3844,23 +3676,6 @@
         "metadata(self) -> dict[str, object]"
       ]
     },
-    "driver.rule_call.RuleCall": {
-      "bases": [],
-      "fields": [
-        "entry: DriverRuleEntry",
-        "hook: AgentHook"
-      ],
-      "methods": []
-    },
-    "driver.rule_history_key.RuleHistoryKey": {
-      "bases": [],
-      "fields": [
-        "agent_id: int",
-        "rule: str",
-        "layer: str"
-      ],
-      "methods": []
-    },
     "driver.rule_outcome.RuleOutcome": {
       "bases": [],
       "fields": [
@@ -3993,30 +3808,6 @@
       "fields": [],
       "methods": []
     },
-    "driver.state_board.StateBoard": {
-      "bases": [],
-      "fields": [],
-      "methods": [
-        "is_open(self, entry: AgentStateEntry) -> bool",
-        "is_removed(self, entry: AgentStateEntry) -> bool",
-        "open_rows(self, entry: AgentStateEntry) -> Sequence[OpenRow]",
-        "stack(self, driver: str) -> list[Layer]",
-        "substates_above_parents(layers: list[Layer]) -> list[Layer]",
-        "is_asked_on_this_hook(self, entry: AgentStateEntry) -> bool",
-        "applies_to_role(self, state: AgentState) -> bool",
-        "timed_rows(self, entry: AgentStateEntry, state: AgentState, key: str) -> Sequence[OpenRow]",
-        "outcome(rows: Sequence[OpenRow]) -> str",
-        "state_records(self) -> tuple[StateRecord, ...]",
-        "guarded_rows(self, entry: AgentStateEntry, state: AgentState) -> Sequence[OpenRow]"
-      ]
-    },
-    "driver.state_boards.StateBoards": {
-      "bases": [],
-      "fields": [],
-      "methods": [
-        "for_hook(self, hook: AgentHook) -> StateBoard"
-      ]
-    },
     "driver.state_record.StateRecord": {
       "bases": [],
       "fields": [
@@ -4026,60 +3817,6 @@
         "milliseconds: int"
       ],
       "methods": []
-    },
-    "driver.states.agent_row_state.AgentRowState": {
-      "bases": [
-        "AgentState"
-      ],
-      "fields": [],
-      "methods": [
-        "open_rows(self, hook: AgentHook) -> Sequence[OpenRow]"
-      ]
-    },
-    "driver.states.block_state.BlockState": {
-      "bases": [
-        "AgentState"
-      ],
-      "fields": [
-        "nudge_keys: ClassVar[Sequence[str]]"
-      ],
-      "methods": [
-        "keys(self) -> Sequence[str]",
-        "open_rows(self, hook: AgentHook) -> Sequence[OpenRow]"
-      ]
-    },
-    "driver.states.countdown_state.CountdownState": {
-      "bases": [
-        "BlockState"
-      ],
-      "fields": [
-        "span: ClassVar[Span]",
-        "refusal: ClassVar[NudgeDeclaration]",
-        "countdown: ClassVar[CountDown]",
-        "strict: ClassVar[bool]"
-      ],
-      "methods": [
-        "keys(self) -> Sequence[str]",
-        "start(cls, hook: AgentHook, condition: BlockCondition, refusal_fields: Mapping[str, object] | None) -> OpenHold"
-      ]
-    },
-    "driver.states.hook_triggered_state.HookTriggeredState": {
-      "bases": [
-        "AgentState"
-      ],
-      "fields": [
-        "commands: ClassVar[Sequence[str]]"
-      ],
-      "methods": [
-        "open_rows(self, hook: AgentHook) -> Sequence[OpenRow]"
-      ]
-    },
-    "driver.states.open_blocks.OpenBlocks": {
-      "bases": [],
-      "fields": [],
-      "methods": [
-        "open_rows(self, agent_id: int, nudge_keys: Sequence[str]) -> Sequence[OpenRow]"
-      ]
     },
     "driver.stop_blockers.StopBlockers": {
       "bases": [],
@@ -4151,16 +3888,45 @@
         "is_writing_files(self) -> bool"
       ]
     },
-    "driver.walk.Walk": {
+    "driver.wake_ask.WakeAsk": {
+      "bases": [],
+      "fields": [
+        "program: str",
+        "session: str",
+        "launch: str",
+        "token: str"
+      ],
+      "methods": [
+        "parsed(cls, data: object) -> 'WakeAsk'"
+      ]
+    },
+    "driver.wake_reply.WakeReply": {
+      "bases": [],
+      "fields": [
+        "status: int",
+        "agent_id: int",
+        "line: str",
+        "line_id: int",
+        "token: str"
+      ],
+      "methods": [
+        "gone(cls) -> 'WakeReply'",
+        "nothing(cls) -> 'WakeReply'",
+        "waiting(cls, agent_id: int, token: str) -> 'WakeReply'",
+        "given(cls, line: str, line_id: int, token: str) -> 'WakeReply'",
+        "is_waiting(self) -> bool",
+        "json(self) -> dict[str, object]"
+      ]
+    },
+    "driver.wake_route.WakeRoute": {
       "bases": [],
       "fields": [],
       "methods": [
-        "record(self, entry: DriverRuleEntry, layer: str, outcome: RuleOutcome) -> bool",
-        "record_gated(self, entry: DriverRuleEntry, state: str) -> None",
-        "record_silenced(self, entry: DriverRuleEntry, layer: str) -> None",
-        "leave_layer(self, layer: Layer, overlay: type[Overlay] | type[AgentState]) -> None",
-        "silences(self, rule: type[DriverRule]) -> bool",
-        "answers(self, states: Sequence[StateRecord]) -> RuleAnswers"
+        "answer(self, ask: WakeAsk) -> WakeReply",
+        "waited(self, waiting: WakeReply, seconds: float) -> WakeReply",
+        "received(self, line_id: int, token: str) -> bool",
+        "line(self, ask: WakeAsk, hook: str, text: str) -> bool",
+        "live_waiters(self) -> int"
       ]
     },
     "driver.watched_runs.WatchedRuns": {
@@ -4193,13 +3959,6 @@
       "methods": [
         "can_receive_work(self) -> bool"
       ]
-    },
-    "enums.agent_kind.AgentKind": {
-      "bases": [
-        "StrEnum"
-      ],
-      "fields": [],
-      "methods": []
     },
     "enums.agent_role.AgentRole": {
       "bases": [
@@ -4476,13 +4235,6 @@
       "fields": [],
       "methods": []
     },
-    "enums.hook_wildcard.HookWildcard": {
-      "bases": [
-        "StrEnum"
-      ],
-      "fields": [],
-      "methods": []
-    },
     "enums.inspector_width.InspectorWidth": {
       "bases": [
         "StrEnum"
@@ -4528,6 +4280,13 @@
       "methods": []
     },
     "enums.line_category.LineCategory": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "enums.line_delivery.LineDelivery": {
       "bases": [
         "StrEnum"
       ],
@@ -4667,13 +4426,6 @@
       "fields": [],
       "methods": []
     },
-    "enums.rule_priority.RulePriority": {
-      "bases": [
-        "IntEnum"
-      ],
-      "fields": [],
-      "methods": []
-    },
     "enums.sandbox_level.SandboxLevel": {
       "bases": [
         "StrEnum"
@@ -4745,13 +4497,6 @@
     "enums.starter_type.StarterType": {
       "bases": [
         "StrEnum"
-      ],
-      "fields": [],
-      "methods": []
-    },
-    "enums.state_tier.StateTier": {
-      "bases": [
-        "IntEnum"
       ],
       "fields": [],
       "methods": []
@@ -6234,13 +5979,6 @@
         "applies(self, entry_name: str, change: Change[Model]) -> bool"
       ]
     },
-    "listener.commit.agent_state_openness.AgentStateOpenness": {
-      "bases": [],
-      "fields": [],
-      "methods": [
-        "is_open(self, agent_id: int, state: type[AgentState]) -> bool"
-      ]
-    },
     "listener.commit.commit_listener.CommitListener": {
       "bases": [
         "EventSubscriber[E]"
@@ -6285,8 +6023,6 @@
         "is_prepared(self, entry: ListenerEntry, events: list[LoggedEvent], position: int) -> bool",
         "prepare_rows(self, entry: ListenerEntry, events: list[LoggedEvent]) -> None",
         "handle_event(self, entry: ListenerEntry, event: LoggedEvent) -> bool",
-        "is_heard_in_state(self, listener: CommitListener[object], built_event: object, event: LoggedEvent) -> bool",
-        "is_state_open(self, agent_id: int, state: type[AgentState], event: LoggedEvent) -> bool",
         "hold_when_over_time_limit(self, entry: ListenerEntry, event: LoggedEvent, elapsed: float) -> None"
       ]
     },
@@ -6302,17 +6038,6 @@
         "guard_current_thread() -> None",
         "thread_name(container: Container) -> str",
         "close(self) -> None"
-      ]
-    },
-    "listener.commit.state_listener.StateListener": {
-      "bases": [
-        "CommitListener[E]"
-      ],
-      "fields": [
-        "state: ClassVar[type[AgentState]]"
-      ],
-      "methods": [
-        "agent_of(self, event: E) -> int | None"
       ]
     },
     "listener.deletion_listener.DeletionListener": {
@@ -6349,13 +6074,6 @@
       "methods": []
     },
     "listener.errors.listener_time_limit_error.ListenerTimeLimitError": {
-      "bases": [
-        "Exception"
-      ],
-      "fields": [],
-      "methods": []
-    },
-    "listener.errors.unregistered_listener_state_error.UnregisteredListenerStateError": {
       "bases": [
         "Exception"
       ],
@@ -6922,18 +6640,6 @@
         "constructor_types(cls: type) -> tuple[str, ...]"
       ]
     },
-    "module.default_state.DefaultState": {
-      "bases": [],
-      "fields": [
-        "state: type[AgentState]",
-        "kind: AgentKind",
-        "value: str",
-        "removed_while: str"
-      ],
-      "methods": [
-        "declared(cls) -> 'DefaultState'"
-      ]
-    },
     "module.dock_check.DockCheck": {
       "bases": [],
       "fields": [],
@@ -6947,17 +6653,7 @@
       "methods": [
         "suites(self, modules: Sequence[type[Module]], shipped_modules: Sequence[type[Module]], suites: SuiteList) -> tuple[SuiteEntry, ...]",
         "task_assigner_path(suite: type[Suite]) -> str",
-        "drivers(self, modules: Sequence[type[Module]]) -> tuple[DriverEntry, ...]",
-        "overlays(self, modules: Sequence[type[Module]]) -> tuple[OverlayEntry, ...]",
-        "agent_states(self, modules: Sequence[type[Module]]) -> tuple[AgentStateEntry, ...]",
-        "deferred_rules(self, modules: Sequence[type[Module]]) -> tuple[DeferredRuleEntry, ...]",
-        "check_deferred(state: type[AgentState]) -> None",
-        "check_substates(declared: Sequence[tuple[str, type[AgentState], str]]) -> None",
-        "with_substates(self, owner: str, state: type[AgentState], parent: str) -> list[tuple[str, type[AgentState], str]]",
-        "state_tree(self, states: Sequence[type[AgentState]]) -> list[type[AgentState]]",
-        "check_states(entries: Sequence[AgentStateEntry], module_rules: set[str]) -> None",
-        "rules(self, modules: Sequence[type[Module]]) -> tuple[DriverRuleEntry, ...]",
-        "entry(self, rule: type[DriverRule], owner: str, exempt: bool, essential: bool) -> DriverRuleEntry"
+        "drivers(self, modules: Sequence[type[Module]]) -> tuple[DriverEntry, ...]"
       ]
     },
     "module.errors.module_error.ModuleError": {
@@ -6985,7 +6681,7 @@
       "bases": [],
       "fields": [],
       "methods": [
-        "problems(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry], suites: SuiteList) -> tuple[str, ...]",
+        "problems(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]",
         "group_problems(modules: Sequence[type[Module]], names: frozenset[str], profiles: Mapping[str, AgentProfile]) -> Iterator[str]",
         "owner(module: type[Module], suites: SuiteList) -> str",
         "declaration_problems(self, module: type[Module], declaration: type[HelperType], claimed: dict[str, str], owner: str) -> list[str]",
@@ -7137,9 +6833,6 @@
         "removal: ClassVar[type[Migration] | None]",
         "bindings: ClassVar[dict[type, type]]",
         "drivers: ClassVar[list[type[Driver]]]",
-        "overlays: ClassVar[list[type[Overlay]]]",
-        "driver_rules: ClassVar[list[type[DriverRule]]]",
-        "agent_states: ClassVar[list[type[AgentState]]]",
         "windows: ClassVar[list[WindowDeclaration | type[Window]]]",
         "window_extensions: ClassVar[list[WindowExtension | type[WindowExtension]]]",
         "marks: ClassVar[list[MarkDeclaration | type[MarkDeclaration]]]",
@@ -7229,10 +6922,10 @@
         "known_events(self, modules: Sequence[type[Module]]) -> tuple[str, ...]",
         "module_events(module: type[Module], book: StateBook) -> dict[str, tuple[EventForm, ...]]",
         "event_keys(cls, modules: Sequence[type[Module]]) -> tuple[EventKeyEntry, ...]",
-        "check(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> None",
+        "check(self, modules: Sequence[type[Module]]) -> None",
         "button_warnings(self, modules: Sequence[type[Module]]) -> dict[str, str]",
         "models(self, modules: Sequence[type[Module]]) -> tuple[type[Model], ...]",
-        "duplicate_names(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]",
+        "duplicate_names(self, modules: Sequence[type[Module]]) -> tuple[str, ...]",
         "lifecycle_problems(self, modules: Sequence[type[Module]]) -> tuple[str, ...]",
         "event_problems(self, modules: Sequence[type[Module]]) -> tuple[str, ...]",
         "duplicate_event_keys(self, modules: Sequence[type[Module]]) -> tuple[str, ...]",
@@ -7288,7 +6981,7 @@
         "ordered_migrations(self, modules: Sequence[type[Module]]) -> tuple[ModuleMigrations, ...]",
         "synchronize(self) -> SyncReport",
         "migrations(self, module: type[Module]) -> tuple[Migration, ...]",
-        "registry(self, modules: tuple[type[Module], ...], rules: tuple[DriverRuleEntry, ...], actor_ids: dict[str, int]) -> Registry",
+        "registry(self, modules: tuple[type[Module], ...], actor_ids: dict[str, int]) -> Registry",
         "guard_entries(guards: Sequence[GuardClass], first_position: int) -> tuple[GuardEntry, ...]",
         "profile_entries(modules: tuple[type[Module], ...]) -> tuple[ProfileEntry, ...]",
         "windows(self, modules: tuple[type[Module], ...]) -> tuple[WindowEntry, ...]",
@@ -7432,12 +7125,9 @@
         "modules: ClassVar[Sequence[type[Module]]]",
         "joins: ClassVar[str | None]",
         "requires: ClassVar[Sequence[str]]",
-        "complete_control: ClassVar[bool]",
-        "included_overlays: ClassVar[Sequence[str]]",
         "entrances: ClassVar[Sequence[type[Entrance]]]",
         "task_assigner: ClassVar[type[TaskAssigner] | None]",
-        "helper_types: ClassVar[Sequence[type[HelperType]]]",
-        "default_states: ClassVar[Sequence[type[DefaultState]]]"
+        "helper_types: ClassVar[Sequence[type[HelperType]]]"
       ],
       "methods": [
         "offered_windows(cls) -> tuple[str, ...]",
@@ -7450,7 +7140,7 @@
       "bases": [],
       "fields": [],
       "methods": [
-        "problems(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry], suites: SuiteList) -> tuple[str, ...]",
+        "problems(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]",
         "module_memberships(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]",
         "suite_modules(self, modules: Sequence[type[Module]], suites: SuiteList) -> Mapping[str, str]",
         "duplicates(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]",
@@ -7459,17 +7149,7 @@
         "loop(self, start: str, requires: Mapping[str, Sequence[str]]) -> list[str]",
         "driver_suites(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]",
         "wrong_suite_drivers(self, modules: Sequence[type[Module]]) -> tuple[str, ...]",
-        "preset_problems(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]",
-        "rule_owners(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]",
-        "unknown_hooks(self, rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]"
-      ]
-    },
-    "module.suite_entrypoint.SuiteEntrypoint": {
-      "bases": [],
-      "fields": [],
-      "methods": [
-        "entries(self, suite: type[Suite]) -> tuple[DefaultStateEntry, ...]",
-        "entry(self, suite: type[Suite], default: DefaultState) -> DefaultStateEntry"
+        "preset_problems(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]"
       ]
     },
     "module.suite_import_check.SuiteImportCheck": {
@@ -7984,8 +7664,22 @@
       ],
       "fields": [],
       "methods": [
-        "detected(cls, hook: 'ManagedHook', provider: type[Provider], event: HookEventName, rules: Sequence[type[HookToolRule]]) -> list['HookEffect']"
+        "detected(cls, hook: 'ManagedHook', provider: type[Provider], event: HookEventName) -> list['HookEffect']"
       ]
+    },
+    "provider.enums.matcher_style.MatcherStyle": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "provider.enums.wake_answer.WakeAnswer": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
     },
     "provider.errors.unknown_program_error.UnknownProgramError": {
       "bases": [
@@ -8040,6 +7734,16 @@
         "restore(self) -> list[ManagedHook]"
       ]
     },
+    "provider.hook_matcher.HookMatcher": {
+      "bases": [],
+      "fields": [
+        "text: str",
+        "style: MatcherStyle"
+      ],
+      "methods": [
+        "matches(self, name: str) -> bool"
+      ]
+    },
     "provider.hook_partition.HookPartition": {
       "bases": [],
       "fields": [
@@ -8055,16 +7759,6 @@
       "fields": [
         "path: str",
         "tracked: bool"
-      ],
-      "methods": []
-    },
-    "provider.hook_tool_rule.HookToolRule": {
-      "bases": [
-        "Protocol"
-      ],
-      "fields": [
-        "hook: ClassVar[HookEventName | HookWildcard]",
-        "tools: ClassVar[Sequence[ToolType]]"
       ],
       "methods": []
     },
@@ -8123,8 +7817,9 @@
         "sources: Sequence[HookSource]"
       ],
       "methods": [
+        "facts(self) -> list[str]",
         "all_sources(self) -> tuple[HookSource, ...]",
-        "found(cls, program: str, event: str, matcher: str, entry: Mapping[str, object], source: str, tracked: bool) -> 'ManagedHook'"
+        "found(cls, program: str, event: str, matcher: str, entry: Mapping[str, object], source: str, tracked: bool, default_timeout: int) -> 'ManagedHook'"
       ]
     },
     "provider.managed_hook_history.ManagedHookHistory": {
@@ -8203,6 +7898,7 @@
         "hooks(cls, provider: type[Provider], folder: Path) -> 'ProgramHooks'",
         "journal(cls, provider: type[Provider], path: Path) -> 'ProgramHooks'",
         "journal_blocks(self, runner: str, root: Path, managed: Sequence[ManagedHook]) -> dict[str, list[object]]",
+        "wake_entries(self, event: str, runner: str, root: Path) -> list[dict[str, object]]",
         "write(self, runner: str, root: Path, managed: Sequence[ManagedHook]) -> None",
         "entry_timeout(self, event: str, managed: Sequence[ManagedHook]) -> int",
         "is_complete(self) -> bool",
@@ -8234,7 +7930,14 @@
         "decoder: str",
         "rewrites: Mapping[str, Mapping[str, object]]",
         "matchers: Mapping[str, str]",
-        "halts: Mapping[str, str]"
+        "halts: Mapping[str, str]",
+        "matcher_style: str",
+        "default_hook_seconds: int",
+        "session_end_limit_seconds: int",
+        "wake_answer: str",
+        "wake_seconds: int",
+        "entry_fields: Sequence[str]",
+        "output_fields: Sequence[str]"
       ],
       "methods": [
         "row(cls, provider: type[Provider]) -> 'ProgramRow'"
@@ -8339,6 +8042,13 @@
         "matchers: ClassVar[Mapping[str, str]]",
         "line_events: ClassVar[Sequence[HookEventName]]",
         "plain_output_events: ClassVar[Sequence[HookEventName]]",
+        "additional_context_limit: ClassVar[int]",
+        "hook_entry_fields: ClassVar[frozenset[str]]",
+        "hook_output_fields: ClassVar[frozenset[str]]",
+        "matcher_style: ClassVar[MatcherStyle]",
+        "default_hook_seconds: ClassVar[int]",
+        "session_end_limit_seconds: ClassVar[int]",
+        "wake_hook: ClassVar[WakeHook | None]",
         "refusals: ClassVar[Mapping[HookEventName, RefusalStyle]]",
         "tool_categories: ClassVar[Mapping[str, ToolType]]",
         "safe_tools: ClassVar[tuple[str, ...]]",
@@ -8355,6 +8065,7 @@
         "person_file_note: ClassVar[str]",
         "controls: ClassVar[Sequence[ControlGroup]]",
         "compacts_headless: ClassVar[bool]",
+        "compaction_instructions: ClassVar[str]",
         "has_windowed_compaction: ClassVar[bool]",
         "new_capabilities: ClassVar[Sequence[Capability]]",
         "needs_launch_variables: ClassVar[bool]",
@@ -8366,6 +8077,7 @@
       ],
       "methods": [
         "capabilities(cls) -> Capabilities",
+        "reads_hook_text(self, event: HookEventName) -> bool",
         "readable_folders(self) -> tuple[Path, ...]",
         "server_files(self, folder: Path) -> tuple[ProgramServerFile, ...]",
         "skill_instruction(self, skill: str, path: Path) -> str",
@@ -8398,7 +8110,6 @@
         "uses_web_reader(self, event: HookEvent) -> bool",
         "skills_kept_after_compaction(self, transcript: Path | None) -> Mapping[str, str]",
         "transcript_path(self, event: HookEvent) -> Path | None",
-        "delivered_line(self, line: SessionLine) -> bool",
         "peer_note(self, line: str) -> Sequence[PeerNote]",
         "context_percent(self, home: JournalHome, session: str) -> int | None",
         "context_window(self, home: JournalHome, session: str) -> ContextWindow",
@@ -8500,7 +8211,8 @@
       "fields": [],
       "methods": [
         "row(position: int, row_type: object, text: str, time: object) -> TranscriptRow",
-        "author(row_type: str, text: str) -> str"
+        "author(row_type: str, text: str) -> str",
+        "is_wake_notification(text: str) -> bool"
       ]
     },
     "provider.transcript_entries.TranscriptEntries": {
@@ -8559,6 +8271,16 @@
         "lines(self, count: int) -> list[str]",
         "tail_lines(self, window: int) -> list[str]"
       ]
+    },
+    "provider.wake_hook.WakeHook": {
+      "bases": [],
+      "fields": [
+        "event: str",
+        "answer: WakeAnswer",
+        "fields: Mapping[str, object]",
+        "limit_seconds: int"
+      ],
+      "methods": []
     },
     "query.condition_join.ConditionJoin": {
       "bases": [],
@@ -9414,23 +9136,6 @@
         "exists_statement(self) -> Statement"
       ]
     },
-    "registry.agent_state_entry.AgentStateEntry": {
-      "bases": [],
-      "fields": [
-        "name: str",
-        "path: DottedPath",
-        "owner: str",
-        "position: int",
-        "tier: int",
-        "drivers: Sequence[str]",
-        "parent: str",
-        "rules: Sequence[str]",
-        "deferred: Sequence[str]"
-      ],
-      "methods": [
-        "covers(self, driver: str) -> bool"
-      ]
-    },
     "registry.button_entry.ButtonEntry": {
       "bases": [],
       "fields": [
@@ -9459,33 +9164,6 @@
         "subject(self) -> str",
         "allows(self, argv: list[str]) -> bool",
         "fits(self, part: str, word: str) -> bool"
-      ]
-    },
-    "registry.default_state_entry.DefaultStateEntry": {
-      "bases": [],
-      "fields": [
-        "state: str",
-        "kind: AgentKind",
-        "value: str",
-        "removed_while: str"
-      ],
-      "methods": [
-        "matches(self, role: str, driver: str, helper_type: str) -> bool"
-      ]
-    },
-    "registry.deferred_rule_entry.DeferredRuleEntry": {
-      "bases": [],
-      "fields": [
-        "name: str",
-        "path: DottedPath",
-        "state: str",
-        "hook: str",
-        "drivers: Sequence[str]",
-        "role_group: RoleGroup"
-      ],
-      "methods": [
-        "covers_hook(self, hook_name: str) -> bool",
-        "covers(self, driver: str) -> bool"
       ]
     },
     "registry.dock_entry.DockEntry": {
@@ -9525,40 +9203,6 @@
         "guards: Sequence[str]"
       ],
       "methods": []
-    },
-    "registry.driver_patterns.DriverPatterns": {
-      "bases": [],
-      "fields": [
-        "patterns: Sequence[str]"
-      ],
-      "methods": [
-        "covers(self, driver: str) -> bool"
-      ]
-    },
-    "registry.driver_rule_entry.DriverRuleEntry": {
-      "bases": [],
-      "fields": [
-        "name: str",
-        "path: DottedPath",
-        "hook: str",
-        "position: int",
-        "owner: str",
-        "drivers: Sequence[str]",
-        "roles: Sequence[str]",
-        "exempt: bool",
-        "essential: bool",
-        "history: bool",
-        "claims_essential: bool",
-        "role_group: RoleGroup",
-        "priority: int"
-      ],
-      "methods": [
-        "is_standing(self) -> bool",
-        "covers_hook(self, hook_name: str) -> bool",
-        "covers_driver(self, driver: str, role: str) -> bool",
-        "covers_helper(self, role: str) -> bool",
-        "is_driver_standing_rule(self, driver: str) -> bool"
-      ]
     },
     "registry.errors.lazy_load_error.LazyLoadError": {
       "bases": [
@@ -9762,18 +9406,6 @@
         "restored(cls, stored: Mapping[str, Any]) -> 'NudgeEntry'"
       ]
     },
-    "registry.overlay_entry.OverlayEntry": {
-      "bases": [],
-      "fields": [
-        "name: str",
-        "path: DottedPath",
-        "position: int",
-        "drivers: Sequence[str]"
-      ],
-      "methods": [
-        "covers(self, driver: str) -> bool"
-      ]
-    },
     "registry.parsed_registries.ParsedRegistries": {
       "bases": [],
       "fields": [],
@@ -9812,10 +9444,6 @@
         "guards: tuple[GuardEntry, ...]",
         "listeners: tuple[ListenerEntry, ...]",
         "bindings: dict[str, DottedPath]",
-        "overlays: tuple[OverlayEntry, ...]",
-        "agent_states: tuple[AgentStateEntry, ...]",
-        "deferred_rule_entries: tuple[DeferredRuleEntry, ...]",
-        "rules: tuple[DriverRuleEntry, ...]",
         "suites: tuple[SuiteEntry, ...]",
         "drivers: tuple[DriverEntry, ...]",
         "windows: tuple[WindowEntry, ...]",
@@ -9853,20 +9481,6 @@
         "parsed(cls, fingerprint: str, entries_text: str) -> 'Registry'",
         "built(cls, fingerprint: str, entries_text: str) -> 'Registry'",
         "entries_text(self) -> str",
-        "with_overlays(self, overlays: tuple[OverlayEntry, ...]) -> 'Registry'",
-        "with_rules(self, rules: tuple[DriverRuleEntry, ...]) -> 'Registry'",
-        "essential_rules(self, driver: str, hook_name: str) -> list[DriverRuleEntry]",
-        "overlay_rules(self, overlay: str, hook_name: str) -> list[DriverRuleEntry]",
-        "driver_rules(self, driver: str, role: str, hook_name: str) -> list[DriverRuleEntry]",
-        "hook_rules(self, hook_name: str) -> list[DriverRuleEntry]",
-        "gates(self) -> dict[str, AgentStateEntry]",
-        "rule_gate(self, rule_name: str) -> AgentStateEntry | None",
-        "deferred_rules(self, state_name: str, hook_name: str) -> list[DeferredRuleEntry]",
-        "tier_states(self, driver: str, tier: int) -> list[AgentStateEntry]",
-        "default_states(self, suite_name: str, role: str, driver: str, helper_type: str) -> tuple[DefaultStateEntry, ...]",
-        "agent_state(self, name: str) -> AgentStateEntry | None",
-        "state_rules(self, state_name: str, hook_name: str) -> list[DriverRuleEntry]",
-        "driver_overlays(self, driver: str) -> list[OverlayEntry]",
         "bind(self, container: Container) -> None",
         "state_book(self) -> StateBook",
         "agent_group_book(self) -> AgentGroupBook",
@@ -10009,20 +9623,14 @@
         "name: str",
         "module: str",
         "requires: Sequence[str]",
-        "complete_control: bool",
-        "included_overlays: Sequence[str]",
         "windows: Sequence[str]",
         "layouts: Mapping[str, LayoutShape]",
         "presets: Mapping[str, Sequence[LayoutPreset]]",
         "task_assigner: str",
         "shipped: bool",
-        "entrances: Mapping[str, Sequence[str]]",
-        "default_states: Sequence[DefaultStateEntry]"
+        "entrances: Mapping[str, Sequence[str]]"
       ],
-      "methods": [
-        "is_overlay_included(self, overlay: str) -> bool",
-        "is_rule_included(self, owner: str, patterns: Sequence[str], driver: str) -> bool"
-      ]
+      "methods": []
     },
     "registry.suite_windows.SuiteWindows": {
       "bases": [],
@@ -10224,76 +9832,6 @@
       "methods": [
         "is_main(self) -> bool",
         "stored_agent_id(self) -> int | None"
-      ]
-    },
-    "rule_backed.rule_backed_area.RuleBackedArea": {
-      "bases": [
-        "EngineArea"
-      ],
-      "fields": [],
-      "methods": []
-    },
-    "rule_backed.rule_effect.RuleEffect": {
-      "bases": [
-        "Effect"
-      ],
-      "fields": [
-        "rule: ClassVar[type[DriverRule]]"
-      ],
-      "methods": [
-        "commands(self, view: AgentView, record: DecisionRecord) -> Sequence[Command[object]]"
-      ]
-    },
-    "rule_backed.rule_events.RuleEvents": {
-      "bases": [],
-      "fields": [],
-      "methods": [
-        "hook_events(rule: type[DriverRule]) -> list[HookEventName]",
-        "agent_types(rule: type[DriverRule]) -> list[str]"
-      ]
-    },
-    "rule_backed.rule_hooks.RuleHooks": {
-      "bases": [
-        "ABC"
-      ],
-      "fields": [],
-      "methods": [
-        "answer(self, rule: type[DriverRule], question: Question, agent_id: int) -> RuleAnswer | None"
-      ]
-    },
-    "rule_backed.rule_line_source.RuleLineSource": {
-      "bases": [
-        "LineSource"
-      ],
-      "fields": [
-        "rule: ClassVar[type[DriverRule]]"
-      ],
-      "methods": [
-        "lines(self, question: Question, view: AgentView) -> Sequence[Line]"
-      ]
-    },
-    "rule_backed.rule_policy.RulePolicy": {
-      "bases": [
-        "Policy"
-      ],
-      "fields": [
-        "rule: ClassVar[type[DriverRule]]"
-      ],
-      "methods": [
-        "refusals(self, question: Question, view: AgentView) -> Sequence[Reason]"
-      ]
-    },
-    "rule_backed.rule_transform.RuleTransform": {
-      "bases": [
-        "Transform"
-      ],
-      "fields": [
-        "rule: ClassVar[type[DriverRule]]",
-        "replaces_action: ClassVar[bool]"
-      ],
-      "methods": [
-        "applied(self, question: Question, view: AgentView) -> Rewrite",
-        "final_question(self, question: Question, command: str) -> Question"
       ]
     },
     "sandbox.agent_sandbox_choice.AgentSandboxChoice": {
@@ -11271,17 +10809,6 @@
         "with_touched_rows(self, output_text: str) -> str"
       ]
     },
-    "testing.stories.old_path_story_files.OldPathStoryFiles": {
-      "bases": [],
-      "fields": [
-        "slices: dict[str, str]",
-        "replacements: dict[str, str]"
-      ],
-      "methods": [
-        "read(cls, root: Path) -> 'OldPathStoryFiles'",
-        "live_slices(self, story_file: str, live: tuple[str, ...]) -> tuple[str, ...]"
-      ]
-    },
     "testing.stories.story.Story": {
       "bases": [
         "KitRows"
@@ -11324,6 +10851,11 @@
         "step(self, name: str) -> object",
         "run_tick_handler(self, label: str) -> None",
         "run_ticker_round(self) -> None",
+        "wake_ask(self, session: str, token: str, program: str, launch: str) -> WakeReply",
+        "wake_received(self, answer: WakeReply) -> bool",
+        "expect_wake_line(self, answer: WakeReply, text: ExpectedText) -> None",
+        "expect_no_wake(self, answer: WakeReply) -> None",
+        "live_wake_waiters(self) -> int",
         "tick(self, session: str) -> HookReply",
         "busy_database(self) -> Generator[None]",
         "run_tick(self, name: str) -> None",

@@ -3,7 +3,7 @@ from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from core.modules.memories.models.memory_mark import MemoryMark
-from core.modules.memories.support.mark_tracker import MarkTracker
+from core.modules.memories.support.marks.mark_tracker import MarkTracker
 from core.modules.memories.commands.skip_memory_mark.skip_memory_mark import SkipMemoryMark
 
 

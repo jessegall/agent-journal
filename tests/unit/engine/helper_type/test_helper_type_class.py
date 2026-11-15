@@ -60,7 +60,7 @@ class CopySuite(Suite):
 
 def problems(*suites: type[Suite]) -> tuple[str, ...]:
     listed = SuiteList(suites)
-    return HelperTypeCheck().problems(listed.modules(), (), listed)
+    return HelperTypeCheck().problems(listed.modules(), listed)
 
 
 def declaration_problems(declaration: type[HelperType]) -> tuple[str, ...]:

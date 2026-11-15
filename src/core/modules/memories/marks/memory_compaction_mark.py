@@ -3,7 +3,7 @@ from engine.enums.mark_click import MarkClick
 from engine.enums.mark_grouping import MarkGrouping
 from core.modules.memories.models.enums.memory_mark_type import MemoryMarkType
 from core.modules.memories.models.enums.memory_mark_variant import MemoryMarkVariant
-from core.modules.memories.support.memory_marks import CONTEXT_FAMILY
+from core.modules.memories.support.marks.memory_marks import CONTEXT_FAMILY
 
 
 class MemoryCompactionMark(MarkDeclaration):

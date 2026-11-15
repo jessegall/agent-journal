@@ -12,7 +12,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PYTHON_FOLDERS = ["src/core", "src/suites", "src/server", "src/install", "tests", "scripts"]
+PYTHON_FOLDERS = ["src/engine", "src/core", "src/suites", "src/server", "src/install", "tests", "scripts"]
 GO_FOLDERS = ["tools/journal-hook", "tools/journal"]
 SKIPPED_FOLDERS = {"__pycache__", "node_modules", "dist", "testdata"}
 LISTS = ROOT / ".commandments" / "custom" / "lists.json"

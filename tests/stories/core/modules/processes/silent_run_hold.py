@@ -21,7 +21,7 @@ from tests.integration.core.modules.processes.test_hang_watch import ActiveBuild
 from tests.stories.core.modules.processes.support.process_samples import end_run
 from core.modules.processes.nudges.silent_run_blocked_nudge import SilentRunBlockedNudge
 from core.modules.drivers.support.driver_nudges import REQUIRED_COMMAND_TOOL_USES
-from core.modules.drivers.commands.support.required_commands import RequiredCommands
+from core.modules.drivers.support.required_commands import RequiredCommands
 from engine.testing.expectations.expected_nudge import expected_nudge
 
 HANG_SECONDS = 300

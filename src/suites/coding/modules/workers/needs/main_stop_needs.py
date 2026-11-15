@@ -1,5 +1,7 @@
 from collections.abc import Mapping, Sequence
 
+from core.modules.agents.models.agent import Agent
+from core.modules.tasks.models.task import Task
 from engine.agent_machine.needs.agent_reference import AgentReference
 from engine.agent_machine.needs.block_plan import BlockPlan
 from engine.agent_machine.needs.need import Need
@@ -25,8 +27,6 @@ from suites.coding.support.stop_notices import UNFINISHED_TASKS_TEXT, StopNotice
 MAIN_STOP_KEY = "coding.main-stop"
 # a Working frame is ordered by its push time, never by a rank key
 MAIN_STOP_RANK = ""
-TASK_SUBJECT = "task"
-AGENT_SUBJECT = "agent"
 
 
 class MainStopNeeds(NeedSource):
@@ -53,7 +53,7 @@ class MainStopNeeds(NeedSource):
         if handed is not None:
             reason = Reason(MAIN_STOP_KEY, DecisionClass.HOLD, MAIN_STOP_RANK, TaskAssignmentNudge.declared().nudge(task=handed.id).text)
             return [Need(Working(WorkReference(WorkType.HANDED_TASK, handed.id, f"task {handed.id}"), True, reason), MAIN_STOP_RANK,
-                         NeedKey("Working", SubjectReference(TASK_SUBJECT, handed.id), f"handed-task:{handed.id}"))]
+                         NeedKey("Working", SubjectReference(Task.model_name, handed.id), f"handed-task:{handed.id}"))]
         return self.own_tasks(agent_id) if is_stop else []
 
     def own_tasks(self, agent_id: int) -> list[Need | BlockPlan]:
@@ -66,4 +66,4 @@ class MainStopNeeds(NeedSource):
         remains = not self.notices.has_notice(agent_id, text, UNFINISHED_TASKS_TEXT)
         tasks = ",".join(str(task_id) for task_id in task_ids)
         return [Need(Working(WorkReference(WorkType.OWN_TASKS, agent_id, f"tasks {tasks}"), remains, Reason(MAIN_STOP_KEY, DecisionClass.HOLD, MAIN_STOP_RANK, text)),
-                     MAIN_STOP_RANK, NeedKey("Working", SubjectReference(AGENT_SUBJECT, agent_id), f"own-tasks:{tasks}"))]
+                     MAIN_STOP_RANK, NeedKey("Working", SubjectReference(Agent.model_name, agent_id), f"own-tasks:{tasks}"))]

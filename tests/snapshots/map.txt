@@ -16,7 +16,7 @@ engine  The building blocks every module stands on; it imports no module.
     container  The container that builds a class with what it needs, and the container of one journal.
     database  The database: tables, migrations, statements and the count of repeated work.
     dotted_path  A dotted path to a class, and loading the class it names.
-    driver  Drivers, suites, driver rules and overlays: how the journal answers the hooks of an agent.
+    driver  Drivers and suites, and the hook route, events and lines: how the journal answers the hooks of an agent.
     environment  The names of environments.
     event  Events: what a change to a row raises, the event log, event types and event patterns.
     execution  Who asks for an execution and how urgent it is, so every execution waits its turn in one order.
@@ -43,7 +43,6 @@ engine  The building blocks every module stands on; it imports no module.
     repository  Saving and loading rows, with the check for a stale row.
     request  Values kept while one request is answered.
     row  What every row has: metadata, a page of rows and the owner of a row.
-    rule_backed  Lines, policies and effects of the agent machine answered by an old driver rule, so today's texts and commands stay exact until each rule's body moves into its contribution.
     sandbox  The sandbox of an agent and of a shell line.
     scope  Scopes: which rows an actor or an environment may read.
     seed  Seeders and the demo data.
@@ -122,7 +121,7 @@ core  The modules that come with every journal.
   usage  Adds usage and cost: what each open session's status line reported of its model, context and cost, the plan's windows, and the project's counts, shown on the Usage window. Needs: journal.core.agents, journal.core.environments, journal.core.tasks, journal.core.questions, journal.core.drivers, journal.core.messages, journal.core.waits, journal.core.plans, journal.core.processes, journal.core.settings, journal.core.actors, journal.core.schedules, journal.core.skills, journal.core.profiles, journal.core.assignments.
   viewer  Adds the viewer: the window the shell itself runs its lines as, the check of every line a window sends, each user's layouts and the permissions each user gives a window. Needs: journal.core.actors, journal.core.environments, journal.core.agents, journal.core.settings, journal.core.drivers.
   voices  Adds the voice the agent talks to you in, the title and first name it calls you by, and whether the chat shows a figure: chosen with journal voice, and told to the main agent when it starts, after a compaction and when it changes. Needs: journal.core.actors, journal.core.agents, journal.core.drivers, journal.core.settings.
-  waits  Adds waits: an agent waits on rows it does not control or reports it is stuck, and while the wait is open it takes control of the agent as an exclusive overlay. Needs: journal.core.actors, journal.core.agents, journal.core.drivers, journal.core.chat.
+  waits  Adds waits: an agent waits on rows it does not control or reports it is stuck, and while the wait is open its Waiting frame holds the agent's stack. Needs: journal.core.actors, journal.core.agents, journal.core.drivers, journal.core.chat.
 suites  Suites: the modules and drivers for one sort of work.
   coding  Building software: the main agent works from its work controls and starts workers and the merger, while helpers read for it; the viewer shows its chat, tasks, plans, agents, questions and their activity and file edits, a phone layout, and version 4's layout presets; the main agent and every worker carry a default state of their own. Modules: checks, workers.
 tunnels  Tunnels that reach the viewer from outside the machine.

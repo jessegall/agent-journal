@@ -1,5 +1,6 @@
 from collections.abc import Mapping, Sequence
 
+from core.modules.agents.models.agent import Agent
 from engine.agent_machine.needs.agent_reference import AgentReference
 from engine.agent_machine.needs.block_plan import BlockPlan
 from engine.agent_machine.needs.need import Need
@@ -18,7 +19,6 @@ from suites.coding.modules.workers.types.worker import Worker
 WORKER_STOP_KEY = "workers.stop-once-delivered"
 # a Working frame is ordered by its push time, never by a rank key
 WORKER_STOP_RANK = ""
-AGENT_SUBJECT = "agent"
 
 
 class WorkerUnitNeeds(NeedSource):
@@ -38,4 +38,4 @@ class WorkerUnitNeeds(NeedSource):
     def working(agent_id: int, text: str) -> Need:
         reason = Reason(WORKER_STOP_KEY, DecisionClass.HOLD, WORKER_STOP_RANK, text)
         return Need(Working(WorkReference(WorkType.UNIT, agent_id, f"the unit of worker {agent_id}"), True, reason), WORKER_STOP_RANK,
-                    NeedKey("Working", SubjectReference(AGENT_SUBJECT, agent_id), f"unit:{agent_id}"))
+                    NeedKey("Working", SubjectReference(Agent.model_name, agent_id), f"unit:{agent_id}"))

@@ -1,4 +1,4 @@
-from engine.driver.line_delivery import LineDelivery
+from engine.enums.line_delivery import LineDelivery
 from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.enums.nudge_type import NudgeType
 
@@ -7,7 +7,6 @@ class ParentReportNudge(NudgeDeclaration):
     """The nudge agents.report."""
 
     key = "agents.report"
-
     delivery = LineDelivery.WAKE_HOOK
     type = NudgeType.STEERING
     text = "agent:{agent} reported in message:{message}: read it and act on it"

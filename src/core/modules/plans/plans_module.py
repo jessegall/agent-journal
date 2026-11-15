@@ -1,4 +1,5 @@
 from core.modules.plans.needs.plan_context_needs import PlanContextNeeds
+from core.modules.plans.lines.plan_context_lines import PlanContextLines
 from core.modules.plans.lines.plan_focus_lines import PlanFocusLines
 from core.modules.plans.lines.plan_order_lines import PlanOrderLines
 from core.modules.plans.lines.plan_state_lines import PlanStateLines
@@ -145,7 +146,7 @@ class PlansModule(Module):
     marks = [PlanMark]
     nudges = PLAN_NUDGES
     needs = [PlanContextNeeds]
-    lines = [PlanFocusLines, PlanOrderLines, PlanStateLines, PlanTaskEndLines]
+    lines = [PlanContextLines, PlanFocusLines, PlanOrderLines, PlanStateLines, PlanTaskEndLines]
     docks = PLANS_DOCKS
     window_extensions = [ChatRunningAgentsExtension]
     buttons = [PlansApproveButton]

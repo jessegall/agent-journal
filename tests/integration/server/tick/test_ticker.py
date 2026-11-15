@@ -111,14 +111,14 @@ def test_a_class_with_a_call_keeps_what_it_holds_from_one_run_to_the_next(synced
 
 def test_each_module_declares_the_handlers_it_needs_and_the_ticker_takes_them(synced_home):
     names = [declared.label for declared in Ticker.module_handlers(ModuleFinder(synced_home))]
-    assert {"read running outputs", "agent ticks", "hook pruning", "phone notices"} <= set(names)
+    assert {"read running outputs", "agent minute steps", "hook pruning", "phone notices"} <= set(names)
     assert len(names) == len(set(names))
 
 
 def test_the_handlers_the_modules_declare_start_at_their_own_pace(synced_home):
     intervals = {declared.label: (declared.interval.seconds, declared.starts_immediately) for declared in Ticker.module_handlers(ModuleFinder(synced_home))}
     assert intervals["read running outputs"] == (1, False)
-    assert intervals["agent ticks"] == (60, True)
+    assert intervals["agent minute steps"] == (60, True)
     assert intervals["hook pruning"] == (60 * 60, False)
     assert intervals["phone notices"] == (60, True)
 

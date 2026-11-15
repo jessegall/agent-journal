@@ -62,7 +62,7 @@ class Grants:
 def admission(rows: Rows, grants: Grants) -> CommandAdmission:
     finder = SimpleNamespace(modules=lambda: [SimpleNamespace(policies=[SendWorkPolicy])])
     types = SimpleNamespace(behaviours=lambda role: None, read_access_keys=lambda: ())
-    return CommandAdmission(finder, SimpleNamespace(get=lambda cls: cls()), SimpleNamespace(), SimpleNamespace(find=lambda agent_id: AGENT), grants, rows, rows,
+    return CommandAdmission(finder, SimpleNamespace(get=lambda cls: cls()), SimpleNamespace(find=lambda agent_id: AGENT), grants, rows, rows,
                             MachineAssembly(finder, SimpleNamespace(), types))
 
 

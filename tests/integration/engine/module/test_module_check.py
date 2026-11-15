@@ -21,7 +21,6 @@ from engine.model.model import Model
 from engine.model.move import Move
 from engine.model.tables import Tables
 from engine.module.module import Module
-from engine.module.driver_entries import DriverEntries
 from engine.module.inspector_check import InspectorCheck
 from engine.module.module_check import ModuleCheck
 from engine.module.provider_check import ProviderCheck
@@ -106,7 +105,7 @@ def module(name: str, models: tuple[ModelDeclaration, ...] = (), guards: tuple[t
 
 def problems(*modules: type[Module]) -> str:
     with pytest.raises(ModuleError) as raised:
-        module_check().check(modules, DriverEntries().rules(modules))
+        module_check().check(modules)
     return str(raised.value)
 
 
@@ -140,7 +139,7 @@ def test_two_events_with_one_key_are_refused():
 
 
 def test_modules_without_problems_pass():
-    module_check().check([module("items", [ModelDeclaration(Item)], [PausedItemGuard])], ())
+    module_check().check([module("items", [ModelDeclaration(Item)], [PausedItemGuard])])
 
 
 def test_a_guard_on_an_event_no_model_raises_is_refused():
@@ -153,7 +152,7 @@ def test_two_modules_with_one_model_name_and_table_are_refused():
 
 
 def test_two_guards_with_one_name_are_refused():
-    assert "two guards, listeners or driver rules named items.paused-only" in problems(module("items", [ModelDeclaration(Item)], [PausedItemGuard]), module("support", (), [PausedItemGuard]))
+    assert "two guards or listeners named items.paused-only" in problems(module("items", [ModelDeclaration(Item)], [PausedItemGuard]), module("support", (), [PausedItemGuard]))
 
 
 def test_a_move_named_like_a_standard_change_is_refused():

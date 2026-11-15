@@ -308,6 +308,7 @@ class DriversModule(Module):
     profiles = [REVIEWER_PROFILE]
     move_reason = "version 4 kept hook records in its own bookkeeping tables, which stay in the backup"
     requires_engine = ">=5,<6"
+    former_event_keys = {f"core.drivers.{former}.{action}": f"core.drivers.{current}.{action}" for former, current in (("rule_history", "agent_line_history"), ("agent_subject", "agent_stack")) for action in ("created", "updated", "deleted")}
     settings = DRIVERS_SETTINGS
     agent_drivers = [MainAgentDriver, HelperAgentDriver]
     dependencies = ["journal.core.chat", "journal.core.developer", "journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.assignments", "journal.core.settings", "journal.core.profiles"]

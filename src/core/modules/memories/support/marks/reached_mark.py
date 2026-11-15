@@ -7,7 +7,7 @@ from engine.setting.setting_values import SettingValues
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.support.current_context_window import CurrentContextWindow
 from core.modules.memories.queries.active_memory_query import ActiveMemoryQuery
-from core.modules.memories.support.mark_tracker import MarkTracker
+from core.modules.memories.support.marks.mark_tracker import MarkTracker
 from core.modules.memories.support.memory_settings import MARK_SPACING_TOKENS_SETTING, MARK_TOOL_USES_SETTING, MARKS_SETTING
 from core.modules.settings.bindings.support.context_share import ContextShare
 
