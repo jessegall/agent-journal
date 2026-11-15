@@ -1,11 +1,48 @@
-from engine.rule_backed.rule_policy import RulePolicy
-from core.modules.agents.rules.program_settings_rule import ProgramSettingsRule
+from engine.driver.nudge import Nudge
+from engine.driver.hook_event import HookEvent
+from engine.agent_machine.contracts.event_policy import EventPolicy
+from pathlib import Path
+
+from engine.driver.tool import Tool
+from engine.journal.journal_home import JournalHome
+from core.modules.agents.nudges.program_settings_ban_nudge import ProgramSettingsBanNudge
+from engine.journal.journal_home import JOURNAL_FOLDER
 
 
-class ProgramSettingsPolicy(RulePolicy):
-    """The refusal of ProgramSettingsRule, with today's text, as a policy of the new driver."""
+class ProgramSettingsPolicy(EventPolicy):
+    """A write to the journal's own Claude Code or Codex settings, or to a file they depend on, is refused, under
+    every overlay: the journal writes them at every start."""
 
-    rule = ProgramSettingsRule
+    key = "agents.program-settings"
     rank = "safety.all"
     is_safety = True
     grant_types = []
+
+    def __init__(self, home: JournalHome) -> None:
+        self.home = home
+
+    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+        tool = event.tool
+        if tool is None or not any(spelling in text for text in self.tool_write_texts(tool) for spelling in self.spellings()):
+            return None
+        return ProgramSettingsBanNudge.declared().nudge()
+
+    @staticmethod
+    def tool_write_texts(tool: Tool) -> tuple[str, ...]:
+        files = tool.files if tool.category.writes_files else ()
+        if tool.shell is None:
+            return files
+        parts = tuple(part.text for part in tool.shell.parts if not part.classification.category.is_readonly)
+        return (*files, *parts, *tool.shell.redirects)
+
+    def protected_paths(self) -> tuple[Path, ...]:
+        return (self.home.programs_folder, self.home.program_settings_backups.parent, self.home.program_settings_digests, self.home.hook_runner,
+                self.home.hook_runner_choice, self.home.hook_runner_choice.parent / "hook.sh")
+
+    def spellings(self) -> tuple[str, ...]:
+        person_home = str(Path.home())
+        markers = tuple(f"{JOURNAL_FOLDER}/{path.relative_to(self.home.folder)}" for path in self.protected_paths())
+        folders = {spelled for path in self.protected_paths() for spelled in (str(path), str(path.resolve()))}
+        home_folders = [folder for folder in folders if folder.startswith(f"{person_home}/")]
+        return (*markers, *folders, *(folder.replace(person_home, "~", 1) for folder in home_folders), *(folder.replace(person_home, "$HOME", 1) for folder in home_folders))
+

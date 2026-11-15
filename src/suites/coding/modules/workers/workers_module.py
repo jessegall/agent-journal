@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.policies.dispatch_names_model_policy import DispatchNamesModelPolicy
 from suites.coding.modules.workers.effects.orphan_worktree_effect import OrphanWorktreeEffect
 from suites.coding.modules.workers.effects.missing_process_effect import MissingProcessEffect
 from suites.coding.modules.workers.lines.inactive_worker_stop_lines import InactiveWorkerStopLines
@@ -146,7 +147,7 @@ class WorkersModule(Module):
     effects = [OrphanWorktreeEffect, MissingProcessEffect, InactiveWorkerStopEffect, CacheRefreshEffect, MergeJobReportEffect, RequestCompactionEffect, InactiveHelperEffect, PhaseTestEffect, RecordTodoListEffect]
     needs = [MergeJobNeeds, CompactionNeeds, DeliveredWorkStopNeeds, UnmergedWorkerNeeds, WorkerStatusFirstNeeds]
     lines = [ContextStopNowLines, InactiveHelperLines, MergeCheckoutLines, SmallBatchLines, StoppedWorkerLines, UnmergedWorkerLines, UnstartedWorkerLines, WorkerLogDueLines, WorkersOutLines]
-    policies = [ProvedDeliveryPolicy, ContextHardLimitPolicy, CheckoutWriteCodePolicy, DispatchAllowancePolicy, PhaseTestPolicy, ProtectedFolderPolicy, ReadonlyHelperAllowancePolicy, WorkerFilePolicy, WorkerOutsideLinkPolicy, WorkerReadPolicy, WorkerReusePolicy, WorkerTestCountPolicy, WorkerTestLinePolicy]
+    policies = [DispatchNamesModelPolicy, ProvedDeliveryPolicy, ContextHardLimitPolicy, CheckoutWriteCodePolicy, DispatchAllowancePolicy, PhaseTestPolicy, ProtectedFolderPolicy, ReadonlyHelperAllowancePolicy, WorkerFilePolicy, WorkerOutsideLinkPolicy, WorkerReadPolicy, WorkerReusePolicy, WorkerTestCountPolicy, WorkerTestLinePolicy]
     profiles = WORKER_PROFILES
     helper_types = [Worker, Merger]
     agent_states = [WorkerLogDue]

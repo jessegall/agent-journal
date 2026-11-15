@@ -1,30 +1,22 @@
-import re
-
 from engine.driver.agent_hook import AgentHook
-from engine.enums.command_effect import CommandEffect
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.claude_code.nudges.native_memory_ban_nudge import NativeMemoryBanNudge
-
-NATIVE_MEMORY_PATH = re.compile(r"\.claude/projects/[^/\s]+/memory(/|\b)")
+from engine.enums.hook_event_name import HookEventName
+from core.modules.claude_code.policies.native_memory_policy import NativeMemoryPolicy
 
 
 class NativeMemoryRule(DriverRule):
-    """A write into Claude Code's own memory folder is refused, under every overlay: the journal keeps the
-    memories."""
+    """The old walk's answer for NativeMemoryPolicy, which owns it, until the walk is deleted."""
 
-    name = "claude_code.native-memory"
+    name = NativeMemoryPolicy.key
     exempt = True
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     single_action_refusal = "A write into Claude Code's own memory folder is refused, under every overlay"
 
+    def __init__(self, policy: NativeMemoryPolicy) -> None:
+        self.policy = policy
+
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        tool = hook.event.tool
-        if tool is None or not tool.is_writing_files():
-            return RuleAnswer.allowed()
-        writing_texts = (*(part.text for part in tool.shell.parts if CommandEffect.WRITES_FILES in part.classification.effects), *tool.shell.redirects) if tool.shell is not None else ()
-        if any(NATIVE_MEMORY_PATH.search(text) for text in (*tool.files, *writing_texts)):
-            return RuleAnswer.refused(NativeMemoryBanNudge.declared().nudge())
-        return RuleAnswer.allowed()
+        nudge = self.policy.refusal(hook.event, hook.agent_id)
+        return RuleAnswer.refused(nudge) if nudge is not None else RuleAnswer.allowed()

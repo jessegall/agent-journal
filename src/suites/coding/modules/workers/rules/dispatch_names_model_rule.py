@@ -1,8 +1,11 @@
 from core.modules.helpers.rules.start_names_model_rule import StartNamesModelRule
+from suites.coding.modules.workers.policies.dispatch_names_model_policy import DispatchNamesModelPolicy
 
 
 class DispatchNamesModelRule(StartNamesModelRule):
-    """A worker dispatch names its model, an exact one or default for the profile's own (message 117983)."""
+    """The old walk's answer for DispatchNamesModelPolicy, which owns it, until the walk is deleted."""
 
-    name = "workers.dispatch-names-model"
-    starts = tuple(["worker dispatch"])
+    name = DispatchNamesModelPolicy.key
+
+    def __init__(self, policy: DispatchNamesModelPolicy) -> None:
+        super().__init__(policy)

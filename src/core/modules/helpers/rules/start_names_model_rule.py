@@ -2,25 +2,20 @@ from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.driver.rule_answer import RuleAnswer
 from engine.enums.hook_event_name import HookEventName
-from core.modules.helpers.nudges.start_without_model_nudge import StartWithoutModelNudge
-
-MODEL_FLAG = "--model"
+from core.modules.helpers.policies.start_names_model_policy import StartNamesModelPolicy
 
 
 class StartNamesModelRule(DriverRule):
-    """An agent's helper start names its model, an exact one or default for the profile's own, so the model is
-    always chosen (message 117983). A suite with starts of its own declares them on a rule of this class."""
+    """The old walk's answer for StartNamesModelPolicy, which owns it, until the walk is deleted."""
 
-    name = "helpers.start-names-model"
+    name = StartNamesModelPolicy.key
     single_action_refusal = "A helper start that names no model is refused, naming the flag"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    starts: tuple[str, ...] = tuple(["helper start"])
+
+    def __init__(self, policy: StartNamesModelPolicy) -> None:
+        self.policy = policy
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        shell = hook.event.tool.shell if hook.event.tool is not None else None
-        if shell is None:
-            return RuleAnswer.allowed()
-        starts = [part for start in self.starts for part in shell.parts_running_journal_command(start)]
-        starts_without_model = [part for part in starts if not any(argument.split("=")[0] == MODEL_FLAG for argument in part.arguments)]
-        return RuleAnswer.refused(StartWithoutModelNudge.declared().nudge()) if starts_without_model else RuleAnswer.allowed()
+        nudge = self.policy.refusal(hook.event, hook.agent_id)
+        return RuleAnswer.refused(nudge) if nudge is not None else RuleAnswer.allowed()
