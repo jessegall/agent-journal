@@ -21,7 +21,10 @@ STEP_ROUND_AGENTS_SETTING = f"{MODULE_KEY}.step-round-agents"
 WAKE_RETRY_SETTING = f"{MODULE_KEY}.wake-retry-seconds"
 WAKE_ATTEMPTS_SETTING = f"{MODULE_KEY}.wake-attempts"
 # The parts of the new driver whose phase has passed its gate and so may become active; each phase adds its own.
-READY_SLICES: tuple[str, ...] = ("safety", "admission")
+READY_SLICES: tuple[str, ...] = ("safety", "admission", "waiting", "blocked.skills", "blocked.overview", "blocked.messages", "blocked.memories",
+                                 "blocked.documents", "blocked.plans", "blocked.tasks", "blocked.sequences", "blocked.processes", "blocked.reminders",
+                                 "blocked.triggers", "blocked.coding", "blocked.workers", "working.main", "working.helper", "working.merger",
+                                 "working.worker")
 DRIVERS_SETTINGS = [
     SettingValue("suite", "Suite", "The set of agent roles and workflows available in this environment.", SettingType.TEXT, default="", scope=SettingScope.ENVIRONMENT, person_set=True,
                  is_driving=True),
