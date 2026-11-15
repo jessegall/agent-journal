@@ -1,4 +1,4 @@
-from argparse import ArgumentParser
+from argparse import ArgumentParser, BooleanOptionalAction
 from dataclasses import MISSING, Field, field
 from enum import StrEnum
 from types import new_class
@@ -48,7 +48,8 @@ def copied_default(model_field: Field[Any]) -> Field[Any]:
 
 def parser_argument(parser: ArgumentParser, flag: str, value_type: type[object]) -> None:
     if value_type is bool:
-        parser.add_argument(flag, action="store_true", default=None)
+        # --flag sets it and --no-flag clears it; neither leaves the field as it is
+        parser.add_argument(flag, action=BooleanOptionalAction, default=None)
     elif value_type is tuple:
         parser.add_argument(flag, nargs="+", action="extend")
     elif issubclass(value_type, StrEnum):

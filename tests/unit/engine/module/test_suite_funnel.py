@@ -5,7 +5,7 @@ from engine.enums.agent_kind import AgentKind
 from engine.module.default_state import DefaultState
 from engine.module.errors.module_error import ModuleError
 from engine.module.suite import Suite
-from engine.module.suite_funnel import SuiteFunnel
+from engine.module.suite_entrypoint import SuiteEntrypoint
 from engine.module.suite_list import SuiteList
 from engine.registry.default_state_entry import DefaultStateEntry
 
@@ -34,8 +34,8 @@ class JoiningSuite(Suite):
     default_states = [declared_default(LoadingState, AgentKind.HELPER_TYPE, "shop.reviewer", "samples.done")]
 
 
-def funnel(*suites: type[Suite]) -> SuiteFunnel:
-    return SuiteFunnel(SuiteList(suites), ["samples.loading"], ["shop.main"], ["shop.reviewer"])
+def funnel(*suites: type[Suite]) -> SuiteEntrypoint:
+    return SuiteEntrypoint(SuiteList(suites), ["samples.loading"], ["shop.main"], ["shop.reviewer"])
 
 
 def test_a_suite_and_the_suites_that_join_it_give_their_default_states():

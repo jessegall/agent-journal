@@ -7399,7 +7399,7 @@
         "unknown_hooks(self, rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]"
       ]
     },
-    "module.suite_funnel.SuiteFunnel": {
+    "module.suite_entrypoint.SuiteEntrypoint": {
       "bases": [],
       "fields": [],
       "methods": [

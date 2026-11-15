@@ -54,7 +54,7 @@ def test_the_state_is_asked_in_place_and_gates_the_task_rules_that_need_a_starte
     assert StartedTask.rules == [TaskReturnLineRule, LogRequestRule, UnloggedWriteRule, TaskNameRule, InactiveTaskReminderRule, TaskSummaryLineRule]
 
 
-@pytest.mark.parametrize("built", GATED, ids=["where-you-stand", "log-request", "log-before-more-writes", "named-task", "quiet-task", "session-start-summary"])
+@pytest.mark.parametrize("built", GATED, ids=["main-agent", "log-request", "log-before-more-writes", "named-task", "quiet-task", "session-start-summary"])
 def test_with_no_started_task_the_state_is_closed_and_each_gated_rule_answers_allowed_alone(built):
     assert StartedTask(started([])).open_rows(hook()) == []
     assert built().answer(hook()) == RuleAnswer.allowed()

@@ -9,7 +9,7 @@ from core.modules.tasks.lines.quiet_task_lines import QuietTaskLines
 from core.modules.tasks.lines.log_request_lines import LogRequestLines
 from core.modules.tasks.lines.task_filed_lines import TaskFiledLines
 from core.modules.tasks.lines.task_name_lines import TaskNameLines
-from core.modules.tasks.lines.where_you_stand_lines import WhereYouStandLines
+from core.modules.tasks.lines.task_return_lines import TaskReturnLines
 from core.modules.tasks.lines.still_held_lines import StillHeldLines
 from core.modules.tasks.lines.one_in_hand_lines import OneInHandLines
 from core.modules.tasks.lines.session_start_summary_lines import SessionStartSummaryLines
@@ -23,7 +23,7 @@ from core.modules.tasks.models.declarations.task_block_renewal_model_declaration
 from core.modules.tasks.models.declarations.task_read_model_declaration import TaskReadModelDeclaration
 from core.modules.tasks.docks.tasks_docks import TASKS_DOCKS
 from core.modules.tasks.skills.declarations.tasks_skills import TASKS_SKILLS
-from core.modules.tasks.states.where_you_stand import WhereYouStand
+from core.modules.tasks.states.main_agent_state import MainAgentState
 from core.modules.tasks.states.started_task import StartedTask
 from core.modules.tasks.commands.repair_task_states.repair_task_states_handler import RepairTaskStatesHandler
 from core.modules.agents.support.agent_task_reads import AgentTaskReads
@@ -152,7 +152,7 @@ class TasksModule(Module):
     nudges = TASK_NUDGES
     settings = TASK_SETTINGS
     requires_engine = ">=5,<6"
-    agent_states = [WhereYouStand, StartedTask]
+    agent_states = [MainAgentState, StartedTask]
     block_conditions = [TaskStopped, TaskStarted, TaskClosed, StartedTaskExists, TaskLogged, TaskBriefRead, TaskBlocksReviewed]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking", "journal.core.settings", "journal.core.assignments"]
     bindings = {AgentTaskReads: RowAgentTaskReads}
@@ -172,7 +172,7 @@ class TasksModule(Module):
     docks = TASKS_DOCKS
     needs = [TaskWorkNeeds, UnloggedWriteNeeds, BlockReviewNeeds]
     effects = [BlockReviewEffect]
-    lines = [BlockedWorkLines, QuietTaskLines, LogRequestLines, TaskFiledLines, TaskNameLines, WhereYouStandLines, StillHeldLines, OneInHandLines, SessionStartSummaryLines, WaitInWordsLines, BlockReviewLines]
+    lines = [BlockedWorkLines, QuietTaskLines, LogRequestLines, TaskFiledLines, TaskNameLines, TaskReturnLines, StillHeldLines, OneInHandLines, SessionStartSummaryLines, WaitInWordsLines, BlockReviewLines]
     driver_rules = [TaskFiledRule, TaskStartRule, TaskReturnReminderRule, WaitDescriptionRule, UnopenableBlockRule, TaskStopRule, AutoModeTaskStopRule, BlockedWorkRule]
     windows = TASKS_WINDOWS
     inspectors = [TaskInspector]

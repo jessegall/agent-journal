@@ -9,21 +9,21 @@ def test_state_types_with_defaults_shows_what_the_coding_suite_gives_each_kind_o
     story = new_story(fixture=BuilderStartedWithoutPlainWords)
     shown = story.run("driver state-types --defaults --json", actor=story.agent).output_text
     states = {row["state"]: row["value"] for row in json.loads(shown)["rows"]}
-    story.expect_rows(states.get("tasks.where-you-stand") == "main", states.get("workers.worker-log-due") == "worker", detail=shown)
+    story.expect_rows(states.get("tasks.main-agent") == "main", states.get("workers.worker-log-due") == "worker", detail=shown)
 
 
-def test_a_coding_main_agent_has_the_where_you_stand_default_at_the_bottom_of_its_states_and_nothing_is_written(new_story):
+def test_a_coding_main_agent_has_the_main_agent_default_at_the_bottom_of_its_states_and_nothing_is_written(new_story):
     story = new_story(fixture=BuilderStartedWithoutPlainWords)
     shown = story.run(f"driver states {agent_number(story, story.agent.id)}", actor=story.agent).output_text
     placed = next(line for line in shown.splitlines() if line.startswith("in_place:"))
-    story.expect_rows("tasks.where-you-stand (agent:" in placed and "since" in placed, detail=shown)
+    story.expect_rows("tasks.main-agent (agent:" in placed and "since" in placed, detail=shown)
 
 
 def test_a_worker_gets_the_worker_defaults_and_not_the_main_ones(new_story):
     story = new_story(fixture=BuilderStartedWithoutPlainWords)
     worker = story.new_row_id(f"agent start s-2 claude worker --parent {story.agent.id} --environment main")
     shown = story.run(f"driver states {agent_number(story, worker)}", actor=story.agent).output_text
-    story.expect_rows("workers.worker-log-due" in shown, "tasks.where-you-stand" not in shown, detail=shown)
+    story.expect_rows("workers.worker-log-due" in shown, "tasks.main-agent" not in shown, detail=shown)
 
 
 def test_the_worker_default_gates_the_rules_only_a_worker_hears_but_not_the_protected_folder_rule(new_story):

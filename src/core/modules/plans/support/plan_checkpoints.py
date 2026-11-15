@@ -69,7 +69,7 @@ class PlanCheckpoints:
         reaches = self.reaches(plan_id)
         running_phase_ids = self.running_phase_ids(reaches)
         run_tasks = {reach.phase_id: reach.tasks() for reach in reaches if reach.source.opens_phases() and reach.state is not CheckpointState.FAILED}
-        passed = self.release_unchecked(plan_id, windows, reaches, self.passed_phase_ids(plan_id), context)
+        passed = self.release_passed(plan_id, reaches, self.passed_phase_ids(plan_id), context)
         last_id = windows.checkpoint_phases()[-1].id
         for checkpoint in windows.checkpoint_phases():
             if not windows.is_reached(checkpoint) or checkpoint.id in running_phase_ids:
@@ -98,10 +98,9 @@ class PlanCheckpoints:
                                                        for checkpoint in windows.checkpoint_phases() if checkpoint.id in newest):
             self.record(plan_id, context)
 
-    # a checkpoint whose run passed and that no person was set to check gets its pass, as one whose run passed after this change does
-    def release_unchecked(self, plan_id: int, windows: CheckpointWindows, reaches: tuple[CheckpointReach, ...], passed: frozenset[int], context: Context) -> frozenset[int]:
-        unchecked = frozenset(phase.id for phase in windows.phases if not phase.person_check)
-        released = self.waiting_ids(reaches, passed) & unchecked
+    # a checkpoint whose run passed gets its pass, so nothing waits for a person
+    def release_passed(self, plan_id: int, reaches: tuple[CheckpointReach, ...], passed: frozenset[int], context: Context) -> frozenset[int]:
+        released = self.waiting_ids(reaches, passed)
         for phase_id in released:
             self.saved_pass(plan_id, phase_id, context)
         return passed | released
@@ -133,21 +132,9 @@ class PlanCheckpoints:
     def running_phase_ids(reaches: tuple[CheckpointReach, ...]) -> frozenset[int]:
         return frozenset(reach.phase_id for reach in reaches if reach.state is CheckpointState.RUNNING)
 
-    def save_pass(self, plan_id: int, phase_id: int, context: Context) -> bool:
-        if self.queries.query(Phase).find(phase_id).person_check:
-            return False
-        return self.saved_pass(plan_id, phase_id, context)
-
     @staticmethod
     def waiting_ids(reaches: tuple[CheckpointReach, ...], passed: frozenset[int]) -> frozenset[int]:
         return frozenset(reach.phase_id for reach in reaches if reach.source.opens_phases() and reach.state is CheckpointState.PASSED and reach.phase_id not in passed)
-
-    def waiting_phase_ids(self, plan_id: int) -> frozenset[int]:
-        person_checked = frozenset(self.queries.query(Phase).filter(plan_id=plan_id, person_check=True).pluck("id", int))
-        return self.waiting_ids(self.reaches(plan_id), self.passed_phase_ids(plan_id)) & person_checked
-
-    def approve(self, plan_id: int, phase_id: int, context: Context) -> bool:
-        return phase_id in self.waiting_phase_ids(plan_id) and self.saved_pass(plan_id, phase_id, context)
 
     def saved_pass(self, plan_id: int, phase_id: int, context: Context) -> bool:
         if self.queries.query(CheckpointPass).filter(plan_id=plan_id, phase_id=phase_id).exists():

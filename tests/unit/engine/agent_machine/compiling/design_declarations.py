@@ -99,7 +99,7 @@ SUITE_MODULES = ("coding", "workers", "tools", "checks")
 LINES = {
     "drivers": ["continued-session", "opening-lines", "takeover", "long-output", "repeated-file-read", "managed-hooks-lines"],
     "messages": ["delivery", "unanswered-line", "read-marks-read", "agent-text-hints", "chat-manners", "chat-opening", "plain-code", "reply-note"],
-    "tasks": ["blocked-work-at-stop", "quiet-task", "log-request", "start-with-one-in-hand", "filed", "named-task", "still-held", "where-you-stand",
+    "tasks": ["blocked-work-at-stop", "quiet-task", "log-request", "start-with-one-in-hand", "filed", "named-task", "still-held", "main-agent",
               "session-start-summary", "wait-in-tokens", "unopenable-blocks"],
     "plans": ["focus-lines", "task-order", "state-lines", "task-end-lines"],
     "overview": ["overview-first-line"], "memories": ["open-mark-line", "start-delivery", "keyword-delivery"],

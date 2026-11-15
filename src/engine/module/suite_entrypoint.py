@@ -9,7 +9,7 @@ from engine.module.suite_list import SuiteList
 from engine.registry.default_state_entry import DefaultStateEntry
 
 
-class SuiteFunnel:
+class SuiteEntrypoint:
     """Takes in at sync the default states a suite and the suites that join it declare, refusing one that
     names a state no module registers or a role, driver or helper type nothing registers."""
 

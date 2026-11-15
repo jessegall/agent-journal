@@ -46,10 +46,10 @@ def close(story: FixtureJournal, *task_ids: int) -> None:
     story.run_listeners()
 
 
-def plan_of_phases(story: FixtureJournal, *phases: tuple[str, bool, int], person_check_phase: int = 0) -> None:
+def plan_of_phases(story: FixtureJournal, *phases: tuple[str, bool, int]) -> None:
     story.run(lines.NEW_PLAN)
     for number, (title, is_checkpoint, task_count) in enumerate(phases, 1):
-        story.run(f'phase make --plan 1 "{title}"{" --checkpoint" if is_checkpoint else ""}{" --person-check" if number == person_check_phase else ""}')
+        story.run(f'phase make --plan 1 "{title}"{" --checkpoint" if is_checkpoint else ""}')
         for task_number in range(1, task_count + 1):
             task_id = story.new_row_id(f'task make "{title} {task_number}" --environment main')
             story.run(f"phase place {task_id} --phase {number}")
@@ -75,16 +75,6 @@ class ReachedCheckpoint(StoryFixture):
     parent = WindowsPlan
 
     def steps(self, story: FixtureJournal) -> None:
-        close(story, 1, 2, 3)
-
-
-class PersonCheckedCheckpoint(StoryFixture):
-    """The plan of ReachedCheckpoint with phase 3 made to wait for a person."""
-
-    parent = UserJoined
-
-    def steps(self, story: FixtureJournal) -> None:
-        plan_of_phases(story, ("Read", False, 1), ("Write", False, 1), ("Check", True, 1), ("Polish", False, 1), ("Ship", False, 1), person_check_phase=3)
         close(story, 1, 2, 3)
 
 
@@ -317,23 +307,6 @@ def test_190_the_plan_view_gets_a_line_on_how_each_checkpoint_stands_and_on_a_te
         inspected = server.viewer_line_value(cookie, {"window": "plans.plans", "line": ["plan", "inspect", "1"], "environment": "main"})
     lines = inspected["checkpoint_lines"]
     story.expect_rows("checkpoint of phase 3: running" in lines, "checkpoint of phase 5: waits for tasks 4, 5" in lines, "test of phase 1 not run: this phase is not a checkpoint" in lines, detail=str(lines))
-
-
-APPROVE = "plan approve-checkpoint 1 3 --environment main"
-
-
-def test_a_passed_checkpoint_keeps_the_later_phase_closed_until_a_person_approves_it_when_the_phase_was_made_for_a_person_check(played):
-    story = played(PersonCheckedCheckpoint)
-    pass_reach(story, 1)
-    story.expect_rows(rows(story, PASSES) == [], rows(story, REACHES)[0]["state"] == "passed", detail=str(rows(story, PASSES)))
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "later phases open once a user approves it on the plan card")
-    story.expect_text(OUTLINE, "checkpoint of phase 3: tests passed, waits for a user", actor=story.user)
-    story.expect_refusal(APPROVE, "only a user approves a checkpoint", actor=story.agent)
-    story.expect_success(APPROVE, "checkpoint phase 3 approved", actor=story.user)
-    story.expect_text(OUTLINE, "checkpoint of phase 3: passed", actor=story.user)
-    story.expect_rows([row["phase_id"] for row in rows(story, PASSES)] == [3], detail=str(rows(story, PASSES)))
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "later phases are open: tell the user")
-    story.expect_refusal(APPROVE, "waits for no approval", actor=story.user)
 
 
 QUICK_REVIEW = f"setting set {QUICK_REVIEW_SETTING} true --environment main"

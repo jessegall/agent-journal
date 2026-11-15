@@ -9,7 +9,6 @@ from core.modules.plans.models.lifecycles.checkpoint_lifecycle import Checkpoint
 from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.support.plan_main_agents import PlanMainAgents
-from core.modules.plans.nudges.checkpoint_awaits_approval_nudge import CheckpointAwaitsApprovalNudge
 from core.modules.plans.nudges.checkpoint_finished_nudge import CheckpointFinishedNudge
 from core.modules.plans.support.plan_checkpoints import PlanCheckpoints
 from core.modules.tasks.commands.make_task_log.make_task_log import MakeTaskLog
@@ -22,8 +21,7 @@ class CheckpointPassListener(SaveListener[Moved[CheckpointReach]]):
     """A reach whose tests passed opens the phases after its checkpoint: the pass is saved with it,
     each task of the run gets a log line, the main agent is told once for the checkpoint, and tasks
     completed in the window since the run started get a run of their own. An early run opens no
-    phase and tells nobody. A checkpoint made with a person check gets no pass here and
-    the main agent is told that a user must approve."""
+    phase and tells nobody."""
 
     name = "plans.checkpoint-pass"
     moves = tuple([CheckpointLifecycle.passed])
@@ -35,11 +33,9 @@ class CheckpointPassListener(SaveListener[Moved[CheckpointReach]]):
     def handle(self, event: Moved[CheckpointReach], context: Context) -> None:
         reach = event.row
         if reach.source.opens_phases():
-            opened = self.checkpoints.save_pass(reach.plan_id, reach.phase_id, context)
-            waits = reach.phase_id in self.checkpoints.waiting_phase_ids(reach.plan_id)
-            phase = self.rows.required(Phase, reach.phase_id)
-            if opened or waits:
-                self.main_agents.send(self.rows.required(Plan, reach.plan_id), CheckpointFinishedNudge.declared() if opened else CheckpointAwaitsApprovalNudge.declared(), PASS_SOURCE, context, phase=phase.title)
+            if self.checkpoints.saved_pass(reach.plan_id, reach.phase_id, context):
+                phase = self.rows.required(Phase, reach.phase_id)
+                self.main_agents.send(self.rows.required(Plan, reach.plan_id), CheckpointFinishedNudge.declared(), PASS_SOURCE, context, phase=phase.title)
         for task_id in reach.tasks():
             self.bus.dispatch(MakeTaskLog(task_id, PASS_LINE.format(phase=reach.phase_id)), context)
         self.checkpoints.record(reach.plan_id, context)

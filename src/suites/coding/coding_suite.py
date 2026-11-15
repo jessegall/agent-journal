@@ -1,5 +1,5 @@
 from engine.module.suite import Suite
-from suites.coding.default_states.main_where_you_stand import MainWhereYouStand
+from suites.coding.default_states.main_agent_default import MainAgentDefault
 from suites.coding.modules.workers.default_states.worker_log_due_default import WorkerLogDueDefault
 from suites.coding.support.next_task import NextTask
 from suites.coding.coding_module import CodingModule
@@ -21,4 +21,4 @@ class CodingSuite(Suite):
     modules = [CodingModule, WorkersModule, ChecksModule]
     task_assigner = NextTask
     entrances = [AdminEntrance, WorkersAdminEntrance, ChecksAdminEntrance]
-    default_states = [MainWhereYouStand, WorkerLogDueDefault]
+    default_states = [MainAgentDefault, WorkerLogDueDefault]

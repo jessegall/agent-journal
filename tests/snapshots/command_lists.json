@@ -2389,11 +2389,6 @@
   "merger": "refused",
   "worker": "refused"
  },
- "plan approve-checkpoint": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
- },
  "plan assign": {
   "helper": "refused",
   "merger": "refused",

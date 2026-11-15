@@ -10,7 +10,7 @@ from core.modules.tasks.rules.support.current_tasks import CurrentTasks
 class TaskReturnLineRule(DriverRule):
     """An agent that gets control back after an overlay silenced it is told which task it holds, if any."""
 
-    name = "tasks.where-you-stand"
+    name = "tasks.task-return"
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
     role_group = RoleGroup.TASK

@@ -15,7 +15,7 @@ from engine.driver.agent_state import AgentState
 from engine.registry.suite_entry import SuiteEntry
 from engine.module.errors.module_error import ModuleError
 from engine.module.suite import Suite
-from engine.module.suite_funnel import SuiteFunnel
+from engine.module.suite_entrypoint import SuiteEntrypoint
 from engine.module.task_assigner import TaskAssigner
 
 DRIVERS_MODULE = "journal.core.drivers"
@@ -26,11 +26,11 @@ class DriverEntries:
     module, each driver's rules, each overlay's rules, then the rules the module adds."""
 
     def suites(self, modules: Sequence[type[Module]], shipped_modules: Sequence[type[Module]], suites: SuiteList) -> tuple[SuiteEntry, ...]:
-        funnel = SuiteFunnel(suites, [state.name for state in self.agent_states(modules)], [driver.name for module in modules for driver in module.drivers],
+        entrypoint = SuiteEntrypoint(suites, [state.name for state in self.agent_states(modules)], [driver.name for module in modules for driver in module.drivers],
                              [helper_type.key for module in modules for helper_type in suites.helper_types(module)])
         return tuple(SuiteEntry(suite.name, module.name, tuple(suite.requires), suite.complete_control, tuple(suite.included_overlays),
                                       suite.offered_windows(), suite.default_layouts(), suite.offered_presets(),
-                                      self.task_assigner_path(suite), shipped=module in shipped_modules, entrances=suite.entrance_windows(), default_states=funnel.entries(suite))
+                                      self.task_assigner_path(suite), shipped=module in shipped_modules, entrances=suite.entrance_windows(), default_states=entrypoint.entries(suite))
                      for module in modules for suite in suites.module_suites(module))
 
     @staticmethod
