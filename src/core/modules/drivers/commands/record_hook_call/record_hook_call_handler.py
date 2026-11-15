@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from dataclasses import asdict, replace
 from engine.command.bus import Bus
 from engine.command.command import Command
+from engine.agent_step.errors.step_conflict_error import StepConflictError
 from engine.agent_step.step_writer import StepWriter
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -114,8 +115,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         self.nudges.write(agent.id, answers, context)
         self.required_commands.open(agent.id, answers.delivered_nudges, context)
         self.timing.stamp("call_saved")
-        if command.step is not None:
-            self.steps.save(command.step.view, command.step.step, call.id, context)
+        if command.step is not None and not self.steps.save(command.step.view, command.step.step, call.id, context).is_saved:
+            raise StepConflictError()
         for row in handed_lines.rows:
             self.event_rows.remember(row)
         for row in handed_lines.rows:
