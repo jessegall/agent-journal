@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ProgramSettingsBanMessage(MessageTemplate):
-    """The nudge agents.program_settings."""
+    """The agent message agents.program_settings."""
 
     key = "agents.program_settings"
     type = AgentMessageType.SAFETY_REFUSAL

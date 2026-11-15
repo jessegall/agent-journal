@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class DraftReadyMessage(MessageTemplate):
-    """The nudge processes.draft_ready."""
+    """The agent message processes.draft_ready."""
 
     key = "processes.draft_ready"
     type = AgentMessageType.STEERING

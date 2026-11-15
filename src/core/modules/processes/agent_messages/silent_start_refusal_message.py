@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class SilentStartRefusalMessage(MessageTemplate):
-    """The nudge processes.silent_start_refused."""
+    """The agent message processes.silent_start_refused."""
 
     key = "processes.silent_start_refused"
     type = AgentMessageType.REFUSAL

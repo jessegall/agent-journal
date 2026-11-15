@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class TranscriptionImportRequestMessage(MessageTemplate):
-    """The nudge transcriptions.fetch_requested."""
+    """The agent message transcriptions.fetch_requested."""
 
     key = "transcriptions.fetch_requested"
     type = AgentMessageType.STEERING

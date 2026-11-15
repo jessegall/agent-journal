@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class UserBlockReviewMessage(MessageTemplate):
-    """The nudge tasks.user_block_review."""
+    """The agent message tasks.user_block_review."""
 
     key = "tasks.user_block_review"
     type = AgentMessageType.NOTICE

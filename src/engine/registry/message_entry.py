@@ -5,7 +5,7 @@ from typing import Any
 
 @dataclass(frozen=True)
 class MessageEntry:
-    """A registered nudge: its key and the module that declares it, its type, its words and its limits."""
+    """A registered agent message: its key and the module that declares it, its type, its words and its limits."""
 
     key: str
     module: str

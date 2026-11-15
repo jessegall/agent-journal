@@ -4,7 +4,7 @@ from suites.coding.modules.checks.windows.checks.checks_window import ChecksWind
 
 
 class ChecksAdminEntryPoint(EntryPoint):
-    """The window the checks module adds to the admin entrance of the coding suite."""
+    """The window the checks module adds to the admin entry point of the coding suite."""
 
     key = ADMIN_ENTRY_POINT_KEY
     windows = [ChecksWindow]

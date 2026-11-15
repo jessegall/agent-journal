@@ -2,8 +2,8 @@ from engine.viewer.window_key import WindowKey
 
 
 class AgentMessagesKey(WindowKey):
-    """The nudges data of the drivers.nudges window."""
+    """The agent messages data of the drivers.agent-messages window."""
 
-    name = "nudges"
-    read = "nudge list"
+    name = "agent_messages"
+    read = "agent-message list"
     events = ["agent_message_record.*"]

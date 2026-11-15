@@ -4,7 +4,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class RunFrozenMessage(MessageTemplate):
-    """The nudge processes.run_frozen."""
+    """The agent message processes.run_frozen."""
 
     key = "processes.run_frozen"
     delivery = LineDelivery.WAKE_HOOK

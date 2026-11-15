@@ -7,7 +7,7 @@ MODULE_KEY = "journal.core.developer"
 TOOLS_SETTING = f"{MODULE_KEY}.tools"
 HOOKS_SETTING = f"{TOOLS_SETTING}.hooks"
 HOOK_DURATIONS_SETTING = f"{HOOKS_SETTING}.terminal-durations"
-HOOK_AGENT_MESSAGES_SETTING = f"{HOOKS_SETTING}.terminal-nudges"
+HOOK_AGENT_MESSAGES_SETTING = f"{HOOKS_SETTING}.terminal-agent-messages"
 HOOK_REQUEST_LOG_SETTING = f"{HOOKS_SETTING}.request-log"
 HOOK_REQUEST_LOG_SIZE_SETTING = f"{HOOKS_SETTING}.request-log-size"
 SLOW_TICKS_SETTING = f"{TOOLS_SETTING}.slow-clock-ticks"
@@ -22,7 +22,7 @@ DEVELOPER_SETTINGS = [
                  children=[SettingGroup("hooks", "Agent tool calls", "Shows details of each agent tool call in the terminal.", toggleable=True,
                                         children=[SettingValue("terminal-durations", "Call costs", "Shows the database points each call cost.",
                                                                SettingType.FLAG, default=False, scope=SettingScope.PROJECT),
-                                                  SettingValue("terminal-nudges", "Nudges in the terminal", "Show all journal instructions in the agent’s terminal.",
+                                                  SettingValue("terminal-agent-messages", "Agent messages in the terminal", "Show all journal instructions in the agent’s terminal.",
                                                                SettingType.FLAG, default=False, scope=SettingScope.PROJECT),
                                                   SettingValue("request-log", "Record agent calls", "Save recent agent requests, including headers and body, for the Request log.",
                                                                SettingType.FLAG, default=False, scope=SettingScope.PROJECT),

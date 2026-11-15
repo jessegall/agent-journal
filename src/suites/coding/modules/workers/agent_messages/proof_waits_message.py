@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ProofWaitsMessage(MessageTemplate):
-    """The nudge workers.proof_waits."""
+    """The agent message workers.proof_waits."""
 
     key = "workers.proof_waits"
     type = AgentMessageType.STEERING

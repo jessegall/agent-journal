@@ -5,7 +5,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class UnansweredMessageReminder(MessageTemplate):
-    """The nudge messages.unanswered."""
+    """The agent message messages.unanswered."""
 
     key = "messages.unanswered"
     type = AgentMessageType.STEERING

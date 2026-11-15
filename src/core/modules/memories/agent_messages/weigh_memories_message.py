@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WeighMemoriesMessage(MessageTemplate):
-    """The nudge memories.weigh_memories."""
+    """The agent message memories.weigh_memories."""
 
     key = "memories.weigh_memories"
     type = AgentMessageType.NOTICE

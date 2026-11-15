@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WorkerCommitPassedMessage(MessageTemplate):
-    """The nudge workers.commit_tests_passed."""
+    """The agent message workers.commit_tests_passed."""
 
     key = "workers.commit_tests_passed"
     type = AgentMessageType.STEERING

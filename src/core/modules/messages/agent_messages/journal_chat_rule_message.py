@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class JournalChatRuleMessage(MessageTemplate):
-    """The nudge messages.discretion."""
+    """The agent message messages.discretion."""
 
     key = "messages.discretion"
     type = AgentMessageType.NOTICE

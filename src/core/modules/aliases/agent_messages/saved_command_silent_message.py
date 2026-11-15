@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class SavedCommandSilentMessage(MessageTemplate):
-    """The nudge aliases.saved_command_silent."""
+    """The agent message aliases.saved_command_silent."""
 
     key = "aliases.saved_command_silent"
     type = AgentMessageType.REFUSAL

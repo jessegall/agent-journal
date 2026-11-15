@@ -16,7 +16,7 @@ from engine.enums.state_end import StateEnd
 from engine.enums.stack_level import StackLevel
 from engine.enums.stack_move_type import StackMoveType
 
-# a resume and a finished compaction end no work, so their frames leave with no end that counts as progress;
+# a resume and a finished compaction end no work, so their stacked states leave with no end that counts as progress;
 # a hold ends as its condition was judged
 STACKED_STATE_ENDS = {"Working": StateEnd.CLOSED, "Waiting": StateEnd.ANSWERED}
 BLOCK_ENDS = {ConditionOutcome.SATISFIED: StateEnd.SATISFIED, ConditionOutcome.CANCELLED: StateEnd.CANCELLED, ConditionOutcome.TARGET_MISSING: StateEnd.TARGET_MISSING}
@@ -24,9 +24,9 @@ BLOCK_ENDS = {ConditionOutcome.SATISFIED: StateEnd.SATISFIED, ConditionOutcome.C
 
 class StackBuilder:
     """Builds an agent's stack from what its step read (doc 1310 section 4.3): Stopped at the bottom, one work
-    frame per need in push order, one Blocked frame per open block by rank and age, then Compacting, Paused
-    and Ended. A frame whose need ended leaves wherever it sits; past the depth limit the lowest-ranked
-    Blocked frames get no frame and their blocks still constrain."""
+    stacked state per need in push order, one Blocked stacked state per open block by rank and age, then Compacting, Paused
+    and Ended. A stacked state whose need ended leaves wherever it sits; past the depth limit the lowest-ranked
+    Blocked stacked states get no stacked state and their blocks still constrain."""
 
     def built(self, view: AgentView) -> BuiltStack:
         old = {stacked_state.state_key: stacked_state for stacked_state in view.stack.stacked_states}
@@ -83,7 +83,7 @@ class StackBuilder:
         if isinstance(stacked_state.state, Blocked):
             block_id = stacked_state.state.block.block_id
             return BLOCK_ENDS.get(view.block_outcomes.get(block_id, ConditionOutcome.PENDING)) if block_id is not None else None
-        # a frame a person removed is waived, which is no progress
+        # a stacked state a person removed is waived, which is no progress
         if stacked_state.state_key in view.suppressions:
             return StateEnd.WAIVED
         subject = stacked_state.state_key.subject

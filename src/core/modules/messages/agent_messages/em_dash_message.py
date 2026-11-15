@@ -5,7 +5,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class EmDashMessage(MessageTemplate):
-    """The nudge messages.no_em_dashes."""
+    """The agent message messages.no_em_dashes."""
 
     key = "messages.no_em_dashes"
     type = AgentMessageType.STEERING

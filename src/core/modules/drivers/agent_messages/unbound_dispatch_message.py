@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class UnboundDispatchMessage(MessageTemplate):
-    """The nudge drivers.unbound_dispatch."""
+    """The agent message drivers.unbound_dispatch."""
 
     key = "drivers.unbound_dispatch"
     type = AgentMessageType.REFUSAL

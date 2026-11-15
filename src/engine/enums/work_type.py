@@ -2,7 +2,7 @@ from enum import StrEnum
 
 
 class WorkType(StrEnum):
-    """What a Working frame stands for."""
+    """What a Working stacked state stands for."""
 
     TASK = "task"
     HANDED_TASK = "handed-task"

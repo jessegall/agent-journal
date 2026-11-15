@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class UnreadableAuditMessage(MessageTemplate):
-    """The nudge processes.unreadable_audit."""
+    """The agent message processes.unreadable_audit."""
 
     key = "processes.unreadable_audit"
     type = AgentMessageType.STEERING

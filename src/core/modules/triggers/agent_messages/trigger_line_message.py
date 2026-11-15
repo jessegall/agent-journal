@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class TriggerLineMessage(MessageTemplate):
-    """The nudge triggers.trigger_line."""
+    """The agent message triggers.trigger_line."""
 
     key = "triggers.trigger_line"
     type = AgentMessageType.NOTICE

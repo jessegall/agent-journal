@@ -5,7 +5,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WorkerLogDueMessage(MessageTemplate):
-    """The nudge workers.worker_log_due."""
+    """The agent message workers.worker_log_due."""
 
     key = "workers.worker_log_due"
     type = AgentMessageType.STEERING

@@ -4,7 +4,7 @@ from core.modules.processes.support.block_conditions.output_titled import Output
 
 
 class RunNameMessage(MessageTemplate):
-    """The nudge processes.name_the_run."""
+    """The agent message processes.name_the_run."""
 
     key = "processes.name_the_run"
     type = AgentMessageType.STEERING

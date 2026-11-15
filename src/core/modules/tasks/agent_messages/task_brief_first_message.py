@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class TaskBriefFirstMessage(MessageTemplate):
-    """The nudge tasks.brief_first."""
+    """The agent message tasks.brief_first."""
 
     key = "tasks.brief_first"
     type = AgentMessageType.REFUSAL

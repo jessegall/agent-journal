@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class FocusSuggestedMessage(MessageTemplate):
-    """The nudge plans.focus_suggested."""
+    """The agent message plans.focus_suggested."""
 
     key = "plans.focus_suggested"
     type = AgentMessageType.NOTICE

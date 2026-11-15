@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class UpdateReminderMessage(MessageTemplate):
-    """The nudge workers.worktree_update_reminder."""
+    """The agent message workers.worktree_update_reminder."""
 
     key = "workers.worktree_update_reminder"
     type = AgentMessageType.STEERING

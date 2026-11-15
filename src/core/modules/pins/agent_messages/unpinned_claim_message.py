@@ -5,7 +5,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class UnpinnedClaimMessage(MessageTemplate):
-    """The nudge pins.pin_claimed_unmade."""
+    """The agent message pins.pin_claimed_unmade."""
 
     key = "pins.pin_claimed_unmade"
     type = AgentMessageType.STEERING

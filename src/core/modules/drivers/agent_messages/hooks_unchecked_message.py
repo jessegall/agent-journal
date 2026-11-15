@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class HooksUncheckedMessage(MessageTemplate):
-    """The nudge drivers.hooks_unchecked."""
+    """The agent message drivers.hooks_unchecked."""
 
     key = "drivers.hooks_unchecked"
     type = AgentMessageType.STEERING

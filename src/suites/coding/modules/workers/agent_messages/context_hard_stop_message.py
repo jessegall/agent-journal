@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ContextHardStopMessage(MessageTemplate):
-    """The nudge workers.context_hard_stop."""
+    """The agent message workers.context_hard_stop."""
 
     key = "workers.context_hard_stop"
     type = AgentMessageType.REFUSAL

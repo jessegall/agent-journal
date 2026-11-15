@@ -12,7 +12,7 @@ OPEN_SUPPRESSIONS_REASON = "the open suppressions of one agent, a handful at mos
 
 
 class RestoreStackedStateHandler(Handler[RestoreStackedState, str]):
-    """Ends the open suppression of one frame of an agent; only a person restores a frame."""
+    """Ends the open suppression of one stacked state of an agent; only a person restores a stacked state."""
 
     command = RestoreStackedState
 

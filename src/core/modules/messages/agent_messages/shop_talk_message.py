@@ -5,7 +5,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ShopTalkMessage(MessageTemplate):
-    """The nudge messages.no_shop_talk."""
+    """The agent message messages.no_shop_talk."""
 
     key = "messages.no_shop_talk"
     type = AgentMessageType.STEERING

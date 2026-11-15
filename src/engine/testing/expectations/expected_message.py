@@ -11,9 +11,9 @@ ANY_VALUE = "[^\n]+?"
 
 @dataclass(frozen=True)
 class ExpectedMessage:
-    """A nudge a story expects, named by its declaration and the values it knows. A line matches the
-    declaration's own template, a value left out matches any text and capitals do not count; a kept nudge
-    matches by its key and fields. A story so holds none of a nudge's words, and a change of wording breaks
+    """An agent message a story expects, named by its declaration and the values it knows. A line matches the
+    declaration's own template, a value left out matches any text and capitals do not count; a kept agent message
+    matches by its key and fields. A story so holds none of an agent message's words, and a change of wording breaks
     no story."""
 
     declaration: MessageTemplate

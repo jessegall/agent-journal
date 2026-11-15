@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class RunSparseMessage(MessageTemplate):
-    """The nudge processes.run_sparse."""
+    """The agent message processes.run_sparse."""
 
     key = "processes.run_sparse"
     type = AgentMessageType.NOTICE

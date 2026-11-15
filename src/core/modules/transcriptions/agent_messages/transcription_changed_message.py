@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class TranscriptionChangedMessage(MessageTemplate):
-    """The nudge transcriptions.changed."""
+    """The agent message transcriptions.changed."""
 
     key = "transcriptions.changed"
     type = AgentMessageType.STEERING

@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ProcessMissingMessage(MessageTemplate):
-    """The nudge processes.process_lost."""
+    """The agent message processes.process_lost."""
 
     key = "processes.process_lost"
     type = AgentMessageType.STEERING

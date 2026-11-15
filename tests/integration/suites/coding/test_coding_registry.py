@@ -49,7 +49,7 @@ def test_a_second_entry_point_is_a_second_class_the_registry_reads_beside_the_ad
 
 
 MENU_REMOVED = ("reviews.reviewer", "reviews.reviewers", "phone.phones", "usage.fitness", "suggestions.suggestions", "workers.models", "tunnel.tunnel", "tunler.account", "updates.updates", "templates.templates", "processes.output")
-MENU_KEPT = ("drivers.hook-calls", "drivers.nudges", "sharing.shares", "triggers.triggers", "messages.attachments", "workers.points", "tasks.task-counts")
+MENU_KEPT = ("drivers.hook-calls", "drivers.agent-messages", "sharing.shares", "triggers.triggers", "messages.attachments", "workers.points", "tasks.task-counts")
 
 
 def offered_windows(journal):

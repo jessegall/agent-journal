@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class MonitorCommandNoteMessage(MessageTemplate):
-    """The nudge processes.use_the_monitor_command."""
+    """The agent message processes.use_the_monitor_command."""
 
     key = "processes.use_the_monitor_command"
     type = AgentMessageType.STEERING

@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class TaskEndContextStopMessage(MessageTemplate):
-    """The nudge workers.context_stop_between_tasks."""
+    """The agent message workers.context_stop_between_tasks."""
 
     key = "workers.context_stop_between_tasks"
     type = AgentMessageType.STEERING

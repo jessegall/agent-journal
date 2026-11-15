@@ -9,6 +9,7 @@ from core.modules.triggers.models.declarations.trigger_model_declaration import 
 from core.modules.triggers.models.declarations.trigger_action_run_model_declaration import TriggerActionRunModelDeclaration
 from core.modules.triggers.commands.try_trigger.try_trigger_subcommand import TryTriggerSubcommand
 from core.modules.triggers.migrations.m005_trigger_skill import TriggerSkillMigration
+from core.modules.triggers.migrations.m007_trigger_message_action import TriggerMessageActionMigration
 from core.modules.triggers.migrations.m006_trigger_approval_index import TriggerApprovalIndexMigration
 from core.modules.triggers.commands.enable_trigger.enable_trigger_handler import EnableTriggerHandler
 from core.modules.triggers.commands.enable_trigger.enable_trigger_subcommand import EnableTriggerSubcommand
@@ -59,7 +60,7 @@ class TriggersModule(Module):
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.chat", "journal.core.drivers", "journal.core.settings", "journal.core.processes", "journal.core.skills"]
     models = [TriggerModelDeclaration, TriggerActionRunModelDeclaration]
-    migrations = [TriggersTableMigration, TriggerDetailsMigration, TriggerEnablingMigration, TriggerActionRunsMigration, TriggerSkillMigration, TriggerApprovalIndexMigration]
+    migrations = [TriggerMessageActionMigration, TriggersTableMigration, TriggerDetailsMigration, TriggerEnablingMigration, TriggerActionRunsMigration, TriggerSkillMigration, TriggerApprovalIndexMigration]
     handlers = [EnableTriggerHandler, MakeTriggerHandler, ScheduleTriggerHandler, StrikeTriggerHandler, FireTriggerHandler, PauseTriggerHandler, StartTriggerActionHandler, DeliverTriggerOutputHandler]
     listeners = [TriggerActionsListener, TriggerWaitingMarkListener, TriggerOutputListener, TriggerProcessRemovalListener, TriggerApprovalListener]
     subcommands = [TryTriggerSubcommand, EnableTriggerSubcommand, MakeTriggerSubcommand, ScheduleTriggerSubcommand, StrikeTriggerSubcommand, PauseTriggerSubcommand, TriggerListSubcommand]

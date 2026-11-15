@@ -13,16 +13,16 @@ from engine.enums.block_end import BlockEnd
 
 REFUSED_STATES = {"Paused": "a paused agent is resumed with journal agent resume", "Stopped": "the bottom of a stack is never removed",
                   "Ended": "an ended agent stays ended"}
-# a person's pop of these frames hides their need until restored; a new wait or a new context generation has a key of its own
+# a person's pop of these stacked states hides their need until restored; a new wait or a new context generation has a key of its own
 SUPPRESSED_TEXTS = {"Working": "work {frame} hidden until it is restored or assigned again", "Waiting": "wait {frame} cancelled by a person",
                     "Compacting": "compaction request {frame} cancelled for this context generation"}
 
 
 class RemoveStackedStateHandler(Handler[RemoveStackedState, str]):
-    """Removes a frame as a person (doc 1310 section 4.3): a Blocked frame closes its block as waived by the
-    person, a Working frame is hidden by a suppression until it is restored or assigned again, a Waiting or
-    Compacting frame is cancelled for that wait or that context generation, and Paused, Stopped and Ended are
-    refused with the way out. Only a person pops a frame, and a pop never passes a
+    """Removes a stacked state as a person (doc 1310 section 4.3): a Blocked stacked state closes its block as waived by the
+    person, a Working stacked state is hidden by a suppression until it is restored or assigned again, a Waiting or
+    Compacting stacked state is cancelled for that wait or that context generation, and Paused, Stopped and Ended are
+    refused with the way out. Only a person pops a stacked state, and a pop never passes a
     policy."""
 
     command = RemoveStackedState

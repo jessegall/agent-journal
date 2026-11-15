@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class HelperProgramFaultMessage(MessageTemplate):
-    """The nudge helpers.program_fault."""
+    """The agent message helpers.program_fault."""
 
     key = "helpers.program_fault"
     type = AgentMessageType.STEERING

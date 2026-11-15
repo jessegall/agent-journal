@@ -8,7 +8,7 @@ from core.modules.settings.models.setting import Setting
 
 class DrivingSettingReadVersionsListener(SaveListener[Changed[Setting]]):
     """A setting declared as driving, and the driver or suite chosen, moves the driver
-    epoch of its environment in the same write, and of every environment when it is the project's."""
+    version of its environment in the same write, and of every environment when it is the project's."""
 
     name = "drivers.driving-setting-basis"
 

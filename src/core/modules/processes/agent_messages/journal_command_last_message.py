@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class JournalCommandLastMessage(MessageTemplate):
-    """The nudge processes.journal_command_last."""
+    """The agent message processes.journal_command_last."""
 
     key = "processes.journal_command_last"
     type = AgentMessageType.REFUSAL

@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ContextCompactedMessage(MessageTemplate):
-    """The nudge workers.context_compacted."""
+    """The agent message workers.context_compacted."""
 
     key = "workers.context_compacted"
     type = AgentMessageType.NOTICE

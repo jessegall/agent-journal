@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WorkerJudgeScopeMessage(MessageTemplate):
-    """The nudge workers.judge_scope."""
+    """The agent message workers.judge_scope."""
 
     key = "workers.judge_scope"
     type = AgentMessageType.REFUSAL

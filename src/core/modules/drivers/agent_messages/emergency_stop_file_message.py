@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class EmergencyStopFileMessage(MessageTemplate):
-    """The nudge drivers.panic_file."""
+    """The agent message drivers.panic_file."""
 
     key = "drivers.panic_file"
     type = AgentMessageType.SAFETY_REFUSAL

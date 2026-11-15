@@ -24,7 +24,7 @@ class AgentMessage:
     turn_limited: bool = True
     required_command: str = ""
     fields: tuple[tuple[str, object], ...] = field(default=(), compare=False)
-    declaration: "NudgeDeclaration | None" = field(default=None, compare=False)
+    declaration: "MessageTemplate | None" = field(default=None, compare=False)
     record_keys: tuple[str, ...] = ()
 
     @property
@@ -53,7 +53,7 @@ class AgentMessage:
         return tuple(sorted((name, str(value)) for name, value in self.fields if name != id_field))
 
     @property
-    def records(self) -> "tuple[Nudge, ...]":
+    def records(self) -> "tuple[AgentMessage, ...]":
         if not self.record_keys:
             return tuple([self])
         return tuple(replace(self, key=key, record_keys=()) for key in self.record_keys)
@@ -68,14 +68,14 @@ class AgentMessage:
                            {name: str(value) for name, value in self.fields} if declaration is not None else {"text": self.text})
 
     @staticmethod
-    def collapsed(agent_messages: "Iterable[Nudge]") -> "list[Nudge]":
+    def collapsed(agent_messages: "Iterable[AgentMessage]") -> "list[AgentMessage]":
         groups: dict[tuple[str, tuple[tuple[str, str], ...]], list[AgentMessage]] = {}
         for agent_message in agent_messages:
             groups.setdefault((agent_message.key, agent_message.merge_context), []).append(agent_message)
         return [AgentMessage.merged(group) for group in groups.values()]
 
     @staticmethod
-    def merged(group: "Sequence[Nudge]") -> "AgentMessage":
+    def merged(group: "Sequence[AgentMessage]") -> "AgentMessage":
         distinct = list({agent_message.text: agent_message for agent_message in group}.values())
         declaration = distinct[0].declaration
         return distinct[0] if len(distinct) == 1 or declaration is None else declaration.merged(distinct)

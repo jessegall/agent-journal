@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WorkerReuseMessage(MessageTemplate):
-    """The nudge workers.reuse."""
+    """The agent message workers.reuse."""
 
     key = "workers.reuse"
     type = AgentMessageType.REFUSAL

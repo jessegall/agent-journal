@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 class Suite:
     """The base of every suite: a swappable set of drivers above the core, each driving the helper type it
-    names, with the modules it lists (its own module first), the suites it requires, its entrances (each the
+    names, with the modules it lists (its own module first), the suites it requires, its entry points (each the
     viewer windows its environments show, the default layout of each viewer page, per driver where one is
     named, and the layouts it offers per page in the picker) and the kinds of helper it registers. A suite that joins another is no suite to pick: a plugin ships one to add its
     modules to that suite, whose environments alone run them, so no module names a suite itself."""
@@ -30,7 +30,7 @@ class Suite:
     def offered_windows(cls) -> tuple[str, ...]:
         return tuple(dict.fromkeys(window for entry_point in cls.entry_points for window in entry_point.window_names()))
 
-    # an earlier entrance's layout of a page comes first
+    # an earlier entry point's layout of a page comes first
     @classmethod
     def default_layouts(cls) -> dict[str, LayoutShape]:
         return {page: layout.shape for entry_point in reversed(cls.entry_points) for page, layout in entry_point.layouts.items()}
@@ -40,7 +40,7 @@ class Suite:
         pages = dict.fromkeys(page for entry_point in cls.entry_points for page in entry_point.presets)
         return {page: tuple(preset for entry_point in cls.entry_points if page in entry_point.presets for preset in entry_point.presets[page].layout_presets()) for page in pages}
 
-    # entrances that share a key are one way in, whose windows several modules declare
+    # entry points that share a key are one way in, whose windows several modules declare
     @classmethod
     def entry_point_windows(cls) -> dict[str, tuple[str, ...]]:
         return {key: tuple(dict.fromkeys(name for entry_point in cls.entry_points if entry_point.key == key for name in entry_point.window_names()))

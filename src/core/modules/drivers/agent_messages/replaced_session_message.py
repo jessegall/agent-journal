@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ReplacedSessionMessage(MessageTemplate):
-    """The nudge drivers.replaced_session."""
+    """The agent message drivers.replaced_session."""
 
     key = "drivers.replaced_session"
     type = AgentMessageType.SAFETY_REFUSAL

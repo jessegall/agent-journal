@@ -8,7 +8,7 @@ OPEN_SUPPRESSIONS_REASON = "the frames a person removed from one agent, a handfu
 
 @dataclass(frozen=True, kw_only=True)
 class HiddenState(Model):
-    """A person's removal of a Working frame: the need gets no frame while the row is open, and the task stays
+    """A person's removal of a Working stacked state: the need gets no stacked state while the row is open, and the task stays
     assigned and started. It ends by a restore or a new assignment of the work."""
 
     model_name = "hidden_state"

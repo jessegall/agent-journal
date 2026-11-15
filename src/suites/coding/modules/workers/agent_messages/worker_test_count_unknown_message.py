@@ -6,7 +6,7 @@ from suites.coding.models.enums.ask_topic import AskTopic
 
 
 class WorkerTestCountUnknownMessage(MessageTemplate):
-    """The nudge processes.test_count_unknown."""
+    """The agent message processes.test_count_unknown."""
 
     key = "processes.test_count_unknown"
     type = AgentMessageType.STEERING

@@ -16,7 +16,7 @@ from core.modules.drivers.models.used_grant_record import UsedGrantRecord
 
 
 class CommandCheck:
-    """Asks a command's entrance the policies the hook asks (doc 1310 sections 4.7 and 10.9) for an agent that
+    """Asks a command's entry point the policies the hook asks (doc 1310 sections 4.7 and 10.9) for an agent that
     runs it: a refusal is passed by the receipt the hook left when it
     spent a grant for this command, taken once, or else by a usable grant spent here; otherwise the command
     is refused with the policy's own text, the hook's text."""
@@ -29,8 +29,8 @@ class CommandCheck:
     def answers(self, context: Context) -> bool:
         return context.actor.is_agent()
 
-    # a guard runs on a row's save, where the context's command may be one its entrance command dispatched, so the
-    # guard names the entrance command it guards
+    # a guard runs on a row's save, where the context's command may be one its entry point command dispatched, so the
+    # guard names the entry point command it guards
     def admit(self, entry_point: type[Command[object]], context: Context) -> None:
         agent = self.agents.find(context.actor.id)
         reference = AgentReference(agent.id, agent.parent_id, agent.environment_id, agent.role)

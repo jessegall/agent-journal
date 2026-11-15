@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class UnfinishedTasksMessage(MessageTemplate):
-    """The nudge coding.unfinished_tasks."""
+    """The agent message coding.unfinished_tasks."""
 
     key = "coding.unfinished_tasks"
     type = AgentMessageType.REFUSAL

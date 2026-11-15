@@ -41,7 +41,7 @@ class MessageTemplate:
     full_text: bool = False
     role_texts: Mapping[str, str] = field(default_factory=dict[str, str])
 
-    # a nudge written as a class in its own file sets the fields as class attributes
+    # an agent message written as a class in its own file sets the fields as class attributes
     @classmethod
     @cache
     def declared(cls) -> "MessageTemplate":

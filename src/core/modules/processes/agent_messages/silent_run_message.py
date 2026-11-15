@@ -7,7 +7,7 @@ SILENT_RUN_INTERVAL = Seconds(600)
 
 
 class SilentRunMessage(MessageTemplate):
-    """The nudge processes.silent_run."""
+    """The agent message processes.silent_run."""
 
     key = "processes.silent_run"
     type = AgentMessageType.NOTICE

@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class UnlaunchedNativeSubagentMessage(MessageTemplate):
-    """The nudge drivers.native_subagent_no_launch."""
+    """The agent message drivers.native_subagent_no_launch."""
 
     key = "drivers.native_subagent_no_launch"
     type = AgentMessageType.SAFETY_REFUSAL

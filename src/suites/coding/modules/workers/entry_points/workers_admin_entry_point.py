@@ -7,7 +7,7 @@ from suites.coding.modules.workers.windows.todos.todos_window import TodosWindow
 
 
 class WorkersAdminEntryPoint(EntryPoint):
-    """The windows the workers module adds to the admin entrance of the coding suite."""
+    """The windows the workers module adds to the admin entry point of the coding suite."""
 
     key = ADMIN_ENTRY_POINT_KEY
     windows = [WorkersWindow, WorktreesWindow, PointsWindow, TodosWindow]

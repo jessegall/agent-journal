@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class AgentLineAvailableMessage(MessageTemplate):
-    """The nudge drivers.agent_line_available."""
+    """The agent message drivers.agent_line_available."""
 
     key = "drivers.agent_line_available"
     type = AgentMessageType.NOTICE

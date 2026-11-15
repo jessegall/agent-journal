@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class CompactionInstructionsMessage(MessageTemplate):
-    """The nudge drivers.compaction_instructions."""
+    """The agent message drivers.compaction_instructions."""
 
     key = "drivers.compaction_instructions"
     type = AgentMessageType.NOTICE

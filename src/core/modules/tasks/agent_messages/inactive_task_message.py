@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class InactiveTaskMessage(MessageTemplate):
-    """The nudge tasks.inactive_task."""
+    """The agent message tasks.inactive_task."""
 
     key = "tasks.inactive_task"
     type = AgentMessageType.STEERING

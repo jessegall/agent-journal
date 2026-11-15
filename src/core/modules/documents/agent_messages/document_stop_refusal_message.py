@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class DocumentStopRefusalMessage(MessageTemplate):
-    """The nudge documents.open-document-stop."""
+    """The agent message documents.open-document-stop."""
 
     key = "documents.open-document-stop"
     type = AgentMessageType.REFUSAL

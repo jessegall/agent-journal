@@ -9,7 +9,7 @@ from engine.model.model import Model
 
 class MessageSender(ABC):
     """Gives an agent a line outside a hook's own answer and returns the saved row of that line. Declared
-    nudges keep their templates; other text is read by its row number. The drivers module binds the class
+    agent messages keep their templates; other text is read by its row number. The drivers module binds the class
     that writes."""
 
     def send(self, agent_id: int, declaration: MessageTemplate, source: str, context: Context, **values: object) -> Model:

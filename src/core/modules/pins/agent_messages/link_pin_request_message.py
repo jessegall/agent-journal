@@ -7,7 +7,7 @@ PIN_REQUEST_TOOL_USES = 50
 
 
 class LinkPinRequestMessage(MessageTemplate):
-    """The nudge pins.pin_the_link."""
+    """The agent message pins.pin_the_link."""
 
     key = "pins.pin_the_link"
     type = AgentMessageType.STEERING

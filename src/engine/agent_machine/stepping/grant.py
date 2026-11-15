@@ -11,7 +11,7 @@ NEXT_ACTION = ""
 @dataclass(frozen=True)
 class Grant:
     """A one-use exception a policy reads: the policy it passes, for which agent, target and action, where it
-    stands, who asked and answered, and the firing that spent it."""
+    stands, who asked and answered, and the event id that spent it."""
 
     grant_id: int
     grant_type: GrantType

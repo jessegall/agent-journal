@@ -4,7 +4,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ExceptionLineMessage(MessageTemplate):
-    """The nudge developer.exception."""
+    """The agent message developer.exception."""
 
     key = "developer.exception"
     delivery = LineDelivery.WAKE_HOOK

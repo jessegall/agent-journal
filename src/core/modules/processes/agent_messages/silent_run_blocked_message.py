@@ -4,7 +4,7 @@ from core.modules.processes.support.block_conditions.output_read_since_block imp
 
 
 class SilentRunBlockedMessage(MessageTemplate):
-    """The nudge processes.silent_run_held."""
+    """The agent message processes.silent_run_held."""
 
     key = "processes.silent_run_held"
     type = AgentMessageType.REFUSAL

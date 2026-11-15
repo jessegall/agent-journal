@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class QuestionToolMessage(MessageTemplate):
-    """The nudge questions.own_question_tool."""
+    """The agent message questions.own_question_tool."""
 
     key = "questions.own_question_tool"
     type = AgentMessageType.REFUSAL

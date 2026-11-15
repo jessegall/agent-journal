@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WakeObligationMessage(MessageTemplate):
-    """The nudge drivers.wake: the one line the wake delivery owner gives an agent whose work needs it."""
+    """The agent message drivers.wake: the one line the wake delivery owner gives an agent whose work needs it."""
 
     key = "drivers.wake"
     type = AgentMessageType.STEERING

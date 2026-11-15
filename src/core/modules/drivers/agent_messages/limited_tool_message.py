@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class LimitedToolMessage(MessageTemplate):
-    """The nudge drivers.limited_tool."""
+    """The agent message drivers.limited_tool."""
 
     key = "drivers.limited_tool"
     type = AgentMessageType.SAFETY_REFUSAL

@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ConflictOpenMessage(MessageTemplate):
-    """The nudge workers.worktree_clash_open."""
+    """The agent message workers.worktree_clash_open."""
 
     key = "workers.worktree_clash_open"
     type = AgentMessageType.STEERING

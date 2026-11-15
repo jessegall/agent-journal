@@ -22,7 +22,7 @@ SHORT_TEXT = "point {points} of your work is short: prove it again with journal 
 
 class ProvedDeliveryPolicy(Policy):
     """A worker delivers no work while a proof of its worktree is short (doc 1310 sections 10.5, 10.9):
-    asked at the hook of journal worker ask-merge and at AskMerge's entrance, each reading the proofs as
+    asked at the hook of journal worker ask-merge and at AskMerge's entry point, each reading the proofs as
     they stand then, so a proof sent back after the hook admitted the line is caught at the command."""
 
     key = "workers.proved-delivery"

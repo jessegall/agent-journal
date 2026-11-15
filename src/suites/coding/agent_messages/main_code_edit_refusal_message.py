@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class MainCodeEditRefusalMessage(MessageTemplate):
-    """The nudge coding.main_writes_no_code."""
+    """The agent message coding.main_writes_no_code."""
 
     key = "coding.main_writes_no_code"
     type = AgentMessageType.REFUSAL

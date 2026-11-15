@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class TaskReopenedMessage(MessageTemplate):
-    """The nudge tasks.open_again."""
+    """The agent message tasks.open_again."""
 
     key = "tasks.open_again"
     type = AgentMessageType.STEERING

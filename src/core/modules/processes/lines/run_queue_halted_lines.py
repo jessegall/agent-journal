@@ -11,7 +11,7 @@ from core.modules.processes.support.run_queue_halt import RunQueueHalt
 
 class RunQueueHaltedLines(EventLineSource):
     """While the process queue is halted, the main agent is reminded on hooks and clock ticks,
-    and the nudge's interval keeps it to once in five minutes; so is an update that waits, naming the runs it
+    and the agent message's interval keeps it to once in five minutes; so is an update that waits, naming the runs it
     waits for. A restart's own hold is not reminded of."""
 
     key = "processes.run-queue-halted"

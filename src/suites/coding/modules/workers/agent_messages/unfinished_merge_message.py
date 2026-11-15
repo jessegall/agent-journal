@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class UnfinishedMergeMessage(MessageTemplate):
-    """The nudge workers.unfinished-merge: a merger's stop is refused while a merge it started still runs."""
+    """The agent message workers.unfinished-merge: a merger's stop is refused while a merge it started still runs."""
 
     key = "workers.unfinished-merge"
     type = AgentMessageType.STEERING

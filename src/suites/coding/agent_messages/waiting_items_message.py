@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WaitingItemsMessage(MessageTemplate):
-    """The nudge coding.waiting_items."""
+    """The agent message coding.waiting_items."""
 
     key = "coding.waiting_items"
     type = AgentMessageType.STEERING

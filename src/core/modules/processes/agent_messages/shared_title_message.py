@@ -5,7 +5,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class SharedTitleMessage(MessageTemplate):
-    """The nudge processes.shared_title."""
+    """The agent message processes.shared_title."""
 
     key = "processes.shared_title"
     type = AgentMessageType.STEERING

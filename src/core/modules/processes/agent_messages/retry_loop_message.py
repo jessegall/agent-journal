@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class RetryLoopMessage(MessageTemplate):
-    """The nudge processes.retry_loop."""
+    """The agent message processes.retry_loop."""
 
     key = "processes.retry_loop"
     type = AgentMessageType.REFUSAL

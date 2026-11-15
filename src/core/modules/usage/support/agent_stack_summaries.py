@@ -13,7 +13,7 @@ PAGE_STACKS_REASON = "one page of agent cards reads the stacks of its own agents
 
 class AgentStackSummaries:
     """What the agent machine knows of the agents on one page of cards, read in two batched queries: the top
-    frame of each stack, its refusal counts and its open escalation; an agent with no stack yet has no
+    stacked state of each stack, its refusal counts and its open escalation; an agent with no stack yet has no
     summary."""
 
     def __init__(self, queries: Queries) -> None:

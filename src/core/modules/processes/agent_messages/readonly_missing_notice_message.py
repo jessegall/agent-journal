@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ReadonlyMissingNoticeMessage(MessageTemplate):
-    """The nudge processes.read_only_missing_readers."""
+    """The agent message processes.read_only_missing_readers."""
 
     key = "processes.read_only_missing_readers"
     type = AgentMessageType.STEERING

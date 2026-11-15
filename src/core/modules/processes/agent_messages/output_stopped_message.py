@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class OutputStoppedMessage(MessageTemplate):
-    """The nudge processes.output_stopped."""
+    """The agent message processes.output_stopped."""
 
     key = "processes.output_stopped"
     type = AgentMessageType.STEERING

@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ManagedHookLineMessage(MessageTemplate):
-    """The nudge drivers.managed_hook_line."""
+    """The agent message drivers.managed_hook_line."""
 
     key = "drivers.managed_hook_line"
     type = AgentMessageType.NOTICE

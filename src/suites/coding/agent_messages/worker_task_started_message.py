@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WorkerTaskStartedMessage(MessageTemplate):
-    """The nudge coding.worker_task_started."""
+    """The agent message coding.worker_task_started."""
 
     key = "coding.worker_task_started"
     type = AgentMessageType.REFUSAL

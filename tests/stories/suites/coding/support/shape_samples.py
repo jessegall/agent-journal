@@ -37,7 +37,7 @@ class ShopModule(Module):
 
 
 class ShopSuite(Suite):
-    """A made-up suite that ships the shop module through its entrance."""
+    """A made-up suite that ships the shop module through its entry point."""
 
     name = "sample-shop"
     modules = [ShopModule]

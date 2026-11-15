@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class CheckFailedMessage(MessageTemplate):
-    """The nudge checks.check_failed."""
+    """The agent message checks.check_failed."""
 
     key = "checks.check_failed"
     type = AgentMessageType.NOTICE

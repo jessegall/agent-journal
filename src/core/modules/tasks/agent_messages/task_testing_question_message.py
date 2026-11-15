@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class TaskTestingQuestionMessage(MessageTemplate):
-    """The nudge tasks.testing_question."""
+    """The agent message tasks.testing_question."""
 
     key = "tasks.testing_question"
     type = AgentMessageType.STEERING

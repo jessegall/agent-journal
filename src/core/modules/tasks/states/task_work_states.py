@@ -30,14 +30,14 @@ from core.modules.tasks.support.suite_task_assigners import SuiteTaskAssigners
 
 TASK_STOP_KEY = "tasks.carry-on-at-stop"
 TASK_STOP_SKIP_WINDOW = Interval(ToolUseWindow(25), Seconds(1500))
-# a Working frame is ordered by its push time, never by a rank key
+# a Working stacked state is ordered by its push time, never by a rank key
 TASK_RANK = ""
 ENDED_TASKS_REASON = "the ended tasks whose frames one step takes off one agent's stack, a few at most"
 TASK_ENDS = {TaskState.COMPLETED: StateEnd.CLOSED, TaskState.CANCELLED: StateEnd.CANCELLED}
 
 
 class TaskWorkStates(StateSource):
-    """One Working frame for each task a main agent holds started (doc 1310 section 4.4): work remains while it
+    """One Working stacked state for each task a main agent holds started (doc 1310 section 4.4): work remains while it
     is started, unless the suite lets the agent stop with its tasks in hand; the stop text names every started
     task. A run going is the processes module's Waiting need on top."""
     state_type = Working
@@ -69,7 +69,7 @@ class TaskWorkStates(StateSource):
         assigner = self.assigners.assigner()
         return assigner is None or not assigner.allows_stop_with_tasks(agent_id)
 
-    # a task's frame leaves closed when the task completed and cancelled when it was cancelled, which is no progress
+    # a task's stacked state leaves closed when the task completed and cancelled when it was cancelled, which is no progress
     def ends(self, subjects: Sequence[RowReference]) -> Mapping[RowReference, StateEnd]:
         task_ids = [subject.row_id for subject in subjects if subject.model == Task.model_name]
         tasks = self.tasks.named_tasks(task_ids)

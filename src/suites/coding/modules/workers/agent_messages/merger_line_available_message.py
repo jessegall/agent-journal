@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class MergerLineAvailableMessage(MessageTemplate):
-    """The nudge workers.merger_line_available."""
+    """The agent message workers.merger_line_available."""
 
     key = "workers.merger_line_available"
     type = AgentMessageType.STEERING

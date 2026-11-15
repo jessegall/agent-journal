@@ -17,7 +17,7 @@ ALL_PLACES = ("messages", "commands", "files")
 @dataclass(frozen=True, kw_only=True)
 class Trigger(Model):
     """A named text that reaches the agent when its words appear or its time comes, and passes its conditions:
-    as a nudge, an instruction or a refusal, followed by its extra actions. A paused trigger does nothing, nor
+    as an agent message, an instruction or a refusal, followed by its extra actions. A paused trigger does nothing, nor
     does one that waits for the user to enable it."""
 
     model_name = "trigger"

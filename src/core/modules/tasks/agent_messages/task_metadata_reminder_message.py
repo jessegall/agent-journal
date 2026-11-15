@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class TaskMetadataReminderMessage(MessageTemplate):
-    """The nudge tasks.missing_metadata."""
+    """The agent message tasks.missing_metadata."""
 
     key = "tasks.missing_metadata"
     type = AgentMessageType.NOTICE

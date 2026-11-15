@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WorkerTestLimitStopMessage(MessageTemplate):
-    """The nudge processes.run_over_test_limit."""
+    """The agent message processes.run_over_test_limit."""
 
     key = "processes.run_over_test_limit"
     type = AgentMessageType.STEERING

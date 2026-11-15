@@ -5,7 +5,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class RunQueueHaltedMessage(MessageTemplate):
-    """The nudge processes.run_queue_halted."""
+    """The agent message processes.run_queue_halted."""
 
     key = "processes.run_queue_halted"
     type = AgentMessageType.STEERING

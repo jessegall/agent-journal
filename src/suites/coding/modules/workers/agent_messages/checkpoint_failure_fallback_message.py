@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class CheckpointFailureFallbackMessage(MessageTemplate):
-    """The nudge workers.checkpoint_failure_fallback."""
+    """The agent message workers.checkpoint_failure_fallback."""
 
     key = "workers.checkpoint_failure_fallback"
     type = AgentMessageType.STEERING

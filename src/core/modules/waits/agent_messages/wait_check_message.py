@@ -5,7 +5,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WaitCheckMessage(MessageTemplate):
-    """The nudge waits.check_the_wait."""
+    """The agent message waits.check_the_wait."""
 
     key = "waits.check_the_wait"
     type = AgentMessageType.STEERING

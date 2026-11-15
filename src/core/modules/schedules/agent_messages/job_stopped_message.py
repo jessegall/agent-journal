@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class JobStoppedMessage(MessageTemplate):
-    """The nudge schedules.job_stopped."""
+    """The agent message schedules.job_stopped."""
 
     key = "schedules.job_stopped"
     type = AgentMessageType.STEERING

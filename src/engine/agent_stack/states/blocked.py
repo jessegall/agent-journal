@@ -10,7 +10,7 @@ from engine.enums.stack_level import StackLevel
 
 @dataclass(frozen=True)
 class Blocked(State):
-    """The frame of one open hold; it refuses through the hold's scopes and is transparent for the work
+    """The stacked state of one open hold; it refuses through the hold's scopes and is transparent for the work
     answer."""
 
     lane: ClassVar[StackLevel] = StackLevel.HOLD

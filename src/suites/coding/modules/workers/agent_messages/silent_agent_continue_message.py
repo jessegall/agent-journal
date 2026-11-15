@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class SilentAgentContinueMessage(MessageTemplate):
-    """The nudge workers.continue_silent_agent."""
+    """The agent message workers.continue_silent_agent."""
 
     key = "workers.continue_silent_agent"
     type = AgentMessageType.STEERING

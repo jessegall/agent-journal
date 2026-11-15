@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class UnjudgedLineMessage(MessageTemplate):
-    """The nudge drivers.unjudged_line."""
+    """The agent message drivers.unjudged_line."""
 
     key = "drivers.unjudged_line"
     type = AgentMessageType.SAFETY_REFUSAL

@@ -4,7 +4,7 @@ from suites.coding.models.enums.ask_topic import AskTopic
 
 
 class WorkerFullTestRunMessage(MessageTemplate):
-    """The nudge coding.worker_full_test_run."""
+    """The agent message coding.worker_full_test_run."""
 
     key = "coding.worker_full_test_run"
     type = AgentMessageType.REFUSAL

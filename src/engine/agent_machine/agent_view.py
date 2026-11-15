@@ -61,5 +61,5 @@ class AgentView:
     journal_started_at: datetime | None = None
     # the rules that refused the agent's last refused hook: a policy among them offers its skip at a tool use
     last_refused_rules: frozenset[str] = frozenset()
-    # how the subjects of frames that left this step ended, as their need sources tell
+    # how the subjects of stacked states that left this step ended, as their need sources tell
     subject_ends: Mapping[RowReference, StateEnd] = field(default_factory=dict)

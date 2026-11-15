@@ -7,7 +7,7 @@ from engine.time.timestamp import Timestamp
 
 
 class Interval:
-    """A mix of spans: the first to pass fires the interval, and firing starts every span again from 0."""
+    """A mix of spans: the first to pass fires the interval, and event id starts every span again from 0."""
 
     def __init__(self, *spans: Span) -> None:
         self.spans = spans

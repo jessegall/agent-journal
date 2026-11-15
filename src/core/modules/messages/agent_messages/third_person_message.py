@@ -5,7 +5,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ThirdPersonMessage(MessageTemplate):
-    """The nudge messages.say_you."""
+    """The agent message messages.say_you."""
 
     key = "messages.say_you"
     type = AgentMessageType.STEERING

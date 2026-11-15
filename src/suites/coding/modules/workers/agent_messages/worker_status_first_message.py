@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WorkerStatusFirstMessage(MessageTemplate):
-    """The nudge workers.status_first."""
+    """The agent message workers.status_first."""
 
     key = "workers.status_first"
     type = AgentMessageType.REFUSAL

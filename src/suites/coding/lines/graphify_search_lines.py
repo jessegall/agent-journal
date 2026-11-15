@@ -9,7 +9,7 @@ from suites.coding.support.graphify_searches import GRAPHIFY_SEARCH_KEY, Graphif
 
 
 class GraphifySearchLines(EventLineSource):
-    """From the nudge count on, a search of the code that does not use Graphify tells the agent to use it."""
+    """From the agent message count on, a search of the code that does not use Graphify tells the agent to use it."""
 
     key = GRAPHIFY_SEARCH_KEY
     events = [HookEventName.PRE_TOOL_USE]

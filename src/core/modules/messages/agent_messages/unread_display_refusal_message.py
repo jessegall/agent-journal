@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class UnreadDisplayRefusalMessage(MessageTemplate):
-    """The nudge messages.unread_show."""
+    """The agent message messages.unread_show."""
 
     key = "messages.unread_show"
     type = AgentMessageType.REFUSAL

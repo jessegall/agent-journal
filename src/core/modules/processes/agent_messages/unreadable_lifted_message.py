@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class UnreadableLiftedMessage(MessageTemplate):
-    """The nudge processes.unreadable_lifted."""
+    """The agent message processes.unreadable_lifted."""
 
     key = "processes.unreadable_lifted"
     type = AgentMessageType.STEERING

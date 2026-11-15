@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class UnreadableSingleLineMessage(MessageTemplate):
-    """The nudge processes.unreadable_single_line."""
+    """The agent message processes.unreadable_single_line."""
 
     key = "processes.unreadable_single_line"
     type = AgentMessageType.STEERING

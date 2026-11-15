@@ -5,7 +5,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WorkerLateRunMessage(MessageTemplate):
-    """The nudge workers.run_outlasts."""
+    """The agent message workers.run_outlasts."""
 
     key = "workers.run_outlasts"
     type = AgentMessageType.STEERING

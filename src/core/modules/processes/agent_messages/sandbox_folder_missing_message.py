@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class SandboxFolderMissingMessage(MessageTemplate):
-    """The nudge processes.sandbox_folder_missing."""
+    """The agent message processes.sandbox_folder_missing."""
 
     key = "processes.sandbox_folder_missing"
     type = AgentMessageType.REFUSAL

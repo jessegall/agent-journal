@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class StaleChoicesMessage(MessageTemplate):
-    """The nudge workers.worktree_behind_choices."""
+    """The agent message workers.worktree_behind_choices."""
 
     key = "workers.worktree_behind_choices"
     type = AgentMessageType.STEERING

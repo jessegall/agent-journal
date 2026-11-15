@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ReminderLineMessage(MessageTemplate):
-    """The nudge reminders.line."""
+    """The agent message reminders.line."""
 
     key = "reminders.line"
     type = AgentMessageType.STEERING

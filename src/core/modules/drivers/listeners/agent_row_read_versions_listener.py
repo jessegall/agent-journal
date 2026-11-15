@@ -10,7 +10,7 @@ PERMISSION_FIELDS = ("session", "role", "profile", "access", "pid", "process_sta
 
 class AgentRowReadVersionsListener(SaveListener[Changed[Agent]]):
     """An agent row's change that changes what the agent may do moves its answer basis in the same write: a pause
-    or resume that of every agent below it too, and a usage limit set or lifted its program's epoch."""
+    or resume that of every agent below it too, and a usage limit set or lifted its program's version."""
 
     name = "drivers.agent-row-basis"
 

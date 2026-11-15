@@ -175,7 +175,7 @@ class Module:
     def mark_declarations(cls) -> list[MarkDeclaration]:
         return [mark.declared() if isinstance(mark, type) else mark for mark in cls.marks]
 
-    # a nudge written as a class gives its declaration; an inline nudge is its own
+    # an agent message written as a class gives its declaration; an inline agent message is its own
     @classmethod
     def agent_message_declarations(cls) -> list[MessageTemplate]:
         return [agent_message.declared() if isinstance(agent_message, type) else agent_message for agent_message in cls.agent_messages]

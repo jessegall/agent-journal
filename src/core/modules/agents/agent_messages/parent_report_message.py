@@ -4,7 +4,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ParentReportMessage(MessageTemplate):
-    """The nudge agents.report."""
+    """The agent message agents.report."""
 
     key = "agents.report"
     delivery = LineDelivery.WAKE_HOOK

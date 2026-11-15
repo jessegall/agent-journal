@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class HelperTypeCategoryMessage(MessageTemplate):
-    """The nudge drivers.helper_type_category."""
+    """The agent message drivers.helper_type_category."""
 
     key = "drivers.helper_type_category"
     type = AgentMessageType.REFUSAL

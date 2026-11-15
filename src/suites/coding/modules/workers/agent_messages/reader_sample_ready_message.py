@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ReaderSampleReadyMessage(MessageTemplate):
-    """The nudge workers.reader_sample_ready."""
+    """The agent message workers.reader_sample_ready."""
 
     key = "workers.reader_sample_ready"
     type = AgentMessageType.STEERING

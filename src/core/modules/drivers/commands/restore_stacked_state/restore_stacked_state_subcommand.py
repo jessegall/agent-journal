@@ -6,7 +6,7 @@ from core.modules.drivers.commands.restore_stacked_state.restore_stacked_state i
 
 
 class RestoreStackedStateSubcommand(Subcommand[RestoreStackedState, str]):
-    """`journal driver restore <agent> <frame>`: a person shows the work they removed from an agent's stack
+    """`journal driver restore <agent> <stacked state>`: a person shows the work they removed from an agent's stack
     again."""
 
     cli_name = "driver"

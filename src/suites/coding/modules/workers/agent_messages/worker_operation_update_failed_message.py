@@ -4,7 +4,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WorkerOperationUpdateFailedMessage(MessageTemplate):
-    """The nudge workers.operation_update_failed."""
+    """The agent message workers.operation_update_failed."""
 
     key = "workers.operation_update_failed"
     delivery = LineDelivery.WAKE_HOOK

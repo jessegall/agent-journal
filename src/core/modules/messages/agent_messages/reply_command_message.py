@@ -5,7 +5,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ReplyCommandMessage(MessageTemplate):
-    """The nudge messages.reply_command."""
+    """The agent message messages.reply_command."""
 
     key = "messages.reply_command"
     type = AgentMessageType.STEERING

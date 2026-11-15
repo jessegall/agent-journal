@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class SavedCommandTimeoutMessage(MessageTemplate):
-    """The nudge aliases.saved_command_timeout."""
+    """The agent message aliases.saved_command_timeout."""
 
     key = "aliases.saved_command_timeout"
     type = AgentMessageType.REFUSAL

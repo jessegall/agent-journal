@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ClosingChoiceMessage(MessageTemplate):
-    """The nudge messages.closing_choice."""
+    """The agent message messages.closing_choice."""
 
     key = "messages.closing_choice"
     type = AgentMessageType.STEERING

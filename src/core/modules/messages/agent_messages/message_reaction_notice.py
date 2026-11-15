@@ -4,7 +4,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class MessageReactionNotice(MessageTemplate):
-    """The nudge messages.reaction."""
+    """The agent message messages.reaction."""
 
     key = "messages.reaction"
     delivery = LineDelivery.WAKE_HOOK

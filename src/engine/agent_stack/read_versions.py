@@ -4,7 +4,7 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class ReadVersions:
     """The three numbers a step reads first and compares in its save: the agent's stack version, the
-    environment's driver epoch and the program's epoch, with the attempt that read them."""
+    environment's driver version and the program's version, with the attempt that read them."""
 
     stack_version: int
     driver_version: int

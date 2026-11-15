@@ -20,7 +20,7 @@ WATCH_TEXT = "the run it watches"
 
 class WatchedRunStates(StateSource):
     """Waiting for each run an agent watches (doc 1310 section 4.4): its stop rests until the run ends, and the watch
-    ending, as the processes module writes it, takes the frame away."""
+    ending, as the processes module writes it, takes the stacked state away."""
 
     state_type = Waiting
     rank = ""

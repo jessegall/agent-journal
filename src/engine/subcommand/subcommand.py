@@ -14,7 +14,7 @@ R = TypeVar("R", covariant=True)
 class Subcommand(Generic[C, R]):
     """One `journal <model> <subcommand>` that changes something: its arguments, the command they make, and
     how the result is printed. It holds no rule; the command's guards do. A subcommand that sets background is
-    run in the background at once when an agent types it. One that sets outward reaches past the journal, so
+    run in the background at once when an agent types it. One that sets external reaches past the journal, so
     a read-only agent may not run it. An answer that waits on what the commit listeners started is printed by
     after_listeners, which also answers the line's exit code."""
 

@@ -18,7 +18,7 @@ class DispatchAllowanceGuard(Guard[Created[Worktree]]):
         self.caller, self.options, self.admission = caller, options, admission
 
     def check(self, event: Created[Worktree], context: Context) -> None:
-        # once the admission slice answers the agent, the entrance asks the hook's policy (doc 1310 section 10.9)
+        # once the admission slice answers the agent, the entry point asks the hook's policy (doc 1310 section 10.9)
         if self.admission.answers(context):
             self.admission.admit(DispatchWorker, context)
             return

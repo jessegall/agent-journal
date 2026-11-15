@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WorkerHelpRequestMessage(MessageTemplate):
-    """The nudge workers.help-request."""
+    """The agent message workers.help-request."""
 
     key = "workers.help-request"
     type = AgentMessageType.STEERING

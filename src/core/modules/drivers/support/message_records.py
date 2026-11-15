@@ -6,7 +6,7 @@ from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from core.modules.drivers.models.message_record import MessageRecord
 
-AGENT_MESSAGE_LINES_REASON = "every record of the nudges asked about decides whether each is due again"
+AGENT_MESSAGE_LINES_REASON = "every record of the agent messages asked about decides whether each is due again"
 
 
 class MessageRecords:
@@ -17,7 +17,7 @@ class MessageRecords:
 
     def newest_row(self, agent_id: int, key: str) -> MessageRecord | None:
         newest = self.queries.query(MessageRecord).filter(session_agent_id=agent_id, key=key).descending("last_delivered_at")
-        return self.kept.read(newest, newest.first, name="drivers.nudges.newest")
+        return self.kept.read(newest, newest.first, name="drivers.agent-messages.newest")
 
     def agent_message_rows(self, agent_id: int, agent_messages: Sequence[AgentMessage]) -> list[MessageRecord]:
         records = self.queries.query(MessageRecord).filter(session_agent_id=agent_id).matching(Among("key", tuple(sorted({agent_message.key for agent_message in agent_messages}))))

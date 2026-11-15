@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WorkerNextTaskMessage(MessageTemplate):
-    """The nudge workers.next_task."""
+    """The agent message workers.next_task."""
 
     key = "workers.next_task"
     type = AgentMessageType.STEERING

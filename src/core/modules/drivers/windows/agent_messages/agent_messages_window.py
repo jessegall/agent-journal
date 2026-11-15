@@ -5,16 +5,16 @@ from engine.enums.window_loading import WindowLoading
 from core.modules.drivers.windows.agent_messages.keys.agent_messages_key import AgentMessagesKey
 
 
-class MessagesWindow(Window):
-    """The Nudges window."""
+class AgentMessagesWindow(Window):
+    """The Agent messages window: every line the code declares for an agent, with how often it was given."""
 
-    name = "drivers.nudges"
-    title = "Nudges"
-    entry = "nudges.js"
+    name = "drivers.agent-messages"
+    title = "Agent messages"
+    entry = "agent-messages.js"
     loading = WindowLoading.COMPONENT
     skeleton = DRIVERS_AGENT_MESSAGES_SKELETON
     group = "project"
     icon = WindowIcon.RULE
-    reads = ["nudge list", "nudge-record list"]
+    reads = ["agent-message list", "agent-message-record list"]
     events = ["agent_message_record.*"]
     keys = [AgentMessagesKey]

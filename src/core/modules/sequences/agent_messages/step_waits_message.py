@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class StepWaitsMessage(MessageTemplate):
-    """The nudge sequences.step_waits."""
+    """The agent message sequences.step_waits."""
 
     key = "sequences.step_waits"
     type = AgentMessageType.REFUSAL

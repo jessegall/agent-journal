@@ -5,7 +5,7 @@ from core.modules.processes.agent_messages.silent_run_message import SILENT_RUN_
 
 
 class SilentSavedFailureMessage(MessageTemplate):
-    """The nudge processes.silent_saved_failure."""
+    """The agent message processes.silent_saved_failure."""
 
     key = "processes.silent_saved_failure"
     type = AgentMessageType.STEERING

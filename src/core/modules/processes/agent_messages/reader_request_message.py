@@ -7,7 +7,7 @@ READER_REQUEST_REMINDER = Seconds(600)
 
 
 class ReaderRequestMessage(MessageTemplate):
-    """The nudge processes.reader_request."""
+    """The agent message processes.reader_request."""
 
     key = "processes.reader_request"
     type = AgentMessageType.STEERING

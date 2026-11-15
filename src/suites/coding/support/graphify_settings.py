@@ -8,13 +8,13 @@ from suites.coding.support.coding_settings import MODULE_KEY
 GRAPHIFY_GROUP = f"{MODULE_KEY}.graphify"
 GRAPHIFY_COMMAND = f"{MODULE_KEY}.graphify-command"
 GRAPHIFY_INSTALL_COMMAND = f"{MODULE_KEY}.graphify-install-command"
-GRAPHIFY_AGENT_MESSAGE_AFTER = f"{GRAPHIFY_GROUP}.nudge-after"
+GRAPHIFY_AGENT_MESSAGE_AFTER = f"{GRAPHIFY_GROUP}.agent-message-after"
 GRAPHIFY_BLOCK_AFTER = f"{GRAPHIFY_GROUP}.block-after"
 GRAPHIFY_REFRESH_MINUTES = f"{GRAPHIFY_GROUP}.refresh-minutes"
 GRAPHIFY_CLUSTER_MINUTES = f"{GRAPHIFY_GROUP}.cluster-minutes"
 
 GRAPHIFY_SETTINGS = SettingGroup("graphify", "Graphify", "The settings of Graphify, switched on and off with the tool.", toggleable=True, enabled=False, children=[
-    SettingValue("nudge-after", "Searches before a nudge", "At this many searches of the code without Graphify an agent is told to use it.",
+    SettingValue("agent-message-after", "Searches before a message", "At this many searches of the code without Graphify an agent is told to use it.",
                  SettingType.NUMBER, default=10, scope=SettingScope.PROJECT, rule=NumberRule(1), required_settings=[GRAPHIFY_GROUP]),
     SettingValue("block-after", "Searches before a block", "After this many searches of the code without Graphify, others are refused until the agent uses it.",
                  SettingType.NUMBER, default=25, scope=SettingScope.PROJECT, rule=NumberRule(1), required_settings=[GRAPHIFY_GROUP]),

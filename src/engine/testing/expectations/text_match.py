@@ -4,7 +4,7 @@ ExpectedText = str | ExpectedMessage
 
 
 # Whether a story's expected text appears in what the journal printed, in any case: a line's capitals are wording, not
-# behaviour. A nudge a story names by its declaration matches the declaration's own template.
+# behaviour. An agent message a story names by its declaration matches the declaration's own template.
 def contains_text(full: str, part: ExpectedText) -> bool:
     if isinstance(part, ExpectedMessage):
         return part.matches_text(full)

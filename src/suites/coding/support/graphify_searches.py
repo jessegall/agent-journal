@@ -20,7 +20,7 @@ GRAPHIFY_SEARCH_KEY = "tools.graphify-search"
 @dataclass(frozen=True)
 class GraphifyAnswer:
     """What a search of the code that does not use Graphify gets: a refusal past the block count, or a line from the
-    nudge count on."""
+    agent message count on."""
 
     refusal: AgentMessage | None = None
     agent_message: AgentMessage | None = None
@@ -28,7 +28,7 @@ class GraphifyAnswer:
 
 class GraphifySearches:
     """While the Graphify tool is on, an agent's searches of the project's code that do not use Graphify are counted
-    back to its last use of Graphify: from the nudge count on it is told to use Graphify, again ten searches later,
+    back to its last use of Graphify: from the agent message count on it is told to use Graphify, again ten searches later,
     and past the block count every search that is not Graphify is refused until it has used Graphify, which starts the
     count again. Read once a hook, so the refusal and the line agree."""
 

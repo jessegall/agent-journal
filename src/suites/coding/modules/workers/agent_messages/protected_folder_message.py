@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ProtectedFolderMessage(MessageTemplate):
-    """The nudge workers.protected_folder."""
+    """The agent message workers.protected_folder."""
 
     key = "workers.protected_folder"
     type = AgentMessageType.REFUSAL

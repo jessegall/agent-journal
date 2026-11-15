@@ -4,7 +4,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WaitEndedMessage(MessageTemplate):
-    """The nudge waits.wait_over."""
+    """The agent message waits.wait_over."""
 
     key = "waits.wait_over"
     delivery = LineDelivery.WAKE_HOOK

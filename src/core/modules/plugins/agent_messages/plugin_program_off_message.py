@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class PluginProgramOffMessage(MessageTemplate):
-    """The nudge plugins.program_off."""
+    """The agent message plugins.program_off."""
 
     key = "plugins.program_off"
     type = AgentMessageType.REFUSAL

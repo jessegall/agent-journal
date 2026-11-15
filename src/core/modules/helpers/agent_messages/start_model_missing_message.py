@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class StartModelMissingMessage(MessageTemplate):
-    """The nudge helpers.start_without_model."""
+    """The agent message helpers.start_without_model."""
 
     key = "helpers.start_without_model"
     type = AgentMessageType.REFUSAL

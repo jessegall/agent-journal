@@ -5,7 +5,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class BrokenTaskWaitMessage(MessageTemplate):
-    """The nudge checks.broken_task_wait."""
+    """The agent message checks.broken_task_wait."""
 
     key = "checks.broken_task_wait"
     type = AgentMessageType.STEERING

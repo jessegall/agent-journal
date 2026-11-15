@@ -5,7 +5,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class LongOutputMessage(MessageTemplate):
-    """The nudge drivers.long_output."""
+    """The agent message drivers.long_output."""
 
     key = "drivers.long_output"
     type = AgentMessageType.STEERING

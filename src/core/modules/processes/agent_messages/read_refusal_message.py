@@ -5,7 +5,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ReadRefusalMessage(MessageTemplate):
-    """The nudge processes.reading_prevented."""
+    """The agent message processes.reading_prevented."""
 
     key = "processes.reading_prevented"
     type = AgentMessageType.REFUSAL

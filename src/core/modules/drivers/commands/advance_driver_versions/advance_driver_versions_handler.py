@@ -5,7 +5,7 @@ from core.modules.drivers.support.read_versions_writers import ReadVersionsWrite
 
 
 class AdvanceDriverVersionsHandler(Handler[AdvanceDriverVersions, None]):
-    """Moves every environment's driver epoch in one write and records when the journal started."""
+    """Moves every environment's driver version in one write and records when the journal started."""
 
     command = AdvanceDriverVersions
 

@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class TestingTasksFailedRunMessage(MessageTemplate):
-    """The nudge tasks.testing_tasks_failed_run."""
+    """The agent message tasks.testing_tasks_failed_run."""
 
     key = "tasks.testing_tasks_failed_run"
     type = AgentMessageType.NOTICE

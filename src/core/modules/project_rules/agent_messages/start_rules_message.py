@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class StartRulesMessage(MessageTemplate):
-    """The nudge project_rules.start_rules."""
+    """The agent message project_rules.start_rules."""
 
     key = "project_rules.start_rules"
     type = AgentMessageType.STEERING

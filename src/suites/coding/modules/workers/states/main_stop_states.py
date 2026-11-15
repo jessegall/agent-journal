@@ -26,7 +26,7 @@ from suites.coding.support.next_task import NextTask
 from suites.coding.support.stop_notices import UNFINISHED_TASKS_TEXT, StopNotices
 
 MAIN_STOP_KEY = "coding.main-stop"
-# a Working frame is ordered by its push time, never by a rank key
+# a Working stacked state is ordered by its push time, never by a rank key
 MAIN_STOP_RANK = ""
 
 
@@ -35,7 +35,7 @@ class MainStopStates(StateSource):
     started and one it may act on, Working(handed task), whose always-effect starts it, at a stop and, while keep
     going is on, off a hook; with unfinished tasks of its own and none started, Working(own open tasks), whose stop is
     held once for each set of those tasks, unless the stop is the one that compacts its context; a started task holds
-    the stop with its own frame."""
+    the stop with its own stacked state."""
     state_type = Working
     rank = MAIN_STOP_RANK
     agent_types = ["main"]

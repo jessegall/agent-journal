@@ -5,7 +5,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class TakeoverMessage(MessageTemplate):
-    """The nudge drivers.takeover."""
+    """The agent message drivers.takeover."""
 
     key = "drivers.takeover"
     type = AgentMessageType.NOTICE

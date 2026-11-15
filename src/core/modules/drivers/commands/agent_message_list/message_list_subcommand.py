@@ -9,14 +9,14 @@ from engine.types.type_guards import is_tuple
 from core.modules.drivers.models.message_total import MessageTotal
 from core.modules.drivers.support.message_row import MessageRow
 
-TOTALS_REASON = "One total for each nudge the code declares, never for stored journal rows."
+TOTALS_REASON = "One total for each agent message the code declares, never for stored journal rows."
 
 
 class MessageListSubcommand(ReadSubcommand[tuple[MessageRow, ...]]):
-    """`journal nudge list`: every nudge the modules declare, its type and words, and how often it was said.
+    """`journal agent-message list`: every agent message the modules declare, its type and words, and how often it was said.
     """
 
-    cli_name = "nudge"
+    cli_name = "agent-message"
     name = "list"
 
     def __init__(self, registry: Registry, queries: Queries) -> None:

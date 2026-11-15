@@ -4,7 +4,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class CompactionNoticeMessage(MessageTemplate):
-    """The nudge drivers.compaction_notice."""
+    """The agent message drivers.compaction_notice."""
 
     key = "drivers.compaction_notice"
     delivery = LineDelivery.WAKE_HOOK

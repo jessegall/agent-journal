@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ReadonlyMessage(MessageTemplate):
-    """The nudge drivers.readonly."""
+    """The agent message drivers.readonly."""
 
     key = "drivers.readonly"
     type = AgentMessageType.SAFETY_REFUSAL

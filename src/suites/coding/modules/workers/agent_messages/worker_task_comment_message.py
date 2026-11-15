@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WorkerTaskCommentMessage(MessageTemplate):
-    """The nudge workers.task_comment."""
+    """The agent message workers.task_comment."""
 
     key = "workers.task_comment"
     type = AgentMessageType.STEERING

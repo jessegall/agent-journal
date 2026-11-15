@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class StepEditBanMessage(MessageTemplate):
-    """The nudge sequences.step_holds_edits."""
+    """The agent message sequences.step_holds_edits."""
 
     key = "sequences.step_holds_edits"
     type = AgentMessageType.REFUSAL

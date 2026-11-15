@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class FailedFullRunMessage(MessageTemplate):
-    """The nudge processes.failed_full_run."""
+    """The agent message processes.failed_full_run."""
 
     key = "processes.failed_full_run"
     type = AgentMessageType.REFUSAL

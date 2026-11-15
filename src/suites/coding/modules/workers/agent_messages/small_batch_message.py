@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class SmallBatchMessage(MessageTemplate):
-    """The nudge workers.small_batch."""
+    """The agent message workers.small_batch."""
 
     key = "workers.small_batch"
     type = AgentMessageType.STEERING

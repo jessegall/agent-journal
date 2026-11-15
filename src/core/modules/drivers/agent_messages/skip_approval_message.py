@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class SkipApprovalMessage(MessageTemplate):
-    """The nudge drivers.skip_waits_for_approval."""
+    """The agent message drivers.skip_waits_for_approval."""
 
     key = "drivers.skip_waits_for_approval"
     type = AgentMessageType.STEERING

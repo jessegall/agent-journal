@@ -57,7 +57,7 @@ class RefusalCounting:
         # the holds as this step judged them, with the reasons of their plans, whose tool or stop refusal refused
         block_ids = tuple(block.block_id for block in JudgedBlocks.constraining(view)
                           if block.block_id is not None and (block.reason in reasons or block.stop_refusal() in reasons))
-        # the Working frames whose stop answer refused, which the escalation defers with the holds it names
+        # the Working stacked states whose stop answer refused, which the escalation defers with the holds it names
         work_keys = tuple(stacked_state.state_key for stacked_state in stack.stacked_states if isinstance(stacked_state.state, Working) and stacked_state.state.stop_reason in reasons)
         if view.escalation is not None:
             return replace(view.escalation, block_ids=tuple(dict.fromkeys([*view.escalation.block_ids, *block_ids])),

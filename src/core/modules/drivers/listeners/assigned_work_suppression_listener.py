@@ -11,7 +11,7 @@ WORK_KEY_SEPARATOR = ":"
 
 
 class AssignedWorkSuppressionListener(SaveListener[Created[Assignment]]):
-    """Work assigned again to an agent shows again: the person's suppression of that work's frame ends in the
+    """Work assigned again to an agent shows again: the person's suppression of that work's stacked state ends in the
     assignment's write (doc 1310 section 4.3)."""
 
     name = "drivers.assigned-work-suppression"
@@ -22,7 +22,7 @@ class AssignedWorkSuppressionListener(SaveListener[Created[Assignment]]):
     def handle(self, event: Created[Assignment], context: Context) -> None:
         rows = self.queries.query(HiddenState).filter(session_agent_id=event.row.actor_id, ended_at=None).every_row(OPEN_SUPPRESSIONS_REASON)
         for row in rows:
-            # a work frame's generation names its work as "<model>:<row id>", as its need writes it
+            # a work stacked state's generation names its work as "<model>:<row id>", as its need writes it
             model, _, row_id = StackCodec.decoded_key(row.state_key).generation.partition(WORK_KEY_SEPARATOR)
             if model == event.row.subject_model and row_id == str(event.row.subject_id):
                 self.repository.save(row.changed(ended_at=context.timestamp), context)

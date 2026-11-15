@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class OldHookLineMessage(MessageTemplate):
-    """The nudge drivers.old_hook_line."""
+    """The agent message drivers.old_hook_line."""
 
     key = "drivers.old_hook_line"
     type = AgentMessageType.SAFETY_REFUSAL

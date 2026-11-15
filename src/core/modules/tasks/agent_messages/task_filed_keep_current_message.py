@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class TaskFiledKeepCurrentMessage(MessageTemplate):
-    """The nudge tasks.filed_keep_current."""
+    """The agent message tasks.filed_keep_current."""
 
     key = "tasks.filed_keep_current"
     type = AgentMessageType.STEERING

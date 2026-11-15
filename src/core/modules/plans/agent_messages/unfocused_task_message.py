@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class UnfocusedTaskMessage(MessageTemplate):
-    """The nudge plans.unfocused_task."""
+    """The agent message plans.unfocused_task."""
 
     key = "plans.unfocused_task"
     type = AgentMessageType.NOTICE

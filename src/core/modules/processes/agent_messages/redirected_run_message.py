@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class RedirectedRunMessage(MessageTemplate):
-    """The nudge processes.redirected_run."""
+    """The agent message processes.redirected_run."""
 
     key = "processes.redirected_run"
     type = AgentMessageType.STEERING

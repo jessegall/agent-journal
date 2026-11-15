@@ -4,7 +4,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class UnreadSkillsMessage(MessageTemplate):
-    """The nudge skills.unread_skills."""
+    """The agent message skills.unread_skills."""
 
     key = "skills.unread_skills"
     type = AgentMessageType.REFUSAL

@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class NativeMemoryBanMessage(MessageTemplate):
-    """The nudge claude_code.native_memory_ban."""
+    """The agent message claude_code.native_memory_ban."""
 
     key = "claude_code.native_memory_ban"
     type = AgentMessageType.REFUSAL

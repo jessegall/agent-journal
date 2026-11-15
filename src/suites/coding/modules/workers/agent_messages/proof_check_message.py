@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ProofCheckMessage(MessageTemplate):
-    """The nudge workers.check_the_proof."""
+    """The agent message workers.check_the_proof."""
 
     key = "workers.check_the_proof"
     type = AgentMessageType.REFUSAL

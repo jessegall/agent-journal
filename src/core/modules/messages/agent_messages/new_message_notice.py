@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class NewMessageNotice(MessageTemplate):
-    """The nudge messages.new_message."""
+    """The agent message messages.new_message."""
 
     key = "messages.new_message"
     type = AgentMessageType.STEERING

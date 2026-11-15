@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class SkipsSpentMessage(MessageTemplate):
-    """The nudge drivers.skips_spent."""
+    """The agent message drivers.skips_spent."""
 
     key = "drivers.skips_spent"
     type = AgentMessageType.STEERING

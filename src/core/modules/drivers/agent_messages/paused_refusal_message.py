@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class PausedRefusalMessage(MessageTemplate):
-    """The nudge drivers.paused."""
+    """The agent message drivers.paused."""
 
     key = "drivers.paused"
     type = AgentMessageType.REFUSAL

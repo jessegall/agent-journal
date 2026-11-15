@@ -4,7 +4,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ProjectHookWakeMessage(MessageTemplate):
-    """The nudge drivers.project_hook_woke."""
+    """The agent message drivers.project_hook_woke."""
 
     key = "drivers.project_hook_woke"
     type = AgentMessageType.NOTICE

@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class RepeatedClosingMessage(MessageTemplate):
-    """The nudge messages.repeated_closing."""
+    """The agent message messages.repeated_closing."""
 
     key = "messages.repeated_closing"
     type = AgentMessageType.STEERING

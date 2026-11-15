@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ReadCommandSkillFirstMessage(MessageTemplate):
-    """The nudge skills.read_command_skill_first."""
+    """The agent message skills.read_command_skill_first."""
 
     key = "skills.read_command_skill_first"
     type = AgentMessageType.REFUSAL

@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class UpdateOrderedMessage(MessageTemplate):
-    """The nudge workers.worktree_update_ordered."""
+    """The agent message workers.worktree_update_ordered."""
 
     key = "workers.worktree_update_ordered"
     type = AgentMessageType.STEERING

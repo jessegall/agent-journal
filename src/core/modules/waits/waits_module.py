@@ -25,7 +25,7 @@ from core.modules.waits.seeders.waits_seeder import WaitsSeeder
 
 class WaitsModule(Module):
     """Adds waits: an agent waits on rows it does not control or reports it is stuck, and while the wait
-    is open its Waiting frame holds the agent's stack."""
+    is open its Waiting stacked state holds the agent's stack."""
 
     name = "journal.core.waits"
     agent_listeners = [WaitStepListener]

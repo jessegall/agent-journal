@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ReminderBlockMessage(MessageTemplate):
-    """The nudge reminders.block."""
+    """The agent message reminders.block."""
 
     key = "reminders.block"
     type = AgentMessageType.REFUSAL

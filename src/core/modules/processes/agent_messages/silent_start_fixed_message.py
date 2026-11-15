@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class SilentStartFixedMessage(MessageTemplate):
-    """The nudge processes.silent_start_fixed."""
+    """The agent message processes.silent_start_fixed."""
 
     key = "processes.silent_start_fixed"
     type = AgentMessageType.STEERING

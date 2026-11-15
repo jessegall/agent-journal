@@ -15,7 +15,7 @@ from engine.enums.work_stop import WorkStop
 
 @dataclass(frozen=True)
 class Stack:
-    """An agent's frames from the bottom: Stopped, the work lane, the hold lane, then Compacting, Paused and
+    """An agent's stacked states from the bottom: Stopped, the work lane, the hold lane, then Compacting, Paused and
     Ended."""
 
     stacked_states: Sequence[StackedState]
@@ -23,7 +23,7 @@ class Stack:
     def has(self, state_type: type[State]) -> bool:
         return any(isinstance(stacked_state.state, state_type) for stacked_state in self.stacked_states)
 
-    # the subjects of the frames whose need is no longer among the given keys, which this step takes off the stack
+    # the subjects of the stacked states whose need is no longer among the given keys, which this step takes off the stack
     def subjects_without(self, state_keys: set[StateKey]) -> list[RowReference]:
         return [stacked_state.state_key.subject for stacked_state in self.stacked_states if stacked_state.state_key.subject is not None and stacked_state.state_key not in state_keys]
 

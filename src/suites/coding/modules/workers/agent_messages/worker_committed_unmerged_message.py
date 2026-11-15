@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WorkerCommittedUnmergedMessage(MessageTemplate):
-    """The nudge workers.committed_unmerged."""
+    """The agent message workers.committed_unmerged."""
 
     key = "workers.committed_unmerged"
     type = AgentMessageType.STEERING

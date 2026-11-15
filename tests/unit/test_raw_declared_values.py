@@ -47,7 +47,7 @@ def text_argument(call: ast.Call, place: int) -> str:
 
 
 def declared_agent_message_texts() -> set[str]:
-    """The text of every nudge the source declares, as a call of NudgeDeclaration or as the text of a class built on it."""
+    """The text of every agent message the source declares, as a call of NudgeDeclaration or as the text of a class built on it."""
     texts = {text_argument(call, 2) for call in declared_calls(AGENT_MESSAGE_DECLARATION)}
     for source in SOURCE_FOLDER.rglob("*.py"):
         for node in source_tree(source).body:

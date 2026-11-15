@@ -8,7 +8,7 @@ from core.modules.drivers.models.agent_stack import AgentStack
 
 @dataclass(frozen=True)
 class OpenState:
-    """One frame of an agent's stack, for a screen: its state type, its state's name, the row its need is about,
+    """One stacked state of an agent's stack, for a screen: its state type, its state's name, the row its need is about,
     and since when."""
 
     state: str
@@ -18,7 +18,7 @@ class OpenState:
 
 
 class AgentStateListing:
-    """The frames of an agent's stack from the bottom, as a screen lists them."""
+    """The stacked states of an agent's stack from the bottom, as a screen lists them."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

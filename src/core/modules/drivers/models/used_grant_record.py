@@ -6,7 +6,7 @@ from engine.time.timestamp import Timestamp
 
 @dataclass(frozen=True, kw_only=True)
 class UsedGrantRecord(Model):
-    """The record that a hook admitted a journal command by spending a grant; the command's own entrance accepts it
+    """The record that a hook admitted a journal command by spending a grant; the command's own entry point accepts it
     once in place of a second grant."""
 
     model_name = "used_grant_record"

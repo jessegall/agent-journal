@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class LoadedSkillRefusalMessage(MessageTemplate):
-    """The nudge skills.already_loaded."""
+    """The agent message skills.already_loaded."""
 
     key = "skills.already_loaded"
     type = AgentMessageType.REFUSAL

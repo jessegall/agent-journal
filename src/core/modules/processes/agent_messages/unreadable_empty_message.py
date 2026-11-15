@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class UnreadableEmptyMessage(MessageTemplate):
-    """The nudge processes.unreadable_empty."""
+    """The agent message processes.unreadable_empty."""
 
     key = "processes.unreadable_empty"
     type = AgentMessageType.STEERING

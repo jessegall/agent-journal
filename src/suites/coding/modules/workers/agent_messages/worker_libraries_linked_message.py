@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WorkerLibrariesLinkedMessage(MessageTemplate):
-    """The nudge workers.libraries_linked."""
+    """The agent message workers.libraries_linked."""
 
     key = "workers.libraries_linked"
     type = AgentMessageType.STEERING

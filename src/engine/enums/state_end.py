@@ -2,7 +2,7 @@ from enum import StrEnum
 
 
 class StateEnd(StrEnum):
-    """Why a frame left an agent's stack."""
+    """Why a stacked state left an agent's stack."""
 
     CLOSED = "closed"
     HANDED_IN = "handed-in"

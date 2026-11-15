@@ -10,7 +10,7 @@ from suites.coding.agent_messages.task_assignment_message import TaskAssignmentM
 
 MASTER = "journal.core.developer.tools"
 HOOKS = "journal.core.developer.tools.hooks"
-TERMINAL_AGENT_MESSAGES = f"{HOOKS}.terminal-nudges"
+TERMINAL_AGENT_MESSAGES = f"{HOOKS}.terminal-agent-messages"
 
 
 def terminal_line(story) -> str:
@@ -63,7 +63,7 @@ def test_each_line_sent_to_the_agent_shows_in_the_terminal_while_the_agent_messa
 
 
 class HookLogging(StoryFixture):
-    """The developer tools with call costs and nudges in the terminal switched on."""
+    """The developer tools with call costs and agent messages in the terminal switched on."""
 
     parent = UserBuilder
 

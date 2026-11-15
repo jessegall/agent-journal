@@ -7,12 +7,12 @@ from engine.time.timestamp import Timestamp
 
 @dataclass(frozen=True, kw_only=True)
 class MessageRecord(Prunable, Model):
-    """How often one agent was told one line of a nudge, and when last."""
+    """How often one agent was told one line of an agent message, and when last."""
 
     kept_rows = 20000
 
     model_name = "agent_message_record"
-    cli_name = "nudge-record"
+    cli_name = "agent-message-record"
 
     session_agent_id: int
     creator_id: int

@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class HandMadeMonitorMessage(MessageTemplate):
-    """The nudge processes.hand_made_monitor."""
+    """The agent message processes.hand_made_monitor."""
 
     key = "processes.hand_made_monitor"
     type = AgentMessageType.REFUSAL

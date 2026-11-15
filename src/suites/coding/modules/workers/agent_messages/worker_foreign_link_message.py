@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WorkerForeignLinkMessage(MessageTemplate):
-    """The nudge workers.outside_link."""
+    """The agent message workers.outside_link."""
 
     key = "workers.outside_link"
     type = AgentMessageType.REFUSAL

@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class HelperGrantedMessage(MessageTemplate):
-    """The nudge helpers.granted."""
+    """The agent message helpers.granted."""
 
     key = "helpers.granted"
     type = AgentMessageType.STEERING

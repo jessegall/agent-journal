@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class MessageRow:
-    """One declared nudge as the nudges window lists it: what it is, and how often it was said."""
+    """One declared agent message as the agent messages window lists it: what it is, and how often it was said."""
 
     key: str
     module: str

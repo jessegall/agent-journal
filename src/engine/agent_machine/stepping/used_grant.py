@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class UsedGrant:
-    """The record that a hook admitted a journal command by spending a grant, which the command's own entrance
+    """The record that a hook admitted a journal command by spending a grant, which the command's own entry point
     accepts once."""
 
     agent_id: int

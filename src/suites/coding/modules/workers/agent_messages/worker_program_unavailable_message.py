@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WorkerProgramUnavailableMessage(MessageTemplate):
-    """The nudge workers.program_out."""
+    """The agent message workers.program_out."""
 
     key = "workers.program_out"
     type = AgentMessageType.STEERING

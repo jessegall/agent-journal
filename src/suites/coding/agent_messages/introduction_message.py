@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class IntroductionMessage(MessageTemplate):
-    """The nudge coding.introduce_yourself."""
+    """The agent message coding.introduce_yourself."""
 
     key = "coding.introduce_yourself"
     type = AgentMessageType.STEERING

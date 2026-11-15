@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ReplyNoteMessage(MessageTemplate):
-    """The nudge messages.reply_note."""
+    """The agent message messages.reply_note."""
 
     key = "messages.reply_note"
     type = AgentMessageType.STEERING

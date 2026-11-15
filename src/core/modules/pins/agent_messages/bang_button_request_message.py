@@ -5,7 +5,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class BangButtonRequestMessage(MessageTemplate):
-    """The nudge pins.pin_the_bang_command."""
+    """The agent message pins.pin_the_bang_command."""
 
     key = "pins.pin_the_bang_command"
     type = AgentMessageType.STEERING

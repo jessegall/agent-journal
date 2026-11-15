@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class PhaseTestRunAllowedMessage(MessageTemplate):
-    """The nudge workers.phase_test_run_allowed."""
+    """The agent message workers.phase_test_run_allowed."""
 
     key = "workers.phase_test_run_allowed"
     type = AgentMessageType.STEERING

@@ -19,7 +19,7 @@ from core.modules.drivers.models.enums.handover_state import HandoverState
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 
-# a Working frame is ordered by its push time, never by a rank key
+# a Working stacked state is ordered by its push time, never by a rank key
 JOB_RANK = ""
 JOB_STOP_KEY = "helpers.job-open"
 HELPER_TYPE = "helper"
@@ -28,8 +28,8 @@ ENDED_JOBS_REASON = "the ended jobs whose frames one step takes off one helper's
 
 
 class JobWorkStates(StateSource):
-    """One Working frame for a read-only helper's open job (doc 1310 section 4.4): its allowed stop under it is
-    the hand-in (section 4.9), and a new job pushes a new frame."""
+    """One Working stacked state for a read-only helper's open job (doc 1310 section 4.4): its allowed stop under it is
+    the hand-in (section 4.9), and a new job pushes a new stacked state."""
 
     state_type = Working
     rank = JOB_RANK
@@ -49,7 +49,7 @@ class JobWorkStates(StateSource):
                                                     StateKey("Working", RowReference(JOB_SUBJECT, job.id), f"job:{job.id}"))])
         return agent_jobs
 
-    # a job's frame leaves handed in when its report was saved, else closed
+    # a job's stacked state leaves handed in when its report was saved, else closed
     def ends(self, subjects: Sequence[RowReference]) -> Mapping[RowReference, StateEnd]:
         job_ids = [subject.row_id for subject in subjects if subject.model == JOB_SUBJECT]
         jobs = self.queries.query(HelperJob).matching(Among("id", job_ids)).every_row(ENDED_JOBS_REASON) if job_ids else []

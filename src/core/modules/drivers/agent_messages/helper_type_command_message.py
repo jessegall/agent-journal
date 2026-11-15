@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class HelperTypeCommandMessage(MessageTemplate):
-    """The nudge drivers.helper_type_command."""
+    """The agent message drivers.helper_type_command."""
 
     key = "drivers.helper_type_command"
     type = AgentMessageType.REFUSAL

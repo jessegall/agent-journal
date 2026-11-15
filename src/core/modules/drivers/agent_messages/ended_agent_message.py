@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class EndedAgentMessage(MessageTemplate):
-    """The nudge drivers.ended_agent."""
+    """The agent message drivers.ended_agent."""
 
     key = "drivers.ended_agent"
     type = AgentMessageType.SAFETY_REFUSAL

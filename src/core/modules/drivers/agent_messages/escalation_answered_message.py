@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class EscalationAnsweredMessage(MessageTemplate):
-    """The nudge drivers.escalation-answered, which wakes the agent whose escalation its responder answered."""
+    """The agent message drivers.escalation-answered, which wakes the agent whose escalation its responder answered."""
 
     key = "drivers.escalation-answered"
     type = AgentMessageType.STEERING

@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ReaderRequestRefusalMessage(MessageTemplate):
-    """The nudge processes.reader_request_refusal."""
+    """The agent message processes.reader_request_refusal."""
 
     key = "processes.reader_request_refusal"
     type = AgentMessageType.REFUSAL

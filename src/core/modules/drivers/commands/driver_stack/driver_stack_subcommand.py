@@ -11,7 +11,7 @@ MOVES_SHOWN = 20
 
 
 class DriverStackSubcommand(ReadSubcommand[tuple[str, ...]]):
-    """`journal driver stack <agent> [--page n]`: an agent's stack from the bottom with when each frame
+    """`journal driver stack <agent> [--page n]`: an agent's stack from the bottom with when each stacked state
     entered, then its moves, newest first, a page at a time."""
 
     cli_name = "driver"

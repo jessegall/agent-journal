@@ -5,7 +5,7 @@ from core.modules.processes.agent_messages.silent_run_message import SILENT_RUN_
 
 
 class StalledRunMessage(MessageTemplate):
-    """The nudge processes.stalled_run."""
+    """The agent message processes.stalled_run."""
 
     key = "processes.stalled_run"
     type = AgentMessageType.NOTICE

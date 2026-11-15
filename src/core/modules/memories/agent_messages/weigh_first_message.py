@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WeighFirstMessage(MessageTemplate):
-    """The nudge memories.weigh_first."""
+    """The agent message memories.weigh_first."""
 
     key = "memories.weigh_first"
     type = AgentMessageType.REFUSAL

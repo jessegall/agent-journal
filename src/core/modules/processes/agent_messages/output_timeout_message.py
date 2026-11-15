@@ -4,7 +4,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class OutputTimeoutMessage(MessageTemplate):
-    """The nudge processes.output_timed_out."""
+    """The agent message processes.output_timed_out."""
 
     key = "processes.output_timed_out"
     delivery = LineDelivery.WAKE_HOOK

@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class BlockedTasksMessage(MessageTemplate):
-    """The nudge tasks.blocked_tasks."""
+    """The agent message tasks.blocked_tasks."""
 
     key = "tasks.blocked_tasks"
     type = AgentMessageType.REFUSAL

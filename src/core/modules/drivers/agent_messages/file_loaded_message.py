@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class FileLoadedMessage(MessageTemplate):
-    """The nudge drivers.file-in-context."""
+    """The agent message drivers.file-in-context."""
 
     key = "drivers.file-in-context"
     type = AgentMessageType.NOTICE

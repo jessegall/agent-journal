@@ -5,7 +5,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ParagraphMessage(MessageTemplate):
-    """The nudge messages.blank_lines."""
+    """The agent message messages.blank_lines."""
 
     key = "messages.blank_lines"
     type = AgentMessageType.STEERING

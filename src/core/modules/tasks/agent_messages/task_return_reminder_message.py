@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class TaskReturnReminderMessage(MessageTemplate):
-    """The nudge tasks.task_still_held."""
+    """The agent message tasks.task_still_held."""
 
     key = "tasks.task_still_held"
     type = AgentMessageType.STEERING

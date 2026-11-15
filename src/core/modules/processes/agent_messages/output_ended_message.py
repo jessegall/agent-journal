@@ -4,7 +4,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class OutputEndedMessage(MessageTemplate):
-    """The nudge processes.output_ended."""
+    """The agent message processes.output_ended."""
 
     key = "processes.output_ended"
     delivery = LineDelivery.WAKE_HOOK

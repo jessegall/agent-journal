@@ -107,7 +107,7 @@ class StoredAgentViewReader(AgentViewReader):
                            program_version.epoch if program_version is not None else 0)
 
     def stack(self, row: AgentStack | None, agent: Agent) -> Stack:
-        # a row a permission change made before the agent's first step holds no frame yet, and reads as a fresh stack
+        # a row a permission change made before the agent's first step holds no stacked state yet, and reads as a fresh stack
         stacked_states = StackCodec.decoded(row.stacked_states) if row is not None else []
         return Stack(stacked_states or [StackedState(Stopped(agent.creation_timestamp().value, "started", True), BOTTOM_KEY, agent.creation_timestamp().value)])
 

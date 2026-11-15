@@ -4,7 +4,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class JournalStartedMessage(MessageTemplate):
-    """The nudge drivers.journal_started."""
+    """The agent message drivers.journal_started."""
 
     key = "drivers.journal_started"
     delivery = LineDelivery.WAKE_HOOK

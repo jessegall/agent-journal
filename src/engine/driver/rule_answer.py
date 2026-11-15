@@ -12,7 +12,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 @dataclass(frozen=True)
 class RuleAnswer:
-    """What one part of a hook's answer says: nothing, nudges, a refusal or a new input for the tool, with
+    """What one part of a hook's answer says: nothing, agent messages, a refusal or a new input for the tool, with
     the commands the journal runs for it, and the commands it runs only when no rule refused the hook."""
 
     refusal: str = ""

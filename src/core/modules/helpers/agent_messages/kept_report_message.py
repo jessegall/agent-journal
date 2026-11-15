@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class KeptReportMessage(MessageTemplate):
-    """The nudge helpers.kept-report, told to the parent of a helper whose report could not be saved twice."""
+    """The agent message helpers.kept-report, told to the parent of a helper whose report could not be saved twice."""
 
     key = "helpers.kept-report"
     type = AgentMessageType.NOTICE

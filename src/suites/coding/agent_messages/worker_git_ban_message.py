@@ -4,7 +4,7 @@ from suites.coding.models.enums.ask_topic import AskTopic
 
 
 class WorkerGitBanMessage(MessageTemplate):
-    """The nudge coding.worker_runs_no_git."""
+    """The agent message coding.worker_runs_no_git."""
 
     key = "coding.worker_runs_no_git"
     type = AgentMessageType.REFUSAL

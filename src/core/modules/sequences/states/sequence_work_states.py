@@ -17,13 +17,13 @@ from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.modules.sequences.support.sequence_stop_blockers import SequenceStopBlockers
 
 SEQUENCE_STOP_KEY = "sequences.finish-before-stop"
-# a Working frame is ordered by its push time, never by a rank key
+# a Working stacked state is ordered by its push time, never by a rank key
 SEQUENCE_RANK = ""
 SEQUENCE_SUBJECT = "sequence_run"
 
 
 class SequenceWorkStates(StateSource):
-    """One Working frame for the sequence an agent runs (doc 1310 section 10.4): work remains while the run is
+    """One Working stacked state for the sequence an agent runs (doc 1310 section 10.4): work remains while the run is
     current, unless the agent waits on its question, a run it watches or its helper; the stop text names the
     sequence and its step."""
     state_type = Working

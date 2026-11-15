@@ -17,12 +17,12 @@ from suites.coding.modules.workers.support.worker_unit_stop import WorkerUnitSto
 from suites.coding.modules.workers.types.worker import Worker
 
 WORKER_STOP_KEY = "workers.stop-once-delivered"
-# a Working frame is ordered by its push time, never by a rank key
+# a Working stacked state is ordered by its push time, never by a rank key
 WORKER_STOP_RANK = ""
 
 
 class WorkerUnitStates(StateSource):
-    """One Working frame for a worker's unit (doc 1310 section 10.5): work remains while its stop is held, as
+    """One Working stacked state for a worker's unit (doc 1310 section 10.5): work remains while its stop is held, as
     the worker's unit stop holds it, and the stop text says what to do now."""
     state_type = Working
     rank = WORKER_STOP_RANK

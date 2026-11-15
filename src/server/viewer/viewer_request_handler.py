@@ -103,7 +103,7 @@ STACKED_STATE_POLICY = ("sandbox allow-scripts; default-src 'none'; script-src {
 class ViewerRequestHandler(BaseHTTPRequestHandler):
     """Answers the viewer's requests: refuses one whose Host is not the listener's own address, turns a
     login key into a session cookie once, serves module, window kit and shell asset files, which hold code
-    and no data, to any origin, and the phone's pairing page and its POST to anyone, so a frame with no
+    and no data, to any origin, and the phone's pairing page and its POST to anyone, so a stacked state with no
     origin loads its own, and answers the viewer's pages and data only with that cookie."""
 
     def do_GET(self) -> None:

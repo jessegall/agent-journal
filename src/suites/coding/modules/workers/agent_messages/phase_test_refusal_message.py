@@ -4,7 +4,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class PhaseTestRefusalMessage(MessageTemplate):
-    """The nudge workers.phase_test_refused."""
+    """The agent message workers.phase_test_refused."""
 
     key = "workers.phase_test_refused"
     type = AgentMessageType.SAFETY_REFUSAL

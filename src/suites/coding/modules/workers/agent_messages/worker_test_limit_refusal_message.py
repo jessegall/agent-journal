@@ -4,7 +4,7 @@ from suites.coding.models.enums.ask_topic import AskTopic
 
 
 class WorkerTestLimitRefusalMessage(MessageTemplate):
-    """The nudge processes.test_run_over_limit."""
+    """The agent message processes.test_run_over_limit."""
 
     key = "processes.test_run_over_limit"
     type = AgentMessageType.REFUSAL

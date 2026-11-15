@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WorkerRouteFallbackMessage(MessageTemplate):
-    """The nudge workers.route_fallback."""
+    """The agent message workers.route_fallback."""
 
     key = "workers.route_fallback"
     type = AgentMessageType.STEERING

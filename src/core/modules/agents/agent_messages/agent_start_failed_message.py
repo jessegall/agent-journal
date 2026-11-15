@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class AgentStartFailedMessage(MessageTemplate):
-    """The nudge agents.start_failed."""
+    """The agent message agents.start_failed."""
 
     key = "agents.start_failed"
     type = AgentMessageType.STEERING

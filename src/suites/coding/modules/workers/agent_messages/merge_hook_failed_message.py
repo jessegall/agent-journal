@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class MergeHookFailedMessage(MessageTemplate):
-    """The nudge workers.merge_hook_failed."""
+    """The agent message workers.merge_hook_failed."""
 
     key = "workers.merge_hook_failed"
     type = AgentMessageType.STEERING

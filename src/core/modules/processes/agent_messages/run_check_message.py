@@ -4,7 +4,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class RunCheckMessage(MessageTemplate):
-    """The nudge processes.look_at_run."""
+    """The agent message processes.look_at_run."""
 
     key = "processes.look_at_run"
     delivery = LineDelivery.WAKE_HOOK

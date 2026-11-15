@@ -4,7 +4,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WorkerOperationStartedMessage(MessageTemplate):
-    """The nudge workers.operation_started."""
+    """The agent message workers.operation_started."""
 
     key = "workers.operation_started"
     delivery = LineDelivery.WAKE_HOOK

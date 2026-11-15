@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class RunnerMissingMessage(MessageTemplate):
-    """The nudge processes.runner_missing."""
+    """The agent message processes.runner_missing."""
 
     key = "processes.runner_missing"
     type = AgentMessageType.STEERING

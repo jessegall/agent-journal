@@ -20,7 +20,7 @@ OPEN_WAITS_REASON = "the open waits of the agents one step reads, and their rows
 class WaitStates(StateSource):
     """Waiting for each open wait of an agent (doc 1310 section 4.4): a question it asked, a help request, a
     merger's answer or rows it chose to wait on. A wait ends once none of its rows is left open, so it waits
-    on all of them; the wait module's own writes end it, and the frame goes with it."""
+    on all of them; the wait module's own writes end it, and the stacked state goes with it."""
 
     state_type = Waiting
     rank = ""

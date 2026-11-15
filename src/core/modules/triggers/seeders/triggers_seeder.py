@@ -3,7 +3,7 @@ from engine.seed.seeder import Seeder
 
 
 class TriggersSeeder(Seeder):
-    """Makes a phrase trigger that nudges and a scheduled one that comes every half hour."""
+    """Makes a phrase trigger that agent messages and a scheduled one that comes every half hour."""
 
     def seed(self, demo: Demo) -> None:
         user = demo.people["user"]

@@ -19,7 +19,7 @@ ENVIRONMENTS_REASON = "the environments of one project, a handful"
 class ReadVersionsWriters:
     """Moves the numbers an agent's answer basis is read from (doc 1310 section 6.5) in the write that changed
     what an agent may do, so a step that read rows since changed cannot save: the agent's stack version, the
-    driver epoch of every environment and a program's epoch."""
+    driver version of every environment and a program's version."""
 
     def __init__(self, queries: Queries, repository: Repository, database: Database, scopes: Scopes) -> None:
         self.queries, self.repository, self.database, self.scopes = queries, repository, database, scopes

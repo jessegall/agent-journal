@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class HelperLimitWarningMessage(MessageTemplate):
-    """The nudge helpers.limit_warning."""
+    """The agent message helpers.limit_warning."""
 
     key = "helpers.limit_warning"
     type = AgentMessageType.STEERING

@@ -13,7 +13,7 @@ const OFFERED = [
     page("secrets.secrets", "Secrets"),
     page("memories.memories", "Memories"),
     page("documents.page", "Document reader"),
-    page("drivers.nudges", "Nudges"),
+    page("drivers.agent-messages", "Agent messages"),
     page("tools.tools", "Tools"),
     page("processes.outputs", "Commands"),
     page("processes.output", "Output"),
@@ -45,7 +45,7 @@ test("test_nav_order: the pages stand in the design's groups and order, and what
         ["agents", ["skills.skills", "memories.memories", "project-rules.rules", "templates.templates", "sequences.sequences", "reminders.reminders"]],
         ["connect", ["secrets.secrets"]],
         ["developer", ["developer.numbers", "developer.system-logs"]],
-        ["more", ["drivers.nudges"]],
+        ["more", ["drivers.agent-messages"]],
         ["foot", ["settings.settings"]],
     ]);
     const shown = drawn(OFFERED);

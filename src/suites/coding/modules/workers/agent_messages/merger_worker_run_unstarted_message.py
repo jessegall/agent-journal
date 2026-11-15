@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class MergerWorkerRunUnstartedMessage(MessageTemplate):
-    """The nudge workers.merger_worker_run_unstarted."""
+    """The agent message workers.merger_worker_run_unstarted."""
 
     key = "workers.merger_worker_run_unstarted"
     type = AgentMessageType.STEERING

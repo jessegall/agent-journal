@@ -5,7 +5,7 @@ from engine.enums.work_type import WorkType
 
 @dataclass(frozen=True)
 class WorkReference:
-    """The work a Working frame stands for: what sort of work, its row and the text that names it."""
+    """The work a Working stacked state stands for: what sort of work, its row and the text that names it."""
 
     work_type: WorkType
     work_id: int

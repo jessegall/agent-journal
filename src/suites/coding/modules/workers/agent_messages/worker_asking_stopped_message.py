@@ -5,7 +5,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WorkerAskingStoppedMessage(MessageTemplate):
-    """The nudge workers.asking_stopped."""
+    """The agent message workers.asking_stopped."""
 
     key = "workers.asking_stopped"
     type = AgentMessageType.STEERING

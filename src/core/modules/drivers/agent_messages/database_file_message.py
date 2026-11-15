@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class DatabaseFileMessage(MessageTemplate):
-    """The nudge drivers.database_file."""
+    """The agent message drivers.database_file."""
 
     key = "drivers.database_file"
     type = AgentMessageType.SAFETY_REFUSAL

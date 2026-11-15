@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class AgentResumedMessage(MessageTemplate):
-    """The nudge drivers.resumed."""
+    """The agent message drivers.resumed."""
 
     key = "drivers.resumed"
     type = AgentMessageType.STEERING

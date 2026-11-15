@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class CheckpointReachedMessage(MessageTemplate):
-    """The nudge plans.checkpoint_reached."""
+    """The agent message plans.checkpoint_reached."""
 
     key = "plans.checkpoint_reached"
     type = AgentMessageType.STEERING

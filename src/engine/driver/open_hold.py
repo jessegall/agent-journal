@@ -9,9 +9,9 @@ from engine.driver.agent_message import AgentMessage
 
 @dataclass(frozen=True)
 class OpenHold(Command[object]):
-    """Blocks an agent until the condition is true; each tool it may not use is refused with the nudge. With
-    an interval in after, the block holds only once that grace has passed, and the countdown nudge is shown
-    while it runs: {block} in the nudge is the block's number and {left} in the countdown the tool uses
+    """Blocks an agent until the condition is true; each tool it may not use is refused with the agent message. With
+    an interval in after, the block holds only once that grace has passed, and the countdown agent message is shown
+    while it runs: {block} in the agent message is the block's number and {left} in the countdown the tool uses
     remaining, shown once fewer than countdown_limit remain. A block that holds the stop refuses only the
     agent's stop, no tool. A strict block lets through nothing but reading a skill, where any other lets
     through reads and journal commands."""

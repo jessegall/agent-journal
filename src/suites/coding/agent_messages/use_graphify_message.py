@@ -3,11 +3,11 @@ from engine.driver.interval import Interval
 from engine.enums.agent_message_type import AgentMessageType
 from core.modules.drivers.models.support.tool_use_window import ToolUseWindow
 
-AGENT_MESSAGE_TOOL_USES = 9  # the nine tool uses between two nudges make it the tenth search after one in a row of searches
+AGENT_MESSAGE_TOOL_USES = 9  # the nine tool uses between two agent messages make it the tenth search after one in a row of searches
 
 
 class UseGraphifyMessage(MessageTemplate):
-    """The nudge tools.use_graphify."""
+    """The agent message tools.use_graphify."""
 
     key = "tools.use_graphify"
     type = AgentMessageType.STEERING

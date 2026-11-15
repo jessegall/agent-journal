@@ -17,7 +17,7 @@ SUFFIX_CONTENT_TYPES = {".webmanifest": "application/manifest+json"}
 
 class ModuleFiles:
     """Answers GET /modules/<module>/<path>: a file from that module's web/dist and nothing outside it, with
-    its exact content type, marked when it is a frame window's entry."""
+    its exact content type, marked when it is a stacked state window's entry."""
 
     def __init__(self, home: JournalHome, turns: WriteTurns | None = None) -> None:
         self.home, self.turns = home, turns

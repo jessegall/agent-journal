@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ContinuedSessionMessage(MessageTemplate):
-    """The nudge drivers.continued_session."""
+    """The agent message drivers.continued_session."""
 
     key = "drivers.continued_session"
     type = AgentMessageType.NOTICE

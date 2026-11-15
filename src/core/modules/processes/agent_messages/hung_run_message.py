@@ -4,7 +4,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class HungRunMessage(MessageTemplate):
-    """The nudge processes.hung_run."""
+    """The agent message processes.hung_run."""
 
     key = "processes.hung_run"
     delivery = LineDelivery.WAKE_HOOK

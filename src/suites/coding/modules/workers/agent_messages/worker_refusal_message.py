@@ -7,7 +7,7 @@ WORKER_REFUSAL_INTERVAL = Interval(Seconds(600))
 
 
 class WorkerRefusalMessage(MessageTemplate):
-    """The nudge workers.repeated_refusal."""
+    """The agent message workers.repeated_refusal."""
 
     key = "workers.repeated_refusal"
     type = AgentMessageType.STEERING

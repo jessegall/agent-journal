@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class OverviewLineMessage(MessageTemplate):
-    """The nudge overview.run_overview."""
+    """The agent message overview.run_overview."""
 
     key = "overview.run_overview"
     type = AgentMessageType.STEERING

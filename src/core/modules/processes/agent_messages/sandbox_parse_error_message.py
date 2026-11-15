@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class SandboxParseErrorMessage(MessageTemplate):
-    """The nudge processes.sandbox_parse_error."""
+    """The agent message processes.sandbox_parse_error."""
 
     key = "processes.sandbox_parse_error"
     type = AgentMessageType.REFUSAL

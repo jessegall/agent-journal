@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ManagedHookRefusalMessage(MessageTemplate):
-    """The nudge drivers.managed_hook_refusal."""
+    """The agent message drivers.managed_hook_refusal."""
 
     key = "drivers.managed_hook_refusal"
     type = AgentMessageType.REFUSAL

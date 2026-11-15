@@ -21,7 +21,7 @@ AGENT = SimpleNamespace(id=4, parent_id=None, environment_id=1, role="main")
 
 @dataclass(frozen=True)
 class SendWork(Command[None]):
-    """A sample command a policy guards at its entrance."""
+    """A sample command a policy guards at its entry point."""
 
 
 class SendWorkPolicy(Policy):

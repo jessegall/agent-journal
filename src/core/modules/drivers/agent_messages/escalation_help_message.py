@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class EscalationHelpMessage(MessageTemplate):
-    """The nudge drivers.escalation-help, which wakes the parent an agent asked for help."""
+    """The agent message drivers.escalation-help, which wakes the parent an agent asked for help."""
 
     key = "drivers.escalation-help"
     type = AgentMessageType.STEERING

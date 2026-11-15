@@ -5,7 +5,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class UpdateWaitingMessage(MessageTemplate):
-    """The nudge processes.update_waiting."""
+    """The agent message processes.update_waiting."""
 
     key = "processes.update_waiting"
     type = AgentMessageType.STEERING

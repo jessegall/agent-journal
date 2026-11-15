@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class MoveBanMessage(MessageTemplate):
-    """The nudge processes.do_not_move."""
+    """The agent message processes.do_not_move."""
 
     key = "processes.do_not_move"
     type = AgentMessageType.REFUSAL

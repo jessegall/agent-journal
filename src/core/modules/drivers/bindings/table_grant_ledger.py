@@ -32,7 +32,7 @@ class TableGrantLedger(GrantLedger):
     a confirmed refusal skip, approved where it needs approval, passes the next action its policy refuses;
     an allowed permission passes the action it names; an alias or guard skip is a driver_grant row. A spend
     uses the skip and permission commands, so the skip's streak and window and the permission's use stay as they are, and a
-    spent journal command leaves a receipt its own entrance takes once."""
+    spent journal command leaves a receipt its own entry point takes once."""
 
     def __init__(self, queries: Queries, repository: Repository, bus: Bus) -> None:
         self.queries, self.repository, self.bus = queries, repository, bus

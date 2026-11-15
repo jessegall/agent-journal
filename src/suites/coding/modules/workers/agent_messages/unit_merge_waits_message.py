@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class UnitMergeWaitsMessage(MessageTemplate):
-    """The nudge workers.unit_merge_waits."""
+    """The agent message workers.unit_merge_waits."""
 
     key = "workers.unit_merge_waits"
     type = AgentMessageType.STEERING

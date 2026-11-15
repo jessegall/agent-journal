@@ -72,5 +72,5 @@ def test_an_agent_stopped_with_a_task_blocked_on_a_question_is_woken_when_the_qu
 
 
 def expect_entered(story, entered, *agent_messages) -> None:
-    """The main agent was typed these nudges, in this order, and nothing else."""
+    """The main agent was typed these agent messages, in this order, and nothing else."""
     story.expect_rows(len(entered) == len(agent_messages), all(agent_id == story.agent.id and agent_message.matches_text(text) for (agent_id, text), agent_message in zip(entered, agent_messages)), detail=str(entered))

@@ -4,7 +4,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class HookTimeoutsMessage(MessageTemplate):
-    """The nudge drivers.hooks_timed_out."""
+    """The agent message drivers.hooks_timed_out."""
 
     key = "drivers.hooks_timed_out"
     delivery = LineDelivery.WAKE_HOOK

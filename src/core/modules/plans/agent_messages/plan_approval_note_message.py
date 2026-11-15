@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class PlanApprovalNoteMessage(MessageTemplate):
-    """The nudge plans.plan_approved_message."""
+    """The agent message plans.plan_approved_message."""
 
     key = "plans.plan_approved_message"
     type = AgentMessageType.NOTICE

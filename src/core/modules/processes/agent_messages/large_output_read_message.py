@@ -5,7 +5,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class LargeOutputReadMessage(MessageTemplate):
-    """The nudge processes.large_output_read."""
+    """The agent message processes.large_output_read."""
 
     key = "processes.large_output_read"
     type = AgentMessageType.STEERING

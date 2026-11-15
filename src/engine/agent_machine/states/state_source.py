@@ -27,7 +27,7 @@ class StateSource(ABC):
     @abstractmethod
     def states(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[RequiredState | BlockPlan]]: ...
 
-    # how each subject this source gave a frame for, which is gone now, ended: a frame left with it records that end
+    # how each subject this source gave a stacked state for, which is gone now, ended: a stacked state left with it records that end
     # and only a listed end counts as progress (doc 1310 sections 4.3 and 4.6); a source that cannot tell says nothing
     def ends(self, subjects: Sequence[RowReference]) -> Mapping[RowReference, StateEnd]:
         return {}

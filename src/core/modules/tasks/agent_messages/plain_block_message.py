@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class PlainBlockMessage(MessageTemplate):
-    """The nudge tasks.plain_block."""
+    """The agent message tasks.plain_block."""
 
     key = "tasks.plain_block"
     type = AgentMessageType.STEERING

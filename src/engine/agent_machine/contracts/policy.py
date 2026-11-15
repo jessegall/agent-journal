@@ -13,7 +13,7 @@ from engine.enums.grant_type import GrantType
 
 class Policy(ABC):
     """A pure judgement of an action from the agent's rows, type and profile, the settings and the usable
-    grants; it never moves the stack, and the commands it names ask it again at their entrance. A safety
+    grants; it never moves the stack, and the commands it names ask it again at their entry point. A safety
     policy is passed by no grant."""
 
     key: ClassVar[str]
@@ -30,6 +30,6 @@ class Policy(ABC):
     @abstractmethod
     def refusals(self, question: Question, view: AgentView) -> Sequence[Reason]: ...
 
-    # the same judgement asked at the entrance of one of its entrance commands, where no hook came first
+    # the same judgement asked at the entry point of one of its entry point commands, where no hook came first
     def entry_point_refusals(self, command: Command[object], agent: AgentReference) -> Sequence[Reason]:
         return []

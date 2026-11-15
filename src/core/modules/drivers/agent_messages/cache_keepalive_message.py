@@ -4,7 +4,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class CacheKeepaliveMessage(MessageTemplate):
-    """The nudge drivers.cache_keepalive."""
+    """The agent message drivers.cache_keepalive."""
 
     key = "drivers.cache_keepalive"
     delivery = LineDelivery.WAKE_HOOK

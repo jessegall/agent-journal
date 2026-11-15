@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class SafeguardsStoppedMessage(MessageTemplate):
-    """The nudge drivers.safeguards_stopped."""
+    """The agent message drivers.safeguards_stopped."""
 
     key = "drivers.safeguards_stopped"
     type = AgentMessageType.STEERING

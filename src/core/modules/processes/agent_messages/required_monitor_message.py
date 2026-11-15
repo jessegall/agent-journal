@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class RequiredMonitorMessage(MessageTemplate):
-    """The nudge processes.monitor_required."""
+    """The agent message processes.monitor_required."""
 
     key = "processes.monitor_required"
     type = AgentMessageType.REFUSAL

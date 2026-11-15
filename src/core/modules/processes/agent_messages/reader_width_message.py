@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ReaderWidthMessage(MessageTemplate):
-    """The nudge processes.reader_too_wide."""
+    """The agent message processes.reader_too_wide."""
 
     key = "processes.reader_too_wide"
     type = AgentMessageType.STEERING

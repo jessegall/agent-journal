@@ -4,7 +4,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class PermissionRequestedMessage(MessageTemplate):
-    """The nudge drivers.permission_asked."""
+    """The agent message drivers.permission_asked."""
 
     key = "drivers.permission_asked"
     delivery = LineDelivery.WAKE_HOOK

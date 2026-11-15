@@ -8,7 +8,7 @@ from core.modules.drivers.models.support.views import AGENT_MESSAGE_TOTALS_SELEC
 class MessageTotal(ViewModel):
     """How often an agent message was given to all agents and when it was given last, read from the agent_message_totals view."""
 
-    cli_name = "nudge-total"
+    cli_name = "agent-message-total"
     view = "agent_message_totals"
     key = "agent_message_key"
     select = AGENT_MESSAGE_TOTALS_SELECT

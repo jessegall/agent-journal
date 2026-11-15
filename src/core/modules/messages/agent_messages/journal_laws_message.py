@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class JournalLawsMessage(MessageTemplate):
-    """The nudge messages.journal_laws."""
+    """The agent message messages.journal_laws."""
 
     key = "messages.journal_laws"
     type = AgentMessageType.NOTICE

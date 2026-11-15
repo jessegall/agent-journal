@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class MainHelperBanMessage(MessageTemplate):
-    """The nudge coding.main_starts_no_helpers."""
+    """The agent message coding.main_starts_no_helpers."""
 
     key = "coding.main_starts_no_helpers"
     type = AgentMessageType.REFUSAL

@@ -6,7 +6,7 @@ NOTES = "tests.stories.core.modules.viewer.support.window_samples:NotesSuiteOfNo
 SANDBOX_POLICY = "sandbox allow-scripts; default-src 'none'"
 
 
-# a user, Ada, logged in to a journal with the sample notes module and its frame window
+# a user, Ada, logged in to a journal with the sample notes module and its stacked state window
 @pytest.fixture
 def notes_server(journal):
     user = journal.make_user()

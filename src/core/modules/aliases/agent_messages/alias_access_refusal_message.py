@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class AliasAccessRefusalMessage(MessageTemplate):
-    """The nudge aliases.access_refused."""
+    """The agent message aliases.access_refused."""
 
     key = "aliases.access_refused"
     type = AgentMessageType.REFUSAL

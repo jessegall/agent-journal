@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class FastForwardedMessage(MessageTemplate):
-    """The nudge workers.worktree_fast_forwarded."""
+    """The agent message workers.worktree_fast_forwarded."""
 
     key = "workers.worktree_fast_forwarded"
     type = AgentMessageType.STEERING

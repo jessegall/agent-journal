@@ -5,7 +5,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class AliasSuggestionMessage(MessageTemplate):
-    """The nudge processes.alias_suggestion."""
+    """The agent message processes.alias_suggestion."""
 
     key = "processes.alias_suggestion"
     type = AgentMessageType.STEERING

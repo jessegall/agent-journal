@@ -9,7 +9,7 @@ BLOCK_REVIEW_REMINDER = ReminderDeclaration("tasks.block_review", Interval(Secon
 
 
 class BlockReviewMessage(MessageTemplate):
-    """The nudge tasks.block_review."""
+    """The agent message tasks.block_review."""
 
     key = "tasks.block_review"
     type = AgentMessageType.NOTICE

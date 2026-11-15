@@ -18,7 +18,7 @@ class FrontDeskModule(Module):
 
 
 class FrontDeskSuite(Suite):
-    """A made-up suite with the admin entrance of the coding suite and a second entrance beside it."""
+    """A made-up suite with the admin entry point of the coding suite and a second entry point beside it."""
 
     name = "front-desk"
     modules = [FrontDeskModule]

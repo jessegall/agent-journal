@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class PrivateCorpusMessage(MessageTemplate):
-    """The nudge drivers.private_corpus."""
+    """The agent message drivers.private_corpus."""
 
     key = "drivers.private_corpus"
     type = AgentMessageType.SAFETY_REFUSAL

@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class BlockReviewRequiredMessage(MessageTemplate):
-    """The nudge tasks.block_review_hold."""
+    """The agent message tasks.block_review_hold."""
 
     key = "tasks.block_review_hold"
     type = AgentMessageType.REFUSAL

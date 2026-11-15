@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class AutomaticRunWatchedMessage(MessageTemplate):
-    """The nudge processes.automatic_run_watched."""
+    """The agent message processes.automatic_run_watched."""
 
     key = "processes.automatic_run_watched"
     type = AgentMessageType.STEERING

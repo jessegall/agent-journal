@@ -10,7 +10,7 @@ import QuestionDock from "../../core/modules/questions/web/src/QuestionDock.vue"
 import StateRows from "../kit/StateRows.vue";
 import {commandsWindowContext} from "./support/commandsWindowContext.js";
 import Outputs from "../../core/modules/processes/web/src/Outputs.vue";
-import NudgeList from "../../core/modules/drivers/web/src/NudgeList.vue";
+import AgentMessageList from "../../core/modules/drivers/web/src/AgentMessageList.vue";
 import HookCallList from "../../core/modules/drivers/web/src/HookCallList.vue";
 import PlanCards from "../../core/modules/plans/web/src/PlanCards.vue";
 
@@ -49,8 +49,8 @@ test("command output uses process state labels", async () => {
 });
 
 test("instruction types have readable labels and keep their stored styling value", async () => {
-    const element = await mounted(NudgeList, context({"nudge list": page([{id: 2, key: "cart", type: "steering", text: "Check the cart", delivery_count: 1}])}, null, {
-        nudges: {line: "nudge list", events: ["nudge_record.*"]},
+    const element = await mounted(AgentMessageList, context({"agent-message list": page([{id: 2, key: "cart", type: "steering", text: "Check the cart", delivery_count: 1}])}, null, {
+        nudges: {line: "agent-message list", events: ["nudge_record.*"]},
     }));
     expect(element.querySelector(".nudge-type").textContent).toBe("Instruction");
     expect(element.querySelector(".nudge-type").dataset.type).toBe("steering");

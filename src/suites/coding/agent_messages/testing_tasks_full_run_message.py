@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class TestingTasksFullRunMessage(MessageTemplate):
-    """The nudge tasks.testing_tasks_full_run."""
+    """The agent message tasks.testing_tasks_full_run."""
 
     key = "tasks.testing_tasks_full_run"
     type = AgentMessageType.NOTICE

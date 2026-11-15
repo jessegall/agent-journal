@@ -4,7 +4,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WorkerTestCommandsMissingMessage(MessageTemplate):
-    """The nudge workers.no_test_commands."""
+    """The agent message workers.no_test_commands."""
 
     key = "workers.no_test_commands"
     type = AgentMessageType.SAFETY_REFUSAL

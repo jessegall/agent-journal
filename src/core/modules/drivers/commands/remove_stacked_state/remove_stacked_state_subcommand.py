@@ -6,7 +6,7 @@ from core.modules.drivers.commands.remove_stacked_state.remove_stacked_state imp
 
 
 class RemoveStackedStateSubcommand(Subcommand[RemoveStackedState, str]):
-    """`journal driver pop <agent> <frame> --reason "<why>"`: a person removes a frame of an agent's stack,
+    """`journal driver pop <agent> <stacked state> --reason "<why>"`: a person removes a stacked state of an agent's stack,
     named by its generation as journal driver stack prints it."""
 
     cli_name = "driver"

@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class WorkerOperationUnstartedMessage(MessageTemplate):
-    """The nudge workers.operation_never_started."""
+    """The agent message workers.operation_never_started."""
 
     key = "workers.operation_never_started"
     type = AgentMessageType.STEERING

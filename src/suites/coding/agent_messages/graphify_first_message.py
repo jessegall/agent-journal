@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class GraphifyFirstMessage(MessageTemplate):
-    """The nudge tools.graphify_first."""
+    """The agent message tools.graphify_first."""
 
     key = "tools.graphify_first"
     type = AgentMessageType.REFUSAL

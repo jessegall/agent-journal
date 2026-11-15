@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class ProofRunHungMessage(MessageTemplate):
-    """The nudge workers.proof_run_stuck."""
+    """The agent message workers.proof_run_stuck."""
 
     key = "workers.proof_run_stuck"
     type = AgentMessageType.STEERING

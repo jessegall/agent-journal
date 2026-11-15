@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class SequenceStartedMessage(MessageTemplate):
-    """The nudge sequences.started."""
+    """The agent message sequences.started."""
 
     key = "sequences.started"
     type = AgentMessageType.STEERING

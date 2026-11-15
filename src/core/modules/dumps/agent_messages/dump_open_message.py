@@ -5,7 +5,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class DumpOpenMessage(MessageTemplate):
-    """The nudge dumps.dump_open."""
+    """The agent message dumps.dump_open."""
 
     key = "dumps.dump_open"
     type = AgentMessageType.STEERING

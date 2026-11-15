@@ -3,7 +3,7 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class MemoryLineMessage(MessageTemplate):
-    """The nudge memories.memory_line."""
+    """The agent message memories.memory_line."""
 
     key = "memories.memory_line"
     type = AgentMessageType.STEERING

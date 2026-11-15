@@ -10,7 +10,7 @@ REQUIRED_KEYS = ("id", "exit_code", "stdout", "stderr", "milliseconds", "timed_o
 
 @dataclass(frozen=True)
 class ProjectHookRun:
-    """The result of one managed hook on one firing."""
+    """The result of one managed hook on one event id."""
 
     id: str
     exit_code: int
