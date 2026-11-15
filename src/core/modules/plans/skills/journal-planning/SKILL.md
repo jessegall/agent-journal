@@ -10,8 +10,8 @@ and finish it without having to decide anything for itself.
 
 - When your job names a functional design document, read it whole. Its goal and phases are your source: turn them
   into the plan, and do not design it again. Its user stories say how the system must behave; they are not tasks.
-- Plan the steps of the change, never its tests: no story books and no test tasks. Which tests to write is the user's
-  to decide.
+- Plan the steps of the change, not its tests: the agent that builds each step decides which tests that step needs,
+  from the step's brief.
 
 - Split each phase into its real steps. File one task per step a user could check.
 - A phase with one task needs a reason. `journal plan ready` refuses it until you pass
