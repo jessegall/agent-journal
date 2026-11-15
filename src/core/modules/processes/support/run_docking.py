@@ -42,6 +42,8 @@ class DockedRuns:
 
     nudges: tuple[Nudge, ...]
     commands: tuple[Command[object], ...]
+    # the docked runs, those docked now among them, whose output has no descriptive title
+    untitled: tuple[int, ...] = ()
 
 
 class RunDocking:
@@ -74,7 +76,9 @@ class RunDocking:
         placed = due[:self.room.places(ProcessDockType.OUTPUT.value)]
         shown = [*docked, *placed]
         outputs = self.run_outputs(tuple(process.id for process in shown))
-        return DockedRuns(tuple(self.title_nudges(shown, outputs)), tuple(AddDockItem(ProcessDockType.OUTPUT.value, process.model_name, process.id) for process in placed))
+        untitled = tuple(process.id for process in shown if process.id in outputs and not RunTitle.is_descriptive(outputs[process.id].title, process.line))
+        return DockedRuns(tuple(RunNameNudge.declared().nudge(process=process_id) for process_id in untitled),
+                          tuple(AddDockItem(ProcessDockType.OUTPUT.value, process.model_name, process.id) for process in placed), untitled)
 
     # the agent's docked runs, read once a request by the docking and by the hold on their titles
     def docked_runs(self, agent_id: int) -> tuple[Process, ...]:
@@ -86,9 +90,6 @@ class RunDocking:
             return {}
         return self.request_values.read(f"processes.dock-outputs:{','.join(map(str, sorted(process_ids)))}", self.database.change_mark,
                                         lambda: {output.process_id: output for output in self.outputs.matching(Among("process_id", list(process_ids))).every_row(DOCK_RUNS_REASON)})
-
-    def title_nudges(self, due: list[Process], outputs: dict[int, Output]) -> list[Nudge]:
-        return [RunNameNudge.declared().nudge(process=process.id) for process in due if process.id in outputs and not RunTitle.is_descriptive(outputs[process.id].title, process.line)]
 
     def needs_dock(self, process: Process, agent_id: int, dock: Interval, parts: tuple[ProcessPart, ...]) -> bool:
         if process.started_at is None or not dock.has_passed(self.spans, agent_id, process.started_at, self.clock.timestamp()) or self.visibility.select_visible_part(process, parts) is None or self.folder.end(process.id) is not None:

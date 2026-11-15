@@ -96,7 +96,6 @@ tests/stories/core/modules/drivers/deferred_queue.py
 tests/stories/core/modules/drivers/foreign_runs.py
 tests/stories/core/modules/drivers/hook_durations.py
 tests/stories/core/modules/drivers/hooks_through_the_server.py
-tests/stories/core/modules/drivers/interrupted_agent.py
 tests/stories/core/modules/drivers/journal_started.py
 tests/stories/core/modules/drivers/managed_answers.py
 tests/stories/core/modules/drivers/managed_failures.py

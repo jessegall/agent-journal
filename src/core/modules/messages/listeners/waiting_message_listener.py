@@ -12,7 +12,7 @@ from core.modules.messages.support.message_targets import MessageTargets
 
 
 class WaitingMessageListener(CommitListener[Created[Message]]):
-    """A message the user writes while the main agent sits idle wakes it."""
+    """A message the user writes while the main agent sits idle wakes it, also while the agent is paused."""
 
     name = "messages.idle-message"
     run_order = -2
@@ -25,6 +25,7 @@ class WaitingMessageListener(CommitListener[Created[Message]]):
         if logged.environment_id is None or event.row.type not in PERSON_MESSAGE_TYPES:
             return
         agent = self.targets.recipient(event.row)
-        # the waiting slice wakes the agent through its message step and the one wake owner
-        if agent is not None and not self.slices.answers(agent.id, WAITING_SLICE):
+        # the waiting slice wakes the agent through its message step and the one wake owner, which never wakes a paused
+        # agent; a person's message is still typed to a paused one, since a pause stops its work and not the chat
+        if agent is not None and (agent.paused_at is not None or not self.slices.answers(agent.id, WAITING_SLICE)):
             self.bus.run(RecordWaitingMessageLine(agent.id), Actor(logged.actor_id, ActorType.USER))

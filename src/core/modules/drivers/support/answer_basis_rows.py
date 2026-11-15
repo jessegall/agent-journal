@@ -23,3 +23,16 @@ class AnswerBasisRows:
 
     def program_epoch(self, program: str) -> ProgramEpoch | None:
         return self.request_values.read(f"drivers.program-epoch:{program}", self.database.change_mark, lambda: self.queries.query(ProgramEpoch).filter(program=program).first())
+
+    # the slices the agent is pinned to, kept for the request once taken, since a pin never changes until the next
+    # session start; an agent pinned to none is read again, as its first hook may pin it
+    def pins(self, agent_id: int) -> frozenset[str]:
+        key = f"drivers.pins:{agent_id}"
+        kept = self.request_values.read(key, lambda: 0, lambda: None)
+        if kept:
+            return kept
+        row = self.row(agent_id)
+        pins = frozenset(row.pinned_slices if row is not None else ())
+        if pins:
+            self.request_values.keep(key, lambda: 0, pins)
+        return pins

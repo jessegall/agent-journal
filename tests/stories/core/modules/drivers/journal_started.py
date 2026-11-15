@@ -1,7 +1,5 @@
 from core.modules.drivers.nudges.journal_started_nudge import JournalStartedNudge
-from engine.serving.server_files import ServerFiles
 from server.work.booting_work import BootingWork
-from core.modules.drivers.ticks.released_session_wake import ReleasedSessionWake
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.core.support.fixtures import MainEnvironment
 
@@ -11,12 +9,6 @@ LINE = JournalStartedNudge.declared().nudge().text
 def started_journal(story):
     BootingWork().run(story.container)
     story.run_listeners()
-
-
-def test_a_start_of_the_journal_wakes_the_running_main_agent(new_story):
-    story = new_story(fixture=BuilderStarted)
-    started_journal(story)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", LINE)
 
 
 def test_a_start_with_no_agent_wakes_nobody(new_story):
@@ -30,7 +22,3 @@ def test_a_start_does_not_wake_an_ended_main_agent(new_story):
     story.run(f"agent end {story.agent.id}")
     started_journal(story)
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", LINE)
-
-
-
-

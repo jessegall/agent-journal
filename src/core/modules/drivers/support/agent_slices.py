@@ -36,5 +36,4 @@ class AgentSlices:
 
     # an old tick's entrance stands down for an agent once its slice answers that agent, as a hook's old rule does
     def tick_slices(self, agent: Agent) -> frozenset[str]:
-        row = self.stacks.row(agent.id)
-        return frozenset(row.pinned_slices if row is not None else ()) & self.active(agent)
+        return self.stacks.pins(agent.id) & self.active(agent)

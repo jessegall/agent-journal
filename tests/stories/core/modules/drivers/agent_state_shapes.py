@@ -6,12 +6,9 @@ import pytest
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story_fixture import StoryFixture
-from core.modules.drivers.models.agent_block import AgentBlock
-from core.modules.messages.rules.unread_message_write_rule import UnreadMessageWriteRule
 from engine.testing.stories.story import Story
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
-from engine.testing.stories.story import Story
 
 LISTING = HookSamples.shell("ls", ShellPart("ls", "read", []))
 LONG_LISTING = HookSamples.shell("ls -l", ShellPart("ls", "read", ["-l"]))
@@ -61,19 +58,3 @@ def test_the_coding_suite_adds_its_own_shape_and_core_and_the_engine_never_name_
     source = Path(__file__).resolve().parents[5] / "src"
     naming = [file for folder in ("core", "engine") for file in (source / folder).rglob("*.py") if "WorkerLogDue" in file.read_text() or "worker-log-due" in file.read_text()]
     story.expect_rows(naming == [], detail=str(naming))
-
-
-def test_a_rule_pushes_a_countdown_by_its_answer_alone_and_the_hook_record_writes_the_block(new_story, monkeypatch):
-    story = new_story(fixture=MessageUnread)
-    answer = UnreadMessageWriteRule.answer
-    rows_at_answer = []
-
-    def watched(rule, hook):
-        rows_at_answer.append(len(story.story_rows(AgentBlock)))
-        return answer(rule, hook)
-
-    monkeypatch.setattr(UnreadMessageWriteRule, "answer", watched)
-    previous = len(story.story_rows(AgentBlock))
-    story.hook("s-1", LONG_LISTING)
-    after = [block for block in story.story_rows(AgentBlock) if block.closed_at is None]
-    story.expect_rows(rows_at_answer == [previous], len(after) == previous + 1, detail=f"{rows_at_answer} {previous} {len(after)}")

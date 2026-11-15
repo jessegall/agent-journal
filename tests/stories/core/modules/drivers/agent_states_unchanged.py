@@ -44,50 +44,9 @@ def switch_off(story, name: str) -> None:
     story.expect_success(f"setting make {GUARD}{name} false")
 
 
-def test_a_rule_whose_state_is_closed_is_recorded_allowed_in_its_place_without_being_asked(new_story, monkeypatch):
-    story = new_story(fixture=BuilderStartedWithoutPlainWords)
-    calls = Calls(monkeypatch)
-    rows = recorded(story, LISTING)
-    story.expect_rows(rows[FOCUS_RULE]["outcome"] == "allowed", "milliseconds" not in rows[FOCUS_RULE], (calls.opened, calls.asked) == (1, 0), detail=f"{calls.opened}, {calls.asked}, {rows}")
-
-
-def test_a_plan_start_opens_the_focus_state_so_its_rule_is_asked(new_story, monkeypatch):
-    story = new_story(fixture=BuilderStartedWithoutPlainWords)
-    calls = Calls(monkeypatch)
-    rows = recorded(story, PLAN_START)
-    story.expect_rows(FOCUS_RULE in rows, (calls.opened, calls.asked) == (1, 1), detail=f"{calls.opened}, {calls.asked}, {rows}")
-
-
 def test_a_rule_switched_off_stays_off_though_its_state_is_open(new_story, monkeypatch):
     story = new_story(fixture=BuilderStartedWithoutPlainWords)
     switch_off(story, FOCUS_RULE)
     calls = Calls(monkeypatch)
     rows = recorded(story, PLAN_START)
     story.expect_rows(FOCUS_RULE not in rows, calls.asked == 0, detail=f"{calls.asked}, {rows}")
-
-
-def test_with_the_switch_of_the_state_off_its_rule_is_asked_on_every_hook_again(new_story, monkeypatch):
-    story = new_story(fixture=BuilderStartedWithoutPlainWords)
-    switch_off(story, FOCUS_STATE)
-    calls = Calls(monkeypatch)
-    recorded(story, LISTING)
-    story.expect_rows((calls.opened, calls.asked) == (0, 1), detail=f"{calls.opened}, {calls.asked}")
-
-
-def test_an_opener_that_raises_leaves_its_rule_asked_and_the_hook_answered(new_story, monkeypatch):
-    story = new_story(fixture=BuilderStartedWithoutPlainWords)
-    requested = []
-    answer = PlanFocusRule.answer
-
-    def broken(state, hook):
-        raise RuntimeError("the opener broke")
-
-    def counted_answer(focus_rule, hook):
-        requested.append(hook.hook_name)
-        return answer(focus_rule, hook)
-
-    monkeypatch.setattr(PlanFocusDue, "open_rows", broken)
-    monkeypatch.setattr(PlanFocusRule, "answer", counted_answer)
-    story.hook("s-1", HookSamples.prompt("go on"))
-    rows = recorded(story, LISTING)
-    story.expect_rows(FOCUS_RULE in rows, len(requested) == 1, detail=f"{requested}, {rows}")

@@ -10,7 +10,6 @@ from engine.agent_stack.subject_reference import SubjectReference
 from core.modules.processes.nudges.run_name_nudge import RunNameNudge
 from core.modules.processes.support.run_docking import LONG_RUN_DOCK_KEY, RunDocking
 from core.modules.processes.support.block_conditions.output_titled import OutputTitled
-from core.modules.processes.support.run_title import RunTitle
 
 OUTPUT_TITLE_RANK = "processes.output-title"
 # a docked run with no descriptive title holds the agent's tools after this many uses (doc 1310 section 4.6)
@@ -32,13 +31,9 @@ class LongRunDockNeeds(NeedSource):
     def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]:
         plans: dict[int, list[Need | BlockPlan]] = {}
         for agent in agents:
-            docked = list(self.docking.docked_runs(agent.agent_id))
-            if not docked:
-                continue
-            outputs = self.docking.run_outputs(tuple(run.id for run in docked))
-            untitled = [run for run in docked if run.id in outputs and not RunTitle.is_descriptive(outputs[run.id].title, run.line)]
+            untitled = self.docking.docked(question.event, agent.agent_id).untitled
             if untitled:
-                plans[agent.agent_id] = [self.plan(run.id) for run in untitled]
+                plans[agent.agent_id] = [self.plan(process_id) for process_id in untitled]
         return plans
 
     @staticmethod
