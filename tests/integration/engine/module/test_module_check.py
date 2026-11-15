@@ -1,3 +1,5 @@
+from engine.module.contribution_reader import ContributionReader
+from engine.module.machine_check import MachineCheck
 from engine.module.window_check import WindowCheck
 from engine.module.mark_check import MarkCheck
 from engine.module.dock_check import DockCheck
@@ -171,5 +173,5 @@ def test_two_handlers_for_one_command_are_refused():
 
 
 def module_check() -> ModuleCheck:
-    return ModuleCheck(Tables(), SuiteCheck(), WindowCheck(ModuleFinder(JournalHome(Path("journal")))), ProviderCheck(), MarkCheck(ButtonCheck()), DockCheck(ButtonCheck()), SettingCheck(), SkillCheck(), MoveCheck(), TemplateCheck(), ButtonCheck(), ModuleFinder(JournalHome(Path("journal"))), StateCheck(), HelperTypeCheck(), ProfileCheck(), InspectorCheck(), AssignableCheck())
+    return ModuleCheck(Tables(), SuiteCheck(), WindowCheck(ModuleFinder(JournalHome(Path("journal")))), ProviderCheck(), MarkCheck(ButtonCheck()), DockCheck(ButtonCheck()), SettingCheck(), SkillCheck(), MoveCheck(), TemplateCheck(), ButtonCheck(), ModuleFinder(JournalHome(Path("journal"))), StateCheck(), HelperTypeCheck(), ProfileCheck(), InspectorCheck(), AssignableCheck(), MachineCheck(ContributionReader()))
 

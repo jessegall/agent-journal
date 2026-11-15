@@ -1,3 +1,5 @@
+from core.modules.drivers.marks.escalation_mark import EscalationMark
+from core.modules.drivers.listeners.escalation_mark_listener import EscalationMarkListener
 from core.modules.drivers.tick_handlers.agent_wake_delivery_tick_handler import AgentWakeDeliveryTickHandler
 from core.modules.drivers.commands.deliver_agent_wake.deliver_agent_wake_handler import DeliverAgentWakeHandler
 from core.modules.drivers.listeners.wake_acknowledgement_listener import WakeAcknowledgementListener
@@ -350,9 +352,9 @@ class DriversModule(Module):
     subcommands = [DriverTableSubcommand, DriverStackSubcommand, DriverAttentionSubcommand, DriverCompareSubcommand, DriverDifferencesSubcommand, DriverActiveSubcommand, EscalationListSubcommand, EscalationShowSubcommand, AnswerEscalationSubcommand, RefreshAgentPinSubcommand, RemoveStackFrameSubcommand, RestoreStackFrameSubcommand, ApproveDifferenceSubcommand, SetActiveSliceSubcommand, CheckSuiteSubcommand, ApproveRefusalSkipSubcommand, DeclineRefusalSkipSubcommand, AskPermissionSubcommand, AllowPermissionSubcommand, DeclinePermissionSubcommand, ConfirmRefusalSkipSubcommand, CancelRefusalSkipSubcommand, HookCallStopsSubcommand, EnvironmentMenuSubcommand, SkipRefusalSubcommand, RestoreRefusalSkipSubcommand, SkipAgentBlockSubcommand,PauseAgentSubcommand, ResumeAgentSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneEventsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand, DriverStatesSubcommand, DriverStateTypesSubcommand,
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]
-    listeners = [WakeAcknowledgementListener, NewJobPinListener, AssignedWorkSuppressionListener, AgentPermissionBasisListener, PermissionRequestBasisListener, AgentRowBasisListener, DrivingSettingBasisListener, JournalStartBasisListener, DriverTableSyncListener, CompactionNoticeMarkListener, InstructionImportsListener, HookTimeoutMarkListener, JournalStartedListener, ManageHooksListener, AgentBlockSkipMarkListener, BypassLogListener, DeferredRulesListener, HookWaitFileListener, TypedLineListener, StopLineTypingListener, ClaimedLineReleaseListener, NewDriverLinesListener]
+    listeners = [EscalationMarkListener, WakeAcknowledgementListener, NewJobPinListener, AssignedWorkSuppressionListener, AgentPermissionBasisListener, PermissionRequestBasisListener, AgentRowBasisListener, DrivingSettingBasisListener, JournalStartBasisListener, DriverTableSyncListener, CompactionNoticeMarkListener, InstructionImportsListener, HookTimeoutMarkListener, JournalStartedListener, ManageHooksListener, AgentBlockSkipMarkListener, BypassLogListener, DeferredRulesListener, HookWaitFileListener, TypedLineListener, StopLineTypingListener, ClaimedLineReleaseListener, NewDriverLinesListener]
     overlays = [PausedOverlay]
-    marks = [RequiredCommandSkippedMark, BypassMark, DispatchMark, CompactionMark]
+    marks = [RequiredCommandSkippedMark, BypassMark, DispatchMark, CompactionMark, EscalationMark]
     performance_tools = [HookCostTool]
     tick_handlers = [AgentWakeDeliveryTickHandler, AgentMinuteStepsTickHandler, AgentStepRoundTickHandler, InterruptedAgentWakeTickHandler, AgentTicksTickHandler, EndSilentHelpersTickHandler, CompactionFaultsTickHandler, PanicWatchTickHandler, ReleasedSessionWakeTickHandler,
                      HookPruningTickHandler, RowPruningTickHandler,

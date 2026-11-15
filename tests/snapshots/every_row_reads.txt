@@ -36,27 +36,46 @@ src/core/modules/documents/commands/doc_revisions/doc_revisions_subcommand.py:th
 src/core/modules/documents/commands/record_mentions/record_mentions_handler.py:the mentions of a text are compared with every mention link it has
 src/core/modules/documents/listeners/deleted_row_link_listener.py:a deleted row takes every link to or from it with it
 src/core/modules/documents/listeners/link_correction_reset_listener.py:a new selection resets every link correction of the message
+src/core/modules/documents/needs/open_document_needs.py:an agent holds at most one open document
 src/core/modules/documents/support/link_endpoint_reader.py:every row a page of links points at is read for its title
 src/core/modules/documents/support/row_comments.py:every comment on the page is shown with its selection
 src/core/modules/documents/support/row_link_writer.py:every correction of the sources of the links being saved is compared with them
 src/core/modules/documents/support/row_link_writer.py:the links to write are compared with every stored link of the row
 src/core/modules/documents/support/row_refs.py:every reference is checked for a row that exists
 src/core/modules/documents/support/work_context_reader.py:the work context names every actor, link and title its messages refer to
+src/core/modules/drivers/bindings/stored_agent_view_reader.py:the frames a person removed from one agent, a handful at most
+src/core/modules/drivers/bindings/stored_agent_view_reader.py:the open blocks of one agent are few: each is closed or skipped before the agent goes on
+src/core/modules/drivers/bindings/stored_step_writer.py:a step closes the few blocks it judged ended
+src/core/modules/drivers/bindings/table_grant_ledger.py:the open grants of the agents one step reads, a few each
+src/core/modules/drivers/bindings/table_step_requests.py:the open step requests of the agents one change names, one each
+src/core/modules/drivers/commands/approve_difference/approve_difference_handler.py:the comparisons of one kind of difference are approved together
+src/core/modules/drivers/commands/driver_attention/driver_attention_subcommand.py:agents the journal cannot move on by itself are few: each waits for its responder
+src/core/modules/drivers/commands/driver_differences/driver_differences_subcommand.py:the kinds of difference are few: one per intended difference of the design and the unexplained rest
 src/core/modules/drivers/commands/environment_menu/environment_menu_subcommand.py:The menu names every environment of the project, a catalogue a user makes by hand.
+src/core/modules/drivers/commands/escalation_list/escalation_list_subcommand.py:open escalations are few: each waits for one answer
 src/core/modules/drivers/commands/nudge_list/nudge_list_subcommand.py:One total for each nudge the code declares, never for stored journal rows.
 src/core/modules/drivers/commands/prune_runtime_folders/prune_runtime_folders_handler.py:the agents whose old terminal logs may go
+src/core/modules/drivers/commands/record_driver_tables/record_driver_tables_handler.py:the digests of one sync are a handful, one per driver
 src/core/modules/drivers/commands/record_hook_call/record_hook_call_handler.py:every line waiting for the agent may be handed to it at this hook
 src/core/modules/drivers/commands/report_compaction_faults/report_compaction_faults_handler.py:The compactions still requested, started or unmeasured ten minutes after they were made: one for each agent at most, read together on a tick.
+src/core/modules/drivers/commands/restore_stack_frame/restore_stack_frame_handler.py:the open suppressions of one agent, a handful at most
+src/core/modules/drivers/listeners/assigned_work_suppression_listener.py:the frames a person removed from one agent, a handful at most
 src/core/modules/drivers/listeners/claimed_line_release_listener.py:at a start every line left typing is released
+src/core/modules/drivers/listeners/wake_acknowledgement_listener.py:the active wake obligations of one agent, one for each work generation
 src/core/modules/drivers/queries/hook_call_query.py:every message display call since the agent's last turn is shown
 src/core/modules/drivers/rules/access_rule.py:a tool use is matched against every permission the agent was given, oldest first
 src/core/modules/drivers/rules/agent_block_rule.py:the open blocks of one agent are few: each is closed or skipped before the agent goes on
 src/core/modules/drivers/rules/block_stop_rule.py:the open blocks of one agent are few: each is closed or skipped before the agent goes on
 src/core/modules/drivers/support/agent_activities.py:The open agents of one family, which the agent limits bound; every rule of the hook reads them from this one load.
 src/core/modules/drivers/support/agent_open_blocks.py:every open block of the agent for the state's nudges
+src/core/modules/drivers/support/answer_basis_writers.py:the agents one agent started, a few levels deep
+src/core/modules/drivers/support/answer_basis_writers.py:the environments of one project, a handful
 src/core/modules/drivers/support/hook_rule_histories.py:An agent has one history row for each driver rule and layer, so the read is bounded by the number of rules, and a hook checks every rule.
 src/core/modules/drivers/support/nudge_records.py:every record of the nudges asked about decides whether each is due again
 src/core/modules/drivers/support/waiting_line_typing.py:a release types every line that waited for the agent, oldest first
+src/core/modules/drivers/ticks/agent_minute_steps.py:the minute step reaches every agent with a stack, one row each
+src/core/modules/drivers/ticks/agent_step_round.py:the oldest open step requests of one round, a few dozen at most
+src/core/modules/drivers/ticks/agent_wake_delivery.py:the wake obligations that may be due, one active row for each agent and work generation
 src/core/modules/drivers/ticks/released_session_wake.py:every kept agent of a released session is woken
 src/core/modules/dumps/commands/dump_board/dump_board_subcommand.py:the board shows every item of the dumps on its page
 src/core/modules/dumps/commands/dump_items/dump_items_subcommand.py:the item list shows every item of the dump
@@ -136,6 +155,7 @@ src/core/modules/processes/listeners/booted_runs_listener.py:at a start every ru
 src/core/modules/processes/listeners/ended_agent_runs_listener.py:an ended agent leaves every run it still has running orphaned
 src/core/modules/processes/listeners/process_removal_listener.py:every reader request that sampled a removed process loses its sample
 src/core/modules/processes/listeners/reader_request_complete_listener.py:a completed request gives its reader to every part that waited for it
+src/core/modules/processes/needs/watched_run_needs.py:the open watches of the agents one step reads, a few each
 src/core/modules/processes/queries/output_query.py:the output of every process asked about is read
 src/core/modules/processes/queries/process_part_query.py:a run is judged by all of its parts, and one shell line may have more than fifty
 src/core/modules/processes/queries/reader_request_query.py:the open reader requests are read once and kept until one completes
@@ -199,8 +219,10 @@ src/core/modules/usage/commands/usage_agents/usage_agents_subcommand.py:The agen
 src/core/modules/usage/commands/usage_show/usage_show_subcommand.py:The agents that have not ended, which the running programs bound; every reader of a request shares this one kept load.
 src/core/modules/usage/conditions/agent_activity.py:the agents list keeps every agent waiting on an answer or on help among the working ones
 src/core/modules/usage/conditions/agent_activity.py:the agents list keeps every agent waiting on the answer to its question among the working ones
+src/core/modules/usage/support/agent_stack_summaries.py:one page of agent cards reads the stacks of its own agents
 src/core/modules/viewer/commands/prune_window_permissions/prune_window_permissions_handler.py:pruning checks every window permission of the environment for a subject that is gone
 src/core/modules/waits/listeners/target_resolution_listener.py:Every save of a row asks whether an open wait waits on it, so the unresolved targets are one kept load that the open waits bound.
+src/core/modules/waits/needs/wait_needs.py:the open waits of the agents one step reads, and their rows, a few each
 src/engine/listener/rows/event_rows.py:every row the logged events name is read once for the listeners
 src/engine/repository/standard_rows.py:the rows a version comes with are compared by title with every stored one
 src/engine/testing/stories/kit_rows.py:the story kit lists every row of a table for an assertion
