@@ -1,3 +1,4 @@
+from core.modules.helpers.commands.record_unsaved_report.record_unsaved_report_handler import RecordUnsavedReportHandler
 from core.modules.helpers.commands.change_agent_driver.change_agent_driver_handler import ChangeAgentDriverHandler
 from core.modules.helpers.commands.end_agent_lockdown.end_agent_lockdown_handler import EndAgentLockdownHandler
 from core.modules.helpers.commands.end_helper_job.end_helper_job_handler import EndHelperJobHandler
@@ -17,4 +18,4 @@ from core.modules.helpers.commands.start_helper.start_helper_handler import Star
 from core.modules.helpers.commands.start_unstarted_jobs.start_unstarted_jobs_handler import StartUnstartedJobsHandler
 from core.modules.helpers.commands.stop_helper.stop_helper_handler import StopHelperHandler
 
-HELPERS_HANDLERS = [StartUnstartedJobsHandler, ChangeAgentDriverHandler, RecordJobNewSessionHandler, EndAgentLockdownHandler, GrantHelperHandler, RunGrantedCommandHandler, SetUsageLimitHandler, RefreshHourlyLimitsHandler, MakeProviderOutageHandler, SendProgramFaultHandler, StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EndHelpersPastLimitsHandler, SendHelperLimitWarningHandler, EndProviderOutagesHandler]
+HELPERS_HANDLERS = [RecordUnsavedReportHandler, StartUnstartedJobsHandler, ChangeAgentDriverHandler, RecordJobNewSessionHandler, EndAgentLockdownHandler, GrantHelperHandler, RunGrantedCommandHandler, SetUsageLimitHandler, RefreshHourlyLimitsHandler, MakeProviderOutageHandler, SendProgramFaultHandler, StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EndHelpersPastLimitsHandler, SendHelperLimitWarningHandler, EndProviderOutagesHandler]

@@ -56,6 +56,15 @@ class DecisionAssembler:
             new_commands = [command for effect in (*step.record.unconditional_effects, *step.record.admission_effects) for command in effect.commands(view, step.record)]
         return AssembledAnswer(self.merged(answers, step.record, new_commands), AssembledStep(view, step))
 
+    # the answer of a step whose required effect failed and whose save was rolled back (doc 1310 section 4.9)
+    @staticmethod
+    def failed_effects(assembled: AssembledAnswer) -> RuleAnswers:
+        if assembled.step is None:
+            return assembled.answers
+        view, record = assembled.step.view, assembled.step.step.record
+        failed = [RuleRecord(type(effect).__name__, NEW_DRIVER_LAYER, "refused", effect.failed(view, record)) for effect in record.admission_effects if effect.is_required]
+        return replace(assembled.answers, rules=[*failed, *assembled.answers.rules])
+
     def merged(self, answers: RuleAnswers, record: DecisionRecord, new_commands: list[Command[object]]) -> RuleAnswers:
         old_lines = {nudge.text for rule in answers.answered if rule.answer is not None for nudge in rule.answer.nudges}
         nudges = tuple(Nudge(line.key, NudgeType.STEERING if line.category is LineCategory.STEERING else NudgeType.NOTICE, line.text)

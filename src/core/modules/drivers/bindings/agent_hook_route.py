@@ -1,3 +1,4 @@
+from engine.agent_step.errors.required_effect_failure import RequiredEffectFailure
 from core.modules.drivers.commands.record_repeated_hook_answer.record_repeated_hook_answer import RecordRepeatedHookAnswer
 from engine.agent_machine.stepping.constraints import Constraints
 from engine.driver.hook_limits import HookLimits
@@ -118,6 +119,10 @@ class AgentHookRoute(HookRoute):
                 return self.bus.run(RecordHookCall(event, agent.id, assembled.answers, assembled.step), actor, environment_id=agent.environment_id), assembled.answers
             except StepConflictError:
                 continue
+            # a required effect that failed rolled its save back: the hook is recorded again with the effect's own answer
+            except RequiredEffectFailure:
+                failed = DecisionAssembler.failed_effects(assembled)
+                return self.bus.run(RecordHookCall(event, agent.id, failed), actor, environment_id=agent.environment_id), failed
         answers = DecisionFallbacks.missed_check(event, agent.id, assembled.answers)
         return self.bus.run(RecordHookCall(event, agent.id, answers), actor, environment_id=agent.environment_id), answers
 

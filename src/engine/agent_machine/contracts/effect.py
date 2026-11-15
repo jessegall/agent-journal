@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, ClassVar
 from engine.agent_machine.agent_view import AgentView
 from engine.command.command import Command
 from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.rule_answer import RuleAnswer
 from engine.enums.effect_timing import EffectTiming
 from engine.enums.hook_event_name import HookEventName
 
@@ -29,3 +30,8 @@ class Effect(ABC):
 
     @abstractmethod
     def commands(self, view: AgentView, record: DecisionRecord) -> Sequence[Command[object]]: ...
+
+    # what a required effect answers once its save failed and was rolled back, in a fresh write: by default the stop or
+    # action is refused with its failure line
+    def failed(self, view: AgentView, record: "DecisionRecord") -> RuleAnswer:
+        return RuleAnswer(refusal=self.failure.declared().nudge().text if self.failure is not None else "")

@@ -1,3 +1,4 @@
+from core.modules.helpers.nudges.kept_report_nudge import KeptReportNudge
 from core.modules.helpers.nudges.unsaved_report_nudge import UnsavedReportNudge
 from core.modules.helpers.nudges.helper_limit_warning_nudge import HelperLimitWarningNudge
 from core.modules.helpers.nudges.helper_program_fault_nudge import HelperProgramFaultNudge
@@ -5,4 +6,4 @@ from core.modules.helpers.nudges.helper_granted_nudge import HelperGrantedNudge
 from core.modules.helpers.nudges.lockdown_ended_nudge import LockdownEndedNudge
 from core.modules.helpers.nudges.start_without_model_nudge import StartWithoutModelNudge
 
-HELPER_NUDGES = [UnsavedReportNudge, StartWithoutModelNudge, LockdownEndedNudge, HelperGrantedNudge, HelperLimitWarningNudge, HelperProgramFaultNudge]
+HELPER_NUDGES = [KeptReportNudge, UnsavedReportNudge, StartWithoutModelNudge, LockdownEndedNudge, HelperGrantedNudge, HelperLimitWarningNudge, HelperProgramFaultNudge]
