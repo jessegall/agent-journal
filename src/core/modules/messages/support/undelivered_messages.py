@@ -22,19 +22,21 @@ class UndeliveredBatch:
 
 
 class UndeliveredMessages:
-    """The user's messages to an agent that a hook which takes lines delivers, at most five, unless the journal is
-    typing a waiting message into its terminal: read once a hook, so the lines that name them and the effect that
-    records their delivery agree."""
+    """The user's messages to an agent that a hook which takes lines, or the agent's step, delivers, at most five,
+    unless the journal is typing a waiting message into its terminal: read once a hook, so the lines that name them
+    and the effect that records their delivery agree."""
 
     def __init__(self, queries: Queries, messages: MessageQuery, request_values: RequestValues) -> None:
         self.queries, self.messages, self.request_values = queries, messages, request_values
 
-    def batch(self, event: HookEvent, agent_id: int) -> UndeliveredBatch | None:
+    # at a hook that takes lines, or at the agent's step, whose lines wait for the wake that types them
+    def batch(self, event: HookEvent | None, agent_id: int) -> UndeliveredBatch | None:
+        firing = event.firing if event is not None else "step"
         # read once a hook whatever changes meanwhile: recording a delivery takes the message off this list
-        return self.request_values.read(f"messages.undelivered:{agent_id}:{event.firing}", lambda: event.firing, lambda: self.found(event, agent_id))
+        return self.request_values.read(f"messages.undelivered:{agent_id}:{firing}", lambda: firing, lambda: self.found(event, agent_id))
 
-    def found(self, event: HookEvent, agent_id: int) -> UndeliveredBatch | None:
-        if not event.accepts_lines or event.event == HookEventName.TICK:
+    def found(self, event: HookEvent | None, agent_id: int) -> UndeliveredBatch | None:
+        if event is not None and (not event.accepts_lines or event.event == HookEventName.TICK):
             return None
         messages = self.messages.oldest_undelivered(agent_id, LISTED_MESSAGES)
         if not messages or self.queries.query(AgentLine).filter(session_agent_id=agent_id, source=WAITING_MESSAGE_SOURCE, state=AgentLineState.TYPING).exists():

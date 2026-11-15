@@ -1,3 +1,4 @@
+from engine.request.request_values import RequestValues
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.container.container import Container
@@ -35,7 +36,9 @@ class AgentStepRound:
         for request in ready[:limit]:
             agent = container.get(AgentRows).find_unscoped(request.session_agent_id)
             try:
-                bus.run(RunAgentStep(request.id), Actor.core(), environment_id=agent.environment_id)
+                # each agent's step is one request, whose readers share what they read
+                with container.get(RequestValues).opened():
+                    bus.run(RunAgentStep(request.id), Actor.core(), environment_id=agent.environment_id)
             # one agent's step that fails is counted and logged, and the round goes on with the others
             except Exception as error:
                 container.get(ErrorLog).reported(["agent step round", str(request.session_agent_id)], error, agent.environment_id)

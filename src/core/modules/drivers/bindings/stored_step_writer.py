@@ -1,3 +1,4 @@
+from core.modules.drivers.support.answer_basis_rows import AnswerBasisRows
 from engine.enums.closer_role import CloserRole
 import json
 from collections.abc import Mapping, Sequence
@@ -30,9 +31,7 @@ from core.modules.drivers.models.agent_escalation import AgentEscalation
 from core.modules.drivers.models.agent_stack import AgentStack
 from core.modules.drivers.models.agent_stack_move import AgentStackMove
 from core.modules.drivers.models.agent_wake import AgentWake
-from core.modules.drivers.models.driver_epoch import DriverEpoch
 from core.modules.drivers.models.enums.wake_state import WakeState
-from core.modules.drivers.models.program_epoch import ProgramEpoch
 
 MACHINE_OPENER = "drivers.machine"
 ENDED_WAKE_STATES = (WakeState.ACKNOWLEDGED, WakeState.CANCELLED, WakeState.EXPIRED)
@@ -47,13 +46,14 @@ class StoredStepWriter(StepWriter):
     effects when the step admits (a required one that fails raises and rolls everything back), and the
     wake. A step outside a hook that changed nothing writes nothing."""
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus, database: Database, grant_store: GrantLedger, nudger: Nudger) -> None:
-        self.nudger = nudger
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus, database: Database, grant_store: GrantLedger, nudger: Nudger, stacks: AnswerBasisRows) -> None:
+        self.nudger, self.stacks = nudger, stacks
         self.grant_store = grant_store
         self.queries, self.repository, self.bus, self.database = queries, repository, bus, database
 
     def save(self, view: AgentView, step: StepResult, hook_call_id: int | None, context: Context) -> StepCommit:
-        row = self.queries.query(AgentStack).filter(session_agent_id=view.agent.agent_id).first()
+        # the row the view read, read again only when a write came between, which a changed basis then refuses
+        row = self.stacks.row(view.agent.agent_id)
         if not self.basis_matches(row, view):
             return StepCommit.conflict()
         record = step.record
@@ -80,7 +80,7 @@ class StoredStepWriter(StepWriter):
     # a line the program cannot carry at this event waits in today's line queue for the agent's next event that can
     def queue_waiting_lines(self, view: AgentView, record: DecisionRecord, context: Context) -> None:
         for line in record.waiting_lines:
-            self.nudger.send_text(view.agent.agent_id, line.text, line.source_key or line.key, context)
+            self.nudger.send_nudge(view.agent.agent_id, line.said(), line.source_key or line.key, context)
 
     # the grants that passed a refusing policy are spent in this write, and a journal command leaves its receipt
     def spend_grants(self, record: DecisionRecord, context: Context) -> None:
@@ -90,8 +90,8 @@ class StoredStepWriter(StepWriter):
             self.grant_store.spend(grant, event.firing if event is not None else "", fingerprint, context)
 
     def basis_matches(self, row: AgentStack | None, view: AgentView) -> bool:
-        driver_epoch = self.queries.query(DriverEpoch).first()
-        program_epoch = self.queries.query(ProgramEpoch).filter(program=view.program_name).first()
+        driver_epoch = self.stacks.driver_epoch()
+        program_epoch = self.stacks.program_epoch(view.program_name)
         current = (row.version if row is not None else 0, driver_epoch.epoch if driver_epoch is not None else 0,
                    program_epoch.epoch if program_epoch is not None else 0)
         return current == (view.basis.stack_version, view.basis.driver_epoch, view.basis.program_epoch)

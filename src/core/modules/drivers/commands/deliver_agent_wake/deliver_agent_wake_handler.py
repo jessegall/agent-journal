@@ -1,3 +1,5 @@
+from core.modules.drivers.models.enums.agent_line_state import AgentLineState
+from core.modules.drivers.models.agent_line import AgentLine
 
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -57,9 +59,11 @@ class DeliverAgentWakeHandler(Handler[DeliverAgentWake, None]):
         remaining = self.countdowns.tick(attempts, agent.id, str(wake.id), context)
         retry = Timestamp(context.timestamp.value).plus_seconds(self.settings.number(WAKE_RETRY_SETTING))
         self.repository.save(wake.changed(state=WakeState.DELIVERED, attempts=attempts.span.count - remaining, next_attempt_at=retry, transport=self.transport(agent)), context)
-        self.nudger.send(agent.id, WakeObligationNudge.declared(), WAKE_SOURCE, context)
+        # the wake types the lines its step left waiting, such as a new message's; with none it says that work waits
+        if not self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING).exists():
+            self.nudger.send(agent.id, WakeObligationNudge.declared(), WAKE_SOURCE, context)
         if agent.is_main:
-            self.typing.release(agent.id, context.actor.id, context.timestamp)
+            self.typing.release_for_wake(agent.id, context.actor.id)
 
     # the agent's wake tries, counted silently for the wake it is on, up to wake-attempts
     def attempts(self) -> CountDown:

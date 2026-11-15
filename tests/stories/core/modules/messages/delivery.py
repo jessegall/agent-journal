@@ -42,8 +42,12 @@ COMPACTION = HookSamples.sample("compact")
 MESSAGE_DISPLAY_HOOK = HookSamples.shell("journal message show 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "show", "1"], subcommand="message"))
 
 
+# the message's step and its wake are served by their rounds, as the server runs them every few seconds
 def post_message(story, text: str) -> None:
     story.run(f'message send "{text}" --environment main', actor=story.user)
+    story.run_listeners()
+    story.run_tick_handler("agent step round")
+    story.run_tick_handler("agent wake delivery")
 
 
 class MessagingSession(StoryFixture):

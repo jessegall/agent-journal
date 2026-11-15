@@ -6,7 +6,6 @@ from engine.driver.nudge import Nudge
 from engine.enums.hook_event_name import HookEventName
 from engine.enums.nudge_type import NudgeType
 from core.modules.drivers.models.agent_block import AgentBlock
-from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.support.open_block_rows import OpenBlockRows
 
 BLOCK_COUNTDOWN_KEY = "drivers.block-countdown"
@@ -19,15 +18,15 @@ class BlockCountdownLines(EventLineSource):
     key = BLOCK_COUNTDOWN_KEY
     events = [HookEventName.PRE_TOOL_USE]
 
-    def __init__(self, open_blocks: OpenBlockRows, hook_calls: HookCallQuery) -> None:
-        self.open_blocks, self.hook_calls = open_blocks, hook_calls
+    def __init__(self, open_blocks: OpenBlockRows) -> None:
+        self.open_blocks = open_blocks
 
     def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
         counted = [block for block in self.open_blocks.rows(agent_id) if block.countdown_text and block.grace_tool_uses]
         if not counted:
             return []
-        uses = self.hook_calls.tool_use_counts(agent_id, [block.creation_timestamp() for block in counted])
-        return [nudge for block, used in zip(counted, uses) if (nudge := self.countdown(block, used)) is not None]
+        uses = self.open_blocks.grace_uses(agent_id)
+        return [nudge for block in counted if (nudge := self.countdown(block, uses.get(block.id, 0))) is not None]
 
     @staticmethod
     def countdown(block: AgentBlock, tool_uses: int) -> Nudge | None:

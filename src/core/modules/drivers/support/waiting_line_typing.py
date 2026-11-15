@@ -33,6 +33,14 @@ class WaitingLineTyping:
     def type(self, line: AgentLine, actor_id: int, timestamp: Timestamp) -> None:
         if not (line.wakes_agent or line.source in TERMINAL_SOURCES) or line.state is not AgentLineState.WAITING:
             return
+        self.entered(line, actor_id)
+
+    # a delivered wake gives the lines its agent's steps left waiting (doc 1310 section 6.4), whether or not each wakes
+    def release_for_wake(self, agent_id: int, actor_id: int) -> None:
+        for line in self.queries.query(AgentLine).filter(session_agent_id=agent_id, state=AgentLineState.WAITING).every_row(WAITING_LINES_REASON):
+            self.entered(line, actor_id)
+
+    def entered(self, line: AgentLine, actor_id: int) -> None:
         if line.source not in (PAUSE_SOURCE, RESUME_SOURCE, COMPACTED_WAKE_SOURCE) and not self.hook_calls.has_ended_turn(line.session_agent_id):
             return
         actor = Actor(actor_id, ActorType.USER)

@@ -1,3 +1,4 @@
+from core.modules.drivers.support.answer_basis_rows import AnswerBasisRows
 from core.modules.drivers.support.open_block_rows import OpenBlockRows
 from datetime import datetime
 from core.modules.drivers.support.driver_settings import CAPABILITY_PROOFS_SETTING
@@ -43,7 +44,6 @@ from core.modules.drivers.models.agent_stack import AgentStack
 from core.modules.drivers.nudges.paused_refusal_nudge import PausedRefusalNudge
 from core.modules.drivers.models.driver_epoch import DriverEpoch
 from core.modules.drivers.models.enums.escalation_state import EscalationState
-from core.modules.drivers.models.program_epoch import ProgramEpoch
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 
 BOTTOM_KEY = NeedKey("Stopped", None, "bottom")
@@ -58,20 +58,20 @@ class StoredAgentViewReader(AgentViewReader):
     holds none."""
 
     def __init__(self, agents: AgentRows, queries: Queries, settings: SettingValues, hook_calls: HookCallQuery, finder: ModuleFinder, clock: Clock, grant_store: GrantLedger, providers: Providers, judgement: BlockJudgement,
-                 skips: RefusalSkips, open_blocks: OpenBlockRows) -> None:
-        self.providers, self.skips, self.open_blocks = providers, skips, open_blocks
+                 skips: RefusalSkips, open_blocks: OpenBlockRows, stacks: AnswerBasisRows) -> None:
+        self.providers, self.skips, self.open_blocks, self.stacks = providers, skips, open_blocks, stacks
         self.agents, self.queries, self.settings, self.hook_calls, self.finder, self.clock = agents, queries, settings, hook_calls, finder, clock
         self.grant_store, self.judgement = grant_store, judgement
 
     def read(self, agent_id: int, question: Question) -> AgentView:
         agent = self.agents.find(agent_id)
-        row = self.queries.query(AgentStack).filter(session_agent_id=agent_id).first()
+        row = self.stacks.row(agent_id)
         driver = self.driver(agent.role)
         escalation = self.escalation(agent_id)
         counts = RefusalCounts(row.stop_refusals, row.tool_refusals, escalation) if row is not None else RefusalCounts(0, 0, escalation)
         reference = AgentReference(agent.id, agent.parent_id, agent.environment_id, agent.role)
         rows = self.open_rows(agent_id)
-        driver_epoch = self.queries.query(DriverEpoch).first()
+        driver_epoch = self.stacks.driver_epoch()
         return AgentView(
             basis=self.basis(row, agent, driver_epoch), agent=reference, program_name=agent.program,
             session=agent.session, profile=agent.profile, driver_name=driver.name, session_generation=1, stepped_at=self.clock.timestamp().value,
@@ -101,7 +101,7 @@ class StoredAgentViewReader(AgentViewReader):
         return tuple(self.grant_store.usable_grants([agent]).get(agent.agent_id, ()))
 
     def basis(self, row: AgentStack | None, agent: Agent, driver_epoch: DriverEpoch | None) -> AnswerBasis:
-        program_epoch = self.queries.query(ProgramEpoch).filter(program=agent.program).first()
+        program_epoch = self.stacks.program_epoch(agent.program)
         return AnswerBasis(row.version if row is not None else 0, driver_epoch.epoch if driver_epoch is not None else 0,
                            program_epoch.epoch if program_epoch is not None else 0)
 
@@ -126,8 +126,7 @@ class StoredAgentViewReader(AgentViewReader):
         return list(self.open_blocks.rows(agent_id))
 
     def blocks(self, rows: list[AgentBlock], agent_id: int) -> tuple[OpenBlock, ...]:
-        counted = [row for row in rows if row.grace_tool_uses]
-        uses = dict(zip([row.id for row in counted], self.hook_calls.tool_use_counts(agent_id, [row.creation_timestamp() for row in counted]))) if counted else {}
+        uses = self.open_blocks.grace_uses(agent_id)
         return tuple(self.open_block(row, uses.get(row.id, 0)) for row in rows)
 
     def open_block(self, row: AgentBlock, tool_uses: int) -> OpenBlock:
