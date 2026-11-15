@@ -27,7 +27,8 @@ class RuleNeedSource(NeedSource):
 
     def __init_subclass__(cls, **kwargs: object) -> None:
         super().__init_subclass__(**kwargs)
-        cls.agent_types = RuleEvents.agent_types(cls.rule)
+        # a rule a driver lists names no role, so its need source names the driver's agent type itself
+        cls.agent_types = cls.__dict__.get("agent_types") or RuleEvents.agent_types(cls.rule)
         cls.replaced_rules = tuple([cls.rule.name])
 
     def __init__(self, hooks: RuleHooks) -> None:
