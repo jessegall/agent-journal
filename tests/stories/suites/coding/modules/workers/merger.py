@@ -208,6 +208,30 @@ def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent
     story.expect_text(f"agent-line list --agent {worker.id}", "Fix the merged code", actor=worker)
 
 
+def test_a_worker_sent_one_task_given_the_next_free_task_on_its_commit_waits_for_the_merger_and_is_merged(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    started = recorded_test_launches(story)
+    repository = repository_environment(story)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    free_task = story.new_row_id('task make "Check rounding" --brief "Check the rounding" --complexity 1 --environment main', actor=story.agent)
+    repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
+    story.expect_success(PROOF, actor=worker)
+    story.expect_text("worker commit --wait --differences none", "your work is handed in", actor=worker)
+    story.run_listeners()
+    story.expect_text(f"task inspect {free_task} --json", f'"helper_name": "Worker {agent_number(story, worker.id)}"', actor=story.agent)
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
+    try:
+        ended(story, started[0], 0)
+    finally:
+        launcher.server.close()
+        story.home.socket("launcher").unlink(missing_ok=True)
+    actor = Actor(merger_agent(story).id, ActorType.AGENT)
+    story.expect_text("merger next", agent_label(story, worker.id), "brief:", actor=actor)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_text(f"merger merge --wait {agent_number(story, worker.id)}", f"{agent_label(story, worker.id)} merged into", actor=actor)
+    story.expect_text("merger next", "no worker waits", actor=actor)
+
+
 def test_the_merger_and_a_worker_message_each_other_but_two_workers_do_not(new_story):
     story, repository, worker, started = queued_story(new_story)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))

@@ -57,7 +57,8 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
     on that task, and a worker past the context limit is told to stop there so that its stop compacts it. A
     commit that leaves no started task is final and delivers the worktree. A worker with no
     started task commits for the task of its worktree, which delivers the worktree. The worker is given the
-    next free task it may take, which it starts when this work is done."""
+    next free task it may take, which it starts when this work is done: it is read after the unit, so it never
+    joins the unit this commit hands in."""
 
     command = CommitWorkerWork
     disabled_scopes = [ActorScope]
@@ -110,8 +111,8 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
         for task in tasks:
             if task.state is TaskState.STARTED:
                 self.repository.save_change(task, task.moved(TaskLifecycle.test), context)
-        self.free_task.give_next(context.actor.id, tasks, context)
         unit = self.units.unit(context.actor.id)
+        self.free_task.give_next(context.actor.id, tasks, context)
         worktree = self.repository.save_change(committed, self.moved_worktree(committed, open_tasks, tasks, unit, context), context)
         submission = self.proof_queue.submit_ready(worktree, tasks, context)
         if submission is Submission.UNTESTED:
