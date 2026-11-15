@@ -13,7 +13,6 @@ from engine.enums.decision_class import DecisionClass
 
 PAUSE_KEY = "drivers.paused-agent"
 PAUSE_RANK = "safety.paused"
-PAUSE_TEXT = "You are paused: only reads, searches and journal message commands run until a person resumes you."
 
 
 class Constraints:
@@ -35,11 +34,12 @@ class Constraints:
     @staticmethod
     def pause_reasons(question: Question, stack: Stack) -> list[Reason]:
         tool = question.tool()
-        if not stack.has(Paused) or tool is None or tool.is_readonly or tool.is_search:
+        paused = next((frame.state for frame in stack.frames if isinstance(frame.state, Paused)), None)
+        if paused is None or tool is None or tool.is_readonly or tool.is_search:
             return []
         if tool.shell is not None and tool.shell.has_only_parts(lambda part: BlockExemptions.names(part, MESSAGE_COMMAND)):
             return []
-        return [Reason(PAUSE_KEY, DecisionClass.REFUSE, PAUSE_RANK, PAUSE_TEXT)]
+        return [Reason(PAUSE_KEY, DecisionClass.REFUSE, PAUSE_RANK, paused.refusal_text)]
 
     def policy_reasons(self, question: Question, view: AgentView) -> list[Reason]:
         fingerprint = question.fingerprint()

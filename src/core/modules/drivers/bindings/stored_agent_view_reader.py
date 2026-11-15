@@ -31,6 +31,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.drivers.models.agent_escalation import AgentEscalation
 from core.modules.drivers.models.agent_stack import AgentStack
+from core.modules.drivers.nudges.paused_refusal_nudge import PausedRefusalNudge
 from core.modules.drivers.models.driver_epoch import DriverEpoch
 from core.modules.drivers.models.enums.escalation_state import EscalationState
 from core.modules.drivers.models.program_epoch import ProgramEpoch
@@ -78,8 +79,8 @@ class StoredAgentViewReader(AgentViewReader):
         return Stack(frames or [Frame(Stopped(agent.creation_timestamp().value, "started", True), BOTTOM_KEY, agent.creation_timestamp().value)])
 
     def facts(self, agent: Agent) -> tuple[Fact, ...]:
-        holder = self.agents.pause_holder(agent.id)
-        pause = [PauseFact(None, tuple([PauseCause(holder.id, holder.id, holder.paused_at.value)]))] if holder.paused_at is not None else []
+        causes = tuple(PauseCause(paused.id, paused.id, paused.paused_at.value) for paused in self.agents.paused_line(agent.id) if paused.paused_at is not None)
+        pause = [PauseFact(None, causes, PausedRefusalNudge.declared().nudge().text)] if causes else []
         return (*pause, *self.ended(agent))
 
     def ended(self, agent: Agent) -> list[Fact]:

@@ -14,3 +14,4 @@ class Paused(State):
     lane: ClassVar[Lane] = Lane.SAFETY
     rank: ClassVar[int] = 50
     causes: tuple[PauseCause, ...]
+    refusal_text: str

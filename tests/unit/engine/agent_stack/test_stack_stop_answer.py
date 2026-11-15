@@ -78,7 +78,7 @@ def test_an_open_escalation_defers_the_stop_scope_of_its_holds() -> None:
 
 
 def test_paused_rests_whatever_else_refuses() -> None:
-    paused = Paused((PauseCause(1, 4, STARTED_AT),))
+    paused = Paused((PauseCause(1, 4, STARTED_AT),), "The user paused you")
     answer = stack(working(WorkType.TASK, True), message_hold(), paused).stop_answer(WorkStop.REFUSE_WHILE_WORK_REMAINS, None)
     assert answer.answer_type is StopAnswerType.SAFETY_REST
 

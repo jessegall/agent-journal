@@ -48,6 +48,17 @@ class AgentRows:
             holder = self.find(holder.parent_id)
         return holder
 
+    # the agent and its ancestors in its environment that are paused, nearest first: each is a cause the resume of
+    # that agent lifts
+    def paused_line(self, agent_id: int) -> list[Agent]:
+        line = [self.find(agent_id)]
+        while line[-1].parent_id is not None:
+            parent = self.find(line[-1].parent_id)
+            if parent.environment_id != line[-1].environment_id:
+                break
+            line.append(parent)
+        return [agent for agent in line if agent.paused_at is not None]
+
     def find_unscoped(self, agent_id: int) -> Agent:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
             return self.rows.required(Agent, agent_id)

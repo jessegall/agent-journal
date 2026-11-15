@@ -59,6 +59,7 @@ EDIT = QuestionSamples.question(HookSamples.edit("a.py"))
 READ = QuestionSamples.question(HookSamples.tool_use("Read", ToolType.READ, ["a.py"], None))
 SKILL_READ = QuestionSamples.question(HookSamples.tool_use("Read", ToolType.READ, [".claude/skills/journal/SKILL.md"], None))
 CARRIES_EVERYTHING = Capabilities(*(Capability(part, event, CapabilityProof.IMPLEMENTED_HERE) for part in CapabilityPart for event in HookEventName))
+PAUSE_TEXT = "The user paused you: only journal commands and reads run until you are resumed; reply in the chat"
 
 
 def journal_line(line: str, *parts: Sequence[str]) -> Question:
@@ -168,7 +169,7 @@ def test_a_usable_grant_passes_its_policy_but_a_held_one_and_a_safety_policy_are
 
 
 def paused(agent_type: str = "main", **changes: object) -> AgentView:
-    return view(agent_type, facts=(PauseFact(None, (PauseCause(1, 4, SAMPLE_TIME),)),), **changes)
+    return view(agent_type, facts=(PauseFact(None, (PauseCause(1, 4, SAMPLE_TIME),), PAUSE_TEXT),), **changes)
 
 
 def test_a_paused_agent_may_answer_with_a_message_and_rest_but_not_edit_or_hand_over() -> None:

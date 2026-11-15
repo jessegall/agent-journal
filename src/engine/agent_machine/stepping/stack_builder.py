@@ -57,7 +57,7 @@ class StackBuilder:
     def safety(view: AgentView, old: dict[NeedKey, Frame]) -> list[Frame]:
         frames = [Frame(need.state, need.key, old[need.key].entered_at if need.key in old else view.stepped_at)
                   for need in view.needs if need.state.lane is Lane.SAFETY and need.key not in view.suppressions][:1]
-        frames += [Frame(Paused(fact.causes), NeedKey("Paused", None, "pause"), view.stepped_at) for fact in view.facts if isinstance(fact, PauseFact) and fact.causes][:1]
+        frames += [Frame(Paused(fact.causes, fact.refusal_text), NeedKey("Paused", None, "pause"), view.stepped_at) for fact in view.facts if isinstance(fact, PauseFact) and fact.causes][:1]
         frames += [Frame(Ended(fact.cause, fact.actor_id), NeedKey("Ended", None, "end"), view.stepped_at) for fact in view.facts if isinstance(fact, EndedFact)][:1]
         return frames
 
