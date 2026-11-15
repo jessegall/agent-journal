@@ -8,4 +8,4 @@ class JournalLastRule(DriverRule):
 
     def answer(self, hook):
         # @righteous architecture_processes_pressure_outside_the_enforcer
-        return RuleAnswer.refused(JOURNAL_COMMAND_LAST.nudge())
+        return RuleAnswer.refused(JOURNAL_COMMAND_LAST.agent_message())

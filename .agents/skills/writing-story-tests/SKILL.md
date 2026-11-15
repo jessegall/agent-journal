@@ -28,7 +28,7 @@ def test_a_started_task_names_its_holder(new_story):
 Use `expect_success` for complete output lines, `expect_text` for substrings, `expect_refusal` for a refused write,
 and `expect_rows` for row checks. Set settings through their real commands. Read JSON with `--json` when checking a
 structured response. Exercise hooks through `HookSamples` and `story.hook`, `expect_hook_allowed` or
-`expect_hook_refusal`. Check nudges through their declaration rather than copying their prose.
+`expect_hook_refusal`. Check agent messages through their template rather than copying their prose.
 
 Shared setup belongs in a `StoryFixture` subclass with `parent`, `steps(story)` and `expect(story)`, or a pytest fixture
 for runtime resources that cannot be cached in a database fixture. Reuse the closest existing fixture. The overlap

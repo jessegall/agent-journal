@@ -43,8 +43,8 @@ A shell line of a main agent or a worker runs through `journal-run`, which keeps
   mark and lift commands. Make and lift marks through `UnreadableMarkRegistry`, so the reason and the actor are recorded.
 - **`run-shown-by-category-outside-run-visibility`** - code outside `RunVisibility` and `PartVisibility` decides by
   `is_watched` or `is_visible` which runs show a card, a mark or a dock item. Ask `visible_part`.
-- **`nudge-carries-row-data`** - a nudge declaration of the processes or aliases module puts a command, a title, a line
-  or a text of a stored row into the line an agent receives. A nudge names the row and its number; the agent reads the
+- **`nudge-carries-row-data`** - a message template of the processes or aliases module puts a command, a title, a line
+  or a text of a stored row into the line an agent receives. An agent message names the row and its number; the agent reads the
   rest by command (rule 8). A count of lines (`{lines} lines`) is a number, not data.
 - **`stock-reader-outside-the-stock-file`** - a `StockReader` is built away from `support/stock_reader.py`. Add a
   shipped reader to `STOCK_READERS` there, with a recorded sample in the stock sample store; nowhere else.

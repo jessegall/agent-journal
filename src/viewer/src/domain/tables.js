@@ -108,7 +108,7 @@ export const TABLES = {
     plugins: type("Plugin", "plug", "An installed extension that responds to events and can run background services", {scope: "project"}),
     environments: type("Environment", "branch", "A separate workspace with messages, tasks, memories, plans and settings", {scope: "project"}),
     agents: type("Agent", "bot", "A session of Claude or Codex, and what it is doing right now"),
-    nudges: type("Agent instruction", "arrow", "A short instruction the journal sends the agent by itself; you never see it in the chat.", {nested: true, typed_as_title: true}),
+    agent_message_records: type("Agent instruction", "arrow", "A short instruction the journal sends the agent by itself; you never see it in the chat.", {nested: true, typed_as_title: true}),
     workers: type("Worker", "bot", "An agent assigned a task in a separate working copy"),
     verifiers: type("Verifier", "verifier", "An agent that checks whether an output reader report was correctly closed"),
     test_turns: type("Test turn", "terminal", "A worker's turn to run the tests it named, under the test budget"),

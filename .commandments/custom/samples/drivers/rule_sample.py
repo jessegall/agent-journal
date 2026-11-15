@@ -1,7 +1,7 @@
-from engine.agent_machine.contracts.effect import Effect
-from engine.agent_machine.contracts.policy import Policy
-from engine.agent_machine.needs.wake_cause import WakeCause
-from engine.agent_machine.needs.need_source import NeedSource
+from engine.agent_state_machine.contracts.effect import Effect
+from engine.agent_state_machine.contracts.policy import Policy
+from engine.agent_state_machine.states.wake_cause import WakeCause
+from engine.agent_state_machine.states.state_source import StateSource
 from engine.command.bus import Bus
 from core.modules.tasks.commands import StartTask
 from core.modules.tasks.queries.task_query import TaskQuery
@@ -20,7 +20,7 @@ class SampleStartPolicy(Policy):
         return self.tasks.started(view.agent.agent_id)
 
 
-class SampleReaderNeedSource(NeedSource):
+class SampleReaderNeedSource(StateSource):
     def needs(self, agents, question):
         # @sin architecture_drivers_rule_builds_its_reader
         tasks = TaskQuery(None, None)

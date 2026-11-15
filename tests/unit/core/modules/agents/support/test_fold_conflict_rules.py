@@ -17,7 +17,7 @@ def test_assignments_keep_the_survivors_row_even_when_older():
 
 
 def test_agent_message_records_keep_the_oldest_and_links_too():
-    assert FoldConflictRules.resolution("nudge_records", [{"id": 9}, {"id": 3}], SURVIVOR, "agent_id").kept["id"] == 3
+    assert FoldConflictRules.resolution("agent_message_records", [{"id": 9}, {"id": 3}], SURVIVOR, "agent_id").kept["id"] == 3
     assert FoldConflictRules.resolution("links", [{"id": 9}, {"id": 3}], SURVIVOR, "subject_id").kept["id"] == 3
 
 

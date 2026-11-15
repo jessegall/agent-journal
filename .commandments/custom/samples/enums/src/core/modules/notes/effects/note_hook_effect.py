@@ -1,4 +1,4 @@
-from engine.agent_machine.contracts.effect import Effect
+from engine.agent_state_machine.contracts.effect import Effect
 
 
 class NoteHookEffect(Effect):

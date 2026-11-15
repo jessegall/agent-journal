@@ -27,5 +27,5 @@ def test_a_database_that_holds_the_old_type_names_holds_the_new_ones_after_a_syn
 def test_the_agent_message_list_names_the_new_types_after_the_sync(journal):
     old_registry(journal)
     journal.synced()
-    listed = journal.run("nudge list --json").text
+    listed = journal.run("agent-message list --json").text
     assert '"type": "instruction"' not in listed and '"type": "steering"' in listed and '"type": "info"' in listed

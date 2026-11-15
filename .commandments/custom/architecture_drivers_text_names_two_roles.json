@@ -8,7 +8,7 @@
                 "of": "closest:call",
                 "nameIn": [
                     "Refusal",
-                    "NudgeDeclaration"
+                    "MessageTemplate"
                 ]
             },
             {

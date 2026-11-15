@@ -1,6 +1,6 @@
 // What a trigger does when its words appear, in the user's words.
 export const DOES = [
-    {key: "nudge", value: "nudge", label: "Remind the agent", hint: "A short note only the agent sees. It carries on with its work.", ask: "What to remind the agent of", example: "Add the change to src/CHANGELOG.md in plain words."},
+    {key: "agent-message", value: "agent-message", label: "Remind the agent", hint: "A short note only the agent sees. It carries on with its work.", ask: "What to remind the agent of", example: "Add the change to src/CHANGELOG.md in plain words."},
     {key: "instruct", value: "instruct", label: "Tell the agent to do something now", hint: "The agent sees “Do this now:” followed by your text.", ask: "What the agent should do", example: "Stop and ask me before you touch the database."},
     {key: "deny", value: "deny", label: "Block a command or file change", hint: "The command or file change is refused, and the agent is given your reason.", ask: "Reason the agent is given", example: "Never force-push. Ask me first."},
     {key: "skill", value: "skill", label: "Make the agent read a skill", hint: "The agent must read the skill before it continues.", ask: "Which skill the agent must read", example: "journal-plans"},
@@ -10,7 +10,7 @@ export const TIME_DOES = DOES.filter((option) => !["deny", "skill"].includes(opt
 
 export const EXAMPLES = [
     {name: "Block a command", phrases: ["push --force"], action: "deny", text: "Never force-push. Ask me first."},
-    {name: "Remind the agent when a word appears", phrases: ["CHANGELOG"], action: "nudge", text: "Add the change to src/CHANGELOG.md in plain words."},
+    {name: "Remind the agent when a word appears", phrases: ["CHANGELOG"], action: "agent-message", text: "Add the change to src/CHANGELOG.md in plain words."},
     {name: "Tell the agent to stop and ask", phrases: ["migration"], action: "instruct", text: "Stop and ask me before you touch the database."},
 ];
 
@@ -72,7 +72,7 @@ function wordsText(words) {
 
 const DOING = {
     skill: (text) => `make the agent read ${text}`,
-    nudge: (text) => `remind the agent ${text}`,
+    "agent-message": (text) => `remind the agent ${text}`,
     instruct: (text) => `tell the agent to do this now: ${text}`,
     deny: (text) => `block it and tell the agent ${text}`,
 };

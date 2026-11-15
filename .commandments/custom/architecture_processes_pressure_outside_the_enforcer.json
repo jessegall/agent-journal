@@ -65,7 +65,7 @@
                 "fileMatches": "(^|/)core/modules/processes/listeners/background_run_watch_listener\\.py$"
             },
             {
-                "fileMatches": "(^|/)core/modules/processes/needs/silent_run_block_needs\\.py$"
+                "fileMatches": "(^|/)core/modules/processes/states/silent_run_block_states\\.py$"
             },
             {
                 "fileMatches": "(^|/)core/modules/aliases/policies/"

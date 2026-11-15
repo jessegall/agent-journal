@@ -19,7 +19,7 @@
                                     "extendsAny": "EventPolicy"
                                 },
                                 {
-                                    "extendsAny": "NeedSource"
+                                    "extendsAny": "StateSource"
                                 },
                                 {
                                     "extendsAny": "LineSource"

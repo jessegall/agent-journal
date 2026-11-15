@@ -20,7 +20,7 @@
     "sin": {
         "name": "terminal-line-outside-line-typing",
         "description": "A line is typed into an agent's terminal without being a row, so a hook can give it too and the journal has no record of it.",
-        "rule": "The journal's lines go through Nudger and LineTyping. Only a person's own words and a person's choice of a control are typed directly, by the two handlers this rule allows.",
+        "rule": "The journal's lines go through MessageSender and LineTyping. Only a person's own words and a person's choice of a control are typed directly, by the two handlers this rule allows.",
         "skill": "plain-code-words"
     }
 }

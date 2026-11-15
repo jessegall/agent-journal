@@ -21,7 +21,7 @@ class MessageRecords:
 
     def agent_message_rows(self, agent_id: int, agent_messages: Sequence[AgentMessage]) -> list[MessageRecord]:
         records = self.queries.query(MessageRecord).filter(session_agent_id=agent_id).matching(Among("key", tuple(sorted({agent_message.key for agent_message in agent_messages}))))
-        return self.kept.read(records, lambda: self.loaded_rows(agent_id, agent_messages), name=f"drivers.nudges:{sorted({agent_message.text for agent_message in agent_messages})}")
+        return self.kept.read(records, lambda: self.loaded_rows(agent_id, agent_messages), name=f"drivers.agent-messages:{sorted({agent_message.text for agent_message in agent_messages})}")
 
     def loaded_rows(self, agent_id: int, agent_messages: Sequence[AgentMessage]) -> list[MessageRecord]:
         clock_keys = sorted({agent_message.key for agent_message in agent_messages if agent_message.interval})

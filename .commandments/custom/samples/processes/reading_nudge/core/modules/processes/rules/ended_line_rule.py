@@ -7,4 +7,4 @@ class EndedLineRule(DriverRule):
 
     def answer(self, hook):
         # @righteous architecture_processes_reading_nudge_outside_the_notices
-        return OUTPUT_ENDED.nudge(output=hook.output)
+        return OUTPUT_ENDED.agent_message(output=hook.output)

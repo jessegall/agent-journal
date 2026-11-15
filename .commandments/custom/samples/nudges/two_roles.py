@@ -1,4 +1,4 @@
-from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.message_template import MessageTemplate
 from engine.errors.refusal import Refusal
 
 
@@ -13,6 +13,6 @@ def refuse_for_the_asking_role(process_id: int) -> None:
 
 
 # @sin architecture_drivers_text_names_two_roles
-POLL = NudgeDeclaration("samples.poll", "a main agent sets a monitor; a worker goes idle")
+POLL = MessageTemplate("samples.poll", "a main agent sets a monitor; a worker goes idle")
 # @righteous architecture_drivers_text_names_two_roles
-IDLE = NudgeDeclaration("samples.idle", "go idle: the journal wakes you when it ends")
+IDLE = MessageTemplate("samples.idle", "go idle: the journal wakes you when it ends")

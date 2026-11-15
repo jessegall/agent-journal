@@ -1,13 +1,13 @@
-from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.enums.nudge_type import NudgeType
+from engine.driver.message_template import MessageTemplate
+from engine.enums.agent_message_type import AgentMessageType
 
 # @sin architecture_processes_nudge_carries_row_data
-RUN_COMMAND = NudgeDeclaration("samples.run_command", NudgeType.STEERING, "output {output} runs {command}")
+RUN_COMMAND = MessageTemplate("samples.run_command", AgentMessageType.STEERING, "output {output} runs {command}")
 # @sin architecture_processes_nudge_carries_row_data
-RUN_TITLE = NudgeDeclaration("samples.run_title", NudgeType.STEERING, "output {output} is called {title}")
+RUN_TITLE = MessageTemplate("samples.run_title", AgentMessageType.STEERING, "output {output} is called {title}")
 # @sin architecture_processes_nudge_carries_row_data
-LAST_LINES = NudgeDeclaration("samples.last_lines", NudgeType.STEERING, "output {output} ended. Last lines: {lines}")
+LAST_LINES = MessageTemplate("samples.last_lines", AgentMessageType.STEERING, "output {output} ended. Last lines: {lines}")
 # @righteous architecture_processes_nudge_carries_row_data
-READER_MISSED = NudgeDeclaration("samples.reader_missed", NudgeType.STEERING, "reader {reader} picked none of {lines} lines of output {output}")
+READER_MISSED = MessageTemplate("samples.reader_missed", AgentMessageType.STEERING, "reader {reader} picked none of {lines} lines of output {output}")
 # @righteous architecture_processes_nudge_carries_row_data
-SILENT_RUN = NudgeDeclaration("samples.silent_run", NudgeType.NOTICE, "output {output} printed nothing for {seconds} seconds")
+SILENT_RUN = MessageTemplate("samples.silent_run", AgentMessageType.NOTICE, "output {output} printed nothing for {seconds} seconds")

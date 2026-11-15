@@ -5,7 +5,7 @@
         "select": "call",
         "where": [
             {
-                "name": "nudge"
+                "name": "agent_message"
             },
             {
                 "of": "receiver",

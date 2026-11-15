@@ -7,4 +7,4 @@ class SilentNoticeRule(DriverRule):
 
     def answer(self, hook):
         # @sin architecture_processes_reading_nudge_outside_the_notices
-        return RUN_SPARSE.nudge(output=hook.output, seconds=hook.seconds, hint="")
+        return RUN_SPARSE.agent_message(output=hook.output, seconds=hook.seconds, hint="")

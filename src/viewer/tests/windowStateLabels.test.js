@@ -50,10 +50,10 @@ test("command output uses process state labels", async () => {
 
 test("instruction types have readable labels and keep their stored styling value", async () => {
     const element = await mounted(AgentMessageList, context({"agent-message list": page([{id: 2, key: "cart", type: "steering", text: "Check the cart", delivery_count: 1}])}, null, {
-        nudges: {line: "agent-message list", events: ["nudge_record.*"]},
+        agent_messages: {line: "agent-message list", events: ["agent_message_record.*"]},
     }));
-    expect(element.querySelector(".nudge-type").textContent).toBe("Instruction");
-    expect(element.querySelector(".nudge-type").dataset.type).toBe("steering");
+    expect(element.querySelector(".agent-message-type").textContent).toBe("Instruction");
+    expect(element.querySelector(".agent-message-type").dataset.type).toBe("steering");
 });
 
 test("agent calls show their readable event label", async () => {

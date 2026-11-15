@@ -60,7 +60,7 @@ def database(tmp_path):
     (Statement("SELECT count(*) FROM chat_marks WHERE session_agent_id = ? OR session_agent_id IS NULL", [1]), "chat_marks_agent"),
     (Statement("SELECT * FROM sequence_run_rows ORDER BY id DESC LIMIT 25"), "sequence_runs_open_id"),
     (Statement("SELECT * FROM chat_messages ORDER BY id DESC LIMIT 25"), "messages_chat_visible_id"),
-    (Statement("SELECT * FROM nudge_totals LIMIT 25"), "nudge_records_key_delivery"),
+    (Statement("SELECT * FROM agent_message_totals LIMIT 25"), "nudge_records_key_delivery"),
     (Statement("SELECT count(*) FROM refusals WHERE reason GLOB ?", ["reader request 1 save failed: *"]), "refusals_reason"),
     (Statement("SELECT * FROM task_edges LIMIT 25 OFFSET 0"), "task_waits_open_edges"),
 ])

@@ -8,7 +8,7 @@ from core.modules.triggers.agent_messages.trigger_line_message import TriggerLin
 
 def test_a_phrase_trigger_tells_the_agent_its_text_when_the_users_prompt_holds_a_phrase(new_story):
     story = new_story(fixture=UserJoined)
-    story.expect_success('trigger make "deploy, release" "Run the release sequence"', "trigger 1: deploy, release -> nudge", actor=story.user)
+    story.expect_success('trigger make "deploy, release" "Run the release sequence"', "trigger 1: deploy, release -> agent-message", actor=story.user)
     story.expect_hook_allowed("s-1", HookSamples.prompt("please release it"), TriggerLineMessage.declared().agent_message(trigger=1).text)
     story.expect_text("trigger show 1", "Run the release sequence", actor=story.agent)
 

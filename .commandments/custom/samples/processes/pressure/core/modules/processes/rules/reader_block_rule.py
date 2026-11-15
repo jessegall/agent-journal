@@ -8,4 +8,4 @@ class ReaderBlockRule(DriverRule):
 
     def answer(self, hook):
         # @sin architecture_processes_pressure_outside_the_enforcer
-        return RuleAnswer.refused(READER_BLOCK.nudge(output=hook.output, request=hook.request))
+        return RuleAnswer.refused(READER_BLOCK.agent_message(output=hook.output, request=hook.request))

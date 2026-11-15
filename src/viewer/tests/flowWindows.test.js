@@ -10,7 +10,7 @@ import {choose} from "./support/cardMenu.js";
 const mountedTrigger = (rows) => mountedWindow(TriggerCards, triggerWindowContext({"trigger list": page(rows)}));
 
 test("a trigger slip shows only its name, its line and its number", async () => {
-    const element = await mountedTrigger([{id: 1, name: "Release checks", description: "Runs the checks", action: "nudge", text: "Run the release sequence", phrases: ["deploy", "release"], next_at: null}]);
+    const element = await mountedTrigger([{id: 1, name: "Release checks", description: "Runs the checks", action: "agent-message", text: "Run the release sequence", phrases: ["deploy", "release"], next_at: null}]);
     await settled();
     const slip = element.querySelector('[data-row="1"]');
     expect(slip.textContent).toContain("Release checks");
@@ -20,13 +20,13 @@ test("a trigger slip shows only its name, its line and its number", async () => 
 });
 
 test("a trigger from before, with no name, shows by its text", async () => {
-    const element = await mountedTrigger([{id: 2, action: "nudge", text: "Check the build", phrases: [], next_at: "2036-01-01T00:00:00Z"}]);
+    const element = await mountedTrigger([{id: 2, action: "agent-message", text: "Check the build", phrases: [], next_at: "2036-01-01T00:00:00Z"}]);
     await settled();
     expect(element.querySelector('[data-row="2"]').textContent).toContain("Check the build");
 });
 
 test("a trigger an agent made says it waits and offers to enable it, and an enabled one does not", async () => {
-    const element = await mountedTrigger([{id: 3, action: "nudge", text: "Mind the cart", phrases: ["cart"], next_at: null, needs_enabling: true}, {id: 4, action: "nudge", text: "Mind the till", phrases: ["till"], next_at: null, needs_enabling: false}]);
+    const element = await mountedTrigger([{id: 3, action: "agent-message", text: "Mind the cart", phrases: ["cart"], next_at: null, needs_enabling: true}, {id: 4, action: "agent-message", text: "Mind the till", phrases: ["till"], next_at: null, needs_enabling: false}]);
     await settled();
     expect(element.querySelector('[data-row="3"]').textContent).toContain("Waiting for you");
     expect(element.querySelector('[data-row="4"]').textContent).not.toContain("Waiting for you");

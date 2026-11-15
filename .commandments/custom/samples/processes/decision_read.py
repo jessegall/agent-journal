@@ -1,4 +1,4 @@
-from engine.agent_machine.contracts.policy import Policy
+from engine.agent_state_machine.contracts.policy import Policy
 from core.modules.processes.queries.reading_decision_query import ReadingDecisionQuery
 
 

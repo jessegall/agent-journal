@@ -18,7 +18,7 @@
                         "of": "enclosingType"
                     },
                     {
-                        "extendsAny": "NeedSource",
+                        "extendsAny": "StateSource",
                         "of": "enclosingType"
                     },
                     {

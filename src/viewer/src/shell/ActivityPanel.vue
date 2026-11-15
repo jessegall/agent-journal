@@ -5,7 +5,7 @@ import {meta} from "../domain/tables.js";
 import {peekRef} from "../route.js";
 
 const props = defineProps({events: {type: Array, default: () => []}});
-const busy = new Set(["agents", "hook_calls", "agent_lines", "nudge_records"]);
+const busy = new Set(["agents", "hook_calls", "agent_lines", "agent_message_records"]);
 const openedGroups = ref(new Set());
 const openedEvents = ref(new Set());
 const settled = ref(false);
@@ -36,7 +36,7 @@ function toggle(set, key) {
 }
 const heading = (event) => {
     if (event.row_table === "hook_calls") return "Agent activity";
-    if (event.row_table === "agent_lines" || event.row_table === "nudge_records") return "Agent instruction";
+    if (event.row_table === "agent_lines" || event.row_table === "agent_message_records") return "Agent instruction";
     const name = meta(event.row_table)?.title || "Agent";
     const action = event.event.split(".").at(-1);
     if (action === "create") return `New ${name.toLowerCase()}`;
@@ -46,7 +46,7 @@ const heading = (event) => {
 const title = (event) => event.data?.title?.[1] || event.data?.text?.[1] || event.data?.summary?.[1] || "";
 const when = (event) => ago(event.timestamp) || "just now";
 const count = (events) => {
-    const instructions = events.filter((event) => event.row_table === "agent_lines" || event.row_table === "nudge_records").length;
+    const instructions = events.filter((event) => event.row_table === "agent_lines" || event.row_table === "agent_message_records").length;
     const agents = events.length - instructions;
     return [agents ? `${agents} agent ${agents === 1 ? "update" : "updates"}` : "", instructions ? `${instructions} agent ${instructions === 1 ? "instruction" : "instructions"}` : ""].filter(Boolean).join(", ");
 };

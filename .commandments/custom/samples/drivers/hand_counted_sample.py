@@ -15,11 +15,11 @@ class PollCheck:
 
     def warning(self, limit: int) -> object:
         # @sin architecture_drivers_countdown_given_a_computed_number
-        return SAMPLE_COUNTDOWN.nudge(limit - self.reads_seen)
+        return SAMPLE_COUNTDOWN.agent_message(limit - self.reads_seen)
 
     def countdown_line(self, actor_id: int, context: Context) -> object:
         remaining = self.countdowns.tick(SAMPLE_COUNTDOWN, actor_id, "output", context)
         # @righteous architecture_drivers_countdown_given_a_computed_number
-        SAMPLE_COUNTDOWN.nudge("{left}")
+        SAMPLE_COUNTDOWN.agent_message("{left}")
         # @righteous architecture_drivers_count_raised_by_hand
         return remaining + 1

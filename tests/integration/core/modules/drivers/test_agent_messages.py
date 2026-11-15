@@ -91,7 +91,7 @@ def test_many_agent_messages_read_records_together(played):
         log.skipped_lines(story.agent.id, answers, context.timestamp)
         with database.transaction():
             log.write(story.agent.id, answers, context)
-    record_reads = [call for call in reads.call_args_list if "SELECT * FROM nudge_records" in call.args[0].sql]
+    record_reads = [call for call in reads.call_args_list if "SELECT * FROM agent_message_records" in call.args[0].sql]
     expect_value(len(record_reads), 1)
 
 

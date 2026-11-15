@@ -6,7 +6,7 @@ import {sentence} from "../../core/modules/triggers/web/src/triggerWords.js";
 
 afterEach(() => (document.body.innerHTML = ""));
 
-const TRIGGER = {id: 1, action: "nudge", text: "Run the release sequence", phrases: ["deploy", "release"], next_at: null, created_at: "2026-11-01T10:00:00Z"};
+const TRIGGER = {id: 1, action: "agent-message", text: "Run the release sequence", phrases: ["deploy", "release"], next_at: null, created_at: "2026-11-01T10:00:00Z"};
 
 async function drawn(rows = [TRIGGER]) {
     const ran = [];

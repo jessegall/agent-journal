@@ -46,13 +46,13 @@ def rows_loaded(played: FixtureJournal, line: str) -> int:
 
 
 def test_the_agent_message_list_loads_one_row_for_each_agent_message_however_often_it_was_said(started_task):
-    previous_count = rows_loaded(started_task, "nudge list --json")
+    previous_count = rows_loaded(started_task, "agent-message list --json")
     repository, context = started_task.container.get(Repository), Context(Actor.core(), started_task.clock.timestamp(), ReadMessage(1))
     with started_task.journal.database.transaction():
         for number in range(6):
             repository.save(MessageRecord(session_agent_id=started_task.agent.id, creator_id=started_task.agent.id, key="samples.said", text=f"said {number}",
                                         delivery_count=1, last_delivered_at=started_task.clock.timestamp()), context)
-    assert rows_loaded(started_task, "nudge list --json") == previous_count + 1
+    assert rows_loaded(started_task, "agent-message list --json") == previous_count + 1
 
 
 def test_the_plan_timeline_reads_one_page_of_events_from_one_view(checkpoint_plan):

@@ -29,7 +29,7 @@ const TITLES = {
     workers: (r) => r.name,
     triggers: (r) => (r.phrases || []).join(", "),
     reactions: (r) => r.face,
-    nudges: (r) => r.data?.line || "",
+    agent_message_records: (r) => r.data?.line || "",
     plugins: (r) => r.manifest?.title || r.name,
     shares: (r) => `Share of ${r.target || "nothing"}`,
 };

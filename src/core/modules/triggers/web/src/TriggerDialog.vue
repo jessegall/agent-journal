@@ -28,7 +28,7 @@ const draft = reactive({
     cron: held?.cron_line ?? "",
     limit: held?.fire_limit ? String(held.fire_limit) : "",
     conditions: JSON.parse(held?.conditions ?? "[]"),
-    action: held?.action ?? "nudge",
+    action: held?.action ?? "agent-message",
     skill: held?.skill ?? "",
     text: held?.text ?? "",
     extra: JSON.parse(held?.extra_actions ?? "[]"),
@@ -47,7 +47,7 @@ const missing = computed(() => {
 const startFrom = ({name, phrases, action, text}) => Object.assign(draft, {name, phrases, action, text, type: "words"});
 const changeExtra = (position, values) => (draft.extra = draft.extra.map((entry, place) => place === position ? {...entry, ...values} : entry));
 watch(() => draft.type, (type) => {
-    if (type === "time" && ["deny", "skill"].includes(draft.action)) draft.action = "nudge";
+    if (type === "time" && ["deny", "skill"].includes(draft.action)) draft.action = "agent-message";
 });
 
 const timeValue = () => (draft.time === "once" ? new Date(draft.at).toISOString() : draft[draft.time]);

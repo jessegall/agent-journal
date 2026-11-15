@@ -475,7 +475,11 @@
         "disturbance",
         "holdings",
         "conclude",
-        "crowded"
+        "crowded",
+        "nudge",
+        "Nudge",
+        "nudges",
+        "Nudges"
     ],
     "poetic_values": [
         "Above",
@@ -1407,7 +1411,7 @@
         "merger-line",
         "message",
         "message-work-source",
-        "nudge",
+        "agent-message",
         "nudge-record",
         "open-document",
         "output",
