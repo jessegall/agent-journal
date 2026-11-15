@@ -10,6 +10,8 @@ from core.modules.helpers.commands.record_unsaved_report.record_unsaved_report i
 from core.modules.helpers.nudges.kept_report_nudge import KeptReportNudge
 
 REPORT_SOURCE = "helpers.unsaved-report"
+# the failed save that keeps the text, after the first that refused the stop
+KEPT_TEXT_FAILURES = 2
 
 
 class RecordUnsavedReportHandler(Handler[RecordUnsavedReport, None]):
@@ -24,10 +26,11 @@ class RecordUnsavedReportHandler(Handler[RecordUnsavedReport, None]):
     def handle(self, command: RecordUnsavedReport, context: Context) -> None:
         job = self.queries.query(HelperJob).find(command.job_id)
         failures = job.handover_failures + 1
-        if failures < 2:
+        if failures < KEPT_TEXT_FAILURES:
             self.repository.save(job.changed(handover_failures=failures), context)
             return
         self.repository.save(job.changed(handover_failures=failures, handover_state=HandoverState.CAPTURE_FAILED, failed_text=command.text), context)
         helper = self.agents.find(job.helper_id) if job.helper_id is not None else None
-        if helper is not None and helper.parent_id is not None:
+        # the parent is told once, as the text is first kept; a later failed retry adds nothing
+        if helper is not None and helper.parent_id is not None and failures == KEPT_TEXT_FAILURES:
             self.nudger.send(helper.parent_id, KeptReportNudge.declared(), REPORT_SOURCE, context, helper=helper.number, job=job.id)

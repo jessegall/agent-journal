@@ -5,7 +5,7 @@ from core.modules.drivers.support.answer_basis_writers import AnswerBasisWriters
 
 
 class AdvanceDriverEpochsHandler(Handler[AdvanceDriverEpochs, None]):
-    """Moves every environment's driver epoch in one write."""
+    """Moves every environment's driver epoch in one write and records when the journal started."""
 
     command = AdvanceDriverEpochs
 
@@ -13,4 +13,4 @@ class AdvanceDriverEpochsHandler(Handler[AdvanceDriverEpochs, None]):
         self.writers = writers
 
     def handle(self, command: AdvanceDriverEpochs, context: Context) -> None:
-        self.writers.bump_environments(context)
+        self.writers.record_journal_start(context)

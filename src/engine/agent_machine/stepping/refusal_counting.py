@@ -5,6 +5,7 @@ from engine.agent_stack.reason import Reason
 from engine.agent_machine.record.stack_move import StackMove
 from engine.agent_stack.stack import Stack
 from engine.agent_machine.stepping.built_stack import BuiltStack
+from engine.agent_machine.stepping.judged_blocks import JudgedBlocks
 from engine.agent_stack.states.working import Working
 from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.decision import Decision
@@ -53,7 +54,9 @@ class RefusalCounting:
         if not reached:
             return view.escalation or RefusalCounting.repair(view)
         escalation_type, count = reached[0]
-        block_ids = tuple(block.block_id for block in view.blocks if block.block_id is not None and block.reason in reasons)
+        # the holds as this step judged them, with the reasons of their plans, whose tool or stop refusal refused
+        block_ids = tuple(block.block_id for block in JudgedBlocks.constraining(view)
+                          if block.block_id is not None and (block.reason in reasons or block.stop_refusal() in reasons))
         # the Working frames whose stop answer refused, which the escalation defers with the holds it names
         work_keys = tuple(frame.need_key for frame in stack.frames if isinstance(frame.state, Working) and frame.state.stop_reason in reasons)
         if view.escalation is not None:

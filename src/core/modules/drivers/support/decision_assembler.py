@@ -71,11 +71,9 @@ class DecisionAssembler:
                        for line in record.lines if line.text not in old_lines)
         is_new_refusal = record.decision.decision_class is not DecisionClass.ALLOW and record.shown_reason.rank != WALK_RANK
         rules = [self.without_commands(rule, new_commands) for rule in answers.rules]
-        # the machine's rewrite is the input printed, as the old rewriters it replaces stand down
-        rewritten = dict(record.rewrite.tool_input) if record.rewrite.tool_input is not None else {}
-        if not nudges and not is_new_refusal and not rewritten:
+        if not nudges and not is_new_refusal:
             return replace(answers, rules=rules)
-        answer = RuleAnswer(refusal=record.shown_reason.text if is_new_refusal else "", nudges=nudges, updated_input=rewritten, refusal_priority=NEW_REFUSAL_PRIORITY)
+        answer = RuleAnswer(refusal=record.shown_reason.text if is_new_refusal else "", nudges=nudges, refusal_priority=NEW_REFUSAL_PRIORITY)
         return replace(answers, rules=[RuleRecord(record.shown_reason.key or NEW_DRIVER_LAYER, NEW_DRIVER_LAYER, answer.outcome, answer), *rules])
 
     @staticmethod

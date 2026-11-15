@@ -52,10 +52,12 @@ class JobReportEffect(Effect):
             return []
         return [RecordParentReport(helper.id, helper.parent_id, self.report_text.text(event, helper), jobs[-1].work_id)]
 
+    # a stop that rests because an escalation defers the job's work hands nothing in (doc 1310 section 4.9)
     @staticmethod
     def is_report_stop(view: AgentView) -> bool:
         waits = any(isinstance(need.state, Waiting) for need in view.needs)
-        return not waits and not view.stack.has(Paused) and not view.stack.has(Compacting)
+        deferred = view.escalation is not None and any(view.escalation.defers_work(need.key) for need in view.needs if isinstance(need.state, Working))
+        return not waits and not deferred and not view.stack.has(Paused) and not view.stack.has(Compacting)
 
     # the first failed save refuses the stop once; the second keeps the text and lets the helper rest
     def failed(self, view: AgentView, record: DecisionRecord) -> RuleAnswer:

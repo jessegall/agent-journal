@@ -1,4 +1,5 @@
 from engine.command.context import Context
+from engine.enums.hook_event_name import HookEventName
 from engine.event.changed import Changed
 from engine.listener.save_listener import SaveListener
 from engine.query.conditions.among import Among
@@ -22,7 +23,8 @@ class WakeAcknowledgementListener(SaveListener[Changed[HookCall]]):
         self.queries, self.repository = queries, repository
 
     def handle(self, event: Changed[HookCall], context: Context) -> None:
-        if event.old_row is not None:
+        # a tick the server records as a hook call is no turn of the agent
+        if event.old_row is not None or event.row.hook == HookEventName.TICK:
             return
         wakes = self.queries.query(AgentWake).filter(session_agent_id=event.row.session_agent_id).matching(
             Among("state", [state.value for state in ACKNOWLEDGED_STATES])).every_row(ACTIVE_WAKES_REASON)

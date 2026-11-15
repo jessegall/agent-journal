@@ -13,14 +13,11 @@ from engine.rule_backed.rule_hooks import RuleHooks
 class RuleTransform(Transform):
     """A transform of the agent machine whose rewrite is the one an old rule gives at its hook, the same input
     in the same words. A rewritten shell line is parsed by the hook client's parser and judged again as the
-    final action, unless the transform only wraps the line it was given."""
+    final action, unless the transform only wraps the line it was given. The old rule stays the one that
+    rewrites and prints the input: the runner's rewrite needs the process row its own command makes first."""
 
     rule: ClassVar[type[DriverRule]]
     replaces_action: ClassVar[bool] = True
-
-    def __init_subclass__(cls, **kwargs: object) -> None:
-        super().__init_subclass__(**kwargs)
-        cls.replaced_rules = tuple([cls.rule.name])
 
     def __init__(self, hooks: RuleHooks, parser: ShellParser) -> None:
         self.hooks, self.parser = hooks, parser

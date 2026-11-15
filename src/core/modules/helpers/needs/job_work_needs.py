@@ -42,7 +42,8 @@ class JobWorkNeeds(NeedSource):
         agent_jobs: dict[int, Sequence[Need | BlockPlan]] = {}
         for agent in agents:
             job = self.jobs.open_job(agent.agent_id) if agent.agent_type == HELPER_TYPE else None
-            if job is not None:
+            # a job whose report save failed twice waits for its retry or drop, so the helper rests
+            if job is not None and job.handover_state is not HandoverState.CAPTURE_FAILED:
                 stop_reason = Reason(JOB_STOP_KEY, DecisionClass.HOLD, JOB_RANK, f"job {job.id} is open")
                 agent_jobs[agent.agent_id] = tuple([Need(Working(WorkReference(WorkType.JOB, job.id, f"job {job.id}"), True, stop_reason), JOB_RANK,
                                                     NeedKey("Working", SubjectReference(JOB_SUBJECT, job.id), f"job:{job.id}"))])

@@ -242,6 +242,12 @@ def test_a_hold_no_one_can_judge_never_passes_and_asks_a_person_to_repair_it() -
     record = AgentMachine().step(view(blocks=(block("documents.open", "documents.open"),), block_outcomes={3: ConditionOutcome.UNAVAILABLE}), EDIT).record
     assert not record.decision.admits() and record.counts.escalation is not None and record.counts.escalation.escalation_type is EscalationType.REPAIR
 
+
+def test_the_fifth_stop_refused_by_an_open_row_its_need_still_plans_names_that_row_in_the_escalation() -> None:
+    stop_plan = replace(plan(0), scope_stop=True, stop_check_key="tasks.log-before-stop", stop_nudge=Nudge("tasks.unlogged-stop", NudgeType.STEERING, "log your task before you stop"))
+    record = AgentMachine().step(view(blocks=(block("tasks.unlogged-writes", "row-rank"),), plans=(stop_plan,), counts=RefusalCounts(4, 0)), STOP).record
+    assert record.counts.escalation is not None and record.counts.escalation.block_ids == (3,)
+
 def test_an_open_escalation_defers_the_stop_scope_of_its_blocks() -> None:
     deferred = Escalation(5, EscalationType.STOPS, Responder.PERSON, (3,), (), 5)
     assert AgentMachine().step(view(blocks=(block("messages.unread", "messages.unread"),), escalation=deferred), STOP).record.decision.admits()

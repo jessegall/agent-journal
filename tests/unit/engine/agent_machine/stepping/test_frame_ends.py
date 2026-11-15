@@ -40,3 +40,9 @@ def test_a_frame_whose_source_told_its_end_records_that_end():
     work = Frame(Paused((), "paused"), NeedKey("Working", SubjectReference("task", 3), "task:3"), ENTERED)
     view = replace(ViewSamples.view("main", WorkStop.REFUSE_WHILE_WORK_REMAINS), subject_ends={SubjectReference("task", 3): FrameEnd.CANCELLED})
     assert StackBuilder.frame_end(view, work) is FrameEnd.CANCELLED and FrameEnd.CANCELLED not in PROGRESS_ENDS
+
+
+def test_a_frame_a_person_removed_ends_waived_which_is_no_progress():
+    work = Frame(Paused((), "paused"), NeedKey("Working", None, "task:4"), ENTERED)
+    view = replace(ViewSamples.view("main", WorkStop.REFUSE_WHILE_WORK_REMAINS), suppressions=tuple([work.need_key]))
+    assert StackBuilder.frame_end(view, work) is FrameEnd.WAIVED and FrameEnd.WAIVED not in PROGRESS_ENDS

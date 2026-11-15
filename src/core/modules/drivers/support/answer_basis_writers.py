@@ -1,3 +1,4 @@
+from engine.time.timestamp import Timestamp
 from engine.command.context import Context
 from engine.database.database import Database
 from engine.query.queries import Queries
@@ -43,17 +44,25 @@ class AnswerBasisWriters:
             self.bump_agent_tree(child, context)
 
     def bump_environment(self, environment_id: int, context: Context) -> None:
+        self.bumped_epoch(environment_id, context, None)
+
+    def bumped_epoch(self, environment_id: int, context: Context, started_at: Timestamp | None) -> None:
         with self.scopes.command_scope((), context.actor, environment_id):
             epoch = self.queries.query(DriverEpoch).first()
             if epoch is None:
-                self.repository.save(DriverEpoch(epoch=1), context)
+                self.repository.save(DriverEpoch(epoch=1, started_at=started_at), context)
                 return
-            self.repository.save_change(epoch, epoch.changed(epoch=epoch.epoch + 1), context)
+            self.repository.save_change(epoch, epoch.changed(epoch=epoch.epoch + 1, started_at=started_at or epoch.started_at), context)
 
-    # a sync that changes a driver table and a server boot reach every environment
+    # a project-wide driving setting reaches every environment
     def bump_environments(self, context: Context) -> None:
         for environment in self.queries.query(Environment).every_row(ENVIRONMENTS_REASON):
             self.bump_environment(environment.id, context)
+
+    # a server boot reaches every environment and records when the journal started
+    def record_journal_start(self, context: Context) -> None:
+        for environment in self.queries.query(Environment).every_row(ENVIRONMENTS_REASON):
+            self.bumped_epoch(environment.id, context, context.timestamp)
 
     def bump_program(self, program: str, context: Context) -> None:
         epoch = self.queries.query(ProgramEpoch).filter(program=program).first()

@@ -128,5 +128,5 @@ def test_the_runner_wraps_the_line_the_alias_expanded():
     assert record.rewrite.tool_input == {"command": f"journal-run -- {EDIT_LINE}"}
 
 
-def test_a_rule_transform_stands_down_the_rule_it_replaces():
-    assert SampleAliasTransform.replaced_rules == tuple([SampleRewriteRule.name])
+def test_a_rule_transform_leaves_its_old_rule_answering():
+    assert SampleAliasTransform.replaced_rules == ()
