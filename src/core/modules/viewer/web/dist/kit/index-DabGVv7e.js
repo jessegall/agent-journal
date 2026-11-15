@@ -6981,44 +6981,44 @@ const Hb = {
   props: { id: { type: Number, required: !0 }, revisions: { type: Array, required: !0 }, text: { type: String, default: "" }, read: { type: Function, required: !0 }, editing: Boolean },
   emits: ["restored", "close-revision"],
   setup(e, { emit: t }) {
-    const n = e, a = t, s = E(null), o = E(""), l = M(() => s.value ? Wb(s.value.body, n.text) : []);
-    async function i(c) {
-      const f = await n.read(["doc", "revision", String(n.id), String(c.number)]);
-      s.value = f.ok ? f.value : null, o.value = f.ok ? "" : f.error;
+    const n = e, a = t, s = E(null), o = E(""), l = M(() => [...n.revisions].sort((f, m) => m.number - f.number)), i = M(() => s.value ? Wb(s.value.body, n.text) : []);
+    async function u(f) {
+      const m = await n.read(["doc", "revision", String(n.id), String(f.number)]);
+      s.value = m.ok ? m.value : null, o.value = m.ok ? "" : m.error;
     }
-    async function u() {
-      const c = await n.read(["doc", "edit", String(n.id), "--abstract", s.value.abstract, "--body", s.value.body]);
-      o.value = c.ok ? "" : c.error, c.ok && a("restored");
+    async function c() {
+      const f = await n.read(["doc", "edit", String(n.id), "--abstract", s.value.abstract, "--body", s.value.body]);
+      o.value = f.ok ? "" : f.error, f.ok && a("restored");
     }
-    return (c, f) => (r(), d("div", Hb, [
+    return (f, m) => (r(), d("div", Hb, [
       e.editing ? (r(), j(ie, {
         key: 0,
         small: "",
         bordered: "",
         "data-close-revision": "",
-        onClick: f[0] || (f[0] = (m) => a("close-revision"))
+        onClick: m[0] || (m[0] = (p) => a("close-revision"))
       }, {
-        default: N(() => [...f[1] || (f[1] = [
+        default: N(() => [...m[1] || (m[1] = [
           z("Close the open revision", -1)
         ])]),
         _: 1
       })) : k("", !0),
       e.revisions.length ? (r(), d(B, { key: 1 }, [
-        (r(!0), d(B, null, Z(e.revisions, (m, p) => (r(), j(ie, {
-          key: m.number,
+        (r(!0), d(B, null, Z(l.value, (p, b) => (r(), j(ie, {
+          key: p.number,
           variant: "text",
-          "data-text-revision": m.number,
-          onClick: (b) => i(m)
+          "data-text-revision": p.number,
+          onClick: ($) => u(p)
         }, {
           default: N(() => [
-            z("Revision " + v(m.number), 1),
-            p ? k("", !0) : (r(), d(B, { key: 0 }, [
+            z("Revision " + v(p.number), 1),
+            b ? k("", !0) : (r(), d(B, { key: 0 }, [
               z(" · current")
             ], 64)),
-            z(": " + v(m.change) + " · " + v(m.author_name) + " · ", 1),
+            z(": " + v(p.change) + " · " + v(p.author_name) + " · ", 1),
             h("time", {
-              datetime: m.created_at
-            }, v(m.created_at.slice(0, 16).replace("T", " ")), 9, zb)
+              datetime: p.created_at
+            }, v(p.created_at.slice(0, 16).replace("T", " ")), 9, zb)
           ]),
           _: 2
         }, 1032, ["data-text-revision", "onClick"]))), 128)),
@@ -7028,24 +7028,24 @@ const Hb = {
             small: "",
             bordered: "",
             "data-text-revision-restore": "",
-            onClick: u
+            onClick: c
           }, {
-            default: N(() => [...f[2] || (f[2] = [
+            default: N(() => [...m[2] || (m[2] = [
               z("Go back to this revision", -1)
             ])]),
             _: 1
           }),
           h("div", Vb, [
-            (r(!0), d(B, null, Z(l.value, (m) => (r(), d("div", {
-              key: m.key,
-              class: X(["revision-line", m.type])
-            }, v(m.text || " "), 3))), 128))
+            (r(!0), d(B, null, Z(i.value, (p) => (r(), d("div", {
+              key: p.key,
+              class: X(["revision-line", p.type])
+            }, v(p.text || " "), 3))), 128))
           ])
         ], 64)) : k("", !0)
       ], 64)) : (r(), d("p", Gb, "No revisions"))
     ]));
   }
-}, Yb = /* @__PURE__ */ V(Kb, [["__scopeId", "data-v-240e694a"]]), Qb = {
+}, Yb = /* @__PURE__ */ V(Kb, [["__scopeId", "data-v-d99a0253"]]), Qb = {
   class: "settle-failure",
   role: "alert",
   "data-settle-failure": ""
@@ -16977,7 +16977,7 @@ const xC = /* @__PURE__ */ kC($C), SC = ["width", "height", "viewBox"], MC = ["w
       ])
     ]));
   }
-}, iB = /* @__PURE__ */ V(nA, [["__scopeId", "data-v-b494c444"]]), rB = Xu(() => import("./VoiceFigure-DZ5rRer4.js").then((e) => e.V)), uB = "1.2.0", cB = "3.5";
+}, iB = /* @__PURE__ */ V(nA, [["__scopeId", "data-v-b494c444"]]), rB = Xu(() => import("./VoiceFigure-CWdp75Ki.js").then((e) => e.V)), uB = "1.2.0", cB = "3.5";
 export {
   Um as $,
   Oe as A,

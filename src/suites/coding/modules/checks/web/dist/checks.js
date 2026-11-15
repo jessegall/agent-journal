@@ -1,5 +1,5 @@
-if (!document.getElementById("window-styles-0620abcc0989")) { const style = document.createElement("style"); style.id = "window-styles-0620abcc0989"; style.textContent = ".check-bar[data-v-643882e1]{display:block;overflow:hidden;height:3px;border-radius:2px;background:var(--hover)}.check-bar-fill[data-v-643882e1]{display:block;height:100%;border-radius:2px;background:var(--accent);transition:width .5s ease}.check-bar-fill.sliding[data-v-643882e1]{width:30%;animation:check-bar-slide-643882e1 1.2s ease-in-out infinite alternate}@keyframes check-bar-slide-643882e1{0%{transform:translate(0)}to{transform:translate(233%)}}.check-tools[data-v-a4a837dc]{display:flex;align-items:center;gap:8px;margin-bottom:10px}.check-space[data-v-a4a837dc]{flex:1}.check-command[data-v-a4a837dc]{display:block;margin-bottom:10px;overflow-wrap:anywhere;color:var(--text-2);font-size:12px}.check-output[data-v-a4a837dc]{overflow:auto;max-height:50vh;margin:0;padding:10px 12px;border-radius:8px;background:var(--raised);font-size:12px;white-space:pre-wrap}.check-runs[data-v-a4a837dc]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.check-run-row[data-v-a4a837dc]{display:flex;width:100%;padding:6px 8px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:13px;cursor:pointer}.check-run-row[data-v-a4a837dc]:hover{background:var(--hover)}.check-verdict[data-v-a4a837dc]{color:var(--accent-text)}.check-verdict.failing[data-v-a4a837dc]{color:var(--danger)}.check-note[data-v-a4a837dc]{margin:0;color:var(--text-3)}.note[data-v-341d3654]{margin:0;color:var(--text-3);font-size:12.5px}.rhythm[data-v-341d3654]{color:var(--text-3);font-size:12px;white-space:nowrap}\n"; document.head.appendChild(style); }
-import { openBlock as n, createElementBlock as l, createElementVNode as _, normalizeStyle as T, normalizeClass as F, ref as N, computed as P, watch as U, onUnmounted as z, createBlock as h, unref as s, withCtx as d, createVNode as S, createTextVNode as B, toDisplayString as w, createCommentVNode as C, Fragment as I, renderList as M } from "vue";
+if (!document.getElementById("window-styles-099d808a1fb3")) { const style = document.createElement("style"); style.id = "window-styles-099d808a1fb3"; style.textContent = ".check-bar[data-v-88da7980]{display:block;overflow:hidden;height:3px;border-radius:2px;background:var(--hover)}.check-bar-fill[data-v-88da7980]{display:block;height:100%;border-radius:2px;background:var(--accent);transition:width .5s ease}.check-bar-fill.sliding[data-v-88da7980]{width:30%;animation:check-bar-slide-88da7980 1.2s ease-in-out infinite alternate}@keyframes check-bar-slide-88da7980{0%{transform:translate(0)}to{transform:translate(233%)}}.check-tools[data-v-9fbf4735]{display:flex;align-items:center;gap:8px;margin-bottom:10px}.check-space[data-v-9fbf4735]{flex:1}.check-command[data-v-9fbf4735]{display:block;margin-bottom:10px;overflow-wrap:anywhere;color:var(--text-2);font-size:12px}.check-output[data-v-9fbf4735]{overflow:auto;max-height:50vh;margin:0;padding:10px 12px;border-radius:8px;background:var(--raised);font-size:12px;white-space:pre-wrap}.check-runs[data-v-9fbf4735]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.check-run-row[data-v-9fbf4735]{display:flex;width:100%;padding:6px 8px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:13px;cursor:pointer}.check-run-row[data-v-9fbf4735]:hover{background:var(--hover)}.check-verdict[data-v-9fbf4735]{color:var(--accent-text)}.check-verdict.failing[data-v-9fbf4735]{color:var(--danger)}.check-note[data-v-9fbf4735]{margin:0;color:var(--text-3)}.note[data-v-47e26b53]{margin:0;color:var(--text-3);font-size:12.5px}.rhythm[data-v-47e26b53]{color:var(--text-3);font-size:12px;white-space:nowrap}\n"; document.head.appendChild(style); }
+import { openBlock as n, createElementBlock as l, createElementVNode as _, normalizeStyle as T, normalizeClass as F, ref as N, computed as P, watch as U, onUnmounted as z, createBlock as h, unref as s, withCtx as d, createVNode as S, createTextVNode as B, toDisplayString as w, createCommentVNode as b, Fragment as I, renderList as M } from "vue";
 import { useWindow as V, Dialog as W, Segmented as J, Btn as q, TimeAgo as G, CreateDialog as H, CardPage as K, ActionsMenu as Q, Skeleton as X, copying as Y } from "@journal/window-kit";
 const E = (t, k) => {
   const p = t.__vccOpts || t;
@@ -20,7 +20,7 @@ const E = (t, k) => {
       }, null, 6)
     ]));
   }
-}, j = /* @__PURE__ */ E(ee, [["__scopeId", "data-v-643882e1"]]), te = { class: "check-tools" }, ne = { class: "check-command" }, se = {
+}, j = /* @__PURE__ */ E(ee, [["__scopeId", "data-v-88da7980"]]), te = { class: "check-tools" }, ne = { class: "check-command" }, se = {
   key: 1,
   class: "check-note"
 }, ae = {
@@ -45,7 +45,7 @@ const E = (t, k) => {
     const p = [
       { key: "output", label: "Output" },
       { key: "runs", label: "Runs" }
-    ], v = t, g = k, m = V(), c = N("output"), u = N(null), y = `runs.${v.row.id}`, { rows: b, failure: R } = m.props[y], O = P(() => {
+    ], v = t, g = k, m = V(), c = N("output"), u = N(null), y = `runs.${v.row.id}`, { rows: C, failure: R } = m.props[y], O = P(() => {
       var f;
       return ((f = u.value) == null ? void 0 : f.output) ?? v.row.last_output;
     });
@@ -72,7 +72,7 @@ const E = (t, k) => {
             onPick: r[0] || (r[0] = (i) => c.value = i)
           }, null, 8, ["value"]),
           r[3] || (r[3] = _("span", { class: "check-space" }, null, -1)),
-          t.row.stopped ? C("", !0) : (n(), h(s(q), {
+          t.row.stopped ? b("", !0) : (n(), h(s(q), {
             key: 0,
             small: "",
             bordered: "",
@@ -90,13 +90,13 @@ const E = (t, k) => {
         t.row.run_percent !== null && t.row.run_percent !== void 0 ? (n(), h(j, {
           key: 0,
           percent: t.row.run_percent
-        }, null, 8, ["percent"])) : C("", !0),
-        s(R) ? (n(), l("p", se, w(s(R)), 1)) : C("", !0),
+        }, null, 8, ["percent"])) : b("", !0),
+        s(R) ? (n(), l("p", se, w(s(R)), 1)) : b("", !0),
         c.value === "output" ? (n(), l(I, { key: 2 }, [
           O.value ? (n(), l("pre", ae, w(O.value), 1)) : (n(), l("p", oe, "No output yet"))
         ], 64)) : (n(), l(I, { key: 3 }, [
-          s(b).length ? (n(), l("ul", le, [
-            (n(!0), l(I, null, M(s(b), (i) => (n(), l("li", {
+          s(C).length ? (n(), l("ul", le, [
+            (n(!0), l(I, null, M(s(C), (i) => (n(), l("li", {
               key: i.run_at
             }, [
               _("button", {
@@ -119,7 +119,7 @@ const E = (t, k) => {
       _: 1
     }, 8, ["title"]));
   }
-}, ie = /* @__PURE__ */ E(ue, [["__scopeId", "data-v-a4a837dc"]]), de = (t) => /\s/.test(t) ? JSON.stringify(t) : t, ke = [
+}, ie = /* @__PURE__ */ E(ue, [["__scopeId", "data-v-9fbf4735"]]), de = (t) => /\s/.test(t) ? JSON.stringify(t) : t, ke = [
   { key: "title", label: "Title", required: !0, placeholder: "Unit tests" },
   { key: "command", label: "Command", required: !0, placeholder: "pytest tests/unit" },
   { key: "every", label: "Run every, in minutes", kind: "number", help: "Leave blank to run it only by hand.", placeholder: "30" }
@@ -156,7 +156,7 @@ const E = (t, k) => {
 }, _e = {
   __name: "CheckCards",
   setup(t) {
-    const k = V(), { rows: p, failure: v, loaded: g } = k.props.checks, m = N(null), c = P(() => p.value.find((e) => e.id === m.value) || null), u = N(/* @__PURE__ */ new Set()), y = N(""), b = N(!1), R = (e) => e.status === "running" ? "Running" : e.last_passed === !0 ? "Passing" : e.last_passed === !1 ? "Failing" : "Not run", O = P(() => p.value.map((e) => ({
+    const k = V(), { rows: p, failure: v, loaded: g } = k.props.checks, m = N(null), c = P(() => p.value.find((e) => e.id === m.value) || null), u = N(/* @__PURE__ */ new Set()), y = N(""), C = N(!1), R = (e) => e.status === "running" ? "Running" : e.last_passed === !0 ? "Passing" : e.last_passed === !1 ? "Failing" : "Not run", O = P(() => p.value.map((e) => ({
       id: e.id,
       title: e.title,
       icon: "check",
@@ -195,7 +195,7 @@ const E = (t, k) => {
             small: "",
             variant: "primary",
             "data-check-new": "",
-            onClick: o[0] || (o[0] = (a) => b.value = !0)
+            onClick: o[0] || (o[0] = (a) => C.value = !0)
           }, {
             default: d(() => [...o[3] || (o[3] = [
               B("New check", -1)
@@ -216,8 +216,8 @@ const E = (t, k) => {
           a.row.run_percent !== null && a.row.run_percent !== void 0 ? (n(), h(j, {
             key: 0,
             percent: a.row.run_percent
-          }, null, 8, ["percent"])) : C("", !0),
-          y.value ? (n(), l("p", ge, w(y.value), 1)) : C("", !0)
+          }, null, 8, ["percent"])) : b("", !0),
+          y.value ? (n(), l("p", ge, w(y.value), 1)) : b("", !0)
         ]),
         foot: d(({ item: a }) => [
           a.row.stopped ? (n(), h(s(q), {
@@ -253,20 +253,20 @@ const E = (t, k) => {
         ]),
         _: 1
       }, 8, ["items"]),
-      b.value ? (n(), h(ve, {
+      C.value ? (n(), h(ve, {
         key: 0,
-        onClose: o[1] || (o[1] = (a) => b.value = !1)
-      })) : C("", !0),
+        onClose: o[1] || (o[1] = (a) => C.value = !1)
+      })) : b("", !0),
       c.value ? (n(), h(ie, {
         key: 1,
         row: c.value,
         running: u.value.has(c.value.id),
         onClose: o[2] || (o[2] = (a) => m.value = null),
         onRun: f
-      }, null, 8, ["row", "running"])) : C("", !0)
+      }, null, 8, ["row", "running"])) : b("", !0)
     ], 64));
   }
-}, $e = /* @__PURE__ */ E(_e, [["__scopeId", "data-v-341d3654"]]);
+}, $e = /* @__PURE__ */ E(_e, [["__scopeId", "data-v-47e26b53"]]);
 export {
   $e as default
 };

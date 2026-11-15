@@ -1,5 +1,5 @@
-if (!document.getElementById("window-styles-de40da1445fd")) { const style = document.createElement("style"); style.id = "window-styles-de40da1445fd"; style.textContent = ".tool[data-v-ae806d06]{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;padding:12px;border:1px solid var(--border-2);border-radius:10px;font-size:13px}.head[data-v-ae806d06]{display:flex;align-items:baseline;gap:10px}.title[data-v-ae806d06]{flex:1;font-weight:600}.state[data-v-ae806d06],.detail[data-v-ae806d06]{margin:0;color:var(--text-3);font-size:12px}.actions[data-v-ae806d06]{display:flex;gap:8px}.failure[data-v-ae806d06]{margin:0;color:var(--bad, var(--text-2));font-size:12px}\n"; document.head.appendChild(style); }
-import { computed as k, ref as C, openBlock as r, createBlock as L, unref as o, withCtx as f, createElementBlock as v, toDisplayString as s, createCommentVNode as y, Fragment as I, renderList as B, createElementVNode as n, createTextVNode as b, createVNode as N } from "vue";
+if (!document.getElementById("window-styles-16a92a141563")) { const style = document.createElement("style"); style.id = "window-styles-16a92a141563"; style.textContent = ".tool[data-v-70b8a36f]{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;padding:12px;border:1px solid var(--border-2);border-radius:10px;font-size:13px}.head[data-v-70b8a36f]{display:flex;align-items:baseline;gap:10px}.title[data-v-70b8a36f]{flex:1;font-weight:600}.state[data-v-70b8a36f],.detail[data-v-70b8a36f]{margin:0;color:var(--text-3);font-size:12px}.actions[data-v-70b8a36f]{display:flex;gap:8px}.failure[data-v-70b8a36f]{margin:0;color:var(--bad, var(--text-2));font-size:12px}\n"; document.head.appendChild(style); }
+import { computed as k, ref as C, openBlock as r, createBlock as L, unref as o, withCtx as f, createElementBlock as v, toDisplayString as s, createCommentVNode as b, Fragment as I, renderList as B, createElementVNode as n, createTextVNode as y, createVNode as N } from "vue";
 import { useWindow as P, usePoll as R, WindowRoom as S, Btn as x } from "@journal/window-kit";
 const V = (m, a) => {
   const c = m.__vccOpts || m;
@@ -43,7 +43,7 @@ const V = (m, a) => {
     const O = (t) => t.refreshed_at ? `Last refresh ${new Date(t.refreshed_at).toLocaleString()}` : "Never refreshed", T = (t) => t.is_running ? "Refreshing" : t.is_failed ? "The last refresh failed" : t.enabled ? "On" : "Off";
     return (t, l) => (r(), L(o(S), null, {
       default: f(() => [
-        o(u) ? (r(), v("p", $, s(o(u)), 1)) : y("", !0),
+        o(u) ? (r(), v("p", $, s(o(u)), 1)) : b("", !0),
         (r(!0), v(I, null, B(_.value, (e) => (r(), v("article", {
           key: e.name,
           class: "tool",
@@ -57,7 +57,7 @@ const V = (m, a) => {
           n("p", j, s(e.is_installed ? "Installed" : "Not installed"), 1),
           n("p", q, s(O(e)), 1),
           n("div", z, [
-            e.is_installed ? y("", !0) : (r(), L(o(x), {
+            e.is_installed ? b("", !0) : (r(), L(o(x), {
               key: 0,
               bordered: "",
               disabled: p.value || d.value !== "",
@@ -65,7 +65,7 @@ const V = (m, a) => {
               onClick: (w) => h(e, ["tool", "install", e.name])
             }, {
               default: f(() => [...l[0] || (l[0] = [
-                b("Install", -1)
+                y("Install", -1)
               ])]),
               _: 1
             }, 8, ["disabled", "onClick"])),
@@ -76,7 +76,7 @@ const V = (m, a) => {
               onClick: (w) => h(e, ["tool", e.enabled ? "off" : "on", e.name])
             }, {
               default: f(() => [
-                b(s(e.enabled ? "Turn off" : "Turn on"), 1)
+                y(s(e.enabled ? "Turn off" : "Turn on"), 1)
               ]),
               _: 2
             }, 1032, ["disabled", "onClick"]),
@@ -87,18 +87,18 @@ const V = (m, a) => {
               onClick: (w) => h(e, ["tool", "refresh", e.name])
             }, {
               default: f(() => [...l[1] || (l[1] = [
-                b("Refresh now", -1)
+                y("Refresh now", -1)
               ])]),
               _: 1
             }, 8, ["disabled", "onClick"])
           ]),
-          i.value.name === e.name && i.value.text ? (r(), v("p", A, s(i.value.text), 1)) : y("", !0)
+          i.value.name === e.name && i.value.text ? (r(), v("p", A, s(i.value.text), 1)) : b("", !0)
         ], 8, D))), 128))
       ]),
       _: 1
     }));
   }
-}, Q = /* @__PURE__ */ V(H, [["__scopeId", "data-v-ae806d06"]]);
+}, Q = /* @__PURE__ */ V(H, [["__scopeId", "data-v-70b8a36f"]]);
 export {
   Q as default
 };

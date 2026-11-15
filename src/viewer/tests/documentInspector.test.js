@@ -18,7 +18,7 @@ globalThis.ResizeObserver ??= class {
     disconnect() {}
 };
 
-function drawn(comments = [onWords, whole], width = 980, term = "doc", closeReason = "", textOnly = false) {
+function drawn(comments = [onWords, whole], width = 980, term = "doc", closeReason = "", textOnly = false, oldestFirst = false) {
     vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockReturnValue(width);
     const ran = [];
     const read = async (line) => {
@@ -27,7 +27,10 @@ function drawn(comments = [onWords, whole], width = 980, term = "doc", closeReas
         if (line[1] === "comments") return {ok: true, value: {rows: comments, total: comments.length}};
         if (line[1] === "comment" && line.at(-1) === "no") return {ok: false, error: "refused"};
         if (line[0] === "link") return {ok: true, value: {rows: [], counterparts: [{endpoint: {model: "plan", id: 3, title: "plan:3", exists: true, unavailable: false, open_ref: "plans:3"}, relations: ["mentions"], link_ids: [1]}], total: 1}};
-        if (line[1] === "revisions") return {ok: true, value: {rows: [{number: 2, change: "Totals", author_name: "Lady Lovelace", created_at: "2026-11-01"}, {number: 1, change: "First", author_name: "Unknown", created_at: "2026-10-31"}]}};
+        if (line[1] === "revisions") {
+            const rows = [{number: 2, change: "Totals", author_name: "Lady Lovelace", created_at: "2026-11-01"}, {number: 1, change: "First", author_name: "Unknown", created_at: "2026-10-31"}];
+            return {ok: true, value: {rows: oldestFirst ? rows.reverse() : rows}};
+        }
         if (line[1] === "revision") return {ok: true, value: {body: "the old text"}};
         return {ok: true, value: {rows: []}};
     };
@@ -301,19 +304,20 @@ test("Links is a tab that reads the row's links, and a report has no Revisions t
     expect(element.querySelector("[data-document-links]")).not.toBeNull();
 });
 
-test("the current revision is named in the Revisions tab", async () => {
-    const {element} = drawn();
-    await settle();
-    element.querySelector('[data-document-tab="revisions"]').click();
-    await settle();
-    expect(element.querySelector('[data-text-revision="2"]').textContent).toContain("Revision 2 · current");
-    expect(element.querySelector('[data-text-revision="1"]').textContent).not.toContain("current");
-});
-
 test("a text-only body draws no Actions menu, Links or Details", async () => {
     const {element} = drawn([], 980, "doc", "", true);
     await settle();
     expect(element.querySelector("[data-actions-menu]")).toBeNull();
     expect(element.querySelector('[data-document-tab="links"]')).toBeNull();
     expect(element.querySelector('[data-document-tab="details"]')).toBeNull();
+});
+
+test("the newest revision comes first and is the current one, whatever order the journal lists them in", async () => {
+    const {element} = drawn([], 980, "doc", "", false, true);
+    await settle();
+    element.querySelector('[data-document-tab="revisions"]').click();
+    await settle();
+    const rows = [...element.querySelectorAll("[data-text-revision]")];
+    expect(rows.map((row) => row.dataset.textRevision)).toEqual(["2", "1"]);
+    expect(rows[0].textContent).toContain("current");
 });

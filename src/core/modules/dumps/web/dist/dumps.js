@@ -1,10 +1,10 @@
-if (!document.getElementById("window-styles-6ad132cf2311")) { const style = document.createElement("style"); style.id = "window-styles-6ad132cf2311"; style.textContent = ".dumps[data-v-c45e9237]{display:flex;flex-direction:column;gap:12px}.dump[data-v-c45e9237]{display:flex;flex-direction:column;gap:6px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}.dump-earlier[data-v-c45e9237]{flex-direction:row;align-items:center;justify-content:space-between;color:inherit;text-align:left;cursor:pointer}.dump-head[data-v-c45e9237]{display:flex;align-items:center;gap:10px}.dump-title[data-v-c45e9237]{margin:0;font-size:13px;font-weight:500}.dump-name[data-v-c45e9237]{flex:1;font-size:13px}.dump-pill[data-v-c45e9237]{padding:1px 8px;border-radius:10px;color:var(--text-3);font-size:11px;border:1px solid var(--border)}.dump-pill[data-phase=Filed][data-v-c45e9237]{color:var(--accent-text)}.dump-rename[data-v-c45e9237],.dumps-more[data-v-c45e9237]{color:var(--text-3);background:none;border:0;cursor:pointer}.dump-rename[data-v-c45e9237]{margin-left:auto;font-size:12px}.dumps-more[data-v-c45e9237]{align-self:flex-start}.dump-brief[data-v-c45e9237],.dumps-note[data-v-c45e9237]{margin:0;color:var(--text-3);font-size:12px}.dump-progress[data-v-c45e9237]{display:flex;align-items:center;gap:10px;color:var(--text-3);font-size:12px}.dump-bar[data-v-c45e9237]{flex:1;height:4px;border-radius:2px;background:var(--border)}.dump-fill[data-v-c45e9237]{display:block;height:100%;border-radius:2px;background:var(--accent-text)}.item[data-v-c45e9237]{display:grid;grid-template-columns:64px 1fr;gap:2px 10px;padding:6px 0;border-top:1px solid var(--border)}.item-state[data-v-c45e9237]{grid-row:span 3;align-self:start;color:var(--text-3);font-size:12px}.item-state.filed[data-v-c45e9237]{color:var(--accent-text)}.item-state.failed[data-v-c45e9237]{color:var(--danger)}.item-note[data-v-c45e9237],.item-refs[data-v-c45e9237]{color:var(--text-3);font-size:12px}.made-title[data-v-c45e9237]{margin:8px 0 0;font-size:12px;font-weight:500}.made[data-v-c45e9237]{display:flex;gap:10px;font-size:12px}.made-type[data-v-c45e9237]{color:var(--accent-text)}.made-from[data-v-c45e9237]{color:var(--text-3)}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-d55150df1441")) { const style = document.createElement("style"); style.id = "window-styles-d55150df1441"; style.textContent = ".dumps[data-v-a0bd6fa2]{display:flex;flex-direction:column;gap:12px}.dump[data-v-a0bd6fa2]{display:flex;flex-direction:column;gap:6px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}.dump-earlier[data-v-a0bd6fa2]{flex-direction:row;align-items:center;justify-content:space-between;color:inherit;text-align:left;cursor:pointer}.dump-head[data-v-a0bd6fa2]{display:flex;align-items:center;gap:10px}.dump-title[data-v-a0bd6fa2]{margin:0;font-size:13px;font-weight:500}.dump-name[data-v-a0bd6fa2]{flex:1;font-size:13px}.dump-pill[data-v-a0bd6fa2]{padding:1px 8px;border-radius:10px;color:var(--text-3);font-size:11px;border:1px solid var(--border)}.dump-pill[data-phase=Filed][data-v-a0bd6fa2]{color:var(--accent-text)}.dump-rename[data-v-a0bd6fa2],.dumps-more[data-v-a0bd6fa2]{color:var(--text-3);background:none;border:0;cursor:pointer}.dump-rename[data-v-a0bd6fa2]{margin-left:auto;font-size:12px}.dumps-more[data-v-a0bd6fa2]{align-self:flex-start}.dump-brief[data-v-a0bd6fa2],.dumps-note[data-v-a0bd6fa2]{margin:0;color:var(--text-3);font-size:12px}.dump-progress[data-v-a0bd6fa2]{display:flex;align-items:center;gap:10px;color:var(--text-3);font-size:12px}.dump-bar[data-v-a0bd6fa2]{flex:1;height:4px;border-radius:2px;background:var(--border)}.dump-fill[data-v-a0bd6fa2]{display:block;height:100%;border-radius:2px;background:var(--accent-text)}.item[data-v-a0bd6fa2]{display:grid;grid-template-columns:64px 1fr;gap:2px 10px;padding:6px 0;border-top:1px solid var(--border)}.item-state[data-v-a0bd6fa2]{grid-row:span 3;align-self:start;color:var(--text-3);font-size:12px}.item-state.filed[data-v-a0bd6fa2]{color:var(--accent-text)}.item-state.failed[data-v-a0bd6fa2]{color:var(--danger)}.item-note[data-v-a0bd6fa2],.item-refs[data-v-a0bd6fa2]{color:var(--text-3);font-size:12px}.made-title[data-v-a0bd6fa2]{margin:8px 0 0;font-size:12px;font-weight:500}.made[data-v-a0bd6fa2]{display:flex;gap:10px;font-size:12px}.made-type[data-v-a0bd6fa2]{color:var(--accent-text)}.made-from[data-v-a0bd6fa2]{color:var(--text-3)}\n"; document.head.appendChild(style); }
 import { ref as m, computed as k, watch as I, openBlock as o, createBlock as N, unref as c, withCtx as W, createElementVNode as l, createElementBlock as n, toDisplayString as a, createCommentVNode as d, createVNode as j, Fragment as r, renderList as C, withDirectives as A, withKeys as U, vModelText as Y, normalizeStyle as q, normalizeClass as G } from "vue";
 import { useWindow as H, useListTools as J, WindowRoom as Q, Skeleton as X, ListTools as Z } from "@journal/window-kit";
 const ee = (w, g) => {
   const _ = w.__vccOpts || w;
-  for (const [T, p] of g)
-    _[T] = p;
+  for (const [b, p] of g)
+    _[b] = p;
   return _;
 }, te = { class: "dumps" }, se = {
   key: 1,
@@ -19,31 +19,31 @@ const ee = (w, g) => {
   key: 0,
   class: "dump-progress",
   "data-dump-progress": ""
-}, ce = { class: "dump-bar" }, re = { class: "dump-count" }, _e = ["data-item", "data-state"], he = { class: "item-text" }, ve = {
+}, ce = { class: "dump-bar" }, re = { class: "dump-count" }, _e = ["data-item", "data-state"], he = { class: "item-text" }, fe = {
   key: 0,
   class: "item-note"
-}, fe = {
+}, ve = {
   key: 1,
   class: "item-refs"
-}, ye = { class: "made-title" }, ke = { class: "made-type" }, we = { class: "made-ref" }, ge = { class: "made-from" }, Te = ["data-dump", "onClick"], $e = { class: "dump-title" }, be = ["data-phase"], xe = {
+}, ye = { class: "made-title" }, ke = { class: "made-type" }, we = { class: "made-ref" }, ge = { class: "made-from" }, be = ["data-dump", "onClick"], Te = { class: "dump-title" }, $e = ["data-phase"], xe = {
   __name: "DumpRows",
   setup(w) {
-    const g = { new: "New", noted: "Noted", filed: "Filed", failed: "Failed" }, _ = { docs: "Document", doc: "Document", plans: "Plan", plan: "Plan", tasks: "Task", task: "Task", reports: "Report", report: "Report" }, T = ["noted", "filed", "failed"], p = H(), { data: $, failure: B, loaded: K } = p.props.dumps, i = m([]), h = m(""), D = k(() => h.value || B.value), L = k(() => $.value ? $.value.total : 0);
-    I($, (t) => {
+    const g = { new: "New", noted: "Noted", filed: "Filed", failed: "Failed" }, _ = { docs: "Document", doc: "Document", plans: "Plan", plan: "Plan", tasks: "Task", task: "Task", reports: "Report", report: "Report" }, b = ["noted", "filed", "failed"], p = H(), { data: T, failure: B, loaded: K } = p.props.dumps, i = m([]), h = m(""), D = k(() => h.value || B.value), L = k(() => T.value ? T.value.total : 0);
+    I(T, (t) => {
       i.value = t ? t.dumps : [], h.value = "";
     }, { immediate: !0 });
-    const F = m(null), v = m(null), f = m(""), S = J(i, { title: (t) => t.title || `Dump ${t.id}`, isOpen: (t) => !t.outcome }), b = k(() => S.shown.value), V = k(() => F.value ?? (b.value[0] ? b.value[0].id : null)), O = (t) => t.title || `Dump ${t.id}`, y = (t) => t.outcome ? "Filed" : "Filing", R = (t) => t.items.filter((u) => T.includes(u.state)).length, x = (t) => t.items.flatMap((u) => u.refs.map((e) => ({ ref: e, from: u.text }))), M = (t) => _[t.split(":")[0]] || t.split(":")[0];
+    const F = m(null), f = m(null), v = m(""), S = J(i, { title: (t) => t.title || `Dump ${t.id}`, isOpen: (t) => !t.outcome }), $ = k(() => S.shown.value), V = k(() => F.value ?? ($.value[0] ? $.value[0].id : null)), O = (t) => t.title || `Dump ${t.id}`, y = (t) => t.outcome ? "Filed" : "Filing", R = (t) => t.items.filter((u) => b.includes(u.state)).length, x = (t) => t.items.flatMap((u) => u.refs.map((e) => ({ ref: e, from: u.text }))), M = (t) => _[t.split(":")[0]] || t.split(":")[0];
     async function P() {
       const t = await p.readKey("dumps", { before: Math.min(...i.value.map((u) => u.id)) });
       if (!t.ok) return void (h.value = t.error);
       i.value = [...i.value, ...t.value.dumps];
     }
     function z(t) {
-      v.value = t.id, f.value = t.title;
+      f.value = t.id, v.value = t.title;
     }
     async function E(t) {
-      const u = f.value.trim();
-      if (v.value = null, !u || u === t.title) return;
+      const u = v.value.trim();
+      if (f.value = null, !u || u === t.title) return;
       const e = await p.run(["dump", "name", String(t.id), u]);
       e.ok || (h.value = e.error);
     }
@@ -55,7 +55,7 @@ const ee = (w, g) => {
             shape: "cards"
           })),
           j(c(Z), { tools: c(S) }, null, 8, ["tools"]),
-          (o(!0), n(r, null, C(b.value, (e) => (o(), n(r, {
+          (o(!0), n(r, null, C($.value, (e) => (o(), n(r, {
             key: e.id
           }, [
             e.id === V.value ? (o(), n("section", {
@@ -64,22 +64,22 @@ const ee = (w, g) => {
               "data-dump": e.id
             }, [
               l("header", ae, [
-                v.value === e.id ? A((o(), n("input", {
+                f.value === e.id ? A((o(), n("input", {
                   key: 0,
-                  "onUpdate:modelValue": u[0] || (u[0] = (s) => f.value = s),
+                  "onUpdate:modelValue": u[0] || (u[0] = (s) => v.value = s),
                   class: "dump-name",
                   "data-dump-name": "",
                   maxlength: "80",
                   onKeydown: U((s) => E(e), ["enter"]),
                   onBlur: (s) => E(e)
                 }, null, 40, le)), [
-                  [Y, f.value]
+                  [Y, v.value]
                 ]) : (o(), n("h3", ue, a(O(e)), 1)),
                 l("span", {
                   class: "dump-pill",
                   "data-phase": y(e)
                 }, a(y(e)), 9, ie),
-                !e.outcome && v.value !== e.id ? (o(), n("button", {
+                !e.outcome && f.value !== e.id ? (o(), n("button", {
                   key: 2,
                   type: "button",
                   class: "dump-rename",
@@ -107,8 +107,8 @@ const ee = (w, g) => {
                   class: G(["item-state", s.state])
                 }, a(g[s.state] || s.state), 3),
                 l("span", he, a(s.text), 1),
-                s.summary || s.note ? (o(), n("span", ve, a(s.summary || s.note), 1)) : d("", !0),
-                s.refs.length ? (o(), n("span", fe, "Filed into " + a(s.refs.join(", ")), 1)) : d("", !0)
+                s.summary || s.note ? (o(), n("span", fe, a(s.summary || s.note), 1)) : d("", !0),
+                s.refs.length ? (o(), n("span", ve, "Filed into " + a(s.refs.join(", ")), 1)) : d("", !0)
               ], 8, _e))), 128)),
               x(e).length ? (o(), n(r, { key: 1 }, [
                 l("h4", ye, a(x(e).length) + " items created", 1),
@@ -129,12 +129,12 @@ const ee = (w, g) => {
               "data-dump": e.id,
               onClick: (s) => F.value = e.id
             }, [
-              l("span", $e, a(O(e)), 1),
+              l("span", Te, a(O(e)), 1),
               l("span", {
                 class: "dump-pill",
                 "data-phase": y(e)
-              }, a(y(e)), 9, be)
-            ], 8, Te))
+              }, a(y(e)), 9, $e)
+            ], 8, be))
           ], 64))), 128)),
           i.value.length < L.value ? (o(), n("button", {
             key: 3,
@@ -147,7 +147,7 @@ const ee = (w, g) => {
       _: 1
     }));
   }
-}, Fe = /* @__PURE__ */ ee(xe, [["__scopeId", "data-v-c45e9237"]]);
+}, Fe = /* @__PURE__ */ ee(xe, [["__scopeId", "data-v-a0bd6fa2"]]);
 export {
   Fe as default
 };

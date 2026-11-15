@@ -1,4 +1,4 @@
-if (!document.getElementById("window-styles-25b8f5ad7399")) { const style = document.createElement("style"); style.id = "window-styles-25b8f5ad7399"; style.textContent = ".age[data-v-78f490ef]{color:var(--text-3);font-size:12px;white-space:nowrap}.more[data-v-78f490ef],.failure[data-v-78f490ef]{margin:0;padding:6px var(--inset);color:var(--text-3);font-size:12px}.failure[data-v-78f490ef]{color:var(--bad, var(--text-2))}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-a4f5f4415ddb")) { const style = document.createElement("style"); style.id = "window-styles-a4f5f4415ddb"; style.textContent = ".age[data-v-829ed138]{color:var(--text-3);font-size:12px;white-space:nowrap}.more[data-v-829ed138],.failure[data-v-829ed138]{margin:0;padding:6px var(--inset);color:var(--text-3);font-size:12px}.failure[data-v-829ed138]{color:var(--bad, var(--text-2))}\n"; document.head.appendChild(style); }
 import { openBlock as p, createBlock as g, unref as t, computed as C, withCtx as c, createVNode as y, createTextVNode as $, createCommentVNode as x, createElementBlock as S, ref as b, Fragment as _, toDisplayString as j } from "vue";
 import { useWindow as V, CreateDialog as N, copying as L, deleteItem as M, Reader as P, ActionsMenu as U, Btn as W, defaultFilter as H, applyFilter as z, ListReaderLayout as G, TimeAgo as J, Skeleton as K, PageHeader as Q, FilterBar as X, removed as Y } from "@journal/window-kit";
 const Z = {
@@ -172,7 +172,7 @@ const re = {
       _: 1
     }, 8, ["chosen", "items"]));
   }
-}, pe = /* @__PURE__ */ le(ue, [["__scopeId", "data-v-78f490ef"]]);
+}, pe = /* @__PURE__ */ le(ue, [["__scopeId", "data-v-829ed138"]]);
 export {
   pe as default
 };
