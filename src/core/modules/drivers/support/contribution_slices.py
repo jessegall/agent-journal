@@ -46,12 +46,17 @@ class ContributionSlices:
             return WAITING_SLICE
         return SAFETY_SLICE
 
+    # the old rules a hold replaces, whose refusal is a hold's in the one record
+    def blocking_rules(self) -> frozenset[str]:
+        return frozenset(rule for module in self.finder.modules() for source in module.needs if issubclass(source.state_type, Blocked)
+                         for rule in source.replaced_rules)
+
     def machine_answered(self, agent_slices: frozenset[str], agent_type: str) -> frozenset[str]:
         if not agent_slices:
             return frozenset()
         slices: dict[str, set[str]] = {}
         for module in self.finder.modules():
-            for contribution in (*module.needs, *module.policies, *module.lines, *module.effects):
+            for contribution in (*module.needs, *module.policies, *module.lines, *module.effects, *module.transforms):
                 for rule in contribution.replaced_rules:
                     slices.setdefault(rule, set()).add(self.slice_name(contribution, module, agent_type))
         return frozenset(rule for rule, rule_slices in slices.items() if rule_slices <= agent_slices)

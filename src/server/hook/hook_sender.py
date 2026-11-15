@@ -6,7 +6,7 @@ from engine.driver.hook_event import HookEvent
 from engine.enums.hook_event_name import HookEventName
 from engine.types.type_guards import is_mapping
 from engine.enums.execution_priority import ExecutionPriority
-from server.hook.hook_limits import AGENT_HOOK_LIMIT_SECONDS, HOOK_LIMIT_SECONDS, STOP_LIMIT_SECONDS
+from engine.driver.hook_limits import AGENT_HOOK_LIMIT_SECONDS, HOOK_LIMIT_SECONDS, STOP_LIMIT_SECONDS
 
 # the main agent's hooks go first and never wait out a limit; the hooks of other agents come next
 MAIN_AGENT_HOOK_PRIORITY = ExecutionPriority.IMMEDIATE

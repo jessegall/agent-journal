@@ -8,23 +8,26 @@ from engine.driver.rule_answers import RuleAnswers
 from engine.enums.decision_class import DecisionClass
 
 WALK_RANK = "drivers.walk"
+# the old rule that refuses for every open block row
+OLD_BLOCK_RULE = "drivers.agent-block"
 
 
 class WalkAnswerPolicy(Policy):
     """The old walk's refusal as a reason of the one record while some of its slices still answer (doc 1310
-    section 13.2, item 3): a hold at a stop and a refusal elsewhere, ranked after the new reasons of its
-    class, so any refusal refuses and the refusal counts count it. It is built for one hook, never listed by
-    a module."""
+    section 13.2, items 3 and 8): a hold at a stop, and at a tool when the deciding rule is the old block rule
+    or one a hold replaces, else a refusal, ranked after the new reasons of its class, so any refusal refuses
+    and the refusal counts count it. It is built for one hook, never listed by a module."""
 
     key = WALK_RANK
     rank = WALK_RANK
 
-    def __init__(self, answers: RuleAnswers) -> None:
-        self.answers = answers
+    def __init__(self, answers: RuleAnswers, blocking_rules: frozenset[str]) -> None:
+        self.answers, self.blocking_rules = answers, blocking_rules | {OLD_BLOCK_RULE}
 
     def refusals(self, question: Question, view: AgentView) -> Sequence[Reason]:
         refusal = self.answers.refusal
         if not refusal:
             return []
         deciding = next((rule.name for rule in self.answers.answered if rule.answer is not None and rule.answer.refusal == refusal), WALK_RANK)
-        return [Reason(deciding, DecisionClass.HOLD if question.is_stop() else DecisionClass.REFUSE, self.rank, refusal)]
+        refuses_as_block = question.is_stop() or deciding in self.blocking_rules
+        return [Reason(deciding, DecisionClass.HOLD if refuses_as_block else DecisionClass.REFUSE, self.rank, refusal)]

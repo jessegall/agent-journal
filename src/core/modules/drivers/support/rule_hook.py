@@ -14,7 +14,8 @@ from core.modules.drivers.support.actor_loader import ActorLoader
 
 class RuleHook(RuleHooks):
     """Asks an old rule at the hook built from the agent's row, loaded as the rule walk loads its actor, once for a
-    hook until a row changes."""
+    hook and the action asked until a row changes; a transform's later slot asks with the action the earlier
+    slot left, so the slots chain."""
 
     def __init__(self, agents: AgentRows, loader: ActorLoader, clock: Clock, container: Container, request_values: RequestValues, database: Database) -> None:
         self.agents, self.loader, self.clock, self.container, self.request_values, self.database = agents, loader, clock, container, request_values, database
@@ -23,7 +24,7 @@ class RuleHook(RuleHooks):
         event = question.event
         if event is None:
             return None
-        return self.request_values.read(f"rule_backed.{rule.name}.{agent_id}.{event.firing}", self.database.change_mark, lambda: self.rule_answer(rule, event, agent_id))
+        return self.request_values.read(f"rule_backed.{rule.name}.{agent_id}.{event.firing}.{question.fingerprint()}", self.database.change_mark, lambda: self.rule_answer(rule, event, agent_id))
 
     def rule_answer(self, rule: type[DriverRule], event: HookEvent, agent_id: int) -> RuleAnswer:
         hook = AgentHook.of_actor(event, self.loader.loaded(self.agents.find(agent_id)), self.clock.timestamp())

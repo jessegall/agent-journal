@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.listeners.new_unit_pin_listener import NewUnitPinListener
 from suites.coding.modules.workers.listeners.worktree_step_listener import WorktreeStepListener
 from suites.coding.modules.workers.listeners.proof_step_listener import ProofStepListener
 from suites.coding.modules.workers.guards.proved_delivery_guard import ProvedDeliveryGuard
@@ -177,7 +178,7 @@ class WorkersModule(Module):
         "suites.coding.workers.worktree_behind_check.hold": "suites.coding.workers.worktree_behind_check.pause",
     }
     bindings = {DocumentFilers: ReportDocumentFilers, CheckpointBranchMoves: WorkerCheckpointBranchMoves, CheckpointRuns: CheckpointRunner, CompactionLimit: WorkerCompactionLimit, CompactionStop: WorkerCompactionStop, ManagedFiles: JournalManagedFiles, HelperGrantPolicy: WorkerGrantPolicy, ReadCommands: WorkerReadCommands, WorkerRecoveryReports: RecordWorkerRecoveryReports, AgentWork: WorkerAgentWork, AgentBriefPoints: WorkerBriefPoints, AssignedWorkSources: WorkerTaskSources, AgentFolders: WorkerFolders, DispatchPolicy: WorkerPolicy, AgentWriteFolder: WorkerWriteFolder, AgentSandboxChoice: WorkerSandboxChoice, AgentCheckouts: WorkerCheckouts, TaskAssignees: WorkerTaskAssignees, SkillProjects: WorkerSkillProjects, TaskWaitTargets: WorkerTaskWaitTargets, QueueRunWorkers: WorkerQueueRunWorkers, RunCounts: WorkerTestListings, PartVisibility: WorkerPartVisibility, RunWaits: WorkerRunWaits, RuleWarnings: RouteRuleWarnings}
-    listeners = WORKERS_LISTENERS
+    listeners = [NewUnitPinListener, *WORKERS_LISTENERS]
     agent_listeners = [WorktreeStepListener, ProofStepListener]
     tick_handlers = [WorkerInstructionRefreshTickHandler, StoppedWorkerLibrariesTickHandler, MergerRetryTickHandler, InactiveMainAgentPromptTickHandler, BehindWorktreesTickHandler, BehindCheckPruningTickHandler, AskWatchTickHandler, StoppedWorkerRunsTickHandler, WorkerResumeRetryTickHandler, GoneWorkerRecoveryTickHandler, StalledWorkerTestRunsTickHandler, UnstartedWorkerProofsTickHandler, UnlaunchedWorkerTestRunsTickHandler]
     windows = WORKERS_WINDOWS

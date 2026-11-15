@@ -18,6 +18,10 @@ class RuleTransform(Transform):
     rule: ClassVar[type[DriverRule]]
     replaces_action: ClassVar[bool] = True
 
+    def __init_subclass__(cls, **kwargs: object) -> None:
+        super().__init_subclass__(**kwargs)
+        cls.replaced_rules = tuple([cls.rule.name])
+
     def __init__(self, hooks: RuleHooks, parser: ShellParser) -> None:
         self.hooks, self.parser = hooks, parser
 

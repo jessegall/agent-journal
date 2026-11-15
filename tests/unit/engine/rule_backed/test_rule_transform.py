@@ -110,3 +110,23 @@ def test_the_runner_wrap_is_judged_as_the_line_it_wraps():
     read = shell_question("cat a.py", ShellPart("cat", CommandCategory.READ, ["a.py"]))
     rewrite = SampleRunnerTransform(SampleHooks(EDIT_LINE), SampleParser()).applied(read, view())
     assert rewrite.changed() and rewrite.final_question(read) == read
+
+
+class WrappingHooks(RuleHooks):
+    """The runner's answer: the line it is asked about, wrapped."""
+
+    def answer(self, rule: type[DriverRule], question: Question, agent_id: int) -> RuleAnswer | None:
+        tool = question.tool()
+        assert tool is not None and tool.shell is not None
+        return RuleAnswer(updated_input={"command": f"journal-run -- {tool.shell.display_text}"})
+
+
+def test_the_runner_wraps_the_line_the_alias_expanded():
+    alias = shell_question("journal fix", ShellPart("journal", CommandCategory.JOURNAL, ["fix"]))
+    transforms = [SampleAliasTransform(SampleHooks(EDIT_LINE), SampleParser()), SampleRunnerTransform(WrappingHooks(), SampleParser())]
+    record = AgentMachine(transforms=transforms).step(view(), alias).record
+    assert record.rewrite.tool_input == {"command": f"journal-run -- {EDIT_LINE}"}
+
+
+def test_a_rule_transform_stands_down_the_rule_it_replaces():
+    assert SampleAliasTransform.replaced_rules == tuple([SampleRewriteRule.name])

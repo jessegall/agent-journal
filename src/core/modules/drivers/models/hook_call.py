@@ -61,6 +61,7 @@ class HookCall(Prunable, EnvironmentScoped, Model):
     refusal: str = ""
     lines: str = ""
     updated_input: str = "{}"
+    repeated_answer: str = ""
 
     @staticmethod
     def summarize(text: str) -> str:

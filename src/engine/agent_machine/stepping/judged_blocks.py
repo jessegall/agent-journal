@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from engine.agent_stack.open_block import OpenBlock
 from engine.agent_stack.reason import Reason
 from engine.agent_machine.agent_view import AgentView
@@ -15,8 +17,18 @@ class JudgedBlocks:
 
     @staticmethod
     def constraining(view: AgentView) -> list[OpenBlock]:
-        rows = [block for block in view.blocks if block.block_id is None or view.block_outcomes.get(block.block_id, ConditionOutcome.PENDING) not in CLOSING_OUTCOMES]
+        plans = {plan.nudge.key: plan for plan in view.plans}
+        rows = [JudgedBlocks.with_plan(block, plans.get(block.nudge_key)) for block in view.blocks
+                if block.block_id is None or view.block_outcomes.get(block.block_id, ConditionOutcome.PENDING) not in CLOSING_OUTCOMES]
         return [*rows, *(JudgedBlocks.planned(plan) for plan in JudgedBlocks.new_plans(view))]
+
+    # an open row whose need still plans it this step decides under the plan's rank, check keys, stop text and subject
+    @staticmethod
+    def with_plan(block: OpenBlock, plan: BlockPlan | None) -> OpenBlock:
+        if plan is None:
+            return block
+        planned = JudgedBlocks.planned(plan)
+        return replace(block, reason=planned.reason, stop_reason=planned.stop_reason, subject=planned.subject)
 
     @staticmethod
     def new_plans(view: AgentView) -> list[BlockPlan]:

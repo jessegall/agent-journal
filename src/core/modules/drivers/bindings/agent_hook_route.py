@@ -1,3 +1,6 @@
+from core.modules.drivers.commands.record_repeated_hook_answer.record_repeated_hook_answer import RecordRepeatedHookAnswer
+from engine.agent_machine.stepping.constraints import Constraints
+from engine.driver.hook_limits import HookLimits
 from engine.time.timestamp import MILLISECONDS
 from dataclasses import replace
 
@@ -48,8 +51,6 @@ from core.modules.environments.models.environment import Environment
 from engine.setting.setting_values import SettingValues
 
 
-MAIN_HOOK_SECONDS = 5
-AGENT_HOOK_SECONDS = 40
 # a lost check is tried once more when time is left (doc 1310 section 6.6)
 CHECK_ATTEMPTS = 2
 STORED_ANSWER_REASON = "a repeated hook is found by its firing, which is unique in every environment"
@@ -121,7 +122,7 @@ class AgentHookRoute(HookRoute):
         return self.bus.run(RecordHookCall(event, agent.id, answers), actor, environment_id=agent.environment_id), answers
 
     def has_check_time(self, event: HookEvent, agent: Agent) -> bool:
-        limit = MAIN_HOOK_SECONDS if agent.role == AgentRole.MAIN else AGENT_HOOK_SECONDS
+        limit = HookLimits.seconds(agent.role == AgentRole.MAIN, event.event)
         waited = self.clock.timestamp().value.timestamp() - event.hook_timestamp_ms / MILLISECONDS
         with self.bus.scopes.read_scope((), None, agent.environment_id):
             reserve = self.settings.number(RETRY_RESERVE_SETTING) / MILLISECONDS
@@ -136,14 +137,20 @@ class AgentHookRoute(HookRoute):
         is_stored_admission = not reply.refusal and event.event in (HookEventName.PRE_TOOL_USE, HookEventName.PROMPT)
         if not is_answered or not is_stored_admission:
             return reply
-        override = self.replay_override(event, agent, stored_call)
-        return replace(reply, refusal=override) if override else reply
+        override = self.repeated_answer(event, agent, stored_call)
+        if not override:
+            return reply
+        self.bus.run(RecordRepeatedHookAnswer(stored_call.id, override), Actor.core(), environment_id=agent.environment_id)
+        return replace(reply, refusal=override)
 
-    def replay_override(self, event: HookEvent, agent: Agent, stored_call: HookCall) -> str:
+    def repeated_answer(self, event: HookEvent, agent: Agent, stored_call: HookCall) -> str:
         if agent.retired_at is not None:
             return EndedAgentNudge.declared().nudge().text
         if self.sessions.replaced_agent_id(event.session) is not None:
             return ReplacedSessionNudge.declared().nudge(agent=agent.number).text
+        # a pause since then refuses only a tool Paused refuses, never a read, a search, journal message or a prompt
+        if event.tool is None or not Constraints.pause_refuses(event.tool):
+            return ""
         paused_later = [paused for paused in self.agents.paused_line(agent.id) if paused.paused_at is not None and paused.paused_at.value >= stored_call.creation_timestamp().value]
         return PausedRefusalNudge.declared().nudge().text if paused_later else ""
 
@@ -162,7 +169,7 @@ class AgentHookRoute(HookRoute):
     def note_timeout(self, event: HookEvent, agent: Agent, actor: Actor) -> None:
         if event.event == HookEventName.TICK:
             return
-        limit = MAIN_HOOK_SECONDS if agent.role == AgentRole.MAIN else AGENT_HOOK_SECONDS
+        limit = HookLimits.seconds(agent.role == AgentRole.MAIN, event.event)
         waited = self.clock.timestamp().value.timestamp() - event.hook_timestamp_ms / MILLISECONDS
         if waited >= limit:
             self.bus.run(RecordHookTimeout(agent.id), actor, environment_id=agent.environment_id)

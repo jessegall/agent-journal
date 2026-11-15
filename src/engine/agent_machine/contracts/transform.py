@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from typing import ClassVar
 
 from engine.agent_machine.agent_view import AgentView
@@ -12,6 +13,7 @@ class Transform(ABC):
     transformed a second time."""
 
     slot: ClassVar[TransformSlot]
+    replaced_rules: ClassVar[Sequence[str]] = ()
 
     @abstractmethod
     def applied(self, question: Question, view: AgentView) -> Rewrite: ...

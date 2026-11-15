@@ -31,6 +31,7 @@ from engine.driver.nudge import Nudge
 from engine.enums.capability_part import CapabilityPart
 from engine.enums.capability_proof import CapabilityProof
 from engine.enums.command_category import CommandCategory
+from engine.enums.command_effect import CommandEffect
 from engine.enums.condition_outcome import ConditionOutcome
 from engine.enums.decision_class import DecisionClass
 from engine.enums.escalation_type import EscalationType
@@ -137,6 +138,13 @@ def plan(tool_grace_uses: int) -> BlockPlan:
                     tool_grace_uses=tool_grace_uses)
 
 
+
+def test_an_open_row_its_need_still_plans_decides_under_the_plans_rank_keys_and_stop_text() -> None:
+    stop_plan = replace(plan(0), scope_stop=True, stop_check_key="tasks.log-before-stop", stop_nudge=Nudge("tasks.unlogged-stop", NudgeType.STEERING, "log your task before you stop"))
+    row = block("tasks.unlogged-writes", "row-rank")
+    shown = AgentMachine().step(view(blocks=(row,), plans=(stop_plan,)), STOP).record.shown_reason
+    assert (shown.key, shown.rank, shown.text) == ("tasks.log-before-stop", "tasks.unlogged", "log your task before you stop")
+
 def test_a_plan_without_a_grace_refuses_the_action_that_found_it_and_a_grace_lets_it_through_both_opening_their_row() -> None:
     without_grace, with_grace = AgentMachine().step(view(plans=(plan(0),)), EDIT).record, AgentMachine().step(view(plans=(plan(5),)), EDIT).record
     assert (without_grace.decision.admits(), with_grace.decision.admits()) == (False, True)
@@ -185,6 +193,16 @@ def test_a_paused_agent_may_answer_with_a_message_and_rest_but_not_edit_or_hand_
     rest = machine.step(paused("helper", needs=(working(WorkType.JOB),)), STOP).record
     assert (rest.decision.admits(), rest.shown_reason.handover) == (True, None)
 
+
+
+def test_a_paused_agent_may_search_but_not_chain_a_search_with_a_write_or_a_journal_command() -> None:
+    search = ShellPart("grep", CommandCategory.SEARCH, ["x", "a.py"])
+    alone = QuestionSamples.question(HookSamples.shell("grep x a.py", search))
+    with_write = QuestionSamples.question(HookSamples.shell("grep x a.py && rm a.py", search, ShellPart("rm", CommandCategory.EDIT, ["a.py"], effects=[CommandEffect.WRITES_FILES])))
+    with_journal = QuestionSamples.question(HookSamples.shell("grep x a.py && journal task make t", search, ShellPart("journal", CommandCategory.JOURNAL, ["task", "make", "t"])))
+    machine = AgentMachine()
+    assert machine.step(paused(), alone).record.decision.admits()
+    assert [machine.step(paused(), question).record.shown_reason.key for question in (with_write, with_journal)] == [PAUSE_KEY, PAUSE_KEY]
 
 class RunnerWrap(Transform):
     slot = TransformSlot.RUNNER

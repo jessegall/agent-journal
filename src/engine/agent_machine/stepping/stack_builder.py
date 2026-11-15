@@ -11,11 +11,15 @@ from engine.agent_machine.needs.pause_fact import PauseFact
 from engine.agent_machine.record.stack_move import StackMove
 from engine.agent_machine.stepping.built_stack import BuiltStack
 from engine.agent_machine.stepping.judged_blocks import JudgedBlocks
+from engine.enums.condition_outcome import ConditionOutcome
 from engine.enums.frame_end import FrameEnd
 from engine.enums.lane import Lane
 from engine.enums.stack_move_type import StackMoveType
 
-FRAME_ENDS = {"Working": FrameEnd.CLOSED, "Waiting": FrameEnd.ANSWERED, "Blocked": FrameEnd.SATISFIED, "Compacting": FrameEnd.CLOSED, "Paused": FrameEnd.CLOSED}
+# a resume and a finished compaction end no work, so their frames leave with no end that counts as progress;
+# a hold ends as its condition was judged
+FRAME_ENDS = {"Working": FrameEnd.CLOSED, "Waiting": FrameEnd.ANSWERED}
+BLOCK_ENDS = {ConditionOutcome.SATISFIED: FrameEnd.SATISFIED, ConditionOutcome.CANCELLED: FrameEnd.CANCELLED, ConditionOutcome.TARGET_MISSING: FrameEnd.TARGET_MISSING}
 
 
 class StackBuilder:
@@ -29,7 +33,7 @@ class StackBuilder:
         work = self.work_lane(view)
         frames = [view.stack.frames[0], *work, *self.capped(view, len(work), self.block_lane(view, old)), *self.safety(view, old)]
         stack = Stack(frames)
-        return BuiltStack(stack, tuple(self.moves(view.stack, stack)))
+        return BuiltStack(stack, tuple(self.moves(view, stack)))
 
     @staticmethod
     def work_lane(view: AgentView) -> list[Frame]:
@@ -62,13 +66,21 @@ class StackBuilder:
         return frames
 
     @staticmethod
-    def moves(old: Stack, new: Stack) -> list[StackMove]:
+    def moves(view: AgentView, new: Stack) -> list[StackMove]:
+        old = view.stack
         if len(old.frames) <= 1 and len(new.frames) > 1:
             return [StackMove(StackMoveType.SEEDED, None, "the stack was built from the agent's rows")]
         old_frames, new_frames = {frame.need_key: frame for frame in old.frames}, {frame.need_key: frame for frame in new.frames}
-        exited = [StackMove(StackMoveType.EXITED, key, f"{type(frame.state).__name__} exited", FRAME_ENDS.get(key.state_name))
+        exited = [StackMove(StackMoveType.EXITED, key, f"{type(frame.state).__name__} exited", StackBuilder.frame_end(view, frame))
                   for key, frame in old_frames.items() if key not in new_frames]
         entered = [StackMove(StackMoveType.ENTERED, key, f"{type(frame.state).__name__} entered") for key, frame in new_frames.items() if key not in old_frames]
         changed = [StackMove(StackMoveType.DATA_CHANGED, key, f"{type(frame.state).__name__} changed") for key, frame in new_frames.items()
                    if key in old_frames and old_frames[key].state != frame.state]
         return [*exited, *entered, *changed]
+
+    @staticmethod
+    def frame_end(view: AgentView, frame: Frame) -> FrameEnd | None:
+        if isinstance(frame.state, Blocked):
+            block_id = frame.state.block.block_id
+            return BLOCK_ENDS.get(view.block_outcomes.get(block_id, ConditionOutcome.PENDING)) if block_id is not None else None
+        return FRAME_ENDS.get(frame.need_key.state_name)

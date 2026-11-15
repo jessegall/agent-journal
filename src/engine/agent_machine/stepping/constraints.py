@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 
+from engine.driver.tool import Tool
 from engine.agent_stack.reason import Reason
 from engine.agent_stack.stack import Stack
 from engine.agent_stack.states.compacting import Compacting
@@ -36,11 +37,16 @@ class Constraints:
     def pause_reasons(question: Question, stack: Stack) -> list[Reason]:
         tool = question.tool()
         paused = next((frame.state for frame in stack.frames if isinstance(frame.state, Paused)), None)
-        if paused is None or tool is None or tool.is_readonly or tool.is_search:
-            return []
-        if tool.shell is not None and tool.shell.has_only_parts(lambda part: BlockExemptions.names(part, MESSAGE_COMMAND)):
+        if paused is None or tool is None or not Constraints.pause_refuses(tool):
             return []
         return [Reason(PAUSE_KEY, DecisionClass.REFUSE, PAUSE_RANK, paused.refusal_text)]
+
+    # Paused lets through reads, searches and a line made only of journal message (doc 1310 section 4.2, point 1)
+    @staticmethod
+    def pause_refuses(tool: Tool) -> bool:
+        if tool.is_readonly:
+            return False
+        return tool.shell is None or not tool.shell.has_only_parts(lambda part: BlockExemptions.names(part, MESSAGE_COMMAND))
 
     def policy_reasons(self, question: Question, view: AgentView) -> list[Reason]:
         return [reason for _, refusals, grant in self.judged_policies(question, view) if grant is None for reason in refusals]

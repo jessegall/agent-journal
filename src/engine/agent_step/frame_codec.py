@@ -6,6 +6,7 @@ from enum import Enum
 from types import NoneType, UnionType
 from typing import Any, Union, get_args, get_origin, get_type_hints
 
+from engine.agent_stack.need_key import NeedKey
 from engine.agent_stack.frame import Frame
 from engine.agent_stack.states.blocked import Blocked
 from engine.agent_stack.states.compacting import Compacting
@@ -32,6 +33,15 @@ class FrameCodec:
     @staticmethod
     def decoded(text: str) -> list[Frame]:
         return [FrameCodec.frame(StoredFrame(**entry)) for entry in json.loads(text)]
+
+    # a need key alone, as a person's suppression of a frame keeps it
+    @staticmethod
+    def encoded_key(key: NeedKey) -> str:
+        return json.dumps(FrameCodec.plain(key))
+
+    @staticmethod
+    def decoded_key(text: str) -> NeedKey:
+        return FrameCodec.built(NeedKey, json.loads(text))
 
     @staticmethod
     def frame(stored: StoredFrame) -> Frame:

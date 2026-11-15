@@ -1,5 +1,4 @@
 from engine.agent_stack.states.blocked import Blocked
-from engine.agent_stack.states.working import Working
 from engine.agent_step.frame_codec import FrameCodec
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -14,12 +13,16 @@ from engine.enums.block_end import BlockEnd
 
 REFUSED_STATES = {"Paused": "a paused agent is resumed with journal agent resume", "Stopped": "the bottom of a stack is never removed",
                   "Ended": "an ended agent stays ended"}
+# a person's pop of these frames hides their need until restored; a new wait or a new context generation has a key of its own
+SUPPRESSED_TEXTS = {"Working": "work {frame} hidden until it is restored or assigned again", "Waiting": "wait {frame} cancelled by a person",
+                    "Compacting": "compaction request {frame} cancelled for this context generation"}
 
 
 class RemoveStackFrameHandler(Handler[RemoveStackFrame, str]):
     """Removes a frame as a person (doc 1310 section 4.3): a Blocked frame closes its block as waived by the
-    person, a Working frame is hidden by a suppression until it is restored or assigned again, and Paused,
-    Stopped and Ended are refused with the way out. Only a person pops a frame, and a pop never passes a
+    person, a Working frame is hidden by a suppression until it is restored or assigned again, a Waiting or
+    Compacting frame is cancelled for that wait or that context generation, and Paused, Stopped and Ended are
+    refused with the way out. Only a person pops a frame, and a pop never passes a
     policy."""
 
     command = RemoveStackFrame
@@ -43,8 +46,8 @@ class RemoveStackFrameHandler(Handler[RemoveStackFrame, str]):
             self.repository.save(block.changed(closed_at=context.timestamp, closed_reason=BlockEnd.WAIVED.value, closer=f"person {context.actor.id}",
                                                skip_reason=command.reason), context)
             return f"block {block.id} waived"
-        if isinstance(state, Working):
-            self.repository.save(AgentFrameSuppression(session_agent_id=command.agent_id, need_key=command.frame, person_id=context.actor.id,
-                                                       reason=command.reason), context)
-            return f"work {command.frame} hidden until it is restored or assigned again"
-        raise Refusal(f"a {state_name} frame is removed by its own command", "a wait ends with journal wait end, a compaction request by its control")
+        if state_name not in SUPPRESSED_TEXTS:
+            raise Refusal(f"a {state_name} frame cannot be removed", "journal driver stack lists the frames a person may remove")
+        self.repository.save(AgentFrameSuppression(session_agent_id=command.agent_id, need_key=FrameCodec.encoded_key(frames[0].need_key), person_id=context.actor.id,
+                                                   reason=command.reason), context)
+        return SUPPRESSED_TEXTS[state_name].format(frame=command.frame)

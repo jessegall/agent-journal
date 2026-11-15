@@ -1,3 +1,4 @@
+from core.modules.drivers.models.agent_frame_suppression import AgentFrameSuppression
 from engine.agent_stack.answer_basis import AnswerBasis
 from engine.agent_stack.escalation import Escalation
 from engine.agent_stack.frame import Frame
@@ -39,6 +40,7 @@ from core.modules.drivers.models.enums.escalation_state import EscalationState
 from core.modules.drivers.models.program_epoch import ProgramEpoch
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 
+OPEN_SUPPRESSIONS_REASON = "the frames a person removed from one agent, a handful at most"
 OPEN_BLOCKS_REASON = "the open blocks of one agent are few: each is closed or skipped before the agent goes on"
 BOTTOM_KEY = NeedKey("Stopped", None, "bottom")
 CORE_SUITE = "core"
@@ -66,11 +68,15 @@ class StoredAgentViewReader(AgentViewReader):
         return AgentView(
             basis=self.basis(row, agent), agent=reference, program_name=agent.program,
             session=agent.session, profile=agent.profile, driver_name=driver.name, session_generation=1, stepped_at=self.clock.timestamp().value,
-            stack=self.stack(row, agent), facts=self.facts(agent), needs=(), plans=(), blocks=self.blocks(agent_id), grants=self.grants(reference), suppressions=(),
+            stack=self.stack(row, agent), facts=self.facts(agent), needs=(), plans=(), blocks=self.blocks(agent_id), grants=self.grants(reference), suppressions=self.suppressions(agent_id),
             escalation=escalation, settings={key: self.settings.number(key) for key in (STOP_LIMIT_SETTING, TOOL_LIMIT_SETTING)},
             is_resting=self.hook_calls.has_ended_turn(agent_id), pinned_slices=row.pinned_slices if row is not None else (),
             table_digest=row.table_digest if row is not None else "", work_stop=driver.work_stop, responder=driver.responder, rank_order=driver.rank_order,
             depth_limit=driver.depth_limit, program=self.providers.provider(agent.program).capabilities(), counts=counts, block_outcomes={})
+
+    def suppressions(self, agent_id: int) -> tuple[NeedKey, ...]:
+        rows = self.queries.query(AgentFrameSuppression).filter(session_agent_id=agent_id, ended_at=None).every_row(OPEN_SUPPRESSIONS_REASON)
+        return tuple(FrameCodec.decoded_key(row.need_key) for row in rows)
 
     def grants(self, agent: AgentReference) -> tuple[Grant, ...]:
         return tuple(self.grant_store.usable_grants([agent]).get(agent.agent_id, ()))
@@ -97,16 +103,18 @@ class StoredAgentViewReader(AgentViewReader):
         replaced = self.queries.query(AgentSession).filter(session_agent_id=agent.id, end_reason=EndReason.PERSON_REPLACEMENT.value).first()
         return [EndedFact(None, "replaced", agent.id)] if replaced is not None else []
 
+    # a row's tool grace passes after its committed tool uses or its seconds, whichever comes first, as the old block rule counts them
     def blocks(self, agent_id: int) -> tuple[OpenBlock, ...]:
-        rows = self.queries.query(AgentBlock).filter(session_agent_id=agent_id, closed_at=None).every_row(OPEN_BLOCKS_REASON)
-        return tuple(self.open_block(row) for row in rows)
+        rows = list(self.queries.query(AgentBlock).filter(session_agent_id=agent_id, closed_at=None).every_row(OPEN_BLOCKS_REASON))
+        counted = [row for row in rows if row.grace_tool_uses]
+        uses = dict(zip([row.id for row in counted], self.hook_calls.tool_use_counts(agent_id, [row.creation_timestamp() for row in counted]))) if counted else {}
+        return tuple(self.open_block(row, uses.get(row.id, 0)) for row in rows)
 
-    def open_block(self, row: AgentBlock) -> OpenBlock:
+    def open_block(self, row: AgentBlock, tool_uses: int) -> OpenBlock:
         reason = Reason(row.nudge_key, DecisionClass.HOLD, row.nudge_key, row.nudge_text, row.lifting_lines)
-        has_grace = bool(row.grace_tool_uses or row.grace_seconds)
-        elapsed = row.creation_timestamp().elapsed_seconds(self.clock.timestamp())
-        return OpenBlock(row.nudge_key, row.id, reason, row.has_tool_scope, row.has_stop_scope, not has_grace or elapsed >= row.grace_seconds > 0,
-                         elapsed >= row.stop_grace_seconds, row.strict)
+        timestamp = self.clock.timestamp()
+        return OpenBlock(row.nudge_key, row.id, reason, row.has_tool_scope, row.has_stop_scope, row.is_active(tool_uses, timestamp),
+                         row.creation_timestamp().elapsed_seconds(timestamp) >= row.stop_grace_seconds, row.strict)
 
     def escalation(self, agent_id: int) -> Escalation | None:
         row = self.queries.query(AgentEscalation).filter(session_agent_id=agent_id, state=EscalationState.OPEN).first()

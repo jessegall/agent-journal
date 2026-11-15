@@ -1,0 +1,36 @@
+from engine.query.queries import Queries
+from engine.testing.examples.hook_samples import HookSamples
+from engine.enums.tool_type import ToolType
+from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.drivers.models.hook_call import HookCall
+from core.modules.drivers.nudges.paused_refusal_nudge import PausedRefusalNudge
+from core.modules.drivers.support.contribution_slices import SAFETY_SLICE
+from core.modules.drivers.support.driver_settings import ACTIVE_SLICES_SETTING
+from engine.command.bus import Bus
+from core.modules.drivers.commands.refresh_agent_pin.refresh_agent_pin import RefreshAgentPin
+from tests.stories.core.support.coding_fixtures import ReadTaskBuilder
+
+READ = HookSamples.tool_use("Read", ToolType.READ, ["src/cart.py"], None).with_fields(firing="replayed-read")
+EDIT = HookSamples.edit("src/cart.py").with_fields(firing="replayed-edit")
+
+
+def paused_after(story, sample):
+    story.expect_success(f"setting set {ACTIVE_SLICES_SETTING} '[\"{SAFETY_SLICE}\"]'", actor=story.user)
+    story.container.get(Bus).run(RefreshAgentPin(story.agent.id), story.user, environment_id=1)
+    first = story.hook("s-1", sample)
+    story.expect_success(f"agent pause {story.container.get(AgentRows).find(story.agent.id).number}", actor=story.user)
+    return first, story.hook("s-1", sample)
+
+
+def test_a_replayed_read_passes_a_pause_since_its_stored_answer(played):
+    story = played(ReadTaskBuilder)
+    first, again = paused_after(story, READ)
+    assert not first.refusal and not again.refusal
+
+
+def test_a_replayed_edit_is_refused_by_a_pause_since_and_the_call_records_it(played):
+    story = played(ReadTaskBuilder)
+    first, again = paused_after(story, EDIT)
+    paused_text = PausedRefusalNudge.declared().nudge().text
+    call = story.container.get(Queries).query(HookCall).every_environment("one test's hook").filter(firing="replayed-edit").first()
+    assert not first.refusal and again.refusal == paused_text and call is not None and call.repeated_answer == paused_text

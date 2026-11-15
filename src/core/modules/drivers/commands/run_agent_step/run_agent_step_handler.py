@@ -37,7 +37,7 @@ class RunAgentStepHandler(Handler[RunAgentStep, None]):
         if agent_slices:
             question = Question.none()
             view = self.assembly.with_sliced_needs(self.reader.read(agent.id, question), question, agent_slices)
-            step = self.assembly.sliced_machine(agent.role, agent_slices, WalkAnswerPolicy(EMPTY_WALK)).step(view, question)
+            step = self.assembly.sliced_machine(agent.role, agent_slices, WalkAnswerPolicy(EMPTY_WALK, frozenset())).step(view, question)
             if not self.steps.save(view, step, None, context).is_saved:
                 raise StepConflictError()
         self.repository.save_change(request, request.changed(served_at=context.timestamp), context)

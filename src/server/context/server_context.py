@@ -6,7 +6,7 @@ from engine.provider.transcript_entries import TranscriptEntries
 from engine.time.timestamp import Timestamp
 from server.handover.code_version import CodeVersion
 from server.hook.hook_database import HookDatabase
-from server.hook.hook_limits import AGENT_HOOK_LIMIT_SECONDS, HOOK_LIMIT_SECONDS, STOP_LIMIT_SECONDS
+from engine.driver.hook_limits import AGENT_HOOK_LIMIT_SECONDS, HOOK_LIMIT_SECONDS, STOP_LIMIT_SECONDS
 from server.door.journal_door import JournalDoor
 from server.work.listeners.listener_wake_router import ListenerWakeRouter
 from engine.serving.server_files import ServerFiles
