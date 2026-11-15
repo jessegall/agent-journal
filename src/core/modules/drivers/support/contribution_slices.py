@@ -13,6 +13,8 @@ from engine.module.module_finder import ModuleFinder
 
 # the old rule that let a stop through after repeated refusals, which the escalation of section 4.6 replaces
 REPEATED_STOP_RELEASE = "drivers.repeated-stop-release"
+# the old rule that refuses for every open hold row, which the machine judges itself once every blocked slice answers
+OLD_BLOCK_RULE = "drivers.agent-block"
 SAFETY_SLICE, ADMISSION_SLICE, LINES_SLICE = "safety", "admission", "lines"
 Contribution = NeedSource | Policy | LineSource | Effect | Transform | WakeCause
 
@@ -66,9 +68,10 @@ class ContributionSlices:
                     slices.setdefault(rule, set()).add(self.slice_name(contribution, module, agent_type))
         answered = frozenset(rule for rule, rule_slices in slices.items() if rule_slices <= agent_slices)
         blocked = self.blocked_slices(agent_type)
-        return answered | {REPEATED_STOP_RELEASE} if blocked and blocked <= agent_slices else answered
+        return answered | {REPEATED_STOP_RELEASE, OLD_BLOCK_RULE} if blocked and blocked <= agent_slices else answered
 
-    # every blocked slice of an agent type: once all answer it, the escalation replaces the old repeated stop release
+    # every blocked slice of an agent type: once all answer it, the escalation and the machine's own judging of open rows
+    # replace the old repeated stop release and the old block rule
     def blocked_slices(self, agent_type: str) -> frozenset[str]:
         return frozenset(self.slice_name(source, module, agent_type) for module in self.finder.modules() for source in module.needs
                          if issubclass(source.state_type, Blocked) and (not source.agent_types or agent_type in source.agent_types))

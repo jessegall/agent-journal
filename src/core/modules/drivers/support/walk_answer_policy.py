@@ -6,10 +6,9 @@ from engine.agent_machine.record.question import Question
 from engine.agent_stack.reason import Reason
 from engine.driver.rule_answers import RuleAnswers
 from engine.enums.decision_class import DecisionClass
+from core.modules.drivers.support.contribution_slices import OLD_BLOCK_RULE
 
 WALK_RANK = "drivers.walk"
-# the old rule that refuses for every open block row
-OLD_BLOCK_RULE = "drivers.agent-block"
 
 
 class WalkAnswerPolicy(Policy):
