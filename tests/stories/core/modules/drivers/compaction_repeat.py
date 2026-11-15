@@ -71,15 +71,9 @@ def expect_single_entered_request(story):
     story.expect_rows(len(rows) == 1, rows[0].state is CompactionState.REQUESTED, story.typing.typed == [COMPACT_LINE], detail=f"{rows} {story.typing.typed}")
 
 
-def test_g1_two_stops_of_one_agent_in_the_same_second_make_one_request_and_type_one_line(exceeding_limit):
+def test_g1_two_stops_and_a_request_in_the_same_second_make_one_request_and_the_request_is_refused_naming_it(exceeding_limit):
     has_context(exceeding_limit, LIMIT_TOKENS)
     exceeding_limit.hook(SESSION, HookSamples.stop())
-    exceeding_limit.hook(SESSION, HookSamples.stop())
-    expect_single_entered_request(exceeding_limit)
-
-
-def test_g1_a_second_request_made_in_the_same_second_as_the_first_is_refused_naming_it(exceeding_limit):
-    has_context(exceeding_limit, LIMIT_TOKENS)
     exceeding_limit.hook(SESSION, HookSamples.stop())
     with pytest.raises(Refusal, match=OPEN_REFUSAL):
         exceeding_limit.run_command(CompactAgentContext(exceeding_limit.agent.id), exceeding_limit.agent)

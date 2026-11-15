@@ -50,6 +50,7 @@ def moved_base(played):
     return story, repository, moved_base_worker(story, repository)
 
 
+@pytest.mark.xfail(reason="task 10228: the played journal lacks the story kit's started-test record and operation story", strict=True)
 def test_24_25_a_commit_of_a_proved_task_queues_its_tests_puts_the_task_in_testing_and_is_named_for_its_task_in_git(proved):
     outcome = proved.story.run(COMMIT, actor=proved.worker)
     proved.story.run_listeners()
@@ -77,6 +78,7 @@ def test_37_a_commit_of_a_task_in_no_plan_queues_one_selected_run_when_its_two_c
     story.expect_rows(selected.count('"picker_command"') == 1, "pick.py" in selected, detail=selected)
 
 
+@pytest.mark.xfail(reason="task 10228: the played journal lacks the story kit's started-test record and operation story", strict=True)
 def test_38_a_proof_sent_back_short_and_shown_again_is_tested_again_at_the_next_commit(proved):
     story = proved.story
     story.expect_success(COMMIT, actor=proved.worker)

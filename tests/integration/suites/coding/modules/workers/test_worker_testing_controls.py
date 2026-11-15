@@ -102,12 +102,14 @@ def merged_work(played):
     return MergedWork(story, worker, merger)
 
 
+@pytest.mark.xfail(reason="task 10228: the played journal launches no merger, so the merged work has none to read it", strict=True)
 def test_empty_merger_checks_keep_mechanical_judging(merged_work):
     story, worker, merger = merged_work.story, merged_work.worker, merged_work.merger
     story.expect_no_text(f"merger merge --wait {agent_number(story, worker.id)}", "run:", actor=merger)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
 
 
+@pytest.mark.xfail(reason="task 10228: the played journal launches no merger, so the merged work has none to read it", strict=True)
 def test_s39_configured_merger_checks_are_listed_after_the_merge_with_the_commit(merged_work):
     story, worker, merger = merged_work.story, merged_work.worker, merged_work.merger
     story.expect_success(f"setting set {MERGER_COMMANDS} '[\"journal sins --branch={{commit}}\"]' --project", actor=story.user)

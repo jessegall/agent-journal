@@ -3,6 +3,7 @@ tests/stories/core/modules/agents/agent_kind_controls.py
 tests/stories/core/modules/agents/ended_program.py
 tests/stories/core/modules/developer/read_limit_setting.py
 tests/stories/core/modules/documents/work_source_corrections.py
+tests/stories/core/modules/drivers/agent_state_shapes.py
 tests/stories/core/modules/drivers/agent_states_unchanged.py
 tests/stories/core/modules/drivers/hook_durations.py
 tests/stories/core/modules/drivers/hooks_through_the_server.py
@@ -61,6 +62,7 @@ tests/stories/suites/coding/modules/workers/merge.py
 tests/stories/suites/coding/modules/workers/merger.py
 tests/stories/suites/coding/modules/workers/merger_corrections.py
 tests/stories/suites/coding/modules/workers/merger_rotation.py
+tests/stories/suites/coding/modules/workers/model_identity.py
 tests/stories/suites/coding/modules/workers/pending_work.py
 tests/stories/suites/coding/modules/workers/plan_send.py
 tests/stories/suites/coding/modules/workers/queued_commands.py

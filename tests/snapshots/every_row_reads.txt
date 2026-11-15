@@ -169,6 +169,7 @@ src/core/modules/setting_requests/listeners/pending_setting_approval_listener.py
 src/core/modules/settings/support/setting_rows.py:every stored setting is read once and kept until a setting is written
 src/core/modules/sharing/commands/share_comments/share_comments_subcommand.py:the comment list shows every comment visitors left on the link
 src/core/modules/skills/commands/reset_skills/reset_skills_handler.py:a reset forgets every skill the agent has loaded
+src/core/modules/skills/support/agent_skill_rows.py:an agent holds one row for each skill it was asked to read, a few dozen at most
 src/core/modules/skills/support/loaded_skills.py:every loaded skill of the agent is compared with the catalogue's digest
 src/core/modules/skills/support/unread_skills.py:one agent has at most one row for each skill of the project
 src/core/modules/skills/support/unread_skills.py:the skills due for one agent are at most the skills of the project, kept until one changes
