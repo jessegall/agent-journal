@@ -6,6 +6,7 @@ class MemoryMarkVariant(StrEnum):
 
     MADE = "made"
     WEIGHED = "weighed"
+    EDITED = "edited"
     REMOVED = "removed"
     FADED = "faded"
     GIVEN = "given"
