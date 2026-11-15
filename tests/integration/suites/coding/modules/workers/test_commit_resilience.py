@@ -48,6 +48,7 @@ def test_60_a_second_commit_right_after_the_first_finds_nothing_staged_and_makes
     worker.story.expect_rows(refused.code != 0, "nothing is staged" in refused.output_text, branch_tip(worker) == committed_tip, detail=refused.output_text)
 
 
+@pytest.mark.xfail(reason="task 10228: the played journal lacks the story kit's started-test record and operation story", strict=True)
 def test_61_a_proof_shown_while_a_commit_runs_is_no_part_of_it_and_waits_for_the_next_commit(two_of_three_proved, monkeypatch):
     worker, story = two_of_three_proved, two_of_three_proved.story
     git_commit = WorkerTaskCommit.commit
