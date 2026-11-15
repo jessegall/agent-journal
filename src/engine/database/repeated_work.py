@@ -77,6 +77,7 @@ ALLOWED_FILE_READS = {
     "core/modules/plugins/support/journal_instruction_file.py": "The check for doubled imports reads the same instruction files in the journal's start round.",
     "core/modules/plugins/support/plugin_code_diff.py": "An upgrade preview compares every file of a plugin, its manifest among them.",
     "core/modules/claude_code/providers/support/claude_trust.py": "A helper's start marks its parent's folder trusted and its launch marks its own start folder, each against the file as it is then.",
+    "core/modules/drivers/listeners/driver_table_sync_listener.py": "A module sync rebuilds the container, so the driver tables' new finder reads the module list once more, served by the file cache.",
     "core/modules/processes/support/output_folder.py": "A run's output files are written by the running program; a request that ends a run reads them for its mark, its decisions and its proof, each against the file as it is then.",
 }
 ALLOWED_FILE_READERS = tuple(ALLOWED_FILE_READS)
