@@ -2465,7 +2465,7 @@ const km = (e, t) => t ? e.filter((n) => t.includes(n.runs.split(" ").slice(0, 2
   plugins: we("Plugin", "plug", "An installed extension that responds to events and can run background services", { scope: "project" }),
   environments: we("Environment", "branch", "A separate workspace with messages, tasks, memories, plans and settings", { scope: "project" }),
   agents: we("Agent", "bot", "A session of Claude or Codex, and what it is doing right now"),
-  nudges: we("Agent instruction", "arrow", "A short instruction the journal sends the agent by itself; you never see it in the chat.", { nested: !0, typed_as_title: !0 }),
+  agent_message_records: we("Agent instruction", "arrow", "A short instruction the journal sends the agent by itself; you never see it in the chat.", { nested: !0, typed_as_title: !0 }),
   workers: we("Worker", "bot", "An agent assigned a task in a separate working copy"),
   verifiers: we("Verifier", "verifier", "An agent that checks whether an output reader report was correctly closed"),
   test_turns: we("Test turn", "terminal", "A worker's turn to run the tests it named, under the test budget"),
@@ -3245,7 +3245,7 @@ const ml = {
   workers: (e) => e.name,
   triggers: (e) => (e.phrases || []).join(", "),
   reactions: (e) => e.face,
-  nudges: (e) => {
+  agent_message_records: (e) => {
     var t;
     return ((t = e.data) == null ? void 0 : t.line) || "";
   },
@@ -16977,7 +16977,7 @@ const xC = /* @__PURE__ */ kC($C), SC = ["width", "height", "viewBox"], MC = ["w
       ])
     ]));
   }
-}, iB = /* @__PURE__ */ V(nA, [["__scopeId", "data-v-b494c444"]]), rB = Xu(() => import("./VoiceFigure-BE_re7Y4.js").then((e) => e.V)), uB = "1.2.0", cB = "3.5";
+}, iB = /* @__PURE__ */ V(nA, [["__scopeId", "data-v-b494c444"]]), rB = Xu(() => import("./VoiceFigure-BTK5ZVvO.js").then((e) => e.V)), uB = "1.2.0", cB = "3.5";
 export {
   Um as $,
   Oe as A,

@@ -1,5 +1,5 @@
 import { wordLabel as s } from "@journal/window-kit";
-const l = { info: "Notice", steering: "Instruction", refusal: "Refusal" }, a = {
+const r = { info: "Notice", steering: "Instruction", refusal: "Refusal" }, l = {
   pre_tool_use: "Before a tool runs",
   post_tool_use: "After a tool runs",
   post_tool_use_failure: "Tool failed",
@@ -11,16 +11,16 @@ const l = { info: "Notice", steering: "Instruction", refusal: "Refusal" }, a = {
   compact: "Context shortened",
   message_display: "Message shown",
   tick: "Timer"
-}, i = { allowed: "Allowed", refused: "Refused", rewritten: "Rewrote input", lines: "Added lines", raised: "Failed", disabled: "Switched off", silenced: "Skipped" }, c = (e) => s(e.replace(".", ": ").replaceAll("-", " ")), p = (e) => i[e] ?? s(e), _ = (e) => l[e] ?? s(e), u = (e) => a[e] ?? s(e), f = (e, o) => {
+}, i = { allowed: "Allowed", refused: "Refused", rewritten: "Rewrote input", lines: "Added lines", raised: "Failed", disabled: "Switched off", silenced: "Skipped" }, d = (e) => s(e.replace(".", ": ").replaceAll("-", " ")), p = (e) => i[e] ?? s(e), _ = (e) => r[e] ?? s(e), f = (e) => l[e] ?? s(e), u = (e, o) => {
   const t = e.__vccOpts || e;
-  for (const [n, r] of o)
-    t[n] = r;
+  for (const [n, a] of o)
+    t[n] = a;
   return t;
 };
 export {
-  f as _,
+  u as _,
+  _ as a,
   p as c,
-  u as h,
-  _ as n,
-  c as r
+  f as h,
+  d as r
 };

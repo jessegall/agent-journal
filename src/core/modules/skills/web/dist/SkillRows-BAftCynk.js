@@ -224,7 +224,7 @@ const X = [["journal", "From the journal"], ["plugin", "From a plugin"], ["proje
     ]));
   }
 }, dt = /* @__PURE__ */ I(ot, [["__scopeId", "data-v-7c679e99"]]), ut = [
-  { key: "nudge", value: "nudge", label: "Remind the agent", hint: "A short note only the agent sees. It carries on with its work.", ask: "What to remind the agent of", example: "Add the change to src/CHANGELOG.md in plain words." },
+  { key: "agent-message", value: "agent-message", label: "Remind the agent", hint: "A short note only the agent sees. It carries on with its work.", ask: "What to remind the agent of", example: "Add the change to src/CHANGELOG.md in plain words." },
   { key: "instruct", value: "instruct", label: "Tell the agent to do something now", hint: "The agent sees “Do this now:” followed by your text.", ask: "What the agent should do", example: "Stop and ask me before you touch the database." },
   { key: "deny", value: "deny", label: "Block a command or file change", hint: "The command or file change is refused, and the agent is given your reason.", ask: "Reason the agent is given", example: "Never force-push. Ask me first." },
   { key: "skill", value: "skill", label: "Make the agent read a skill", hint: "The agent must read the skill before it continues.", ask: "Which skill the agent must read", example: "journal-plans" }
@@ -253,7 +253,7 @@ function kt(e) {
 }
 const ft = {
   skill: (e) => `make the agent read ${e}`,
-  nudge: (e) => `remind the agent ${e}`,
+  "agent-message": (e) => `remind the agent ${e}`,
   instruct: (e) => `tell the agent to do this now: ${e}`,
   deny: (e) => `block it and tell the agent ${e}`
 }, ht = {
