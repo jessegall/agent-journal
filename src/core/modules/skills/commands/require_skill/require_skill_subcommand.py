@@ -16,7 +16,7 @@ class RequireSkillSubcommand(Subcommand[RequireSkill, AgentSkill]):
 
     cli_name = "skill"
     name = "require"
-    outward = True
+    external = True
 
     def __init__(self, files: SkillFiles, queries: Queries) -> None:
         self.files, self.queries = files, queries

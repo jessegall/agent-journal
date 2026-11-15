@@ -12,7 +12,7 @@ class DeleteSecretSubcommand(Subcommand[DeleteSecret, Secret]):
 
     cli_name = "secret"
     name = "delete"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("n", type=int)

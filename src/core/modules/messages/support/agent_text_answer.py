@@ -33,7 +33,7 @@ class AgentTextAnswer:
 
     def shown(self, event: HookEvent, agent_id: int) -> AgentTextShown:
         # read once a hook whatever changes meanwhile: the message it sends is a text the filter would then find
-        return self.request_values.read(f"messages.agent-text:{agent_id}:{event.firing}", lambda: event.firing, lambda: self.found(event, agent_id))
+        return self.request_values.read(f"messages.agent-text:{agent_id}:{event.event_id}", lambda: event.event_id, lambda: self.found(event, agent_id))
 
     def found(self, event: HookEvent, agent_id: int) -> AgentTextShown:
         nothing = AgentTextShown(None, None)

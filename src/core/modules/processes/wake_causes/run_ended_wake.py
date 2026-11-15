@@ -1,5 +1,5 @@
 from engine.agent_machine.agent_view import AgentView
-from engine.agent_machine.needs.wake_cause import WakeCause
+from engine.agent_machine.states.wake_cause import WakeCause
 from engine.query.conditions.greater import Greater
 from engine.query.conditions.has_value import HasValue
 from engine.query.queries import Queries

@@ -11,7 +11,7 @@ class RefreshToolSubcommand(Subcommand[RefreshTool, ToolStatus]):
 
     cli_name = "tool"
     name = "refresh"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("tool_name")

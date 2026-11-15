@@ -12,7 +12,7 @@ class LiftUnreadableSubcommand(Subcommand[LiftUnreadable, UnreadableMark]):
 
     cli_name = "reader"
     name = "readable"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("words", help="the leading words the command was marked by")

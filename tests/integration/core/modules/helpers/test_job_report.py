@@ -43,8 +43,8 @@ class FailingReport(RecordParentReportHandler):
 def stop_twice_with_a_failing_save(story, helper):
     story.hook(helper.session, HookSamples.session_start())
     story.replace(RecordParentReportHandler, FailingReport())
-    first = story.hook(helper.session, HookSamples.stop().with_fields(raw={"last_assistant_message": REPORT}, firing="report-1"))
-    second = story.hook(helper.session, HookSamples.stop().with_fields(raw={"last_assistant_message": REPORT}, firing="report-2"))
+    first = story.hook(helper.session, HookSamples.stop().with_fields(raw={"last_assistant_message": REPORT}, event_id="report-1"))
+    second = story.hook(helper.session, HookSamples.stop().with_fields(raw={"last_assistant_message": REPORT}, event_id="report-2"))
     return first, second
 
 

@@ -53,7 +53,7 @@ class PluginHookRun:
     def answer(self, event: HookEvent | None, agent_id: int) -> PluginHookAnswer:
         hook_event = event if event is not None else self.minute_tick.event(agent_id)
         # read once a hook whatever changes meanwhile: a second read would run the plugins' programs again
-        return self.request_values.read(f"plugins.hook-run:{agent_id}:{hook_event.firing}", lambda: hook_event.firing, lambda: self.delivered(hook_event, agent_id))
+        return self.request_values.read(f"plugins.hook-run:{agent_id}:{hook_event.event_id}", lambda: hook_event.event_id, lambda: self.delivered(hook_event, agent_id))
 
     def delivered(self, hook_event: HookEvent, agent_id: int) -> PluginHookAnswer:
         role = self.roles.role(agent_id)
@@ -98,7 +98,7 @@ class PluginHookRun:
         queue = PluginQueue(self.folders.data(plugin.name))
         reserved = queue.reserved_names()
         committed: set[str] = set(self.queries.query(PluginQueueFile).filter(plugin_id=plugin.id).matching(Among("name", reserved)).pluck("name", str)) if reserved else set()
-        read = queue.reserve(event.environment, agent_id, event.firing, committed, self.clock)
+        read = queue.reserve(event.environment, agent_id, event.event_id, committed, self.clock)
         for name, answer in read.answers:
             lines.extend([f"[plugin {plugin.name}] {answer.line}"] if answer.line else [])
             commands.extend([AddPluginOutput(plugin.id, agent_id, answer.output)] if answer.has_output() else [])

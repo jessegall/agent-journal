@@ -15,14 +15,14 @@ def test_a_main_agents_ended_pytest_run_is_read_by_the_stock_reader_with_its_out
     story = new_story(fixture=RoomyBuilderStarted)
     case = case_of(story, ended_run(story, "pytest tests/cart -q", PYTEST_OUTPUT), ENDED)
     story.expect_rows(case.command_key == "pytest tests/cart -q", case.reader_layer is not None and case.reader_layer.name == "STOCK",
-                      case.reader_judgement is not None, case.output is not None and case.output.line_count == 6,
+                      case.reader_check is not None, case.output is not None and case.output.line_count == 6,
                       not case.reader_required, case.role_uses_saved_commands, not case.waiting_request, detail=repr(case))
 
 
 def test_a_build_no_reader_reads_has_no_layer_no_judgement_and_no_output_at_its_start(new_story):
     story = new_story(fixture=RoomyBuilderStarted)
     case = case_of(story, start_process(story, "custom-build run", category=CommandCategory.BUILD), STARTED)
-    story.expect_rows(case.category is CommandCategory.BUILD, case.classification_recognized, case.reader_layer is None, case.reader_judgement is None,
+    story.expect_rows(case.category is CommandCategory.BUILD, case.classification_recognized, case.reader_layer is None, case.reader_check is None,
                       not case.default_reader, case.output is None, case.runs_without_change == 0, not case.is_unneeded, detail=repr(case))
 
 

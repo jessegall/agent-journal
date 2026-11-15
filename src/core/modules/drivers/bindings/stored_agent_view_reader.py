@@ -1,5 +1,5 @@
 from engine.helper_type.helper_type_book import HelperTypeBook
-from core.modules.drivers.support.answer_basis_rows import AnswerBasisRows
+from core.modules.drivers.support.read_versions_rows import ReadVersionsRows
 from core.modules.drivers.support.open_block_rows import OpenBlockRows
 from datetime import datetime
 from core.modules.drivers.support.driver_settings import CAPABILITY_PROOFS_SETTING
@@ -22,10 +22,10 @@ from engine.agent_machine.stepping.grant import Grant
 from engine.agent_machine.stepping.grant_ledger import GrantLedger
 from engine.agent_machine.driver import CORE_SUITE, Driver
 from core.modules.drivers.support.suite_choice import SuiteChoice
-from engine.agent_machine.needs.agent_reference import AgentReference
-from engine.agent_machine.needs.ended_fact import EndedFact
-from engine.agent_machine.needs.fact import Fact
-from engine.agent_machine.needs.pause_fact import PauseFact
+from engine.agent_machine.states.agent_reference import AgentReference
+from engine.agent_machine.states.ended_fact import EndedFact
+from engine.agent_machine.states.fact import Fact
+from engine.agent_machine.states.pause_fact import PauseFact
 from engine.agent_machine.record.question import Question
 from engine.agent_machine.record.refusal_counts import RefusalCounts
 from engine.agent_machine.stepping.refusal_counting import STOP_LIMIT_SETTING, TOOL_LIMIT_SETTING
@@ -59,7 +59,7 @@ class StoredAgentViewReader(AgentViewReader):
     holds none."""
 
     def __init__(self, agents: AgentRows, queries: Queries, settings: SettingValues, hook_calls: HookCallQuery, finder: ModuleFinder, clock: Clock, grant_store: GrantLedger, providers: Providers, judgement: BlockJudgement,
-                 skips: RefusalSkips, open_blocks: OpenBlockRows, stacks: AnswerBasisRows, types: HelperTypeBook, choice: SuiteChoice) -> None:
+                 skips: RefusalSkips, open_blocks: OpenBlockRows, stacks: ReadVersionsRows, types: HelperTypeBook, choice: SuiteChoice) -> None:
         self.providers, self.skips, self.open_blocks, self.stacks, self.types = providers, skips, open_blocks, stacks, types
         self.agents, self.queries, self.settings, self.hook_calls, self.finder, self.clock = agents, queries, settings, hook_calls, finder, clock
         self.grant_store, self.judgement, self.choice = grant_store, judgement, choice
@@ -72,20 +72,20 @@ class StoredAgentViewReader(AgentViewReader):
         counts = RefusalCounts(row.stop_refusals, row.tool_refusals, escalation) if row is not None else RefusalCounts(0, 0, escalation)
         reference = AgentReference(agent.id, agent.parent_id, agent.environment_id, agent.role)
         rows = self.open_rows(agent_id)
-        driver_epoch = self.stacks.driver_epoch()
+        driver_version = self.stacks.driver_version()
         return AgentView(
-            basis=self.basis(row, agent, driver_epoch), agent=reference, program_name=agent.program,
-            session=agent.session, profile=agent.profile, driver_name=driver.name, session_generation=1, stepped_at=self.clock.timestamp().value,
-            stack=self.stack(row, agent), facts=self.facts(agent), needs=(), plans=(), blocks=self.blocks(rows, agent_id), grants=self.grants(reference), suppressions=self.suppressions(agent_id),
+            read_versions=self.read_versions(row, agent, driver_version), agent=reference, program_name=agent.program,
+            session=agent.session, profile=agent.profile, driver_name=driver.name, session_number=1, stepped_at=self.clock.timestamp().value,
+            stack=self.stack(row, agent), facts=self.facts(agent), states=(), plans=(), blocks=self.blocks(rows, agent_id), grants=self.grants(reference), suppressions=self.suppressions(agent_id),
             escalation=escalation, settings={key: self.settings.number(key) for key in (STOP_LIMIT_SETTING, TOOL_LIMIT_SETTING)},
             is_resting=self.hook_calls.has_ended_turn(agent_id),
             table_digest=row.table_digest if row is not None else "", work_stop=driver.work_stop, responder=self.responder(driver.responder, agent), rank_order=driver.rank_order,
             depth_limit=driver.depth_limit, program=self.providers.provider(agent.program).capabilities().proved(agent.program, self.settings.texts(CAPABILITY_PROOFS_SETTING)), counts=counts, block_outcomes=self.judgement.outcomes(rows, question, agent_id), newest_hook_at=self.newest_hook_at(agent_id), last_refused_rules=self.skips.last_refused_rules(agent_id),
-            journal_started_at=driver_epoch.started_at.value if driver_epoch is not None and driver_epoch.started_at is not None else None)
+            journal_started_at=driver_version.started_at.value if driver_version is not None and driver_version.started_at is not None else None)
 
     def suppressions(self, agent_id: int) -> tuple[StateKey, ...]:
         rows = self.queries.query(HiddenState).filter(session_agent_id=agent_id, ended_at=None).every_row(OPEN_SUPPRESSIONS_REASON)
-        return tuple(StackCodec.decoded_key(row.need_key) for row in rows)
+        return tuple(StackCodec.decoded_key(row.state_key) for row in rows)
 
     def newest_hook_at(self, agent_id: int) -> datetime | None:
         hook = self.hook_calls.newest_agent_hook(agent_id)
@@ -101,15 +101,15 @@ class StoredAgentViewReader(AgentViewReader):
     def grants(self, agent: AgentReference) -> tuple[Grant, ...]:
         return tuple(self.grant_store.usable_grants([agent]).get(agent.agent_id, ()))
 
-    def basis(self, row: AgentStack | None, agent: Agent, driver_epoch: DriverVersion | None) -> ReadVersions:
-        program_epoch = self.stacks.program_epoch(agent.program)
-        return ReadVersions(row.version if row is not None else 0, driver_epoch.epoch if driver_epoch is not None else 0,
-                           program_epoch.epoch if program_epoch is not None else 0)
+    def read_versions(self, row: AgentStack | None, agent: Agent, driver_version: DriverVersion | None) -> ReadVersions:
+        program_version = self.stacks.program_version(agent.program)
+        return ReadVersions(row.version if row is not None else 0, driver_version.epoch if driver_version is not None else 0,
+                           program_version.epoch if program_version is not None else 0)
 
     def stack(self, row: AgentStack | None, agent: Agent) -> Stack:
         # a row a permission change made before the agent's first step holds no frame yet, and reads as a fresh stack
-        frames = StackCodec.decoded(row.frames) if row is not None else []
-        return Stack(frames or [StackedState(Stopped(agent.creation_timestamp().value, "started", True), BOTTOM_KEY, agent.creation_timestamp().value)])
+        stacked_states = StackCodec.decoded(row.stacked_states) if row is not None else []
+        return Stack(stacked_states or [StackedState(Stopped(agent.creation_timestamp().value, "started", True), BOTTOM_KEY, agent.creation_timestamp().value)])
 
     def facts(self, agent: Agent) -> tuple[Fact, ...]:
         causes = tuple(PauseCause(paused.id, paused.id, paused.paused_at.value) for paused in self.agents.paused_line(agent.id) if paused.paused_at is not None)

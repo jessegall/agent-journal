@@ -31,7 +31,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
 
     cli_name = "worker"
     name = "dispatch"
-    outward = True
+    external = True
     background = True
 
     def __init__(self, home: JournalHome, plan_tasks: PlanWorkerTasks, agents: AgentRows, worktrees: WorktreeQuery, scopes: Scopes) -> None:

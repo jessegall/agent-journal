@@ -12,7 +12,7 @@ class StartCheckSubcommand(Subcommand[StartCheck, Check]):
 
     cli_name = "check"
     name = "start"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("id", type=int)

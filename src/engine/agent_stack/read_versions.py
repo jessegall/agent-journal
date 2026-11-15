@@ -7,9 +7,9 @@ class ReadVersions:
     environment's driver epoch and the program's epoch, with the attempt that read them."""
 
     stack_version: int
-    driver_epoch: int
-    program_epoch: int
+    driver_version: int
+    program_version: int
     attempt: int = 1
 
     def matches(self, current: "ReadVersions") -> bool:
-        return (self.stack_version, self.driver_epoch, self.program_epoch) == (current.stack_version, current.driver_epoch, current.program_epoch)
+        return (self.stack_version, self.driver_version, self.program_version) == (current.stack_version, current.driver_version, current.program_version)

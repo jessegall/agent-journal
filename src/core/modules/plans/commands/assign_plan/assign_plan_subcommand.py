@@ -15,7 +15,7 @@ class AssignPlanSubcommand(Subcommand[AssignPlan, Cascade]):
 
     cli_name = "plan"
     name = "assign"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("plan_id", type=int)

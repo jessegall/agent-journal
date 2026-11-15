@@ -11,5 +11,5 @@ class RecordKeptSkills(Command[Agent]):
 
     agent_id: int
     program: str
-    firing: str
+    event_id: str
     transcript_path: str

@@ -2,11 +2,11 @@ from collections.abc import Sequence
 from typing import ClassVar
 
 from engine.agent_machine.contracts.line_source import LineSource
-from engine.agent_machine.needs.rank_order import RankOrder
+from engine.agent_machine.states.rank_order import RankOrder
 from engine.enums.responder import Responder
 from engine.enums.work_stop import WorkStop
 
-DEPTH_LIMIT_FRAMES = 16
+DEPTH_LIMIT_STACKED_STATES = 16
 CORE_SUITE = "core"
 
 
@@ -24,4 +24,4 @@ class Driver:
     responder: ClassVar[Responder] = Responder.PARENT
     opening_lines: ClassVar[Sequence[type[LineSource]]] = ()
     instructions: ClassVar[Sequence[str]] = ()
-    depth_limit: ClassVar[int] = DEPTH_LIMIT_FRAMES
+    depth_limit: ClassVar[int] = DEPTH_LIMIT_STACKED_STATES

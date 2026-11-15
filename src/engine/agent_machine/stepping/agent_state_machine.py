@@ -10,7 +10,7 @@ from engine.agent_machine.contracts.effect import Effect
 from engine.agent_machine.contracts.line_source import LineSource
 from engine.agent_machine.contracts.policy import Policy
 from engine.agent_machine.contracts.transform import Transform
-from engine.agent_machine.needs.wake_cause import WakeCause
+from engine.agent_machine.states.wake_cause import WakeCause
 from engine.agent_machine.decision import Decision
 from engine.agent_machine.decision_record import DecisionRecord
 from engine.agent_machine.record.block_closing import BlockClosing
@@ -43,7 +43,7 @@ from engine.enums.transform_slot import TransformSlot
 HANDOVER_KEY = "drivers.handover"
 HANDOVER_RANK = "drivers.handover"
 HANDOVER_TEXT = "The job is handed over to the parent with this stop's text."
-STEP_FIRING = "step-{version}"
+STEP_EVENT_ID = "step-{version}"
 FALLBACK_KEY = "drivers.transform-fallback"
 FALLBACK_RANK = "safety.all"
 FALLBACK_TEXT = "This program cannot carry the journal's rewrite of this line: run it with journal process run \"<line>\"."
@@ -83,7 +83,7 @@ class AgentStateMachine:
         record = self.record(view, question, decision, judgement, rewrite, counts, built.stack, built.moves, reasons)
         if decision.admits() and question.is_action():
             record = replace(record, spent_grants=tuple(self.constraints.spent_grants(rewrite.final_question(question), view)))
-        return StepResult(view.basis, built.stack, record, record.wake)
+        return StepResult(view.read_versions, built.stack, record, record.wake)
 
     def transformed(self, question: Question, view: AgentView) -> Rewrite:
         rewrite = Rewrite.unchanged()
@@ -119,29 +119,29 @@ class AgentStateMachine:
                stack: Stack, moves: tuple, reasons: list[Reason]) -> DecisionRecord:
         lines = self.lines(question, view)
         unconditional = [effect for effect in self.effects(question, view) if effect.timing is EffectTiming.UNCONDITIONAL]
-        admission = [effect for effect in self.effects(question, view) if effect.timing is EffectTiming.ON_ADMISSION] if question.is_action() else []
+        admission = [effect for effect in self.effects(question, view) if effect.timing is EffectTiming.WHEN_ALLOWED] if question.is_action() else []
         return DecisionRecord(
             identity=self.identity(view, question), action=question, decision=decision, shown_reason=decision.reason,
             outranked_reasons=judgement.outranked_reasons, rewrite=rewrite if decision.admits() else Rewrite.unchanged(),
-            lines=[line for line in lines if line.carrier is not LineChannel.WAITING], unconditional_effects=unconditional,
+            lines=[line for line in lines if line.channel is not LineChannel.WAITING], unconditional_effects=unconditional,
             admission_effects=admission, after_commit=(), terminal=self.terminal(lines), moves=moves, blocks_opened=JudgedBlocks.new_plans(view),
             # a refused action did not run, so what it would have done lifts no hold; the next admitted step closes them
-            blocks_closed=self.closings(view) if decision.admits() or not question.is_action() else (), waiting_lines=[line for line in lines if line.carrier is LineChannel.WAITING],
-            stop_checks=self.stop_checks(question, reasons), counts=counts, wake=self.wakes.change(view, stack), basis=view.basis,
+            blocks_closed=self.closings(view) if decision.admits() or not question.is_action() else (), waiting_lines=[line for line in lines if line.channel is LineChannel.WAITING],
+            stop_checks=self.stop_checks(question, reasons), counts=counts, wake=self.wakes.change(view, stack), read_versions=view.read_versions,
             printing=self.printing(question, view, decision, rewrite),
-            inputs=DecisionInputs(view.table_digest, tuple(need.key for need in view.needs),
+            inputs=DecisionInputs(view.table_digest, tuple(required_state.key for required_state in view.states),
                                   tuple(block.block_id for block in view.blocks if block.block_id is not None), tuple(grant.grant_id for grant in view.grants)))
 
     @staticmethod
     def terminal(lines: list[Line]) -> str:
-        return "\n".join(line.text for line in lines if line.carrier is LineChannel.TERMINAL)
+        return "\n".join(line.text for line in lines if line.channel is LineChannel.TERMINAL)
 
     @staticmethod
     def identity(view: AgentView, question: Question) -> EventIdentity:
         if question.event is not None:
-            return EventIdentity.identified(question.event, view.session_generation, view.agent.agent_id, view.agent.environment_id, view.agent.agent_type,
+            return EventIdentity.identified(question.event, view.session_number, view.agent.agent_id, view.agent.environment_id, view.agent.agent_type,
                                             view.profile, view.driver_name)
-        return EventIdentity(view.program_name, view.session, view.session_generation, STEP_FIRING.format(version=view.basis.stack_version),
+        return EventIdentity(view.program_name, view.session, view.session_number, STEP_EVENT_ID.format(version=view.read_versions.stack_version),
                              view.agent.agent_id, view.agent.environment_id, view.agent.agent_type, view.profile, view.driver_name)
 
     def lines(self, question: Question, view: AgentView) -> list[Line]:
@@ -153,7 +153,7 @@ class AgentStateMachine:
         if event is not None and view.program.supports(CapabilityPart.LINES, event.event):
             return lines
         # what is printed to the person's terminal is no line of the agent's, so it never waits
-        return [line if line.carrier is LineChannel.TERMINAL else replace(line, carrier=LineChannel.WAITING) for line in lines]
+        return [line if line.channel is LineChannel.TERMINAL else replace(line, channel=LineChannel.WAITING) for line in lines]
 
     def effects(self, question: Question, view: AgentView) -> list[Effect]:
         event = question.event

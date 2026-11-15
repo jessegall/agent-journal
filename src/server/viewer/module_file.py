@@ -8,4 +8,4 @@ class ModuleFile:
 
     content: bytes
     content_type: str
-    frame: bool
+    stacked_state: bool

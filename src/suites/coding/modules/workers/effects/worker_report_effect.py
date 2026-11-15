@@ -25,7 +25,7 @@ class WorkerReportEffect(Effect):
 
     events = [HookEventName.STOP]
     agent_types = [Worker.key]
-    timing = EffectTiming.ON_ADMISSION
+    timing = EffectTiming.WHEN_ALLOWED
 
     def __init__(self, agents: AgentRows, tasks: TaskQuery, settings: SettingValues, next_task: WorkerNextTask, units: WorkUnits) -> None:
         self.agents, self.tasks, self.settings, self.next_task, self.units = agents, tasks, settings, next_task, units

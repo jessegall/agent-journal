@@ -12,7 +12,7 @@ class RecordAgentInterruptSubcommand(Subcommand[RecordAgentInterrupt, Agent]):
 
     cli_name = "agent"
     name = "interrupted"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("agent_id", type=int)

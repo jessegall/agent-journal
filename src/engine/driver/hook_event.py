@@ -2,7 +2,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from engine.enums.agent_role import AgentRole
-from engine.driver.foreign_run import ForeignRun
+from engine.driver.project_hook_run import ProjectHookRun
 from engine.driver.errors.hook_event_error import HookEventError
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.errors.hook_event_version_error import HookEventVersionError
@@ -31,7 +31,7 @@ class HookEvent:
     program: str
     event: HookEventName
     session: str
-    firing: str
+    event_id: str
     hook_timestamp_ms: int
     actor: str
     environment: str
@@ -40,13 +40,13 @@ class HookEvent:
     raw: Mapping[object, object]
     accepts_lines: bool = False
     launch: str = ""
-    foreign: tuple[ForeignRun, ...] = ()
+    foreign: tuple[ProjectHookRun, ...] = ()
     child_agent: str = ""
     role: str = ""
 
     @classmethod
-    def tick(cls, program: str, session: str, firing: str, hook_timestamp_ms: int, actor: str, environment: str) -> "HookEvent":
-        return cls(HOOK_EVENT_VERSION, program, HookEventName.TICK, session, firing, hook_timestamp_ms, actor, environment, None, None, {})
+    def tick(cls, program: str, session: str, event_id: str, hook_timestamp_ms: int, actor: str, environment: str) -> "HookEvent":
+        return cls(HOOK_EVENT_VERSION, program, HookEventName.TICK, session, event_id, hook_timestamp_ms, actor, environment, None, None, {})
 
     @classmethod
     def parsed(cls, data: object) -> "HookEvent":
@@ -68,12 +68,12 @@ class HookEvent:
         return cls(HOOK_EVENT_VERSION, text(fields, "program"), HookEventName(event), text(fields, "session"), text(fields, "firing"),
                    number(fields, "fired_at_ms"), text(fields, "actor"), text(fields, "environment"),
                    Tool.parsed(tool) if tool is not None else None, prompt, mapping(fields.get("raw", {}), "raw"), accepts_lines,
-                   text(fields, "launch"), ForeignRun.parsed_many(fields["foreign"]), str(fields.get("child_agent", "")), str(fields.get("role", "")))
+                   text(fields, "launch"), ProjectHookRun.parsed_many(fields["foreign"]), str(fields.get("child_agent", "")), str(fields.get("role", "")))
 
     @property
     def transcript(self) -> HookTranscript:
         path = self.raw.get("transcript_path")
-        return HookTranscript(self.program, self.firing, path if isinstance(path, str) else "")
+        return HookTranscript(self.program, self.event_id, path if isinstance(path, str) else "")
 
     @property
     def is_resume(self) -> bool:

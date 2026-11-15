@@ -10,7 +10,7 @@ class ResetExecutionClassSubcommand(Subcommand[RemoveExecutionClass, str]):
 
     cli_name = "queue-class"
     name = "reset"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("class_name")

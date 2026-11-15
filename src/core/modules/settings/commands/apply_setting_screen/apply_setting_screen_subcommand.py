@@ -15,7 +15,7 @@ class ApplySettingScreenSubcommand(Subcommand[ApplySettingScreen, ScreenReading]
 
     cli_name = "setting-screen"
     name = "apply"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("screen")

@@ -12,7 +12,7 @@ class ConfigurePluginSubcommand(Subcommand[ConfigurePlugin, PluginSetting]):
 
     cli_name = "plugin"
     name = "configure"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("plugin")

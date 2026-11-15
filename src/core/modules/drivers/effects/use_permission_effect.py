@@ -17,7 +17,7 @@ class UsePermissionEffect(Effect):
     admission."""
 
     events = [HookEventName.PRE_TOOL_USE]
-    timing = EffectTiming.ON_ADMISSION
+    timing = EffectTiming.WHEN_ALLOWED
     is_required = True
     failure = PermissionUseFailedMessage
 

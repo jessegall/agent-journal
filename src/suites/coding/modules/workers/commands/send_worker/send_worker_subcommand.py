@@ -36,7 +36,7 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
 
     cli_name = "worker"
     name = "send"
-    outward = True
+    external = True
 
     def __init__(self, home: JournalHome, agents: AgentRows, requests: WorkerCommandRequest,
                  tasks: KeptWorkerTasks, policy: WorkerRoutePolicy, flags: WriteFlags, scopes: Scopes, plan_tasks: PlanWorkerTasks, test_names: WorkerTestNames, resume: WorkerResume) -> None:

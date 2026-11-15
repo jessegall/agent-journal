@@ -11,7 +11,7 @@ class StackMove:
     rows it named."""
 
     move_type: StackMoveType
-    frame_key: StateKey | None
+    stacked_state_key: StateKey | None
     reason_text: str
-    frame_end: StateEnd | None = None
+    stacked_state_end: StateEnd | None = None
     actor_id: int | None = None

@@ -12,7 +12,7 @@ class CountShareViewSubcommand(Subcommand[CountShareView, ShareLink]):
 
     cli_name = "share"
     name = "viewed"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("token_digest")

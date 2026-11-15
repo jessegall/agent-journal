@@ -10,7 +10,7 @@ from core.modules.processes.effects.orphan_process_effect import OrphanProcessEf
 from core.modules.processes.wake_causes.run_ended_wake import RunEndedWake
 from core.modules.processes.listeners.run_end_step_listener import RunEndStepListener
 from core.modules.processes.listeners.watch_step_listener import WatchStepListener
-from core.modules.processes.needs.watched_run_needs import WatchedRunNeeds
+from core.modules.processes.states.watched_run_states import WatchedRunStates
 from core.modules.processes.migrations.m085_process_claim import ProcessClaimMigration
 from core.modules.processes.commands.claim_process.claim_process_subcommand import ClaimProcessSubcommand
 from core.modules.processes.commands.claim_process.claim_process_handler import ClaimProcessHandler
@@ -33,9 +33,9 @@ from core.modules.processes.policies.sleep_poll_policy import SleepPollPolicy
 from core.modules.processes.effects.leftover_run_effect import LeftoverRunEffect
 from core.modules.processes.effects.long_run_dock_effect import LongRunDockEffect
 from core.modules.processes.effects.watch_lines_effect import WatchLinesEffect
-from core.modules.processes.needs.long_run_dock_needs import LongRunDockNeeds
-from core.modules.processes.needs.reader_request_needs import ReaderRequestNeeds
-from core.modules.processes.needs.silent_run_block_needs import SilentRunBlockNeeds
+from core.modules.processes.states.long_run_dock_states import LongRunDockStates
+from core.modules.processes.states.reader_request_states import ReaderRequestStates
+from core.modules.processes.states.silent_run_block_states import SilentRunBlockStates
 from core.modules.processes.story_steps.processes_story_steps import PROCESSES_STORY_STEPS
 from core.modules.processes.windows.extensions.agents_processes_extension import AgentsProcessesExtension
 from core.modules.processes.windows.extensions.helpers_processes_extension import HelpersProcessesExtension
@@ -306,7 +306,7 @@ class ProcessesModule(Module):
 
     name = "journal.core.processes"
     agent_listeners = [RunEndStepListener, WatchStepListener]
-    needs = [WatchedRunNeeds, LongRunDockNeeds, ReaderRequestNeeds, SilentRunBlockNeeds]
+    states = [WatchedRunStates, LongRunDockStates, ReaderRequestStates, SilentRunBlockStates]
     effects = [LeftoverRunEffect, LongRunDockEffect, OrphanProcessEffect, ReaderRequestEffect, RunnerStartEffect, WatchLinesEffect]
     policies = [FolderChangePolicy, HandMadeMonitorPolicy, JournalChainPolicy, JournalPipePolicy, ReadCommandOutputPolicy, ReadingPolicy, RetryLoopPolicy, RunnerSandboxPolicy, SleepPollPolicy]
     lines = [AliasSuggestionLines, DockTitleLines, EndedOutputLineLines, OrphanProcessLines, OutputStatusMonitorLines, ReadAdviceLines, ReaderRequestLines, ReadingLines, RunnerMissingLines, RunQueueHaltedLines, RunTitleLines, WatchLinesLines]

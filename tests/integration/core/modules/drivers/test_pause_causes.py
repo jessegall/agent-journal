@@ -1,4 +1,4 @@
-from engine.agent_machine.needs.pause_fact import PauseFact
+from engine.agent_machine.states.pause_fact import PauseFact
 from engine.agent_machine.record.question import Question
 from engine.agent_step.agent_view_reader import AgentViewReader
 from core.modules.agents.support.agent_rows import AgentRows

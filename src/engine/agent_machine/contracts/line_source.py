@@ -24,7 +24,7 @@ class LineSource(ABC):
     role_group: ClassVar[RoleGroup] = RoleGroup.ANY
     # a line of a session's start, which a resumed session does not get
     start_line: ClassVar[bool] = False
-    carrier: ClassVar[LineChannel] = LineChannel.NOW
+    channel: ClassVar[LineChannel] = LineChannel.NOW
     category: ClassVar[LineCategory] = LineCategory.INFORMATION
     interval_key: ClassVar[str] = ""
 

@@ -22,7 +22,7 @@ class CommitWorkerWorkSubcommand(Subcommand[Command[object], CommitOutcome]):
 
     cli_name = "worker"
     name = "commit"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         WorkerCommandRequest.arguments(parser)

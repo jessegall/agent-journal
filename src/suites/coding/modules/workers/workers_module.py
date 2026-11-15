@@ -10,14 +10,14 @@ from suites.coding.modules.workers.effects.inactive_worker_stop_effect import In
 from suites.coding.modules.workers.lines.context.cache_refresh_lines import CacheRefreshLines
 from suites.coding.modules.workers.effects.cache_refresh_effect import CacheRefreshEffect
 from suites.coding.modules.workers.effects.merge_job_report_effect import MergeJobReportEffect
-from suites.coding.modules.workers.needs.merge_job_needs import MergeJobNeeds
+from suites.coding.modules.workers.states.merge_job_states import MergeJobStates
 from suites.coding.modules.workers.listeners.worktree_step_listener import WorktreeStepListener
 from suites.coding.modules.workers.listeners.proof_step_listener import ProofStepListener
 from suites.coding.modules.workers.guards.proved_delivery_guard import ProvedDeliveryGuard
 from suites.coding.modules.workers.policies.proved_delivery_policy import ProvedDeliveryPolicy
 from suites.coding.modules.workers.effects.context.request_compaction_effect import RequestCompactionEffect
 from suites.coding.modules.workers.policies.context_hard_limit_policy import ContextHardLimitPolicy
-from suites.coding.modules.workers.needs.compaction_needs import CompactionNeeds
+from suites.coding.modules.workers.states.compaction_states import CompactionStates
 from suites.coding.modules.workers.policies.checkout_write_code_policy import CheckoutWriteCodePolicy
 from suites.coding.modules.workers.policies.dispatch.dispatch_allowance_policy import DispatchAllowancePolicy
 from suites.coding.modules.workers.policies.test_runs.phase_test_policy import PhaseTestPolicy
@@ -38,8 +38,8 @@ from suites.coding.modules.workers.lines.unmerged_worker_lines import UnmergedWo
 from suites.coding.modules.workers.lines.unstarted_worker_lines import UnstartedWorkerLines
 from suites.coding.modules.workers.lines.worker_log_due_lines import WorkerLogDueLines
 from suites.coding.modules.workers.lines.workers_out_lines import WorkersOutLines
-from suites.coding.modules.workers.needs.delivered_work_stop_needs import DeliveredWorkStopNeeds
-from suites.coding.modules.workers.needs.worker_status_first_needs import WorkerStatusFirstNeeds
+from suites.coding.modules.workers.states.delivered_work_stop_states import DeliveredWorkStopStates
+from suites.coding.modules.workers.states.worker_status_first_states import WorkerStatusFirstStates
 from suites.coding.modules.workers.effects.inactive_helper_effect import InactiveHelperEffect
 from suites.coding.modules.workers.effects.phase_test_effect import PhaseTestEffect
 from suites.coding.modules.workers.effects.record_todo_list_effect import RecordTodoListEffect
@@ -137,9 +137,9 @@ from suites.coding.modules.workers.buttons.workers_release_button import Workers
 from suites.coding.modules.workers.policies.worker_git_policy import WorkerGitPolicy
 from suites.coding.modules.workers.policies.worker_judge_scope_policy import WorkerJudgeScopePolicy
 from suites.coding.modules.workers.effects.context.full_context_compaction_effect import FullContextCompactionEffect
-from suites.coding.modules.workers.needs.main_stop_needs import MainStopNeeds
+from suites.coding.modules.workers.states.main_stop_states import MainStopStates
 from suites.coding.modules.workers.effects.handed_task_effect import HandedTaskEffect
-from suites.coding.modules.workers.needs.worker_unit_needs import WorkerUnitNeeds
+from suites.coding.modules.workers.states.worker_unit_states import WorkerUnitStates
 from suites.coding.modules.workers.effects.worker_report_effect import WorkerReportEffect
 from suites.coding.modules.workers.lines.worker_blocked_task_lines import WorkerBlockedTaskLines
 
@@ -152,7 +152,7 @@ class WorkersModule(Module):
     line_sources = [InactiveWorkerStopLines, CacheRefreshLines]
     effects = [HandedTaskEffect, FullContextCompactionEffect, WorkerReportEffect, OrphanWorktreeEffect, MissingProcessEffect, InactiveWorkerStopEffect, CacheRefreshEffect, MergeJobReportEffect, RequestCompactionEffect, InactiveHelperEffect, PhaseTestEffect, RecordTodoListEffect, UnmergedWorkerEffect]
     block_conditions = [DeliveredProofsChecked]
-    needs = [MainStopNeeds, WorkerUnitNeeds, MergeJobNeeds, CompactionNeeds, DeliveredWorkStopNeeds, WorkerStatusFirstNeeds]
+    states = [MainStopStates, WorkerUnitStates, MergeJobStates, CompactionStates, DeliveredWorkStopStates, WorkerStatusFirstStates]
     lines = [WorkerBlockedTaskLines, CompactionRequestLines, ContextStopNowLines, InactiveHelperLines, MergeCheckoutLines, PhaseTestLines, SmallBatchLines, StoppedWorkerLines, UnmergedWorkerLines, UnstartedWorkerLines, WorkerLogDueLines, WorkersOutLines]
     policies = [WorkerGitPolicy, WorkerJudgeScopePolicy, DispatchNamesModelPolicy, ProvedDeliveryPolicy, ContextHardLimitPolicy, CheckoutWriteCodePolicy, DispatchAllowancePolicy, PhaseTestPolicy, ProtectedFolderPolicy, ReadonlyHelperAllowancePolicy, WorkerFilePolicy, WorkerOutsideLinkPolicy, WorkerReadPolicy, WorkerReusePolicy, WorkerTestLinePolicy, WorkerTestCountPolicy]
     profiles = WORKER_PROFILES

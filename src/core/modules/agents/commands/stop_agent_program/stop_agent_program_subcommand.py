@@ -15,7 +15,7 @@ class StopAgentProgramSubcommand(Subcommand[StopAgentProgram, Stopped]):
 
     cli_name = "agent"
     name = "stop-program"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("agent_id", type=AgentNumber)

@@ -20,8 +20,8 @@ from tests.integration.support.server_harness import SYSTEM_CLOCK
 SESSION = "s-1"
 
 
-def finished_edit(firing: str) -> dict[str, object]:
-    return dict(HookSamples.edit("src/cart.py").with_fields(event="post_tool_use", session=SESSION, firing=firing).body)
+def finished_edit(event_id: str) -> dict[str, object]:
+    return dict(HookSamples.edit("src/cart.py").with_fields(event="post_tool_use", session=SESSION, event_id=event_id).body)
 
 
 # a server whose system log holds an older rotated file, a warning and raw output, an error and a note

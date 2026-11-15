@@ -224,8 +224,8 @@ def test_an_answer_that_arrived_delivers_the_message_once(server):
     server.story.expect_text("message show 1", "delivered_at: 2", actor=server.story.user)
 
 
-def hook_body(firing: str) -> dict[str, object]:
-    return dict(TOOL_FINISHED.with_fields(session="s-1", environment="main", firing=firing, role="main").body)
+def hook_body(event_id: str) -> dict[str, object]:
+    return dict(TOOL_FINISHED.with_fields(session="s-1", environment="main", event_id=event_id, role="main").body)
 
 
 def test_a_prompt_typed_in_the_terminal_shows_in_the_chat_as_the_users_message(builder):

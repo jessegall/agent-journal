@@ -23,6 +23,6 @@ class AssignedWorkSuppressionListener(SaveListener[Created[Assignment]]):
         rows = self.queries.query(HiddenState).filter(session_agent_id=event.row.actor_id, ended_at=None).every_row(OPEN_SUPPRESSIONS_REASON)
         for row in rows:
             # a work frame's generation names its work as "<model>:<row id>", as its need writes it
-            model, _, row_id = StackCodec.decoded_key(row.need_key).generation.partition(WORK_KEY_SEPARATOR)
+            model, _, row_id = StackCodec.decoded_key(row.state_key).generation.partition(WORK_KEY_SEPARATOR)
             if model == event.row.subject_model and row_id == str(event.row.subject_id):
                 self.repository.save(row.changed(ended_at=context.timestamp), context)

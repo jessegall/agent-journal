@@ -10,7 +10,7 @@ from engine.enums.effect_timing import EffectTiming
 from engine.enums.hook_event_name import HookEventName
 from core.modules.drivers.models.enums.compaction_reason import CompactionReason
 from suites.coding.modules.workers.commands.compact_agent_context.compact_agent_context import CompactAgentContext
-from suites.coding.modules.workers.needs.compaction_needs import COMPACTION_STOP_RULE, DUE_CAUSE
+from suites.coding.modules.workers.states.compaction_states import COMPACTION_STOP_RULE, DUE_CAUSE
 from suites.coding.modules.workers.types.worker import Worker
 from suites.coding.support.context_limit_check import ContextLimitCheck
 
@@ -21,7 +21,7 @@ class RequestCompactionEffect(Effect):
     compacts by its own window is sent nothing, and a request already open is not asked again."""
 
     events = [HookEventName.STOP]
-    timing = EffectTiming.ON_ADMISSION
+    timing = EffectTiming.WHEN_ALLOWED
     agent_types = [AgentRole.MAIN, Worker.key]
 
     def __init__(self, limits: ContextLimitCheck) -> None:
@@ -36,5 +36,5 @@ class RequestCompactionEffect(Effect):
 
     # the stop asks for the compaction: it is due and not running, and the program does not compact by its own window
     def asks(self, view: AgentView) -> bool:
-        compacting = next((need.state for need in view.needs if isinstance(need.state, Compacting)), None)
+        compacting = next((required_state.state for required_state in view.states if isinstance(required_state.state, Compacting)), None)
         return compacting is not None and not compacting.is_running and compacting.cause == DUE_CAUSE and not self.limits.has_windowed_compaction(view.agent.agent_id)

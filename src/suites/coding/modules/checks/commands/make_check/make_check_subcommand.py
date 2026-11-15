@@ -10,7 +10,7 @@ class MakeCheckSubcommand(ShowCheckLineSubcommand[MakeCheck]):
 
     cli_name = "check"
     name = "make"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("title")

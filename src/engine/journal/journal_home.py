@@ -39,7 +39,7 @@ class JournalHome:
         return [self.database, *(self.database.with_name(f"{self.database.name}{suffix}") for suffix in ("-wal", "-shm"))]
 
     @property
-    def panic_file(self) -> Path:
+    def emergency_stop_file(self) -> Path:
         return self.folder / "panic"
 
     @property

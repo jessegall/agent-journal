@@ -22,7 +22,7 @@ class MergeWorkerSubcommand(Subcommand[Command[object], MergeOutcome]):
 
     cli_name = "worker"
     name = "merge"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         WorkerCommandRequest.arguments(parser)

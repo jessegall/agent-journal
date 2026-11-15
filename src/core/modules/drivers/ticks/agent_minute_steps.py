@@ -19,7 +19,7 @@ class AgentMinuteSteps:
 
     def __call__(self, container: Container) -> None:
         queries, bus = container.get(Queries), container.get(Bus)
-        stacked = [stack.session_agent_id for stack in queries.query(AgentStack).every_row(STACKS_REASON) if stack.has_frames]
+        stacked = [stack.session_agent_id for stack in queries.query(AgentStack).every_row(STACKS_REASON) if stack.has_stacked_states]
         agents = sorted((agent for agent in queries.query(Agent).find_many(stacked) if agent.retired_at is None), key=lambda agent: agent.environment_id)
         for environment_id, environment_agents in groupby(agents, key=lambda agent: agent.environment_id):
             bus.run(RequestAgentStep(tuple(agent.id for agent in environment_agents), MINUTE_STEP), Actor.core(), environment_id=environment_id)

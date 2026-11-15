@@ -19,7 +19,7 @@ class StartNextWorkerTaskSubcommand(Subcommand[Command[object], Task]):
 
     cli_name = "worker"
     name = "next"
-    outward = True
+    external = True
 
     def __init__(self, requests: WorkerCommandRequest, guidance: WorkerGuidance, run_answer: WorkerRunAnswer) -> None:
         self.requests, self.guidance, self.run_answer = requests, guidance, run_answer

@@ -28,14 +28,14 @@ class PanicWatch:
         bus, environments = container.get(Bus), tuple(container.get(Queries).query(Environment).get())
         actor = container.get(ModuleActors).actor(MODULE_KEY)
         announced = home.panic_announced
-        text = FileAccess.read(home.panic_file, errors="replace") if FileAccess.is_file(home.panic_file) else ""
+        text = FileAccess.read(home.emergency_stop_file, errors="replace") if FileAccess.is_file(home.emergency_stop_file) else ""
         reason = next((line.split(":", 1)[1].strip() for line in text.splitlines() if line.strip().startswith("why:")), "")
         if reason and not FileAccess.is_file(announced):
             FileAccess.write(announced, reason)
             log.write(LogLevel.WARNING, f"panic file written: {text.strip()}", LogSource.BYPASS)
             self.show(bus, actor, environments, ShowMark(BypassMarkType.BYPASS, BypassMarkVariant.PANIC_STARTED, f"panic:{FileAccess.stat(announced).st_mtime_ns}", f"Panic: the main agent works around the journal. {reason}",
                              detail=text.strip(), outcome=MarkOutcome.FAILED))
-        has_unresolved_panic = FileAccess.is_file(announced) and FileAccess.is_file(home.panic_file) and FileAccess.is_file(home.bypass_log)
+        has_unresolved_panic = FileAccess.is_file(announced) and FileAccess.is_file(home.emergency_stop_file) and FileAccess.is_file(home.bypass_log)
         if has_unresolved_panic:
             claimed = home.bypass_log.with_suffix(".taken")
             FileAccess.replace(home.bypass_log, claimed)
@@ -45,7 +45,7 @@ class PanicWatch:
                 log.write(LogLevel.WARNING, "\n".join(lines), LogSource.BYPASS)
                 self.show(bus, actor, environments, ShowMark(BypassMarkType.BYPASS, BypassMarkVariant.UNCHECKED, f"panic-hooks:{FileAccess.stat(claimed.parent).st_mtime_ns}", f"{len(lines)} {HOOK_WORD}{'s' if len(lines) != 1 else ''} went through unchecked during the panic",
                                  outcome=MarkOutcome.FAILED, ended=True))
-        if FileAccess.is_file(announced) and not FileAccess.is_file(home.panic_file):
+        if FileAccess.is_file(announced) and not FileAccess.is_file(home.emergency_stop_file):
             began = FileAccess.read(announced)
             FileAccess.unlink(announced)
             FileAccess.unlink(home.panic_count, missing_ok=True)

@@ -10,8 +10,8 @@ class EventIdentity:
 
     program: str
     session: str
-    session_generation: int
-    firing: str
+    session_number: int
+    event_id: str
     agent_id: int
     environment_id: int
     agent_type: str
@@ -20,6 +20,6 @@ class EventIdentity:
     child_agent: str = ""
 
     @classmethod
-    def identified(cls, event: HookEvent, session_generation: int, agent_id: int, environment_id: int, agent_type: str, profile: str, driver_name: str) -> "EventIdentity":
-        return cls(event.program, event.session, session_generation, event.firing, agent_id, environment_id, agent_type, profile, driver_name,
+    def identified(cls, event: HookEvent, session_number: int, agent_id: int, environment_id: int, agent_type: str, profile: str, driver_name: str) -> "EventIdentity":
+        return cls(event.program, event.session, session_number, event.event_id, agent_id, environment_id, agent_type, profile, driver_name,
                    event.child_agent)

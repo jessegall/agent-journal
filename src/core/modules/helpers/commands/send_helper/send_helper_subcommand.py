@@ -14,7 +14,7 @@ class SendHelperSubcommand(Subcommand[SendHelper, int]):
 
     cli_name = "helper"
     name = "send"
-    outward = True
+    external = True
 
     def __init__(self, agents: AgentRows) -> None:
         self.agents = agents

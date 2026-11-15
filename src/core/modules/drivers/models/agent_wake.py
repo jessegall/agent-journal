@@ -16,8 +16,8 @@ class AgentWake(EnvironmentScoped, Model):
 
     session_agent_id: int
     environment_id: int = 0
-    work_generation: str
-    session_generation: int
+    work_number: str
+    session_number: int
     causes: str = "[]"
     lines: tuple[str, ...] = ()
     state: WakeState = WakeState.OPEN

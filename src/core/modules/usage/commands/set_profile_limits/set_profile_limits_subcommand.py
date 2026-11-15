@@ -13,7 +13,7 @@ class SetProfileLimitsSubcommand(CurrentSettingOutput, Subcommand[SetProfileLimi
 
     cli_name = "agent"
     name = "profile-limits"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("agent_type")

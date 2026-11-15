@@ -13,4 +13,4 @@ class DisplayedBlocks:
     def text(self, agent_id: int, event: HookEvent) -> str:
         if not event.is_final_display:
             return ""
-        return self.request_values.read(f"drivers.displayed-block:{agent_id}:{event.firing}", lambda: event.firing, lambda: self.hook_calls.displayed_block(agent_id, event))
+        return self.request_values.read(f"drivers.displayed-block:{agent_id}:{event.event_id}", lambda: event.event_id, lambda: self.hook_calls.displayed_block(agent_id, event))

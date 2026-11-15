@@ -15,12 +15,12 @@ from engine.agent_machine.capabilities import Capabilities
 from engine.agent_machine.contracts.capability import Capability
 from engine.agent_machine.stepping.grant import Grant
 from engine.agent_machine.contracts.policy import Policy
-from engine.agent_machine.needs.rank_order import RankOrder
+from engine.agent_machine.states.rank_order import RankOrder
 from engine.agent_machine.contracts.transform import Transform
-from engine.agent_machine.needs.ended_fact import EndedFact
-from engine.agent_machine.needs.block_plan import BlockPlan
-from engine.agent_machine.needs.required_state import RequiredState
-from engine.agent_machine.needs.pause_fact import PauseFact
+from engine.agent_machine.states.ended_fact import EndedFact
+from engine.agent_machine.states.block_plan import BlockPlan
+from engine.agent_machine.states.required_state import RequiredState
+from engine.agent_machine.states.pause_fact import PauseFact
 from engine.agent_machine.record.question import Question
 from engine.agent_machine.record.refusal_counts import RefusalCounts
 from engine.agent_machine.record.rewrite import Rewrite
@@ -85,19 +85,19 @@ def working(work_type: WorkType = WorkType.TASK, work_remains: bool = True) -> R
 
 
 def test_a_stop_with_a_started_task_is_refused_counted_and_checked() -> None:
-    record = AgentStateMachine().step(view(needs=(working(),)), STOP).record
+    record = AgentStateMachine().step(view(states=(working(),)), STOP).record
     assert (record.decision.decision_class, record.shown_reason, record.counts.stop_refusals) == (DecisionClass.HOLD, TASK_REFUSAL, 1)
     assert [check.rule for check in record.stop_checks] == ["tasks.stop"]
 
 
 def test_a_wait_on_top_of_the_work_lets_the_stop_through_and_resets_the_counts() -> None:
     waits = RequiredState(Waiting((), WaitMode.ANY, True, "question 2"), "", StateKey("Waiting", None, "question:2"))
-    record = AgentStateMachine().step(view(needs=(working(), waits), counts=RefusalCounts(3, 2)), STOP).record
+    record = AgentStateMachine().step(view(states=(working(), waits), counts=RefusalCounts(3, 2)), STOP).record
     assert (record.decision.admits(), record.counts) == (True, RefusalCounts(0, 0))
 
 
 def test_a_helper_stop_on_its_open_job_hands_the_job_in() -> None:
-    record = AgentStateMachine().step(view("helper", needs=(working(WorkType.JOB),)), STOP).record
+    record = AgentStateMachine().step(view("helper", states=(working(WorkType.JOB),)), STOP).record
     assert (record.decision.admits(), record.shown_reason.key, record.shown_reason.handover) == (True, HANDOVER_KEY, WorkReference(WorkType.JOB, 6, "task 6"))
 
 
@@ -190,7 +190,7 @@ def test_a_paused_agent_may_answer_with_a_message_and_rest_but_not_edit_or_hand_
     machine = AgentStateMachine()
     assert machine.step(paused(), EDIT).record.shown_reason.key == PAUSE_KEY
     assert machine.step(paused(blocks=(block("documents.open", "documents.open", is_strict=True),)), journal_line("journal message send hi", ("message", "send", "hi"))).record.decision.admits()
-    rest = machine.step(paused("helper", needs=(working(WorkType.JOB),)), STOP).record
+    rest = machine.step(paused("helper", states=(working(WorkType.JOB),)), STOP).record
     assert (rest.decision.admits(), rest.shown_reason.handover) == (True, None)
 
 
@@ -219,23 +219,23 @@ def test_a_rewrite_the_program_cannot_carry_becomes_its_fallback_refusal() -> No
 
 
 def test_the_same_view_gives_the_same_record() -> None:
-    same = view(needs=(working(),), blocks=(block("documents.open", "documents.open"),))
+    same = view(states=(working(),), blocks=(block("documents.open", "documents.open"),))
     assert AgentStateMachine().step(same, STOP).record == AgentStateMachine().step(same, STOP).record
 
 
 def test_the_fifth_refused_stop_opens_an_escalation_and_says_who_was_asked() -> None:
-    record = AgentStateMachine().step(view(needs=(working(),), counts=RefusalCounts(4, 0)), STOP).record
+    record = AgentStateMachine().step(view(states=(working(),), counts=RefusalCounts(4, 0)), STOP).record
     assert record.counts.escalation is not None
     assert record.shown_reason.text.endswith("A person was asked: you may stop and wait for the answer.")
 
 
 
 def test_the_fifth_stop_refused_by_a_started_task_names_it_and_the_next_stop_rests_while_new_work_still_refuses() -> None:
-    fifth = AgentStateMachine().step(view(needs=(working(),), counts=RefusalCounts(4, 0)), STOP).record
+    fifth = AgentStateMachine().step(view(states=(working(),), counts=RefusalCounts(4, 0)), STOP).record
     escalation = fifth.counts.escalation
     assert not fifth.decision.admits() and escalation is not None and escalation.work_keys == tuple([working().key])
-    assert AgentStateMachine().step(view(needs=(working(),), escalation=escalation), STOP).record.decision.admits()
-    assert not AgentStateMachine().step(view(needs=(working(WorkType.JOB),), escalation=escalation), STOP).record.decision.admits()
+    assert AgentStateMachine().step(view(states=(working(),), escalation=escalation), STOP).record.decision.admits()
+    assert not AgentStateMachine().step(view(states=(working(WorkType.JOB),), escalation=escalation), STOP).record.decision.admits()
 
 
 def test_a_hold_no_one_can_judge_never_passes_and_asks_a_person_to_repair_it() -> None:
@@ -260,24 +260,24 @@ def test_a_block_judged_satisfied_closes_and_constrains_nothing() -> None:
 
 def test_an_ended_agent_gets_ended_on_top_of_its_stack() -> None:
     result = AgentStateMachine().step(view(facts=(EndedFact(None, "retired", 1),)), Question.none())
-    assert isinstance(result.stack.frames[-1].state, Ended)
+    assert isinstance(result.stack.stacked_states[-1].state, Ended)
 
 
-def test_past_the_depth_limit_a_block_has_no_frame_and_still_refuses() -> None:
+def test_past_the_depth_limit_a_block_has_no_stacked_state_and_still_refuses() -> None:
     blocks = (block("messages.unread", "messages.unread", block_id=1), block("overview.first", "overview.first", block_id=2))
     result = AgentStateMachine().step(view(blocks=blocks, depth_limit=1), EDIT)
-    assert [frame.need_key.generation for frame in result.stack.frames[1:]] == ["overview.first"]
+    assert [stacked_state.state_key.generation for stacked_state in result.stack.stacked_states[1:]] == ["overview.first"]
     assert [reason.rank for reason in (result.record.shown_reason, *result.record.outranked_reasons)] == ["overview.first", "messages.unread"]
 
 
-def test_a_new_need_enters_its_frame_and_an_ended_one_exits_wherever_it_sits() -> None:
+def test_a_new_need_enters_its_stacked_state_and_an_ended_one_exits_wherever_it_sits() -> None:
     machine = AgentStateMachine()
-    first = machine.step(view(needs=(working(),)), Question.none())
+    first = machine.step(view(states=(working(),)), Question.none())
     second = machine.step(view(stack=first.stack), Question.none())
     assert [move.move_type for move in first.record.moves] == [StackMoveType.SEEDED]
     assert [move.move_type for move in second.record.moves] == [StackMoveType.EXITED]
 
 
 def test_a_resting_agent_whose_stop_would_be_refused_gets_a_wake_unless_it_is_paused() -> None:
-    assert AgentStateMachine().step(view(needs=(working(),), is_resting=True), Question.none()).wake.wake_move is WakeMove.WRITTEN
-    assert AgentStateMachine().step(paused(needs=(working(),), is_resting=True), Question.none()).wake.wake_move is WakeMove.INHIBITED
+    assert AgentStateMachine().step(view(states=(working(),), is_resting=True), Question.none()).wake.wake_move is WakeMove.WRITTEN
+    assert AgentStateMachine().step(paused(states=(working(),), is_resting=True), Question.none()).wake.wake_move is WakeMove.INHIBITED

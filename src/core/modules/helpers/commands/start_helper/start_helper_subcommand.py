@@ -16,7 +16,7 @@ class StartHelperSubcommand(Subcommand[StartHelper, HelperStarted]):
 
     cli_name = "helper"
     name = "start"
-    outward = True
+    external = True
 
     def __init__(self, standings: AgentStanding) -> None:
         self.standings = standings

@@ -1,4 +1,4 @@
-from engine.agent_machine.needs.line_history import LineHistory
+from engine.agent_machine.states.line_history import LineHistory
 from engine.time.timestamp import Timestamp
 from core.modules.drivers.support.agent_line_histories import AgentLineHistories
 

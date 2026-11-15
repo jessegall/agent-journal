@@ -30,7 +30,7 @@ TRIED = "ran the failed tests by name and they pass"
 
 
 def full_line():
-    return HookSamples.shell("pytest", ShellPart("pytest", CommandCategory.TEST_RUN, [], is_full_test_run=True)).with_fields(firing=f"full-{uuid4().hex}")
+    return HookSamples.shell("pytest", ShellPart("pytest", CommandCategory.TEST_RUN, [], is_full_test_run=True)).with_fields(event_id=f"full-{uuid4().hex}")
 
 
 class FailedFullRun(StoryFixture):

@@ -13,7 +13,7 @@ class SetSettingSubcommand(CurrentSettingOutput, Subcommand[SetSetting, CurrentS
 
     cli_name = "setting"
     name = "set"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("key")

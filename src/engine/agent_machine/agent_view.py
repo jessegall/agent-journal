@@ -11,11 +11,11 @@ from engine.agent_stack.open_block import OpenBlock
 from engine.agent_stack.stack import Stack
 from engine.agent_machine.capabilities import Capabilities
 from engine.agent_machine.stepping.grant import Grant
-from engine.agent_machine.needs.rank_order import RankOrder
-from engine.agent_machine.needs.block_plan import BlockPlan
-from engine.agent_machine.needs.agent_reference import AgentReference
-from engine.agent_machine.needs.fact import Fact
-from engine.agent_machine.needs.required_state import RequiredState
+from engine.agent_machine.states.rank_order import RankOrder
+from engine.agent_machine.states.block_plan import BlockPlan
+from engine.agent_machine.states.agent_reference import AgentReference
+from engine.agent_machine.states.fact import Fact
+from engine.agent_machine.states.required_state import RequiredState
 from engine.agent_machine.record.refusal_counts import RefusalCounts
 from engine.enums.condition_outcome import ConditionOutcome
 from engine.enums.responder import Responder
@@ -29,17 +29,17 @@ class AgentView:
     settings, whether the agent rests, its driver's contract and its program's capabilities, the
     refusal counts kept so far, how each open hold's condition was judged, and when the step runs."""
 
-    basis: ReadVersions
+    read_versions: ReadVersions
     agent: AgentReference
     program_name: str
     session: str
     profile: str
     driver_name: str
-    session_generation: int
+    session_number: int
     stepped_at: datetime
     stack: Stack
     facts: tuple[Fact, ...]
-    needs: tuple[RequiredState, ...]
+    states: tuple[RequiredState, ...]
     plans: tuple[BlockPlan, ...]
     blocks: tuple[OpenBlock, ...]
     grants: tuple[Grant, ...]

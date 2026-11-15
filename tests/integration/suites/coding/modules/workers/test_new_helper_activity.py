@@ -14,7 +14,7 @@ def test_the_inactive_helper_rule_run_right_after_a_dispatch_does_not_name_the_n
     story = played(OpenTaskOrchestrator)
     repository_environment(story)
     story.advance(timedelta(minutes=31))
-    event = HookEvent.parsed(HookSamples.tick().with_fields(session="s-1", firing="check", fired_at_ms=0).body)
+    event = HookEvent.parsed(HookSamples.tick().with_fields(session="s-1", event_id="check", fired_at_ms=0).body)
     hook = AgentHook(event=event, agent_id=story.agent.id, environment_id=1, role=AgentRole.MAIN, driver="coding.main", timestamp=story.clock.timestamp())
     story.container.get(AgentActivities).read(hook.event, hook.agent_id)
     worker = dispatched_worker(story)

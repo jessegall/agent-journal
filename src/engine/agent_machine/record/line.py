@@ -15,7 +15,7 @@ class Line:
     text: str
     category: LineCategory
     interval_key: str
-    carrier: LineChannel
+    channel: LineChannel
     # the key of the source that gave it, whose history records when it last spoke
     source_key: str = ""
     # the nudge it was made from, whose interval, record keys and required command the line keeps when it is said
@@ -23,9 +23,9 @@ class Line:
 
     # a line of a nudge, of the category its type gives unless one is named
     @classmethod
-    def of_agent_message(cls, agent_message: AgentMessage, carrier: LineChannel, category: LineCategory | None = None) -> "Line":
+    def of_agent_message(cls, agent_message: AgentMessage, channel: LineChannel, category: LineCategory | None = None) -> "Line":
         kind = category if category is not None else LineCategory.STEERING if agent_message.type is AgentMessageType.STEERING else LineCategory.INFORMATION
-        return cls(agent_message.key, agent_message.text, kind, agent_message.key, carrier, agent_message=agent_message)
+        return cls(agent_message.key, agent_message.text, kind, agent_message.key, channel, agent_message=agent_message)
 
     # the nudge that says this line: the one it was made from, or one of its words alone
     def said(self) -> AgentMessage:

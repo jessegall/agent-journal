@@ -5,7 +5,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
-from tests.stories.core.modules.processes.support.cadence_probe import (cadence_lines, truncate_output, damaged_record, foreign_run, folder_made_a_file,
+from tests.stories.core.modules.processes.support.cadence_probe import (cadence_lines, truncate_output, damaged_record, project_hook_run, folder_made_a_file,
                                                                        kept_lines, emitted, record_text, removed_output, ring, tick_statements, ticks)
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from core.modules.processes.models.enums.process_setting import ProcessSetting
@@ -88,7 +88,7 @@ def test_two_environments_judge_their_runs_by_their_own_thresholds(new_story):
     different = Actor(story.new_row_id("agent start s-elsewhere claude main --environment elsewhere"), ActorType.AGENT)
     story.expect_success(f"setting set {ProcessSetting.FIRST_OUTPUT_SECONDS.key} 60 --environment elsewhere", actor=story.user)
     here = moved_run(story, "make here", CommandCategory.BUILD)
-    there = foreign_run(story, different)
+    there = project_hook_run(story, different)
     ticks(story, 30)
     early = kept_lines(story, different.id, story.user)
     ticks(story, 30)

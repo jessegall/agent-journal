@@ -19,10 +19,10 @@ class SetUsageLimitHandler(Handler[SetUsageLimit, UsageLimit]):
 
     def handle(self, command: SetUsageLimit, context: Context) -> UsageLimit:
         windows = self.states.windows(command.program)
-        current_epoch = context.timestamp.value.timestamp()
+        current_version = context.timestamp.value.timestamp()
         new_limit = UsageLimit(program=command.program, creator_id=context.actor.id, window=command.window, mode=command.mode, percent=command.percent)
         window = self.limits.matching_window(new_limit, windows)
-        baseline = (window.used_percent, self.limits.marker(new_limit, window, current_epoch)) if window is not None and command.mode is UsageLimitMode.BUDGET else (0.0, 0.0)
+        baseline = (window.used_percent, self.limits.marker(new_limit, window, current_version)) if window is not None and command.mode is UsageLimitMode.BUDGET else (0.0, 0.0)
         existing = next((row for row in self.limits.program_limits(command.program) if (row.window, row.mode) == (command.window, command.mode)), None)
         if existing is None:
             return self.repository.save(new_limit.changed(baseline_percent=baseline[0], baseline_marker=baseline[1]), context)

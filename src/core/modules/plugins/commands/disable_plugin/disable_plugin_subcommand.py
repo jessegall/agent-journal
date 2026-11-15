@@ -12,7 +12,7 @@ class DisablePluginSubcommand(Subcommand[SwitchPlugin, Plugin]):
 
     cli_name = "plugin"
     name = "disable"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("plugin")

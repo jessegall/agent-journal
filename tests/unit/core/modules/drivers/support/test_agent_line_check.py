@@ -17,7 +17,7 @@ from engine.row.row_owner import MAIN_AGENT, RowOwner
 
 TYPES = HelperTypeBook(tuple([HelperTypeEntry.declared("journal.core.helpers", Helper)]))
 TASK_EDIT = JournalLine("task edit", frozenset([JournalLineClass.CHANGES]))
-SETTING_SET = JournalLine("setting set", frozenset([JournalLineClass.CHANGES, JournalLineClass.OUTWARD]))
+SETTING_SET = JournalLine("setting set", frozenset([JournalLineClass.CHANGES, JournalLineClass.EXTERNAL]))
 TASK_READ = JournalLine("task show", frozenset([JournalLineClass.READS]))
 PROFILE_FILES = SimpleNamespace(registered=lambda name: None)
 

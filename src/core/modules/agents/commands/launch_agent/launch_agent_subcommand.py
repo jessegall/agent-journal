@@ -14,7 +14,7 @@ class LaunchAgentSubcommand(Subcommand[LaunchAgent, Agent]):
 
     cli_name = "agent"
     name = "launch"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("program")

@@ -1,4 +1,4 @@
-from core.modules.documents.needs.open_document_needs import OpenDocumentNeeds
+from core.modules.documents.states.open_document_states import OpenDocumentStates
 from core.modules.documents.models.declarations.open_document_model_declaration import OpenDocumentModelDeclaration
 from core.modules.documents.models.declarations.doc_model_declaration import DocModelDeclaration
 from core.modules.documents.models.declarations.report_model_declaration import ReportModelDeclaration
@@ -111,7 +111,7 @@ class DocumentsModule(Module):
     models = [OpenDocumentModelDeclaration, DocModelDeclaration, ReportModelDeclaration, DocRevisionModelDeclaration, LinkModelDeclaration, CommentSelectionModelDeclaration, LinkCorrectionModelDeclaration]
     migrations = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration, CommentSelectionsMigration, ProjectDocumentsMigration, RevisionAuthorsMigration, LinkCorrectionsMigration, MessageLinkPathsMigration]
     block_conditions = [DocumentClosed]
-    needs = [OpenDocumentNeeds]
+    states = [OpenDocumentStates]
     tick_handlers = [CloseEndedDocumentsTickHandler]
     library_shares = [DocLibraryShare]
     moves = [DocumentsMove, MessageLinksMove]

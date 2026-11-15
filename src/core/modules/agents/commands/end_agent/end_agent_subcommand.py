@@ -11,7 +11,7 @@ class EndAgentSubcommand(Subcommand[EndAgent, Agent]):
 
     cli_name = "agent"
     name = "end"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("row_id", type=int)

@@ -14,7 +14,7 @@ class PauseAgentSubcommand(Subcommand[PauseAgent, Agent]):
 
     cli_name = "agent"
     name = "pause"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("agent_id", type=AgentNumber)

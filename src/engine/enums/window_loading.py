@@ -6,5 +6,5 @@ class WindowLoading(StrEnum):
     document the viewer draws itself."""
 
     COMPONENT = "component"
-    FRAME = "frame"
+    STACKED_STATE = "frame"
     DOCUMENT = "document"

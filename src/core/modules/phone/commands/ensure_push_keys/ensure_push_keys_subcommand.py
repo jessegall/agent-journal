@@ -15,7 +15,7 @@ class EnsurePushKeysSubcommand(Subcommand[EnsurePushKeys, PushKeyPair]):
 
     cli_name = "phone"
     name = "push-key"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         return None

@@ -2,7 +2,7 @@ from core.modules.drivers.support.effect_commands import EffectCommands
 from core.modules.drivers.support.message_log import MessageLog
 from core.modules.drivers.support.required_commands import RequiredCommands
 from core.modules.drivers.support.line_history_writer import LineHistoryWriter
-from core.modules.drivers.support.answer_basis_rows import AnswerBasisRows
+from core.modules.drivers.support.read_versions_rows import ReadVersionsRows
 from engine.enums.closer_role import CloserRole
 import json
 from collections.abc import Mapping, Sequence
@@ -12,7 +12,7 @@ from engine.agent_machine.contracts.effect import Effect
 from engine.agent_machine.stepping.grant_ledger import GrantLedger
 from engine.driver.message_sender import MessageSender
 from engine.agent_machine.decision_record import DecisionRecord
-from engine.agent_machine.needs.block_plan import BlockPlan
+from engine.agent_machine.states.block_plan import BlockPlan
 from engine.agent_machine.record.block_closing import BlockClosing
 from engine.agent_machine.record.wake_change import WakeChange
 from engine.agent_machine.step_result import StepResult
@@ -50,7 +50,7 @@ class StoredStepWriter(StepWriter):
     effects when the step admits (a required one that fails raises and rolls everything back), and the
     wake. A step outside a hook that changed nothing runs only its unconditional effects."""
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus, database: Database, grant_store: GrantLedger, message_sender: MessageSender, stacks: AnswerBasisRows,
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus, database: Database, grant_store: GrantLedger, message_sender: MessageSender, stacks: ReadVersionsRows,
                  effect_commands: EffectCommands, agent_message_log: MessageLog, history: LineHistoryWriter, required_commands: RequiredCommands) -> None:
         self.message_sender, self.stacks, self.effect_commands, self.agent_message_log, self.history = message_sender, stacks, effect_commands, agent_message_log, history
         self.required_commands = required_commands
@@ -60,7 +60,7 @@ class StoredStepWriter(StepWriter):
     def save(self, view: AgentView, step: StepResult, hook_call_id: int | None, context: Context) -> StepCommit:
         # the row the view read, read again only when a write came between, which a changed basis then refuses
         row = self.stacks.row(view.agent.agent_id)
-        if not self.basis_matches(row, view):
+        if not self.read_versions_matches(row, view):
             return StepCommit.conflict()
         record = step.record
         if hook_call_id is None and not self.has_changes(row, view, step):
@@ -68,9 +68,9 @@ class StoredStepWriter(StepWriter):
             return StepCommit.saved(None, tuple(failures))
         row = self.saved_stack(row, view, step, context)
         for move in record.moves:
-            self.repository.save(AgentStackMove(session_agent_id=view.agent.agent_id, move_type=move.move_type, frame_key=f"{move.frame_key.state_name}:{move.frame_key.generation}" if move.frame_key is not None else "",
-                                                reason_text=move.reason_text, version_before=view.basis.stack_version, version_after=row.version,
-                                                step_cause=STEP_CAUSE, hook_call_id=hook_call_id, frame_end=move.frame_end, actor_id=move.actor_id), context)
+            self.repository.save(AgentStackMove(session_agent_id=view.agent.agent_id, move_type=move.move_type, stacked_state_key=f"{move.stacked_state_key.state_name}:{move.stacked_state_key.generation}" if move.stacked_state_key is not None else "",
+                                                reason_text=move.reason_text, version_before=view.read_versions.stack_version, version_after=row.version,
+                                                step_cause=STEP_CAUSE, hook_call_id=hook_call_id, stacked_state_end=move.stacked_state_end, actor_id=move.actor_id), context)
         self.open_blocks(record.blocks_opened, view, record, context)
         self.close_blocks(record.blocks_closed, context)
         self.save_escalation(view, record, context)
@@ -101,26 +101,26 @@ class StoredStepWriter(StepWriter):
         event, tool = record.action.event, record.action.tool()
         fingerprint = record.action.fingerprint() if tool is not None and tool.journal_commands else ""
         for grant in record.spent_grants:
-            self.grant_store.spend(grant, event.firing if event is not None else "", fingerprint, context)
+            self.grant_store.spend(grant, event.event_id if event is not None else "", fingerprint, context)
 
-    def basis_matches(self, row: AgentStack | None, view: AgentView) -> bool:
-        driver_epoch = self.stacks.driver_epoch()
-        program_epoch = self.stacks.program_epoch(view.program_name)
-        current = (row.version if row is not None else 0, driver_epoch.epoch if driver_epoch is not None else 0,
-                   program_epoch.epoch if program_epoch is not None else 0)
-        return current == (view.basis.stack_version, view.basis.driver_epoch, view.basis.program_epoch)
+    def read_versions_matches(self, row: AgentStack | None, view: AgentView) -> bool:
+        driver_version = self.stacks.driver_version()
+        program_version = self.stacks.program_version(view.program_name)
+        current = (row.version if row is not None else 0, driver_version.epoch if driver_version is not None else 0,
+                   program_version.epoch if program_version is not None else 0)
+        return current == (view.read_versions.stack_version, view.read_versions.driver_version, view.read_versions.program_version)
 
     @staticmethod
     def has_changes(row: AgentStack | None, view: AgentView, step: StepResult) -> bool:
         record = step.record
         changed_counts = (record.counts.stop_refusals, record.counts.tool_refusals) != (view.counts.stop_refusals, view.counts.tool_refusals)
-        is_first_step = row is None or not row.has_frames
+        is_first_step = row is None or not row.has_stacked_states
         return bool(is_first_step or record.moves or record.blocks_opened or record.blocks_closed or record.waiting_lines or changed_counts or record.counts.escalation != view.escalation
                     or record.wake.wake_move is not WakeMove.UNCHANGED or step.stack != view.stack)
 
     def saved_stack(self, row: AgentStack | None, view: AgentView, step: StepResult, context: Context) -> AgentStack:
         values = {"driver_name": view.driver_name, "table_digest": view.table_digest,
-                  "frames": StackCodec.encoded(step.stack.frames), "stop_refusals": step.record.counts.stop_refusals,
+                  "stacked_states": StackCodec.encoded(step.stack.stacked_states), "stop_refusals": step.record.counts.stop_refusals,
                   "tool_refusals": step.record.counts.tool_refusals}
         stack = row.changed(**values) if row is not None else AgentStack(session_agent_id=view.agent.agent_id, **values)
         return self.repository.save(stack, context)
@@ -135,7 +135,7 @@ class StoredStepWriter(StepWriter):
                                             subject_id=plan.subject.row_id if plan.subject is not None else None, members=plan.members,
                                             context_generation=plan.context_generation, lifting_lines=plan.lifting_lines,
                                             closer_roles=tuple(role.value for role in plan.closer_roles), opener=MACHINE_OPENER,
-                                            is_skippable=CloserRole.AGENT in plan.closer_roles, opening_firing=record.identity.firing,
+                                            is_skippable=CloserRole.AGENT in plan.closer_roles, opening_event_id=record.identity.event_id,
                                             countdown_key=plan.countdown.key if plan.countdown is not None else "", countdown_text=plan.countdown.text if plan.countdown is not None else ""), context)
 
     def close_blocks(self, closings: Sequence[BlockClosing], context: Context) -> None:
@@ -186,7 +186,7 @@ class StoredStepWriter(StepWriter):
     def save_wake(self, view: AgentView, wake: WakeChange, context: Context) -> None:
         if wake.wake_move is WakeMove.UNCHANGED:
             return
-        active = self.queries.query(AgentWake).filter(session_agent_id=view.agent.agent_id, work_generation=wake.work_generation).matching(
+        active = self.queries.query(AgentWake).filter(session_agent_id=view.agent.agent_id, work_number=wake.work_number).matching(
             Excluding(Among("state", [state.value for state in ENDED_WAKE_STATES]))).first()
         state = WakeState.INHIBITED if wake.wake_move is WakeMove.INHIBITED else WakeState.OPEN
         if active is not None:
@@ -195,12 +195,12 @@ class StoredStepWriter(StepWriter):
             return
         if self.has_ended_wake(view.agent.agent_id, wake):
             return
-        self.repository.save(AgentWake(session_agent_id=view.agent.agent_id, work_generation=wake.work_generation,
-                                       session_generation=view.session_generation, causes=json.dumps(list(wake.causes)), state=state), context)
+        self.repository.save(AgentWake(session_agent_id=view.agent.agent_id, work_number=wake.work_number,
+                                       session_number=view.session_number, causes=json.dumps(list(wake.causes)), state=state), context)
 
     # an expired wake stays final for its causes until a new cause, or a hook of the agent after it (doc 1310 section 6.4)
     def has_ended_wake(self, agent_id: int, wake: WakeChange) -> bool:
-        expired = self.queries.query(AgentWake).filter(session_agent_id=agent_id, work_generation=wake.work_generation, state=WakeState.EXPIRED).newest().first()
+        expired = self.queries.query(AgentWake).filter(session_agent_id=agent_id, work_number=wake.work_number, state=WakeState.EXPIRED).newest().first()
         if expired is None or not set(wake.causes) <= set(json.loads(expired.causes)):
             return False
         hook = self.queries.query(HookCall).filter(session_agent_id=agent_id).newest().first()

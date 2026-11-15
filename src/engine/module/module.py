@@ -20,10 +20,10 @@ from engine.agent_machine.contracts.effect import Effect
 from engine.agent_machine.contracts.line_source import LineSource
 from engine.agent_machine.contracts.policy import Policy
 from engine.agent_machine.contracts.transform import Transform
-from engine.agent_machine.needs.wake_cause import WakeCause
+from engine.agent_machine.states.wake_cause import WakeCause
 from engine.agent_machine.driver import CORE_SUITE, Driver
-from engine.agent_machine.needs.fact_source import FactSource
-from engine.agent_machine.needs.state_source import StateSource
+from engine.agent_machine.states.fact_source import FactSource
+from engine.agent_machine.states.state_source import StateSource
 from engine.model.model import Model
 from engine.guard.guard import Guard
 from engine.listener.commit.commit_listener import CommitListener
@@ -86,7 +86,7 @@ class Module:
     marks: ClassVar[list[MarkDeclaration | type[MarkDeclaration]]] = []
     block_conditions: ClassVar[list[type[BlockCondition]]] = []
     agent_drivers: ClassVar[list[type[Driver]]] = []
-    needs: ClassVar[list[type[StateSource]]] = []
+    states: ClassVar[list[type[StateSource]]] = []
     facts: ClassVar[list[type[FactSource]]] = []
     policies: ClassVar[list[type[Policy]]] = []
     lines: ClassVar[list[type[LineSource]]] = []

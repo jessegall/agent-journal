@@ -29,5 +29,5 @@ class WorkEndsWaitEffect(Effect):
         tool = record.action.tool()
         if tool is None or (tool.shell is not None and tool.shell.is_journal_line):
             return []
-        waits = [need.key.subject.row_id for need in view.needs if isinstance(need.state, Waiting) and need.key.subject is not None and need.key.subject.model == WAIT_SUBJECT]
+        waits = [required_state.key.subject.row_id for required_state in view.states if isinstance(required_state.state, Waiting) and required_state.key.subject is not None and required_state.key.subject.model == WAIT_SUBJECT]
         return [EndWait(wait_id, outcome=WENT_ON) for wait_id in sorted(waits)]

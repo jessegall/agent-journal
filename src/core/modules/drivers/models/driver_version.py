@@ -11,8 +11,8 @@ class DriverVersion(EnvironmentScoped, Model):
     driver or suite, a profile, a table digest, and a server boot, with the time of that boot, which no
     driving setting moves."""
 
-    model_name = "driver_epoch"
-    table = "driver_epochs"
+    model_name = "driver_version"
+    table = "driver_versions"
     cli_name = "driver-epoch"
 
     environment_id: int = 0

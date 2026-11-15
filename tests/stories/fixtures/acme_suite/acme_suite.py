@@ -1,8 +1,8 @@
 from engine.module.suite import Suite
-from engine.viewer.entrance import Entrance
+from engine.viewer.entry_point import EntryPoint
 
 
-class AcmeEntrance(Entrance):
+class AcmeEntryPoint(EntryPoint):
     key = "acme"
     windows = ["findings.findings"]
 
@@ -10,4 +10,4 @@ class AcmeEntrance(Entrance):
 class AcmeSuite(Suite):
     name = "acme"
     requires = ["coding"]
-    entrances = [AcmeEntrance]
+    entry_points = [AcmeEntryPoint]

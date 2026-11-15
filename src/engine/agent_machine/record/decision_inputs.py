@@ -8,6 +8,6 @@ class DecisionInputs:
     """What a decision was made from: the table digest, and the needs, holds and grants read."""
 
     table_digest: str
-    need_keys: tuple[StateKey, ...]
+    state_keys: tuple[StateKey, ...]
     block_ids: tuple[int, ...]
     grant_ids: tuple[int, ...]

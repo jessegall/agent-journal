@@ -12,7 +12,7 @@ class EnableTriggerSubcommand(Subcommand[EnableTrigger, Trigger]):
 
     cli_name = "trigger"
     name = "enable"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("id", type=int)

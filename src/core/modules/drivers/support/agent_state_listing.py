@@ -25,8 +25,8 @@ class AgentStateListing:
 
     def open_states(self, agent: Agent) -> list[OpenState]:
         row = self.queries.query(AgentStack).filter(session_agent_id=agent.id).first()
-        if row is None or not row.has_frames:
+        if row is None or not row.has_stacked_states:
             return []
-        return [OpenState(type(frame.state).__name__, frame.need_key.state_name,
-                          tuple([f"{frame.need_key.subject.model} {frame.need_key.subject.row_id}"]) if frame.need_key.subject is not None else (),
-                          frame.entered_at.isoformat()) for frame in StackCodec.decoded(row.frames)]
+        return [OpenState(type(stacked_state.state).__name__, stacked_state.state_key.state_name,
+                          tuple([f"{stacked_state.state_key.subject.model} {stacked_state.state_key.subject.row_id}"]) if stacked_state.state_key.subject is not None else (),
+                          stacked_state.entered_at.isoformat()) for stacked_state in StackCodec.decoded(row.stacked_states)]

@@ -18,7 +18,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 
 def written_wake(story, agent_id: int, **fields: object) -> AgentWake:
-    wake = AgentWake(session_agent_id=agent_id, environment_id=1, work_generation="task:1", session_generation=1, causes='["tasks.work-remains"]', **fields)
+    wake = AgentWake(session_agent_id=agent_id, environment_id=1, work_number="task:1", session_number=1, causes='["tasks.work-remains"]', **fields)
     with story.container.get(Database).transaction():
         return story.container.get(Repository).save(wake, Context(Actor.core(), story.clock.timestamp(), DeliverAgentWake(0)))
 

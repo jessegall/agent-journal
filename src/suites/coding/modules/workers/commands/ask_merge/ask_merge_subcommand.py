@@ -17,7 +17,7 @@ class AskMergeSubcommand(Subcommand[AskMerge, MergeAskOutcome]):
 
     cli_name = "worker"
     name = "ask-merge"
-    outward = True
+    external = True
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

@@ -11,7 +11,7 @@ class SkipReaderRequestSubcommand(Subcommand[SkipReaderRequest, ReaderRequest]):
 
     cli_name = "reader-request"
     name = "waive"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("request_id", type=int)

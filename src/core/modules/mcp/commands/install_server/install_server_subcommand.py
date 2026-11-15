@@ -12,7 +12,7 @@ class InstallServerSubcommand(Subcommand[InstallServer, McpServer]):
 
     cli_name = "mcp"
     name = "install"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("name")

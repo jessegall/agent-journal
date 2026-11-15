@@ -36,7 +36,7 @@ class GraphifySearches:
         self.hook_calls, self.settings, self.home, self.request_values = hook_calls, settings, home, request_values
 
     def answer(self, event: HookEvent, agent_id: int) -> GraphifyAnswer:
-        return self.request_values.read(f"coding.graphify:{agent_id}:{event.firing}", lambda: event.firing, lambda: self.counted(event, agent_id))
+        return self.request_values.read(f"coding.graphify:{agent_id}:{event.event_id}", lambda: event.event_id, lambda: self.counted(event, agent_id))
 
     def counted(self, event: HookEvent, agent_id: int) -> GraphifyAnswer:
         tool = event.tool

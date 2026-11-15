@@ -1,5 +1,5 @@
 from engine.module.suite import Suite
-from engine.viewer.entrance import Entrance
+from engine.viewer.entry_point import EntryPoint
 from engine.module.module import Module
 from engine.viewer.button_declaration import ButtonDeclaration
 from engine.viewer.skeleton_part import SkeletonPart
@@ -18,7 +18,7 @@ GOOD_SECTION = f"{MODULE_FILE}:GoodSectionModule"
 
 
 def section(name: str, *slots: str, place: WindowPlace = WindowPlace.SECTION) -> WindowDeclaration:
-    return WindowDeclaration(name, "Sample section", "board.html", WindowLoading.FRAME, place=place, slots=slots, skeleton=tuple([SkeletonPart.line()]))
+    return WindowDeclaration(name, "Sample section", "board.html", WindowLoading.STACKED_STATE, place=place, slots=slots, skeleton=tuple([SkeletonPart.line()]))
 
 
 class UnknownSlotModule(Module):
@@ -47,14 +47,14 @@ class SlotsModulePane(Module):
     windows = [section("pane_slots.notes", "inspector.plan", place=WindowPlace.PANE)]
 
 
-class SectionEntrance(Entrance):
+class SectionEntryPoint(EntryPoint):
     key = "sections"
     windows = ["section_suite.notes"]
 
 
 class SectionSuite(Suite):
     name = "sections"
-    entrances = [SectionEntrance]
+    entry_points = [SectionEntryPoint]
 
 
 class SuiteNamesSectionModule(Module):

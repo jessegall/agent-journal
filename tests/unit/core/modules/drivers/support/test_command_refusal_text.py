@@ -3,7 +3,7 @@ from engine.helper_type.command_allow_list import CommandAllowList
 from engine.helper_type.enums.journal_line_class import JournalLineClass
 from engine.helper_type.journal_line import JournalLine
 
-SETTING_SET = JournalLine("setting set", frozenset([JournalLineClass.CHANGES, JournalLineClass.OUTWARD]))
+SETTING_SET = JournalLine("setting set", frozenset([JournalLineClass.CHANGES, JournalLineClass.EXTERNAL]))
 
 
 def test_the_refusal_names_the_line_and_the_groups_and_lines_the_type_runs_and_nothing_else():

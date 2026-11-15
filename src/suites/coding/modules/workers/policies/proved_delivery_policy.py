@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.contracts.policy import Policy
-from engine.agent_machine.needs.agent_reference import AgentReference
+from engine.agent_machine.states.agent_reference import AgentReference
 from engine.agent_machine.record.question import Question
 from engine.agent_stack.reason import Reason
 from engine.command.command import Command
@@ -28,7 +28,7 @@ class ProvedDeliveryPolicy(Policy):
     key = "workers.proved-delivery"
     rank = "workers.policies"
     agent_types = [Worker.key]
-    entrance_commands = [AskMerge]
+    entry_point_commands = [AskMerge]
 
     def __init__(self, queries: Queries, proofs: ProofQuery) -> None:
         self.queries, self.proofs = queries, proofs
@@ -39,7 +39,7 @@ class ProvedDeliveryPolicy(Policy):
             return []
         return self.short_points(view.agent.agent_id)
 
-    def entrance_refusals(self, command: Command[object], agent: AgentReference) -> Sequence[Reason]:
+    def entry_point_refusals(self, command: Command[object], agent: AgentReference) -> Sequence[Reason]:
         return self.short_points(agent.agent_id)
 
     def short_points(self, agent_id: int) -> list[Reason]:

@@ -10,7 +10,7 @@ class ResetHookNumbersSubcommand(Subcommand[ResetHookNumbers, None]):
 
     cli_name = "developer"
     name = "reset-numbers"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         return None

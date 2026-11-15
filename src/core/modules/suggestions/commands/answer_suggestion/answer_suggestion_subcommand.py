@@ -13,7 +13,7 @@ class AnswerSuggestionSubcommand(Subcommand[AnswerSuggestion, Suggestion]):
 
     cli_name = "suggestion"
     name = "answer"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("id", type=int)

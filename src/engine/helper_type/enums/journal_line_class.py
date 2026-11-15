@@ -11,14 +11,14 @@ class JournalLineClass(StrEnum):
 
     READS = "reads"
     CHANGES = "changes"
-    OUTWARD = "outward"
+    EXTERNAL = "outward"
     BACKGROUND = "background"
 
     @classmethod
     def subcommand_classes(cls, subcommand: type[Subcommand[Command[object], object]] | type[ReadSubcommand[object]]) -> frozenset["JournalLineClass"]:
         classes = {cls.READS if issubclass(subcommand, ReadSubcommand) else cls.CHANGES}
-        if subcommand.outward:
-            classes.add(cls.OUTWARD)
+        if subcommand.external:
+            classes.add(cls.EXTERNAL)
         if subcommand.background:
             classes.add(cls.BACKGROUND)
         return frozenset(classes)

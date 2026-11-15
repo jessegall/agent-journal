@@ -12,7 +12,7 @@ class GiveServerKeySubcommand(Subcommand[GiveServerKey, McpServer]):
 
     cli_name = "mcp"
     name = "key"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("name")

@@ -28,7 +28,7 @@ class TextBeforeToolEffect(EventEffect):
     def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         if event is None or event.tool is None:
             return []
-        calls = self.hook_calls.display_calls_after_turn(agent_id, event.firing)
+        calls = self.hook_calls.display_calls_after_turn(agent_id, event.event_id)
         return [SendMessage(call.displayed_text, is_agent_text=True) for call in calls if self.should_send(agent_id, call)]
 
     def should_send(self, agent_id: int, call: HookCall) -> bool:

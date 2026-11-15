@@ -1,6 +1,6 @@
 from core.modules.messages.listeners.message_step_listener import MessageStepListener
-from core.modules.messages.needs.unread_message_needs import UnreadMessageNeeds
-from core.modules.messages.needs.unanswered_message_needs import UnansweredMessageNeeds
+from core.modules.messages.states.unread_message_states import UnreadMessageStates
+from core.modules.messages.states.unanswered_message_states import UnansweredMessageStates
 from core.modules.messages.policies.unread_message_show_policy import UnreadMessageShowPolicy
 from core.modules.messages.lines.new_message_lines import NewMessageLines
 from core.modules.messages.lines.unanswered_message_lines import UnansweredMessageLines
@@ -126,7 +126,7 @@ class MessagesModule(Module):
     migrations = [MessageHookScanIndexesMigration, MainMessageTargetsMigration, MessageSessionMigration, MessageTargetMigration, VisibleMessageIndexMigration, MessageReplyIndexMigration, MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration, MessagePeerMigration, MessageRecipientMigration, MessageHookIndexesMigration, MessageVisibilityMigration, MessageTypeIndexesMigration, MessageWorkSourcesMigration, WorkSourceSelectionsMigration, MessageParentEnvironmentMigration, MessageAgentTextMigration, MessageWorkSourcesEnvironmentIndexMigration]
     guards = [OneReplyPerMessageGuard, RepeatedMessageGuard, QuestionMessageGuard]
     handlers = [ReportSafeguardsStopHandler, RecordTypedPromptHandler, ResetMessageDeliveriesHandler, RecordParentReportHandler, RecordPeerMessageHandler, RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, SendAgentMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordWaitingMessageLineHandler, ChooseWorkSourceHandler, ClearWorkSourceHandler, NoteMessageReadHandler]
-    needs = [UnreadMessageNeeds, UnansweredMessageNeeds]
+    states = [UnreadMessageStates, UnansweredMessageStates]
     policies = [UnreadMessageShowPolicy]
     lines = [NewMessageLines, UnansweredMessageLines, MessageReadLines, ChatMannersLines, ChatOpeningLines, PlainCodeLines, ReplyNoteLines, AgentTextLines]
     effects = [MessageDeliveryEffect, MessageReadEffect, AgentTextEffect, TextBeforeToolEffect, TranscriptCatchUpEffect, TypedPromptEffect, PeerMessageEffect]

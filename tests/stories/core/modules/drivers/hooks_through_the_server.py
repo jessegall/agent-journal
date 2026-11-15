@@ -47,8 +47,8 @@ def started_agent(server, role: str) -> str:
     return session
 
 
-def lead_stop(firing: str) -> dict[str, object]:
-    return dict(HookSamples.stop().with_fields(session="s-1", environment="main", firing=firing).body)
+def lead_stop(event_id: str) -> dict[str, object]:
+    return dict(HookSamples.stop().with_fields(session="s-1", environment="main", event_id=event_id).body)
 
 
 def test_a_known_agents_hook_is_answered_over_the_socket_as_the_route_answers_it_in_process(lead_server):
@@ -56,7 +56,7 @@ def test_a_known_agents_hook_is_answered_over_the_socket_as_the_route_answers_it
     story.expect_hook_answer("/hook", lead_stop("server-1"), 200, "\"refusal\": \"\"")
 
 
-def test_a_hook_resent_under_its_firing_gets_its_stored_answer(lead_server):
+def test_a_hook_resent_under_its_event_id_gets_its_stored_answer(lead_server):
     story = lead_server
     story.expect_hook_answer("/hook", lead_stop("server-2"), 200, '"hook_call_id": 2')
     story.expect_hook_answer("/hook", lead_stop("server-2"), 200, '"hook_call_id": 2')
@@ -93,13 +93,13 @@ def test_a_stop_waits_past_the_hook_limit_for_another_hook_and_is_checked(lead_s
 @pytest.mark.parametrize("role", ["worker", "helper"])
 def test_a_workers_or_helpers_tool_the_journal_could_not_check_is_refused_and_told_what_to_do(lead_server, role):
     session = started_agent(lead_server, role)
-    lead_server.expect_locked_hook_answer(dict(HookSamples.edit("a.py").with_fields(session=session, environment="main", firing=f"held-{role}").body), "so it is held")
-    old_runner = dict(HookSamples.edit("a.py").with_fields(session=session, environment="main", firing=f"old-runner-{role}", foreign=[{}]).body)
+    lead_server.expect_locked_hook_answer(dict(HookSamples.edit("a.py").with_fields(session=session, environment="main", event_id=f"held-{role}").body), "so it is held")
+    old_runner = dict(HookSamples.edit("a.py").with_fields(session=session, environment="main", event_id=f"old-runner-{role}", foreign=[{}]).body)
     lead_server.expect_hook_answer("/hook", old_runner, 200, "stop and write in your report")
 
 
 def test_a_main_agents_tool_that_waits_past_its_limit_goes_through_with_one_line(lead_server):
-    body = dict(HookSamples.edit("a.py").with_fields(session="s-1", environment="main", firing="held-main", role="main").body)
+    body = dict(HookSamples.edit("a.py").with_fields(session="s-1", environment="main", event_id="held-main", role="main").body)
     lead_server.expect_locked_hook_answer(body, "the journal let this through unchecked")
 
 
@@ -108,13 +108,13 @@ def test_a_workers_tool_after_the_journal_fails_on_it_is_refused(lead_server, mo
         raise ValueError("broken")
 
     monkeypatch.setattr(AgentHookRoute, "answer", broken)
-    body = dict(HookSamples.edit("a.py").with_fields(session=started_agent(lead_server, "helper"), environment="main", firing="failed").body)
+    body = dict(HookSamples.edit("a.py").with_fields(session=started_agent(lead_server, "helper"), environment="main", event_id="failed").body)
     lead_server.expect_hook_answer("/hook", body, 200, "so it is held")
 
 
 def test_a_tool_hook_that_waits_past_its_limit_for_another_hook_is_let_through_with_one_line(lead_server):
     story = lead_server
-    body = dict(HookSamples.sample("post_tool_use").with_fields(session="s-1", environment="main", firing="server-6").body)
+    body = dict(HookSamples.sample("post_tool_use").with_fields(session="s-1", environment="main", event_id="server-6").body)
     story.expect_locked_hook_answer(body, "the journal let this through unchecked")
 
 

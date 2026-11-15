@@ -9,7 +9,7 @@ from core.modules.drivers.listeners.escalation_responder_listener import Escalat
 from core.modules.drivers.listeners.retired_responder_listener import RetiredResponderListener
 from core.modules.drivers.models.driver_version import DriverVersion
 from core.modules.drivers.models.enums.escalation_state import EscalationState
-from core.modules.drivers.support.answer_basis_writers import AnswerBasisWriters
+from core.modules.drivers.support.read_versions_writers import ReadVersionsWriters
 
 BOOT = Timestamp(datetime(2026, 11, 15, 4, 0, tzinfo=timezone.utc))
 LATER = Timestamp(datetime(2026, 11, 15, 9, 0, tzinfo=timezone.utc))
@@ -60,6 +60,6 @@ def test_a_driving_setting_moves_the_epoch_but_keeps_the_journals_start():
     epoch = DriverVersion(epoch=4, started_at=BOOT)
     queries = SimpleNamespace(query=lambda model: SimpleNamespace(first=lambda: epoch))
     repository = SimpleNamespace(save_change=lambda old, new, context: saved.append(new))
-    writers = AnswerBasisWriters(queries, repository, SimpleNamespace(), SimpleNamespace(command_scope=lambda *values: nullcontext()))
+    writers = ReadVersionsWriters(queries, repository, SimpleNamespace(), SimpleNamespace(command_scope=lambda *values: nullcontext()))
     writers.bump_environment(1, SimpleNamespace(actor=None, timestamp=LATER))
     assert (saved[0].epoch, saved[0].started_at) == (5, BOOT)

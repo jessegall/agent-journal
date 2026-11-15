@@ -62,7 +62,7 @@ class AgentBlock(ClosedPrunable, Model):
     judgement_reason: str = ""
     escalation_id: int | None = None
     opener: str = ""
-    opening_firing: str = ""
+    opening_event_id: str = ""
     closed_reason: str = ""
     closer: str = ""
     closing_evidence: str = ""

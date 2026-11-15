@@ -37,7 +37,7 @@ def test_a_read_only_helper_runs_a_read_line_a_module_adds_later_and_is_refused_
     story.expect_hook_refusal(session, journal_hook_line("shelf", "stock"), f"{HELPER_REFUSAL} shelf stock")
 
 
-def test_an_outward_line_is_refused_to_a_read_only_helper_and_a_plan_is_made_only_by_a_profile_that_files_plans(new_story):
+def test_an_external_line_is_refused_to_a_read_only_helper_and_a_plan_is_made_only_by_a_profile_that_files_plans(new_story):
     story = new_story(fixture=UserBuilder)
     planner, debugger = started_profile(story, PLANNER_PROFILE.name), started_profile(story, DEBUGGER_PROFILE.name)
     story.expect_refusal(f"setting set {AUTOMATIC_APPROVAL} true", f"{HELPER_REFUSAL} setting set", actor=planner)

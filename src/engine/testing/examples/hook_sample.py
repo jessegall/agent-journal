@@ -10,7 +10,7 @@ class HookSample:
     body: Mapping[str, object]
 
     @property
-    def firing(self) -> object:
+    def event_id(self) -> object:
         return self.body["firing"]
 
     @property

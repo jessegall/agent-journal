@@ -12,7 +12,7 @@ class MakeTriggerSubcommand(ShowTriggerLineSubcommand[MakeTrigger]):
 
     cli_name = "trigger"
     name = "make"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("phrases")

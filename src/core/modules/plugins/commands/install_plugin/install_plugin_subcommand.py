@@ -13,7 +13,7 @@ class InstallPluginSubcommand(Subcommand[InstallPlugin, PluginInstall]):
 
     cli_name = "plugin"
     name = "install"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("source")

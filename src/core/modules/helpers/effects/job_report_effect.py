@@ -16,7 +16,7 @@ from engine.enums.work_stop import WorkStop
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from core.modules.helpers.commands.record_unsaved_report.record_unsaved_report import RecordUnsavedReport
-from core.modules.helpers.needs.job_work_needs import HELPER_TYPE
+from core.modules.helpers.states.job_work_states import HELPER_TYPE
 from core.modules.helpers.agent_messages.unsaved_report_message import UnsavedReportMessage
 from core.modules.helpers.support.helper_report_text import HelperReportText
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
@@ -33,7 +33,7 @@ class JobReportEffect(Effect):
     agent_types = [HELPER_TYPE]
     # the work stop under which this type's allowed stop hands its job in
     report_contract: ClassVar[WorkStop] = WorkStop.HANDOVER
-    timing = EffectTiming.ON_ADMISSION
+    timing = EffectTiming.WHEN_ALLOWED
     is_required = True
     completes_work = True
     failure = UnsavedReportMessage
@@ -43,7 +43,7 @@ class JobReportEffect(Effect):
 
     def commands(self, view: AgentView, record: DecisionRecord) -> Sequence[Command[object]]:
         event = record.action.event
-        jobs = [need.state.work for need in view.needs if isinstance(need.state, Working) and need.state.work.is_job()]
+        jobs = [required_state.state.work for required_state in view.states if isinstance(required_state.state, Working) and required_state.state.work.is_job()]
         if event is None or not jobs or view.work_stop is not self.report_contract or not self.is_report_stop(view):
             return []
         helper = self.agents.find(view.agent.agent_id)
@@ -54,7 +54,7 @@ class JobReportEffect(Effect):
     # no stop under an open escalation hands in (doc 1310 section 4.9, F3)
     @staticmethod
     def is_report_stop(view: AgentView) -> bool:
-        waits = any(isinstance(need.state, Waiting) for need in view.needs)
+        waits = any(isinstance(required_state.state, Waiting) for required_state in view.states)
         return not waits and view.escalation is None and not view.stack.has(Paused) and not view.stack.has(Compacting)
 
     # the first failed save refuses the stop once; the second keeps the text and lets the helper rest

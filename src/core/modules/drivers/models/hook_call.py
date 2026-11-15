@@ -7,7 +7,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from engine.enums.hook_event_name import HookEventName
-from engine.driver.foreign_run import ForeignRun
+from engine.driver.project_hook_run import ProjectHookRun
 from engine.driver.hook_transcript import HookTranscript
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.enums.event_form import EventForm
@@ -49,7 +49,7 @@ class HookCall(Prunable, EnvironmentScoped, Model):
     environment_id: int = 0
     creator_id: int
     hook: str
-    firing: str
+    event_id: str
     tool: str = ""
     summary: str = ""
     writes_files: bool = False
@@ -75,8 +75,8 @@ class HookCall(Prunable, EnvironmentScoped, Model):
         return HOOK_CHANGE_NAMES.get(self.hook)
 
     @property
-    def foreign_runs(self) -> tuple[ForeignRun, ...]:
-        return ForeignRun.parsed_many(self.metadata.module_part(DRIVERS_MODULE).get("foreign", []))
+    def project_hook_runs(self) -> tuple[ProjectHookRun, ...]:
+        return ProjectHookRun.parsed_many(self.metadata.module_part(DRIVERS_MODULE).get("foreign", []))
 
     @property
     def refused_rules(self) -> tuple[Mapping[str, object], ...]:
@@ -133,7 +133,7 @@ class HookCall(Prunable, EnvironmentScoped, Model):
 
     @property
     def transcript(self) -> HookTranscript:
-        return HookTranscript(self.driver_text("program"), self.firing, self.driver_text("transcript_path"))
+        return HookTranscript(self.driver_text("program"), self.event_id, self.driver_text("transcript_path"))
 
     @property
     def is_compaction(self) -> bool:

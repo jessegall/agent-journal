@@ -19,7 +19,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 def read_check(story, opened_at=None):
     clock_time = story.clock.timestamp()
     agent_id = story.agent.id
-    event = HookEvent.parsed(HookSamples.session_start().with_fields(session="s-1", firing="check", fired_at_ms=0).body)
+    event = HookEvent.parsed(HookSamples.session_start().with_fields(session="s-1", event_id="check", fired_at_ms=0).body)
     hook = AgentHook(event=event, agent_id=agent_id, environment_id=1, role=AgentRole.MAIN, driver="builder", timestamp=clock_time)
     return BlockCheck(hook, opened_at or clock_time, story.container)
 

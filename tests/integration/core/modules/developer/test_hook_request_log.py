@@ -31,9 +31,9 @@ def test_a_recorded_hook_keeps_its_headers_and_body(played):
 def test_only_the_last_hooks_the_setting_names_are_kept_newest_first(played):
     story = logging_story(played, size=2)
     log = story.container.get(HookRequestLog)
-    for firing in ("first", "second", "third"):
-        log.record("claude", HEADERS, {"firing": firing}, 1, HookAnswer.ALLOWED)
-    expect_number_firing_body(log, [(3, "third"), (2, "second")])
+    for event_id in ("first", "second", "third"):
+        log.record("claude", HEADERS, {"firing": event_id}, 1, HookAnswer.ALLOWED)
+    expect_number_event_id_body(log, [(3, "third"), (2, "second")])
 
 
 def test_request_rows_include_millisecond_times_day_lines_durations_and_outcomes(played):
@@ -62,7 +62,7 @@ def expect_day_start(row) -> None:
     assert actual, actual
 
 
-def expect_number_firing_body(log, expected) -> None:
+def expect_number_event_id_body(log, expected) -> None:
     actual = [(row.number, row.body['firing']) for row in log.read()]
     assert actual == expected, actual
 
@@ -70,8 +70,8 @@ def expect_number_firing_body(log, expected) -> None:
 def test_the_window_lists_more_requests_than_the_read_limit_when_the_log_keeps_them(played):
     story = logging_story(played, size=60)
     log = story.container.get(HookRequestLog)
-    for firing in range(60):
-        log.record("claude", HEADERS, {"firing": firing}, 1, HookAnswer.ALLOWED)
+    for event_id in range(60):
+        log.record("claude", HEADERS, {"firing": event_id}, 1, HookAnswer.ALLOWED)
     answer = story.run("developer hook-requests --json", actor=story.user)
     story.expect_rows(answer.code == 0, len(json.loads(answer.output_text)["rows"]) == 60, detail=answer.output_text[:300])
 
@@ -81,8 +81,8 @@ def test_stop_and_session_end_requests_stay_beyond_the_size_of_the_log(played):
     log = story.container.get(HookRequestLog)
     log.record("claude", HEADERS, {"hook_event_name": "Stop"}, 15000, HookAnswer.ALLOWED)
     log.record("claude", HEADERS, {"hook_event_name": "SessionEnd"}, 1, HookAnswer.ALLOWED)
-    for firing in ("first", "second", "third"):
-        log.record("claude", HEADERS, {"hook_event_name": "PreToolUse", "firing": firing}, 1, HookAnswer.ALLOWED)
+    for event_id in ("first", "second", "third"):
+        log.record("claude", HEADERS, {"hook_event_name": "PreToolUse", "firing": event_id}, 1, HookAnswer.ALLOWED)
     kept = [row.event for row in log.read()]
     story.expect_rows(kept == ["PreToolUse", "PreToolUse", "SessionEnd", "Stop"], detail=str(kept))
 

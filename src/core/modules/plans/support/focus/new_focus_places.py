@@ -1,6 +1,6 @@
 from engine.container.single_instance import SingleInstance
 from engine.driver.hook_event import HookEvent
-from engine.agent_machine.needs.line_history import LineHistory
+from engine.agent_machine.states.line_history import LineHistory
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from core.modules.plans.models.plan_task import PlanTask

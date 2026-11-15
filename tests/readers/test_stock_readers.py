@@ -111,7 +111,7 @@ def test_a_passed_output_is_not_marked_failed(sample):
 
 
 @pytest.mark.parametrize("name", sorted(TEST_READERS))
-def test_a_test_reader_has_every_field_a_test_needs(name):
+def test_a_test_reader_has_every_field_a_test_states(name):
     assert judge().fields_missing(reader_row(READERS[name]), CommandCategory.TEST_RUN) == ()
 
 

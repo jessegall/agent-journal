@@ -7,7 +7,7 @@ class HookTranscript:
     """Where the program of one hook keeps its session's transcript."""
 
     program: str
-    firing: str
+    event_id: str
     text: str
 
     @property

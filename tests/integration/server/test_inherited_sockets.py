@@ -43,7 +43,7 @@ def test_a_connection_waiting_on_the_old_server_is_answered_by_the_server_that_t
     client.close()
 
 
-def test_the_queue_holds_as_many_clients_as_a_hand_over_needs(path):
+def test_the_queue_holds_as_many_clients_as_a_hand_over_states(path):
     server = JournalServer(path, ShoutingHandler, Mock())
     clients = [connected(path) for _ in range(QUEUED_CONNECTIONS)]
     for client in clients:

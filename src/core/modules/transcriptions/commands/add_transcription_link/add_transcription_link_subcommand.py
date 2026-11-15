@@ -12,7 +12,7 @@ class AddTranscriptionLinkSubcommand(Subcommand[AddTranscriptionLink, Link]):
 
     cli_name = "transcription"
     name = "link"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("transcription_id", type=int)

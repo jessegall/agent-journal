@@ -15,7 +15,7 @@ class ChooseLibraryVersionSubcommand(Subcommand[ChooseLibraryVersion, LibraryCop
 
     cli_name = "library"
     name = "resolve"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("copy_id", metavar="copy", type=int)

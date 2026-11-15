@@ -11,7 +11,7 @@ class SetToolStateSubcommand(Subcommand[SetTool, ToolCard]):
 
     cli_name = "tool"
     name = "on"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("tool_name")

@@ -21,7 +21,7 @@ from engine.driver.hook_route import HookRoute
 from engine.driver.lockdown import Lockdown
 from engine.driver.program_lockdown import ProgramLockdown
 from core.modules.agents.commands.halt_agent.halt_agent import HaltAgent
-from core.modules.drivers.policies.panic_file_policy import PanicFilePolicy
+from core.modules.drivers.policies.emergency_stop_file_policy import EmergencyStopFilePolicy
 from engine.provider.providers import Providers
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
@@ -86,7 +86,7 @@ class AgentHookRoute(HookRoute):
         lockdown = self.lockdown.lockdown(event.program)
         if lockdown.stops(event.event) and not self.passes_lockdown(event):
             return self.halted(event, lockdown)
-        stored_call = self.queries.query(HookCall).every_environment(STORED_ANSWER_REASON).filter(firing=event.firing).first()
+        stored_call = self.queries.query(HookCall).every_environment(STORED_ANSWER_REASON).filter(event_id=event.event_id).first()
         if stored_call is not None:
             return self.replayed(event, stored_call)
         agent = self.agent(event)
@@ -179,7 +179,7 @@ class AgentHookRoute(HookRoute):
         agent = self.open_agent(event.session)
         if agent is None or agent.role != AgentRole.MAIN:
             return False
-        return event.event is HookEventName.PROMPT or (event.event is HookEventName.PRE_TOOL_USE and PanicFilePolicy.is_panic_file_line(event))
+        return event.event is HookEventName.PROMPT or (event.event is HookEventName.PRE_TOOL_USE and EmergencyStopFilePolicy.is_emergency_stop_file_line(event))
 
     def halted(self, event: HookEvent, lockdown: Lockdown) -> HookReply:
         agent = self.open_agent(event.session) or self.launch_name_agent(event)

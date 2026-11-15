@@ -1,8 +1,8 @@
 from collections.abc import Mapping, Sequence
 
-from engine.agent_machine.needs.agent_reference import AgentReference
-from engine.agent_machine.needs.fact import Fact
-from engine.agent_machine.needs.fact_source import FactSource
+from engine.agent_machine.states.agent_reference import AgentReference
+from engine.agent_machine.states.fact import Fact
+from engine.agent_machine.states.fact_source import FactSource
 
 
 class FakeFactSource(FactSource):

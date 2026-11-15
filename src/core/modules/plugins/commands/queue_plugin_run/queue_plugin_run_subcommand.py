@@ -25,7 +25,7 @@ class QueuePluginRunSubcommand(Subcommand[QueuePluginRun, QueuedRunStart]):
 
     cli_name = "plugin"
     name = "queue"
-    outward = True
+    external = True
 
     def __init__(self, access: PluginCallAccess, agents: AgentRows, launch: QueuedProcessLaunch, follow: QueuedRunFollow) -> None:
         self.access, self.agents, self.launch, self.follow = access, agents, launch, follow

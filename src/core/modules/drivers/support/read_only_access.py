@@ -60,7 +60,7 @@ class ReadOnlyAccess:
             return OldHookLineMessage.declared().agent_message()
         if shell is not None and shell.has_uncertain_part:
             return UnjudgedLineMessage.declared().agent_message()
-        if shell is not None and self.reaches_outward(shell, agent_id):
+        if shell is not None and self.reaches_external(shell, agent_id):
             return ExternalJournalLineMessage.declared().agent_message()
         return READ_ONLY.refused(event, self.providers.provider(event.program))
 
@@ -80,12 +80,12 @@ class ReadOnlyAccess:
         allowed = self.queries.query(PermissionRequest).filter(asker_id=agent.id, state=PermissionState.ALLOWED).every_row(ALLOWED_REQUESTS_REASON)
         return next((request for request in allowed if (tool.shell is not None and tool.shell.is_permitted_line(request.action)) or request.action in tool.files), None)
 
-    def reaches_outward(self, shell: ShellLine, agent_id: int) -> bool:
+    def reaches_external(self, shell: ShellLine, agent_id: int) -> bool:
         if shell.has_part_naming((SESSION_VARIABLE, RUNNER_VARIABLE, *(provider.session_variable for provider in self.providers.all()))):
             return True
-        outward = [part.arguments for part in shell.parts_running_journal_command() if HELP_FLAG not in part.arguments and self.is_outward(" ".join(part.arguments[:2]))]
-        foreign_stops = [arguments for arguments in outward if " ".join(arguments[:2]) == RUN_STOP_LINE and not self.is_agent_run_stop(arguments, agent_id)]
-        edits = [edit for edit in (self.plan_edit(arguments) for arguments in outward) if edit is not None]
+        external = [part.arguments for part in shell.parts_running_journal_command() if HELP_FLAG not in part.arguments and self.is_external(" ".join(part.arguments[:2]))]
+        foreign_stops = [arguments for arguments in external if " ".join(arguments[:2]) == RUN_STOP_LINE and not self.is_agent_run_stop(arguments, agent_id)]
+        edits = [edit for edit in (self.plan_edit(arguments) for arguments in external) if edit is not None]
         return bool(foreign_stops) or (bool(edits) and not self.plan_authors.are_authors(agent_id, edits))
 
     def is_agent_run_stop(self, arguments: Sequence[str], agent_id: int) -> bool:
@@ -98,9 +98,9 @@ class ReadOnlyAccess:
         row_id = next((int(word) for word in arguments[2:] if word.isdigit()), None)
         return PlanEdit(line, row_id) if line in PLAN_AUTHOR_LINES and row_id is not None else None
 
-    def is_outward(self, line: str) -> bool:
-        if not self.registry.is_outward(line) or line in self.registry.subcommands:
-            return self.registry.is_outward(line)
+    def is_external(self, line: str) -> bool:
+        if not self.registry.is_external(line) or line in self.registry.subcommands:
+            return self.registry.is_external(line)
         cli_name, _, name = line.partition(" ")
         try:
             self.lookup.subcommand(cli_name, name)

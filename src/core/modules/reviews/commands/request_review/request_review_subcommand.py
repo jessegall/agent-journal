@@ -12,7 +12,7 @@ class RequestReviewSubcommand(Subcommand[RequestReview, Review]):
 
     cli_name = "review"
     name = "request"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("subject_model")

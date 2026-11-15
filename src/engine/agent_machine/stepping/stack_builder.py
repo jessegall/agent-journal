@@ -6,8 +6,8 @@ from engine.agent_stack.states.blocked import Blocked
 from engine.agent_stack.states.ended import Ended
 from engine.agent_stack.states.paused import Paused
 from engine.agent_machine.agent_view import AgentView
-from engine.agent_machine.needs.ended_fact import EndedFact
-from engine.agent_machine.needs.pause_fact import PauseFact
+from engine.agent_machine.states.ended_fact import EndedFact
+from engine.agent_machine.states.pause_fact import PauseFact
 from engine.agent_machine.record.stack_move import StackMove
 from engine.agent_machine.stepping.built_stack import BuiltStack
 from engine.agent_machine.stepping.judged_blocks import JudgedBlocks
@@ -18,7 +18,7 @@ from engine.enums.stack_move_type import StackMoveType
 
 # a resume and a finished compaction end no work, so their frames leave with no end that counts as progress;
 # a hold ends as its condition was judged
-FRAME_ENDS = {"Working": StateEnd.CLOSED, "Waiting": StateEnd.ANSWERED}
+STACKED_STATE_ENDS = {"Working": StateEnd.CLOSED, "Waiting": StateEnd.ANSWERED}
 BLOCK_ENDS = {ConditionOutcome.SATISFIED: StateEnd.SATISFIED, ConditionOutcome.CANCELLED: StateEnd.CANCELLED, ConditionOutcome.TARGET_MISSING: StateEnd.TARGET_MISSING}
 
 
@@ -29,64 +29,64 @@ class StackBuilder:
     Blocked frames get no frame and their blocks still constrain."""
 
     def built(self, view: AgentView) -> BuiltStack:
-        old = {frame.need_key: frame for frame in view.stack.frames}
+        old = {stacked_state.state_key: stacked_state for stacked_state in view.stack.stacked_states}
         work = self.work_lane(view)
-        frames = [view.stack.frames[0], *work, *self.capped(view, len(work), self.block_lane(view, old)), *self.safety(view, old)]
-        stack = Stack(frames)
+        stacked_states = [view.stack.stacked_states[0], *work, *self.capped(view, len(work), self.block_lane(view, old)), *self.safety(view, old)]
+        stack = Stack(stacked_states)
         return BuiltStack(stack, tuple(self.moves(view, stack)))
 
     @staticmethod
     def work_lane(view: AgentView) -> list[StackedState]:
-        needs = {need.key: need for need in view.needs if need.state.lane is StackLevel.WORK and need.key not in view.suppressions}
-        kept = [StackedState(needs[frame.need_key].state, frame.need_key, frame.entered_at) for frame in view.stack.lane(StackLevel.WORK) if frame.need_key in needs]
-        kept_keys = {frame.need_key for frame in kept}
-        return [*kept, *(StackedState(need.state, key, view.stepped_at) for key, need in needs.items() if key not in kept_keys)]
+        states = {required_state.key: required_state for required_state in view.states if required_state.state.lane is StackLevel.WORK and required_state.key not in view.suppressions}
+        kept = [StackedState(states[stacked_state.state_key].state, stacked_state.state_key, stacked_state.entered_at) for stacked_state in view.stack.lane(StackLevel.WORK) if stacked_state.state_key in states]
+        kept_keys = {stacked_state.state_key for stacked_state in kept}
+        return [*kept, *(StackedState(required_state.state, key, view.stepped_at) for key, required_state in states.items() if key not in kept_keys)]
 
     @staticmethod
     def block_lane(view: AgentView, old: dict[StateKey, StackedState]) -> list[StackedState]:
-        frames = [StackedState(Blocked(block), key, old[key].entered_at if key in old else view.stepped_at)
+        stacked_states = [StackedState(Blocked(block), key, old[key].entered_at if key in old else view.stepped_at)
                   for block in JudgedBlocks.constraining(view) for key in [StackBuilder.block_key(block)]]
-        return sorted(frames, key=lambda frame: (-view.rank_order.place(frame.state.block.reason.rank), -frame.entered_at.timestamp()))
+        return sorted(stacked_states, key=lambda stacked_state: (-view.rank_order.place(stacked_state.state.block.reason.rank), -stacked_state.entered_at.timestamp()))
 
     @staticmethod
     def block_key(block: OpenBlock) -> StateKey:
         return StateKey("Blocked", block.subject, block.agent_message_key)
 
     @staticmethod
-    def capped(view: AgentView, work_count: int, blocked_frames: list[StackedState]) -> list[StackedState]:
+    def capped(view: AgentView, work_count: int, blocked_stacked_states: list[StackedState]) -> list[StackedState]:
         room = max(view.depth_limit - work_count, 0)
-        return blocked_frames[max(len(blocked_frames) - room, 0):]
+        return blocked_stacked_states[max(len(blocked_stacked_states) - room, 0):]
 
     @staticmethod
     def safety(view: AgentView, old: dict[StateKey, StackedState]) -> list[StackedState]:
-        frames = [StackedState(need.state, need.key, old[need.key].entered_at if need.key in old else view.stepped_at)
-                  for need in view.needs if need.state.lane is StackLevel.SAFETY and need.key not in view.suppressions][:1]
-        frames += [StackedState(Paused(fact.causes, fact.refusal_text), StateKey("Paused", None, "pause"), view.stepped_at) for fact in view.facts if isinstance(fact, PauseFact) and fact.causes][:1]
-        frames += [StackedState(Ended(fact.cause, fact.actor_id), StateKey("Ended", None, "end"), view.stepped_at) for fact in view.facts if isinstance(fact, EndedFact)][:1]
-        return frames
+        stacked_states = [StackedState(required_state.state, required_state.key, old[required_state.key].entered_at if required_state.key in old else view.stepped_at)
+                  for required_state in view.states if required_state.state.lane is StackLevel.SAFETY and required_state.key not in view.suppressions][:1]
+        stacked_states += [StackedState(Paused(fact.causes, fact.refusal_text), StateKey("Paused", None, "pause"), view.stepped_at) for fact in view.facts if isinstance(fact, PauseFact) and fact.causes][:1]
+        stacked_states += [StackedState(Ended(fact.cause, fact.actor_id), StateKey("Ended", None, "end"), view.stepped_at) for fact in view.facts if isinstance(fact, EndedFact)][:1]
+        return stacked_states
 
     @staticmethod
     def moves(view: AgentView, new: Stack) -> list[StackMove]:
         old = view.stack
-        if len(old.frames) <= 1 and len(new.frames) > 1:
+        if len(old.stacked_states) <= 1 and len(new.stacked_states) > 1:
             return [StackMove(StackMoveType.SEEDED, None, "the stack was built from the agent's rows")]
-        old_frames, new_frames = {frame.need_key: frame for frame in old.frames}, {frame.need_key: frame for frame in new.frames}
-        exited = [StackMove(StackMoveType.EXITED, key, f"{type(frame.state).__name__} exited", StackBuilder.frame_end(view, frame))
-                  for key, frame in old_frames.items() if key not in new_frames]
-        entered = [StackMove(StackMoveType.ENTERED, key, f"{type(frame.state).__name__} entered") for key, frame in new_frames.items() if key not in old_frames]
-        changed = [StackMove(StackMoveType.DATA_CHANGED, key, f"{type(frame.state).__name__} changed") for key, frame in new_frames.items()
-                   if key in old_frames and old_frames[key].state != frame.state]
+        old_stacked_states, new_stacked_states = {stacked_state.state_key: stacked_state for stacked_state in old.stacked_states}, {stacked_state.state_key: stacked_state for stacked_state in new.stacked_states}
+        exited = [StackMove(StackMoveType.EXITED, key, f"{type(stacked_state.state).__name__} exited", StackBuilder.stacked_state_end(view, stacked_state))
+                  for key, stacked_state in old_stacked_states.items() if key not in new_stacked_states]
+        entered = [StackMove(StackMoveType.ENTERED, key, f"{type(stacked_state.state).__name__} entered") for key, stacked_state in new_stacked_states.items() if key not in old_stacked_states]
+        changed = [StackMove(StackMoveType.DATA_CHANGED, key, f"{type(stacked_state.state).__name__} changed") for key, stacked_state in new_stacked_states.items()
+                   if key in old_stacked_states and old_stacked_states[key].state != stacked_state.state]
         return [*exited, *entered, *changed]
 
     @staticmethod
-    def frame_end(view: AgentView, frame: StackedState) -> StateEnd | None:
-        if isinstance(frame.state, Blocked):
-            block_id = frame.state.block.block_id
+    def stacked_state_end(view: AgentView, stacked_state: StackedState) -> StateEnd | None:
+        if isinstance(stacked_state.state, Blocked):
+            block_id = stacked_state.state.block.block_id
             return BLOCK_ENDS.get(view.block_outcomes.get(block_id, ConditionOutcome.PENDING)) if block_id is not None else None
         # a frame a person removed is waived, which is no progress
-        if frame.need_key in view.suppressions:
+        if stacked_state.state_key in view.suppressions:
             return StateEnd.WAIVED
-        subject = frame.need_key.subject
+        subject = stacked_state.state_key.subject
         if subject is not None and subject in view.subject_ends:
             return view.subject_ends[subject]
-        return FRAME_ENDS.get(frame.need_key.state_name)
+        return STACKED_STATE_ENDS.get(stacked_state.state_key.state_name)

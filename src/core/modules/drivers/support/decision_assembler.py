@@ -34,7 +34,7 @@ class DecisionAssembler:
     def assembled(self, event: HookEvent, agent: Agent, actor: Actor) -> AssembledAnswer:
         with self.bus.scopes.command_scope((), actor, agent.environment_id):
             question = Question.posed(event)
-            view = self.assembly.with_needs(self.reader.read(agent.id, question), question)
+            view = self.assembly.with_states(self.reader.read(agent.id, question), question)
             step = self.assembly.machine(agent.role).step(view, question)
         answers = self.answers(step.record)
         answers = replace(answers, skipped_lines=self.agent_messages.skipped_lines(agent.id, answers, self.clock.timestamp()))
@@ -65,7 +65,7 @@ class DecisionAssembler:
         records = []
         for source in sources:
             said = [line for line in lines if line.source_key == source]
-            answer = RuleAnswer(agent_messages=tuple(line.said() for line in said if line.carrier is not LineChannel.TERMINAL),
-                                terminal="\n".join(line.text for line in said if line.carrier is LineChannel.TERMINAL))
+            answer = RuleAnswer(agent_messages=tuple(line.said() for line in said if line.channel is not LineChannel.TERMINAL),
+                                terminal="\n".join(line.text for line in said if line.channel is LineChannel.TERMINAL))
             records.append(RuleRecord(source or MACHINE_SOURCE, answer.outcome, answer))
         return records

@@ -14,7 +14,7 @@ class AgentLaunch(Model):
 
     session_agent_id: int
     attempt: int
-    session_generation: int
+    session_number: int
     requested_at: Timestamp
     launched_at: Timestamp | None = None
     first_hook_at: Timestamp | None = None

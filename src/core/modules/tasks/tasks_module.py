@@ -1,8 +1,8 @@
 from core.modules.tasks.listeners.next_task_listener import NextTaskListener
 from core.modules.tasks.commands.assign_next_task.assign_next_task_handler import AssignNextTaskHandler
-from core.modules.tasks.needs.task_work_needs import TaskWorkNeeds
-from core.modules.tasks.needs.unlogged_write_needs import UnloggedWriteNeeds
-from core.modules.tasks.needs.block_review_needs import BlockReviewNeeds
+from core.modules.tasks.states.task_work_states import TaskWorkStates
+from core.modules.tasks.states.unlogged_write_states import UnloggedWriteStates
+from core.modules.tasks.states.block_review_states import BlockReviewStates
 from core.modules.tasks.effects.block_review_effect import BlockReviewEffect
 from core.modules.tasks.lines.blocked_work_lines import BlockedWorkLines
 from core.modules.tasks.lines.quiet_task_lines import QuietTaskLines
@@ -157,7 +157,7 @@ class TasksModule(Module):
     marks = [TaskMark]
     former_event_keys = {"core.tasks.task.drop_hold": "core.tasks.task.release_holder"}
     docks = TASKS_DOCKS
-    needs = [TaskWorkNeeds, UnloggedWriteNeeds, BlockReviewNeeds]
+    states = [TaskWorkStates, UnloggedWriteStates, BlockReviewStates]
     effects = [BlockReviewEffect]
     lines = [BlockedWorkLines, QuietTaskLines, LogRequestLines, TaskFiledLines, TaskNameLines, StillHeldLines, OneInHandLines, SessionStartSummaryLines, WaitInWordsLines, BlockReviewLines]
     windows = TASKS_WINDOWS

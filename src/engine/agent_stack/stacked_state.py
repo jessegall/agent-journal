@@ -10,5 +10,5 @@ class StackedState:
     """One state instance on an agent's stack, with its need key and when it entered the stack."""
 
     state: State
-    need_key: StateKey
+    state_key: StateKey
     entered_at: datetime

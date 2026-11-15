@@ -30,12 +30,12 @@ class ModuleFiles:
         target = (folder / path).resolve()
         if not target.is_relative_to(folder) or not FileAccess.is_file(target):
             raise MissingModuleFileError(f"{module_name} has no file {path} in its web/dist")
-        return ModuleFile(FileAccess.binary(target), SUFFIX_CONTENT_TYPES.get(target.suffix) or mimetypes.guess_type(target.name)[0] or UNKNOWN_TYPE, self.is_frame_entry(module_name, path))
+        return ModuleFile(FileAccess.binary(target), SUFFIX_CONTENT_TYPES.get(target.suffix) or mimetypes.guess_type(target.name)[0] or UNKNOWN_TYPE, self.is_stacked_state_entry(module_name, path))
 
-    def is_frame_entry(self, module_name: str, path: str) -> bool:
+    def is_stacked_state_entry(self, module_name: str, path: str) -> bool:
         container = synced_container(self.home, self.turns)
         try:
             windows = container.get(Registry).windows
         finally:
             container.get(Database).close()
-        return any(window.module == module_name and window.entry == path and window.loading == WindowLoading.FRAME.value for window in windows)
+        return any(window.module == module_name and window.entry == path and window.loading == WindowLoading.STACKED_STATE.value for window in windows)

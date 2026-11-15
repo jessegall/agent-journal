@@ -52,7 +52,7 @@ class BlockReviewRound:
 
     def answer(self, event: HookEvent, agent_id: int) -> BlockReviewAnswer:
         # read once a hook whatever changes meanwhile: the round it records changes what the next read finds
-        return self.request_values.read(f"tasks.block-review:{agent_id}:{event.firing}", lambda: event.firing, lambda: self.round(agent_id))
+        return self.request_values.read(f"tasks.block-review:{agent_id}:{event.event_id}", lambda: event.event_id, lambda: self.round(agent_id))
 
     def round(self, agent_id: int) -> BlockReviewAnswer:
         nothing = BlockReviewAnswer((), None, None)

@@ -1,4 +1,4 @@
-from suites.coding.support.coding_contributions import CODING_LINES, CODING_NEEDS, CODING_POLICIES
+from suites.coding.support.coding_contributions import CODING_LINES, CODING_STATES, CODING_POLICIES
 from suites.coding.support.coding_module_agent_messages import CODING_MODULE_AGENT_MESSAGES
 from suites.coding.seeders.coding_seeders import CODING_SEEDERS
 from suites.coding.settings.coding_setting_lists import CODING_SETTING_LISTS
@@ -31,7 +31,7 @@ class CodingModule(Module):
     windows; the modules only coding uses live in its modules folder."""
 
     name = "journal.suites.coding"
-    needs = CODING_NEEDS
+    states = CODING_STATES
     lines = CODING_LINES
     policies = CODING_POLICIES
     profiles = HELPER_PROFILES

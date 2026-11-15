@@ -11,7 +11,7 @@ class RestoreManagedHooksSubcommand(Subcommand[RestoreManagedHooks, int]):
 
     cli_name = "managed-hook"
     name = "give-back"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         pass

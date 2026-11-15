@@ -21,7 +21,7 @@ class KeywordMemories:
         self.queries, self.settings, self.memories, self.request_values, self.database = queries, settings, memories, request_values, database
 
     def memory_ids(self, event: HookEvent, agent_id: int) -> tuple[int, ...]:
-        return self.request_values.read(f"memories.keyword:{agent_id}:{event.firing}", self.database.change_mark, lambda: self.found(event, agent_id))
+        return self.request_values.read(f"memories.keyword:{agent_id}:{event.event_id}", self.database.change_mark, lambda: self.found(event, agent_id))
 
     def found(self, event: HookEvent, agent_id: int) -> tuple[int, ...]:
         hook_terms = hook_keywords(event)

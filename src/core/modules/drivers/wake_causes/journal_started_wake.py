@@ -1,5 +1,5 @@
 from engine.agent_machine.agent_view import AgentView
-from engine.agent_machine.needs.wake_cause import WakeCause
+from engine.agent_machine.states.wake_cause import WakeCause
 from engine.enums.hook_event_name import HookEventName
 from core.modules.drivers.agent_messages.journal_started_message import JournalStartedMessage
 from core.modules.drivers.queries.hook_call_query import HookCallQuery

@@ -31,9 +31,9 @@ class UndeliveredMessages:
 
     # at a hook that takes lines, or at the agent's step, whose lines wait for the wake that types them
     def batch(self, event: HookEvent | None, agent_id: int) -> UndeliveredBatch | None:
-        firing = event.firing if event is not None else "step"
+        event_id = event.event_id if event is not None else "step"
         # read once a hook whatever changes meanwhile: recording a delivery takes the message off this list
-        return self.request_values.read(f"messages.undelivered:{agent_id}:{firing}", lambda: firing, lambda: self.found(event, agent_id))
+        return self.request_values.read(f"messages.undelivered:{agent_id}:{event_id}", lambda: event_id, lambda: self.found(event, agent_id))
 
     def found(self, event: HookEvent | None, agent_id: int) -> UndeliveredBatch | None:
         if event is not None and (not event.accepts_lines or event.event == HookEventName.TICK):

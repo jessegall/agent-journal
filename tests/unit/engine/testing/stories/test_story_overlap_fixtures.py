@@ -36,7 +36,7 @@ def test_second(new_story):
     pytest_run.assert_outcomes(passed=2)
 
 
-def test_identical_hooks_are_detected_despite_generated_firing_ids(pytester, monkeypatch):
+def test_identical_hooks_are_detected_despite_generated_event_ids(pytester, monkeypatch):
     configure_hooks(pytester, monkeypatch, "cart.py")
     pytest_run = pytester.runpytest_subprocess("-q", "--tb=short")
     assert pytest_run.ret == pytest.ExitCode.TESTS_FAILED

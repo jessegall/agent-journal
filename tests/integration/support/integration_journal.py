@@ -23,7 +23,7 @@ from engine.module.journal_container import synced_database_container
 from engine.module.module_finder import ModuleFinder
 from engine.registry.registry import Registry
 from engine.testing.examples.hook_sample import HookSample
-from engine.testing.examples.hook_samples import SAMPLE_FIRING
+from engine.testing.examples.hook_samples import SAMPLE_EVENT_ID
 from engine.time.clock import Clock
 
 MAIN_ENVIRONMENT = 1
@@ -58,8 +58,8 @@ class IntegrationJournal:
     # the agent program of the session fires the sample hook, answered through the real hook route
     def hook(self, session: str, sample: HookSample) -> HookReply:
         fired_at_ms = int(self.container.get(Clock).timestamp().value.timestamp() * 1000)
-        firing = f"integration-{uuid4().hex}" if sample.firing == SAMPLE_FIRING else sample.firing
-        event = HookEvent.parsed(sample.with_fields(session=session, firing=firing, fired_at_ms=fired_at_ms).body)
+        event_id = f"integration-{uuid4().hex}" if sample.event_id == SAMPLE_EVENT_ID else sample.event_id
+        event = HookEvent.parsed(sample.with_fields(session=session, event_id=event_id, fired_at_ms=fired_at_ms).body)
         with cast(RepeatedWork, self.database.repeated_work).request():
             return self.container.get(HookRoute).answer(event)
 

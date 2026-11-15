@@ -23,10 +23,10 @@ class WaitingNotice(LineSource):
 
     events = ()
     includes_steps = True
-    carrier = LineChannel.WAITING
+    channel = LineChannel.WAITING
 
     def lines(self, question, view):
-        return [Line("samples.waiting-notice", NOTICE, LineCategory.INFORMATION, "", self.carrier)]
+        return [Line("samples.waiting-notice", NOTICE, LineCategory.INFORMATION, "", self.channel)]
 
 
 def test_a_line_no_event_carries_now_waits_in_the_agents_line_queue(played):

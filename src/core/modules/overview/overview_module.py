@@ -1,6 +1,6 @@
 from engine.module.module import Module
 from core.modules.overview.lines.overview_first_lines import OverviewFirstLines
-from core.modules.overview.needs.overview_first_needs import OverviewFirstNeeds
+from core.modules.overview.states.overview_first_states import OverviewFirstStates
 from core.modules.overview.commands.overview.overview_subcommand import OverviewSubcommand
 from core.modules.overview.support.block_conditions.recent_overview_read import RecentOverviewRead
 from core.modules.overview.support.overview_agent_messages import OVERVIEW_AGENT_MESSAGES
@@ -20,5 +20,5 @@ class OverviewModule(Module):
     settings = OVERVIEW_SETTINGS
     subcommands = [OverviewSubcommand]
     block_conditions = [RecentOverviewRead]
-    needs = [OverviewFirstNeeds]
+    states = [OverviewFirstStates]
     lines = [OverviewFirstLines]

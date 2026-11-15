@@ -12,7 +12,7 @@ class WaitPlanSubcommand(Subcommand[WaitPlan, Plan]):
 
     cli_name = "plan"
     name = "block"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("plan_id", type=int)

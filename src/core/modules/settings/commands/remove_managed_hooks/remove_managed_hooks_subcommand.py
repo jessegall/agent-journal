@@ -13,7 +13,7 @@ class RemoveManagedHooksSubcommand(Subcommand[RemoveManagedHooks, list[ManagedHo
 
     cli_name = "managed-hook"
     name = "remove"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--stamp", required=True)

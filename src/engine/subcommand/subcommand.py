@@ -25,7 +25,7 @@ class Subcommand(Generic[C, R]):
     name: str
     help: str = ""
     background: bool = False
-    outward: bool = False
+    external: bool = False
 
     def arguments(self, parser: ArgumentParser) -> None:
         raise NotImplementedError

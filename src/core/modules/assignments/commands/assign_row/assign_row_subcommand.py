@@ -13,7 +13,7 @@ class AssignRowSubcommand(Subcommand[AssignRow, Cascade]):
 
     cli_name = "assign"
     name = "assign"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("subject_model", metavar="model")

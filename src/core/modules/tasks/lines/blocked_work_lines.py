@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from engine.agent_machine.contracts.event_line_source import EventLineSource
-from engine.agent_machine.needs.line_history import LineHistory
+from engine.agent_machine.states.line_history import LineHistory
 from engine.driver.hook_event import HookEvent
 from engine.driver.agent_message import AgentMessage
 from engine.enums.agent_role import AgentRole
@@ -21,7 +21,7 @@ class BlockedWorkLines(EventLineSource):
     key = "tasks.blocked-work-at-stop"
     events = [HookEventName.STOP]
     agent_types = [AgentRole.MAIN.value]
-    carrier = LineChannel.WAITING
+    channel = LineChannel.WAITING
 
     def __init__(self, tasks: TaskQuery, calls: HookCallQuery, current: CurrentTasks, assigners: SuiteTaskAssigners, history: LineHistory) -> None:
         self.tasks, self.calls, self.current, self.assigners, self.history = tasks, calls, current, assigners, history

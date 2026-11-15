@@ -12,7 +12,7 @@ class ApplyWorkSettingsSubcommand(Subcommand[ApplyWorkSettings, WorkSettings]):
 
     cli_name = "work-settings"
     name = "apply"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--revision", required=True)

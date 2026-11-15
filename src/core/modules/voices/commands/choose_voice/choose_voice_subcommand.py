@@ -14,7 +14,7 @@ class ChooseVoiceSubcommand(Subcommand[SetSetting, CurrentSetting]):
 
     cli_name = "voice"
     name = "choose"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("name", choices=BuiltinCatalogue.NAMES)

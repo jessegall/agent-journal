@@ -11,7 +11,7 @@ class MakeTaskDependencySubcommand(Subcommand[MakeTaskDependency, TaskDependency
 
     cli_name = "task"
     name = "depend"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         dependency_arguments(parser)

@@ -13,7 +13,7 @@ class TagTaskSubcommand(Subcommand[TagTask, Task]):
 
     cli_name = "task"
     name = "tag"
-    outward = True
+    external = True
 
     def __init__(self, tasks: TaskQuery, flags: WriteFlags) -> None:
         self.tasks, self.flags = tasks, flags

@@ -14,7 +14,7 @@ class SwitchSettingGroupSubcommand(CurrentSettingOutput, Subcommand[SwitchSettin
 
     cli_name = "setting"
     name = "switch"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("key")

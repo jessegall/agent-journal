@@ -15,7 +15,7 @@ class AddReaderSubcommand(Subcommand[AddReader, Reader]):
 
     cli_name = "reader"
     name = "add"
-    outward = True
+    external = True
 
     def __init__(self, requests: ReaderRequestQuery) -> None:
         self.requests = requests

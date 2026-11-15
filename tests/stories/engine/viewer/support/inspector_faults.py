@@ -14,7 +14,7 @@ DEPENDENCIES = ["journal.core.reminders", "journal.core.plans", "journal.core.vi
 
 def window(name: str, place: WindowPlace) -> WindowDeclaration:
     slots = ["inspector.reminder"] if place is WindowPlace.SECTION else []
-    return WindowDeclaration(name, "Board", "board.html", WindowLoading.FRAME, place=place, skeleton=[SkeletonPart.line()], slots=slots)
+    return WindowDeclaration(name, "Board", "board.html", WindowLoading.STACKED_STATE, place=place, skeleton=[SkeletonPart.line()], slots=slots)
 
 
 def action(label: str = "Start the reminder", icon: str = "start", **fields: object) -> ButtonDeclaration:

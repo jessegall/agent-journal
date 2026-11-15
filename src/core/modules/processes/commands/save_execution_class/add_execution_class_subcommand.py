@@ -16,7 +16,7 @@ class AddExecutionClassSubcommand(Subcommand[SaveExecutionClass, str]):
 
     cli_name = "queue-class"
     name = "add"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("class_name")

@@ -20,11 +20,11 @@ class AgentStackMove(Prunable, Model):
 
     session_agent_id: int
     move_type: StackMoveType
-    frame_key: str
+    stacked_state_key: str
     reason_text: str
     version_before: int
     version_after: int
     step_cause: str
     hook_call_id: int | None = None
-    frame_end: StateEnd | None = None
+    stacked_state_end: StateEnd | None = None
     actor_id: int | None = None

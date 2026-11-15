@@ -16,8 +16,8 @@ class StackSamples:
     @staticmethod
     def built(*states: State) -> Stack:
         bottom = Stopped(SAMPLE_TIME, "started", True)
-        return Stack([StackSamples.frame(bottom, 0), *(StackSamples.frame(state, place) for place, state in enumerate(states, 1))])
+        return Stack([StackSamples.stacked_state(bottom, 0), *(StackSamples.stacked_state(state, place) for place, state in enumerate(states, 1))])
 
     @staticmethod
-    def frame(state: State, place: int) -> StackedState:
+    def stacked_state(state: State, place: int) -> StackedState:
         return StackedState(state, StateKey(type(state).__name__, None, str(place)), SAMPLE_TIME)

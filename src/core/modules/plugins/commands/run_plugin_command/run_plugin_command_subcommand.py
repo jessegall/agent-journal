@@ -19,7 +19,7 @@ class RunPluginCommandSubcommand(Subcommand[RunPluginCommand, PluginCommandRun])
 
     cli_name = "plugin"
     name = "run"
-    outward = True
+    external = True
 
     def __init__(self, access: PluginCallAccess) -> None:
         self.access = access

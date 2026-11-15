@@ -28,7 +28,7 @@ def test_the_project_hooks_query_reports_every_kind_without_importing_pending_en
     story.expect_text("managed-hook scan", "managed hooks: 1")
     hook = story.container.get(ManagedHooks).all()[0]
     run = {"id": hook.id, "exit_code": 2, "stdout": "", "stderr": "unsafe", "milliseconds": 4, "timed_out": False, "answer": {"refusal": "unsafe", "lines": [], "terminal": ""}}
-    story.hook("s-1", HookSamples.edit("cart.py").with_fields(firing="query-history", foreign=[run]))
+    story.hook("s-1", HookSamples.edit("cart.py").with_fields(event_id="query-history", foreign=[run]))
     ProgramHooks.store(source, {"hooks": {"PreToolUse": [{"matcher": "Bash", "hooks": [
         {"type": "command", "command": "pending-check"}, {"type": "prompt", "prompt": "Review this"}]}]}})
     ProgramHooks.store(root / ".claude/settings.local.json", {"hooks": {"PreToolUse": [{"hooks": [

@@ -11,7 +11,7 @@ class ApplyWorkPresetSubcommand(Subcommand[ApplyWorkPreset, WorkSettings]):
 
     cli_name = "work-settings"
     name = "preset"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("name")

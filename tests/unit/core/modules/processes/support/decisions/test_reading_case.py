@@ -17,7 +17,7 @@ from core.modules.processes.support.decisions.reading_case import ReadingCase
 TEST_OUTPUT = b"collected 3 items\n\n===== 3 passed in 0.10s =====\n"
 RUNNING_TESTS = ReadingCase(command_key="pytest", category=CommandCategory.TEST_RUN, classification_recognized=True, has_asking_flag=False,
                             output_hidden=False, is_saved_command=False, is_plugin_run=False, phase=ReadingPhase.RUNNING, age_seconds=120,
-                            run_state=ProcessState.BACKGROUND, cadence_state=CadenceState.STREAMING, exit_code=None, reader_layer=None, reader_judgement=None, default_reader=False, reader_failed=False, draft_fits=False,
+                            run_state=ProcessState.BACKGROUND, cadence_state=CadenceState.STREAMING, exit_code=None, reader_layer=None, reader_check=None, default_reader=False, reader_failed=False, draft_fits=False,
                             output=None, runs_without_change=0, waiting_request=False, skipped=False, has_unreadable_mark=False, count_missing=False,
                             reader_required=True, reader_writing_allowed=True, role_uses_saved_commands=False, readers_forced=True)
 
@@ -49,8 +49,8 @@ def test_a_short_run_that_failed_still_needs_a_reader():
 
 def test_a_reader_is_suitable_only_when_its_judgement_finds_nothing_missing():
     assert not RUNNING_TESTS.has_suitable_reader
-    assert replace(RUNNING_TESTS, reader_layer=ReaderLayer.PROJECT, reader_judgement=ReaderCheck()).has_suitable_reader
-    assert not replace(RUNNING_TESTS, reader_layer=ReaderLayer.STOCK, reader_judgement=ReaderCheck(missing=tuple(["--count"]))).has_suitable_reader
+    assert replace(RUNNING_TESTS, reader_layer=ReaderLayer.PROJECT, reader_check=ReaderCheck()).has_suitable_reader
+    assert not replace(RUNNING_TESTS, reader_layer=ReaderLayer.STOCK, reader_check=ReaderCheck(missing=tuple(["--count"]))).has_suitable_reader
 
 
 def test_the_unreadable_reason_comes_from_a_mark_first_then_from_the_output():

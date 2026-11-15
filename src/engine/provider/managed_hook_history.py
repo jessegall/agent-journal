@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from engine.driver.foreign_run import ForeignRun
-from engine.driver.enums.foreign_outcome import ForeignOutcome
+from engine.driver.project_hook_run import ProjectHookRun
+from engine.driver.enums.project_hook_outcome import ProjectHookOutcome
 
 
 @dataclass(frozen=True)
@@ -13,6 +13,6 @@ class ManagedHookHistory:
     rewritten: int
     timed_out: int
     failed: int
-    last: ForeignRun | None
+    last: ProjectHookRun | None
     last_at: str | None = None
-    last_outcome: ForeignOutcome | None = None
+    last_outcome: ProjectHookOutcome | None = None

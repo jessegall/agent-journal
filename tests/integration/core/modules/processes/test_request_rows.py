@@ -47,7 +47,7 @@ def test_a_hook_writes_one_request_row_once_and_no_process_row(journal, name):
         server.start_agent(SESSION)
         RequestLogImport()(journal.container)
         RequestLogImport()(journal.container)
-        body = dict(HOOKS[name]().with_fields(session=SESSION, firing=f"request-row-{name}").body)
+        body = dict(HOOKS[name]().with_fields(session=SESSION, event_id=f"request-row-{name}").body)
         events = events_of(journal, lambda: server.expect_hook_answer("/hook", body, 200, '"refusal":'))
     expect_single_request_row(journal, events, ProcessType.HOOK)
 

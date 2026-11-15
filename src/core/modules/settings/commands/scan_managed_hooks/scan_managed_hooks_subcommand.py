@@ -11,7 +11,7 @@ class ScanManagedHooksSubcommand(Subcommand[ScanManagedHooks, int]):
 
     cli_name = "managed-hook"
     name = "scan"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         pass

@@ -3,7 +3,7 @@ from dataclasses import replace
 from engine.agent_stack.open_block import OpenBlock
 from engine.agent_stack.reason import Reason
 from engine.agent_machine.agent_view import AgentView
-from engine.agent_machine.needs.block_plan import BlockPlan
+from engine.agent_machine.states.block_plan import BlockPlan
 from engine.enums.condition_outcome import ConditionOutcome
 from engine.enums.decision_class import DecisionClass
 

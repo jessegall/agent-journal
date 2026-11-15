@@ -89,12 +89,12 @@ def test_a_compaction_and_the_tick_are_stopped_and_leave_no_hook_call(new_story)
     story.expect_rows(all(reply.halt.startswith(STOP_LINE) and not reply.lines for reply in replies), hook_call_count(story) == count)
 
 
-def test_the_plan_below_full_changes_nothing_and_a_repeated_firing_first_allowed_gets_the_stop_once_it_is_full(new_story):
+def test_the_plan_below_full_changes_nothing_and_a_repeated_event_id_first_allowed_gets_the_stop_once_it_is_full(new_story):
     story = lockdown_story(new_story, UserBuilder)
     report(story, 99)
-    first = story.hook("s-1", EDIT.with_fields(firing="firing-1"))
+    first = story.hook("s-1", EDIT.with_fields(event_id="firing-1"))
     report(story, 100)
-    repeated = story.hook("s-1", EDIT.with_fields(firing="firing-1"))
+    repeated = story.hook("s-1", EDIT.with_fields(event_id="firing-1"))
     story.expect_rows(first.halt == "", repeated.halt.startswith(STOP_LINE), "usage-limit delete" not in repeated.halt)
 
 

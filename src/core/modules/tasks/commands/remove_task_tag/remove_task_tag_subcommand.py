@@ -12,7 +12,7 @@ class RemoveTaskTagSubcommand(Subcommand[RemoveTaskTag, Task]):
 
     cli_name = "task"
     name = "untag"
-    outward = True
+    external = True
 
     def __init__(self, tasks: TaskQuery) -> None:
         self.tasks = tasks

@@ -13,7 +13,7 @@ class AllowWindowSubcommand(Subcommand[AllowWindow, WindowPermission]):
 
     cli_name = "window"
     name = "allow"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("window")

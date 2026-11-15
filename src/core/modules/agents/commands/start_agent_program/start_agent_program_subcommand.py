@@ -14,7 +14,7 @@ class StartAgentProgramSubcommand(Subcommand[StartAgentProgram, Dispatch]):
 
     cli_name = "agent"
     name = "start-program"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("agent_id", type=AgentNumber)

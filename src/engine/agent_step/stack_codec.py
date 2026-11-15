@@ -16,7 +16,7 @@ from engine.agent_stack.states.state import State
 from engine.agent_stack.states.stopped import Stopped
 from engine.agent_stack.states.waiting import Waiting
 from engine.agent_stack.states.working import Working
-from engine.agent_step.stored_frame import StoredFrame
+from engine.agent_step.stored_stacked_state import StoredStackedState
 
 STATE_CLASSES: dict[str, type[State]] = {state.__name__: state for state in (Stopped, Working, Waiting, Blocked, Compacting, Paused, Ended)}
 STATE_FIELD = "state_name"
@@ -27,12 +27,12 @@ class StackCodec:
     field by its declared type; a frame whose state the code no longer knows raises, so the step reseeds it."""
 
     @staticmethod
-    def encoded(frames: Sequence[StackedState]) -> str:
-        return json.dumps([{STATE_FIELD: type(frame.state).__name__, **StackCodec.plain(frame)} for frame in frames])
+    def encoded(stacked_states: Sequence[StackedState]) -> str:
+        return json.dumps([{STATE_FIELD: type(stacked_state.state).__name__, **StackCodec.plain(stacked_state)} for stacked_state in stacked_states])
 
     @staticmethod
     def decoded(text: str) -> list[StackedState]:
-        return [StackCodec.frame(StoredFrame(**entry)) for entry in json.loads(text)]
+        return [StackCodec.stacked_state(StoredStackedState(**entry)) for entry in json.loads(text)]
 
     # a need key alone, as a person's suppression of a frame keeps it
     @staticmethod
@@ -44,9 +44,9 @@ class StackCodec:
         return StackCodec.built(StateKey, json.loads(text))
 
     @staticmethod
-    def frame(stored: StoredFrame) -> StackedState:
+    def stacked_state(stored: StoredStackedState) -> StackedState:
         state = StackCodec.built(STATE_CLASSES[stored.state_name], stored.state)
-        return StackedState(state, StackCodec.typed(get_type_hints(StackedState)["need_key"], stored.need_key), datetime.fromisoformat(stored.entered_at))
+        return StackedState(state, StackCodec.typed(get_type_hints(StackedState)["state_key"], stored.state_key), datetime.fromisoformat(stored.entered_at))
 
     @staticmethod
     def plain(value: object) -> Any:

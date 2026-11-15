@@ -5,7 +5,7 @@ from engine.command.command import Command
 from engine.driver.hook_event import HookEvent
 from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
-from core.modules.processes.needs.reader_request_needs import READER_REQUEST_KEY
+from core.modules.processes.states.reader_request_states import READER_REQUEST_KEY
 from core.modules.processes.support.reading.reader_request_blocks import ReaderRequestBlocks
 
 

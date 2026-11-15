@@ -22,5 +22,5 @@ class HandedTaskEffect(Effect):
     timing = EffectTiming.UNCONDITIONAL
 
     def commands(self, view: AgentView, record: DecisionRecord) -> Sequence[Command[object]]:
-        handed = [need.state.work.work_id for need in view.needs if isinstance(need.state, Working) and need.state.work.work_type is WorkType.HANDED_TASK]
+        handed = [required_state.state.work.work_id for required_state in view.states if isinstance(required_state.state, Working) and required_state.state.work.work_type is WorkType.HANDED_TASK]
         return [StartTask(task_id) for task_id in handed[:1]]

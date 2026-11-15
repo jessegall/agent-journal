@@ -88,8 +88,8 @@ class HookCallQuery(Query[HookCall]):
         return self.kept.read_newest(calls, calls.first, name="drivers.latest_compaction")
 
     # the texts shown since the turn call before this hook's, whose own call is recorded before its effects run
-    def display_calls_after_turn(self, agent_id: int, firing: str) -> Sequence[HookCall]:
-        latest = self.agent(agent_id).matching(Among("hook", TURN_HOOKS)).matching(Excluding(Equal("firing", firing))).newest().first()
+    def display_calls_after_turn(self, agent_id: int, event_id: str) -> Sequence[HookCall]:
+        latest = self.agent(agent_id).matching(Among("hook", TURN_HOOKS)).matching(Excluding(Equal("event_id", event_id))).newest().first()
         return tuple(self.agent(agent_id).filter(hook=HookEventName.MESSAGE_DISPLAY).matching(Greater("id", latest.id if latest is not None else 0)).every_row(DISPLAY_CALLS_REASON))
 
     def latest_prompt(self, agent_id: int, cutoff_at: Timestamp) -> HookCall | None:

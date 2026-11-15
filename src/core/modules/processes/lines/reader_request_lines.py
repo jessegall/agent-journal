@@ -4,7 +4,7 @@ from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.driver.hook_event import HookEvent
 from engine.driver.agent_message import AgentMessage
 from engine.enums.hook_event_name import HookEventName
-from core.modules.processes.needs.reader_request_needs import READER_REQUEST_KEY
+from core.modules.processes.states.reader_request_states import READER_REQUEST_KEY
 from core.modules.processes.support.reading.reader_request_blocks import ReaderRequestBlocks
 
 

@@ -44,7 +44,7 @@ class PhaseTestRuns:
 
     def answer(self, event: HookEvent, agent_id: int) -> PhaseTestAnswer:
         # read once a hook whatever changes meanwhile: the runs it counts are what the next read finds spent
-        return self.request_values.read(f"workers.phase-tests:{agent_id}:{event.firing}", lambda: event.firing, lambda: self.counted(event, agent_id))
+        return self.request_values.read(f"workers.phase-tests:{agent_id}:{event.event_id}", lambda: event.event_id, lambda: self.counted(event, agent_id))
 
     def counted(self, event: HookEvent, agent_id: int) -> PhaseTestAnswer:
         tool = event.tool

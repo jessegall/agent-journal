@@ -26,14 +26,14 @@ class LongWaitLines(LineSource):
     events = [HookEventName.TICK]
     includes_steps = True
     key = LONG_WAIT_RULE
-    carrier = LineChannel.WAITING
+    channel = LineChannel.WAITING
     category = LineCategory.STEERING
 
     def __init__(self, queries: Queries, clock: Clock) -> None:
         self.queries, self.clock = queries, clock
 
     def lines(self, question: Question, view: AgentView) -> Sequence[Line]:
-        return [Line.of_agent_message(agent_message, self.carrier, self.category) for agent_message in self.agent_messages(view.agent.agent_id)]
+        return [Line.of_agent_message(agent_message, self.channel, self.category) for agent_message in self.agent_messages(view.agent.agent_id)]
 
     # a check line for each wait of the agent open ten minutes or more
     def agent_messages(self, agent_id: int) -> list[AgentMessage]:

@@ -6,7 +6,7 @@ SESSION = "s-1"
 
 
 def post_prompt(server, text: str) -> None:
-    server.expect_hook_answer("/hook", dict(HookSamples.prompt(text).with_fields(session=SESSION, firing=f"prompt-{text}").body), 200, '"refusal":')
+    server.expect_hook_answer("/hook", dict(HookSamples.prompt(text).with_fields(session=SESSION, event_id=f"prompt-{text}").body), 200, '"refusal":')
 
 
 def started_agent(server) -> None:

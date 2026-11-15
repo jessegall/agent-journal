@@ -7,7 +7,7 @@ from tests.stories.core.support.read_limit import limit_reads
 def test_the_feed_gives_a_hundred_calls_in_one_page_and_the_older_ones_in_the_next(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
     for number in range(105):
-        story.hook("s-1", HookSamples.stop().with_fields(firing=f"f-{number}"))
+        story.hook("s-1", HookSamples.stop().with_fields(event_id=f"f-{number}"))
     newest = story.run(f"hook-call feed --session-agent-id {story.agent.id} --limit 100 --json", actor=story.user)
     newest.expect_text('"id": 106,')
     newest.expect_text('"id": 7,')

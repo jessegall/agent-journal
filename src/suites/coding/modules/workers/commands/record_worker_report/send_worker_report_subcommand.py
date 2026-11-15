@@ -24,7 +24,7 @@ class SendWorkerReportSubcommand(Subcommand[RecordParentReport | SendMergerInput
 
     cli_name = "worker"
     name = "report"
-    outward = True
+    external = True
 
     def __init__(self, queries: Queries, settings: SettingValues) -> None:
         self.queries, self.settings = queries, settings

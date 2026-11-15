@@ -44,13 +44,13 @@ class RunnerPlan:
         self.limits, self.runner, self.types, self.roles, self.folders = limits, runner, types, roles, folders
         self.shell_sandbox, self.project_reads, self.checkouts, self.choice, self.request_values = shell_sandbox, project_reads, checkouts, choice, request_values
 
-    def decision(self, shell: ShellLine | None, firing: str, agent_id: int) -> RunnerDecision:
+    def decision(self, shell: ShellLine | None, event_id: str, agent_id: int) -> RunnerDecision:
         if shell is None:
             return RunnerDecision()
-        return self.request_values.read(f"processes.runner:{agent_id}:{firing}:{shell.runner_text}", lambda: firing, lambda: self.decided(shell, agent_id))
+        return self.request_values.read(f"processes.runner:{agent_id}:{event_id}:{shell.runner_text}", lambda: event_id, lambda: self.decided(shell, agent_id))
 
     def of_event(self, event: HookEvent, agent_id: int) -> RunnerDecision:
-        return self.decision(event.tool.shell if event.tool is not None else None, event.firing, agent_id)
+        return self.decision(event.tool.shell if event.tool is not None else None, event.event_id, agent_id)
 
     def decided(self, shell: ShellLine, agent_id: int) -> RunnerDecision:
         agent_type = self.types.find(self.roles.role(agent_id))

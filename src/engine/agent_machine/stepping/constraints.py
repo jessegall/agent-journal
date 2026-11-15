@@ -42,7 +42,7 @@ class Constraints:
     @staticmethod
     def pause_reasons(question: Question, stack: Stack) -> list[Reason]:
         tool = question.tool()
-        paused = next((frame.state for frame in stack.frames if isinstance(frame.state, Paused)), None)
+        paused = next((stacked_state.state for stacked_state in stack.stacked_states if isinstance(stacked_state.state, Paused)), None)
         if paused is None or tool is None or not Constraints.pause_refuses(tool):
             return []
         return [Reason(PAUSE_KEY, DecisionClass.REFUSE, PAUSE_RANK, paused.refusal_text)]
@@ -116,6 +116,6 @@ class Constraints:
             return []
         refusals = [block.stop_refusal() for block in JudgedBlocks.constraining(view) if block.refuses_stop(view.escalation)]
         top = stack.work_lane_top()
-        if view.escalation is not None and view.escalation.defers_work(top.need_key):
+        if view.escalation is not None and view.escalation.defers_work(top.state_key):
             return refusals
         return [*refusals, *top.state.stop_answer(view.work_stop).refusal_reasons()]

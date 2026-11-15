@@ -1,7 +1,7 @@
 from engine.request.request_values import RequestValues
 from collections.abc import Sequence
 
-from engine.agent_machine.needs.step_requests import StepRequests
+from engine.agent_machine.states.step_requests import StepRequests
 from engine.command.context import Context
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries

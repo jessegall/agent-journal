@@ -7,7 +7,7 @@ class AdmissionReceipt:
     accepts once."""
 
     agent_id: int
-    firing: str
+    event_id: str
     command_fingerprint: str
     policy_key: str
     grant_id: int

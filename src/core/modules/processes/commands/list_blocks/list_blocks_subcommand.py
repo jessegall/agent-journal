@@ -20,7 +20,7 @@ class ListBlocksSubcommand(ReadSubcommand[tuple[str, ...]]):
 
     cli_name = "process"
     name = "holds"
-    outward = True
+    external = True
 
     def __init__(self, blocked_runs: BlockedRuns, queries: Queries, numbers: RowNumbers, clock: Clock) -> None:
         self.held_runs, self.queries, self.numbers, self.clock = blocked_runs, queries, numbers, clock

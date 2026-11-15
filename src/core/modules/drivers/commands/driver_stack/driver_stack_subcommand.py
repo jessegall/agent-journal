@@ -26,9 +26,9 @@ class DriverStackSubcommand(ReadSubcommand[tuple[str, ...]]):
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[str, ...]:
         row = self.queries.query(AgentStack).filter(session_agent_id=arguments.agent).first()
-        if row is None or not row.has_frames:
+        if row is None or not row.has_stacked_states:
             return tuple([f"agent {arguments.agent} has no stack yet: its first step writes it"])
-        frames = [f"{type(frame.state).__name__} {frame.need_key.generation} since {frame.entered_at.isoformat()}" for frame in StackCodec.decoded(row.frames)]
+        stacked_states = [f"{type(stacked_state.state).__name__} {stacked_state.state_key.generation} since {stacked_state.entered_at.isoformat()}" for stacked_state in StackCodec.decoded(row.stacked_states)]
         moves = self.queries.query(AgentStackMove).filter(session_agent_id=arguments.agent).newest().page(arguments.page, MOVES_SHOWN)
-        return (f"{row.driver_name}, version {row.version}, stops refused {row.stop_refusals}, tool calls refused {row.tool_refusals}", *frames,
-                "moves, newest first:", *(f"{move.move_type} {move.frame_key} {move.reason_text}" for move in moves.rows))
+        return (f"{row.driver_name}, version {row.version}, stops refused {row.stop_refusals}, tool calls refused {row.tool_refusals}", *stacked_states,
+                "moves, newest first:", *(f"{move.move_type} {move.stacked_state_key} {move.reason_text}" for move in moves.rows))

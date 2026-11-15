@@ -10,7 +10,7 @@ class EndProviderOutagesSubcommand(Subcommand[EndProviderOutages, None]):
 
     cli_name = "provider-outage"
     name = "end"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("program")

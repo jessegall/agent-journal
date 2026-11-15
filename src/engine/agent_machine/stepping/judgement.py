@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from engine.agent_stack.reason import Reason
-from engine.agent_machine.needs.rank_order import RankOrder
+from engine.agent_machine.states.rank_order import RankOrder
 from engine.agent_machine.decision import Decision
 from engine.enums.decision_class import DecisionClass
 

@@ -117,7 +117,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         if command.event.is_monitor_tool():
             metadata[MONITOR_DESCRIPTION] = str(command.event.tool_input().get("description", ""))
         call = self.repository.save(HookCall(session_agent_id=agent.id, creator_id=context.actor.id, hook=command.event.event,
-                                             firing=command.event.firing, tool=tool.name if tool is not None else "", summary=self.summary(command, displayed_text),
+                                             event_id=command.event.event_id, tool=tool.name if tool is not None else "", summary=self.summary(command, displayed_text),
                                              writes_files=tool is not None and tool.is_writing_files(), lines_added=tool.lines_added if tool is not None else 0,
                                              lines_removed=tool.lines_removed if tool is not None else 0, suite=hook.suite,
                                              driver=hook.driver, answer=HookAnswer.REFUSED if answers.refusal else HookAnswer.ALLOWED, refusal=answers.refusal,

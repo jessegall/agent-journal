@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from engine.agent_machine.needs.required_state import RequiredState
+from engine.agent_machine.states.required_state import RequiredState
 from engine.agent_stack.escalation import Escalation
 from engine.agent_stack.open_block import OpenBlock
 from engine.agent_stack.state_key import StateKey
@@ -20,19 +20,19 @@ JOB = RequiredState(Working(WorkReference(WorkType.JOB, 5, "job 5"), True, Reaso
 
 
 def test_a_stop_that_rests_through_an_escalation_hands_nothing_in():
-    view = replace(ViewSamples.view("helper", WorkStop.HANDOVER), needs=tuple([JOB]))
+    view = replace(ViewSamples.view("helper", WorkStop.HANDOVER), states=tuple([JOB]))
     escalated = replace(view, escalation=Escalation(1, EscalationType.STOPS, Responder.PARENT, (), tuple([JOB_KEY]), 5))
     assert JobReportEffect.is_report_stop(view) and not JobReportEffect.is_report_stop(escalated)
 
 
 def test_a_stop_that_rests_because_an_escalation_defers_a_hold_on_it_hands_nothing_in():
     hold = OpenBlock("documents.open", 3, Reason("documents.open", DecisionClass.HOLD, "documents.open", "close your document"), True, True, True, True, False)
-    view = replace(ViewSamples.view("helper", WorkStop.HANDOVER), needs=tuple([JOB]), blocks=tuple([hold]),
+    view = replace(ViewSamples.view("helper", WorkStop.HANDOVER), states=tuple([JOB]), blocks=tuple([hold]),
                    escalation=Escalation(1, EscalationType.STOPS, Responder.PARENT, (3,), (), 5))
     assert not JobReportEffect.is_report_stop(view)
 
 
 def test_a_stop_under_an_open_escalation_hands_nothing_in_even_when_it_defers_neither_the_job_nor_a_hold():
-    view = replace(ViewSamples.view("helper", WorkStop.HANDOVER), needs=tuple([JOB]),
+    view = replace(ViewSamples.view("helper", WorkStop.HANDOVER), states=tuple([JOB]),
                    escalation=Escalation(1, EscalationType.TOOLS, Responder.PARENT, (8,), (), 5))
     assert not JobReportEffect.is_report_stop(view)

@@ -14,7 +14,7 @@ class MakeShareLinkSubcommand(Subcommand[MakeShareLink, ShareInvitation]):
 
     cli_name = "share"
     name = "make"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("target")

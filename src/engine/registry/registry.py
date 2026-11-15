@@ -94,7 +94,7 @@ class Registry:
     module_fingerprints: dict[str, str] = field(default_factory=lambda: {})
     module_suites: dict[str, tuple[str, ...]] = field(default_factory=dict[str, tuple[str, ...]])
     events: tuple[str, ...] = ()
-    outward_lines: tuple[str, ...] = ()
+    external_lines: tuple[str, ...] = ()
     background_lines: tuple[str, ...] = ()
     event_keys: dict[str, EventKeyEntry] = field(default_factory=dict[str, EventKeyEntry])
     former_event_keys: dict[str, str] = field(default_factory=dict[str, str])
@@ -132,7 +132,7 @@ class Registry:
             models={cli_name: ModelEntry(entry["module"], DottedPath(entry["model"]), tuple(entry["commands"]), tuple(entry["excluded_subcommands"])) for cli_name, entry in entries["models"].items()},
             handlers={command: DottedPath(path) for command, path in entries["handlers"].items()},
             subcommands={line: DottedPath(path) for line, path in entries["subcommands"].items()},
-            outward_lines=tuple(entries.get("outward_lines", ())),
+            external_lines=tuple(entries.get("outward_lines", ())),
             background_lines=tuple(entries.get("background_lines", ())),
             guards=tuple(GuardEntry(guard["name"], EventPattern(guard["event"]), DottedPath(guard["path"]), guard["position"], guard["short_flag"], guard.get("is_confirmation", False))
                          for guard in entries["guards"]),
@@ -144,7 +144,7 @@ class Registry:
                                     {page: tuple(LayoutPreset(preset["key"], preset["name"], preset["text"], loaded_layout(preset["shape"])) for preset in presets)
                                      for page, presets in suite.get("presets", {}).items()},
                                     suite.get("task_assigner", ""), suite.get("shipped", False),
-                                    entrances={key: tuple(windows) for key, windows in suite.get("entrances", {}).items()})
+                                    entry_points={key: tuple(windows) for key, windows in suite.get("entrances", {}).items()})
                          for suite in entries.get("suites", [])),
             drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["instructions"]))
                           for driver in entries.get("drivers", [])),
@@ -189,7 +189,7 @@ class Registry:
             "models":{cli_name: {"module": entry.module, "model": entry.model.text, "commands": list(entry.commands), "excluded_subcommands": list(entry.excluded_subcommands)} for cli_name, entry in self.models.items()},
             "handlers": {command: path.text for command, path in self.handlers.items()},
             "subcommands": {line: path.text for line, path in self.subcommands.items()},
-            "outward_lines": list(self.outward_lines),
+            "outward_lines": list(self.external_lines),
             "background_lines": list(self.background_lines),
             "guards": [{"name": guard.name, "event": guard.event.text, "path": guard.path.text, "position": guard.position, "short_flag": guard.short_flag, "is_confirmation": guard.is_confirmation}
                        for guard in self.guards],
@@ -197,7 +197,7 @@ class Registry:
                            "position": listener.position, "actor_id": listener.actor_id} for listener in self.listeners],
             "bindings": {interface: path.text for interface, path in self.bindings.items()},
             "suites": [{"name": suite.name, "module": suite.module, "requires": list(suite.requires), "windows": list(suite.windows),
-                        "task_assigner": suite.task_assigner, "shipped": suite.shipped, "entrances": {key: list(windows) for key, windows in suite.entrances.items()},
+                        "task_assigner": suite.task_assigner, "shipped": suite.shipped, "entrances": {key: list(windows) for key, windows in suite.entry_points.items()},
                         "layouts": {page: stored_layout(shape) for page, shape in suite.layouts.items()},
                         "presets": {page: [{"key": preset.key, "name": preset.name, "text": preset.text, "shape": stored_layout(preset.shape)} for preset in presets]
                                     for page, presets in suite.presets.items()}} for suite in self.suites],
@@ -314,10 +314,10 @@ class Registry:
     def dock(self, type_name: str) -> DockEntry | None:
         return next((dock for dock in self.docks if dock.type == type_name), None)
 
-    def is_outward(self, line: str) -> bool:
+    def is_external(self, line: str) -> bool:
         cli_name, _, subcommand = line.partition(" ")
         if line in self.subcommands:
-            return line in self.outward_lines
+            return line in self.external_lines
         return cli_name in self.models and subcommand not in BUILT_READS
 
     def has_window(self, name: str) -> bool:

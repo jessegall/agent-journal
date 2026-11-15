@@ -34,7 +34,7 @@ class ReadingDecider:
     def state_without_suitable_reader(case: ReadingCase) -> ReaderState:
         if case.count_missing:
             return ReaderState.MISSING
-        if case.reader_judgement is not None:
+        if case.reader_check is not None:
             return ReaderState.POOR
         return ReaderState.DRAFTABLE if case.draft_fits else ReaderState.MISSING
 
@@ -66,6 +66,6 @@ class ReadingDecider:
             return ReasonCode.COUNT_MISSING
         if case.reader_failed:
             return ReasonCode.READER_FAILED
-        if state is ReaderState.POOR and case.reader_judgement is not None:
-            return case.reader_judgement.reason_code
+        if state is ReaderState.POOR and case.reader_check is not None:
+            return case.reader_check.reason_code
         return state.reason_code

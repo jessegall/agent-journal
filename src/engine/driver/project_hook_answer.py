@@ -1,7 +1,7 @@
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 
-from engine.driver.foreign_run import ForeignRun
+from engine.driver.project_hook_run import ProjectHookRun
 from engine.driver.hook_fields import mapping, text, texts
 
 
@@ -14,7 +14,7 @@ class ProjectHookAnswer:
     terminal: str = ""
 
     @classmethod
-    def read(cls, run: ForeignRun) -> "ProjectHookAnswer":
+    def read(cls, run: ProjectHookRun) -> "ProjectHookAnswer":
         answer = run.answer
         return cls(run.id, text(answer, "refusal"), texts(answer, "lines"),
                    {str(key): value for key, value in mapping(answer.get("updated_input", {}), "updated input").items()}, text(answer, "terminal"))

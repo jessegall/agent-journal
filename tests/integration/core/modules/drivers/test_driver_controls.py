@@ -17,7 +17,7 @@ def test_an_unknown_driver_is_refused_with_the_drivers_there_are(played):
     assert "the drivers are coding.helper, coding.main, coding.merger, coding.worker, core.helper, core.main" in output(story, "driver table coding.robot")
 
 
-def test_the_main_agent_may_not_pop_a_frame(played):
+def test_the_main_agent_may_not_pop_a_stacked_state(played):
     story = played(BuilderStarted)
     agent: Actor = story.agent
     assert "only a person removes a frame" in output(story, f"driver pop {agent.id} task:1 --reason test", agent)

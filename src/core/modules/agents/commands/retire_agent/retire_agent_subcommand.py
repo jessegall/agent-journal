@@ -14,7 +14,7 @@ class RetireAgentSubcommand(Subcommand[RetireAgent, Agent]):
 
     cli_name = "agent"
     name = "retire"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("agent_id", type=AgentNumber)

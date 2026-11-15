@@ -39,11 +39,11 @@ class KeptSkills:
     # the transcript's record is kept until the agent's session is replaced or compacted, the only times the program
     # writes it
     def kept_digests(self, agent_id: int, transcript: HookTranscript) -> Mapping[str, str]:
-        if self.last is not None and self.last[0] == transcript.firing:
+        if self.last is not None and self.last[0] == transcript.event_id:
             return self.last[1]
         session_mark = KeptSkillMark.of(self.agents.find(agent_id))
         digests = KeptSkillRecords.shared(self.home).digests(str(transcript.path), session_mark, lambda: self.read_digests(transcript))
-        self.last = (transcript.firing, digests)
+        self.last = (transcript.event_id, digests)
         return digests
 
     def read_digests(self, transcript: HookTranscript) -> Mapping[str, str]:

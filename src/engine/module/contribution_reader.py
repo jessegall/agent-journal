@@ -15,11 +15,11 @@ class ContributionReader:
 
     def read(self, module: type[Module]) -> ModuleContributions:
         contributions = [
-            *(self.declared(cls, ContributionType.NEED, rank=cls.rank, agent_types=tuple(cls.agent_types), state_name=cls.state_type.__name__) for cls in module.needs),
+            *(self.declared(cls, ContributionType.NEED, rank=cls.rank, agent_types=tuple(cls.agent_types), state_name=cls.state_type.__name__) for cls in module.states),
             *(self.declared(cls, ContributionType.FACT, agent_types=tuple(cls.agent_types)) for cls in module.facts),
             *(self.declared(cls, ContributionType.POLICY, key=cls.key, rank=cls.rank, agent_types=tuple(cls.agent_types), is_safety=cls.is_safety)
               for cls in module.policies),
-            *(self.declared(cls, ContributionType.LINE, events=tuple(cls.events), carrier=cls.carrier) for cls in module.lines),
+            *(self.declared(cls, ContributionType.LINE, events=tuple(cls.events), channel=cls.channel) for cls in module.lines),
             *(self.declared(cls, ContributionType.TRANSFORM, slot=cls.slot) for cls in module.transforms),
             *(self.declared(cls, ContributionType.EFFECT, events=tuple(cls.events), is_required=cls.is_required, has_failure=cls.failure is not None)
               for cls in module.effects),

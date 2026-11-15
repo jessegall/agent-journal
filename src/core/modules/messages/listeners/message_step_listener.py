@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from engine.agent_machine.contracts.agent_listener import AgentListener
-from engine.agent_machine.needs.step_requests import StepRequests
+from engine.agent_machine.states.step_requests import StepRequests
 from engine.event.created import Created
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_targets import MessageTargets

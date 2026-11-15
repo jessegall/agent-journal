@@ -1,9 +1,9 @@
 from engine.driver.project_hook_answer import ProjectHookAnswer
-from engine.driver.foreign_run import ForeignRun
+from engine.driver.project_hook_run import ProjectHookRun
 
 
 def test_reads_the_decoded_answer():
-    run = ForeignRun("check", 0, "ignored", "", 1, False, {"refusal": "unsafe", "lines": ["note"],
+    run = ProjectHookRun("check", 0, "ignored", "", 1, False, {"refusal": "unsafe", "lines": ["note"],
                                                             "updated_input": {"command": "safe"}, "terminal": "notice"})
     answer = ProjectHookAnswer.read(run)
     assert answer.reason() == "check: unsafe"

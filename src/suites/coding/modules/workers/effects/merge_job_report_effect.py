@@ -1,6 +1,6 @@
 from engine.enums.work_stop import WorkStop
 from core.modules.helpers.effects.job_report_effect import JobReportEffect
-from suites.coding.modules.workers.needs.merge_job_needs import MERGER_TYPE
+from suites.coding.modules.workers.states.merge_job_states import MERGER_TYPE
 
 
 class MergeJobReportEffect(JobReportEffect):

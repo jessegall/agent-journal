@@ -1,5 +1,5 @@
 from core.modules.waits.listeners.wait_step_listener import WaitStepListener
-from core.modules.waits.needs.wait_needs import WaitNeeds
+from core.modules.waits.states.wait_states import WaitStates
 from core.modules.waits.lines.long_wait_lines import LongWaitLines
 from core.modules.waits.effects.work_ends_wait_effect import WorkEndsWaitEffect
 from core.modules.waits.models.declarations.wait_model_declaration import WaitModelDeclaration
@@ -29,7 +29,7 @@ class WaitsModule(Module):
 
     name = "journal.core.waits"
     agent_listeners = [WaitStepListener]
-    needs = [WaitNeeds]
+    states = [WaitStates]
     effects = [WorkEndsWaitEffect]
     lines = [LongWaitLines]
     move_reason = "version 4 had no table for waits"

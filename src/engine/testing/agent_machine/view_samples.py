@@ -4,8 +4,8 @@ from engine.agent_stack.read_versions import ReadVersions
 from engine.agent_stack.states.state import State
 from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.capabilities import Capabilities
-from engine.agent_machine.needs.rank_order import RankOrder
-from engine.agent_machine.needs.agent_reference import AgentReference
+from engine.agent_machine.states.rank_order import RankOrder
+from engine.agent_machine.states.agent_reference import AgentReference
 from engine.agent_machine.record.refusal_counts import RefusalCounts
 from engine.enums.responder import Responder
 from engine.enums.work_stop import WorkStop

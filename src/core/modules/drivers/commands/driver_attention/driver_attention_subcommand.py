@@ -35,6 +35,6 @@ class DriverAttentionSubcommand(ReadSubcommand[tuple[str, ...]]):
         wakes = self.queries.query(AgentWake).filter(state=WakeState.EXPIRED).every_row(ATTENTION_REASON)
         requests = self.queries.query(AgentStepRequest).matching(IsNull("served_at")).every_row(ATTENTION_REASON)
         lines = (*(f"agent {row.session_agent_id}: escalation {row.id} to its {row.responder} is not answered" for row in escalations),
-                 *(f"agent {row.session_agent_id}: its wake for {row.work_generation} expired: {row.failure}" for row in wakes),
+                 *(f"agent {row.session_agent_id}: its wake for {row.work_number} expired: {row.failure}" for row in wakes),
                  *(f"agent {row.session_agent_id}: its step failed {row.attempts} times" for row in requests if row.attempts >= FAILED_STEP_ATTEMPTS))
         return lines or tuple([self.empty_line])

@@ -6,7 +6,7 @@ from engine.agent_stack.read_versions import ReadVersions
 from engine.agent_stack.reason import Reason
 from engine.agent_machine.contracts.effect import Effect
 from engine.agent_machine.decision import Decision
-from engine.agent_machine.needs.block_plan import BlockPlan
+from engine.agent_machine.states.block_plan import BlockPlan
 from engine.agent_machine.record.block_closing import BlockClosing
 from engine.agent_machine.record.decision_inputs import DecisionInputs
 from engine.agent_machine.record.event_identity import EventIdentity
@@ -44,7 +44,7 @@ class DecisionRecord:
     stop_checks: Sequence[StopCheck]
     counts: RefusalCounts
     wake: WakeChange
-    basis: ReadVersions
+    read_versions: ReadVersions
     printing: Sequence[EncodedPart]
     inputs: DecisionInputs
     # the grants that passed a refusing policy of an admitted action, which the save spends in its own write

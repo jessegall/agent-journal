@@ -5,8 +5,8 @@ from engine.helper_type.enums.journal_line_class import JournalLineClass
 
 TASK_READ = JournalLine("task show", frozenset([JournalLineClass.READS]))
 TASK_EDIT = JournalLine("task edit", frozenset([JournalLineClass.CHANGES]))
-PROOF_LINE = JournalLine("proof make", frozenset([JournalLineClass.CHANGES, JournalLineClass.OUTWARD]))
-SETTING_SET = JournalLine("setting set", frozenset([JournalLineClass.CHANGES, JournalLineClass.OUTWARD]))
+PROOF_LINE = JournalLine("proof make", frozenset([JournalLineClass.CHANGES, JournalLineClass.EXTERNAL]))
+SETTING_SET = JournalLine("setting set", frozenset([JournalLineClass.CHANGES, JournalLineClass.EXTERNAL]))
 WORKER_LIST = CommandAllowList(categories=tuple([CommandCategory.READ]), groups=tuple(["proof"]), lines=tuple(["task show"]))
 
 
@@ -20,9 +20,9 @@ def test_a_list_allows_a_shell_category_it_names_and_no_other():
 
 
 def test_a_line_passes_by_class_only_when_the_list_names_every_class_it_has():
-    outward_read = JournalLine("message feed", frozenset([JournalLineClass.READS, JournalLineClass.OUTWARD]))
-    assert not CommandAllowList(classes=tuple([JournalLineClass.READS])).allows(outward_read)
-    assert CommandAllowList(classes=(JournalLineClass.READS, JournalLineClass.OUTWARD)).allows(outward_read)
+    external_read = JournalLine("message feed", frozenset([JournalLineClass.READS, JournalLineClass.EXTERNAL]))
+    assert not CommandAllowList(classes=tuple([JournalLineClass.READS])).allows(external_read)
+    assert CommandAllowList(classes=(JournalLineClass.READS, JournalLineClass.EXTERNAL)).allows(external_read)
 
 
 def test_a_line_the_list_does_not_name_is_refused():

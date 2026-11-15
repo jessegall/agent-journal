@@ -43,7 +43,7 @@ class RefusalCounting:
     def is_progress(decision: Decision, question: Question, moves: tuple[StackMove, ...]) -> bool:
         if (question.is_stop() and decision.admits()) or question.question_type is QuestionType.PROMPT:
             return True
-        return any(move.frame_end in PROGRESS_ENDS or StackMoveType.ENTERED is move.move_type and move.frame_key is not None and move.frame_key.state_name == "Working"
+        return any(move.stacked_state_end in PROGRESS_ENDS or StackMoveType.ENTERED is move.move_type and move.stacked_state_key is not None and move.stacked_state_key.state_name == "Working"
                    for move in moves)
 
     @staticmethod
@@ -58,7 +58,7 @@ class RefusalCounting:
         block_ids = tuple(block.block_id for block in JudgedBlocks.constraining(view)
                           if block.block_id is not None and (block.reason in reasons or block.stop_refusal() in reasons))
         # the Working frames whose stop answer refused, which the escalation defers with the holds it names
-        work_keys = tuple(frame.need_key for frame in stack.frames if isinstance(frame.state, Working) and frame.state.stop_reason in reasons)
+        work_keys = tuple(stacked_state.state_key for stacked_state in stack.stacked_states if isinstance(stacked_state.state, Working) and stacked_state.state.stop_reason in reasons)
         if view.escalation is not None:
             return replace(view.escalation, block_ids=tuple(dict.fromkeys([*view.escalation.block_ids, *block_ids])),
                            work_keys=tuple(dict.fromkeys([*view.escalation.work_keys, *work_keys])), refusal_count=count)

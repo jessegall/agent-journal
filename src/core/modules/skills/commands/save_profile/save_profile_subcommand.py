@@ -27,7 +27,7 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
 
     cli_name = "profile"
     name = "save"
-    outward = True
+    external = True
 
     def __init__(self, files: ProfileFiles, providers: Providers, skills: ProfileSkills, types: HelperTypeBook, agents: AgentRows) -> None:
         self.files, self.providers, self.skills, self.types, self.agents = files, providers, skills, types, agents

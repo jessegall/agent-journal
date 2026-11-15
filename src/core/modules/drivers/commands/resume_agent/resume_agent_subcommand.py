@@ -14,7 +14,7 @@ class ResumeAgentSubcommand(Subcommand[ResumeAgent, Agent]):
 
     cli_name = "agent"
     name = "resume"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("agent_id", type=AgentNumber)

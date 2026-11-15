@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from engine.agent_machine.contracts.agent_listener import AgentListener
 from engine.event.changed import Changed
 from engine.query.queries import Queries
-from engine.agent_machine.needs.step_requests import StepRequests
+from engine.agent_machine.states.step_requests import StepRequests
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 

@@ -24,7 +24,7 @@ class RunnerStartEffect(Effect):
     is the final one, after the transforms; a run that cannot be made withdraws the admission."""
 
     events = [HookEventName.PRE_TOOL_USE]
-    timing = EffectTiming.ON_ADMISSION
+    timing = EffectTiming.WHEN_ALLOWED
     is_required = True
     failure = RunnerStartFailedMessage
 
@@ -55,5 +55,5 @@ class RunnerStartEffect(Effect):
         final = record.rewrite.final_question(record.action)
         tool = final.tool()
         event = record.action.event
-        firing = event.firing if event is not None else ""
-        return self.plan.decision(tool.shell if tool is not None else None, firing, view.agent.agent_id)
+        event_id = event.event_id if event is not None else ""
+        return self.plan.decision(tool.shell if tool is not None else None, event_id, view.agent.agent_id)

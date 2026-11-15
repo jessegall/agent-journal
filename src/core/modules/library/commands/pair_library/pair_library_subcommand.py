@@ -13,7 +13,7 @@ class PairLibrarySubcommand(Subcommand[PairLibrary, LibraryConnection]):
 
     cli_name = "library"
     name = "connect"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("address", nargs="?", default="")

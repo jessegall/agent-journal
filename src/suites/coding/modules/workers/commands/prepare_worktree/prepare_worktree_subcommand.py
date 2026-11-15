@@ -11,7 +11,7 @@ class PrepareWorktreeSubcommand(Subcommand[PrepareWorktree, None]):
 
     cli_name = "worktree"
     name = "prepare"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("folder")

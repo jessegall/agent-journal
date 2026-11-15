@@ -17,7 +17,7 @@ class ChangeAgentDriverSubcommand(Subcommand[ChangeAgentDriver, Agent]):
 
     cli_name = "agent"
     name = "driver"
-    outward = True
+    external = True
 
     def __init__(self, states: ProgramStates) -> None:
         self.states = states

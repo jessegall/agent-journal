@@ -3,7 +3,7 @@ from collections.abc import Mapping, Sequence
 from engine.agent_machine.stepping.admission_receipt import AdmissionReceipt
 from engine.agent_machine.stepping.grant import NEXT_ACTION, Grant
 from engine.agent_machine.stepping.grant_ledger import GrantLedger
-from engine.agent_machine.needs.agent_reference import AgentReference
+from engine.agent_machine.states.agent_reference import AgentReference
 from engine.agent_step.errors.required_effect_error import RequiredEffectError
 from engine.command.bus import Bus
 from engine.command.context import Context
@@ -49,9 +49,9 @@ class TableGrantLedger(GrantLedger):
 
     def open_receipt(self, agent_id: int, command_fingerprint: str, policy_key: str) -> AdmissionReceipt | None:
         row = self.queries.query(ReceiptRow).filter(session_agent_id=agent_id, command_fingerprint=command_fingerprint, policy_key=policy_key, consumed_at=None).first()
-        return AdmissionReceipt(row.session_agent_id, row.firing, row.command_fingerprint, row.policy_key, row.grant_id) if row is not None else None
+        return AdmissionReceipt(row.session_agent_id, row.event_id, row.command_fingerprint, row.policy_key, row.grant_id) if row is not None else None
 
-    def spend(self, grant: Grant, firing: str, command_fingerprint: str, context: Context) -> None:
+    def spend(self, grant: Grant, event_id: str, command_fingerprint: str, context: Context) -> None:
         if not self.is_spendable(grant):
             raise RequiredEffectError(SPENT_TEXT)
         if grant.grant_type is GrantType.REFUSAL_SKIP:
@@ -60,9 +60,9 @@ class TableGrantLedger(GrantLedger):
             self.bus.dispatch(UsePermission(grant.grant_id), context)
         else:
             row = self.queries.query(DriverGrant).find(grant.grant_id)
-            self.repository.save_change(row, row.changed(grant_state=GrantState.SPENT, spending_firing=firing), context)
+            self.repository.save_change(row, row.changed(grant_state=GrantState.SPENT, spending_event_id=event_id), context)
         if command_fingerprint:
-            self.repository.save(ReceiptRow(session_agent_id=grant.agent_id, firing=firing, command_fingerprint=command_fingerprint, policy_key=grant.policy_key,
+            self.repository.save(ReceiptRow(session_agent_id=grant.agent_id, event_id=event_id, command_fingerprint=command_fingerprint, policy_key=grant.policy_key,
                                             grant_id=grant.grant_id), context)
 
     # the step read the grant before its write began; the write reads it again, so a grant spent or withdrawn meanwhile admits nothing

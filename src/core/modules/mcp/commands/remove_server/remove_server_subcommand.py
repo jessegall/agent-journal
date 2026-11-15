@@ -12,7 +12,7 @@ class RemoveServerSubcommand(Subcommand[RemoveServer, McpServer]):
 
     cli_name = "mcp"
     name = "remove"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("name")

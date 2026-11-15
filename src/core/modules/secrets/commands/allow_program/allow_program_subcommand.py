@@ -13,7 +13,7 @@ class AllowProgramSubcommand(Subcommand[AllowProgram, SecretProgram]):
 
     cli_name = "secret"
     name = "allow"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("n", type=int)

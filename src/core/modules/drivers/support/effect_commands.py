@@ -16,6 +16,6 @@ class EffectCommands:
 
     def of(self, effect: Effect, view: AgentView, record: DecisionRecord) -> Sequence[Command[object]]:
         event = record.action.event
-        firing = event.firing if event is not None else "step"
-        key = f"drivers.effect-commands:{type(effect).__name__}:{view.agent.agent_id}:{firing}"
-        return self.request_values.read(key, lambda: firing, lambda: tuple(effect.commands(view, record)))
+        event_id = event.event_id if event is not None else "step"
+        key = f"drivers.effect-commands:{type(effect).__name__}:{view.agent.agent_id}:{event_id}"
+        return self.request_values.read(key, lambda: event_id, lambda: tuple(effect.commands(view, record)))

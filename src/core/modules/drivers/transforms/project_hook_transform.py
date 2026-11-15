@@ -4,7 +4,7 @@ from engine.agent_machine.contracts.transform import Transform
 from engine.agent_machine.record.question import Question
 from engine.agent_machine.record.rewrite import Rewrite
 from engine.enums.transform_slot import TransformSlot
-from core.modules.drivers.support.foreign_hook_answers import MANAGED_HOOKS_KEY, ForeignHookAnswers
+from core.modules.drivers.support.project_hook_answers import MANAGED_HOOKS_KEY, ProjectHookAnswers
 
 
 class ProjectHookTransform(Transform):
@@ -13,7 +13,7 @@ class ProjectHookTransform(Transform):
 
     slot = TransformSlot.PROJECT_HOOK
 
-    def __init__(self, answers: ForeignHookAnswers, parser: ShellParser) -> None:
+    def __init__(self, answers: ProjectHookAnswers, parser: ShellParser) -> None:
         self.answers, self.parser = answers, parser
 
     def applied(self, question: Question, view: AgentView) -> Rewrite:

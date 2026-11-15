@@ -17,7 +17,7 @@ class MakeProofSubcommand(Subcommand[MakeProof, Proof]):
 
     cli_name = "proof"
     name = "make"
-    outward = True
+    external = True
 
     def __init__(self, proofs: ProofQuery, tasks: TaskQuery) -> None:
         self.proofs, self.tasks = proofs, tasks

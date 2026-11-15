@@ -8,7 +8,7 @@ from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLE
 from core.modules.developer.support.developer_settings import MARK_MOTION_SETTING
 
 
-def test_clicking_a_chat_mark_in_the_viewer_records_its_frames(new_story):
+def test_clicking_a_chat_mark_in_the_viewer_records_its_stacked_states(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
     story.expect_success(f"setting set {TOUR_COMPLETED} true --project", actor=story.user)
     story.expect_success("setting switch journal.core.developer.tools on --project", actor=story.user)

@@ -19,5 +19,5 @@ class DueTriggers:
     # at the agent's minute step the conditions read the tick that step replaces
     def due(self, event: HookEvent | None, agent_id: int) -> list[Trigger]:
         event = event if event is not None else self.minute_tick.event(agent_id)
-        return self.request_values.read(f"triggers.due:{agent_id}:{event.firing}", self.database.change_mark,
+        return self.request_values.read(f"triggers.due:{agent_id}:{event.event_id}", self.database.change_mark,
                                         lambda: [trigger for trigger in self.triggers.due(self.clock.timestamp()) if self.conditions.all_pass(trigger, event, agent_id)])

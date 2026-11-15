@@ -15,7 +15,7 @@ SLEEP = HookSamples.shell("sleep 60", ShellPart("sleep", CommandCategory.UNKNOWN
 
 def test_a_hook_sent_twice_is_answered_with_the_same_new_input(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    repeated_listing = LISTING.with_fields(firing="sent-twice")
+    repeated_listing = LISTING.with_fields(event_id="sent-twice")
     first = story.hook("s-1", repeated_listing)
     again = story.hook("s-1", repeated_listing)
     story.expect_rows("ls build" in str(first.updated_input), dict(again.updated_input) == dict(first.updated_input), detail=str((first.updated_input, again.updated_input)))

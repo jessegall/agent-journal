@@ -1,7 +1,7 @@
 from engine.enums.window_loading import WindowLoading
 from engine.module.module import Module
 from engine.module.suite import Suite
-from engine.viewer.entrance import Entrance
+from engine.viewer.entry_point import EntryPoint
 from engine.viewer.skeleton_part import SkeletonPart
 from engine.viewer.window import Window
 
@@ -20,7 +20,7 @@ class StockWindow(Window):
 SHOP_WINDOWS = [StockWindow]
 
 
-class ShopEntrance(Entrance):
+class ShopEntryPoint(EntryPoint):
     """The way into the made-up shop: its stock and the chat."""
 
     key = "shop"
@@ -41,4 +41,4 @@ class ShopSuite(Suite):
 
     name = "sample-shop"
     modules = [ShopModule]
-    entrances = [ShopEntrance]
+    entry_points = [ShopEntryPoint]

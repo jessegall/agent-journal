@@ -26,7 +26,7 @@ class RunAgentStepHandler(Handler[RunAgentStep, None]):
         request = self.queries.query(AgentStepRequest).find(command.request_id)
         agent = self.agents.find(request.session_agent_id)
         question = Question.none()
-        view = self.assembly.with_needs(self.reader.read(agent.id, question), question)
+        view = self.assembly.with_states(self.reader.read(agent.id, question), question)
         step = self.assembly.machine(agent.role).step(view, question)
         if not self.steps.save(view, step, None, context).is_saved:
             raise StepConflictError()

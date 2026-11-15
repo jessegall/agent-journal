@@ -19,7 +19,7 @@ class MessageReads:
 
     def unread(self, event: HookEvent, agent_id: int) -> list[Message]:
         # read once a hook whatever changes meanwhile: noting a message read takes it off this list
-        return self.request_values.read(f"messages.read:{agent_id}:{event.firing}", lambda: event.firing, lambda: self.found(event, agent_id))
+        return self.request_values.read(f"messages.read:{agent_id}:{event.event_id}", lambda: event.event_id, lambda: self.found(event, agent_id))
 
     def found(self, event: HookEvent, agent_id: int) -> list[Message]:
         shell = event.tool.shell if event.tool is not None else None

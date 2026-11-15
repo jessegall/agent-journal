@@ -43,7 +43,7 @@ class PeerMessageEffect(EventEffect):
         commands: list[Command[object]] = [RecordPeerMessage(agent_id, note.sender, note.text, note.key) for note in self.new_notes(agent_id, notes)]
         if self.is_agent_message(event):
             tool_input = event.tool_input()
-            commands.append(RecordPeerMessage(agent_id, self.recipient_name(f"{tool_input.get('to', '')}", notes), f"{tool_input.get('message', '')}", f"{event.firing}", True))
+            commands.append(RecordPeerMessage(agent_id, self.recipient_name(f"{tool_input.get('to', '')}", notes), f"{tool_input.get('message', '')}", f"{event.event_id}", True))
         return commands
 
     @staticmethod

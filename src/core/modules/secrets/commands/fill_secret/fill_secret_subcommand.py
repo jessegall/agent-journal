@@ -12,7 +12,7 @@ class FillSecretSubcommand(Subcommand[FillSecret, FilledField]):
 
     cli_name = "secret"
     name = "fill"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("n", type=int)

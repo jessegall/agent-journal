@@ -20,7 +20,7 @@ class RunWorkerOperationSubcommand(Subcommand[RunWorkerOperation, str]):
 
     cli_name = "worker-operation"
     name = "run"
-    outward = True
+    external = True
 
     def __init__(self, bus: Bus, operations: WorkerOperationQuery) -> None:
         self.bus, self.operations = bus, operations

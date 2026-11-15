@@ -18,4 +18,4 @@ class SuiteEntry:
     presets: Mapping[str, Sequence[LayoutPreset]]
     task_assigner: str = ""
     shipped: bool = False
-    entrances: Mapping[str, Sequence[str]] = field(default_factory=dict[str, Sequence[str]])
+    entry_points: Mapping[str, Sequence[str]] = field(default_factory=dict[str, Sequence[str]])

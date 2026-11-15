@@ -1,5 +1,5 @@
 from engine.request.request_values import RequestValues
-from engine.agent_machine.needs.line_history import LineHistory
+from engine.agent_machine.states.line_history import LineHistory
 from engine.driver.seconds import Seconds
 from engine.enums.hook_answer import HookAnswer
 from engine.enums.hook_event_name import HookEventName

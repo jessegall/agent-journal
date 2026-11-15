@@ -8,7 +8,7 @@ from engine.agent_machine.record.question import Question
 from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
 from suites.coding.modules.workers.effects.context.request_compaction_effect import RequestCompactionEffect
-from suites.coding.modules.workers.needs.compaction_needs import COMPACTION_STOP_RULE
+from suites.coding.modules.workers.states.compaction_states import COMPACTION_STOP_RULE
 from suites.coding.modules.workers.agent_messages.context_compacted_message import ContextCompactedMessage
 from suites.coding.modules.workers.types.worker import Worker
 
@@ -20,10 +20,10 @@ class CompactionRequestLines(LineSource):
     agent_types = [AgentRole.MAIN, Worker.key]
     key = COMPACTION_STOP_RULE
     # no program carries a line on a stop, so it waits for the agent's next event
-    carrier = LineChannel.WAITING
+    channel = LineChannel.WAITING
 
     def __init__(self, effect: RequestCompactionEffect) -> None:
         self.effect = effect
 
     def lines(self, question: Question, view: AgentView) -> Sequence[Line]:
-        return [Line.of_agent_message(ContextCompactedMessage.declared().agent_message(), self.carrier)] if self.effect.asks(view) else []
+        return [Line.of_agent_message(ContextCompactedMessage.declared().agent_message(), self.channel)] if self.effect.asks(view) else []

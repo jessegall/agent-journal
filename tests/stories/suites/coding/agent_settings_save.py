@@ -43,7 +43,7 @@ def test_a_number_below_its_least_is_refused_with_the_rule_and_nothing_is_writte
     expect_value((screens.value("work", AUTO), screens.value("tests", number["key"])), (True, number["value"]))
 
 
-def test_the_settings_under_main_agent_sends_workers_declare_it_as_the_switch_they_need(modal):
+def test_the_settings_under_main_agent_sends_workers_declare_it_as_the_switch_they_required_state(modal):
     _, screens = modal
     under = sorted(key for name in LONG_TABS for key, node in screens.nodes(name).items() if SENDS in node["requires"])
     expect_value_4(len(under) >= 2)

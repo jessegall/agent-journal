@@ -41,7 +41,7 @@ def test_444_the_engine_areas_show_contract_areas_first_and_internal_ones_after_
     assert all((len(line.strip().split('  ', 1)) == 2 for line in lines if line.startswith('    '))), 'an area line has no summary'
 
 
-def test_445_every_core_module_shows_its_purpose_and_the_modules_it_needs():
+def test_445_every_core_module_shows_its_purpose_and_the_modules_it_states():
     lines = top_folder_lines("core")
     modules = sorted(folder.name for folder in (SOURCE / "core" / "modules").iterdir() if folder.is_dir() and folder.name != "__pycache__")
     tasks_line = next(line for line in lines if line.startswith("  tasks  "))

@@ -4,7 +4,7 @@ from engine.agent_machine.compiling.module_contributions import ModuleContributi
 from engine.agent_machine.compiling.driver_declaration import DriverDeclaration
 from engine.agent_machine.compiling.program_declaration import ProgramDeclaration
 from engine.agent_machine.contracts.capability import Capability
-from engine.agent_machine.needs.rank_order import RankOrder
+from engine.agent_machine.states.rank_order import RankOrder
 from engine.enums.capability_fallback import CapabilityFallback
 from engine.enums.capability_part import CapabilityPart
 from engine.enums.capability_proof import CapabilityProof
@@ -171,7 +171,7 @@ class DesignDeclarations:
         waits = [ContributionDeclaration(key, ContributionType.NEED, "", tuple(agent_types), "Waiting") for key, agent_types in WAITS.get(module, [])]
         policies = [ContributionDeclaration(key, ContributionType.POLICY, rank, tuple(agent_types), is_safety=rank == SAFETY) for key, rank, agent_types in POLICIES.get(module, [])]
         lines = [ContributionDeclaration(key, ContributionType.LINE, events=tuple([HookEventName.TICK if key in STEP_LINES else HookEventName.PRE_TOOL_USE]),
-                                         carrier=LineChannel.WAITING if key in WAITING_LINES else LineChannel.NOW)
+                                         channel=LineChannel.WAITING if key in WAITING_LINES else LineChannel.NOW)
                  for key in (f"{module}.{name}" for name in LINES.get(module, []))]
         effects = [ContributionDeclaration(key, ContributionType.EFFECT, is_required=required, has_failure=required) for key, required in EFFECTS.get(module, [])]
         transforms = [ContributionDeclaration(key, ContributionType.TRANSFORM, slot=slot) for key, slot in TRANSFORMS.get(module, [])]

@@ -33,19 +33,19 @@ class PluginQueue:
     def reserved_names(self) -> list[str]:
         return [path.name for path in FileAccess.glob(self.folder, f"*{RESERVED_SUFFIX}")] if FileAccess.is_dir(self.folder) else []
 
-    def reserve(self, environment: str, agent_id: int, firing: str, committed_names: Collection[str], clock: Clock) -> PluginQueueRead:
+    def reserve(self, environment: str, agent_id: int, event_id: str, committed_names: Collection[str], clock: Clock) -> PluginQueueRead:
         read = PluginQueueRead([], [])
         if not FileAccess.is_dir(self.folder):
             return read
         self.restore_reservations(committed_names, clock)
         for path in self.queued_paths():
             try:
-                self.reserve_file(path, environment, agent_id, firing, read)
+                self.reserve_file(path, environment, agent_id, event_id, read)
             except FileNotFoundError:
                 continue
         return read
 
-    def reserve_file(self, path: Path, environment: str, agent_id: int, firing: str, read: PluginQueueRead) -> None:
+    def reserve_file(self, path: Path, environment: str, agent_id: int, event_id: str, read: PluginQueueRead) -> None:
         with self.lock_file(path) as source:
             if source is None:
                 return
@@ -58,7 +58,7 @@ class PluginQueue:
                 return
             if is_mapping(fields) and (("env" in fields and fields["env"] != environment) or ("agent" in fields and fields["agent"] != agent_id)):
                 return
-            reserved_file = self.folder / f"{path.name}.{re.sub(FIRING_UNSAFE, '-', firing)}{RESERVED_SUFFIX}"
+            reserved_file = self.folder / f"{path.name}.{re.sub(FIRING_UNSAFE, '-', event_id)}{RESERVED_SUFFIX}"
             try:
                 FileAccess.rename(path, reserved_file)
             except FileNotFoundError:

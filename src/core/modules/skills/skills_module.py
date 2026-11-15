@@ -1,6 +1,6 @@
 from core.modules.skills.listeners.kept_skills_record_listener import KeptSkillsRecordListener
-from core.modules.skills.needs.command_skill_needs import CommandSkillNeeds
-from core.modules.skills.needs.skill_read_first_needs import SkillReadFirstNeeds
+from core.modules.skills.states.command_skill_states import CommandSkillStates
+from core.modules.skills.states.skill_read_first_states import SkillReadFirstStates
 from core.modules.skills.policies.loaded_skill_policy import LoadedSkillPolicy
 from core.modules.skills.windows.skills_windows import SKILLS_WINDOWS
 from core.modules.skills.models.declarations.agent_skill_model_declaration import AgentSkillModelDeclaration
@@ -67,7 +67,7 @@ class SkillsModule(Module):
     handlers = [SaveProfileHandler, SetRequiredSkillHandler, RequireSkillHandler, LoadSkillHandler, RecordKeptSkillsHandler, ResetSkillsHandler, RequestSkillHandler]
     listeners = [KeptSkillsRecordListener, SkillPublishListener, SkillReadListener, SkillPartReadListener, CommandSkillListener, KeptSkillsListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener, SkillRequestSaveListener]
     marks = [SkillMark]
-    needs = [SkillReadFirstNeeds, CommandSkillNeeds]
+    states = [SkillReadFirstStates, CommandSkillStates]
     policies = [LoadedSkillPolicy]
     windows = SKILLS_WINDOWS
     inspectors = [SkillInspector]

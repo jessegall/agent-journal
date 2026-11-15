@@ -11,7 +11,7 @@ class RecordTaskIndependenceSubcommand(Subcommand[RecordTaskIndependence, Task])
 
     cli_name = "task"
     name = "waits-on-nothing"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("task_id", type=int)

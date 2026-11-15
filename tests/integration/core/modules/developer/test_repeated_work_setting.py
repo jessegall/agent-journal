@@ -188,7 +188,7 @@ def test_with_the_setting_on_a_duplicate_query_in_a_hook_is_reported_and_the_hoo
         return answer(route, event)
 
     monkeypatch.setattr(AgentHookRoute, "answer", duplicated_answer)
-    sample = HookSamples.sample("post_tool_use").with_fields(session="s-1", environment="main", firing="repeated-1")
+    sample = HookSamples.sample("post_tool_use").with_fields(session="s-1", environment="main", event_id="repeated-1")
     with server_story(started) as server:
         server.expect_hook_answer("/hook", dict(sample.body), 200, '"refusal":')
     started.expect_rows(len(reported(started)) == 1)
@@ -204,7 +204,7 @@ def test_with_the_setting_off_a_duplicate_query_in_a_hook_is_not_reported(played
         return answer(route, event)
 
     monkeypatch.setattr(AgentHookRoute, "answer", duplicated_answer)
-    sample = HookSamples.sample("post_tool_use").with_fields(session="s-1", environment="main", firing="repeated-2")
+    sample = HookSamples.sample("post_tool_use").with_fields(session="s-1", environment="main", event_id="repeated-2")
     with server_story(started) as server:
         server.expect_hook_answer("/hook", dict(sample.body), 200, '"refusal":')
     started.expect_rows(reported(started) == [])

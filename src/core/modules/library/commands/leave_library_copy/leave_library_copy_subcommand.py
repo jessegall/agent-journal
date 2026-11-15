@@ -12,7 +12,7 @@ class LeaveLibraryCopySubcommand(Subcommand[LeaveLibraryCopy, LibraryCopy]):
 
     cli_name = "library"
     name = "leave"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("copy_id", metavar="copy", type=int)

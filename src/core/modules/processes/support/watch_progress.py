@@ -32,7 +32,7 @@ class WatchProgress:
 
     def progress(self, event: HookEvent, agent_id: int) -> WatchedProgress:
         # read once a hook whatever changes meanwhile: the percent it records is what the next read compares with
-        return self.request_values.read(f"processes.watch-progress:{agent_id}:{event.firing}", lambda: event.firing, lambda: self.found(agent_id))
+        return self.request_values.read(f"processes.watch-progress:{agent_id}:{event.event_id}", lambda: event.event_id, lambda: self.found(agent_id))
 
     def found(self, agent_id: int) -> WatchedProgress:
         given = [line for watch in tuple(self.watches.progress_due(agent_id, PROGRESS_STEP_PERCENT).oldest().get()) if (line := self.given(watch)) is not None]

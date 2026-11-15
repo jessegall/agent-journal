@@ -4,8 +4,8 @@ from engine.helper_type.journal_line import JournalLine
 from suites.coding.modules.workers.types.merger import Merger
 from suites.coding.modules.workers.types.worker import Worker
 
-PROOF_LINE = JournalLine("proof make", frozenset([JournalLineClass.CHANGES, JournalLineClass.OUTWARD]))
-SETTING_SET = JournalLine("setting set", frozenset([JournalLineClass.CHANGES, JournalLineClass.OUTWARD]))
+PROOF_LINE = JournalLine("proof make", frozenset([JournalLineClass.CHANGES, JournalLineClass.EXTERNAL]))
+SETTING_SET = JournalLine("setting set", frozenset([JournalLineClass.CHANGES, JournalLineClass.EXTERNAL]))
 
 
 def test_a_worker_runs_its_proofs_and_task_lines_and_is_refused_a_setting():

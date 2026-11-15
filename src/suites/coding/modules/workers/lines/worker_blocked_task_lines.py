@@ -16,7 +16,7 @@ class WorkerBlockedTaskLines(EventLineSource):
     key = "workers.stop-once-delivered"
     events = [HookEventName.STOP]
     agent_types = [Worker.key]
-    carrier = LineChannel.WAITING
+    channel = LineChannel.WAITING
 
     def __init__(self, stop: WorkerUnitStop) -> None:
         self.stop = stop

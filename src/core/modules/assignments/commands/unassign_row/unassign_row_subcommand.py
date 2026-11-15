@@ -12,7 +12,7 @@ class UnassignRowSubcommand(Subcommand[UnassignRow, tuple[Assignment, ...]]):
 
     cli_name = "unassign"
     name = "unassign"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("subject_model", metavar="model")

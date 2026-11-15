@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from engine.model.model import Model
 
-EMPTY_FRAMES = "[]"
+EMPTY_STACKED_STATES = "[]"
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -18,8 +18,8 @@ class AgentStack(Model):
     # a row a permission change made before the agent's first step names no driver or table yet
     driver_name: str = ""
     table_digest: str = ""
-    frame_schema: int = 1
-    frames: str = EMPTY_FRAMES
+    stacked_state_schema: int = 1
+    stacked_states: str = EMPTY_STACKED_STATES
     stop_refusals: int = 0
     tool_refusals: int = 0
     # the writes outside a step that changed what the agent may do, each of which moves the version
@@ -27,5 +27,5 @@ class AgentStack(Model):
 
     # a row a permission change made before the agent's first step holds no frame yet
     @property
-    def has_frames(self) -> bool:
-        return self.frames != EMPTY_FRAMES
+    def has_stacked_states(self) -> bool:
+        return self.stacked_states != EMPTY_STACKED_STATES

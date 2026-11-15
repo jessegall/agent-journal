@@ -15,7 +15,7 @@ class RestoreRefusalSkipSubcommand(Subcommand[RestoreRefusalSkip, RefusalSkip]):
 
     cli_name = "refusal"
     name = "restore"
-    outward = True
+    external = True
 
     def __init__(self, numbers: RowNumbers) -> None:
         self.numbers = numbers

@@ -21,7 +21,7 @@ def test_a_module_file_outside_its_web_dist_is_refused(notes_server):
     server.expect_viewer_status("/modules/notes/../../window_samples.py", 404, cookie)
 
 
-def test_a_frame_windows_file_is_served_with_its_type_nosniff_and_the_sandbox_policy(notes_server):
+def test_a_stacked_state_windows_file_is_served_with_its_type_nosniff_and_the_sandbox_policy(notes_server):
     server, cookie, _ = notes_server
     server.expect_viewer_headers("/modules/notes/board.html", cookie, {"Content-Type": "text/html", "X-Content-Type-Options": "nosniff", "Cache-Control": "no-cache",
                                                                       "Content-Security-Policy": SANDBOX_POLICY})
@@ -32,7 +32,7 @@ def test_an_unknown_environment_is_answered_with_its_reason(notes_server):
     server.expect_viewer_status("/api/windows?environment=nowhere", 404, cookie, text="no environment named nowhere")
 
 
-def test_a_frame_window_reads_nothing_until_the_person_allows_its_reads(notes_server):
+def test_a_stacked_state_window_reads_nothing_until_the_person_allows_its_reads(notes_server):
     server, cookie, user = notes_server
     line = {"window": "notes.board", "line": ["task", "list"], "environment": "main"}
     server.expect_viewer_line(cookie, line, 200, "notes.board may run task list once you allow it")
@@ -40,7 +40,7 @@ def test_a_frame_window_reads_nothing_until_the_person_allows_its_reads(notes_se
     server.expect_viewer_line(cookie, line, 200, '"code": 0')
 
 
-def test_a_frame_loads_its_own_files_and_the_bridge_without_the_session_cookie_from_any_origin(notes_server):
+def test_a_stacked_state_loads_its_own_files_and_the_bridge_without_the_session_cookie_from_any_origin(notes_server):
     server, _, _ = notes_server
     server.expect_viewer_headers("/modules/notes/board.html", "", {"Content-Type": "text/html", "Access-Control-Allow-Origin": "*"})
     server.expect_viewer_headers("/viewer/kit/frame-bridge.js", "", {"Content-Type": "text/javascript", "Access-Control-Allow-Origin": "*"})

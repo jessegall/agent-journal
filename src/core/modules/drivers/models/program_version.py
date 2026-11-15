@@ -7,8 +7,8 @@ from engine.model.model import Model
 class ProgramVersion(Model):
     """An agent program's part of the answer basis: raised when its usage lockdown begins or ends."""
 
-    model_name = "program_epoch"
-    table = "program_epochs"
+    model_name = "program_version"
+    table = "program_versions"
     cli_name = "program-epoch"
 
     program: str

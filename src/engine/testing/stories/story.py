@@ -75,7 +75,7 @@ from core.modules.skills.testing.story_skill_requirement import StorySkillRequir
 from core.modules.tasks.testing.story_task_brief_requirement import StoryTaskBriefRequirement
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
 from engine.testing.examples.hook_sample import HookSample
-from engine.testing.examples.hook_samples import SAMPLE_FIRING, HookSamples
+from engine.testing.examples.hook_samples import SAMPLE_EVENT_ID, HookSamples
 from engine.testing.fakes.manual_clock import ManualClock
 from engine.testing.stories.story_journal import StoryJournal
 from engine.testing.seeds.seed import Seed
@@ -278,8 +278,8 @@ class Story(KitRows):
     def hook(self, session: str, sample: HookSample) -> HookReply:
         self.steps.append(f"hook {session}: {json.dumps(sample.body, sort_keys=True)}")
         milliseconds = int(self.clock.timestamp().value.timestamp() * 1000)
-        firing = f"story-{uuid4().hex}" if sample.firing == SAMPLE_FIRING else sample.firing
-        event = HookEvent.parsed(sample.with_fields(session=session, firing=firing, fired_at_ms=milliseconds).body)
+        event_id = f"story-{uuid4().hex}" if sample.event_id == SAMPLE_EVENT_ID else sample.event_id
+        event = HookEvent.parsed(sample.with_fields(session=session, event_id=event_id, fired_at_ms=milliseconds).body)
         with self.repeated_work.request():
             reply = self.container.get(HookRoute).answer(event)
         self.path += StoryPath.hook(sample.action, reply)

@@ -30,7 +30,7 @@ from core.modules.processes.queries.reader_request_query import ReaderRequestQue
 from core.modules.agents.support.agent_rows import AgentRows
 
 from engine.agent_machine.contracts.event_line_source import EventLineSource
-from engine.agent_machine.needs.line_history import LineHistory
+from engine.agent_machine.states.line_history import LineHistory
 from engine.driver.hook_event import HookEvent
 from engine.driver.agent_message import AgentMessage
 from engine.time.clock import Clock

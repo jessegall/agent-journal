@@ -100,7 +100,7 @@ def kept_lines(story: Story, agent_id: int = 0, actor: Actor | None = None) -> s
     return story.run(f"agent-line list --agent {agent_id or story.agent.id} --json", actor=actor or story.agent).output_text
 
 
-def foreign_run(story: Story, actor: Actor) -> Process:
+def project_hook_run(story: Story, actor: Actor) -> Process:
     """A silent build of the agent of the second environment, started and moved to the background there."""
     return actor_started_process(story, actor, StartProcess.single_part(actor.id, "make there", "/work/elsewhere", CommandCategory.BUILD, 30), environment_id=2)
 

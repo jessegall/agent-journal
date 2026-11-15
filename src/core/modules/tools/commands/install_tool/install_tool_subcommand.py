@@ -11,7 +11,7 @@ class InstallToolSubcommand(Subcommand[InstallTool, ToolCard]):
 
     cli_name = "tool"
     name = "install"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("tool_name")

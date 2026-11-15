@@ -5,9 +5,9 @@ from engine.agent_machine.contracts.effect import Effect
 from engine.agent_machine.contracts.line_source import LineSource
 from engine.agent_machine.contracts.policy import Policy
 from engine.agent_machine.contracts.transform import Transform
-from engine.agent_machine.needs.wake_cause import WakeCause
-from engine.agent_machine.needs.fact_source import FactSource
-from engine.agent_machine.needs.state_source import StateSource
+from engine.agent_machine.states.wake_cause import WakeCause
+from engine.agent_machine.states.fact_source import FactSource
+from engine.agent_machine.states.state_source import StateSource
 from engine.driver.block_condition import BlockCondition
 from engine.model.model import Model
 
@@ -16,7 +16,7 @@ from engine.model.model import Model
 class Contributions:
     """The ten lists one module gives the agent machine, each of classes that carry their own metadata."""
 
-    needs: tuple[type[StateSource], ...] = ()
+    states: tuple[type[StateSource], ...] = ()
     facts: tuple[type[FactSource], ...] = ()
     policies: tuple[type[Policy], ...] = ()
     lines: tuple[type[LineSource], ...] = ()

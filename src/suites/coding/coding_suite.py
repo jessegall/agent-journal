@@ -4,9 +4,9 @@ from suites.coding.coding_module import CodingModule
 from suites.coding.modules.checks.checks_module import ChecksModule
 from suites.coding.modules.workers.workers_module import WorkersModule
 from suites.coding.support.coding_suite_name import CODING_SUITE_NAME
-from suites.coding.entrances.admin_entrance import AdminEntrance
-from suites.coding.modules.workers.entrances.workers_admin_entrance import WorkersAdminEntrance
-from suites.coding.modules.checks.entrances.checks_admin_entrance import ChecksAdminEntrance
+from suites.coding.entry_points.admin_entry_point import AdminEntryPoint
+from suites.coding.modules.workers.entry_points.workers_admin_entry_point import WorkersAdminEntryPoint
+from suites.coding.modules.checks.entry_points.checks_admin_entry_point import ChecksAdminEntryPoint
 
 
 class CodingSuite(Suite):
@@ -18,4 +18,4 @@ class CodingSuite(Suite):
     name = CODING_SUITE_NAME
     modules = [CodingModule, WorkersModule, ChecksModule]
     task_assigner = NextTask
-    entrances = [AdminEntrance, WorkersAdminEntrance, ChecksAdminEntrance]
+    entry_points = [AdminEntryPoint, WorkersAdminEntryPoint, ChecksAdminEntryPoint]

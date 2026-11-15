@@ -12,7 +12,7 @@ class ApproveAskStackSubcommand(Subcommand[ApproveAskStack, AskStack]):
 
     cli_name = "ask-stack"
     name = "approve"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("id", type=int)

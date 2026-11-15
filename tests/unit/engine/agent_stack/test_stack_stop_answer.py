@@ -28,12 +28,12 @@ TASK_REFUSAL = Reason("tasks.stop", DecisionClass.HOLD, "tasks.started", "task 6
 MESSAGES_REFUSAL = Reason("messages.unread-at-stop", DecisionClass.HOLD, "messages.unread", "read message 7")
 
 
-def frame(state: State, name: str) -> StackedState:
+def stacked_state(state: State, name: str) -> StackedState:
     return StackedState(state, StateKey(name, None, "1"), STARTED_AT)
 
 
 def stack(*states: State) -> Stack:
-    return Stack([frame(Stopped(STARTED_AT, "started", True), "stopped"), *(frame(state, type(state).__name__) for state in states)])
+    return Stack([stacked_state(Stopped(STARTED_AT, "started", True), "stopped"), *(stacked_state(state, type(state).__name__) for state in states)])
 
 
 def working(work_type: WorkType, work_remains: bool) -> Working:

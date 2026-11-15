@@ -19,7 +19,7 @@ def journal_entries(settings: dict[str, object]) -> list[object]:
     return [block for blocks in ProgramHooks.partitioned(settings.get("hooks")).journal.values() for block in blocks]
 
 
-def test_program_manage_moves_foreign_hooks_into_the_store_once_the_index_is_free_and_writes_no_journal_entry_into_the_project(new_story):
+def test_program_manage_moves_project_hooks_into_the_store_once_the_index_is_free_and_writes_no_journal_entry_into_the_project(new_story):
     story = new_story(fixture=MainEnvironment)
     root = story.home.project_folder
     settings = root / ".claude" / "settings.json"

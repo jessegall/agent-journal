@@ -96,7 +96,7 @@ LOGIN_PAGE = """<!doctype html>
 </body>
 </html>
 """
-FRAME_POLICY = ("sandbox allow-scripts; default-src 'none'; script-src {listener}; style-src {listener} 'unsafe-inline'; img-src {listener} data:;"
+STACKED_STATE_POLICY = ("sandbox allow-scripts; default-src 'none'; script-src {listener}; style-src {listener} 'unsafe-inline'; img-src {listener} data:;"
                 " connect-src 'none'; form-action 'none'")
 
 
@@ -467,8 +467,8 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Cache-Control", caching.cache_control)
         self.send_header("ETag", caching.etag)
         self.send_header("Access-Control-Allow-Origin", "*")
-        if module_file.frame:
-            self.send_header("Content-Security-Policy", FRAME_POLICY.format(listener=viewer.answer_headers.listener_origin(viewer.host)))
+        if module_file.stacked_state:
+            self.send_header("Content-Security-Policy", STACKED_STATE_POLICY.format(listener=viewer.answer_headers.listener_origin(viewer.host)))
         for name, value in {**(viewer.answer_headers.shell_page() if path == SHELL_PAGE else {}), **headers}.items():
             self.send_header(name, value)
         self.end_headers()

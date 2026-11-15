@@ -65,8 +65,8 @@ class ServerClient:
         assert status == 200 and answered["code"] == 0, (status, answer)
         return answered["value"]
 
-    def expect_hook_line_soon(self, text: str, firing: str) -> None:
-        body = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use", session="s-1", environment="main", firing=firing, role="main").body
+    def expect_hook_line_soon(self, text: str, event_id: str) -> None:
+        body = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use", session="s-1", environment="main", event_id=event_id, role="main").body
         answer = request_answer(self.socket_path, "POST", "/hook", dict(body))
         assert text in answer.text, answer.text
 

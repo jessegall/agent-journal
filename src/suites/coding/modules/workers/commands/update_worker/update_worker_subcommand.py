@@ -26,7 +26,7 @@ class UpdateWorkerSubcommand(Subcommand[Command[object], UpdateOutcome]):
 
     cli_name = "worker"
     name = "update"
-    outward = True
+    external = True
 
     def __init__(self, requests: WorkerCommandRequest, run_answer: WorkerRunAnswer, agents: AgentRows) -> None:
         self.requests, self.run_answer, self.agents = requests, run_answer, agents

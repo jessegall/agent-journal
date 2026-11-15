@@ -26,7 +26,7 @@ class Grant:
     reason: str
     tried: str = ""
     expires_at: datetime | None = None
-    spending_firing: str = ""
+    spending_event_id: str = ""
 
     def is_usable(self) -> bool:
         return self.grant_state in (GrantState.CONFIRMED, GrantState.APPROVED)

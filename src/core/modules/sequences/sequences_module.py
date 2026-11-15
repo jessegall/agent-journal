@@ -1,6 +1,6 @@
 from core.modules.sequences.policies.step_command_policy import StepCommandPolicy
 from core.modules.sequences.policies.step_guard_policy import StepGuardPolicy
-from core.modules.sequences.needs.unstarted_step_needs import UnstartedStepNeeds
+from core.modules.sequences.states.unstarted_step_states import UnstartedStepStates
 from core.modules.sequences.lines.sequence_trigger_lines import SequenceTriggerLines
 from core.modules.sequences.effects.sequence_trigger_effect import SequenceTriggerEffect
 from core.modules.sequences.windows.sequences_windows import SEQUENCES_WINDOWS
@@ -48,7 +48,7 @@ from engine.driver.stop_blockers import StopBlockers
 from core.modules.sequences.support.sequence_step_started import SequenceStepStarted
 from core.modules.sequences.support.sequence_stop_blockers import SequenceStopBlockers
 
-from core.modules.sequences.needs.sequence_work_needs import SequenceWorkNeeds
+from core.modules.sequences.states.sequence_work_states import SequenceWorkStates
 
 
 class SequencesModule(Module):
@@ -58,7 +58,7 @@ class SequencesModule(Module):
     name = "journal.core.sequences"
     effects = [SequenceTriggerEffect]
     lines = [SequenceTriggerLines]
-    needs = [UnstartedStepNeeds, SequenceWorkNeeds]
+    states = [UnstartedStepStates, SequenceWorkStates]
     policies = [StepCommandPolicy, StepGuardPolicy]
     agent_messages = SEQUENCE_AGENT_MESSAGES
     requires_engine = ">=5,<6"

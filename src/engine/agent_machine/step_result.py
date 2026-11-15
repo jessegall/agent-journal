@@ -11,7 +11,7 @@ class StepResult:
     """What one step of an agent gives its save: the basis it read, the stack after, its decision record and
     its wake change."""
 
-    basis: ReadVersions
+    read_versions: ReadVersions
     stack: Stack
     record: DecisionRecord
     wake: WakeChange

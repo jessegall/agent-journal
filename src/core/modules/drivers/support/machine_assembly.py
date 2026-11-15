@@ -7,9 +7,9 @@ from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.contracts.effect import Effect
 from engine.agent_machine.contracts.line_source import LineSource
 from engine.agent_machine.contracts.policy import Policy
-from engine.agent_machine.needs.state_source import StateSource
-from engine.agent_machine.needs.block_plan import BlockPlan
-from engine.agent_machine.needs.required_state import RequiredState
+from engine.agent_machine.states.state_source import StateSource
+from engine.agent_machine.states.block_plan import BlockPlan
+from engine.agent_machine.states.required_state import RequiredState
 from engine.agent_machine.record.question import Question
 from engine.agent_machine.stepping.agent_state_machine import AgentStateMachine
 from engine.container.container import Container
@@ -32,13 +32,13 @@ class MachineAssembly:
                             self.covering(agent_type, lambda module: module.lines), self.covering(agent_type, lambda module: module.effects),
                             [self.container.get(cls) for cls, module in self.listed(lambda module: module.wake_causes)])
 
-    def with_needs(self, view: AgentView, question: Question) -> AgentView:
-        sources = self.covering(view.agent.agent_type, lambda module: module.needs)
-        given = [item for source in sources for item in source.needs([view.agent], question).get(view.agent.agent_id, ())]
-        needs = tuple(item for item in given if isinstance(item, RequiredState))
-        ended_subjects = view.stack.subjects_without({need.key for need in needs})
+    def with_states(self, view: AgentView, question: Question) -> AgentView:
+        sources = self.covering(view.agent.agent_type, lambda module: module.states)
+        given = [item for source in sources for item in source.states([view.agent], question).get(view.agent.agent_id, ())]
+        states = tuple(item for item in given if isinstance(item, RequiredState))
+        ended_subjects = view.stack.subjects_without({required_state.key for required_state in states})
         ends = {subject: end for source in sources for subject, end in (source.ends(ended_subjects).items() if ended_subjects else ())}
-        return replace(view, needs=needs, plans=tuple(item for item in given if isinstance(item, BlockPlan)), subject_ends=ends)
+        return replace(view, states=states, plans=tuple(item for item in given if isinstance(item, BlockPlan)), subject_ends=ends)
 
     # policies, lines, effects and need sources name the agent types they apply to, none named being every type, and the
     # group of types they hold for

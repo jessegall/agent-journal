@@ -18,17 +18,17 @@ class Stack:
     """An agent's frames from the bottom: Stopped, the work lane, the hold lane, then Compacting, Paused and
     Ended."""
 
-    frames: Sequence[StackedState]
+    stacked_states: Sequence[StackedState]
 
     def has(self, state_type: type[State]) -> bool:
-        return any(isinstance(frame.state, state_type) for frame in self.frames)
+        return any(isinstance(stacked_state.state, state_type) for stacked_state in self.stacked_states)
 
     # the subjects of the frames whose need is no longer among the given keys, which this step takes off the stack
-    def subjects_without(self, need_keys: set[StateKey]) -> list[RowReference]:
-        return [frame.need_key.subject for frame in self.frames if frame.need_key.subject is not None and frame.need_key not in need_keys]
+    def subjects_without(self, state_keys: set[StateKey]) -> list[RowReference]:
+        return [stacked_state.state_key.subject for stacked_state in self.stacked_states if stacked_state.state_key.subject is not None and stacked_state.state_key not in state_keys]
 
     def lane(self, lane: StackLevel) -> list[StackedState]:
-        return [frame for frame in self.frames if frame.state.lane is lane]
+        return [stacked_state for stacked_state in self.stacked_states if stacked_state.state.lane is lane]
 
     def work_lane_top(self) -> StackedState:
         return [*self.lane(StackLevel.BOTTOM), *self.lane(StackLevel.WORK)][-1]
@@ -38,10 +38,10 @@ class Stack:
             return StopAnswer.safety_rest()
         if self.has(Compacting):
             return StopAnswer.compaction_handoff()
-        refusals = [frame.state.stop_refusal() for frame in self.lane(StackLevel.HOLD) if frame.state.refuses_stop(escalation)]
+        refusals = [stacked_state.state.stop_refusal() for stacked_state in self.lane(StackLevel.HOLD) if stacked_state.state.refuses_stop(escalation)]
         if refusals:
             return StopAnswer.refusals(refusals)
         top = self.work_lane_top()
-        if escalation is not None and escalation.defers_work(top.need_key):
+        if escalation is not None and escalation.defers_work(top.state_key):
             return StopAnswer.allowed()
         return top.state.stop_answer(contract)

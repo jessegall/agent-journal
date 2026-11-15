@@ -33,7 +33,7 @@ class ReadingCase:
     cadence_state: CadenceState
     exit_code: int | None
     reader_layer: ReaderLayer | None
-    reader_judgement: ReaderCheck | None
+    reader_check: ReaderCheck | None
     default_reader: bool
     reader_failed: bool
     count_missing: bool
@@ -72,7 +72,7 @@ class ReadingCase:
 
     @property
     def has_suitable_reader(self) -> bool:
-        return self.reader_judgement is not None and self.reader_judgement.is_valid
+        return self.reader_check is not None and self.reader_check.is_valid
 
     @property
     def unreadable_reason(self) -> UnreadableReason | None:

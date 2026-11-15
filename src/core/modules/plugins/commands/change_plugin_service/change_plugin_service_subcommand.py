@@ -11,7 +11,7 @@ class ChangePluginServiceSubcommand(Subcommand[ChangePluginService, str]):
 
     cli_name = "plugin"
     name = "service"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("change", choices=[change.value for change in ServiceChange])

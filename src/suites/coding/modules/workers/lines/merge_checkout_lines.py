@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from engine.agent_machine.contracts.event_line_source import EventLineSource
-from engine.agent_machine.needs.line_history import LineHistory
+from engine.agent_machine.states.line_history import LineHistory
 from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.driver.hook_event import HookEvent

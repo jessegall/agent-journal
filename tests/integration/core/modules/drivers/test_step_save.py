@@ -30,7 +30,7 @@ def test_a_first_step_seeds_the_stack_row_and_its_move(played):
     view, result = step(story)
     commit = saved(story, view, result)
     row = story.container.get(Queries).query(AgentStack).filter(session_agent_id=story.agent.id).first()
-    assert (commit.is_saved, row is not None, StackCodec.decoded(row.frames) == list(result.stack.frames)) == (True, True, True)
+    assert (commit.is_saved, row is not None, StackCodec.decoded(row.stacked_states) == list(result.stack.stacked_states)) == (True, True, True)
 
 
 def test_a_step_that_changes_nothing_writes_nothing(played):
@@ -45,10 +45,10 @@ def test_a_step_that_changes_nothing_writes_nothing(played):
     assert queries.query(AgentStackMove).filter(session_agent_id=story.agent.id).count() == moves
 
 
-def test_a_save_whose_answer_basis_changed_is_a_conflict_and_writes_nothing(played):
+def test_a_save_whose_read_versions_changed_is_a_conflict_and_writes_nothing(played):
     story = played(BuilderStarted)
     view, result = step(story)
     saved(story, view, result)
-    stale = replace(view, basis=replace(view.basis, stack_version=0))
+    stale = replace(view, read_versions=replace(view.read_versions, stack_version=0))
     commit = saved(story, stale, AgentStateMachine().step(stale, Question.none()))
     assert not commit.is_saved

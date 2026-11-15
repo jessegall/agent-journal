@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, ClassVar
 
-from engine.viewer.entrance import Entrance
+from engine.viewer.entry_point import EntryPoint
 from engine.viewer.layout_preset import LayoutPreset
 from engine.viewer.layout_shape import LayoutShape
 from engine.helper_type.helper_type import HelperType
@@ -22,26 +22,26 @@ class Suite:
     modules: ClassVar[Sequence[type[Module]]] = []
     joins: ClassVar[str | None] = None
     requires: ClassVar[Sequence[str]] = []
-    entrances: ClassVar[Sequence[type[Entrance]]] = []
+    entry_points: ClassVar[Sequence[type[EntryPoint]]] = []
     task_assigner: ClassVar[type[TaskAssigner] | None] = None
     helper_types: ClassVar[Sequence[type[HelperType]]] = []
 
     @classmethod
     def offered_windows(cls) -> tuple[str, ...]:
-        return tuple(dict.fromkeys(window for entrance in cls.entrances for window in entrance.window_names()))
+        return tuple(dict.fromkeys(window for entry_point in cls.entry_points for window in entry_point.window_names()))
 
     # an earlier entrance's layout of a page comes first
     @classmethod
     def default_layouts(cls) -> dict[str, LayoutShape]:
-        return {page: layout.shape for entrance in reversed(cls.entrances) for page, layout in entrance.layouts.items()}
+        return {page: layout.shape for entry_point in reversed(cls.entry_points) for page, layout in entry_point.layouts.items()}
 
     @classmethod
     def offered_presets(cls) -> dict[str, tuple[LayoutPreset, ...]]:
-        pages = dict.fromkeys(page for entrance in cls.entrances for page in entrance.presets)
-        return {page: tuple(preset for entrance in cls.entrances if page in entrance.presets for preset in entrance.presets[page].layout_presets()) for page in pages}
+        pages = dict.fromkeys(page for entry_point in cls.entry_points for page in entry_point.presets)
+        return {page: tuple(preset for entry_point in cls.entry_points if page in entry_point.presets for preset in entry_point.presets[page].layout_presets()) for page in pages}
 
     # entrances that share a key are one way in, whose windows several modules declare
     @classmethod
-    def entrance_windows(cls) -> dict[str, tuple[str, ...]]:
-        return {key: tuple(dict.fromkeys(name for entrance in cls.entrances if entrance.key == key for name in entrance.window_names()))
-                for key in dict.fromkeys(entrance.key for entrance in cls.entrances)}
+    def entry_point_windows(cls) -> dict[str, tuple[str, ...]]:
+        return {key: tuple(dict.fromkeys(name for entry_point in cls.entry_points if entry_point.key == key for name in entry_point.window_names()))
+                for key in dict.fromkeys(entry_point.key for entry_point in cls.entry_points)}

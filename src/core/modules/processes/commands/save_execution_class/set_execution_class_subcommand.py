@@ -15,7 +15,7 @@ class SetExecutionClassSubcommand(Subcommand[SaveExecutionClass, str]):
 
     cli_name = "queue-class"
     name = "set"
-    outward = True
+    external = True
 
     def __init__(self, store: StoredExecutionClasses) -> None:
         self.classes = ExecutionClasses(store)

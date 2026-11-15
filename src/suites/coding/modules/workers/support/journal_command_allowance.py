@@ -3,7 +3,7 @@ from typing import ClassVar
 
 from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.contracts.policy import Policy
-from engine.agent_machine.needs.agent_reference import AgentReference
+from engine.agent_machine.states.agent_reference import AgentReference
 from engine.agent_machine.record.question import Question
 from engine.agent_stack.reason import Reason
 from engine.command.command import Command
@@ -42,7 +42,7 @@ class JournalCommandAllowance(Policy):
     def runs_command(shell: ShellLine | None, arguments: tuple[str, ...]) -> bool:
         return shell is not None and any(part.classification.category is CommandCategory.JOURNAL and tuple(part.arguments[:len(arguments)]) == arguments for part in shell.parts)
 
-    def entrance_refusals(self, command: Command[object], agent: AgentReference) -> Sequence[Reason]:
+    def entry_point_refusals(self, command: Command[object], agent: AgentReference) -> Sequence[Reason]:
         return self.refusal()
 
     def refusal(self) -> list[Reason]:

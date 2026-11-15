@@ -48,7 +48,7 @@ class ReadingEnforcer:
 
     # read once a hook, so the refusal and the lines that come with it agree
     def answer(self, event: HookEvent) -> ReadingAnswer:
-        return self.request_values.read(f"processes.reading:{event.firing}", lambda: event.firing, lambda: self.found(event))
+        return self.request_values.read(f"processes.reading:{event.event_id}", lambda: event.event_id, lambda: self.found(event))
 
     def found(self, event: HookEvent) -> ReadingAnswer:
         shell = event.tool.shell if event.tool is not None else None

@@ -1,4 +1,4 @@
-from core.modules.plans.needs.plan_context_needs import PlanContextNeeds
+from core.modules.plans.states.plan_context_states import PlanContextStates
 from core.modules.plans.lines.plan_context_lines import PlanContextLines
 from core.modules.plans.lines.plan_focus_lines import PlanFocusLines
 from core.modules.plans.lines.plan_order_lines import PlanOrderLines
@@ -145,7 +145,7 @@ class PlansModule(Module):
                  FinishedPlanListener, PassedPlanListener, CheckpointRunListener, FinishedPlanLineListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener, NextPlanTaskStarterListener, ReadyPlanSyncListener]
     marks = [PlanMark]
     agent_messages = PLAN_AGENT_MESSAGES
-    needs = [PlanContextNeeds]
+    states = [PlanContextStates]
     lines = [PlanContextLines, PlanFocusLines, PlanOrderLines, PlanStateLines, PlanTaskEndLines]
     docks = PLANS_DOCKS
     window_extensions = [ChatRunningAgentsExtension]

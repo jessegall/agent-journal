@@ -35,7 +35,7 @@ class PhraseTriggerMatch:
 
     def answer(self, event: HookEvent, agent_id: int) -> PhraseTriggerAnswer:
         # read once a hook whatever changes meanwhile: the triggers it fires change the counts their conditions read
-        return self.request_values.read(f"triggers.phrase:{agent_id}:{event.firing}", lambda: event.firing, lambda: self.matched(event, agent_id))
+        return self.request_values.read(f"triggers.phrase:{agent_id}:{event.event_id}", lambda: event.event_id, lambda: self.matched(event, agent_id))
 
     def matched(self, event: HookEvent, agent_id: int) -> PhraseTriggerAnswer:
         texts = [(place, text) for place, text in self.texts(event) if text]

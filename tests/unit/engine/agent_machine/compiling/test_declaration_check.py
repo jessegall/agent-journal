@@ -10,7 +10,7 @@ from engine.agent_machine.compiling.driver_declaration import DriverDeclaration
 from engine.agent_machine.compiling.open_owners import OpenOwners
 from engine.agent_machine.compiling.program_declaration import ProgramDeclaration
 from engine.agent_machine.contracts.capability import Capability
-from engine.agent_machine.needs.rank_order import RankOrder
+from engine.agent_machine.states.rank_order import RankOrder
 from engine.enums.capability_fallback import CapabilityFallback
 from engine.enums.capability_part import CapabilityPart
 from engine.enums.capability_proof import CapabilityProof
@@ -59,8 +59,8 @@ def test_each_misuse_is_refused_with_its_fix(contribution: ContributionDeclarati
     assert any(fix in text for text in fixes(contribution)), fixes(contribution)
 
 
-def test_a_line_with_a_waiting_carrier_may_sit_on_an_event_no_program_carries() -> None:
-    assert fixes(ContributionDeclaration("messages.late-line", ContributionType.LINE, events=(HookEventName.STOP,), carrier=LineChannel.WAITING)) == []
+def test_a_line_with_a_waiting_channel_may_sit_on_an_event_no_program_carries() -> None:
+    assert fixes(ContributionDeclaration("messages.late-line", ContributionType.LINE, events=(HookEventName.STOP,), channel=LineChannel.WAITING)) == []
 
 
 def test_a_safety_policy_from_a_suite_module_is_refused() -> None:

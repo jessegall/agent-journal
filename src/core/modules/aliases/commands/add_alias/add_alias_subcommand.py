@@ -15,7 +15,7 @@ class AddAliasSubcommand(Subcommand[AddAlias, Alias]):
 
     cli_name = "alias"
     name = "add"
-    outward = True
+    external = True
 
     def __init__(self, registry: Registry) -> None:
         self.registry = registry

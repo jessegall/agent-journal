@@ -13,7 +13,7 @@ class LeaveShareCommentSubcommand(Subcommand[LeaveShareComment, ShareComment]):
 
     cli_name = "share"
     name = "comment"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("link_id", type=int)

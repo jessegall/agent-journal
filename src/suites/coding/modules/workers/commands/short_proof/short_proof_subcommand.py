@@ -11,7 +11,7 @@ class ShortProofSubcommand(Subcommand[ShortProof, Proof]):
 
     cli_name = "proof"
     name = "short"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("proof_id", type=int)

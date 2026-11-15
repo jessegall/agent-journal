@@ -2,7 +2,7 @@ from core.modules.drivers.support.machine_assembly import MachineAssembly
 from engine.agent_machine.stepping.grant import NEXT_ACTION
 from engine.agent_machine.stepping.grant_ledger import GrantLedger
 from engine.agent_machine.contracts.policy import Policy
-from engine.agent_machine.needs.agent_reference import AgentReference
+from engine.agent_machine.states.agent_reference import AgentReference
 from engine.command.command import Command
 from engine.command.context import Context
 from engine.container.container import Container
@@ -31,16 +31,16 @@ class CommandCheck:
 
     # a guard runs on a row's save, where the context's command may be one its entrance command dispatched, so the
     # guard names the entrance command it guards
-    def admit(self, entrance: type[Command[object]], context: Context) -> None:
+    def admit(self, entry_point: type[Command[object]], context: Context) -> None:
         agent = self.agents.find(context.actor.id)
         reference = AgentReference(agent.id, agent.parent_id, agent.environment_id, agent.role)
-        for policy in self.entrance_policies(entrance, agent):
-            refusals = policy.entrance_refusals(context.command, reference)
+        for policy in self.entry_point_policies(entry_point, agent):
+            refusals = policy.entry_point_refusals(context.command, reference)
             if refusals and not self.is_passed(policy, reference, context):
                 raise Refusal(refusals[0].text)
 
-    def entrance_policies(self, entrance: type[Command[object]], agent: Agent) -> list[Policy]:
-        listed = [policy for module in self.finder.modules() for policy in module.policies if entrance in policy.entrance_commands]
+    def entry_point_policies(self, entry_point: type[Command[object]], agent: Agent) -> list[Policy]:
+        listed = [policy for module in self.finder.modules() for policy in module.policies if entry_point in policy.entry_point_commands]
         return [self.container.get(policy) for policy in listed if self.assembly.covers(policy, agent.role)]
 
     def is_passed(self, policy: Policy, agent: AgentReference, context: Context) -> bool:

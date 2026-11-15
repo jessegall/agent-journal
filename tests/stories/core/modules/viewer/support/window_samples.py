@@ -1,5 +1,5 @@
 from engine.module.suite import Suite
-from engine.viewer.entrance import Entrance
+from engine.viewer.entry_point import EntryPoint
 from engine.guard.guard import Guard
 from engine.model.model import Model
 from engine.module.module import Module
@@ -54,7 +54,7 @@ class NotesPresets(PresetSet):
     presets = [BoardPreset, BothPreset]
 
 
-class NotesEntrance(Entrance):
+class NotesEntryPoint(EntryPoint):
     """The way into the notes suite: its board, summary and planner."""
 
     key = "notes"
@@ -66,7 +66,7 @@ class NotesSuite(Suite):
     """A sample suite that offers the notes board."""
 
     name = "notes"
-    entrances = [NotesEntrance]
+    entry_points = [NotesEntryPoint]
 
 
 class NotesModule(Module):
@@ -76,9 +76,9 @@ class NotesModule(Module):
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.tasks", "journal.core.viewer", "journal.core.drivers"]
     guards = [NotesStartCheck]
-    windows = [WindowDeclaration("notes.board", "Notes board", "board.html", WindowLoading.FRAME, skeleton=[SkeletonPart.line()], reads=["task list"], runs=["task start"]),
+    windows = [WindowDeclaration("notes.board", "Notes board", "board.html", WindowLoading.STACKED_STATE, skeleton=[SkeletonPart.line()], reads=["task list"], runs=["task start"]),
                WindowDeclaration("notes.summary", "Notes summary", "task list", WindowLoading.DOCUMENT, skeleton=[SkeletonPart.line()], reads=["task list"]),
-               WindowDeclaration("notes.planner", "Notes planner", "board.html", WindowLoading.FRAME, skeleton=[SkeletonPart.line()], reads=["task list"], icon=WindowIcon.PLAN,
+               WindowDeclaration("notes.planner", "Notes planner", "board.html", WindowLoading.STACKED_STATE, skeleton=[SkeletonPart.line()], reads=["task list"], icon=WindowIcon.PLAN,
                                  float_size=WindowSize(440, 380), count="task list", auto_scroll=AutoScroll.TOP, tabs=[WindowTab("week", "Week", "task list", "total")],
                                  options=[ToggleOption("flush", "Flush"), ChoiceOption("range", "Range", (("week", "Week"), ("month", "Month")), "week")])]
 
@@ -86,14 +86,14 @@ class NotesModule(Module):
 class WiderNotesModule(NotesModule):
     """The notes module after an upgrade whose board also reads plans."""
 
-    windows = [WindowDeclaration("notes.board", "Notes board", "board.html", WindowLoading.FRAME, skeleton=[SkeletonPart.line()], reads=["task list", "plan list"], runs=["task start"]),
+    windows = [WindowDeclaration("notes.board", "Notes board", "board.html", WindowLoading.STACKED_STATE, skeleton=[SkeletonPart.line()], reads=["task list", "plan list"], runs=["task start"]),
                WindowDeclaration("notes.summary", "Notes summary", "task list", WindowLoading.DOCUMENT, skeleton=[SkeletonPart.line()], reads=["task list"])]
 
 
 class GrantingNotesModule(NotesModule):
     """The notes module with a board that declares the lines that give rights and change settings."""
 
-    windows = [WindowDeclaration("notes.board", "Notes board", "board.html", WindowLoading.FRAME, skeleton=[SkeletonPart.line()], reads=["task list"],
+    windows = [WindowDeclaration("notes.board", "Notes board", "board.html", WindowLoading.STACKED_STATE, skeleton=[SkeletonPart.line()], reads=["task list"],
                                  runs=["window allow", "window trust", "setting make", "setting edit", "viewer-layout save"])]
 
 

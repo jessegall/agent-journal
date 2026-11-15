@@ -13,7 +13,7 @@ class HookTriggeredSequence:
         self.sequences, self.runs, self.request_values, self.database = sequences, runs, request_values, database
 
     def sequence_id(self, event: HookEvent, agent_id: int) -> int | None:
-        return self.request_values.read(f"sequences.triggered:{agent_id}:{event.firing}", self.database.change_mark, lambda: self.found(event, agent_id))
+        return self.request_values.read(f"sequences.triggered:{agent_id}:{event.event_id}", self.database.change_mark, lambda: self.found(event, agent_id))
 
     def found(self, event: HookEvent, agent_id: int) -> int | None:
         triggered = [candidate for candidate in self.sequences.trigger_lists() if any(trigger.matches_hook(event) for trigger in candidate.triggers)]

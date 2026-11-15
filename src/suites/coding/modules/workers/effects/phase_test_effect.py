@@ -15,7 +15,7 @@ class PhaseTestEffect(EventEffect):
     key = PHASE_TESTS_KEY
     events = [HookEventName.PRE_TOOL_USE]
     agent_types = [Worker.key]
-    timing = EffectTiming.ON_ADMISSION
+    timing = EffectTiming.WHEN_ALLOWED
 
     def __init__(self, runs: PhaseTestRuns) -> None:
         self.runs = runs

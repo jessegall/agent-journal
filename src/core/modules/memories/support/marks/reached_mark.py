@@ -35,7 +35,7 @@ class ReachedMark:
         self.request_values, self.database = request_values, database
 
     def reached(self, event: HookEvent, agent_id: int) -> MarkReached | None:
-        return self.request_values.read(f"memories.reached-mark:{agent_id}:{event.firing}", self.database.change_mark, lambda: self.found(agent_id))
+        return self.request_values.read(f"memories.reached-mark:{agent_id}:{event.event_id}", self.database.change_mark, lambda: self.found(agent_id))
 
     def found(self, agent_id: int) -> MarkReached | None:
         agent = self.agents.find(agent_id)

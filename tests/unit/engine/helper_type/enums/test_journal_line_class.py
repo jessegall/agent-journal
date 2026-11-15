@@ -17,7 +17,7 @@ class ShelfStock(Subcommand[Command[object], object]):
 class ShelfPublish(Subcommand[Command[object], object]):
     cli_name = "shelf"
     name = "publish"
-    outward = True
+    external = True
     background = True
 
 
@@ -29,5 +29,5 @@ def test_a_changing_subcommand_gives_its_line_the_class_changes():
     assert JournalLineClass.subcommand_classes(ShelfStock) == frozenset([JournalLineClass.CHANGES])
 
 
-def test_the_outward_and_background_flags_add_their_classes():
-    assert JournalLineClass.subcommand_classes(ShelfPublish) == frozenset([JournalLineClass.CHANGES, JournalLineClass.OUTWARD, JournalLineClass.BACKGROUND])
+def test_the_external_and_background_flags_add_their_classes():
+    assert JournalLineClass.subcommand_classes(ShelfPublish) == frozenset([JournalLineClass.CHANGES, JournalLineClass.EXTERNAL, JournalLineClass.BACKGROUND])

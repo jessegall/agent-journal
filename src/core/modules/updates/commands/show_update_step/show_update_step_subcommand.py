@@ -14,7 +14,7 @@ class ShowUpdateStepSubcommand(Subcommand[ShowUpdateStep, ChatMark]):
 
     cli_name = "update"
     name = "step"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("run")

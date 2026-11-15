@@ -13,7 +13,7 @@ class RemoveLibraryItemSubcommand(ItemArguments, Subcommand[RemoveLibraryItem, L
 
     cli_name = "library"
     name = "remove"
-    outward = True
+    external = True
 
     def command(self, arguments: Namespace, caller: Caller) -> RemoveLibraryItem:
         return RemoveLibraryItem(arguments.share, arguments.item_id)

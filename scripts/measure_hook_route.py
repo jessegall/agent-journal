@@ -44,7 +44,7 @@ def measured_through_server(fixture: type[StoryFixture]) -> list[float]:
     durations: list[float] = []
     with started_server(story.home) as (socket, _):
         for number in range(HOOKS):
-            body = SAMPLES_IN_TURN[number % len(SAMPLES_IN_TURN)].with_fields(session="s-1", environment="main", firing=f"measure-{number}").body
+            body = SAMPLES_IN_TURN[number % len(SAMPLES_IN_TURN)].with_fields(session="s-1", environment="main", event_id=f"measure-{number}").body
             started = time.perf_counter()
             request_answer(socket, "POST", "/hook", dict(body))
             durations.append((time.perf_counter() - started) * 1000)

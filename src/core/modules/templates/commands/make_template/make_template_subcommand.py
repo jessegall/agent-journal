@@ -13,7 +13,7 @@ class MakeTemplateSubcommand(Subcommand[MakeTemplate, Template]):
 
     cli_name = "template"
     name = "make"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("title")

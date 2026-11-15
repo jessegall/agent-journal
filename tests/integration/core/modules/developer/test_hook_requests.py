@@ -105,7 +105,7 @@ def test_completed_hook_requests_record_the_real_duration_and_decision(recording
     if outcome is HookAnswer.REFUSED:
         assert server.run_as('task make "Fix the cart" --brief "Correct the cart total"', SESSION).exit_code == 0
         assert server.run_as("task start 1", SESSION).exit_code == 0
-    sample = HookSamples.sample(event).with_fields(session=SESSION, environment="main", firing=f"record-{event}")
+    sample = HookSamples.sample(event).with_fields(session=SESSION, environment="main", event_id=f"record-{event}")
     post_hook(server, sample)
     request = hook_rows(server, login(server))[0]
     assert request["duration_ms"] > 0
@@ -126,7 +126,7 @@ def test_a_disabled_hook_log_loads_no_agent_rows(recording_server, monkeypatch):
         return recorded
 
     monkeypatch.setattr(HookRequestLog, "record_hook", record_counted)
-    post_hook(server, HookSamples.sample("post_tool_use").with_fields(session=SESSION, environment="main", firing="unrecorded"))
+    post_hook(server, HookSamples.sample("post_tool_use").with_fields(session=SESSION, environment="main", event_id="unrecorded"))
     assert len(costs) == 1 and costs[0].tables["agents"] == 0
     assert not server.journal.container.get(HookRequestLog).read()
 
@@ -146,7 +146,7 @@ def test_a_locked_hook_log_counts_the_dropped_row_without_a_warning(recording_se
 
     monkeypatch.setattr(HookRequestLog, "record_hook", locked_record)
     previous_count = server.context.request_trace.counts["dropped"]
-    post_hook(server, HookSamples.sample("post_tool_use").with_fields(session=SESSION, environment="main", firing="locked-log"))
+    post_hook(server, HookSamples.sample("post_tool_use").with_fields(session=SESSION, environment="main", event_id="locked-log"))
     assert server.context.request_trace.counts["dropped"] == previous_count + 1
     log = server.journal.home.system_log
     assert not log.exists() or "request recording failed: database is locked" not in log.read_text()
@@ -155,8 +155,8 @@ def test_a_locked_hook_log_counts_the_dropped_row_without_a_warning(recording_se
 def test_a_hook_request_counts_the_parts_of_its_command_chain(recording_server):
     server = recording_server
     parts = [ShellPart("git", CommandCategory.VERSION_CONTROL, ["status"]), ShellPart("ls", CommandCategory.READ, [])]
-    post_hook(server, HookSamples.shell("git status && ls", *parts).with_fields(session=SESSION, environment="main", firing="record-chain"))
-    post_hook(server, HookSamples.sample("stop").with_fields(session=SESSION, environment="main", firing="record-stop"))
+    post_hook(server, HookSamples.shell("git status && ls", *parts).with_fields(session=SESSION, environment="main", event_id="record-chain"))
+    post_hook(server, HookSamples.sample("stop").with_fields(session=SESSION, environment="main", event_id="record-stop"))
     assert [row["part_count"] for row in hook_rows(server, login(server))] == [0, 2]
 
 
@@ -166,7 +166,7 @@ def test_requests_show_the_sender_and_queue_time(recording_server):
     number = server.journal.container.get(Queries).query(Agent).find(worker).number
     assert server.journal.run(f'agent edit {number} --given-name "Ada"').code == 0
     for session, role in ((SESSION, "main"), ("s-worker", "worker")):
-        post_hook(server, HookSamples.sample("post_tool_use").with_fields(session=session, role=role, firing=f"sender-{role}"))
+        post_hook(server, HookSamples.sample("post_tool_use").with_fields(session=session, role=role, event_id=f"sender-{role}"))
     cookie = login(server)
     server.viewer_line_value(cookie, TASK_LIST)
     server.expect_cli_exit("task list", "/", 0, "")
@@ -199,7 +199,7 @@ def test_request_filters_apply_on_the_viewer_route(recording_server):
 def test_a_hook_shows_the_time_it_waited_for_another(recording_server):
     server = recording_server
     started_worker(server.journal, "s-queued-worker")
-    sample = HookSamples.sample("post_tool_use").with_fields(session="s-queued-worker", firing="queued")
+    sample = HookSamples.sample("post_tool_use").with_fields(session="s-queued-worker", event_id="queued")
     with ThreadPoolExecutor(1) as pool:
         with server.context.hook_database.used(AGENT_HOOK_PRIORITY, 1):
             answer = pool.submit(post_hook, server, sample)
@@ -231,7 +231,7 @@ def test_the_executions_show_a_worker_hook_waiting_behind_a_held_lane(recording_
     server = recording_server
     cookie = login(server)
     started_worker(server.journal, "s-queue-worker")
-    worker = HookSamples.sample("post_tool_use").with_fields(session="s-queue-worker", firing="queue-worker")
+    worker = HookSamples.sample("post_tool_use").with_fields(session="s-queue-worker", event_id="queue-worker")
     with ThreadPoolExecutor(1) as pool:
         with server.context.hook_database.used(AGENT_HOOK_PRIORITY, 1):
             first = pool.submit(post_hook, server, worker)
@@ -322,7 +322,7 @@ def test_a_running_viewer_get_is_listed_in_the_queue_inspector(recording_server,
 
 
 def test_a_main_agent_hook_is_answered_while_an_agent_hook_holds_the_whole_instant_lane(recording_server):
-    body = dict(HookSamples.sample("post_tool_use").with_fields(session=SESSION, environment="main", role="main", firing="ahead-of-the-lane").body)
+    body = dict(HookSamples.sample("post_tool_use").with_fields(session=SESSION, environment="main", role="main", event_id="ahead-of-the-lane").body)
     with recording_server.context.hook_database.used(AGENT_HOOK_PRIORITY, 1):
         recording_server.expect_hook_answer("/hook", body, 200, '"refusal":')
 
@@ -373,7 +373,7 @@ def expect_day_start(row) -> None:
     assert actual, actual
 
 
-def expect_number_firing_body(log, expected) -> None:
+def expect_number_event_id_body(log, expected) -> None:
     actual = [(row.number, row.body['firing']) for row in log.read()]
     assert actual == expected, actual
 

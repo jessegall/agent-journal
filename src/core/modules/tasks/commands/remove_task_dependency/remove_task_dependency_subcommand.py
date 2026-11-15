@@ -11,7 +11,7 @@ class RemoveTaskDependencySubcommand(Subcommand[RemoveTaskDependency, None]):
 
     cli_name = "task"
     name = "remove-dependency"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         dependency_arguments(parser)

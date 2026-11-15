@@ -11,7 +11,7 @@ class DispatchAllowancePolicy(JournalCommandAllowance):
     key = "workers.dispatch-allowed"
     arguments = tuple(DISPATCH_ARGUMENTS)
     setting = DISPATCHES_WORKERS_SETTING
-    entrance_commands = [DispatchWorker]
+    entry_point_commands = [DispatchWorker]
 
     def refusal_text(self) -> str:
         return MainWorkersRefusalMessage.declared().agent_message(then=self.guidance.without_workers()).text

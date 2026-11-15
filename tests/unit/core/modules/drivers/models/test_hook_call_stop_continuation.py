@@ -6,7 +6,7 @@ from core.modules.drivers.models.hook_call import HookCall
 
 
 def stop_call(**drivers_part) -> HookCall:
-    return HookCall(session_agent_id=1, environment_id=1, creator_id=1, hook=HookEventName.STOP, firing="f", answer=HookAnswer.ALLOWED,
+    return HookCall(session_agent_id=1, environment_id=1, creator_id=1, hook=HookEventName.STOP, event_id="f", answer=HookAnswer.ALLOWED,
                     metadata=Metadata({DRIVERS_MODULE: drivers_part}))
 
 

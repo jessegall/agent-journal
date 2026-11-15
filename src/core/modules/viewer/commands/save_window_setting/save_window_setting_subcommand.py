@@ -13,7 +13,7 @@ class SaveWindowSettingSubcommand(Subcommand[SaveWindowSetting, Setting]):
 
     cli_name = "window"
     name = "save-setting"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("window")

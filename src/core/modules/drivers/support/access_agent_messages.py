@@ -11,7 +11,7 @@ from core.modules.drivers.agent_messages.ended_agent_message import EndedAgentMe
 from core.modules.drivers.agent_messages.replaced_session_message import ReplacedSessionMessage
 from core.modules.drivers.agent_messages.native_subagent_message import NativeSubagentMessage
 from core.modules.drivers.agent_messages.unlaunched_native_subagent_message import UnlaunchedNativeSubagentMessage
-from core.modules.drivers.agent_messages.panic_file_message import PanicFileMessage
+from core.modules.drivers.agent_messages.emergency_stop_file_message import EmergencyStopFileMessage
 from core.modules.drivers.agent_messages.private_corpus_message import PrivateCorpusMessage
 from core.modules.drivers.agent_messages.database_file_message import DatabaseFileMessage
 from core.modules.drivers.agent_messages.skip_approval_message import SkipApprovalMessage
@@ -20,4 +20,4 @@ from core.modules.drivers.agent_messages.skip_declined_message import SkipDeclin
 from core.modules.drivers.agent_messages.skips_spent_message import SkipsSpentMessage
 
 
-ACCESS_AGENT_MESSAGES = [PermissionUseFailedMessage, PanicFileMessage, PrivateCorpusMessage, DatabaseFileMessage, SkipsSpentMessage, SkipApprovalMessage, SkipApprovedMessage, SkipDeclinedMessage, NativeSubagentMessage, UnlaunchedNativeSubagentMessage, EndedAgentMessage, ReplacedSessionMessage, UnknownAgentMessage, UnjudgedLineMessage, OldHookLineMessage, ExternalJournalLineMessage, HelperTypeCategoryMessage, HelperTypeCommandMessage, LimitedToolMessage, ReadonlyMessage]
+ACCESS_AGENT_MESSAGES = [PermissionUseFailedMessage, EmergencyStopFileMessage, PrivateCorpusMessage, DatabaseFileMessage, SkipsSpentMessage, SkipApprovalMessage, SkipApprovedMessage, SkipDeclinedMessage, NativeSubagentMessage, UnlaunchedNativeSubagentMessage, EndedAgentMessage, ReplacedSessionMessage, UnknownAgentMessage, UnjudgedLineMessage, OldHookLineMessage, ExternalJournalLineMessage, HelperTypeCategoryMessage, HelperTypeCommandMessage, LimitedToolMessage, ReadonlyMessage]

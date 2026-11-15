@@ -11,7 +11,7 @@ class ReleaseDockItemSubcommand(Subcommand[ReleaseDockItem, DockItem]):
 
     cli_name = "dock"
     name = "unkeep"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("item_id", type=int)

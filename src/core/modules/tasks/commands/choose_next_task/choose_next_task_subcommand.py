@@ -12,7 +12,7 @@ class ChooseNextTaskSubcommand(Subcommand[ChooseNextTask, Task]):
 
     cli_name = "task"
     name = "next"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("task_id", type=int)

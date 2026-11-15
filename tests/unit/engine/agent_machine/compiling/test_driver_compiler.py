@@ -2,7 +2,7 @@ from engine.agent_machine.compiling.contribution_declaration import Contribution
 from engine.agent_machine.compiling.module_contributions import ModuleContributions
 from engine.agent_machine.compiling.driver_compiler import DriverCompiler
 from engine.agent_machine.compiling.driver_declaration import DriverDeclaration
-from engine.agent_machine.needs.rank_order import RankOrder
+from engine.agent_machine.states.rank_order import RankOrder
 from engine.enums.contribution_type import ContributionType
 from engine.enums.responder import Responder
 from engine.enums.work_stop import WorkStop
@@ -13,14 +13,14 @@ CODING_MAIN = DriverDeclaration("coding.main", "coding-main", "coding", ("core.m
 WORKER = DriverDeclaration("coding.worker", "worker", "coding", (), ORDER, WorkStop.REFUSE_WHILE_WORK_REMAINS, Responder.PARENT)
 
 
-def need(key: str, rank: str, *agent_types: str) -> ContributionDeclaration:
+def required_state(key: str, rank: str, *agent_types: str) -> ContributionDeclaration:
     return ContributionDeclaration(key, ContributionType.NEED, rank, agent_types, "Blocked")
 
 
 MODULES = [
-    ModuleContributions("messages", True, ("overview",), (need("messages.unread-needs", "messages.unread"),
+    ModuleContributions("messages", True, ("overview",), (required_state("messages.unread-needs", "messages.unread"),
                                                      ContributionDeclaration("messages.show", ContributionType.POLICY, "messages.show"))),
-    ModuleContributions("overview", True, (), (need("overview.first-needs", "overview.first", "main"),
+    ModuleContributions("overview", True, (), (required_state("overview.first-needs", "overview.first", "main"),
                                           ContributionDeclaration("drivers.database-file", ContributionType.POLICY, "safety.all", is_safety=True))),
 ]
 

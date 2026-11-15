@@ -10,7 +10,7 @@ class PruneEventsSubcommand(Subcommand[PruneEvents, int]):
 
     cli_name = "event"
     name = "prune"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         pass

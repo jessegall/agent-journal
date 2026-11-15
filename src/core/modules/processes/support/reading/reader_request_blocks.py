@@ -50,7 +50,7 @@ class ReaderRequestBlocks:
     # what the reader requests say at one hook of the agent, read once a hook; the minute step reads the tick it replaces
     def answer(self, event: HookEvent | None, agent_id: int) -> ReaderRequestAnswer:
         hook_event = event if event is not None else self.minute_tick.event(agent_id)
-        return self.request_values.read(f"processes.reader-requests:{agent_id}:{hook_event.firing}", lambda: hook_event.firing, lambda: self.found(hook_event, agent_id))
+        return self.request_values.read(f"processes.reader-requests:{agent_id}:{hook_event.event_id}", lambda: hook_event.event_id, lambda: self.found(hook_event, agent_id))
 
     def found(self, event: HookEvent, agent_id: int) -> ReaderRequestAnswer:
         if not event.accepts_lines:

@@ -23,5 +23,5 @@ class KeptSkillsRecordListener(CommitListener[Created[HookCall]]):
         if call.hook != HookEventName.POST_TOOL_USE:
             return
         transcript = call.transcript
-        self.bus.run(RecordKeptSkills(call.session_agent_id, transcript.program, transcript.firing, transcript.text), Actor(call.session_agent_id, ActorType.AGENT),
+        self.bus.run(RecordKeptSkills(call.session_agent_id, transcript.program, transcript.event_id, transcript.text), Actor(call.session_agent_id, ActorType.AGENT),
                      cause_id=logged.id, environment_id=call.environment_id)

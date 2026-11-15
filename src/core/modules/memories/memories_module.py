@@ -1,4 +1,4 @@
-from core.modules.memories.needs.memory_mark_needs import MemoryMarkNeeds
+from core.modules.memories.states.memory_mark_states import MemoryMarkStates
 from core.modules.memories.lines.open_mark_lines import OpenMarkLines
 from core.modules.memories.lines.start_delivery_lines import StartDeliveryLines
 from core.modules.memories.lines.keyword_delivery_lines import KeywordDeliveryLines
@@ -87,7 +87,7 @@ class MemoriesModule(Module):
     views = [ActiveMemory, ContextMemory, KeywordMemory, MemoryHolder]
     guards = [AgentScopeGuard, AgentWeightGuard, KeywordScopeGuard]
     handlers = [MakeMemoryHandler, WeighMemoriesHandler, ReadMemoryHandler, FadeMemoriesHandler, GiveMemoriesHandler, OpenMemoryMarkHandler, SkipMemoryMarkHandler]
-    needs = [MemoryMarkNeeds]
+    states = [MemoryMarkStates]
     lines = [OpenMarkLines, StartDeliveryLines, KeywordDeliveryLines]
     effects = [OpenMarkEffect, GiveMemoriesEffect]
     listeners = [StartMemoriesListener, CompactionFaderListener, TaskMemoryRemoverListener, MemoryMadeMarkListener, MemoryEditedMarkListener, MemoryWeighedMarkListener,

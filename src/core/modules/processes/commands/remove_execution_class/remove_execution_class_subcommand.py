@@ -10,7 +10,7 @@ class RemoveExecutionClassSubcommand(Subcommand[RemoveExecutionClass, str]):
 
     cli_name = "queue-class"
     name = "remove"
-    outward = True
+    external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("class_name")

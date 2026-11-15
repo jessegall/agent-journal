@@ -24,7 +24,7 @@ TEST_OUTPUT = b"collected 3 items\n\n===== 3 passed in 0.10s =====\n"
 
 MAIN_BUILD = ReadingCase(command_key="custom-build run", category=CommandCategory.BUILD, classification_recognized=True, has_asking_flag=False,
                          output_hidden=False, is_saved_command=False, is_plugin_run=False, phase=ReadingPhase.START, age_seconds=0,
-                         run_state=ProcessState.RUNNING, cadence_state=CadenceState.STREAMING, exit_code=None, reader_layer=None, reader_judgement=None, default_reader=False, reader_failed=False, count_missing=False,
+                         run_state=ProcessState.RUNNING, cadence_state=CadenceState.STREAMING, exit_code=None, reader_layer=None, reader_check=None, default_reader=False, reader_failed=False, count_missing=False,
                          draft_fits=False, output=None, runs_without_change=0, waiting_request=False, skipped=False, has_unreadable_mark=False,
                          reader_required=False, reader_writing_allowed=True, role_uses_saved_commands=True, readers_forced=True)
 WORKER_BUILD = replace(MAIN_BUILD, reader_required=True, role_uses_saved_commands=False)
@@ -37,7 +37,7 @@ def ended(case: ReadingCase, sample: bytes = TEST_OUTPUT, exit_code: int = 0, ag
 
 
 def with_reader(case: ReadingCase, judgement: ReaderCheck) -> ReadingCase:
-    return replace(case, reader_layer=ReaderLayer.PROJECT, reader_judgement=judgement)
+    return replace(case, reader_layer=ReaderLayer.PROJECT, reader_check=judgement)
 
 
 NOTHING_NEEDED = (ReaderState.UNNEEDED, ReaderAction.IGNORE, PressureLevel.SUGGEST, ())

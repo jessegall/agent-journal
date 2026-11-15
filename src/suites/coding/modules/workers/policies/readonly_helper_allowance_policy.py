@@ -10,7 +10,7 @@ class ReadonlyHelperAllowancePolicy(JournalCommandAllowance):
     key = "workers.helper-allowed"
     arguments = ("helper", "start")
     setting = STARTS_HELPERS_SETTING
-    entrance_commands = [StartHelper]
+    entry_point_commands = [StartHelper]
 
     def refusal_text(self) -> str:
         return MainHelperBanMessage.declared().agent_message(then=self.guidance.without_helpers()).text

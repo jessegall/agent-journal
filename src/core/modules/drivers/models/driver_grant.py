@@ -28,4 +28,4 @@ class DriverGrant(EnvironmentScoped, Model):
     responder_id: int | None = None
     tried: str = ""
     expires_at: Timestamp | None = None
-    spending_firing: str = ""
+    spending_event_id: str = ""
