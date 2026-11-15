@@ -3750,8 +3750,8 @@
   "worker": "refused"
  },
  "task remove-dependency": {
-  "helper": "refused",
-  "merger": "refused",
+  "helper": "allowed",
+  "merger": "allowed",
   "worker": "refused"
  },
  "task reopen": {
