@@ -40,7 +40,7 @@ class CompactionNeeds(NeedSource):
 
     def compacting(self, agent_id: int) -> Need | None:
         open_compaction = self.compactions.open_compaction(agent_id)
-        if open_compaction is not None:
+        if open_compaction is not None and open_compaction.is_open_at(self.clock.timestamp()):
             attempt = RETRY_ATTEMPT if open_compaction.is_retry else FIRST_ATTEMPT
             return self.need(open_compaction.id, open_compaction.reason.value, attempt, open_compaction.state is CompactionState.STARTED)
         if self.compactions.blocks_request(agent_id, self.clock.timestamp()) or not self.limits.needs_compaction(agent_id):

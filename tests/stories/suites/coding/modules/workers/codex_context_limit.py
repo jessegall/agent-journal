@@ -29,10 +29,11 @@ def test_a_codex_agent_past_the_limit_gets_the_compact_line_typed_at_its_stop(co
     codex_agent.expect_rows(codex_agent.typing.typed == ["/compact"], detail=str(codex_agent.typing.typed))
 
 
-def test_with_clear_chosen_a_codex_agent_gets_the_clear_line_and_the_same_wake_as_a_claude_agent(codex_agent):
+# a resting agent is woken only when it needs attention (doc 1310 section 6.4), and a worker with no task left needs none
+def test_with_clear_chosen_a_codex_agent_gets_the_clear_line_and_with_no_work_left_is_not_woken_after_it(codex_agent):
     set_value(codex_agent, CONTEXT_LIMIT_ACTION, "clear")
     stops(codex_agent)
     codex_agent.expect_rows(codex_agent.typing.typed == ["/clear"], detail=str(codex_agent.typing.typed))
     codex_agent.hook(CODEX_SESSION, CLEAR_START)
-    codex_agent.run_listeners()
-    codex_agent.expect_rows(len(codex_agent.typing.typed) == 2 and "compacted" in codex_agent.typing.typed[1], detail=str(codex_agent.typing.typed))
+    codex_agent.run_ticker_round("agent step round", "agent wake delivery")
+    codex_agent.expect_rows(codex_agent.typing.typed == ["/clear"], detail=str(codex_agent.typing.typed))

@@ -29,10 +29,12 @@ class Constraints:
 
     def __init__(self, policies: Sequence[Policy]) -> None:
         self.policies = policies
+        self.last_judged: tuple[Question, AgentView, list[tuple[Policy, Sequence[Reason], Grant | None]]] | None = None
 
     def reasons(self, question: Question, view: AgentView, stack: Stack) -> list[Reason]:
         if question.is_stop():
-            return self.stop_reasons(view, stack)
+            stopping = [] if stack.has(Paused) or stack.has(Compacting) else self.stop_policy_reasons(question, view)
+            return [*stopping, *self.stop_reasons(view, stack)]
         if question.is_tool_call():
             return [*self.pause_reasons(question, stack), *self.policy_reasons(question, view), *self.block_reasons(question, view, stack)]
         return self.policy_reasons(question, view) if question.is_action() else []
@@ -52,6 +54,9 @@ class Constraints:
             return False
         return tool.shell is None or not tool.shell.has_only_parts(lambda part: BlockExemptions.names(part, MESSAGE_COMMAND))
 
+    def stop_policy_reasons(self, question: Question, view: AgentView) -> list[Reason]:
+        return [reason for policy in self.policies if policy.judges_stops for reason in policy.refusals(question, view)]
+
     def policy_reasons(self, question: Question, view: AgentView) -> list[Reason]:
         return [Constraints.skip_hinted(reason, policy, question, view) for policy, refusals, grant in self.judged_policies(question, view) if grant is None for reason in refusals]
 
@@ -61,13 +66,19 @@ class Constraints:
             return []
         return [grant for _, _, grant in self.judged_policies(question, view) if grant is not None]
 
+    # the policies of one question are judged once a step: its refusals and the grants it spends read the same judgement
     def judged_policies(self, question: Question, view: AgentView) -> list[tuple[Policy, Sequence[Reason], Grant | None]]:
+        if self.last_judged is not None and self.last_judged[0] is question and self.last_judged[1] is view:
+            return self.last_judged[2]
+        judged = self.judged(question, view)
+        self.last_judged = (question, view, judged)
+        return judged
+
+    def judged(self, question: Question, view: AgentView) -> list[tuple[Policy, Sequence[Reason], Grant | None]]:
         fingerprint = question.fingerprint()
         judged = []
         for policy in self.policies:
-            if policy.agent_types and view.agent.agent_type not in policy.agent_types:
-                continue
-            refusals = policy.refusals(question, view)
+            refusals = [replace(reason, is_safety=True) if policy.is_safety else reason for reason in policy.refusals(question, view)]
             if refusals:
                 judged.append((policy, refusals, self.passing_grant(policy, view, fingerprint)))
         return judged

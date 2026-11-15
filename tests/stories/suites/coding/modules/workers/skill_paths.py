@@ -16,7 +16,7 @@ from suites.coding.support.coding_settings import PLAIN_NAMES_SETTING
 def test_a_workers_skill_refusal_names_the_whole_long_folder(new_story, program, skills_folder):
     story = new_story(f"{PATH}:LongPathSkillsModule", fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
-    worker = dispatched_worker(story)
+    worker = dispatched_worker(story, f"worker dispatch --test-command python=pytest --model default --program {program} 1")
     session = worker_session(story, worker)
     story.expect_success(f"setting make {SESSION_START_KEY} '[]'")
     story.expect_success(f"setting make {PLAIN_NAMES_SETTING} false")

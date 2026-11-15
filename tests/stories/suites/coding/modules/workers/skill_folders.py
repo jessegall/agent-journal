@@ -69,7 +69,7 @@ def test_a_claude_workers_skill_reminder_names_the_skill_to_load_with_the_skill_
 def test_a_codex_workers_skill_reminder_names_its_programs_folder_in_its_worktree(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
-    worker = dispatched_worker(story)
+    worker = dispatched_worker(story, "worker dispatch --test-command python=pytest --model default --program codex 1")
     session = worker_session(story, worker)
     story.container.get(SkillRequirement).is_required = True
     story.hook(session, HookSamples.session_start().with_fields(program="codex", launch=session))

@@ -4,7 +4,7 @@ every agent type rank the keys their modules share the same way. Each phase-2 po
 from engine.agent_machine.needs.rank_order import RankOrder
 
 POLICY_RANKS = ("safety.all", "access.all", "shell.all", "drivers.policies", "messages.policies", "skills.policies", "sequences.policies",
-                "helpers.policies", "questions.policies", "plugins.policies", "triggers.policies", "tools.policies", "workers.policies")
+                "helpers.policies", "questions.policies", "plugins.policies", "triggers.policies", "tools.policies", "workers.test-lines", "workers.policies")
 INSTRUCTION_RANKS = ("skills.command", "skills.read-first", "triggers.skill", "messages.unread", "documents.open", "memories.mark")
 TASK_START_RANKS = ("workers.status-first", "workers.no-task", "sequences.untaken-step", "processes.reader-request", "processes.silent-run")
 FILE_CHANGE_RANKS = ("tasks.unlogged-writes", "processes.output-title")

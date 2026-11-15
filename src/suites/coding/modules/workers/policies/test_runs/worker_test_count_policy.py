@@ -14,7 +14,7 @@ class WorkerTestCountPolicy(EventPolicy):
     """Refuses a worker's command when its latest counted output exceeds the test limit."""
 
     key = "processes.worker-test-limit-refusal"
-    rank = "shell.all"
+    rank = "workers.policies"
     agent_types = [Worker.key]
 
 

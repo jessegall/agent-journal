@@ -1,3 +1,4 @@
+from engine.enums.nudge_type import NudgeType
 from abc import abstractmethod
 from collections.abc import Sequence
 from typing import ClassVar
@@ -29,7 +30,7 @@ class EventPolicy(Policy):
         if event is None or event.event not in self.events:
             return []
         nudge = self.refusal(event, view.agent.agent_id)
-        return [Reason(self.key, DecisionClass.REFUSE, self.rank, nudge.text)] if nudge is not None else []
+        return [Reason(self.key, DecisionClass.REFUSE, self.rank, nudge.text, is_safety=nudge.type is NudgeType.SAFETY_REFUSAL)] if nudge is not None else []
 
     # the line that refuses this event, or nothing
     @abstractmethod

@@ -165,7 +165,7 @@ def test_an_overview_that_cannot_read_its_context_records_no_task_read(new_story
 def test_redirecting_or_piping_a_task_overview_does_not_mark_the_brief_read(new_story):
     story = install_runner(new_story(fixture=UnreadTaskBuilder))
     part = ShellPart("journal", CommandCategory.JOURNAL, ["task", "overview", "1"], subcommand="task")
-    story.expect_hook_refusal("s-1", HookSamples.shell("journal task overview 1 > /tmp/task", part, redirects=["> /tmp/task"]), BRIEF_REFUSAL)
+    story.expect_hook_refusal("s-1", HookSamples.shell("journal task overview 1 > /tmp/task", part, redirects=["> /tmp/task"]), expected_nudge(ReadCommandOutputNudge.declared()))
     piped = ShellPart("journal", CommandCategory.JOURNAL, ["task", "overview", "1"], subcommand="task", pipe_target=1)
     sink = ShellPart("cat", CommandCategory.READ, [])
     story.expect_hook_refusal("s-1", HookSamples.shell("journal task overview 1 && cat", piped, sink), expected_nudge(ReadCommandOutputNudge.declared()))

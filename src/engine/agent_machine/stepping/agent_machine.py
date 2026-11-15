@@ -125,7 +125,8 @@ class AgentMachine:
             outranked_reasons=judgement.outranked_reasons, rewrite=rewrite if decision.admits() else Rewrite.unchanged(),
             lines=[line for line in lines if line.carrier is not LineCarrier.WAITING], unconditional_effects=unconditional,
             admission_effects=admission, after_commit=(), terminal=self.terminal(lines), moves=moves, blocks_opened=JudgedBlocks.new_plans(view),
-            blocks_closed=self.closings(view), waiting_lines=[line for line in lines if line.carrier is LineCarrier.WAITING],
+            # a refused action did not run, so what it would have done lifts no hold; the next admitted step closes them
+            blocks_closed=self.closings(view) if decision.admits() or not question.is_action() else (), waiting_lines=[line for line in lines if line.carrier is LineCarrier.WAITING],
             stop_checks=self.stop_checks(question, reasons), counts=counts, wake=self.wakes.change(view, stack), basis=view.basis,
             printing=self.printing(question, view, decision, rewrite),
             inputs=DecisionInputs(view.table_digest, view.pinned_slices, tuple(need.key for need in view.needs),
@@ -151,7 +152,8 @@ class AgentMachine:
         # a step answers no hook, so its lines wait for the agent's next event or its wake, as at an event its program cannot carry
         if event is not None and view.program.supports(CapabilityPart.LINES, event.event):
             return lines
-        return [replace(line, carrier=LineCarrier.WAITING) for line in lines]
+        # what is printed to the person's terminal is no line of the agent's, so it never waits
+        return [line if line.carrier is LineCarrier.TERMINAL else replace(line, carrier=LineCarrier.WAITING) for line in lines]
 
     def effects(self, question: Question, view: AgentView) -> list[Effect]:
         event = question.event

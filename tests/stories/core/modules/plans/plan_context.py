@@ -102,7 +102,7 @@ def test_redirecting_or_piping_plan_context_does_not_release_the_context_block(s
     story = scenario.story
     scenario.tick()
     part = ShellPart("journal", CommandCategory.JOURNAL, ["plan", "context", "1"], subcommand="plan")
-    story.expect_hook_refusal("s-1", HookSamples.shell("journal plan context 1 > /tmp/plan", part, redirects=["> /tmp/plan"]), "Plan 1 started")
+    story.expect_hook_refusal("s-1", HookSamples.shell("journal plan context 1 > /tmp/plan", part, redirects=["> /tmp/plan"]), expected_nudge(ReadCommandOutputNudge.declared()))
     piped = ShellPart("journal", CommandCategory.JOURNAL, ["plan", "context", "1"], subcommand="plan", pipe_target=1)
     reader = ShellPart("cat", CommandCategory.READ, [])
     story.expect_hook_refusal("s-1", HookSamples.shell("journal plan context 1 && cat", piped, reader), expected_nudge(ReadCommandOutputNudge.declared()))

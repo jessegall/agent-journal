@@ -157,16 +157,16 @@ def test_past_the_second_limit_an_agent_is_compacted_even_with_a_task_in_hand(ag
     agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
 
 
-def test_past_the_second_limit_a_tool_is_refused_and_the_compaction_is_typed_at_once_with_a_task_in_hand(hard_limited_worker):
+# the compaction is asked for by the allowed stop the refusal asks for (doc 1310 section 4.10), even with a task in hand
+def test_past_the_second_limit_a_tool_is_refused_and_the_stop_it_asks_for_types_the_compaction_once_with_a_task_in_hand(hard_limited_worker):
     agent = hard_limited_worker
     has_context(agent, HARD)
     agent.expect_hook_refusal(SESSION, HookSamples.edit("src/cart.py"), "no more tools, stop now")
+    agent.expect_rows(agent.typing.typed == [], detail=str(agent.typing.typed))
+    agent.expect_hook_allowed(SESSION, HookSamples.stop())
     agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
     agent.expect_hook_refusal(SESSION, HookSamples.edit("src/cart.py"), "no more tools, stop now")
     agent.expect_rows(agent.typing.typed == [COMPACT], detail="typed once while the last one runs")
-    agent.advance(timedelta(minutes=10))
-    agent.expect_hook_refusal(SESSION, HookSamples.edit("src/cart.py"), "no more tools, stop now")
-    agent.expect_rows(agent.typing.typed == [COMPACT], detail="a tool use shows the typed line still waits in the program")
 
 
 def journal_line(line):

@@ -16,7 +16,8 @@ class WorkerTestLinePolicy(EventPolicy):
     """A worker runs a test only through its named test commands; any other test line is refused."""
 
     key = "workers.named-tests-only"
-    rank = "workers.policies"
+    # a worker runs tests only through its named commands, which is said before any limit on what it may run
+    rank = "workers.test-lines"
     agent_types = [Worker.key]
 
 

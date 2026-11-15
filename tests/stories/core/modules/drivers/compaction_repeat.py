@@ -80,7 +80,7 @@ def test_g1_two_stops_and_a_request_in_the_same_second_make_one_request_and_the_
     expect_single_entered_request(exceeding_limit)
 
 
-def test_g2_the_stop_rule_after_the_hard_stop_rule_in_the_same_second_makes_no_second_request(exceeding_hard_limit):
+def test_g2_a_refused_tool_then_a_stop_past_the_second_limit_make_one_request_for_the_hard_stop(exceeding_hard_limit):
     has_context(exceeding_hard_limit, HARD)
     exceeding_hard_limit.expect_hook_refusal(SESSION, EDIT, HARD_STOP_REFUSAL)
     exceeding_hard_limit.hook(SESSION, HookSamples.stop())
@@ -88,12 +88,12 @@ def test_g2_the_stop_rule_after_the_hard_stop_rule_in_the_same_second_makes_no_s
     exceeding_hard_limit.expect_rows(compactions(exceeding_hard_limit)[0].reason is CompactionReason.HARD_STOP)
 
 
-def test_g2_the_hard_stop_rule_after_the_stop_rule_in_the_same_second_makes_no_second_request(exceeding_hard_limit):
+def test_g2_a_stop_then_a_refused_tool_past_the_second_limit_make_one_request_for_the_hard_stop(exceeding_hard_limit):
     has_context(exceeding_hard_limit, HARD)
     exceeding_hard_limit.hook(SESSION, HookSamples.stop())
     exceeding_hard_limit.expect_hook_refusal(SESSION, EDIT, HARD_STOP_REFUSAL)
     expect_single_entered_request(exceeding_hard_limit)
-    exceeding_hard_limit.expect_rows(compactions(exceeding_hard_limit)[0].reason is CompactionReason.STOP_LIMIT)
+    exceeding_hard_limit.expect_rows(compactions(exceeding_hard_limit)[0].reason is CompactionReason.HARD_STOP)
 
 
 def test_g3_a_typed_compaction_is_woken_by_the_tick_after_ten_seconds_and_a_tick_after_600_seconds_types_no_second_wake(agent):

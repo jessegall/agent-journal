@@ -29,7 +29,13 @@ class RequestCompactionEffect(Effect):
         self.limits = limits
 
     def commands(self, view: AgentView, record: DecisionRecord) -> Sequence[Command[object]]:
-        compacting = next((need.state for need in view.needs if isinstance(need.state, Compacting)), None)
-        if compacting is None or compacting.is_running or compacting.cause != DUE_CAUSE or self.limits.has_windowed_compaction(view.agent.agent_id):
+        if not self.asks(view):
             return []
-        return [CompactAgentContext(view.agent.agent_id, CompactionReason.STOP_LIMIT)]
+        # past the second limit the stop the hard limit asked for is what the compaction is for
+        reason = CompactionReason.HARD_STOP if self.limits.exceeds_hard_limit(view.agent.agent_id) else CompactionReason.STOP_LIMIT
+        return [CompactAgentContext(view.agent.agent_id, reason)]
+
+    # the stop asks for the compaction: it is due and not running, and the program does not compact by its own window
+    def asks(self, view: AgentView) -> bool:
+        compacting = next((need.state for need in view.needs if isinstance(need.state, Compacting)), None)
+        return compacting is not None and not compacting.is_running and compacting.cause == DUE_CAUSE and not self.limits.has_windowed_compaction(view.agent.agent_id)

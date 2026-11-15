@@ -28,7 +28,15 @@ class BlockJudgement:
             return {}
         hook = AgentHook.of_actor(question.event, self.loader.loaded(self.agents.find(agent_id)), self.clock.timestamp())
         self.conditions.prepare([(row.condition_name, row.condition_text) for row in rows], self.container)
-        return {row.id: self.outcome(row, hook) for row in rows}
+        # rows that ask the same condition from the same opening, such as one hold for each task of a delivery, are judged once
+        judged: dict[tuple[str, str, str], ConditionOutcome] = {}
+        outcomes: dict[int, ConditionOutcome] = {}
+        for row in rows:
+            asked = (row.condition_name, row.condition_text, row.creation_timestamp().text)
+            if asked not in judged:
+                judged[asked] = self.outcome(row, hook)
+            outcomes[row.id] = judged[asked]
+        return outcomes
 
     def outcome(self, row: AgentBlock, hook: AgentHook) -> ConditionOutcome:
         condition = self.conditions.built(row.condition_name, row.condition_text)

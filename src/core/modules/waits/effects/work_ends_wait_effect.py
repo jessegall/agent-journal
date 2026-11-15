@@ -19,7 +19,7 @@ WENT_ON = "the agent went on working"
 
 class WorkEndsWaitEffect(Effect):
     """A wait or a stuck report ends when the agent uses a tool outside the journal: it went on working. The
-    wait is the Waiting frame on top of its work lane."""
+    wait is the Waiting frame this step puts on top of its work lane."""
 
     events = [HookEventName.PRE_TOOL_USE]
     timing = EffectTiming.UNCONDITIONAL
@@ -27,10 +27,8 @@ class WorkEndsWaitEffect(Effect):
 
     def commands(self, view: AgentView, record: "DecisionRecord") -> Sequence[Command[object]]:
         tool = record.action.tool()
-        if tool is None or (tool.shell is not None and tool.shell.is_journal_line) or not view.stack.has(Waiting):
+        if tool is None or (tool.shell is not None and tool.shell.is_journal_line):
             return []
-        top = view.stack.work_lane_top()
-        subject = top.need_key.subject
-        if not isinstance(top.state, Waiting) or subject is None or subject.model != WAIT_SUBJECT:
-            return []
-        return [EndWait(subject.row_id, outcome=WENT_ON)]
+        # the wait this step's needs put on top of the work lane: the newest open one, also when it opened since the last step
+        waits = [need.key.subject.row_id for need in view.needs if isinstance(need.state, Waiting) and need.key.subject is not None and need.key.subject.model == WAIT_SUBJECT]
+        return [EndWait(max(waits), outcome=WENT_ON)] if waits else []

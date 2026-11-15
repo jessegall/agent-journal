@@ -24,6 +24,8 @@ class Policy(ABC):
     # the old driver rules this contribution answers for, which stand down once its slice is in force for the agent
     replaced_rules: ClassVar[Sequence[str]] = ()
     is_safety: ClassVar[bool] = False
+    # a policy that also judges a stop, as a project's own hook refusing its stop does; no other policy judges one
+    judges_stops: ClassVar[bool] = False
     grant_types: ClassVar[Sequence[GrantType]] = ()
     entrance_commands: ClassVar[Sequence[type[Command[object]]]] = ()
 

@@ -48,10 +48,11 @@ def test_h6_a_codex_agent_over_the_limit_is_typed_its_own_line_once_and_once_mor
     story = typing_recorded(new_story(fixture=UserBuilder))
     story.expect_success(f"setting set {CONTEXT_LIMIT_ENABLED} true --project", actor=story.user)
     story.expect_success(f"setting set {CONTEXT_LIMIT_TOKENS} {LIMIT} --project", actor=story.user)
-    story.new_row_id(f"agent start {CODEX_SESSION} codex worker --environment main")
+    codex_id = story.new_row_id(f"agent start {CODEX_SESSION} codex worker --environment main")
     codex_rollout(story, monkeypatch)
-    nudge_lines = []
     for _ in range(STOPS):
-        nudge_lines += story.hook(CODEX_SESSION, HookSamples.stop().with_fields(program="codex")).lines
+        story.hook(CODEX_SESSION, HookSamples.stop().with_fields(program="codex"))
         story.advance(OVERLONG)
-    story.expect_rows(story.typing.typed == [CODEX_COMPACT_LINE, CODEX_COMPACT_LINE], len(story.refusals()) == 0, any("passed the limit" in line for line in nudge_lines), detail=f"typed {story.typing.typed}, refusals {len(story.refusals())}, nudge_lines {nudge_lines}")
+    # a stop's lines wait for the agent's next event (doc 1310 section 4.7)
+    waiting = story.run(f"agent-line list --agent {codex_id} --environment main", actor=story.user).output_text
+    story.expect_rows(story.typing.typed == [CODEX_COMPACT_LINE, CODEX_COMPACT_LINE], len(story.refusals()) == 0, "passed the limit" in waiting, detail=f"typed {story.typing.typed}, refusals {len(story.refusals())}, waiting {waiting}")

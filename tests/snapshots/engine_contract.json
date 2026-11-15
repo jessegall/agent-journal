@@ -449,6 +449,7 @@
         "role_group: ClassVar[RoleGroup]",
         "replaced_rules: ClassVar[Sequence[str]]",
         "is_safety: ClassVar[bool]",
+        "judges_stops: ClassVar[bool]",
         "grant_types: ClassVar[Sequence[GrantType]]",
         "entrance_commands: ClassVar[Sequence[type[Command[object]]]]"
       ],
@@ -906,9 +907,11 @@
         "reasons(self, question: Question, view: AgentView, stack: Stack) -> list[Reason]",
         "pause_reasons(question: Question, stack: Stack) -> list[Reason]",
         "pause_refuses(tool: Tool) -> bool",
+        "stop_policy_reasons(self, question: Question, view: AgentView) -> list[Reason]",
         "policy_reasons(self, question: Question, view: AgentView) -> list[Reason]",
         "spent_grants(self, question: Question, view: AgentView) -> list[Grant]",
         "judged_policies(self, question: Question, view: AgentView) -> list[tuple[Policy, Sequence[Reason], Grant | None]]",
+        "judged(self, question: Question, view: AgentView) -> list[tuple[Policy, Sequence[Reason], Grant | None]]",
         "skip_hinted(refusal: Reason, policy: Policy, question: Question, view: AgentView) -> Reason",
         "passing_grant(policy: Policy, view: AgentView, fingerprint: str) -> Grant | None",
         "block_reasons(question: Question, view: AgentView, stack: Stack) -> list[Reason]",
@@ -1084,7 +1087,8 @@
         "text: str",
         "lifting_lines: tuple[str, ...]",
         "subject: SubjectReference | None",
-        "handover: WorkReference | None"
+        "handover: WorkReference | None",
+        "is_safety: bool"
       ],
       "methods": [
         "allowed(cls) -> 'Reason'"

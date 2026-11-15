@@ -1,3 +1,5 @@
+from engine.enums.nudge_type import NudgeType
+from engine.driver.nudge import Nudge
 from core.modules.drivers.support.effect_commands import EffectCommands
 from core.modules.drivers.support.nudge_log import NudgeLog
 from engine.time.clock import Clock
@@ -78,7 +80,9 @@ class DecisionAssembler:
         rules = [self.without_commands(rule, new_commands) for rule in answers.rules]
         if not new_lines and not is_new_refusal:
             return replace(answers, rules=rules)
-        refusal = RuleAnswer(refusal=record.shown_reason.text if is_new_refusal else "", refusal_priority=NEW_REFUSAL_PRIORITY)
+        shown = record.shown_reason
+        safety = tuple([Nudge(shown.key, NudgeType.SAFETY_REFUSAL, shown.text)]) if is_new_refusal and shown.is_safety else ()
+        refusal = RuleAnswer(refusal=shown.text if is_new_refusal else "", nudges=safety, refusal_priority=NEW_REFUSAL_PRIORITY)
         refusals = [RuleRecord(record.shown_reason.key or NEW_DRIVER_LAYER, NEW_DRIVER_LAYER, refusal.outcome, refusal)] if is_new_refusal else []
         return replace(answers, rules=[*refusals, *DecisionAssembler.line_records(new_lines), *rules])
 

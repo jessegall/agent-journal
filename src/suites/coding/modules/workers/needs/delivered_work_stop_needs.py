@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from collections.abc import Mapping, Sequence
 
 from engine.agent_machine.needs.agent_reference import AgentReference
@@ -22,8 +23,9 @@ DELIVERED_PROOFS_REASON = "the main agent checks every proof a worker delivered"
 
 
 class DeliveredWorkStopNeeds(NeedSource):
-    """The main agent's stop is held while a worker's delivered work waits for its checks (doc 1310 section 10.5): one
-    hold for each task of a delivery, naming its proofs, lifted once none of that worktree's proofs waits."""
+    """The main agent's stop is held while a worker's delivered work, or a committed proof with no test, waits for its
+    checks (doc 1310 section 10.5): one hold for each task, naming its proofs, lifted once none of that worktree's
+    proofs waits."""
 
     replaced_rules = tuple([DELIVERED_WORK_STOP_KEY])
     state_type = Blocked
@@ -34,11 +36,14 @@ class DeliveredWorkStopNeeds(NeedSource):
         self.delivered, self.proofs, self.numbers = delivered, proofs, numbers
 
     def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]:
-        plans = [plan for worktree in self.delivered.delivered() for plan in self.plans(worktree)]
+        plans = [plan for worktree in self.delivered.main_worktrees() for plan in self.plans(worktree)]
         return {agent.agent_id: plans for agent in agents} if plans else {}
 
+    # a delivered worktree waits on every proof it delivered; one not delivered yet on the proofs that have no test,
+    # which only the main agent's check passes
     def plans(self, worktree: Worktree) -> list[BlockPlan]:
-        proofs = list(self.proofs.delivered_proofs(worktree.id).every_row(DELIVERED_PROOFS_REASON))
+        proofs = [proof for proof in self.proofs.delivered_proofs(worktree.id).every_row(DELIVERED_PROOFS_REASON)
+                  if worktree.state is WorktreeState.DELIVERED or not proof.test_command]
         return [BlockPlan(nudge, DeliveredProofsChecked(worktree.id), DELIVERED_WORK_STOP_KEY, self.rank, members=tuple([task_id]), scope_tools=False, scope_stop=True)
                 for task_id, nudge in self.task_nudges(worktree, proofs)]
 

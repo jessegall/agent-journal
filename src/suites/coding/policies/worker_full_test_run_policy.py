@@ -12,7 +12,7 @@ class WorkerFullTestRunPolicy(EventPolicy):
     refused whole, judged on the final action."""
 
     key = WORKER_FULL_TEST_RUN_KEY
-    rank = "shell.all"
+    rank = "workers.policies"
     agent_types = [WorkerAgentDriver.agent_type]
 
     def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:

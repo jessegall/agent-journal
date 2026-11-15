@@ -1,3 +1,4 @@
+from engine.helper_type.helper_type_book import HelperTypeBook
 from core.modules.drivers.support.answer_basis_rows import AnswerBasisRows
 from core.modules.drivers.support.open_block_rows import OpenBlockRows
 from datetime import datetime
@@ -58,8 +59,8 @@ class StoredAgentViewReader(AgentViewReader):
     holds none."""
 
     def __init__(self, agents: AgentRows, queries: Queries, settings: SettingValues, hook_calls: HookCallQuery, finder: ModuleFinder, clock: Clock, grant_store: GrantLedger, providers: Providers, judgement: BlockJudgement,
-                 skips: RefusalSkips, open_blocks: OpenBlockRows, stacks: AnswerBasisRows) -> None:
-        self.providers, self.skips, self.open_blocks, self.stacks = providers, skips, open_blocks, stacks
+                 skips: RefusalSkips, open_blocks: OpenBlockRows, stacks: AnswerBasisRows, types: HelperTypeBook) -> None:
+        self.providers, self.skips, self.open_blocks, self.stacks, self.types = providers, skips, open_blocks, stacks, types
         self.agents, self.queries, self.settings, self.hook_calls, self.finder, self.clock = agents, queries, settings, hook_calls, finder, clock
         self.grant_store, self.judgement = grant_store, judgement
 
@@ -141,6 +142,10 @@ class StoredAgentViewReader(AgentViewReader):
             return None
         return Escalation(row.id, row.escalation_type, row.responder, row.block_ids, tuple(NeedKey("Working", None, key) for key in row.work_keys), row.refusal_count)
 
+    # a helper type with no driver of its own is driven by the driver of the type it is built on, as the registry finds it
     def driver(self, agent_type: str) -> type[Driver]:
-        drivers = [driver for module in self.finder.modules() for driver in module.agent_drivers if driver.agent_type == agent_type]
-        return sorted(drivers, key=lambda driver: driver.suite == CORE_SUITE)[0]
+        for type_key in self.types.type_keys(agent_type):
+            drivers = [driver for module in self.finder.modules() for driver in module.agent_drivers if driver.agent_type == type_key]
+            if drivers:
+                return sorted(drivers, key=lambda driver: driver.suite == CORE_SUITE)[0]
+        raise LookupError(f"no driver drives {agent_type} or a type it is built on")

@@ -35,7 +35,8 @@ def rows(story) -> list[tuple[ContextChange, CompactionState]]:
     return [(compaction.change, compaction.state) for compaction in compactions(story)]
 
 
-def test_c5_a_clear_at_a_stop_is_one_row_that_ends_at_its_session_start_wakes_the_agent_once_and_an_older_size_clears_nothing_again(clearing):
+# a resting agent is woken only when it needs attention (doc 1310 section 6.4), and an agent with no work left needs none
+def test_c5_a_clear_at_a_stop_is_one_row_that_ends_at_its_session_start_and_an_older_size_clears_nothing_again(clearing):
     has_context(clearing, LIMIT_TOKENS)
     stops(clearing)
     requested = rows(clearing)
@@ -47,7 +48,7 @@ def test_c5_a_clear_at_a_stop_is_one_row_that_ends_at_its_session_start_wakes_th
     clearing.tick(SESSION)
     lines = clearing.typing.typed
     clearing.expect_rows(requested == [(ContextChange.CLEAR, CompactionState.REQUESTED)], rows(clearing) == [(ContextChange.CLEAR, CompactionState.ENDED)],
-                         lines[0] == CLEAR_LINE, len(lines) == 2 and "compacted" in lines[1], detail=f"{requested} {rows(clearing)} {lines}")
+                         lines == [CLEAR_LINE], detail=f"{requested} {rows(clearing)} {lines}")
 
 
 def test_the_first_size_read_after_a_clear_measures_its_row(clearing):

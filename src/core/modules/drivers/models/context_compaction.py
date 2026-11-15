@@ -48,6 +48,10 @@ class ContextCompaction(Model):
             return True
         return self.blocks_person_request_at(timestamp)
 
+    # open while it runs, or while a request waits within its retry time; one that did not start in time may be asked once more
+    def is_open_at(self, timestamp: Timestamp) -> bool:
+        return self.state is CompactionState.STARTED or (self.state is CompactionState.REQUESTED and self.creation_timestamp().elapsed_seconds(timestamp) < RETRY_SECONDS)
+
     def blocks_person_request_at(self, timestamp: Timestamp) -> bool:
         if self.state is CompactionState.STARTED:
             return True

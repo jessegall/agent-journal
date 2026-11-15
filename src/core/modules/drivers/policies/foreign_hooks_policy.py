@@ -11,6 +11,7 @@ class ForeignHooksPolicy(EventPolicy):
     key = MANAGED_HOOKS_KEY
     rank = "drivers.policies"
     events = list(HookEventName)
+    judges_stops = True
 
     def __init__(self, answers: ForeignHookAnswers) -> None:
         self.answers = answers
