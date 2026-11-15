@@ -183,3 +183,10 @@ def test_a_starter_with_nothing_running_starts_a_run_costing_more_than_its_cap()
     small_lane = replace(DEFAULT_LANE_LIMITS, capacities={**DEFAULT_LANE_LIMITS.capacities, ExecutionLane.LONG: 4}, starter_caps={**DEFAULT_LANE_LIMITS.starter_caps, ExecutionLane.LONG: 2})
     test_run = ticket(ExecutionPriority.AGENT, ExecutionLane.LONG, slot_cost=4)
     assert ExecutionOrder(small_lane).starting([test_run], [], seconds_after_start(0), False) == tuple([test_run])
+
+
+def test_a_run_that_costs_more_than_its_narrowed_lane_starts_alone_and_waits_beside_another():
+    narrowed = ExecutionOrder(DEFAULT_LANE_LIMITS.with_capacities({**DEFAULT_LANE_LIMITS.capacities, ExecutionLane.LONG: 4}))
+    full_run, test_run = ticket(AGENT, ExecutionLane.LONG, slot_cost=8), ticket(AGENT, ExecutionLane.LONG, slot_cost=4)
+    assert list(narrowed.starting([full_run], [], CHECK_TIME, False)) == [full_run]
+    assert list(narrowed.starting([full_run], [test_run], CHECK_TIME, False)) == []
