@@ -16,6 +16,9 @@ JOURNAL_MARKS = ("journal-hook", "hooks/hook.sh")
 HOOK_TIMEOUT_SECONDS = 90
 TIMEOUT_PADDING_SECONDS = 5
 JOURNAL_WAIT_CEILING_SECONDS = HOOK_TIMEOUT_SECONDS - TIMEOUT_PADDING_SECONDS
+# a session's end waits on the journal no longer than this, so leaving it never waits for a restarting server; the
+# hook program gives up on the server after 4 seconds there
+SESSION_END_ENTRY_SECONDS = 5
 
 
 @dataclass(frozen=True)
@@ -62,10 +65,10 @@ class ProgramHooks:
 
     def entry_timeout(self, event: str, managed: Sequence[ManagedHook]) -> int:
         longest = max((hook.timeout for hook in managed if hook.program == self.program and hook.event == event), default=0)
-        timeout = max(self.timeout_seconds, longest + JOURNAL_WAIT_CEILING_SECONDS + TIMEOUT_PADDING_SECONDS) if longest else self.timeout_seconds
         if self.provider and self.provider.hook_events.get(event) is HookEventName.SESSION_END:
-            return min(timeout, self.provider.session_end_limit_seconds)
-        return timeout
+            entry = longest + SESSION_END_ENTRY_SECONDS if longest else SESSION_END_ENTRY_SECONDS
+            return min(entry, self.provider.session_end_limit_seconds)
+        return max(self.timeout_seconds, longest + JOURNAL_WAIT_CEILING_SECONDS + TIMEOUT_PADDING_SECONDS) if longest else self.timeout_seconds
 
     def is_complete(self) -> bool:
         stored_hooks = self.settings().get("hooks")

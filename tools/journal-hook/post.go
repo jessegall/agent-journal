@@ -69,15 +69,21 @@ func LimitFor(eventName string) time.Duration {
 		return 10 * time.Second
 	case "session_start":
 		return 15 * time.Second
+	case "session_end":
+		return sessionEndWait
 	}
 	return 5 * time.Second
 }
+
+// sessionEndWait is how long a session's end waits for the journal, below the journal's 5 second SessionEnd entry, so
+// leaving a session never waits for a server that restarts.
+const sessionEndWait = 4 * time.Second
 
 // limitIn is LimitFor with the wait the person set for a tool's hook, which the journal writes to a file, read here because
 // the hook decides how long to wait before it can ask the journal anything.
 func limitIn(root, eventName string) time.Duration {
 	standard := LimitFor(eventName)
-	if standard != 5*time.Second {
+	if standard != 5*time.Second || eventName == "session_end" {
 		return standard
 	}
 	text, err := os.ReadFile(filepath.Join(root, ".journal", "runtime", "hook-wait-seconds"))
@@ -98,7 +104,7 @@ const agentHookWait = 50 * time.Second
 
 // limitOf is limitIn for the role that sends the hook: a worker's or helper's hook waits in the queue.
 func limitOf(root, eventName, role string) time.Duration {
-	if role == "" || role == "main" {
+	if role == "" || role == "main" || eventName == "session_end" {
 		return limitIn(root, eventName)
 	}
 	return agentHookWait
@@ -147,7 +153,7 @@ func post(outgoing delivery, transport http.RoundTripper, firedTime time.Time) (
 func heldThroughRestart(outgoing delivery, transport http.RoundTripper) (int, []byte) {
 	began := time.Now()
 	status, answer := posted(outgoing, transport)
-	for status != http.StatusOK && serverIsRestarting(outgoing.root) {
+	for status != http.StatusOK && outgoing.event != "session_end" && serverIsRestarting(outgoing.root) {
 		if time.Since(began) >= RestartWindow {
 			return restartTimedOut, nil
 		}

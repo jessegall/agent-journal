@@ -173,7 +173,7 @@ def test_the_session_end_entry_is_never_longer_than_the_programs_limit(tmp_path,
     for limit in (60, 3):
         monkeypatch.setattr(SampleProgram, "session_end_limit_seconds", limit)
         hooks = ProgramHooks.journal(SampleProgram, tmp_path / "hooks.json")
-        assert (hooks.entry_timeout("Finish", managed), hooks.entry_timeout("Finish", [])) == (limit, limit)
+        assert (hooks.entry_timeout("Finish", managed), hooks.entry_timeout("Finish", [])) == (limit, min(5, limit))
         assert hooks.entry_timeout("BeforeTool", []) == 90
 
 
@@ -226,3 +226,17 @@ def test_names_root_holds_for_the_wake_entry(tmp_path, monkeypatch):
     hooks = woken_hooks(tmp_path, monkeypatch)
     hooks.write("journal-hook", Path("/p"))
     assert hooks.names_root(Path("/p")) and not hooks.names_root(Path("/q"))
+
+
+def test_the_session_end_entry_is_five_seconds_for_claude(tmp_path, monkeypatch):
+    monkeypatch.setattr(SampleProgram, "hook_events", {**SampleProgram.hook_events, "Finish": HookEventName.SESSION_END})
+    monkeypatch.setattr(SampleProgram, "session_end_limit_seconds", 60)
+    hooks = ProgramHooks.journal(SampleProgram, tmp_path / "hooks.json")
+    quick = [ManagedHook.found("sample", "Finish", "", {"command": "cleanup", "timeout": 10}, "settings.json", False, 600)]
+    assert (hooks.entry_timeout("Finish", []), hooks.entry_timeout("Finish", quick)) == (5, 15)
+
+
+def test_the_prompt_entry_follows_the_measured_limit(tmp_path, monkeypatch):
+    # report 1468: an explicit timeout on UserPromptSubmit is honoured, the 30 seconds are only its default
+    monkeypatch.setattr(SampleProgram, "hook_events", {**SampleProgram.hook_events, "Ask": HookEventName.PROMPT})
+    assert ProgramHooks.journal(SampleProgram, tmp_path / "hooks.json").entry_timeout("Ask", []) == 90
