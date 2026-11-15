@@ -1,7 +1,7 @@
 from engine.enums.command_category import CommandCategory
 from engine.enums.tool_type import ToolType
 from core.modules.drivers.rules.allowed_tools_rule import AllowedToolsRule
-from core.modules.drivers.support.access_nudges import READONLY
+from core.modules.drivers.nudges.readonly_nudge import ReadonlyNudge
 
 
 class ReadonlyRule(AllowedToolsRule):
@@ -10,4 +10,4 @@ class ReadonlyRule(AllowedToolsRule):
     name = "drivers.readonly"
     allowed_tools = (ToolType.READ, ToolType.SEARCH, ToolType.SHELL)
     allowed_commands = tuple(category for category in CommandCategory if category.is_readonly)
-    refusal = READONLY
+    refusal = ReadonlyNudge.declared()

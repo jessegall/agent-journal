@@ -7,7 +7,7 @@ from core.modules.processes.commands.stop_hung_process.stop_hung_process import 
 from core.modules.processes.commands.stop_process.stop_process import StopProcess
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.process import Process
-from core.modules.processes.support.process_nudges import HUNG_RUN
+from core.modules.processes.nudges.hung_run_nudge import HungRunNudge
 
 
 class StopHungProcessHandler(Handler[StopHungProcess, Process]):
@@ -24,5 +24,5 @@ class StopHungProcessHandler(Handler[StopHungProcess, Process]):
         if process.state not in RUNNING_STATES:
             return process
         process = self.bus.dispatch(StopProcess(process.id), context)
-        self.nudger.send(process.session_agent_id, HUNG_RUN, "processes.hung", context, output=process.id, seconds=command.seconds)
+        self.nudger.send(process.session_agent_id, HungRunNudge.declared(), "processes.hung", context, output=process.id, seconds=command.seconds)
         return process

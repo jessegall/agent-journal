@@ -12,7 +12,7 @@ from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
 from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
-from suites.coding.modules.workers.support.worker_nudges import WORKER_MERGE_CONFLICT
+from suites.coding.modules.workers.nudges.worker_merge_conflict_nudge import WorkerMergeConflictNudge
 from suites.coding.modules.workers.support.worker_round import WorkerRound
 from suites.coding.modules.workers.support.worker_staging import WorkerStaging
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
@@ -98,4 +98,4 @@ class WorkerSteps:
         if worktree.state is not WorktreeState.CUT or worktree.delivered_at is None:
             return None
         lines = sorted(self.queries.query(AgentLine).filter(session_agent_id=worktree.session_agent_id, source=MERGE_CONFLICT_SOURCE).every_row(CONFLICT_LINES_REASON), key=lambda line: line.id, reverse=True)
-        return next((line for line in lines if line.nudge.key == WORKER_MERGE_CONFLICT.key and line.creation_timestamp().value >= worktree.delivered_at.value), None)
+        return next((line for line in lines if line.nudge.key == WorkerMergeConflictNudge.declared().key and line.creation_timestamp().value >= worktree.delivered_at.value), None)

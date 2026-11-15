@@ -10,7 +10,7 @@ from core.modules.drivers.commands.wake_inactive_agent.wake_inactive_agent impor
 from core.modules.drivers.models.agent_activity import AgentActivity
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from core.modules.drivers.support.driver_nudges import CACHE_KEEPALIVE
+from core.modules.drivers.nudges.cache_keepalive_nudge import CacheKeepaliveNudge
 from core.modules.helpers.support.helper_settings import COLD_SESSION_MINUTES
 from core.modules.processes.support.output_check_schedule import MINUTE_SECONDS
 from engine.setting.setting_values import SettingValues
@@ -44,4 +44,4 @@ class CacheRefreshRule(DriverRule):
             return RuleAnswer.allowed()
         if self.hook_history.has_recent_answer(self.name, hook, RETRY_SECONDS):
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(CACHE_KEEPALIVE.nudge()).running(WakeInactiveAgent(hook.agent_id))
+        return RuleAnswer.with_nudges(CacheKeepaliveNudge.declared().nudge()).running(WakeInactiveAgent(hook.agent_id))

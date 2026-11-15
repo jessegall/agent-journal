@@ -23,7 +23,7 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.checkpoint_results import CheckpointResults
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.returned_tasks import ReturnedTasks
-from suites.coding.modules.workers.support.worker_nudges import CHECKPOINT_FAILURE_FALLBACK
+from suites.coding.modules.workers.nudges.checkpoint_failure_fallback_nudge import CheckpointFailureFallbackNudge
 
 FAILURE_SOURCE = "workers.checkpoint-failure"
 WORKER_RUN_SHORTFALL = "the tests of its checkpoint failed on your commit: outputs {outputs}"
@@ -67,7 +67,7 @@ class ReturnCheckpointTasksHandler(Handler[ReturnCheckpointTasks, tuple[Returned
                 worker_tasks[worker.id].append(task.id)
         if failed.fallback_task_id is not None:
             outputs = ", ".join(str(output_id) for output_id in failed.output_ids(tuple([failed.fallback_task_id])))
-            self.inbox.send_nudge(CHECKPOINT_FAILURE_FALLBACK.nudge(phase=reach.phase_id, outputs=outputs, task=failed.fallback_task_id), FAILURE_SOURCE, context)
+            self.inbox.send_nudge(CheckpointFailureFallbackNudge.declared().nudge(phase=reach.phase_id, outputs=outputs, task=failed.fallback_task_id), FAILURE_SOURCE, context)
         return tuple(ReturnedTasks(worker_id, tuple(task_ids), failed.output_ids(task_ids)) for worker_id, task_ids in worker_tasks.items())
 
     def return_worker_run(self, worktree: Worktree, failed: FailedRun, proofs: tuple[Proof, ...], context: Context) -> None:

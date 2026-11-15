@@ -6,7 +6,7 @@ from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.plan_wait import PlanWait
 from core.modules.plans.support.plan_main_agents import PlanMainAgents
-from core.modules.plans.support.plan_nudges import PLAN_OPENED
+from core.modules.plans.nudges.plan_opened_nudge import PlanOpenedNudge
 
 WAIT_ENDED_SOURCE = "plans.wait-ended"
 
@@ -45,7 +45,7 @@ class PlanWaits:
             if waiting.state is not PlanState.BLOCKED or self.open_waits(waiting.id):
                 continue
             self.repository.save_change(waiting, waiting.unblock(context.timestamp, context.actor), context)
-            self.main_agents.send(waiting, PLAN_OPENED, WAIT_ENDED_SOURCE, context)
+            self.main_agents.send(waiting, PlanOpenedNudge.declared(), WAIT_ENDED_SOURCE, context)
 
     def end_open_waits(self, plan: Plan, context: Context) -> None:
         for wait in self.open_waits(plan.id):

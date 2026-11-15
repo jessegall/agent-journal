@@ -5,7 +5,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.integration.core.modules.helpers.test_helper_jobs import helper_agent
 from tests.stories.core.support.coding_fixtures import UserBuilder
-from core.modules.drivers.support.access_nudges import LIMITED_TOOL
+from core.modules.drivers.nudges.limited_tool_nudge import LimitedToolNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.support.coding_settings import DESIGNER_ENABLED_SETTING
 from suites.coding.support.shipped_profiles import DESIGNER_PROFILE
@@ -54,4 +54,4 @@ def test_a_designer_helper_calls_the_claude_design_tools(new_story):
 
 def test_another_read_only_helper_is_still_refused_the_claude_design_tools(new_story):
     story = new_story(fixture=StartedResearcher)
-    story.expect_hook_refusal(helper_agent(story).session, claude_design_call(), expected_nudge(LIMITED_TOOL))
+    story.expect_hook_refusal(helper_agent(story).session, claude_design_call(), expected_nudge(LimitedToolNudge.declared()))

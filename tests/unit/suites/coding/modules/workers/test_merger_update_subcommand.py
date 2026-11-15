@@ -10,7 +10,7 @@ from suites.coding.modules.workers.commands.decide_behind_check.order_worker_upd
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState as State
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.support.behind_decisions import BehindDecisions
-from suites.coding.modules.workers.support.behind_nudges import UPDATE_ORDERED
+from suites.coding.modules.workers.nudges.update_ordered_nudge import UpdateOrderedNudge
 from tests.unit.suites.coding.modules.workers.support.test_behind_check_closing import WORKTREE
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 from suites.coding.modules.workers.types.merger import Merger
@@ -117,8 +117,8 @@ def test_the_merger_orders_the_update_with_who_and_why_and_the_worker_is_woken_w
     check = repository.saved[0]
     assert (check.state, check.decider_id, check.reason, visits.closed) == (State.ORDERED, MERGER, "cart.py is changed on both sides", 1)
     worker, declaration, fields = nudger.sent[0]
-    assert (worker, declaration, fields) == (WORKER, UPDATE_ORDERED, {"count": 4})
-    assert UPDATE_ORDERED.nudge(**fields).text.startswith(f"Your base branch moved {fields['count']} commits")
+    assert (worker, declaration, fields) == (WORKER, UpdateOrderedNudge.declared(), {"count": 4})
+    assert UpdateOrderedNudge.declared().nudge(**fields).text.startswith(f"Your base branch moved {fields['count']} commits")
 
 
 def test_the_main_agent_may_order_after_a_pass_and_another_agent_is_refused():

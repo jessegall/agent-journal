@@ -21,7 +21,8 @@ from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.modules.drivers.models.nudge_record import NudgeRecord
 from core.modules.drivers.support.nudge_records import NudgeRecords
 from core.modules.processes.support.reader_request_notices import ReaderRequestNotices
-from core.modules.processes.support.process_nudges import READER_REQUEST, RUN_NAME
+from core.modules.processes.nudges.reader_request_nudge import ReaderRequestNudge
+from core.modules.processes.nudges.run_name_nudge import RunNameNudge
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 from tests.stories.core.support.fixtures import UserJoined
@@ -32,8 +33,8 @@ from tests.stories.support.story_checks import expect_answers, expect_outcome_wi
 
 def test_module_sync_registers_every_declared_nudge_under_its_module(played):
     story = played(UserJoined)
-    entry = next(entry for entry in story.container.get(Registry).nudges if entry.key == RUN_NAME.key)
-    expect_row(entry, module="journal.core.processes", type="steering", text=RUN_NAME.text)
+    entry = next(entry for entry in story.container.get(Registry).nudges if entry.key == RunNameNudge.declared().key)
+    expect_row(entry, module="journal.core.processes", type="steering", text=RunNameNudge.declared().text)
 
 
 def test_no_two_nudges_share_a_key(played):
@@ -129,7 +130,7 @@ def test_a_line_on_a_clock_finds_its_newest_record_though_its_text_changed(playe
 def test_a_reader_request_notice_sees_its_last_reminder(played):
     story = played(StartedTaskBuilder)
     log = story.container.get(NudgeLog)
-    answer = RuleAnswer.with_nudges(Nudge(f"{READER_REQUEST.key}.7", NudgeType.STEERING, "Add a reader"))
+    answer = RuleAnswer.with_nudges(Nudge(f"{ReaderRequestNudge.declared().key}.7", NudgeType.STEERING, "Add a reader"))
     context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
     with story.container.get(Database).transaction():
         log.write(story.agent.id, RuleAnswers(["lead"], [RuleRecord("sample", "lead", answer.outcome, answer)]), context)

@@ -1,4 +1,5 @@
-from core.modules.processes.support.process_nudges import OUTPUT_PROGRESS, OUTPUT_RUNNING
+from core.modules.processes.nudges.output_progress_nudge import OutputProgressNudge
+from core.modules.processes.nudges.output_running_nudge import OutputRunningNudge
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -31,9 +32,9 @@ class WatchLinesRule(DriverRule):
 
     def with_progress(self, answer: RuleAnswer, watch: Watch) -> RuleAnswer:
         if watch.given_percent == UNANNOUNCED_PERCENT:
-            return RuleAnswer(refusal=answer.refusal, nudges=[*answer.nudges, OUTPUT_RUNNING.nudge(output=watch.process_id)], commands=[*answer.commands, RecordGivenPercent(watch.id, 0)])
+            return RuleAnswer(refusal=answer.refusal, nudges=[*answer.nudges, OutputRunningNudge.declared().nudge(output=watch.process_id)], commands=[*answer.commands, RecordGivenPercent(watch.id, 0)])
         progress = self.processes.find(watch.process_id).progress
         step = progress - progress % PROGRESS_STEP_PERCENT
         if step <= watch.given_percent:
             return answer
-        return RuleAnswer(refusal=answer.refusal, nudges=[*answer.nudges, OUTPUT_PROGRESS.nudge(output=watch.process_id, percent=progress)], commands=[*answer.commands, RecordGivenPercent(watch.id, step)])
+        return RuleAnswer(refusal=answer.refusal, nudges=[*answer.nudges, OutputProgressNudge.declared().nudge(output=watch.process_id, percent=progress)], commands=[*answer.commands, RecordGivenPercent(watch.id, step)])

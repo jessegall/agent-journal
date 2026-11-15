@@ -2,7 +2,8 @@ from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from core.modules.agents.testing.fake_launcher import FakeLauncher
-from core.modules.drivers.support.access_nudges import ENDED_AGENT, UNKNOWN_AGENT
+from core.modules.drivers.nudges.ended_agent_nudge import EndedAgentNudge
+from core.modules.drivers.nudges.unknown_agent_nudge import UnknownAgentNudge
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.fixtures import SampleSuiteChoice
 from tests.stories.engine.driver.support.hook_agents import hook_agent
@@ -33,7 +34,7 @@ def test_a_session_under_an_unknown_launch_name_is_let_through_and_logged(new_st
 
 def test_a_workers_tool_no_agent_holds_is_refused(new_story):
     story = new_story(SAMPLES, fixture=SampleSuiteChoice)
-    story.expect_hook_refusal("t-8", HookSamples.edit("a.py").with_fields(program="codex", launch="worker-98", role="worker"), UNKNOWN_AGENT.nudge().text)
+    story.expect_hook_refusal("t-8", HookSamples.edit("a.py").with_fields(program="codex", launch="worker-98", role="worker"), UnknownAgentNudge.declared().nudge().text)
 
 
 def test_a_claude_helper_is_found_by_the_session_it_was_given(started_main_agent):
@@ -63,7 +64,7 @@ def test_a_codex_worker_ended_before_its_first_hook_is_refused_its_tools_and_its
     worker_id = story.new_row_id(f"agent start worker-7 codex worker --parent {main.id} --environment main")
     story.run(f"agent end {worker_id}")
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
-    story.expect_hook_refusal("t-7", HookSamples.edit("a.py").with_fields(program="codex", launch="worker-7"), ENDED_AGENT.nudge().text)
+    story.expect_hook_refusal("t-7", HookSamples.edit("a.py").with_fields(program="codex", launch="worker-7"), EndedAgentNudge.declared().nudge().text)
     launcher.drain_requests()
     story.expect_rows(launcher.requests == [{"agent_id": worker_id, "stop": True}], "launch name worker-7" not in story.system_log_text())
     story.expect_absent("agent list --environment main", "t-7")

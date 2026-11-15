@@ -6,7 +6,7 @@ from datetime import timedelta
 
 from core.modules.drivers.models.agent_block import AgentBlock
 from engine.testing.stories.story_fixture import StoryFixture
-from suites.coding.modules.workers.support.worker_nudges import WORKER_UNMERGED
+from suites.coding.modules.workers.nudges.worker_unmerged_nudge import WorkerUnmergedNudge
 from suites.coding.modules.workers.listeners.worker_merge_block_listener import WorkerMergeBlockListener
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, repository_environment
@@ -16,7 +16,7 @@ from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 
 MAIN_SESSION = "s-1"
-REMINDER_INTERVAL = timedelta(seconds=WORKER_UNMERGED.interval.seconds)
+REMINDER_INTERVAL = timedelta(seconds=WorkerUnmergedNudge.declared().interval.seconds)
 
 
 class MainAgentMerges(StoryFixture):

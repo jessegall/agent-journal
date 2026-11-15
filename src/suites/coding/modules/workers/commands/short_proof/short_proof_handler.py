@@ -19,7 +19,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.support.worker_job import SHORT_PROOF_SOURCE
-from suites.coding.modules.workers.support.worker_nudges import WORKER_PROOF_SHORT
+from suites.coding.modules.workers.nudges.worker_proof_short_nudge import WorkerProofShortNudge
 
 
 class ShortProofHandler(Handler[ShortProof, Proof]):
@@ -45,5 +45,5 @@ class ShortProofHandler(Handler[ShortProof, Proof]):
         task = self.queries.query(Task).find(proof.task_id)
         if task.state is TaskState.TESTING:
             self.repository.save(task.moved(TaskLifecycle.retest), context)
-        self.nudger.send(worktree.session_agent_id, WORKER_PROOF_SHORT, SHORT_PROOF_SOURCE, context, proof=proof.id, task=proof.task_id)
+        self.nudger.send(worktree.session_agent_id, WorkerProofShortNudge.declared(), SHORT_PROOF_SOURCE, context, proof=proof.id, task=proof.task_id)
         return proof

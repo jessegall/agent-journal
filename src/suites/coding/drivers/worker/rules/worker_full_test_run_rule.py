@@ -1,5 +1,5 @@
 from suites.coding.rules.no_full_test_run_rule import NoFullTestRunRule
-from suites.coding.support.coding_nudges import WORKER_FULL_TEST_RUN
+from suites.coding.nudges.worker_full_test_run_nudge import WorkerFullTestRunNudge
 
 
 class WorkerFullTestRunRule(NoFullTestRunRule):
@@ -8,4 +8,4 @@ class WorkerFullTestRunRule(NoFullTestRunRule):
 
     name = "workers.no-full-test-run"
     exempt = False
-    refusal = WORKER_FULL_TEST_RUN
+    refusal = WorkerFullTestRunNudge.declared()

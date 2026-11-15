@@ -4,7 +4,9 @@ from core.modules.chat.migrations.m009_environment_index import JournalException
 from core.modules.chat.migrations.m007_chat_mark_session import ChatMarkSessionMigration
 from core.modules.chat.migrations.m005_chat_mark_agent_index import ChatMarkAgentIndexMigration
 from engine.module.module import Module
-from core.modules.chat.support.chat_marks import CHAT_MARKS
+from core.modules.chat.marks.chat_exception_mark import ChatExceptionMark
+from core.modules.chat.marks.chat_upgrade_mark import ChatUpgradeMark
+from core.modules.chat.marks.chat_private_data_mark import ChatPrivateDataMark
 from engine.log.exception_sink import ExceptionSink
 from core.modules.chat.commands.record_journal_exception.record_journal_exception_handler import RecordJournalExceptionHandler
 from core.modules.chat.commands.solve_journal_exception.solve_journal_exception_handler import SolveJournalExceptionHandler
@@ -37,6 +39,6 @@ class ChatModule(Module):
     handlers = [ShowMarkHandler, RecordJournalExceptionHandler, SolveJournalExceptionHandler]
     subcommands = [SolveJournalExceptionSubcommand]
     guards = [MarkTypeGuard]
-    marks = CHAT_MARKS
+    marks = [ChatExceptionMark, ChatUpgradeMark, ChatPrivateDataMark]
     listeners = [JournalExceptionMarkListener, UpgradeMarkListener]
     bindings = {ExceptionSink: ChatExceptionSink}

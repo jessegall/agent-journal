@@ -1,5 +1,6 @@
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
-from core.modules.messages.support.message_nudges import UNREAD_COUNTDOWN, UNREAD_REFUSAL, UNREAD_TOOL_USES
+from core.modules.messages.support.message_nudges import UNREAD_COUNTDOWN, UNREAD_TOOL_USES
+from core.modules.messages.nudges.unread_refusal_nudge import UnreadRefusalNudge
 from engine.driver.states.countdown_state import CountdownState
 
 
@@ -10,5 +11,5 @@ class UnreadCountdown(CountdownState):
 
     name = "messages.unread-countdown"
     span = ToolUseSpan(UNREAD_TOOL_USES)
-    refusal = UNREAD_REFUSAL
+    refusal = UnreadRefusalNudge.declared()
     countdown = UNREAD_COUNTDOWN

@@ -5,7 +5,7 @@ from engine.enums.hook_event_name import HookEventName
 from engine.driver.part import Part
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.shell_line import JOURNAL_PROGRAM
-from suites.coding.modules.workers.support.worker_nudges import WORKER_JUDGE_SCOPE
+from suites.coding.modules.workers.nudges.worker_judge_scope_nudge import WorkerJudgeScopeNudge
 
 JOURNAL_JUDGE = "sins"
 SCOPING_FLAGS = ("--changes", "--branch")
@@ -24,7 +24,7 @@ class WorkerJudgeScopeRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
         if tool is not None and tool.shell is not None and any(self.is_unscoped_judge(part) for part in tool.shell.parts):
-            return RuleAnswer.refused(WORKER_JUDGE_SCOPE.nudge())
+            return RuleAnswer.refused(WorkerJudgeScopeNudge.declared().nudge())
         return RuleAnswer.allowed()
 
     def is_unscoped_judge(self, part: Part) -> bool:

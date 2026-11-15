@@ -10,7 +10,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, started_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_value
-from core.modules.processes.support.process_nudges import SILENT_START_FIXED
+from core.modules.processes.nudges.silent_start_fixed_nudge import SilentStartFixedNudge
 from tests.integration.support.fixture_journal import FixtureJournal
 
 ALIAS = "./build.sh"
@@ -106,7 +106,7 @@ def test_a_run_that_shows_a_percent_is_told_once_that_progress_shows(played):
     process = started_run(story, ALIAS, CommandCategory.BUILD)
     story.advance(timedelta(seconds=70))
     end_run(story, story.container.get(ProcessQuery).find(process.id), PERCENT_OUTPUT)
-    expect_line(story, ALIAS_START, SILENT_START_FIXED.nudge(name='./build.sh').text)
+    expect_line(story, ALIAS_START, SilentStartFixedNudge.declared().nudge(name='./build.sh').text)
     repeated = started_run(story, ALIAS, CommandCategory.BUILD)
     story.advance(timedelta(seconds=70))
     end_run(story, story.container.get(ProcessQuery).find(repeated.id), PERCENT_OUTPUT)

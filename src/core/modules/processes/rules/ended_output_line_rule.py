@@ -5,7 +5,7 @@ from engine.enums.hook_wildcard import HookWildcard
 from engine.driver.rule_answer import RuleAnswer
 from engine.query.conditions.greater import Greater
 from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.processes.support.process_nudges import OUTPUT_ENDED
+from core.modules.processes.nudges.output_ended_nudge import OutputEndedNudge
 
 ENDED_RUNS_REASON = "the agent is told of every run of its that ended since the last answer"
 
@@ -29,4 +29,4 @@ class EndedOutputLineRule(DriverRule):
         ended = self.processes.agent(hook.agent_id).moved().ended()
         if answered_at is not None:
             ended = ended.matching(Greater("ended_at", answered_at.text))
-        return RuleAnswer.with_nudges(*(OUTPUT_ENDED.nudge(output=process.id) for process in ended.every_row(ENDED_RUNS_REASON)))
+        return RuleAnswer.with_nudges(*(OutputEndedNudge.declared().nudge(output=process.id) for process in ended.every_row(ENDED_RUNS_REASON)))

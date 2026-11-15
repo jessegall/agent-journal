@@ -5,7 +5,7 @@ from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.query.queries import Queries
 from core.modules.plans.models.plan_task import PlanTask
-from core.modules.plans.support.plan_nudges import UNLINKED_TASKS
+from core.modules.plans.nudges.unlinked_tasks_nudge import UnlinkedTasksNudge
 from core.modules.tasks.models.enums.task_state import TaskState
 
 LINKED_TASK_COUNT = 2
@@ -31,4 +31,4 @@ class PlanOrderRule(DriverRule):
         open_count = self.queries.query(PlanTask).filter(plan_id=plan_id, state=TaskState.OPEN).count()
         if open_count < LINKED_TASK_COUNT or self.queries.query(PlanTask).filter(plan_id=plan_id, state=TaskState.BLOCKED).exists():
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(UNLINKED_TASKS.nudge(plan=plan_id, count=open_count))
+        return RuleAnswer.with_nudges(UnlinkedTasksNudge.declared().nudge(plan=plan_id, count=open_count))

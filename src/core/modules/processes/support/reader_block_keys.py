@@ -2,9 +2,10 @@ import re
 from dataclasses import replace
 
 from engine.driver.nudge import Nudge
-from core.modules.processes.support.process_nudges import READER_BLOCK, READER_REQUEST_REFUSAL
+from core.modules.processes.nudges.reader_block_nudge import ReaderBlockNudge
+from core.modules.processes.nudges.reader_request_refusal_nudge import ReaderRequestRefusalNudge
 
-READER_BLOCK_KEY = re.compile(rf"(?:{re.escape(READER_BLOCK.key)}|{re.escape(READER_REQUEST_REFUSAL.key)})\.(\d+)")
+READER_BLOCK_KEY = re.compile(rf"(?:{re.escape(ReaderBlockNudge.declared().key)}|{re.escape(ReaderRequestRefusalNudge.declared().key)})\.(\d+)")
 
 
 class ReaderBlockKeys:

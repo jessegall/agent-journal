@@ -14,7 +14,8 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from engine.setting.setting_values import SettingValues
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
-from suites.coding.modules.workers.support.worker_test_limit_nudges import TEST_LIMIT_STOP, WORKER_TEST_LIMIT_SOURCE
+from suites.coding.modules.workers.support.worker_test_limit_nudges import WORKER_TEST_LIMIT_SOURCE
+from suites.coding.modules.workers.nudges.test_limit_stop_nudge import TestLimitStopNudge
 from suites.coding.modules.workers.support.worker_own_runs import WorkerOwnRuns
 from engine.event.changed import Changed
 from engine.event.deleted import Deleted
@@ -51,5 +52,5 @@ class WorkerTestCountListener(SaveListener[Changed[Output]]):
             parts = parts.filter(position=output.reader_position)
         if not parts.exists():
             return
-        self.nudger.send(process.session_agent_id, TEST_LIMIT_STOP, self.name, context, output=process.id, count=output.test_count, limit=limit)
+        self.nudger.send(process.session_agent_id, TestLimitStopNudge.declared(), self.name, context, output=process.id, count=output.test_count, limit=limit)
         self.bus.dispatch(StopProcess(process.id), context)

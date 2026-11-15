@@ -2,7 +2,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from core.modules.drivers.commands.record_bypass_line.record_bypass_line import RecordBypassLine
 from engine.model.model import Model
-from core.modules.drivers.support.driver_nudges import HOOKS_UNCHECKED
+from core.modules.drivers.nudges.hooks_unchecked_nudge import HooksUncheckedNudge
 from engine.driver.nudger import Nudger
 
 LINE_SOURCE = "drivers.bypass"
@@ -17,4 +17,4 @@ class RecordBypassLineHandler(Handler[RecordBypassLine, Model]):
         self.nudger = nudger
 
     def handle(self, command: RecordBypassLine, context: Context) -> Model:
-        return self.nudger.send(command.agent_id, HOOKS_UNCHECKED, LINE_SOURCE, context, count=command.count)
+        return self.nudger.send(command.agent_id, HooksUncheckedNudge.declared(), LINE_SOURCE, context, count=command.count)

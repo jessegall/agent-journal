@@ -1,7 +1,7 @@
 import pytest
 
 from engine.testing.expectations.expect_reply import expect_reply_allowed, expect_reply_line, expect_reply_refusal
-from suites.coding.modules.workers.support.worker_nudges import PHASE_TEST_RUN_ALLOWED
+from suites.coding.modules.workers.nudges.phase_test_run_allowed_nudge import PhaseTestRunAllowedNudge
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_ALIAS, TEST_LINE, start_planned_worker
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 
@@ -16,7 +16,7 @@ def worker(played, monkeypatch):
 def expect_counted(worker, remaining):
     reply = worker.run_test()
     expect_reply_allowed(reply)
-    expect_reply_line(reply, PHASE_TEST_RUN_ALLOWED.nudge(remaining=remaining).text)
+    expect_reply_line(reply, PhaseTestRunAllowedNudge.declared().nudge(remaining=remaining).text)
 
 
 def test_another_worker_in_the_same_phase_has_its_own_count(played):

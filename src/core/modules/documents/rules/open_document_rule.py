@@ -7,7 +7,7 @@ from engine.driver.rule_answer import RuleAnswer
 from engine.driver.tool import Tool
 from engine.query.queries import Queries
 from core.modules.documents.models.open_document import OpenDocument
-from core.modules.documents.support.document_nudges import DOCUMENT_OPEN
+from core.modules.documents.nudges.document_open_nudge import DocumentOpenNudge
 
 
 class OpenDocumentRule(DriverRule):
@@ -29,7 +29,7 @@ class OpenDocumentRule(DriverRule):
         tool = hook.event.tool
         if opened is None or tool is None or not self.is_edit(tool):
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(DOCUMENT_OPEN.nudge(doc=opened.doc_id))
+        return RuleAnswer.refused(DocumentOpenNudge.declared().nudge(doc=opened.doc_id))
 
     def is_edit(self, tool: Tool) -> bool:
         shell = tool.shell

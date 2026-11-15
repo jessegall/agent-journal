@@ -12,7 +12,8 @@ from core.modules.plans.support.focus.judged_focus_tasks import JudgedFocusTasks
 from core.modules.plans.support.focus.new_focus_places import FOCUS_RULE_NAME, NewFocusPlaces
 from core.modules.plans.support.focus.plan_focus import PlanFocus
 from engine.journal.journal_home import JournalHome
-from core.modules.plans.support.plan_nudges import UNFOCUSED_TASK, FOCUS_SUGGESTED
+from core.modules.plans.nudges.unfocused_task_nudge import UnfocusedTaskNudge
+from core.modules.plans.nudges.focus_suggested_nudge import FocusSuggestedNudge
 
 MULTIPLE_PLAN_COUNT = 2
 
@@ -58,7 +59,7 @@ class PlanFocusRule(DriverRule):
             return RuleAnswer.allowed()
         if overview.current.source is FocusSource.DEFAULT:
             started_plans = ", ".join(str(started.plan.id) for started in overview.started)
-            return RuleAnswer.with_nudges(FOCUS_SUGGESTED.nudge(plans=started_plans, focus=work.plan.id))
+            return RuleAnswer.with_nudges(FocusSuggestedNudge.declared().nudge(plans=started_plans, focus=work.plan.id))
         waited_ids = work.unblockers.task_ids()
         unfocused_places = [place for place in places if place.plan_id != work.plan.id and place.task_id not in waited_ids]
-        return RuleAnswer.with_nudges(*(UNFOCUSED_TASK.nudge(task=place.task_id, plan=place.plan_id, focus=work.plan.id) for place in unfocused_places))
+        return RuleAnswer.with_nudges(*(UnfocusedTaskNudge.declared().nudge(task=place.task_id, plan=place.plan_id, focus=work.plan.id) for place in unfocused_places))

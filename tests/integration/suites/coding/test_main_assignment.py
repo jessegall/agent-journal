@@ -13,7 +13,7 @@ from suites.coding.modules.workers.ticks.inactive_main_agent_prompt import Inact
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 from tests.stories.suites.coding.support.main_controls_fixture import scope_line
 from tests.stories.support.story_checks import expect_value
-from suites.coding.support.coding_nudges import TASK_ASSIGNMENT
+from suites.coding.nudges.task_assignment_nudge import TaskAssignmentNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.modules.workers.support.worker_settings import DISPATCHES_WORKERS_SETTING
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT

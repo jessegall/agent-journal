@@ -1,7 +1,7 @@
 from engine.cli.row_numbers import RowNumbers
 from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.driver.nudge import Nudge
-from suites.coding.modules.workers.support.worker_nudges import MERGE_WAITS
+from suites.coding.modules.workers.nudges.merge_waits_nudge import MergeWaitsNudge
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -39,5 +39,5 @@ class MergeCheckoutRule(DriverRule):
         for worktree in delivered:
             environment = environments[worktree.environment_id]
             if not self.proofs.waiting_proofs(worktree.id).exists() and self.git.head(environment.folder) != worktree.base_branch:
-                nudges.append(MERGE_WAITS.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), environment=environment.name, branch=worktree.base_branch))
+                nudges.append(MergeWaitsNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), environment=environment.name, branch=worktree.base_branch))
         return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

@@ -8,7 +8,7 @@ from suites.coding.modules.workers.commands.merger.require_merger import require
 from suites.coding.modules.workers.commands.recover_worker_libraries.recover_worker_libraries import RecoverWorkerLibraries
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
-from suites.coding.modules.workers.support.worker_nudges import WORKER_LIBRARIES_LINKED
+from suites.coding.modules.workers.nudges.worker_libraries_linked_nudge import WorkerLibrariesLinkedNudge
 from suites.coding.modules.workers.support.worktree_libraries import WorktreeLibraries
 from core.modules.agents.support.agent_label import AgentLabel
 from engine.cli.row_numbers import RowNumbers
@@ -33,5 +33,5 @@ class RecoverWorkerLibrariesHandler(Handler[RecoverWorkerLibraries, str]):
         names = self.libraries.repair(worktree)
         if not names:
             return "nothing missing"
-        self.nudger.send(command.worker_id, WORKER_LIBRARIES_LINKED, WORKER_JOB_SOURCE, context)
+        self.nudger.send(command.worker_id, WorkerLibrariesLinkedNudge.declared(), WORKER_JOB_SOURCE, context)
         return f"linked: {', '.join(names)}"

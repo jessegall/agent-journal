@@ -36,7 +36,7 @@ def declared_lines(folder):
     dotted = ".".join(folder.relative_to(ROOT / "src").parts)
     module_file = importlib.import_module(f"{dotted}.{folder.name}_module")
     modules = [value for name, value in vars(module_file).items() if name.endswith("Module") and getattr(value, "__module__", "") == module_file.__name__]
-    readers = [declared for module in modules for declared in (*map(EXTENSIONS.extend, module.window_declarations()), *module.marks, *module.dock_declarations())]
+    readers = [declared for module in modules for declared in (*map(EXTENSIONS.extend, module.window_declarations()), *module.mark_declarations(), *module.dock_declarations())]
     return {line for reader in readers for line in getattr(reader, "reads", ())}, {line for reader in readers for line in getattr(reader, "runs", ())}
 
 

@@ -10,7 +10,7 @@ from engine.listener.rows.event_rows import EventRows
 from core.modules.environments.models.environment import Environment
 from engine.enums.agent_role import AgentRole
 from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions
-from suites.coding.support.coding_nudges import MAIN_CODE_EDIT_REFUSED
+from suites.coding.nudges.main_code_edit_refused_nudge import MainCodeEditRefusedNudge
 
 ALLOWED_COMMANDS = tuple(category.value for category in (CommandCategory.READ, CommandCategory.SEARCH, CommandCategory.TEST_RUN, CommandCategory.CHECK,
                                                           CommandCategory.VERSION_CONTROL))
@@ -36,12 +36,12 @@ class CheckoutWriteCodeRule(DriverRule):
             return RuleAnswer.allowed()
         if tool.category.writes_files:
             folder = Path(self.rows.required(Environment, hook.environment_id).folder).resolve()
-            return RuleAnswer.refused(MAIN_CODE_EDIT_REFUSED.nudge()) if any(self.is_project_file(folder, file) for file in tool.files) else RuleAnswer.allowed()
+            return RuleAnswer.refused(MainCodeEditRefusedNudge.declared().nudge()) if any(self.is_project_file(folder, file) for file in tool.files) else RuleAnswer.allowed()
         shell = tool.shell
         if shell is None:
             return RuleAnswer.allowed()
         writes = shell.parse_error or not shell.parts or shell.has_uncertain_part or shell.has_non_journal_file_writes
-        return RuleAnswer.refused(MAIN_CODE_EDIT_REFUSED.nudge()) if writes or shell.disallowed_part(ALLOWED_COMMANDS) is not None else RuleAnswer.allowed()
+        return RuleAnswer.refused(MainCodeEditRefusedNudge.declared().nudge()) if writes or shell.disallowed_part(ALLOWED_COMMANDS) is not None else RuleAnswer.allowed()
 
     @staticmethod
     def is_project_file(folder: Path, file: str) -> bool:

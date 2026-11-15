@@ -6,8 +6,8 @@ ALLOW_LIST_FILE = Path(__file__).with_name("folder_budget_allow_list.txt")
 WIDTH_LIMIT_ENTRIES = 12
 DEPTH_LIMIT_LEVELS = 3
 STANDARD_FOLDERS = {
-    "bindings", "commands", "conditions", "drivers", "enums", "errors", "expressions", "guards", "listeners", "migrations", "models", "modules", "overlays",
-    "providers", "rules", "suites", "tunnels", "upgrade",
+    "ask_topics", "bindings", "buttons", "commands", "conditions", "drivers", "enums", "errors", "expressions", "guards", "inspectors", "listeners", "marks",
+    "migrations", "models", "modules", "nudges", "overlays", "providers", "rules", "suites", "tick_handlers", "tunnels", "upgrade",
 }
 # a folder of one thing's declarations, such as a window's keys: a list of equals, at the level of the thing it declares for
 DECLARATION_FOLDERS = {"keys", "declarations"}

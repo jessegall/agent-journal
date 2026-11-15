@@ -78,7 +78,7 @@ class IntegrationJournal:
 
     # runs a module's tick handler by its name, as the server's ticker would
     def run_tick(self, name: str) -> None:
-        handler = next(handler for module in DEFAULT_MODULES for handler in module.tick_handlers if handler.label == name)
+        handler = next(handler for module in DEFAULT_MODULES for handler in module.tick_handler_declarations() if handler.label == name)
         handler.handler(self.container)
 
     # the module list gains the module and the journal syncs, as an install does; a passed sync reopens the container

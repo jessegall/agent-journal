@@ -1,6 +1,6 @@
 from engine.cli.row_numbers import RowNumbers
 from engine.cli.agent_number import AGENT_MODEL_NAME
-from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK
+from suites.coding.modules.workers.nudges.proof_check_nudge import ProofCheckNudge
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -44,4 +44,4 @@ class DeliveredWorkStopRule(DriverRule):
 
     def nudges(self, worktree: Worktree, proofs: list[Proof]) -> list[Nudge]:
         worker = self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)
-        return [PROOF_CHECK.nudge(worker=worker, task=task_id, proofs=", ".join(str(proof.id) for proof in proofs if proof.task_id == task_id)) for task_id in dict.fromkeys(proof.task_id for proof in proofs)]
+        return [ProofCheckNudge.declared().nudge(worker=worker, task=task_id, proofs=", ".join(str(proof.id) for proof in proofs if proof.task_id == task_id)) for task_id in dict.fromkeys(proof.task_id for proof in proofs)]

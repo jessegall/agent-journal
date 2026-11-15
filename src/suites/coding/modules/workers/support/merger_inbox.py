@@ -7,7 +7,7 @@ from core.modules.drivers.support.main_agent_line import MainAgentLine
 from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
 from suites.coding.modules.workers.models.merger_line import MergerLine
-from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
+from suites.coding.modules.workers.nudges.merger_line_available_nudge import MergerLineAvailableNudge
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 
@@ -26,7 +26,7 @@ class MergerInbox:
         enabled = self.settings.flag(MERGER_ENABLED)
         saved = self.repository.save(line if enabled else self.forwarded(line, context), context)
         if not enabled:
-            self.main_line.send_nudge(MERGER_LINE_AVAILABLE.nudge(line=saved.id), line.fallback_source, context)
+            self.main_line.send_nudge(MergerLineAvailableNudge.declared().nudge(line=saved.id), line.fallback_source, context)
 
     @staticmethod
     def forwarded(line: MergerLine, context: Context) -> MergerLine:

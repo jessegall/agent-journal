@@ -2,7 +2,7 @@ from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.processes.support.process_nudges import READ_COMMAND_OUTPUT
+from core.modules.processes.nudges.read_command_output_nudge import ReadCommandOutputNudge
 from core.modules.processes.support.read_commands import ReadCommands
 
 
@@ -24,8 +24,8 @@ class ReadCommandOutputRule(DriverRule):
         for part in shell.parts:
             if any(arguments[:len(tokens)] == tokens for arguments in part.nested_journal_commands
                    for tokens in (tuple(command.split()) for command in self.commands.names())):
-                return RuleAnswer.refused(READ_COMMAND_OUTPUT.nudge())
+                return RuleAnswer.refused(ReadCommandOutputNudge.declared().nudge())
         for part in shell.parts_running_journal_command(*self.commands.names()):
             if part.pipe_target is not None or any(redirect in part.text for redirect in shell.redirects):
-                return RuleAnswer.refused(READ_COMMAND_OUTPUT.nudge())
+                return RuleAnswer.refused(ReadCommandOutputNudge.declared().nudge())
         return RuleAnswer.allowed()

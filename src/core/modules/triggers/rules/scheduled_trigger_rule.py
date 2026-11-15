@@ -1,4 +1,4 @@
-from core.modules.triggers.support.trigger_nudges import TRIGGER_LINE
+from core.modules.triggers.nudges.trigger_line_nudge import TriggerLineNudge
 from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
@@ -25,4 +25,4 @@ class ScheduledTriggerRule(DriverRule):
         due = [trigger for trigger in self.triggers.due(hook.timestamp) if self.conditions.all_pass(trigger, hook)]
         if not due:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(*(TRIGGER_LINE.nudge(trigger=trigger.id) for trigger in due)).running(*(FireTrigger(trigger.id) for trigger in due))
+        return RuleAnswer.with_nudges(*(TriggerLineNudge.declared().nudge(trigger=trigger.id) for trigger in due)).running(*(FireTrigger(trigger.id) for trigger in due))

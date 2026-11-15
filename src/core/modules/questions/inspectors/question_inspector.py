@@ -1,0 +1,26 @@
+from engine.viewer.inspector_declaration import InspectorDeclaration
+from engine.viewer.button_declaration import ButtonDeclaration
+from engine.viewer.inspector_component import InspectorComponent
+from engine.viewer.text_field import TextField
+from core.modules.questions.models.question import Question
+from engine.viewer.button_condition import ButtonCondition
+
+OPEN = ButtonCondition("state", tuple(["open"]))
+
+
+class QuestionInspector(InspectorDeclaration):
+    """The inspector of Question."""
+
+    model = Question
+    reads = "question show {row_id}"
+    label = "Question {id} · {state}"
+    title = "{title}"
+    events = tuple(["question.*"])
+    actions = (
+        ButtonDeclaration("questions.write-answer", (), "Write the answer", "question answer {row_id} --answer={answer}", icon="tick", primary=True, condition=OPEN,
+                          fields=tuple([TextField("answer", "Your answer")])),
+        ButtonDeclaration("questions.leave", (), "Leave the question without an answer", "question close {row_id}", icon="stop", condition=OPEN,
+                          confirm="Leave this question without an answer? The agent is told it was closed."),
+    )
+    components = tuple([InspectorComponent("questions.question-options")])
+    lists_fields = True

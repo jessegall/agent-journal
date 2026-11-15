@@ -2,7 +2,9 @@ from core.modules.settings.bindings.support.context_share import ContextShare
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.support.current_context_window import CurrentContextWindow
 from core.modules.memories.support.block_conditions.memories_weighed import MemoriesWeighed
-from core.modules.memories.support.memory_nudges import WEIGH_COUNTDOWN, WEIGH_FIRST, WEIGH_MEMORIES
+from core.modules.memories.support.memory_nudges import WEIGH_COUNTDOWN
+from core.modules.memories.nudges.weigh_first_nudge import WeighFirstNudge
+from core.modules.memories.nudges.weigh_memories_nudge import WeighMemoriesNudge
 from engine.driver.agent_hook import AgentHook
 from engine.driver.block_until import BlockUntil
 from engine.driver.driver_rule import DriverRule
@@ -52,5 +54,5 @@ class OpenMarkRule(DriverRule):
         tool_uses = self.settings.numbers(MARK_TOOL_USES_SETTING)
         uses = dict(zip(marks, tool_uses)).get(reached, tool_uses[-1])
         memories = self.memories.all_weighted(WEIGHED_REASON)
-        return RuleAnswer.with_nudges(WEIGH_MEMORIES.nudge(percent=reached, uses=uses, count=len(memories), memories=",".join(str(memory.memory_id) for memory in memories))).running(
-            OpenMemoryMark(hook.agent_id, reached), BlockUntil(hook.agent_id, WEIGH_FIRST.nudge(), MemoriesWeighed(), Interval(ToolUseSpan(uses)), WEIGH_COUNTDOWN.nudge("{left}")))
+        return RuleAnswer.with_nudges(WeighMemoriesNudge.declared().nudge(percent=reached, uses=uses, count=len(memories), memories=",".join(str(memory.memory_id) for memory in memories))).running(
+            OpenMemoryMark(hook.agent_id, reached), BlockUntil(hook.agent_id, WeighFirstNudge.declared().nudge(), MemoriesWeighed(), Interval(ToolUseSpan(uses)), WEIGH_COUNTDOWN.nudge("{left}")))

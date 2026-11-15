@@ -6,7 +6,7 @@ from engine.driver.rule_answer import RuleAnswer
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from core.modules.dumps.models.dump import Dump
-from core.modules.dumps.support.dump_nudges import DUMP_OPEN
+from core.modules.dumps.nudges.dump_open_nudge import DumpOpenNudge
 
 
 class OpenDumpRule(DriverRule):
@@ -22,4 +22,4 @@ class OpenDumpRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         dump = self.queries.query(Dump).matching(IsNull("closed_at")).oldest().first()
-        return RuleAnswer.with_nudges(DUMP_OPEN.nudge(dump=dump.id)) if dump is not None else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(DumpOpenNudge.declared().nudge(dump=dump.id)) if dump is not None else RuleAnswer.allowed()

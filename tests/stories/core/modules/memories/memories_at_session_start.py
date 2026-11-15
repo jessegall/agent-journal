@@ -1,6 +1,6 @@
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from core.modules.memories.support.memory_nudges import START_MEMORIES
+from core.modules.memories.nudges.start_memories_nudge import StartMemoriesNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
 
 SESSION_START = HookSamples.session_start()
@@ -16,4 +16,4 @@ def four_memories(story) -> None:
 def test_a_session_start_gives_reminders_then_facts_heaviest_first(new_story):
     story = new_story(fixture=BuilderStarted)
     four_memories(story)
-    story.expect_hook_allowed("s-1", SESSION_START, expected_nudge(START_MEMORIES, count=4))
+    story.expect_hook_allowed("s-1", SESSION_START, expected_nudge(StartMemoriesNudge.declared(), count=4))

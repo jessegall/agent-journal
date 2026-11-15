@@ -5,7 +5,7 @@ from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.command.context import Context
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
-from suites.coding.modules.workers.support.merger_nudges import UNIT_BLOCKED
+from suites.coding.modules.workers.nudges.unit_blocked_nudge import UnitBlockedNudge
 
 UNIT_TASKS_REASON = "the tasks left in a worker's unit are looked at for one that is not blocked"
 
@@ -24,4 +24,4 @@ class BlockedUnitNotice:
             return
         waits = "; ".join(f"task:{task.id} waits on {task.reason}" for task in remaining)
         committed_ids = ", ".join(f"task:{task.id}" for task in committed)
-        self.main_agent_line.send_nudge(UNIT_BLOCKED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worker_id), committed=committed_ids, waits=waits), UNIT_BLOCKED.key, context)
+        self.main_agent_line.send_nudge(UnitBlockedNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worker_id), committed=committed_ids, waits=waits), UnitBlockedNudge.declared().key, context)

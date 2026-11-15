@@ -15,7 +15,7 @@ from engine.helper_type.journal_line import JournalLine
 from engine.setting.setting_values import SettingValues
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.base_commands import BASE_COMMANDS
-from core.modules.drivers.support.access_nudges import HELPER_TYPE_CATEGORY
+from core.modules.drivers.nudges.helper_type_category_nudge import HelperTypeCategoryNudge
 from core.modules.drivers.support.type_command_check import TypeCommandCheck
 
 
@@ -39,7 +39,7 @@ class TypeCommandsRule(DriverRule):
         helper_type = self.types.find(hook.role)
         refused_part = shell.disallowed_part(self.command_types(helper_type, BASE_COMMANDS.joined(helper_type.commands)))
         if refused_part is not None:
-            return RuleAnswer.refused(HELPER_TYPE_CATEGORY.nudge(helper_type=helper_type.label.lower(), category=refused_part.classification.category.value, hint=f". {helper_type.refusal_hint}" if helper_type.refusal_hint else ""))
+            return RuleAnswer.refused(HelperTypeCategoryNudge.declared().nudge(helper_type=helper_type.label.lower(), category=refused_part.classification.category.value, hint=f". {helper_type.refusal_hint}" if helper_type.refusal_hint else ""))
         refusal = self.commands.refusal(self.agents.find(hook.agent_id), self.journal_lines(shell))
         return RuleAnswer.allowed() if refusal is None else RuleAnswer.refused(refusal)
 

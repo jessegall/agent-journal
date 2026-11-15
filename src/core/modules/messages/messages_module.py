@@ -87,7 +87,9 @@ from core.modules.messages.commands.reply_message.reply_message_subcommand impor
 from core.modules.messages.commands.send_message.send_message_subcommand import SendMessageSubcommand
 from engine.module.module import Module
 from core.modules.messages.upgrade.messages_move import MessagesMove
-from core.modules.messages.support.message_marks import MESSAGE_MARKS
+from core.modules.messages.marks.message_summary_mark import MessageSummaryMark
+from core.modules.messages.marks.message_filed_mark import MessageFiledMark
+from core.modules.messages.marks.message_edited_mark import MessageEditedMark
 from core.modules.messages.seeders.messages_seeder import MessagesSeeder
 from core.modules.messages.support.block_conditions.messages_read import MessagesRead
 from core.modules.messages.support.block_conditions.messages_answered import MessagesAnswered
@@ -126,7 +128,7 @@ class MessagesModule(Module):
     agent_states = [MessagesUnread, MessagesUnanswered, UnreadCountdown]
     subcommands = [MessageConversationsSubcommand, AgentReportsSubcommand, UnreadReportsSubcommand, AttachmentListSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand, ChooseWorkSourceSubcommand, ClearWorkSourceSubcommand, WorkSourceSubcommand]
     windows = MESSAGES_WINDOWS
-    marks = MESSAGE_MARKS
+    marks = [MessageSummaryMark, MessageFiledMark, MessageEditedMark]
     skills = MESSAGES_SKILLS
     listeners = [NewSessionWorkSourceListener, ReportPinListener, MessageRowsListener, MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, WaitingMessageTypingListener, ReadMessageLineListener, ReleasedMessageLineListener, AllowedStopListener, DeletedWorkSourceListener, DeletedAgentWorkSourceListener, TaggedImageBlockListener]
     seeders = [MessagesSeeder]

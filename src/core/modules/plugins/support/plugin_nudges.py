@@ -1,7 +1,5 @@
-from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.enums.nudge_type import NudgeType
+from core.modules.plugins.nudges.plugin_refusal_nudge import PluginRefusalNudge
+from core.modules.plugins.nudges.plugin_program_off_nudge import PluginProgramOffNudge
 
-PLUGIN_REFUSAL = NudgeDeclaration("plugins.plugin_refusal", NudgeType.REFUSAL, "plugin:{plugin} refused this")
-PLUGIN_PROGRAM_OFF = NudgeDeclaration("plugins.program_off", NudgeType.REFUSAL, "This program belongs to plugin {plugin}, which is switched off or not installed", id_field="plugin")
 
-PLUGIN_NUDGES = [PLUGIN_PROGRAM_OFF, PLUGIN_REFUSAL]
+PLUGIN_NUDGES = [PluginProgramOffNudge, PluginRefusalNudge]

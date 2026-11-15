@@ -1,4 +1,4 @@
-from core.modules.processes.support.process_nudges import JOURNAL_COMMAND_LAST
+from core.modules.processes.nudges.journal_command_last_nudge import JournalCommandLastNudge
 import re
 
 from engine.driver.agent_hook import AgentHook
@@ -29,7 +29,7 @@ class JournalChainRule(DriverRule):
         has_long_part = False
         for part in shell.parts:
             if self.is_journal_loop(part) or (part.program == JOURNAL and has_long_part):
-                return RuleAnswer.refused(JOURNAL_COMMAND_LAST.nudge())
+                return RuleAnswer.refused(JournalCommandLastNudge.declared().nudge())
             has_long_part = has_long_part or not part.classification.category.is_short
         return RuleAnswer.allowed()
 

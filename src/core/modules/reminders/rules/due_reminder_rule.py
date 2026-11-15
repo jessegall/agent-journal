@@ -12,7 +12,8 @@ from engine.query.queries import Queries
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.reminders.commands.record_reminder_fired.record_reminder_fired import RecordReminderFired
 from core.modules.reminders.models.reminder import Reminder
-from core.modules.reminders.support.reminder_nudges import REMINDER_BLOCK, REMINDER_LINE
+from core.modules.reminders.nudges.reminder_block_nudge import ReminderBlockNudge
+from core.modules.reminders.nudges.reminder_line_nudge import ReminderLineNudge
 
 OPEN_REMINDERS_READ = 200
 
@@ -40,8 +41,8 @@ class DueReminderRule(DriverRule):
         due = [reminder for reminder in reminders if reminder.should_fire(hook.timestamp, tool_uses.get(reminder.id, 0), closed_tasks.get(reminder.id, 0))]
         if not due:
             return RuleAnswer.allowed()
-        blocks = (BlockUntil(hook.agent_id, REMINDER_BLOCK.nudge(reminder=reminder.id), self.conditions.built(reminder.block_condition, reminder.block_subject)) for reminder in due if reminder.block_condition)
-        return RuleAnswer.with_nudges(*(REMINDER_LINE.nudge(reminder=reminder.id) for reminder in due)).running(*(RecordReminderFired(reminder.id) for reminder in due), *blocks)
+        blocks = (BlockUntil(hook.agent_id, ReminderBlockNudge.declared().nudge(reminder=reminder.id), self.conditions.built(reminder.block_condition, reminder.block_subject)) for reminder in due if reminder.block_condition)
+        return RuleAnswer.with_nudges(*(ReminderLineNudge.declared().nudge(reminder=reminder.id) for reminder in due)).running(*(RecordReminderFired(reminder.id) for reminder in due), *blocks)
 
     def tool_uses(self, reminders: list[Reminder], hook: AgentHook) -> dict[int, int]:
         counting = [reminder for reminder in reminders if reminder.due_at is None and reminder.interval_tool_uses]

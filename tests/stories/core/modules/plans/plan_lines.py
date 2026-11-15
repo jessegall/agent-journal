@@ -13,14 +13,14 @@ from tests.stories.engine.driver.support.samples import SAMPLES
 from engine.testing.expectations.expect_reply import expect_absent_reply_line
 from tests.stories.support.story_checks import expect_lines_3, expect_value_with, expect_value_without_line
 from tests.stories.core.support.plan_steps import ready_plan
-from core.modules.plans.support.plan_nudges import PLAN_CANCELLED
+from core.modules.plans.nudges.plan_cancelled_nudge import PlanCancelledNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
-from core.modules.plans.support.plan_nudges import CHECKPOINT_REACHED
-from core.modules.plans.support.plan_nudges import PLAN_FINISHED
-from core.modules.plans.support.plan_nudges import PLAN_STALLED
-from core.modules.tasks.support.task_nudges import TASK_RETURN_REMINDER
-from core.modules.plans.support.plan_nudges import PHASE_FINISHED
-from core.modules.plans.support.plan_nudges import PLAN_APPROVED
+from core.modules.plans.nudges.checkpoint_reached_nudge import CheckpointReachedNudge
+from core.modules.plans.nudges.plan_finished_nudge import PlanFinishedNudge
+from core.modules.plans.nudges.plan_stalled_nudge import PlanStalledNudge
+from core.modules.tasks.nudges.task_return_reminder_nudge import TaskReturnReminderNudge
+from core.modules.plans.nudges.phase_finished_nudge import PhaseFinishedNudge
+from core.modules.plans.nudges.plan_approved_nudge import PlanApprovedNudge
 
 
 def task_end(task_id):
@@ -58,27 +58,27 @@ def closed_lines(story, task_id):
 
 def test_ending_a_task_names_the_task_now_in_hand_once_and_the_phase_it_ended(completed_cart_phase):
     story, lines = completed_cart_phase
-    expect_lines_3(lines, "task:2", [TASK_RETURN_REMINDER.nudge(task=2).text])
-    expect_value_with(lines, PHASE_FINISHED.nudge(plan=1, phase='Build').text)
+    expect_lines_3(lines, "task:2", [TaskReturnReminderNudge.declared().nudge(task=2).text])
+    expect_value_with(lines, PhaseFinishedNudge.declared().nudge(plan=1, phase='Build').text)
 
 
 def test_a_checkpoint_phase_says_the_phases_after_it_wait_for_its_tests(new_story):
     story = new_story(fixture=CheckpointCartPlan)
     story.expect_success("task start 1", "state: started", actor=story.agent)
-    expect_closed_lines(story, 1, CHECKPOINT_REACHED.nudge(plan=1, phase='Build').text)
+    expect_closed_lines(story, 1, CheckpointReachedNudge.declared().nudge(plan=1, phase='Build').text)
 
 
 def test_the_last_task_says_the_plan_is_done(completed_cart_phase):
     story, _ = completed_cart_phase
-    expect_closed_lines(story, 2, PLAN_FINISHED.nudge(plan=1).text)
+    expect_closed_lines(story, 2, PlanFinishedNudge.declared().nudge(plan=1).text)
 
 
 def test_a_plan_whose_tasks_cannot_start_says_so(started_cart_plan):
     story = started_cart_plan
     story.run('task block 2 --reason "waits for a key"')
     lines = closed_lines(story, 1)
-    expect_value_with(lines, PLAN_STALLED.nudge(plan=1, count=1, waits=': task 2, which is blocked with a reason').text)
-    expect_value_with(lines, PHASE_FINISHED.nudge(plan=1, phase='Build').text)
+    expect_value_with(lines, PlanStalledNudge.declared().nudge(plan=1, count=1, waits=': task 2, which is blocked with a reason').text)
+    expect_value_with(lines, PhaseFinishedNudge.declared().nudge(plan=1, phase='Build').text)
 
 
 def test_a_task_refused_its_close_says_nothing(started_cart_plan):
@@ -90,12 +90,12 @@ def test_a_plan_approved_or_cancelled_since_the_last_hook_is_named(new_story):
     story = new_story(fixture=ReadyCartPlan)
     story.advance(timedelta(seconds=1))
     story.run("plan approve 1 --environment main", actor=story.user)
-    story.expect_hook_allowed("s-1", VIEW_LINE, PLAN_APPROVED.nudge(plan=1).text)
+    story.expect_hook_allowed("s-1", VIEW_LINE, PlanApprovedNudge.declared().nudge(plan=1).text)
     story.advance(timedelta(seconds=1))
-    story.expect_absent_hook_line("s-1", VIEW_LINE, PLAN_APPROVED.nudge(plan=1).text)
+    story.expect_absent_hook_line("s-1", VIEW_LINE, PlanApprovedNudge.declared().nudge(plan=1).text)
     story.advance(timedelta(seconds=1))
     story.run('plan cancel 1 --reason "not needed"')
-    story.expect_hook_allowed("s-1", VIEW_LINE, expected_nudge(PLAN_CANCELLED, plan=1))
+    story.expect_hook_allowed("s-1", VIEW_LINE, expected_nudge(PlanCancelledNudge.declared(), plan=1))
 
 
 def test_a_new_main_session_is_told_it_is_a_new_session_and_a_session_again_is_not(new_story):
@@ -132,7 +132,7 @@ def test_a_plan_approved_with_no_tool_running_is_named_on_the_next_call(new_stor
     story.run("plan approve 1 --environment main", actor=story.user)
     story.advance(timedelta(seconds=30))
     story.hook("s-1", HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, [])))
-    story.expect_hook_allowed("s-1", VIEW_LINE, PLAN_APPROVED.nudge(plan=1).text)
+    story.expect_hook_allowed("s-1", VIEW_LINE, PlanApprovedNudge.declared().nudge(plan=1).text)
 
 
 @pytest.fixture

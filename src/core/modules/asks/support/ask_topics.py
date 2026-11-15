@@ -10,7 +10,7 @@ class AskTopics:
         self.finder = finder
 
     def all(self) -> tuple[AskTopic, ...]:
-        return tuple(topic for module in self.finder.modules() for topic in module.ask_topics)
+        return tuple(topic for module in self.finder.modules() for topic in module.ask_topic_declarations())
 
     def named(self, key: str) -> AskTopic:
         topics = self.all()

@@ -4,7 +4,7 @@ from dataclasses import replace
 
 from engine.driver.nudge import Nudge
 from core.modules.processes.models.reader_request import ReaderRequest
-from core.modules.processes.support.process_nudges import READER_REQUEST
+from core.modules.processes.nudges.reader_request_nudge import ReaderRequestNudge
 
 
 class ReaderRequestText:
@@ -14,5 +14,5 @@ class ReaderRequestText:
         self.numbers = numbers
 
     def line(self, request: ReaderRequest) -> Nudge:
-        nudge = READER_REQUEST.nudge(request=request.id, agent=self.numbers.number(AGENT_MODEL_NAME, request.creator_id), command=request.command, output=request.sample_process_id)
+        nudge = ReaderRequestNudge.declared().nudge(request=request.id, agent=self.numbers.number(AGENT_MODEL_NAME, request.creator_id), command=request.command, output=request.sample_process_id)
         return replace(nudge, key=f"{nudge.key}.{request.id}")

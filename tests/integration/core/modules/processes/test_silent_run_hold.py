@@ -18,7 +18,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.integration.core.modules.processes.test_hang_watch import ActiveBuild, started_tree, watch_tick
 from tests.stories.core.modules.processes.support.process_samples import end_run
-from core.modules.processes.support.process_nudges import SILENT_RUN_BLOCKED
+from core.modules.processes.nudges.silent_run_blocked_nudge import SilentRunBlockedNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
 from tests.integration.support.fixture_journal import FixtureJournal
 
@@ -49,7 +49,7 @@ def silent_story(played, seconds: int = HANG_SECONDS + 1) -> FixtureJournal:
 def test_a_run_silent_for_the_hang_time_holds_the_next_tool_use_and_names_what_to_read(played):
     story = silent_story(played)
     story.expect_hook_refusal("s-1", EDIT, BLOCKED)
-    story.expect_hook_refusal("s-1", EDIT, expected_nudge(SILENT_RUN_BLOCKED, output=1, seconds=301, processor='not known', hint='read'))
+    story.expect_hook_refusal("s-1", EDIT, expected_nudge(SilentRunBlockedNudge.declared(), output=1, seconds=301, processor='not known', hint='read'))
 
 
 def test_the_hold_says_the_processor_time_is_rising_when_it_moved_since_the_run_went_silent(played):

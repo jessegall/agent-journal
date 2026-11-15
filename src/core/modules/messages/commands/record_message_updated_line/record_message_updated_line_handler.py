@@ -5,7 +5,7 @@ from core.modules.drivers.listeners.typed_line_listener import IDLE_MESSAGE_SOUR
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from engine.driver.nudger import Nudger
 from core.modules.messages.commands.record_message_updated_line.record_message_updated_line import RecordMessageUpdatedLine
-from core.modules.messages.support.message_nudges import MESSAGE_UPDATED
+from core.modules.messages.nudges.message_updated_nudge import MessageUpdatedNudge
 from core.modules.messages.models.message import Message
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.support.message_targets import MessageTargets
@@ -30,4 +30,4 @@ class RecordMessageUpdatedLineHandler(Handler[RecordMessageUpdatedLine, None]):
         if agent is None:
             return
         source = IDLE_MESSAGE_SOURCE if self.hook_calls.has_ended_turn(agent.id) else UPDATED_SOURCE
-        self.nudger.send(agent.id, MESSAGE_UPDATED, source, context, message=command.message_id)
+        self.nudger.send(agent.id, MessageUpdatedNudge.declared(), source, context, message=command.message_id)

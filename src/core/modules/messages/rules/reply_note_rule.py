@@ -3,7 +3,7 @@ from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.messages.support.message_nudges import REPLY_NOTE
+from core.modules.messages.nudges.reply_note_nudge import ReplyNoteNudge
 
 
 class ReplyNoteRule(DriverRule):
@@ -17,4 +17,4 @@ class ReplyNoteRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         replies = shell.journal_command_numbers("message reply") if shell is not None else ()
-        return RuleAnswer.with_nudges(REPLY_NOTE.nudge(message=replies[0])) if replies else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(ReplyNoteNudge.declared().nudge(message=replies[0])) if replies else RuleAnswer.allowed()

@@ -6,7 +6,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.worker_nudges import WORKER_FOREIGN_LINK
+from suites.coding.modules.workers.nudges.worker_foreign_link_nudge import WorkerForeignLinkNudge
 
 LINK_PROGRAM = "ln"
 
@@ -30,5 +30,5 @@ class WorkerOutsideLinkRule(DriverRule):
             return RuleAnswer.allowed()
         arguments = [argument for part in tool.shell.parts if part.program == LINK_PROGRAM for argument in part.arguments if not argument.startswith("-")]
         if any(not Path(worktree.folder, argument).resolve().is_relative_to(Path(worktree.folder).resolve()) for argument in arguments):
-            return RuleAnswer.refused(WORKER_FOREIGN_LINK.nudge())
+            return RuleAnswer.refused(WorkerForeignLinkNudge.declared().nudge())
         return RuleAnswer.allowed()

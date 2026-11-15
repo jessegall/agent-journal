@@ -1,5 +1,5 @@
 from core.modules.drivers.rules.denied_programs_rule import DeniedProgramsRule
-from suites.coding.support.coding_nudges import GIT_RESTRICTION
+from suites.coding.nudges.git_restriction_nudge import GitRestrictionNudge
 
 
 class NoGitRule(DeniedProgramsRule):
@@ -7,4 +7,4 @@ class NoGitRule(DeniedProgramsRule):
 
     name = "drivers.no-git"
     denied_programs = ["git"]
-    refusal = GIT_RESTRICTION
+    refusal = GitRestrictionNudge.declared()

@@ -2,7 +2,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.support.driver_nudges import AGENT_NOTICE
+from core.modules.drivers.nudges.agent_notice_nudge import AgentNoticeNudge
 from engine.driver.nudger import Nudger
 from core.modules.plugins.commands.send_plugin_step_line.send_plugin_step_line import SendPluginStepLine
 
@@ -19,6 +19,6 @@ class SendPluginStepLineHandler(Handler[SendPluginStepLine, None]):
 
     def handle(self, command: SendPluginStepLine, context: Context) -> None:
         agent = self.queries.query(Agent).find(command.agent_id)
-        self.nudger.send(agent.id, AGENT_NOTICE, STEP_LINE_SOURCE, context, text=command.text)
+        self.nudger.send(agent.id, AgentNoticeNudge.declared(), STEP_LINE_SOURCE, context, text=command.text)
         if agent.parent_id is not None:
-            self.nudger.send(agent.parent_id, AGENT_NOTICE, STEP_LINE_SOURCE, context, text=command.text)
+            self.nudger.send(agent.parent_id, AgentNoticeNudge.declared(), STEP_LINE_SOURCE, context, text=command.text)

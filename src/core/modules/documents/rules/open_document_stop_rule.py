@@ -5,7 +5,7 @@ from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.query.queries import Queries
 from core.modules.documents.models.open_document import OpenDocument
-from core.modules.documents.support.document_nudges import DOCUMENT_STOP_REFUSAL
+from core.modules.documents.nudges.document_stop_refusal_nudge import DocumentStopRefusalNudge
 
 
 class OpenDocumentStopRule(DriverRule):
@@ -25,4 +25,4 @@ class OpenDocumentStopRule(DriverRule):
         opened = self.queries.query(OpenDocument).filter(author_id=hook.agent_id).first()
         if opened is None:
             return RuleAnswer.allowed("the agent has no open document")
-        return RuleAnswer.refused(DOCUMENT_STOP_REFUSAL.nudge(doc=opened.doc_id))
+        return RuleAnswer.refused(DocumentStopRefusalNudge.declared().nudge(doc=opened.doc_id))

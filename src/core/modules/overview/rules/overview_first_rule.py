@@ -4,7 +4,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.overview.support.overview_first import OverviewFirst
-from core.modules.overview.support.overview_nudges import OVERVIEW_LINE
+from core.modules.overview.nudges.overview_line_nudge import OverviewLineNudge
 
 
 class OverviewFirstRule(DriverRule):
@@ -24,4 +24,4 @@ class OverviewFirstRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if not self.first.is_required:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(OVERVIEW_LINE.nudge()).running(self.first.block(hook.agent_id))
+        return RuleAnswer.with_nudges(OverviewLineNudge.declared().nudge()).running(self.first.block(hook.agent_id))

@@ -1,4 +1,4 @@
-from core.modules.tasks.support.task_nudges import BLOCKED_TASKS
+from core.modules.tasks.nudges.blocked_tasks_nudge import BlockedTasksNudge
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -32,4 +32,4 @@ class BlockedWorkRule(DriverRule):
             return RuleAnswer.allowed("no blocked task needs a review")
         if self.calls.last_stop_refused(hook.agent_id):
             return RuleAnswer.allowed("blocked tasks were already named at the previous stop")
-        return RuleAnswer.refused(BLOCKED_TASKS.nudge(tasks=', '.join(str(task_id) for task_id in blocked)))
+        return RuleAnswer.refused(BlockedTasksNudge.declared().nudge(tasks=', '.join(str(task_id) for task_id in blocked)))

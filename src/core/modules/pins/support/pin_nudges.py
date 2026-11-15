@@ -1,14 +1,7 @@
-from engine.driver.interval import Interval
-from engine.driver.seconds import Seconds
-from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.enums.nudge_type import NudgeType
-from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
+from core.modules.pins.nudges.link_pin_request_nudge import LinkPinRequestNudge
+from core.modules.pins.nudges.unpinned_claim_nudge import UnpinnedClaimNudge
+from core.modules.pins.nudges.bang_button_request_nudge import BangButtonRequestNudge
 
-PIN_REQUEST_TOOL_USES = 50
 
-LINK_PIN_REQUEST = NudgeDeclaration("pins.pin_the_link", NudgeType.STEERING, "Pin this link if the user will come back to it: {url}", interval=Interval(ToolUseSpan(PIN_REQUEST_TOOL_USES)))
-UNPINNED_CLAIM = NudgeDeclaration("pins.pin_claimed_unmade", NudgeType.STEERING, "You mentioned a pinned link but made none: pin it or drop the mention", interval=Interval(Seconds(300)))
 
-BANG_BUTTON_REQUEST = NudgeDeclaration("pins.pin_the_bang_command", NudgeType.STEERING, "A pin can hold a button that runs your ! command in your terminal", interval=Interval(Seconds(300)))
-
-PIN_NUDGES = [LINK_PIN_REQUEST, UNPINNED_CLAIM, BANG_BUTTON_REQUEST]
+PIN_NUDGES = [LinkPinRequestNudge, UnpinnedClaimNudge, BangButtonRequestNudge]

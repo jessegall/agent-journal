@@ -5,7 +5,7 @@ from engine.driver.rule_answer import RuleAnswer
 from engine.agent.enums.role_group import RoleGroup
 from core.modules.skills.support.agent_profile_skills import AgentProfileSkills
 from core.modules.skills.support.skill_files import SkillFiles
-from core.modules.skills.support.skill_nudges import READ_SKILL_FIRST
+from core.modules.skills.nudges.read_skill_first_nudge import ReadSkillFirstNudge
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.modules.skills.support.unread_skills import UnreadSkills
 
@@ -28,4 +28,4 @@ class ProfileSkillFirstRule(DriverRule):
             return RuleAnswer.allowed()
         required = self.profile_skills.required(hook.agent_id)
         unread = [folder for folder in self.unread_skills.names(hook.agent_id) if folder in required]
-        return RuleAnswer.refused(READ_SKILL_FIRST.nudge(instruction=self.files.instruction(unread[0], hook))) if unread else RuleAnswer.allowed()
+        return RuleAnswer.refused(ReadSkillFirstNudge.declared().nudge(instruction=self.files.instruction(unread[0], hook))) if unread else RuleAnswer.allowed()

@@ -4,7 +4,8 @@ import select
 from engine.testing.examples.hook_samples import HookSamples
 from engine.enums.command_category import CommandCategory
 from core.modules.triggers.support.trigger_settings import AGENTS_ENABLE_SETTING
-from core.modules.triggers.support.trigger_nudges import TRIGGER_DENIES, TRIGGER_LINE
+from core.modules.triggers.nudges.trigger_denies_nudge import TriggerDeniesNudge
+from core.modules.triggers.nudges.trigger_line_nudge import TriggerLineNudge
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderStarted
@@ -83,7 +84,7 @@ def test_a_trigger_looks_only_in_the_places_it_watches(new_story):
     made(story, "--watch-places messages")
     story.expect_hook_allowed("s-1", GIT_CHAIN)
     story.expect_success("trigger edit 1 --watch-places commands", actor=story.agent)
-    story.expect_hook_refusal("s-1", GIT_CHAIN, TRIGGER_DENIES.nudge(trigger=1).text)
+    story.expect_hook_refusal("s-1", GIT_CHAIN, TriggerDeniesNudge.declared().nudge(trigger=1).text)
 
 
 def test_whole_word_and_pattern_matching(new_story):
@@ -91,7 +92,7 @@ def test_whole_word_and_pattern_matching(new_story):
     made(story, '--phrases "pus" --match-mode word')
     story.expect_hook_allowed("s-1", GIT_CHAIN)
     story.expect_success('trigger edit 1 --phrases "git p.*force" --match-mode pattern', actor=story.agent)
-    story.expect_hook_refusal("s-1", GIT_CHAIN, TRIGGER_DENIES.nudge(trigger=1).text)
+    story.expect_hook_refusal("s-1", GIT_CHAIN, TriggerDeniesNudge.declared().nudge(trigger=1).text)
 
 
 def test_a_pattern_that_could_stall_a_hook_is_refused_when_saved(new_story):
@@ -107,7 +108,7 @@ def test_a_condition_on_the_hour_keeps_it_quiet_outside_the_hours(new_story):
     made(story, """--conditions '[{"type": "hours", "value": "0-0"}]'""")
     story.expect_hook_allowed("s-1", GIT_CHAIN)
     story.expect_success("""trigger edit 1 --conditions '[{"type": "hours", "value": "0-24"}]'""", actor=story.agent)
-    story.expect_hook_refusal("s-1", GIT_CHAIN, TRIGGER_DENIES.nudge(trigger=1).text)
+    story.expect_hook_refusal("s-1", GIT_CHAIN, TriggerDeniesNudge.declared().nudge(trigger=1).text)
 
 
 def test_a_condition_that_cannot_be_read_is_refused_when_saved(new_story):
@@ -125,7 +126,7 @@ def test_a_paused_trigger_rests_and_goes_on_again(new_story):
     story.expect_text("trigger list --json", '"text": "Never force push"', '"paused_at": "', actor=story.agent)
     story.expect_hook_allowed("s-1", GIT_CHAIN)
     story.expect_success("trigger pause 1 --off", "trigger 1 goes on", actor=story.agent)
-    story.expect_hook_refusal("s-1", GIT_CHAIN, TRIGGER_DENIES.nudge(trigger=1).text)
+    story.expect_hook_refusal("s-1", GIT_CHAIN, TriggerDeniesNudge.declared().nudge(trigger=1).text)
 
 
 def test_a_fired_trigger_runs_its_extra_command(new_story, tmp_path):
@@ -143,7 +144,7 @@ def test_a_trigger_that_blocks_counts_as_fired_and_runs_its_extra_command(new_st
     story = extra_command_runner(new_story(fixture=AgentsEnableTriggers))
     marker = RunSignal(tmp_path)
     made(story, f"""--extra-actions '[{{"type": "run", "target": "{marker.command}"}}]'""")
-    story.expect_hook_refusal("s-1", GIT_CHAIN, TRIGGER_DENIES.nudge(trigger=1).text)
+    story.expect_hook_refusal("s-1", GIT_CHAIN, TriggerDeniesNudge.declared().nudge(trigger=1).text)
     story.run_listeners()
     story.expect_text("trigger list --json", '"fired_count": 1', actor=story.agent)
     marker.wait()
@@ -153,8 +154,8 @@ def test_a_trigger_ends_at_its_limit_of_firings(new_story):
     story = new_story(fixture=AgentsEnableTriggers)
     story.expect_success('trigger make "cart" "Mind the cart"', actor=story.agent)
     story.expect_success("trigger edit 1 --fire-limit 1", actor=story.agent)
-    story.expect_hook_allowed("s-1", HookSamples.prompt("Fix the cart"), TRIGGER_LINE.nudge(trigger=1).text)
-    story.expect_absent_hook_line("s-1", HookSamples.prompt("Fix the cart again"), TRIGGER_LINE.nudge(trigger=1).text)
+    story.expect_hook_allowed("s-1", HookSamples.prompt("Fix the cart"), TriggerLineNudge.declared().nudge(trigger=1).text)
+    story.expect_absent_hook_line("s-1", HookSamples.prompt("Fix the cart again"), TriggerLineNudge.declared().nudge(trigger=1).text)
     story.expect_text("trigger list --json", '{"rows": []}', actor=story.agent)
 
 
@@ -163,7 +164,7 @@ def test_a_scheduled_trigger_runs_its_extra_command_when_its_time_comes(new_stor
     marker = RunSignal(tmp_path)
     story.expect_success('trigger schedule "Look at the build" --at 2020-01-01T00:00:00+00:00', actor=story.agent)
     story.expect_success(f"""trigger edit 1 --extra-actions '[{{"type": "run", "target": "{marker.command}"}}]'""", actor=story.agent)
-    story.expect_hook_allowed("s-1", HookSamples.prompt("Next"), TRIGGER_LINE.nudge(trigger=1).text)
-    story.expect_absent_hook_line("s-1", HookSamples.prompt("Next"), TRIGGER_LINE.nudge(trigger=1).text)
+    story.expect_hook_allowed("s-1", HookSamples.prompt("Next"), TriggerLineNudge.declared().nudge(trigger=1).text)
+    story.expect_absent_hook_line("s-1", HookSamples.prompt("Next"), TriggerLineNudge.declared().nudge(trigger=1).text)
     story.run_listeners()
     marker.wait()

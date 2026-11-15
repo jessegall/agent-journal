@@ -8,7 +8,8 @@ from core.modules.plans.models.checkpoint_reach import CheckpointReach
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.checkpoint_folders import CheckpointFolders
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
-from suites.coding.modules.workers.support.worker_nudges import MERGER_WORKER_RUN_UNSTARTED, WORKER_RUN_UNSTARTED
+from suites.coding.modules.workers.nudges.merger_worker_run_unstarted_nudge import MergerWorkerRunUnstartedNudge
+from suites.coding.modules.workers.nudges.worker_run_unstarted_nudge import WorkerRunUnstartedNudge
 
 UNSTARTED_SOURCE = "workers.worker-run-unstarted"
 
@@ -29,6 +30,6 @@ class WorkerRunStarts:
         except Refusal:
             worker_id = self.queries.query(Worktree).find(link.worktree_id).session_agent_id
             self.bus.dispatch(FailCheckpoint(reach.id), context)
-            self.nudger.send(worker_id, WORKER_RUN_UNSTARTED, UNSTARTED_SOURCE, context, phase=reach.phase_id)
-            self.inbox.send_nudge(MERGER_WORKER_RUN_UNSTARTED.nudge(phase=reach.phase_id, worker=worker_id), UNSTARTED_SOURCE, context)
+            self.nudger.send(worker_id, WorkerRunUnstartedNudge.declared(), UNSTARTED_SOURCE, context, phase=reach.phase_id)
+            self.inbox.send_nudge(MergerWorkerRunUnstartedNudge.declared().nudge(phase=reach.phase_id, worker=worker_id), UNSTARTED_SOURCE, context)
             return None

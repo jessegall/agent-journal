@@ -8,7 +8,8 @@ from suites.coding.modules.workers.support.available_work import AvailableWork
 from suites.coding.modules.workers.support.main_agent_work import MainAgentWork
 from suites.coding.support.next_task import NextTask
 from suites.coding.support.stop_notices import UNFINISHED_TASKS_TEXT, StopNotices
-from suites.coding.support.coding_nudges import TASK_ASSIGNMENT, UNFINISHED_TASKS
+from suites.coding.nudges.task_assignment_nudge import TaskAssignmentNudge
+from suites.coding.nudges.unfinished_tasks_nudge import UnfinishedTasksNudge
 
 
 class OpenWorkStopRule(DriverRule):
@@ -29,7 +30,7 @@ class OpenWorkStopRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         available = self.work.answer(hook.agent_id)
         if available.assigned_task is not None:
-            return RuleAnswer.refused(TASK_ASSIGNMENT.nudge(task=available.assigned_task.id)).running(StartTask(available.assigned_task.id))
+            return RuleAnswer.refused(TaskAssignmentNudge.declared().nudge(task=available.assigned_task.id)).running(StartTask(available.assigned_task.id))
         return self.unfinished_answer(hook)
 
     def unfinished_answer(self, hook: AgentHook) -> RuleAnswer:
@@ -37,7 +38,7 @@ class OpenWorkStopRule(DriverRule):
             return RuleAnswer.allowed("this stop compacts the context of the main agent")
         task_ids = self.assigner.agent_tasks([hook.agent_id]).get(hook.agent_id, ())
         if task_ids and hook.agent_id not in self.unfinished_work.waiting_agents([hook.agent_id], hook.timestamp):
-            notice = UNFINISHED_TASKS.nudge(tasks=", ".join(str(task_id) for task_id in task_ids))
+            notice = UnfinishedTasksNudge.declared().nudge(tasks=", ".join(str(task_id) for task_id in task_ids))
             if not self.notices.has_notice(hook.agent_id, notice.text, UNFINISHED_TASKS_TEXT):
                 return RuleAnswer.refused(notice)
         return RuleAnswer.allowed("no task can be handed to the main agent or sent to a worker")

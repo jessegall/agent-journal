@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from core.modules.tasks.support.task_nudges import TASK_REOPENED
+from core.modules.tasks.nudges.task_reopened_nudge import TaskReopenedNudge
 from engine.database.kept_rows import KeptRows
 from engine.command.context import Context
 from engine.driver.nudger import Nudger
@@ -54,7 +54,7 @@ class TaskWaits(KeptRowChanges[TaskWait]):
         for agent in MainAgentFinder.rows(self.queries):
             for task in tasks:
                 if not actor_ids[task.id] or agent.id in actor_ids[task.id]:
-                    self.nudger.send(agent.id, TASK_REOPENED, WAIT_ENDED_SOURCE, context, task=task.id)
+                    self.nudger.send(agent.id, TaskReopenedNudge.declared(), WAIT_ENDED_SOURCE, context, task=task.id)
 
     def open_waits(self, task_id: int):
         return self.queries.query(TaskWait).filter(task_id=task_id).matching(IsNull("ended_at"))

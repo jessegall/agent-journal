@@ -34,9 +34,6 @@ from core.modules.plugins.migrations.m006_plugin_output_environment import Plugi
 from core.modules.plugins.migrations.m007_plugin_config import PluginConfigMigration
 from core.modules.plugins.migrations.m008_plugin_setting_environments import PluginSettingEnvironmentsMigration
 from core.modules.plugins.commands.prune_plugin_deliveries.prune_plugin_deliveries_handler import PrunePluginDeliveriesHandler
-from core.modules.plugins.ticks.delivery_pruning import DeliveryPruning
-from core.modules.plugins.ticks.orphan_service_stopping import OrphanServiceStopping
-from core.modules.plugins.ticks.plugin_config_reading import PluginConfigReading
 from core.modules.plugins.commands.refresh_plugin_config.refresh_plugin_config_handler import RefreshPluginConfigHandler
 from core.modules.plugins.commands.refresh_plugin_config.refresh_plugin_config_subcommand import RefreshPluginConfigSubcommand
 from core.modules.plugins.listeners.plugin_event_listener import PluginEventListener
@@ -102,13 +99,15 @@ from core.modules.plugins.listeners.stale_managed_hooks_listener import StaleMan
 from core.modules.plugins.migrations.m001_plugins import PluginsTablesMigration
 from core.modules.plugins.migrations.m002_plugin_queue_index import PluginQueueIndexMigration
 from core.modules.plugins.migrations.m009_plain_column_names import PlainColumnNamesMigration
-from engine.ticker.tick_handler import TickHandler
-from engine.ticker.tick_interval import TickInterval
-from core.modules.plugins.ticks.plugin_card_reading import PluginCardReading
 from core.modules.plugins.states.plugins_enabled import PluginsEnabled
 from core.modules.plugins.rules.plugin_program_rule import PluginProgramRule
-from core.modules.plugins.support.plugin_marks import PLUGIN_MARKS
+from core.modules.plugins.marks.plugin_health_mark import PluginHealthMark
+from core.modules.plugins.marks.plugin_card_mark import PluginCardMark
 from core.modules.plugins.upgrade.plugins_move import PluginsMove
+from core.modules.plugins.tick_handlers.plugin_card_reading_tick_handler import PluginCardReadingTickHandler
+from core.modules.plugins.tick_handlers.plugin_config_reading_tick_handler import PluginConfigReadingTickHandler
+from core.modules.plugins.tick_handlers.orphan_service_stopping_tick_handler import OrphanServiceStoppingTickHandler
+from core.modules.plugins.tick_handlers.delivery_pruning_tick_handler import DeliveryPruningTickHandler
 
 
 class PluginsModule(Module):
@@ -134,11 +133,11 @@ class PluginsModule(Module):
     agent_states = [PluginsEnabled]
     bindings = {ProjectReads: PluginProjectReads, ProcessTypeLimits: PluginRunLimits, InstalledPlugins: PluginInstalledNames}
     declared_plugin_events = [*PLAIN_EVENTS.values(), "tool_starting", "command_starting", "file_edited"]
-    marks = PLUGIN_MARKS
-    tick_handlers = [TickHandler(TickInterval(seconds=1), PluginCardReading(), "plugin card reading"),
-                     TickHandler(TickInterval(seconds=5), PluginConfigReading(), "plugin config reading", starts_immediately=True),
-                     TickHandler(TickInterval(seconds=60), OrphanServiceStopping(), "orphan plugin service stopping"),
-                     TickHandler(TickInterval(seconds=24 * 60 * 60), DeliveryPruning(), "plugin delivery pruning", starts_immediately=True)]
+    marks = [PluginHealthMark, PluginCardMark]
+    tick_handlers = [PluginCardReadingTickHandler,
+                     PluginConfigReadingTickHandler,
+                     OrphanServiceStoppingTickHandler,
+                     DeliveryPruningTickHandler]
     guards = [PluginEventGuard]
     listeners = [QueuedRunAdmissionListener, QueuedRunEndListener, PluginServicesRemovalListener, PluginServicesUpgradeListener, PluginWrongKeyMarkListener, PluginEventListener, SystemEventDeliveryListener, LoginPathListener, PluginSkillPublishListener, PluginReadersListener, PluginReadersBootListener, JournalInstructionFileListener, StaleManagedHooksListener, PluginDeliveryListener, PluginHealthMarkListener, PluginOutputListener, PluginQueueFileListener]
     subcommands = [QueuePluginRunSubcommand, CancelQueuedRunSubcommand, QueuedRunReadSubcommand, QueuedRunShowSubcommand, ChangePluginServiceSubcommand, LogPluginLineSubcommand, PostPluginCardSubcommand, PluginTrySubcommand, PluginEventsSubcommand, RunPluginCommandSubcommand, PluginCheckoutSubcommand, PluginPathSubcommand, RefreshPluginConfigSubcommand, PluginChangesSubcommand, PluginFileSubcommand, PluginRecordSubcommand, PluginListSubcommand, PluginSettingsSubcommand, PluginServicesSubcommand, PluginServiceLogSubcommand, UpgradePluginSubcommand, PluginPreviewSubcommand, PluginLatestSubcommand, PluginDashboardSubcommand, PluginDashboardsSubcommand, PluginDescriptionsSubcommand, ProposePluginSubcommand, InstallPluginSubcommand, EnablePluginSubcommand,

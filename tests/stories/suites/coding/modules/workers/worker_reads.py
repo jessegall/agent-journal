@@ -3,11 +3,11 @@ from pathlib import Path
 from engine.enums.tool_type import ToolType
 from engine.testing.expectations.expect_reply import expect_reply_allowed
 from engine.testing.examples.hook_samples import HookSamples
-from suites.coding.modules.workers.support.worker_nudges import WORKER_READ_REFUSAL
+from suites.coding.modules.workers.nudges.worker_read_refusal_nudge import WorkerReadRefusalNudge
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 
-REFUSAL = WORKER_READ_REFUSAL.nudge().text
+REFUSAL = WorkerReadRefusalNudge.declared().nudge().text
 
 
 def read_row(path):

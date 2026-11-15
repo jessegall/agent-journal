@@ -28,10 +28,11 @@ from tests.stories.engine.driver.support.samples import SAMPLES
 from engine.testing.expectations.expect_reply import expect_absent_reply_line, expect_absent_reply_refusal, expect_reply_line
 from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_lines_2, expect_lines_3, expect_refusal_hook
-from core.modules.messages.support.message_nudges import MESSAGE_UPDATED
+from core.modules.messages.nudges.message_updated_nudge import MessageUpdatedNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
-from core.modules.messages.support.message_nudges import IMAGE_TAG_REQUEST, NEW_MESSAGE
-from core.modules.drivers.support.driver_nudges import AGENT_COMPACTED
+from core.modules.messages.nudges.image_tag_request_nudge import ImageTagRequestNudge
+from core.modules.messages.nudges.new_message_nudge import NewMessageNudge
+from core.modules.drivers.nudges.agent_compacted_nudge import AgentCompactedNudge
 from core.modules.drivers.support.line_typing import TERMINAL_PREFIX
 from tests.integration.support.fixture_journal import FixtureJournal
 
@@ -106,8 +107,8 @@ def test_only_the_first_message_is_typed_to_an_agent_the_stop_hook_let_stop_and_
     agent = story.agent
     post_message(story, "Are you there")
     post_message(story, "Hello")
-    expect_row(typing, typed=[(agent.id, f"[journal] {NEW_MESSAGE.nudge(message=1).text}")])
-    delivered_lines = story.hook("s-1", HookSamples.prompt(f"[journal] {NEW_MESSAGE.nudge(message=1).text}"))
+    expect_row(typing, typed=[(agent.id, f"[journal] {NewMessageNudge.declared().nudge(message=1).text}")])
+    delivered_lines = story.hook("s-1", HookSamples.prompt(f"[journal] {NewMessageNudge.declared().nudge(message=1).text}"))
     expect_reply_line(delivered_lines, "New message 2")
     expect_absent_reply_line(delivered_lines, "New message 1")
 
@@ -118,12 +119,12 @@ def test_a_new_message_is_typed_to_an_idle_agent_though_an_older_one_was_told_an
     agent = story.agent
     post_message(story, "Are you there")
     story.advance(timedelta(seconds=1))
-    story.hook("s-1", HookSamples.prompt(f"[journal] {NEW_MESSAGE.nudge(message=1).text}"))
+    story.hook("s-1", HookSamples.prompt(f"[journal] {NewMessageNudge.declared().nudge(message=1).text}"))
     story.hook("s-1", tool_failure(True))
     story.advance(timedelta(minutes=10))
     post_message(story, "Hello")
     story.run_listeners()
-    expect_row(typing, typed=[(agent.id, f"[journal] {NEW_MESSAGE.nudge(message=1).text}"), (agent.id, f"[journal] {NEW_MESSAGE.nudge(message=2).text}")])
+    expect_row(typing, typed=[(agent.id, f"[journal] {NewMessageNudge.declared().nudge(message=1).text}"), (agent.id, f"[journal] {NewMessageNudge.declared().nudge(message=2).text}")])
 
 
 def test_a_message_reaches_an_agent_that_waits_on_a_question(played):
@@ -138,7 +139,7 @@ def test_a_fresh_session_that_has_not_been_given_a_prompt_is_idle_too(played):
     typing = KeptTyping()
     story.replace(TerminalTyping, typing)
     post_message(story, "Are you there")
-    expect_terminal_lines(typing, [f"[journal] {NEW_MESSAGE.nudge(message=1).text}"])
+    expect_terminal_lines(typing, [f"[journal] {NewMessageNudge.declared().nudge(message=1).text}"])
 
 
 def test_a_message_to_an_agent_with_no_hook_for_half_a_minute_is_not_typed_since_it_is_in_a_turn(delivery_typing):
@@ -200,7 +201,7 @@ def test_a_line_the_agents_own_hook_took_while_it_was_typed_is_typed_once_and_no
     story.hook("s-1", READ_MESSAGE_HOOK)
     for _ in range(4):
         story.run_listeners()
-    expect_terminal_lines(typing, [f"[journal] {NEW_MESSAGE.nudge(message=1).text}"])
+    expect_terminal_lines(typing, [f"[journal] {NewMessageNudge.declared().nudge(message=1).text}"])
 
 
 class HookDuringTerminalLine(KeptTyping):
@@ -223,7 +224,7 @@ def test_a_hook_during_the_typing_does_not_give_the_line_too(played):
     agent = story.agent
     post_message(story, "Are you there")
     story.run_listeners()
-    expect_terminal_lines(typing, [f"[journal] {NEW_MESSAGE.nudge(message=1).text}"])
+    expect_terminal_lines(typing, [f"[journal] {NewMessageNudge.declared().nudge(message=1).text}"])
     expect_hook_lines_typing_without_line(typing, "New message 1")
     story.expect_text(f"agent-line list --agent {agent.id} --state entered", "New message 1", actor=story.user)
 
@@ -294,7 +295,7 @@ def test_a_compaction_that_sends_no_further_hook_stops_holding_lines_after_its_l
     story.hook("s-1", COMPACTION)
     story.advance(timedelta(seconds=COMPACTION_LIMIT_SECONDS))
     post_message(story, "Are you there")
-    expect_terminal_lines(typing, [f"[journal] {NEW_MESSAGE.nudge(message=1).text}"])
+    expect_terminal_lines(typing, [f"[journal] {NewMessageNudge.declared().nudge(message=1).text}"])
 
 
 def test_a_paused_agent_that_is_idle_is_typed_a_message_so_the_user_can_chat(idle_delivery_typing):
@@ -303,7 +304,7 @@ def test_a_paused_agent_that_is_idle_is_typed_a_message_so_the_user_can_chat(idl
     story.run(f"agent pause {agent_number(story, agent.id)}", actor=story.user)
     typing.typed.clear()
     post_message(story, "Are you there")
-    expect_row(typing, typed=[(agent.id, f"[journal] {NEW_MESSAGE.nudge(message=1).text}")])
+    expect_row(typing, typed=[(agent.id, f"[journal] {NewMessageNudge.declared().nudge(message=1).text}")])
 
 
 def test_an_agent_waiting_on_a_question_is_woken_by_a_new_message(delivery_typing):
@@ -311,7 +312,7 @@ def test_an_agent_waiting_on_a_question_is_woken_by_a_new_message(delivery_typin
     story.run('question ask "Which database?" --context "A story asks this so its card and answer can be checked." --environment main', actor=story.agent)
     agent = hook_agent(story, story.hook("s-1", HookSamples.stop()))
     post_message(story, "Use sqlite")
-    expect_row(typing, typed=[(agent.id, f"[journal] {NEW_MESSAGE.nudge(message=1).text}")])
+    expect_row(typing, typed=[(agent.id, f"[journal] {NewMessageNudge.declared().nudge(message=1).text}")])
 
 
 def test_with_no_terminal_the_line_waits_for_the_next_hook(played):
@@ -418,7 +419,7 @@ def test_a_message_with_an_image_tells_the_agent_to_look_at_it(image_message):
     story = image_message
     story.container.get(Database).connection.execute("UPDATE messages SET files = ? WHERE id = 1", ['["shot.png", "notes.txt"]'])
     lines = story.hook("s-1", READ_MESSAGE_HOOK).lines
-    expect_lines_5(IMAGE_TAG_REQUEST.nudge(message=1, name="shot.png").text, lines)
+    expect_lines_5(ImageTagRequestNudge.declared().nudge(message=1, name="shot.png").text, lines)
     expect_absent_notes_lines("notes.txt", "attaches an image", lines)
 
 
@@ -482,7 +483,7 @@ def test_editing_a_message_the_agent_read_names_it_to_the_agent_without_its_text
     story.expect_success('message edit 1 --text "Better words"', actor=story.user)
     story.run_listeners()
     lines = story.hook("s-1", HookSamples.edit("cart.py"))
-    expect_reply_line(lines, expected_nudge(MESSAGE_UPDATED, message=1))
+    expect_reply_line(lines, expected_nudge(MessageUpdatedNudge.declared(), message=1))
     expect_absent_reply_line(lines, "Better words")
 
 
@@ -545,18 +546,18 @@ def test_a_line_that_could_not_be_typed_is_asked_again_after_ten_seconds_typed_o
     story.advance(timedelta(seconds=11))
     story.tick("s-1")
     story.run_listeners()
-    expect_row(typing, typed=[(agent.id, f"[journal] {NEW_MESSAGE.nudge(message=1).text}")])
+    expect_row(typing, typed=[(agent.id, f"[journal] {NewMessageNudge.declared().nudge(message=1).text}")])
     for _ in range(3):
         story.advance(timedelta(seconds=11))
         story.tick("s-1")
         story.run_listeners()
-    expect_row(typing, typed=[(agent.id, f"[journal] {NEW_MESSAGE.nudge(message=1).text}")])
+    expect_row(typing, typed=[(agent.id, f"[journal] {NewMessageNudge.declared().nudge(message=1).text}")])
 
 
 def test_a_line_the_hook_carries_after_a_failed_typing_is_told_once(untyped_message_after_tick):
     story = untyped_message_after_tick
     lines = story.hook("s-1", HookSamples.prompt("Carry on")).lines
-    expect_lines_3(lines, "New message 1", [NEW_MESSAGE.nudge(message=1).text])
+    expect_lines_3(lines, "New message 1", [NewMessageNudge.declared().nudge(message=1).text])
     story.expect_absent_hook_line("s-1", HookSamples.edit("cart.py"), "New message 1")
 
 
@@ -733,7 +734,7 @@ def test_a_message_is_typed_at_once_to_an_agent_back_from_a_compaction_a_person_
     story.tick("s-1")
     post_message(story, "Are you back")
     story.run_listeners()
-    expect_terminal_lines(typing, [TERMINAL_PREFIX + AGENT_COMPACTED.nudge().text, TERMINAL_PREFIX + NEW_MESSAGE.nudge(message=1).text])
+    expect_terminal_lines(typing, [TERMINAL_PREFIX + AgentCompactedNudge.declared().nudge().text, TERMINAL_PREFIX + NewMessageNudge.declared().nudge(message=1).text])
 
 
 def test_an_agent_that_runs_a_tool_within_ten_seconds_of_its_compaction_is_not_told_to_read_the_overview(played):

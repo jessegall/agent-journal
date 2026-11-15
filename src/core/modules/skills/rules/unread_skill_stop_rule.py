@@ -1,4 +1,4 @@
-from core.modules.skills.support.skill_nudges import UNREAD_SKILLS
+from core.modules.skills.nudges.unread_skills_nudge import UnreadSkillsNudge
 from engine.agent.enums.role_group import RoleGroup
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
@@ -22,4 +22,4 @@ class UnreadSkillStopRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         names = self.unread_skills.names(hook.agent_id)
-        return RuleAnswer.refused(UNREAD_SKILLS.nudge(skills=', '.join(names))) if names and self.requirement.is_required else RuleAnswer.allowed("no required skill is unread")
+        return RuleAnswer.refused(UnreadSkillsNudge.declared().nudge(skills=', '.join(names))) if names and self.requirement.is_required else RuleAnswer.allowed("no required skill is unread")

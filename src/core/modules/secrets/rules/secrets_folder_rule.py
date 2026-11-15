@@ -1,5 +1,5 @@
 from functools import cache
-from core.modules.secrets.support.secret_nudges import SECRETS_FOLDER_BAN
+from core.modules.secrets.nudges.secrets_folder_ban_nudge import SecretsFolderBanNudge
 import json
 from pathlib import Path
 
@@ -32,7 +32,7 @@ class SecretsFolderRule(DriverRule):
         tool_texts = (*tool.files, *(tool.shell.part_texts if tool.shell is not None else ()), json.dumps(dict(hook.event.tool_input()), default=str))
         if not any(spelling in tool_text for tool_text in tool_texts for spelling in self.spellings()):
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(SECRETS_FOLDER_BAN.nudge())
+        return RuleAnswer.refused(SecretsFolderBanNudge.declared().nudge())
 
     def spellings(self) -> tuple[str, ...]:
         return folder_spellings(str(self.folder.folder), str(Path.home()))

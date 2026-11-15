@@ -10,6 +10,7 @@ from engine.viewer.choice import Choice
 from engine.viewer.choice_field import ChoiceField
 from engine.viewer.template_field import TemplateField
 from engine.viewer.text_field import TextField
+from engine.types.class_fields import class_fields
 
 __all__ = ["Choice", "ChoiceField", "TextField", "TemplateField", "AgentField", "ButtonCondition", "ButtonMenuItem", "ButtonDeclaration"]
 
@@ -31,6 +32,11 @@ class ButtonDeclaration:
     tip: str = ""
     confirm: str = ""
     danger: bool = False
+
+    # a button written as a class in its own file sets the fields as class attributes
+    @classmethod
+    def declared(cls) -> "ButtonDeclaration":
+        return ButtonDeclaration(**class_fields(cls, ButtonDeclaration))
 
     def has_slot_with(self, prefixes: str | tuple[str, ...]) -> bool:
         return any(slot.startswith(prefixes) for slot in self.slots)

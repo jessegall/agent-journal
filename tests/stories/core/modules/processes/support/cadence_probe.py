@@ -48,7 +48,7 @@ def cadence_tick(story: Story) -> None:
 
 
 def labelled_tick(story: Story, label: str) -> None:
-    handlers = [handler for module in ModuleFinder(story.home).modules() for handler in module.tick_handlers if handler.label == label]
+    handlers = [handler for module in ModuleFinder(story.home).modules() for handler in module.tick_handler_declarations() if handler.label == label]
     story.expect_rows(len(handlers) == 1)
     handlers[0].handler(story.container)
 

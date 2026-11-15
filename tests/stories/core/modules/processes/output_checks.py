@@ -9,7 +9,7 @@ CHECK_TERMS = "has run {minutes} min: check it is doing its work"
 
 
 def check_tick(story):
-    handlers = [handler for module in ModuleFinder(story.home).modules() for handler in module.tick_handlers if handler.label == "output checks"]
+    handlers = [handler for module in ModuleFinder(story.home).modules() for handler in module.tick_handler_declarations() if handler.label == "output checks"]
     story.expect_rows(len(handlers) == 1)
     handlers[0].handler(story.container)
 

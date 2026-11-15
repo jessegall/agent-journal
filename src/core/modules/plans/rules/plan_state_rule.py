@@ -13,16 +13,20 @@ from core.modules.agents.models.agent import Agent
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.queries.plan_query import PlanQuery
-from core.modules.plans.support.plan_nudges import PLAN_APPROVED, PLAN_APPROVED_WITH_MESSAGE, PLAN_BLOCKED, PLAN_CANCELLED, PLAN_WAITING
+from core.modules.plans.nudges.plan_approved_nudge import PlanApprovedNudge
+from core.modules.plans.nudges.plan_approved_with_message_nudge import PlanApprovedWithMessageNudge
+from core.modules.plans.nudges.plan_blocked_nudge import PlanBlockedNudge
+from core.modules.plans.nudges.plan_cancelled_nudge import PlanCancelledNudge
+from core.modules.plans.nudges.plan_waiting_nudge import PlanWaitingNudge
 from core.modules.plans.support.plan_approval import PlanApproval
 
 CHANGED_PLANS_REASON = "every plan whose state changed since the last answer is told to the agent"
 
 STATE_NUDGES: dict[PlanState, NudgeDeclaration] = {
-    PlanState.READY: PLAN_WAITING,
-    PlanState.APPROVED: PLAN_APPROVED,
-    PlanState.CANCELLED: PLAN_CANCELLED,
-    PlanState.BLOCKED: PLAN_BLOCKED,
+    PlanState.READY: PlanWaitingNudge.declared(),
+    PlanState.APPROVED: PlanApprovedNudge.declared(),
+    PlanState.CANCELLED: PlanCancelledNudge.declared(),
+    PlanState.BLOCKED: PlanBlockedNudge.declared(),
 }
 
 
@@ -50,5 +54,5 @@ class PlanStateRule(DriverRule):
             return STATE_NUDGES[plan.state].nudge(plan=plan.id)
         message_id = PlanApproval.message_id(plan)
         if message_id is None:
-            return PLAN_APPROVED.nudge(plan=plan.id)
-        return PLAN_APPROVED_WITH_MESSAGE.nudge(plan=plan.id, message=message_id)
+            return PlanApprovedNudge.declared().nudge(plan=plan.id)
+        return PlanApprovedWithMessageNudge.declared().nudge(plan=plan.id, message=message_id)

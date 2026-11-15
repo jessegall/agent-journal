@@ -11,7 +11,9 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from engine.driver.nudge import Nudge
 from engine.driver.nudge_declaration import NudgeDeclaration
-from suites.coding.modules.workers.support.behind_nudges import STALE_CHOICES, MERGER_STALE_WORKTREE, STALE_SOURCE
+from suites.coding.modules.workers.support.behind_nudges import STALE_SOURCE
+from suites.coding.modules.workers.nudges.stale_choices_nudge import StaleChoicesNudge
+from suites.coding.modules.workers.nudges.merger_stale_worktree_nudge import MergerStaleWorktreeNudge
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
@@ -30,7 +32,7 @@ class AnnounceBehindChecksHandler(Handler[AnnounceBehindChecks, tuple[Nudge, ...
     def handle(self, command: AnnounceBehindChecks, context: Context) -> tuple[Nudge, ...]:
         merger_enabled = self.settings.flag(MERGER_ENABLED)
         worktrees = self.rows.required_index(Worktree, command.worktree_ids)
-        nudges = tuple(self.nudge(worktrees[worktree_id], MERGER_STALE_WORKTREE if merger_enabled else STALE_CHOICES) for worktree_id in command.worktree_ids)
+        nudges = tuple(self.nudge(worktrees[worktree_id], MergerStaleWorktreeNudge.declared() if merger_enabled else StaleChoicesNudge.declared()) for worktree_id in command.worktree_ids)
         for nudge in nudges:
             self.inbox.send_nudge(nudge, STALE_SOURCE, context)
         return nudges

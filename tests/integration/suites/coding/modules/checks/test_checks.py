@@ -8,7 +8,7 @@ from engine.registry.registry import Registry
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
 from engine.testing.expectations.expect_row import expect_row
-from suites.coding.modules.checks.support.check_nudges import CHECK_FAILED
+from suites.coding.modules.checks.nudges.check_failed_nudge import CheckFailedNudge
 
 
 def test_a_check_is_made_run_by_hand_and_listed_with_its_verdict(played):
@@ -21,7 +21,7 @@ def test_a_check_is_made_run_by_hand_and_listed_with_its_verdict(played):
 def test_a_failing_check_prints_its_output_and_tells_the_agent_once(played):
     story = played(SuiteCheck)
     story.expect_text("check run 1", "check 1 failed: Lint", "two problems", actor=story.user)
-    story.expect_hook_allowed("s-1", HookSamples.stop(), CHECK_FAILED.nudge(check=1).text)
+    story.expect_hook_allowed("s-1", HookSamples.stop(), CheckFailedNudge.declared().nudge(check=1).text)
 
 
 def test_the_runs_of_a_check_are_listed_newest_first_with_what_each_printed(played):

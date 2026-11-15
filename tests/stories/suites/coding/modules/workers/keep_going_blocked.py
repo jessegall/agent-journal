@@ -3,14 +3,14 @@ from datetime import timedelta
 import pytest
 
 from suites.coding.modules.workers.models.merger_line import MergerLine
-from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
+from suites.coding.modules.workers.nudges.worker_task_blocked_nudge import WorkerTaskBlockedNudge
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.integration.suites.coding.modules.workers.test_gone_workers import RESUMED_PID, missing_program, running_worker, start_launcher, worker_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
-from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
+from suites.coding.modules.workers.nudges.worker_task_blocked_nudge import WorkerTaskBlockedNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
-from suites.coding.modules.workers.support.worker_nudges import BLOCKED_WORKER_TASK
+from suites.coding.modules.workers.nudges.blocked_worker_task_nudge import BlockedWorkerTaskNudge
 from tests.stories.support.story_checks import expect_value_4
 
 __all__ = ["missing_program", "running_worker", "worker_story"]
@@ -51,7 +51,7 @@ def worker_blocked_its_task(worker_on_a_task):
 def test_a_blocked_task_is_not_left_to_the_merger(worker_blocked_its_task):
     story = worker_blocked_its_task
     texts = merger_line_texts(story)
-    story.expect_rows(not any(expected_nudge(WORKER_TASK_BLOCKED).matches_text(text) for text in texts), detail=str(texts))
+    story.expect_rows(not any(expected_nudge(WorkerTaskBlockedNudge.declared()).matches_text(text) for text in texts), detail=str(texts))
 
 
 def test_worker_deliver_on_a_blocked_task_is_refused_and_hands_in_nothing(worker_blocked_its_task):
@@ -65,6 +65,6 @@ def test_a_worker_whose_task_the_main_agent_blocks_is_told(worker_on_a_task):
     story = worker_on_a_task
     story.expect_success(BLOCK, actor=story.agent)
     lines = worker_lines(story)
-    story.expect_rows(BLOCKED_WORKER_TASK.nudge(task=1).text in lines, detail=lines)
+    story.expect_rows(BlockedWorkerTaskNudge.declared().nudge(task=1).text in lines, detail=lines)
 
 

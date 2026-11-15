@@ -7,7 +7,7 @@ from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.skills.support.agent_skill_rows import AgentSkillRows
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
-from core.modules.skills.support.skill_nudges import LOADED_SKILL_REFUSAL
+from core.modules.skills.nudges.loaded_skill_refusal_nudge import LoadedSkillRefusalNudge
 
 
 class LoadedSkillRule(DriverRule):
@@ -32,4 +32,4 @@ class LoadedSkillRule(DriverRule):
         loaded = [skill.folder for skill in self.catalogue.skills() if skill.folder in folders and self.rows.is_loaded(hook.agent_id, skill.folder, skill.digest)]
         if not loaded:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(LOADED_SKILL_REFUSAL.nudge(name=loaded[0]))
+        return RuleAnswer.refused(LoadedSkillRefusalNudge.declared().nudge(name=loaded[0]))

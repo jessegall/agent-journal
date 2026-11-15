@@ -1,6 +1,6 @@
 from core.modules.plugins.support.heard_event import HeardEvent
 from core.modules.plugins.models.plugin_delivery import PluginDelivery
-from core.modules.plugins.support.plugin_nudges import PLUGIN_REFUSAL
+from core.modules.plugins.nudges.plugin_refusal_nudge import PluginRefusalNudge
 from core.modules.drivers.commands.record_agent_notice.record_agent_notice import RecordAgentNotice
 import json
 
@@ -71,7 +71,7 @@ class PluginRule(DriverRule):
             for group in self.window_groups(manifest, [event for event in reached if event.name in manifest.window_names()]):
                 refusal = self.refusal_text(hook, runnable, group, lines, commands, facts)
                 if refusal:
-                    notice = PLUGIN_REFUSAL.nudge(plugin=plugin.id)
+                    notice = PluginRefusalNudge.declared().nudge(plugin=plugin.id)
                     commands.extend(RecordAgentNotice(hook.agent_id, line, self.name) for line in [*lines, refusal])
                     return RuleAnswer(refusal=notice.text, nudges=tuple([notice]), commands=tuple(commands))
         return RuleAnswer.allowed().running(*commands, *(RecordAgentNotice(hook.agent_id, line, self.name) for line in lines))

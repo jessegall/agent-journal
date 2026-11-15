@@ -15,7 +15,8 @@ from core.modules.assign_rules.models.assign_rule_condition import AssignRuleCon
 from core.modules.assign_rules.models.enums.decision_outcome import DecisionOutcome
 from core.modules.assign_rules.models.support.task_facts import TaskFacts
 from core.modules.assign_rules.support.assign_rules_mode import AssignRulesMode
-from core.modules.assign_rules.support.assign_rules_nudges import RULE_NUDGE_SOURCE, RULE_TASK_NUDGE
+from core.modules.assign_rules.support.assign_rules_nudges import RULE_NUDGE_SOURCE
+from core.modules.assign_rules.nudges.rule_task_nudge import RuleTaskNudge
 from core.modules.assign_rules.support.decision_note import DecisionNote
 from core.modules.assign_rules.support.rules.enabled_rules import EnabledRules
 from core.modules.assign_rules.support.rules.environment_rules import EnvironmentRules
@@ -159,7 +160,7 @@ class AssignRules:
     def nudge_main_agent(self, task: Task, rule: AssignRule, actor_id: int, context: Context) -> None:
         agent = self.assignments.agent_row(actor_id)
         if agent is not None and agent.role == AgentRole.MAIN:
-            self.nudger.send(agent.id, RULE_TASK_NUDGE, RULE_NUDGE_SOURCE, context, task=task.id, rule=rule.id)
+            self.nudger.send(agent.id, RuleTaskNudge.declared(), RULE_NUDGE_SOURCE, context, task=task.id, rule=rule.id)
 
     def matched(self, task: Task, stored: AssignDecision | None, rule: AssignRule, usable: Usable, skipped: list[str], later_rules: list[AssignRule],
                 context: Context) -> AssignDecision:

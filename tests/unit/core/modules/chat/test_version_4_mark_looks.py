@@ -28,6 +28,6 @@ LOOKS = (Version4Look("messages.thought", "messages.thoughts", "agent", "group",
 
 @pytest.mark.parametrize("look", LOOKS, ids=[look.type for look in LOOKS])
 def test_each_mark_is_declared_as_version_4_showed_it(look):
-    mark = next(mark for module in DEFAULT_MODULES for mark in module.marks if mark.type.value == look.type)
+    mark = next(mark for module in DEFAULT_MODULES for mark in module.mark_declarations() if mark.type.value == look.type)
     assert (mark.family.name, mark.family.group.value, mark.family.colouring.value, mark.mark_icon) == (look.family, look.group, look.colouring, look.mark_icon)
     assert not look.group_label or mark.group_label == look.group_label

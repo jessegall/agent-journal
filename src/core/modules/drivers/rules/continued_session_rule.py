@@ -5,7 +5,7 @@ from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.drivers.support.driver_nudges import CONTINUED_SESSION
+from core.modules.drivers.nudges.continued_session_nudge import ContinuedSessionNudge
 
 
 class ContinuedSessionRule(DriverRule):
@@ -23,4 +23,4 @@ class ContinuedSessionRule(DriverRule):
         self.numbers = numbers
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.with_nudges(CONTINUED_SESSION.nudge(agent=self.numbers.number(AGENT_MODEL_NAME, hook.agent_id))) if hook.event.is_resume else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(ContinuedSessionNudge.declared().nudge(agent=self.numbers.number(AGENT_MODEL_NAME, hook.agent_id))) if hook.event.is_resume else RuleAnswer.allowed()

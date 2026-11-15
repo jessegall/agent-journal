@@ -2,7 +2,7 @@ from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.driver.rule_answer import RuleAnswer
 from engine.enums.hook_event_name import HookEventName
-from core.modules.helpers.support.helper_nudges import START_WITHOUT_MODEL
+from core.modules.helpers.nudges.start_without_model_nudge import StartWithoutModelNudge
 
 MODEL_FLAG = "--model"
 
@@ -23,4 +23,4 @@ class StartNamesModelRule(DriverRule):
             return RuleAnswer.allowed()
         starts = [part for start in self.starts for part in shell.parts_running_journal_command(start)]
         starts_without_model = [part for part in starts if not any(argument.split("=")[0] == MODEL_FLAG for argument in part.arguments)]
-        return RuleAnswer.refused(START_WITHOUT_MODEL.nudge()) if starts_without_model else RuleAnswer.allowed()
+        return RuleAnswer.refused(StartWithoutModelNudge.declared().nudge()) if starts_without_model else RuleAnswer.allowed()

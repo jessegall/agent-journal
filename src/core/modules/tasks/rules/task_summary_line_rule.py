@@ -1,4 +1,5 @@
-from core.modules.tasks.support.task_nudges import MISSED_LOG, CURRENT_TASK
+from core.modules.tasks.nudges.missed_log_nudge import MissedLogNudge
+from core.modules.tasks.nudges.current_task_nudge import CurrentTaskNudge
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -24,4 +25,4 @@ class TaskSummaryLineRule(DriverRule):
         current = self.current_tasks.current(hook.agent_id)
         if current is None:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(CURRENT_TASK.nudge(task=current.task.id), MISSED_LOG.nudge(task=current.task.id))
+        return RuleAnswer.with_nudges(CurrentTaskNudge.declared().nudge(task=current.task.id), MissedLogNudge.declared().nudge(task=current.task.id))

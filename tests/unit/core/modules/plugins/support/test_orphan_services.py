@@ -24,5 +24,5 @@ def stopped(story) -> None:
 
 
 def test_the_check_runs_once_a_minute():
-    handler = next(handler for handler in PluginsModule.tick_handlers if handler.name == "orphan plugin service stopping")
+    handler = next(handler for handler in PluginsModule.tick_handler_declarations() if handler.name == "orphan plugin service stopping")
     expect_value(handler.interval.seconds, 60)

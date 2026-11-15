@@ -39,8 +39,7 @@ from core.modules.drivers.commands.record_program_compaction.record_program_comp
 from core.modules.drivers.commands.end_program_compaction.end_program_compaction_handler import EndProgramCompactionHandler
 from core.modules.drivers.commands.report_compaction_faults.report_compaction_faults_handler import ReportCompactionFaultsHandler
 from core.modules.drivers.listeners.compaction_notice_mark_listener import CompactionNoticeMarkListener
-from core.modules.drivers.support.compaction_marks import COMPACTION_MARKS
-from core.modules.drivers.ticks.compaction_faults_tick import CompactionFaultsTick
+from core.modules.drivers.marks.compaction_mark import CompactionMark
 from core.modules.agents.support.context_change_requests import ContextChangeRequests
 from core.modules.drivers.bindings.recorded_context_change_requests import RecordedContextChangeRequests
 from core.modules.drivers.migrations.m040_held_refusal_skips import ConfirmedSkipsMigration
@@ -60,7 +59,7 @@ from core.modules.drivers.migrations.m020_block_stop_name import BlockStopNameMi
 from core.modules.drivers.migrations.m010_subagent_dispatches import SubagentDispatchesMigration
 from core.modules.drivers.migrations.m024_helper_jobs import HelperJobsMigration
 from core.modules.drivers.migrations.m025_helper_job_helper_index import HelperJobHelperIndexMigration
-from core.modules.drivers.support.dispatch_marks import DISPATCH_MARKS
+from core.modules.drivers.marks.dispatch_mark import DispatchMark
 from core.modules.agents.support.transcript_authors import TranscriptAuthors
 from core.modules.drivers.support.line_transcript_authors import LineTranscriptAuthors
 from core.modules.drivers.commands.skip_agent_block.skip_agent_block_subcommand import SkipAgentBlockSubcommand
@@ -70,12 +69,6 @@ from core.modules.drivers.migrations.m016_agent_line_wakes import AgentLineWakes
 from core.modules.drivers.migrations.m017_stop_blocks import StopBlocksMigration
 from core.modules.drivers.migrations.m015_agent_line_state_index import AgentLineStateIndexMigration
 from core.modules.drivers.migrations.m005_nudge_debts import NudgeDebtsMigration
-from engine.ticker.tick_handler import TickHandler
-from engine.ticker.tick_interval import TickInterval
-from core.modules.drivers.ticks.agent_ticks import AgentTicks
-from core.modules.drivers.ticks.event_pruning import EventPruning
-from core.modules.drivers.ticks.hook_pruning import HookPruning
-from core.modules.drivers.ticks.row_pruning import RowPruning
 from core.modules.drivers.migrations.m006_required_commands import RequiredCommandsMigration
 from core.modules.drivers.migrations.m007_nudge_record_delivery import NudgeRecordDeliveryMigration
 from core.modules.drivers.migrations.m045_hook_timeout_notices import HookTimeoutNoticesMigration
@@ -120,7 +113,8 @@ from core.modules.drivers.listeners.deferred_rules_listener import DeferredRules
 from core.modules.drivers.commands.record_bypass_line.record_bypass_line_handler import RecordBypassLineHandler
 from core.modules.drivers.commands.record_hook_timeout.record_hook_timeout_handler import RecordHookTimeoutHandler
 from core.modules.drivers.commands.record_missing_prompt.record_missing_prompt_handler import RecordMissingPromptHandler
-from core.modules.drivers.support.bypass_marks import BYPASS_MARKS
+from core.modules.drivers.marks.required_command_skipped_mark import RequiredCommandSkippedMark
+from core.modules.drivers.marks.bypass_mark import BypassMark
 from core.modules.drivers.listeners.hook_wait_file_listener import HookWaitFileListener
 from core.modules.drivers.commands.record_agent_notice.record_agent_notice_handler import RecordAgentNoticeHandler
 from core.modules.drivers.commands.record_agent_nudge.record_agent_nudge_handler import RecordAgentNudgeHandler
@@ -169,7 +163,6 @@ from core.modules.drivers.commands.type_waiting_lines.type_waiting_lines_handler
 from core.modules.drivers.commands.wake_compacted_agent.wake_compacted_agent_handler import WakeCompactedAgentHandler
 from core.modules.drivers.commands.wake_inactive_agent.wake_inactive_agent_handler import WakeInactiveAgentHandler
 from core.modules.drivers.commands.wake_interrupted_agent.wake_interrupted_agent_handler import WakeInterruptedAgentHandler
-from core.modules.drivers.ticks.interrupted_agent_wake import InterruptedAgentWake
 from core.modules.drivers.commands.wake_safeguards_stopped_agent.wake_safeguards_stopped_agent_handler import WakeSafeguardsStoppedAgentHandler
 from core.modules.drivers.rules.safeguards_stop_rule import SafeguardsStopRule
 from core.modules.drivers.commands.end_silent_helpers.end_silent_helpers_handler import EndSilentHelpersHandler
@@ -195,7 +188,6 @@ from core.modules.drivers.migrations.m019_hook_change_names import HookChangeNam
 from core.modules.drivers.migrations.m031_helper_job_created_index import HelperJobCreatedIndexMigration
 from core.modules.drivers.migrations.m027_helper_jobs_closed import HelperJobsClosedMigration
 from core.modules.drivers.rules.agent_block_rule import AgentBlockRule
-from core.modules.drivers.ticks.end_silent_helpers_tick import EndSilentHelpersTick
 from core.modules.drivers.rules.access_rule import AccessRule
 from core.modules.drivers.rules.type_commands_rule import TypeCommandsRule
 from core.modules.drivers.support.agent_line_check import AgentLineCheck
@@ -204,8 +196,6 @@ from core.modules.drivers.rules.native_subagent_rule import NativeSubagentRule
 from core.modules.drivers.rules.private_corpus_rule import PrivateCorpusRule
 from core.modules.drivers.rules.database_file_rule import DatabaseFileRule
 from core.modules.drivers.rules.panic_file_rule import PanicFileRule
-from core.modules.drivers.ticks.panic_watch import PanicWatch
-from core.modules.drivers.ticks.released_session_wake import ReleasedSessionWake
 from core.modules.drivers.migrations.m004_nudge_records import NudgeRecordsMigration
 from core.modules.drivers.migrations.m028_read_indexes import ReadIndexesMigration
 from core.modules.drivers.migrations.m047_plain_column_names import PlainColumnNamesMigration
@@ -237,6 +227,15 @@ from core.modules.drivers.commands.record_agent_launch_failure.record_agent_laun
 from core.modules.drivers.listeners.instruction_imports_listener import InstructionImportsListener
 from core.modules.drivers.support.driver_settings import DRIVERS_SETTINGS
 from core.modules.drivers.support.reviewer_start import REVIEWER_PROFILE
+from core.modules.drivers.tick_handlers.interrupted_agent_wake_tick_handler import InterruptedAgentWakeTickHandler
+from core.modules.drivers.tick_handlers.agent_ticks_tick_handler import AgentTicksTickHandler
+from core.modules.drivers.tick_handlers.end_silent_helpers_tick_handler import EndSilentHelpersTickHandler
+from core.modules.drivers.tick_handlers.compaction_faults_tick_handler import CompactionFaultsTickHandler
+from core.modules.drivers.tick_handlers.panic_watch_tick_handler import PanicWatchTickHandler
+from core.modules.drivers.tick_handlers.released_session_wake_tick_handler import ReleasedSessionWakeTickHandler
+from core.modules.drivers.tick_handlers.hook_pruning_tick_handler import HookPruningTickHandler
+from core.modules.drivers.tick_handlers.row_pruning_tick_handler import RowPruningTickHandler
+from core.modules.drivers.tick_handlers.event_pruning_tick_handler import EventPruningTickHandler
 
 
 class DriversModule(Module):
@@ -259,11 +258,11 @@ class DriversModule(Module):
     guards = [DriverSettingGuard]
     listeners = [CompactionNoticeMarkListener, InstructionImportsListener, HookTimeoutMarkListener, JournalStartedListener, ManageHooksListener, AgentBlockSkipMarkListener, BypassLogListener, DeferredRulesListener, HookWaitFileListener, TypedLineListener, StopLineTypingListener, ClaimedLineReleaseListener, NewDriverLinesListener]
     overlays = [PausedOverlay]
-    marks = [*BYPASS_MARKS, *DISPATCH_MARKS, *COMPACTION_MARKS]
+    marks = [RequiredCommandSkippedMark, BypassMark, DispatchMark, CompactionMark]
     performance_tools = [HookCostTool]
-    tick_handlers = [TickHandler(TickInterval(seconds=3), InterruptedAgentWake(), "interrupted agents"), TickHandler(TickInterval(seconds=60), AgentTicks(), "agent ticks", starts_immediately=True), TickHandler(TickInterval(seconds=60), EndSilentHelpersTick(), "silent helpers"), TickHandler(TickInterval(seconds=60), CompactionFaultsTick(), "compaction faults"), TickHandler(TickInterval(seconds=2), PanicWatch(), "panic watch"), TickHandler(TickInterval(seconds=5), ReleasedSessionWake(), "held session wake"),
-                     TickHandler(TickInterval(seconds=60 * 60), HookPruning(), "hook pruning"), TickHandler(TickInterval(seconds=60), RowPruning(), "row pruning"),
-                     TickHandler(TickInterval(seconds=5), EventPruning(), "event pruning")]
+    tick_handlers = [InterruptedAgentWakeTickHandler, AgentTicksTickHandler, EndSilentHelpersTickHandler, CompactionFaultsTickHandler, PanicWatchTickHandler, ReleasedSessionWakeTickHandler,
+                     HookPruningTickHandler, RowPruningTickHandler,
+                     EventPruningTickHandler]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed]
     driver_rules = [RepeatedFileReadRule, SafeguardsStopRule, PanicFileRule, BlockStopRule, LongOutputRule, ForeignHooksRule, CompactionDueStopRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, ContinuedSessionRule, AgentBlockRule, TakeoverRule, AccessRule, TypeCommandsRule, NativeSubagentRule, PrivateCorpusRule, DatabaseFileRule]
     bindings = {OpenBlocks: AgentOpenBlocks, CallerLineCheck: AgentLineCheck, ContextChangeRequests: RecordedContextChangeRequests, Nudger: AgentLineNudger, OverviewReads: TableOverviewReads, RefusalSkips: TableRefusalSkips, ManagedHookHistoryReader: ManagedHookHistoryQuery, TranscriptAuthors: LineTranscriptAuthors, HookHistory: TableHookHistory, AgentStateOpenness: BoardStateOpenness,HookRoute: AgentHookRoute, ChangeFilter: DriverChangeFilter,

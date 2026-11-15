@@ -6,7 +6,9 @@ from engine.driver.rule_answer import RuleAnswer
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
 from core.modules.skills.support.block_conditions.skill_loaded import SkillLoaded
 from core.modules.skills.support.skill_block import SkillBlock
-from core.modules.skills.support.skill_nudges import READ_COMMAND_SKILL_FIRST, READ_SKILL_FIRST, SKILL_COUNTDOWN, SKILL_TOOL_USES
+from core.modules.skills.support.skill_nudges import SKILL_COUNTDOWN, SKILL_TOOL_USES
+from core.modules.skills.nudges.read_command_skill_first_nudge import ReadCommandSkillFirstNudge
+from core.modules.skills.nudges.read_skill_first_nudge import ReadSkillFirstNudge
 
 HOOK = SimpleNamespace(agent_id=7)
 
@@ -22,11 +24,11 @@ def built_before(nudge, folder: str, strict: bool):
 
 
 def test_the_block_for_an_unread_skill_is_the_block_blocking_after_built_before():
-    nudge = READ_SKILL_FIRST.nudge(instruction="load this first with the Skill tool: journal-notes")
+    nudge = ReadSkillFirstNudge.declared().nudge(instruction="load this first with the Skill tool: journal-notes")
     assert same_block(SkillBlock.answer(HOOK, nudge, "journal-notes").commands[0], built_before(nudge, "journal-notes", False))
 
 
 def test_a_strict_block_for_a_command_skill_stays_strict():
-    nudge = READ_COMMAND_SKILL_FIRST.nudge(instruction="load this first with the Skill tool: journal-notes")
+    nudge = ReadCommandSkillFirstNudge.declared().nudge(instruction="load this first with the Skill tool: journal-notes")
     block = SkillBlock.answer(HOOK, nudge, "journal-notes", strict=True).commands[0]
     assert block.strict is True and same_block(block, built_before(nudge, "journal-notes", True))

@@ -1,5 +1,5 @@
 from engine.helper_type.helper_type_book import HelperTypeBook
-from core.modules.drivers.support.driver_nudges import REPEATED_STOP
+from core.modules.drivers.nudges.repeated_stop_nudge import RepeatedStopNudge
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -25,4 +25,4 @@ class RepeatedStopReleaseRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if self.types.behaviours(hook.role).checked_stops or self.calls.stop_refusal_count(hook.agent_id) < STOP_REFUSAL_COUNT or self.work.is_running(hook.agent_id):
             return RuleAnswer.allowed("the agent must finish its work or has fewer than five refused stops")
-        return RuleAnswer.final_allowance(REPEATED_STOP.nudge())
+        return RuleAnswer.final_allowance(RepeatedStopNudge.declared().nudge())

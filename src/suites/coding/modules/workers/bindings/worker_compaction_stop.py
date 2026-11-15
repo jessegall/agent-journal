@@ -3,7 +3,7 @@ from engine.driver.agent_hook import AgentHook
 from engine.driver.rule_answer import RuleAnswer
 from engine.helper_type.helper_type_book import HelperTypeBook
 from suites.coding.modules.workers.commands.compact_agent_context.compact_agent_context import CompactAgentContext
-from suites.coding.modules.workers.support.worker_nudges import CONTEXT_COMPACTED
+from suites.coding.modules.workers.nudges.context_compacted_nudge import ContextCompactedNudge
 from suites.coding.support.context_limit_check import ContextLimitCheck
 
 
@@ -20,4 +20,4 @@ class WorkerCompactionStop(CompactionStop):
             return super().answer(hook)
         if self.limit_check.has_windowed_compaction(hook.agent_id) or self.limit_check.is_compaction_requested(hook.agent_id, hook.timestamp):
             return RuleAnswer.final_allowance()
-        return RuleAnswer.final_allowance(CONTEXT_COMPACTED.nudge()).running(CompactAgentContext(hook.agent_id))
+        return RuleAnswer.final_allowance(ContextCompactedNudge.declared().nudge()).running(CompactAgentContext(hook.agent_id))

@@ -6,7 +6,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.expectations.expect_reply import expect_reply_allowed
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
-from core.modules.agents.support.report_nudges import PARENT_REPORT
+from core.modules.agents.nudges.parent_report_nudge import ParentReportNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
@@ -45,7 +45,7 @@ def test_a_helpers_report_keeps_the_workers_task_and_worktree(new_story):
     story, worker = worker_with_helper(new_story)
     stop = HookSamples.stop()
     story.hook(read_helper(story, worker).session, stop.with_raw({**stop.body["raw"], "last_assistant_message": "The cart adds tax twice."}))
-    story.expect_text(f"agent-line list --agent {worker.id}", expected_nudge(PARENT_REPORT))
+    story.expect_text(f"agent-line list --agent {worker.id}", expected_nudge(ParentReportNudge.declared()))
     story.expect_rows(story.newest_row(Message).text == "The cart adds tax twice.")
     story.expect_text("worker-worktree show 1", "state: cut")
     story.expect_text("task show 1", "state: started")

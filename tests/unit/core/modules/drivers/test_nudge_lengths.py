@@ -1,5 +1,5 @@
-from core.modules.skills.support.skill_nudges import READ_SKILL_FIRST
-from core.modules.triggers.support.trigger_nudges import TRIGGER_LINE
+from core.modules.skills.nudges.read_skill_first_nudge import ReadSkillFirstNudge
+from core.modules.triggers.nudges.trigger_line_nudge import TriggerLineNudge
 
 
 def expect_nudge_skill_with(item, path, expected) -> None:
@@ -13,6 +13,6 @@ def expect_nudge_trigger(item, number, expected) -> None:
 
 
 def test_a_line_someone_wrote_and_a_path_to_open_stay_whole():
-    expect_nudge_trigger(TRIGGER_LINE, 500, TRIGGER_LINE.nudge(trigger=500).text)
+    expect_nudge_trigger(TriggerLineNudge.declared(), 500, TriggerLineNudge.declared().nudge(trigger=500).text)
     path = ".agents/skills/commandments-rows-through-their-repository/SKILL.md"
-    expect_nudge_skill_with(READ_SKILL_FIRST, path, path)
+    expect_nudge_skill_with(ReadSkillFirstNudge.declared(), path, path)

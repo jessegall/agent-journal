@@ -31,6 +31,3 @@ def text_inspector(model: type[Doc] | type[Report], model_name: str, closing_lin
 def model_label(model_name: str) -> str:
     return "document" if model_name == "doc" else model_name
 
-
-DOC_INSPECTOR = text_inspector(Doc, "doc", "doc settle", "Document")
-REPORT_INSPECTOR = text_inspector(Report, "report", "report close", "Report")

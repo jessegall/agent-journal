@@ -7,7 +7,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.drivers.support.access_nudges import COMMAND_RESTRICTION
+from core.modules.drivers.nudges.command_restriction_nudge import CommandRestrictionNudge
 
 
 class AllowedCommandTypesRule(DriverRule):
@@ -17,7 +17,7 @@ class AllowedCommandTypesRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     exempt = True
     allowed_commands: ClassVar[Sequence[CommandCategory]] = tuple(CommandCategory)
-    refusal: ClassVar[NudgeDeclaration] = COMMAND_RESTRICTION
+    refusal: ClassVar[NudgeDeclaration] = CommandRestrictionNudge.declared()
     single_action_refusal = "Allows journal commands and the command categories a driver declares or reads from its settings"
 
     def command_types(self, hook: AgentHook) -> Sequence[str]:

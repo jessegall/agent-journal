@@ -5,12 +5,12 @@ from tests.integration.core.modules.helpers.test_helper_jobs import StartedHelpe
 from tests.integration.core.modules.helpers.test_helper_reports import LINES, helper_report, stop_with_report
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.engine.driver.support.hook_agents import hook_agent
-from core.modules.agents.support.report_nudges import PARENT_REPORT
+from core.modules.agents.nudges.parent_report_nudge import ParentReportNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
-from core.modules.memories.support.memory_nudges import START_MEMORIES
+from core.modules.memories.nudges.start_memories_nudge import StartMemoriesNudge
 
 MEMORY_TEXT = "The till is counted every evening"
-MEMORIES_LINE = START_MEMORIES.nudge(count=1).text
+MEMORIES_LINE = StartMemoriesNudge.declared().nudge(count=1).text
 TEST_ENVIRONMENT = "environment make story-engine /work/story-engine --test --test-agent-id {agent}"
 FAKE_START = "agent start s-9 claude main --environment story-engine"
 
@@ -46,7 +46,7 @@ def test_a_helper_of_agent_one_keeps_its_parent_and_its_report_reaches_the_new_s
     session_agent = new_main_session(story, "s-2")
     story.expect_rows(session_agent.id == story.agent.id, helper_agent(story).parent_id == story.agent.id)
     story.hook(helper_agent(story).session, stop_with_report("The cart adds tax twice."))
-    story.expect_text(LINES.format(agent=story.agent.id), expected_nudge(PARENT_REPORT))
+    story.expect_text(LINES.format(agent=story.agent.id), expected_nudge(ParentReportNudge.declared()))
     story.expect_text(f"message read {helper_report(story).id}", "The cart adds tax twice.", actor=session_agent)
 
 

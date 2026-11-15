@@ -1,7 +1,10 @@
 from core.modules.processes.support.run_count_lines import RunCountLines
 from dataclasses import replace
 
-from core.modules.processes.support.process_nudges import RUNNER_MISSING, SANDBOX_RUNNER_MISSING, SANDBOX_PARSE_ERROR, SANDBOX_FOLDER_MISSING
+from core.modules.processes.nudges.runner_missing_nudge import RunnerMissingNudge
+from core.modules.processes.nudges.sandbox_runner_missing_nudge import SandboxRunnerMissingNudge
+from core.modules.processes.nudges.sandbox_parse_error_nudge import SandboxParseErrorNudge
+from core.modules.processes.nudges.sandbox_folder_missing_nudge import SandboxFolderMissingNudge
 from collections.abc import Mapping, Sequence
 
 from engine.driver.agent_hook import AgentHook
@@ -56,16 +59,16 @@ class RunnerRewriteRule(DriverRule):
         sandbox = self.shell_sandbox.is_required and (agent_type.access is Access.READ or agent_type.separate_folder) and self.choice.sandboxed(hook.agent_id)
         if shell.parse_error:
             if sandbox:
-                return RuleAnswer.refused(SANDBOX_PARSE_ERROR.nudge())
+                return RuleAnswer.refused(SandboxParseErrorNudge.declared().nudge())
             return RuleAnswer.allowed()
         if not self.runner.is_installed():
             if sandbox:
-                return RuleAnswer.refused(SANDBOX_RUNNER_MISSING.nudge())
+                return RuleAnswer.refused(SandboxRunnerMissingNudge.declared().nudge())
             return self.missing(hook)
         decided = self.limits.decide(shell, hook.agent_id)
         folder = self.folders.folder(hook.agent_id) if sandbox and agent_type.separate_folder and agent_type.access is Access.WRITING else None
         if sandbox and agent_type.separate_folder and agent_type.access is Access.WRITING and folder is None:
-            return RuleAnswer.refused(SANDBOX_FOLDER_MISSING.nudge())
+            return RuleAnswer.refused(SandboxFolderMissingNudge.declared().nudge())
         read_folders = self.project_reads.folders(self.checkouts.checkout(hook.agent_id).project_root) if folder is not None else ()
         writable_folders = self.project_reads.writable_folders() if folder is not None else ()
         run = replace(decided, read_command=shell.is_readonly, shell_sandbox=sandbox, folder=folder, read_folders=read_folders, writable_folders=writable_folders)
@@ -82,4 +85,4 @@ class RunnerRewriteRule(DriverRule):
     def missing(self, hook: AgentHook) -> RuleAnswer:
         if self.hook_history.last_answer(self.name, hook) is not None:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(RUNNER_MISSING.nudge(folder=self.runner.path.parent))
+        return RuleAnswer.with_nudges(RunnerMissingNudge.declared().nudge(folder=self.runner.path.parent))

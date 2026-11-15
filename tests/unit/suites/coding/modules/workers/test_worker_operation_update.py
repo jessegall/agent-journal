@@ -15,9 +15,9 @@ from suites.coding.modules.workers.support.worker_run_answer import WorkerRunAns
 from engine.time.polled_wait import PolledWait
 
 import pytest
-from suites.coding.modules.workers.models.enums.worker_operation_name import WORKER_OPERATION_UPDATED
-from suites.coding.modules.workers.models.enums.worker_operation_name import WORKER_OPERATION_UPDATE_CONFLICT
-from suites.coding.modules.workers.models.enums.worker_operation_name import WORKER_OPERATION_UPDATE_FAILED
+from suites.coding.modules.workers.nudges.worker_operation_updated_nudge import WorkerOperationUpdatedNudge
+from suites.coding.modules.workers.nudges.worker_operation_update_conflict_nudge import WorkerOperationUpdateConflictNudge
+from suites.coding.modules.workers.nudges.worker_operation_update_failed_nudge import WorkerOperationUpdateFailedNudge
 
 WORKER = 7
 OUTPUT = 40
@@ -43,10 +43,10 @@ def listener() -> WorkerRunEndedListener:
 
 
 def test_the_finished_line_of_an_update_follows_its_result_and_a_clash_ending_with_exit_code_0_is_a_clash():
-    assert listener().update_nudge(operation(outcome=UpdateResult.UPDATED), ended(0)).text == WORKER_OPERATION_UPDATED.nudge(worker=3, output=40).text
-    assert listener().update_nudge(operation(outcome=UpdateResult.CURRENT), ended(0)).text == WORKER_OPERATION_UPDATED.nudge(worker=3, output=40).text
-    assert listener().update_nudge(operation(outcome=UpdateResult.CONFLICTS), ended(0)).text == WORKER_OPERATION_UPDATE_CONFLICT.nudge(worker=3, output=40).text
-    assert listener().update_nudge(operation(outcome=None), ended(1)).text == WORKER_OPERATION_UPDATE_FAILED.nudge(worker=3, output=40).text
+    assert listener().update_nudge(operation(outcome=UpdateResult.UPDATED), ended(0)).text == WorkerOperationUpdatedNudge.declared().nudge(worker=3, output=40).text
+    assert listener().update_nudge(operation(outcome=UpdateResult.CURRENT), ended(0)).text == WorkerOperationUpdatedNudge.declared().nudge(worker=3, output=40).text
+    assert listener().update_nudge(operation(outcome=UpdateResult.CONFLICTS), ended(0)).text == WorkerOperationUpdateConflictNudge.declared().nudge(worker=3, output=40).text
+    assert listener().update_nudge(operation(outcome=None), ended(1)).text == WorkerOperationUpdateFailedNudge.declared().nudge(worker=3, output=40).text
 
 
 def test_an_update_already_on_its_base_is_current_a_moved_one_updated_and_markers_a_clash():

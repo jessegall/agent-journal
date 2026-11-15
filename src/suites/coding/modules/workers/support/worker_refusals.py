@@ -9,7 +9,8 @@ from core.modules.drivers.support.countdowns import Countdowns
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worker_refusal_count import WorkerRefusalCount
-from suites.coding.modules.workers.support.worker_nudges import WORKER_REFUSED, WORKER_REFUSAL_INTERVAL
+from suites.coding.modules.workers.nudges.worker_refused_nudge import WORKER_REFUSAL_INTERVAL
+from suites.coding.modules.workers.nudges.worker_refused_nudge import WorkerRefusedNudge
 
 REFUSAL_LIMIT_COUNT = 5
 REFUSAL_COUNTDOWN = CountDown("workers.worker_refusal", "worker refusal", TimesSpan(REFUSAL_LIMIT_COUNT), is_silent=True)
@@ -31,7 +32,7 @@ class WorkerRefusals:
         if refusal.notice_at is not None and refusal.notice_at.elapsed_seconds(context.timestamp) < WORKER_REFUSAL_INTERVAL.seconds:
             return
         count = self.countdowns.used_count(REFUSAL_COUNTDOWN, worktree.session_agent_id)
-        notice = WORKER_REFUSED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), count=count, task=worktree.task_id)
+        notice = WorkerRefusedNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), count=count, task=worktree.task_id)
         self.main_agent_line.send_nudge(notice, "workers.repeated-refusal", context)
         self.repository.save(refusal.changed(notice_at=context.timestamp), context)
 

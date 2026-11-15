@@ -9,7 +9,7 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.unread_messages import UnreadMessages
-from core.modules.messages.support.message_nudges import NEW_MESSAGE
+from core.modules.messages.nudges.new_message_nudge import NewMessageNudge
 
 WAITING_MESSAGE_SOURCE = "messages.waiting"
 
@@ -39,7 +39,7 @@ class WaitingMessageLines:
         return self.queries.query(AgentLine).filter(session_agent_id=agent_id, source=WAITING_MESSAGE_SOURCE, state=AgentLineState.WAITING).newest()
 
     def names(self, line: AgentLine, message: Message) -> bool:
-        return line.text == NEW_MESSAGE.nudge(message=message.id).text
+        return line.text == NewMessageNudge.declared().nudge(message=message.id).text
 
     def drop(self, line: AgentLine, event: LoggedEvent) -> None:
         call = self.hook_calls.newest_agent_hook(line.session_agent_id)

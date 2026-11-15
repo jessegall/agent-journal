@@ -81,17 +81,17 @@ class Module:
     agent_states: ClassVar[list[type[AgentState]]] = []
     windows: ClassVar[list[WindowDeclaration | type[Window]]] = []
     window_extensions: ClassVar[list[WindowExtension | type[WindowExtension]]] = []
-    marks: ClassVar[list[MarkDeclaration]] = []
+    marks: ClassVar[list[MarkDeclaration | type[MarkDeclaration]]] = []
     block_conditions: ClassVar[list[type[BlockCondition]]] = []
     performance_tools: ClassVar[list[type[PerformanceTool]]] = []
-    nudges: ClassVar[list[NudgeDeclaration]] = []
-    tick_handlers: ClassVar[list[TickHandler]] = []
-    ask_topics: ClassVar[list[AskTopic]] = []
+    nudges: ClassVar[list[NudgeDeclaration | type[NudgeDeclaration]]] = []
+    tick_handlers: ClassVar[list[TickHandler | type[TickHandler]]] = []
+    ask_topics: ClassVar[list[AskTopic | type[AskTopic]]] = []
     docks: ClassVar[list[DockDeclaration | type[DockDeclaration]]] = []
     templates: ClassVar[list[TemplateDeclaration | type[TemplateDeclaration]]] = []
-    buttons: ClassVar[list[ButtonDeclaration]] = []
+    buttons: ClassVar[list[ButtonDeclaration | type[ButtonDeclaration]]] = []
     button_slots: ClassVar[list[str]] = []
-    inspectors: ClassVar[list[InspectorDeclaration]] = []
+    inspectors: ClassVar[list[InspectorDeclaration | type[InspectorDeclaration]]] = []
     added_states: ClassVar[Sequence[StateAddition]] = ()
     helper_types: ClassVar[list[type[HelperType]]] = []
     agent_groups: ClassVar[list[AgentGroup | type[AgentGroup]]] = []
@@ -154,9 +154,39 @@ class Module:
     def model_declarations(cls) -> list[ModelDeclaration]:
         return [model.declared() if isinstance(model, type) else model for model in cls.models]
 
+    # a mark written as a class gives its declaration; an inline mark is its own
+    @classmethod
+    def mark_declarations(cls) -> list[MarkDeclaration]:
+        return [mark.declared() if isinstance(mark, type) else mark for mark in cls.marks]
+
+    # a nudge written as a class gives its declaration; an inline nudge is its own
+    @classmethod
+    def nudge_declarations(cls) -> list[NudgeDeclaration]:
+        return [nudge.declared() if isinstance(nudge, type) else nudge for nudge in cls.nudges]
+
+    # a tick handler written as a class gives its declaration; an inline handler is its own
+    @classmethod
+    def tick_handler_declarations(cls) -> list[TickHandler]:
+        return [handler.declared() if isinstance(handler, type) else handler for handler in cls.tick_handlers]
+
+    # a button written as a class gives its declaration; an inline button is its own
+    @classmethod
+    def button_declarations(cls) -> list[ButtonDeclaration]:
+        return [button.declared() if isinstance(button, type) else button for button in cls.buttons]
+
+    # an inspector written as a class gives its declaration; an inline inspector is its own
+    @classmethod
+    def inspector_declarations(cls) -> list[InspectorDeclaration]:
+        return [inspector.declared() if isinstance(inspector, type) else inspector for inspector in cls.inspectors]
+
+    # an ask topic written as a class gives its declaration; an inline topic is its own
+    @classmethod
+    def ask_topic_declarations(cls) -> list[AskTopic]:
+        return [topic.declared() if isinstance(topic, type) else topic for topic in cls.ask_topics]
+
     @classmethod
     def declared_buttons(cls) -> list[ButtonDeclaration]:
-        return [*cls.buttons, *(action for inspector in cls.inspectors for action in inspector.slotted_actions())]
+        return [*cls.button_declarations(), *(action for inspector in cls.inspector_declarations() for action in inspector.slotted_actions())]
 
     @classmethod
     @cache

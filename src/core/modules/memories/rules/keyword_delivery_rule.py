@@ -1,4 +1,4 @@
-from core.modules.memories.support.memory_nudges import MEMORY_LINE
+from core.modules.memories.nudges.memory_line_nudge import MemoryLineNudge
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_wildcard import HookWildcard
@@ -40,4 +40,4 @@ class KeywordDeliveryRule(DriverRule):
         memories = self.memories.among(memory_ids).absent_memories(hook.agent_id).weight_order().take(limit)
         if not memories:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(*(MEMORY_LINE.nudge(memory=memory.memory_id) for memory in memories)).running(GiveMemories(hook.agent_id, tuple(row.memory_id for row in memories), DeliveryCause.KEYWORD))
+        return RuleAnswer.with_nudges(*(MemoryLineNudge.declared().nudge(memory=memory.memory_id) for memory in memories)).running(GiveMemories(hook.agent_id, tuple(row.memory_id for row in memories), DeliveryCause.KEYWORD))

@@ -46,7 +46,7 @@ class Ticker:
 
     @staticmethod
     def module_handlers(finder: ModuleFinder) -> list[TickHandler]:
-        return [handler for module in finder.modules() for handler in module.tick_handlers]
+        return [handler for module in finder.modules() for handler in module.tick_handler_declarations()]
 
     @staticmethod
     def worker_count(container: Container) -> int:

@@ -3,14 +3,14 @@ from datetime import timedelta
 import pytest
 
 from suites.coding.modules.workers.models.merger_line import MergerLine
-from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
+from suites.coding.modules.workers.nudges.worker_task_blocked_nudge import WorkerTaskBlockedNudge
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.integration.suites.coding.modules.workers.test_gone_workers import RESUMED_PID, missing_program, running_worker, start_launcher, worker_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
-from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
+from suites.coding.modules.workers.nudges.worker_task_blocked_nudge import WorkerTaskBlockedNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
-from suites.coding.modules.workers.support.worker_nudges import BLOCKED_WORKER_TASK
+from suites.coding.modules.workers.nudges.blocked_worker_task_nudge import BlockedWorkerTaskNudge
 from tests.stories.support.story_checks import expect_value_4
 
 __all__ = ["missing_program", "running_worker", "worker_story"]

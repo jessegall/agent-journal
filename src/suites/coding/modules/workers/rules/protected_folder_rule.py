@@ -6,7 +6,7 @@ from engine.driver.rule_answer import RuleAnswer
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.protected_folders import ProtectedFolders
 from core.modules.agents.support.agent_rows import AgentRows
-from suites.coding.modules.workers.support.worker_nudges import PROTECTED_FOLDER
+from suites.coding.modules.workers.nudges.protected_folder_nudge import ProtectedFolderNudge
 
 
 class ProtectedFolderRule(DriverRule):
@@ -35,5 +35,5 @@ class ProtectedFolderRule(DriverRule):
         for path in paths:
             folder = self.protected.match(worktree.folder, path, profile)
             if folder:
-                return RuleAnswer.refused(PROTECTED_FOLDER.nudge(folder=folder))
+                return RuleAnswer.refused(ProtectedFolderNudge.declared().nudge(folder=folder))
         return RuleAnswer.allowed()

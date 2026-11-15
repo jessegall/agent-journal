@@ -6,7 +6,9 @@ from core.modules.messages.models.message import Message
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState
-from core.modules.plans.support.plan_nudges import PLAN_APPROVED, PLAN_APPROVED_WITH_MESSAGE, PLAN_WAITING
+from core.modules.plans.nudges.plan_approved_nudge import PlanApprovedNudge
+from core.modules.plans.nudges.plan_approved_with_message_nudge import PlanApprovedWithMessageNudge
+from core.modules.plans.nudges.plan_waiting_nudge import PlanWaitingNudge
 from core.modules.plans.support.plan_approval import PlanApproval
 from core.modules.plans.models.plan import Plan
 from engine.testing.expectations.expect_reply import expect_reply_allowed
@@ -28,8 +30,8 @@ def test_the_main_agent_is_told_to_read_the_approval_message(new_story):
     story.expect_rows(PlanApproval.message_id(story.row(Plan, 1)) == message.id)
     reply = story.hook("s-1", VIEW_LINE)
     expect_reply_allowed(reply)
-    story.expect_rows(PLAN_APPROVED_WITH_MESSAGE.nudge(plan=1, message=message.id).text in reply.lines,
-                      PLAN_APPROVED.nudge(plan=1).text not in reply.lines)
+    story.expect_rows(PlanApprovedWithMessageNudge.declared().nudge(plan=1, message=message.id).text in reply.lines,
+                      PlanApprovedNudge.declared().nudge(plan=1).text not in reply.lines)
 
 
 def test_an_approval_without_a_message_keeps_the_plain_notice(new_story):
@@ -38,7 +40,7 @@ def test_an_approval_without_a_message_keeps_the_plain_notice(new_story):
     story.expect_success("plan approve 1 --environment main", actor=story.user)
     reply = story.hook("s-1", VIEW_LINE)
     expect_reply_allowed(reply)
-    story.expect_rows(PLAN_APPROVED.nudge(plan=1).text in reply.lines,
+    story.expect_rows(PlanApprovedNudge.declared().nudge(plan=1).text in reply.lines,
                       len(story.story_rows(Message)) == 0)
 
 
@@ -59,7 +61,7 @@ def test_the_main_agent_is_told_the_ready_plan_waits_for_a_person(new_story):
     story.run("plan ready 1", actor=story.agent)
     reply = story.hook("s-1", VIEW_LINE)
     expect_reply_allowed(reply)
-    story.expect_rows(PLAN_WAITING.nudge(plan=1).text in reply.lines, detail=str(reply.lines))
+    story.expect_rows(PlanWaitingNudge.declared().nudge(plan=1).text in reply.lines, detail=str(reply.lines))
 
 
 def test_a_person_approves_a_ready_plan_from_its_card_and_the_card_leaves(new_story):

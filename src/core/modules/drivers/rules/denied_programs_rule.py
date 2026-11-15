@@ -6,7 +6,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.drivers.support.access_nudges import PROGRAM_RESTRICTION
+from core.modules.drivers.nudges.program_restriction_nudge import ProgramRestrictionNudge
 
 
 class DeniedProgramsRule(DriverRule):
@@ -16,7 +16,7 @@ class DeniedProgramsRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     exempt = True
     denied_programs: ClassVar[Sequence[str]] = ()
-    refusal: ClassVar[NudgeDeclaration] = PROGRAM_RESTRICTION
+    refusal: ClassVar[NudgeDeclaration] = ProgramRestrictionNudge.declared()
     single_action_refusal = "Refuses a shell line containing any program a driver excludes"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:

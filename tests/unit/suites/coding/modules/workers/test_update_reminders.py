@@ -7,7 +7,8 @@ from suites.coding.modules.workers.commands.remind_behind_updates.remind_behind_
 from suites.coding.modules.workers.commands.remind_behind_updates.remind_behind_updates_handler import RemindBehindUpdatesHandler
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState as State
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
-from suites.coding.modules.workers.support.behind_nudges import UPDATE_SKIPPED, UPDATE_REMINDER
+from suites.coding.modules.workers.nudges.update_skipped_nudge import UpdateSkippedNudge
+from suites.coding.modules.workers.nudges.update_reminder_nudge import UpdateReminderNudge
 from suites.coding.modules.workers.support.worker_settings import UPDATE_REMINDERS, UPDATE_WAIT_MINUTES
 from tests.unit.suites.coding.modules.workers.support.test_behind_check_closing import WORKTREE
 
@@ -85,7 +86,7 @@ def run_at(minutes: list[int], store: Store | None = None, paused: bool = False,
 
 def test_a_worker_is_reminded_at_thirty_and_sixty_minutes_and_not_a_third_time_then_the_merger_hears_once():
     reminded, merger, store = run_at([10, 30, 45, 60, 90, 120, 150])
-    assert (reminded, merger) == ([UPDATE_REMINDER.key, UPDATE_REMINDER.key], [UPDATE_SKIPPED.key])
+    assert (reminded, merger) == ([UpdateReminderNudge.declared().key, UpdateReminderNudge.declared().key], [UpdateSkippedNudge.declared().key])
 
 
 def test_a_paused_worker_is_not_reminded():
@@ -97,4 +98,4 @@ def test_a_closed_check_is_not_reminded():
 
 
 def test_with_no_reminders_the_merger_hears_at_once():
-    assert run_at([30, 60], reminders=0)[:2] == ([], [UPDATE_SKIPPED.key])
+    assert run_at([30, 60], reminders=0)[:2] == ([], [UpdateSkippedNudge.declared().key])

@@ -3,7 +3,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.rule_priority import RulePriority
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.sequences.support.sequence_nudges import SEQUENCE_UNFINISHED
+from core.modules.sequences.nudges.sequence_unfinished_nudge import SequenceUnfinishedNudge
 from core.modules.sequences.support.sequence_stop_blockers import SequenceStopBlockers
 
 
@@ -24,4 +24,4 @@ class SequenceStopRule(DriverRule):
         run = self.work.blocking_run(hook.agent_id)
         if run is None:
             return RuleAnswer.allowed("no running sequence holds the agent")
-        return RuleAnswer.refused(SEQUENCE_UNFINISHED.nudge(sequence=run.sequence_id, step=run.step_number))
+        return RuleAnswer.refused(SequenceUnfinishedNudge.declared().nudge(sequence=run.sequence_id, step=run.step_number))

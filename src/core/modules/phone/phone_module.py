@@ -3,9 +3,6 @@ from core.modules.phone.models.declarations.phone_model_declaration import Phone
 from core.modules.phone.models.declarations.phone_code_model_declaration import PhoneCodeModelDeclaration
 from core.modules.phone.settings.phone_setting_values import PhoneSettingValues
 from core.modules.phone.migrations.m004_phone_notice_index import PhoneNoticeIndexMigration
-from engine.ticker.tick_handler import TickHandler
-from engine.ticker.tick_interval import TickInterval
-from core.modules.phone.ticks.phone_notices import PhoneNotices
 from engine.module.module import Module
 from core.modules.phone.commands.pair_phone.pair_phone_handler import PairPhoneHandler
 from core.modules.phone.commands.pair_phone.pair_phone_subcommand import PairPhoneSubcommand
@@ -30,6 +27,7 @@ from core.modules.phone.commands.send_phone_notices.send_phone_notices_handler i
 from core.modules.phone.support.push_service import PushService
 from core.modules.phone.support.push_transport import PushTransport
 from core.modules.phone.push.web_push import WebPush
+from core.modules.phone.tick_handlers.phone_notices_tick_handler import PhoneNoticesTickHandler
 
 
 class PhoneModule(Module):
@@ -50,4 +48,4 @@ class PhoneModule(Module):
     windows = PHONE_WINDOWS
     seeders = [PhoneSeeder]
     moves = [PhoneMove]
-    tick_handlers = [TickHandler(TickInterval(seconds=60), PhoneNotices(), "phone notices", starts_immediately=True)]
+    tick_handlers = [PhoneNoticesTickHandler]

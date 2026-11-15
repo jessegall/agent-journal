@@ -2,7 +2,7 @@ from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from engine.process.leftover_process import LeftoverProcess
-from core.modules.drivers.support.access_nudges import REPLACED_SESSION
+from core.modules.drivers.nudges.replaced_session_nudge import ReplacedSessionNudge
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.fixtures import SampleSuiteChoice

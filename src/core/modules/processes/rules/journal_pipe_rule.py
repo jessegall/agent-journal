@@ -1,4 +1,4 @@
-from core.modules.processes.support.process_nudges import CUT_JOURNAL_COMMAND
+from core.modules.processes.nudges.cut_journal_command_nudge import CutJournalCommandNudge
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -28,7 +28,7 @@ class JournalPipeRule(DriverRule):
             return RuleAnswer.allowed()
         for part in shell.parts:
             if part.program == JOURNAL and part.pipe_target is not None and shell.parts[part.pipe_target].program in CUTTING_PROGRAMS and not self.allows_pipes(part):
-                return RuleAnswer.refused(CUT_JOURNAL_COMMAND.nudge())
+                return RuleAnswer.refused(CutJournalCommandNudge.declared().nudge())
         return RuleAnswer.allowed()
 
     def allows_pipes(self, part: Part) -> bool:

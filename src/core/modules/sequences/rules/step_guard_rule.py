@@ -4,7 +4,7 @@ from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.sequences.queries.sequence_query import SequenceQuery
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
-from core.modules.sequences.support.sequence_nudges import STEP_EDIT_BAN
+from core.modules.sequences.nudges.step_edit_ban_nudge import StepEditBanNudge
 
 
 class StepGuardRule(DriverRule):
@@ -31,4 +31,4 @@ class StepGuardRule(DriverRule):
             return RuleAnswer.allowed()
         if tool.shell is not None and any(tool.shell.has_part_matching(pattern) for pattern in guard.allowed_commands):
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(STEP_EDIT_BAN.nudge(sequence=run.sequence_id, step=run.step_number))
+        return RuleAnswer.refused(StepEditBanNudge.declared().nudge(sequence=run.sequence_id, step=run.step_number))

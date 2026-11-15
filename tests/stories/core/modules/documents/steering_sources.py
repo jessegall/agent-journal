@@ -6,9 +6,9 @@ from engine.testing.stories.story_fixture import StoryFixture
 
 from tests.stories.core.modules.documents.support.trail_fixtures import feature, scenario, viewer_answer, Scenario, TrailReady
 from tests.stories.core.support.agent_labels import agent_number
-from core.modules.messages.support.message_nudges import MESSAGE_UPDATED
+from core.modules.messages.nudges.message_updated_nudge import MessageUpdatedNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
-from core.modules.questions.support.question_nudges import QUESTION_ANSWERED
+from core.modules.questions.nudges.question_answered_nudge import QuestionAnsweredNudge
 
 
 class EditedActiveRequest(StoryFixture):
@@ -45,7 +45,7 @@ def test_an_answered_question_tells_the_agent_once_and_names_no_message(scenario
     scenario.command('question ask "Which tax?" --context "A story asks this so its card and answer can be checked." --options "Local" "Export"')
     scenario.person("questions.questions", "question", "answer", "1", "--answer", "Local")
     lines = "\n".join(scenario.story.hook("s-1", HookSamples.prompt("go on")).lines)
-    scenario.story.expect_rows(lines.count(QUESTION_ANSWERED.nudge(question=1).text) == 1, "answer source" not in lines, detail=lines)
+    scenario.story.expect_rows(lines.count(QuestionAnsweredNudge.declared().nudge(question=1).text) == 1, "answer source" not in lines, detail=lines)
 
 
 def test_answer_notification_does_not_replace_active_request(scenario):
@@ -105,7 +105,7 @@ def test_update_notification_names_the_explicit_selection_command(scenario):
     scenario.person("messages.chat", "message", "edit", "1", "--text", "Use a different rounding boundary")
     scenario.story.run_listeners()
     lines = "\n".join(scenario.story.hook("s-1", HookSamples.prompt("go on")).lines)
-    scenario.story.expect_rows(expected_nudge(MESSAGE_UPDATED, message=1).matches_text(lines), detail=lines)
+    scenario.story.expect_rows(expected_nudge(MessageUpdatedNudge.declared(), message=1).matches_text(lines), detail=lines)
 
 
 @pytest.mark.parametrize("invalid", ["agent-message", "other-recipient", "other-author"])

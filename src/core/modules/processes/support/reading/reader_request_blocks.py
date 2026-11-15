@@ -17,7 +17,9 @@ from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.support.block_conditions.reader_request_completed import ReaderRequestCompleted
-from core.modules.processes.support.process_nudges import READER_BLOCK, READER_REQUEST_COUNTDOWN, READER_REQUEST_REFUSAL, READER_REQUEST_SPAN
+from core.modules.processes.support.process_nudges import READER_REQUEST_COUNTDOWN, READER_REQUEST_SPAN
+from core.modules.processes.nudges.reader_block_nudge import ReaderBlockNudge
+from core.modules.processes.nudges.reader_request_refusal_nudge import ReaderRequestRefusalNudge
 from core.modules.processes.support.reader_block_keys import ReaderBlockKeys
 from core.modules.processes.support.reader_request_notices import ReaderRequestNotices
 from core.modules.processes.support.reader_request_text import ReaderRequestText
@@ -38,7 +40,7 @@ class ReaderRequestBlocks:
         request = self.requests.find(part.reader_request_id)
         if request.completed_at is not None or request.expires_at <= self.clock.timestamp():
             return
-        nudge = READER_BLOCK.nudge(output=part.process_id, request=request.id)
+        nudge = ReaderBlockNudge.declared().nudge(output=part.process_id, request=request.id)
         ends = AnyCondition(ReaderRequestCompleted(request.id), TimeReached(request.expires_at.text))
         self.bus.dispatch(BlockUntil(process.session_agent_id, ReaderBlockKeys.keyed(nudge, request.id), ends), context)
 
@@ -57,7 +59,7 @@ class ReaderRequestBlocks:
 
     @staticmethod
     def help_block(agent_id: int, request: ReaderRequest) -> BlockUntil:
-        refusal = READER_REQUEST_REFUSAL.nudge(request=request.id, command=request.command, block="{block}")
+        refusal = ReaderRequestRefusalNudge.declared().nudge(request=request.id, command=request.command, block="{block}")
         countdown = READER_REQUEST_COUNTDOWN.nudge("{left}", command=request.command)
         return BlockUntil(agent_id, ReaderBlockKeys.keyed(refusal, request.id), ReaderRequestCompleted(request.id),
                           after=Interval(READER_REQUEST_SPAN), countdown=countdown)

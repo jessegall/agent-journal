@@ -15,13 +15,13 @@ def test_the_plans_module_lists_no_mod_among_its_dependencies():
 
 def test_no_skill_or_nudge_of_the_plans_module_names_a_review_or_a_critique():
     skills = (CHECKOUT / "src/core/modules/plans/skills").rglob("*.md")
-    texts = [path.read_text().lower() for path in skills] + [nudge.text.lower() for nudge in PlansModule.nudges]
+    texts = [path.read_text().lower() for path in skills] + [nudge.text.lower() for nudge in PlansModule.nudge_declarations()]
     texts += [f"{skill.folder} {skill.description} {' '.join(skill.keywords)}".lower() for skill in PlansModule.skill_declarations()]
     assert all((word not in text for text in texts for word in REVIEW_TERMS))
 
 
 def test_the_plan_inspector_files_do_not_name_review_rows():
-    files = [CHECKOUT / "src/viewer/src/resource/PlanDetails.vue", CHECKOUT / "src/core/modules/plans/support/plan_inspector.py"]
+    files = [CHECKOUT / "src/viewer/src/resource/PlanDetails.vue", CHECKOUT / "src/core/modules/plans/inspectors/plan_inspector.py"]
     assert all((word not in path.read_text().lower() for path in files for word in REVIEW_TERMS))
     assert not (CHECKOUT / 'src/viewer/src/resource/PlanReviews.vue').exists()
 

@@ -1,5 +1,7 @@
 from engine.helper_type.helper_type_book import HelperTypeBook
-from core.modules.processes.support.process_nudges import MONITOR_COMMAND_NOTE, MONITOR_NOTE, AUTOMATIC_RUN_WATCHED
+from core.modules.processes.nudges.monitor_command_note_nudge import MonitorCommandNoteNudge
+from core.modules.processes.nudges.monitor_note_nudge import MonitorNoteNudge
+from core.modules.processes.nudges.automatic_run_watched_nudge import AutomaticRunWatchedNudge
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.driver.nudge_declaration import NudgeDeclaration
@@ -31,8 +33,8 @@ class OutputStatusMonitorRule(DriverRule):
 
     def note(self, hook: AgentHook) -> NudgeDeclaration:
         if self.types.behaviours(hook.role).watches_runs_automatically:
-            return AUTOMATIC_RUN_WATCHED
-        return MONITOR_COMMAND_NOTE if self.providers.provider(hook.event.program).monitor_tool is ToolType.SHELL else MONITOR_NOTE
+            return AutomaticRunWatchedNudge.declared()
+        return MonitorCommandNoteNudge.declared() if self.providers.provider(hook.event.program).monitor_tool is ToolType.SHELL else MonitorNoteNudge.declared()
 
     def is_status(self, part: Part) -> bool:
         return part.program == JOURNAL and list(part.arguments[:2]) == OUTPUT_STATUS_COMMAND and len(part.arguments) > 2

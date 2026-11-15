@@ -75,14 +75,10 @@ from core.modules.agents.commands.agent_standing.agent_standing_subcommand impor
 from core.modules.agents.commands.stop_unused_launcher.stop_unused_launcher_handler import StopUnusedLauncherHandler
 from core.modules.agents.rules.unused_launcher_rule import UnusedLauncherRule
 from core.modules.agents.commands.check_agent_programs.check_agent_programs_handler import CheckAgentProgramsHandler
-from core.modules.agents.ticks.agent_reconcile import AgentReconcile
-from core.modules.agents.ticks.program_settings_watch import ProgramSettingsWatch
 from core.modules.agents.rules.program_settings_rule import ProgramSettingsRule
-from core.modules.agents.support.program_settings_nudges import PROGRAM_SETTINGS_BAN
+from core.modules.agents.nudges.program_settings_ban_nudge import ProgramSettingsBanNudge
 from core.modules.agents.support.agent_program_sessions import AgentProgramSessions
 from engine.agent.program_sessions import ProgramSessions
-from engine.ticker.tick_handler import TickHandler
-from engine.ticker.tick_interval import TickInterval
 from core.modules.agents.commands.start_agent_program.start_agent_program_handler import StartAgentProgramHandler
 from core.modules.agents.commands.start_agent_program.start_agent_program_subcommand import StartAgentProgramSubcommand
 from core.modules.agents.commands.stop_agent_program.stop_agent_program_handler import StopAgentProgramHandler
@@ -96,12 +92,15 @@ from core.modules.agents.commands.agent_sessions.agent_sessions_subcommand impor
 from core.modules.agents.commands.end_replaced_main.end_replaced_main_handler import EndReplacedMainHandler
 from core.modules.agents.commands.record_menu_answer.record_menu_answer_handler import RecordMenuAnswerHandler
 from core.modules.agents.commands.record_menu_answer.record_menu_answer_subcommand import RecordMenuAnswerSubcommand
-from core.modules.agents.support.agent_marks import AGENT_MARKS
-from core.modules.agents.support.agent_inspector import AGENT_INSPECTOR
+from core.modules.agents.marks.subagent_mark import SubagentMark
+from core.modules.agents.marks.agent_menu_mark import AgentMenuMark
+from core.modules.agents.marks.agent_launcher_mark import AgentLauncherMark
+from core.modules.agents.marks.program_settings_mark import ProgramSettingsMark
+from core.modules.agents.inspectors.agent_inspector import AgentInspector
 from engine.caller.caller_resolver import CallerResolver
 from engine.module.module import Module
 from core.modules.agents.migrations.m009_agent_access import AgentAccessMigration
-from core.modules.agents.commands.record_agent_launch_failure.launch_nudges import AGENT_START_FAILED
+from core.modules.agents.nudges.agent_start_failed_nudge import AgentStartFailedNudge
 from core.modules.agents.commands.record_agent_process.record_agent_process_handler import RecordAgentProcessHandler
 from engine.agent.agent_checkouts import AgentCheckouts
 from core.modules.agents.bindings.agent_caller_resolver import AgentCallerResolver
@@ -122,6 +121,8 @@ from core.modules.agents.commands.remove_instruction_import.remove_instruction_i
 from core.modules.agents.commands.warn_instruction_imports.warn_instruction_imports_handler import WarnInstructionImportsHandler
 from core.modules.agents.listeners.boot_instruction_imports_listener import BootInstructionImportsListener
 from core.modules.agents.seeders.agents_seeder import AgentsSeeder
+from core.modules.agents.tick_handlers.agent_reconcile_tick_handler import AgentReconcileTickHandler
+from core.modules.agents.tick_handlers.program_settings_watch_tick_handler import ProgramSettingsWatchTickHandler
 
 
 
@@ -135,16 +136,16 @@ class AgentsModule(Module):
     models = [AgentModelDeclaration, MenuAnswerModelDeclaration, AgentFoldModelDeclaration, AgentFoldRowModelDeclaration, AgentSessionModelDeclaration]
     moves = [AgentsMove]
     migrations = [FoldMainAgentsMigration, AgentFoldsMigration, AgentAnnouncedColumnMigration, AgentLaunchFailureColumnMigration, MainAgentParentMigration, AgentSessionsMigration, AgentNumberMigration, MenuAnswerAgentIndexMigration, AgentHaltColumnMigration, AgentLaunchColumnMigration, PlainColumnNamesMigration, AgentInterruptMigration, AgentUsageCapMigration, KeptAgentsIndexMigration, AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
-    nudges = [AGENT_START_FAILED, *REPORT_NUDGES, PROGRAM_SETTINGS_BAN]
+    nudges = [AgentStartFailedNudge, *REPORT_NUDGES, ProgramSettingsBanNudge]
     guards = [AgentNameGuard, NumberGuard, RetiredRowGuard, RetiredDeleteGuard, AgentChatGuard]
-    tick_handlers = [TickHandler(TickInterval(seconds=30), AgentReconcile(), "agent rows and their programs"),
-                     TickHandler(TickInterval(seconds=2), ProgramSettingsWatch(), "program settings watch", starts_immediately=True)]
+    tick_handlers = [AgentReconcileTickHandler,
+                     ProgramSettingsWatchTickHandler]
     driver_rules = [UnusedLauncherRule, ProgramSettingsRule]
     handlers = [StopUnusedLauncherHandler, CheckAgentProgramsHandler, StartAgentProgramHandler, StopAgentProgramHandler, HaltAgentHandler, EndAgentHaltHandler, ReplaceAgentSessionHandler, WarnInstructionImportsHandler, RemoveInstructionImportHandler, RecordAgentInterruptHandler, SetAgentUsageLimitHandler, RetireAgentHandler, EndReplacedMainHandler, RecordAgentProcessHandler, StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler, CheckMainAgentFoldHandler]
     subcommands = [RemoveInstructionImportSubcommand, RecordAgentInterruptSubcommand, RetireAgentSubcommand, ShowMainAgentsSubcommand, MainSessionsSubcommand, AgentSessionsSubcommand, AgentStandingSubcommand, StartAgentProgramSubcommand, StopAgentProgramSubcommand, ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, AgentPeopleSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand, ManageProgramSubcommand, RestoreHooksSubcommand, CheckMainAgentFoldSubcommand]
     bindings = {ProgramSessions: AgentProgramSessions, ProgramTransport: LocalLauncherTransport, CallerResolver: AgentCallerResolver, AgentCheckouts: AgentProjectCheckouts, AgentRoleReader: AgentRoleRows, RowNumbers: AgentRowNumbers}
     windows = AGENTS_WINDOWS
-    inspectors = [AGENT_INSPECTOR]
+    inspectors = [AgentInspector]
     listeners = [SessionEndListener, SessionLaunchListener, MenuAnswerMarkListener, EndedAgentProgramListener, BootInstructionImportsListener]
-    marks = AGENT_MARKS
+    marks = [SubagentMark, AgentMenuMark, AgentLauncherMark, ProgramSettingsMark]
     seeders = [AgentsSeeder]

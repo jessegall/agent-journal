@@ -2,7 +2,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.scope.actor_scope import ActorScope
 from core.modules.developer.commands.send_exception_line.send_exception_line import SendExceptionLine
-from core.modules.developer.support.developer_nudges import EXCEPTION_LINE
+from core.modules.developer.nudges.exception_line_nudge import ExceptionLineNudge
 from engine.driver.nudger import Nudger
 
 EXCEPTION_LINE_SOURCE = "developer.exception"
@@ -18,4 +18,4 @@ class SendExceptionLineHandler(Handler[SendExceptionLine, None]):
         self.nudger = nudger
 
     def handle(self, command: SendExceptionLine, context: Context) -> None:
-        self.nudger.send(command.agent_id, EXCEPTION_LINE, EXCEPTION_LINE_SOURCE, context, exception=command.exception_id)
+        self.nudger.send(command.agent_id, ExceptionLineNudge.declared(), EXCEPTION_LINE_SOURCE, context, exception=command.exception_id)

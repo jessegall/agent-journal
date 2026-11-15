@@ -1,11 +1,11 @@
-from core.modules.drivers.support.driver_nudges import JOURNAL_STARTED
+from core.modules.drivers.nudges.journal_started_nudge import JournalStartedNudge
 from engine.serving.server_files import ServerFiles
 from server.work.booting_work import BootingWork
 from core.modules.drivers.ticks.released_session_wake import ReleasedSessionWake
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.core.support.fixtures import MainEnvironment
 
-LINE = JOURNAL_STARTED.nudge().text
+LINE = JournalStartedNudge.declared().nudge().text
 
 
 def started_journal(story):

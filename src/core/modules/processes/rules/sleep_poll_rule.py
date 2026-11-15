@@ -6,7 +6,7 @@ from engine.enums.hook_event_name import HookEventName
 from engine.driver.part import Part
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.processes.support.process_nudges import SLEEP_REFUSED
+from core.modules.processes.nudges.sleep_refused_nudge import SleepRefusedNudge
 
 
 SLEEP_LOOP = re.compile(r"^\s*(until|while)\s+(.+?)\s*[;\n]\s*do\s+sleep\s+\d+(?:\.\d+)?\s*[;\n]\s*done\s*$", re.DOTALL)
@@ -30,11 +30,11 @@ class SleepPollRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
         if tool is not None and tool.name in SLEEP_TOOLS:
-            return RuleAnswer.refused(SLEEP_REFUSED.nudge())
+            return RuleAnswer.refused(SleepRefusedNudge.declared().nudge())
         shell = tool.shell if tool is not None else None
         if shell is None or shell.parse_error or not any(self.is_sleep_poll(part) for part in shell.parts):
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(SLEEP_REFUSED.nudge())
+        return RuleAnswer.refused(SleepRefusedNudge.declared().nudge())
 
     def is_sleep_poll(self, part: Part) -> bool:
         return part.program == SLEEP or (part.program in LOOPS and SLEEP_LOOP.match(part.text) is not None)

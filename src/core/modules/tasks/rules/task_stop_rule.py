@@ -1,4 +1,5 @@
-from core.modules.tasks.support.task_nudges import STOP_TASK, STOP_TASKS
+from core.modules.tasks.nudges.stop_task_nudge import StopTaskNudge
+from core.modules.tasks.nudges.stop_tasks_nudge import StopTasksNudge
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -38,5 +39,5 @@ class TaskStopRule(DriverRule):
             return RuleAnswer.allowed("the suite lets the agent stop with its tasks in hand")
         started_tasks = self.current_tasks.started_tasks(hook.agent_id)
         if len(started_tasks) > 1:
-            return RuleAnswer.refused(STOP_TASKS.nudge(tasks=", ".join(f"task:{task.id}" for task in started_tasks)))
-        return RuleAnswer.refused(STOP_TASK.nudge(task=current.task.id))
+            return RuleAnswer.refused(StopTasksNudge.declared().nudge(tasks=", ".join(f"task:{task.id}" for task in started_tasks)))
+        return RuleAnswer.refused(StopTaskNudge.declared().nudge(task=current.task.id))

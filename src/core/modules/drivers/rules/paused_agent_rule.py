@@ -2,7 +2,7 @@ from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.drivers.support.driver_nudges import PAUSED_REFUSAL
+from core.modules.drivers.nudges.paused_refusal_nudge import PausedRefusalNudge
 from core.modules.drivers.support.block_conditions.agent_resumed import AgentResumed
 
 
@@ -18,8 +18,8 @@ class PausedAgentRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if self.is_journal_work(hook):
-            return RuleAnswer.refused(PAUSED_REFUSAL.nudge())
-        return RuleAnswer.blocked(hook, PAUSED_REFUSAL.nudge(), AgentResumed())
+            return RuleAnswer.refused(PausedRefusalNudge.declared().nudge())
+        return RuleAnswer.blocked(hook, PausedRefusalNudge.declared().nudge(), AgentResumed())
 
     @staticmethod
     def is_journal_work(hook: AgentHook) -> bool:

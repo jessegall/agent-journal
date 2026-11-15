@@ -325,6 +325,7 @@
         "kit: str"
       ],
       "methods": [
+        "declared(cls) -> 'MarkDeclaration'",
         "problems(self) -> list[str]"
       ]
     },
@@ -2447,6 +2448,7 @@
         "role_texts: Mapping[str, str]"
       ],
       "methods": [
+        "declared(cls) -> 'NudgeDeclaration'",
         "limit(self) -> int",
         "is_mergeable(self) -> bool",
         "nudge(self) -> Nudge",
@@ -5425,7 +5427,9 @@
         "waiting_work: str",
         "needs_writing: bool"
       ],
-      "methods": []
+      "methods": [
+        "declared(cls) -> 'AskTopic'"
+      ]
     },
     "module.assignable_check.AssignableCheck": {
       "bases": [],
@@ -5703,17 +5707,17 @@
         "agent_states: ClassVar[list[type[AgentState]]]",
         "windows: ClassVar[list[WindowDeclaration | type[Window]]]",
         "window_extensions: ClassVar[list[WindowExtension | type[WindowExtension]]]",
-        "marks: ClassVar[list[MarkDeclaration]]",
+        "marks: ClassVar[list[MarkDeclaration | type[MarkDeclaration]]]",
         "block_conditions: ClassVar[list[type[BlockCondition]]]",
         "performance_tools: ClassVar[list[type[PerformanceTool]]]",
-        "nudges: ClassVar[list[NudgeDeclaration]]",
-        "tick_handlers: ClassVar[list[TickHandler]]",
-        "ask_topics: ClassVar[list[AskTopic]]",
+        "nudges: ClassVar[list[NudgeDeclaration | type[NudgeDeclaration]]]",
+        "tick_handlers: ClassVar[list[TickHandler | type[TickHandler]]]",
+        "ask_topics: ClassVar[list[AskTopic | type[AskTopic]]]",
         "docks: ClassVar[list[DockDeclaration | type[DockDeclaration]]]",
         "templates: ClassVar[list[TemplateDeclaration | type[TemplateDeclaration]]]",
-        "buttons: ClassVar[list[ButtonDeclaration]]",
+        "buttons: ClassVar[list[ButtonDeclaration | type[ButtonDeclaration]]]",
         "button_slots: ClassVar[list[str]]",
-        "inspectors: ClassVar[list[InspectorDeclaration]]",
+        "inspectors: ClassVar[list[InspectorDeclaration | type[InspectorDeclaration]]]",
         "added_states: ClassVar[Sequence[StateAddition]]",
         "helper_types: ClassVar[list[type[HelperType]]]",
         "agent_groups: ClassVar[list[AgentGroup | type[AgentGroup]]]",
@@ -5740,6 +5744,12 @@
         "setting_nodes(cls) -> list[SettingNode]",
         "dock_declarations(cls) -> list[DockDeclaration]",
         "model_declarations(cls) -> list[ModelDeclaration]",
+        "mark_declarations(cls) -> list[MarkDeclaration]",
+        "nudge_declarations(cls) -> list[NudgeDeclaration]",
+        "tick_handler_declarations(cls) -> list[TickHandler]",
+        "button_declarations(cls) -> list[ButtonDeclaration]",
+        "inspector_declarations(cls) -> list[InspectorDeclaration]",
+        "ask_topic_declarations(cls) -> list[AskTopic]",
         "declared_buttons(cls) -> list[ButtonDeclaration]",
         "folder(cls) -> Path",
         "web_folder(cls) -> Path"
@@ -10005,6 +10015,7 @@
         "starts_immediately: bool"
       ],
       "methods": [
+        "declared(cls) -> 'TickHandler'",
         "label(self) -> str"
       ]
     },
@@ -10355,6 +10366,7 @@
         "danger: bool"
       ],
       "methods": [
+        "declared(cls) -> 'ButtonDeclaration'",
         "has_slot_with(self, prefixes: str | tuple[str, ...]) -> bool",
         "restored(cls, stored: Mapping[str, Any]) -> 'ButtonDeclaration'"
       ]
@@ -10453,6 +10465,7 @@
         "draws_text: bool"
       ],
       "methods": [
+        "declared(cls) -> 'InspectorDeclaration'",
         "default_declaration(cls, model: type[Model] | type[ViewModel]) -> 'InspectorDeclaration'",
         "model_name(self) -> str",
         "read_line(self) -> str",

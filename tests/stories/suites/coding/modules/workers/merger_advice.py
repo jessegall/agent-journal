@@ -23,7 +23,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with
 from tests.stories.suites.coding.modules.workers.support.phase_steps import StoryWorker, start_planned_worker
 from tests.stories.support.story_checks import expect_value, expect_value_without
-from core.modules.agents.support.report_nudges import PARENT_REPORT
+from core.modules.agents.nudges.parent_report_nudge import ParentReportNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
@@ -187,7 +187,7 @@ def merged_after_five_asks(five_questions):
 def test_advise_still_reaches_the_worker_as_a_message_from_the_merger(advising):
     advising.advised()
     advising.story.expect_rows([row.text for row in advising.messages()] == [ADVICES[0]], len(advising.merger_message_rows()) == 1, detail=str(advising.messages()))
-    advising.story.expect_text(f"agent-line list --agent {advising.worker.id}", expected_nudge(PARENT_REPORT), actor=advising.worker)
+    advising.story.expect_text(f"agent-line list --agent {advising.worker.id}", expected_nudge(ParentReportNudge.declared()), actor=advising.worker)
 
 
 def test_a_burst_of_lines_about_one_worker_becomes_one_advice(advising):

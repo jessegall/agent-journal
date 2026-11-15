@@ -5,7 +5,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins
-from core.modules.plugins.support.plugin_nudges import PLUGIN_PROGRAM_OFF
+from core.modules.plugins.nudges.plugin_program_off_nudge import PluginProgramOffNudge
 
 PLUGIN_PROGRAM = re.compile(r"(?:^|/)\.journal/plugins/([^/]+)/")
 
@@ -30,5 +30,5 @@ class PluginProgramRule(DriverRule):
         for part in shell.parts:
             matched = PLUGIN_PROGRAM.search(part.program)
             if matched is not None and matched.group(1) not in enabled:
-                return RuleAnswer.refused(PLUGIN_PROGRAM_OFF.nudge(plugin=matched.group(1)))
+                return RuleAnswer.refused(PluginProgramOffNudge.declared().nudge(plugin=matched.group(1)))
         return RuleAnswer.allowed()

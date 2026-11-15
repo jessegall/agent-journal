@@ -8,7 +8,7 @@ from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock
 from core.modules.drivers.models.agent_block import AgentBlock, OPEN_BLOCKS_REASON
-from core.modules.drivers.support.driver_nudges import REQUIRED_COMMAND_REFUSAL
+from core.modules.drivers.nudges.required_command_refusal_nudge import RequiredCommandRefusalNudge
 from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
@@ -23,7 +23,8 @@ from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
 from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED, MERGER_WAIT_MINUTES
-from suites.coding.modules.workers.support.worker_nudges import WORKER_UNMERGED, WORKER_UNMERGED_DUE
+from suites.coding.modules.workers.nudges.worker_unmerged_nudge import WorkerUnmergedNudge
+from suites.coding.modules.workers.nudges.worker_unmerged_due_nudge import WorkerUnmergedDueNudge
 from suites.coding.modules.workers.support.work_units import UNIT_TASKS_REASON
 
 
@@ -60,11 +61,11 @@ class UnmergedWorkerRule(DriverRule):
             action = f"{self.merge_command(worktree)}, or journal worker release {self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)}"
             if proofs:
                 action = f"journal proof check {', '.join(str(proof.id) for proof in proofs)}"
-            key = f"{WORKER_UNMERGED.key}.{worktree.session_agent_id}"
-            declaration = WORKER_UNMERGED_DUE if self.delivered_reminder_count(hook.agent_id, key) >= BLOCKING_REMINDER_COUNT - 1 else WORKER_UNMERGED
+            key = f"{WorkerUnmergedNudge.declared().key}.{worktree.session_agent_id}"
+            declaration = WorkerUnmergedDueNudge.declared() if self.delivered_reminder_count(hook.agent_id, key) >= BLOCKING_REMINDER_COUNT - 1 else WorkerUnmergedNudge.declared()
             nudges.append(replace(declaration.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), tasks=self.task_names(worktree), action=action), key=key))
         commands = {self.merge_command(worktree) for worktree in delivered}
-        prefix = f"{REQUIRED_COMMAND_REFUSAL.key}:journal worker merge "
+        prefix = f"{RequiredCommandRefusalNudge.declared().key}:journal worker merge "
         blocks = self.queries.query(AgentBlock).filter(session_agent_id=hook.agent_id).matching(IsNull("closed_at")).every_row(OPEN_BLOCKS_REASON)
         stale = [CloseAgentBlock(block.id) for block in blocks if block.nudge_key.startswith(prefix) and block.condition_text not in commands]
         return RuleAnswer.with_nudges(*nudges).running(*stale)

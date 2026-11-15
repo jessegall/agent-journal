@@ -4,11 +4,11 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders
 from tests.stories.core.support.coding_fixtures import UserBuilder
-from core.modules.processes.support.process_nudges import REDIRECTED_RUN
+from core.modules.processes.nudges.redirected_run_nudge import RedirectedRunNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
 
 REDIRECTED_BUILD = HookSamples.shell("custom-build run > build.txt", ShellPart("custom-build", CommandCategory.BUILD, ["run"]), redirects=["> build.txt"])
-REDIRECT_EXIT = expected_nudge(REDIRECTED_RUN, programs='custom-build')
+REDIRECT_EXIT = expected_nudge(RedirectedRunNudge.declared(), programs='custom-build')
 
 
 def raw_test_line() -> object:

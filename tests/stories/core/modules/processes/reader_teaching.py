@@ -6,9 +6,9 @@ from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, start_process
 from tests.stories.core.modules.processes.support.reader_teaching_fixtures import SameTitleTwoRuns
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from core.modules.processes.support.process_nudges import READER_HINT
+from core.modules.processes.nudges.reader_hint_nudge import ReaderHintNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
-from core.modules.processes.support.process_nudges import READER_HINT
+from core.modules.processes.nudges.reader_hint_nudge import ReaderHintNudge
 
 VIEW_LINE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, [])).with_fields(event="post_tool_use")
 
@@ -54,8 +54,8 @@ def test_reading_all_of_an_output_a_reader_reads_names_the_shorter_read(new_stor
     reader_id = story.new_row_id('reader add tally --commands "make*" --lines "passed"')
     process = moved_run(story, "make test")
     end_run(story, process, "3 passed in 1s\n" + "x\n" * 300)
-    story.expect_hook_allowed("s-1", posted(f"journal output read {process.id} --all"), expected_nudge(READER_HINT, reader=reader_id))
-    story.expect_absent_hook_line("s-1", posted(f"journal output read {process.id} --tail 5"), expected_nudge(READER_HINT))
+    story.expect_hook_allowed("s-1", posted(f"journal output read {process.id} --all"), expected_nudge(ReaderHintNudge.declared(), reader=reader_id))
+    story.expect_absent_hook_line("s-1", posted(f"journal output read {process.id} --tail 5"), expected_nudge(ReaderHintNudge.declared()))
 
 
 def test_a_title_that_holds_a_flag_or_a_path_is_refused_and_a_readers_title_is_not_judged(new_story):

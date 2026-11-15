@@ -1,4 +1,4 @@
-from core.modules.processes.support.process_nudges import PROCESS_MISSING
+from core.modules.processes.nudges.process_missing_nudge import ProcessMissingNudge
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -49,4 +49,4 @@ class OrphanProcessRule(DriverRule):
         limit = Interval(self.settings.seconds(ProcessSetting.MISSING_RUNNER_SECONDS if pid_missing else ProcessSetting.ORPHAN_SECONDS))
         if restarted or last_sign is None or not limit.has_passed(self.spans, hook.agent_id, last_sign, hook.timestamp):
             return answer
-        return RuleAnswer(refusal=answer.refusal, nudges=[*answer.nudges, PROCESS_MISSING.nudge(process=process.id)], commands=[*answer.commands, OrphanProcess(process.id)])
+        return RuleAnswer(refusal=answer.refusal, nudges=[*answer.nudges, ProcessMissingNudge.declared().nudge(process=process.id)], commands=[*answer.commands, OrphanProcess(process.id)])

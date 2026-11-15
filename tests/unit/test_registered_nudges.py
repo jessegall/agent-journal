@@ -17,7 +17,7 @@ ALLOWED_PLACEHOLDERS = frozenset({"approval", "recipient", "code", "plugin", "ta
     "path", "instruction", "reader", "rule", "seconds", "sequence", "shape", "skills", "state", "step", "subject", "task", "tasks", "transcription", "url", "wait", "worker", "workers", "writes", "hint", "items", "hint", "then", "grant", "processor", "plans", "focus", "waits", "notice", "merge_ask", "committed", "failed", "helper_type", "groups",
 })
 # Static driver instructions, runtime rule diagnostics and the words a managed hook, a foreign hook or a plugin step printed have no stored resource.
-FOREIGN_TEMPLATES = frozenset({"OPENING_LINE", "RULE_FAILED", "MANAGED_HOOK_LINE", "AGENT_NOTICE"})
+FOREIGN_TEMPLATES = frozenset({"OpeningLineNudge", "ManagedHookLineNudge", "AgentNoticeNudge"})
 
 def source_files() -> list[Path]:
     return [path for folder in ("src/core", "src/suites") for path in (ROOT / folder).rglob("*.py")]
@@ -26,15 +26,20 @@ def source_files() -> list[Path]:
 TYPES: dict[str, str] = {}
 
 
+def class_values(node: ast.ClassDef) -> dict[str, ast.expr]:
+    return {statement.targets[0].id: statement.value for statement in node.body if isinstance(statement, ast.Assign) and isinstance(statement.targets[0], ast.Name)}
+
+
 def declarations() -> list[tuple[str, str, Path]]:
     rows = []
     for path in source_files():
         tree = source_tree(path)
         for node in ast.walk(tree):
-            is_declaration = isinstance(node, ast.Assign) and isinstance(node.value, ast.Call) and getattr(node.value.func, "id", "") == "NudgeDeclaration"
-            if is_declaration and isinstance(node.value.args[2], ast.Constant):
-                rows.append((node.targets[0].id, node.value.args[2].value, path))
-                TYPES[node.targets[0].id] = getattr(node.value.args[1], "attr", "")
+            is_declaration = isinstance(node, ast.ClassDef) and any(getattr(base, "id", "") == "NudgeDeclaration" for base in node.bases)
+            values = class_values(node) if is_declaration else {}
+            if is_declaration and isinstance(values.get("text"), ast.Constant):
+                rows.append((node.name, values["text"].value, path))
+                TYPES[node.name] = getattr(values["type"], "attr", "")
     return rows
 
 
@@ -61,10 +66,10 @@ def test_every_declared_line_is_info_steering_or_a_refusal():
 def test_a_line_carries_a_row_by_its_id_never_by_its_words(name, text, path):
     if name in FOREIGN_TEMPLATES:
         return
-    if name == "TASK_METADATA_REMINDER":
+    if name == "TaskMetadataReminderNudge":
         assert set(PLACEHOLDER.findall(text)) == {"task", "missing"}
         return
-    if name == "TASK_HELPER_METADATA_REMINDER":
+    if name == "TaskHelperMetadataReminderNudge":
         assert set(PLACEHOLDER.findall(text)) == {"task", "missing"}
         return
     assert PLACEHOLDER.fullmatch(text) is None, f"{name} is only a placeholder, so its words are made on the fly: {text}"
@@ -74,8 +79,6 @@ def test_a_line_carries_a_row_by_its_id_never_by_its_words(name, text, path):
 
 @pytest.mark.parametrize("name,text,path", DECLARATIONS, ids=[row[0] for row in DECLARATIONS])
 def test_every_line_is_in_a_register_of_its_module(name, text, path):
-    if path.name == "rule_outcome.py":
-        return
     module = next(parent for parent in path.parents if list(parent.glob("*_module.py")))
     module_sources = [source_text(source) for source in (module / "support").glob("*.py")] + [source_text(source) for source in module.glob("*_module.py")]
     registered = any(re.search(rf"(NUDGES = \[[^\]]*\b{name}\b|nudges = \[[^\]]*\b{name}\b)", file_text) for file_text in module_sources)

@@ -12,7 +12,8 @@ from core.modules.questions.commands.ask_question.ask_question_handler import As
 from core.modules.questions.commands.ask_question.ask_question_subcommand import AskQuestionSubcommand
 from core.modules.questions.commands.question_list.question_list_subcommand import QuestionListSubcommand
 from core.modules.questions.commands.question_show.question_show_subcommand import QuestionShowSubcommand
-from core.modules.questions.support.question_marks import QUESTION_MARKS
+from core.modules.questions.marks.question_mark import QuestionMark
+from core.modules.questions.marks.question_answer_mark import QuestionAnswerMark
 from core.modules.questions.rules.own_question_tool_rule import OwnQuestionToolRule
 from core.modules.questions.guards.question_asker_guard import QuestionAskerGuard
 from core.modules.questions.guards.actor_options_guard import ActorOptionsGuard
@@ -30,7 +31,7 @@ from core.modules.questions.upgrade.questions_move import QuestionsMove
 from core.modules.questions.upgrade.question_links_move import QuestionLinksMove
 from core.modules.questions.support.block_conditions.question_answered import QuestionAnswered
 from core.modules.questions.support.block_conditions.questions_closed import QuestionsClosed
-from core.modules.questions.support.question_inspector import QUESTION_INSPECTOR
+from core.modules.questions.inspectors.question_inspector import QuestionInspector
 
 
 class QuestionsModule(Module):
@@ -48,9 +49,9 @@ class QuestionsModule(Module):
     handlers = [AskQuestionHandler, AnswerQuestionHandler]
     guards = [QuestionAskerGuard, ActorOptionsGuard]
     driver_rules = [OwnQuestionToolRule]
-    marks = QUESTION_MARKS
+    marks = [QuestionMark, QuestionAnswerMark]
     listeners = [OpenQuestionsDockListener, QuestionOpenMarkListener, QuestionEditedMarkListener, QuestionAnsweredMarkListener, QuestionClosedMarkListener, QuestionAnswerLineListener]
     docks = QUESTIONS_DOCKS
     windows = QUESTIONS_WINDOWS
-    inspectors = [QUESTION_INSPECTOR]
+    inspectors = [QuestionInspector]
     seeders = [QuestionsSeeder]

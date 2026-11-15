@@ -2,8 +2,6 @@ from core.modules.assign_rules.models.declarations.assign_rule_model_declaration
 from core.modules.assign_rules.models.declarations.assign_rule_condition_model_declaration import AssignRuleConditionModelDeclaration
 from core.modules.assign_rules.models.declarations.assign_decision_model_declaration import AssignDecisionModelDeclaration
 from engine.module.module import Module
-from engine.ticker.tick_handler import TickHandler
-from engine.ticker.tick_interval import TickInterval
 from core.modules.assign_rules.commands.record_assign_decision.apply_assign_rule_handler import ApplyAssignRuleHandler
 from core.modules.assign_rules.commands.record_assign_decision.apply_assign_rule_subcommand import ApplyAssignRuleSubcommand
 from core.modules.assign_rules.commands.edit_assign_rule.move_rule_tasks_handler import MoveRuleTasksHandler
@@ -29,7 +27,6 @@ from core.modules.assign_rules.commands.judge_task.judge_task_handler import Jud
 from core.modules.assign_rules.commands.judge_task.record_failed_decision_handler import RecordFailedDecisionHandler
 from core.modules.assign_rules.commands.record_assign_decision.judge_skipped_tasks_handler import JudgeSkippedTasksHandler
 from core.modules.assign_rules.listeners.agent_start_retry_listener import AgentStartRetryListener
-from core.modules.assign_rules.ticks.judge_skipped_tasks_tick import JudgeSkippedTasksTick
 from core.modules.assign_rules.guards.assign_rule_person_guard import AssignRulePersonGuard
 from core.modules.assign_rules.listeners.auto_assign_tag_listener import AutoAssignTagListener
 from core.modules.assign_rules.listeners.auto_assign_task_listener import AutoAssignTaskListener
@@ -43,6 +40,7 @@ from core.modules.assign_rules.migrations.m004_enabled_rule_index import Enabled
 from core.modules.assign_rules.support.assign_rules_nudges import ASSIGN_RULES_NUDGES
 from core.modules.assign_rules.support.rules.rule_assignment_reasons import RuleAssignmentReasons
 from core.modules.assignments.support.assignment_reasons import AssignmentReasons
+from core.modules.assign_rules.tick_handlers.judge_skipped_tasks_tick_handler import JudgeSkippedTasksTickHandler
 
 
 
@@ -66,4 +64,4 @@ class AssignRulesModule(Module):
     guards = [AssignRulePersonGuard, AssignRuleTargetGuard]
     bindings = {AssignmentReasons: RuleAssignmentReasons}
     nudges = ASSIGN_RULES_NUDGES
-    tick_handlers = [TickHandler(TickInterval(seconds=60), JudgeSkippedTasksTick(), "assign rules retry")]
+    tick_handlers = [JudgeSkippedTasksTickHandler]

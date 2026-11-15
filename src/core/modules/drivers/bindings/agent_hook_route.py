@@ -27,7 +27,9 @@ from core.modules.agents.support.agent_program import AgentProgram
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.agents.support.agent_sessions import AgentSessions
-from core.modules.drivers.support.access_nudges import ENDED_AGENT, REPLACED_SESSION, UNKNOWN_AGENT
+from core.modules.drivers.nudges.ended_agent_nudge import EndedAgentNudge
+from core.modules.drivers.nudges.replaced_session_nudge import ReplacedSessionNudge
+from core.modules.drivers.nudges.unknown_agent_nudge import UnknownAgentNudge
 from core.modules.drivers.support.hook_rule_answers import HookRuleAnswers
 from core.modules.drivers.commands.record_hook_call.record_hook_call import RecordHookCall
 from core.modules.drivers.commands.record_hook_timeout.record_hook_timeout import RecordHookTimeout
@@ -105,14 +107,14 @@ class AgentHookRoute(HookRoute):
         if event.event != HookEventName.PRE_TOOL_USE:
             return HookReply.allowed()
         self.program.request_stop(row)
-        return HookReply(refusal=ENDED_AGENT.nudge().text)
+        return HookReply(refusal=EndedAgentNudge.declared().nudge().text)
 
     def agentless_reply(self, event: HookEvent) -> HookReply:
         replaced_agent_id = self.sessions.replaced_agent_id(event.session)
         if replaced_agent_id is not None and event.event == HookEventName.PRE_TOOL_USE:
-            return HookReply(refusal=REPLACED_SESSION.nudge(agent=self.agents.find_unscoped(replaced_agent_id).number).text)
+            return HookReply(refusal=ReplacedSessionNudge.declared().nudge(agent=self.agents.find_unscoped(replaced_agent_id).number).text)
         if replaced_agent_id is None and event.is_check_required:
-            return HookReply(refusal=UNKNOWN_AGENT.nudge().text)
+            return HookReply(refusal=UnknownAgentNudge.declared().nudge().text)
         return HookReply.allowed()
 
     def passes_lockdown(self, event: HookEvent) -> bool:

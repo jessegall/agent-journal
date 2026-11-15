@@ -1,5 +1,7 @@
 from engine.driver.nudge import Nudge
-from core.modules.messages.support.message_nudges import MESSAGE_NOTE, REPLY_COMMAND, IMAGE_TAG_REQUEST
+from core.modules.messages.nudges.message_note_nudge import MessageNoteNudge
+from core.modules.messages.nudges.reply_command_nudge import ReplyCommandNudge
+from core.modules.messages.nudges.image_tag_request_nudge import ImageTagRequestNudge
 
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
@@ -36,8 +38,8 @@ class MessageReadRule(DriverRule):
             all_unread = self.messages.unread(hook.agent_id).every_row(UNREAD_REASON)
             unread = [message for message in all_unread if message.delivered_at is not None]
         images = [nudge for message in unread for nudge in self.image_nudges(message)]
-        nudges = [MESSAGE_NOTE.nudge(), REPLY_COMMAND.nudge(), *images] if unread else []
+        nudges = [MessageNoteNudge.declared().nudge(), ReplyCommandNudge.declared().nudge(), *images] if unread else []
         return RuleAnswer.with_nudges(*nudges).running(*(NoteMessageRead(message.id) for message in unread))
 
     def image_nudges(self, message: Message) -> list[Nudge]:
-        return [IMAGE_TAG_REQUEST.nudge(message=message.id, name=name) for name in MessageCaptions.untagged_images(message)]
+        return [ImageTagRequestNudge.declared().nudge(message=message.id, name=name) for name in MessageCaptions.untagged_images(message)]

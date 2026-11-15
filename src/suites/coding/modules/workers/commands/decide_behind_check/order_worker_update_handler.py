@@ -14,7 +14,8 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.support.behind_decisions import WITHOUT_OPEN_CHECK, BehindDecisions
 from suites.coding.modules.workers.support.behind_facts_reader import BehindFactsReader
-from suites.coding.modules.workers.support.behind_nudges import STALE_SOURCE, UPDATE_ORDERED
+from suites.coding.modules.workers.support.behind_nudges import STALE_SOURCE
+from suites.coding.modules.workers.nudges.update_ordered_nudge import UpdateOrderedNudge
 from suites.coding.modules.workers.support.merger_visits import MergerVisits
 
 
@@ -47,4 +48,4 @@ class OrderWorkerUpdateHandler(Handler[OrderWorkerUpdate, None]):
         check = self.decisions.check(worktree, WorktreeBehindCheck.is_undecided) or self.opened(worktree, deciding.id, context)
         self.repository.save_change(check, check.ordered(deciding.id, command.reason), context)
         self.visits.close_newest(context)
-        self.nudger.send(worktree.session_agent_id, UPDATE_ORDERED, STALE_SOURCE, context, count=check.commits_lagging)
+        self.nudger.send(worktree.session_agent_id, UpdateOrderedNudge.declared(), STALE_SOURCE, context, count=check.commits_lagging)

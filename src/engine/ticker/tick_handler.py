@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from engine.container.container import Container
 from engine.ticker.tick_interval import TickInterval
+from engine.types.class_fields import class_fields
 
 
 @dataclass(frozen=True)
@@ -17,6 +18,11 @@ class TickHandler:
     handler: Callable[[Container], bool | None]
     name: str = ""
     starts_immediately: bool = False
+
+    # a tick handler written as a class in its own file sets the fields as class attributes
+    @classmethod
+    def declared(cls) -> "TickHandler":
+        return TickHandler(**class_fields(cls, TickHandler))
 
     @property
     def label(self) -> str:

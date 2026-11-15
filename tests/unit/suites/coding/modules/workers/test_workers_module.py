@@ -24,7 +24,7 @@ def test_the_merger_answers_a_question_through_a_registered_command():
 def test_unanswered_questions_are_watched_and_forwarded_by_registered_parts():
     assert ForwardWorkerQuestionsHandler in WorkersModule.handlers
     assert QuestionTimesGuard in AsksModule.guards
-    assert any(isinstance(tick.handler, AskWatch) for tick in WorkersModule.tick_handlers)
+    assert any(isinstance(tick.handler, AskWatch) for tick in WorkersModule.tick_handler_declarations())
 
 
 def test_the_two_ticks_of_waiting_test_runs_are_named_for_test_runs():

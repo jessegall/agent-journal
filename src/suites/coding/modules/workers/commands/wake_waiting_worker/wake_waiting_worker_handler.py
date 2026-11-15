@@ -5,7 +5,7 @@ from engine.scope.actor_scope import ActorScope
 from suites.coding.modules.workers.commands.wake_waiting_worker.wake_waiting_worker import WakeWaitingWorker
 from suites.coding.modules.workers.support.work_units import WorkUnits
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
-from suites.coding.modules.workers.support.worker_nudges import WORKER_UNIT_RUN_PASSED
+from suites.coding.modules.workers.nudges.worker_unit_run_passed_nudge import WorkerUnitRunPassedNudge
 
 WAKE_SOURCE = "workers.unit-run-passed"
 
@@ -24,4 +24,4 @@ class WakeWaitingWorkerHandler(Handler[WakeWaitingWorker, None]):
         unit = self.units.unit(command.worker_id)
         if not unit.is_committed_unit:
             return
-        self.nudger.send(command.worker_id, WORKER_UNIT_RUN_PASSED, WAKE_SOURCE, context, phase=command.phase_id, line=self.guidance.line(command.worker_id))
+        self.nudger.send(command.worker_id, WorkerUnitRunPassedNudge.declared(), WAKE_SOURCE, context, phase=command.phase_id, line=self.guidance.line(command.worker_id))

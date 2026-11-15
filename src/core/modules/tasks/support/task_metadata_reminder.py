@@ -5,7 +5,8 @@ from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_tag import TaskTag
-from core.modules.tasks.support.task_nudges import TASK_METADATA_REMINDER, TASK_HELPER_METADATA_REMINDER
+from core.modules.tasks.nudges.task_metadata_reminder_nudge import TaskMetadataReminderNudge
+from core.modules.tasks.nudges.task_helper_metadata_reminder_nudge import TaskHelperMetadataReminderNudge
 
 
 class TaskMetadataReminder:
@@ -21,5 +22,5 @@ class TaskMetadataReminder:
         missing = [name for name, is_missing in (("tags", not has_tags), ("complexity", task.complexity is None)) if is_missing]
         if not missing:
             return ""
-        reminder = TASK_HELPER_METADATA_REMINDER if self.queries.query(Agent).find(task.creator_id).access == Access.READ else TASK_METADATA_REMINDER
+        reminder = TaskHelperMetadataReminderNudge.declared() if self.queries.query(Agent).find(task.creator_id).access == Access.READ else TaskMetadataReminderNudge.declared()
         return reminder.nudge(task=task.id, missing=" and ".join(missing)).text

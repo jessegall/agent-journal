@@ -2,7 +2,7 @@ from core.modules.search.windows.search_windows import SEARCH_WINDOWS
 from engine.module.module import Module
 from core.modules.search.commands.search_find.search_find_subcommand import SearchFindSubcommand
 from core.modules.search.listeners.search_mark_listener import SearchMarkListener
-from core.modules.search.support.search_marks import SEARCH_MARKS
+from core.modules.search.marks.search_mark import SearchMark
 
 
 class SearchModule(Module):
@@ -15,6 +15,6 @@ class SearchModule(Module):
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.chat", "journal.core.drivers", "journal.core.processes"]
     subcommands = [SearchFindSubcommand]
-    marks = SEARCH_MARKS
+    marks = [SearchMark]
     listeners = [SearchMarkListener]
     windows = SEARCH_WINDOWS

@@ -58,7 +58,7 @@ class WindowCheck:
 
     @staticmethod
     def slotless_section_problems(modules: Sequence[type[Module]]) -> list[str]:
-        component_windows = {component.window for module in modules for inspector in module.inspectors for component in inspector.components}
+        component_windows = {component.window for module in modules for inspector in module.inspector_declarations() for component in inspector.components}
         return [f"{window.name} is a section and names no slot" for module in modules for window in module.window_declarations()
                 if window.place is WindowPlace.SECTION and not window.slots and window.name not in component_windows]
 
@@ -82,7 +82,7 @@ class WindowCheck:
     @staticmethod
     def mark_dock_lines(modules: Sequence[type[Module]], shipped: set[str] | frozenset[str]) -> tuple[ButtonLine, ...]:
         return tuple(ButtonLine(module.name, button.runs, module.name in shipped) for module in modules
-                     for button in (*(button for mark in module.marks for button in (*mark.buttons, *mark.group_buttons)),
+                     for button in (*(button for mark in module.mark_declarations() for button in (*mark.buttons, *mark.group_buttons)),
                                     *(button for dock in module.dock_declarations() for button in dock.buttons)))
 
     @staticmethod

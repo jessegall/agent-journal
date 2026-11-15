@@ -43,7 +43,7 @@ from core.modules.sequences.rules.step_command_rule import StepCommandRule
 from core.modules.sequences.rules.unstarted_step_rule import UnstartedStepRule
 from core.modules.sequences.seeders.sequences_seeder import SequencesSeeder
 from core.modules.sequences.upgrade.sequences_move import SequencesMove
-from core.modules.sequences.support.sequence_marks import SEQUENCE_MARKS
+from core.modules.sequences.marks.sequence_mark import SequenceMark
 from engine.driver.stop_blockers import StopBlockers
 from core.modules.sequences.support.sequence_step_started import SequenceStepStarted
 from core.modules.sequences.support.sequence_stop_blockers import SequenceStopBlockers
@@ -71,7 +71,7 @@ class SequencesModule(Module):
                    AdvanceStepSubcommand, AbandonSequenceSubcommand]
     views = [SequenceRunRow]
     listeners = [SequenceEventIndexListener, SequenceRowTriggerListener, SequenceEndListener, StandardSequencesListener, SequenceStartedMarkListener, SequenceEndedMarkListener]
-    marks = SEQUENCE_MARKS
+    marks = [SequenceMark]
     driver_rules = [UnstartedStepRule, StepGuardRule, StepCommandRule, SequenceStopRule, SequenceTriggerRule]
     seeders = [SequencesSeeder]
     windows = SEQUENCES_WINDOWS

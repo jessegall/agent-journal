@@ -2,7 +2,12 @@ from core.modules.processes.models.enums.notice_type import NoticeType
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.support.cadence.cadence_notice import CadenceNotice
-from core.modules.processes.support.process_nudges import RUN_FROZEN, RUN_SPARSE, SILENT_RUN, SILENT_SAVED_PACKAGES, SILENT_SAVED_RUN, STALLED_RUN
+from core.modules.processes.nudges.run_frozen_nudge import RunFrozenNudge
+from core.modules.processes.nudges.run_sparse_nudge import RunSparseNudge
+from core.modules.processes.nudges.silent_run_nudge import SilentRunNudge
+from core.modules.processes.nudges.silent_saved_packages_nudge import SilentSavedPackagesNudge
+from core.modules.processes.nudges.silent_saved_run_nudge import SilentSavedRunNudge
+from core.modules.processes.nudges.stalled_run_nudge import StalledRunNudge
 from core.modules.processes.support.streaming_hints import StreamingHints
 
 
@@ -17,13 +22,13 @@ class CadenceNudges:
         hint = StreamingHints.hint(command)
         match category:
             case NoticeType.SILENT if part.saved_command:
-                declaration = SILENT_SAVED_PACKAGES if StreamingHints.is_serial_packages_run(command) else SILENT_SAVED_RUN
+                declaration = SilentSavedPackagesNudge.declared() if StreamingHints.is_serial_packages_run(command) else SilentSavedRunNudge.declared()
                 return CadenceNotice(declaration, {"name": part.saved_command, "seconds": seconds})
             case NoticeType.SILENT:
-                return CadenceNotice(SILENT_RUN, {"output": process.id, "seconds": seconds, "hint": hint})
+                return CadenceNotice(SilentRunNudge.declared(), {"output": process.id, "seconds": seconds, "hint": hint})
             case NoticeType.STOPPED_WRITING:
-                return CadenceNotice(STALLED_RUN, {"output": process.id, "seconds": seconds, "hint": hint})
+                return CadenceNotice(StalledRunNudge.declared(), {"output": process.id, "seconds": seconds, "hint": hint})
             case NoticeType.SPARSE:
-                return CadenceNotice(RUN_SPARSE, {"output": process.id, "seconds": seconds, "hint": hint})
+                return CadenceNotice(RunSparseNudge.declared(), {"output": process.id, "seconds": seconds, "hint": hint})
             case NoticeType.FROZEN:
-                return CadenceNotice(RUN_FROZEN, {"output": process.id, "seconds": seconds, "limit": limit})
+                return CadenceNotice(RunFrozenNudge.declared(), {"output": process.id, "seconds": seconds, "limit": limit})

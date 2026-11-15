@@ -8,7 +8,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.worker_nudges import WORKER_READ_REFUSAL
+from suites.coding.modules.workers.nudges.worker_read_refusal_nudge import WorkerReadRefusalNudge
 
 SHARED_FOLDERS = ("/tmp", "/private/tmp")
 
@@ -37,4 +37,4 @@ class WorkerReadRule(DriverRule):
         paths = (Path(normpath(join(worktree.folder, path))) for path in tool.files)
         if all(any(path.is_relative_to(folder) for folder in readable) for path in paths):
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(WORKER_READ_REFUSAL.nudge())
+        return RuleAnswer.refused(WorkerReadRefusalNudge.declared().nudge())

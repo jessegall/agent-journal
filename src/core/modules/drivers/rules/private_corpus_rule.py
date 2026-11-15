@@ -5,7 +5,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.part import Part
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.drivers.support.access_nudges import PRIVATE_CORPUS
+from core.modules.drivers.nudges.private_corpus_nudge import PrivateCorpusNudge
 
 CORPUS_FOLDER = ".journal/corpus"
 SANDBOXED_TEST = re.compile(r"^(?:\S+=\S+\s+)*go\s+(?:-C\s+\S+\s+)?test\b")
@@ -27,7 +27,7 @@ class PrivateCorpusRule(DriverRule):
         if shell is None:
             return RuleAnswer.allowed()
         names_corpus = any(CORPUS_FOLDER in redirect for redirect in shell.redirects) or any(self.has_private_corpus(part) for part in shell.parts)
-        return RuleAnswer.refused(PRIVATE_CORPUS.nudge()) if names_corpus else RuleAnswer.allowed()
+        return RuleAnswer.refused(PrivateCorpusNudge.declared().nudge()) if names_corpus else RuleAnswer.allowed()
 
     @staticmethod
     def has_private_corpus(part: Part) -> bool:

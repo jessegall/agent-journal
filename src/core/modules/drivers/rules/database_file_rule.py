@@ -6,7 +6,7 @@ from engine.driver.part import Part
 from engine.driver.rule_answer import RuleAnswer
 from engine.enums.command_category import CommandCategory
 from engine.enums.hook_event_name import HookEventName
-from core.modules.drivers.support.access_nudges import DATABASE_FILE
+from core.modules.drivers.nudges.database_file_nudge import DatabaseFileNudge
 
 DATABASE_PATH = re.compile(r"\.journal/version-5\.db(?:-wal|-shm)?(?![\w-])")
 READ_ONLY_FLAG = "-readonly"
@@ -28,7 +28,7 @@ class DatabaseFileRule(DriverRule):
         if shell is None:
             return RuleAnswer.allowed()
         writes = any(DATABASE_PATH.search(redirect) for redirect in shell.redirects) or any(self.writes_database(part) for part in shell.parts)
-        return RuleAnswer.refused(DATABASE_FILE.nudge()) if writes else RuleAnswer.allowed()
+        return RuleAnswer.refused(DatabaseFileNudge.declared().nudge()) if writes else RuleAnswer.allowed()
 
     @staticmethod
     def writes_database(part: Part) -> bool:
