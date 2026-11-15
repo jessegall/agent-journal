@@ -2,6 +2,7 @@ from dataclasses import replace
 
 from engine.agent_machine.needs.need import Need
 from engine.agent_stack.escalation import Escalation
+from engine.agent_stack.open_block import OpenBlock
 from engine.agent_stack.need_key import NeedKey
 from engine.agent_stack.reason import Reason
 from engine.agent_stack.states.working import Working
@@ -22,3 +23,10 @@ def test_a_stop_that_rests_through_an_escalation_hands_nothing_in():
     view = replace(ViewSamples.view("helper", WorkStop.HANDOVER), needs=tuple([JOB]))
     escalated = replace(view, escalation=Escalation(1, EscalationType.STOPS, Responder.PARENT, (), tuple([JOB_KEY]), 5))
     assert JobReportEffect.is_report_stop(view) and not JobReportEffect.is_report_stop(escalated)
+
+
+def test_a_stop_that_rests_because_an_escalation_defers_a_hold_on_it_hands_nothing_in():
+    hold = OpenBlock("documents.open", 3, Reason("documents.open", DecisionClass.HOLD, "documents.open", "close your document"), True, True, True, True, False)
+    view = replace(ViewSamples.view("helper", WorkStop.HANDOVER), needs=tuple([JOB]), blocks=tuple([hold]),
+                   escalation=Escalation(1, EscalationType.STOPS, Responder.PARENT, (3,), (), 5))
+    assert not JobReportEffect.is_report_stop(view)

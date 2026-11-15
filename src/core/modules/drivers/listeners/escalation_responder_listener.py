@@ -1,7 +1,7 @@
 from engine.command.context import Context
 from engine.driver.nudger import Nudger
 from engine.enums.responder import Responder
-from engine.event.created import Created
+from engine.event.changed import Changed
 from engine.listener.save_listener import SaveListener
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.models.agent_escalation import AgentEscalation
@@ -10,18 +10,18 @@ from core.modules.drivers.nudges.escalation_help_nudge import EscalationHelpNudg
 ESCALATION_SOURCE = "drivers.escalation"
 
 
-class EscalationResponderListener(SaveListener[Created[AgentEscalation]]):
-    """An escalation its agent's parent answers gives that parent a line that wakes it, in the escalation's write
-    (doc 1310 section 4.6); the person sees it in the chat."""
+class EscalationResponderListener(SaveListener[Changed[AgentEscalation]]):
+    """An escalation its agent's parent answers gives that parent a line that wakes it, in the escalation's write,
+    when it opens and when new refusals join it (doc 1310 section 4.6); the person sees it in the chat."""
 
     name = "drivers.escalation-responder"
 
     def __init__(self, agents: AgentRows, nudger: Nudger) -> None:
         self.agents, self.nudger = agents, nudger
 
-    def handle(self, event: Created[AgentEscalation], context: Context) -> None:
-        escalation = event.row
-        if escalation.responder is not Responder.PARENT:
+    def handle(self, event: Changed[AgentEscalation], context: Context) -> None:
+        escalation, previous = event.row, event.old_row
+        if escalation.responder is not Responder.PARENT or (previous is not None and escalation.refusal_count <= previous.refusal_count):
             return
         agent = self.agents.find(escalation.session_agent_id)
         if agent.parent_id is not None:

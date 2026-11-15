@@ -9,3 +9,10 @@ def test_the_old_repeated_stop_release_stands_down_only_once_every_blocked_slice
     assert blocked and {REPEATED_STOP_RELEASE, OLD_BLOCK_RULE} <= slices.machine_answered(blocked, "helper")
     some = frozenset(sorted(blocked)[:1]) | {SAFETY_SLICE}
     assert len(blocked) == 1 or REPEATED_STOP_RELEASE not in slices.machine_answered(some, "helper")
+
+
+def test_a_rule_a_transform_stands_for_keeps_answering_with_every_slice_on(played):
+    story = played(StartedHelper)
+    slices = story.container.get(ContributionSlices)
+    every_slice = slices.blocked_slices("helper") | {"safety", "admission", "lines", "waiting", "working.helper"}
+    assert not {"drivers.managed-hooks", "processes.runner-rewrite", "aliases.expansion"} & slices.machine_answered(every_slice, "helper")
