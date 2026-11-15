@@ -1,4 +1,3 @@
-from engine.agent_machine.step_result import StepResult
 from engine.agent_step.errors.required_effect_error import RequiredEffectError
 from core.modules.drivers.commands.record_repeated_hook_answer.record_repeated_hook_answer import RecordRepeatedHookAnswer
 from engine.agent_machine.stepping.constraints import Constraints
@@ -17,8 +16,6 @@ from engine.request.request_values import RequestValues
 from engine.log.system_log_writer import SystemLogWriter
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.hook_reply import HookReply
-from engine.driver.rule_answers import RuleAnswers
-from engine.log.error_log import ErrorLog
 from engine.performance.timing import Timing
 from engine.driver.hook_route import HookRoute
 from engine.driver.lockdown import Lockdown
@@ -41,12 +38,9 @@ from core.modules.drivers.nudges.unknown_agent_nudge import UnknownAgentNudge
 from core.modules.drivers.support.decision_assembler import DecisionAssembler
 from engine.agent_step.errors.step_conflict_error import StepConflictError
 from core.modules.drivers.nudges.paused_refusal_nudge import PausedRefusalNudge
-from core.modules.drivers.support.agent_slices import AgentSlices
-from core.modules.drivers.support.contribution_slices import SAFETY_SLICE
 from core.modules.drivers.support.decision_fallbacks import DecisionFallbacks
 from core.modules.drivers.support.assembled_answer import AssembledAnswer
-from core.modules.drivers.support.driver_comparison_step import DriverComparisonStep
-from core.modules.drivers.support.driver_settings import COMPARISON_SETTING, RETRY_RESERVE_SETTING
+from core.modules.drivers.support.driver_settings import RETRY_RESERVE_SETTING
 from core.modules.drivers.commands.record_hook_call.record_hook_call import RecordHookCall
 from core.modules.drivers.commands.record_hook_timeout.record_hook_timeout import RecordHookTimeout
 from core.modules.drivers.support.hook_durations import HookDurations
@@ -75,9 +69,8 @@ class AgentHookRoute(HookRoute):
     unknown agent when the event does not require an agent check. The row of a recorded hook is kept once
     its call is committed; a tick that brought nothing keeps none."""
 
-    def __init__(self, slices: AgentSlices, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, assembler: DecisionAssembler, request_values: RequestValues, clock: Clock, providers: Providers, lockdown: ProgramLockdown, sessions: AgentSessions, request_records: RequestRecords,
-                 comparison: DriverComparisonStep, errors: ErrorLog, timing: Timing) -> None:
-        self.comparison, self.errors, self.timing, self.slices = comparison, errors, timing, slices
+    def __init__(self, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, assembler: DecisionAssembler, request_values: RequestValues, clock: Clock, providers: Providers, lockdown: ProgramLockdown, sessions: AgentSessions, request_records: RequestRecords, timing: Timing) -> None:
+        self.timing = timing
         self.lockdown, self.sessions, self.request_records = lockdown, sessions, request_records
         self.clock, self.providers = clock, providers
         self.assembler, self.request_values = assembler, request_values
@@ -100,10 +93,8 @@ class AgentHookRoute(HookRoute):
         if agent is None:
             return self.ended_agent_reply(event)
         actor = Actor(agent.id, ActorType.AGENT)
-        assembled = self.assembler.assembled(event, agent, actor)
-        compared = self.compared_step(event, agent, actor, assembled.answers)
-        reply, answers = self.recorded(event, agent, actor, assembled)
-        self.compare(event, agent, actor, answers, reply, compared)
+        reply = self.recorded(event, agent, actor, self.assembler.assembled(event, agent, actor))
+        self.timing.stamp("driver_decided")
         if reply.hook_call_id is not None:
             self.request_records.recorded_hook(agent.id, agent.environment_id, hook_row_line(event), REFUSED_HOOK_EXIT_CODE if reply.refusal else 0)
         self.note_timeout(event, agent, actor)
@@ -112,22 +103,22 @@ class AgentHookRoute(HookRoute):
         return replace(reply, terminal="\n".join(line for line in (reply.terminal, measured) if line))
 
     # a step whose save lost its check is checked once more while time is left, else answered by the fallback of 6.6
-    def recorded(self, event: HookEvent, agent: Agent, actor: Actor, assembled: AssembledAnswer) -> tuple[HookReply, RuleAnswers]:
+    def recorded(self, event: HookEvent, agent: Agent, actor: Actor, assembled: AssembledAnswer) -> HookReply:
         for attempt in range(CHECK_ATTEMPTS):
             if attempt:
                 if not self.has_check_time(event, agent):
                     break
                 assembled = self.assembler.assembled(event, agent, actor)
             try:
-                return self.bus.run(RecordHookCall(event, agent.id, assembled.answers, assembled.step), actor, environment_id=agent.environment_id), assembled.answers
+                return self.bus.run(RecordHookCall(event, agent.id, assembled.answers, assembled.step), actor, environment_id=agent.environment_id)
             except StepConflictError:
                 continue
             # a required effect that failed rolled its save back: the hook is recorded again with the effect's own answer
             except RequiredEffectError:
                 failed = DecisionAssembler.failed_effects(assembled)
-                return self.bus.run(RecordHookCall(event, agent.id, failed), actor, environment_id=agent.environment_id), failed
+                return self.bus.run(RecordHookCall(event, agent.id, failed), actor, environment_id=agent.environment_id)
         answers = DecisionFallbacks.missed_check(event, agent.id, assembled.answers)
-        return self.bus.run(RecordHookCall(event, agent.id, answers), actor, environment_id=agent.environment_id), answers
+        return self.bus.run(RecordHookCall(event, agent.id, answers), actor, environment_id=agent.environment_id)
 
     def has_check_time(self, event: HookEvent, agent: Agent) -> bool:
         limit = HookLimits.seconds(agent.role == AgentRole.MAIN, event.event)
@@ -136,14 +127,11 @@ class AgentHookRoute(HookRoute):
             reserve = self.settings.number(RETRY_RESERVE_SETTING) / MILLISECONDS
         return limit - waited >= reserve
 
-    # a stored admission does not act for an agent retired, replaced or paused since, once the safety slice answers it
+    # a stored admission does not act for an agent retired, replaced or paused since
     def replayed(self, event: HookEvent, stored_call: HookCall) -> HookReply:
         reply = HookReply.stored(stored_call)
         agent = self.agents.find_unscoped(stored_call.session_agent_id)
-        with self.bus.scopes.read_scope((), None, agent.environment_id):
-            is_answered = SAFETY_SLICE in self.slices.tick_slices(agent)
-        is_stored_admission = not reply.refusal and event.event in (HookEventName.PRE_TOOL_USE, HookEventName.PROMPT)
-        if not is_answered or not is_stored_admission:
+        if reply.refusal or event.event not in (HookEventName.PRE_TOOL_USE, HookEventName.PROMPT):
             return reply
         override = self.repeated_answer(event, agent, stored_call)
         if not override:
@@ -161,29 +149,6 @@ class AgentHookRoute(HookRoute):
             return ""
         paused_later = [paused for paused in self.agents.paused_line(agent.id) if paused.paused_at is not None and paused.paused_at.value >= stored_call.creation_timestamp().value]
         return PausedRefusalNudge.declared().nudge().text if paused_later else ""
-
-    # the new driver steps on the walk's own rule answers, before the walk saves, so both answer the same state: the
-    # walk's save spends skips and moves countdowns the new step would otherwise read as spent and moved
-    def compared_step(self, event: HookEvent, agent: Agent, actor: Actor, answers: RuleAnswers) -> StepResult | None:
-        with self.bus.scopes.read_scope((), None, agent.environment_id):
-            is_compared = self.settings.flag(COMPARISON_SETTING)
-        if not is_compared:
-            return None
-        try:
-            return self.comparison.stepped(event, agent, actor, answers)
-        # the comparison never changes the live answer (doc 1310 section 13.3): a fault in it is logged and the hook answers
-        except Exception as error:
-            self.errors.reported(["driver comparison", hook_row_line(event)], error, agent.environment_id)
-            return None
-
-    def compare(self, event: HookEvent, agent: Agent, actor: Actor, answers: RuleAnswers, reply: HookReply, stepped: StepResult | None) -> None:
-        if stepped is None:
-            return
-        try:
-            self.comparison.compared(event, agent, actor, answers, reply, stepped)
-        except Exception as error:
-            self.errors.reported(["driver comparison", hook_row_line(event)], error, agent.environment_id)
-        self.timing.stamp("driver_decided")
 
     def note_timeout(self, event: HookEvent, agent: Agent, actor: Actor) -> None:
         if event.event == HookEventName.TICK:

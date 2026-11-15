@@ -1,7 +1,6 @@
 from engine.event.event_log import EventLog
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.driver.driver_rule import DriverRule
 from engine.journal.journal_home import JournalHome
 from engine.provider.managed_hooks import ManagedHooks
 from engine.provider.providers import Providers
@@ -18,8 +17,7 @@ class ScanManagedHooksHandler(Handler[ScanManagedHooks, int]):
         self.home, self.providers, self.managed, self.events = home, providers, managed, events
 
     def handle(self, command: ScanManagedHooks, context: Context) -> int:
-        rules = [entry.path.checked_class(DriverRule) for entry in self.providers.registry.rules]
-        manager = HookManager(self.home.project_folder, self.managed, rules)
+        manager = HookManager(self.home.project_folder, self.managed)
         for provider in self.providers.all():
             manager.import_hooks(type(provider), self.home.project_folder)
         self.events.write_file_change("managed-hook.scanned", self.managed.path, context)

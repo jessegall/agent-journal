@@ -5,8 +5,6 @@ from engine.driver.count_down import CountDown
 from engine.driver.times_span import TimesSpan
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from core.modules.drivers.models.agent_block import AgentBlock
-from core.modules.drivers.rules.agent_block_rule import AgentBlockRule
 from core.modules.drivers.support.countdowns import Countdowns, is_unbounded
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from tests.stories.core.support.coding_fixtures import BuilderStarted
@@ -72,12 +70,3 @@ def test_a_countdown_says_its_line_only_below_the_count_it_is_given(played):
     story = played(BuilderStarted)
     story.expect_rows(LATE_LINE.line_at(2) is None)
     story.expect_rows(LATE_LINE.line_at(1).text == "stop repeating due: 1 times")
-
-
-def test_a_block_says_its_countdown_only_below_the_count_it_was_given(played):
-    story = played(BuilderStarted)
-    block = AgentBlock(session_agent_id=story.agent.id, creator_id=story.agent.id, nudge_key="stories.block", nudge_text="held", condition_name="c", condition_text="t",
-                       grace_tool_uses=5, countdown_key="stories.block_countdown", countdown_text="left {left}", countdown_limit=2)
-    rule = story.container.get(AgentBlockRule)
-    story.expect_rows(rule.countdown(block, 2) is None)
-    story.expect_rows(rule.countdown(block, 3).text == "left 1")

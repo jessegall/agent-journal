@@ -1,5 +1,3 @@
-from engine.testing.examples.sample_nudge import sample_nudge
-from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 
@@ -9,29 +7,19 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.command.move_command import MoveCommand
 from engine.database.migration import Migration
-from engine.driver.agent_hook import AgentHook
 from engine.enums.command_category import CommandCategory
 from engine.enums.command_effect import CommandEffect
 from engine.driver.driver import Driver
-from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
-from engine.enums.hook_wildcard import HookWildcard
-from engine.driver.open_row import OpenRow
-from engine.driver.overlay import Overlay
-from engine.driver.rule_answer import RuleAnswer
 from engine.module.suite import Suite
-from engine.enums.tool_type import ToolType
 from engine.guard.guard import Guard
 from engine.model.lifecycle import Lifecycle
 from engine.model.model import Model
 from engine.model.move import Move
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
-from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.enums.setting_type import SettingType
 from engine.setting.setting_value import SettingValue
-from engine.setting.setting_values import SettingValues
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.event.created import Created
@@ -91,57 +79,6 @@ class EditLocksTable(Migration):
     )
 
 
-class StopLine(DriverRule):
-    """The lead is told one line at every stop."""
-
-    name = "samples.stop-line"
-    hook = HookEventName.STOP
-
-    def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.with_nudges(sample_nudge("the lead stops here"))
-
-
-class RemovalRule(DriverRule):
-    """The lead removes no folder with rm -rf."""
-
-    name = "samples.removal-limit"
-    exempt = True
-    hook = HookEventName.PRE_TOOL_USE
-
-    def answer(self, hook: AgentHook) -> RuleAnswer:
-        shell = hook.event.tool.shell if hook.event.tool is not None else None
-        if shell is not None and shell.has_part_matching("^rm -rf"):
-            return RuleAnswer.refused(sample_nudge("the lead removes no folder"))
-        return RuleAnswer.allowed()
-
-
-class ShellRewrite(DriverRule):
-    """While the project setting samples.rewrite is true, the lead's shell line runs through sample-run."""
-
-    name = "samples.shell-rewrite"
-    hook = HookEventName.PRE_TOOL_USE
-
-    def __init__(self, settings: SettingValues) -> None:
-        self.settings = settings
-
-    def answer(self, hook: AgentHook) -> RuleAnswer:
-        shell = hook.event.tool.shell if hook.event.tool is not None else None
-        if shell is not None and self.settings.project_value("samples.rewrite") is True:
-            return RuleAnswer.rewritten({"command": f"sample-run -- {shell.runner_text}"})
-        return RuleAnswer.allowed()
-
-
-class SecondShellRewrite(ShellRewrite):
-    """While samples.rewrite-twice is true as well, a second rule rewrites the same shell line."""
-
-    name = "samples.second-shell-rewrite"
-
-    def answer(self, hook: AgentHook) -> RuleAnswer:
-        if self.settings.project_value("samples.rewrite-twice") is True and hook.event.tool is not None and hook.event.tool.shell is not None:
-            return RuleAnswer.rewritten({"command": "sample-run-again"})
-        return RuleAnswer.allowed()
-
-
 @dataclass(frozen=True)
 class SampleNumber(Command[int]):
     """A sample command whose result, 7, a rule puts in the tool's new input."""
@@ -152,162 +89,6 @@ class SampleNumberHandler(Handler[SampleNumber, int]):
 
     def handle(self, command: SampleNumber, context: Context) -> int:
         return 7
-
-
-class NumberedRewrite(DriverRule):
-    """While samples.rewrite-after is true, runs SampleNumber and rewrites the shell line with the number it made."""
-
-    name = "samples.numbered-rewrite"
-    hook = HookEventName.PRE_TOOL_USE
-
-    def __init__(self, settings: SettingValues) -> None:
-        self.settings = settings
-
-    def answer(self, hook: AgentHook) -> RuleAnswer:
-        if hook.event.tool is None or hook.event.tool.shell is None or self.settings.project_value("samples.rewrite-after") is not True:
-            return RuleAnswer.allowed()
-        line = hook.event.tool.shell.runner_text
-        return RuleAnswer.allowed().running(SampleNumber()).rewriting_after_commands(lambda results: {"command": f"sample-run --process {results[0]} -- {line}"})
-
-
-class ForegroundRun(DriverRule):
-    """While samples.foreground is true, a shell line the agent program would run in its own background is
-    asked for in the foreground."""
-
-    name = "samples.foreground-run"
-    hook = HookEventName.PRE_TOOL_USE
-
-    def __init__(self, settings: SettingValues) -> None:
-        self.settings = settings
-
-    def answer(self, hook: AgentHook) -> RuleAnswer:
-        tool_input = hook.event.tool_input()
-        if hook.event.tool is None or hook.event.tool.shell is None or tool_input.get("run_in_background") is not True:
-            return RuleAnswer.allowed()
-        if self.settings.project_value("samples.foreground") is not True:
-            return RuleAnswer.allowed()
-        return RuleAnswer.rewritten({str(field): value for field, value in tool_input.items() if field != "run_in_background"})
-
-
-class CodingRewrite(DriverRule):
-    """While samples.rewrite-coding is true, a second rule rewrites every shell line of the coding suite's agents."""
-
-    name = "samples.coding-rewrite"
-    hook = HookEventName.PRE_TOOL_USE
-    drivers = ["coding.*"]
-
-    def __init__(self, settings: SettingValues) -> None:
-        self.settings = settings
-
-    def answer(self, hook: AgentHook) -> RuleAnswer:
-        if hook.event.tool is not None and hook.event.tool.shell is not None and self.settings.project_value("samples.rewrite-coding") is True:
-            return RuleAnswer.rewritten({"command": "sample-run"})
-        return RuleAnswer.allowed()
-
-
-class LockedEditRefusal(DriverRule):
-    """An open edit lock refuses every edit."""
-
-    name = "samples.locked-edit-refusal"
-    hook = HookEventName.PRE_TOOL_USE
-
-    def answer(self, hook: AgentHook) -> RuleAnswer:
-        if hook.event.tool is not None and hook.event.tool.category is ToolType.EDIT:
-            return RuleAnswer.refused(sample_nudge(f"{hook.layer_ref} refuses every edit"))
-        return RuleAnswer.allowed()
-
-
-class ReturnLine(DriverRule):
-    """Once an edit lock above it ends, the lead is told it is back at its own work, once."""
-
-    name = "samples.return-line"
-    hook = HookWildcard.ALL_HOOKS
-    drivers = ["samples.*"]
-    history = True
-
-    def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.with_nudges(sample_nudge("you are back at your own work")) if hook.control_return else RuleAnswer.allowed()
-
-
-class FailingRule(DriverRule):
-    """Fails on every stop."""
-
-    name = "samples.failing-rule"
-    hook = HookEventName.STOP
-    drivers = ["samples.*"]
-
-    def answer(self, hook: AgentHook) -> RuleAnswer:
-        raise RuntimeError("the sample rule failed")
-
-
-class EssentialClaim(DriverRule):
-    """A rule its module marks essential, ordinary until the user allows it."""
-
-    name = "samples.essential-claim"
-    hook = HookEventName.STOP
-    drivers = ["*"]
-    essential = True
-
-    def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.with_nudges(sample_nudge("the sample rule answers first"))
-
-
-class LockRelease(DriverRule):
-    """A prompt ends the edit lock it is asked for."""
-
-    name = "samples.lock-release"
-    hook = HookEventName.PROMPT
-
-    def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.allowed().ending_layer(EditLockEnd(hook.layer.row_id)) if hook.layer is not None else RuleAnswer.allowed()
-
-
-class SecondLockRelease(DriverRule):
-    """A second rule that also ends the edit lock on a prompt, so one row gets two moves on one hook."""
-
-    name = "samples.second-lock-release"
-    hook = HookEventName.PROMPT
-
-    def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.allowed().running(EditLockEnd(hook.layer.row_id)) if hook.layer is not None else RuleAnswer.allowed()
-
-
-class StopRefusal(DriverRule):
-    """While the project setting samples.refuse-stops is true, the lead's stop is refused."""
-
-    name = "samples.stop-refusal"
-    hook = HookEventName.STOP
-
-    def __init__(self, settings: SettingValues) -> None:
-        self.settings = settings
-
-    def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.refused(sample_nudge("the sample lead may not stop yet")) if self.settings.project_value("samples.refuse-stops") is True else RuleAnswer.allowed()
-
-
-class ReopenClaim(DriverRule):
-    """On a compaction, asks to reopen the edit lock it is asked for, which is open, so the lifecycle refuses it."""
-
-    name = "samples.reopen-claim"
-    hook = HookEventName.COMPACT
-
-    def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.allowed().running(EditLockReopen(hook.layer.row_id)) if hook.layer is not None else RuleAnswer.allowed()
-
-
-class EditLockOverlay(Overlay):
-    """An open edit lock of the agent, which silences the lead's own rules."""
-
-    name = "samples.edit-lock"
-    exclusive = True
-    delays_lines = True
-    rules = [LockedEditRefusal, LockRelease, SecondLockRelease, ReopenClaim]
-
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
-
-    def open_agent_rows(self, agent_id: int) -> Sequence[OpenRow]:
-        return [OpenRow("edit_lock", lock.id, lock.updated_at) for lock in self.queries.query(EditLock).filter(agent_id=agent_id, state=EditLockState.OPEN).every_row(TEST_ROWS_REASON)]
 
 
 class LeadLockGuard(Guard[Created[EditLock]]):
@@ -331,21 +112,18 @@ class Lead(Driver):
     name = LEAD
     suite_name = SampleSuite.name
     role = AgentRole.MAIN
-    rules = [RemovalRule, StopLine, StopRefusal, ShellRewrite, SecondShellRewrite, NumberedRewrite, ForegroundRun]
     guards = [LeadLockGuard]
     opening_lines = ["You are the sample lead"]
 
 
 class ControlSuite(Suite):
-    """A sample suite in complete control that includes the sample edit lock."""
+    """A second sample suite of one lead."""
 
     name = "control"
-    complete_control = True
-    included_overlays = ["samples.edit-lock"]
 
 
 class ControlLead(Driver):
-    """Drives the control suite's main agent, with no rules of its own."""
+    """Drives the control suite's main agent."""
 
     name = "control.lead"
     suite_name = ControlSuite.name
@@ -367,8 +145,6 @@ class SamplesModule(Module):
     guards = [LeadLockGuard]
     handlers = [SampleNumberHandler]
     drivers = [Lead, ControlLead]
-    overlays = [EditLockOverlay]
-    driver_rules = [ReturnLine, FailingRule, EssentialClaim, CodingRewrite]
 
 
 class SampleSuiteOfSamplesModule(SampleSuite):

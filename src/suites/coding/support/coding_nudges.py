@@ -8,9 +8,7 @@ from suites.coding.nudges.unfinished_tasks_nudge import UnfinishedTasksNudge
 from suites.coding.nudges.introduction_nudge import IntroductionNudge
 from suites.coding.nudges.waiting_items_nudge import WaitingItemsNudge
 from suites.coding.nudges.worker_full_test_run_nudge import WorkerFullTestRunNudge
-from suites.coding.nudges.git_restriction_nudge import GitRestrictionNudge
-from suites.coding.nudges.full_test_restriction_nudge import FullTestRestrictionNudge
 from suites.coding.nudges.failed_full_run_nudge import FailedFullRunNudge
 
 
-CODING_NUDGES = [GitRestrictionNudge, FullTestRestrictionNudge, FailedFullRunNudge, WorkerFullTestRunNudge, IntroductionNudge, WaitingItemsNudge, WorkerTaskStartedNudge, WorkerTaskUnstartedNudge, WorkerGitBanNudge, MainHelperBanNudge, MainCodeEditRefusedNudge, TaskAssignmentNudge, UnfinishedTasksNudge]
+CODING_NUDGES = [FailedFullRunNudge, WorkerFullTestRunNudge, IntroductionNudge, WaitingItemsNudge, WorkerTaskStartedNudge, WorkerTaskUnstartedNudge, WorkerGitBanNudge, MainHelperBanNudge, MainCodeEditRefusedNudge, TaskAssignmentNudge, UnfinishedTasksNudge]

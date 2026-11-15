@@ -6,7 +6,6 @@ from engine.enums.command_category import CommandCategory
 from engine.enums.tool_type import ToolType
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
-from core.modules.processes.rules.read_advice_rule import ReadAdviceRule
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner

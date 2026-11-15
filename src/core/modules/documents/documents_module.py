@@ -23,8 +23,6 @@ from core.modules.documents.support.work_context_reader import WorkContextReader
 from core.modules.documents.commands.open_doc.open_doc_handler import OpenDocHandler
 from core.modules.documents.commands.open_doc.open_doc_subcommand import OpenDocSubcommand
 from core.modules.documents.migrations.m006_revision_authors import RevisionAuthorsMigration
-from core.modules.documents.rules.open_document_rule import OpenDocumentRule
-from core.modules.documents.rules.open_document_stop_rule import OpenDocumentStopRule
 from core.modules.documents.support.document_closed import DocumentClosed
 from core.modules.documents.listeners.close_ended_document_listener import CloseEndedDocumentListener
 from core.modules.documents.commands.record_subject_link.record_subject_link_handler import RecordSubjectLinkHandler
@@ -112,7 +110,6 @@ class DocumentsModule(Module):
     nudges = [DocumentOpenNudge, DocumentStopRefusalNudge]
     models = [OpenDocumentModelDeclaration, DocModelDeclaration, ReportModelDeclaration, DocRevisionModelDeclaration, LinkModelDeclaration, CommentSelectionModelDeclaration, LinkCorrectionModelDeclaration]
     migrations = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration, CommentSelectionsMigration, ProjectDocumentsMigration, RevisionAuthorsMigration, LinkCorrectionsMigration, MessageLinkPathsMigration]
-    driver_rules = [OpenDocumentRule, OpenDocumentStopRule]
     block_conditions = [DocumentClosed]
     needs = [OpenDocumentNeeds]
     tick_handlers = [CloseEndedDocumentsTickHandler]

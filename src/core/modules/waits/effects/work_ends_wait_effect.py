@@ -8,12 +8,13 @@ from engine.command.command import Command
 from engine.enums.effect_timing import EffectTiming
 from engine.enums.hook_event_name import HookEventName
 from core.modules.waits.commands.end_wait.end_wait import EndWait
-from core.modules.waits.rules.work_ends_wait_rule import WorkEndsWaitRule
 
 if TYPE_CHECKING:
     from engine.agent_machine.decision_record import DecisionRecord
 
 WAIT_SUBJECT = "waits"
+# the key the wait's end is recorded under
+WORK_ENDS_WAIT_KEY = "waits.work-ends-wait"
 WENT_ON = "the agent went on working"
 
 
@@ -23,7 +24,7 @@ class WorkEndsWaitEffect(Effect):
 
     events = [HookEventName.PRE_TOOL_USE]
     timing = EffectTiming.UNCONDITIONAL
-    replaced_rules = tuple([WorkEndsWaitRule.name])
+    replaced_rules = tuple([WORK_ENDS_WAIT_KEY])
 
     def commands(self, view: AgentView, record: "DecisionRecord") -> Sequence[Command[object]]:
         tool = record.action.tool()

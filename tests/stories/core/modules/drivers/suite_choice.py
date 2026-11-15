@@ -22,9 +22,9 @@ def test_a_chosen_suite_runs_in_its_environment_and_gives_each_role_its_default_
     story.expect_success(lines.CURRENT_SUITE, "suite: samples", "drivers: main: samples.lead")
 
 
-def test_suite_show_names_its_defaults_and_the_overlays_it_includes(new_story):
+def test_suite_show_names_its_default_driver_per_role(new_story):
     story = new_story(SAMPLES, fixture=MainEnvironment)
-    story.expect_success("suite show control", "complete_control: True", "includes: samples.edit-lock", "drivers: main: control.lead")
+    story.expect_success("suite show control", "drivers: main: control.lead")
 
 
 def test_choosing_a_driver_of_no_installed_module_or_of_another_suite_is_refused(new_story):

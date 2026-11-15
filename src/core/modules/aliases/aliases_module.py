@@ -31,9 +31,6 @@ from core.modules.aliases.seeders.aliases_seeder import AliasesSeeder
 from core.modules.aliases.support.alias_shell_aliases import AliasShellAliases
 from core.modules.aliases.upgrade.aliases_move import AliasesMove
 from core.modules.aliases.commands.skip_saved_command.skip_saved_command_subcommand import SkipSavedCommandSubcommand
-from core.modules.aliases.rules.alias_expansion_rule import AliasExpansionRule
-from core.modules.aliases.rules.saved_command_rule import SavedCommandRule
-from core.modules.aliases.rules.unknown_command_rule import UnknownCommandRule
 from core.modules.aliases.nudges.command_type_unknown_nudge import CommandTypeUnknownNudge
 from core.modules.aliases.nudges.alias_access_refused_nudge import AliasAccessRefusedNudge
 from core.modules.aliases.nudges.alias_missing_nudge import AliasMissingNudge
@@ -69,5 +66,4 @@ class AliasesModule(Module):
     listeners = [AliasFileListener, PluginAliasesListener, EndedRunSilenceListener]
     tick_handlers = [SilentAliasMarkingTickHandler]
     guards = [ReaderAliasGuard, SavedCommandGuard]
-    driver_rules = [AliasExpansionRule, UnknownCommandRule, SavedCommandRule]
     nudges = [CommandTypeUnknownNudge, AliasUnexpandedNudge, AliasMissingNudge, AliasPluginOffNudge, AliasAccessRefusedNudge, SavedCommandMixedNudge, SavedCommandUnknownNudge, SavedCommandChoicesNudge, SavedCommandHelperNudge, SavedCommandDirectNudge, SavedCommandPipedNudge, SavedCommandUnreadNudge, SavedCommandSilentNudge, SavedCommandTimeoutNudge]

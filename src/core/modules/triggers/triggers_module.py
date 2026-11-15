@@ -35,8 +35,6 @@ from core.modules.triggers.commands.trigger_list.trigger_list_subcommand import 
 from core.modules.triggers.migrations.m001_triggers import TriggersTableMigration
 from core.modules.triggers.upgrade.triggers_move import TriggersMove
 from core.modules.triggers.seeders.triggers_seeder import TriggersSeeder
-from core.modules.triggers.rules.phrase_trigger_rule import PhraseTriggerRule
-from core.modules.triggers.rules.scheduled_trigger_rule import ScheduledTriggerRule
 from core.modules.triggers.migrations.m004_trigger_action_runs import TriggerActionRunsMigration
 from core.modules.triggers.commands.start_trigger_action.start_trigger_action_handler import StartTriggerActionHandler
 from core.modules.triggers.commands.deliver_trigger_output.deliver_trigger_output_handler import DeliverTriggerOutputHandler
@@ -65,7 +63,6 @@ class TriggersModule(Module):
     handlers = [EnableTriggerHandler, MakeTriggerHandler, ScheduleTriggerHandler, StrikeTriggerHandler, FireTriggerHandler, PauseTriggerHandler, StartTriggerActionHandler, DeliverTriggerOutputHandler]
     listeners = [TriggerActionsListener, TriggerWaitingMarkListener, TriggerOutputListener, TriggerProcessRemovalListener, TriggerApprovalListener]
     subcommands = [TryTriggerSubcommand, EnableTriggerSubcommand, MakeTriggerSubcommand, ScheduleTriggerSubcommand, StrikeTriggerSubcommand, PauseTriggerSubcommand, TriggerListSubcommand]
-    driver_rules = [PhraseTriggerRule, ScheduledTriggerRule]
     windows = TRIGGERS_WINDOWS
     seeders = [TriggersSeeder]
     moves = [TriggersMove]

@@ -1,7 +1,6 @@
 from engine.file.file_access import FileAccess
 from pathlib import Path
 
-from engine.driver.driver_rule import DriverRule
 from engine.journal.journal_home import JournalHome
 from engine.provider.hook_manager import HookManager
 from engine.provider.managed_hook_history_reader import ManagedHookHistoryReader
@@ -32,8 +31,7 @@ class ProjectHooks:
     def listed(self) -> ProjectHookList:
         root = self.home.project_folder
         providers = self.providers.all()
-        rules = [entry.path.checked_class(DriverRule) for entry in self.providers.registry.rules]
-        manager = HookManager(root, self.managed, rules)
+        manager = HookManager(root, self.managed)
         return ProjectHookList(tuple(ManagedHookItem(hook, self.history.read(hook)) for hook in self.managed.all()),
                                tuple(entry for provider in providers for entry in self.journal_entries(provider)),
                                tuple(hook for provider in providers for hook in manager.unmanaged(type(provider), root)),

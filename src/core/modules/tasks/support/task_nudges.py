@@ -1,6 +1,5 @@
 from engine.driver.count_down import CountDown
 from core.modules.drivers.support.write_span import WriteSpan
-from core.modules.tasks.nudges.task_return_nudge import TaskReturnNudge
 from core.modules.tasks.nudges.blocked_tasks_nudge import BlockedTasksNudge
 from core.modules.tasks.nudges.current_task_nudge import CurrentTaskNudge
 from core.modules.tasks.nudges.task_reopened_nudge import TaskReopenedNudge
@@ -27,4 +26,4 @@ LOG_REQUEST_WRITES = 25
 
 LOG_REQUEST = CountDown("tasks.log_request", "log task {task}", WriteSpan(LOG_REQUEST_WRITES))
 
-TASK_NUDGES = [TaskMetadataReminderNudge, TaskHelperMetadataReminderNudge, TaskTestingQuestionNudge, TaskBriefFirstNudge, TaskFiledNudge, TaskFiledKeepCurrentNudge, TaskReopenedNudge, WaitDescriptionNudge, PlainBlockNudge, TaskNameNudge, BlockReviewNudge, BlockReviewRequiredNudge, UserBlockReviewNudge, MissedLogNudge, TaskReturnNudge, BlockedTasksNudge, CurrentTaskNudge, LOG_REQUEST.declaration, StopTaskNudge, StopTasksNudge, TaskReturnReminderNudge, UnloggedWritesNudge, InactiveTaskNudge]
+TASK_NUDGES = [TaskMetadataReminderNudge, TaskHelperMetadataReminderNudge, TaskTestingQuestionNudge, TaskBriefFirstNudge, TaskFiledNudge, TaskFiledKeepCurrentNudge, TaskReopenedNudge, WaitDescriptionNudge, PlainBlockNudge, TaskNameNudge, BlockReviewNudge, BlockReviewRequiredNudge, UserBlockReviewNudge, MissedLogNudge, BlockedTasksNudge, CurrentTaskNudge, LOG_REQUEST.declaration, StopTaskNudge, StopTasksNudge, TaskReturnReminderNudge, UnloggedWritesNudge, InactiveTaskNudge]

@@ -4,7 +4,6 @@ const EFFECT_LABELS = {
   can_refuse: "Can refuse",
   can_rewrite: "Can rewrite",
   adds_lines: "Adds context",
-  overlaps: "Also checked by journal",
 };
 </script>
 

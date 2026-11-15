@@ -9,7 +9,6 @@ from engine.enums.actor_type import ActorType
 from engine.enums.command_category import CommandCategory
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.merger_line import MergerLine
-from core.modules.drivers.rules.repeated_stop_release_rule import STOP_REFUSAL_COUNT
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import start_process
 from tests.stories.core.support import story_lines as lines
@@ -31,6 +30,9 @@ from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 MAIN_SESSION = "s-1"
 PROCESS_START = "2026-10-31T09:00:00+00:00"
+
+# the stops in a row a block refuses before the agent's parent is asked (setting most-stop-refusals)
+STOP_REFUSAL_COUNT = 5
 
 
 

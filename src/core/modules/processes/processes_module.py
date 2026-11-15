@@ -120,8 +120,6 @@ from core.modules.processes.commands.make_reader_draft.make_reader_draft_subcomm
 from core.modules.processes.commands.send_reader_request_notice.send_reader_request_notice_handler import SendReaderRequestNoticeHandler
 from core.modules.processes.commands.skip_reader_request.skip_reader_request_handler import SkipReaderRequestHandler
 from core.modules.processes.commands.skip_reader_request.skip_reader_request_subcommand import SkipReaderRequestSubcommand
-from core.modules.processes.rules.reader_request_rule import ReaderRequestRule
-from core.modules.processes.rules.retry_loop_rule import RetryLoopRule
 from core.modules.processes.migrations.m027_reader_request_chat_history import ReaderRequestChatHistoryMigration
 from core.modules.processes.migrations.m029_stock_test_titles import StockTestTitlesMigration
 from core.modules.processes.migrations.m031_stock_reader_defaults import StockReaderDefaultsMigration
@@ -141,7 +139,6 @@ from core.modules.processes.commands.halt_run_queue.halt_run_queue_handler impor
 from core.modules.processes.commands.halt_run_queue.halt_run_queue_subcommand import HaltRunQueueSubcommand
 from core.modules.processes.commands.resume_run_queue.resume_run_queue_handler import ResumeRunQueueHandler
 from core.modules.processes.commands.resume_run_queue.resume_run_queue_subcommand import ResumeRunQueueSubcommand
-from core.modules.processes.states.run_queue_halted import RunQueueHalted
 from core.modules.processes.listeners.waiting_message_run_listener import WaitingMessageRunListener
 from core.modules.processes.support.process_nudges import PROCESS_NUDGES
 from engine.driver.watched_runs import WatchedRuns
@@ -171,18 +168,11 @@ from core.modules.processes.commands.watch_output.watch_output_subcommand import
 from core.modules.processes.listeners.background_run_watch_listener import BackgroundRunWatchListener
 from core.modules.processes.listeners.ended_process_watch_listener import EndedProcessWatchListener
 from core.modules.processes.listeners.reader_proof_listener import ReaderProofListener
-from core.modules.processes.rules.watch_lines_rule import WatchLinesRule
 from core.modules.processes.commands.prune_processes.prune_processes_handler import PruneProcessesHandler
 from core.modules.processes.listeners.process_prune_listener import ProcessPruneListener
 from core.modules.processes.listeners.process_removal_listener import ProcessRemovalListener
-from core.modules.processes.rules.leftover_run_rule import LeftoverRunRule
-from core.modules.processes.rules.orphan_process_rule import OrphanProcessRule
 from core.modules.processes.listeners.process_folder_removal_listener import ProcessFolderRemovalListener
 from core.modules.processes.listeners.run_slot_listener import RunSlotListener
-from core.modules.processes.rules.alias_suggestion_rule import AliasSuggestionRule
-from core.modules.processes.rules.read_advice_rule import ReadAdviceRule
-from core.modules.processes.rules.reading_rule import ReadingRule
-from core.modules.processes.rules.run_title_rule import RunTitleRule
 from core.modules.processes.listeners.process_end_mark_listener import ProcessEndMarkListener
 from core.modules.processes.listeners.process_part_start_mark_listener import ProcessPartStartMarkListener
 from core.modules.processes.listeners.process_move_mark_listener import ProcessMoveMarkListener
@@ -203,25 +193,14 @@ from core.modules.processes.commands.process_feed.process_feed_subcommand import
 from core.modules.processes.models.process_row import ProcessRow
 from core.modules.processes.commands.title_output.title_output_handler import TitleOutputHandler
 from core.modules.processes.commands.title_output.title_output_subcommand import TitleOutputSubcommand
-from core.modules.processes.rules.journal_chain_rule import JournalChainRule
-from core.modules.processes.rules.journal_pipe_rule import JournalPipeRule
-from core.modules.processes.rules.read_command_output_rule import ReadCommandOutputRule
-from core.modules.processes.rules.silent_run_block_rule import SilentRunBlockRule
-from core.modules.processes.rules.long_run_dock_rule import LongRunDockRule
 from core.modules.processes.listeners.active_tests_marker_listener import ActiveTestsMarkerListener
 from core.modules.processes.listeners.process_output_listener import ProcessOutputListener
-from core.modules.processes.rules.output_status_monitor_rule import OutputStatusMonitorRule
 from core.modules.processes.guards.ended_process_dock_guard import EndedProcessDockGuard
 from core.modules.processes.guards.run_owner_parts_guard import RunOwnerPartsGuard
 from core.modules.processes.guards.run_owner_reports_guard import RunOwnerReportsGuard
 from core.modules.processes.commands.start_process.start_process_handler import StartProcessHandler
 from core.modules.processes.commands.stop_process.stop_process_handler import StopProcessHandler
 from core.modules.processes.commands.stop_process.stop_process_subcommand import StopProcessSubcommand
-from core.modules.processes.rules.ended_output_line_rule import EndedOutputLineRule
-from core.modules.processes.rules.folder_change_rule import FolderChangeRule
-from core.modules.processes.rules.runner_rewrite_rule import RunnerRewriteRule
-from core.modules.processes.rules.hand_made_monitor_rule import HandMadeMonitorRule
-from core.modules.processes.rules.sleep_poll_rule import SleepPollRule
 from core.modules.processes.commands.add_reader.add_reader_handler import AddReaderHandler
 from core.modules.processes.commands.add_reader.add_reader_subcommand import AddReaderSubcommand
 from core.modules.processes.commands.choose_default_reader.choose_default_reader_handler import ChooseDefaultReaderHandler
@@ -348,8 +327,6 @@ class ProcessesModule(Module):
     handlers = [ClaimProcessHandler, ChooseExecutionPresetHandler, SaveExecutionClassHandler, RemoveExecutionClassHandler, WarnCadenceHandler, StoreEndDecisionsHandler, RequestReaderHandler, CheckOutputHandler, ConfirmOutputHandler, RecordSandboxHandler, UpdateStockReadersHandler, SetOutputTimeoutHandler, StopTimedProcessHandler, RequestOutputCheckHandler, StopHungProcessHandler, PruneProcessesHandler, SendReadersNoticeHandler, MakeReaderDraftHandler, SendReaderRequestNoticeHandler, SkipReaderRequestHandler, TitleOutputHandler, StartProcessHandler, StartProcessPartHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, RecordGivenPercentHandler, ReadNewOutputHandler, GrantRunSlotsHandler, HaltRunQueueHandler, ResumeRunQueueHandler, RecordRequestRunHandler, RecordRequestRunsHandler, ReleaseBlockHandler, MarkRunUnreadableHandler, LiftRunUnreadableHandler, MarkUnreadableHandler, LiftUnreadableHandler, SendReadingNoticesHandler, RequestCountReaderHandler]
     subcommands = [ClaimProcessSubcommand, ListLanesSubcommand, ChooseExecutionPresetSubcommand, ListExecutionPresetsSubcommand, SetExecutionClassSubcommand, AddExecutionClassSubcommand, RemoveExecutionClassSubcommand, ResetExecutionClassSubcommand, ListExecutionClassesSubcommand, ShowExecutionClassSubcommand, PreviewExecutionClassSubcommand, RequestReaderSubcommand, ConfirmOutputSubcommand, RecordSandboxSubcommand, SetOutputTimeoutSubcommand, PageOutputSubcommand, HookOutputPageSubcommand, InspectRunQueueSubcommand, MakeReaderDraftSubcommand, SkipReaderRequestSubcommand, ListRunQueueSubcommand, ProcessFeedSubcommand, ProcessCardSubcommand, TitleOutputSubcommand, StopProcessSubcommand, EndProcessSubcommand, StartProcessPartSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand, HaltRunQueueSubcommand, ResumeRunQueueSubcommand, ProcessListSubcommand, ListBlocksSubcommand, ReleaseBlockSubcommand, MarkRunUnreadableSubcommand, LiftRunUnreadableSubcommand, MarkUnreadableSubcommand, LiftUnreadableSubcommand]
     guards = [RunOwnerReportsGuard, RunOwnerPartsGuard, ReaderOwnerGuard, EndedProcessDockGuard]
-    driver_rules = [ReadingRule, RetryLoopRule, ReaderRequestRule, LeftoverRunRule, HandMadeMonitorRule, AliasSuggestionRule, ReadAdviceRule, RunTitleRule, SleepPollRule, JournalChainRule, ReadCommandOutputRule, JournalPipeRule, SilentRunBlockRule, OutputStatusMonitorRule, LongRunDockRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, WatchLinesRule, OrphanProcessRule]
-    agent_states = [RunQueueHalted]
     listeners = [BootedRunsListener, ReaderRunCountResetListener, UnreadableMarkRunCountResetListener, EndDecisionListener, EndedRunLineListener, FullOutputReadListener, StockReadersPublishListener, StartReadersListener, ReaderFailureListener, ReaderBlockListener, ReaderRequestCompleteListener, ProcessFolderRemovalListener, RunSlotListener, ActiveTestsMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, ReaderProofListener, ProcessPruneListener, ProcessRemovalListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, ProcessPartStartMarkListener, ProcessMoveMarkListener, ProcessOutputMarkListener, ProcessOutputListener]
     wake_causes = [RunEndedWake]
     marks = [ProcessCommandMark]

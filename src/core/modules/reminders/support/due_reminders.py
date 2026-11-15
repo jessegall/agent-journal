@@ -10,6 +10,8 @@ from core.modules.tasks.queries.task_query import TaskQuery
 
 OPEN_REMINDERS_READ = 200
 
+# the key a due reminder's hold, lines and effect are recorded under
+DUE_REMINDER_KEY = "reminders.due"
 
 class DueReminders:
     """The reminders that have come due for a main agent now: the open reminders in one query a request, the tool uses

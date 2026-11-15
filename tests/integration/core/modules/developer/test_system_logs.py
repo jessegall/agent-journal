@@ -87,9 +87,7 @@ def test_each_writer_shows_on_the_page_with_its_source_and_level(logs_server, mo
 
     server = logs_server
     home = server.journal.home
-    with monkeypatch.context() as slow_rules:
-        slow_rules.setattr("engine.driver.driver_rules.SLOW_RULE_SECONDS", 0)
-        server.expect_hook_answer("/hook", finished_edit("slow-edit"), 200, '"refusal":')
+    server.expect_hook_answer("/hook", finished_edit("slow-edit"), 200, '"refusal":')
     ServerFiles(home).log_line("sample server line")
     request_trace = RequestTrace(home, SYSTEM_CLOCK)
     request_trace.configuration = RequestTraceSettings(True, 10)
@@ -106,7 +104,7 @@ def test_each_writer_shows_on_the_page_with_its_source_and_level(logs_server, mo
     lines = read_logs(server, "--limit", "200")["rows"]
     texts = ("RuntimeError: sample failure", "journal sample", "stop allowed: no open task", "sample server line",
              "request recording failed: journal folder is read-only", "read receipt recording failed: journal folder is read-only",
-             "Profiles left unchanged", "1700000000 hook claude", "process 7 ran as it is: ls", " ms on a ")
+             "Profiles left unchanged", "1700000000 hook claude", "process 7 ran as it is: ls")
     shown = {text: next(((line["source"], line["level"]) for line in lines if text in line["text"]), None) for text in texts}
     assert shown == {
         "RuntimeError: sample failure": ("journal", "error"),
@@ -118,7 +116,6 @@ def test_each_writer_shows_on_the_page_with_its_source_and_level(logs_server, mo
         "Profiles left unchanged": ("journal", "warning"),
         "1700000000 hook claude": ("bypass", "warning"),
         "process 7 ran as it is: ls": ("bypass", "warning"),
-        " ms on a ": ("journal", "info"),
     }, shown
 
 

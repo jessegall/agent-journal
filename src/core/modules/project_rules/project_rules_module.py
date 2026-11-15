@@ -10,7 +10,6 @@ from core.modules.project_rules.migrations.m001_rules import RulesTableMigration
 from core.modules.project_rules.migrations.m002_memory_rules import MemoryRulesMigration
 from core.modules.project_rules.migrations.m003_plain_memories import PlainMemoriesMigration
 from core.modules.project_rules.guards.rule_approval_guard import RuleApprovalGuard
-from core.modules.project_rules.rules.start_rules_rule import StartRulesRule
 from core.modules.project_rules.support.rule_nudges import RULE_NUDGES
 from core.modules.project_rules.support.rule_settings import RULE_SETTINGS
 from core.modules.project_rules.upgrade.rules_move import RulesMove
@@ -33,5 +32,4 @@ class ProjectRulesModule(Module):
     settings = RULE_SETTINGS
     nudges = RULE_NUDGES
     skills = PROJECT_RULES_SKILLS
-    driver_rules = [StartRulesRule]
     windows = PROJECT_RULES_WINDOWS

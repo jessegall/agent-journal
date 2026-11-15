@@ -4,7 +4,6 @@ from engine.driver.nudge import Nudge
 from collections.abc import Sequence
 
 from engine.cli.subcommand_lookup import SubcommandLookup
-from core.modules.drivers.rules.access_rule import HELP_FLAG
 from engine.driver.shell_line import ShellLine
 from engine.helper_type.command_allow_list import CommandAllowList
 from engine.helper_type.enums.journal_line_class import JournalLineClass
@@ -15,6 +14,7 @@ from engine.setting.setting_values import SettingValues
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.base_commands import BASE_COMMANDS
 from core.modules.drivers.nudges.helper_type_category_nudge import HelperTypeCategoryNudge
+from core.modules.drivers.support.read_only_access import HELP_FLAG
 from core.modules.drivers.support.type_command_check import TypeCommandCheck
 
 

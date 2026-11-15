@@ -9,8 +9,7 @@ from engine.enums.hook_event_name import HookEventName
 from engine.enums.line_category import LineCategory
 from engine.time.clock import Clock
 from core.modules.reminders.nudges.reminder_line_nudge import ReminderLineNudge
-from core.modules.reminders.rules.due_reminder_rule import DueReminderRule
-from core.modules.reminders.support.due_reminders import DueReminders
+from core.modules.reminders.support.due_reminders import DUE_REMINDER_KEY, DueReminders
 
 
 class DueReminderLines(LineSource):
@@ -19,7 +18,7 @@ class DueReminderLines(LineSource):
     events = [event for event in HookEventName if event is not HookEventName.TICK]
     includes_steps = True
     agent_types = [AgentRole.MAIN.value]
-    replaced_rules = tuple([DueReminderRule.name])
+    replaced_rules = tuple([DUE_REMINDER_KEY])
     category = LineCategory.STEERING
 
     def __init__(self, reminders: DueReminders, clock: Clock) -> None:

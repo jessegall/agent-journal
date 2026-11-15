@@ -8,7 +8,6 @@ from engine.database.database import Database
 from engine.query.queries import Queries
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.models.driver_epoch import DriverEpoch
-from core.modules.drivers.support.driver_settings import COMPARISON_SETTING
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
@@ -36,8 +35,3 @@ def test_a_pause_written_after_the_view_was_read_keeps_that_step_from_saving(pla
     assert saved(story, *read_step(story)).is_saved is True
 
 
-def test_a_driving_setting_moves_the_driver_epoch_of_its_environment(played):
-    story = played(BuilderStarted)
-    before = epoch(story)
-    story.expect_success(f"setting set {COMPARISON_SETTING} true", actor=story.user)
-    assert epoch(story) == before + 1

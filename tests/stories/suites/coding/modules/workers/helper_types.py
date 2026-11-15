@@ -5,17 +5,10 @@ import json
 
 import pytest
 
-from engine.enums.access import Access
-from engine.enums.agent_role import AgentRole
-from engine.helper_type.helper_type_book import HelperTypeBook
-from engine.database.database import Database
-from engine.registry.registry import Registry
 from core.modules.drivers.models.agent_line import AgentLine
-from tests.stories.core.support.coding_fixtures import CodingEnvironment
 from engine.enums.tool_type import ToolType
 from engine.testing.examples.hook_samples import HookSamples
-from tests.stories.suites.coding.modules.workers.support.helper_types import ClerkStarted, HelperStarted, BuilderNativeHelper, EveryHelperRule, ReaderHelpersRule, WorkerStarted
-from suites.coding.support.shipped_profiles import WORKER_MEDIOR_PROFILE
+from tests.stories.suites.coding.modules.workers.support.helper_types import ClerkStarted, HelperStarted, BuilderNativeHelper, WorkerStarted
 
 
 READ_SAMPLE = HookSamples.tool_use("Read", ToolType.READ, ["README.md"], None)
@@ -49,27 +42,6 @@ def test_an_ended_helper_is_left_out_of_the_inactive_notice(new_story):
 def test_a_helper_has_saved_commands_from_its_first_start(new_story):
     story = new_story(fixture=HelperStarted)
     story.expect_helper_type_behaviours("helper", runs_saved_commands=True)
-
-
-@pytest.mark.parametrize("role", ["helper", "worker", "clerk"])
-def test_a_rule_that_names_the_helper_role_holds_for_a_worker_and_every_other_kind(new_story, role):
-    story = new_story(fixture=EveryHelperRule)
-    story.expect_hook_refusal(f"s-{role}", READ_SAMPLE, "sample rule holds for every helper")
-
-
-def test_a_rule_that_names_the_helper_role_leaves_the_main_agent_alone(new_story):
-    story = new_story(fixture=EveryHelperRule)
-    story.expect_hook_allowed("s-1", READ_SAMPLE)
-
-
-def test_a_rule_for_read_only_helpers_holds_for_a_read_only_helper(new_story):
-    story = new_story(fixture=ReaderHelpersRule)
-    story.expect_hook_refusal("s-helper", READ_SAMPLE, "sample rule holds for read-only helpers")
-
-
-def test_a_rule_for_read_only_helpers_leaves_a_worker_alone(new_story):
-    story = new_story(fixture=ReaderHelpersRule)
-    story.expect_hook_allowed("s-worker", READ_SAMPLE)
 
 
 def test_helper_stop_tells_a_worker_where_its_work_goes(new_story):

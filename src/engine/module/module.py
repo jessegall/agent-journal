@@ -8,7 +8,6 @@ from engine.agent.groups.agent_group import AgentGroup
 from engine.helper_type.helper_type import HelperType
 from engine.profile.agent_profile import AgentProfile
 from engine.module.ask_topic import AskTopic
-from engine.driver.agent_state import AgentState
 
 from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.chat.dock_declaration import DockDeclaration
@@ -27,8 +26,6 @@ from engine.agent_machine.driver import Driver as AgentDriver
 from engine.agent_machine.needs.fact_source import FactSource
 from engine.agent_machine.needs.need_source import NeedSource
 from engine.model.model import Model
-from engine.driver.driver_rule import DriverRule
-from engine.driver.overlay import Overlay
 from engine.guard.guard import Guard
 from engine.listener.commit.commit_listener import CommitListener
 from engine.listener.deletion_listener import DeletionListener
@@ -86,9 +83,6 @@ class Module:
     removal: ClassVar[type[Migration] | None] = None
     bindings: ClassVar[dict[type, type]] = {}
     drivers: ClassVar[list[type[Driver]]] = []
-    overlays: ClassVar[list[type[Overlay]]] = []
-    driver_rules: ClassVar[list[type[DriverRule]]] = []
-    agent_states: ClassVar[list[type[AgentState]]] = []
     windows: ClassVar[list[WindowDeclaration | type[Window]]] = []
     window_extensions: ClassVar[list[WindowExtension | type[WindowExtension]]] = []
     marks: ClassVar[list[MarkDeclaration | type[MarkDeclaration]]] = []

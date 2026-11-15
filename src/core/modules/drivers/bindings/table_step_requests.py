@@ -6,28 +6,21 @@ from engine.command.context import Context
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.models.agent_step_request import AgentStepRequest
-from core.modules.drivers.support.agent_slices import AgentSlices
 
 OPEN_REQUESTS_REASON = "the open step requests of the agents one change names, one each"
 
 
 class TableStepRequests(StepRequests):
-    """Opens a step request for each named agent that a slice of the new driver answers and that has no
-    open one, and joins the cause to the open ones; an agent no slice answers gets none, since its step
-    would do nothing."""
+    """Opens a step request for each named agent that has no open one, and joins the cause to the open ones."""
 
-    def __init__(self, queries: Queries, repository: Repository, agents: AgentRows, slices: AgentSlices, request_values: RequestValues) -> None:
-        self.queries, self.repository, self.agents, self.slices, self.request_values = queries, repository, agents, slices, request_values
+    def __init__(self, queries: Queries, repository: Repository, request_values: RequestValues) -> None:
+        self.queries, self.repository, self.request_values = queries, repository, request_values
 
     def requested(self, agent_ids: Sequence[int], cause: str, context: Context) -> None:
-        if not self.slices.has_active_slice():
-            return
-        agent_ids = [agent.id for agent in self.agents.find_many(list(agent_ids)) if self.slices.tick_slices(agent)]
         if not agent_ids:
             return
-        open_requests = self.open_requests(agent_ids)
+        open_requests = self.open_requests(list(agent_ids))
         for agent_id in agent_ids:
             request = open_requests.get(agent_id)
             if request is None:

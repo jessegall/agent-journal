@@ -6,7 +6,7 @@ from engine.command.context import Context
 from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from engine.registry.registry import Registry
-from core.modules.drivers.support.driver_settings import ALLOWANCE_SETTINGS, DRIVER_SETTINGS, MODULE_KEY, SUITE_SETTING
+from core.modules.drivers.support.driver_settings import DRIVER_SETTINGS, MODULE_KEY, SUITE_SETTING
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.settings.models.setting import Setting
 
@@ -24,8 +24,6 @@ class DriverSettingGuard(Guard[Created[Setting] | Updated[Setting]]):
     def check(self, event: Created[Setting] | Updated[Setting], context: Context) -> None:
         setting = event.row
         if not setting.key.startswith(f"{MODULE_KEY}."):
-            return
-        if setting.key.startswith(ALLOWANCE_SETTINGS):
             return
         value = json.loads(setting.value)
         if setting.key == SUITE_SETTING:

@@ -60,7 +60,6 @@ from engine.module.button_slots import ButtonSlots
 from engine.module.inspector_slots import InspectorSlots
 from engine.module.driver_entries import DriverEntries
 from engine.module.provider_entries import ProviderEntries
-from engine.registry.driver_rule_entry import DriverRuleEntry
 from engine.module.module_check import ModuleCheck
 from engine.module.subcommand_line import subcommand_line
 from engine.module.module_finder import ModuleFinder
@@ -103,8 +102,7 @@ class ModuleSync:
 
     def synchronize(self) -> SyncReport:
         modules = self.order.ordered(self.finder.modules())
-        rules = self.entries.rules(modules)
-        self.check.check(modules, rules)
+        self.check.check(modules)
         models = self.check.models(modules)
         migrations = self.schema.migrate(self.ordered_migrations(modules))
         views = tuple(view for module in modules for view in module.views)
@@ -117,7 +115,7 @@ class ModuleSync:
             timestamp = self.clock.timestamp().text
             self.actors.core_actor(timestamp)
             actor_ids = self.actors.module_actors([module.name for module in modules], timestamp)
-            registry = self.registry(modules, rules, actor_ids)
+            registry = self.registry(modules, actor_ids)
             registry_changed = self.registry_table.write(registry.fingerprint, registry.entries_text(), timestamp)
             if registry_changed:
                 self.events.write_registry_sync(CORE_ACTOR_ID, registry.fingerprint, timestamp)
@@ -131,7 +129,7 @@ class ModuleSync:
     def migrations(self, module: type[Module]) -> tuple[Migration, ...]:
         return tuple(migration() for migration in module.migrations)
 
-    def registry(self, modules: tuple[type[Module], ...], rules: tuple[DriverRuleEntry, ...], actor_ids: dict[str, int]) -> Registry:
+    def registry(self, modules: tuple[type[Module], ...], actor_ids: dict[str, int]) -> Registry:
         guards = sorted((guard for module in modules for guard in module.guards), key=lambda guard: guard.runs_last)
         first_guards = [guard for guard in guards if guard.runs_first]
         later_guards = [guard for guard in guards if not guard.runs_first]
@@ -158,10 +156,6 @@ class ModuleSync:
             listeners=tuple(ListenerEntry(listener.name, EventPattern(listener.event), self.timing(listener), DottedPath.class_path(listener), position,
                                           actor_ids[module.name]) for position, (module, listener) in enumerate(listeners, 1)),
             bindings={DottedPath.class_path(interface).text: DottedPath.class_path(implementation) for module in modules for interface, implementation in module.bindings.items()},
-            overlays=self.entries.overlays(modules),
-            agent_states=self.entries.agent_states(modules),
-            deferred_rule_entries=self.entries.deferred_rules(modules),
-            rules=rules,
             suites=self.entries.suites(modules, self.finder.default_modules(), suites),
             drivers=self.entries.drivers(modules),
             windows=self.windows(modules),

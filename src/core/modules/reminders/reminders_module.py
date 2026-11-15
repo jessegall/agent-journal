@@ -11,7 +11,6 @@ from core.modules.reminders.commands.make_reminder.make_reminder_subcommand impo
 from core.modules.reminders.commands.record_reminder_fired.record_reminder_fired_handler import RecordReminderFiredHandler
 from core.modules.reminders.listeners.reminder_made_mark_listener import ReminderMadeMarkListener
 from core.modules.reminders.migrations.m001_reminders import RemindersTableMigration
-from core.modules.reminders.rules.due_reminder_rule import DueReminderRule
 from core.modules.reminders.support.reminder_nudges import REMINDER_NUDGES
 
 
@@ -33,5 +32,4 @@ class RemindersModule(Module):
     subcommands = [MakeReminderSubcommand]
     listeners = [ReminderMadeMarkListener]
     nudges = REMINDER_NUDGES
-    driver_rules = [DueReminderRule]
     windows = REMINDERS_WINDOWS

@@ -103,8 +103,6 @@ from core.modules.plugins.listeners.stale_managed_hooks_listener import StaleMan
 from core.modules.plugins.migrations.m001_plugins import PluginsTablesMigration
 from core.modules.plugins.migrations.m002_plugin_queue_index import PluginQueueIndexMigration
 from core.modules.plugins.migrations.m009_plain_column_names import PlainColumnNamesMigration
-from core.modules.plugins.states.plugins_enabled import PluginsEnabled
-from core.modules.plugins.rules.plugin_program_rule import PluginProgramRule
 from core.modules.plugins.marks.plugin_health_mark import PluginHealthMark
 from core.modules.plugins.marks.plugin_card_mark import PluginCardMark
 from core.modules.plugins.upgrade.plugins_move import PluginsMove
@@ -136,8 +134,6 @@ class PluginsModule(Module):
                 RecordPluginFaultHandler, ClearPluginFaultsHandler, AddPluginOutputHandler,
                 ClearPluginQueueFileHandler]
     settings = [PluginsSettingValues]
-    driver_rules = [PluginProgramRule]
-    agent_states = [PluginsEnabled]
     bindings = {ProjectReads: PluginProjectReads, ProcessTypeLimits: PluginRunLimits, InstalledPlugins: PluginInstalledNames}
     declared_plugin_events = [*PLAIN_EVENTS.values(), "tool_starting", "command_starting", "file_edited"]
     marks = [PluginHealthMark, PluginCardMark]

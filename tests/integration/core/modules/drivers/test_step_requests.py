@@ -2,8 +2,6 @@ from engine.query.queries import Queries
 from core.modules.drivers.models.agent_step_request import AgentStepRequest
 from core.modules.drivers.ticks.agent_step_round import AgentStepRound
 from engine.testing.examples.hook_samples import HookSamples
-from core.modules.drivers.support.contribution_slices import WAITING_SLICE
-from core.modules.drivers.support.driver_settings import ACTIVE_SLICES_SETTING
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 
 STEP_CAUSE = "messages.message-step"
@@ -14,7 +12,6 @@ def requests(story, agent_id: int) -> list[AgentStepRequest]:
 
 
 def waiting_slice_on(story, session: str) -> None:
-    story.expect_success(f"setting set {ACTIVE_SLICES_SETTING} '[\"{WAITING_SLICE}\"]'", actor=story.user)
     story.hook(session, HookSamples.session_start())
 
 

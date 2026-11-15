@@ -1,4 +1,3 @@
-from core.modules.drivers.support.driver_settings import READY_SLICES
 from engine.actor.actor import Actor
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
@@ -16,12 +15,6 @@ def test_a_new_driver_shows_its_contract_and_its_compiled_table(played):
 def test_an_unknown_driver_is_refused_with_the_drivers_there_are(played):
     story = played(BuilderStarted)
     assert "the drivers are coding.main, coding.merger, coding.worker, core.helper, core.main" in output(story, "driver table coding.robot")
-
-
-def test_no_part_of_the_new_driver_can_go_live_before_its_phase_gate_and_every_ready_part_is_live_by_default(played):
-    story = played(BuilderStarted)
-    assert "has not passed its phase's gate" in output(story, "driver set-active blocked.unknown on")
-    assert all(name in output(story, "driver active") for name in READY_SLICES)
 
 
 def test_the_main_agent_switches_a_ready_part_but_may_not_pop_a_frame_or_repin(played):

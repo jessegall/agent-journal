@@ -12,7 +12,6 @@ from core.modules.waits.migrations.m003_pending_targets_index import PendingTarg
 from core.modules.waits.migrations.m005_open_wait_index import OpenWaitIndexMigration
 from core.modules.waits.models.waiting_row import WaitingRow
 from core.modules.waits.commands.waiting_wait.waiting_wait_subcommand import WaitingWaitSubcommand
-from core.modules.waits.overlays.help_request_overlay import HelpRequestOverlay
 from core.modules.waits.listeners.target_resolution_listener import TargetResolutionListener
 from core.modules.waits.listeners.reported_wait_mark_listener import ReportedWaitMarkListener
 from core.modules.waits.listeners.wait_end_listener import WaitEndListener
@@ -21,7 +20,6 @@ from core.modules.waits.marks.reported_wait_mark import ReportedWaitMark
 from core.modules.waits.commands.open_wait.open_wait_subcommand import OpenWaitSubcommand
 from core.modules.waits.commands.open_wait.open_wait_handler import OpenWaitHandler
 from core.modules.waits.commands.request_help.request_help_subcommand import RequestHelpSubcommand
-from core.modules.waits.overlays.wait_overlay import WaitOverlay
 from core.modules.waits.seeders.waits_seeder import WaitsSeeder
 
 
@@ -45,5 +43,4 @@ class WaitsModule(Module):
     listeners = [TargetResolutionListener, ReportedWaitMarkListener, WaitEndListener]
     nudges = WAIT_NUDGES
     marks = [ReportedWaitMark]
-    overlays = [WaitOverlay, HelpRequestOverlay]
     seeders = [WaitsSeeder]

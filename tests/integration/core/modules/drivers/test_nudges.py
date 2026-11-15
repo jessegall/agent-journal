@@ -1,16 +1,12 @@
-import sqlite3
 
 from unittest.mock import patch
 
 from engine.actor.actor import Actor
 from engine.command.context import Context
 from engine.database.database import Database
-from engine.driver.driver_rules import DriverRules
-from engine.journal.journal_home import JournalHome
 from engine.driver.interval import Interval
 from engine.driver.seconds import Seconds
 from engine.driver.nudge import Nudge
-from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.enums.nudge_type import NudgeType
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.rule_answers import RuleAnswers
@@ -23,11 +19,10 @@ from core.modules.drivers.support.nudge_records import NudgeRecords
 from core.modules.processes.support.reader_request_notices import ReaderRequestNotices
 from core.modules.processes.nudges.reader_request_nudge import ReaderRequestNudge
 from core.modules.processes.nudges.run_name_nudge import RunNameNudge
-from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 from tests.stories.core.support.fixtures import UserJoined
 from engine.testing.expectations.expect_row import expect_row
-from tests.stories.support.story_checks import expect_answers, expect_outcome_with, expect_value, expect_value_with
+from tests.stories.support.story_checks import expect_answers, expect_value
 
 
 
@@ -137,18 +132,3 @@ def test_a_reader_request_notice_sees_its_last_reminder(played):
     expect_value(story.container.get(ReaderRequestNotices).has_recent_notice(story.agent.id, 7, story.clock.timestamp()), True)
 
 
-def test_a_hooks_rules_are_asked_with_no_write_lock_held(played, monkeypatch):
-    story = played(StartedTaskBuilder)
-    database, transaction_states = story.container.get(Database), []
-    first_request = DriverRules.ask
-
-    def ask_with_lock_check(rules, hook):
-        connection = sqlite3.connect(story.container.get(JournalHome).database, timeout=0, autocommit=True)
-        connection.execute("BEGIN IMMEDIATE")
-        connection.execute("ROLLBACK")
-        connection.close()
-        transaction_states.append(database.has_transaction)
-        return first_request(rules, hook)
-    monkeypatch.setattr(DriverRules, "ask", ask_with_lock_check)
-    story.expect_hook_allowed("s-1", HookSamples.edit("a.py"))
-    expect_value(transaction_states, [False])

@@ -22,7 +22,6 @@ from core.modules.plans.commands.wait_plan.wait_plan_handler import WaitPlanHand
 from core.modules.plans.commands.wait_plan.wait_plan_subcommand import WaitPlanSubcommand
 from core.modules.plans.listeners.plan_wait_listener import PlanWaitListener
 from core.modules.plans.support.block_conditions.plan_context_read import PlanContextRead as PlanContextReadCondition
-from core.modules.plans.rules.plan_context_rule import PlanContextRule
 from core.modules.plans.listeners.next_plan_task_starter_listener import NextPlanTaskStarterListener
 from core.modules.plans.listeners.started_task_plan_listener import StartedTaskPlanListener
 from core.modules.plans.guards.one_task_phase_guard import OneTaskPhaseGuard
@@ -78,10 +77,6 @@ from core.modules.plans.listeners.plan_move_mark_listener import PlanMoveMarkLis
 from core.modules.plans.listeners.started_plan_dock_listener import StartedPlanDockListener
 from core.modules.plans.listeners.ready_plan_sync_listener import ReadyPlanSyncListener
 from core.modules.plans.commands.plan_timeline.plan_timeline_subcommand import PlanTimelineSubcommand
-from core.modules.plans.rules.plan_order_rule import PlanOrderRule
-from core.modules.plans.states.plan_focus_due import PlanFocusDue
-from core.modules.plans.rules.plan_state_rule import PlanStateRule
-from core.modules.plans.rules.plan_task_line_rule import PlanTaskLineRule
 from core.modules.plans.marks.plan_mark import PlanMark
 from core.modules.plans.support.plan_nudges import PLAN_NUDGES
 from core.modules.plans.seeders.plans_seeder import PlansSeeder
@@ -149,10 +144,8 @@ class PlansModule(Module):
                  FinishedPlanListener, PassedPlanListener, CheckpointRunListener, FinishedPlanLineListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener, NextPlanTaskStarterListener, ReadyPlanSyncListener]
     marks = [PlanMark]
     nudges = PLAN_NUDGES
-    driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule, PlanContextRule]
     needs = [PlanContextNeeds]
     lines = [PlanFocusLines, PlanOrderLines, PlanStateLines, PlanTaskEndLines]
-    agent_states = [PlanFocusDue]
     docks = PLANS_DOCKS
     window_extensions = [ChatRunningAgentsExtension]
     buttons = [PlansApproveButton]

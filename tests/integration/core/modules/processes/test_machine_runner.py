@@ -1,10 +1,8 @@
-import json
 
 from engine.enums.command_category import CommandCategory
 from engine.sandbox.shell_sandbox import ShellSandbox
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from core.modules.drivers.support.driver_settings import ACTIVE_SLICES_SETTING
 from core.modules.processes.nudges.sandbox_runner_missing_nudge import SandboxRunnerMissingNudge
 from tests.stories.core.modules.processes.support.process_samples import install_runner, runner_line
 from tests.stories.core.support.coding_fixtures import BuilderHelper, BuilderStarted
@@ -15,11 +13,9 @@ SERVER = HookSamples.shell("node serve.js", ShellPart("node", CommandCategory.PR
 
 # the slices the runner's policy, line and start effect are in, and safety under them: the other slices hold an agent
 # that has not read its overview or its skills before any shell line runs
-RUNNER_SLICES = ("safety", "admission", "lines")
 
 
 def runner_slices_on(story):
-    story.expect_success(f"setting set {ACTIVE_SLICES_SETTING} '{json.dumps(list(RUNNER_SLICES))}'", actor=story.user)
     return story
 
 

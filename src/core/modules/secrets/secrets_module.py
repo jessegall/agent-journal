@@ -26,7 +26,6 @@ from core.modules.secrets.guards.secret_value_guard import SecretValueGuard
 from core.modules.secrets.listeners.secret_approval_listener import SecretApprovalListener
 from core.modules.secrets.migrations.m001_secrets import SecretsTableMigration
 from core.modules.secrets.migrations.m003_erased_deleted_secrets import ErasedDeletedSecretsMigration
-from core.modules.secrets.rules.secrets_folder_rule import SecretsFolderRule
 from core.modules.secrets.seeders.secrets_seeder import SecretsSeeder
 from core.modules.secrets.upgrade.secrets_move import SecretsMove
 
@@ -51,5 +50,4 @@ class SecretsModule(Module):
                    SecretShowSubcommand, SecretRunSubcommand, ProposeProgramSubcommand, AllowProgramSubcommand, DeleteSecretSubcommand]
     guards = [SecretValueGuard]
     listeners = [SecretApprovalListener]
-    driver_rules = [SecretsFolderRule]
     windows = SECRETS_WINDOWS

@@ -22,8 +22,6 @@ from core.modules.tasks.models.declarations.task_block_renewal_model_declaration
 from core.modules.tasks.models.declarations.task_read_model_declaration import TaskReadModelDeclaration
 from core.modules.tasks.docks.tasks_docks import TASKS_DOCKS
 from core.modules.tasks.skills.declarations.tasks_skills import TASKS_SKILLS
-from core.modules.tasks.states.main_agent_state import MainAgentState
-from core.modules.tasks.states.started_task import StartedTask
 from core.modules.tasks.commands.repair_task_states.repair_task_states_handler import RepairTaskStatesHandler
 from core.modules.agents.support.agent_task_reads import AgentTaskReads
 from core.modules.tasks.support.row_agent_task_reads import RowAgentTaskReads
@@ -52,10 +50,6 @@ from core.modules.tasks.migrations.m011_task_block_renewals import TaskBlockRene
 from core.modules.tasks.listeners.task_block_renewal_listener import TaskBlockRenewalListener
 from core.modules.tasks.support.block_conditions.task_blocks_reviewed import TaskBlocksReviewed
 from core.modules.tasks.support.task_nudges import TASK_NUDGES
-from core.modules.tasks.rules.task_return_reminder_rule import TaskReturnReminderRule
-from core.modules.tasks.rules.blocked_work_rule import BlockedWorkRule
-from core.modules.tasks.rules.task_stop_rule import TaskStopRule
-from core.modules.tasks.rules.auto_mode_task_stop_rule import AutoModeTaskStopRule
 from core.modules.tasks.commands.choose_next_task.choose_next_task_handler import ChooseNextTaskHandler
 from core.modules.tasks.commands.choose_task_focus.choose_task_focus_handler import ChooseTaskFocusHandler
 from core.modules.tasks.commands.choose_task_focus.choose_task_focus_subcommand import ChooseTaskFocusSubcommand
@@ -69,7 +63,6 @@ from core.modules.tasks.commands.wait_task.wait_task_handler import WaitTaskHand
 from core.modules.tasks.models.task_edge import TaskEdge
 from core.modules.tasks.models.task_inspection_row import TaskInspectionRow
 from core.modules.tasks.commands.wait_task.wait_task_subcommand import WaitTaskSubcommand
-from core.modules.tasks.listeners.auto_next_task_listener import AutoNextTaskListener
 from core.modules.tasks.listeners.task_dependency_wait_listener import TaskDependencyWaitListener
 from core.modules.tasks.listeners.task_wait_listener import TaskWaitListener
 from core.modules.tasks.listeners.stopped_agent_tasks_listener import StoppedAgentTasksListener
@@ -91,8 +84,6 @@ from core.modules.tasks.commands.reset_task_reads.reset_task_reads_handler impor
 from core.modules.tasks.listeners.task_brief_assigned_listener import TaskBriefAssignedListener
 from core.modules.tasks.listeners.task_brief_compaction_listener import TaskBriefCompactionListener
 from core.modules.tasks.support.block_conditions.task_brief_read import TaskBriefRead
-from core.modules.tasks.rules.unopenable_block_rule import UnopenableBlockRule
-from core.modules.tasks.rules.wait_description_rule import WaitDescriptionRule
 from core.modules.tasks.commands.task_board.task_board_subcommand import TaskBoardSubcommand
 from core.modules.tasks.commands.task_counts.task_counts_subcommand import TaskCountsSubcommand
 from core.modules.tasks.commands.task_inspect.task_inspect_subcommand import TaskInspectSubcommand
@@ -113,8 +104,6 @@ from core.modules.tasks.migrations.m002_paused_tasks_blocked import PausedTasksB
 from core.modules.tasks.migrations.m003_task_state_index import TaskStateIndexMigration
 from core.modules.tasks.migrations.m016_all_environments_task_state_index import AllEnvironmentsTaskStateIndexMigration
 from core.modules.tasks.models.task_card import TaskCard
-from core.modules.tasks.rules.task_filed_rule import TaskFiledRule
-from core.modules.tasks.rules.task_start_rule import TaskStartRule
 from core.modules.tasks.commands.make_task_log.make_task_log_subcommand import MakeTaskLogSubcommand
 from core.modules.tasks.upgrade.tasks_move import TasksMove
 from core.modules.tasks.commands.remove_task_dependency.remove_task_dependency_handler import RemoveTaskDependencyHandler
@@ -151,7 +140,6 @@ class TasksModule(Module):
     nudges = TASK_NUDGES
     settings = TASK_SETTINGS
     requires_engine = ">=5,<6"
-    agent_states = [MainAgentState, StartedTask]
     block_conditions = [TaskStopped, TaskStarted, TaskClosed, StartedTaskExists, TaskLogged, TaskBriefRead, TaskBlocksReviewed]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking", "journal.core.settings", "journal.core.assignments"]
     bindings = {AgentTaskReads: RowAgentTaskReads}
@@ -165,14 +153,13 @@ class TasksModule(Module):
     moves = [TasksMove]
     guards = [TaskTagAccessGuard, TaskTagWordGuard, TaskEditAccessGuard, VisibleDependencyGuard, DependenciesClosedGuard, UserWaitGuard, AssignedTaskStartGuard]
     views = [TaskTagWord, OpenDependency, TaskCard, TaskEdge, EnvironmentCard, TaskInspectionRow, TaskBlockReview]
-    listeners = [NextTaskListener, StartAssignmentListener, TaskTagRemoverListener, TaskDependencyWaitListener, WaitingTaskListener, TaskRowsListener, TaskBlockRenewalListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, AutoNextTaskListener, StoppedAgentTasksListener]
+    listeners = [NextTaskListener, StartAssignmentListener, TaskTagRemoverListener, TaskDependencyWaitListener, WaitingTaskListener, TaskRowsListener, TaskBlockRenewalListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, StoppedAgentTasksListener]
     marks = [TaskMark]
     former_event_keys = {"core.tasks.task.drop_hold": "core.tasks.task.release_holder"}
     docks = TASKS_DOCKS
     needs = [TaskWorkNeeds, UnloggedWriteNeeds, BlockReviewNeeds]
     effects = [BlockReviewEffect]
     lines = [BlockedWorkLines, QuietTaskLines, LogRequestLines, TaskFiledLines, TaskNameLines, StillHeldLines, OneInHandLines, SessionStartSummaryLines, WaitInWordsLines, BlockReviewLines]
-    driver_rules = [TaskFiledRule, TaskStartRule, TaskReturnReminderRule, WaitDescriptionRule, UnopenableBlockRule, TaskStopRule, AutoModeTaskStopRule, BlockedWorkRule]
     windows = TASKS_WINDOWS
     inspectors = [TaskInspector]
     seeders = [TasksSeeder]

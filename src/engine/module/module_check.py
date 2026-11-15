@@ -25,7 +25,6 @@ from engine.module.dock_check import DockCheck
 from engine.module.inspector_check import InspectorCheck
 from engine.module.move_check import MoveCheck
 from engine.module.skill_check import SkillCheck
-from engine.registry.driver_rule_entry import DriverRuleEntry
 from engine.registry.event_key_entry import EventKeyEntry
 from engine.module.setting_check import SettingCheck
 from engine.module.template_check import TemplateCheck
@@ -80,13 +79,13 @@ class ModuleCheck:
         plugin_events = [EventKeyEntry.plugin_event(module.name, name) for module in modules for name in module.plugin_event_names()]
         return (*(EventKeyEntry.system(SYSTEM_EVENTS_MODULE, event, COMMIT_FORM) for event in SYSTEM_EVENTS), *entries, *plugin_events)
 
-    def check(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> None:
-        problems = (self.duplicate_names(modules, rules) + self.lifecycle_problems(modules) + self.event_problems(modules) + self.duplicate_event_keys(modules) + self.duplicate_handlers(modules)
-                    + self.duplicate_subcommands(modules) + self.suites.problems(modules, rules, self.finder.suite_list()) + self.windows.problems(modules, self.known_events(modules)) + self.inspectors.problems(modules, self.known_events(modules))
+    def check(self, modules: Sequence[type[Module]]) -> None:
+        problems = (self.duplicate_names(modules) + self.lifecycle_problems(modules) + self.event_problems(modules) + self.duplicate_event_keys(modules) + self.duplicate_handlers(modules)
+                    + self.duplicate_subcommands(modules) + self.suites.problems(modules, self.finder.suite_list()) + self.windows.problems(modules, self.known_events(modules)) + self.inspectors.problems(modules, self.known_events(modules))
                     + self.providers.problems(modules) + self.marks.problems(modules) + self.docks.problems(modules) + self.settings.problems(modules)
                     + self.skills.problems(modules, self.known_events(modules)) + self.moves.problems(modules) + self.templates.problems(modules) + self.states.problems(modules) + self.assignables.problems(modules)
                     + self.buttons.declared_problems(modules, frozenset(module.name for module in self.finder.default_modules()))
-                    + self.helper_types.problems(modules, rules, self.finder.suite_list()) + self.profiles.problems(modules, self.finder.suite_list())
+                    + self.helper_types.problems(modules, self.finder.suite_list()) + self.profiles.problems(modules, self.finder.suite_list())
                     + self.machine.problems(modules))
         if problems:
             raise ModuleError("the modules cannot be synced: " + "; ".join(problems))
@@ -97,12 +96,11 @@ class ModuleCheck:
     def models(self, modules: Sequence[type[Module]]) -> tuple[type[Model], ...]:
         return tuple(declaration.model for module in modules for declaration in module.model_declarations())
 
-    def duplicate_names(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]:
+    def duplicate_names(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
         models = self.models(modules)
-        switch_names = [*(guard.name for module in modules for guard in module.guards), *(listener.name for module in modules for listener in module.listeners),
-                        *(name for name, _ in dict.fromkeys((rule.name, rule.path.text) for rule in rules))]
+        switch_names = [*(guard.name for module in modules for guard in module.guards), *(listener.name for module in modules for listener in module.listeners)]
         return NameGroups.duplicates([("models", [model.model_name for model in models]), ("tables", [self.tables.table(model).name for model in models]),
-                                      ("guards, listeners or driver rules", switch_names)])
+                                      ("guards or listeners", switch_names)])
 
     def lifecycle_problems(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
         problems: list[str] = []

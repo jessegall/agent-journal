@@ -3,7 +3,6 @@ from pathlib import Path
 from engine.actor.actor import Actor
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.driver.driver_rule import DriverRule
 from engine.journal.journal_home import JournalHome
 from engine.provider.hook_manager import HookManager
 from engine.provider.managed_hooks import ManagedHooks
@@ -23,8 +22,7 @@ class ManageProgramHandler(Handler[ManageProgram, int]):
 
     def prepare(self, command: ManageProgram, actor: Actor) -> None:
         provider = self.providers.provider(command.program)
-        rules = [entry.path.checked_class(DriverRule) for entry in self.providers.registry.rules]
-        manager = HookManager(self.home.project_folder, self.managed, rules)
+        manager = HookManager(self.home.project_folder, self.managed)
         if manager.unmanaged(type(provider), Path(command.folder)):
             manager.import_hooks(type(provider), Path(command.folder))
         self.sync.prepare(command.program)

@@ -4,8 +4,6 @@ import pytest
 
 from engine.enums.hook_event_name import HookEventName
 from engine.enums.refusal_style import RefusalStyle
-from engine.driver.driver_rule import DriverRule
-from engine.enums.tool_type import ToolType
 from engine.provider.enums.hook_effect import HookEffect
 from engine.provider.managed_hook import ManagedHook
 
@@ -32,13 +30,3 @@ def test_a_program_with_no_native_rewrite_or_refusal_gets_no_such_labels():
     assert HookEffect.detected(hook, provider, HookEventName.PRE_TOOL_USE) == ["adds_lines"]
 
 
-def test_overlap_uses_the_rule_event_and_declared_tool_categories():
-    class ShellRule(DriverRule):
-        name = "sample.shell"
-        hook = HookEventName.PRE_TOOL_USE
-        tools = [ToolType.SHELL]
-
-    provider = SimpleNamespace(refusals={}, rewrites={}, line_events=[], tool_categories={"Bash": ToolType.SHELL})
-    hook = ManagedHook.found("sample", "PreToolUse", "Bash", {"command": "check"}, "settings.json", False)
-    assert HookEffect.detected(hook, provider, HookEventName.PRE_TOOL_USE, [ShellRule]) == [HookEffect.OVERLAPS]
-    assert HookEffect.detected(hook, provider, HookEventName.POST_TOOL_USE, [ShellRule]) == []

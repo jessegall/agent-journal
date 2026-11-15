@@ -44,10 +44,6 @@ from core.modules.memories.commands.give_memories.give_memories_handler import G
 from core.modules.memories.commands.open_memory_mark.open_memory_mark_handler import OpenMemoryMarkHandler
 from core.modules.memories.commands.skip_memory_mark.skip_memory_mark_handler import SkipMemoryMarkHandler
 from core.modules.memories.commands.skip_memory_mark.skip_memory_mark_subcommand import SkipMemoryMarkSubcommand
-from core.modules.memories.rules.open_mark_rule import OpenMarkRule
-from core.modules.memories.overlays.weighing_overlay import WeighingOverlay
-from core.modules.memories.rules.start_delivery_rule import StartDeliveryRule
-from core.modules.memories.rules.keyword_delivery_rule import KeywordDeliveryRule
 from core.modules.memories.commands.memory_context.memory_context_subcommand import MemoryContextSubcommand
 from core.modules.memories.commands.memory_faded.memory_faded_subcommand import MemoryFadedSubcommand
 from core.modules.memories.commands.make_memory.make_memory_handler import MakeMemoryHandler
@@ -94,8 +90,6 @@ class MemoriesModule(Module):
     needs = [MemoryMarkNeeds]
     lines = [OpenMarkLines, StartDeliveryLines, KeywordDeliveryLines]
     effects = [OpenMarkEffect, GiveMemoriesEffect]
-    driver_rules = [StartDeliveryRule, KeywordDeliveryRule, OpenMarkRule]
-    overlays = [WeighingOverlay]
     listeners = [StartMemoriesListener, CompactionFaderListener, TaskMemoryRemoverListener, MemoryMadeMarkListener, MemoryEditedMarkListener, MemoryWeighedMarkListener,
                  MemoryRemovedMarkListener, MemoryFadedMarkListener, MemoryGivenMarkListener, CompactionMarkListener]
     subcommands = [MemoryListSubcommand, MemoryAgentsSubcommand, MemoryCountsSubcommand, MemoryPageSubcommand, MakeMemorySubcommand, WeighMemoriesSubcommand, ReadMemorySubcommand, MemoryContextSubcommand, MemoryFadedSubcommand, SkipMemoryMarkSubcommand]

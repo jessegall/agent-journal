@@ -5,7 +5,6 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 from engine.git.hook_files_git import HookFilesGit
-from engine.provider.hook_tool_rule import HookToolRule
 from engine.provider.enums.hook_effect import HookEffect
 from engine.provider.managed_hook import ManagedHook
 from engine.provider.managed_hooks import ManagedHooks
@@ -17,10 +16,9 @@ from engine.types.type_guards import is_list, is_mapping
 class HookManager:
     """Moves project command hooks into the managed store and restores their source files."""
 
-    def __init__(self, root: Path, managed: ManagedHooks, rules: Sequence[type[HookToolRule]] = ()) -> None:
+    def __init__(self, root: Path, managed: ManagedHooks) -> None:
         self.root = root
         self.managed = managed
-        self.rules = rules
 
     def import_hooks(self, provider: type[Provider], folder: Path) -> list[ManagedHook]:
         if ProgramHooks.hooks(provider, self.root).uses_shell_runner:
@@ -72,7 +70,7 @@ class HookManager:
         tracked = HookFilesGit(folder).tracks(name)
         source = os.path.relpath(folder / name, self.root)
         hooks = [ManagedHook.found(provider.name, event, matcher, entry, source, tracked) for event, matcher, entry in commands]
-        return [replace(hook, effects=tuple(HookEffect.detected(hook, provider, event, self.rules))) if (event := provider.hook_events.get(hook.event)) is not None else hook for hook in hooks]
+        return [replace(hook, effects=tuple(HookEffect.detected(hook, provider, event))) if (event := provider.hook_events.get(hook.event)) is not None else hook for hook in hooks]
 
     @staticmethod
     def _restored_blocks(hook: ManagedHook, blocks: list[object]) -> list[object]:

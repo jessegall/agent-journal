@@ -1,6 +1,5 @@
 from core.modules.drivers.support.agent_state_listing import AgentStateListing
 from core.modules.drivers.support.context_compactions import ContextCompactions
-from engine.time.clock import Clock
 from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 from dataclasses import asdict
@@ -29,8 +28,8 @@ class UsageInspectorSubcommand(ReadSubcommand[AgentInspectorAnswer]):
     name = "inspector"
     environment_refusal = "the agent is shown for one environment"
 
-    def __init__(self, queries: Queries, inspection: UsageAgentSubcommand, facts: UsageAgentsSubcommand, tool: UsageToolSubcommand, programs: AgentProgramsSubcommand, points: AgentBriefPoints, compactions: ContextCompactions, listing: AgentStateListing, clock: Clock) -> None:
-        self.compactions, self.listing, self.clock = compactions, listing, clock
+    def __init__(self, queries: Queries, inspection: UsageAgentSubcommand, facts: UsageAgentsSubcommand, tool: UsageToolSubcommand, programs: AgentProgramsSubcommand, points: AgentBriefPoints, compactions: ContextCompactions, listing: AgentStateListing) -> None:
+        self.compactions, self.listing = compactions, listing
         self.queries, self.inspection, self.facts, self.tool, self.programs, self.points = queries, inspection, facts, tool, programs, points
 
     def arguments(self, parser: ArgumentParser) -> None:
@@ -44,7 +43,7 @@ class UsageInspectorSubcommand(ReadSubcommand[AgentInspectorAnswer]):
                                     self.queries.query(Agent).filter(parent_id=agent.id).count(),
                                     self.queries.query(AgentSkill).filter(session_agent_id=agent.id, state=AgentSkillState.LOADED).count(),
                                     self.points.brief_points(agent.id), self.programs.read(Namespace(), caller), self.compactions.newest(agent.id),
-                                    () if agent.ended_at else tuple(self.listing.open_states(agent, self.clock.timestamp())))
+                                    () if agent.ended_at else tuple(self.listing.open_states(agent)))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, AgentInspectorAnswer):

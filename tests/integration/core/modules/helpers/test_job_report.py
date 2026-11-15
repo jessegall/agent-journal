@@ -3,14 +3,12 @@ from engine.query.queries import Queries
 from engine.testing.examples.hook_samples import HookSamples
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.models.hook_call import HookCall
-from core.modules.drivers.support.driver_settings import ACTIVE_SLICES_SETTING
 from core.modules.drivers.models.enums.handover_state import HandoverState
 from core.modules.helpers.nudges.unsaved_report_nudge import UnsavedReportNudge
 from core.modules.messages.commands.record_parent_report.record_parent_report_handler import RecordParentReportHandler
 from core.modules.messages.models.message import Message
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 
-WORKING_HELPER_SLICE = "working.helper"
 REPORT = "The cart total was rounded twice: report filed."
 
 
@@ -21,7 +19,6 @@ def helper_reports(story, helper) -> list[Message]:
 def test_the_allowed_stop_of_a_helper_on_a_job_hands_its_report_in_once(played):
     story = played(StartedHelper)
     helper = helper_agent(story)
-    story.expect_success(f"setting set {ACTIVE_SLICES_SETTING} '[\"{WORKING_HELPER_SLICE}\"]'", actor=story.user)
     story.hook(helper.session, HookSamples.session_start())
     before = len(helper_reports(story, helper))
     story.hook(helper.session, HookSamples.stop().with_fields(raw={"last_assistant_message": REPORT}))
@@ -44,7 +41,6 @@ class FailingReport(RecordParentReportHandler):
 
 
 def stop_twice_with_a_failing_save(story, helper):
-    story.expect_success(f"setting set {ACTIVE_SLICES_SETTING} '[\"{WORKING_HELPER_SLICE}\"]'", actor=story.user)
     story.hook(helper.session, HookSamples.session_start())
     story.replace(RecordParentReportHandler, FailingReport())
     first = story.hook(helper.session, HookSamples.stop().with_fields(raw={"last_assistant_message": REPORT}, firing="report-1"))

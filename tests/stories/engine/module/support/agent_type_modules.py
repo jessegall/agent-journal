@@ -1,15 +1,9 @@
 from engine.helper_type.command_allow_list import CommandAllowList
 from engine.enums.access import Access
-from engine.enums.agent_role import AgentRole
 from engine.agent.agent_roster import AgentRoster
-from engine.driver.agent_hook import AgentHook
-from engine.driver.rule_answer import RuleAnswer
-from engine.agent.enums.role_group import RoleGroup
 from engine.helper_type.helper_type import HelperType
 from core.modules.helpers.types.helper import Helper
 from engine.driver.driver import Driver
-from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.module.suite import Suite
 from engine.module.module import Module
 
@@ -133,45 +127,6 @@ class UnknownDriver(Driver):
 
 class DriverRole(Clerk):
     drivers = [UnknownDriver]
-
-
-class UnknownRule(DriverRule):
-    name = "sample.rule"
-    hook = HookEventName.PRE_TOOL_USE
-    drivers = ["*"]
-    roles = ["missing-rule-role"]
-
-
-class RuleRole(Clerk):
-    driver_rules = [UnknownRule]
-
-
-class EveryHelperRule(DriverRule):
-    name = "sample.every-helper"
-    hook = HookEventName.PRE_TOOL_USE
-    drivers = ["*"]
-    roles = [AgentRole.HELPER]
-
-    def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer(refusal="sample rule holds for every helper")
-
-
-class EveryHelperRules(Clerk):
-    driver_rules = [EveryHelperRule]
-
-
-class ReaderHelperRule(DriverRule):
-    name = "sample.read-only-helper"
-    hook = HookEventName.PRE_TOOL_USE
-    drivers = ["*"]
-    role_group = RoleGroup.HELPERS
-
-    def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer(refusal="sample rule holds for read-only helpers")
-
-
-class ReaderHelperRules(Clerk):
-    driver_rules = [ReaderHelperRule]
 
 
 class HelperTypeSuite(Suite):

@@ -1,9 +1,7 @@
 from engine.actor.actor import Actor
 from engine.enums.agent_role import AgentRole
-from engine.database.database import Database
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.drivers.ticks.agent_ticks import AgentTicks
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderHelper
 from tests.integration.support.fixture_journal import FixtureJournal
@@ -20,16 +18,6 @@ class FourAgents(StoryFixture):
     def steps(self, story: FixtureJournal) -> None:
         for session in ("sub-2", "sub-3"):
             story.expect_success(f"agent start {session} claude helper --parent {story.agent.id} --environment main")
-
-
-def test_a_tick_with_four_agents_reads_one_row_set(played):
-    story = played(FourAgents)
-    database = story.container.get(Database)
-    start = database.repeated_work.points()
-    AgentTicks()(story.container)
-    cost = database.repeated_work.points().minus(start)
-    rows_read = sum(rows for statement, rows in cost.statements.items() if "agents" in statement and RUNNING_READ in statement and "count(*)" not in statement)
-    story.expect_rows(rows_read == AGENT_COUNT)
 
 
 def test_running_agents_are_read_by_role_and_parent_and_an_ended_one_leaves(played):

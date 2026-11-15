@@ -11,8 +11,7 @@ from engine.module.block_conditions import BlockConditions
 from engine.time.clock import Clock
 from core.modules.reminders.models.reminder import Reminder
 from core.modules.reminders.nudges.reminder_block_nudge import ReminderBlockNudge
-from core.modules.reminders.rules.due_reminder_rule import DueReminderRule
-from core.modules.reminders.support.due_reminders import DueReminders
+from core.modules.reminders.support.due_reminders import DUE_REMINDER_KEY, DueReminders
 
 
 class DueReminderNeeds(NeedSource):
@@ -21,7 +20,7 @@ class DueReminderNeeds(NeedSource):
     state_type = Blocked
     rank = "reminders.due"
     agent_types = [AgentRole.MAIN.value]
-    replaced_rules = tuple([DueReminderRule.name])
+    replaced_rules = tuple([DUE_REMINDER_KEY])
 
     def __init__(self, reminders: DueReminders, conditions: BlockConditions, clock: Clock) -> None:
         self.reminders, self.conditions, self.clock = reminders, conditions, clock
@@ -35,4 +34,4 @@ class DueReminderNeeds(NeedSource):
 
     def plan(self, reminder: Reminder) -> BlockPlan:
         return BlockPlan(ReminderBlockNudge.declared().nudge(reminder=reminder.id), self.conditions.built(reminder.block_condition, reminder.block_subject),
-                         DueReminderRule.name, self.rank, scope_tools=True, scope_stop=False)
+                         DUE_REMINDER_KEY, self.rank, scope_tools=True, scope_stop=False)

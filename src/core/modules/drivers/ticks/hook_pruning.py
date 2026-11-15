@@ -3,14 +3,12 @@ from engine.command.bus import Bus
 from engine.container.container import Container
 from core.modules.drivers.commands.prune_temp_folders.prune_temp_folders import PruneTempFolders
 from core.modules.drivers.commands.prune_runtime_folders.prune_runtime_folders import PruneRuntimeFolders
-from core.modules.drivers.commands.prune_driver_comparisons.prune_driver_comparisons import PruneDriverComparisons
 
 
 class HookPruning:
-    """The temp folders of ended sessions and the stale runtime folders are removed; comparisons past their
-    days are pruned; other rows are pruned by RowPruning."""
+    """The temp folders of ended sessions and the stale runtime folders are removed; other rows are pruned by
+    RowPruning."""
 
     def __call__(self, container: Container) -> None:
         container.get(Bus).run(PruneTempFolders(), Actor.core())
         container.get(Bus).run(PruneRuntimeFolders(), Actor.core())
-        container.get(Bus).run(PruneDriverComparisons(), Actor.core())

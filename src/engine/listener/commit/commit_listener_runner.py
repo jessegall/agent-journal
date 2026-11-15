@@ -13,10 +13,7 @@ from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
 from engine.log.exception_sink import ExceptionSink
 from engine.listener.round_yield import RoundYield
-from engine.driver.agent_state import AgentState
-from engine.listener.commit.agent_state_openness import AgentStateOpenness
-from engine.listener.commit.commit_listener import CommitListener, is_commit_listener_class
-from engine.listener.commit.state_listener import StateListener
+from engine.listener.commit.commit_listener import is_commit_listener_class
 from engine.listener.commit.listener_set import ListenerSet
 from engine.database.listener_cursor_table import ListenerCursorTable
 from engine.registry.listener_entry import ListenerEntry
@@ -54,8 +51,6 @@ class CommitListenerRunner(RoundState):
         self.positions_stale = False
         self.held_listeners: set[str] = set()
         self.heard_names: dict[tuple[str, str], bool] = {}
-        # whether an agent is in a state, read once per round however many events of the round are about it
-        self.round_states: dict[tuple[int, type[AgentState]], bool] = {}
 
     def reset(self) -> None:
         self.positions = {}
@@ -123,7 +118,6 @@ class CommitListenerRunner(RoundState):
                 return
 
     def run_round(self, entries: list[ListenerEntry], urgent_entries: list[ListenerEntry]) -> bool:
-        self.round_states = {}
         positions = self.known_positions(entries)
         entries = [entry for entry in entries if entry.name in positions and entry.name not in self.held_listeners]
         events = self.log.events_after(min(positions[entry.name] for entry in entries)) if entries else []
@@ -245,7 +239,7 @@ class CommitListenerRunner(RoundState):
             with self.container.get(RequestValues).opened(), self.scopes.event_scope(listener_class.disabled_scopes, event):
                 built_event = self.container.get(EventBuilder).built(listener_class.event_type(event.event), event)
                 listener = self.listener_set.instance(entry)
-                if built_event is not None and self.is_heard_in_state(listener, built_event, event):
+                if built_event is not None:
                     listener.handle(built_event, event)
             elapsed = perf_counter() - started_at
             self.hold_when_over_time_limit(entry, event, elapsed)
@@ -264,27 +258,6 @@ class CommitListenerRunner(RoundState):
             self.errors.reported(["listener", entry.name, "event", str(event.id)], error, event.environment_id)
             return failures >= FAILURE_LIMIT_ATTEMPTS
         return True
-
-    # a state listener hears an event about an agent only while the agent is in its state; one it does not hear is passed
-    # by as handled, so its cursor moves on
-    def is_heard_in_state(self, listener: CommitListener[object], built_event: object, event: LoggedEvent) -> bool:
-        if not isinstance(listener, StateListener):
-            return True
-        agent_id = listener.agent_of(built_event)
-        if agent_id is None:
-            return True
-        key = (agent_id, listener.state)
-        if key not in self.round_states:
-            self.round_states[key] = self.is_state_open(agent_id, listener.state, event)
-        return self.round_states[key]
-
-    # an opener that raises is reported, once a round, and counts as open, so a fault never silences the listener
-    def is_state_open(self, agent_id: int, state: type[AgentState], event: LoggedEvent) -> bool:
-        try:
-            return self.container.get(AgentStateOpenness).is_open(agent_id, state)
-        except Exception as error:
-            self.errors.reported(["agent state", state.name, "agent", str(agent_id)], error, event.environment_id)
-            return True
 
     # a developer setting, off by default: a listener of the ordinary rounds over the limit runs no more events until the server restarts, and its
     # error reaches the main agent at once; its cursor stays, so the held events run after the restart

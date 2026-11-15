@@ -11,7 +11,6 @@ from suites.coding.modules.workers.lines.cache_refresh_lines import CacheRefresh
 from suites.coding.modules.workers.effects.cache_refresh_effect import CacheRefreshEffect
 from suites.coding.modules.workers.effects.merge_job_report_effect import MergeJobReportEffect
 from suites.coding.modules.workers.needs.merge_job_needs import MergeJobNeeds
-from suites.coding.modules.workers.listeners.new_unit_pin_listener import NewUnitPinListener
 from suites.coding.modules.workers.listeners.worktree_step_listener import WorktreeStepListener
 from suites.coding.modules.workers.listeners.proof_step_listener import ProofStepListener
 from suites.coding.modules.workers.guards.proved_delivery_guard import ProvedDeliveryGuard
@@ -51,12 +50,10 @@ from suites.coding.modules.workers.upgrade.workers_moves import WORKERS_MOVES
 from suites.coding.modules.workers.commands.workers_handlers import WORKERS_HANDLERS
 from suites.coding.modules.workers.commands.workers_subcommands import WORKERS_SUBCOMMANDS
 from suites.coding.modules.workers.guards.workers_guards import WORKERS_GUARDS
-from suites.coding.modules.workers.rules.workers_driver_rules import WORKERS_DRIVER_RULES
 from suites.coding.modules.workers.listeners.workers_listeners import WORKERS_LISTENERS
 from suites.coding.modules.workers.windows.extensions.workers_window_extensions import WORKERS_WINDOW_EXTENSIONS
 from suites.coding.modules.workers.skills.declarations.workers_skills import WORKERS_SKILLS
 from suites.coding.modules.workers.windows.workers_windows import WORKERS_WINDOWS
-from suites.coding.modules.workers.states.worker_log_due import WorkerLogDue
 from core.modules.drivers.support.compaction_stop import CompactionStop
 from suites.coding.modules.workers.bindings.worker_compaction_stop import WorkerCompactionStop
 from suites.coding.support.managed_files import ManagedFiles
@@ -139,6 +136,12 @@ from suites.coding.modules.workers.tick_handlers.unlaunched_worker_test_runs_tic
 from suites.coding.modules.workers.buttons.workers_send_job_button import WorkersSendJobButton
 from suites.coding.modules.workers.buttons.workers_merge_button import WorkersMergeButton
 from suites.coding.modules.workers.buttons.workers_release_button import WorkersReleaseButton
+from suites.coding.modules.workers.policies.worker_git_policy import WorkerGitPolicy
+from suites.coding.modules.workers.needs.main_stop_needs import MainStopNeeds
+from suites.coding.modules.workers.effects.handed_task_effect import HandedTaskEffect
+from suites.coding.modules.workers.needs.worker_unit_needs import WorkerUnitNeeds
+from suites.coding.modules.workers.effects.worker_report_effect import WorkerReportEffect
+from suites.coding.modules.workers.lines.worker_blocked_task_lines import WorkerBlockedTaskLines
 
 
 class WorkersModule(Module):
@@ -147,14 +150,13 @@ class WorkersModule(Module):
 
     name = "journal.suites.coding.workers"
     line_sources = [InactiveWorkerStopLines, CacheRefreshLines]
-    effects = [OrphanWorktreeEffect, MissingProcessEffect, InactiveWorkerStopEffect, CacheRefreshEffect, MergeJobReportEffect, RequestCompactionEffect, InactiveHelperEffect, PhaseTestEffect, RecordTodoListEffect, UnmergedWorkerEffect]
+    effects = [HandedTaskEffect, WorkerReportEffect, OrphanWorktreeEffect, MissingProcessEffect, InactiveWorkerStopEffect, CacheRefreshEffect, MergeJobReportEffect, RequestCompactionEffect, InactiveHelperEffect, PhaseTestEffect, RecordTodoListEffect, UnmergedWorkerEffect]
     block_conditions = [DeliveredProofsChecked]
-    needs = [MergeJobNeeds, CompactionNeeds, DeliveredWorkStopNeeds, WorkerStatusFirstNeeds]
-    lines = [CompactionRequestLines, ContextStopNowLines, InactiveHelperLines, MergeCheckoutLines, PhaseTestLines, SmallBatchLines, StoppedWorkerLines, UnmergedWorkerLines, UnstartedWorkerLines, WorkerLogDueLines, WorkersOutLines]
-    policies = [DispatchNamesModelPolicy, ProvedDeliveryPolicy, ContextHardLimitPolicy, CheckoutWriteCodePolicy, DispatchAllowancePolicy, PhaseTestPolicy, ProtectedFolderPolicy, ReadonlyHelperAllowancePolicy, WorkerFilePolicy, WorkerOutsideLinkPolicy, WorkerReadPolicy, WorkerReusePolicy, WorkerTestLinePolicy, WorkerTestCountPolicy]
+    needs = [MainStopNeeds, WorkerUnitNeeds, MergeJobNeeds, CompactionNeeds, DeliveredWorkStopNeeds, WorkerStatusFirstNeeds]
+    lines = [WorkerBlockedTaskLines, CompactionRequestLines, ContextStopNowLines, InactiveHelperLines, MergeCheckoutLines, PhaseTestLines, SmallBatchLines, StoppedWorkerLines, UnmergedWorkerLines, UnstartedWorkerLines, WorkerLogDueLines, WorkersOutLines]
+    policies = [WorkerGitPolicy, DispatchNamesModelPolicy, ProvedDeliveryPolicy, ContextHardLimitPolicy, CheckoutWriteCodePolicy, DispatchAllowancePolicy, PhaseTestPolicy, ProtectedFolderPolicy, ReadonlyHelperAllowancePolicy, WorkerFilePolicy, WorkerOutsideLinkPolicy, WorkerReadPolicy, WorkerReusePolicy, WorkerTestLinePolicy, WorkerTestCountPolicy]
     profiles = WORKER_PROFILES
     helper_types = [Worker, Merger]
-    agent_states = [WorkerLogDue]
     templates = WORKER_TEMPLATES
     window_extensions = WORKERS_WINDOW_EXTENSIONS
     nudges = WORKERS_MODULE_NUDGES
@@ -173,7 +175,6 @@ class WorkersModule(Module):
     handlers = WORKERS_HANDLERS
     subcommands = WORKERS_SUBCOMMANDS
     guards = [ProvedDeliveryGuard, *WORKERS_GUARDS]
-    driver_rules = WORKERS_DRIVER_RULES
     marks = [WorkerSplitMark, WorkerTestsMark, WorkerMark]
     declared_plugin_events = ["worker_clocking_out", "worker_delivering", "worker_merging"]
     former_event_keys = {
@@ -192,7 +193,7 @@ class WorkersModule(Module):
         "suites.coding.workers.worktree_behind_check.hold": "suites.coding.workers.worktree_behind_check.pause",
     }
     bindings = {DocumentFilers: ReportDocumentFilers, CheckpointBranchMoves: WorkerCheckpointBranchMoves, CheckpointRuns: CheckpointRunner, CompactionLimit: WorkerCompactionLimit, CompactionStop: WorkerCompactionStop, ManagedFiles: JournalManagedFiles, HelperGrantPolicy: WorkerGrantPolicy, ReadCommands: WorkerReadCommands, WorkerRecoveryReports: RecordWorkerRecoveryReports, AgentWork: WorkerAgentWork, AgentBriefPoints: WorkerBriefPoints, AssignedWorkSources: WorkerTaskSources, AgentFolders: WorkerFolders, DispatchPolicy: WorkerPolicy, AgentWriteFolder: WorkerWriteFolder, AgentSandboxChoice: WorkerSandboxChoice, AgentCheckouts: WorkerCheckouts, TaskAssignees: WorkerTaskAssignees, SkillProjects: WorkerSkillProjects, TaskWaitTargets: WorkerTaskWaitTargets, QueueRunWorkers: WorkerQueueRunWorkers, RunCounts: WorkerTestListings, PartVisibility: WorkerPartVisibility, RunWaits: WorkerRunWaits, RuleWarnings: RouteRuleWarnings}
-    listeners = [NewUnitPinListener, *WORKERS_LISTENERS]
+    listeners = [*WORKERS_LISTENERS]
     agent_listeners = [WorktreeStepListener, ProofStepListener]
     tick_handlers = [WorkerInstructionRefreshTickHandler, StoppedWorkerLibrariesTickHandler, MergerRetryTickHandler, InactiveMainAgentPromptTickHandler, BehindWorktreesTickHandler, BehindCheckPruningTickHandler, AskWatchTickHandler, StoppedWorkerRunsTickHandler, WorkerResumeRetryTickHandler, GoneWorkerRecoveryTickHandler, StalledWorkerTestRunsTickHandler, UnstartedWorkerProofsTickHandler, UnlaunchedWorkerTestRunsTickHandler]
     windows = WORKERS_WINDOWS

@@ -10,7 +10,6 @@ from suites.coding.drivers.worker.worker_agent_driver import WorkerAgentDriver
 from suites.coding.models.coding_models import CODING_MODELS
 from suites.coding.migrations.coding_migrations import CODING_MIGRATIONS
 from suites.coding.commands.coding_handlers import CODING_HANDLERS
-from suites.coding.rules.coding_driver_rules import CODING_DRIVER_RULES
 from suites.coding.listeners.coding_listeners import CODING_LISTENERS
 from suites.coding.commands.coding_subcommands import CODING_SUBCOMMANDS
 from suites.coding.agent_groups.coding_agent_groups import CODING_AGENT_GROUPS
@@ -51,7 +50,6 @@ class CodingModule(Module):
     models = CODING_MODELS
     migrations = CODING_MIGRATIONS
     handlers = CODING_HANDLERS
-    driver_rules = CODING_DRIVER_RULES
     listeners = CODING_LISTENERS
     bindings = {ToolRunners: CodingToolRunners, ProjectCheckouts: WorktreeCheckouts}
     subcommands = CODING_SUBCOMMANDS

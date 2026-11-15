@@ -5,7 +5,6 @@ from engine.viewer.entrance import Entrance
 from engine.viewer.layout_preset import LayoutPreset
 from engine.viewer.layout_shape import LayoutShape
 from engine.helper_type.helper_type import HelperType
-from engine.module.default_state import DefaultState
 from engine.module.task_assigner import TaskAssigner
 
 if TYPE_CHECKING:
@@ -14,23 +13,18 @@ if TYPE_CHECKING:
 
 class Suite:
     """The base of every suite: a swappable set of drivers above the core, each driving the helper type it
-    names, with the modules it lists (its own module first), the suites it requires, whether it takes
-    complete control, the other modules' overlays it then includes, its entrances (each the viewer windows
-    its environments show, the default layout of each viewer page, per driver where one is named, and the
-    layouts it offers per page in the picker), the kinds of helper it registers and the states it gives
-    agents by default. A suite that joins another is no suite to pick: a plugin ships one to add its
+    names, with the modules it lists (its own module first), the suites it requires, its entrances (each the
+    viewer windows its environments show, the default layout of each viewer page, per driver where one is
+    named, and the layouts it offers per page in the picker) and the kinds of helper it registers. A suite that joins another is no suite to pick: a plugin ships one to add its
     modules to that suite, whose environments alone run them, so no module names a suite itself."""
 
     name: ClassVar[str]
     modules: ClassVar[Sequence[type[Module]]] = []
     joins: ClassVar[str | None] = None
     requires: ClassVar[Sequence[str]] = []
-    complete_control: ClassVar[bool] = False
-    included_overlays: ClassVar[Sequence[str]] = []
     entrances: ClassVar[Sequence[type[Entrance]]] = []
     task_assigner: ClassVar[type[TaskAssigner] | None] = None
     helper_types: ClassVar[Sequence[type[HelperType]]] = []
-    default_states: ClassVar[Sequence[type[DefaultState]]] = []
 
     @classmethod
     def offered_windows(cls) -> tuple[str, ...]:

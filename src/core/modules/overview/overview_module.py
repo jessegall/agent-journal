@@ -2,9 +2,6 @@ from engine.module.module import Module
 from core.modules.overview.lines.overview_first_lines import OverviewFirstLines
 from core.modules.overview.needs.overview_first_needs import OverviewFirstNeeds
 from core.modules.overview.commands.overview.overview_subcommand import OverviewSubcommand
-from core.modules.overview.overlays.overview_overlay import OverviewOverlay
-from core.modules.overview.rules.overview_compaction_rule import OverviewCompactionRule
-from core.modules.overview.rules.overview_first_rule import OverviewFirstRule
 from core.modules.overview.support.block_conditions.recent_overview_read import RecentOverviewRead
 from core.modules.overview.support.overview_nudges import OVERVIEW_NUDGES
 from core.modules.overview.support.overview_settings import OVERVIEW_SETTINGS
@@ -20,8 +17,6 @@ class OverviewModule(Module):
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.settings", "journal.core.drivers"]
     nudges = OVERVIEW_NUDGES
-    driver_rules = [OverviewFirstRule, OverviewCompactionRule]
-    overlays = [OverviewOverlay]
     settings = OVERVIEW_SETTINGS
     subcommands = [OverviewSubcommand]
     block_conditions = [RecentOverviewRead]

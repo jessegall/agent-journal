@@ -1,10 +1,6 @@
 from engine.helper_type.command_allow_list import CommandAllowList
 from engine.enums.access import Access
-from engine.driver.agent_hook import AgentHook
 from engine.driver.driver import Driver
-from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
-from engine.driver.rule_answer import RuleAnswer
 from engine.helper_type.helper_type import HelperType
 from core.modules.helpers.types.helper import Helper
 from engine.module.suite import Suite
@@ -82,23 +78,12 @@ class LegacyProfiles(ProfileModule):
     """Ships the legacy suite, which lists it."""
 
 
-class ClerkRule(DriverRule):
-    """A clerk reads and edits nothing else: the sample's rule on its own agent type."""
-
-    name = "sample.clerk-rule"
-    hook = HookEventName.PRE_TOOL_USE
-
-    def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.allowed()
-
-
 class ClerkDriver(Driver):
     """Drives the sample's clerk."""
 
     name = "coding.clerk"
     suite_name = CodingSuite.name
     role = "clerk"
-    rules = [ClerkRule]
 
 
 class ClerkModule(Module):

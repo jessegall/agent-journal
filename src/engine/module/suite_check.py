@@ -1,22 +1,20 @@
 from collections.abc import Mapping, Sequence
 
-from engine.enums.hook_event_name import HookEventName
 from engine.module.module import Module
 from engine.module.name_groups import NameGroups
 from engine.module.suite_list import SuiteList
-from engine.registry.driver_rule_entry import ANY_HOOK, DriverRuleEntry
 from engine.viewer.layout_shape import layout_windows
 
 
 class SuiteCheck:
-    """Checks the suites, drivers and driver rules before a sync writes: names, requirements, suites reached
-    through dependencies, defaults that fit their role and suite, presets that show only the suite's windows
-    under keys of their own, and who owns each rule."""
+    """Checks the suites and drivers before a sync writes: names, requirements, suites reached through
+    dependencies, defaults that fit their role and suite, and presets that show only the suite's windows
+    under keys of their own."""
 
-    def problems(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry], suites: SuiteList) -> tuple[str, ...]:
+    def problems(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
         return (suites.problems() + self.duplicates(modules, suites) + self.unknown_requirements(modules, suites) + self.requirement_loops(modules, suites)
                 + self.driver_suites(modules, suites) + self.wrong_suite_drivers(modules) + self.preset_problems(modules, suites)
-                + self.rule_owners(modules, rules) + self.unknown_hooks(rules) + self.module_memberships(modules, suites))
+                + self.module_memberships(modules, suites))
 
     def module_memberships(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
         owners = self.suite_modules(modules, suites)
@@ -37,8 +35,7 @@ class SuiteCheck:
         return {suite.name: module.name for module in modules for suite in suites.module_suites(module)}
 
     def duplicates(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
-        groups = (("suites", [suite.name for module in modules for suite in suites.module_suites(module)]), ("drivers", [driver.name for module in modules for driver in module.drivers]),
-                  ("overlays", [overlay.name for module in modules for overlay in module.overlays]))
+        groups = (("suites", [suite.name for module in modules for suite in suites.module_suites(module)]), ("drivers", [driver.name for module in modules for driver in module.drivers]))
         return NameGroups.duplicates(groups)
 
     def unknown_requirements(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
@@ -86,13 +83,3 @@ class SuiteCheck:
                 problems += [f"suite {suite.name}'s preset {preset.key} for {page} shows {window}, which the suite does not offer"
                              for preset in presets for window in dict.fromkeys(layout_windows(preset.shape)) if window not in offered]
         return tuple(problems)
-
-    def rule_owners(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]:
-        module_names = {module.name for module in modules}
-        problems = [f"rule {rule.name} is listed by {rule.owner} and also names driver patterns" for rule in rules if rule.owner not in module_names and (rule.drivers or rule.roles)]
-        problems += [f"rule {rule.name} names no driver pattern, so no driver hears it" for rule in rules if rule.owner in module_names and not rule.drivers]
-        return tuple(problems)
-
-    def unknown_hooks(self, rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]:
-        names = {*HookEventName, ANY_HOOK}
-        return tuple(f"rule {rule.name} covers hook {rule.hook}, which no agent program sends" for rule in rules if rule.hook not in names)

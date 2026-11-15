@@ -39,13 +39,8 @@ from core.modules.sequences.migrations.m005_run_subject import RunSubjectMigrati
 from core.modules.sequences.migrations.m006_open_run_subject_index import OpenRunSubjectIndexMigration
 from core.modules.sequences.models.sequence_run_row import SequenceRunRow
 from core.modules.sequences.shares.sequence_library_share import SequenceLibraryShare
-from core.modules.sequences.rules.sequence_trigger_rule import SequenceTriggerRule
 from core.modules.sequences.guards.step_condition_name_guard import StepConditionNameGuard
 from core.modules.sequences.guards.plan_being_built_guard import PlanBeingBuiltGuard
-from core.modules.sequences.rules.sequence_stop_rule import SequenceStopRule
-from core.modules.sequences.rules.step_guard_rule import StepGuardRule
-from core.modules.sequences.rules.step_command_rule import StepCommandRule
-from core.modules.sequences.rules.unstarted_step_rule import UnstartedStepRule
 from core.modules.sequences.seeders.sequences_seeder import SequencesSeeder
 from core.modules.sequences.upgrade.sequences_move import SequencesMove
 from core.modules.sequences.marks.sequence_mark import SequenceMark
@@ -53,6 +48,7 @@ from engine.driver.stop_blockers import StopBlockers
 from core.modules.sequences.support.sequence_step_started import SequenceStepStarted
 from core.modules.sequences.support.sequence_stop_blockers import SequenceStopBlockers
 
+from core.modules.sequences.needs.sequence_work_needs import SequenceWorkNeeds
 
 
 class SequencesModule(Module):
@@ -62,7 +58,7 @@ class SequencesModule(Module):
     name = "journal.core.sequences"
     effects = [SequenceTriggerEffect]
     lines = [SequenceTriggerLines]
-    needs = [UnstartedStepNeeds]
+    needs = [UnstartedStepNeeds, SequenceWorkNeeds]
     policies = [StepCommandPolicy, StepGuardPolicy]
     nudges = SEQUENCE_NUDGES
     requires_engine = ">=5,<6"
@@ -81,6 +77,5 @@ class SequencesModule(Module):
     views = [SequenceRunRow]
     listeners = [SequenceEventIndexListener, SequenceRowTriggerListener, SequenceEndListener, StandardSequencesListener, SequenceStartedMarkListener, SequenceEndedMarkListener]
     marks = [SequenceMark]
-    driver_rules = [UnstartedStepRule, StepGuardRule, StepCommandRule, SequenceStopRule, SequenceTriggerRule]
     seeders = [SequencesSeeder]
     windows = SEQUENCES_WINDOWS

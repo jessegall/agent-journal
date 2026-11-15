@@ -9,11 +9,14 @@ from engine.enums.agent_role import AgentRole
 from engine.enums.decision_class import DecisionClass
 from core.modules.processes.support.output_watch_call import OutputWatchCall
 from suites.coding.modules.workers.nudges.context_hard_stop_nudge import ContextHardStopNudge
-from suites.coding.modules.workers.rules.context_hard_stop_rule import STOP_REQUIREMENT_COMMANDS
 from suites.coding.modules.workers.types.worker import Worker
 from suites.coding.support.context_limit_check import ContextLimitCheck
 
 HARD_LIMIT_RULE = "workers.context-limit-hard-stop"
+
+# the journal commands an agent past its hard context limit may still run, so it can meet what its stop asks
+STOP_REQUIREMENT_COMMANDS = ("memory", "message", "wait", "refusal", "agent-block", "overview", "question", "sequence", "skill required",
+                             "doc close", "report close", "task log", "task test", "task close", "task block", "task start", "task overview")
 
 
 class ContextHardLimitPolicy(Policy):

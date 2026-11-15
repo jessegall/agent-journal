@@ -37,16 +37,11 @@ from core.modules.messages.migrations.m009_message_recipient import MessageRecip
 from core.modules.messages.migrations.m010_message_hook_indexes import MessageHookIndexesMigration
 from core.modules.messages.migrations.m011_message_visibility import MessageVisibilityMigration
 from core.modules.messages.migrations.m014_message_target import MessageTargetMigration
-from core.modules.messages.rules.reply_note_rule import ReplyNoteRule
 from core.modules.messages.commands.record_parent_report.record_parent_report_handler import RecordParentReportHandler
 from core.modules.messages.commands.record_peer_message.record_peer_message_handler import RecordPeerMessageHandler
 from core.modules.messages.commands.reset_message_deliveries.reset_message_deliveries_handler import ResetMessageDeliveriesHandler
-from core.modules.messages.rules.tool_message_rule import ToolMessageRule
-from core.modules.messages.rules.transcript_message_rule import TranscriptMessageRule
-from core.modules.messages.rules.typed_prompt_rule import TypedPromptRule
 from core.modules.messages.commands.record_typed_prompt.record_typed_prompt_handler import RecordTypedPromptHandler
 from core.modules.messages.migrations.m008_message_peer import MessagePeerMigration
-from core.modules.messages.rules.peer_message_rule import PeerMessageRule
 from core.modules.messages.commands.record_message_updated_line.record_message_updated_line_handler import RecordMessageUpdatedLineHandler
 from core.modules.messages.listeners.message_edited_mark_listener import MessageEditedMarkListener
 from core.modules.messages.listeners.read_message_edit_listener import ReadMessageEditListener
@@ -78,7 +73,6 @@ from core.modules.messages.commands.react_message.react_message_subcommand impor
 from core.modules.messages.commands.send_message.send_message_handler import SendMessageHandler
 from core.modules.messages.commands.send_agent_message.send_agent_message_handler import SendAgentMessageHandler
 from core.modules.messages.commands.record_waiting_message_line.record_waiting_message_line_handler import RecordWaitingMessageLineHandler
-from core.modules.messages.listeners.allowed_stop_listener import AllowedStopListener
 from core.modules.messages.listeners.waiting_message_listener import WaitingMessageListener
 from core.modules.messages.listeners.message_rows_listener import MessageRowsListener
 from core.modules.messages.listeners.tagged_image_block_listener import TaggedImageBlockListener
@@ -90,18 +84,6 @@ from core.modules.messages.migrations.m002_message_files import MessageFilesMigr
 from core.modules.messages.migrations.m003_message_delivery import MessageDeliveryMigration
 from core.modules.messages.migrations.m004_message_delivered_at import MessageDeliveredColumnMigration
 from core.modules.messages.migrations.m017_message_type_indexes import MessageTypeIndexesMigration
-from core.modules.messages.rules.agent_text_rule import AgentTextRule
-from core.modules.messages.rules.message_delivery_rule import MessageDeliveryRule
-from core.modules.messages.rules.message_read_rule import MessageReadRule
-from core.modules.messages.rules.waiting_message_tick_rule import WaitingMessageTickRule
-from core.modules.messages.rules.unread_message_show_rule import UnreadMessageShowRule
-from core.modules.messages.rules.chat_manners_rule import ChatMannersRule
-from core.modules.messages.rules.chat_opening_rule import ChatOpeningRule
-from core.modules.messages.rules.plain_code_rule import PlainCodeRule
-from core.modules.messages.states.messages_unanswered import MessagesUnanswered
-from core.modules.messages.rules.unread_message_stop_rule import UnreadMessageStopRule
-from core.modules.messages.states.messages_unread import MessagesUnread
-from core.modules.messages.states.unread_countdown import UnreadCountdown
 from core.modules.messages.commands.reply_message.reply_message_subcommand import ReplyMessageSubcommand
 from core.modules.messages.commands.send_message.send_message_subcommand import SendMessageSubcommand
 from engine.module.module import Module
@@ -148,11 +130,9 @@ class MessagesModule(Module):
     policies = [UnreadMessageShowPolicy]
     lines = [NewMessageLines, UnansweredMessageLines, MessageReadLines, ChatMannersLines, ChatOpeningLines, PlainCodeLines, ReplyNoteLines, AgentTextLines]
     effects = [MessageDeliveryEffect, MessageReadEffect, AgentTextEffect, TextBeforeToolEffect, TranscriptCatchUpEffect, TypedPromptEffect, PeerMessageEffect]
-    driver_rules = [WaitingMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, ToolMessageRule, TranscriptMessageRule, TypedPromptRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule, PeerMessageRule, ReplyNoteRule]
-    agent_states = [MessagesUnread, MessagesUnanswered, UnreadCountdown]
     subcommands = [MessageConversationsSubcommand, AgentReportsSubcommand, UnreadReportsSubcommand, AttachmentListSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand, ChooseWorkSourceSubcommand, ClearWorkSourceSubcommand, WorkSourceSubcommand]
     windows = MESSAGES_WINDOWS
     marks = [MessageSummaryMark, MessageFiledMark, MessageEditedMark]
     skills = MESSAGES_SKILLS
-    listeners = [NewSessionWorkSourceListener, ReportPinListener, MessageRowsListener, MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, WaitingMessageTypingListener, ReadMessageLineListener, ReleasedMessageLineListener, AllowedStopListener, DeletedWorkSourceListener, DeletedAgentWorkSourceListener, TaggedImageBlockListener]
+    listeners = [NewSessionWorkSourceListener, ReportPinListener, MessageRowsListener, MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, WaitingMessageTypingListener, ReadMessageLineListener, ReleasedMessageLineListener, DeletedWorkSourceListener, DeletedAgentWorkSourceListener, TaggedImageBlockListener]
     seeders = [MessagesSeeder]

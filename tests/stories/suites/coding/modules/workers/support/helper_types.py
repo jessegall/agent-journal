@@ -38,23 +38,3 @@ class ClerkStarted(HelperSession):
 
 
 
-class EveryHelperRule(StoryFixture):
-    """A module adds a rule that names the helper role; a worker, a read-only helper and a clerk are each started."""
-
-    parent = OpenTaskOrchestrator
-
-    def steps(self, story: Story) -> None:
-        story.expect_sync_success("tests.stories.engine.module.support.agent_type_modules:EveryHelperRules")
-        for role in ("helper", "worker", "clerk"):
-            story.expect_success(f"agent start s-{role} claude {role} --parent {story.agent.id} --environment main")
-
-
-class ReaderHelpersRule(StoryFixture):
-    """A module adds a rule for read-only helpers alone; a worker and a read-only helper are started."""
-
-    parent = OpenTaskOrchestrator
-
-    def steps(self, story: Story) -> None:
-        story.expect_sync_success("tests.stories.engine.module.support.agent_type_modules:ReaderHelperRules")
-        for role in ("helper", "worker"):
-            story.expect_success(f"agent start s-{role} claude {role} --parent {story.agent.id} --environment main")

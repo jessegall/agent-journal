@@ -20,7 +20,6 @@ from core.modules.dumps.commands.name_dump.name_dump_handler import NameDumpHand
 from core.modules.dumps.commands.name_dump.name_dump_subcommand import NameDumpSubcommand
 from core.modules.dumps.commands.note_item.note_item_subcommand import NoteItemSubcommand
 from core.modules.dumps.listeners.dump_arrival_listener import DumpArrivalListener
-from core.modules.dumps.rules.open_dump_rule import OpenDumpRule
 from core.modules.dumps.support.dump_nudges import DUMP_NUDGES
 from core.modules.dumps.listeners.dump_dock_listener import DumpDockListener
 from core.modules.dumps.migrations.m001_dumps import DumpsTablesMigration
@@ -44,7 +43,6 @@ class DumpsModule(Module):
     views = [DumpRow]
     subcommands = [DumpBoardSubcommand, DumpItemBoardSubcommand, MakeDumpSubcommand, DumpItemsSubcommand, NoteItemSubcommand, FileDumpItemSubcommand, FailDumpItemSubcommand, NameDumpSubcommand]
     nudges = DUMP_NUDGES
-    driver_rules = [OpenDumpRule]
     listeners = [DumpArrivalListener, DumpDockListener]
     wake_causes = [DumpArrivedWake]
     docks = DUMPS_DOCKS

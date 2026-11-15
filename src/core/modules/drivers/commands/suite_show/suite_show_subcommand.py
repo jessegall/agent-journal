@@ -8,8 +8,7 @@ from core.modules.drivers.commands.support.suite_description import SuiteDescrip
 
 
 class SuiteShowSubcommand(ReadSubcommand[SuiteDescription]):
-    """`journal suite show <suite>`: what it requires, its default driver per role, whether it takes complete
-    control, the other modules' overlays it includes, and any of those no installed module ships."""
+    """`journal suite show <suite>`: the module that ships it, what it requires and its default driver per role."""
 
     cli_name = "suite"
     name = "show"
@@ -24,7 +23,5 @@ class SuiteShowSubcommand(ReadSubcommand[SuiteDescription]):
         suite = self.registry.suite(arguments.suite)
         if suite is None:
             raise Refusal(f"no installed module ships suite {arguments.suite}", "journal suite current shows the suite of an environment")
-        shipped = {overlay.name for overlay in self.registry.overlays}
-        missing = [name for name in suite.included_overlays if name not in shipped]
-        return SuiteDescription(suite.name, suite.module, ", ".join(suite.requires), suite.complete_control, ", ".join(suite.included_overlays), ", ".join(missing),
+        return SuiteDescription(suite.name, suite.module, ", ".join(suite.requires),
                                 ", ".join(f"{role}: {driver.name}" for role, driver in self.registry.type_drivers(suite).items()))

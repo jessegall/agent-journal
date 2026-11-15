@@ -16,7 +16,6 @@ from engine.helper_type.helper_type_book import MAIN_KEY, HelperTypeBook
 from engine.module.module import Module
 from engine.module.suite_list import SuiteList
 from engine.helper_type.helper_type_entry import HelperTypeEntry
-from engine.registry.driver_rule_entry import DriverRuleEntry
 
 HELPER_TYPE_WORD = re.compile(r"[a-z]+(-[a-z]+)*")
 AGENTS_MODULE = "journal.core.agents"
@@ -26,7 +25,7 @@ REQUIRED_FIELDS = ("key", "label", "behaviours", "commands")
 class HelperTypeCheck:
     """Checks helper type declarations and every role modules use before a sync writes anything."""
 
-    def problems(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry], suites: SuiteList) -> tuple[str, ...]:
+    def problems(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
         claimed: dict[str, str] = {}
         problems: list[str] = []
         for module in modules:
@@ -53,7 +52,6 @@ class HelperTypeCheck:
                 problems.append(f"{declaration.key}: default profile {profile.name} has type {profile.agent_type}, which {declaration.key} does not extend")
         names = frozenset(book.entries)
         uses = [(driver.name, driver.role) for module in modules for driver in module.drivers]
-        uses.extend((rule.name, role) for rule in rules for role in rule.roles)
         problems.extend(f"{owner}: {role} is no registered helper type; register it in a module's or suite's helper_types"
                         for owner, role in dict.fromkeys(uses) if role not in names)
         problems.extend(self.group_problems(modules, names, profiles))

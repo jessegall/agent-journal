@@ -8,7 +8,6 @@ from core.modules.helpers.migrations.helpers_migrations import HELPERS_MIGRATION
 from core.modules.helpers.commands.helpers_handlers import HELPERS_HANDLERS
 from core.modules.helpers.commands.helpers_subcommands import HELPERS_SUBCOMMANDS
 from core.modules.helpers.guards.helpers_guards import HELPERS_GUARDS
-from core.modules.helpers.rules.helpers_driver_rules import HELPERS_DRIVER_RULES
 from core.modules.helpers.listeners.helpers_listeners import HELPERS_LISTENERS
 from core.modules.helpers.skills.declarations.helpers_skills import HELPERS_SKILLS
 from engine.module.module import Module
@@ -45,4 +44,3 @@ class HelpersModule(Module):
     skills = HELPERS_SKILLS
     subcommands = HELPERS_SUBCOMMANDS
     listeners = HELPERS_LISTENERS
-    driver_rules = HELPERS_DRIVER_RULES

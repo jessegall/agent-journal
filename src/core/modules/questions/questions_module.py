@@ -15,7 +15,6 @@ from core.modules.questions.commands.question_list.question_list_subcommand impo
 from core.modules.questions.commands.question_show.question_show_subcommand import QuestionShowSubcommand
 from core.modules.questions.marks.question_mark import QuestionMark
 from core.modules.questions.marks.question_answer_mark import QuestionAnswerMark
-from core.modules.questions.rules.own_question_tool_rule import OwnQuestionToolRule
 from core.modules.questions.guards.question_asker_guard import QuestionAskerGuard
 from core.modules.questions.guards.actor_options_guard import ActorOptionsGuard
 from core.modules.questions.listeners.open_questions_dock_listener import OpenQuestionsDockListener
@@ -50,7 +49,6 @@ class QuestionsModule(Module):
     subcommands = [AskQuestionSubcommand, QuestionListSubcommand, QuestionShowSubcommand]
     handlers = [AskQuestionHandler, AnswerQuestionHandler]
     guards = [QuestionAskerGuard, ActorOptionsGuard]
-    driver_rules = [OwnQuestionToolRule]
     marks = [QuestionMark, QuestionAnswerMark]
     listeners = [OpenQuestionsDockListener, QuestionOpenMarkListener, QuestionEditedMarkListener, QuestionAnsweredMarkListener, QuestionClosedMarkListener, QuestionAnswerLineListener]
     docks = QUESTIONS_DOCKS

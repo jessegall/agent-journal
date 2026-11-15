@@ -13,23 +13,21 @@ from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.models.admission_receipt import AdmissionReceipt
-from core.modules.drivers.support.agent_slices import AgentSlices
-from core.modules.drivers.support.contribution_slices import ADMISSION_SLICE
 
 
 class CommandAdmission:
-    """Asks a command's entrance the policies the hook asks (doc 1310 sections 4.7 and 10.9), once the
-    admission slice answers the agent that runs it: a refusal is passed by the receipt the hook left when it
+    """Asks a command's entrance the policies the hook asks (doc 1310 sections 4.7 and 10.9) for an agent that
+    runs it: a refusal is passed by the receipt the hook left when it
     spent a grant for this command, taken once, or else by a usable grant spent here; otherwise the command
     is refused with the policy's own text, the hook's text."""
 
-    def __init__(self, finder: ModuleFinder, container: Container, slices: AgentSlices, agents: AgentRows, grant_store: GrantLedger,
+    def __init__(self, finder: ModuleFinder, container: Container, agents: AgentRows, grant_store: GrantLedger,
                  queries: Queries, repository: Repository, assembly: MachineAssembly) -> None:
-        self.finder, self.container, self.slices, self.agents, self.grant_store = finder, container, slices, agents, grant_store
+        self.finder, self.container, self.agents, self.grant_store = finder, container, agents, grant_store
         self.queries, self.repository, self.assembly = queries, repository, assembly
 
     def answers(self, context: Context) -> bool:
-        return context.actor.is_agent() and ADMISSION_SLICE in self.slices.tick_slices(self.agents.find(context.actor.id))
+        return context.actor.is_agent()
 
     # a guard runs on a row's save, where the context's command may be one its entrance command dispatched, so the
     # guard names the entrance command it guards

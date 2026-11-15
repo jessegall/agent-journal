@@ -7,7 +7,6 @@ from engine.command.handler import Handler
 from engine.environment.environment_names import EnvironmentNames
 from engine.journal.journal_home import JournalHome
 from engine.provider.hook_manager import HookManager
-from engine.driver.driver_rule import DriverRule
 from engine.provider.managed_hooks import ManagedHooks
 from engine.provider.providers import Providers
 from engine.provider.program_settings_sync import ProgramSettingsSync
@@ -60,8 +59,7 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
         self.libraries.place(command.source, command.folder, links, copies)
         self.timing.stamp("prepare_libraries")
         self.place_program_hooks(command)
-        rules = [entry.path.checked_class(DriverRule) for entry in self.providers.registry.rules]
-        manager = HookManager(self.home.project_folder, self.managed, rules)
+        manager = HookManager(self.home.project_folder, self.managed)
         for provider in self.providers.all():
             manager.import_hooks(type(provider), Path(command.folder))
         for provider in self.providers.all():

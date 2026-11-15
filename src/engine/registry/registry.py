@@ -3,12 +3,11 @@ import sqlite3
 from collections.abc import Sequence
 from engine.registry.profile_entry import ProfileEntry
 from engine.errors.refusal import Refusal
-from engine.agent.enums.role_group import RoleGroup
 from engine.agent.groups.agent_group_book import AgentGroupBook
 from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.agent.groups.agent_group_entry import AgentGroupEntry
 from engine.helper_type.helper_type_entry import HelperTypeEntry
-from dataclasses import asdict, dataclass, field, replace
+from dataclasses import asdict, dataclass, field
 from functools import cached_property, lru_cache
 from engine.registry.parsed_registries import ParsedRegistries
 
@@ -19,7 +18,6 @@ from engine.database.registry_table import RegistryTable
 from engine.database.registry_version import RegistryVersion
 from engine.dotted_path.dotted_path import DottedPath
 from engine.registry.driver_entry import DriverEntry
-from engine.registry.driver_rule_entry import DriverRuleEntry
 from engine.registry.event_key_entry import EventKeyEntry
 from engine.registry.event_lookup import EventLookup
 from engine.registry.guard_entry import GuardEntry
@@ -37,17 +35,12 @@ from engine.registry.setting_entry import SettingEntry
 from engine.registry.tunnel_entry import TunnelEntry
 from engine.registry.model_entry import ModelEntry
 from engine.registry.move_entry import MoveEntry
-from engine.registry.overlay_entry import OverlayEntry
-from engine.registry.agent_state_entry import AgentStateEntry
-from engine.registry.deferred_rule_entry import DeferredRuleEntry
 from engine.registry.provider_entry import ProviderEntry
 from engine.registry.skill_entry import SkillEntry
 from engine.model.state_book import StateBook
 from engine.registry.errors.stale_registry_error import StaleRegistryError
 from engine.registry.state_addition_entry import StateAdditionEntry
 from engine.registry.suite_entry import SuiteEntry
-from engine.registry.default_state_entry import DefaultStateEntry
-from engine.enums.agent_kind import AgentKind
 from engine.registry.window_entry import WindowEntry
 from engine.viewer.layout_preset import LayoutPreset
 from engine.viewer.window_declaration import DEFAULT_FLOAT_SIZE
@@ -76,10 +69,6 @@ class Registry:
     guards: tuple[GuardEntry, ...]
     listeners: tuple[ListenerEntry, ...]
     bindings: dict[str, DottedPath] = field(default_factory=lambda: {})
-    overlays: tuple[OverlayEntry, ...] = ()
-    agent_states: tuple[AgentStateEntry, ...] = ()
-    deferred_rule_entries: tuple[DeferredRuleEntry, ...] = ()
-    rules: tuple[DriverRuleEntry, ...] = ()
     suites: tuple[SuiteEntry, ...] = ()
     drivers: tuple[DriverEntry, ...] = ()
     windows: tuple[WindowEntry, ...] = ()
@@ -150,23 +139,12 @@ class Registry:
             listeners=tuple(ListenerEntry(listener["name"], EventPattern(listener["event"]), ListenerTiming(listener["timing"]), DottedPath(listener["path"]),
                                           listener["position"], listener["actor_id"]) for listener in entries["listeners"]),
             bindings={interface: DottedPath(path) for interface, path in entries["bindings"].items()},
-            overlays=tuple(OverlayEntry(overlay["name"], DottedPath(overlay["path"]), overlay["position"], tuple(overlay["drivers"])) for overlay in entries.get("overlays", [])),
-            agent_states=tuple(AgentStateEntry(state["name"], DottedPath(state["path"]), state["owner"], state["position"], state["tier"], tuple(state["drivers"]), state["parent"],
-                                               tuple(state["rules"]), tuple(state["deferred"])) for state in entries.get("agent_states", [])),
-            deferred_rule_entries=tuple(DeferredRuleEntry(rule["name"], DottedPath(rule["path"]), rule["state"], rule["hook"], tuple(rule["drivers"]), RoleGroup(rule["role_group"]))
-                                        for rule in entries.get("deferred_rules", [])),
-            rules=tuple(DriverRuleEntry(rule["name"], DottedPath(rule["path"]), rule["hook"], rule["position"], rule["owner"], tuple(rule["drivers"]), tuple(rule["roles"]),
-                                        rule.get("exempt", rule.get("unsilenced", False)), rule["essential"], rule.get("history", False), rule.get("claims_essential", False),
-                                        RoleGroup(rule.get("role_group", "any")), rule.get("priority", 0))
-                        for rule in entries.get("rules", [])),
-            suites=tuple(SuiteEntry(suite["name"], suite["module"], tuple(suite["requires"]), suite["complete_control"], tuple(suite["included_overlays"]),
+            suites=tuple(SuiteEntry(suite["name"], suite["module"], tuple(suite["requires"]),
                                     tuple(suite.get("windows", [])), {page: loaded_layout(shape) for page, shape in suite.get("layouts", {}).items()},
                                     {page: tuple(LayoutPreset(preset["key"], preset["name"], preset["text"], loaded_layout(preset["shape"])) for preset in presets)
                                      for page, presets in suite.get("presets", {}).items()},
                                     suite.get("task_assigner", ""), suite.get("shipped", False),
-                                    entrances={key: tuple(windows) for key, windows in suite.get("entrances", {}).items()},
-                                    default_states=tuple(DefaultStateEntry(default["state"], AgentKind(default["kind"]), default["value"], default["removed_while"])
-                                                         for default in suite.get("default_states", [])))
+                                    entrances={key: tuple(windows) for key, windows in suite.get("entrances", {}).items()})
                          for suite in entries.get("suites", [])),
             drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["opening_lines"]),
                                       tuple(driver.get("guards", [])))
@@ -219,19 +197,8 @@ class Registry:
             "listeners": [{"name": listener.name, "event": listener.event.text, "timing": listener.timing.value, "path": listener.path.text,
                            "position": listener.position, "actor_id": listener.actor_id} for listener in self.listeners],
             "bindings": {interface: path.text for interface, path in self.bindings.items()},
-            "overlays": [{"name": overlay.name, "path": overlay.path.text, "position": overlay.position, "drivers": list(overlay.drivers)} for overlay in self.overlays],
-            "agent_states": [{"name": state.name, "path": state.path.text, "owner": state.owner, "position": state.position, "tier": state.tier, "drivers": list(state.drivers),
-                              "parent": state.parent, "rules": list(state.rules), "deferred": list(state.deferred)} for state in self.agent_states],
-            "deferred_rules": [{"name": rule.name, "path": rule.path.text, "state": rule.state, "hook": rule.hook, "drivers": list(rule.drivers), "role_group": rule.role_group.value}
-                               for rule in self.deferred_rule_entries],
-            "rules": [{"name": rule.name, "path": rule.path.text, "hook": rule.hook, "position": rule.position, "owner": rule.owner, "drivers": list(rule.drivers),
-                       "roles": list(rule.roles), "exempt": rule.exempt, "essential": rule.essential, "history": rule.history,
-                       "claims_essential": rule.claims_essential, "role_group": rule.role_group.value, "priority": rule.priority} for rule in self.rules],
-            "suites": [{"name": suite.name, "module": suite.module, "requires": list(suite.requires), "complete_control": suite.complete_control,
-                        "included_overlays": list(suite.included_overlays), "windows": list(suite.windows),
+            "suites": [{"name": suite.name, "module": suite.module, "requires": list(suite.requires), "windows": list(suite.windows),
                         "task_assigner": suite.task_assigner, "shipped": suite.shipped, "entrances": {key: list(windows) for key, windows in suite.entrances.items()},
-                        "default_states": [{"state": default.state, "kind": default.kind.value, "value": default.value, "removed_while": default.removed_while}
-                                           for default in suite.default_states],
                         "layouts": {page: stored_layout(shape) for page, shape in suite.layouts.items()},
                         "presets": {page: [{"key": preset.key, "name": preset.name, "text": preset.text, "shape": stored_layout(preset.shape)} for preset in presets]
                                     for page, presets in suite.presets.items()}} for suite in self.suites],
@@ -263,58 +230,6 @@ class Registry:
             "module_fingerprints": self.module_fingerprints,
             "module_suites": {module: list(suites) for module, suites in self.module_suites.items()},
         }, sort_keys=True)
-
-    def with_overlays(self, overlays: tuple[OverlayEntry, ...]) -> "Registry":
-        return replace(self, overlays=overlays)
-
-    def with_rules(self, rules: tuple[DriverRuleEntry, ...]) -> "Registry":
-        return replace(self, rules=rules)
-
-    def essential_rules(self, driver: str, hook_name: str) -> list[DriverRuleEntry]:
-        return [rule for rule in self.hook_rules(hook_name) if rule.is_driver_standing_rule(driver)]
-
-    def overlay_rules(self, overlay: str, hook_name: str) -> list[DriverRuleEntry]:
-        return [rule for rule in self.hook_rules(hook_name) if rule.owner == overlay and not rule.drivers]
-
-    def driver_rules(self, driver: str, role: str, hook_name: str) -> list[DriverRuleEntry]:
-        helper_types = self.helper_type_book()
-        return [rule for rule in self.hook_rules(hook_name) if not rule.essential and not rule.exempt
-                and rule.covers_driver(driver, role) and rule.role_group.has_role(role, helper_types)]
-
-    def hook_rules(self, hook_name: str) -> list[DriverRuleEntry]:
-        return sorted((rule for rule in self.rules if rule.covers_hook(hook_name)), key=lambda rule: rule.position)
-
-    # the agent state that gates each rule, by the rule's name
-    @cached_property
-    def gates(self) -> dict[str, AgentStateEntry]:
-        return {rule: state for state in self.agent_states for rule in state.rules}
-
-    def rule_gate(self, rule_name: str) -> AgentStateEntry | None:
-        return self.gates.get(rule_name)
-
-    # the deferred rules of a state that run after a hook of this name, in registration order
-    def deferred_rules(self, state_name: str, hook_name: str) -> list[DeferredRuleEntry]:
-        return [rule for rule in self.deferred_rule_entries if rule.state == state_name and rule.covers_hook(hook_name)]
-
-    def tier_states(self, driver: str, tier: int) -> list[AgentStateEntry]:
-        return [state for state in self.agent_states if state.tier == tier and state.covers(driver)]
-
-    # the states a suite gives an agent of this role, driver and helper type, its joining suites' among them
-    def default_states(self, suite_name: str, role: str, driver: str, helper_type: str) -> tuple[DefaultStateEntry, ...]:
-        suite = self.suite(suite_name)
-        return tuple(default for default in suite.default_states if default.matches(role, driver, helper_type)) if suite is not None else ()
-
-    def agent_state(self, name: str) -> AgentStateEntry | None:
-        return next((state for state in self.agent_states if state.name == name), None)
-
-    def state_rules(self, state_name: str, hook_name: str) -> list[DriverRuleEntry]:
-        state = self.agent_state(state_name)
-        if state is None:
-            return []
-        return [rule for rule in self.rules if rule.name in state.rules and rule.covers_hook(hook_name)]
-
-    def driver_overlays(self, driver: str) -> list[OverlayEntry]:
-        return [overlay for overlay in self.overlays if overlay.covers(driver)]
 
     def bind(self, container: Container) -> None:
         for interface, implementation in self.bindings.items():

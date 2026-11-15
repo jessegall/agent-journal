@@ -8,7 +8,4 @@ class SuiteDescription:
     suite: str
     module: str
     requires: str
-    complete_control: bool
-    includes: str
-    missing: str
     drivers: str

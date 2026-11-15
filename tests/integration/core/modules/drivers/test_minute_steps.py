@@ -1,10 +1,7 @@
-from tests.integration.core.modules.drivers.support.walk_only import walk_only
 from engine.command.bus import Bus
 from engine.query.queries import Queries
 from engine.testing.examples.hook_samples import HookSamples
 from core.modules.drivers.models.agent_step_request import AgentStepRequest
-from core.modules.drivers.support.contribution_slices import WAITING_SLICE
-from core.modules.drivers.support.driver_settings import ACTIVE_SLICES_SETTING
 from core.modules.drivers.ticks.agent_minute_steps import MINUTE_STEP, AgentMinuteSteps
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.listeners.run_end_step_listener import RunEndStepListener
@@ -18,7 +15,6 @@ def open_causes(story) -> list[tuple[str, ...]]:
 
 
 def waiting_slice_on(story) -> None:
-    story.expect_success(f"setting set {ACTIVE_SLICES_SETTING} '[\"{WAITING_SLICE}\"]'", actor=story.user)
     story.hook("s-1", HookSamples.session_start())
 
 
@@ -27,12 +23,6 @@ def test_the_minute_step_asks_for_the_step_of_an_agent_the_waiting_slice_answers
     waiting_slice_on(story)
     AgentMinuteSteps()(story.container)
     assert any(MINUTE_STEP in causes for causes in open_causes(story))
-
-
-def test_with_no_slice_on_the_minute_step_writes_nothing(played):
-    story = walk_only(played(BuilderStarted))
-    AgentMinuteSteps()(story.container)
-    assert open_causes(story) == []
 
 
 def test_a_run_that_ends_asks_for_the_step_of_the_agent_that_ran_it(played):

@@ -3,9 +3,6 @@ from core.modules.pins.lines.link_pin_lines import LinkPinLines
 from core.modules.pins.effects.agent_text_pin_effect import AgentTextPinEffect
 from core.modules.pins.effects.automatic_link_pin_effect import AutomaticLinkPinEffect
 from core.modules.pins.models.declarations.pin_model_declaration import PinModelDeclaration
-from core.modules.pins.rules.agent_text_pin_rule import AgentTextPinRule
-from core.modules.pins.rules.link_pin_rule import LinkPinRule
-from core.modules.pins.rules.automatic_link_pin_rule import AutomaticLinkPinRule
 from core.modules.pins.support.pin_nudges import PIN_NUDGES
 from engine.module.module import Module
 from core.modules.pins.commands.close_pin.close_pin_handler import ClosePinHandler
@@ -27,7 +24,6 @@ class PinsModule(Module):
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.drivers"]
     nudges = PIN_NUDGES
-    driver_rules = [LinkPinRule, AgentTextPinRule, AutomaticLinkPinRule]
     seeders = [PinsSeeder]
     models = [PinModelDeclaration]
     migrations = [PinsTableMigration]

@@ -26,8 +26,7 @@ class HookWriter:
     def import_hooks(self, runner: str) -> list[ManagedHook]:
         if shlex.split(runner) != [str(self.root / ".journal/bin/journal-hook")]:
             return self.managed()
-        rules = [rule for module in DEFAULT_MODULES for rule in module.driver_rules]
-        manager = HookManager(self.root, ManagedHooks(JournalHome(self.root / ".journal")), rules)
+        manager = HookManager(self.root, ManagedHooks(JournalHome(self.root / ".journal")))
         for provider in self.providers:
             manager.import_hooks(provider, self.root)
         return self.managed()

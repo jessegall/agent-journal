@@ -15,54 +15,35 @@ from engine.agent_machine.stepping.agent_machine import AgentMachine
 from engine.container.container import Container
 from engine.module.module import Module
 from engine.module.module_finder import ModuleFinder
-from core.modules.drivers.support.contribution_slices import ContributionSlices
 
 Contribution = TypeVar("Contribution")
-Kept = Callable[[type, type[Module]], bool]
 
 
 class MachineAssembly:
     """The one assembler of the agent machine (doc 1310 section 13.2): every contribution the installed modules
     list, built through the container, and for one agent type the machine of those that cover it and its
-    view filled with the needs and plans its need sources give, whole for the comparison or cut to the
-    slices in force."""
+    view filled with the needs and plans its need sources give."""
 
     def __init__(self, finder: ModuleFinder, container: Container, types: HelperTypeBook) -> None:
         self.finder, self.container, self.types = finder, container, types
 
     def machine(self, agent_type: str) -> AgentMachine:
-        return self.built_machine(agent_type, lambda contribution, module: True, ())
-
-    def sliced_machine(self, agent_type: str, agent_slices: frozenset[str], walk: Policy) -> AgentMachine:
-        return self.built_machine(agent_type, self.slice_filter(agent_type, agent_slices), tuple([walk]))
+        return AgentMachine(self.covering(agent_type, lambda module: module.policies), [self.container.get(cls) for cls, module in self.listed(lambda module: module.transforms)],
+                            self.covering(agent_type, lambda module: module.lines), self.covering(agent_type, lambda module: module.effects),
+                            [self.container.get(cls) for cls, module in self.listed(lambda module: module.wake_causes)])
 
     def with_needs(self, view: AgentView, question: Question) -> AgentView:
-        return self.with_kept_needs(view, question, lambda contribution, module: True)
-
-    def with_sliced_needs(self, view: AgentView, question: Question, agent_slices: frozenset[str]) -> AgentView:
-        return self.with_kept_needs(view, question, self.slice_filter(view.agent.agent_type, agent_slices))
-
-    def built_machine(self, agent_type: str, kept: Kept, walk: Sequence[Policy]) -> AgentMachine:
-        return AgentMachine([*self.covering(agent_type, lambda module: module.policies, kept), *walk], [self.container.get(cls) for cls, module in self.listed(lambda module: module.transforms) if kept(cls, module)],
-                            self.covering(agent_type, lambda module: module.lines, kept), self.covering(agent_type, lambda module: module.effects, kept),
-                            [self.container.get(cls) for cls, module in self.listed(lambda module: module.wake_causes) if kept(cls, module)])
-
-    def with_kept_needs(self, view: AgentView, question: Question, kept: Kept) -> AgentView:
-        sources = self.covering(view.agent.agent_type, lambda module: module.needs, kept)
+        sources = self.covering(view.agent.agent_type, lambda module: module.needs)
         given = [item for source in sources for item in source.needs([view.agent], question).get(view.agent.agent_id, ())]
         needs = tuple(item for item in given if isinstance(item, Need))
         ended_subjects = view.stack.subjects_without({need.key for need in needs})
         ends = {subject: end for source in sources for subject, end in (source.ends(ended_subjects).items() if ended_subjects else ())}
         return replace(view, needs=needs, plans=tuple(item for item in given if isinstance(item, BlockPlan)), subject_ends=ends)
 
-    @staticmethod
-    def slice_filter(agent_type: str, agent_slices: frozenset[str]) -> Kept:
-        return lambda contribution, module: ContributionSlices.slice_name(contribution, module, agent_type) in agent_slices
-
     # policies, lines, effects and need sources name the agent types they apply to, none named being every type, and the
     # group of types they hold for
-    def covering(self, agent_type: str, lists: Callable[[type[Module]], Sequence[type[Contribution]]], kept: Kept) -> list[Contribution]:
-        return [self.container.get(cls) for cls, module in self.listed(lists) if self.covers(cls, agent_type) and kept(cls, module)]
+    def covering(self, agent_type: str, lists: Callable[[type[Module]], Sequence[type[Contribution]]]) -> list[Contribution]:
+        return [self.container.get(cls) for cls, module in self.listed(lists) if self.covers(cls, agent_type)]
 
     def covers(self, contribution: type[Policy] | type[LineSource] | type[Effect] | type[NeedSource], agent_type: str) -> bool:
         # a type named covers the types built on it, as a rule naming the helper role covers every kind of helper

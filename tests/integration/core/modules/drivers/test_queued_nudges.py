@@ -3,11 +3,6 @@ from engine.command.context import Context
 from engine.database.database import Database
 from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.enums.nudge_type import NudgeType
-from engine.driver.driver_rules import DriverRules
-from engine.driver.rule_answer import RuleAnswer
-from engine.driver.rule_answers import RuleAnswers
-from engine.driver.rule_record import RuleRecord
-from unittest.mock import patch
 from engine.driver.nudger import Nudger
 from core.modules.drivers.support.line_typing import LineTyping
 from core.modules.agents.support.terminal_typing import TerminalTyping
@@ -29,19 +24,6 @@ def test_queued_declarations_merge_before_the_tool_hook_line_limit(played):
     answer = story.hook("s-1", HookSamples.edit("cart.py"))
     expect_queued_lines(answer, ["tasks 1, 2, 3, 4 are queued for worker 7"])
     expect_queued_lines(story.hook("s-1", HookSamples.edit("cart.py")), [])
-
-
-def test_separate_tick_answers_keep_their_declaration_until_a_tool_hook(played):
-    story = played(StartedTaskBuilder)
-    for task in range(1, 5):
-        answer = RuleAnswer.with_nudges(QUEUED.nudge(task=task, worker=8))
-        answers = RuleAnswers(["lead"], [RuleRecord("sample.queued", "lead", answer.outcome, answer)])
-        with patch.object(DriverRules, "ask", return_value=answers):
-            story.hook("s-1", HookSamples.tick())
-    current_answer = RuleAnswer.with_nudges(QUEUED.nudge(task=5, worker=8))
-    with patch.object(DriverRules, "ask", return_value=RuleAnswers(["lead"], [RuleRecord("sample.queued", "lead", current_answer.outcome, current_answer)])):
-        delivered = story.hook("s-1", HookSamples.edit("cart.py"))
-    expect_queued_lines(delivered, ["tasks 5, 1, 2, 3, 4 are queued for worker 8"])
 
 
 def expect_queued_lines(answer, expected):

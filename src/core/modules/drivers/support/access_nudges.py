@@ -1,10 +1,5 @@
-from core.modules.drivers.nudges.tool_restriction_nudge import ToolRestrictionNudge
-from core.modules.drivers.nudges.command_restriction_nudge import CommandRestrictionNudge
 from core.modules.drivers.nudges.readonly_nudge import ReadonlyNudge
-from core.modules.drivers.nudges.file_access_restriction_nudge import FileAccessRestrictionNudge
-from core.modules.drivers.nudges.journal_restriction_nudge import JournalRestrictionNudge
-from core.modules.drivers.nudges.shell_restriction_nudge import ShellRestrictionNudge
-from core.modules.drivers.nudges.program_restriction_nudge import ProgramRestrictionNudge
+from core.modules.drivers.nudges.permission_use_failed_nudge import PermissionUseFailedNudge
 from core.modules.drivers.nudges.unjudged_line_nudge import UnjudgedLineNudge
 from core.modules.drivers.nudges.old_hook_line_nudge import OldHookLineNudge
 from core.modules.drivers.nudges.helper_type_category_nudge import HelperTypeCategoryNudge
@@ -25,5 +20,4 @@ from core.modules.drivers.nudges.skip_declined_nudge import SkipDeclinedNudge
 from core.modules.drivers.nudges.skips_spent_nudge import SkipsSpentNudge
 
 
-ACCESS_NUDGES = [PanicFileNudge, PrivateCorpusNudge, DatabaseFileNudge, SkipsSpentNudge, SkipNeedsApprovalNudge, SkipApprovedNudge, SkipDeclinedNudge, NativeSubagentNudge, NativeSubagentWithoutLaunchNudge, EndedAgentNudge, ReplacedSessionNudge, UnknownAgentNudge, UnjudgedLineNudge, OldHookLineNudge, OutwardJournalLineNudge, HelperTypeCategoryNudge, HelperTypeCommandNudge, LimitedToolNudge, ToolRestrictionNudge, CommandRestrictionNudge, ReadonlyNudge, FileAccessRestrictionNudge, JournalRestrictionNudge,
-                 ShellRestrictionNudge, ProgramRestrictionNudge]
+ACCESS_NUDGES = [PermissionUseFailedNudge, PanicFileNudge, PrivateCorpusNudge, DatabaseFileNudge, SkipsSpentNudge, SkipNeedsApprovalNudge, SkipApprovedNudge, SkipDeclinedNudge, NativeSubagentNudge, NativeSubagentWithoutLaunchNudge, EndedAgentNudge, ReplacedSessionNudge, UnknownAgentNudge, UnjudgedLineNudge, OldHookLineNudge, OutwardJournalLineNudge, HelperTypeCategoryNudge, HelperTypeCommandNudge, LimitedToolNudge, ReadonlyNudge]
