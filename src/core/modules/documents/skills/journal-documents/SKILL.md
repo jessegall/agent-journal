@@ -13,8 +13,9 @@ trace, a review or a check, and has no revisions. Debuggers, researchers and rev
 journal-researcher, journal-code-reviewer, journal-plan-reviewer) file reports only: `journal doc make` and
 `journal doc edit` are refused to them with a line that names `journal report make`. Designers and planners file docs.
 
-- `journal doc make "<title>" --abstract "<one line>" --file <path>` writes one from a file; `--body "<text>"` takes a short
-  text in place. `journal report make` takes the same.
+- `journal doc make "<title>" --abstract "<one line>"` takes its text in one of three ways, by who you are: `--file <path>`
+  from a file you wrote (an agent that may write files), `--body -` through standard input (a read-only agent, which
+  writes no file), or `--body "<text>"` for a few lines. `journal report make` takes the same.
 - Write a whole document or report as a file first, then file it at once: an agent that may write files writes the whole
   text to a temporary file (your scratchpad, or the system's temporary folder) and runs `journal doc make ... --file <path>`.
   The file needs no shell quoting, no word in it reads as a command, and you can read it over before you file it. Edit an
