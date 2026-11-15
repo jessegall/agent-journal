@@ -15,10 +15,20 @@ class TaskBriefBlocks:
         self.bus, self.requirement, self.tasks = bus, requirement, tasks
 
     def block_current(self, agent_id: int, context: Context) -> None:
-        for task in self.tasks.started_tasks(agent_id)[:1]:
-            self.block_unread(agent_id, task, context)
+        hold = self.current_hold(agent_id)
+        if hold is not None:
+            self.bus.dispatch(hold, context)
 
     def block_unread(self, agent_id: int, task: Task, context: Context) -> None:
+        hold = self.unread_hold(agent_id, task)
+        if hold is not None:
+            self.bus.dispatch(hold, context)
+
+    def current_hold(self, agent_id: int) -> OpenHold | None:
+        started = self.tasks.started_tasks(agent_id)
+        return self.unread_hold(agent_id, started[0]) if started else None
+
+    def unread_hold(self, agent_id: int, task: Task) -> OpenHold | None:
         if not self.requirement.is_required or self.tasks.has_brief_read(task.id, agent_id):
-            return
-        self.bus.dispatch(OpenHold(agent_id, TaskBriefFirstNudge.declared().nudge(task=task.id), TaskBriefRead(task.id)), context)
+            return None
+        return OpenHold(agent_id, TaskBriefFirstNudge.declared().nudge(task=task.id), TaskBriefRead(task.id))

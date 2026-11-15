@@ -20,4 +20,4 @@ def test_the_shell_runner_the_install_chose_is_in_both_programs_files_and_the_ho
     story.expect_text(f'program command claude "{root}" --launch launch-1', "--settings")
     story.expect_text(f'program manage codex "{root}"', "managed hooks:")
     page = json.loads(story.run("managed-hook list --json").output_text)
-    story.expect_rows(journal_hook_commands(story) == {f'{shell_runner} claude "{root}"', f'{shell_runner} codex "{root}"'}, page["fallback"] is True)
+    story.expect_rows(journal_hook_commands(story) == {f'{shell_runner} claude "{root}"', f'{shell_runner} claude "{root}" --wake', f'{shell_runner} codex "{root}"'}, page["fallback"] is True)

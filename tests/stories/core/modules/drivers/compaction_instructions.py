@@ -57,6 +57,7 @@ POST_COMPACT = HookSamples.sample("compact_end").with_fields(accepts_lines=False
 
 def test_a_compaction_ends_at_its_post_compact_hook(new_story):
     from core.modules.agents.support.terminal_typing import TerminalTyping
+    from core.modules.drivers.ticks.agent_wake_delivery import AgentWakeDelivery
     from tests.stories.core.modules.messages.delivery import KeptTyping, StoppedMessagingTurn, post_message
     from tests.stories.engine.driver.support.samples import SAMPLES
     story = new_story(SAMPLES, fixture=StoppedMessagingTurn)
@@ -67,8 +68,9 @@ def test_a_compaction_ends_at_its_post_compact_hook(new_story):
     story.run_listeners()
     story.expect_rows(typing.typed == [], detail=str(typing.typed))
     story.hook(SESSION, POST_COMPACT)
-    # a message line that could not be typed is made anew after ten seconds
     story.advance(timedelta(seconds=11))
     story.tick(SESSION)
+    story.run_listeners()
+    AgentWakeDelivery()(story.container)
     story.run_listeners()
     story.expect_rows(any("New message 1" in line for _, line in typing.typed), detail=str(typing.typed))

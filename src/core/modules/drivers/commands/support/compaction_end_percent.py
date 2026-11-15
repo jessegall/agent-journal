@@ -31,7 +31,7 @@ class CompactionEndPercent:
         self.hook_calls, self.share, self.repository, self.compactions, self.current_window, self.limit = hook_calls, share, repository, compactions, current_window, limit
 
     def finish_compaction(self, event: HookEvent, agent: Agent, context: Context) -> None:
-        if event.is_compaction_start or event.is_clear_start:
+        if event.is_compaction_start or event.is_clear_start or event.event == HookEventName.COMPACT_END:
             self.compactions.record_end(agent.id, ContextChange.CLEAR if event.is_clear_start else ContextChange.COMPACT, context)
             self.mark_ended(agent, context)
             return

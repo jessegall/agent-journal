@@ -18,8 +18,6 @@ from engine.model.move import Move
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
 from engine.errors.refusal import Refusal
-from engine.enums.setting_type import SettingType
-from engine.setting.setting_value import SettingValue
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.event.created import Created
@@ -131,14 +129,9 @@ class ControlLead(Driver):
     opening_lines = ["You are the control lead"]
 
 
-SAMPLE_SETTINGS = [SettingValue(key, key.replace("-", " ").capitalize(), "Whether the sample rule of this name acts.", SettingType.FLAG, default=False)
-                   for key in ("rewrite", "rewrite-twice", "rewrite-after", "foreground", "rewrite-coding", "refuse-stops")]
-
-
 class SamplesModule(Module):
     name = "samples"
     requires_engine = ">=5.0,<6"
-    settings = SAMPLE_SETTINGS
     dependencies = ["journal.core.agents", "journal.core.drivers"]
     models = [ModelDeclaration(EditLock, commands=[EditLockEnd, EditLockReopen])]
     migrations = [EditLocksTable]

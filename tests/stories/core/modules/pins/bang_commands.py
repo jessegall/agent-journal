@@ -18,7 +18,8 @@ def test_a_command_whose_button_was_closed_is_asked_for_again(new_story):
     story = new_story(fixture=UserJoined)
     story.run('pin make "Build the viewer" --link "! npm run build" --label "Run" --environment main', actor=story.agent)
     story.expect_success("pin close 1", actor=story.user)
-    expect_button_lines(story.hook("s-1", HookSamples.message_display("Run `! npm run build`")))
+    story.hook("s-1", HookSamples.message_display("Run `! npm run build`"))
+    story.expect_text(f"agent-line list --agent {story.agent.id} --state waiting", BUTTON_REQUEST, actor=story.user)
 
 
 def test_a_pin_may_hold_a_command_for_a_button_and_lists_it(new_story):
@@ -30,10 +31,6 @@ def test_a_pin_may_hold_a_command_for_a_button_and_lists_it(new_story):
 def test_a_bare_bang_is_no_command(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_refusal('pin make "Nothing" --link "!" --environment main', "or to a command that starts with !", actor=story.agent)
-
-
-def expect_button_lines(hook_answer) -> None:
-    assert button_lines(hook_answer)
 
 
 def expect_absent_button_lines(hook_answer) -> None:

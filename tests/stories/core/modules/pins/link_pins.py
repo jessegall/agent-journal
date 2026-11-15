@@ -1,8 +1,6 @@
 from engine.testing.expectations.text_match import contains_text
 import json
-from unittest.mock import patch
 
-from engine.database.database import Database
 from engine.enums.command_category import CommandCategory
 from engine.enums.tool_type import ToolType
 from engine.testing.examples.hook_samples import HookSamples
@@ -121,18 +119,15 @@ def test_design_files_are_pinned_once_and_a_bare_project_does_not_duplicate_them
     story.expect_rows(len(pins) == 2, {pin["title"] for pin in pins} == {"Design: Checkout", "Design: Payment"})
 
 
-def test_a_link_in_the_agents_text_is_offered(new_story):
+def test_a_link_in_the_agents_text_is_offered_at_its_next_hook(new_story):
     story = new_story(fixture=UserJoined)
-    expect_pin_lines(story.hook("s-1", HookSamples.message_display("Here: https://docs.example.com/pages/1")))
+    story.hook("s-1", HookSamples.message_display("Here: https://docs.example.com/pages/1"))
+    story.expect_text(f"agent-line list --agent {story.agent.id} --state waiting", "pin this link", actor=story.user)
 
 
 def test_words_that_a_link_is_pinned_with_no_pin_made_are_pointed_out(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_hook_allowed("s-1", shell_call('journal message send "I pinned it above"'), "You mentioned a pinned link but made none")
-
-
-def expect_pin_lines(hook_answer) -> None:
-    assert pin_lines(hook_answer)
 
 
 def expect_absent_pin_lines(hook_answer) -> None:

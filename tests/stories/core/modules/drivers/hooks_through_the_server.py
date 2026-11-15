@@ -53,7 +53,7 @@ def lead_stop(firing: str) -> dict[str, object]:
 
 def test_a_known_agents_hook_is_answered_over_the_socket_as_the_route_answers_it_in_process(lead_server):
     story = lead_server
-    story.expect_hook_answer("/hook", lead_stop("server-1"), 200, "the lead stops here")
+    story.expect_hook_answer("/hook", lead_stop("server-1"), 200, "\"refusal\": \"\"")
 
 
 def test_a_hook_resent_under_its_firing_gets_its_stored_answer(lead_server):

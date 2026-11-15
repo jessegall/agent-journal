@@ -1,4 +1,4 @@
-from core.modules.skills.effects.record_kept_skills_effect import RecordKeptSkillsEffect
+from core.modules.skills.listeners.kept_skills_record_listener import KeptSkillsRecordListener
 from core.modules.skills.needs.command_skill_needs import CommandSkillNeeds
 from core.modules.skills.needs.skill_read_first_needs import SkillReadFirstNeeds
 from core.modules.skills.policies.loaded_skill_policy import LoadedSkillPolicy
@@ -65,11 +65,10 @@ class SkillsModule(Module):
     migrations = [SkillSessionMigration, SkillsTablesMigration, SkillRequestsTableMigration]
     subcommands = [SaveProfileSubcommand, ProfileSkillsSubcommand, SetRequiredSkillSubcommand, SkillRequirementsSubcommand, SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand, SkillShowSubcommand, AgentSkillUnreadSubcommand, SkillRequiredSubcommand]
     handlers = [SaveProfileHandler, SetRequiredSkillHandler, RequireSkillHandler, LoadSkillHandler, RecordKeptSkillsHandler, ResetSkillsHandler, RequestSkillHandler]
-    listeners = [SkillPublishListener, SkillReadListener, SkillPartReadListener, CommandSkillListener, KeptSkillsListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener, SkillRequestSaveListener]
+    listeners = [KeptSkillsRecordListener, SkillPublishListener, SkillReadListener, SkillPartReadListener, CommandSkillListener, KeptSkillsListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener, SkillRequestSaveListener]
     marks = [SkillMark]
     needs = [SkillReadFirstNeeds, CommandSkillNeeds]
     policies = [LoadedSkillPolicy]
-    effects = [RecordKeptSkillsEffect]
     windows = SKILLS_WINDOWS
     inspectors = [SkillInspector]
     seeders = [SkillsSeeder]

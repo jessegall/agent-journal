@@ -10,6 +10,7 @@ from engine.journal.journal_home import JournalHome
 from engine.query.queries import Queries
 from engine.instruction.instruction_imports import InstructionImports
 from core.modules.drivers.models.hook_call import HookCall
+from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.nudges.file_loaded_nudge import FileLoadedNudge
 
 READ_TOOL = "Read"
@@ -23,8 +24,8 @@ class RepeatedFileReadLines(EventLineSource):
     key = "drivers.repeated-file-read"
     events = [HookEventName.PRE_TOOL_USE]
 
-    def __init__(self, queries: Queries, home: JournalHome) -> None:
-        self.queries, self.home = queries, home
+    def __init__(self, queries: Queries, home: JournalHome, hook_calls: HookCallQuery) -> None:
+        self.queries, self.home, self.hook_calls = queries, home, hook_calls
 
     def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
         tool = event.tool
@@ -43,7 +44,7 @@ class RepeatedFileReadLines(EventLineSource):
         return file == main_file.resolve() or FileAccess.is_file(main_file) and any((project / name).resolve() == file for name in InstructionImports.imported_names(main_file))
 
     def is_read_unchanged(self, agent_id: int, path: str) -> bool:
-        compaction = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.COMPACT).descending("id").first()
+        compaction = self.hook_calls.latest_compaction(agent_id)
         reads = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.PRE_TOOL_USE, tool=READ_TOOL, summary=path).descending("id")
         read = reads.first()
         if read is None or read.created_at is None or compaction is not None and compaction.id > read.id:

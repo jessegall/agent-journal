@@ -1,3 +1,5 @@
+from core.modules.claude_code.providers.claude_code_provider import STATUS_REFRESH_SECONDS, WAKE_TIMEOUT_SECONDS
+from engine.provider.program_hooks import SESSION_END_ENTRY_SECONDS
 import json
 import os
 import tomllib
@@ -8,7 +10,7 @@ from engine.provider.program_hooks import ProgramHooks
 from tests.stories.core.modules.chat.support.mark_samples import marks_text
 from tests.stories.core.support.fixtures import MainEnvironment
 
-CLAUDE_EVENTS = ["MessageDisplay", "PostToolUse", "PostToolUseFailure", "PreCompact", "PreToolUse", "SessionEnd", "SessionStart", "Stop", "StopFailure",
+CLAUDE_EVENTS = ["MessageDisplay", "PostCompact", "PostToolUse", "PostToolUseFailure", "PreCompact", "PreToolUse", "SessionEnd", "SessionStart", "Stop", "StopFailure",
                  "UserPromptSubmit"]
 CODEX_EVENTS = ["PostToolUse", "PreCompact", "PreToolUse", "SessionEnd", "SessionStart", "Stop", "UserPromptSubmit"]
 CODEX_KEYS = ["post_tool_use", "pre_compact", "pre_tool_use", "session_end", "session_start", "stop", "user_prompt_submit"]
@@ -71,12 +73,14 @@ def person_files_with_everything() -> None:
 def expect_claude_file(story, settings: dict[str, object]) -> None:
     root = story.home.project_folder
     entry = {"type": "command", "command": f'{runner(story)} claude "{root}"', "timeout": 90}
+    wake = {"type": "command", "command": f'{runner(story)} claude "{root}" --wake', "timeout": WAKE_TIMEOUT_SECONDS, "async": True, "asyncRewake": True}
+    expected_hooks = {"Stop": [entry, wake], "SessionEnd": [{**entry, "timeout": SESSION_END_ENTRY_SECONDS}]}
     story.expect_rows(settings["permissions"] == {"defaultMode": "bypassPermissions"}, settings["autoMemoryEnabled"] is False,
-                      settings["statusLine"] == {"type": "command", "command": f'{runner(story)} --status "{root}"', "padding": 0},
+                      settings["statusLine"] == {"type": "command", "command": f'{runner(story)} --status "{root}"', "padding": 0, "refreshInterval": STATUS_REFRESH_SECONDS},
                       list(settings["hooks"]) == CLAUDE_EVENTS, settings["hooks"]["PreToolUse"][0]["hooks"][0]["timeout"] == 150,
-                      all(blocks == [{"matcher": "", "hooks": [entry]}] for event, blocks in settings["hooks"].items() if event != "PreToolUse"),
+                      all(blocks == [{"matcher": "", "hooks": expected_hooks.get(event, [entry])}] for event, blocks in settings["hooks"].items() if event != "PreToolUse"),
                       set(settings) == {*COPIED_CLAUDE_KEYS, "permissions", "autoMemoryEnabled", "statusLine", "hooks"},
-                      all(settings[key] == value for key, value in COPIED_CLAUDE_KEYS.items()), "person-" not in json.dumps(settings))
+                      all(settings[key] == value for key, value in COPIED_CLAUDE_KEYS.items()), "person-" not in json.dumps(settings), detail=json.dumps(settings, indent=1))
 
 
 def expect_codex_files(story) -> None:

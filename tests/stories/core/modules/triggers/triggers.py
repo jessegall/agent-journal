@@ -23,7 +23,8 @@ def test_a_scheduled_trigger_fires_once_its_time_comes_and_ends_after_its_times(
     story = new_story(fixture=UserJoined)
     story.expect_text('trigger schedule "Check the build" --every 30 --times 1', "next at", actor=story.user)
     story.advance(timedelta(minutes=31))
-    story.expect_hook_allowed("s-1", HookSamples.stop(), TriggerLineNudge.declared().nudge(trigger=1).text)
+    story.expect_hook_allowed("s-1", HookSamples.stop())
+    story.expect_text(f"agent-line list --agent {story.agent.id} --state waiting", TriggerLineNudge.declared().nudge(trigger=1).text, actor=story.user)
     story.expect_absent("trigger list", "Check the build", actor=story.user)
 
 

@@ -77,6 +77,7 @@ def test_a_compaction_blocks_the_agent_again_until_it_reads_the_brief(new_story)
     story = new_story(fixture=ReadTaskBuilder)
     briefs_required(story)
     story.hook("s-1", COMPACTION)
+    story.run_listeners()
     story.expect_hook_refusal("s-1", EDIT, BRIEF_REFUSAL)
     story.run("task overview 1", actor=story.agent)
     story.expect_hook_allowed("s-1", EDIT)
@@ -93,6 +94,7 @@ def test_a_compaction_asks_only_for_the_last_started_task_and_the_earlier_one_wh
     story.expect_success("task start 2", actor=story.agent)
     story.expect_success("task overview 2", actor=story.agent)
     story.hook("s-1", COMPACTION)
+    story.run_listeners()
     story.expect_hook_refusal("s-1", EDIT, TaskBriefFirstNudge.declared().nudge(task=2).text)
     story.run("task overview 2", actor=story.agent)
     story.expect_hook_allowed("s-1", EDIT)
@@ -125,6 +127,7 @@ def test_resetting_many_task_reads_reads_each_row_no_more(new_story):
     story.expect_rows(not links.filter(source_model="task_read").exists(), not links.filter(target_model="task_read").exists())
     with patch.object(Database, "rows", autospec=True, side_effect=Database.rows) as reads:
         story.expect_hook_allowed("s-1", COMPACTION)
+        story.run_listeners()
     link_reads = [call.args[1] for call in reads.call_args_list if "FROM links " in call.args[1].sql]
     story.expect_rows(len(link_reads) == 2)
     story.expect_rows(not story.row_exists(TaskRead, session_agent_id=story.agent.id))

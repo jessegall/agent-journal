@@ -145,10 +145,10 @@ def test_a_whole_compaction_is_given_the_summary_instructions_and_the_start_afte
     story, _, compaction_lines, start_lines = compacted
     expect_value(list(compaction_lines), [ClaudeCodeProvider.compaction_instructions])
     expect_value(list(start_lines), [NewMessageNudge.declared().nudge(message=1).text, OverviewLineNudge.declared().nudge().text])
-    story.expect_hook_silent("s-1", SKILL_READ)
+    story.expect_hook_allowed("s-1", SKILL_READ)
     story.expect_hook_refusal("s-1", EDIT, expected_nudge(OverviewRefusalNudge.declared()))
     story.expect_hook_allowed("s-1", OVERVIEW_HOOK)
-    story.expect_hook_allowed("s-1", EDIT, "New message 1")
+    story.expect_hook_allowed("s-1", EDIT)
 
 
 def test_nothing_is_typed_to_an_agent_that_starts_again_after_a_compaction(compacted):

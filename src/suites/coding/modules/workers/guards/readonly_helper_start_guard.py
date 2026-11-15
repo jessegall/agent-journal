@@ -13,8 +13,9 @@ DESIGNER_PROFILE = "journal-designer"
 
 
 class ReadonlyHelperStartGuard(Guard[Created[Agent]]):
-    """A main agent starts no read-only helper while read-only helpers are off, and no designer while the
-    designer is off. The merger is governed by its own setting."""
+    """A main agent starts no designer while the designer is off, and no read-only helper while read-only helpers
+    are off, which an agent's start asks of the hook's policy (doc 1310 section 10.9). The merger is governed by its
+    own setting."""
 
     name = "workers.main-starts-no-helper"
 
@@ -24,12 +25,11 @@ class ReadonlyHelperStartGuard(Guard[Created[Agent]]):
     def check(self, event: Created[Agent], context: Context) -> None:
         if event.row.role != Helper.key or not self.caller.is_main(context):
             return
-        # once the admission slice answers the agent, the entrance asks the hook's policy (doc 1310 section 10.9)
-        if self.admission.answers(context):
-            self.admission.admit(StartHelper, context)
-            return
         options = self.options.options()
         if event.row.profile == DESIGNER_PROFILE and not options.designer:
             raise Refusal("the main agent starts no designer here", "a user turns on journal.suites.coding.designer-enabled")
+        if self.admission.answers(context):
+            self.admission.admit(StartHelper, context)
+            return
         if event.row.profile != DESIGNER_PROFILE and not options.helpers:
             raise Refusal("the main agent starts no read-only helper here", "a user turns on journal.suites.coding.main-starts-read-only-helpers")

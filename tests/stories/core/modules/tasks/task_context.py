@@ -125,6 +125,7 @@ def test_start_return_and_compaction_require_the_same_context(started_context):
     linked_scenario.command("task start 2")
     linked_scenario.command("task overview 2")
     linked_scenario.story.hook("s-1", HookSamples.sample("compact"))
+    linked_scenario.story.run_listeners()
     linked_scenario.story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), TaskBriefFirstNudge.declared().nudge(task=2).text)
     linked_scenario.command("task overview 2")
     linked_scenario.command('task close 2 --outcome "Interrupting work is complete"')
