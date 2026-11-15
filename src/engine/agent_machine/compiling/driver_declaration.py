@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from engine.agent_machine.contracts.rank_order import RankOrder
+from engine.agent_machine.needs.rank_order import RankOrder
 from engine.agent_machine.driver import Driver
 from engine.enums.responder import Responder
 from engine.enums.work_stop import WorkStop

@@ -1,34 +1,23 @@
-from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AGENT_MODEL_NAME
-from pathlib import Path
-
-from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
-from suites.coding.modules.workers.nudges.worker_file_nudge import WorkerFileNudge
+from engine.enums.hook_event_name import HookEventName
+from engine.enums.agent_role import AgentRole
+from suites.coding.modules.workers.policies.worker_file_policy import WorkerFilePolicy
 
 
 class WorkerFileRule(DriverRule):
-    """The main agent edits no file inside a worker's worktree: the work goes to the worker."""
+    """The old walk's answer for WorkerFilePolicy, which owns it, until the walk is deleted."""
 
-    name = "workers.worker-file"
+    name = WorkerFilePolicy.key
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
     single_action_refusal = "The main agent edits no file inside a worker's worktree"
 
-    def __init__(self, worktrees: WorkerWorktrees, numbers: RowNumbers) -> None:
-        self.numbers = numbers
-        self.worktrees = worktrees
+    def __init__(self, policy: WorkerFilePolicy) -> None:
+        self.policy = policy
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        tool = hook.event.tool
-        if tool is None or not tool.is_writing_files():
-            return RuleAnswer.allowed()
-        for worktree in self.worktrees.main_worktrees():
-            if any(Path(path).is_relative_to(worktree.folder) for path in tool.files):
-                return RuleAnswer.refused(WorkerFileNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)))
-        return RuleAnswer.allowed()
+        nudge = self.policy.refusal(hook.event, hook.agent_id)
+        return RuleAnswer.refused(nudge) if nudge is not None else RuleAnswer.allowed()

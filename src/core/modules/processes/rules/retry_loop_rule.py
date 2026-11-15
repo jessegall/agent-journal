@@ -1,20 +1,21 @@
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.processes.nudges.retry_loop_nudge import RetryLoopNudge
+from engine.enums.hook_event_name import HookEventName
+from core.modules.processes.policies.retry_loop_policy import RetryLoopPolicy
 
 
 class RetryLoopRule(DriverRule):
-    """Refuses a shell line that runs something again until it works: the agent runs it once and reads the error."""
+    """The old walk's answer for RetryLoopPolicy, which owns it, until the walk is deleted."""
 
-    name = "processes.retry-loop"
+    name = RetryLoopPolicy.key
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     single_action_refusal = "Refuses a shell line that runs something again until it works"
 
+    def __init__(self, policy: RetryLoopPolicy) -> None:
+        self.policy = policy
+
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        shell = hook.event.tool.shell if hook.event.tool is not None else None
-        if shell is not None and shell.is_retry_loop:
-            return RuleAnswer.refused(RetryLoopNudge.declared().nudge())
-        return RuleAnswer.allowed()
+        nudge = self.policy.refusal(hook.event, hook.agent_id)
+        return RuleAnswer.refused(nudge) if nudge is not None else RuleAnswer.allowed()

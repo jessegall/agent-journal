@@ -1,8 +1,31 @@
-from engine.rule_backed.rule_line_source import RuleLineSource
-from core.modules.processes.rules.run_queue_halted_rule import RunQueueHaltedRule
+from engine.enums.hook_event_name import HookEventName
+from collections.abc import Sequence
+from engine.driver.nudge import Nudge
+from engine.driver.hook_event import HookEvent
+from engine.agent_machine.contracts.event_line_source import EventLineSource
+from engine.enums.agent_role import AgentRole
+from core.modules.processes.nudges.run_queue_halted_nudge import RunQueueHaltedNudge
+from core.modules.processes.nudges.update_waiting_nudge import UpdateWaitingNudge
+from core.modules.processes.support.run_queue_halt import RunQueueHalt
 
 
-class RunQueueHaltedLines(RuleLineSource):
-    """The lines of RunQueueHaltedRule, in today's words."""
+class RunQueueHaltedLines(EventLineSource):
+    """While the process queue is halted, the main agent is reminded on hooks and clock ticks,
+    and the nudge's interval keeps it to once in five minutes; so is an update that waits, naming the runs it
+    waits for. A restart's own hold is not reminded of."""
 
-    rule = RunQueueHaltedRule
+    key = "processes.run-queue-halted"
+    events = [event for event in HookEventName if event is not HookEventName.TICK]
+    agent_types = [AgentRole.MAIN.value]
+
+    main_role_reason = "only the main agent resumes a halted queue or lets a waiting update go on"
+
+    def __init__(self, halt: RunQueueHalt) -> None:
+        self.halt = halt
+
+    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
+        if self.halt.command_halted:
+            return [RunQueueHaltedNudge.declared().nudge()]
+        if self.halt.is_update_waiting:
+            return [UpdateWaitingNudge.declared().nudge(outputs=", ".join(f"output:{run}" for run in self.halt.running_run_ids()) or "none")]
+        return []

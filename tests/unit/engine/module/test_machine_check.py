@@ -4,7 +4,7 @@ from engine.agent_stack.states.blocked import Blocked
 from engine.agent_stack.states.paused import Paused
 from engine.module.contribution_reader import ContributionReader
 from engine.module.machine_check import MachineCheck
-from engine.agent_machine.contracts.rank_order import RankOrder
+from engine.agent_machine.needs.rank_order import RankOrder
 from engine.agent_machine.driver import Driver
 from engine.agent_machine.needs.agent_reference import AgentReference
 from engine.agent_machine.needs.block_plan import BlockPlan

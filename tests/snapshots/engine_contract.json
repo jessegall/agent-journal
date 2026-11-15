@@ -381,6 +381,42 @@
         "failed(self, view: AgentView, record: 'DecisionRecord') -> RuleAnswer"
       ]
     },
+    "agent_machine.contracts.event_effect.EventEffect": {
+      "bases": [
+        "Effect"
+      ],
+      "fields": [
+        "key: str"
+      ],
+      "methods": [
+        "commands(self, view: AgentView, record: 'DecisionRecord') -> Sequence[Command[object]]",
+        "commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]"
+      ]
+    },
+    "agent_machine.contracts.event_line_source.EventLineSource": {
+      "bases": [
+        "LineSource"
+      ],
+      "fields": [
+        "key: str"
+      ],
+      "methods": [
+        "lines(self, question: Question, view: AgentView) -> Sequence[Line]",
+        "nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]"
+      ]
+    },
+    "agent_machine.contracts.event_policy.EventPolicy": {
+      "bases": [
+        "Policy"
+      ],
+      "fields": [
+        "events: ClassVar[Sequence[HookEventName]]"
+      ],
+      "methods": [
+        "refusals(self, question: Question, view: AgentView) -> Sequence[Reason]",
+        "refusal(self, event: HookEvent, agent_id: int) -> Nudge | None"
+      ]
+    },
     "agent_machine.contracts.line_source.LineSource": {
       "bases": [
         "ABC"
@@ -423,16 +459,6 @@
       "fields": [],
       "methods": [
         "encoded(self, record: DecisionRecord) -> HookReply"
-      ]
-    },
-    "agent_machine.contracts.rank_order.RankOrder": {
-      "bases": [],
-      "fields": [
-        "policies: tuple[str, ...]",
-        "blocks: tuple[str, ...]"
-      ],
-      "methods": [
-        "place(self, rank: str) -> int"
       ]
     },
     "agent_machine.contracts.shell_parser.ShellParser": {
@@ -616,6 +642,16 @@
         "refusal_text: str"
       ],
       "methods": []
+    },
+    "agent_machine.needs.rank_order.RankOrder": {
+      "bases": [],
+      "fields": [
+        "policies: tuple[str, ...]",
+        "blocks: tuple[str, ...]"
+      ],
+      "methods": [
+        "place(self, rank: str) -> int"
+      ]
     },
     "agent_machine.needs.step_requests.StepRequests": {
       "bases": [

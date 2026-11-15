@@ -1,33 +1,22 @@
 from suites.coding.modules.workers.types.worker import Worker
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from engine.query.queries import Queries
-from suites.coding.modules.workers.models.proof import Proof
-from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.nudges.worker_log_due_nudge import WorkerLogDueNudge
-
-LOG_DUE_MINUTES = 30
+from engine.enums.hook_event_name import HookEventName
+from suites.coding.modules.workers.lines.worker_log_due_lines import WorkerLogDueLines
 
 
 class WorkerLogDueRule(DriverRule):
-    """A worker that has shown no proof for thirty minutes since its worktree or its last proof is told to log
-    where it stands."""
+    """The old walk's answer for WorkerLogDueLines, which owns it, until the walk is deleted."""
 
-    name = "workers.worker-log-due"
+    name = WorkerLogDueLines.key
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
     roles = [Worker.key]
 
-    def __init__(self, worktrees: WorktreeQuery, queries: Queries) -> None:
-        self.worktrees, self.queries = worktrees, queries
+    def __init__(self, lines: WorkerLogDueLines) -> None:
+        self.lines = lines
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        worktree = self.worktrees.worker_worktree(hook.agent_id)
-        if worktree is None:
-            return RuleAnswer.allowed()
-        latest_proof = self.queries.query(Proof).filter(worktree_id=worktree.id).newest().first()
-        latest = latest_proof.creation_timestamp() if latest_proof is not None else worktree.creation_timestamp()
-        minutes = latest.elapsed_minutes(hook.timestamp)
-        return RuleAnswer.with_nudges(WorkerLogDueNudge.declared().nudge(minutes=minutes)) if minutes >= LOG_DUE_MINUTES else RuleAnswer.allowed()
+        nudges = self.lines.nudges(hook.event, hook.agent_id)
+        return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

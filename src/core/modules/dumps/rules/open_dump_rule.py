@@ -1,25 +1,22 @@
-from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from engine.query.conditions.is_null import IsNull
-from engine.query.queries import Queries
-from core.modules.dumps.models.dump import Dump
-from core.modules.dumps.nudges.dump_open_nudge import DumpOpenNudge
+from engine.enums.hook_event_name import HookEventName
+from engine.enums.agent_role import AgentRole
+from core.modules.dumps.lines.open_dump_lines import OpenDumpLines
 
 
 class OpenDumpRule(DriverRule):
-    """Reminds the main agent of the oldest unfinished project dump after a tool call."""
+    """The old walk's answer for OpenDumpLines, which owns it, until the walk is deleted."""
 
-    name = "dumps.open-dump"
+    name = OpenDumpLines.key
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, lines: OpenDumpLines) -> None:
+        self.lines = lines
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        dump = self.queries.query(Dump).matching(IsNull("closed_at")).oldest().first()
-        return RuleAnswer.with_nudges(DumpOpenNudge.declared().nudge(dump=dump.id)) if dump is not None else RuleAnswer.allowed()
+        nudges = self.lines.nudges(hook.event, hook.agent_id)
+        return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

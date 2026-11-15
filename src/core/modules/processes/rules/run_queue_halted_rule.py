@@ -1,30 +1,22 @@
-from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_wildcard import HookWildcard
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.processes.nudges.run_queue_halted_nudge import RunQueueHaltedNudge
-from core.modules.processes.nudges.update_waiting_nudge import UpdateWaitingNudge
-from core.modules.processes.support.run_queue_halt import RunQueueHalt
+from engine.enums.hook_wildcard import HookWildcard
+from engine.enums.agent_role import AgentRole
+from core.modules.processes.lines.run_queue_halted_lines import RunQueueHaltedLines
 
 
 class RunQueueHaltedRule(DriverRule):
-    """While the process queue is halted, the main agent is reminded on hooks and clock ticks,
-    and the nudge's interval keeps it to once in five minutes; so is an update that waits, naming the runs it
-    waits for. A restart's own hold is not reminded of."""
+    """The old walk's answer for RunQueueHaltedLines, which owns it, until the walk is deleted."""
 
-    name = "processes.run-queue-halted"
+    name = RunQueueHaltedLines.key
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
     roles = [AgentRole.MAIN]
-    main_role_reason = "only the main agent resumes a halted queue or lets a waiting update go on"
 
-    def __init__(self, halt: RunQueueHalt) -> None:
-        self.halt = halt
+    def __init__(self, lines: RunQueueHaltedLines) -> None:
+        self.lines = lines
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if self.halt.command_halted:
-            return RuleAnswer.with_nudges(RunQueueHaltedNudge.declared().nudge())
-        if self.halt.is_update_waiting:
-            return RuleAnswer.with_nudges(UpdateWaitingNudge.declared().nudge(outputs=", ".join(f"output:{run}" for run in self.halt.running_run_ids()) or "none"))
-        return RuleAnswer.allowed()
+        nudges = self.lines.nudges(hook.event, hook.agent_id)
+        return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

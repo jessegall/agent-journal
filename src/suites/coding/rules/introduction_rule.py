@@ -1,21 +1,23 @@
-from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from suites.coding.nudges.introduction_nudge import IntroductionNudge
+from engine.enums.hook_event_name import HookEventName
+from engine.enums.agent_role import AgentRole
+from suites.coding.lines.introduction_lines import IntroductionLines
 
 
 class IntroductionRule(DriverRule):
-    """A main session the journal started, from its launcher, is told to introduce itself in the chat."""
+    """The old walk's answer for IntroductionLines, which owns it, until the walk is deleted."""
 
-    name = "coding.introduction"
+    name = IntroductionLines.key
     start_line_rule = True
     hook = HookEventName.SESSION_START
     drivers = ["coding.*"]
     roles = [AgentRole.MAIN]
 
+    def __init__(self, lines: IntroductionLines) -> None:
+        self.lines = lines
+
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if not hook.event.launch:
-            return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(IntroductionNudge.declared().nudge())
+        nudges = self.lines.nudges(hook.event, hook.agent_id)
+        return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

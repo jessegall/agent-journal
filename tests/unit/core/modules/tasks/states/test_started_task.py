@@ -1,3 +1,5 @@
+from core.modules.tasks.lines.session_start_summary_lines import SessionStartSummaryLines
+from core.modules.tasks.lines.task_name_lines import TaskNameLines
 from types import SimpleNamespace
 
 import pytest
@@ -43,9 +45,9 @@ GATED = [
     lambda: TaskReturnLineRule(no_current()),
     lambda: LogRequestRule(TaskWriteCount(no_current(), Untouched(), Untouched())),
     lambda: UnloggedWriteRule(TaskWriteCount(no_current(), Untouched(), Untouched())),
-    lambda: TaskNameRule(Untouched(), no_current()),
+    lambda: TaskNameRule(TaskNameLines(Untouched(), no_current())),
     lambda: InactiveTaskReminderRule(no_current(), Untouched(), Untouched(), Untouched(), Untouched()),
-    lambda: TaskSummaryLineRule(no_current()),
+    lambda: TaskSummaryLineRule(SessionStartSummaryLines(no_current())),
 ]
 
 

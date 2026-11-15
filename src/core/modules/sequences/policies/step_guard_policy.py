@@ -1,9 +1,31 @@
-from engine.rule_backed.rule_policy import RulePolicy
-from core.modules.sequences.rules.step_guard_rule import StepGuardRule
+from engine.driver.nudge import Nudge
+from engine.driver.hook_event import HookEvent
+from engine.agent_machine.contracts.event_policy import EventPolicy
+from core.modules.sequences.queries.sequence_query import SequenceQuery
+from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
+from core.modules.sequences.nudges.step_edit_ban_nudge import StepEditBanNudge
 
 
-class StepGuardPolicy(RulePolicy):
-    """The refusal of StepGuardRule, with today's text, as a policy of the new driver."""
+class StepGuardPolicy(EventPolicy):
+    """A step that holds file edits refuses a writing call, except journal lines and the commands the step
+    allows."""
 
-    rule = StepGuardRule
+    key = "sequences.step-guard"
     rank = "sequences.policies"
+
+    def __init__(self, runs: SequenceRunQuery, sequences: SequenceQuery) -> None:
+        self.runs, self.sequences = runs, sequences
+
+    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+        tool = event.tool
+        if tool is None or tool.is_journal_line or not tool.is_writing_files():
+            return None
+        run = self.runs.current(agent_id)
+        if run is None:
+            return None
+        guard = self.sequences.step_guard(run.sequence_id, run.step_number)
+        if guard.file_edits_allowed:
+            return None
+        if tool.shell is not None and any(tool.shell.has_part_matching(pattern) for pattern in guard.allowed_commands):
+            return None
+        return StepEditBanNudge.declared().nudge(sequence=run.sequence_id, step=run.step_number)

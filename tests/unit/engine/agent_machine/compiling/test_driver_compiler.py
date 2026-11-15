@@ -2,7 +2,7 @@ from engine.agent_machine.compiling.contribution_declaration import Contribution
 from engine.agent_machine.compiling.module_contributions import ModuleContributions
 from engine.agent_machine.compiling.driver_compiler import DriverCompiler
 from engine.agent_machine.compiling.driver_declaration import DriverDeclaration
-from engine.agent_machine.contracts.rank_order import RankOrder
+from engine.agent_machine.needs.rank_order import RankOrder
 from engine.enums.contribution_type import ContributionType
 from engine.enums.responder import Responder
 from engine.enums.work_stop import WorkStop

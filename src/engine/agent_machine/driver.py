@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from typing import ClassVar
 
 from engine.agent_machine.contracts.line_source import LineSource
-from engine.agent_machine.contracts.rank_order import RankOrder
+from engine.agent_machine.needs.rank_order import RankOrder
 from engine.enums.responder import Responder
 from engine.enums.work_stop import WorkStop
 

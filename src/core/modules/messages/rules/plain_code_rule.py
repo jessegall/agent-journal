@@ -1,23 +1,20 @@
-from pathlib import PurePath
-
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.messages.nudges.plain_code_nudge import PlainCodeNudge
-
-CODE_SUFFIXES = (".py", ".js", ".ts", ".vue", ".go", ".php")
+from engine.enums.hook_event_name import HookEventName
+from core.modules.messages.lines.plain_code_lines import PlainCodeLines
 
 
 class PlainCodeRule(DriverRule):
-    """An edit of a code file reminds the agent, every half hour, to write code in plain words."""
+    """The old walk's answer for PlainCodeLines, which owns it, until the walk is deleted."""
 
-    name = "messages.plain-code"
+    name = PlainCodeLines.key
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
 
+    def __init__(self, lines: PlainCodeLines) -> None:
+        self.lines = lines
+
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        tool = hook.event.tool
-        if tool is None or not tool.is_writing_files() or not any(PurePath(path).suffix in CODE_SUFFIXES for path in tool.files):
-            return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(PlainCodeNudge.declared().nudge())
+        nudges = self.lines.nudges(hook.event, hook.agent_id)
+        return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

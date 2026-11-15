@@ -271,7 +271,7 @@ src/suites/coding/modules/workers/rules/inactive_helper_rule.py:every ended help
 src/suites/coding/modules/workers/rules/support/worker_worktrees.py:every worker that owns a worktree of the main agent is read
 src/suites/coding/modules/workers/rules/unmerged_worker_rule.py:a worker's unit is every task assigned to it, which can hold more than fifty
 src/suites/coding/modules/workers/rules/unmerged_worker_rule.py:the open blocks of one agent are few: each is closed or skipped before the agent goes on
-src/suites/coding/modules/workers/rules/worker_reuse_rule.py:every open worktree is checked for a worker that knows the files of the new tasks
+src/suites/coding/modules/workers/policies/worker_reuse_policy.py:every open worktree is checked for a worker that knows the files of the new tasks
 src/suites/coding/modules/workers/rules/worker_stop_rule.py:a worker's unit is every task assigned to it, which can hold more than fifty
 src/suites/coding/modules/workers/support/affected_test_rows.py:the queue of affected tests runs every queued one in turn
 src/suites/coding/modules/workers/support/behind_check_closing.py:every behind check of the worktree is weighed

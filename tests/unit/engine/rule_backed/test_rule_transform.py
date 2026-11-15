@@ -5,7 +5,7 @@ from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.capabilities import Capabilities
 from engine.agent_machine.contracts.capability import Capability
 from engine.agent_machine.contracts.policy import Policy
-from engine.agent_machine.contracts.rank_order import RankOrder
+from engine.agent_machine.needs.rank_order import RankOrder
 from engine.agent_machine.contracts.shell_parser import ShellParser
 from engine.agent_machine.record.question import Question
 from engine.agent_stack.reason import Reason

@@ -1,28 +1,22 @@
-from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.tasks.rules.support.current_tasks import CurrentTasks
-from core.modules.tasks.nudges.task_return_reminder_nudge import TaskReturnReminderNudge
-
-LEAVING_COMMANDS = ("task close", "task cancel", "task block", "task release")
+from engine.enums.hook_event_name import HookEventName
+from engine.enums.agent_role import AgentRole
+from core.modules.tasks.lines.still_held_lines import StillHeldLines
 
 
 class TaskReturnReminderRule(DriverRule):
-    """An agent that lets go of a task while it holds others is sent back to the one it started last."""
+    """The old walk's answer for StillHeldLines, which owns it, until the walk is deleted."""
 
-    name = "tasks.still-held"
+    name = StillHeldLines.key
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, current_tasks: CurrentTasks) -> None:
-        self.current_tasks = current_tasks
+    def __init__(self, lines: StillHeldLines) -> None:
+        self.lines = lines
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        shell = hook.event.tool.shell if hook.event.tool is not None else None
-        if shell is None or not shell.parts_running_journal_command(*LEAVING_COMMANDS):
-            return RuleAnswer.allowed()
-        current = self.current_tasks.current(hook.agent_id)
-        return RuleAnswer.with_nudges(TaskReturnReminderNudge.declared().nudge(task=current.task.id)) if current is not None else RuleAnswer.allowed()
+        nudges = self.lines.nudges(hook.event, hook.agent_id)
+        return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

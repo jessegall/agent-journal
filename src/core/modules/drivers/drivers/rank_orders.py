@@ -1,7 +1,7 @@
 """The rank orders of the drivers of the new machine (doc 1310 section 5.1), highest first: one table, so the drivers of
 every agent type rank the keys their modules share the same way. Each phase-2 port adds the keys of its module."""
 
-from engine.agent_machine.contracts.rank_order import RankOrder
+from engine.agent_machine.needs.rank_order import RankOrder
 
 POLICY_RANKS = ("safety.all", "access.all", "shell.all", "drivers.policies", "messages.policies", "skills.policies", "sequences.policies",
                 "helpers.policies", "questions.policies", "plugins.policies", "triggers.policies", "tools.policies", "workers.policies")

@@ -1,31 +1,21 @@
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.processes.nudges.read_command_output_nudge import ReadCommandOutputNudge
-from core.modules.processes.support.read_commands import ReadCommands
+from engine.enums.hook_event_name import HookEventName
+from core.modules.processes.policies.read_command_output_policy import ReadCommandOutputPolicy
 
 
 class ReadCommandOutputRule(DriverRule):
-    """Keeps the output of commands that count as reading in the agent's tool response."""
+    """The old walk's answer for ReadCommandOutputPolicy, which owns it, until the walk is deleted."""
 
-    name = "processes.read-command-output"
+    name = ReadCommandOutputPolicy.key
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     single_action_refusal = "Keeps the output of commands that count as reading in the agent's tool response"
 
-    def __init__(self, commands: ReadCommands) -> None:
-        self.commands = commands
+    def __init__(self, policy: ReadCommandOutputPolicy) -> None:
+        self.policy = policy
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        shell = hook.event.tool.shell if hook.event.tool is not None else None
-        if shell is None or shell.parse_error:
-            return RuleAnswer.allowed()
-        for part in shell.parts:
-            if any(arguments[:len(tokens)] == tokens for arguments in part.nested_journal_commands
-                   for tokens in (tuple(command.split()) for command in self.commands.names())):
-                return RuleAnswer.refused(ReadCommandOutputNudge.declared().nudge())
-        for part in shell.parts_running_journal_command(*self.commands.names()):
-            if part.pipe_target is not None or any(redirect in part.text for redirect in shell.redirects):
-                return RuleAnswer.refused(ReadCommandOutputNudge.declared().nudge())
-        return RuleAnswer.allowed()
+        nudge = self.policy.refusal(hook.event, hook.agent_id)
+        return RuleAnswer.refused(nudge) if nudge is not None else RuleAnswer.allowed()

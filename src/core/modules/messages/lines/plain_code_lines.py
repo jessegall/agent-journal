@@ -1,8 +1,23 @@
-from engine.rule_backed.rule_line_source import RuleLineSource
-from core.modules.messages.rules.plain_code_rule import PlainCodeRule
+from collections.abc import Sequence
+from engine.driver.nudge import Nudge
+from engine.driver.hook_event import HookEvent
+from engine.agent_machine.contracts.event_line_source import EventLineSource
+from pathlib import PurePath
+
+from engine.enums.hook_event_name import HookEventName
+from core.modules.messages.nudges.plain_code_nudge import PlainCodeNudge
+
+CODE_SUFFIXES = (".py", ".js", ".ts", ".vue", ".go", ".php")
 
 
-class PlainCodeLines(RuleLineSource):
-    """The lines of that code in the chat is written plainly, in today's words of PlainCodeRule."""
+class PlainCodeLines(EventLineSource):
+    """An edit of a code file reminds the agent, every half hour, to write code in plain words."""
 
-    rule = PlainCodeRule
+    key = "messages.plain-code"
+    events = [HookEventName.PRE_TOOL_USE]
+
+    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
+        tool = event.tool
+        if tool is None or not tool.is_writing_files() or not any(PurePath(path).suffix in CODE_SUFFIXES for path in tool.files):
+            return []
+        return [PlainCodeNudge.declared().nudge()]

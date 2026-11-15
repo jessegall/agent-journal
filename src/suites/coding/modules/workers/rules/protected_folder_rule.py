@@ -1,39 +1,23 @@
 from suites.coding.modules.workers.types.worker import Worker
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.protected_folders import ProtectedFolders
-from core.modules.agents.support.agent_rows import AgentRows
-from suites.coding.modules.workers.nudges.protected_folder_nudge import ProtectedFolderNudge
+from engine.enums.hook_event_name import HookEventName
+from suites.coding.modules.workers.policies.protected_folder_policy import ProtectedFolderPolicy
 
 
 class ProtectedFolderRule(DriverRule):
-    """Stops worker edits to the project's protected folders."""
+    """The old walk's answer for ProtectedFolderPolicy, which owns it, until the walk is deleted."""
 
-    name = "workers.protected-folder"
+    name = ProtectedFolderPolicy.key
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = [Worker.key]
     single_action_refusal = "Stops worker edits to the project's protected folders"
 
-    def __init__(self, worktrees: WorktreeQuery, protected: ProtectedFolders, agents: AgentRows) -> None:
-        self.worktrees, self.protected, self.agents = worktrees, protected, agents
+    def __init__(self, policy: ProtectedFolderPolicy) -> None:
+        self.policy = policy
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        tool = hook.event.tool
-        if tool is None or not tool.is_writing_files():
-            return RuleAnswer.allowed()
-        worktree = self.worktrees.worker_worktree(hook.agent_id)
-        if worktree is None:
-            return RuleAnswer.allowed()
-        profile = self.agents.find(hook.agent_id).profile
-        paths = list(tool.files)
-        if tool.shell is not None:
-            paths.extend(path for part in tool.shell.parts for path in part.output_paths)
-        for path in paths:
-            folder = self.protected.match(worktree.folder, path, profile)
-            if folder:
-                return RuleAnswer.refused(ProtectedFolderNudge.declared().nudge(folder=folder))
-        return RuleAnswer.allowed()
+        nudge = self.policy.refusal(hook.event, hook.agent_id)
+        return RuleAnswer.refused(nudge) if nudge is not None else RuleAnswer.allowed()

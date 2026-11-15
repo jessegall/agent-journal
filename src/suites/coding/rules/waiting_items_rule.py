@@ -1,35 +1,23 @@
-from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from engine.query.conditions.is_null import IsNull
-from engine.query.queries import Queries
-from engine.query.conditions.among import Among
-from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
-from core.modules.messages.models.message import Message
-from core.modules.questions.models.enums.question_state import QuestionState
-from core.modules.questions.models.question import Question
-from core.modules.tasks.models.enums.task_state import TaskState
-from core.modules.tasks.models.task import Task
-from suites.coding.nudges.waiting_items_nudge import WaitingItemsNudge
+from engine.enums.hook_event_name import HookEventName
+from engine.enums.agent_role import AgentRole
+from suites.coding.lines.waiting_items_lines import WaitingItemsLines
 
 
 class WaitingItemsRule(DriverRule):
-    """A main session's start names how many open tasks, unread messages and open questions wait for it."""
+    """The old walk's answer for WaitingItemsLines, which owns it, until the walk is deleted."""
 
-    name = "coding.waiting-items"
+    name = WaitingItemsLines.key
     start_line_rule = True
     hook = HookEventName.SESSION_START
     drivers = ["coding.*"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, lines: WaitingItemsLines) -> None:
+        self.lines = lines
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        counts = (("open tasks", self.queries.query(Task).filter(state=TaskState.OPEN).count()),
-                  ("unread messages", self.queries.query(Message).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).count()),
-                  ("open questions", self.queries.query(Question).filter(state=QuestionState.OPEN).count()))
-        items = ", ".join(f"{count} {name}" for name, count in counts if count)
-        return RuleAnswer.with_nudges(WaitingItemsNudge.declared().nudge(items=items)) if items else RuleAnswer.allowed()
+        nudges = self.lines.nudges(hook.event, hook.agent_id)
+        return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

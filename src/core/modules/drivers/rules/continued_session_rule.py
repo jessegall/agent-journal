@@ -1,26 +1,22 @@
-from engine.cli.agent_number import AGENT_MODEL_NAME
-from engine.cli.row_numbers import RowNumbers
-from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.drivers.nudges.continued_session_nudge import ContinuedSessionNudge
+from engine.enums.hook_event_name import HookEventName
+from engine.enums.agent_role import AgentRole
+from core.modules.drivers.lines.continued_session_lines import ContinuedSessionLines
 
 
 class ContinuedSessionRule(DriverRule):
-    """A main agent started again from a session of an earlier run is told once, in the words version 4 used
-    for a resumed conversation, that it is back in it and says so to the user, naming the session. The
-    start hook is recorded as allowed, which is what shows the agent idle, though its last hook of that run
-    may say it was working."""
+    """The old walk's answer for ContinuedSessionLines, which owns it, until the walk is deleted."""
 
-    name = "drivers.continued-session"
+    name = ContinuedSessionLines.key
     hook = HookEventName.SESSION_START
     drivers = ["*"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, lines: ContinuedSessionLines) -> None:
+        self.lines = lines
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.with_nudges(ContinuedSessionNudge.declared().nudge(agent=self.numbers.number(AGENT_MODEL_NAME, hook.agent_id))) if hook.event.is_resume else RuleAnswer.allowed()
+        nudges = self.lines.nudges(hook.event, hook.agent_id)
+        return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

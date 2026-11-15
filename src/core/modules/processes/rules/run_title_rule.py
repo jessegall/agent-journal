@@ -1,27 +1,20 @@
-from collections import defaultdict
-
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.processes.queries.output_query import OutputQuery
-from core.modules.processes.nudges.shared_title_nudge import SharedTitleNudge
+from engine.enums.hook_event_name import HookEventName
+from core.modules.processes.lines.run_title_lines import RunTitleLines
 
 
 class RunTitleRule(DriverRule):
-    """Two running outputs of one agent, of any role, with one title teach the title in words."""
+    """The old walk's answer for RunTitleLines, which owns it, until the walk is deleted."""
 
-    name = "processes.run-titles"
+    name = RunTitleLines.key
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
 
-    def __init__(self, outputs: OutputQuery) -> None:
-        self.outputs = outputs
+    def __init__(self, lines: RunTitleLines) -> None:
+        self.lines = lines
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        titled = self.outputs.running_titles(hook.agent_id).get()
-        identical: defaultdict[str, list[str]] = defaultdict(list)
-        for output in titled:
-            identical[output.title].append(str(output.process_id))
-        shared = [SharedTitleNudge.declared().nudge(outputs=", ".join(numbers)) for numbers in identical.values() if len(numbers) > 1]
-        return RuleAnswer.with_nudges(*shared)
+        nudges = self.lines.nudges(hook.event, hook.agent_id)
+        return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

@@ -1,20 +1,22 @@
-from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.messages.nudges.reply_note_nudge import ReplyNoteNudge
+from engine.enums.hook_event_name import HookEventName
+from engine.enums.agent_role import AgentRole
+from core.modules.messages.lines.reply_note_lines import ReplyNoteLines
 
 
 class ReplyNoteRule(DriverRule):
-    """After a reply sent by command the main agent is told it is in the chat, so words after it are not written."""
+    """The old walk's answer for ReplyNoteLines, which owns it, until the walk is deleted."""
 
-    name = "messages.reply-note"
+    name = ReplyNoteLines.key
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
     roles = [AgentRole.MAIN]
 
+    def __init__(self, lines: ReplyNoteLines) -> None:
+        self.lines = lines
+
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        shell = hook.event.tool.shell if hook.event.tool is not None else None
-        replies = shell.journal_command_numbers("message reply") if shell is not None else ()
-        return RuleAnswer.with_nudges(ReplyNoteNudge.declared().nudge(message=replies[0])) if replies else RuleAnswer.allowed()
+        nudges = self.lines.nudges(hook.event, hook.agent_id)
+        return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

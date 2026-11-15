@@ -1,36 +1,20 @@
-import re
-
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.tasks.nudges.plain_block_nudge import PlainBlockNudge
-from core.modules.tasks.nudges.wait_description_nudge import WaitDescriptionNudge
-from core.modules.tasks.support.task_wait_targets import TaskWaitTargets
-
-
-WAIT_TERMS = re.compile(r"\b(wait(s|ing)?\s+(for|on|until)|blocked\s+(on|by|until))\b", re.I)
-DESCRIBING_COMMANDS = ("task log", "task block", "message send", "message reply")
-BLOCK_FLAGS = ("--on", "--until")
+from engine.enums.hook_event_name import HookEventName
+from core.modules.tasks.lines.wait_in_words_lines import WaitInWordsLines
 
 
 class WaitDescriptionRule(DriverRule):
-    """A log line, a block's reason or a message that says the work waits, in words, teaches the block that
-    opens by itself."""
+    """The old walk's answer for WaitInWordsLines, which owns it, until the walk is deleted."""
 
-    name = "tasks.wait-in-words"
+    name = WaitInWordsLines.key
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
 
-    def __init__(self, targets: TaskWaitTargets) -> None:
-        self.targets = targets
+    def __init__(self, lines: WaitInWordsLines) -> None:
+        self.lines = lines
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        shell = hook.event.tool.shell if hook.event.tool is not None else None
-        described = shell.parts_running_journal_command(*DESCRIBING_COMMANDS) if shell is not None else ()
-        if any(part.arguments[:2] == ("task", "block") and any(arg == "--reason" or arg.startswith("--reason=") for arg in part.arguments)
-               and not any(arg.split("=", 1)[0] in (*BLOCK_FLAGS, "--until-user") for arg in part.arguments) for part in described):
-            return RuleAnswer.with_nudges(PlainBlockNudge.declared().nudge(targets=", ".join(self.targets.target_types)))
-        if not any(WAIT_TERMS.search(part.text) and not set(BLOCK_FLAGS) & set(part.arguments) for part in described):
-            return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(WaitDescriptionNudge.declared().nudge())
+        nudges = self.lines.nudges(hook.event, hook.agent_id)
+        return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

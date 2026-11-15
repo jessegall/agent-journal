@@ -1,29 +1,23 @@
-from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AGENT_MODEL_NAME
-from engine.driver.nudge import Nudge
-from suites.coding.modules.workers.nudges.worker_task_nudge import WorkerTaskNudge
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from engine.enums.hook_event_name import HookEventName
 from engine.enums.agent_role import AgentRole
+from suites.coding.modules.workers.lines.workers_out_lines import WorkersOutLines
 
 
 class WorkersOutRule(DriverRule):
-    """A main agent's session starts with a line for each worker of its environment that still has a worktree
-    out."""
+    """The old walk's answer for WorkersOutLines, which owns it, until the walk is deleted."""
 
-    name = "workers.workers-out-at-start"
+    name = WorkersOutLines.key
     start_line_rule = True
     hook = HookEventName.SESSION_START
     drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, worktrees: WorktreeQuery, numbers: RowNumbers) -> None:
-        self.numbers = numbers
-        self.worktrees = worktrees
+    def __init__(self, lines: WorkersOutLines) -> None:
+        self.lines = lines
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        nudges: list[Nudge] = [WorkerTaskNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), task=worktree.task_id) for worktree in self.worktrees.open_worktrees()]
+        nudges = self.lines.nudges(hook.event, hook.agent_id)
         return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

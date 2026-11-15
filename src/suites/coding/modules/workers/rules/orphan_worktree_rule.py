@@ -1,20 +1,21 @@
-from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from suites.coding.modules.workers.commands.remove_orphan_worktrees.remove_orphan_worktrees import RemoveOrphanWorktrees
+from engine.enums.hook_event_name import HookEventName
+from engine.enums.agent_role import AgentRole
+from suites.coding.modules.workers.effects.orphan_worktree_effect import OrphanWorktreeEffect
 
 
 class OrphanWorktreeRule(DriverRule):
-    """On the tick that falls on the first minute of an hour, the worktrees no worker holds are swept away."""
+    """The old walk's answer for OrphanWorktreeEffect, which owns it, until the walk is deleted."""
 
-    name = "workers.worktree-sweep"
+    name = OrphanWorktreeEffect.key
     hook = HookEventName.TICK
     drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
 
+    def __init__(self, effect: OrphanWorktreeEffect) -> None:
+        self.effect = effect
+
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if hook.timestamp.value.minute != 0:
-            return RuleAnswer.allowed()
-        return RuleAnswer.allowed().running(RemoveOrphanWorktrees())
+        return RuleAnswer.allowed().running(*self.effect.commands_of(hook.event, hook.agent_id))

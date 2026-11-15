@@ -1,23 +1,21 @@
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.driver.rule_answer import RuleAnswer
-from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
-from core.modules.agents.commands.stop_unused_launcher.stop_unused_launcher import StopUnusedLauncher
-from core.modules.agents.support.launcher_processes import LauncherProcesses
+from engine.enums.agent_role import AgentRole
+from core.modules.agents.effects.unused_launcher_effect import UnusedLauncherEffect
 
 
 class UnusedLauncherRule(DriverRule):
-    """On a main agent's tick, has each second launcher of this journal that serves nobody told to the user
-    and stopped."""
+    """The old walk's answer for UnusedLauncherEffect, which owns it, until the walk is deleted."""
 
-    name = "agents.unused-launcher"
+    name = UnusedLauncherEffect.key
     hook = HookEventName.TICK
     drivers = ["*"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, processes: LauncherProcesses) -> None:
-        self.processes = processes
+    def __init__(self, effect: UnusedLauncherEffect) -> None:
+        self.effect = effect
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.allowed().running(*(StopUnusedLauncher(serving.pid, unused.pid) for serving, unused in self.processes.unused()))
+        return RuleAnswer.allowed().running(*self.effect.commands_of(hook.event, hook.agent_id))

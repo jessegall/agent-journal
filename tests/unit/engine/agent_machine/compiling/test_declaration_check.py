@@ -10,7 +10,7 @@ from engine.agent_machine.compiling.driver_declaration import DriverDeclaration
 from engine.agent_machine.compiling.open_owners import OpenOwners
 from engine.agent_machine.compiling.program_declaration import ProgramDeclaration
 from engine.agent_machine.contracts.capability import Capability
-from engine.agent_machine.contracts.rank_order import RankOrder
+from engine.agent_machine.needs.rank_order import RankOrder
 from engine.enums.capability_fallback import CapabilityFallback
 from engine.enums.capability_part import CapabilityPart
 from engine.enums.capability_proof import CapabilityProof

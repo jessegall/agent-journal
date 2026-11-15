@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.lines.stopped_worker_lines import StoppedWorkerLines
 from types import SimpleNamespace
 
 from engine.time.timestamp import Timestamp
@@ -53,8 +54,8 @@ class Stop:
 
 
 def answer(question_open: bool):
-    rule = StoppedWorkerRule(None, Stop(), Unfinished(), StartedWork(), Settings(), None, Escalations(question_open))
-    return rule.answer(SimpleNamespace(timestamp=LATER))
+    rule = StoppedWorkerRule(StoppedWorkerLines(None, Stop(), Unfinished(), StartedWork(), Settings(), None, Escalations(question_open), SimpleNamespace(timestamp=lambda: LATER)))
+    return rule.answer(SimpleNamespace(timestamp=LATER, event=None, agent_id=0))
 
 
 def test_a_stopped_worker_whose_question_went_to_the_main_agent_is_named_with_its_committed_task():

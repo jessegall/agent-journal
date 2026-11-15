@@ -1,34 +1,21 @@
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.sequences.queries.sequence_query import SequenceQuery
-from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
-from core.modules.sequences.nudges.step_edit_ban_nudge import StepEditBanNudge
+from engine.enums.hook_event_name import HookEventName
+from core.modules.sequences.policies.step_guard_policy import StepGuardPolicy
 
 
 class StepGuardRule(DriverRule):
-    """A step that holds file edits refuses a writing call, except journal lines and the commands the step
-    allows."""
+    """The old walk's answer for StepGuardPolicy, which owns it, until the walk is deleted."""
 
-    name = "sequences.step-guard"
+    name = StepGuardPolicy.key
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     single_action_refusal = "A step that holds file edits refuses a writing call, except journal lines and the commands the step allows"
 
-    def __init__(self, runs: SequenceRunQuery, sequences: SequenceQuery) -> None:
-        self.runs, self.sequences = runs, sequences
+    def __init__(self, policy: StepGuardPolicy) -> None:
+        self.policy = policy
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        tool = hook.event.tool
-        if tool is None or tool.is_journal_line or not tool.is_writing_files():
-            return RuleAnswer.allowed()
-        run = self.runs.current(hook.agent_id)
-        if run is None:
-            return RuleAnswer.allowed()
-        guard = self.sequences.step_guard(run.sequence_id, run.step_number)
-        if guard.file_edits_allowed:
-            return RuleAnswer.allowed()
-        if tool.shell is not None and any(tool.shell.has_part_matching(pattern) for pattern in guard.allowed_commands):
-            return RuleAnswer.allowed()
-        return RuleAnswer.refused(StepEditBanNudge.declared().nudge(sequence=run.sequence_id, step=run.step_number))
+        nudge = self.policy.refusal(hook.event, hook.agent_id)
+        return RuleAnswer.refused(nudge) if nudge is not None else RuleAnswer.allowed()

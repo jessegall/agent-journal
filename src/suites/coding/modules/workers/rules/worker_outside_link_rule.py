@@ -1,34 +1,23 @@
 from suites.coding.modules.workers.types.worker import Worker
-from pathlib import Path
-
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.nudges.worker_foreign_link_nudge import WorkerForeignLinkNudge
-
-LINK_PROGRAM = "ln"
+from engine.enums.hook_event_name import HookEventName
+from suites.coding.modules.workers.policies.worker_outside_link_policy import WorkerOutsideLinkPolicy
 
 
 class WorkerOutsideLinkRule(DriverRule):
-    """Stops a worker linking something from outside its worktree into it; the journal links the shared libraries."""
+    """The old walk's answer for WorkerOutsideLinkPolicy, which owns it, until the walk is deleted."""
 
-    name = "workers.outside-link"
+    name = WorkerOutsideLinkPolicy.key
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = [Worker.key]
     single_action_refusal = "A worker may not link a folder from outside its worktree into it"
 
-    def __init__(self, worktrees: WorktreeQuery) -> None:
-        self.worktrees = worktrees
+    def __init__(self, policy: WorkerOutsideLinkPolicy) -> None:
+        self.policy = policy
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        tool = hook.event.tool
-        worktree = self.worktrees.worker_worktree(hook.agent_id)
-        if tool is None or tool.shell is None or worktree is None:
-            return RuleAnswer.allowed()
-        arguments = [argument for part in tool.shell.parts if part.program == LINK_PROGRAM for argument in part.arguments if not argument.startswith("-")]
-        if any(not Path(worktree.folder, argument).resolve().is_relative_to(Path(worktree.folder).resolve()) for argument in arguments):
-            return RuleAnswer.refused(WorkerForeignLinkNudge.declared().nudge())
-        return RuleAnswer.allowed()
+        nudge = self.policy.refusal(hook.event, hook.agent_id)
+        return RuleAnswer.refused(nudge) if nudge is not None else RuleAnswer.allowed()

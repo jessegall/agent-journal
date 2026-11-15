@@ -1,27 +1,22 @@
-from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.tasks.models.task_wait import TaskWait
-from engine.query.queries import Queries
-from suites.coding.modules.checks.queries.check_query import CheckQuery
-from suites.coding.modules.checks.nudges.broken_task_wait_nudge import BrokenTaskWaitNudge
+from engine.enums.hook_event_name import HookEventName
+from engine.enums.agent_role import AgentRole
+from suites.coding.modules.checks.lines.broken_task_wait_lines import BrokenTaskWaitLines
+
 
 class BrokenTaskWaitRule(DriverRule):
-    """A command a blocked task waits on that cannot run at all is named to the main agent, since it would
-    wait forever."""
+    """The old walk's answer for BrokenTaskWaitLines, which owns it, until the walk is deleted."""
 
-    name = "checks.broken-task-wait"
+    name = BrokenTaskWaitLines.key
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, checks: CheckQuery, queries: Queries) -> None:
-        self.checks, self.queries = checks, queries
+    def __init__(self, lines: BrokenTaskWaitLines) -> None:
+        self.lines = lines
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        broken = self.checks.broken_task_waits()
-        waits = self.queries.query(TaskWait).find_many([check.task_wait_id for check in broken if check.task_wait_id is not None])
-        tasks = {wait.id: wait.task_id for wait in waits}
-        return RuleAnswer.with_nudges(*(BrokenTaskWaitNudge.declared().nudge(task=tasks[check.task_wait_id], output=check.last_output.strip()) for check in broken if check.task_wait_id is not None))
+        nudges = self.lines.nudges(hook.event, hook.agent_id)
+        return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

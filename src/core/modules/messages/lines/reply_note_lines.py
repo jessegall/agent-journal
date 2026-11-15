@@ -1,8 +1,20 @@
-from engine.rule_backed.rule_line_source import RuleLineSource
-from core.modules.messages.rules.reply_note_rule import ReplyNoteRule
+from collections.abc import Sequence
+from engine.driver.nudge import Nudge
+from engine.driver.hook_event import HookEvent
+from engine.agent_machine.contracts.event_line_source import EventLineSource
+from engine.enums.agent_role import AgentRole
+from engine.enums.hook_event_name import HookEventName
+from core.modules.messages.nudges.reply_note_nudge import ReplyNoteNudge
 
 
-class ReplyNoteLines(RuleLineSource):
-    """The lines of the note under a reply, in today's words of ReplyNoteRule."""
+class ReplyNoteLines(EventLineSource):
+    """After a reply sent by command the main agent is told it is in the chat, so words after it are not written."""
 
-    rule = ReplyNoteRule
+    key = "messages.reply-note"
+    events = [HookEventName.POST_TOOL_USE]
+    agent_types = [AgentRole.MAIN.value]
+
+    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
+        shell = event.tool.shell if event.tool is not None else None
+        replies = shell.journal_command_numbers("message reply") if shell is not None else ()
+        return [ReplyNoteNudge.declared().nudge(message=replies[0])] if replies else []

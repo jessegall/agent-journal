@@ -1,31 +1,21 @@
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from engine.listener.rows.event_rows import EventRows
-from core.modules.sequences.models.sequence import Sequence
-from core.modules.sequences.models.support.sequence_guards import SequenceGuards
-from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
-from core.modules.sequences.nudges.step_refuses_command_nudge import StepRefusesCommandNudge
+from engine.enums.hook_event_name import HookEventName
+from core.modules.sequences.policies.step_command_policy import StepCommandPolicy
 
 
 class StepCommandRule(DriverRule):
-    """A step refuses the journal commands it lists, also in a chain or inside a shell of their own."""
+    """The old walk's answer for StepCommandPolicy, which owns it, until the walk is deleted."""
 
-    name = "sequences.step-refused-command"
+    name = StepCommandPolicy.key
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     single_action_refusal = "A step refuses the journal commands it lists, also in a chain or inside a shell of their own"
 
-    def __init__(self, runs: SequenceRunQuery, rows: EventRows) -> None:
-        self.runs, self.rows = runs, rows
+    def __init__(self, policy: StepCommandPolicy) -> None:
+        self.policy = policy
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        tool = hook.event.tool
-        run = self.runs.current(hook.agent_id)
-        if tool is None or tool.shell is None or run is None:
-            return RuleAnswer.allowed()
-        sequence = self.rows.required(Sequence, run.sequence_id)
-        if not tool.shell.runs_journal_command(*SequenceGuards.step_guard(sequence.step_guards, run.step_number).refused_commands):
-            return RuleAnswer.allowed()
-        return RuleAnswer.refused(StepRefusesCommandNudge.declared().nudge(sequence=sequence.id, step=run.step_number))
+        nudge = self.policy.refusal(hook.event, hook.agent_id)
+        return RuleAnswer.refused(nudge) if nudge is not None else RuleAnswer.allowed()

@@ -1,25 +1,19 @@
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.pins.support.link_pin_check import LinkPinCheck
+from engine.enums.hook_event_name import HookEventName
+from core.modules.pins.effects.automatic_link_pin_effect import AutomaticLinkPinEffect
 
 
 class AutomaticLinkPinRule(DriverRule):
-    """Pins pull request links returned by tools; a design link waits for its designer's report."""
+    """The old walk's answer for AutomaticLinkPinEffect, which owns it, until the walk is deleted."""
 
-    name = "pins.automatic-link"
+    name = AutomaticLinkPinEffect.key
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
 
-    def __init__(self, check: LinkPinCheck) -> None:
-        self.check = check
+    def __init__(self, effect: AutomaticLinkPinEffect) -> None:
+        self.effect = effect
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        tool = hook.event.tool
-        if tool is None:
-            return RuleAnswer.allowed()
-        if self.check.is_file_read_tool(tool):
-            return RuleAnswer.allowed()
-        text = self.check.joined_text([hook.event.tool_input(), hook.event.raw.get("tool_response")])
-        return RuleAnswer.allowed().running(*self.check.change_request_pins(text))
+        return RuleAnswer.allowed().running(*self.effect.commands_of(hook.event, hook.agent_id))

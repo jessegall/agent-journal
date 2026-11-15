@@ -1,8 +1,34 @@
-from engine.rule_backed.rule_line_source import RuleLineSource
-from suites.coding.modules.workers.rules.small_batch_rule import SmallBatchRule
+from collections.abc import Sequence
+from engine.driver.nudge import Nudge
+from engine.driver.hook_event import HookEvent
+from engine.agent_machine.contracts.event_line_source import EventLineSource
+from suites.coding.modules.workers.nudges.small_batch_nudge import SmallBatchNudge
+from suites.coding.modules.workers.support.worker_settings import WORKER_BATCH_SIZE
+from engine.enums.agent_role import AgentRole
+from engine.enums.command_category import CommandCategory
+from engine.enums.hook_event_name import HookEventName
+from engine.setting.setting_values import SettingValues
+from suites.coding.modules.workers.support.dispatch_arguments import DISPATCH_ARGUMENTS
 
 
-class SmallBatchLines(RuleLineSource):
-    """The lines of SmallBatchRule, in today's words."""
+class SmallBatchLines(EventLineSource):
+    """After a worker dispatch of fewer tasks than the batch size setting, the main agent is told that giving
+    a worker more work is better."""
 
-    rule = SmallBatchRule
+    key = "workers.small-batch"
+    events = [HookEventName.POST_TOOL_USE]
+    agent_types = [AgentRole.MAIN.value]
+
+    def __init__(self, settings: SettingValues) -> None:
+        self.settings = settings
+
+    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
+        shell = event.tool.shell if event.tool is not None else None
+        dispatches = [part for part in shell.parts if part.classification.category is CommandCategory.JOURNAL and tuple(part.arguments[:2]) == DISPATCH_ARGUMENTS] if shell is not None else []
+        counts = [self.task_count(list(part.arguments[2:])) for part in dispatches]
+        batch_size = self.settings.number(WORKER_BATCH_SIZE)
+        return [*(SmallBatchNudge.declared().nudge(count=count) for count in counts if count < batch_size)]
+
+    @staticmethod
+    def task_count(arguments: list[str]) -> int:
+        return sum(1 for previous, argument in zip(["", *arguments], arguments) if argument.isdigit() and not previous.startswith("--"))

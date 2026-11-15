@@ -1,40 +1,21 @@
-import re
-
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
-from engine.driver.part import Part
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.processes.nudges.sleep_refused_nudge import SleepRefusedNudge
-
-
-SLEEP_LOOP = re.compile(r"^\s*(until|while)\s+(.+?)\s*[;\n]\s*do\s+sleep\s+\d+(?:\.\d+)?\s*[;\n]\s*done\s*$", re.DOTALL)
-LOOPS = ("until", "while")
-SLEEP = "sleep"
-SLEEP_TOOLS = ["clocksleep"]
+from engine.enums.hook_event_name import HookEventName
+from core.modules.processes.policies.sleep_poll_policy import SleepPollPolicy
 
 
 class SleepPollRule(DriverRule):
-    """A line that only sleeps, sleeps in a loop to check again, or a sleep tool of the agent's program, is refused
-    for every agent: it goes on working or stops, and the journal tells it when a run ends."""
+    """The old walk's answer for SleepPollPolicy, which owns it, until the walk is deleted."""
 
-    name = "processes.sleep-poll-refusal"
+    name = SleepPollPolicy.key
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     single_action_refusal = "A line that only sleeps, sleeps in a loop to check again, or a sleep tool of the agent's program, is refused"
 
-    def __init__(self, processes: ProcessQuery) -> None:
-        self.processes = processes
+    def __init__(self, policy: SleepPollPolicy) -> None:
+        self.policy = policy
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        tool = hook.event.tool
-        if tool is not None and tool.name in SLEEP_TOOLS:
-            return RuleAnswer.refused(SleepRefusedNudge.declared().nudge())
-        shell = tool.shell if tool is not None else None
-        if shell is None or shell.parse_error or not any(self.is_sleep_poll(part) for part in shell.parts):
-            return RuleAnswer.allowed()
-        return RuleAnswer.refused(SleepRefusedNudge.declared().nudge())
-
-    def is_sleep_poll(self, part: Part) -> bool:
-        return part.program == SLEEP or (part.program in LOOPS and SLEEP_LOOP.match(part.text) is not None)
+        nudge = self.policy.refusal(hook.event, hook.agent_id)
+        return RuleAnswer.refused(nudge) if nudge is not None else RuleAnswer.allowed()

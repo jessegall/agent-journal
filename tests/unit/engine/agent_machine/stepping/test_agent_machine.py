@@ -15,7 +15,7 @@ from engine.agent_machine.capabilities import Capabilities
 from engine.agent_machine.contracts.capability import Capability
 from engine.agent_machine.stepping.grant import Grant
 from engine.agent_machine.contracts.policy import Policy
-from engine.agent_machine.contracts.rank_order import RankOrder
+from engine.agent_machine.needs.rank_order import RankOrder
 from engine.agent_machine.contracts.transform import Transform
 from engine.agent_machine.needs.ended_fact import EndedFact
 from engine.agent_machine.needs.block_plan import BlockPlan

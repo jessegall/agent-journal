@@ -1,32 +1,22 @@
-from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
-from engine.enums.command_category import CommandCategory
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.tasks.rules.support.current_tasks import CurrentTasks
-from core.modules.tasks.nudges.task_filed_nudge import TaskFiledNudge
-from core.modules.tasks.nudges.task_filed_keep_current_nudge import TaskFiledKeepCurrentNudge
-
-TASK_COMMAND_START = ["task", "make"]
+from engine.enums.hook_event_name import HookEventName
+from engine.enums.agent_role import AgentRole
+from core.modules.tasks.lines.task_filed_lines import TaskFiledLines
 
 
 class TaskFiledRule(DriverRule):
-    """After an agent makes a task it is told to leave it open: the task is started by whoever the suite an
-    environment runs has hand out tasks, if it has one."""
+    """The old walk's answer for TaskFiledLines, which owns it, until the walk is deleted."""
 
-    name = "tasks.filed"
+    name = TaskFiledLines.key
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, current_tasks: CurrentTasks) -> None:
-        self.current_tasks = current_tasks
+    def __init__(self, lines: TaskFiledLines) -> None:
+        self.lines = lines
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        tool = hook.event.tool
-        parts = tool.shell.parts if tool is not None and tool.shell is not None else ()
-        if not any(part.classification.category is CommandCategory.JOURNAL and list(part.arguments[:2]) == TASK_COMMAND_START for part in parts):
-            return RuleAnswer.allowed()
-        current = self.current_tasks.current(hook.agent_id)
-        return RuleAnswer.with_nudges(TaskFiledKeepCurrentNudge.declared().nudge(task=current.task.id) if current is not None else TaskFiledNudge.declared().nudge())
+        nudges = self.lines.nudges(hook.event, hook.agent_id)
+        return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()
