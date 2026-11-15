@@ -119,6 +119,10 @@ class HookCall(Prunable, EnvironmentScoped, Model):
         return value if isinstance(value, str) else ""
 
     @property
+    def has_background_work(self) -> bool:
+        return bool(self.metadata.module_part(DRIVERS_MODULE).get("background_work"))
+
+    @property
     def is_interrupted(self) -> bool:
         return bool(self.metadata.module_part(DRIVERS_MODULE).get("interrupted"))
 

@@ -106,3 +106,13 @@ def test_a_stop_body_with_stop_hook_active_is_read_as_a_continuation():
     continued = HookEvent.parsed({**example, "version": 3, "foreign": [], "raw": {"stop_hook_active": True}})
     first = HookEvent.parsed({**example, "version": 3, "foreign": [], "raw": {"stop_hook_active": False}})
     assert continued.is_stop_continuation and not first.is_stop_continuation
+
+
+def test_has_background_work_reads_either_list():
+    example = json.loads((HOOK_FOLDER / "event" / "testdata" / "schema" / "stop.json").read_text())
+
+    def stop(raw):
+        return HookEvent.parsed({**example, "version": 3, "foreign": [], "raw": raw})
+    assert stop({"background_tasks": [{"id": "t"}], "session_crons": []}).has_background_work
+    assert stop({"background_tasks": [], "session_crons": [{"id": "c"}]}).has_background_work
+    assert not stop({"background_tasks": [], "session_crons": []}).has_background_work and not stop({}).has_background_work

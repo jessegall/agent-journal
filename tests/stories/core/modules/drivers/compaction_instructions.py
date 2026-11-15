@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import pytest
 
 from core.modules.claude_code.providers.claude_code_provider import COMPACTION_INSTRUCTIONS
@@ -48,3 +50,25 @@ def test_a_codex_compaction_is_unchanged(agent):
     started(agent, CODEX_SESSION, "codex", "helper")
     reply = agent.hook(CODEX_SESSION, PRE_COMPACT.with_fields(program="codex").with_raw({"trigger": "auto"}))
     agent.expect_rows(reply.refusal == "", COMPACTION_INSTRUCTIONS not in reply.lines, detail=str(reply))
+
+
+POST_COMPACT = HookSamples.sample("compact_end").with_fields(accepts_lines=False).with_raw({"trigger": "manual", "compact_summary": "The summary."})
+
+
+def test_a_compaction_ends_at_its_post_compact_hook(new_story):
+    from core.modules.agents.support.terminal_typing import TerminalTyping
+    from tests.stories.core.modules.messages.delivery import KeptTyping, StoppedMessagingTurn, post_message
+    from tests.stories.engine.driver.support.samples import SAMPLES
+    story = new_story(SAMPLES, fixture=StoppedMessagingTurn)
+    typing = KeptTyping()
+    story.replace(TerminalTyping, typing)
+    story.hook(SESSION, PRE_COMPACT.with_raw({"trigger": "manual"}))
+    post_message(story, "Are you there")
+    story.run_listeners()
+    story.expect_rows(typing.typed == [], detail=str(typing.typed))
+    story.hook(SESSION, POST_COMPACT)
+    # a message line that could not be typed is made anew after ten seconds
+    story.advance(timedelta(seconds=11))
+    story.tick(SESSION)
+    story.run_listeners()
+    story.expect_rows(any("New message 1" in line for _, line in typing.typed), detail=str(typing.typed))

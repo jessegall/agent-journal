@@ -122,7 +122,7 @@ class HookCallQuery(Query[HookCall]):
             return False
         if call.is_compaction_start:
             return call.answer == HookAnswer.ALLOWED and self.is_after_manual_compaction(agent_id)
-        return (call.hook in IDLE_HOOKS and call.answer == HookAnswer.ALLOWED) or call.is_interrupted
+        return (call.hook in IDLE_HOOKS and call.answer == HookAnswer.ALLOWED and not call.has_background_work) or call.is_interrupted
 
     def is_after_manual_compaction(self, agent_id: int) -> bool:
         compaction = self.latest_compaction(agent_id)
