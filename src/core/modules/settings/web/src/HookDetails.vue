@@ -1,5 +1,5 @@
 <script setup>
-defineProps({ hook: { type: Object, required: true } });
+defineProps({ hook: { type: Object, required: true }, facts: { type: Array, default: () => [] } });
 const EFFECT_LABELS = {
   can_refuse: "Can refuse",
   can_rewrite: "Can rewrite",
@@ -13,6 +13,9 @@ const EFFECT_LABELS = {
       <strong>{{ hook.program }}</strong
       ><span>{{ hook.event }}</span
       ><code>{{ hook.matcher || "All" }}</code>
+    </div>
+    <div v-if="facts.length" class="hook-facts">
+      <template v-for="fact in facts" :key="fact"><span>{{ fact }}</span></template>
     </div>
     <details class="hook-command">
       <summary :title="hook.command">
@@ -44,6 +47,12 @@ const EFFECT_LABELS = {
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+}
+.hook-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 12px;
 }
 .hook-identity {
   font-size: 12px;

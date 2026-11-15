@@ -3,6 +3,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from engine.enums.hook_event_name import HookEventName
 from engine.json.json_settings import JsonSettings
 from engine.provider.hook_partition import HookPartition
 from engine.provider.hook_block_partition import HookBlockPartition
@@ -15,6 +16,9 @@ JOURNAL_MARKS = ("journal-hook", "hooks/hook.sh")
 HOOK_TIMEOUT_SECONDS = 90
 TIMEOUT_PADDING_SECONDS = 5
 JOURNAL_WAIT_CEILING_SECONDS = HOOK_TIMEOUT_SECONDS - TIMEOUT_PADDING_SECONDS
+# a session's end waits on the journal no longer than this, so leaving it never waits for a restarting server; the
+# hook program gives up on the server after 4 seconds there
+SESSION_END_ENTRY_SECONDS = 5
 
 
 @dataclass(frozen=True)
@@ -42,7 +46,14 @@ class ProgramHooks:
 
     def journal_blocks(self, runner: str, root: Path, managed: Sequence[ManagedHook] = ()) -> dict[str, list[object]]:
         return {event: [{"matcher": "", "hooks": [{"type": "command", "command": f'{runner} {self.program} "{root}"', "timeout": self.entry_timeout(event, managed),
-                                                   **self.entry_fields, **self.event_fields.get(event, {})}]}] for event in self.events}
+                                                   **self.entry_fields, **self.event_fields.get(event, {})}, *self.wake_entries(event, runner, root)]}]
+                for event in self.events}
+
+    def wake_entries(self, event: str, runner: str, root: Path) -> list[dict[str, object]]:
+        wake = self.provider.wake_hook if self.provider else None
+        if wake is None or wake.event != event:
+            return []
+        return [{"type": "command", "command": f'{runner} {self.program} "{root}" --wake', "timeout": wake.limit_seconds, **wake.fields}]
 
     def write(self, runner: str, root: Path, managed: Sequence[ManagedHook] = ()) -> None:
         settings = self.settings()
@@ -54,9 +65,10 @@ class ProgramHooks:
 
     def entry_timeout(self, event: str, managed: Sequence[ManagedHook]) -> int:
         longest = max((hook.timeout for hook in managed if hook.program == self.program and hook.event == event), default=0)
-        if not longest:
-            return self.timeout_seconds
-        return max(self.timeout_seconds, longest + JOURNAL_WAIT_CEILING_SECONDS + TIMEOUT_PADDING_SECONDS)
+        if self.provider and self.provider.hook_events.get(event) is HookEventName.SESSION_END:
+            entry = longest + SESSION_END_ENTRY_SECONDS if longest else SESSION_END_ENTRY_SECONDS
+            return min(entry, self.provider.session_end_limit_seconds)
+        return max(self.timeout_seconds, longest + JOURNAL_WAIT_CEILING_SECONDS + TIMEOUT_PADDING_SECONDS) if longest else self.timeout_seconds
 
     def is_complete(self) -> bool:
         stored_hooks = self.settings().get("hooks")

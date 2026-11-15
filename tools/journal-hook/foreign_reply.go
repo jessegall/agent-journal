@@ -13,7 +13,8 @@ const refusedWithoutReason = "Hook refused without a reason"
 
 // projectHooksOnly runs the project's hooks in a session the journal does not handle, a plain program started in the
 // project or an actor the journal skips, since their settings entries now live with the journal; it answers from
-// them alone, as the program would have without the journal.
+// them alone, as the program would have without the journal. A background hook runs detached there too, and an
+// asyncRewake one that ends with exit code 2 wakes nothing, since no journal holds the session.
 func projectHooksOnly(programName, root string, stdin io.Reader, stdout, stderr io.Writer) int {
 	hooks := LoadManaged(filepath.Join(root, ".journal", "hooks", "managed.json"))
 	if len(hooks) == 0 {
@@ -24,7 +25,7 @@ func projectHooksOnly(programName, root string, stdin io.Reader, stdout, stderr 
 		return 0
 	}
 	table := programs.LoadTable(filepath.Join(root, ".journal", "programs.json"))
-	runs := runManaged(Matching(hooks, programName, hookName(body), body, table), body, programName, root)
+	runs := runManaged(Matching(hooks, programName, hookName(body), body, table), body, programName, table.Programs[programName], root)
 	decodeRuns(table.Programs[programName], table.Programs[programName].Events[hookName(body)], runs)
 	return foreignAnswered(stdout, stderr, table.Programs[programName], hookName(body), runs)
 }
@@ -32,8 +33,9 @@ func projectHooksOnly(programName, root string, stdin io.Reader, stdout, stderr 
 // foreignAnswered prints the project hooks' answer in the program's own shape, for a hook that reaches no journal.
 func foreignAnswered(stdout, stderr io.Writer, program programs.Program, hookName string, runs []ForeignRun) int {
 	event := program.Events[hookName]
-	stdoutText, stderrText, code := ProgramAnswer(program, hookName, event, foreignReply(program, event, runs))
-	io.WriteString(stdout, stdoutText)
+	reply := foreignReply(program, event, runs)
+	stdoutText, stderrText, code := ProgramAnswer(program, hookName, event, reply)
+	io.WriteString(stdout, withPassthrough(stdoutText, program, hookName, reply, runs))
 	io.WriteString(stderr, stderrText)
 	return code
 }
@@ -61,13 +63,13 @@ func foreignReply(program programs.Program, event string, runs []ForeignRun) Rep
 
 func foreignRunReply(program programs.Program, event string, run ForeignRun) Reply {
 	if run.TimedOut {
-		return Reply{Terminal: run.ID + ": hook timed out"}
+		return failed(run, "hook timed out")
 	}
 	if run.ExitCode == 2 {
 		return Reply{Refusal: withDefault(strings.TrimSpace(run.Stderr), refusedWithoutReason)}
 	}
 	if run.ExitCode != 0 {
-		return Reply{Terminal: fmt.Sprintf("%s: hook exited with code %d: %s", run.ID, run.ExitCode, strings.TrimSpace(run.Stderr))}
+		return failed(run, fmt.Sprintf("hook exited with code %d: %s", run.ExitCode, strings.TrimSpace(run.Stderr)))
 	}
 	stdout := strings.TrimSpace(run.Stdout)
 	if stdout == "" {
@@ -78,9 +80,18 @@ func foreignRunReply(program programs.Program, event string, run ForeignRun) Rep
 		if program.TakesPlainOutput(event) {
 			return Reply{Lines: strings.Split(stdout, "\n")}
 		}
-		return Reply{Terminal: run.ID + ": hook answer must be a JSON object"}
+		return failed(run, "hook answer must be a JSON object")
 	}
 	return answer
+}
+
+// failed is a project hook's failure: a refusal naming the hook when its entry says onFailure block, else a note for
+// the terminal.
+func failed(run ForeignRun, reason string) Reply {
+	if run.OnFailure == blockOnFailure {
+		return Reply{Refusal: run.ID + " failed: " + reason}
+	}
+	return Reply{Terminal: run.ID + ": " + reason}
 }
 
 func withDefault(text, fallback string) string {

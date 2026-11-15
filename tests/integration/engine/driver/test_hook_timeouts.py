@@ -11,8 +11,8 @@ from install.hook.hook_writer import HookWriter
 
 def store_managed_hook(root: Path) -> None:
     ManagedHooks(JournalHome(root / ".journal")).added([
-        ManagedHook.found("claude", "PreToolUse", "Bash", {"command": "slow", "timeout": 600}, ".claude/settings.local.json", False),
-        ManagedHook.found("codex", "PreToolUse", "Bash", {"command": "slow", "timeout": 600}, ".codex/hooks.json", False),
+        ManagedHook.found("claude", "PreToolUse", "Bash", {"command": "slow", "timeout": 600}, ".claude/settings.local.json", False, 600),
+        ManagedHook.found("codex", "PreToolUse", "Bash", {"command": "slow", "timeout": 600}, ".codex/hooks.json", False, 600),
     ])
 
 

@@ -9,13 +9,25 @@
     "session_start",
     "session_end",
     "compact",
+    "compact_end",
     "message_display"
   ],
   "programs": {
     "claude": {
       "decoder": "common",
+      "default_hook_seconds": 600,
+      "entry_fields": [
+        "args",
+        "async",
+        "asyncRewake",
+        "if",
+        "onFailure",
+        "shell",
+        "statusMessage"
+      ],
       "events": {
         "MessageDisplay": "message_display",
+        "PostCompact": "compact_end",
         "PostToolUse": "post_tool_use",
         "PostToolUseFailure": "post_tool_use_failure",
         "PreCompact": "compact",
@@ -35,7 +47,9 @@
         "pre_tool_use",
         "post_tool_use"
       ],
+      "matcher_style": "names_or_regex",
       "matchers": {
+        "PostCompact": "trigger",
         "PostToolUse": "tool_name",
         "PostToolUseFailure": "tool_name",
         "PreCompact": "trigger",
@@ -43,9 +57,18 @@
         "SessionEnd": "reason",
         "SessionStart": "source"
       },
+      "output_fields": [
+        "continue",
+        "sessionTitle",
+        "stopReason",
+        "suppressOriginalPrompt",
+        "terminalSequence",
+        "updatedToolOutput"
+      ],
       "plain_output_events": [
         "session_start",
-        "prompt"
+        "prompt",
+        "compact"
       ],
       "refusals": {
         "pre_tool_use": "deny",
@@ -57,6 +80,7 @@
           "run_in_background": false
         }
       },
+      "session_end_limit_seconds": 60,
       "tool_categories": {
         "Agent": "agent",
         "AskUserQuestion": "question",
@@ -72,10 +96,16 @@
         "Task": "agent",
         "ToolSearch": "search",
         "Write": "write"
-      }
+      },
+      "wake_answer": "exit_with_stderr",
+      "wake_seconds": 86400
     },
     "codex": {
       "decoder": "codex",
+      "default_hook_seconds": 600,
+      "entry_fields": [
+        "async"
+      ],
       "events": {
         "PostToolUse": "post_tool_use",
         "PreCompact": "compact",
@@ -95,12 +125,17 @@
         "pre_tool_use",
         "post_tool_use"
       ],
+      "matcher_style": "regex",
       "matchers": {
         "PostToolUse": "tool_name",
         "PreToolUse": "tool_name",
         "SessionEnd": "reason",
         "SessionStart": "source"
       },
+      "output_fields": [
+        "continue",
+        "stopReason"
+      ],
       "plain_output_events": [
         "session_start",
         "prompt"
@@ -109,6 +144,7 @@
         "stop": "block"
       },
       "rewrites": {},
+      "session_end_limit_seconds": 3,
       "tool_categories": {
         "Bash": "shell",
         "apply_patch": "edit",
@@ -117,7 +153,9 @@
         "request_user_input": "question",
         "view_image": "read",
         "write_file": "write"
-      }
+      },
+      "wake_answer": "",
+      "wake_seconds": 0
     }
   }
 }

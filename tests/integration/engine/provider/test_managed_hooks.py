@@ -12,7 +12,36 @@ from engine.enums.managed_state import ManagedState
 
 
 def sample_hook(command: str = "check") -> ManagedHook:
-    return ManagedHook.found("sample", "BeforeTool", "Shell", {"command": command, "timeout": 30, "statusMessage": "Checking"}, "settings.json", True)
+    return ManagedHook.found("sample", "BeforeTool", "Shell", {"command": command, "timeout": 30, "statusMessage": "Checking"}, "settings.json", True, 600)
+
+
+def test_a_hook_without_timeout_gets_600_seconds():
+    assert ManagedHook.found("sample", "BeforeTool", "Shell", {"command": "check"}, "settings.json", True, 600).timeout == 600
+
+
+def test_an_entry_with_args_and_no_command_is_loaded():
+    hook = ManagedHook.found("claude", "PreToolUse", "Bash", {"type": "command", "args": ["node", "check.js"]}, "settings.json", True, 600)
+    assert hook.command == "node check.js" and hook.fields == {"args": ["node", "check.js"]}
+
+
+def test_the_extra_fields_args_and_shell_are_kept():
+    hook = ManagedHook.found("claude", "PreToolUse", "Bash", {"type": "command", "command": "node", "args": ["check.js"], "shell": "bash"}, "settings.json", True, 600)
+    assert (hook.command, hook.fields) == ("node", {"args": ["check.js"], "shell": "bash"})
+
+
+def test_facts_name_each_set_field():
+    entry = {"command": "node", "args": ["check.js"], "if": "Bash(git *)", "asyncRewake": True, "onFailure": "block", "shell": "bash", "timeout": 20}
+    assert ManagedHook.found("claude", "PreToolUse", "Bash", entry, "settings.json", True, 600).facts() == [
+        "If: Bash(git *)", "In the background, wakes the agent", "Timeout: 20 s", "Blocks on failure", "Shell: bash", "Arguments"]
+
+
+def test_facts_always_show_the_timeout():
+    hook = ManagedHook.found("claude", "PostToolUse", "Edit", {"command": "lint", "async": True}, "settings.json", True, 600)
+    assert hook.facts() == ["In the background", "Timeout: 600 s"]
+
+
+def test_facts_are_empty_for_a_plain_hook_except_the_timeout():
+    assert ManagedHook.found("claude", "Stop", "", {"command": "check"}, "settings.json", True, 600).facts() == ["Timeout: 600 s"]
 
 
 def test_the_same_hook_has_the_same_id_and_keeps_extra_fields():

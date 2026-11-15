@@ -39,6 +39,9 @@ from engine.database.schema import Schema
 from engine.driver.hook_event import HookEvent
 from engine.driver.hook_reply import HookReply
 from engine.driver.hook_route import HookRoute
+from engine.driver.wake_ask import WakeAsk
+from engine.driver.wake_reply import GIVEN_STATUS, WakeReply
+from engine.driver.wake_route import WakeRoute
 from engine.command.script_policy import ScriptPolicy
 from engine.command.bus import Bus
 from engine.command.command import Command
@@ -90,6 +93,10 @@ R = TypeVar("R")
 S = TypeVar("S")
 
 COMMITTING_JOURNAL = StoryJournal()
+
+
+# how long a story's wake ask waits for a line, so a story never waits the 25 seconds a real ask does
+STORY_WAKE_SECONDS = 0.2
 
 
 class Story(KitRows):
@@ -306,6 +313,30 @@ class Story(KitRows):
             handler = next(handler for module in ModuleFinder(self.home).modules() for handler in module.tick_handler_declarations() if handler.label == label)
             with self.repeated_work.request():
                 handler.handler(self.container)
+
+    # an ask of the program's wake hook, as journal-hook --wake sends it, that waits for a line a short while only
+    def wake_ask(self, session: str, token: str = "t-1", program: str = "claude", launch: str = "") -> WakeReply:
+        self.steps.append(f"wake ask {session} {token}")
+        route = self.container.get(WakeRoute)
+        with self.repeated_work.request():
+            first = route.answer(WakeAsk(program, session, launch, token))
+        return route.waited(first, STORY_WAKE_SECONDS) if first.is_waiting else first
+
+    def wake_received(self, answer: WakeReply) -> bool:
+        self.steps.append(f"wake received {answer.line_id}")
+        with self.repeated_work.request():
+            return self.container.get(WakeRoute).received(answer.line_id, answer.token)
+
+    def expect_wake_line(self, answer: WakeReply, text: ExpectedText) -> None:
+        self.checked("wake line")
+        self.expected(answer.status == GIVEN_STATUS and contains_text(answer.line, text), f"the wake hook was given {answer}, not {text!r}")
+
+    def expect_no_wake(self, answer: WakeReply) -> None:
+        self.checked("no wake")
+        self.expected(answer.status != GIVEN_STATUS, f"the wake hook was given {answer}")
+
+    def live_wake_waiters(self) -> int:
+        return self.container.get(WakeRoute).live_waiters()
 
     def tick(self, session: str) -> HookReply:
         return self.hook(session, HookSamples.tick())

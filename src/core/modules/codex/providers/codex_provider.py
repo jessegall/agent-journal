@@ -49,7 +49,7 @@ from core.modules.codex.providers.support.codex_journal_config import CodexJourn
 from engine.provider.managed_hook import ManagedHook
 from engine.provider.program_settings import ProgramSettings
 from engine.provider.settings_file import SettingsFile
-from core.modules.codex.models.enums.codex_hook_event import CodexHookEvent
+from core.modules.codex.models.enums.codex_hook_event import SESSION_END_LIMIT_SECONDS, CodexHookEvent
 from engine.journal.journal_home import JOURNAL_FOLDER
 
 HOME_VARIABLE = "CODEX_HOME"
@@ -80,6 +80,7 @@ class CodexProvider(Provider):
     line_events = [HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE]
     plain_output_events = [HookEventName.SESSION_START, HookEventName.PROMPT]
     refusals = {HookEventName.STOP: RefusalStyle.BLOCK}
+    session_end_limit_seconds = SESSION_END_LIMIT_SECONDS
     halts = {HookEventName.PRE_TOOL_USE: HaltStyle.REFUSE, HookEventName.PROMPT: HaltStyle.REFUSE}
     tool_categories = {"Bash": ToolType.SHELL, "apply_patch": ToolType.EDIT, "write_file": ToolType.NEW_FILE,
                        "read_file": ToolType.READ, "view_image": ToolType.READ, "collaborationspawn_agent": ToolType.AGENT,
@@ -96,7 +97,7 @@ class CodexProvider(Provider):
         "UserPromptSubmit": {"additionalContextLimit": 0},
         "PreToolUse": {"additionalContextLimit": 0},
         "PostToolUse": {"additionalContextLimit": 0},
-        "SessionEnd": {"timeout": 3},
+        "SessionEnd": {"timeout": SESSION_END_LIMIT_SECONDS},
     })
     session_variable = "CODEX_THREAD_ID"
     markers = ["CODEX_THREAD_ID", "CODEX_SESSION_ID", "CODEX_TOOL_CALL_ID", "CODEX_CI", "CODEX_SANDBOX", "CODEX_VERSION",

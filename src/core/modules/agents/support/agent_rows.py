@@ -27,6 +27,14 @@ class AgentRows:
             agents = self.queries.query(Agent).filter(session=session)
             return self.kept.read(agents, lambda: AgentRows.session_holder(agents.newest().take(SESSION_ROWS)), name="agents.session")
 
+    def open_session(self, session: str) -> Agent | None:
+        agent = self.session(session)
+        return agent if agent is not None and agent.ended_at is None else None
+
+    def open_launch(self, launch_name: str) -> Agent | None:
+        agent = self.launch_row(launch_name)
+        return agent if agent is not None and agent.ended_at is None else None
+
     @staticmethod
     def session_holder(rows: list[Agent]) -> Agent | None:
         return next((row for row in rows if row.ended_at is None), rows[0] if rows else None)

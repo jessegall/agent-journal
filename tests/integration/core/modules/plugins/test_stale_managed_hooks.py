@@ -14,7 +14,7 @@ PROJECT_COMMAND = "project-check"
 
 
 def managed_hook(command: str) -> ManagedHook:
-    return ManagedHook.found("claude", "PreToolUse", "Bash", {"command": command}, ".claude/settings.json", True)
+    return ManagedHook.found("claude", "PreToolUse", "Bash", {"command": command}, ".claude/settings.json", True, 600)
 
 
 def commands(story: FixtureJournal) -> list[str]:

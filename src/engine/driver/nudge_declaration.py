@@ -3,6 +3,7 @@ from dataclasses import dataclass, field, replace
 
 from engine.driver.block_condition import BlockCondition
 from engine.driver.interval import Interval
+from engine.driver.line_delivery import LineDelivery
 from engine.driver.nudge import Nudge
 from engine.enums.nudge_type import NudgeType
 from engine.driver.stored_nudge import StoredNudge
@@ -33,6 +34,7 @@ class NudgeDeclaration:
     closed_by: type[BlockCondition] | None = None
     plural_text: str = ""
     wakes_agent: bool = False
+    delivery: LineDelivery = LineDelivery.TERMINAL_TYPING
     path_fields: Sequence[str] = ()
     repeats_without_hook: bool = False
     id_field: str | None = None

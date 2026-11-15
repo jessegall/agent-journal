@@ -2,7 +2,10 @@ from core.modules.drivers.support.displayed_blocks import DisplayedBlocks
 from engine.agent_step.step_commit import StepCommit
 from core.modules.settings.bindings.support.context_share import ContextShare
 import json
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
+
+from engine.driver.nudge import Nudge
+from engine.driver.hook_event import HookEvent
 from dataclasses import asdict, replace
 from engine.command.bus import Bus
 from engine.command.command import Command
@@ -30,6 +33,7 @@ from engine.performance.timing import Timing
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.commands.deliver_agent_line.deliver_agent_line import DeliverAgentLine
 from core.modules.drivers.commands.record_hook_call.record_hook_call import RecordHookCall
+from core.modules.drivers.commands.support.context_line_split import ContextLineSplit
 from core.modules.drivers.commands.support.delivered_lines import DeliveredLines
 from core.modules.drivers.commands.support.compaction_end_percent import CompactionEndPercent
 from core.modules.drivers.commands.support.required_commands import RequiredCommands
@@ -50,6 +54,9 @@ from core.modules.agents.support.agent_label import AgentLabel
 WAITING_LINES_REASON = "every line waiting for the agent may be handed to it at this hook"
 
 LOG_LINE_CHARACTERS = 240
+# the characters kept below a program's own limit for the text of one reply, as room for what the program adds
+CONTEXT_LIMIT_MARGIN = 500
+OVERFLOW_SOURCE = "drivers.overflow"
 
 
 class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
@@ -84,10 +91,13 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
             return HookReply.allowed()
         waiting = self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING).every_row(WAITING_LINES_REASON)
         handed_lines = DeliveredLines.chosen(command.event, answers, tuple(waiting))
-        lines = handed_lines.with_answers(answers)
+        split = ContextLineSplit.split(handed_lines.with_answers(answers), self.context_limit(command.event))
+        lines = list(split.kept)
+        later = {nudge.text for nudge in split.rest}
+        handed_rows = [row for row in handed_lines.rows if row.nudge.text not in later]
         moves = OneMovePerRow.split(answers.commands)
         tool = command.event.tool
-        metadata = {**answers.metadata(), "foreign": [asdict(run) for run in command.event.foreign], "folder": str(command.event.raw.get("cwd", "")), "resumed": command.event.is_resume, "compaction_start": command.event.is_compaction_start, "stop_continuation": command.event.is_stop_continuation, "clear_start": command.event.is_clear_start, "ended_session": command.event.session if command.event.event == HookEventName.SESSION_END else "", "manual_compaction": command.event.is_manual_compaction, "search": SearchCategory.classify(tool, str(command.event.raw.get("cwd", "")), self.home.project_folder), "interrupted": command.event.is_interrupt, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.delivered_nudges, *answers.refusal_nudges)]}
+        metadata = {**answers.metadata(), "foreign": [asdict(run) for run in command.event.foreign], "folder": str(command.event.raw.get("cwd", "")), "resumed": command.event.is_resume, "compaction_start": command.event.is_compaction_start, "stop_continuation": command.event.is_stop_continuation, "clear_start": command.event.is_clear_start, "ended_session": command.event.session if command.event.event == HookEventName.SESSION_END else "", "manual_compaction": command.event.is_manual_compaction, "search": SearchCategory.classify(tool, str(command.event.raw.get("cwd", "")), self.home.project_folder), "interrupted": command.event.is_interrupt, "background_work": command.event.has_background_work, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.delivered_nudges, *answers.refusal_nudges)]}
         if command.event.event == HookEventName.COMPACT or command.event.is_compaction_start:
             percent = self.share.agent_percent(agent)
             if percent is not None:
@@ -120,10 +130,11 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         commit = self.steps.save(command.step.view, command.step.step, call.id, context) if command.step is not None else None
         if commit is not None and not commit.is_saved:
             raise StepConflictError()
-        for row in handed_lines.rows:
+        for row in handed_rows:
             self.event_rows.remember(row)
-        for row in handed_lines.rows:
+        for row in handed_rows:
             self.bus.dispatch(DeliverAgentLine(row.id, call.id, context.timestamp), context)
+        self.leave_for_next_hook(agent.id, split.rest, answers, {row.nudge.text for row in handed_lines.rows}, context)
         outcomes = [(rule, *self.run_command(rule_command, context)) for rule, rule_command in moves.runnable if rule not in answers.refused_rewriters]
         refused = [(rule, line) for rule, line, _ in outcomes if line]
         output_tools = self.providers.provider(command.event.program).refusal_output_tools
@@ -134,6 +145,18 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
             return self.save_waiting_lines(agent.id, answers, refused, call.id, context)
         return HookReply(answers.refusal, [*(nudge.text for nudge in lines), *(line for _, line in refused)], call.id, updated_input, terminal=answers.terminal,
                          labelled_lines=[*(nudge.labelled for nudge in (*lines, *answers.refusal_nudges)), *(f"journal: {line}" for _, line in refused)])
+
+    def context_limit(self, event: HookEvent) -> int:
+        limit = self.providers.provider(event.program).additional_context_limit
+        return limit - CONTEXT_LIMIT_MARGIN if limit and event.event != HookEventName.TICK else 0
+
+    # the lines of a reply past the program's limit wait for the agent's next hook, each with the source it came from;
+    # a waiting line that did not fit is not delivered, so it waits as it was
+    def leave_for_next_hook(self, agent_id: int, rest: Sequence[Nudge], answers: RuleAnswers, waiting_texts: set[str], context: Context) -> None:
+        sources = {text: rule for rule, text in answers.rule_lines}
+        for nudge in rest:
+            if nudge.text not in waiting_texts:
+                self.nudger.send_nudge(agent_id, nudge, sources.get(nudge.text, OVERFLOW_SOURCE), context)
 
     def save_waiting_lines(self, agent_id: int, answers: RuleAnswers, refused: list[tuple[str, str]], call_id: int, context: Context) -> HookReply:
         nudges = {nudge.text: nudge for nudge in answers.delivered_nudges}

@@ -171,3 +171,46 @@ func TestASkippedEventsRefusalIsAnswered(t *testing.T) {
 		t.Fatalf("code = %d, stdout = %s", code, stdout.String())
 	}
 }
+
+func blockedReply(run ForeignRun) Reply {
+	return foreignRunReply(hookProgram, "pre_tool_use", run)
+}
+
+func TestOnFailureBlockRefusesATimeout(t *testing.T) {
+	if reply := blockedReply(ForeignRun{ID: "guard", TimedOut: true, OnFailure: "block"}); reply.Refusal != "guard failed: hook timed out" || reply.Terminal != "" {
+		t.Fatalf("reply = %+v", reply)
+	}
+}
+
+func TestOnFailureBlockRefusesACrash(t *testing.T) {
+	for _, code := range []int{1, -1} {
+		if reply := blockedReply(ForeignRun{ID: "guard", ExitCode: code, Stderr: "boom", OnFailure: "block"}); !strings.HasPrefix(reply.Refusal, "guard failed: hook exited with code") {
+			t.Fatalf("exit %d gave %+v", code, reply)
+		}
+	}
+}
+
+func TestOnFailureBlockRefusesUnreadableOutput(t *testing.T) {
+	if reply := blockedReply(ForeignRun{ID: "guard", Stdout: "{not json", OnFailure: "block"}); reply.Refusal != "guard failed: hook answer must be a JSON object" {
+		t.Fatalf("reply = %+v", reply)
+	}
+}
+
+func TestWithoutOnFailureTheseStayNotes(t *testing.T) {
+	for _, run := range []ForeignRun{{ID: "guard", TimedOut: true}, {ID: "guard", ExitCode: 1}, {ID: "guard", Stdout: "{not json"}} {
+		if reply := blockedReply(run); reply.Refusal != "" || reply.Terminal == "" {
+			t.Fatalf("%+v gave %+v", run, reply)
+		}
+	}
+}
+
+func TestOnFailureIsIgnoredForAProgramThatDoesNotHonourIt(t *testing.T) {
+	hook := ManagedHook{Event: "PreToolUse", Fields: map[string]any{"onFailure": "block"}}
+	table := programs.LoadTable("")
+	if onFailure(hook, table.Programs["codex"]) != "" || onFailure(hook, table.Programs["claude"]) != "block" {
+		t.Fatal("onFailure is not read by the program's entry fields")
+	}
+	if onFailure(ManagedHook{Event: "Stop", Fields: hook.Fields}, table.Programs["claude"]) != "" {
+		t.Fatal("onFailure blocked a Stop, where Claude Code gives it no effect")
+	}
+}

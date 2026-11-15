@@ -1,3 +1,4 @@
+from engine.driver.line_delivery import LineDelivery
 from abc import ABC, abstractmethod
 
 from engine.command.context import Context
@@ -18,4 +19,5 @@ class Nudger(ABC):
     def send_nudge(self, agent_id: int, nudge: Nudge, source: str, context: Context, wakes_agent: bool = False) -> Model: ...
 
     @abstractmethod
-    def send_text(self, agent_id: int, text: str, source: str, context: Context, wakes_agent: bool = False, repeats_without_hook: bool = False) -> Model: ...
+    def send_text(self, agent_id: int, text: str, source: str, context: Context, wakes_agent: bool = False, repeats_without_hook: bool = False,
+                  delivery: LineDelivery = LineDelivery.TERMINAL_TYPING) -> Model: ...

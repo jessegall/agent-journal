@@ -9,6 +9,8 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.support.line_typing import LineTyping
+from core.modules.drivers.support.wake_delivery import WakeDelivery
+from engine.driver.line_delivery import LineDelivery
 from engine.query.conditions.greater import Greater
 
 WAITING_LINES_REASON = "a release types every line that waited for the agent, oldest first"
@@ -25,10 +27,12 @@ class WaitingLineTyping:
     agent sits between turns (a silent agent in a turn is never typed to), and its program's plan allowance
     is not used up; a line that is not typed stays waiting for the agent's next hook, or for the end of its
     usage limit. The same line is typed once between two hooks of the agent: a repeat is entered without
-    being typed again."""
+    being typed again. A line delivered by the wake hook goes to the agent's live wake waiter instead; with no
+    live waiter (one that expired or crashed, a compaction, an interrupt, or hook settings written before the wake
+    hook) it is typed as before, so no wake is lost."""
 
-    def __init__(self, queries: Queries, typing: LineTyping, bus: Bus, hook_calls: HookCallQuery, agents: AgentRows) -> None:
-        self.queries, self.typing, self.bus, self.hook_calls, self.agents = queries, typing, bus, hook_calls, agents
+    def __init__(self, queries: Queries, typing: LineTyping, bus: Bus, hook_calls: HookCallQuery, agents: AgentRows, wakes: WakeDelivery) -> None:
+        self.queries, self.typing, self.bus, self.hook_calls, self.agents, self.wakes = queries, typing, bus, hook_calls, agents, wakes
 
     def type(self, line: AgentLine, actor_id: int, timestamp: Timestamp) -> None:
         if not (line.wakes_agent or line.source in TERMINAL_SOURCES) or line.state is not AgentLineState.WAITING:
@@ -46,6 +50,8 @@ class WaitingLineTyping:
         actor = Actor(actor_id, ActorType.USER)
         if self.has_entered_repeat(line):
             self.bus.run(EnterAgentLine(line.id), actor)
+        elif line.delivery is LineDelivery.WAKE_HOOK and self.wakes.has_waiter(line.session_agent_id):
+            self.wakes.deliver(line, actor)
         else:
             self.typing.enter_line(line, actor)
 

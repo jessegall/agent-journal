@@ -34,8 +34,9 @@ from engine.agent_machine.contracts.capability import Capability
 from engine.enums.answer_encoding import AnswerEncoding
 from engine.enums.capability_part import CapabilityPart
 from engine.enums.capability_proof import CapabilityProof
+from engine.provider.enums.matcher_style import MatcherStyle
+from engine.provider.wake_hook import WakeHook
 from engine.enums.refusal_style import RefusalStyle
-from engine.provider.session_line import SessionLine
 from engine.provider.transcript_author import AGENT_AUTHOR, USER_AUTHOR
 from engine.provider.transcript_row import TranscriptRow
 from engine.provider.transcript_tail import TranscriptTail
@@ -60,6 +61,16 @@ class Provider(ABC):
     matchers: ClassVar[Mapping[str, str]] = {}
     line_events: ClassVar[Sequence[HookEventName]]
     plain_output_events: ClassVar[Sequence[HookEventName]] = ()
+    # the most characters of a hook's text the program reads whole; 0 when it reads any length
+    additional_context_limit: ClassVar[int] = 0
+    # the fields of a hook entry the program honours, and the output fields of a hook's answer it reads
+    hook_entry_fields: ClassVar[frozenset[str]] = frozenset({"async"})
+    hook_output_fields: ClassVar[frozenset[str]] = frozenset({"continue", "stopReason"})
+    matcher_style: ClassVar[MatcherStyle] = MatcherStyle.REGEX
+    default_hook_seconds: ClassVar[int] = 600
+    session_end_limit_seconds: ClassVar[int] = 3
+    # the hook entry the program is woken through; None when it is woken by typing only
+    wake_hook: ClassVar[WakeHook | None] = None
     refusals: ClassVar[Mapping[HookEventName, RefusalStyle]] = {}
     tool_categories: ClassVar[Mapping[str, ToolType]]
     safe_tools: ClassVar[tuple[str, ...]] = ()
@@ -76,6 +87,8 @@ class Provider(ABC):
     person_file_note: ClassVar[str] = ""
     controls: ClassVar[Sequence[ControlGroup]] = ()
     compacts_headless: ClassVar[bool] = False
+    # the instructions the program is given for a compaction summary by its PreCompact hook; empty when it takes none
+    compaction_instructions: ClassVar[str] = ""
     has_windowed_compaction: ClassVar[bool] = False
     new_capabilities: ClassVar[Sequence[Capability]] = ()
     # a program that cannot start without its launch variables refuses a launcher that passes none
@@ -103,6 +116,10 @@ class Provider(ABC):
 
     def __init__(self, folders: ProgramFolders) -> None:
         self.folders = folders
+
+    def reads_hook_text(self, event: HookEventName) -> bool:
+        """Whether the program reads a hook's text on this event: as lines for the agent, or as plain instructions."""
+        return event in self.line_events or event in self.plain_output_events
 
     def readable_folders(self) -> tuple[Path, ...]:
         return ()
@@ -218,9 +235,6 @@ class Provider(ABC):
 
     def transcript_path(self, event: HookEvent) -> Path | None:
         return event.transcript.path
-
-    def delivered_line(self, line: SessionLine) -> bool:
-        return False
 
     def peer_note(self, line: str) -> Sequence[PeerNote]:
         return ()

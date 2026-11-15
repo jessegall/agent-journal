@@ -13,7 +13,7 @@ from tests.stories.support.story_checks import expect_value
 
 def test_history_counts_each_outcome_and_returns_the_last_run(played):
     story = played(LeadStarted, SAMPLES)
-    hook = ManagedHook.found("claude", "PreToolUse", "Bash", {"command": "check"}, "settings.json", False)
+    hook = ManagedHook.found("claude", "PreToolUse", "Bash", {"command": "check"}, "settings.json", False, 600)
     samples = [(2, "", False, ForeignOutcome.REFUSED), (0, '{"hookSpecificOutput":{"updatedInput":{"command":"safe"}}}', False, ForeignOutcome.REWRITTEN),
                (7, "", False, ForeignOutcome.FAILED), (-1, "", True, ForeignOutcome.TIMEOUT), (0, "{}", False, ForeignOutcome.ALLOWED)]
     for index, (exit_code, stdout, timed_out, outcome) in enumerate(samples):
@@ -29,7 +29,7 @@ def test_history_counts_each_outcome_and_returns_the_last_run(played):
 
 def test_a_hook_without_runs_has_empty_history(played):
     story = played(LeadStarted, SAMPLES)
-    hook = ManagedHook.found("claude", "PreToolUse", "Bash", {"command": "never"}, "settings.json", False)
+    hook = ManagedHook.found("claude", "PreToolUse", "Bash", {"command": "never"}, "settings.json", False, 600)
     history = story.container.get(ManagedHookHistoryQuery).read(hook)
     expect_row(history, runs=0, refused=0, rewritten=0, failed=0, timed_out=0)
     expect_row(history, last=None)
@@ -37,7 +37,7 @@ def test_a_hook_without_runs_has_empty_history(played):
 
 def test_history_reads_the_last_hundred_runs_of_this_hook(played):
     story = played(LeadStarted, SAMPLES)
-    hook = ManagedHook.found("claude", "PreToolUse", "Bash", {"command": "bounded"}, "settings.json", False)
+    hook = ManagedHook.found("claude", "PreToolUse", "Bash", {"command": "bounded"}, "settings.json", False, 600)
     for index in range(102):
         run = {"id": hook.id, "exit_code": 7 if index == 0 else 0, "stdout": "{}", "stderr": "", "milliseconds": index, "timed_out": False, "answer": {}}
         story.hook("s-1", HookSamples.edit("cart.py").with_fields(firing=f"bounded-{index}", foreign=[run]))
@@ -51,7 +51,7 @@ def test_history_reads_the_last_hundred_runs_of_this_hook(played):
 
 def test_the_read_of_a_hooks_history_walks_only_the_calls_that_ran_a_project_hook(played):
     story = played(LeadStarted, SAMPLES)
-    hook = ManagedHook.found("claude", "PreToolUse", "Bash", {"command": "indexed"}, "settings.json", False)
+    hook = ManagedHook.found("claude", "PreToolUse", "Bash", {"command": "indexed"}, "settings.json", False, 600)
     for index in range(40):
         story.hook("s-1", HookSamples.edit("cart.py").with_fields(firing=f"quiet-{index}", foreign=[]))
     run = {"id": hook.id, "exit_code": 0, "stdout": "{}", "stderr": "", "milliseconds": 1, "timed_out": False, "answer": {}}

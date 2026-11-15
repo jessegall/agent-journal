@@ -48,14 +48,24 @@ def test_the_file_holds_bypass_status_line_and_auto_memory_off(provider, home):
     stored = journal_file(provider, home)
     assert stored["permissions"] == {"defaultMode": "bypassPermissions"}
     assert stored["autoMemoryEnabled"] is False
-    assert stored["statusLine"] == {"type": "command", "command": f'{RUNNER} --status "{home.project_folder}"', "padding": 0}
+    assert stored["statusLine"] == {"type": "command", "command": f'{RUNNER} --status "{home.project_folder}"', "padding": 0, "refreshInterval": 30}
 
 
 def test_one_journal_entry_per_hook_event_and_no_other_hook(provider, home):
     hooks = journal_file(provider, home)["hooks"]
     assert list(hooks) == sorted(ClaudeCodeProvider.hook_events)
-    assert all(len(blocks) == 1 and len(blocks[0]["hooks"]) == 1 and blocks[0]["hooks"][0]["command"] == f'{RUNNER} claude "{home.project_folder}"'
-               for blocks in hooks.values())
+    assert all(len(blocks) == 1 and blocks[0]["hooks"][0]["command"] == f'{RUNNER} claude "{home.project_folder}"' for blocks in hooks.values())
+
+
+def test_the_claude_stop_event_has_a_wake_entry_with_async_and_async_rewake(provider, home):
+    stop = journal_file(provider, home)["hooks"]["Stop"]
+    assert len(stop) == 1 and len(stop[0]["hooks"]) == 2
+    assert stop[0]["hooks"][1] == {"type": "command", "command": f'{RUNNER} claude "{home.project_folder}" --wake', "timeout": 86_400, "async": True, "asyncRewake": True}
+
+
+def test_other_events_have_one_entry(provider, home):
+    hooks = journal_file(provider, home)["hooks"]
+    assert all(len(blocks[0]["hooks"]) == 1 for event, blocks in hooks.items() if event != "Stop")
 
 
 def test_a_hook_in_the_person_settings_is_not_carried(provider, home):
@@ -90,7 +100,7 @@ def test_the_same_inputs_give_the_same_bytes(provider, home):
 
 
 def test_a_managed_hook_lengthens_the_entry_timeout(provider, home):
-    managed = tuple([ManagedHook.found("claude", "PreToolUse", "Bash", {"command": "slow", "timeout": 60}, "settings.json", False)])
+    managed = tuple([ManagedHook.found("claude", "PreToolUse", "Bash", {"command": "slow", "timeout": 60}, "settings.json", False, 600)])
     hooks = journal_file(provider, home, managed)["hooks"]
     assert hooks["PreToolUse"][0]["hooks"][0]["timeout"] == 150
     assert hooks["Stop"][0]["hooks"][0]["timeout"] == 90
@@ -105,3 +115,27 @@ def test_the_entries_name_the_main_root(provider, home, tmp_path):
 
 def test_the_person_file_is_listed_for_backup(provider, home):
     assert provider.journal_settings(home, RUNNER, (), []).person_files == provider.user_hook_files()
+
+
+def test_the_status_line_has_a_refresh_interval(provider, home):
+    assert journal_file(provider, home)["statusLine"]["refreshInterval"] == 30
+
+
+def test_the_status_line_command_is_unchanged(provider, home):
+    assert journal_file(provider, home)["statusLine"]["command"] == f'{RUNNER} --status "{home.project_folder}"'
+
+
+def test_the_journals_entries_are_in_the_settings_file_claude_reads(provider, home):
+    assert provider.journal_hook_file(home) == home.program_settings_file("claude")
+    assert all(f'{RUNNER} claude' in blocks[0]["hooks"][0]["command"] for blocks in journal_file(provider, home)["hooks"].values())
+
+
+def test_a_hook_kept_in_the_local_file_runs_as_a_managed_hook(provider):
+    assert Path(".claude/settings.local.json") in ClaudeCodeProvider.hook_files
+
+
+def test_the_local_files_env_is_carried_since_claude_does_not_read_that_file(provider, home):
+    local = home.project_folder / ".claude/settings.local.json"
+    local.parent.mkdir(parents=True, exist_ok=True)
+    local.write_text(json.dumps({"env": {"LOCAL_FLAG": "1"}, "hooks": {}}))
+    assert journal_file(provider, home)["env"] == {"LOCAL_FLAG": "1"}

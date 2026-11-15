@@ -14,5 +14,6 @@ class HookEventName(StrEnum):
     SESSION_START = "session_start"
     SESSION_END = "session_end"
     COMPACT = "compact"
+    COMPACT_END = "compact_end"
     MESSAGE_DISPLAY = "message_display"
     TICK = "tick"

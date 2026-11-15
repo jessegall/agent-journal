@@ -30,6 +30,10 @@ its hooks and are written again at every start; your own `~/.claude` and `~/.cod
 says it is installed and changes nothing. A project that holds a version 4 journal is left as it is and told to
 upgrade (see below).
 
+While the journal runs Claude Code, its own status line takes the place of yours: it keeps the context percent and the
+plan limits for the journal, and Claude Code hides its footer hints while it runs. Start `claude` yourself, outside
+`journal launch`, to have your own status line back: only a launch passes the journal's `--settings` with `--setting-sources project`.
+
 Then start your agent under the journal:
 
     journal launch claude

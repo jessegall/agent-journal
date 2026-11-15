@@ -32,7 +32,7 @@ class ProjectHooks:
         root = self.home.project_folder
         providers = self.providers.all()
         manager = HookManager(root, self.managed)
-        return ProjectHookList(tuple(ManagedHookItem(hook, self.history.read(hook)) for hook in self.managed.all()),
+        return ProjectHookList(tuple(ManagedHookItem.of(hook, self.history.read(hook)) for hook in self.managed.all()),
                                tuple(entry for provider in providers for entry in self.journal_entries(provider)),
                                tuple(hook for provider in providers for hook in manager.unmanaged(type(provider), root)),
                                tuple(entry for provider in providers for entry in (*self.excluded(provider), *self.tracked(provider, manager), *self.journal_files(provider))),
@@ -44,7 +44,10 @@ class ProjectHooks:
         program_hooks = ProgramHooks.journal(type(provider), hook_file)
         stored = ProgramHooks.partitioned(program_hooks.settings().get("hooks")).journal
         managed = self.managed.all()
-        return [JournalHook(provider.name, event, str(hook_file.resolve().relative_to(root)), program_hooks.entry_timeout(event, managed)) for event in stored]
+        source = str(hook_file.resolve().relative_to(root))
+        wake = provider.wake_hook
+        return [*(JournalHook(provider.name, event, source, program_hooks.entry_timeout(event, managed)) for event in stored),
+                *([JournalHook(provider.name, wake.event, source, wake.limit_seconds)] if wake is not None and wake.event in stored else [])]
 
     def excluded(self, provider: Provider) -> list[UnmanagedHook]:
         native = [entry for name in provider.hook_files for entry in self.excluded_file(provider.name, name)]

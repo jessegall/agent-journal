@@ -354,3 +354,17 @@ func TestAStopAskedAgainCountsItsRetriesInTheRequest(t *testing.T) {
 		t.Fatalf("the retry counts of the three asks were %q", retries)
 	}
 }
+
+func TestSessionEndWaitIsFourSeconds(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, filepath.Join(root, ".journal", "runtime", "hook-wait-seconds"), "20")
+	if LimitFor("session_end") != 4*time.Second || limitOf(root, "session_end", "main") != 4*time.Second || limitOf(root, "session_end", "helper") != 4*time.Second {
+		t.Fatal("a session's end waits on the journal for more than four seconds")
+	}
+}
+
+func TestPromptWaitFollowsTheMeasuredLimit(t *testing.T) {
+	if LimitFor("prompt") != 8*time.Second {
+		t.Fatalf("a prompt waits %s, want the 8 seconds within its honoured timeout", LimitFor("prompt"))
+	}
+}

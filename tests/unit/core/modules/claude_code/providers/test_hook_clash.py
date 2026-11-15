@@ -12,5 +12,5 @@ from core.modules.claude_code.providers.claude_code_provider import ClaudeCodePr
     ("Stop", HookEventName.STOP, "", [HookEffect.CAN_REFUSE]),
 ])
 def test_claude_hook_labels_follow_its_provider(native, event, matcher, expected):
-    hook = ManagedHook.found(ClaudeCodeProvider.name, native, matcher, {"command": "check"}, "settings.json", False)
+    hook = ManagedHook.found(ClaudeCodeProvider.name, native, matcher, {"command": "check"}, "settings.json", False, 600)
     assert HookEffect.detected(hook, ClaudeCodeProvider, event) == expected

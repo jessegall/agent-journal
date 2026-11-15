@@ -5,6 +5,7 @@ import HookRunHistory from "./HookRunHistory.vue";
 
 const props = defineProps({
   hook: { type: Object, required: true },
+  facts: { type: Array, default: () => [] },
   history: { type: Object, required: true },
   disabled: Boolean,
   failure: String,
@@ -26,7 +27,7 @@ const saveTimeout = (event) =>
 
 <template>
   <div class="managed-hook" :data-managed-hook="hook.id">
-    <HookDetails :hook="hook" />
+    <HookDetails :hook="hook" :facts="facts" />
     <div class="hook-controls">
       <Switch
         :on="hook.state === 'on'"

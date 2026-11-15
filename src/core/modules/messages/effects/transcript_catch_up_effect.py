@@ -6,6 +6,7 @@ from engine.command.command import Command
 from engine.enums.hook_event_name import HookEventName
 from engine.provider.provider import Provider
 from engine.provider.providers import Providers
+from engine.provider.transcript_author import TranscriptAuthor
 from engine.provider.transcript_entry import TranscriptEntry
 from engine.provider.transcript_entries import TranscriptEntries
 from engine.query.queries import Queries
@@ -65,6 +66,9 @@ class TranscriptCatchUpEffect(EventEffect):
 
     def row_commands(self, event: HookEvent, agent_id: int, row: TranscriptEntry) -> list[Command[object]]:
         cutoff_at = self.settings.seconds(TRANSCRIPT_LOOKBACK_SECONDS).deducted(row.created_at)
+        # the wake hook's own notification is no prompt a person typed
+        if row.is_prompt and TranscriptAuthor.is_wake_notification(row.text):
+            return []
         if row.is_prompt:
             has_hook = self.hook_calls.has_call_after(agent_id, HookEventName.PROMPT, HookCall.summarize(row.text), cutoff_at)
             return [] if has_hook else [RecordMissingPrompt(row.text), RecordTypedPrompt(row.text.strip())]

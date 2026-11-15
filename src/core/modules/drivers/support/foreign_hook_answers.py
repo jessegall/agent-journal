@@ -51,16 +51,23 @@ class ForeignHookAnswers:
         answers = [ForeignAnswer.read(run) for run in event.foreign]
         refusal_text = next((answer.reason() for answer in answers if answer.refusal), "")
         rewritten = next((answer for answer in answers if answer.updated_input), None)
-        lines = [line for answer in answers for line in self.new_lines(agent_id, answer.name, answer.lines)]
-        takes_lines = event.event in provider.line_events
-        commands: list[Command[object]] = [RecordAgentNotice(agent_id, line, MANAGED_HOOKS_KEY) for line in lines] if takes_lines else []
-        nudges = [ManagedHookLineNudge.declared().nudge(line=line) for line in lines] if takes_lines else []
+        # an event whose text the program reads as instructions, such as a compaction, gets a hook's words every time;
+        # an event that takes lines gets them again only once they change from what that hook last said
+        reads_text = provider.reads_hook_text(event.event)
+        takes_instructions = reads_text and event.event not in provider.line_events
+        lines = [line for answer in answers for line in (self.named_lines(answer.name, answer.lines) if takes_instructions else self.new_lines(agent_id, answer.name, answer.lines))]
+        commands: list[Command[object]] = [RecordAgentNotice(agent_id, line, MANAGED_HOOKS_KEY) for line in lines] if reads_text else []
+        nudges = [ManagedHookLineNudge.declared().nudge(line=line) for line in lines] if reads_text else []
         refusal = None
         if refusal_text:
             commands.append(RecordAgentNotice(agent_id, refusal_text, MANAGED_HOOKS_KEY))
             refusal = ManagedHookRefusalNudge.declared().nudge(agent=self.numbers.number(AGENT_MODEL_NAME, agent_id))
         return ForeignHookAnswer(refusal, tuple(nudges), tuple(commands), dict(rewritten.updated_input) if rewritten is not None else {}, rewritten.name if rewritten is not None else "",
-                                 0 if takes_lines else len(lines), "\n".join(answer.terminal for answer in answers if answer.terminal))
+                                 0 if reads_text else len(lines), "\n".join(answer.terminal for answer in answers if answer.terminal))
+
+    @staticmethod
+    def named_lines(name: str, reported: Sequence[str]) -> list[str]:
+        return [f"{name}: {text}" for text in reported]
 
     def new_lines(self, agent_id: int, name: str, reported: Sequence[str]) -> list[str]:
         if not reported:

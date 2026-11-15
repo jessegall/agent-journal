@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"os"
-	"regexp"
 
 	"github.com/jessegall/agent-journal/tools/journal-hook/programs"
 )
@@ -38,12 +37,16 @@ func LoadManaged(path string) []ManagedHook {
 
 func Matching(hooks []ManagedHook, program, event string, body []byte, table programs.Table) []ManagedHook {
 	field := table.Programs[program].Matchers[event]
+	style := table.Programs[program].MatcherStyle
 	var fields map[string]any
 	validBody := json.Unmarshal(body, &fields) == nil
 	value, validField := fields[field].(string)
 	var matches []ManagedHook
 	for _, hook := range hooks {
 		if hook.State != "on" || hook.Program != program || hook.Event != event {
+			continue
+		}
+		if condition, ok := hook.Fields["if"].(string); ok && table.Programs[program].HonoursEntryField("if") && !ifMatches(condition, body) {
 			continue
 		}
 		if field == "" || hook.Matcher == "" || hook.Matcher == "*" {
@@ -53,8 +56,7 @@ func Matching(hooks []ManagedHook, program, event string, body []byte, table pro
 		if !validBody || !validField {
 			continue
 		}
-		matched, err := regexp.MatchString(hook.Matcher, value)
-		if err != nil || !matched {
+		if !matcherMatches(style, hook.Matcher, value) {
 			continue
 		}
 		matches = append(matches, hook)

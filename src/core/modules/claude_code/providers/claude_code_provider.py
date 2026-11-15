@@ -19,6 +19,9 @@ from pathlib import Path
 
 from engine.enums.hook_event_name import HookEventName
 from engine.enums.tool_type import ToolType
+from engine.provider.enums.matcher_style import MatcherStyle
+from engine.provider.enums.wake_answer import WakeAnswer
+from engine.provider.wake_hook import WakeHook
 from engine.journal.journal_home import JournalHome
 from engine.provider.helper_launch import HelperLaunch
 from engine.provider.helper_outcome import HelperOutcome
@@ -39,7 +42,6 @@ from engine.provider.control_group import ControlGroup
 from engine.provider.provider import Provider
 from engine.enums.halt_style import HaltStyle
 from engine.enums.refusal_style import RefusalStyle
-from engine.provider.session_line import SessionLine
 from engine.provider.peer_note import PeerNote
 from engine.provider.transcript_row import TranscriptRow
 from engine.file.file_access import FileAccess
@@ -48,7 +50,6 @@ from engine.types.type_guards import is_list, is_mapping
 from engine.private.server_keys import ServerKeys
 from core.modules.claude_code.providers.support.claude_folder_name import ClaudeFolderName
 from core.modules.claude_code.providers.support.claude_stream_row import ClaudeStreamRow
-from core.modules.claude_code.providers.support.claude_inbox import ClaudeInbox
 from core.modules.claude_code.providers.support.claude_kept_skills import ClaudeKeptSkills
 from core.modules.claude_code.providers.support.claude_peer_notes import ClaudePeerNotes
 from core.modules.claude_code.providers.support.claude_trust import ClaudeTrust
@@ -74,13 +75,19 @@ EFFORT_CHOICES = (("low", "Low"), ("medium", "Medium"), ("high", "High"), ("xhig
 
 SETTINGS_FLAGS = ("--settings", "--setting-sources")
 SETTING_SOURCES = "project"
+LOCAL_SETTINGS = Path(".claude/settings.local.json")
 SERVER_FILE = "mcp.json"
 SERVERS_KEY = "mcpServers"
 COPIED_SETTINGS = ("env", "apiKeyHelper", "awsAuthRefresh", "awsCredentialExport", "forceLoginMethod", "forceLoginOrgUUID", "otelHeadersHelper",
                     "includeCoAuthoredBy", "skipDangerousModePermissionPrompt")
 BYPASS_PERMISSIONS = {"defaultMode": "bypassPermissions"}
 
-COMPACT_LINE = "/compact Focus on continuing the work at once: what you were doing last, what comes next, and the facts those depend on. Keep every instruction, request, direction and correction the user gave you. Leave out the rest of the earlier history and old messages: the journal gives back recent messages, tasks, memories and rules."
+COMPACT_LINE = "/compact"
+# the status line also runs every 30 seconds, so the status file of an idle session stays fresh (statusline page: seconds)
+STATUS_REFRESH_SECONDS = 30
+# the largest timeout Claude Code was seen to accept on an asyncRewake hook, which it enforces (report 1427, P3)
+WAKE_TIMEOUT_SECONDS = 86_400
+COMPACTION_INSTRUCTIONS = "Focus on continuing the work at once: what you were doing last, what comes next, and the facts those depend on. Keep every instruction, request, direction and correction the user gave you. Leave out the rest of the earlier history and old messages: the journal gives back recent messages, tasks, memories and rules."
 
 class ClaudeCodeProvider(Provider):
     """Anthropic's Claude Code: hooks in the journal's own settings file, passed with --settings, sessions
@@ -92,13 +99,22 @@ class ClaudeCodeProvider(Provider):
     executable = "claude"
     hook_events = {"SessionStart": HookEventName.SESSION_START, "UserPromptSubmit": HookEventName.PROMPT,
                    "PreToolUse": HookEventName.PRE_TOOL_USE, "PostToolUse": HookEventName.POST_TOOL_USE,
-                   "PostToolUseFailure": HookEventName.POST_TOOL_USE_FAILURE, "PreCompact": HookEventName.COMPACT,
+                   "PostToolUseFailure": HookEventName.POST_TOOL_USE_FAILURE, "PreCompact": HookEventName.COMPACT, "PostCompact": HookEventName.COMPACT_END,
                    "Stop": HookEventName.STOP, "StopFailure": HookEventName.STOP_FAILURE,
                    
                    "SessionEnd": HookEventName.SESSION_END, "MessageDisplay": HookEventName.MESSAGE_DISPLAY}
     new_capabilities = [Capability(CapabilityPart.WAKE_HOOK, HookEventName.STOP, CapabilityProof.DOCUMENTED_UPSTREAM, CapabilityFallback.TYPING_OR_RESUME)]
     line_events = [HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE]
-    plain_output_events = [HookEventName.SESSION_START, HookEventName.PROMPT]
+    plain_output_events = [HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.COMPACT]
+    matcher_style = MatcherStyle.NAMES_OR_REGEX
+    session_end_limit_seconds = 60
+    # Claude Code saves an additionalContext text over 10,000 characters to a file and shows a preview (report 1468)
+    additional_context_limit = 10_000
+    # the hook entry and output fields the hooks page names (report 1468); updatedToolOutput, suppressOriginalPrompt and
+    # sessionTitle are read only on their own events (PostToolUse, UserPromptSubmit, SessionStart)
+    hook_entry_fields = frozenset({"if", "args", "shell", "async", "asyncRewake", "onFailure", "statusMessage"})
+    hook_output_fields = frozenset({"continue", "stopReason", "updatedToolOutput", "suppressOriginalPrompt", "sessionTitle", "terminalSequence"})
+    wake_hook = WakeHook("Stop", WakeAnswer.EXIT_WITH_STDERR, {"async": True, "asyncRewake": True}, WAKE_TIMEOUT_SECONDS)
     refusals = {HookEventName.PRE_TOOL_USE: RefusalStyle.DENY, HookEventName.PROMPT: RefusalStyle.BLOCK, HookEventName.STOP: RefusalStyle.BLOCK}
     skills_folder = ".claude/skills"
     profile_model_setting = "journal.core.profiles.model-claude"
@@ -114,13 +130,14 @@ class ClaudeCodeProvider(Provider):
     safe_tools = ("WebFetch", "WebSearch", "TodoWrite")
     web_reader_agents = tuple(["web-fetch"])
     matchers = {"PreToolUse": "tool_name", "PostToolUse": "tool_name", "PostToolUseFailure": "tool_name",
-                "SessionStart": "source", "SessionEnd": "reason", "PreCompact": "trigger"}
+                "SessionStart": "source", "SessionEnd": "reason", "PreCompact": "trigger", "PostCompact": "trigger"}
     hook_file = HookFile(Path(".claude/settings.local.json"), {})
     hook_files = (Path(".claude/settings.json"), Path(".claude/settings.local.json"))
     session_variable = "CLAUDE_CODE_SESSION_ID"
     person_file_note = "Claude Code itself may save a /model or /config choice in this file; the journal does not."
     markers = ["CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SHELL_PREFIX"]
     compacts_headless = True
+    compaction_instructions = COMPACTION_INSTRUCTIONS
     controls = (ControlGroup("model", "Model", tuple(ControlChoice(value, label, f"/model {value}") for value, label in MODEL_CHOICES)),
                 ControlGroup("effort", "Reasoning effort", tuple(ControlChoice(value, label, f"/effort {value}") for value, label in EFFORT_CHOICES)),
                 ControlGroup("context", "Context window", (ControlChoice("compact", "Compact context", COMPACT_LINE), ControlChoice("clear", "Clear context", "/clear"))))
@@ -268,6 +285,9 @@ class ClaudeCodeProvider(Provider):
         person_settings = self.person_settings(person_data.get(person_file, b""))
         unreadable = tuple(path for path in [person_file] if FileAccess.is_file(path) and (path not in person_data or person_settings is None))
         person_values = {key: value for key, value in (person_settings or {}).items() if key in COPIED_SETTINGS}
+        local_env = self.local_env(root)
+        if local_env:
+            person_values["env"] = {**(person_values.get("env") if isinstance(person_values.get("env"), dict) else {}), **local_env}
         settings = {**person_values, "permissions": BYPASS_PERMISSIONS, **self.hook_settings(runner, root),
                     "hooks": ProgramHooks.journal(type(self), path).journal_blocks(runner, root, managed)}
         state = self.state_file()
@@ -278,6 +298,14 @@ class ClaudeCodeProvider(Provider):
         server_file = SettingsFile(self.server_file(home), json.dumps({SERVERS_KEY: servers if is_mapping(servers) else {}}, indent=2, sort_keys=True) + "\n")
         return ProgramSettings(self.name, (SettingsFile(path, json.dumps(settings, indent=2, sort_keys=True) + "\n"), server_file),
                                person_files=self.user_hook_files(), person_data=person_data, unreadable_person_files=unreadable)
+
+    # Claude Code started with --setting-sources project does not read the project's local settings file, so its env is
+    # carried into the journal's own settings; its hooks are taken over as managed hooks
+    def local_env(self, root: Path) -> Mapping[str, object]:
+        path = root / LOCAL_SETTINGS
+        local = self.person_settings(KeptBytes.read(path)) if FileAccess.is_file(path) else None
+        env = (local or {}).get("env")
+        return env if isinstance(env, dict) else {}
 
     @staticmethod
     def person_settings(data: bytes) -> Mapping[str, object] | None:
@@ -310,10 +338,8 @@ class ClaudeCodeProvider(Provider):
 
     @classmethod
     def hook_settings(cls, runner: str, root: Path) -> Mapping[str, object]:
-        return {"autoMemoryEnabled": False, "statusLine": {"type": "command", "command": f'{runner} --status "{root}"', "padding": 0}}
-
-    def delivered_line(self, line: SessionLine) -> bool:
-        return ClaudeInbox(self.folders.folder(CONFIG_VARIABLE, ".claude") / "sessions").delivered_line(line)
+        return {"autoMemoryEnabled": False, "statusLine": {"type": "command", "command": f'{runner} --status "{root}"', "padding": 0,
+                                                             "refreshInterval": STATUS_REFRESH_SECONDS}}
 
     def peer_note(self, line: str) -> Sequence[PeerNote]:
         return ClaudePeerNotes.note(line)

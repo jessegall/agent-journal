@@ -1,0 +1,32 @@
+from collections.abc import Sequence
+from dataclasses import dataclass, replace
+
+from engine.driver.nudge import Nudge
+
+LINE_BREAK = 1
+
+
+@dataclass(frozen=True)
+class ContextLineSplit:
+    """The lines of one reply cut for a program that swaps a longer text for a file: the whole lines that fit within the
+    limit, counted with the line breaks that join them, go in this reply, and the rest wait for the agent's next hook.
+    A first line longer than the limit on its own is cut at the limit."""
+
+    kept: tuple[Nudge, ...]
+    rest: tuple[Nudge, ...]
+
+    @classmethod
+    def split(cls, lines: Sequence[Nudge], limit: int) -> "ContextLineSplit":
+        if limit <= 0:
+            return cls(tuple(lines), ())
+        kept: list[Nudge] = []
+        used = 0
+        for index, nudge in enumerate(lines):
+            size = len(nudge.text) + (LINE_BREAK if kept else 0)
+            if used + size > limit:
+                if not kept:
+                    return cls((replace(nudge, text=nudge.text[:limit]),), tuple(lines[index + 1:]))
+                return cls(tuple(kept), tuple(lines[index:]))
+            kept.append(nudge)
+            used += size
+        return cls(tuple(kept), ())

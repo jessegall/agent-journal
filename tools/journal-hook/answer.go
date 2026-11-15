@@ -72,7 +72,7 @@ func Answered(stdout, stderr io.Writer, program programs.Program, hookName, even
 		reply = withForeign(reply, foreignReply(program, event, runs))
 	}
 	stdoutText, stderrText, code := ProgramAnswer(program, hookName, event, reply)
-	io.WriteString(stdout, stdoutText)
+	io.WriteString(stdout, withPassthrough(stdoutText, program, hookName, reply, runs))
 	io.WriteString(stderr, stderrText)
 	return code
 }
@@ -120,6 +120,9 @@ func answered(program programs.Program, hookName, event string, reply Reply) (st
 	if len(reply.UpdatedInput) > 0 {
 		return rewritten(program.Rewrites[event], hookName, reply.UpdatedInput, lines), "", 0
 	}
+	if takesInstructions(program, event) {
+		return instructions(lines), "", 0
+	}
 	if reply.Refusal != "" {
 		return refused(program.Refusals[event], hookName, joined(reply.Refusal, lines))
 	}
@@ -127,6 +130,20 @@ func answered(program programs.Program, hookName, event string, reply Reply) (st
 		return "", "", 0
 	}
 	return jsonText(map[string]any{"hookSpecificOutput": map[string]any{"hookEventName": hookName, "additionalContext": lines}}), "", 0
+}
+
+// takesInstructions says the program reads a hook's plain output on this event as instructions rather than lines, as
+// Claude Code reads PreCompact stdout as instructions for the compaction summary; such an event is never refused.
+func takesInstructions(program programs.Program, event string) bool {
+	return program.TakesPlainOutput(event) && !program.AcceptsLines(event)
+}
+
+// instructions is the plain text a program takes as instructions, with a closing line break when there is any.
+func instructions(lines string) string {
+	if lines == "" {
+		return ""
+	}
+	return lines + "\n"
 }
 
 // rewritten is the answer that lets the tool run with the new input, which carries the fields the program asks for in a
