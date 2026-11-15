@@ -1,3 +1,4 @@
+from core.modules.messages.listeners.message_step_listener import MessageStepListener
 from core.modules.messages.needs.unread_message_needs import UnreadMessageNeeds
 from core.modules.messages.needs.unanswered_message_needs import UnansweredMessageNeeds
 from core.modules.messages.policies.unread_message_show_policy import UnreadMessageShowPolicy
@@ -130,6 +131,7 @@ class MessagesModule(Module):
     """Adds messages: what the user, the agents and the journal say in an environment's chat."""
 
     name = "journal.core.messages"
+    agent_listeners = [MessageStepListener]
     nudges = MESSAGE_NUDGES
     settings = MESSAGE_SETTINGS
     requires_engine = ">=5,<6"

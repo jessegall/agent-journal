@@ -132,7 +132,7 @@ class AgentHookRoute(HookRoute):
         reply = HookReply.stored(stored_call)
         agent = self.agents.find_unscoped(stored_call.session_agent_id)
         with self.bus.scopes.read_scope((), None, agent.environment_id):
-            is_answered = SAFETY_SLICE in self.slices.tick_answering_slices(agent)
+            is_answered = SAFETY_SLICE in self.slices.tick_slices(agent)
         is_stored_admission = not reply.refusal and event.event in (HookEventName.PRE_TOOL_USE, HookEventName.PROMPT)
         if not is_answered or not is_stored_admission:
             return reply

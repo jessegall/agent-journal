@@ -47,12 +47,12 @@ class DecisionAssembler:
             question = Question.posed(event)
             view = self.reader.read(agent.id, question)
             pinned = self.slices.pinned(view, event, active)
-            answering = pinned & active
-            answers = self.rule_answers.evaluate(event, agent, self.contribution_slices.machine_answered(answering, agent.role))
-            if not answering:
+            agent_slices = pinned & active
+            answers = self.rule_answers.evaluate(event, agent, self.contribution_slices.machine_answered(agent_slices, agent.role))
+            if not agent_slices:
                 return AssembledAnswer(answers)
-            view = self.assembly.with_sliced_needs(replace(view, pinned_slices=tuple(sorted(pinned))), question, answering)
-            step = self.assembly.sliced_machine(agent.role, answering, WalkAnswerPolicy(answers)).step(view, question)
+            view = self.assembly.with_sliced_needs(replace(view, pinned_slices=tuple(sorted(pinned))), question, agent_slices)
+            step = self.assembly.sliced_machine(agent.role, agent_slices, WalkAnswerPolicy(answers)).step(view, question)
             new_commands = [command for effect in (*step.record.unconditional_effects, *step.record.admission_effects) for command in effect.commands(view, step.record)]
         return AssembledAnswer(self.merged(answers, step.record, new_commands), AssembledStep(view, step))
 

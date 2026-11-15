@@ -2699,6 +2699,11 @@
   "merger": "allowed",
   "worker": "refused"
  },
+ "process claim": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
  "process delete": {
   "helper": "refused",
   "merger": "refused",

@@ -29,6 +29,6 @@ class AnsweringSlices:
         return frozenset(view.pinned_slices)
 
     # an old tick's entrance stands down for an agent once its slice answers that agent, as a hook's old rule does
-    def tick_answering_slices(self, agent: Agent) -> frozenset[str]:
+    def tick_slices(self, agent: Agent) -> frozenset[str]:
         row = self.queries.query(AgentStack).filter(session_agent_id=agent.id).first()
         return frozenset(row.pinned_slices if row is not None else ()) & self.active(agent)

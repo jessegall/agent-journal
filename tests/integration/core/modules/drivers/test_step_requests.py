@@ -1,0 +1,27 @@
+from engine.query.queries import Queries
+from core.modules.drivers.models.agent_step_request import AgentStepRequest
+from core.modules.drivers.ticks.agent_step_round import AgentStepRound
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
+
+STEP_CAUSE = "messages.message-step"
+
+
+def requests(story, agent_id: int) -> list[AgentStepRequest]:
+    return list(story.container.get(Queries).query(AgentStepRequest).filter(session_agent_id=agent_id).every_row("one agent of one test"))
+
+
+def test_a_message_to_an_agent_leaves_its_step_request_in_the_same_write_and_a_second_cause_joins_it(played):
+    story = played(StartedHelper)
+    helper = helper_agent(story)
+    story.expect_success(f'message send "read the brief" --to agent:{helper.number}', actor=story.agent)
+    story.expect_success(f'message send "and then the plan" --to agent:{helper.number}', actor=story.agent)
+    opened = [request for request in requests(story, helper.id) if request.served_at is None]
+    assert [request.causes for request in opened] == [tuple([STEP_CAUSE])]
+
+
+def test_the_round_serves_an_open_request_with_no_step_while_no_slice_answers_the_agent(played):
+    story = played(StartedHelper)
+    helper = helper_agent(story)
+    story.expect_success(f'message send "read the brief" --to agent:{helper.number}', actor=story.agent)
+    AgentStepRound()(story.container)
+    assert [request.served_at is not None for request in requests(story, helper.id)] == [True]

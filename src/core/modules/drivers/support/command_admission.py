@@ -28,7 +28,7 @@ class CommandAdmission:
         self.queries, self.repository = queries, repository
 
     def answers(self, context: Context) -> bool:
-        return context.actor.is_agent() and ADMISSION_SLICE in self.slices.tick_answering_slices(self.agents.find(context.actor.id))
+        return context.actor.is_agent() and ADMISSION_SLICE in self.slices.tick_slices(self.agents.find(context.actor.id))
 
     # a guard runs on a row's save, where the context's command may be one its entrance command dispatched, so the
     # guard names the entrance command it guards

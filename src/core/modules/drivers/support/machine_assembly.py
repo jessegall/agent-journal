@@ -29,14 +29,14 @@ class MachineAssembly:
     def machine(self, agent_type: str) -> AgentMachine:
         return self.built_machine(agent_type, lambda contribution, module: True, ())
 
-    def sliced_machine(self, agent_type: str, answering: frozenset[str], walk: Policy) -> AgentMachine:
-        return self.built_machine(agent_type, self.slice_filter(agent_type, answering), tuple([walk]))
+    def sliced_machine(self, agent_type: str, agent_slices: frozenset[str], walk: Policy) -> AgentMachine:
+        return self.built_machine(agent_type, self.slice_filter(agent_type, agent_slices), tuple([walk]))
 
     def with_needs(self, view: AgentView, question: Question) -> AgentView:
         return self.with_kept_needs(view, question, lambda contribution, module: True)
 
-    def with_sliced_needs(self, view: AgentView, question: Question, answering: frozenset[str]) -> AgentView:
-        return self.with_kept_needs(view, question, self.slice_filter(view.agent.agent_type, answering))
+    def with_sliced_needs(self, view: AgentView, question: Question, agent_slices: frozenset[str]) -> AgentView:
+        return self.with_kept_needs(view, question, self.slice_filter(view.agent.agent_type, agent_slices))
 
     def built_machine(self, agent_type: str, kept: Kept, walk: Sequence[Policy]) -> AgentMachine:
         return AgentMachine([*self.covering(agent_type, lambda module: module.policies, kept), *walk], [self.container.get(cls) for cls, module in self.listed(lambda module: module.transforms) if kept(cls, module)],
@@ -49,8 +49,8 @@ class MachineAssembly:
         return replace(view, needs=tuple(item for item in given if isinstance(item, Need)), plans=tuple(item for item in given if isinstance(item, BlockPlan)))
 
     @staticmethod
-    def slice_filter(agent_type: str, answering: frozenset[str]) -> Kept:
-        return lambda contribution, module: ContributionSlices.slice_name(contribution, module, agent_type) in answering
+    def slice_filter(agent_type: str, agent_slices: frozenset[str]) -> Kept:
+        return lambda contribution, module: ContributionSlices.slice_name(contribution, module, agent_type) in agent_slices
 
     # policies, lines, effects and need sources name the agent types they apply to; none named is every type
     def covering(self, agent_type: str, lists: Callable[[type[Module]], Sequence[type[Contribution]]], kept: Kept) -> list[Contribution]:

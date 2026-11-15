@@ -135,7 +135,8 @@ class ModuleSync:
         guards = sorted((guard for module in modules for guard in module.guards), key=lambda guard: guard.runs_last)
         first_guards = [guard for guard in guards if guard.runs_first]
         later_guards = [guard for guard in guards if not guard.runs_first]
-        listeners = [(module, listener) for module in modules for listener in module.listeners]
+        # an agent listener is a save listener too: it writes its step requests inside the change's own write
+        listeners = [(module, listener) for module in modules for listener in (*module.listeners, *module.agent_listeners)]
         suites = self.finder.suite_list()
         return Registry(
             fingerprint=self.fingerprint.text(modules),

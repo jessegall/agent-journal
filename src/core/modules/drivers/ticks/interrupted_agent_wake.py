@@ -15,7 +15,7 @@ class InterruptedAgentWake:
         interrupted, timestamp, slices, scopes = container.get(InterruptedAgents), container.get(Clock).timestamp(), container.get(AnsweringSlices), container.get(Scopes)
         for agent in container.get(AgentRows).running_main_agents():
             with scopes.read_scope((), None, agent.environment_id):
-                is_answered = SAFETY_SLICE in slices.tick_answering_slices(agent)
+                is_answered = SAFETY_SLICE in slices.tick_slices(agent)
             # the new driver gives an interrupted turn no automatic go-on (doc 1310 section 16, difference 3)
             if not is_answered:
                 interrupted.watch(agent, timestamp)
