@@ -19,6 +19,8 @@ from engine.log.error_log import ErrorLog
 from engine.registry.registry import Registry
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.models.hook_call import HookCall
+from core.modules.drivers.support.agent_slices import AgentSlices
+from core.modules.drivers.support.contribution_slices import LINES_SLICE
 from core.modules.drivers.support.actor_loader import ActorLoader
 
 DEFERRED_RULE_COMMAND_RUNS = "deferred rules only run commands"
@@ -34,13 +36,18 @@ class DeferredRulesListener(CommitListener[Created[HookCall]]):
     name = "drivers.deferred-rules"
     run_order = 900
 
-    def __init__(self, registry: Registry, container: Container, switches: GuardSwitches, boards: StateBoards, loader: ActorLoader, agents: AgentRows, bus: Bus, errors: ErrorLog) -> None:
+    def __init__(self, registry: Registry, container: Container, switches: GuardSwitches, boards: StateBoards, loader: ActorLoader, agents: AgentRows, bus: Bus, errors: ErrorLog,
+                 slices: AgentSlices) -> None:
         self.registry, self.container, self.switches, self.boards, self.loader, self.agents, self.bus, self.errors = registry, container, switches, boards, loader, agents, bus, errors
+        self.slices = slices
 
     def handle(self, event: Created[HookCall], logged: LoggedEvent) -> None:
         call = event.row
         states = self.registry.tier_states(call.driver, int(StateTier.DEFERRED))
         if not states:
+            return
+        # an agent the lines slice answers runs no deferred rule: its effects run in the step's save (doc 1310 section 6.7)
+        if self.slices.has_active_slice() and LINES_SLICE in self.slices.tick_slices(self.agents.find(call.session_agent_id)):
             return
         board = self.boards.for_hook(self.hook_of(call))
         for state in states:

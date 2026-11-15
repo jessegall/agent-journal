@@ -24,7 +24,7 @@ def test_an_agent_with_no_stack_says_its_first_step_writes_it(played):
 
 def test_no_part_of_the_new_driver_can_go_live_before_its_phase_gate(played):
     story = played(BuilderStarted)
-    assert "has not passed its phase's gate" in output(story, "driver set-active waiting on")
+    assert "has not passed its phase's gate" in output(story, "driver set-active blocked.unknown on")
     assert "no part of the new driver is active" in output(story, "driver active")
 
 

@@ -54,7 +54,7 @@ class Listening:
         agents = SimpleNamespace(find=lambda agent_id: SimpleNamespace(id=7, program="claude", session="s-1"))
         bus = SimpleNamespace(run=lambda command, actor, **fields: self.ran.append(command))
         errors = SimpleNamespace(reported=lambda argv, error, environment_id=None: self.errors.append((argv, str(error))))
-        self.listener = DeferredRulesListener(registry, container, switches, boards, SimpleNamespace(loaded=lambda agent: actor), agents, bus, errors)
+        self.listener = DeferredRulesListener(registry, container, switches, boards, SimpleNamespace(loaded=lambda agent: actor), agents, bus, errors, SimpleNamespace(has_active_slice=lambda: False))
 
     def hear(self) -> None:
         call = SimpleNamespace(session_agent_id=7, driver="coding.main", hook="stop", firing="f1", environment_id=1, creation_timestamp=lambda: CREATED)

@@ -1,3 +1,4 @@
+from core.modules.helpers.effects.unstarted_helper_effect import UnstartedHelperEffect
 from core.modules.helpers.tick_handlers.kept_report_retries_tick_handler import KeptReportRetriesTickHandler
 from core.modules.helpers.needs.job_work_needs import JobWorkNeeds
 from core.modules.helpers.effects.job_report_effect import JobReportEffect
@@ -27,7 +28,7 @@ class HelpersModule(Module):
     name = "journal.core.helpers"
     policies = [StartNamesModelPolicy]
     needs = [JobWorkNeeds]
-    effects = [JobReportEffect]
+    effects = [UnstartedHelperEffect, JobReportEffect]
     seed_reason = "demo programs have no outages"
     move_reason = "version 4 had no helpers"
     requires_engine = ">=5,<6"

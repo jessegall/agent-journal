@@ -1,3 +1,9 @@
+from suites.coding.modules.workers.effects.orphan_worktree_effect import OrphanWorktreeEffect
+from suites.coding.modules.workers.effects.missing_process_effect import MissingProcessEffect
+from suites.coding.modules.workers.lines.inactive_worker_stop_lines import InactiveWorkerStopLines
+from suites.coding.modules.workers.effects.inactive_worker_stop_effect import InactiveWorkerStopEffect
+from suites.coding.modules.workers.lines.cache_refresh_lines import CacheRefreshLines
+from suites.coding.modules.workers.effects.cache_refresh_effect import CacheRefreshEffect
 from suites.coding.modules.workers.effects.merge_job_report_effect import MergeJobReportEffect
 from suites.coding.modules.workers.needs.merge_job_needs import MergeJobNeeds
 from suites.coding.modules.workers.listeners.new_unit_pin_listener import NewUnitPinListener
@@ -136,7 +142,8 @@ class WorkersModule(Module):
     """
 
     name = "journal.suites.coding.workers"
-    effects = [MergeJobReportEffect, RequestCompactionEffect, InactiveHelperEffect, PhaseTestEffect, RecordTodoListEffect]
+    line_sources = [InactiveWorkerStopLines, CacheRefreshLines]
+    effects = [OrphanWorktreeEffect, MissingProcessEffect, InactiveWorkerStopEffect, CacheRefreshEffect, MergeJobReportEffect, RequestCompactionEffect, InactiveHelperEffect, PhaseTestEffect, RecordTodoListEffect]
     needs = [MergeJobNeeds, CompactionNeeds, DeliveredWorkStopNeeds, UnmergedWorkerNeeds, WorkerStatusFirstNeeds]
     lines = [ContextStopNowLines, InactiveHelperLines, MergeCheckoutLines, SmallBatchLines, StoppedWorkerLines, UnmergedWorkerLines, UnstartedWorkerLines, WorkerLogDueLines, WorkersOutLines]
     policies = [ProvedDeliveryPolicy, ContextHardLimitPolicy, CheckoutWriteCodePolicy, DispatchAllowancePolicy, PhaseTestPolicy, ProtectedFolderPolicy, ReadonlyHelperAllowancePolicy, WorkerFilePolicy, WorkerOutsideLinkPolicy, WorkerReadPolicy, WorkerReusePolicy, WorkerTestCountPolicy, WorkerTestLinePolicy]

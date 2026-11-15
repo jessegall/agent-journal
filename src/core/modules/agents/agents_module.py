@@ -1,3 +1,4 @@
+from core.modules.agents.effects.unused_launcher_effect import UnusedLauncherEffect
 from core.modules.agents.listeners.agent_lifecycle_step_listener import AgentLifecycleStepListener
 from core.modules.agents.policies.program_settings_policy import ProgramSettingsPolicy
 from core.modules.agents.windows.agents_windows import AGENTS_WINDOWS
@@ -133,6 +134,7 @@ class AgentsModule(Module):
     """Adds agents, one per session of an agent program, each an actor with the same number."""
 
     name = "journal.core.agents"
+    effects = [UnusedLauncherEffect]
     policies = [ProgramSettingsPolicy]
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]

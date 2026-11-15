@@ -78,7 +78,7 @@ class PlanCheckpoints:
             agent_commit_pass = self.agent_commit_pass(reaches, checkpoint.id, completed)
             if agent_commit_pass is not None and not (checkpoint.id == last_id and self.moves.moved_after(agent_commit_pass)):
                 if checkpoint.id not in passed:
-                    self.save_pass(plan_id, checkpoint.id, context)
+                    self.saved_pass(plan_id, checkpoint.id, context)
                 continue
             if not completed and checkpoint.id not in passed:
                 self.repository.save(CheckpointPass(creator_id=context.actor.id, plan_id=plan_id, phase_id=checkpoint.id, passed_at=context.timestamp), context)
