@@ -1,3 +1,4 @@
+from core.modules.helpers.tick_handlers.kept_report_retries_tick_handler import KeptReportRetriesTickHandler
 from core.modules.helpers.needs.job_work_needs import JobWorkNeeds
 from core.modules.helpers.effects.job_report_effect import JobReportEffect
 from core.modules.helpers.policies.start_names_model_policy import StartNamesModelPolicy
@@ -38,7 +39,7 @@ class HelpersModule(Module):
     settings = HELPER_SETTINGS
     guards = HELPERS_GUARDS
     handlers = HELPERS_HANDLERS
-    tick_handlers = [HelperLimitsTickHandler, UsageLimitMarkerTickHandler, UnstartedJobStartsTickHandler]
+    tick_handlers = [KeptReportRetriesTickHandler, HelperLimitsTickHandler, UsageLimitMarkerTickHandler, UnstartedJobStartsTickHandler]
     nudges = HELPER_NUDGES
     skills = HELPERS_SKILLS
     subcommands = HELPERS_SUBCOMMANDS

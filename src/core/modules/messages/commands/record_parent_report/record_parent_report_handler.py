@@ -1,3 +1,4 @@
+from core.modules.drivers.models.enums.handover_state import HandoverState
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
@@ -30,7 +31,8 @@ class RecordParentReportHandler(Handler[RecordParentReport, Message | None]):
         message = self.sent_report(command, text, context)
         if command.job_id is not None:
             job = self.rows.required(HelperJob, command.job_id)
-            self.repository.save(job.changed(ended_at=context.timestamp, returned=text, report_message_id=message.id if message is not None else None), context)
+            self.repository.save(job.changed(ended_at=context.timestamp, returned=text, report_message_id=message.id if message is not None else None,
+                                             handover_state=HandoverState.COMPLETED), context)
         return message
 
     def sent_report(self, command: RecordParentReport, text: str, context: Context) -> Message | None:

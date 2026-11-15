@@ -1464,6 +1464,16 @@
   "merger": "allowed",
   "worker": "refused"
  },
+ "helper report-drop": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "helper report-retry": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
  "helper run": {
   "helper": "refused",
   "merger": "allowed",

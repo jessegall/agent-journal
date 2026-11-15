@@ -59,3 +59,22 @@ def test_a_report_whose_save_fails_refuses_the_stop_once_then_keeps_its_text_and
     job = story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).newest().first()
     assert first.refusal == UnsavedReportNudge.declared().nudge().text and not second.refusal
     assert (job.handover_state, job.failed_text, job.ended_at) == (HandoverState.CAPTURE_FAILED, REPORT, None)
+
+
+def test_a_kept_report_is_saved_again_by_its_retry_once_the_save_works(played):
+    story = played(StartedHelper)
+    helper = helper_agent(story)
+    stop_twice_with_a_failing_save(story, helper)
+    story.container.rebuild(RecordParentReportHandler, RecordParentReportHandler)
+    story.expect_success(f"helper report-retry {helper.number}", actor=story.user)
+    job = story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).newest().first()
+    assert (job.handover_state, job.returned, job.ended_at is not None) == (HandoverState.COMPLETED, REPORT, True)
+
+
+def test_a_dropped_kept_report_ends_its_job_with_no_report(played):
+    story = played(StartedHelper)
+    helper = helper_agent(story)
+    stop_twice_with_a_failing_save(story, helper)
+    story.expect_success(f"helper report-drop {helper.number}", actor=story.user)
+    job = story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).newest().first()
+    assert (job.handover_state, job.ended_at is not None) == (HandoverState.NO_REPORT, True)

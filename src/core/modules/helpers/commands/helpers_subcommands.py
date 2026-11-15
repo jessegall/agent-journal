@@ -1,3 +1,5 @@
+from core.modules.helpers.commands.send_kept_report.send_kept_report_subcommand import SendKeptReportSubcommand
+from core.modules.helpers.commands.end_kept_report.end_kept_report_subcommand import EndKeptReportSubcommand
 from core.modules.helpers.commands.agent_mix.agent_mix_subcommand import AgentMixSubcommand
 from core.modules.helpers.commands.change_agent_driver.change_agent_driver_subcommand import ChangeAgentDriverSubcommand
 from core.modules.helpers.commands.cold_sessions.cold_sessions_subcommand import ColdSessionsSubcommand
@@ -14,4 +16,4 @@ from core.modules.helpers.commands.set_usage_limit.set_usage_limit_subcommand im
 from core.modules.helpers.commands.start_helper.start_helper_subcommand import StartHelperSubcommand
 from core.modules.helpers.commands.stop_helper.stop_helper_subcommand import StopHelperSubcommand
 
-HELPERS_SUBCOMMANDS = [ChangeAgentDriverSubcommand, HelperProfileScreenSubcommand, HelperLifetimesSubcommand, GrantHelperSubcommand, RunGrantedCommandSubcommand, ColdSessionsSubcommand, SetUsageLimitSubcommand, AgentMixSubcommand, StartHelperSubcommand, SendHelperSubcommand, StopHelperSubcommand, RecordProgramExitSubcommand, HelperAvailabilitySubcommand, MakeProviderOutageSubcommand, EndProviderOutagesSubcommand]
+HELPERS_SUBCOMMANDS = [SendKeptReportSubcommand, EndKeptReportSubcommand, ChangeAgentDriverSubcommand, HelperProfileScreenSubcommand, HelperLifetimesSubcommand, GrantHelperSubcommand, RunGrantedCommandSubcommand, ColdSessionsSubcommand, SetUsageLimitSubcommand, AgentMixSubcommand, StartHelperSubcommand, SendHelperSubcommand, StopHelperSubcommand, RecordProgramExitSubcommand, HelperAvailabilitySubcommand, MakeProviderOutageSubcommand, EndProviderOutagesSubcommand]

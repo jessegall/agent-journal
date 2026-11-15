@@ -1,7 +1,8 @@
+from core.modules.helpers.guards.kept_report_job_guard import KeptReportJobGuard
 from core.modules.helpers.guards.open_job_retire_guard import OpenJobRetireGuard
 from core.modules.helpers.guards.program_split_guard import ProgramSplitGuard
 from core.modules.helpers.guards.provider_outage_access_guard import ProviderOutageAccessGuard
 from core.modules.helpers.guards.provider_outage_program_guard import ProviderOutageProgramGuard
 from core.modules.helpers.guards.usage_cap_guard import UsageCapGuard
 
-HELPERS_GUARDS = [UsageCapGuard, ProviderOutageAccessGuard, OpenJobRetireGuard, ProviderOutageProgramGuard, ProgramSplitGuard]
+HELPERS_GUARDS = [KeptReportJobGuard, UsageCapGuard, ProviderOutageAccessGuard, OpenJobRetireGuard, ProviderOutageProgramGuard, ProgramSplitGuard]
