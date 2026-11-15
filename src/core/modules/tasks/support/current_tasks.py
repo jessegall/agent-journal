@@ -1,6 +1,6 @@
 from engine.query.queries import Queries
 from engine.database.kept_rows import KeptRows
-from core.modules.tasks.rules.support.current_task import CurrentTask
+from core.modules.tasks.support.current_task import CurrentTask
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_log import TaskLog
 from core.modules.tasks.models.task_read import TaskRead

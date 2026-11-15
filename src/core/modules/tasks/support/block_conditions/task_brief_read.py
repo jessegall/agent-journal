@@ -1,6 +1,6 @@
 from engine.driver.block_check import BlockCheck
 from engine.driver.block_condition import BlockCondition
-from core.modules.tasks.rules.support.current_tasks import CurrentTasks
+from core.modules.tasks.support.current_tasks import CurrentTasks
 
 
 class TaskBriefRead(BlockCondition):

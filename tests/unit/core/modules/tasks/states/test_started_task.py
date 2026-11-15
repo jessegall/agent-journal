@@ -11,8 +11,8 @@ from engine.time.timestamp import Timestamp
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.rules.inactive_task_reminder_rule import InactiveTaskReminderRule
 from core.modules.tasks.rules.log_request_rule import LogRequestRule
-from core.modules.tasks.rules.support.current_tasks import CurrentTasks
-from core.modules.tasks.rules.support.task_write_count import TaskWriteCount
+from core.modules.tasks.support.current_tasks import CurrentTasks
+from core.modules.tasks.support.task_write_count import TaskWriteCount
 from core.modules.tasks.lines.log_request_lines import LogRequestLines
 from core.modules.tasks.lines.quiet_task_lines import QuietTaskLines
 from core.modules.tasks.needs.unlogged_write_needs import UnloggedWriteNeeds

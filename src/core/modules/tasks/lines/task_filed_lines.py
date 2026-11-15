@@ -5,7 +5,7 @@ from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.enums.agent_role import AgentRole
 from engine.enums.command_category import CommandCategory
 from engine.enums.hook_event_name import HookEventName
-from core.modules.tasks.rules.support.current_tasks import CurrentTasks
+from core.modules.tasks.support.current_tasks import CurrentTasks
 from core.modules.tasks.nudges.task_filed_nudge import TaskFiledNudge
 from core.modules.tasks.nudges.task_filed_keep_current_nudge import TaskFiledKeepCurrentNudge
 

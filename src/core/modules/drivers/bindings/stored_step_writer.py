@@ -1,3 +1,4 @@
+from engine.enums.closer_role import CloserRole
 import json
 from collections.abc import Mapping, Sequence
 
@@ -79,7 +80,7 @@ class StoredStepWriter(StepWriter):
     # a line the program cannot carry at this event waits in today's line queue for the agent's next event that can
     def queue_waiting_lines(self, view: AgentView, record: DecisionRecord, context: Context) -> None:
         for line in record.waiting_lines:
-            self.nudger.send_text(view.agent.agent_id, line.text, line.key, context)
+            self.nudger.send_text(view.agent.agent_id, line.text, line.source_key or line.key, context)
 
     # the grants that passed a refusing policy are spent in this write, and a journal command leaves its receipt
     def spend_grants(self, record: DecisionRecord, context: Context) -> None:
@@ -120,7 +121,8 @@ class StoredStepWriter(StepWriter):
                                             subject_id=plan.subject.row_id if plan.subject is not None else None, members=plan.members,
                                             context_generation=plan.context_generation, lifting_lines=plan.lifting_lines,
                                             closer_roles=tuple(role.value for role in plan.closer_roles), opener=MACHINE_OPENER,
-                                            opening_firing=record.identity.firing), context)
+                                            is_skippable=CloserRole.AGENT in plan.closer_roles, opening_firing=record.identity.firing,
+                                            countdown_key=plan.countdown.key if plan.countdown is not None else "", countdown_text=plan.countdown.text if plan.countdown is not None else ""), context)
 
     def close_blocks(self, closings: Sequence[BlockClosing], context: Context) -> None:
         rows = {row.id: row for row in self.queries.query(AgentBlock).matching(Among("id", [closing.block_id for closing in closings])).every_row(CLOSED_BLOCKS_REASON)}

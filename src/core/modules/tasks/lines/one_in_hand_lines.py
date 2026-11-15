@@ -5,7 +5,7 @@ from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.enums.command_category import CommandCategory
 from engine.enums.hook_event_name import HookEventName
-from core.modules.tasks.rules.support.current_tasks import CurrentTasks
+from core.modules.tasks.support.current_tasks import CurrentTasks
 from core.modules.tasks.nudges.task_testing_question_nudge import TaskTestingQuestionNudge
 
 TASK_START_COMMAND = ["task", "start"]

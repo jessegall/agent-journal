@@ -14,7 +14,7 @@ from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 
 class ForcedReaders(StoryFixture):
-    """A main agent and a worker with required readers enabled."""
+    """A main agent and a worker with its task started and required readers enabled."""
 
     parent = BuilderStarted
 
@@ -22,6 +22,9 @@ class ForcedReaders(StoryFixture):
         story.run(f"setting set {ProcessSetting.READERS_FORCED.key} on --environment main")
         story.run(f"setting set {WORKER_TEST_LIMIT} 25 --environment main", actor=story.user)
         story.run("agent start s-reader claude worker --environment main")
+        # a worker holds the task it was sent, so only the reader block holds its tools
+        task_id = story.new_row_id("task make 'Build the cart' --brief 'the cart builds'", story.user)
+        story.run(f"task start {task_id}", actor=reader_worker(story))
 
 
 def reader_worker(story: Story) -> Actor:

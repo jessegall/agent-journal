@@ -13,7 +13,7 @@ from engine.driver.nudge import Nudge
 from engine.enums.hook_event_name import HookEventName
 from core.modules.drivers.support.block_conditions.any_condition import AnyCondition
 from core.modules.tasks.nudges.unlogged_writes_nudge import UnloggedWritesNudge
-from core.modules.tasks.rules.support.task_write_count import TaskWriteCount
+from core.modules.tasks.support.task_write_count import TaskWriteCount
 from core.modules.tasks.support.block_conditions.task_logged import TaskLogged
 from core.modules.tasks.support.block_conditions.task_stopped import TaskStopped
 

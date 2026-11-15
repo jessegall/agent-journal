@@ -1,3 +1,4 @@
+from core.modules.tasks.needs.task_work_needs import TASK_STOP_SKIP_WINDOW
 from core.modules.tasks.nudges.stop_task_nudge import StopTaskNudge
 from core.modules.tasks.nudges.stop_tasks_nudge import StopTasksNudge
 from engine.driver.agent_hook import AgentHook
@@ -5,10 +6,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.watched_runs import WatchedRuns
-from engine.driver.interval import Interval
-from engine.driver.seconds import Seconds
-from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
-from core.modules.tasks.rules.support.current_tasks import CurrentTasks
+from core.modules.tasks.support.current_tasks import CurrentTasks
 from engine.enums.agent_role import AgentRole
 from core.modules.tasks.support.suite_task_assigners import SuiteTaskAssigners
 
@@ -22,7 +20,7 @@ class TaskStopRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN]
     single_action_refusal = "A stop with tasks in hand is refused, naming them all"
-    skip_window = Interval(ToolUseSpan(25), Seconds(1500))
+    skip_window = TASK_STOP_SKIP_WINDOW
     skip_name = "tasks.carry-on-at-stop"
 
     def __init__(self, current_tasks: CurrentTasks, runs: WatchedRuns, assigners: SuiteTaskAssigners) -> None:

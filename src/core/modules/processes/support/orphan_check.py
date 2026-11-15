@@ -12,7 +12,7 @@ from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.models.process import Process
 from core.modules.processes.nudges.process_missing_nudge import ProcessMissingNudge
 from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.processes.rules.support.run_folder_ends import RunFolderEnds
+from core.modules.processes.support.run_folder_ends import RunFolderEnds
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_settings import ProcessSettings
 

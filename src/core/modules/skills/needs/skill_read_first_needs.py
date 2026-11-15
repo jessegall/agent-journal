@@ -1,3 +1,4 @@
+from core.modules.skills.support.skill_nudges import SKILL_COUNTDOWN
 from typing import Any
 from collections.abc import Mapping, Sequence
 
@@ -61,7 +62,7 @@ class SkillReadFirstNeeds(NeedSource):
         tool_nudge = ReadSkillFirstNudge.instructed(self.files.agent_instruction(missing[0], row))
         stop_nudge = UnreadSkillsNudge.naming(names)
         return SkillReadFirstNeeds.read_plan(tool_nudge, missing[0], TOOL_RULE, stop_check_key=STOP_RULE, tool_grace_uses=SKILL_TOOL_USES, scope_stop=True,
-                                             stop_nudge=stop_nudge)
+                                             stop_nudge=stop_nudge, countdown=SKILL_COUNTDOWN.nudge("{left}", skill=missing[0]))
 
     def profile_plan(self, agent: AgentReference) -> BlockPlan | None:
         required = self.profile_skills.required(agent.agent_id)

@@ -63,8 +63,10 @@ class AgentRows:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
             return self.rows.required(Agent, agent_id)
 
+    # the agents of these ids that exist, read once a request through the rows the hook already holds
     def find_many(self, agent_ids: list[int]) -> list[Agent]:
-        return self.queries.query(Agent).find_many(agent_ids)
+        self.rows.prepare(Agent, agent_ids)
+        return [agent for agent in (self.rows.find(Agent, agent_id) for agent_id in dict.fromkeys(agent_ids)) if agent is not None]
 
     def is_main(self, agent_id: int) -> bool:
         return self.find(agent_id).is_main

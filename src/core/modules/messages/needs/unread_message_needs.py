@@ -1,3 +1,4 @@
+from core.modules.messages.support.message_nudges import UNREAD_COUNTDOWN
 from collections.abc import Mapping, Sequence
 
 from engine.agent_stack.states.blocked import Blocked
@@ -45,4 +46,5 @@ class UnreadMessageNeeds(NeedSource):
         return BlockPlan(refusal, MessagesRead([message.id for message in shown]), TOOL_RULE, UNREAD_RANK, stop_check_key=STOP_RULE,
                          members=tuple(message.id for message in shown), tool_grace_uses=UNREAD_TOOL_USES, scope_stop=True,
                          closer_roles=tuple([CloserRole.AGENT]), lifting_lines=READ_COMMANDS,
-                         stop_nudge=UnreadMessageStopNudge.declared().nudge(message=shown[0].id))
+                         stop_nudge=UnreadMessageStopNudge.declared().nudge(message=shown[0].id),
+                         countdown=UNREAD_COUNTDOWN.nudge("{left}", messages=", ".join(str(message.id) for message in shown)))

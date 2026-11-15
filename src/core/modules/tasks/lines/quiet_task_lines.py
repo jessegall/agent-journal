@@ -13,7 +13,7 @@ from engine.time.clock import Clock
 from engine.time.timestamp import MINUTE_SECONDS
 from core.modules.drivers.support.agent_activities import AgentActivities
 from core.modules.tasks.nudges.inactive_task_nudge import InactiveTaskNudge
-from core.modules.tasks.rules.support.current_tasks import CurrentTasks
+from core.modules.tasks.support.current_tasks import CurrentTasks
 from core.modules.tasks.support.task_settings import SILENT_TASK_MINUTES
 
 

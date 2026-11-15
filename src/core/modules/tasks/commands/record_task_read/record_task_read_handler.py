@@ -3,7 +3,7 @@ from engine.command.handler import Handler
 from engine.repository.repository import Repository
 from core.modules.tasks.commands.record_task_read.record_task_read import RecordTaskRead
 from core.modules.tasks.models.task_read import TaskRead
-from core.modules.tasks.rules.support.current_tasks import CurrentTasks
+from core.modules.tasks.support.current_tasks import CurrentTasks
 
 
 class RecordTaskReadHandler(Handler[RecordTaskRead, None]):

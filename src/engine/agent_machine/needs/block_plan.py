@@ -27,3 +27,5 @@ class BlockPlan:
     context_generation: int | None = None
     lifting_lines: tuple[str, ...] = ()
     stop_nudge: Nudge | None = None
+    # the line that counts the tool uses left before the hold refuses, its {left} filled in at each use of the grace
+    countdown: Nudge | None = None

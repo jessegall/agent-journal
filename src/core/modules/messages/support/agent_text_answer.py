@@ -4,7 +4,7 @@ from engine.driver.hook_event import HookEvent
 from engine.driver.nudge import Nudge
 from engine.request.request_values import RequestValues
 from engine.time.clock import Clock
-from core.modules.drivers.queries.hook_call_query import HookCallQuery
+from core.modules.drivers.support.displayed_blocks import DisplayedBlocks
 from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.messages.nudges.closing_choice_nudge import ClosingChoiceNudge
 from core.modules.messages.nudges.closing_line_hidden_nudge import ClosingLineHiddenNudge
@@ -28,8 +28,8 @@ class AgentTextAnswer:
     keeps it out; a text held for following a reply is shown once a tool comes. Read once a hook, so the line and the
     message agree."""
 
-    def __init__(self, texts: AgentTextFilter, hook_calls: HookCallQuery, repeats: RepeatedMessages, targets: TurnReplyTargets, clock: Clock, request_values: RequestValues) -> None:
-        self.texts, self.hook_calls, self.repeats, self.targets, self.clock, self.request_values = texts, hook_calls, repeats, targets, clock, request_values
+    def __init__(self, texts: AgentTextFilter, displayed_blocks: DisplayedBlocks, repeats: RepeatedMessages, targets: TurnReplyTargets, clock: Clock, request_values: RequestValues) -> None:
+        self.texts, self.displayed_blocks, self.repeats, self.targets, self.clock, self.request_values = texts, displayed_blocks, repeats, targets, clock, request_values
 
     def shown(self, event: HookEvent, agent_id: int) -> AgentTextShown:
         # read once a hook whatever changes meanwhile: the message it sends is a text the filter would then find
@@ -38,7 +38,7 @@ class AgentTextAnswer:
     def found(self, event: HookEvent, agent_id: int) -> AgentTextShown:
         nothing = AgentTextShown(None, None)
         now = self.clock.timestamp()
-        text = self.hook_calls.displayed_block(agent_id, event)
+        text = self.displayed_blocks.text(agent_id, event)
         if not text or self.texts.is_reaction_turn(agent_id, now):
             return nothing
         after_reply = self.texts.is_after_reply(agent_id, text, now)

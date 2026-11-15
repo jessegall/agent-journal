@@ -579,7 +579,8 @@
         "subject: SubjectReference | None",
         "context_generation: int | None",
         "lifting_lines: tuple[str, ...]",
-        "stop_nudge: Nudge | None"
+        "stop_nudge: Nudge | None",
+        "countdown: Nudge | None"
       ],
       "methods": []
     },
@@ -1683,6 +1684,7 @@
       "fields": [],
       "methods": [
         "run(self, argv: list[str], caller: Caller, stream: TextIO, request: CallerRequest) -> int",
+        "line_run(self, argv: list[str], caller: Caller, stream: TextIO, request: CallerRequest) -> int",
         "omits_subcommand(self, argv: list[str]) -> bool",
         "request_approval(self, refusal: Refusal, argv: list[str], caller: Caller, parsed: Namespace) -> str | None",
         "subcommand_help(self, cli_name: str, caller: Caller, stream: TextIO) -> int",

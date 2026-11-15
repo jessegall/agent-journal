@@ -10,7 +10,7 @@ from engine.listener.rows.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.models.task import Task
-from core.modules.tasks.rules.support.current_tasks import CurrentTasks
+from core.modules.tasks.support.current_tasks import CurrentTasks
 from core.modules.tasks.support.suite_task_assigners import SuiteTaskAssigners
 from core.modules.drivers.support.agent_slices import AgentSlices
 from core.modules.tasks.listeners.next_task_listener import MAIN_WORKING_SLICE

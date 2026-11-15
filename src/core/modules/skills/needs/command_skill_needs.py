@@ -1,3 +1,4 @@
+from core.modules.skills.support.skill_nudges import SKILL_COUNTDOWN
 from collections.abc import Mapping, Sequence
 
 from engine.agent_stack.states.blocked import Blocked
@@ -43,4 +44,4 @@ class CommandSkillNeeds(NeedSource):
             return None
         nudge = ReadCommandSkillFirstNudge.declared().nudge(instruction=self.files.agent_instruction(folder, self.agents.find(agent_id)))
         return BlockPlan(nudge, SkillLoaded(folder), COMMAND_RULE, COMMAND_SKILL_RANK, tool_grace_uses=SKILL_TOOL_USES, is_strict=True,
-                         closer_roles=tuple([CloserRole.AGENT]), lifting_lines=tuple([f"{SKILL_COMMAND} {folder}"]))
+                         closer_roles=tuple([CloserRole.AGENT]), lifting_lines=tuple([f"{SKILL_COMMAND} {folder}"]), countdown=SKILL_COUNTDOWN.nudge("{left}", skill=folder))

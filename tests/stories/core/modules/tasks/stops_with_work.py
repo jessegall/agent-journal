@@ -7,8 +7,6 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import BuilderStarted, StartedTaskBuilder
-from core.modules.tasks.nudges.blocked_tasks_nudge import BlockedTasksNudge
-from engine.testing.expectations.expected_nudge import expected_nudge
 
 READ = HookSamples.sample("pre_tool_use", {"name": "Read", "category": ToolType.READ, "files": ["a.py"], "shell": None, "diff": None})
 
@@ -23,12 +21,14 @@ def skipped_stop(new_story):
     return story
 
 
-def test_a_builder_with_only_blocked_tasks_is_refused_at_its_first_stop_and_not_its_second(new_story):
+def test_a_builder_with_only_blocked_tasks_is_told_them_at_its_first_stop_and_not_its_second(new_story):
     story = new_story(fixture=BuilderStarted)
     story.run(lines.NEW_TASK)
     story.run("task block 1 --reason 'waits for the price list'")
-    story.expect_hook_refusal("s-1", HookSamples.stop(), expected_nudge(BlockedTasksNudge.declared()))
     story.expect_hook_allowed("s-1", HookSamples.stop())
+    story.expect_hook_allowed("s-1", HookSamples.stop())
+    story.expect_success(f"agent-line list --agent {story.agent.id} --state waiting", "tasks.blocked-work-at-stop", actor=story.user)
+    story.expect_rows(story.run(f"agent-line list --agent {story.agent.id} --state waiting", actor=story.user).output_text.count("tasks.blocked-work-at-stop") == 1)
 
 
 def test_the_task_in_hand_stop_refusal_is_silent_while_a_run_of_the_agent_goes_and_returns_once_it_ends(new_story):

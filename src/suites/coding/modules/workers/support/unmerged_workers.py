@@ -1,13 +1,12 @@
+from core.modules.drivers.support.open_block_rows import OpenBlockRows
 from dataclasses import replace
 
 from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 
 from engine.driver.nudge import Nudge
-from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock
-from core.modules.drivers.models.agent_block import AgentBlock, OPEN_BLOCKS_REASON
 from core.modules.drivers.nudges.required_command_refusal_nudge import RequiredCommandRefusalNudge
 from engine.driver.interval import Interval
 from engine.driver.span_queries import SpanQueries
@@ -49,8 +48,8 @@ class UnmergedWorkers:
     has had the wait setting's minutes to take it in, or at once when the merger left it to the main agent."""
 
     def __init__(self, delivered: WorkerWorktrees, tasks: TaskQuery, proofs: ProofQuery, records: NudgeRecords, settings: SettingValues, queries: Queries, spans: SpanQueries,
-                 numbers: RowNumbers, clock: Clock, request_values: RequestValues) -> None:
-        self.numbers, self.clock, self.request_values = numbers, clock, request_values
+                 numbers: RowNumbers, clock: Clock, request_values: RequestValues, open_blocks: OpenBlockRows) -> None:
+        self.numbers, self.clock, self.request_values, self.open_blocks = numbers, clock, request_values, open_blocks
         self.settings, self.queries, self.spans = settings, queries, spans
         self.delivered, self.tasks, self.proofs, self.records = delivered, tasks, proofs, records
 
@@ -77,7 +76,7 @@ class UnmergedWorkers:
             nudges.append(replace(declaration.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), tasks=self.task_names(worktree), action=action), key=key))
         commands = {self.merge_command(worktree) for worktree in delivered}
         prefix = f"{RequiredCommandRefusalNudge.declared().key}:journal worker merge "
-        blocks = self.queries.query(AgentBlock).filter(session_agent_id=agent_id).matching(IsNull("closed_at")).every_row(OPEN_BLOCKS_REASON)
+        blocks = self.open_blocks.rows(agent_id)
         stale = tuple(CloseAgentBlock(block.id) for block in blocks if block.nudge_key.startswith(prefix) and block.condition_text not in commands)
         return UnmergedAnswer(tuple(nudges), stale)
 

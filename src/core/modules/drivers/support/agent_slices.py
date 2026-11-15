@@ -1,3 +1,4 @@
+from engine.request.request_values import RequestValues
 from engine.agent_machine.agent_view import AgentView
 from engine.driver.hook_event import HookEvent
 from engine.enums.hook_event_name import HookEventName
@@ -16,8 +17,8 @@ class AgentSlices:
     active slice, as does the first hook of an agent pinned to none; a slice switched off drops out at once, and
     nothing of it is deleted."""
 
-    def __init__(self, settings: SettingValues, queries: Queries) -> None:
-        self.settings, self.queries = settings, queries
+    def __init__(self, settings: SettingValues, queries: Queries, request_values: RequestValues) -> None:
+        self.settings, self.queries, self.request_values = settings, queries, request_values
 
     def has_active_slice(self) -> bool:
         return bool(self.settings.texts(ACTIVE_SLICES_SETTING))
@@ -35,7 +36,12 @@ class AgentSlices:
             return active
         return frozenset(view.pinned_slices)
 
-    # an old tick's entrance stands down for an agent once its slice answers that agent, as a hook's old rule does
+    # an old tick's entrance stands down for an agent once its slice answers that agent, as a hook's old rule does; the
+    # pins are read once a request, since only an agent's first hook takes them
     def tick_slices(self, agent: Agent) -> frozenset[str]:
-        row = self.queries.query(AgentStack).filter(session_agent_id=agent.id).first()
-        return frozenset(row.pinned_slices if row is not None else ()) & self.active(agent)
+        pins = self.request_values.read(f"drivers.pinned-slices:{agent.id}", lambda: 0, lambda: self.pinned_rows(agent.id))
+        return pins & self.active(agent)
+
+    def pinned_rows(self, agent_id: int) -> frozenset[str]:
+        row = self.queries.query(AgentStack).filter(session_agent_id=agent_id).first()
+        return frozenset(row.pinned_slices if row is not None else ())

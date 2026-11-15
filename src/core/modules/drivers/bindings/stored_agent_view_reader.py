@@ -1,3 +1,4 @@
+from core.modules.drivers.support.open_block_rows import OpenBlockRows
 from datetime import datetime
 from core.modules.drivers.support.driver_settings import CAPABILITY_PROOFS_SETTING
 from core.modules.drivers.support.block_judgement import BlockJudgement
@@ -44,7 +45,6 @@ from core.modules.drivers.models.driver_epoch import DriverEpoch
 from core.modules.drivers.models.enums.escalation_state import EscalationState
 from core.modules.drivers.models.program_epoch import ProgramEpoch
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from core.modules.drivers.models.agent_block import OPEN_BLOCKS_REASON
 
 BOTTOM_KEY = NeedKey("Stopped", None, "bottom")
 CORE_SUITE = "core"
@@ -58,8 +58,8 @@ class StoredAgentViewReader(AgentViewReader):
     holds none."""
 
     def __init__(self, agents: AgentRows, queries: Queries, settings: SettingValues, hook_calls: HookCallQuery, finder: ModuleFinder, clock: Clock, grant_store: GrantLedger, providers: Providers, judgement: BlockJudgement,
-                 skips: RefusalSkips) -> None:
-        self.providers, self.skips = providers, skips
+                 skips: RefusalSkips, open_blocks: OpenBlockRows) -> None:
+        self.providers, self.skips, self.open_blocks = providers, skips, open_blocks
         self.agents, self.queries, self.settings, self.hook_calls, self.finder, self.clock = agents, queries, settings, hook_calls, finder, clock
         self.grant_store, self.judgement = grant_store, judgement
 
@@ -123,7 +123,7 @@ class StoredAgentViewReader(AgentViewReader):
 
     # a row's tool grace passes after its committed tool uses or its seconds, whichever comes first, as the old block rule counts them
     def open_rows(self, agent_id: int) -> list[AgentBlock]:
-        return list(self.queries.query(AgentBlock).filter(session_agent_id=agent_id, closed_at=None).every_row(OPEN_BLOCKS_REASON))
+        return list(self.open_blocks.rows(agent_id))
 
     def blocks(self, rows: list[AgentBlock], agent_id: int) -> tuple[OpenBlock, ...]:
         counted = [row for row in rows if row.grace_tool_uses]

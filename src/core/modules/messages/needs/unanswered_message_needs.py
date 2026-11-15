@@ -1,3 +1,4 @@
+from core.modules.messages.support.message_nudges import UNANSWERED_COUNTDOWN
 from collections.abc import Mapping, Sequence
 
 from engine.agent_stack.states.blocked import Blocked
@@ -42,4 +43,4 @@ class UnansweredMessageNeeds(NeedSource):
         refusal = UnansweredRefusalNudge.declared().nudge(messages=numbers, message=unanswered[0].id)
         return BlockPlan(refusal, MessagesAnswered([message.id for message in unanswered]), UNANSWERED_RULE, UNANSWERED_RANK,
                          members=tuple(message.id for message in unanswered), tool_grace_uses=UNANSWERED_TOOL_USES,
-                         closer_roles=tuple([CloserRole.AGENT]), lifting_lines=ANSWER_COMMANDS)
+                         closer_roles=tuple([CloserRole.AGENT]), lifting_lines=ANSWER_COMMANDS, countdown=UNANSWERED_COUNTDOWN.nudge("{left}", messages=numbers))

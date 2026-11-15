@@ -1,3 +1,4 @@
+from core.modules.memories.support.memory_nudges import WEIGH_COUNTDOWN
 from collections.abc import Mapping, Sequence
 
 from engine.agent_stack.states.blocked import Blocked
@@ -41,4 +42,4 @@ class MemoryMarkNeeds(NeedSource):
         uses = dict(zip(self.settings.numbers(MARKS_SETTING), tool_uses)).get(marks[0].percent, tool_uses[-1])
         nudge = WeighFirstNudge.declared().nudge()
         return BlockPlan(nudge, MemoriesWeighed(), TOOL_RULE, MARK_RANK, stop_check_key=STOP_RULE, tool_grace_uses=uses, scope_stop=True,
-                         closer_roles=tuple([CloserRole.AGENT]), lifting_lines=WEIGH_COMMANDS, stop_nudge=nudge)
+                         closer_roles=tuple([CloserRole.AGENT]), lifting_lines=WEIGH_COMMANDS, stop_nudge=nudge, countdown=WEIGH_COUNTDOWN.nudge("{left}"))

@@ -9,7 +9,7 @@ from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from core.modules.tasks.models.enums.task_state import UNFINISHED_STATES
 from core.modules.tasks.models.task import Task
-from core.modules.tasks.rules.support.current_tasks import CurrentTasks
+from core.modules.tasks.support.current_tasks import CurrentTasks
 from core.modules.tasks.nudges.task_name_nudge import TaskNameNudge
 
 

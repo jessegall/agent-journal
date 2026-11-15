@@ -4,7 +4,7 @@ from engine.command.handler import Handler
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.tasks.commands.assign_next_task.assign_next_task import AssignNextTask
 from core.modules.tasks.commands.start_task.start_task import StartTask
-from core.modules.tasks.rules.support.current_tasks import CurrentTasks
+from core.modules.tasks.support.current_tasks import CurrentTasks
 from core.modules.tasks.support.suite_task_assigners import SuiteTaskAssigners
 
 

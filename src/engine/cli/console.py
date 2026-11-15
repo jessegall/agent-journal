@@ -14,6 +14,7 @@ from engine.subcommand.overview_command import OverviewCommand
 from engine.subcommand.overview_reads import OverviewReads
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.subcommand.subcommand import SUCCESS_CODE, Subcommand
+from engine.request.request_values import RequestValues
 from engine.cli.agent_number_arguments import AgentNumberArguments
 from engine.cli.line_parser import LineParser
 from engine.cli.subcommand_lookup import AnySubcommand
@@ -64,15 +65,20 @@ class Console:
     def __init__(self, registry: Registry, finder: ModuleFinder, fingerprint: CodeFingerprint, line_parser: LineParser, bus: Bus,
                  flags: WriteFlags, refusals: RefusalLog, errors: ErrorLog, tables: Tables, commit_listeners: CommitListenerRunner,
                  environment_names: EnvironmentNames, resolver: CallerResolver, aliases: ShellAliases, handoff: ShellHandoff, events: EventLog, scopes: Scopes, refusal_skips: RefusalSkips, overview_reads: OverviewReads, read_limit_bypass: ReadLimitBypass, agent_numbers: AgentNumberArguments, request_records: RequestRecords,
-                 line_check: CallerLineCheck) -> None:
-        self.line_check = line_check
+                 line_check: CallerLineCheck, request_values: RequestValues) -> None:
+        self.line_check, self.request_values = line_check, request_values
         self.read_limit_bypass, self.agent_numbers, self.request_records = read_limit_bypass, agent_numbers, request_records
         self.registry, self.finder, self.fingerprint, self.line_parser, self.bus = registry, finder, fingerprint, line_parser, bus
         self.flags, self.refusals, self.errors, self.tables, self.commit_listeners = flags, refusals, errors, tables, commit_listeners
         self.refusal_skips, self.overview_reads = refusal_skips, overview_reads
         self.environment_names, self.resolver, self.aliases, self.handoff, self.events, self.scopes = environment_names, resolver, aliases, handoff, events, scopes
 
+    # a command line is one request: what its readers share is kept while it runs, as for a hook
     def run(self, argv: list[str], caller: Caller, stream: TextIO, request: CallerRequest = CallerRequest()) -> int:
+        with self.request_values.opened():
+            return self.line_run(argv, caller, stream, request)
+
+    def line_run(self, argv: list[str], caller: Caller, stream: TextIO, request: CallerRequest) -> int:
         output = Output(self.tables, "--json" in argv, stream, request.is_terminal)
         try:
             argv = self.read_limit_bypass.applied(argv, caller)

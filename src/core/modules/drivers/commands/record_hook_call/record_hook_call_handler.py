@@ -1,3 +1,4 @@
+from core.modules.drivers.support.displayed_blocks import DisplayedBlocks
 from engine.agent_step.step_commit import StepCommit
 from core.modules.settings.bindings.support.context_share import ContextShare
 import json
@@ -61,8 +62,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     runs_once = True
 
     def __init__(self, required_commands: RequiredCommands, bus: Bus, database: Database, queries: Queries, repository: Repository,
-                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome, share: ContextShare, compaction_end: CompactionEndPercent, hook_calls: HookCallQuery, loader: ActorLoader, steps: StepWriter) -> None:
-        self.steps = steps
+                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome, share: ContextShare, compaction_end: CompactionEndPercent, hook_calls: HookCallQuery, loader: ActorLoader, steps: StepWriter, displayed_blocks: DisplayedBlocks) -> None:
+        self.steps, self.displayed_blocks = steps, displayed_blocks
         self.home, self.share, self.compaction_end, self.hook_calls, self.loader = home, share, compaction_end, hook_calls, loader
         self.event_rows = event_rows
         self.system_log = system_log
@@ -92,7 +93,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
             if percent is not None:
                 metadata["context_percent"] = percent
         metadata[PROGRAM_SESSION] = command.event.session
-        displayed_text = self.hook_calls.displayed_block(agent.id, command.event)
+        displayed_text = self.displayed_blocks.text(agent.id, command.event)
         if displayed_text:
             metadata[DISPLAYED_TEXT] = displayed_text
         if command.event.displayed_part and not command.event.is_final_display:

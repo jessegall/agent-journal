@@ -7,15 +7,12 @@ from engine.agent_machine.needs.need_source import NeedSource
 from engine.agent_machine.record.question import Question
 from engine.agent_stack.states.blocked import Blocked
 from engine.agent_stack.subject_reference import SubjectReference
-from engine.query.conditions.among import Among
 from core.modules.processes.nudges.run_name_nudge import RunNameNudge
-from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.support.run_docking import LONG_RUN_DOCK_KEY, RunDocking
 from core.modules.processes.support.block_conditions.output_titled import OutputTitled
 from core.modules.processes.support.run_title import RunTitle
 
 OUTPUT_TITLE_RANK = "processes.output-title"
-DOCKED_OUTPUTS_REASON = "the outputs of the runs one agent has docked, a few at most"
 # a docked run with no descriptive title holds the agent's tools after this many uses (doc 1310 section 4.6)
 TITLE_GRACE_USES = 5
 
@@ -29,8 +26,8 @@ class LongRunDockNeeds(NeedSource):
     state_type = Blocked
     rank = OUTPUT_TITLE_RANK
 
-    def __init__(self, docking: RunDocking, outputs: OutputQuery) -> None:
-        self.docking, self.outputs = docking, outputs
+    def __init__(self, docking: RunDocking) -> None:
+        self.docking = docking
 
     def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]:
         plans: dict[int, list[Need | BlockPlan]] = {}
@@ -38,7 +35,7 @@ class LongRunDockNeeds(NeedSource):
             docked = list(self.docking.docked_runs(agent.agent_id))
             if not docked:
                 continue
-            outputs = {output.process_id: output for output in self.outputs.matching(Among("process_id", [run.id for run in docked])).every_row(DOCKED_OUTPUTS_REASON)}
+            outputs = self.docking.run_outputs(tuple(run.id for run in docked))
             untitled = [run for run in docked if run.id in outputs and not RunTitle.is_descriptive(outputs[run.id].title, run.line)]
             if untitled:
                 plans[agent.agent_id] = [self.plan(run.id) for run in untitled]

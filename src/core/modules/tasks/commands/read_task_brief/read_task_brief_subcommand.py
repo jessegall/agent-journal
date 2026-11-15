@@ -4,7 +4,7 @@ from engine.caller.caller import Caller
 from engine.subcommand.overview_command import OverviewCommand
 from engine.subcommand.subcommand import Subcommand
 from core.modules.tasks.commands.read_task_brief.read_task_brief import ReadTaskBrief
-from core.modules.tasks.rules.support.current_tasks import CurrentTasks
+from core.modules.tasks.support.current_tasks import CurrentTasks
 from core.modules.tasks.support.task_brief import TaskBrief
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
 

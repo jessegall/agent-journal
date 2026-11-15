@@ -73,12 +73,19 @@ class RunDocking:
         due = [process for process in new if self.needs_dock(process, agent_id, dock, tuple(parts[process.id]))]
         placed = due[:self.room.places(ProcessDockType.OUTPUT.value)]
         shown = [*docked, *placed]
-        outputs = {output.process_id: output for output in self.outputs.matching(Among("process_id", [process.id for process in shown])).every_row(DOCK_RUNS_REASON)} if shown else {}
+        outputs = self.run_outputs(tuple(process.id for process in shown))
         return DockedRuns(tuple(self.title_nudges(shown, outputs)), tuple(AddDockItem(ProcessDockType.OUTPUT.value, process.model_name, process.id) for process in placed))
 
     # the agent's docked runs, read once a request by the docking and by the hold on their titles
     def docked_runs(self, agent_id: int) -> tuple[Process, ...]:
         return self.request_values.read(f"processes.docked:{agent_id}", self.database.change_mark, lambda: tuple(self.processes.agent(agent_id).running().docked_runs().get()))
+
+    # the outputs of these runs, read once a request by the docking and by the hold on their titles
+    def run_outputs(self, process_ids: tuple[int, ...]) -> dict[int, Output]:
+        if not process_ids:
+            return {}
+        return self.request_values.read(f"processes.dock-outputs:{','.join(map(str, sorted(process_ids)))}", self.database.change_mark,
+                                        lambda: {output.process_id: output for output in self.outputs.matching(Among("process_id", list(process_ids))).every_row(DOCK_RUNS_REASON)})
 
     def title_nudges(self, due: list[Process], outputs: dict[int, Output]) -> list[Nudge]:
         return [RunNameNudge.declared().nudge(process=process.id) for process in due if process.id in outputs and not RunTitle.is_descriptive(outputs[process.id].title, process.line)]

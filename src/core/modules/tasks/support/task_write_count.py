@@ -1,8 +1,8 @@
 from engine.driver.hook_event import HookEvent
 from engine.database.kept_rows import KeptRows
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from core.modules.tasks.rules.support.current_task import CurrentTask
-from core.modules.tasks.rules.support.current_tasks import CurrentTasks
+from core.modules.tasks.support.current_task import CurrentTask
+from core.modules.tasks.support.current_tasks import CurrentTasks
 
 
 class TaskWriteCount:
