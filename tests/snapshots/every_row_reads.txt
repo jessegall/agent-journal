@@ -318,3 +318,4 @@ src/suites/coding/support/next_task.py:the own tasks of an agent are every task 
 src/core/modules/drivers/listeners/retired_responder_listener.py:the agents a retired agent started, a handful
 src/core/modules/drivers/listeners/retired_responder_listener.py:the open escalations of a retired agent's children, one each at most
 src/core/modules/drivers/listeners/retired_responder_listener.py:the open escalations of one retiring agent, one at most
+src/core/modules/waits/lines/long_wait_lines.py:the open waits of one agent, a few at most
