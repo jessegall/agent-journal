@@ -1,3 +1,6 @@
+from suites.coding.modules.checks.lines.broken_task_wait_lines import BrokenTaskWaitLines
+from suites.coding.modules.checks.lines.failed_check_lines import FailedCheckLines
+from suites.coding.modules.checks.effects.failed_check_effect import FailedCheckEffect
 from suites.coding.modules.checks.models.declarations.check_model_declaration import CheckModelDeclaration
 from suites.coding.modules.checks.skills.declarations.checks_skills import CHECKS_SKILLS
 from suites.coding.modules.checks.windows.extensions.shell_checks_extension import ShellChecksExtension
@@ -55,6 +58,8 @@ class ChecksModule(Module):
     fails."""
 
     name = "journal.suites.coding.checks"
+    effects = [FailedCheckEffect]
+    lines = [BrokenTaskWaitLines, FailedCheckLines]
     window_extensions = [ShellChecksExtension]
     nudges = CHECK_NUDGES
     requires_engine = ">=5,<6"

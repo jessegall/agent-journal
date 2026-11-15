@@ -13,8 +13,8 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.closer_role import CloserRole
 from engine.enums.hook_event_name import HookEventName
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
-from core.modules.drivers.support.rule_events import RuleEvents
-from core.modules.drivers.support.rule_hook import RuleHook
+from engine.rule_backed.rule_events import RuleEvents
+from engine.rule_backed.rule_hooks import RuleHooks
 
 
 class RuleNeedSource(NeedSource):
@@ -30,17 +30,17 @@ class RuleNeedSource(NeedSource):
         super().__init_subclass__(**kwargs)
         cls.agent_types = RuleEvents.agent_types(cls.rule)
 
-    def __init__(self, container: Container, hooks: RuleHook) -> None:
+    def __init__(self, container: Container, hooks: RuleHooks) -> None:
         self.container, self.hooks = container, hooks
 
     def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]:
-        if question.event is None or question.event.event not in RuleEvents.of(self.rule) or question.event.event is HookEventName.TICK:
+        if question.event is None or question.event.event not in RuleEvents.hook_events(self.rule) or question.event.event is HookEventName.TICK:
             return {}
         plans = {agent.agent_id: self.plans(agent.agent_id, question) for agent in agents}
         return {agent_id: list(found) for agent_id, found in plans.items() if found}
 
     def plans(self, agent_id: int, question: Question) -> list[BlockPlan]:
-        hook = self.hooks.of_agent(question, agent_id)
+        hook = self.hooks.agent_hook(question, agent_id)
         if hook is None:
             return []
         answer = self.container.get(self.rule).answer(hook)

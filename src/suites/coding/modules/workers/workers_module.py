@@ -1,3 +1,29 @@
+from suites.coding.modules.workers.policies.checkout_write_code_policy import CheckoutWriteCodePolicy
+from suites.coding.modules.workers.policies.dispatch_allowance_policy import DispatchAllowancePolicy
+from suites.coding.modules.workers.policies.phase_test_policy import PhaseTestPolicy
+from suites.coding.modules.workers.policies.protected_folder_policy import ProtectedFolderPolicy
+from suites.coding.modules.workers.policies.readonly_helper_allowance_policy import ReadonlyHelperAllowancePolicy
+from suites.coding.modules.workers.policies.worker_file_policy import WorkerFilePolicy
+from suites.coding.modules.workers.policies.worker_outside_link_policy import WorkerOutsideLinkPolicy
+from suites.coding.modules.workers.policies.worker_read_policy import WorkerReadPolicy
+from suites.coding.modules.workers.policies.worker_reuse_policy import WorkerReusePolicy
+from suites.coding.modules.workers.policies.worker_test_count_policy import WorkerTestCountPolicy
+from suites.coding.modules.workers.policies.worker_test_line_policy import WorkerTestLinePolicy
+from suites.coding.modules.workers.lines.context_stop_now_lines import ContextStopNowLines
+from suites.coding.modules.workers.lines.inactive_helper_lines import InactiveHelperLines
+from suites.coding.modules.workers.lines.merge_checkout_lines import MergeCheckoutLines
+from suites.coding.modules.workers.lines.small_batch_lines import SmallBatchLines
+from suites.coding.modules.workers.lines.stopped_worker_lines import StoppedWorkerLines
+from suites.coding.modules.workers.lines.unmerged_worker_lines import UnmergedWorkerLines
+from suites.coding.modules.workers.lines.unstarted_worker_lines import UnstartedWorkerLines
+from suites.coding.modules.workers.lines.worker_log_due_lines import WorkerLogDueLines
+from suites.coding.modules.workers.lines.workers_out_lines import WorkersOutLines
+from suites.coding.modules.workers.needs.delivered_work_stop_needs import DeliveredWorkStopNeeds
+from suites.coding.modules.workers.needs.unmerged_worker_needs import UnmergedWorkerNeeds
+from suites.coding.modules.workers.needs.worker_status_first_needs import WorkerStatusFirstNeeds
+from suites.coding.modules.workers.effects.inactive_helper_effect import InactiveHelperEffect
+from suites.coding.modules.workers.effects.phase_test_effect import PhaseTestEffect
+from suites.coding.modules.workers.effects.record_todo_list_effect import RecordTodoListEffect
 from suites.coding.modules.workers.support.workers_module_nudges import WORKERS_MODULE_NUDGES
 from suites.coding.modules.workers.models.workers_models import WORKERS_MODELS
 from suites.coding.modules.workers.migrations.workers_migrations import WORKERS_MIGRATIONS
@@ -100,6 +126,10 @@ class WorkersModule(Module):
     """
 
     name = "journal.suites.coding.workers"
+    effects = [InactiveHelperEffect, PhaseTestEffect, RecordTodoListEffect]
+    needs = [DeliveredWorkStopNeeds, UnmergedWorkerNeeds, WorkerStatusFirstNeeds]
+    lines = [ContextStopNowLines, InactiveHelperLines, MergeCheckoutLines, SmallBatchLines, StoppedWorkerLines, UnmergedWorkerLines, UnstartedWorkerLines, WorkerLogDueLines, WorkersOutLines]
+    policies = [CheckoutWriteCodePolicy, DispatchAllowancePolicy, PhaseTestPolicy, ProtectedFolderPolicy, ReadonlyHelperAllowancePolicy, WorkerFilePolicy, WorkerOutsideLinkPolicy, WorkerReadPolicy, WorkerReusePolicy, WorkerTestCountPolicy, WorkerTestLinePolicy]
     profiles = WORKER_PROFILES
     helper_types = [Worker, Merger]
     agent_states = [WorkerLogDue]

@@ -1,4 +1,4 @@
-from core.modules.drivers.support.rule_effect import RuleEffect
+from engine.rule_backed.rule_effect import RuleEffect
 from core.modules.messages.rules.transcript_message_rule import TranscriptMessageRule
 
 

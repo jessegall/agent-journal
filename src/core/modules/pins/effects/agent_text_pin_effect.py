@@ -1,4 +1,4 @@
-from core.modules.drivers.support.rule_effect import RuleEffect
+from engine.rule_backed.rule_effect import RuleEffect
 from core.modules.pins.rules.agent_text_pin_rule import AgentTextPinRule
 
 

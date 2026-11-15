@@ -7,7 +7,7 @@ class RuleEvents:
     """The hook events an old rule answers: its one event, or every agent event for a rule of every hook."""
 
     @staticmethod
-    def of(rule: type[DriverRule]) -> list[HookEventName]:
+    def hook_events(rule: type[DriverRule]) -> list[HookEventName]:
         if rule.hook == HookWildcard.ALL_HOOKS:
             return [event for event in HookEventName if event is not HookEventName.TICK]
         return [HookEventName(rule.hook)]

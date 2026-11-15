@@ -1,4 +1,4 @@
-from core.modules.drivers.support.rule_line_source import RuleLineSource
+from engine.rule_backed.rule_line_source import RuleLineSource
 from core.modules.processes.rules.output_status_monitor_rule import OutputStatusMonitorRule
 
 

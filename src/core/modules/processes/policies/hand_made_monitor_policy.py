@@ -1,4 +1,4 @@
-from core.modules.drivers.support.rule_policy import RulePolicy
+from engine.rule_backed.rule_policy import RulePolicy
 from core.modules.processes.rules.hand_made_monitor_rule import HandMadeMonitorRule
 
 

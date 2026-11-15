@@ -1,3 +1,10 @@
+from suites.coding.policies.failed_full_run_policy import FailedFullRunPolicy
+from suites.coding.policies.graphify_search_policy import GraphifySearchPolicy
+from suites.coding.policies.no_full_test_run_policy import NoFullTestRunPolicy
+from suites.coding.lines.graphify_search_lines import GraphifySearchLines
+from suites.coding.lines.introduction_lines import IntroductionLines
+from suites.coding.lines.waiting_items_lines import WaitingItemsLines
+from suites.coding.needs.worker_task_start_needs import WorkerTaskStartNeeds
 from suites.coding.support.coding_module_nudges import CODING_MODULE_NUDGES
 from suites.coding.seeders.coding_seeders import CODING_SEEDERS
 from suites.coding.settings.coding_setting_lists import CODING_SETTING_LISTS
@@ -31,6 +38,9 @@ class CodingModule(Module):
     windows; the modules only coding uses live in its modules folder."""
 
     name = "journal.suites.coding"
+    needs = [WorkerTaskStartNeeds]
+    lines = [GraphifySearchLines, IntroductionLines, WaitingItemsLines]
+    policies = [FailedFullRunPolicy, GraphifySearchPolicy, NoFullTestRunPolicy]
     profiles = HELPER_PROFILES
     agent_groups = CODING_AGENT_GROUPS
     templates = CODING_TEMPLATES

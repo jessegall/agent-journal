@@ -1,4 +1,4 @@
-from core.modules.drivers.support.rule_effect import RuleEffect
+from engine.rule_backed.rule_effect import RuleEffect
 from core.modules.pins.rules.automatic_link_pin_rule import AutomaticLinkPinRule
 
 

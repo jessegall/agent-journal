@@ -72,6 +72,8 @@ from engine.agent_step.agent_view_reader import AgentViewReader
 from engine.agent_step.step_writer import StepWriter
 from core.modules.drivers.bindings.stored_agent_view_reader import StoredAgentViewReader
 from core.modules.drivers.bindings.stored_step_writer import StoredStepWriter
+from core.modules.drivers.support.rule_hook import RuleHook
+from engine.rule_backed.rule_hooks import RuleHooks
 from core.modules.drivers.commands.record_driver_tables.record_driver_tables_handler import RecordDriverTablesHandler
 from core.modules.drivers.listeners.driver_table_sync_listener import DriverTableSyncListener
 from core.modules.drivers.drivers.helper.helper_agent_driver import HelperAgentDriver
@@ -328,7 +330,7 @@ class DriversModule(Module):
                      EventPruningTickHandler]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed]
     driver_rules = [RepeatedFileReadRule, SafeguardsStopRule, PanicFileRule, BlockStopRule, LongOutputRule, ForeignHooksRule, CompactionDueStopRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, ContinuedSessionRule, AgentBlockRule, TakeoverRule, AccessRule, TypeCommandsRule, NativeSubagentRule, PrivateCorpusRule, DatabaseFileRule]
-    bindings = {AgentViewReader: StoredAgentViewReader, StepWriter: StoredStepWriter, OpenBlocks: AgentOpenBlocks, CallerLineCheck: AgentLineCheck, ContextChangeRequests: RecordedContextChangeRequests, Nudger: AgentLineNudger, OverviewReads: TableOverviewReads, RefusalSkips: TableRefusalSkips, ManagedHookHistoryReader: ManagedHookHistoryQuery, TranscriptAuthors: LineTranscriptAuthors, HookHistory: TableHookHistory, AgentStateOpenness: BoardStateOpenness,HookRoute: AgentHookRoute, ChangeFilter: DriverChangeFilter,
+    bindings = {RuleHooks: RuleHook, AgentViewReader: StoredAgentViewReader, StepWriter: StoredStepWriter, OpenBlocks: AgentOpenBlocks, CallerLineCheck: AgentLineCheck, ContextChangeRequests: RecordedContextChangeRequests, Nudger: AgentLineNudger, OverviewReads: TableOverviewReads, RefusalSkips: TableRefusalSkips, ManagedHookHistoryReader: ManagedHookHistoryQuery, TranscriptAuthors: LineTranscriptAuthors, HookHistory: TableHookHistory, AgentStateOpenness: BoardStateOpenness,HookRoute: AgentHookRoute, ChangeFilter: DriverChangeFilter,
                 EssentialAllowances: SettingEssentialAllowances}
     windows = DRIVERS_WINDOWS
     seed_reason = "each suite chooses the drivers used by its demo"

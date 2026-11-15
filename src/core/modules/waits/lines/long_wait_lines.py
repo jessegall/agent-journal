@@ -1,4 +1,4 @@
-from core.modules.drivers.support.rule_line_source import RuleLineSource
+from engine.rule_backed.rule_line_source import RuleLineSource
 from core.modules.waits.rules.long_wait_rule import LongWaitRule
 
 

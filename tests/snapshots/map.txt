@@ -43,6 +43,7 @@ engine  The building blocks every module stands on; it imports no module.
     repository  Saving and loading rows, with the check for a stale row.
     request  Values kept while one request is answered.
     row  What every row has: metadata, a page of rows and the owner of a row.
+    rule_backed  Lines, policies and effects of the agent machine answered by an old driver rule, so today's texts and commands stay exact until each rule's body moves into its contribution.
     sandbox  The sandbox of an agent and of a shell line.
     scope  Scopes: which rows an actor or an environment may read.
     seed  Seeders and the demo data.
