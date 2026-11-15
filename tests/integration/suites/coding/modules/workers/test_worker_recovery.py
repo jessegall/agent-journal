@@ -1,3 +1,4 @@
+import pytest
 from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
 
@@ -52,23 +53,21 @@ def test_a_stop_over_a_socket_nobody_answers_removes_it_and_starts_no_launcher(w
     story.expect_rows(not stopped, service.launcher is None, not story.home.socket(LAUNCHER_SOCKET).exists())
 
 
-def test_a_worker_gone_when_the_server_starts_is_ended_and_resumed_at_once(running_worker):
+# what the launcher answers of a worker's program as the server starts, and how many starts the recovery then asks
+LAUNCHER_ANSWERS = [pytest.param(f"started {RESUMED_PID}\n".encode(), 1, id="gone-and-resumed"), pytest.param(b"running\n", 0, id="running-and-left-alone")]
+
+
+@pytest.mark.parametrize(("answer", "starts"), LAUNCHER_ANSWERS)
+def test_the_recovery_resumes_a_worker_gone_when_the_server_starts_and_leaves_a_running_one_alone(running_worker, answer, starts):
     story = running_worker
     story.use_processes()
-    launcher = start_launcher(story, f"started {RESUMED_PID}\n".encode())
+    launcher = start_launcher(story, answer)
     GoneWorkerRecovery()(story.container)
     launcher.drain_requests()
-    story.expect_rows(len(launcher.starts) == 1, launcher.starts[0]["agent_id"] == story.worker.id)
-    story.expect_text(f"agent show {agent_number(story, story.worker.id)}", f"pid: {RESUMED_PID}")
+    story.expect_rows(len(launcher.starts) == starts, all(start["agent_id"] == story.worker.id for start in launcher.starts))
     story.expect_no_text(f"agent show {agent_number(story, story.worker.id)}", "ended_at:")
-
-
-def test_a_worker_running_when_the_server_starts_is_left_alone(running_worker):
-    story = running_worker
-    launcher = start_launcher(story, b"running\n")
-    GoneWorkerRecovery()(story.container)
-    story.expect_rows(launcher.requests == [])
-    story.expect_no_text(f"agent show {agent_number(story, story.worker.id)}", "ended_at:")
+    if starts:
+        story.expect_text(f"agent show {agent_number(story, story.worker.id)}", f"pid: {RESUMED_PID}")
 
 
 def test_a_worker_with_started_work_and_no_job_or_delegated_task_is_resumed(running_worker):
