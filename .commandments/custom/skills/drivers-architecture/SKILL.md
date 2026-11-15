@@ -1,33 +1,33 @@
 ---
 name: DriversArchitecture
-description: Load it before writing a suite, a driver, a driver rule or an overlay in version 5, so the journal's conduct toward an agent stays in rules that only answer, over rows read through injected queries.
-summary: Rules and overlays only answer and read through the queries they are handed; the driver base knows no module; every suite, driver, rule and overlay names itself; no stack is stored.
+description: Load it before writing a suite, a driver or a contribution of the agent machine (a policy, need source, line source, effect, transform or wake cause) in version 5, so the journal's conduct toward an agent stays in contributions that only answer, over rows read through injected queries.
+summary: Contributions only answer and read through the queries they are handed; an effect names its commands and the step's save runs them; the driver base knows no module; every suite and driver names itself; the stack is stored only by the agent machine.
 tier: mandatory
 languages: [python]
 ---
 
 # The drivers architecture
 
-Version 5 drives an agent by suites of drivers (doc 1096). On every hook the drivers module asks the rules of the
-agent's driver and of the open overlays, and records every answer as a `hook_call` row. That only holds while
-each piece keeps to its place.
+Version 5 drives an agent by the agent machine (doc 1310). On every hook and at every minute step the machine reads
+one view of the agent, asks every contribution its module lists, and saves the step and its decision record in one
+write; the hook is answered from that record. That only holds while each contribution keeps to its place.
 
 ## When it fires
 
-- **`rule-runs-a-command`** - a driver rule, an overlay, an agent state's opener or a deferred rule calls `run`, `dispatch`, `save`, `delete` or a database
-  write itself. A rule only answers: it hands a command to `RuleAnswer` with `running(command)` or
-  `ending_layer(command)`, and the hook record runs each command alone in its own savepoint.
-- **`rule-builds-its-reader`** - a driver rule, an overlay, an agent state's opener or a deferred rule constructs a `Database`, a `Container`, `Queries`
-  or a query class. Name the query it needs in its constructor, `def __init__(self, tasks: TaskQuery)`, and
-  the container hands it in.
+- **`rule-runs-a-command`** - a policy, need source, line source, transform or wake cause calls `run`, `dispatch`,
+  `save`, `delete` or a database write itself. A contribution only answers: an effect names the commands it wants in
+  `commands()`, and the step's save runs them.
+- **`rule-builds-its-reader`** - a contribution constructs a `Database`, a `Container`, `Queries` or a query class.
+  Name the query it needs in its constructor, `def __init__(self, tasks: TaskQuery)`, and the container hands it in.
+- **`hook-named-by-a-string`** - a contribution names an event it hears by a string. Name it by its member:
+  `events = [HookEventName.STOP]`.
 - **`driver-base-imports-a-module`** - a file of `engine/driver/` imports from `core/modules/` or
   `suites/`. The base is what every module builds on; what it needs from a module is an interface in the
-  base that the module binds, as `HookHistory` and `HookRoute` are.
-- **`driver-piece-without-a-name`** - a suite, driver, driver rule, overlay, agent state or deferred rule declares no `name`. Every piece is
-  found, listed, switched and recorded by its name: give it `name = "<module>.<what it is>"`.
-- **`agent-keeps-a-stack`** - the agent model declares a `stack`, `states` or `state` field. Overlays are worked
-  out from open rows on every hook and nothing about where the agent stands is stored on the agent. An agent
-  state is the same: a shape over rows the journal already has, worked out by its opener, never a table of its own.
+  base that the module binds, as `HookRoute` is.
+- **`driver-piece-without-a-name`** - a suite or driver declares no `name`. Every piece is found, listed, switched and
+  recorded by its name: give it `name = "<module>.<what it is>"`.
+- **`agent-keeps-a-stack`** - the agent model declares a `stack`, `states` or `state` field. Where an agent stands is
+  the agent machine's stack, saved in the drivers module's `agent_stack` row by the step, never on the agent.
 - **`launcher-stop-outside-agent-program`** - code asks `LauncherLink` to stop a program. End the agent's row instead:
   `EndedAgentProgramListener` stops the program through `AgentProgram` when another ended it, and an agent that ended
   itself gets no stop.

@@ -18,19 +18,35 @@
             {
                 "any": [
                     {
-                        "extendsAny": "DriverRule",
+                        "extendsAny": "Policy",
                         "of": "enclosingType"
                     },
                     {
-                        "extendsAny": "Overlay",
+                        "extendsAny": "EventPolicy",
                         "of": "enclosingType"
                     },
                     {
-                        "extendsAny": "AgentState",
+                        "extendsAny": "NeedSource",
                         "of": "enclosingType"
                     },
                     {
-                        "extendsAny": "DeferredRule",
+                        "extendsAny": "LineSource",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "EventLineSource",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "Effect",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "Transform",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "WakeCause",
                         "of": "enclosingType"
                     }
                 ]
@@ -47,8 +63,8 @@
     },
     "sin": {
         "name": "rule-runs-a-command",
-        "description": "A driver rule, an overlay, an agent state's opener or a deferred rule runs a command or writes a row itself, so the write skips the hook call's transaction, its savepoint and its record.",
-        "rule": "A rule only answers: it hands the commands it wants run to RuleAnswer with running() or ending_layer(), and the hook record runs each one alone.",
+        "description": "A contribution of the agent machine runs a command or writes a row itself, so the write escapes the step's save and its decision record (doc 1310 sections 4.1 and 5.1).",
+        "rule": "A policy, need source, line source, transform or wake cause only answers; an effect names its commands in commands() and the step's save runs them.",
         "skill": "drivers-architecture"
     }
 }

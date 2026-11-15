@@ -1,4 +1,4 @@
-from engine.driver.driver_rule import DriverRule
+from engine.agent_machine.contracts.policy import Policy
 
 
 class ReaderJudge:
@@ -6,8 +6,8 @@ class ReaderJudge:
         return reader not in text
 
 
-class MissedLinesRule(DriverRule):
-    name = "samples.reading_judged"
+class MissedLinesPolicy(Policy):
+    key = "samples.reading_judged"
 
     def __init__(self, judge: ReaderJudge) -> None:
         self.judge = judge

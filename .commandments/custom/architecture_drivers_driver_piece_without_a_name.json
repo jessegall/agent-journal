@@ -7,22 +7,10 @@
             {
                 "any": [
                     {
-                        "extendsAny": "DriverRule"
-                    },
-                    {
-                        "extendsAny": "Overlay"
-                    },
-                    {
                         "extendsAny": "Suite"
                     },
                     {
                         "extendsAny": "Driver"
-                    },
-                    {
-                        "extendsAny": "AgentState"
-                    },
-                    {
-                        "extendsAny": "DeferredRule"
                     }
                 ]
             },
@@ -56,7 +44,7 @@
     },
     "sin": {
         "name": "driver-piece-without-a-name",
-        "description": "A suite, driver, driver rule, overlay, agent state or deferred rule declares no name, so it cannot be found, listed, switched or recorded.",
+        "description": "A suite or a driver declares no name, so it cannot be found, listed, switched or recorded.",
         "rule": "Give it name = \"<module>.<what it is>\" as a class attribute.",
         "skill": "drivers-architecture"
     }

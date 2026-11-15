@@ -11,30 +11,56 @@
                             "is": "type-declaration"
                         },
                         {
-                            "extendsAny": "DriverRule"
+                            "any": [
+                                {
+                                    "extendsAny": "Policy"
+                                },
+                                {
+                                    "extendsAny": "EventPolicy"
+                                },
+                                {
+                                    "extendsAny": "NeedSource"
+                                },
+                                {
+                                    "extendsAny": "LineSource"
+                                },
+                                {
+                                    "extendsAny": "EventLineSource"
+                                },
+                                {
+                                    "extendsAny": "Effect"
+                                },
+                                {
+                                    "extendsAny": "Transform"
+                                },
+                                {
+                                    "extendsAny": "WakeCause"
+                                }
+                            ]
                         }
                     ]
                 }
             },
             {
-                "of": "parent",
-                "all": [
-                    {
-                        "is": "assignment"
-                    },
-                    {
-                        "descendant": {
-                            "all": [
-                                {
-                                    "is": "identifier"
-                                },
-                                {
-                                    "name": "hook"
-                                }
-                            ]
+                "inside": {
+                    "all": [
+                        {
+                            "is": "assignment"
+                        },
+                        {
+                            "descendant": {
+                                "all": [
+                                    {
+                                        "is": "identifier"
+                                    },
+                                    {
+                                        "name": "events"
+                                    }
+                                ]
+                            }
                         }
-                    }
-                ]
+                    ]
+                }
             }
         ],
         "reject": [
@@ -45,8 +71,8 @@
     },
     "sin": {
         "name": "hook-named-by-a-string",
-        "description": "A driver rule names its hook by a string, so a misspelt hook passes until sync and the names are written out again in every rule.",
-        "rule": "Name the hook by its member: hook = HookEventName.PRE_TOOL_USE, or HookWildcard.ALL_HOOKS for a rule on every hook.",
+        "description": "A contribution of the agent machine names an event it hears by a string, so a misspelt event passes until sync and the names are written out again in every contribution.",
+        "rule": "Name each event by its member: events = [HookEventName.PRE_TOOL_USE].",
         "skill": "plain-code-words"
     }
 }

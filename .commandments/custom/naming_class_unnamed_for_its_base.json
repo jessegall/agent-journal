@@ -12,18 +12,6 @@
                     {
                         "all": [
                             {
-                                "extendsAny": "DriverRule"
-                            },
-                            {
-                                "not": {
-                                    "nameLike": "*Rule"
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "all": [
-                            {
                                 "extendsAny": "Guard"
                             },
                             {
@@ -120,18 +108,6 @@
                     {
                         "all": [
                             {
-                                "extendsAny": "Overlay"
-                            },
-                            {
-                                "not": {
-                                    "nameLike": "*Overlay"
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "all": [
-                            {
                                 "extendsAny": "Suite"
                             },
                             {
@@ -211,7 +187,7 @@
     "sin": {
         "name": "class-unnamed-for-its-base",
         "description": "A class extends one of the core's building blocks but its name does not end with that block's name, so a reader cannot tell what it is.",
-        "rule": "End the class's name with the block it extends: ...Rule for a DriverRule, ...Guard, ...Handler, ...Subcommand, ...Listener, ...Driver, ...Overlay, ...Suite, ...Module, ...Migration, ...Provider, or ...Error for an exception other than a Refusal; name its file the same in snake case.",
+        "rule": "End the class's name with the block it extends: ...Guard, ...Handler, ...Subcommand, ...Listener, ...Driver, ...Suite, ...Module, ...Migration, ...Provider, or ...Error for an exception other than a Refusal; name its file the same in snake case.",
         "skill": "plain-code-words"
     }
 }

@@ -1,9 +1,9 @@
-from engine.driver.driver_rule import DriverRule
+from engine.agent_machine.contracts.policy import Policy
 from core.modules.processes.queries.reading_decision_query import ReadingDecisionQuery
 
 
-class StoredDecisionRule(DriverRule):
-    name = "samples.decision_read"
+class StoredDecisionPolicy(Policy):
+    key = "samples.decision_read"
 
     def __init__(self, decisions: ReadingDecisionQuery) -> None:
         self.decisions = decisions

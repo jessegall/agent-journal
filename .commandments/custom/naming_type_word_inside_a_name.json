@@ -10,9 +10,6 @@
             {
                 "any": [
                     {
-                        "extendsAny": "DriverRule"
-                    },
-                    {
                         "extendsAny": "Guard"
                     },
                     {
@@ -35,9 +32,6 @@
                     },
                     {
                         "extendsAny": "Driver"
-                    },
-                    {
-                        "extendsAny": "Overlay"
                     },
                     {
                         "extendsAny": "Suite"

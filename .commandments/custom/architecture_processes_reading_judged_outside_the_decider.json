@@ -58,7 +58,35 @@
             {
                 "any": [
                     {
-                        "extendsAny": "DriverRule",
+                        "extendsAny": "Policy",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "EventPolicy",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "NeedSource",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "LineSource",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "EventLineSource",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "Effect",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "Transform",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "WakeCause",
                         "of": "enclosingType"
                     },
                     {
@@ -97,7 +125,7 @@
     },
     "sin": {
         "name": "reading-judged-outside-the-decider",
-        "description": "A rule, a listener or a handler judges whether a command has a good reader.",
+        "description": "A contribution, a listener or a handler judges whether a command has a good reader.",
         "rule": "Ask the engine: ReadingDecider decides from the facts ReadingFacts gathers; a rule only reads the stored decision.",
         "skill": "processes-architecture"
     }

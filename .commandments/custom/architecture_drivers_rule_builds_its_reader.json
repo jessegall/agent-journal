@@ -37,19 +37,35 @@
             {
                 "any": [
                     {
-                        "extendsAny": "DriverRule",
+                        "extendsAny": "Policy",
                         "of": "enclosingType"
                     },
                     {
-                        "extendsAny": "Overlay",
+                        "extendsAny": "EventPolicy",
                         "of": "enclosingType"
                     },
                     {
-                        "extendsAny": "AgentState",
+                        "extendsAny": "NeedSource",
                         "of": "enclosingType"
                     },
                     {
-                        "extendsAny": "DeferredRule",
+                        "extendsAny": "LineSource",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "EventLineSource",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "Effect",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "Transform",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "WakeCause",
                         "of": "enclosingType"
                     }
                 ]
@@ -84,8 +100,8 @@
     },
     "sin": {
         "name": "rule-builds-its-reader",
-        "description": "A driver rule, an overlay, an agent state's opener or a deferred rule builds its own database, container or query instead of being handed one, so it reads outside the hook's transaction and its connection.",
-        "rule": "Name the query the rule reads in its constructor; the container hands in the one the hook runs on.",
+        "description": "A contribution of the agent machine (a policy, need source, line source, effect, transform or wake cause) builds its own database, container or query instead of being handed one, so it reads outside the step's answer basis (doc 1310 section 5.1).",
+        "rule": "Take every reader through the constructor, as an injected query, so the step reads what the machine pinned.",
         "skill": "drivers-architecture"
     }
 }

@@ -4,23 +4,83 @@
     "find": {
         "select": "call",
         "where": [
-            {"fileMatches": "(^|/)src/(core/modules|suites)/"},
-            {"any": [
-                {"extendsAny": "DriverRule", "of": "enclosingType"},
-                {"fileMatches": "/drivers/bindings/"}
-            ]},
-            {"any": [
-                {"name": "StopAgent"},
-                {"all": [{"name": "stop"}, {"of": "receiver", "any": [{"name": "LeftoverProcess"}, {"typeLike": "*LauncherLink"}]}]}
-            ]}
+            {
+                "fileMatches": "(^|/)src/(core/modules|suites)/"
+            },
+            {
+                "any": [
+                    {
+                        "extendsAny": "Policy",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "EventPolicy",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "NeedSource",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "LineSource",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "EventLineSource",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "Effect",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "Transform",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "WakeCause",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "fileMatches": "/drivers/bindings/"
+                    }
+                ]
+            },
+            {
+                "any": [
+                    {
+                        "name": "StopAgent"
+                    },
+                    {
+                        "all": [
+                            {
+                                "name": "stop"
+                            },
+                            {
+                                "of": "receiver",
+                                "any": [
+                                    {
+                                        "name": "LeftoverProcess"
+                                    },
+                                    {
+                                        "typeLike": "*LauncherLink"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
         ],
         "reject": [
-            {"testCode": true}
+            {
+                "testCode": true
+            }
         ]
     },
     "sin": {
         "name": "slow-stop-in-a-hook",
-        "description": "A driver rule or the hook route stops an agent or a process, which waits for the program to end while the program waits for the hook's answer.",
+        "description": "A contribution of the agent machine or the hook route stops an agent or a process, which waits for the program to end while the program waits for the hook's answer.",
         "rule": "Answer the hook first and stop in a listener or a tick that runs after the answer, or end the agent row (EndAgent) when the stop is not needed in the hook.",
         "skill": "drivers-architecture"
     }
