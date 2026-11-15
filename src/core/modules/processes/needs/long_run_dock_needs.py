@@ -8,7 +8,7 @@ from engine.agent_machine.needs.state_source import StateSource
 from engine.agent_machine.record.question import Question
 from engine.agent_stack.states.blocked import Blocked
 from engine.agent_stack.row_reference import RowReference
-from core.modules.processes.nudges.run_name_message import RunNameMessage
+from core.modules.processes.agent_messages.run_name_message import RunNameMessage
 from core.modules.processes.support.run_docking import LONG_RUN_DOCK_KEY, RunDocking
 from core.modules.processes.support.block_conditions.output_titled import OutputTitled
 
@@ -38,6 +38,6 @@ class LongRunDockNeeds(StateSource):
     # the hold today's required command opens for the title line, in its words: "title output N is due" after the grace
     @staticmethod
     def plan(process_id: int) -> BlockPlan:
-        block = RequiredCommands.block(0, RunNameMessage.declared().nudge(process=process_id))
-        return BlockPlan(block.nudge, OutputTitled(process_id), LONG_RUN_DOCK_KEY, OUTPUT_TITLE_RANK, tool_grace_uses=TITLE_GRACE_USES,
+        block = RequiredCommands.block(0, RunNameMessage.declared().agent_message(process=process_id))
+        return BlockPlan(block.agent_message, OutputTitled(process_id), LONG_RUN_DOCK_KEY, OUTPUT_TITLE_RANK, tool_grace_uses=TITLE_GRACE_USES,
                          subject=RowReference("process", process_id), lifting_lines=tuple([f"journal output title {process_id}"]), countdown=block.countdown)

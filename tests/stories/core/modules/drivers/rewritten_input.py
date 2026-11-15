@@ -1,6 +1,6 @@
 import shlex
 
-from core.modules.processes.nudges.sleep_refusal_message import SleepRefusalMessage
+from core.modules.processes.agent_messages.sleep_refusal_message import SleepRefusalMessage
 from engine.enums.command_category import CommandCategory
 from engine.enums.command_effect import CommandEffect
 from engine.testing.examples.hook_samples import HookSamples
@@ -23,7 +23,7 @@ def test_a_hook_sent_twice_is_answered_with_the_same_new_input(new_story):
 
 def test_a_refused_shell_line_of_a_program_that_prints_refusals_runs_as_a_line_that_prints_the_reason(new_story):
     story = new_story(fixture=BuilderStarted)
-    reason = SleepRefusalMessage.declared().nudge().text
+    reason = SleepRefusalMessage.declared().agent_message().text
     reply = story.hook("s-1", SLEEP)
     expect_refusal_reply(reply, reason)
     expect_updated_input_reply(reply, {"command": f"printf '%s\\n' {shlex.quote(reason)}"})

@@ -9,7 +9,7 @@ from engine.repository.repository import Repository
 from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from engine.model.model import Model
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.messages.support.work_sources import WorkSources
 from core.modules.tasks.models.task import Task
@@ -35,11 +35,11 @@ class KeptWorkerTasks:
     its delivery mergeable, the tasks wait and start once it is merged; a merged worker gets a new cut in
     its old folder on the same session; an unmerged branch is never overwritten."""
 
-    def __init__(self, queries: Queries, repository: Repository, worktrees: WorktreeQuery, git: WorktreeGit, nudger: MessageSender,
+    def __init__(self, queries: Queries, repository: Repository, worktrees: WorktreeQuery, git: WorktreeGit, message_sender: MessageSender,
                  environments: EnvironmentRows, sources: WorkSources, copies: WorkerTaskCopies,
                  proof_queue: WorkerProofQueue, scopes: Scopes, kept: KeptRows, dependency_waits: DependencyWaits, assignments: WorkerAssignments, reservations: MainReservedTasks, task_assignments: Assignments, assigned_worker_tasks: AssignedWorkerTasks, external_waits: OutsideWaits) -> None:
         self.task_assignments, self.assigned_worker_tasks, self.outside_waits = task_assignments, assigned_worker_tasks, external_waits
-        self.queries, self.repository, self.worktrees, self.git, self.nudger = queries, repository, worktrees, git, nudger
+        self.queries, self.repository, self.worktrees, self.git, self.message_sender = queries, repository, worktrees, git, message_sender
         self.environments, self.sources, self.copies, self.proof_queue = environments, sources, copies, proof_queue
         self.scopes = scopes
         self.kept = kept
@@ -85,20 +85,20 @@ class KeptWorkerTasks:
         self.delegate(worker, tasks, context)
         if AssignableTasks.all_blocked(tasks):
             waiting = ", ".join(f"task:{task.id}" for task in tasks)
-            return self.nudger.send_text(worker.id, job or f"{waiting} are yours once they open; go on with what you have", WAITING_TASKS_SOURCE, context)
+            return self.message_sender.send_text(worker.id, job or f"{waiting} are yours once they open; go on with what you have", WAITING_TASKS_SOURCE, context)
         first = tasks[0].id
-        return self.nudger.send_text(worker.id, job or f"Task:{first} is yours next: journal task overview {first}", WORKER_JOB_SOURCE, context)
+        return self.message_sender.send_text(worker.id, job or f"Task:{first} is yours next: journal task overview {first}", WORKER_JOB_SOURCE, context)
 
     def queued_after_delivery(self, worker: Agent, tasks: list[Task], job: str, context: Context) -> Model:
         self.delegate(worker, tasks, context)
         queued = ", ".join(f"task:{task.id}" for task in tasks)
-        return self.nudger.send_text(worker.id, job or f"{queued} are yours once your delivered work is merged: stay as you are until then", WAITING_TASKS_SOURCE, context)
+        return self.message_sender.send_text(worker.id, job or f"{queued} are yours once your delivered work is merged: stay as you are until then", WAITING_TASKS_SOURCE, context)
 
     def waiting(self, worker: Agent, task_ids: tuple[int, ...], context: Context) -> Model:
         tasks = self.read_tasks(task_ids)
         self.delegate(worker, tasks, context)
         waiting = ", ".join(f"task:{task.id}" for task in tasks)
-        return self.nudger.send_text(worker.id, f"{waiting} are yours once they open", WAITING_TASKS_SOURCE, context)
+        return self.message_sender.send_text(worker.id, f"{waiting} are yours once they open", WAITING_TASKS_SOURCE, context)
 
     def delegate(self, worker: Agent, tasks: list[Task], context: Context) -> None:
         actor_ids = self.task_assignments.row_actor_ids(Task, [task.id for task in tasks])

@@ -9,8 +9,8 @@ from core.modules.drivers.support.main_agent_line import MainAgentLine
 from suites.coding.modules.workers.commands.merger.require_merger import require_merger
 from suites.coding.modules.workers.commands.pass_behind_check.pass_behind_check import PassBehindCheck
 from suites.coding.modules.workers.support.behind_decisions import BehindDecisions
-from suites.coding.modules.workers.support.behind_nudges import STALE_SOURCE
-from suites.coding.modules.workers.nudges.stale_passed_message import StalePassedMessage
+from suites.coding.modules.workers.support.behind_agent_messages import STALE_SOURCE
+from suites.coding.modules.workers.agent_messages.stale_passed_message import StalePassedMessage
 from suites.coding.modules.workers.support.merger_visits import MergerVisits
 
 
@@ -31,4 +31,4 @@ class PassBehindCheckHandler(Handler[PassBehindCheck, None]):
         self.repository.save_change(check, check.passed(merger.id, command.reason), context)
         self.visits.close_newest(context)
         worker = self.numbers.number(AGENT_MODEL_NAME, command.worker_id)
-        self.main_line.send_nudge(StalePassedMessage.declared().nudge(worker=worker, check=check.id), STALE_SOURCE, context)
+        self.main_line.send_agent_message(StalePassedMessage.declared().agent_message(worker=worker, check=check.id), STALE_SOURCE, context)

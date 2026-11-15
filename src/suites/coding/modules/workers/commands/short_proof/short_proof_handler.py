@@ -4,7 +4,7 @@ from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from engine.errors.refusal import Refusal
 from engine.scope.actor_scope import ActorScope
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.agents.models.agent import Agent
@@ -17,7 +17,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.support.worker_job import SHORT_PROOF_SOURCE
-from suites.coding.modules.workers.nudges.worker_proof_short_message import WorkerProofShortMessage
+from suites.coding.modules.workers.agent_messages.worker_proof_short_message import WorkerProofShortMessage
 
 
 class ShortProofHandler(Handler[ShortProof, Proof]):
@@ -26,8 +26,8 @@ class ShortProofHandler(Handler[ShortProof, Proof]):
     command = ShortProof
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, repository: Repository, nudger: MessageSender) -> None:
-        self.queries, self.repository, self.nudger = queries, repository, nudger
+    def __init__(self, queries: Queries, repository: Repository, message_sender: MessageSender) -> None:
+        self.queries, self.repository, self.message_sender = queries, repository, message_sender
 
     def handle(self, command: ShortProof, context: Context) -> Proof:
         proof = self.queries.query(Proof).find(command.row_id)
@@ -43,5 +43,5 @@ class ShortProofHandler(Handler[ShortProof, Proof]):
         task = self.queries.query(Task).find(proof.task_id)
         if task.state is TaskState.TESTING:
             self.repository.save(task.moved(TaskLifecycle.retest), context)
-        self.nudger.send(worktree.session_agent_id, WorkerProofShortMessage.declared(), SHORT_PROOF_SOURCE, context, proof=proof.id, task=proof.task_id)
+        self.message_sender.send(worktree.session_agent_id, WorkerProofShortMessage.declared(), SHORT_PROOF_SOURCE, context, proof=proof.id, task=proof.task_id)
         return proof

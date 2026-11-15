@@ -60,7 +60,7 @@ class WorkerGuidance:
         task = self.current_task(worker_round)
         staging = worker_round.required_staging()
         worktree_task = self.queries.query(Task).find(worktree.task_id)
-        files = "" if worker_round.conflict is None else str(dict(worker_round.conflict.nudge.fields)[CONFLICT_FILES_FIELD])
+        files = "" if worker_round.conflict is None else str(dict(worker_round.conflict.agent_message.fields)[CONFLICT_FILES_FIELD])
         return WorkerStepFacts(task_id=task.id, open_task_count=open_task_count, test_runs_available=runs, label=f"task {worktree_task.id}", conflict_files=files, tests_waiting=self.steps.proofs.tests_waiting(worktree.id),
                                checkpoint_wait=self.unit_wait_text(worktree) or self.checkpoint_wait.text(worktree), ready_task_ids=tuple(ready.id for ready in staging.ready), open_task_ids=tuple(opened.id for opened in staging.open_tasks),
                                missing=staging.missing_points(task.id), is_planned=self.plans.is_started_plan(task.id), unit_open_count=self.unit_open_count(worktree),

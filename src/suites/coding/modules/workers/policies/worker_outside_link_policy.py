@@ -5,7 +5,7 @@ from suites.coding.modules.workers.types.worker import Worker
 from pathlib import Path
 
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.nudges.worker_foreign_link_message import WorkerForeignLinkMessage
+from suites.coding.modules.workers.agent_messages.worker_foreign_link_message import WorkerForeignLinkMessage
 
 LINK_PROGRAM = "ln"
 
@@ -27,5 +27,5 @@ class WorkerOutsideLinkPolicy(EventPolicy):
             return None
         arguments = [argument for part in tool.shell.parts if part.program == LINK_PROGRAM for argument in part.arguments if not argument.startswith("-")]
         if any(not Path(worktree.folder, argument).resolve().is_relative_to(Path(worktree.folder).resolve()) for argument in arguments):
-            return WorkerForeignLinkMessage.declared().nudge()
+            return WorkerForeignLinkMessage.declared().agent_message()
         return None

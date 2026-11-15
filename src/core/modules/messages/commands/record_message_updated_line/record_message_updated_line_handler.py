@@ -6,9 +6,9 @@ from engine.command.handler import Handler
 from engine.query.queries import Queries
 from core.modules.drivers.listeners.typed_line_listener import IDLE_MESSAGE_SOURCE
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from core.modules.messages.commands.record_message_updated_line.record_message_updated_line import RecordMessageUpdatedLine
-from core.modules.messages.nudges.message_updated_notice import MessageUpdatedNotice
+from core.modules.messages.agent_messages.message_updated_notice import MessageUpdatedNotice
 from core.modules.messages.models.message import Message
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.support.message_targets import MessageTargets
@@ -23,8 +23,8 @@ class RecordMessageUpdatedLineHandler(Handler[RecordMessageUpdatedLine, None]):
 
     command = RecordMessageUpdatedLine
 
-    def __init__(self, queries: Queries, nudger: MessageSender, hook_calls: HookCallQuery, targets: MessageTargets) -> None:
-        self.queries, self.nudger, self.hook_calls = queries, nudger, hook_calls
+    def __init__(self, queries: Queries, message_sender: MessageSender, hook_calls: HookCallQuery, targets: MessageTargets) -> None:
+        self.queries, self.message_sender, self.hook_calls = queries, message_sender, hook_calls
         self.targets = targets
 
     def handle(self, command: RecordMessageUpdatedLine, context: Context) -> None:
@@ -36,6 +36,6 @@ class RecordMessageUpdatedLineHandler(Handler[RecordMessageUpdatedLine, None]):
             return
         # an idle agent hears it through its program's wake hook, a working one at its next hook
         if self.hook_calls.has_ended_turn(agent.id):
-            self.nudger.send(agent.id, replace(MessageUpdatedNotice.declared(), delivery=LineDelivery.WAKE_HOOK), IDLE_MESSAGE_SOURCE, context, message=command.message_id)
+            self.message_sender.send(agent.id, replace(MessageUpdatedNotice.declared(), delivery=LineDelivery.WAKE_HOOK), IDLE_MESSAGE_SOURCE, context, message=command.message_id)
             return
-        self.nudger.send(agent.id, MessageUpdatedNotice.declared(), UPDATED_SOURCE, context, message=command.message_id)
+        self.message_sender.send(agent.id, MessageUpdatedNotice.declared(), UPDATED_SOURCE, context, message=command.message_id)

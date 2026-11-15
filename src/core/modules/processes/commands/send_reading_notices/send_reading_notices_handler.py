@@ -1,6 +1,6 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from engine.listener.rows.event_rows import EventRows
 from core.modules.processes.commands.send_reading_notices.send_reading_notices import SendReadingNotices
 from core.modules.processes.models.process import Process
@@ -19,8 +19,8 @@ class SendReadingNoticesHandler(Handler[SendReadingNotices, None]):
 
     command = SendReadingNotices
 
-    def __init__(self, rows: EventRows, outputs: OutputQuery, visibility: RunVisibility, notices: ReadingNotices, nudger: MessageSender, marker: UnreadableMarker) -> None:
-        self.rows, self.outputs, self.visibility, self.notices, self.nudger, self.marker = rows, outputs, visibility, notices, nudger, marker
+    def __init__(self, rows: EventRows, outputs: OutputQuery, visibility: RunVisibility, notices: ReadingNotices, message_sender: MessageSender, marker: UnreadableMarker) -> None:
+        self.rows, self.outputs, self.visibility, self.notices, self.message_sender, self.marker = rows, outputs, visibility, notices, message_sender, marker
 
     def handle(self, command: SendReadingNotices, context: Context) -> None:
         process = self.rows.required(Process, command.process_id)
@@ -28,5 +28,5 @@ class SendReadingNoticesHandler(Handler[SendReadingNotices, None]):
         if not parts:
             return
         changes = self.marker.changes(process, parts, context)
-        for nudge in (*self.notices.mark_nudges(process, changes), *self.notices.nudges(process, self.outputs.process_output(process.id), parts)):
-            self.nudger.send_nudge(process.session_agent_id, nudge, SOURCE, context)
+        for agent_message in (*self.notices.mark_agent_messages(process, changes), *self.notices.agent_messages(process, self.outputs.process_output(process.id), parts)):
+            self.message_sender.send_agent_message(process.session_agent_id, agent_message, SOURCE, context)

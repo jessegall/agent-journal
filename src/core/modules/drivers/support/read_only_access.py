@@ -21,11 +21,11 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.drivers.models.enums.permission_state import PermissionState
 from core.modules.drivers.models.permission_request import PermissionRequest
-from core.modules.drivers.nudges.limited_tool_message import LimitedToolMessage
-from core.modules.drivers.nudges.old_hook_line_message import OldHookLineMessage
-from core.modules.drivers.nudges.external_journal_line_message import ExternalJournalLineMessage
-from core.modules.drivers.nudges.readonly_message import ReadonlyMessage
-from core.modules.drivers.nudges.unjudged_line_message import UnjudgedLineMessage
+from core.modules.drivers.agent_messages.limited_tool_message import LimitedToolMessage
+from core.modules.drivers.agent_messages.old_hook_line_message import OldHookLineMessage
+from core.modules.drivers.agent_messages.external_journal_line_message import ExternalJournalLineMessage
+from core.modules.drivers.agent_messages.readonly_message import ReadonlyMessage
+from core.modules.drivers.agent_messages.unjudged_line_message import UnjudgedLineMessage
 from core.modules.drivers.support.tool_allowance import ToolAllowance
 from core.modules.profiles.support.profile_files import ProfileFiles
 
@@ -54,14 +54,14 @@ class ReadOnlyAccess:
         if not self.is_limited(event, agent) or tool is None or self.permission(event, agent) is not None:
             return None
         if tool.category in LIMITED_TOOL_TYPES:
-            return LimitedToolMessage.declared().nudge(tool=tool.name)
+            return LimitedToolMessage.declared().agent_message(tool=tool.name)
         shell = tool.shell
         if shell is not None and shell.has_old_hook_part:
-            return OldHookLineMessage.declared().nudge()
+            return OldHookLineMessage.declared().agent_message()
         if shell is not None and shell.has_uncertain_part:
-            return UnjudgedLineMessage.declared().nudge()
+            return UnjudgedLineMessage.declared().agent_message()
         if shell is not None and self.reaches_outward(shell, agent_id):
-            return ExternalJournalLineMessage.declared().nudge()
+            return ExternalJournalLineMessage.declared().agent_message()
         return READ_ONLY.refused(event, self.providers.provider(event.program))
 
     # the allowed request for leave this action spends, when the agent's read-only access would refuse it otherwise

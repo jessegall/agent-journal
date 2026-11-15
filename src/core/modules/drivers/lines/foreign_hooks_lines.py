@@ -17,8 +17,8 @@ class ForeignHooksLines(EventLineSource):
     def __init__(self, answers: ForeignHookAnswers) -> None:
         self.answers = answers
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         if event is None:
             return []
         answer = self.answers.answer(event, agent_id)
-        return [*answer.nudges, *([answer.refusal] if answer.refusal is not None else [])]
+        return [*answer.agent_messages, *([answer.refusal] if answer.refusal is not None else [])]

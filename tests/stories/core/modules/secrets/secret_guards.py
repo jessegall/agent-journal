@@ -2,12 +2,12 @@ from engine.enums.tool_type import ToolType
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.secrets.support.private_home import REPLACEMENT_VALUE, VALUE, filled_story, private_folder
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from core.modules.secrets.nudges.secrets_folder_ban_message import SecretsFolderBanMessage
-from engine.testing.expectations.expected_message import expected_nudge
+from core.modules.secrets.agent_messages.secrets_folder_ban_message import SecretsFolderBanMessage
+from engine.testing.expectations.expected_message import expected_agent_message
 
 __all__ = ["private_folder"]
 
-FOLDER_REFUSAL = expected_nudge(SecretsFolderBanMessage.declared())
+FOLDER_REFUSAL = expected_agent_message(SecretsFolderBanMessage.declared())
 
 
 def read_sample(path: str):

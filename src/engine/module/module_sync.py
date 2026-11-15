@@ -160,7 +160,7 @@ class ModuleSync:
             drivers=self.entries.drivers(modules),
             windows=self.windows(modules),
             marks=self.marks(modules),
-            nudges=self.nudges(modules),
+            agent_messages=self.agent_messages(modules),
             docks=self.docks(modules),
             templates=tuple(TemplateEntry(module.name, declaration) for module in modules for declaration in module.template_declarations()),
             buttons=self.buttons(modules),
@@ -208,8 +208,8 @@ class ModuleSync:
                                mark.process, mark.full_width, mark.card, module in shipped, unavailable_reason(mark.kit))
                      for module in modules for mark in module.mark_declarations())
 
-    def nudges(self, modules: tuple[type[Module], ...]) -> tuple[MessageEntry, ...]:
-        return tuple(MessageEntry(nudge.key, module.name, nudge.type.value, nudge.text, nudge.interval.seconds if nudge.interval else 0, nudge.limit) for module in modules for nudge in module.nudge_declarations())
+    def agent_messages(self, modules: tuple[type[Module], ...]) -> tuple[MessageEntry, ...]:
+        return tuple(MessageEntry(agent_message.key, module.name, agent_message.type.value, agent_message.text, agent_message.interval.seconds if agent_message.interval else 0, agent_message.limit) for module in modules for agent_message in module.agent_message_declarations())
 
     def docks(self, modules: tuple[type[Module], ...]) -> tuple[DockEntry, ...]:
         shipped = set(self.finder.default_modules())

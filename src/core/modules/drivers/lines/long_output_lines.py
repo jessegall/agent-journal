@@ -5,7 +5,7 @@ from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
 from engine.types.type_guards import is_mapping
-from core.modules.drivers.nudges.long_output_message import LongOutputMessage
+from core.modules.drivers.agent_messages.long_output_message import LongOutputMessage
 
 LONG_OUTPUT_LINE_COUNT = 400
 TEXT_FIELDS = ("stdout", "content", "output")
@@ -20,9 +20,9 @@ class LongOutputLines(EventLineSource):
     events = [HookEventName.POST_TOOL_USE]
     agent_types = [AgentRole.MAIN.value]
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         lines = self.text(event.raw.get("tool_response")).count("\n")
-        return [LongOutputMessage.declared().nudge(lines=lines)] if lines >= LONG_OUTPUT_LINE_COUNT else []
+        return [LongOutputMessage.declared().agent_message(lines=lines)] if lines >= LONG_OUTPUT_LINE_COUNT else []
 
     @classmethod
     def text(cls, response: object) -> str:

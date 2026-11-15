@@ -11,9 +11,9 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from engine.driver.agent_message import AgentMessage
 from engine.driver.message_template import MessageTemplate
-from suites.coding.modules.workers.support.behind_nudges import STALE_SOURCE
-from suites.coding.modules.workers.nudges.stale_choices_message import StaleChoicesMessage
-from suites.coding.modules.workers.nudges.merger_stale_worktree_message import MergerStaleWorktreeMessage
+from suites.coding.modules.workers.support.behind_agent_messages import STALE_SOURCE
+from suites.coding.modules.workers.agent_messages.stale_choices_message import StaleChoicesMessage
+from suites.coding.modules.workers.agent_messages.merger_stale_worktree_message import MergerStaleWorktreeMessage
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
@@ -32,11 +32,11 @@ class AnnounceBehindChecksHandler(Handler[AnnounceBehindChecks, tuple[AgentMessa
     def handle(self, command: AnnounceBehindChecks, context: Context) -> tuple[AgentMessage, ...]:
         merger_enabled = self.settings.flag(MERGER_ENABLED)
         worktrees = self.rows.required_index(Worktree, command.worktree_ids)
-        nudges = tuple(self.nudge(worktrees[worktree_id], MergerStaleWorktreeMessage.declared() if merger_enabled else StaleChoicesMessage.declared()) for worktree_id in command.worktree_ids)
-        for nudge in nudges:
-            self.inbox.send_nudge(nudge, STALE_SOURCE, context)
-        return nudges
+        agent_messages = tuple(self.agent_message(worktrees[worktree_id], MergerStaleWorktreeMessage.declared() if merger_enabled else StaleChoicesMessage.declared()) for worktree_id in command.worktree_ids)
+        for agent_message in agent_messages:
+            self.inbox.send_agent_message(agent_message, STALE_SOURCE, context)
+        return agent_messages
 
-    def nudge(self, worktree: Worktree, declaration: MessageTemplate) -> AgentMessage:
+    def agent_message(self, worktree: Worktree, declaration: MessageTemplate) -> AgentMessage:
         check = self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).newest().first()
-        return declaration.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), count=check.commits_lagging if check else 0)
+        return declaration.agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), count=check.commits_lagging if check else 0)

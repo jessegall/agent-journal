@@ -8,13 +8,13 @@ from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
-from suites.coding.nudges.testing_tasks_failed_run_message import TestingTasksFailedRunMessage
-from suites.coding.nudges.testing_tasks_full_run_message import TestingTasksFullRunMessage
+from suites.coding.agent_messages.testing_tasks_failed_run_message import TestingTasksFailedRunMessage
+from suites.coding.agent_messages.testing_tasks_full_run_message import TestingTasksFullRunMessage
 from engine.event.created import Created
 from core.modules.processes.events.process_ended import ProcessEnded
 
@@ -31,8 +31,8 @@ class FullTestRunListener(SaveListener[Created[Process] | ProcessEnded]):
     name = "tasks.full-test-run"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, repository: Repository, nudger: MessageSender, assignments: Assignments) -> None:
-        self.queries, self.repository, self.nudger, self.assignments = queries, repository, nudger, assignments
+    def __init__(self, queries: Queries, repository: Repository, message_sender: MessageSender, assignments: Assignments) -> None:
+        self.queries, self.repository, self.message_sender, self.assignments = queries, repository, message_sender, assignments
 
     def handle(self, event: Created[Process] | ProcessEnded, context: Context) -> None:
         run = event.row
@@ -54,7 +54,7 @@ class FullTestRunListener(SaveListener[Created[Process] | ProcessEnded]):
     def line_sender(self, run: Process, tasks: tuple[Task, ...], declaration: MessageTemplate, context: Context) -> None:
         if tasks:
             names = ", ".join(f"task:{task.id}" for task in tasks)
-            self.nudger.send(run.session_agent_id, declaration, SOURCE, context, tasks=names)
+            self.message_sender.send(run.session_agent_id, declaration, SOURCE, context, tasks=names)
 
     def testing_tasks(self, run: Process) -> tuple[Task, ...]:
         testing = tuple(self.queries.query(Task).filter(state=TaskState.TESTING).every_row(TESTING_TASKS_REASON))

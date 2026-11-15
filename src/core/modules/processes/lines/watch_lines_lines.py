@@ -18,5 +18,5 @@ class WatchLinesLines(EventLineSource):
     def __init__(self, progress: WatchProgress) -> None:
         self.progress = progress
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        return self.progress.progress(event, agent_id).nudges if event is not None else []
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+        return self.progress.progress(event, agent_id).agent_messages if event is not None else []

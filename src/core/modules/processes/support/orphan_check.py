@@ -10,7 +10,7 @@ from engine.time.clock import Clock
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.models.process import Process
-from core.modules.processes.nudges.process_missing_message import ProcessMissingMessage
+from core.modules.processes.agent_messages.process_missing_message import ProcessMissingMessage
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.run_folder_ends import RunFolderEnds
 from core.modules.processes.support.output_folder import OutputFolder
@@ -25,7 +25,7 @@ class OrphanedRuns:
     """The runs of one agent found ended or lost: the lines that tell it of the lost ones, and the commands that end
     them."""
 
-    nudges: tuple[AgentMessage, ...]
+    agent_messages: tuple[AgentMessage, ...]
     commands: tuple[Command[object], ...]
 
 
@@ -46,16 +46,16 @@ class OrphanCheck:
     def found(self, agent_id: int) -> OrphanedRuns:
         now = self.clock.timestamp()
         restarted = self.folder.tick_interval_seconds(agent_id, now) > TICK_INTERVAL_SECONDS
-        nudges: list[AgentMessage] = []
+        agent_messages: list[AgentMessage] = []
         commands: list[Command[object]] = []
         for process in tuple(self.processes.agent_started(agent_id).running().every_row(RUNNING_RUNS_REASON)):
             ended = self.ends.commands(process)
             if ended:
                 commands.extend(ended)
             elif self.is_lost(process, agent_id, restarted):
-                nudges.append(ProcessMissingMessage.declared().nudge(process=process.id))
+                agent_messages.append(ProcessMissingMessage.declared().agent_message(process=process.id))
                 commands.append(OrphanProcess(process.id))
-        return OrphanedRuns(tuple(nudges), tuple(commands))
+        return OrphanedRuns(tuple(agent_messages), tuple(commands))
 
     def is_lost(self, process: Process, agent_id: int, restarted: bool) -> bool:
         last_sign = self.folder.heartbeat(process.id) or process.created_at

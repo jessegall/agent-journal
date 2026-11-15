@@ -30,8 +30,8 @@ from core.modules.documents.listeners.plan_document_link_listener import PlanDoc
 from core.modules.documents.listeners.reply_link_listener import ReplyLinkListener
 from engine.module.module import Module
 from core.modules.documents.support.doc_library_share import DocLibraryShare
-from core.modules.documents.nudges.document_open_message import DocumentOpenMessage
-from core.modules.documents.nudges.document_stop_refusal_message import DocumentStopRefusalMessage
+from core.modules.documents.agent_messages.document_open_message import DocumentOpenMessage
+from core.modules.documents.agent_messages.document_stop_refusal_message import DocumentStopRefusalMessage
 from core.modules.documents.commands.comment_text.comment_text_handler import CommentTextHandler
 from core.modules.documents.commands.comment_doc.comment_doc_subcommand import CommentDocSubcommand
 from core.modules.documents.commands.report_comment.report_comment_subcommand import ReportCommentSubcommand
@@ -107,7 +107,7 @@ class DocumentsModule(Module):
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.messages", "journal.core.tasks", "journal.core.plans", "journal.core.docking", "journal.core.agents", "journal.core.drivers", "journal.core.processes", "journal.core.chat"]
     skills = DOCUMENTS_SKILLS
-    nudges = [DocumentOpenMessage, DocumentStopRefusalMessage]
+    agent_messages = [DocumentOpenMessage, DocumentStopRefusalMessage]
     models = [OpenDocumentModelDeclaration, DocModelDeclaration, ReportModelDeclaration, DocRevisionModelDeclaration, LinkModelDeclaration, CommentSelectionModelDeclaration, LinkCorrectionModelDeclaration]
     migrations = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration, CommentSelectionsMigration, ProjectDocumentsMigration, RevisionAuthorsMigration, LinkCorrectionsMigration, MessageLinkPathsMigration]
     block_conditions = [DocumentClosed]

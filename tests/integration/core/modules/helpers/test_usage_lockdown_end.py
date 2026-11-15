@@ -12,10 +12,10 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent, read_jobs
 from tests.integration.core.modules.helpers.test_usage_limits import report
 from tests.stories.core.modules.helpers.usage_lockdown import EDIT, LIFT, LIMIT, STOP_LINE, lockdown_story
-from core.modules.helpers.nudges.lockdown_ended_message import LockdownEndedMessage
+from core.modules.helpers.agent_messages.lockdown_ended_message import LockdownEndedMessage
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
-LOCKDOWN_ENDED_TEXT = LockdownEndedMessage.declared().nudge().text
+LOCKDOWN_ENDED_TEXT = LockdownEndedMessage.declared().agent_message().text
 STOPPED_TIME = timedelta(minutes=45)
 
 

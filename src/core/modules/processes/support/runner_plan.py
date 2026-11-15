@@ -12,9 +12,9 @@ from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.request.request_values import RequestValues
 from engine.sandbox.agent_sandbox_choice import AgentSandboxChoice
 from engine.sandbox.shell_sandbox import ShellSandbox
-from core.modules.processes.nudges.sandbox_folder_missing_message import SandboxFolderMissingMessage
-from core.modules.processes.nudges.sandbox_parse_error_message import SandboxParseErrorMessage
-from core.modules.processes.nudges.sandbox_runner_missing_message import SandboxRunnerMissingMessage
+from core.modules.processes.agent_messages.sandbox_folder_missing_message import SandboxFolderMissingMessage
+from core.modules.processes.agent_messages.sandbox_parse_error_message import SandboxParseErrorMessage
+from core.modules.processes.agent_messages.sandbox_runner_missing_message import SandboxRunnerMissingMessage
 from core.modules.processes.support.foreground_limit import ForegroundLimit
 from core.modules.processes.support.foreground_run import ForegroundRun
 from core.modules.processes.support.runner_binary import RunnerBinary
@@ -56,13 +56,13 @@ class RunnerPlan:
         agent_type = self.types.find(self.roles.role(agent_id))
         sandbox = self.shell_sandbox.is_required and (agent_type.access is Access.READ or agent_type.separate_folder) and self.choice.sandboxed(agent_id)
         if shell.parse_error:
-            return RunnerDecision(SandboxParseErrorMessage.declared().nudge()) if sandbox else RunnerDecision()
+            return RunnerDecision(SandboxParseErrorMessage.declared().agent_message()) if sandbox else RunnerDecision()
         if not self.runner.is_installed():
-            return RunnerDecision(SandboxRunnerMissingMessage.declared().nudge()) if sandbox else RunnerDecision(runner_missing=True)
+            return RunnerDecision(SandboxRunnerMissingMessage.declared().agent_message()) if sandbox else RunnerDecision(runner_missing=True)
         writes_apart = sandbox and agent_type.separate_folder and agent_type.access is Access.WRITING
         folder = self.folders.folder(agent_id) if writes_apart else None
         if writes_apart and folder is None:
-            return RunnerDecision(SandboxFolderMissingMessage.declared().nudge())
+            return RunnerDecision(SandboxFolderMissingMessage.declared().agent_message())
         read_folders = self.project_reads.folders(self.checkouts.checkout(agent_id).project_root) if folder is not None else ()
         writable_folders = self.project_reads.writable_folders() if folder is not None else ()
         run = replace(self.limits.decide(shell, agent_id), read_command=shell.is_readonly, shell_sandbox=sandbox, folder=folder, read_folders=read_folders, writable_folders=writable_folders)

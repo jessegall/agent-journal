@@ -4,8 +4,8 @@ from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.enums.agent_role import AgentRole
-from core.modules.processes.nudges.run_queue_halted_message import RunQueueHaltedMessage
-from core.modules.processes.nudges.update_waiting_message import UpdateWaitingMessage
+from core.modules.processes.agent_messages.run_queue_halted_message import RunQueueHaltedMessage
+from core.modules.processes.agent_messages.update_waiting_message import UpdateWaitingMessage
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
 
 
@@ -23,9 +23,9 @@ class RunQueueHaltedLines(EventLineSource):
     def __init__(self, halt: RunQueueHalt) -> None:
         self.halt = halt
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         if self.halt.command_halted:
-            return [RunQueueHaltedMessage.declared().nudge()]
+            return [RunQueueHaltedMessage.declared().agent_message()]
         if self.halt.is_update_waiting:
-            return [UpdateWaitingMessage.declared().nudge(outputs=", ".join(f"output:{run}" for run in self.halt.running_run_ids()) or "none")]
+            return [UpdateWaitingMessage.declared().agent_message(outputs=", ".join(f"output:{run}" for run in self.halt.running_run_ids()) or "none")]
         return []

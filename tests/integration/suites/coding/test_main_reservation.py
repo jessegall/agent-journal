@@ -9,8 +9,8 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 from tests.stories.suites.coding.modules.workers.support.phase_steps import planned_story
 from tests.stories.suites.coding.support.main_controls_fixture import scope_line
 from tests.stories.support.story_checks import expect_value
-from suites.coding.nudges.task_assignment_message import TaskAssignmentMessage
-from engine.testing.expectations.expected_message import expected_nudge
+from suites.coding.agent_messages.task_assignment_message import TaskAssignmentMessage
+from engine.testing.expectations.expected_message import expected_agent_message
 from suites.coding.support.coding_settings import WRITES_CODE_SETTING
 
 WRITES_CODE = f"{WRITES_CODE_SETTING}"

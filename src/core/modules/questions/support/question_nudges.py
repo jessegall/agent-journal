@@ -1,7 +1,0 @@
-from core.modules.questions.nudges.question_answered_message import QuestionAnsweredMessage
-from core.modules.questions.nudges.question_answer_source_message import QuestionAnswerSourceMessage
-from core.modules.questions.nudges.question_closed_message import QuestionClosedMessage
-from core.modules.questions.nudges.question_tool_message import QuestionToolMessage
-
-
-QUESTION_NUDGES = [QuestionAnsweredMessage, QuestionAnswerSourceMessage, QuestionClosedMessage, QuestionToolMessage]

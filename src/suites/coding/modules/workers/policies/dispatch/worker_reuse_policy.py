@@ -12,7 +12,7 @@ from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.nudges.worker_reuse_message import WorkerReuseMessage
+from suites.coding.modules.workers.agent_messages.worker_reuse_message import WorkerReuseMessage
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.dispatch_arguments import DISPATCH_ARGUMENTS
 
@@ -43,7 +43,7 @@ class WorkerReusePolicy(EventPolicy):
                 continue
             worker_id = self.worker_with_files(part)
             if worker_id is not None:
-                return WorkerReuseMessage.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worker_id))
+                return WorkerReuseMessage.declared().agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, worker_id))
         return None
 
     def worker_with_files(self, part: Part) -> int | None:

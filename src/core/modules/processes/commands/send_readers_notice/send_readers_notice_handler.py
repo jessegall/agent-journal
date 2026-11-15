@@ -3,13 +3,13 @@ from engine.command.handler import Handler
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from core.modules.processes.commands.send_readers_notice.send_readers_notice import SendReadersNotice
-from core.modules.processes.nudges.readonly_missing_notice_message import ReadonlyMissingNoticeMessage
-from core.modules.processes.nudges.readers_missing_fields_message import ReadersMissingFieldsMessage
-from core.modules.processes.nudges.reader_repair_message import ReaderRepairMessage
-from core.modules.processes.nudges.stock_reader_stale_message import StockReaderStaleMessage
-from core.modules.processes.nudges.unreadable_audit_message import UnreadableAuditMessage
+from core.modules.processes.agent_messages.readonly_missing_notice_message import ReadonlyMissingNoticeMessage
+from core.modules.processes.agent_messages.readers_missing_fields_message import ReadersMissingFieldsMessage
+from core.modules.processes.agent_messages.reader_repair_message import ReaderRepairMessage
+from core.modules.processes.agent_messages.stock_reader_stale_message import StockReaderStaleMessage
+from core.modules.processes.agent_messages.unreadable_audit_message import UnreadableAuditMessage
 from core.modules.processes.support.reading.catalogue_audit import AUDIT_SOURCE, REPAIR_AFTER_OUTPUTS, CatalogueAudit
 
 
@@ -22,8 +22,8 @@ class SendReadersNoticeHandler(Handler[SendReadersNotice, None]):
 
     command = SendReadersNotice
 
-    def __init__(self, audit: CatalogueAudit, queries: Queries, nudger: MessageSender, repository: Repository) -> None:
-        self.audit, self.queries, self.nudger, self.repository = audit, queries, nudger, repository
+    def __init__(self, audit: CatalogueAudit, queries: Queries, message_sender: MessageSender, repository: Repository) -> None:
+        self.audit, self.queries, self.message_sender, self.repository = audit, queries, message_sender, repository
 
     def handle(self, command: SendReadersNotice, context: Context) -> None:
         fields_missing = self.audit.fields_missing_count()
@@ -35,14 +35,14 @@ class SendReadersNoticeHandler(Handler[SendReadersNotice, None]):
             missing_readers = self.audit.missing_reader_decisions(last_audit_at, [main.id for main in main_agents])
             agent_marks = self.audit.agent_marks_count(last_audit_at)
             if fields_missing:
-                self.nudger.send(agent.id, ReadersMissingFieldsMessage.declared(), AUDIT_SOURCE, context, count=fields_missing)
+                self.message_sender.send(agent.id, ReadersMissingFieldsMessage.declared(), AUDIT_SOURCE, context, count=fields_missing)
             for reader in broken:
-                self.nudger.send(agent.id, ReaderRepairMessage.declared(), AUDIT_SOURCE, context, reader=reader.name, count=REPAIR_AFTER_OUTPUTS)
+                self.message_sender.send(agent.id, ReaderRepairMessage.declared(), AUDIT_SOURCE, context, reader=reader.name, count=REPAIR_AFTER_OUTPUTS)
             if agent_marks:
-                self.nudger.send(agent.id, UnreadableAuditMessage.declared(), AUDIT_SOURCE, context, count=agent_marks)
+                self.message_sender.send(agent.id, UnreadableAuditMessage.declared(), AUDIT_SOURCE, context, count=agent_marks)
             if missing_readers:
-                self.nudger.send(agent.id, ReadonlyMissingNoticeMessage.declared(), AUDIT_SOURCE, context, count=missing_readers)
+                self.message_sender.send(agent.id, ReadonlyMissingNoticeMessage.declared(), AUDIT_SOURCE, context, count=missing_readers)
             for reader, _ in stale_readers:
-                self.nudger.send(agent.id, StockReaderStaleMessage.declared(), AUDIT_SOURCE, context, reader=reader.name)
+                self.message_sender.send(agent.id, StockReaderStaleMessage.declared(), AUDIT_SOURCE, context, reader=reader.name)
         for reader, digest in stale_readers:
             self.repository.update(reader, context, shipped_digest=digest)

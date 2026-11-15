@@ -1,5 +1,5 @@
-from core.modules.processes.nudges.update_waiting_message import UpdateWaitingMessage
-from engine.testing.expectations.expected_message import expected_nudge
+from core.modules.processes.agent_messages.update_waiting_message import UpdateWaitingMessage
+from engine.testing.expectations.expected_message import expected_agent_message
 import json
 import os
 import subprocess
@@ -98,10 +98,10 @@ def test_the_main_agent_is_told_an_update_waits_and_for_which_runs_and_told_agai
     running = queued(story, "make one")
     (story.home.folder / "processes" / str(running.id) / "pid").write_text(str(os.getpid()))
     (story.home.folder / "processes" / str(running.id) / "1.started").write_text("")
-    lines = [line for line in ended_hook_lines(story, VIEW_LINE) if expected_nudge(UpdateWaitingMessage.declared()).matches_text(line)]
+    lines = [line for line in ended_hook_lines(story, VIEW_LINE) if expected_agent_message(UpdateWaitingMessage.declared()).matches_text(line)]
     story.expect_rows(len(lines) == 1, f"{running.id}" in lines[0], detail=str(lines))
     story.advance(timedelta(seconds=REMINDER_SECONDS + 1))
-    story.expect_rows(len([line for line in ended_hook_lines(story, VIEW_LINE) if expected_nudge(UpdateWaitingMessage.declared()).matches_text(line)]) == 1)
+    story.expect_rows(len([line for line in ended_hook_lines(story, VIEW_LINE) if expected_agent_message(UpdateWaitingMessage.declared()).matches_text(line)]) == 1)
     story.home.run_lock.unlink()
     story.advance(timedelta(seconds=REMINDER_SECONDS + 1))
-    story.expect_rows(not [line for line in ended_hook_lines(story, VIEW_LINE) if expected_nudge(UpdateWaitingMessage.declared()).matches_text(line)])
+    story.expect_rows(not [line for line in ended_hook_lines(story, VIEW_LINE) if expected_agent_message(UpdateWaitingMessage.declared()).matches_text(line)])

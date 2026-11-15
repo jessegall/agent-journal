@@ -38,7 +38,7 @@ def compaction(custom_instructions: object = None) -> HookEvent:
 
 
 def answered_lines(instructions: str, event: HookEvent) -> tuple[str, ...]:
-    return tuple(nudge.text for nudge in CompactionInstructionsLines(ProgramInstructions(instructions)).nudges(event, 3))
+    return tuple(agent_message.text for agent_message in CompactionInstructionsLines(ProgramInstructions(instructions)).agent_messages(event, 3))
 
 
 def test_it_answers_with_the_providers_text():

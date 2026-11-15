@@ -5,7 +5,7 @@ from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.current_tasks import CurrentTasks
 from core.modules.tasks.support.block_conditions.task_brief_read import TaskBriefRead
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
-from core.modules.tasks.nudges.task_brief_first_message import TaskBriefFirstMessage
+from core.modules.tasks.agent_messages.task_brief_first_message import TaskBriefFirstMessage
 
 
 class TaskBriefBlocks:
@@ -31,4 +31,4 @@ class TaskBriefBlocks:
     def unread_hold(self, agent_id: int, task: Task) -> OpenHold | None:
         if not self.requirement.is_required or self.tasks.has_brief_read(task.id, agent_id):
             return None
-        return OpenHold(agent_id, TaskBriefFirstMessage.declared().nudge(task=task.id), TaskBriefRead(task.id))
+        return OpenHold(agent_id, TaskBriefFirstMessage.declared().agent_message(task=task.id), TaskBriefRead(task.id))

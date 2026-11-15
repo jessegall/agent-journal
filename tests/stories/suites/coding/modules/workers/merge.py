@@ -34,9 +34,9 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import C
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.web_build import BUILT_TEXT, build_repository
 from tests.stories.support.story_checks import expect_requests_launcher
-from core.modules.processes.nudges.read_command_output_message import ReadCommandOutputMessage
-from engine.testing.expectations.expected_message import expected_nudge
-from suites.coding.modules.workers.nudges.merge_waits_message import MergeWaitsMessage
+from core.modules.processes.agent_messages.read_command_output_message import ReadCommandOutputMessage
+from engine.testing.expectations.expected_message import expected_agent_message
+from suites.coding.modules.workers.agent_messages.merge_waits_message import MergeWaitsMessage
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 
@@ -102,7 +102,7 @@ def test_a_merge_while_the_checkout_is_on_another_branch_moves_nothing_reminds_e
     story.expect_success(lines.TASK_DETAILS, "state: completed")
     story.expect_success("worker-worktree show 1", "state: delivered")
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
-    reminder = MergeWaitsMessage.declared().nudge(worker=agent_number(story, worker.id), environment='main', branch='version-5').text
+    reminder = MergeWaitsMessage.declared().agent_message(worker=agent_number(story, worker.id), environment='main', branch='version-5').text
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.tick(MAIN_SESSION)
     story.tick(MAIN_SESSION)
@@ -345,10 +345,10 @@ def test_redirected_worker_logs_do_not_mark_the_logs_read(new_story):
     story = install_runner(new_story(fixture=OpenTaskOrchestrator))
     worker = delivered_worker(story, repository_environment(story))
     part = ShellPart("journal", CommandCategory.JOURNAL, ["worker", "logs", str(worker.id)], subcommand="worker")
-    story.expect_hook_refusal("s-1", HookSamples.shell(f"journal worker logs {agent_number(story, worker.id)} > /tmp/log", part, redirects=["> /tmp/log"]), expected_nudge(ReadCommandOutputMessage.declared()))
+    story.expect_hook_refusal("s-1", HookSamples.shell(f"journal worker logs {agent_number(story, worker.id)} > /tmp/log", part, redirects=["> /tmp/log"]), expected_agent_message(ReadCommandOutputMessage.declared()))
     piped = ShellPart("journal", CommandCategory.JOURNAL, ["worker", "logs", str(worker.id)], subcommand="worker", pipe_target=1)
     sink = ShellPart("cat", CommandCategory.READ, [])
-    story.expect_hook_refusal("s-1", HookSamples.shell(f"journal worker logs {agent_number(story, worker.id)} && cat", piped, sink), expected_nudge(ReadCommandOutputMessage.declared()))
+    story.expect_hook_refusal("s-1", HookSamples.shell(f"journal worker logs {agent_number(story, worker.id)} && cat", piped, sink), expected_agent_message(ReadCommandOutputMessage.declared()))
     worktree = story.first_row(Worktree, session_agent_id=worker.id)
     story.expect_rows(worktree.logs_read_at is None)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)

@@ -5,7 +5,7 @@ from engine.enums.command_category import CommandCategory
 from engine.query.conditions.greater import Greater
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.queries.process_query import ProcessQuery
-from suites.coding.nudges.failed_full_run_message import FailedFullRunMessage
+from suites.coding.agent_messages.failed_full_run_message import FailedFullRunMessage
 
 
 class FailedFullRunPolicy(EventPolicy):
@@ -25,4 +25,4 @@ class FailedFullRunPolicy(EventPolicy):
         if last is None or last.state is not ProcessState.FAILED:
             return None
         passed = self.processes.agent(agent_id).filter(state=ProcessState.FINISHED, category=CommandCategory.TEST_RUN).matching(Greater("id", last.id)).exists()
-        return None if passed else FailedFullRunMessage.declared().nudge()
+        return None if passed else FailedFullRunMessage.declared().agent_message()

@@ -9,11 +9,11 @@ from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value
 from suites.coding.support.graphify_settings import GRAPHIFY_BLOCK_AFTER
-from suites.coding.support.graphify_settings import GRAPHIFY_NUDGE_AFTER
+from suites.coding.support.graphify_settings import GRAPHIFY_AGENT_MESSAGE_AFTER
 
 SESSION = "s-1"
 BLOCK_AFTER = f"{GRAPHIFY_BLOCK_AFTER}"
-NUDGE_AFTER = f"{GRAPHIFY_NUDGE_AFTER}"
+AGENT_MESSAGE_AFTER = f"{GRAPHIFY_AGENT_MESSAGE_AFTER}"
 SEARCH = HookSamples.tool_use("Grep", ToolType.SEARCH, [], None)
 LOG_SEARCH = HookSamples.tool_use("Grep", ToolType.SEARCH, ["/var/log/system.log"], None)
 SHELL_SEARCH = HookSamples.shell("grep -rn cart src", ShellPart("grep", CommandCategory.SEARCH, ["-rn", "cart", "src"]))
@@ -82,7 +82,7 @@ def test_a_search_outside_the_code_does_not_count(graphify_enabled):
 def test_the_numbers_are_settings_and_shell_searches_count_too(graphify_enabled):
     story = graphify_enabled
     story.expect_success(f"setting set {BLOCK_AFTER} 3 --project", actor=story.user)
-    story.expect_success(f"setting set {NUDGE_AFTER} 2 --project", actor=story.user)
+    story.expect_success(f"setting set {AGENT_MESSAGE_AFTER} 2 --project", actor=story.user)
     expect_value(bool(is_nudged(search(story, SHELL_SEARCH))), False)
     expect_value(bool(is_nudged(search(story, SHELL_SEARCH))), True)
     searched(story, 1, SHELL_SEARCH)
@@ -91,8 +91,8 @@ def test_the_numbers_are_settings_and_shell_searches_count_too(graphify_enabled)
 
 def test_the_graphify_settings_show_in_the_settings_tree_only_while_the_tool_is_on(new_story):
     story = new_story(fixture=UserJoined)
-    story.expect_absent("setting tree", NUDGE_AFTER, actor=story.user)
+    story.expect_absent("setting tree", AGENT_MESSAGE_AFTER, actor=story.user)
     story.expect_success("tool on graphify", actor=story.user)
-    story.expect_text("setting tree", NUDGE_AFTER, BLOCK_AFTER, actor=story.user)
+    story.expect_text("setting tree", AGENT_MESSAGE_AFTER, BLOCK_AFTER, actor=story.user)
     story.expect_success("tool off graphify", actor=story.user)
     story.expect_absent("setting tree", BLOCK_AFTER, actor=story.user)

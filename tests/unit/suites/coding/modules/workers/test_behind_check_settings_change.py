@@ -27,18 +27,18 @@ def test_raising_the_threshold_above_an_open_check_opens_no_new_one_and_leaves_t
 
 
 def test_turning_the_look_off_still_reminds_an_ordered_update():
-    settings, store, nudger = Settings(2), Store(), Lines()
+    settings, store, message_sender = Settings(2), Store(), Lines()
     settings.values[STALE_CHECK_COMMITS] = 0
-    RemindBehindUpdatesHandler(store, Rows(False), store, settings, nudger, Lines(), Numbers(), NoMarkers()).handle(
+    RemindBehindUpdatesHandler(store, Rows(False), store, settings, message_sender, Lines(), Numbers(), NoMarkers()).handle(
         RemindBehindUpdates(), SimpleNamespace(timestamp=Timestamp(ORDERED_AT + timedelta(minutes=30))))
-    assert len(nudger.sent) == 1
+    assert len(message_sender.sent) == 1
 
 
 def test_a_changed_wait_and_number_of_reminders_apply_at_the_next_reminder():
-    settings, store, nudger, inbox = Settings(2), Store(), Lines(), Lines()
-    handler = RemindBehindUpdatesHandler(store, Rows(False), store, settings, nudger, inbox, Numbers(), NoMarkers())
+    settings, store, message_sender, inbox = Settings(2), Store(), Lines(), Lines()
+    handler = RemindBehindUpdatesHandler(store, Rows(False), store, settings, message_sender, inbox, Numbers(), NoMarkers())
     handler.handle(RemindBehindUpdates(), SimpleNamespace(timestamp=Timestamp(ORDERED_AT + timedelta(minutes=30))))
     settings.values[UPDATE_WAIT_MINUTES] = 10
     settings.values[UPDATE_REMINDERS] = 1
     handler.handle(RemindBehindUpdates(), SimpleNamespace(timestamp=Timestamp(ORDERED_AT + timedelta(minutes=40))))
-    assert (len(nudger.sent), len(inbox.sent)) == (1, 1)
+    assert (len(message_sender.sent), len(inbox.sent)) == (1, 1)

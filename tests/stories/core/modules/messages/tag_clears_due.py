@@ -4,7 +4,7 @@ from engine.enums.command_category import CommandCategory
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.support.driver_nudges import REQUIRED_COMMAND_TOOL_USES
+from core.modules.drivers.support.driver_agent_messages import REQUIRED_COMMAND_TOOL_USES
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.memories.commands.open_memory_mark.open_memory_mark import OpenMemoryMark
 from core.modules.messages.commands.send_message.send_message import SendMessage

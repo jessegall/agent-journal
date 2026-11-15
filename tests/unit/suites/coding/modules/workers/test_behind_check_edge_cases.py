@@ -32,26 +32,26 @@ class AbsentWorker:
         return {row_id: self.required(model, row_id) for row_id in row_ids}
 
 
-class NudgeRecorder:
+class AgentMessageRecorder:
     def __init__(self) -> None:
         self.to: list[int] = []
 
     def send(self, agent_id, declaration, source, context, **fields) -> None:
         self.to.append(agent_id)
 
-    def send_nudge(self, nudge, source, context) -> None:
+    def send_agent_message(self, agent_message, source, context) -> None:
         self.to.append(0)
 
 
 def reminded_at(minutes: list[int], rows: AbsentWorker) -> list[tuple[int, int]]:
-    store, nudger = Store(), NudgeRecorder()
-    handler = RemindBehindUpdatesHandler(store, rows, store, Settings(2), nudger, NudgeRecorder(), Numbers(), NoMarkers())
+    store, message_sender = Store(), AgentMessageRecorder()
+    handler = RemindBehindUpdatesHandler(store, rows, store, Settings(2), message_sender, AgentMessageRecorder(), Numbers(), NoMarkers())
     delivered = []
     for minute in minutes:
         rows.now = minute
-        previous = len(nudger.to)
+        previous = len(message_sender.to)
         handler.handle(RemindBehindUpdates(), SimpleNamespace(timestamp=Timestamp(ORDERED_AT + timedelta(minutes=minute))))
-        delivered += [(minute, agent_id) for agent_id in nudger.to[previous:]]
+        delivered += [(minute, agent_id) for agent_id in message_sender.to[previous:]]
     return delivered
 
 

@@ -19,5 +19,5 @@ class UnmergedWorkerLines(EventLineSource):
     def __init__(self, unmerged: UnmergedWorkers) -> None:
         self.unmerged = unmerged
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        return self.unmerged.answer(event, agent_id).nudges
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+        return self.unmerged.answer(event, agent_id).agent_messages

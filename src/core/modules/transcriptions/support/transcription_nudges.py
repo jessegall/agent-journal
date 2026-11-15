@@ -1,5 +1,0 @@
-from core.modules.transcriptions.nudges.transcription_changed_message import TranscriptionChangedMessage
-from core.modules.transcriptions.nudges.transcription_import_request_message import TranscriptionImportRequestMessage
-
-LINE_SOURCE = "transcriptions"
-TRANSCRIPTION_NUDGES = [TranscriptionChangedMessage, TranscriptionImportRequestMessage]

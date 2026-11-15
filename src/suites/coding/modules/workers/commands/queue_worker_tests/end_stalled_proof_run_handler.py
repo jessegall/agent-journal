@@ -12,7 +12,7 @@ from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_tes
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
-from suites.coding.modules.workers.nudges.proof_run_hung_message import ProofRunHungMessage
+from suites.coding.modules.workers.agent_messages.proof_run_hung_message import ProofRunHungMessage
 from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test_handler import LINE_SOURCE
 
 
@@ -35,4 +35,4 @@ class EndStalledProofRunHandler(Handler[EndStalledProofRun, None]):
         self.bus.dispatch(RecordWorkerTest(proof.id, False, HUNG_RUN_NOTE.format(minutes=command.minutes, process=proof.process_id)), context)
         worktree = self.rows.required(Worktree, proof.worktree_id)
         worker = self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)
-        self.inbox.send_nudge(ProofRunHungMessage.declared().nudge(worker=worker, proof=proof.id, minutes=command.minutes, output=proof.process_id), LINE_SOURCE, context)
+        self.inbox.send_agent_message(ProofRunHungMessage.declared().agent_message(worker=worker, proof=proof.id, minutes=command.minutes, output=proof.process_id), LINE_SOURCE, context)

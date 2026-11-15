@@ -30,7 +30,7 @@ RULES: dict[str, tuple[str, Callable[[Sequence[Row], int, str], Row]]] = {
     "subagent_dispatches": ("keep the newest", newest),
     "message_work_sources": ("keep the survivor's, else the newest", survivors_else_newest),
     "rule_histories": ("keep the newest", newest),
-    "nudge_records": ("keep the oldest, when it was first given", oldest),
+    "agent_message_records": ("keep the oldest, when it was first given", oldest),
     "countdowns": ("keep the newest", newest),
     "reminder_passes": ("keep the newest", newest),
     "memory_marks": ("keep the survivor's open mark, else the newest", survivors_else_newest),

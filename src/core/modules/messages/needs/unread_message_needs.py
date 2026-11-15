@@ -1,4 +1,4 @@
-from core.modules.messages.support.message_nudges import UNREAD_COUNTDOWN
+from core.modules.messages.support.message_agent_messages import UNREAD_COUNTDOWN
 from collections.abc import Mapping, Sequence
 
 from engine.agent_stack.states.blocked import Blocked
@@ -8,11 +8,11 @@ from engine.agent_machine.needs.required_state import RequiredState
 from engine.agent_machine.needs.state_source import StateSource
 from engine.agent_machine.record.question import Question
 from engine.enums.closer_role import CloserRole
-from core.modules.messages.nudges.unread_message_stop_notice import UnreadMessageStopNotice
-from core.modules.messages.nudges.unread_refusal_message import UnreadRefusalMessage
+from core.modules.messages.agent_messages.unread_message_stop_notice import UnreadMessageStopNotice
+from core.modules.messages.agent_messages.unread_refusal_message import UnreadRefusalMessage
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.support.block_conditions.messages_read import MessagesRead
-from core.modules.messages.support.message_nudges import UNREAD_TOOL_USES
+from core.modules.messages.support.message_agent_messages import UNREAD_TOOL_USES
 
 UNREAD_RANK = "messages.unread"
 TOOL_RULE, STOP_RULE = "messages.unread-write", "messages.unread-at-stop"
@@ -40,9 +40,9 @@ class UnreadMessageNeeds(StateSource):
         if not shown:
             return None
         count = unread.count() if len(shown) == MESSAGE_COUNT_SHOWN else len(shown)
-        refusal = UnreadRefusalMessage.declared().nudge(count=count, messages=", ".join(str(message.id) for message in shown))
+        refusal = UnreadRefusalMessage.declared().agent_message(count=count, messages=", ".join(str(message.id) for message in shown))
         return BlockPlan(refusal, MessagesRead([message.id for message in shown]), TOOL_RULE, UNREAD_RANK, stop_check_key=STOP_RULE,
                          members=tuple(message.id for message in shown), tool_grace_uses=UNREAD_TOOL_USES, scope_stop=True,
                          closer_roles=tuple([CloserRole.AGENT]), lifting_lines=READ_COMMANDS,
-                         stop_nudge=UnreadMessageStopNotice.declared().nudge(message=shown[0].id),
-                         countdown=UNREAD_COUNTDOWN.nudge("{left}", messages=", ".join(str(message.id) for message in shown)))
+                         stop_agent_message=UnreadMessageStopNotice.declared().agent_message(message=shown[0].id),
+                         countdown=UNREAD_COUNTDOWN.agent_message("{left}", messages=", ".join(str(message.id) for message in shown)))

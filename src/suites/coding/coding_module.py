@@ -1,5 +1,5 @@
 from suites.coding.support.coding_contributions import CODING_LINES, CODING_NEEDS, CODING_POLICIES
-from suites.coding.support.coding_module_nudges import CODING_MODULE_NUDGES
+from suites.coding.support.coding_module_agent_messages import CODING_MODULE_AGENT_MESSAGES
 from suites.coding.seeders.coding_seeders import CODING_SEEDERS
 from suites.coding.settings.coding_setting_lists import CODING_SETTING_LISTS
 from suites.coding.upgrade.coding_moves import CODING_MOVES
@@ -37,7 +37,7 @@ class CodingModule(Module):
     profiles = HELPER_PROFILES
     agent_groups = CODING_AGENT_GROUPS
     templates = CODING_TEMPLATES
-    nudges = CODING_MODULE_NUDGES
+    agent_messages = CODING_MODULE_AGENT_MESSAGES
     seeders = CODING_SEEDERS
     window_extensions = CODING_WINDOW_EXTENSIONS
     requires_engine = ">=5,<6"

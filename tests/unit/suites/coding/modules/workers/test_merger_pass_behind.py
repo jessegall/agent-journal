@@ -12,13 +12,13 @@ from suites.coding.modules.workers.commands.return_worker.return_worker_subcomma
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState as State
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.support.behind_decisions import BehindDecisions
-from suites.coding.modules.workers.nudges.stale_choices_message import StaleChoicesMessage
-from suites.coding.modules.workers.nudges.stale_passed_message import StalePassedMessage
+from suites.coding.modules.workers.agent_messages.stale_choices_message import StaleChoicesMessage
+from suites.coding.modules.workers.agent_messages.stale_passed_message import StalePassedMessage
 from tests.unit.suites.coding.modules.workers.support.test_behind_check_closing import WORKTREE
 from tests.unit.suites.coding.modules.workers.commands.check_worktree_behind.test_check_worktree_behind import Lines, Rows, Settings
 from tests.unit.suites.coding.modules.workers.commands.check_worktree_behind.test_check_worktree_behind import Queries as NoChecks
 from tests.unit.suites.coding.modules.workers.test_merger_update_subcommand import MERGER, WORKER, Agents, Checks, Numbers, Repository, Visits, Worktrees
-from suites.coding.modules.workers.nudges.stale_passed_message import StalePassedMessage
+from suites.coding.modules.workers.agent_messages.stale_passed_message import StalePassedMessage
 
 
 class Waiting:

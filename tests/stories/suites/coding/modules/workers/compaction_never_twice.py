@@ -181,7 +181,7 @@ def test_b6_the_first_tool_after_the_wake_sees_the_old_number_and_is_allowed_wit
     expect_compaction_count(agent, 0)
 
 
-def test_b7_the_stop_now_nudge_is_not_said_after_a_compaction_while_the_number_is_old(new_story):
+def test_b7_the_stop_now_agent_message_is_not_said_after_a_compaction_while_the_number_is_old(new_story):
     agent = typing_recorded(new_story(fixture=AutoCompacted))
     backdate_context(agent, LIMIT_TOKENS)
     reply = agent.hook(SESSION, HookSamples.sample("post_tool_use"))

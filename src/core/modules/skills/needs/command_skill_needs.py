@@ -1,4 +1,4 @@
-from core.modules.skills.support.skill_nudges import SKILL_COUNTDOWN
+from core.modules.skills.support.skill_agent_messages import SKILL_COUNTDOWN
 from collections.abc import Mapping, Sequence
 
 from engine.agent_stack.states.blocked import Blocked
@@ -9,11 +9,11 @@ from engine.agent_machine.needs.state_source import StateSource
 from engine.agent_machine.record.question import Question
 from engine.enums.closer_role import CloserRole
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.skills.nudges.read_command_skill_first_message import ReadCommandSkillFirstMessage
+from core.modules.skills.agent_messages.read_command_skill_first_message import ReadCommandSkillFirstMessage
 from core.modules.skills.support.block_conditions.skill_loaded import SkillLoaded
 from core.modules.skills.support.missing_command_skill import MissingCommandSkill
 from core.modules.skills.support.skill_files import SkillFiles
-from core.modules.skills.support.skill_nudges import SKILL_TOOL_USES
+from core.modules.skills.support.skill_agent_messages import SKILL_TOOL_USES
 
 COMMAND_SKILL_RANK = "skills.command"
 COMMAND_RULE = "skills.command"
@@ -40,6 +40,6 @@ class CommandSkillNeeds(StateSource):
         folder = self.missing.first(agent_id, commands)
         if folder is None:
             return None
-        nudge = ReadCommandSkillFirstMessage.declared().nudge(instruction=self.files.agent_instruction(folder, self.agents.find(agent_id)))
-        return BlockPlan(nudge, SkillLoaded(folder), COMMAND_RULE, COMMAND_SKILL_RANK, tool_grace_uses=SKILL_TOOL_USES, is_strict=True,
-                         closer_roles=tuple([CloserRole.AGENT]), lifting_lines=tuple([f"{SKILL_COMMAND} {folder}"]), countdown=SKILL_COUNTDOWN.nudge("{left}", skill=folder))
+        agent_message = ReadCommandSkillFirstMessage.declared().agent_message(instruction=self.files.agent_instruction(folder, self.agents.find(agent_id)))
+        return BlockPlan(agent_message, SkillLoaded(folder), COMMAND_RULE, COMMAND_SKILL_RANK, tool_grace_uses=SKILL_TOOL_USES, is_strict=True,
+                         closer_roles=tuple([CloserRole.AGENT]), lifting_lines=tuple([f"{SKILL_COMMAND} {folder}"]), countdown=SKILL_COUNTDOWN.agent_message("{left}", skill=folder))

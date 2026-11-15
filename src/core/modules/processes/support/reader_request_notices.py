@@ -3,8 +3,8 @@ from engine.query.queries import Queries
 from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.support.message_records import MessageRecords
-from core.modules.processes.nudges.reader_request_message import READER_REQUEST_REMINDER
-from core.modules.processes.nudges.reader_request_message import ReaderRequestMessage
+from core.modules.processes.agent_messages.reader_request_message import READER_REQUEST_REMINDER
+from core.modules.processes.agent_messages.reader_request_message import ReaderRequestMessage
 
 
 class ReaderRequestNotices:

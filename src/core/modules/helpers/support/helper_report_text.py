@@ -2,7 +2,7 @@ from engine.driver.hook_event import HookEvent
 from engine.provider.providers import Providers
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
-from core.modules.agents.support.report_nudges import REPORT_FIELD
+from core.modules.agents.support.report_agent_messages import REPORT_FIELD
 
 
 class HelperReportText:

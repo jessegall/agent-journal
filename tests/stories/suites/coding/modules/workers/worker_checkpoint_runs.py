@@ -1,4 +1,4 @@
-from suites.coding.modules.workers.nudges.worker_run_unstarted_message import WorkerRunUnstartedMessage
+from suites.coding.modules.workers.agent_messages.worker_run_unstarted_message import WorkerRunUnstartedMessage
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from pathlib import Path
@@ -106,7 +106,7 @@ def test_38_a_run_that_cannot_start_does_not_block_the_worker(new_story, monkeyp
     worker = plan_worker(new_story)
     monkeypatch.setattr(type(worker.story.container.get(WorktreeGit)), "commit_checkout", unstartable_checkout)
     commit_tasks(worker, TEST_LINE, SECOND_TEST_LINE, TEST_LINE)
-    worker.story.expect_rows(worker_reaches(worker)[0]["state"] == "failed", WorkerRunUnstartedMessage.declared().nudge(phase=1).text in worker.worker_lines(),
+    worker.story.expect_rows(worker_reaches(worker)[0]["state"] == "failed", WorkerRunUnstartedMessage.declared().agent_message(phase=1).text in worker.worker_lines(),
                              "state: testing" in worker.story.run("task show 1", actor=worker.story.agent).output_text, detail=str(worker.worker_lines()))
     worker.story.expect_success("task start 4", actor=worker.worker)
 

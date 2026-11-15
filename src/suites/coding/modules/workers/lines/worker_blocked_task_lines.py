@@ -21,5 +21,5 @@ class WorkerBlockedTaskLines(EventLineSource):
     def __init__(self, stop: WorkerUnitStop) -> None:
         self.stop = stop
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         return self.stop.blocked_lines(agent_id)

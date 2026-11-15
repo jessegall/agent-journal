@@ -22,7 +22,7 @@ class ScheduleTriggerSubcommand(ShowTriggerLineSubcommand[ScheduleTrigger]):
         parser.add_argument("--cron", default="")
         parser.add_argument("--until", default="")
         parser.add_argument("--times", type=int)
-        parser.add_argument("--do", type=TriggerAction, choices=list(TriggerAction), default=TriggerAction.NUDGE)
+        parser.add_argument("--do", type=TriggerAction, choices=list(TriggerAction), default=TriggerAction.AGENT_MESSAGE)
         TriggerDetails.add_arguments(parser)
 
     def command(self, arguments: Namespace, caller: Caller) -> ScheduleTrigger:

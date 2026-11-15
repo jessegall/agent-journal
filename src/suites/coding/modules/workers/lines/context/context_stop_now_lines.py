@@ -9,8 +9,8 @@ from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
 from engine.time.clock import Clock
 from core.modules.tasks.queries.task_query import TaskQuery
-from suites.coding.modules.workers.nudges.task_end_context_stop_message import TaskEndContextStopMessage
-from suites.coding.modules.workers.nudges.context_stop_immediate_message import ContextStopImmediateMessage
+from suites.coding.modules.workers.agent_messages.task_end_context_stop_message import TaskEndContextStopMessage
+from suites.coding.modules.workers.agent_messages.context_stop_immediate_message import ContextStopImmediateMessage
 from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
 from suites.coding.modules.workers.types.worker import Worker
 from suites.coding.support.context_limit_check import ContextLimitCheck
@@ -29,12 +29,12 @@ class ContextStopNowLines(EventLineSource):
     def __init__(self, history: LineHistory, limit_check: ContextLimitCheck, tasks: TaskQuery, compaction: WorkerCompaction, clock: Clock) -> None:
         self.history, self.limit_check, self.tasks, self.compaction, self.clock = history, limit_check, tasks, compaction, clock
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         if self.compaction.is_after_task(agent_id):
-            return [TaskEndContextStopMessage.declared().nudge()]
+            return [TaskEndContextStopMessage.declared().agent_message()]
         if self.limit_check.tokens(agent_id) is None or self.tasks.started_tasks(agent_id) or self.spoke_recently(agent_id):
             return []
-        return [ContextStopImmediateMessage.declared().nudge()]
+        return [ContextStopImmediateMessage.declared().agent_message()]
 
     def spoke_recently(self, agent_id: int) -> bool:
         spoke_at = self.history.last_spoke(self.key, agent_id)

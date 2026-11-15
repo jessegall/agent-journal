@@ -162,7 +162,7 @@ def test_worker_commands_return_before_slow_git_and_notify_once(worker_git_comma
     with operation_story(story) as ending_story:
         end_operation(ending_story, operation)
     lines = story.story_rows(AgentLine, session_agent_id=actor.id)
-    notifications = [line for line in lines if line.nudge.key.startswith("workers.operation_")]
+    notifications = [line for line in lines if line.agent_message.key.startswith("workers.operation_")]
     story.expect_rows(len(notifications) == 1, story.row(WorkerOperation, operation.id).ended_at is not None)
 
 
@@ -179,7 +179,7 @@ def test_a_merge_that_succeeds_makes_no_conflict_line_when_the_worker_has_a_next
     with operation_story(story) as ending_story:
         end_operation(ending_story, operation)
     lines = story.story_rows(AgentLine, session_agent_id=story.agent.id)
-    keys = [line.nudge.key for line in lines if line.nudge.key.startswith("workers.operation_")]
+    keys = [line.agent_message.key for line in lines if line.agent_message.key.startswith("workers.operation_")]
     story.expect_rows(keys == ["workers.operation_merged"], detail=str(keys))
 
 
@@ -205,7 +205,7 @@ def test_a_failed_background_command_releases_the_worker_and_names_its_output(wo
     story.expect_rows(outcome.code == 1, "the base branch has a conflict" in outcome.output_text)
     end_operation(story, operation, 1)
     lines = story.story_rows(AgentLine, session_agent_id=worker.id)
-    notifications = [line for line in lines if line.nudge.key == "workers.operation_failed"]
+    notifications = [line for line in lines if line.agent_message.key == "workers.operation_failed"]
     story.expect_rows(len(notifications) == 1, str(operation.process_id) in notifications[0].text)
     story.expect_rows(story.row(WorkerOperation, operation.id).ended_at is not None)
 
@@ -225,7 +225,7 @@ def test_a_worker_command_lost_before_it_started_tells_the_worker_and_can_be_giv
     operation = story.newest_row(WorkerOperation)
     story.run_command(OrphanProcess(operation.process_id), Actor.core(), environment_id=story.row(Agent, worker.id).environment_id)
     lines = story.story_rows(AgentLine, session_agent_id=worker.id)
-    notifications = [line for line in lines if line.nudge.key == "workers.operation_never_started"]
+    notifications = [line for line in lines if line.agent_message.key == "workers.operation_never_started"]
     story.expect_rows(len(notifications) == 1, str(operation.process_id) in notifications[0].text,
                       story.row(WorkerOperation, operation.id).ended_at is not None)
     story.expect_text('worker commit --differences none', "command accepted", actor=worker)
@@ -314,7 +314,7 @@ def merged_operation(story, worker):
 
 def main_line_keys(story):
     lines = story.story_rows(AgentLine, session_agent_id=story.agent.id)
-    return [line.nudge.key for line in lines]
+    return [line.agent_message.key for line in lines]
 
 
 @pytest.mark.real_git

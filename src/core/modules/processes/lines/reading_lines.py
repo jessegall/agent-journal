@@ -17,5 +17,5 @@ class ReadingLines(EventLineSource):
     def __init__(self, enforcer: ReadingEnforcer) -> None:
         self.enforcer = enforcer
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        return self.enforcer.answer(event).nudges if event is not None else []
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+        return self.enforcer.answer(event).agent_messages if event is not None else []

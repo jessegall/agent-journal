@@ -3,12 +3,12 @@ from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.agent_rows import AgentRows
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from suites.coding.modules.workers.commands.merger.require_merger import require_merger
 from suites.coding.modules.workers.commands.recover_worker_libraries.recover_worker_libraries import RecoverWorkerLibraries
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
-from suites.coding.modules.workers.nudges.worker_libraries_linked_message import WorkerLibrariesLinkedMessage
+from suites.coding.modules.workers.agent_messages.worker_libraries_linked_message import WorkerLibrariesLinkedMessage
 from suites.coding.modules.workers.support.worktree_libraries import WorktreeLibraries
 from core.modules.agents.support.agent_label import AgentLabel
 from engine.cli.row_numbers import RowNumbers
@@ -21,9 +21,9 @@ class RecoverWorkerLibrariesHandler(Handler[RecoverWorkerLibraries, str]):
     command = RecoverWorkerLibraries
     disabled_scopes = [ActorScope]
 
-    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, libraries: WorktreeLibraries, nudger: MessageSender, numbers: RowNumbers) -> None:
+    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, libraries: WorktreeLibraries, message_sender: MessageSender, numbers: RowNumbers) -> None:
         self.numbers = numbers
-        self.agents, self.worktrees, self.libraries, self.nudger = agents, worktrees, libraries, nudger
+        self.agents, self.worktrees, self.libraries, self.message_sender = agents, worktrees, libraries, message_sender
 
     def handle(self, command: RecoverWorkerLibraries, context: Context) -> str:
         require_merger(self.agents, context)
@@ -33,5 +33,5 @@ class RecoverWorkerLibrariesHandler(Handler[RecoverWorkerLibraries, str]):
         names = self.libraries.repair(worktree)
         if not names:
             return "nothing missing"
-        self.nudger.send(command.worker_id, WorkerLibrariesLinkedMessage.declared(), WORKER_JOB_SOURCE, context)
+        self.message_sender.send(command.worker_id, WorkerLibrariesLinkedMessage.declared(), WORKER_JOB_SOURCE, context)
         return f"linked: {', '.join(names)}"

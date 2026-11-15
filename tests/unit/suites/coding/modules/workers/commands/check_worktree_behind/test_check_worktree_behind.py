@@ -15,8 +15,8 @@ from suites.coding.modules.workers.models.enums.behind_check_state import Behind
 from suites.coding.modules.workers.models.enums.behind_route import BehindRoute
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.nudges.main_agent_stale_worktree_message import MainAgentStaleWorktreeMessage
-from suites.coding.modules.workers.nudges.fast_forwarded_message import FastForwardedMessage
+from suites.coding.modules.workers.agent_messages.main_agent_stale_worktree_message import MainAgentStaleWorktreeMessage
+from suites.coding.modules.workers.agent_messages.fast_forwarded_message import FastForwardedMessage
 from suites.coding.modules.workers.support.worker_settings import FORCED_UPDATE_COMMITS, MERGER_ENABLED, MAIN_UPDATE_COMMITS
 from suites.coding.modules.workers.ticks.behind_worktrees import BehindWorktrees
 
@@ -99,8 +99,8 @@ class Lines:
     def __init__(self) -> None:
         self.sent: list[object] = []
 
-    def send_nudge(self, nudge, source, context) -> None:
-        self.sent.append(nudge)
+    def send_agent_message(self, agent_message, source, context) -> None:
+        self.sent.append(agent_message)
 
     def send(self, agent_id, declaration, source, context, **fields) -> None:
         self.sent.append((agent_id, declaration, fields))
@@ -116,17 +116,17 @@ class Context:
 
 
 def routed(git: Git, settings: Settings | None = None, operations: Operations | None = None) -> tuple[BehindRoute, Repository, Lines, Lines]:
-    repository, main_line, nudger = Repository(), Lines(), Lines()
-    handler = CheckWorktreeBehindHandler(Rows(), git, Checks(), repository, settings or Settings(), operations or Operations(), main_line, nudger, Numbers())
+    repository, main_line, message_sender = Repository(), Lines(), Lines()
+    handler = CheckWorktreeBehindHandler(Rows(), git, Checks(), repository, settings or Settings(), operations or Operations(), main_line, message_sender, Numbers())
     handler.prepare(CheckWorktreeBehind(1), Actor.core())
-    return handler.handle(CheckWorktreeBehind(1), Context()), repository, main_line, nudger
+    return handler.handle(CheckWorktreeBehind(1), Context()), repository, main_line, message_sender
 
 
 def test_a_worktree_with_nothing_of_its_own_moves_onto_the_base_at_once_and_its_worker_reads_one_line():
     git = Git(4)
-    route, repository, _, nudger = routed(git)
+    route, repository, _, message_sender = routed(git)
     states = [row.state for row in repository.saved if hasattr(row, "commits_lagging")]
-    assert (route, git.forwarded, states[-1], nudger.sent[0][1]) == (BehindRoute.FAST_FORWARDED, [TIP], BehindCheckState.UPDATED, FastForwardedMessage.declared())
+    assert (route, git.forwarded, states[-1], message_sender.sent[0][1]) == (BehindRoute.FAST_FORWARDED, [TIP], BehindCheckState.UPDATED, FastForwardedMessage.declared())
 
 
 def test_no_fast_forward_while_a_command_of_the_worker_runs_or_when_git_refuses_it():

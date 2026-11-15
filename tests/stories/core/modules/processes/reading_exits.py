@@ -10,27 +10,27 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story import Story
 from core.modules.aliases.policies.unknown_command_policy import UNCLASSIFIED_HINT
-from core.modules.aliases.nudges.command_type_unknown_message import CommandTypeUnknownMessage
-from core.modules.aliases.nudges.saved_command_silent_message import SavedCommandSilentMessage
-from core.modules.aliases.nudges.saved_command_unknown_message import SavedCommandUnknownMessage
+from core.modules.aliases.agent_messages.command_type_unknown_message import CommandTypeUnknownMessage
+from core.modules.aliases.agent_messages.saved_command_silent_message import SavedCommandSilentMessage
+from core.modules.aliases.agent_messages.saved_command_unknown_message import SavedCommandUnknownMessage
 from core.modules.processes.commands.move_process.move_process import MoveProcess
 from core.modules.processes.models.enums.pressure_level import PressureLevel
 from core.modules.processes.models.process import Process
-from suites.coding.nudges.failed_full_run_message import FailedFullRunMessage
-from core.modules.processes.nudges.reader_block_message import ReaderBlockMessage
-from core.modules.processes.nudges.redirected_run_message import RedirectedRunMessage
-from core.modules.processes.nudges.required_monitor_message import RequiredMonitorMessage
-from core.modules.processes.nudges.silent_run_blocked_message import SilentRunBlockedMessage
-from core.modules.processes.nudges.silent_start_refusal_message import SilentStartRefusalMessage
+from suites.coding.agent_messages.failed_full_run_message import FailedFullRunMessage
+from core.modules.processes.agent_messages.reader_block_message import ReaderBlockMessage
+from core.modules.processes.agent_messages.redirected_run_message import RedirectedRunMessage
+from core.modules.processes.agent_messages.required_monitor_message import RequiredMonitorMessage
+from core.modules.processes.agent_messages.silent_run_blocked_message import SilentRunBlockedMessage
+from core.modules.processes.agent_messages.silent_start_refusal_message import SilentStartRefusalMessage
 from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
 from tests.integration.core.modules.processes.test_hang_watch import HANG_SECONDS
-from suites.coding.modules.workers.nudges.worker_test_count_unknown_message import WorkerTestCountUnknownMessage
+from suites.coding.modules.workers.agent_messages.worker_test_count_unknown_message import WorkerTestCountUnknownMessage
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 from tests.stories.core.modules.processes.support.reading_scenarios import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
-from core.modules.processes.nudges.reader_block_message import ReaderBlockMessage
-from engine.testing.expectations.expected_message import expected_nudge
+from core.modules.processes.agent_messages.reader_block_message import ReaderBlockMessage
+from engine.testing.expectations.expected_message import expected_agent_message
 
 EDIT = HookSamples.edit("cart.py")
 JOURNAL_COMMAND = re.compile(r"journal ([a-z][a-z-]*) ([a-z][a-z-]*)")
@@ -84,14 +84,14 @@ def test_an_exit_passes_under_a_silent_run_hold(new_story, line):
 def test_an_exit_passes_under_a_reader_block(new_story, line):
     story = new_story(fixture=ForcedReaders)
     process = worker_run(story)
-    story.expect_hook_refusal("s-reader", EDIT, expected_nudge(ReaderBlockMessage.declared()))
+    story.expect_hook_refusal("s-reader", EDIT, expected_agent_message(ReaderBlockMessage.declared()))
     story.expect_hook_allowed("s-reader", journal_line(line.format(output=process.id)))
 
 
 @pytest.mark.parametrize("declaration, fields, exit_text", REFUSALS.values(), ids=REFUSALS.keys())
 def test_every_hold_names_an_exit_the_agent_takes_alone_and_its_commands_exist(new_story, declaration, fields, exit_text):
     story = new_story(fixture=UserBuilder)
-    text = declaration.nudge(**fields).text
+    text = declaration.agent_message(**fields).text
     story.expect_rows(exit_text in text, detail=text)
     for subject, command_word in JOURNAL_COMMAND.findall(text):
         story.expect_success(f"{subject} {command_word} --help", actor=story.agent)

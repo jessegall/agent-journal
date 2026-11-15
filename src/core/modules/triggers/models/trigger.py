@@ -26,7 +26,7 @@ class Trigger(Model):
 
     creator_id: int
     phrases: tuple[str, ...] = ()
-    action: TriggerAction = TriggerAction.NUDGE
+    action: TriggerAction = TriggerAction.AGENT_MESSAGE
     text: str
     skill: str | None = None
     next_at: Timestamp | None = None

@@ -10,7 +10,7 @@ class ReaderHelpHold:
     """The hold that asks the main agent to help with one reader request: its line, the request's completion that
     lifts it, and the command the request is for."""
 
-    nudge: AgentMessage
+    agent_message: AgentMessage
     condition: ReaderRequestCompleted
     command: str
 
@@ -20,6 +20,6 @@ class ReaderRequestAnswer:
     """What the open reader requests say at one hook: the lines that ask for a reader or for help, the holds that ask
     the main agent to help with failed or expired requests, and at the tick the notices that tell it of them."""
 
-    nudges: tuple[AgentMessage, ...] = ()
+    agent_messages: tuple[AgentMessage, ...] = ()
     holds: tuple[ReaderHelpHold, ...] = ()
     commands: tuple[Command[object], ...] = ()

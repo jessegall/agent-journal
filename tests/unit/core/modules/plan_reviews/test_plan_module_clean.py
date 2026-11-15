@@ -13,9 +13,9 @@ def test_the_plans_module_lists_no_mod_among_its_dependencies():
     assert all(('plan_reviews' not in name and 'reviews' not in name for name in PlansModule.dependencies))
 
 
-def test_no_skill_or_nudge_of_the_plans_module_names_a_review_or_a_critique():
+def test_no_skill_or_agent_message_of_the_plans_module_names_a_review_or_a_critique():
     skills = (CHECKOUT / "src/core/modules/plans/skills").rglob("*.md")
-    texts = [path.read_text().lower() for path in skills] + [nudge.text.lower() for nudge in PlansModule.nudge_declarations()]
+    texts = [path.read_text().lower() for path in skills] + [agent_message.text.lower() for agent_message in PlansModule.agent_message_declarations()]
     texts += [f"{skill.folder} {skill.description} {' '.join(skill.keywords)}".lower() for skill in PlansModule.skill_declarations()]
     assert all((word not in text for text in texts for word in REVIEW_TERMS))
 

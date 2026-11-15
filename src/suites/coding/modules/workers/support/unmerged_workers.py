@@ -7,7 +7,7 @@ from engine.cli.row_numbers import RowNumbers
 from engine.driver.agent_message import AgentMessage
 from engine.query.queries import Queries
 from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock
-from core.modules.drivers.nudges.required_command_refusal_message import RequiredCommandRefusalMessage
+from core.modules.drivers.agent_messages.required_command_refusal_message import RequiredCommandRefusalMessage
 from engine.driver.interval import Interval
 from engine.driver.span_queries import SpanQueries
 from core.modules.drivers.support.message_records import MessageRecords
@@ -17,8 +17,8 @@ from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.worker_worktrees import WorkerWorktrees
 from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED, MERGER_WAIT_MINUTES
-from suites.coding.modules.workers.nudges.worker_unmerged_message import WorkerUnmergedMessage
-from suites.coding.modules.workers.nudges.worker_unmerged_due_message import WorkerUnmergedDueMessage
+from suites.coding.modules.workers.agent_messages.worker_unmerged_message import WorkerUnmergedMessage
+from suites.coding.modules.workers.agent_messages.worker_unmerged_due_message import WorkerUnmergedDueMessage
 from suites.coding.modules.workers.support.work_units import UNIT_TASKS_REASON
 
 
@@ -37,7 +37,7 @@ class UnmergedAnswer:
     """The lines that name each worker whose delivered work waits for a merge, and the commands that close the merge
     holds of workers that no longer wait."""
 
-    nudges: tuple[AgentMessage, ...]
+    agent_messages: tuple[AgentMessage, ...]
     stale: tuple[Command[object], ...]
 
 
@@ -62,7 +62,7 @@ class UnmergedWorkers:
         return self.request_values.read(f"workers.unmerged:{agent_id}:{firing}", lambda: firing, lambda: self.found(agent_id))
 
     def found(self, agent_id: int) -> UnmergedAnswer:
-        nudges: list[AgentMessage] = []
+        agent_messages: list[AgentMessage] = []
         delivered = self.delivered.delivered()
         for worktree in delivered:
             if self.is_with_merger(worktree, agent_id):
@@ -73,12 +73,12 @@ class UnmergedWorkers:
                 action = f"journal proof check {', '.join(str(proof.id) for proof in proofs)}"
             key = f"{WorkerUnmergedMessage.declared().key}.{worktree.session_agent_id}"
             declaration = WorkerUnmergedDueMessage.declared() if self.delivered_reminder_count(agent_id, key) >= BLOCKING_REMINDER_COUNT - 1 else WorkerUnmergedMessage.declared()
-            nudges.append(replace(declaration.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), tasks=self.task_names(worktree), action=action), key=key))
+            agent_messages.append(replace(declaration.agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), tasks=self.task_names(worktree), action=action), key=key))
         commands = {self.merge_command(worktree) for worktree in delivered}
         prefix = f"{RequiredCommandRefusalMessage.declared().key}:journal worker merge "
         blocks = self.open_blocks.rows(agent_id)
-        stale = tuple(CloseAgentBlock(block.id) for block in blocks if block.nudge_key.startswith(prefix) and block.condition_text not in commands)
-        return UnmergedAnswer(tuple(nudges), stale)
+        stale = tuple(CloseAgentBlock(block.id) for block in blocks if block.agent_message_key.startswith(prefix) and block.condition_text not in commands)
+        return UnmergedAnswer(tuple(agent_messages), stale)
 
     def is_with_merger(self, worktree: Worktree, agent_id: int) -> bool:
         if not self.settings.flag(MERGER_ENABLED) or worktree.returned_at is not None:

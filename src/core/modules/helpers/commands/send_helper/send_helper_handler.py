@@ -9,7 +9,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from core.modules.helpers.commands.send_helper.send_helper import SendHelper
 from core.modules.helpers.support.helper_job_source import HELPER_JOB_SOURCE
 from core.modules.helpers.support.helper_limits import HelperLimits
@@ -34,8 +34,8 @@ class SendHelperHandler(Handler[SendHelper, int]):
 
     command = SendHelper
 
-    def __init__(self, reach: HelperReach, limits: HelperLimits, jobs: HelperJobRows, nudger: MessageSender, repository: Repository, folders: AgentFolders, sources: WorkSources, scopes: Scopes, providers: Providers, kept: KeptHelpers, files: StatusFiles, occupants: OccupantRotation, profiles: ProfileFiles) -> None:
-        self.reach, self.limits, self.jobs, self.nudger, self.repository, self.folders = reach, limits, jobs, nudger, repository, folders
+    def __init__(self, reach: HelperReach, limits: HelperLimits, jobs: HelperJobRows, message_sender: MessageSender, repository: Repository, folders: AgentFolders, sources: WorkSources, scopes: Scopes, providers: Providers, kept: KeptHelpers, files: StatusFiles, occupants: OccupantRotation, profiles: ProfileFiles) -> None:
+        self.reach, self.limits, self.jobs, self.message_sender, self.repository, self.folders = reach, limits, jobs, message_sender, repository, folders
         self.sources = sources
         self.scopes = scopes
         self.providers = providers
@@ -60,7 +60,7 @@ class SendHelperHandler(Handler[SendHelper, int]):
             return self.running_helper_job(helper, last_job, source, source_context, command, context)
         if last_job.ended_at is None:
             with self.scopes.opened(context.actor.id, context.environment_id, [ActorScope]):
-                self.nudger.send_text(helper.id, command.job, HELPER_JOB_SOURCE, context, wakes_agent=True)
+                self.message_sender.send_text(helper.id, command.job, HELPER_JOB_SOURCE, context, wakes_agent=True)
             self.repository.save(last_job.changed(brief=f"{last_job.brief}\n\n{command.job}", title=command.title.strip() or last_job.title), context)
             return helper.id
         parent_id = self.reach.new_parent(helper, context.actor) or last_job.session_agent_id
@@ -95,7 +95,7 @@ class SendHelperHandler(Handler[SendHelper, int]):
         if last_job.ended_at is None and not command.steer and context.actor.is_agent():
             raise Refusal(f"{AgentLabel.labelled(helper).text} is busy with a job", f'wait for its report, or journal helper send {helper.number} --steer "<text>" adds to that job')
         with self.scopes.opened(context.actor.id, context.environment_id, [ActorScope]):
-            line = self.nudger.send_text(helper.id, command.job, HELPER_JOB_SOURCE, context, wakes_agent=True)
+            line = self.message_sender.send_text(helper.id, command.job, HELPER_JOB_SOURCE, context, wakes_agent=True)
         if self.continues(last_job, source):
             self.repository.save(last_job.changed(brief=f"{last_job.brief}\n\n{command.job}", title=command.title.strip() or last_job.title), context)
             return helper.id

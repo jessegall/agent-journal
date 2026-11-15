@@ -21,8 +21,8 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import C
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
 from tests.stories.suites.coding.modules.workers.support.judge_plugin import SINFUL_TEXT, judge_plugin_folder
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with, running_launcher
-from suites.coding.modules.workers.nudges.merger_line_available_message import MergerLineAvailableMessage
-from engine.testing.expectations.expected_message import expected_nudge
+from suites.coding.modules.workers.agent_messages.merger_line_available_message import MergerLineAvailableMessage
+from engine.testing.expectations.expected_message import expected_agent_message
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 QUESTION = "The sandbox has no compiler"
@@ -187,7 +187,7 @@ def test_the_main_agent_hears_nothing_of_an_ask_and_sees_no_stuck_mark(asking_wi
 def test_with_the_merger_off_an_ask_reaches_the_main_agent_and_the_worker_may_stop(merger_disabled_worker):
     outcome = merger_disabled_worker.post_question(topic=AskTopic.BUILT)
     line = merger_disabled_worker.merger_lines()[0]
-    merger_disabled_worker.story.expect_rows(AskTopic.BUILT.waiting_work() in outcome.output_text, expected_nudge(MergerLineAvailableMessage.declared()).matches_text(merger_disabled_worker.main_lines()), detail=merger_disabled_worker.main_lines())
+    merger_disabled_worker.story.expect_rows(AskTopic.BUILT.waiting_work() in outcome.output_text, expected_agent_message(MergerLineAvailableMessage.declared()).matches_text(merger_disabled_worker.main_lines()), detail=merger_disabled_worker.main_lines())
     merger_disabled_worker.story.expect_text(f"merger-line show {line.id}", QUESTION, "point build", actor=merger_disabled_worker.story.agent)
     merger_disabled_worker.story.expect_hook_allowed(merger_disabled_worker.session(), HookSamples.stop())
 

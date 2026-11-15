@@ -4,10 +4,10 @@ from core.modules.drivers.models.agent_line import AgentLine
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.questions.marks import PersonQuestion
 from tests.stories.server.support.server_client import server_story
-from core.modules.questions.nudges.question_answered_message import QuestionAnsweredMessage
+from core.modules.questions.agent_messages.question_answered_message import QuestionAnsweredMessage
 
 ANSWER = {"window": "viewer.shell", "environment": "main", "line": ["question", "answer", "1", "--answer", "sqlite"]}
-ANSWERED = QuestionAnsweredMessage.declared().nudge(question=1).text
+ANSWERED = QuestionAnsweredMessage.declared().agent_message(question=1).text
 
 
 @pytest.fixture

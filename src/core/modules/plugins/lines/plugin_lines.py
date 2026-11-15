@@ -18,6 +18,6 @@ class PluginLines(EventLineSource):
     def __init__(self, run: PluginHookRun) -> None:
         self.run = run
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         refusal = self.run.answer(event, agent_id).refusal
         return [refusal] if refusal is not None else []

@@ -2,12 +2,12 @@ from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.query.queries import Queries
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from core.modules.processes.commands.stop_hung_process.stop_hung_process import StopHungProcess
 from core.modules.processes.commands.stop_process.stop_process import StopProcess
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.process import Process
-from core.modules.processes.nudges.hung_run_message import HungRunMessage
+from core.modules.processes.agent_messages.hung_run_message import HungRunMessage
 
 
 class StopHungProcessHandler(Handler[StopHungProcess, Process]):
@@ -16,13 +16,13 @@ class StopHungProcessHandler(Handler[StopHungProcess, Process]):
 
     command = StopHungProcess
 
-    def __init__(self, queries: Queries, bus: Bus, nudger: MessageSender) -> None:
-        self.queries, self.bus, self.nudger = queries, bus, nudger
+    def __init__(self, queries: Queries, bus: Bus, message_sender: MessageSender) -> None:
+        self.queries, self.bus, self.message_sender = queries, bus, message_sender
 
     def handle(self, command: StopHungProcess, context: Context) -> Process:
         process = self.queries.query(Process).find(command.process_id)
         if process.state not in RUNNING_STATES:
             return process
         process = self.bus.dispatch(StopProcess(process.id), context)
-        self.nudger.send(process.session_agent_id, HungRunMessage.declared(), "processes.hung", context, output=process.id, seconds=command.seconds)
+        self.message_sender.send(process.session_agent_id, HungRunMessage.declared(), "processes.hung", context, output=process.id, seconds=command.seconds)
         return process

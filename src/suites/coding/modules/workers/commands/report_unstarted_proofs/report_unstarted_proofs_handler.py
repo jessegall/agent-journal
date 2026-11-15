@@ -10,7 +10,7 @@ from suites.coding.modules.workers.commands.report_unstarted_proofs.report_unsta
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
-from suites.coding.modules.workers.nudges.unstarted_proofs_message import UnstartedProofsMessage
+from suites.coding.modules.workers.agent_messages.unstarted_proofs_message import UnstartedProofsMessage
 from suites.coding.modules.workers.ticks.worker_tests.stalled_worker_test_runs import STALLED_TESTS_TICK
 
 UNSTARTED_PROOF_SECONDS = 180
@@ -37,9 +37,9 @@ class ReportUnstartedProofsHandler(Handler[ReportUnstartedProofs, None]):
         source_key = f"{SOURCE_KEY_PREFIX}{','.join(map(str, unstarted))}"
         if not unstarted or self.is_reported(source_key):
             return
-        nudge = UnstartedProofsMessage.declared().nudge(proofs=", ".join(map(str, unstarted)), minutes=UNSTARTED_PROOF_SECONDS // 60, exception=self.last_error())
-        self.repository.save(MergerLine(text=nudge.text, fallback_source=UnstartedProofsMessage.declared().key, nudge_json=nudge.stored.json, source_key=source_key, read_at=context.timestamp), context)
-        self.main_line.send_nudge(nudge, UnstartedProofsMessage.declared().key, context)
+        agent_message = UnstartedProofsMessage.declared().agent_message(proofs=", ".join(map(str, unstarted)), minutes=UNSTARTED_PROOF_SECONDS // 60, exception=self.last_error())
+        self.repository.save(MergerLine(text=agent_message.text, fallback_source=UnstartedProofsMessage.declared().key, agent_message_json=agent_message.stored.json, source_key=source_key, read_at=context.timestamp), context)
+        self.main_line.send_agent_message(agent_message, UnstartedProofsMessage.declared().key, context)
 
     def is_reported(self, source_key: str) -> bool:
         reported = self.queries.query(MergerLine).matching(Prefix("source_key", SOURCE_KEY_PREFIX)).every_row(REPORTED_REASON)

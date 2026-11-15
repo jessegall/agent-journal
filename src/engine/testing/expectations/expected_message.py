@@ -34,10 +34,10 @@ class ExpectedMessage:
     def matches_lines(self, lines: Iterable[str]) -> bool:
         return any(self.matches_text(line) for line in lines)
 
-    def is_kept_as(self, nudge: AgentMessage) -> bool:
-        fields = dict(nudge.fields)
-        return nudge.key == self.declaration.key and all(str(fields.get(name)) == str(value) for name, value in self.values.items())
+    def is_kept_as(self, agent_message: AgentMessage) -> bool:
+        fields = dict(agent_message.fields)
+        return agent_message.key == self.declaration.key and all(str(fields.get(name)) == str(value) for name, value in self.values.items())
 
 
-def expected_nudge(declaration: MessageTemplate, **values: object) -> ExpectedMessage:
+def expected_agent_message(declaration: MessageTemplate, **values: object) -> ExpectedMessage:
     return ExpectedMessage(declaration, values)

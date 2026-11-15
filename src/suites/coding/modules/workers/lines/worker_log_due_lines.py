@@ -8,7 +8,7 @@ from engine.enums.hook_event_name import HookEventName
 from engine.query.queries import Queries
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.nudges.worker_log_due_message import WorkerLogDueMessage
+from suites.coding.modules.workers.agent_messages.worker_log_due_message import WorkerLogDueMessage
 
 LOG_DUE_MINUTES = 30
 
@@ -25,11 +25,11 @@ class WorkerLogDueLines(EventLineSource):
         self.worktrees, self.queries = worktrees, queries
         self.clock = clock
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         worktree = self.worktrees.worker_worktree(agent_id)
         if worktree is None:
             return []
         latest_proof = self.queries.query(Proof).filter(worktree_id=worktree.id).newest().first()
         latest = latest_proof.creation_timestamp() if latest_proof is not None else worktree.creation_timestamp()
         minutes = latest.elapsed_minutes(self.clock.timestamp())
-        return [WorkerLogDueMessage.declared().nudge(minutes=minutes)] if minutes >= LOG_DUE_MINUTES else []
+        return [WorkerLogDueMessage.declared().agent_message(minutes=minutes)] if minutes >= LOG_DUE_MINUTES else []

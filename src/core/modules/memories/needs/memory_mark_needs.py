@@ -1,5 +1,5 @@
 from engine.agent.enums.role_group import RoleGroup
-from core.modules.memories.support.memory_nudges import WEIGH_COUNTDOWN
+from core.modules.memories.support.memory_agent_messages import WEIGH_COUNTDOWN
 from core.modules.memories.support.marks.reached_mark import ReachedMark
 from engine.enums.hook_event_name import HookEventName
 from collections.abc import Mapping, Sequence
@@ -12,7 +12,7 @@ from engine.agent_machine.needs.state_source import StateSource
 from engine.agent_machine.record.question import Question
 from engine.enums.closer_role import CloserRole
 from engine.setting.setting_values import SettingValues
-from core.modules.memories.nudges.weigh_first_message import WeighFirstMessage
+from core.modules.memories.agent_messages.weigh_first_message import WeighFirstMessage
 from core.modules.memories.support.block_conditions.memories_weighed import MemoriesWeighed
 from core.modules.memories.support.marks.mark_tracker import MarkTracker
 from core.modules.memories.support.memory_settings import MARK_TOOL_USES_SETTING, MARKS_SETTING
@@ -45,6 +45,6 @@ class MemoryMarkNeeds(StateSource):
             return None
         tool_uses = self.settings.numbers(MARK_TOOL_USES_SETTING)
         uses = dict(zip(self.settings.numbers(MARKS_SETTING), tool_uses)).get(marks[0].percent, tool_uses[-1]) if marks else reaching.tool_uses
-        nudge = WeighFirstMessage.declared().nudge()
-        return BlockPlan(nudge, MemoriesWeighed(), TOOL_RULE, MARK_RANK, stop_check_key=STOP_RULE, tool_grace_uses=uses, scope_stop=True,
-                         closer_roles=tuple([CloserRole.AGENT]), lifting_lines=WEIGH_COMMANDS, stop_nudge=nudge, countdown=WEIGH_COUNTDOWN.nudge("{left}"))
+        agent_message = WeighFirstMessage.declared().agent_message()
+        return BlockPlan(agent_message, MemoriesWeighed(), TOOL_RULE, MARK_RANK, stop_check_key=STOP_RULE, tool_grace_uses=uses, scope_stop=True,
+                         closer_roles=tuple([CloserRole.AGENT]), lifting_lines=WEIGH_COMMANDS, stop_agent_message=agent_message, countdown=WEIGH_COUNTDOWN.agent_message("{left}"))

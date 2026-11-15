@@ -9,4 +9,4 @@ class ReadingAnswer:
     teach the agent to read its runs, or that come with the refusal."""
 
     refusal: AgentMessage | None = None
-    nudges: tuple[AgentMessage, ...] = ()
+    agent_messages: tuple[AgentMessage, ...] = ()

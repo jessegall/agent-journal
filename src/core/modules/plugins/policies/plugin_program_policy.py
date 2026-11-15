@@ -4,7 +4,7 @@ from engine.agent_machine.contracts.event_policy import EventPolicy
 import re
 
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins
-from core.modules.plugins.nudges.plugin_program_off_message import PluginProgramOffMessage
+from core.modules.plugins.agent_messages.plugin_program_off_message import PluginProgramOffMessage
 
 PLUGIN_PROGRAM = re.compile(r"(?:^|/)\.journal/plugins/([^/]+)/")
 
@@ -27,5 +27,5 @@ class PluginProgramPolicy(EventPolicy):
         for part in shell.parts:
             matched = PLUGIN_PROGRAM.search(part.program)
             if matched is not None and matched.group(1) not in enabled:
-                return PluginProgramOffMessage.declared().nudge(plugin=matched.group(1))
+                return PluginProgramOffMessage.declared().agent_message(plugin=matched.group(1))
         return None

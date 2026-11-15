@@ -3,7 +3,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.enums.tool_type import ToolType
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.models.hook_call import HookCall
-from core.modules.drivers.nudges.paused_refusal_message import PausedRefusalMessage
+from core.modules.drivers.agent_messages.paused_refusal_message import PausedRefusalMessage
 from tests.stories.core.support.coding_fixtures import ReadTaskBuilder
 
 READ = HookSamples.tool_use("Read", ToolType.READ, ["src/cart.py"], None).with_fields(firing="replayed-read")
@@ -25,6 +25,6 @@ def test_a_replayed_read_passes_a_pause_since_its_stored_answer(played):
 def test_a_replayed_edit_is_refused_by_a_pause_since_and_the_call_records_it(played):
     story = played(ReadTaskBuilder)
     first, again = paused_after(story, EDIT)
-    paused_text = PausedRefusalMessage.declared().nudge().text
+    paused_text = PausedRefusalMessage.declared().agent_message().text
     call = story.container.get(Queries).query(HookCall).every_environment("one test's hook").filter(firing="replayed-edit").first()
     assert not first.refusal and again.refusal == paused_text and call is not None and call.repeated_answer == paused_text

@@ -12,7 +12,7 @@ from suites.coding.modules.workers.commands.report_stopped_worker_runs.report_st
 from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
-from suites.coding.modules.workers.nudges.worker_late_run_message import WorkerLateRunMessage
+from suites.coding.modules.workers.agent_messages.worker_late_run_message import WorkerLateRunMessage
 from suites.coding.modules.workers.support.worker_questions import WorkerQuestions
 from suites.coding.modules.workers.support.worker_settings import STOPPED_WORKER_RUN_MINUTES
 from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks
@@ -46,8 +46,8 @@ class ReportStoppedWorkerRunsHandler(Handler[ReportStoppedWorkerRuns, None]):
         for source_key, run in reported_runs.items():
             if source_key in lines:
                 continue
-            nudge = WorkerLateRunMessage.declared().nudge(worker=workers[run.session_agent_id].number, output=run.id)
-            self.inbox.deliver(MergerLine(text=nudge.text, fallback_source=WorkerLateRunMessage.declared().key, nudge_json=nudge.stored.json, worker_id=run.session_agent_id, source_key=source_key), context)
+            agent_message = WorkerLateRunMessage.declared().agent_message(worker=workers[run.session_agent_id].number, output=run.id)
+            self.inbox.deliver(MergerLine(text=agent_message.text, fallback_source=WorkerLateRunMessage.declared().key, agent_message_json=agent_message.stored.json, worker_id=run.session_agent_id, source_key=source_key), context)
 
     @staticmethod
     def source_key(run: Process) -> str:

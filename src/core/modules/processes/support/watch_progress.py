@@ -6,8 +6,8 @@ from engine.driver.agent_message import AgentMessage
 from engine.request.request_values import RequestValues
 from core.modules.processes.commands.record_given_percent.record_given_percent import RecordGivenPercent
 from core.modules.processes.models.watch import UNANNOUNCED_PERCENT, Watch
-from core.modules.processes.nudges.output_progress_message import OutputProgressMessage
-from core.modules.processes.nudges.active_output_message import ActiveOutputMessage
+from core.modules.processes.agent_messages.output_progress_message import OutputProgressMessage
+from core.modules.processes.agent_messages.active_output_message import ActiveOutputMessage
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.watch_query import WatchQuery
 
@@ -18,7 +18,7 @@ PROGRESS_STEP_PERCENT = 10
 class WatchedProgress:
     """The lines about the runs an agent watches, and the commands that record the percent each line gave."""
 
-    nudges: tuple[AgentMessage, ...]
+    agent_messages: tuple[AgentMessage, ...]
     commands: tuple[Command[object], ...]
 
 
@@ -36,13 +36,13 @@ class WatchProgress:
 
     def found(self, agent_id: int) -> WatchedProgress:
         given = [line for watch in tuple(self.watches.progress_due(agent_id, PROGRESS_STEP_PERCENT).oldest().get()) if (line := self.given(watch)) is not None]
-        return WatchedProgress(tuple(nudge for nudge, _ in given), tuple(command for _, command in given))
+        return WatchedProgress(tuple(agent_message for agent_message, _ in given), tuple(command for _, command in given))
 
     def given(self, watch: Watch) -> tuple[AgentMessage, Command[object]] | None:
         if watch.given_percent == UNANNOUNCED_PERCENT:
-            return ActiveOutputMessage.declared().nudge(output=watch.process_id), RecordGivenPercent(watch.id, 0)
+            return ActiveOutputMessage.declared().agent_message(output=watch.process_id), RecordGivenPercent(watch.id, 0)
         progress = self.processes.find(watch.process_id).progress
         step = progress - progress % PROGRESS_STEP_PERCENT
         if step <= watch.given_percent:
             return None
-        return OutputProgressMessage.declared().nudge(output=watch.process_id, percent=progress), RecordGivenPercent(watch.id, step)
+        return OutputProgressMessage.declared().agent_message(output=watch.process_id, percent=progress), RecordGivenPercent(watch.id, step)

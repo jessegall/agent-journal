@@ -19,7 +19,7 @@ class OneMessage:
         return MESSAGE
 
 
-class RecordedNudger:
+class RecordedMessageSender:
     def __init__(self) -> None:
         self.sent: list[tuple[object, str]] = []
 
@@ -41,9 +41,9 @@ class Recipient:
 
 
 def sent(between_turns: bool) -> tuple[LineDelivery, str]:
-    nudger = RecordedNudger()
-    RecordMessageUpdatedLineHandler(OneMessage(), nudger, AgentTurn(between_turns), Recipient()).handle(RecordMessageUpdatedLine(12), None)  # type: ignore[arg-type]
-    declaration, source = nudger.sent[0]
+    message_sender = RecordedMessageSender()
+    RecordMessageUpdatedLineHandler(OneMessage(), message_sender, AgentTurn(between_turns), Recipient()).handle(RecordMessageUpdatedLine(12), None)  # type: ignore[arg-type]
+    declaration, source = message_sender.sent[0]
     return declaration.delivery, source  # type: ignore[attr-defined]
 
 

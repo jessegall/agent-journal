@@ -1,18 +1,18 @@
 from dataclasses import dataclass
 
 from engine.model.view_model import ViewModel
-from core.modules.drivers.models.support.views import NUDGE_TOTALS_SELECT
+from core.modules.drivers.models.support.views import AGENT_MESSAGE_TOTALS_SELECT
 
 
 @dataclass(frozen=True, kw_only=True)
 class MessageTotal(ViewModel):
-    """How often a nudge was said to all agents and when it was said last, read from the nudge_totals view."""
+    """How often an agent message was given to all agents and when it was given last, read from the agent_message_totals view."""
 
     cli_name = "nudge-total"
-    view = "nudge_totals"
-    key = "nudge_key"
-    select = NUDGE_TOTALS_SELECT
+    view = "agent_message_totals"
+    key = "agent_message_key"
+    select = AGENT_MESSAGE_TOTALS_SELECT
 
-    nudge_key: str
+    agent_message_key: str
     delivery_count: int
     last_delivered_at: str

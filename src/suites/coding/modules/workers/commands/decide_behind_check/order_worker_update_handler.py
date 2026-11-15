@@ -1,7 +1,7 @@
 from engine.actor.actor import Actor
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
@@ -14,8 +14,8 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.support.behind_decisions import WITHOUT_OPEN_CHECK, BehindDecisions
 from suites.coding.modules.workers.support.behind_facts_reader import BehindFactsReader
-from suites.coding.modules.workers.support.behind_nudges import STALE_SOURCE
-from suites.coding.modules.workers.nudges.update_ordered_message import UpdateOrderedMessage
+from suites.coding.modules.workers.support.behind_agent_messages import STALE_SOURCE
+from suites.coding.modules.workers.agent_messages.update_ordered_message import UpdateOrderedMessage
 from suites.coding.modules.workers.support.merger_visits import MergerVisits
 
 
@@ -28,8 +28,8 @@ class OrderWorkerUpdateHandler(Handler[OrderWorkerUpdate, None]):
     command = OrderWorkerUpdate
     disabled_scopes = [ActorScope]
 
-    def __init__(self, agents: AgentRows, decisions: BehindDecisions, reader: BehindFactsReader, queries: Queries, repository: Repository, visits: MergerVisits, nudger: MessageSender) -> None:
-        self.agents, self.decisions, self.reader, self.queries, self.repository, self.visits, self.nudger = agents, decisions, reader, queries, repository, visits, nudger
+    def __init__(self, agents: AgentRows, decisions: BehindDecisions, reader: BehindFactsReader, queries: Queries, repository: Repository, visits: MergerVisits, message_sender: MessageSender) -> None:
+        self.agents, self.decisions, self.reader, self.queries, self.repository, self.visits, self.message_sender = agents, decisions, reader, queries, repository, visits, message_sender
         self.behind, self.tip = 0, ""
 
     def opened(self, worktree: Worktree, deciding_id: int, context: Context) -> WorktreeBehindCheck:
@@ -48,4 +48,4 @@ class OrderWorkerUpdateHandler(Handler[OrderWorkerUpdate, None]):
         check = self.decisions.check(worktree, WorktreeBehindCheck.is_undecided) or self.opened(worktree, deciding.id, context)
         self.repository.save_change(check, check.ordered(deciding.id, command.reason), context)
         self.visits.close_newest(context)
-        self.nudger.send(worktree.session_agent_id, UpdateOrderedMessage.declared(), STALE_SOURCE, context, count=check.commits_lagging)
+        self.message_sender.send(worktree.session_agent_id, UpdateOrderedMessage.declared(), STALE_SOURCE, context, count=check.commits_lagging)

@@ -8,13 +8,13 @@ from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
 from engine.command.context import Context
 from core.modules.agents.models.agent import Agent
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.commands.queue_worker_operation.queue_worker_operation import QueueWorkerOperation
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName
-from suites.coding.modules.workers.nudges.worker_operation_paused_message import WorkerOperationPausedMessage
+from suites.coding.modules.workers.agent_messages.worker_operation_paused_message import WorkerOperationPausedMessage
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.queries.worker_operation_query import WorkerOperationQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
@@ -28,16 +28,16 @@ class InactiveWorkerSend:
     an open one whose program has ended. A busy worker takes the task as its next one by itself."""
 
     def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue,
-                 operations: WorkerOperationQuery, bus: Bus, nudger: MessageSender, assignments: Assignments) -> None:
+                 operations: WorkerOperationQuery, bus: Bus, message_sender: MessageSender, assignments: Assignments) -> None:
         self.tasks, self.worktrees, self.proof_queue = tasks, worktrees, proof_queue
-        self.operations, self.bus, self.nudger, self.assignments = operations, bus, nudger, assignments
+        self.operations, self.bus, self.message_sender, self.assignments = operations, bus, message_sender, assignments
 
     def send(self, task: Task, context: Context) -> None:
         worker = self.assignments.agent(task)
         if worker is None or worker.parent_id is None:
             return
         if worker.paused_at is not None:
-            self.nudger.send(worker.parent_id, WorkerOperationPausedMessage.declared(), WORKER_JOB_SOURCE, context, worker=worker.number)
+            self.message_sender.send(worker.parent_id, WorkerOperationPausedMessage.declared(), WORKER_JOB_SOURCE, context, worker=worker.number)
             return
         if not self.is_idle(worker):
             return

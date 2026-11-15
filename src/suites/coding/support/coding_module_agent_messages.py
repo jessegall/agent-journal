@@ -1,0 +1,6 @@
+from suites.coding.support.coding_agent_messages import CODING_AGENT_MESSAGES
+from suites.coding.agent_messages.testing_tasks_failed_run_message import TestingTasksFailedRunMessage
+from suites.coding.agent_messages.testing_tasks_full_run_message import TestingTasksFullRunMessage
+from suites.coding.support.graphify_agent_messages import TOOL_AGENT_MESSAGES
+
+CODING_MODULE_AGENT_MESSAGES = [*CODING_AGENT_MESSAGES, TestingTasksFullRunMessage, TestingTasksFailedRunMessage, *TOOL_AGENT_MESSAGES]

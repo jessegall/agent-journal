@@ -6,7 +6,7 @@ from datetime import timedelta
 
 from core.modules.drivers.models.agent_block import AgentBlock
 from engine.testing.stories.story_fixture import StoryFixture
-from suites.coding.modules.workers.nudges.worker_unmerged_message import WorkerUnmergedMessage
+from suites.coding.modules.workers.agent_messages.worker_unmerged_message import WorkerUnmergedMessage
 from suites.coding.modules.workers.listeners.worker_merge_block_listener import WorkerMergeBlockListener
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, repository_environment

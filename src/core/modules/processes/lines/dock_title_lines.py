@@ -19,6 +19,6 @@ class DockTitleLines(EventLineSource):
     def __init__(self, docking: RunDocking) -> None:
         self.docking = docking
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         # the hold is LongRunDockNeeds', so the line opens no required-command hold of its own
-        return [replace(nudge, required_command="") for nudge in self.docking.docked(event, agent_id).nudges]
+        return [replace(agent_message, required_command="") for agent_message in self.docking.docked(event, agent_id).agent_messages]

@@ -7,7 +7,7 @@ from engine.enums.hook_event_name import HookEventName
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.new_session_line import NewSessionLine
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from core.modules.drivers.nudges.takeover_message import TakeoverMessage
+from core.modules.drivers.agent_messages.takeover_message import TakeoverMessage
 
 
 class TakeoverLines(EventLineSource):
@@ -23,7 +23,7 @@ class TakeoverLines(EventLineSource):
     def __init__(self, session_lines: NewSessionLine, hook_calls: HookCallQuery, agents: AgentRows) -> None:
         self.session_lines, self.hook_calls, self.agents = session_lines, hook_calls, agents
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         agent = self.agents.find(agent_id)
         newest_hook = self.hook_calls.newest_agent_hook(agent_id)
         if newest_hook is not None and newest_hook.program_session in ("", agent.session):
@@ -31,4 +31,4 @@ class TakeoverLines(EventLineSource):
         new_session = self.session_lines.new_session(agent)
         if new_session is None:
             return []
-        return [TakeoverMessage.declared().nudge(agent=new_session.agent, tasks=new_session.tasks, report=new_session.report)]
+        return [TakeoverMessage.declared().agent_message(agent=new_session.agent, tasks=new_session.tasks, report=new_session.report)]

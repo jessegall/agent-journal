@@ -28,8 +28,8 @@ class DecisionAssembler:
     """Builds the one answer of a hook from the agent machine's step: its decision, lines and effects, with the
     lines held back by their intervals and turns."""
 
-    def __init__(self, reader: AgentViewReader, assembly: MachineAssembly, bus: Bus, nudges: MessageLog, clock: Clock) -> None:
-        self.reader, self.assembly, self.bus, self.nudges, self.clock = reader, assembly, bus, nudges, clock
+    def __init__(self, reader: AgentViewReader, assembly: MachineAssembly, bus: Bus, agent_messages: MessageLog, clock: Clock) -> None:
+        self.reader, self.assembly, self.bus, self.agent_messages, self.clock = reader, assembly, bus, agent_messages, clock
 
     def assembled(self, event: HookEvent, agent: Agent, actor: Actor) -> AssembledAnswer:
         with self.bus.scopes.command_scope((), actor, agent.environment_id):
@@ -37,7 +37,7 @@ class DecisionAssembler:
             view = self.assembly.with_needs(self.reader.read(agent.id, question), question)
             step = self.assembly.machine(agent.role).step(view, question)
         answers = self.answers(step.record)
-        answers = replace(answers, skipped_lines=self.nudges.skipped_lines(agent.id, answers, self.clock.timestamp()))
+        answers = replace(answers, skipped_lines=self.agent_messages.skipped_lines(agent.id, answers, self.clock.timestamp()))
         return AssembledAnswer(answers, AssembledStep(view, step))
 
     # the answer of a step whose required effect failed and whose save was rolled back (doc 1310 section 4.9)
@@ -54,7 +54,7 @@ class DecisionAssembler:
         is_refusal = record.decision.decision_class is not DecisionClass.ALLOW
         shown = record.shown_reason
         safety = tuple([AgentMessage(shown.key, AgentMessageType.SAFETY_REFUSAL, shown.text)]) if is_refusal and shown.is_safety else ()
-        refusal = RuleAnswer(refusal=shown.text, nudges=safety)
+        refusal = RuleAnswer(refusal=shown.text, agent_messages=safety)
         refusals = [RuleRecord(shown.key or MACHINE_SOURCE, refusal.outcome, refusal)] if is_refusal else []
         return RuleAnswers([*refusals, *DecisionAssembler.line_records(record.lines)], stop_checks=tuple(record.stop_checks))
 
@@ -65,7 +65,7 @@ class DecisionAssembler:
         records = []
         for source in sources:
             said = [line for line in lines if line.source_key == source]
-            answer = RuleAnswer(nudges=tuple(line.said() for line in said if line.carrier is not LineChannel.TERMINAL),
+            answer = RuleAnswer(agent_messages=tuple(line.said() for line in said if line.carrier is not LineChannel.TERMINAL),
                                 terminal="\n".join(line.text for line in said if line.carrier is LineChannel.TERMINAL))
             records.append(RuleRecord(source or MACHINE_SOURCE, answer.outcome, answer))
         return records

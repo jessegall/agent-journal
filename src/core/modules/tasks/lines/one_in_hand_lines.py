@@ -6,7 +6,7 @@ from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.enums.command_category import CommandCategory
 from engine.enums.hook_event_name import HookEventName
 from core.modules.tasks.support.current_tasks import CurrentTasks
-from core.modules.tasks.nudges.task_testing_question_message import TaskTestingQuestionMessage
+from core.modules.tasks.agent_messages.task_testing_question_message import TaskTestingQuestionMessage
 
 TASK_START_COMMAND = ["task", "start"]
 
@@ -21,11 +21,11 @@ class OneInHandLines(EventLineSource):
     def __init__(self, current_tasks: CurrentTasks) -> None:
         self.current_tasks = current_tasks
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         tool = event.tool
         parts = tool.shell.parts if tool is not None and tool.shell is not None else ()
         starts = [list(part.arguments)[2:] for part in parts if part.classification.category is CommandCategory.JOURNAL and list(part.arguments[:2]) == TASK_START_COMMAND]
         if not starts:
             return []
         active_task_ids = [task.id for task in self.current_tasks.started_tasks(agent_id) if str(task.id) not in starts[0]]
-        return [TaskTestingQuestionMessage.declared().nudge(task=active_task_ids[0])] if active_task_ids else []
+        return [TaskTestingQuestionMessage.declared().agent_message(task=active_task_ids[0])] if active_task_ids else []

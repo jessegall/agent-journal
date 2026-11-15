@@ -17,5 +17,5 @@ class ScheduleTrigger(Command[Trigger]):
     cron_line: str = ""
     end_text: str = ""
     limit: int | None = None
-    action: TriggerAction = TriggerAction.NUDGE
+    action: TriggerAction = TriggerAction.AGENT_MESSAGE
     details: TriggerDetails = TriggerDetails()

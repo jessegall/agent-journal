@@ -127,7 +127,7 @@ TASK_INSPECTIONS_SELECT = Select("tasks").selecting(
 ).joined(ConditionJoin("agents", is_outer=True, condition=task_helper_match(), alias="helper")).view_sql()
 
 NEWEST_RENEWAL = latest_renewal("created_at", SqlFunction.MAX)
-LAST_REVIEW_NOTICE = ScalarSubselect(Select("nudge_records").selecting(FunctionCall(SqlFunction.MAX, [Column("last_delivered_at")]))
+LAST_REVIEW_NOTICE = ScalarSubselect(Select("agent_message_records").selecting(FunctionCall(SqlFunction.MAX, [Column("last_delivered_at")]))
                                      .matching(ColumnCompare("session_agent_id", "=", "agents.id"))
                                      .matching(Comparison(Column("key"), ComparisonOperator.EQUAL, Concat([Literal("tasks.block_review."), Column("tasks.id")]))))
 

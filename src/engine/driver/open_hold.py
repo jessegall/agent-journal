@@ -17,7 +17,7 @@ class OpenHold(Command[object]):
     through reads and journal commands."""
 
     agent_id: int
-    nudge: AgentMessage
+    agent_message: AgentMessage
     condition: BlockCondition
     after: Interval | None = None
     countdown: AgentMessage | None = None

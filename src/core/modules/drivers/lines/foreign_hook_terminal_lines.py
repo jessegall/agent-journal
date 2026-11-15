@@ -21,6 +21,6 @@ class ForeignHookTerminalLines(EventLineSource):
     def __init__(self, answers: ForeignHookAnswers) -> None:
         self.answers = answers
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         terminal = self.answers.answer(event, agent_id).terminal if event is not None else ""
         return [AgentMessage(TERMINAL_KEY, AgentMessageType.NOTICE, terminal)] if terminal else []

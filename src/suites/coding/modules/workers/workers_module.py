@@ -43,7 +43,7 @@ from suites.coding.modules.workers.needs.worker_status_first_needs import Worker
 from suites.coding.modules.workers.effects.inactive_helper_effect import InactiveHelperEffect
 from suites.coding.modules.workers.effects.phase_test_effect import PhaseTestEffect
 from suites.coding.modules.workers.effects.record_todo_list_effect import RecordTodoListEffect
-from suites.coding.modules.workers.support.workers_module_nudges import WORKERS_MODULE_NUDGES
+from suites.coding.modules.workers.support.workers_module_agent_messages import WORKERS_MODULE_AGENT_MESSAGES
 from suites.coding.modules.workers.models.workers_models import WORKERS_MODELS
 from suites.coding.modules.workers.migrations.workers_migrations import WORKERS_MIGRATIONS
 from suites.coding.modules.workers.upgrade.workers_moves import WORKERS_MOVES
@@ -159,7 +159,7 @@ class WorkersModule(Module):
     helper_types = [Worker, Merger]
     templates = WORKER_TEMPLATES
     window_extensions = WORKERS_WINDOW_EXTENSIONS
-    nudges = WORKERS_MODULE_NUDGES
+    agent_messages = WORKERS_MODULE_AGENT_MESSAGES
     seed_reason = "a worker needs a git worktree, which a scratch demo has none of"
     requires_engine = ">=5,<6"
     settings = WORKER_SETTINGS

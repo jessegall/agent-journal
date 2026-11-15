@@ -7,15 +7,15 @@ from engine.driver.shell_line import ShellLine
 from engine.errors.duration_error import DurationError
 from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.time.duration import Duration
-from core.modules.aliases.nudges.saved_command_choices_message import SavedCommandChoicesMessage
-from core.modules.aliases.nudges.saved_command_direct_message import SavedCommandDirectMessage
-from core.modules.aliases.nudges.saved_command_helper_message import SavedCommandHelperMessage
-from core.modules.aliases.nudges.saved_command_mixed_message import SavedCommandMixedMessage
-from core.modules.aliases.nudges.saved_command_piped_message import SavedCommandPipedMessage
-from core.modules.aliases.nudges.saved_command_silent_message import SavedCommandSilentMessage
-from core.modules.aliases.nudges.saved_command_timeout_message import SavedCommandTimeoutMessage
-from core.modules.aliases.nudges.saved_command_unknown_message import SavedCommandUnknownMessage
-from core.modules.aliases.nudges.saved_command_unread_message import SavedCommandUnreadMessage
+from core.modules.aliases.agent_messages.saved_command_choices_message import SavedCommandChoicesMessage
+from core.modules.aliases.agent_messages.saved_command_direct_message import SavedCommandDirectMessage
+from core.modules.aliases.agent_messages.saved_command_helper_message import SavedCommandHelperMessage
+from core.modules.aliases.agent_messages.saved_command_mixed_message import SavedCommandMixedMessage
+from core.modules.aliases.agent_messages.saved_command_piped_message import SavedCommandPipedMessage
+from core.modules.aliases.agent_messages.saved_command_silent_message import SavedCommandSilentMessage
+from core.modules.aliases.agent_messages.saved_command_timeout_message import SavedCommandTimeoutMessage
+from core.modules.aliases.agent_messages.saved_command_unknown_message import SavedCommandUnknownMessage
+from core.modules.aliases.agent_messages.saved_command_unread_message import SavedCommandUnreadMessage
 from core.modules.aliases.queries.alias_query import AliasQuery
 
 ASKING_FLAGS = ("--help", "-h", "--version", "-V")
@@ -41,17 +41,17 @@ class SavedCommandPolicy(EventPolicy):
                     continue
                 Duration.parse(part.timeout_duration)
         except DurationError:
-            return SavedCommandTimeoutMessage.declared().nudge()
+            return SavedCommandTimeoutMessage.declared().agent_message()
         if not shell.aliases_loaded:
             return None
         role = self.roles.role(agent_id)
         if not self.types.behaviours(role).runs_saved_commands:
             return None
         refusals = (self.part_refusal(part, role) for part in shell.parts)
-        refusal = next((nudge for nudge in refusals if nudge and not (shell.is_skip_line and nudge.key in SKIPPED_KEYS)), None)
+        refusal = next((agent_message for agent_message in refusals if agent_message and not (shell.is_skip_line and agent_message.key in SKIPPED_KEYS)), None)
         if refusal:
             return refusal
-        return SavedCommandMixedMessage.declared().nudge() if self.is_mixed(shell) else None
+        return SavedCommandMixedMessage.declared().agent_message() if self.is_mixed(shell) else None
 
     @staticmethod
     def is_mixed(shell: ShellLine) -> bool:
@@ -67,19 +67,19 @@ class SavedCommandPolicy(EventPolicy):
             return None
         exact = self.aliases.first_beginning(part.text, category)
         if exact:
-            return SavedCommandDirectMessage.declared().nudge(name=exact.name)
+            return SavedCommandDirectMessage.declared().agent_message(name=exact.name)
         if self.aliases.with_category(category).exists():
-            return SavedCommandChoicesMessage.declared().nudge(category=category.value)
+            return SavedCommandChoicesMessage.declared().agent_message(category=category.value)
         if role in self.types.read_access_keys():
-            return SavedCommandHelperMessage.declared().nudge(category=category.value)
-        return SavedCommandUnknownMessage.declared().nudge(command=part.text, category=category.value)
+            return SavedCommandHelperMessage.declared().agent_message(category=category.value)
+        return SavedCommandUnknownMessage.declared().agent_message(command=part.text, category=category.value)
 
     def saved_refusal(self, part: Part) -> AgentMessage | None:
         if part.pipe_target is not None:
-            return SavedCommandPipedMessage.declared().nudge(name=part.saved_command)
+            return SavedCommandPipedMessage.declared().agent_message(name=part.saved_command)
         if set(ASKING_FLAGS) & set(part.arguments):
             return None
         if not part.read_flag:
-            return SavedCommandUnreadMessage.declared().nudge(name=part.saved_command)
+            return SavedCommandUnreadMessage.declared().agent_message(name=part.saved_command)
         alias = self.aliases.saved(part.saved_command)
-        return SavedCommandSilentMessage.declared().nudge(name=alias.name) if alias is not None and alias.is_claimed else None
+        return SavedCommandSilentMessage.declared().agent_message(name=alias.name) if alias is not None and alias.is_claimed else None

@@ -11,7 +11,7 @@ class BlockPlan:
     """A hold a need source asks for, as pure data: the step judges the action against it as if it were open
     and opens its row in the same save."""
 
-    nudge: AgentMessage
+    agent_message: AgentMessage
     condition: BlockCondition
     tool_check_key: str
     rank: str
@@ -26,6 +26,6 @@ class BlockPlan:
     subject: RowReference | None = None
     context_generation: int | None = None
     lifting_lines: tuple[str, ...] = ()
-    stop_nudge: AgentMessage | None = None
+    stop_agent_message: AgentMessage | None = None
     # the line that counts the tool uses left before the hold refuses, its {left} filled in at each use of the grace
     countdown: AgentMessage | None = None

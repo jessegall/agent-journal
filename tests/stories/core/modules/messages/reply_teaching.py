@@ -14,13 +14,13 @@ from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.engine.driver.support.samples import SAMPLES
 from engine.testing.expectations.expect_reply import expect_reply_line
 from tests.stories.support.story_checks import expect_lines_reply_line
-from core.modules.messages.nudges.unanswered_message_reminder import UnansweredMessageReminder
-from core.modules.messages.nudges.unanswered_refusal_message import UnansweredRefusalMessage
-from engine.testing.expectations.expected_message import expected_nudge
-from core.modules.messages.nudges.em_dash_message import EmDashMessage
-from core.modules.messages.nudges.paragraph_message import ParagraphMessage
-from core.modules.messages.nudges.shop_talk_message import ShopTalkMessage
-from core.modules.messages.nudges.third_person_message import ThirdPersonMessage
+from core.modules.messages.agent_messages.unanswered_message_reminder import UnansweredMessageReminder
+from core.modules.messages.agent_messages.unanswered_refusal_message import UnansweredRefusalMessage
+from engine.testing.expectations.expected_message import expected_agent_message
+from core.modules.messages.agent_messages.em_dash_message import EmDashMessage
+from core.modules.messages.agent_messages.paragraph_message import ParagraphMessage
+from core.modules.messages.agent_messages.shop_talk_message import ShopTalkMessage
+from core.modules.messages.agent_messages.third_person_message import ThirdPersonMessage
 
 
 
@@ -87,7 +87,7 @@ def test_reading_a_message_says_how_a_reply_goes_out(read_message):
 
 def test_a_read_message_is_named_until_it_is_answered_in_text(read_message):
     story, _ = read_message
-    story.expect_hook_allowed("s-1", VIEW_LINE, expected_nudge(UnansweredMessageReminder.declared(), messages=1))
+    story.expect_hook_allowed("s-1", VIEW_LINE, expected_agent_message(UnansweredMessageReminder.declared(), messages=1))
     story.hook("s-1", HookSamples.message_display("Fixing the cart now"))
     story.advance(timedelta(seconds=301))
     story.expect_absent_hook_line("s-1", VIEW_LINE, "answer message 1")
@@ -103,8 +103,8 @@ def test_filing_the_task_a_message_asks_for_is_not_told_to_answer_it(read_messag
 
 def test_tool_calls_wait_after_ten_and_a_reply_line_always_goes_through(reply_required):
     story = reply_required
-    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), expected_nudge(UnansweredRefusalMessage.declared(), messages=1))
-    story.expect_absent_hook_line("s-1", REPLY_LINE, expected_nudge(UnansweredRefusalMessage.declared(), messages=1))
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), expected_agent_message(UnansweredRefusalMessage.declared(), messages=1))
+    story.expect_absent_hook_line("s-1", REPLY_LINE, expected_agent_message(UnansweredRefusalMessage.declared(), messages=1))
     story.run('message reply 1 "On it" --environment main', actor=story.agent)
     story.expect_absent_hook_line("s-1", VIEW_LINE, "answer message 1")
 
@@ -114,7 +114,7 @@ def test_a_chained_command_is_held_only_after_ten_tool_uses_and_not_before(chain
     for _ in range(2):
         story.hook("s-1", CHAINED_LINE)
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
-    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), expected_nudge(UnansweredRefusalMessage.declared(), messages=1))
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), expected_agent_message(UnansweredRefusalMessage.declared(), messages=1))
 
 
 def test_writes_wait_for_an_unread_message_after_twenty_calls_and_reading_goes_through(new_story):
@@ -133,10 +133,10 @@ def test_the_chat_is_read_for_the_third_person_em_dashes_shop_talk_and_run_on_pa
     long_text = "The cart is fixed. The total is right. The tax is right. The shop is right. " * 6
     story.hook("s-1", HookSamples.message_display(f"the user asked — so journal task make ran — done. {long_text}"))
     lines = story.hook("s-1", VIEW_LINE.with_fields(event="post_tool_use"))
-    expect_reply_line(lines, expected_nudge(ThirdPersonMessage.declared()))
-    expect_reply_line(lines, expected_nudge(EmDashMessage.declared()))
-    expect_reply_line(lines, expected_nudge(ShopTalkMessage.declared()))
-    expect_reply_line(lines, expected_nudge(ParagraphMessage.declared()))
+    expect_reply_line(lines, expected_agent_message(ThirdPersonMessage.declared()))
+    expect_reply_line(lines, expected_agent_message(EmDashMessage.declared()))
+    expect_reply_line(lines, expected_agent_message(ShopTalkMessage.declared()))
+    expect_reply_line(lines, expected_agent_message(ParagraphMessage.declared()))
     story.expect_absent_hook_line("s-1", VIEW_LINE.with_fields(event="post_tool_use"), "never \"the user\"")
 
 
@@ -198,5 +198,5 @@ def test_a_takeover_holds_the_new_agent_only_for_messages_it_read_itself(read_me
     story.run('message send "Then the totals" --environment main', actor=story.user)
     story.hook("s-2", HookSamples.stop())
     story.hook("s-2", journal_line("journal message read 2").with_fields(event="post_tool_use"))
-    story.expect_hook_allowed("s-2", VIEW_LINE, expected_nudge(UnansweredMessageReminder.declared(), messages=2))
+    story.expect_hook_allowed("s-2", VIEW_LINE, expected_agent_message(UnansweredMessageReminder.declared(), messages=2))
     story.expect_absent_hook_line("s-2", VIEW_LINE, "answer message 1")

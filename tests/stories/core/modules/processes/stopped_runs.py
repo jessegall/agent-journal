@@ -5,8 +5,8 @@ from engine.testing.stories.story import Story
 from tests.stories.core.modules.processes.support.process_samples import moved_run
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_value
-from core.modules.processes.nudges.output_timeout_message import OutputTimeoutMessage
-from engine.testing.expectations.expected_message import expected_nudge
+from core.modules.processes.agent_messages.output_timeout_message import OutputTimeoutMessage
+from engine.testing.expectations.expected_message import expected_agent_message
 
 KEPT = "its output is kept"
 
@@ -41,4 +41,4 @@ def test_the_journal_stopping_a_run_for_its_timeout_tells_the_agent_its_output_i
     story.expect_success(f"output timeout {process.id} 2m", actor=story.agent)
     story.advance(timedelta(seconds=121))
     timeout_tick(story)
-    expect_value(expected_nudge(OutputTimeoutMessage.declared()).matches_text(agent_lines(story)), True)
+    expect_value(expected_agent_message(OutputTimeoutMessage.declared()).matches_text(agent_lines(story)), True)

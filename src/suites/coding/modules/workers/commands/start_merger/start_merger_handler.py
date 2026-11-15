@@ -17,7 +17,7 @@ from engine.query.conditions.is_null import IsNull
 from engine.query.conditions.minimum import Minimum
 from core.modules.helpers.commands.send_helper.send_helper import SendHelper
 from core.modules.helpers.commands.start_helper.start_helper import StartHelper
-from suites.coding.modules.workers.support.merger_nudges import MERGER_JOB, MERGER_PROFILE, MERGER_SOURCE
+from suites.coding.modules.workers.support.merger_agent_messages import MERGER_JOB, MERGER_PROFILE, MERGER_SOURCE
 from suites.coding.modules.workers.support.merger_work import MergerWork
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
 

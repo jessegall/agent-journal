@@ -6,11 +6,11 @@ from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.helpers.commands.grant_helper.grant_helper import GrantHelper
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from core.modules.helpers.models.helper_grant import HelperGrant
 from core.modules.helpers.support.helper_grant_policy import HelperGrantPolicy
 from core.modules.helpers.support.helper_job_source import HELPER_JOB_SOURCE
-from core.modules.helpers.nudges.helper_granted_message import HelperGrantedMessage
+from core.modules.helpers.agent_messages.helper_granted_message import HelperGrantedMessage
 
 
 class GrantHelperHandler(Handler[GrantHelper, HelperGrant]):
@@ -18,13 +18,13 @@ class GrantHelperHandler(Handler[GrantHelper, HelperGrant]):
 
     command = GrantHelper
 
-    def __init__(self, agents: AgentRows, queries: Queries, repository: Repository, policy: HelperGrantPolicy, nudger: MessageSender) -> None:
-        self.agents, self.queries, self.repository, self.policy, self.nudger = agents, queries, repository, policy, nudger
+    def __init__(self, agents: AgentRows, queries: Queries, repository: Repository, policy: HelperGrantPolicy, message_sender: MessageSender) -> None:
+        self.agents, self.queries, self.repository, self.policy, self.message_sender = agents, queries, repository, policy, message_sender
 
     def handle(self, command: GrantHelper, context: Context) -> HelperGrant:
         self.policy.check(command.alternatives(), context)
         helper = self.agents.find(command.helper_id)
         grant = self.queries.query(HelperGrant).filter(helper_id=helper.id, program=command.program).first()
         saved = self.repository.save(HelperGrant(helper_id=helper.id, program=command.program, subcommands=command.subcommands, arguments=command.arguments), context) if grant is None else self.repository.save_change(grant, replace(grant, subcommands=command.subcommands, arguments=command.arguments), context)
-        self.nudger.send(helper.id, HelperGrantedMessage.declared(), HELPER_JOB_SOURCE, context, grant=saved.id)
+        self.message_sender.send(helper.id, HelperGrantedMessage.declared(), HELPER_JOB_SOURCE, context, grant=saved.id)
         return saved

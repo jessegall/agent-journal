@@ -5,7 +5,7 @@ from engine.listener.rows.event_rows import EventRows
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.models.support.sequence_guards import SequenceGuards
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
-from core.modules.sequences.nudges.step_refuses_command_message import StepRefusesCommandMessage
+from core.modules.sequences.agent_messages.step_refuses_command_message import StepRefusesCommandMessage
 
 
 class StepCommandPolicy(EventPolicy):
@@ -25,4 +25,4 @@ class StepCommandPolicy(EventPolicy):
         sequence = self.rows.required(Sequence, run.sequence_id)
         if not tool.shell.runs_journal_command(*SequenceGuards.step_guard(sequence.step_guards, run.step_number).refused_commands):
             return None
-        return StepRefusesCommandMessage.declared().nudge(sequence=sequence.id, step=run.step_number)
+        return StepRefusesCommandMessage.declared().agent_message(sequence=sequence.id, step=run.step_number)

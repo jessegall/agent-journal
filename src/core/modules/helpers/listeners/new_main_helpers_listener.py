@@ -8,7 +8,7 @@ from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.models.agent_session import AgentSession
-from core.modules.agents.support.report_nudges import PARENT_REPORT_SOURCE
+from core.modules.agents.support.report_agent_messages import PARENT_REPORT_SOURCE
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.agents.support.agent_rows import AgentRows

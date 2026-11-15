@@ -10,7 +10,7 @@ from engine.enums.agent_role import AgentRole
 from engine.module.block_conditions import BlockConditions
 from engine.time.clock import Clock
 from core.modules.reminders.models.reminder import Reminder
-from core.modules.reminders.nudges.reminder_block_message import ReminderBlockMessage
+from core.modules.reminders.agent_messages.reminder_block_message import ReminderBlockMessage
 from core.modules.reminders.support.due_reminders import DUE_REMINDER_KEY, DueReminders
 
 
@@ -32,5 +32,5 @@ class DueReminderNeeds(StateSource):
         return {agent_id: found for agent_id, found in plans.items() if found}
 
     def plan(self, reminder: Reminder) -> BlockPlan:
-        return BlockPlan(ReminderBlockMessage.declared().nudge(reminder=reminder.id), self.conditions.built(reminder.block_condition, reminder.block_subject),
+        return BlockPlan(ReminderBlockMessage.declared().agent_message(reminder=reminder.id), self.conditions.built(reminder.block_condition, reminder.block_subject),
                          DUE_REMINDER_KEY, self.rank, scope_tools=True, scope_stop=False)

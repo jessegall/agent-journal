@@ -11,7 +11,7 @@ from core.modules.skills.commands.set_required_skill.set_required_skill_subcomma
 from core.modules.skills.commands.skill_requirements.skill_requirements_subcommand import SkillRequirementsSubcommand
 from core.modules.skills.migrations.m003_skill_session import SkillSessionMigration
 from core.modules.skills.listeners.skill_publish_listener import SkillPublishListener
-from core.modules.skills.support.skill_nudges import SKILL_NUDGES
+from core.modules.skills.support.skill_agent_messages import SKILL_AGENT_MESSAGES
 from engine.module.module import Module
 from core.modules.skills.commands.agent_skill_unread.agent_skill_unread_subcommand import AgentSkillUnreadSubcommand
 from core.modules.skills.commands.load_skill.load_skill_handler import LoadSkillHandler
@@ -54,7 +54,7 @@ class SkillsModule(Module):
     """Publishes skills and tracks what each agent must read."""
 
     name = "journal.core.skills"
-    nudges = SKILL_NUDGES
+    agent_messages = SKILL_AGENT_MESSAGES
     move_reason = "version 4 kept skills as files, not as a table"
     requires_engine = ">=5,<6"
     block_conditions = [SkillsRead, SkillLoaded]

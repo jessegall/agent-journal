@@ -20,8 +20,8 @@ class JudgedBlocks:
 
     @staticmethod
     def constraining(view: AgentView) -> list[OpenBlock]:
-        plans = {plan.nudge.key: plan for plan in view.plans}
-        rows = [JudgedBlocks.with_plan(block, plans.get(block.nudge_key)) for block in view.blocks
+        plans = {plan.agent_message.key: plan for plan in view.plans}
+        rows = [JudgedBlocks.with_plan(block, plans.get(block.agent_message_key)) for block in view.blocks
                 if block.block_id is None or view.block_outcomes.get(block.block_id, ConditionOutcome.PENDING) not in CLOSING_OUTCOMES]
         return [*rows, *(JudgedBlocks.planned(plan) for plan in JudgedBlocks.new_plans(view))]
 
@@ -39,12 +39,12 @@ class JudgedBlocks:
 
     @staticmethod
     def new_plans(view: AgentView) -> list[BlockPlan]:
-        open_keys = {block.nudge_key for block in view.blocks}
-        return [plan for plan in view.plans if plan.nudge.key not in open_keys]
+        open_keys = {block.agent_message_key for block in view.blocks}
+        return [plan for plan in view.plans if plan.agent_message.key not in open_keys]
 
     @staticmethod
     def planned(plan: BlockPlan) -> OpenBlock:
-        reason = Reason(plan.tool_check_key, DecisionClass.HOLD, plan.rank, plan.nudge.text, plan.lifting_lines, plan.subject)
-        stop_reason = Reason(plan.stop_check_key or plan.tool_check_key, DecisionClass.HOLD, plan.rank, plan.stop_nudge.text, plan.lifting_lines, plan.subject) if plan.stop_nudge is not None else None
-        return OpenBlock(plan.nudge.key, None, reason, plan.scope_tools, plan.scope_stop, plan.tool_grace_uses == 0, plan.stop_grace_seconds == 0,
+        reason = Reason(plan.tool_check_key, DecisionClass.HOLD, plan.rank, plan.agent_message.text, plan.lifting_lines, plan.subject)
+        stop_reason = Reason(plan.stop_check_key or plan.tool_check_key, DecisionClass.HOLD, plan.rank, plan.stop_agent_message.text, plan.lifting_lines, plan.subject) if plan.stop_agent_message is not None else None
+        return OpenBlock(plan.agent_message.key, None, reason, plan.scope_tools, plan.scope_stop, plan.tool_grace_uses == 0, plan.stop_grace_seconds == 0,
                         plan.is_strict, plan.subject, stop_reason)

@@ -7,30 +7,30 @@ from core.modules.processes.models.process import Process
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.enums.task_state import TaskState
 from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName
-from suites.coding.modules.workers.nudges.worker_operation_next_message import WorkerOperationNextMessage
-from suites.coding.modules.workers.nudges.worker_operation_tests_message import WorkerOperationTestsMessage
-from suites.coding.modules.workers.nudges.worker_operation_conflict_message import WorkerOperationConflictMessage
-from suites.coding.modules.workers.nudges.worker_operation_paused_message import WorkerOperationPausedMessage
-from suites.coding.modules.workers.nudges.worker_operation_updated_message import WorkerOperationUpdatedMessage
-from suites.coding.modules.workers.nudges.worker_operation_update_conflict_message import WorkerOperationUpdateConflictMessage
-from suites.coding.modules.workers.nudges.worker_operation_update_failed_message import WorkerOperationUpdateFailedMessage
+from suites.coding.modules.workers.agent_messages.worker_operation_next_message import WorkerOperationNextMessage
+from suites.coding.modules.workers.agent_messages.worker_operation_tests_message import WorkerOperationTestsMessage
+from suites.coding.modules.workers.agent_messages.worker_operation_conflict_message import WorkerOperationConflictMessage
+from suites.coding.modules.workers.agent_messages.worker_operation_paused_message import WorkerOperationPausedMessage
+from suites.coding.modules.workers.agent_messages.worker_operation_updated_message import WorkerOperationUpdatedMessage
+from suites.coding.modules.workers.agent_messages.worker_operation_update_conflict_message import WorkerOperationUpdateConflictMessage
+from suites.coding.modules.workers.agent_messages.worker_operation_update_failed_message import WorkerOperationUpdateFailedMessage
 from suites.coding.modules.workers.models.enums.update_result import UpdateResult
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
-from suites.coding.modules.workers.nudges.worker_operation_unstarted_message import WorkerOperationUnstartedMessage
-from suites.coding.modules.workers.nudges.worker_operation_failed_message import WorkerOperationFailedMessage
+from suites.coding.modules.workers.agent_messages.worker_operation_unstarted_message import WorkerOperationUnstartedMessage
+from suites.coding.modules.workers.agent_messages.worker_operation_failed_message import WorkerOperationFailedMessage
 from core.modules.processes.events.process_ended import ProcessEnded
 from engine.listener.save_listener import SaveListener
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.agent_rows import AgentRows
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
-from suites.coding.modules.workers.nudges.worker_run_ended_message import WorkerRunEndedMessage
+from suites.coding.modules.workers.agent_messages.worker_run_ended_message import WorkerRunEndedMessage
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from engine.command.context import Context
 
@@ -43,10 +43,10 @@ class WorkerRunEndedListener(SaveListener[ProcessEnded]):
     name = "workers.run-ended"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, nudger: MessageSender, stop: WorkerStop, queries: Queries, repository: Repository, proof_queue: WorkerProofQueue, numbers: RowNumbers) -> None:
+    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, message_sender: MessageSender, stop: WorkerStop, queries: Queries, repository: Repository, proof_queue: WorkerProofQueue, numbers: RowNumbers) -> None:
         self.numbers = numbers
         self.queries, self.repository, self.proof_queue = queries, repository, proof_queue
-        self.agents, self.worktrees, self.nudger, self.stop = agents, worktrees, nudger, stop
+        self.agents, self.worktrees, self.message_sender, self.stop = agents, worktrees, message_sender, stop
 
     def handle(self, event: ProcessEnded, context: Context) -> None:
         process = event.row
@@ -54,7 +54,7 @@ class WorkerRunEndedListener(SaveListener[ProcessEnded]):
         if operation is not None:
             if operation.ended_at is None:
                 self.repository.update(operation, context, ended_at=context.timestamp)
-                self.nudger.send_nudge(operation.recipient_id, self.operation_nudge(operation, process), WORKER_JOB_SOURCE, context)
+                self.message_sender.send_agent_message(operation.recipient_id, self.operation_agent_message(operation, process), WORKER_JOB_SOURCE, context)
             return
         agent = self.agents.find(process.session_agent_id)
         if agent.role != Worker.key or agent.ended_at is None:
@@ -64,35 +64,35 @@ class WorkerRunEndedListener(SaveListener[ProcessEnded]):
             return
         if self.stop.was_stopped(agent) or self.stop.has_help_request_opened_after(agent.id, process.started_at or process.creation_timestamp()):
             return
-        self.nudger.send(agent.id, WorkerRunEndedMessage.declared(), WORKER_JOB_SOURCE, context, output=process.id)
+        self.message_sender.send(agent.id, WorkerRunEndedMessage.declared(), WORKER_JOB_SOURCE, context, output=process.id)
 
-    def operation_nudge(self, operation: WorkerOperation, process: Process) -> AgentMessage:
+    def operation_agent_message(self, operation: WorkerOperation, process: Process) -> AgentMessage:
         if operation.started_at is None and process.state is ProcessState.ORPHANED:
-            return WorkerOperationUnstartedMessage.declared().nudge(output=process.id)
+            return WorkerOperationUnstartedMessage.declared().agent_message(output=process.id)
         if operation.name is WorkerOperationName.UPDATE:
-            return self.update_nudge(operation, process)
+            return self.update_agent_message(operation, process)
         if process.exit_code != 0:
-            return WorkerOperationFailedMessage.declared().nudge(output=process.id)
+            return WorkerOperationFailedMessage.declared().agent_message(output=process.id)
         worktree = self.worktrees.worker_worktree(operation.worker_id)
         if operation.name.is_handoff and worktree is not None:
             task = self.queries.query(Task).find(worktree.task_id)
             if task.state is TaskState.STARTED:
-                return WorkerOperationNextMessage.declared().nudge(task=task.id, output=process.id)
+                return WorkerOperationNextMessage.declared().agent_message(task=task.id, output=process.id)
             if self.proof_queue.tests_pending(worktree):
-                return WorkerOperationTestsMessage.declared().nudge(task=task.id, output=process.id)
+                return WorkerOperationTestsMessage.declared().agent_message(task=task.id, output=process.id)
         if operation.name is WorkerOperationName.MERGE and self.is_unmerged(worktree, process):
-            return WorkerOperationConflictMessage.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, operation.worker_id), output=process.id)
+            return WorkerOperationConflictMessage.declared().agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, operation.worker_id), output=process.id)
         if operation.name is WorkerOperationName.JOB and self.agents.find(operation.worker_id).paused_at is not None:
-            return WorkerOperationPausedMessage.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, operation.worker_id))
-        return operation.name.finished_nudge(self.numbers.number(AGENT_MODEL_NAME, operation.worker_id), process.id)
+            return WorkerOperationPausedMessage.declared().agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, operation.worker_id))
+        return operation.name.finished_agent_message(self.numbers.number(AGENT_MODEL_NAME, operation.worker_id), process.id)
 
-    def update_nudge(self, operation: WorkerOperation, process: Process) -> AgentMessage:
+    def update_agent_message(self, operation: WorkerOperation, process: Process) -> AgentMessage:
         worker = self.numbers.number(AGENT_MODEL_NAME, operation.worker_id)
         if operation.update_outcome is UpdateResult.CONFLICTS:
-            return WorkerOperationUpdateConflictMessage.declared().nudge(worker=worker, output=process.id)
+            return WorkerOperationUpdateConflictMessage.declared().agent_message(worker=worker, output=process.id)
         if operation.update_outcome is None or process.exit_code != 0:
-            return WorkerOperationUpdateFailedMessage.declared().nudge(worker=worker, output=process.id)
-        return WorkerOperationUpdatedMessage.declared().nudge(worker=worker, output=process.id)
+            return WorkerOperationUpdateFailedMessage.declared().agent_message(worker=worker, output=process.id)
+        return WorkerOperationUpdatedMessage.declared().agent_message(worker=worker, output=process.id)
 
     def is_unmerged(self, worktree: Worktree | None, process: Process) -> bool:
         return worktree is not None and not self.worktrees.has_merge(worktree.session_agent_id, process.creation_timestamp())

@@ -19,8 +19,8 @@ from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
 from engine.testing.expectations.expect_row import expect_row
-from core.modules.processes.nudges.run_name_message import RunNameMessage
-from engine.testing.expectations.expected_message import expected_nudge
+from core.modules.processes.agent_messages.run_name_message import RunNameMessage
+from engine.testing.expectations.expected_message import expected_agent_message
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 TEST_ROWS_REASON = "the test reads every row it checks"
@@ -322,7 +322,7 @@ def untitled_docked_run(played):
     story = install_runner(played(RoomyBuilderStarted))
     process = moved_run(story, "./deploy.sh staging", category=CommandCategory.BUILD)
     story.advance(timedelta(seconds=6))
-    wanted = RunNameMessage.declared().nudge(process=process.id).text
+    wanted = RunNameMessage.declared().agent_message(process=process.id).text
     return story, process, wanted
 
 
@@ -364,7 +364,7 @@ def test_a_script_moved_to_the_background_shows_its_mark_asks_for_its_title_and_
     story.run_listeners()
     story.expect_text(MARKS, "Running python3 /tmp/move_files.py")
     story.advance(timedelta(seconds=6))
-    story.expect_hook_allowed("s-1", monitor(f"journal output monitor {process.id}"), expected_nudge(RunNameMessage.declared()))
+    story.expect_hook_allowed("s-1", monitor(f"journal output monitor {process.id}"), expected_agent_message(RunNameMessage.declared()))
     story.expect_text("process list --state background", "python3 /tmp/move_files.py", actor=story.agent)
     end_run(story, process, "moved\n")
     story.run_listeners()

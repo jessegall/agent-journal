@@ -49,7 +49,7 @@ from core.modules.tasks.models.task_block_review import TaskBlockReview
 from core.modules.tasks.migrations.m011_task_block_renewals import TaskBlockRenewalsMigration
 from core.modules.tasks.listeners.task_block_renewal_listener import TaskBlockRenewalListener
 from core.modules.tasks.support.block_conditions.task_blocks_reviewed import TaskBlocksReviewed
-from core.modules.tasks.support.task_nudges import TASK_NUDGES
+from core.modules.tasks.support.task_agent_messages import TASK_AGENT_MESSAGES
 from core.modules.tasks.commands.choose_next_task.choose_next_task_handler import ChooseNextTaskHandler
 from core.modules.tasks.commands.choose_task_focus.choose_task_focus_handler import ChooseTaskFocusHandler
 from core.modules.tasks.commands.choose_task_focus.choose_task_focus_subcommand import ChooseTaskFocusSubcommand
@@ -137,7 +137,7 @@ class TasksModule(Module):
     that keep an agent at its task."""
 
     name = "journal.core.tasks"
-    nudges = TASK_NUDGES
+    agent_messages = TASK_AGENT_MESSAGES
     settings = TASK_SETTINGS
     requires_engine = ">=5,<6"
     block_conditions = [TaskStopped, TaskStarted, TaskClosed, StartedTaskExists, TaskLogged, TaskBriefRead, TaskBlocksReviewed]

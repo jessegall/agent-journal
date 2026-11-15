@@ -73,7 +73,7 @@ class Registry:
     drivers: tuple[DriverEntry, ...] = ()
     windows: tuple[WindowEntry, ...] = ()
     marks: tuple[MarkEntry, ...] = ()
-    nudges: tuple[MessageEntry, ...] = ()
+    agent_messages: tuple[MessageEntry, ...] = ()
     docks: tuple[DockEntry, ...] = ()
     templates: tuple[TemplateEntry, ...] = ()
     buttons: tuple[ButtonEntry, ...] = ()
@@ -154,7 +154,7 @@ class Registry:
                                       window.get("float_height", DEFAULT_FLOAT_SIZE.height), tuple(window.get("options", [])), window.get("count", ""), tuple(window.get("shared_reads", [])), window.get("group", ""), window.get("auto_scroll", ""), tuple(window.get("tabs", [])), dict(window.get("search", {})), window.get("shows", LEGACY_SHOWS.get(window["place"], "environment")), tuple(window.get("skeleton", [])), tuple(window.get("required_settings", [])), tuple(window.get("sources", [])), dict(window.get("links", {})), tuple(window.get("slots", [])))
                           for window in entries.get("windows", [])),
             marks=tuple(MarkEntry.restored(mark) for mark in entries.get("marks", [])),
-            nudges=tuple(MessageEntry.restored(nudge) for nudge in entries.get("nudges", [])),
+            agent_messages=tuple(MessageEntry.restored(agent_message) for agent_message in entries.get("agent_messages", [])),
             docks=tuple(DockEntry.restored(dock) for dock in entries.get("docks", [])),
             templates=tuple(TemplateEntry.restored(template) for template in entries.get("templates", [])),
             buttons=tuple(ButtonEntry.restored(button) for button in entries.get("buttons", [])),
@@ -208,7 +208,7 @@ class Registry:
                          "shipped": window.shipped, "unavailable_reason": window.unavailable_reason, "icon": window.icon,
                          "float_width": window.float_width, "float_height": window.float_height, "options": [dict(option) for option in window.options], "count": window.count, "shared_reads": list(window.shared_reads), "group": window.group, "auto_scroll": window.auto_scroll, "tabs": [dict(tab) for tab in window.tabs], "search": dict(window.search), "skeleton": [dict(part) for part in window.skeleton], "required_settings": list(window.required_settings), "sources": [dict(source) for source in window.sources], "links": dict(window.links), "slots": list(window.slots)} for window in self.windows],
             "marks": [asdict(mark) for mark in self.marks],
-            "nudges": [asdict(nudge) for nudge in self.nudges],
+            "agent_messages": [asdict(agent_message) for agent_message in self.agent_messages],
             "docks": [asdict(dock) for dock in self.docks],
             "templates": [asdict(template) for template in self.templates],
             "buttons": [asdict(button) for button in self.buttons],

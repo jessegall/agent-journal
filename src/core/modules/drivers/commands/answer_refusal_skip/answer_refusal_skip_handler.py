@@ -7,8 +7,8 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.answer_refusal_skip.answer_refusal_skip import AnswerRefusalSkip
 from core.modules.drivers.commands.skip_refusal.skip_refusal_handler import SKIP_SOURCE
 from core.modules.drivers.models.refusal_skip import RefusalSkip
-from core.modules.drivers.nudges.skip_approval_message import SkipApprovalMessage
-from engine.driver.nudger import MessageSender
+from core.modules.drivers.agent_messages.skip_approval_message import SkipApprovalMessage
+from engine.driver.message_sender import MessageSender
 from core.modules.drivers.support.driver_settings import SKIPS_NEED_APPROVAL
 from engine.setting.setting_values import SettingValues
 
@@ -21,8 +21,8 @@ class AnswerRefusalSkipHandler(Handler[AnswerRefusalSkip, RefusalSkip]):
 
     command = AnswerRefusalSkip
 
-    def __init__(self, queries: Queries, repository: Repository, nudger: MessageSender, settings: SettingValues) -> None:
-        self.queries, self.repository, self.nudger, self.settings = queries, repository, nudger, settings
+    def __init__(self, queries: Queries, repository: Repository, message_sender: MessageSender, settings: SettingValues) -> None:
+        self.queries, self.repository, self.message_sender, self.settings = queries, repository, message_sender, settings
 
     def handle(self, command: AnswerRefusalSkip, context: Context) -> RefusalSkip:
         skip = self.queries.query(RefusalSkip).find(command.skip_id)
@@ -39,5 +39,5 @@ class AnswerRefusalSkipHandler(Handler[AnswerRefusalSkip, RefusalSkip]):
         approver_id = agent.parent_id if not agent.is_main and self.settings.flag(SKIPS_NEED_APPROVAL) else None
         confirmed = self.repository.update(skip, context, confirmed_at=context.timestamp, tried=tried, needs_approval=approver_id is not None)
         if approver_id is not None:
-            self.nudger.send(approver_id, SkipApprovalMessage.declared(), SKIP_SOURCE, context, agent=agent.number, refusal=skip.id)
+            self.message_sender.send(approver_id, SkipApprovalMessage.declared(), SKIP_SOURCE, context, agent=agent.number, refusal=skip.id)
         return confirmed

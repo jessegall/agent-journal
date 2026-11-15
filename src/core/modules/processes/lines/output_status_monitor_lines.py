@@ -10,9 +10,9 @@ from engine.enums.hook_event_name import HookEventName
 from engine.enums.tool_type import ToolType
 from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.provider.providers import Providers
-from core.modules.processes.nudges.automatic_run_watched_message import AutomaticRunWatchedMessage
-from core.modules.processes.nudges.monitor_command_note_message import MonitorCommandNoteMessage
-from core.modules.processes.nudges.monitor_note_message import MonitorNoteMessage
+from core.modules.processes.agent_messages.automatic_run_watched_message import AutomaticRunWatchedMessage
+from core.modules.processes.agent_messages.monitor_command_note_message import MonitorCommandNoteMessage
+from core.modules.processes.agent_messages.monitor_note_message import MonitorNoteMessage
 from core.modules.processes.support.background_commands import JOURNAL
 
 OUTPUT_STATUS_COMMAND = ["output", "status"]
@@ -27,13 +27,13 @@ class OutputStatusMonitorLines(EventLineSource):
     def __init__(self, providers: Providers, types: HelperTypeBook, roles: AgentRoleReader) -> None:
         self.providers, self.types, self.roles = providers, types, roles
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         shell = event.tool.shell if event is not None and event.tool is not None else None
         numbers = [part.arguments[2] for part in shell.parts if self.is_status(part)] if shell is not None else []
         if not numbers or event is None:
             return []
         note = self.note(event, agent_id)
-        return [note.nudge(output=number) for number in numbers]
+        return [note.agent_message(output=number) for number in numbers]
 
     def note(self, event: HookEvent, agent_id: int) -> MessageTemplate:
         if self.types.behaviours(self.roles.role(agent_id)).watches_runs_automatically:

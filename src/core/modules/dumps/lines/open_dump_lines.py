@@ -7,7 +7,7 @@ from engine.enums.hook_event_name import HookEventName
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from core.modules.dumps.models.dump import Dump
-from core.modules.dumps.nudges.dump_open_message import DumpOpenMessage
+from core.modules.dumps.agent_messages.dump_open_message import DumpOpenMessage
 
 
 class OpenDumpLines(EventLineSource):
@@ -20,6 +20,6 @@ class OpenDumpLines(EventLineSource):
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         dump = self.queries.query(Dump).matching(IsNull("closed_at")).oldest().first()
-        return [DumpOpenMessage.declared().nudge(dump=dump.id)] if dump is not None else []
+        return [DumpOpenMessage.declared().agent_message(dump=dump.id)] if dump is not None else []

@@ -14,7 +14,7 @@ from engine.journal.journal_home import JournalHome
 from engine.time.timestamp import Timestamp
 
 ACTOR = Actor(1, ActorType.USER)
-LINE = SimpleNamespace(id=7, session_agent_id=3, nudge=SimpleNamespace(text="new message 12: read it"))
+LINE = SimpleNamespace(id=7, session_agent_id=3, agent_message=SimpleNamespace(text="new message 12: read it"))
 
 
 class RecordedBus:

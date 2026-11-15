@@ -18,5 +18,5 @@ def test_the_inactive_helper_rule_run_right_after_a_dispatch_does_not_name_the_n
     hook = AgentHook(event=event, agent_id=story.agent.id, environment_id=1, role=AgentRole.MAIN, driver="coding.main", timestamp=story.clock.timestamp())
     story.container.get(AgentActivities).read(hook.event, hook.agent_id)
     worker = dispatched_worker(story)
-    nudges = story.container.get(InactiveHelperLines).nudges(hook.event, hook.agent_id)
-    story.expect_rows(worker.id > 0, list(nudges) == [])
+    agent_messages = story.container.get(InactiveHelperLines).agent_messages(hook.event, hook.agent_id)
+    story.expect_rows(worker.id > 0, list(agent_messages) == [])

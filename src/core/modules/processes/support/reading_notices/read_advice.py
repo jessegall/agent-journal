@@ -1,8 +1,8 @@
 from engine.driver.agent_message import AgentMessage
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.models.output import Output
-from core.modules.processes.nudges.large_output_read_message import LargeOutputReadMessage
-from core.modules.processes.nudges.reader_hint_message import ReaderHintMessage
+from core.modules.processes.agent_messages.large_output_read_message import LargeOutputReadMessage
+from core.modules.processes.agent_messages.reader_hint_message import ReaderHintMessage
 from core.modules.processes.support.process_settings import ProcessSettings
 
 
@@ -16,7 +16,7 @@ class ReadAdvice:
 
     def hint(self, output: Output) -> tuple[AgentMessage, ...]:
         if output.reader_id is not None and output.reader_lines:
-            return tuple([ReaderHintMessage.declared().nudge(reader=output.reader_id, output=output.process_id)])
+            return tuple([ReaderHintMessage.declared().agent_message(reader=output.reader_id, output=output.process_id)])
         if output.line_count > self.settings.integer(ProcessSetting.LARGE_OUTPUT_LINES):
-            return tuple([LargeOutputReadMessage.declared().nudge(output=output.process_id, lines=output.line_count)])
+            return tuple([LargeOutputReadMessage.declared().agent_message(output=output.process_id, lines=output.line_count)])
         return ()

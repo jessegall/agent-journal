@@ -18,7 +18,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import G
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from engine.enums.tool_type import ToolType
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
-from core.modules.tasks.nudges.task_brief_first_message import TaskBriefFirstMessage
+from core.modules.tasks.agent_messages.task_brief_first_message import TaskBriefFirstMessage
 
 
 @dataclass(frozen=True)
@@ -66,7 +66,7 @@ def test_dispatch_uses_task_overview_context(worker_scenario):
     worktree = worker_scenario.story.container.get(WorktreeQuery).open_worktrees()[0]
     worker = Actor(worktree.session_agent_id, ActorType.AGENT)
     session = worker_session(worker_scenario.story, worker)
-    worker_scenario.story.expect_hook_refusal(session, HookSamples.edit("src/cart.py"), TaskBriefFirstMessage.declared().nudge(task=1).text)
+    worker_scenario.story.expect_hook_refusal(session, HookSamples.edit("src/cart.py"), TaskBriefFirstMessage.declared().agent_message(task=1).text)
     overview = worker_scenario.story.run("task overview 1", actor=worker)
     feature(overview.code == 0 and "Implement the cart request" in overview.output_text, overview.output_text)
     worker_scenario.story.expect_hook_allowed(session, HookSamples.edit("src/cart.py"))
@@ -154,7 +154,7 @@ def test_queued_and_resumed_workers_read_their_current_context(worker_scenario):
     worker = dispatch(worker_scenario, "1 2")
     worker_scenario.story.expect_success("task overview 1", actor=worker)
     commit_continuing(worker_scenario, worker, 2)
-    worker_scenario.story.expect_hook_refusal(worker_session(worker_scenario.story, worker), HookSamples.edit("src/cart.py"), TaskBriefFirstMessage.declared().nudge(task=2).text)
+    worker_scenario.story.expect_hook_refusal(worker_session(worker_scenario.story, worker), HookSamples.edit("src/cart.py"), TaskBriefFirstMessage.declared().agent_message(task=2).text)
     outcome = worker_scenario.story.run("task overview 2", actor=worker)
     worker_scenario.story.expect_rows(outcome.code == 0, detail=outcome.output_text)
     feature("Implement the cart request" in outcome.output_text and "Queued cart assignment" in outcome.output_text, outcome.output_text)
@@ -168,7 +168,7 @@ def test_worker_compaction_requires_current_task_context(assigned_worker):
     session = worker_session(worker_scenario.story, worker)
     worker_scenario.story.hook(session, HookSamples.sample("compact"))
     worker_scenario.story.run_listeners()
-    worker_scenario.story.expect_hook_refusal(session, HookSamples.edit("src/cart.py"), TaskBriefFirstMessage.declared().nudge(task=1).text)
+    worker_scenario.story.expect_hook_refusal(session, HookSamples.edit("src/cart.py"), TaskBriefFirstMessage.declared().agent_message(task=1).text)
     outcome = worker_scenario.story.run("task overview 1", actor=worker)
     worker_scenario.story.expect_rows(outcome.code == 0, detail=outcome.output_text)
     feature("Implement the cart request" in outcome.output_text, outcome.output_text)
@@ -190,7 +190,7 @@ def test_resumed_launch_requires_current_overview(assigned_worker):
     feature("journal task overview 1" in prompt, "resumed launch omits the current task overview")
     session = worker_session(scenario.story, worker)
     scenario.story.hook(session, HookSamples.session_start())
-    scenario.story.expect_hook_refusal(session, HookSamples.edit("src/cart.py"), TaskBriefFirstMessage.declared().nudge(task=1).text)
+    scenario.story.expect_hook_refusal(session, HookSamples.edit("src/cart.py"), TaskBriefFirstMessage.declared().agent_message(task=1).text)
     scenario.story.expect_success("task overview 1", actor=worker)
     scenario.story.expect_hook_allowed(session, HookSamples.edit("src/cart.py"))
 
@@ -233,6 +233,6 @@ def test_rework_requires_current_overview_before_writes(assigned_worker):
     scenario.command(f'worker send --wait {agent_number(scenario.story, worker.id)} "Recheck the cart assignment"')
     session = worker_session(scenario.story, worker)
     scenario.story.hook(session, HookSamples.tool_use("Read", ToolType.READ, [], None))
-    scenario.story.expect_hook_refusal(session, HookSamples.edit("src/cart.py"), TaskBriefFirstMessage.declared().nudge(task=1).text)
+    scenario.story.expect_hook_refusal(session, HookSamples.edit("src/cart.py"), TaskBriefFirstMessage.declared().agent_message(task=1).text)
     scenario.story.expect_success("task overview 1", actor=worker)
     scenario.story.expect_hook_allowed(session, HookSamples.edit("src/cart.py"))

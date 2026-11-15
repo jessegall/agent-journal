@@ -68,14 +68,14 @@ class AgentMessage:
                            {name: str(value) for name, value in self.fields} if declaration is not None else {"text": self.text})
 
     @staticmethod
-    def collapsed(nudges: "Iterable[Nudge]") -> "list[Nudge]":
+    def collapsed(agent_messages: "Iterable[Nudge]") -> "list[Nudge]":
         groups: dict[tuple[str, tuple[tuple[str, str], ...]], list[AgentMessage]] = {}
-        for nudge in nudges:
-            groups.setdefault((nudge.key, nudge.merge_context), []).append(nudge)
+        for agent_message in agent_messages:
+            groups.setdefault((agent_message.key, agent_message.merge_context), []).append(agent_message)
         return [AgentMessage.merged(group) for group in groups.values()]
 
     @staticmethod
     def merged(group: "Sequence[Nudge]") -> "AgentMessage":
-        distinct = list({nudge.text: nudge for nudge in group}.values())
+        distinct = list({agent_message.text: agent_message for agent_message in group}.values())
         declaration = distinct[0].declaration
         return distinct[0] if len(distinct) == 1 or declaration is None else declaration.merged(distinct)

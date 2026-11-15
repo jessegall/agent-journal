@@ -8,7 +8,7 @@ from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
-from suites.coding.modules.workers.nudges.merger_line_available_message import MergerLineAvailableMessage
+from suites.coding.modules.workers.agent_messages.merger_line_available_message import MergerLineAvailableMessage
 
 
 class MergerWakeListener(CommitListener[Created[MergerLine]]):
@@ -22,5 +22,5 @@ class MergerWakeListener(CommitListener[Created[MergerLine]]):
     def handle(self, event: Created[MergerLine], logged: LoggedEvent) -> None:
         if not self.settings.flag(MERGER_ENABLED):
             return
-        line = MergerLineAvailableMessage.declared().nudge(line=event.row.id) if event.row.nudge_json is None else MessageTemplate.restore(event.row.nudge_json)
+        line = MergerLineAvailableMessage.declared().agent_message(line=event.row.id) if event.row.agent_message_json is None else MessageTemplate.restore(event.row.agent_message_json)
         self.bus.run(StartMerger(line), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)

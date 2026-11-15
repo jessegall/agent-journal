@@ -8,7 +8,7 @@ from suites.coding.support.coding_settings import MODULE_KEY
 GRAPHIFY_GROUP = f"{MODULE_KEY}.graphify"
 GRAPHIFY_COMMAND = f"{MODULE_KEY}.graphify-command"
 GRAPHIFY_INSTALL_COMMAND = f"{MODULE_KEY}.graphify-install-command"
-GRAPHIFY_NUDGE_AFTER = f"{GRAPHIFY_GROUP}.nudge-after"
+GRAPHIFY_AGENT_MESSAGE_AFTER = f"{GRAPHIFY_GROUP}.nudge-after"
 GRAPHIFY_BLOCK_AFTER = f"{GRAPHIFY_GROUP}.block-after"
 GRAPHIFY_REFRESH_MINUTES = f"{GRAPHIFY_GROUP}.refresh-minutes"
 GRAPHIFY_CLUSTER_MINUTES = f"{GRAPHIFY_GROUP}.cluster-minutes"

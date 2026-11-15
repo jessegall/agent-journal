@@ -1,7 +1,7 @@
 from dataclasses import replace
 
 from core.modules.processes.queries.reader_query import ReaderQuery
-from core.modules.processes.nudges.stock_reader_stale_message import StockReaderStaleMessage
+from core.modules.processes.agent_messages.stock_reader_stale_message import StockReaderStaleMessage
 from core.modules.processes.support.stock_reader import STOCK_READERS, StockReader
 from server.work.booting_work import BootingWork
 from engine.testing.examples.hook_samples import HookSamples
@@ -44,4 +44,4 @@ def test_a_frozen_stock_reader_whose_shipped_one_changed_is_named_to_the_main_ag
         story.hook("s-1", HookSamples.session_start())
         story.run_listeners()
     listed = story.run(f"agent-line list --agent {story.agent.id}", actor=story.user).output_text
-    story.expect_rows(listed.count(StockReaderStaleMessage.declared().nudge(reader="vitest").text) == 1, detail=listed)
+    story.expect_rows(listed.count(StockReaderStaleMessage.declared().agent_message(reader="vitest").text) == 1, detail=listed)

@@ -7,8 +7,8 @@ from suites.coding.modules.workers.commands.remind_behind_updates.remind_behind_
 from suites.coding.modules.workers.commands.remind_behind_updates.remind_behind_updates_handler import RemindBehindUpdatesHandler
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState as State
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
-from suites.coding.modules.workers.nudges.update_skipped_message import UpdateSkippedMessage
-from suites.coding.modules.workers.nudges.update_reminder_message import UpdateReminderMessage
+from suites.coding.modules.workers.agent_messages.update_skipped_message import UpdateSkippedMessage
+from suites.coding.modules.workers.agent_messages.update_reminder_message import UpdateReminderMessage
 from suites.coding.modules.workers.support.worker_settings import UPDATE_REMINDERS, UPDATE_WAIT_MINUTES
 from tests.unit.suites.coding.modules.workers.support.test_behind_check_closing import WORKTREE
 
@@ -62,8 +62,8 @@ class Lines:
     def send(self, agent_id, declaration, source, context, **fields) -> None:
         self.sent.append(declaration.key)
 
-    def send_nudge(self, nudge, source, context) -> None:
-        self.sent.append(nudge.key)
+    def send_agent_message(self, agent_message, source, context) -> None:
+        self.sent.append(agent_message.key)
 
 
 class NoMarkers:
@@ -77,11 +77,11 @@ class Numbers:
 
 
 def run_at(minutes: list[int], store: Store | None = None, paused: bool = False, reminders: int = 2) -> tuple[list[object], list[object], Store]:
-    store, nudger, inbox = store or Store(), Lines(), Lines()
-    handler = RemindBehindUpdatesHandler(store, Rows(paused), store, Settings(reminders), nudger, inbox, Numbers(), NoMarkers())
+    store, message_sender, inbox = store or Store(), Lines(), Lines()
+    handler = RemindBehindUpdatesHandler(store, Rows(paused), store, Settings(reminders), message_sender, inbox, Numbers(), NoMarkers())
     for minute in minutes:
         handler.handle(RemindBehindUpdates(), SimpleNamespace(timestamp=Timestamp(ORDERED_AT + timedelta(minutes=minute))))
-    return nudger.sent, inbox.sent, store
+    return message_sender.sent, inbox.sent, store
 
 
 def test_a_worker_is_reminded_at_thirty_and_sixty_minutes_and_not_a_third_time_then_the_merger_hears_once():

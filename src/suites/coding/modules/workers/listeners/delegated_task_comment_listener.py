@@ -11,12 +11,12 @@ from core.modules.agents.models.agent import Agent
 from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link
 from core.modules.documents.support.row_link_writer import RowLinkWriter
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from core.modules.messages.models.message import Message
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
-from suites.coding.modules.workers.nudges.worker_task_comment_message import WorkerTaskCommentMessage
-from suites.coding.modules.workers.nudges.worker_comment_copy_message import WorkerCommentCopyMessage
+from suites.coding.modules.workers.agent_messages.worker_task_comment_message import WorkerTaskCommentMessage
+from suites.coding.modules.workers.agent_messages.worker_comment_copy_message import WorkerCommentCopyMessage
 from engine.event.created import Created
 from engine.command.context import Context
 
@@ -31,9 +31,9 @@ class DelegatedTaskCommentListener(SaveListener[Created[Link]]):
     name = "workers.delegated-task-comment"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, links: RowLinkWriter, queries: Queries, nudger: MessageSender, numbers: RowNumbers, assignments: Assignments) -> None:
+    def __init__(self, links: RowLinkWriter, queries: Queries, message_sender: MessageSender, numbers: RowNumbers, assignments: Assignments) -> None:
         self.numbers, self.assignments = numbers, assignments
-        self.links, self.queries, self.nudger = links, queries, nudger
+        self.links, self.queries, self.message_sender = links, queries, message_sender
 
     def handle(self, event: Created[Link], context: Context) -> None:
         link = event.row
@@ -43,7 +43,7 @@ class DelegatedTaskCommentListener(SaveListener[Created[Link]]):
         if worker is None or worker.role == AgentRole.MAIN or self.queries.query(ActorRecord).find(context.actor.id).type is not ActorType.USER:
             return
         message = self.queries.query(Message).find(link.source_id)
-        self.nudger.send(worker.id, WorkerTaskCommentMessage.declared(), WORKER_JOB_SOURCE, context, task=link.target_id)
+        self.message_sender.send(worker.id, WorkerTaskCommentMessage.declared(), WORKER_JOB_SOURCE, context, task=link.target_id)
         self.links.save(Link(creator_id=context.actor.id, source_model=Message.model_name, source_id=message.id, target_model=Agent.model_name, target_id=worker.id, link_type=LinkType.RECIPIENT), context)
         if worker.parent_id is not None:
-            self.nudger.send(worker.parent_id, WorkerCommentCopyMessage.declared(), SOURCE, context, worker=self.numbers.number(AGENT_MODEL_NAME, worker.id), message=message.id)
+            self.message_sender.send(worker.parent_id, WorkerCommentCopyMessage.declared(), SOURCE, context, worker=self.numbers.number(AGENT_MODEL_NAME, worker.id), message=message.id)

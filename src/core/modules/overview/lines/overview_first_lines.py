@@ -7,7 +7,7 @@ from engine.agent_machine.record.question import Question
 from engine.enums.hook_event_name import HookEventName
 from engine.enums.line_channel import LineChannel
 from engine.enums.line_category import LineCategory
-from core.modules.overview.nudges.overview_line_message import OverviewLineMessage
+from core.modules.overview.agent_messages.overview_line_message import OverviewLineMessage
 from core.modules.overview.support.overview_first import OverviewFirst
 
 
@@ -25,5 +25,5 @@ class OverviewFirstLines(LineSource):
         event = question.event
         if not self.first.is_required or event is None or event.is_resume or view.agent.agent_type != "main":
             return []
-        nudge = OverviewLineMessage.declared().nudge()
-        return [Line.of_nudge(nudge, LineChannel.NOW, self.category)]
+        agent_message = OverviewLineMessage.declared().agent_message()
+        return [Line.of_agent_message(agent_message, LineChannel.NOW, self.category)]

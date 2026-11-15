@@ -15,7 +15,7 @@ from core.modules.waits.commands.waiting_wait.waiting_wait_subcommand import Wai
 from core.modules.waits.listeners.target_resolution_listener import TargetResolutionListener
 from core.modules.waits.listeners.reported_wait_mark_listener import ReportedWaitMarkListener
 from core.modules.waits.listeners.wait_end_listener import WaitEndListener
-from core.modules.waits.support.wait_nudges import WAIT_NUDGES
+from core.modules.waits.support.wait_agent_messages import WAIT_AGENT_MESSAGES
 from core.modules.waits.marks.reported_wait_mark import ReportedWaitMark
 from core.modules.waits.commands.open_wait.open_wait_subcommand import OpenWaitSubcommand
 from core.modules.waits.commands.open_wait.open_wait_handler import OpenWaitHandler
@@ -41,6 +41,6 @@ class WaitsModule(Module):
     handlers = [OpenWaitHandler]
     subcommands = [OpenWaitSubcommand, RequestHelpSubcommand, WaitingWaitSubcommand]
     listeners = [TargetResolutionListener, ReportedWaitMarkListener, WaitEndListener]
-    nudges = WAIT_NUDGES
+    agent_messages = WAIT_AGENT_MESSAGES
     marks = [ReportedWaitMark]
     seeders = [WaitsSeeder]

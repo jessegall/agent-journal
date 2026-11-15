@@ -20,6 +20,6 @@ class AgentTextLines(EventLineSource):
     def __init__(self, answer: AgentTextAnswer) -> None:
         self.answer = answer
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        nudge = self.answer.shown(event, agent_id).nudge if event is not None else None
-        return [nudge] if nudge is not None else []
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+        agent_message = self.answer.shown(event, agent_id).agent_message if event is not None else None
+        return [agent_message] if agent_message is not None else []

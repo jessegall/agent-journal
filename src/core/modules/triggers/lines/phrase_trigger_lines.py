@@ -18,5 +18,5 @@ class PhraseTriggerLines(EventLineSource):
     def __init__(self, match: PhraseTriggerMatch) -> None:
         self.match = match
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        return self.match.answer(event, agent_id).nudges if event is not None else []
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+        return self.match.answer(event, agent_id).agent_messages if event is not None else []

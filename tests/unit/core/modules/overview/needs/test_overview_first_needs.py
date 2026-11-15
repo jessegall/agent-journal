@@ -9,7 +9,7 @@ from engine.testing.agent_machine.view_samples import ViewSamples
 from engine.testing.examples.hook_samples import HookSamples
 from core.modules.overview.lines.overview_first_lines import OverviewFirstLines
 from core.modules.overview.needs.overview_first_needs import OVERVIEW_RULE, OverviewFirstNeeds
-from core.modules.overview.nudges.overview_line_message import OverviewLineMessage
+from core.modules.overview.agent_messages.overview_line_message import OverviewLineMessage
 from core.modules.overview.support.overview_first import OverviewFirst
 
 MAIN = AgentReference(4, None, 1, "main")
@@ -33,5 +33,5 @@ def test_the_planned_block_refuses_an_edit_until_the_overview_runs() -> None:
 
 def test_a_session_start_tells_the_agent_to_run_the_overview_in_todays_words() -> None:
     lines = OverviewFirstLines(OverviewFirst())
-    assert [line.text for line in lines.lines(START, VIEW)] == [OverviewLineMessage.declared().nudge().text]
+    assert [line.text for line in lines.lines(START, VIEW)] == [OverviewLineMessage.declared().agent_message().text]
     assert lines.lines(RESUME, VIEW) == []

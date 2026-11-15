@@ -3,7 +3,7 @@ from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.command.context import Context
 from engine.command.handler import Handler
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
-from suites.coding.modules.workers.support.merger_nudges import MERGER_SOURCE
+from suites.coding.modules.workers.support.merger_agent_messages import MERGER_SOURCE
 from suites.coding.modules.workers.commands.send_merger_input.send_merger_input import SendMergerInput
 
 

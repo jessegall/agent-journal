@@ -3,7 +3,7 @@ from engine.scope.environment_scope import EnvironmentScope
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.settings.models.setting import Setting
 from core.modules.voices.support.voice_lines import VoiceLines
-from core.modules.voices.support.voice_nudges import VOICE_CHANGED
+from core.modules.voices.support.voice_agent_messages import VOICE_CHANGED
 from core.modules.voices.support.voices_settings import VOICE_KEYS
 from engine.event.changed import Changed
 from engine.event.deleted import Deleted

@@ -19,8 +19,8 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.models.merger_visit import MergerVisit
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
-from suites.coding.modules.workers.nudges.merger_line_available_message import MergerLineAvailableMessage
+from suites.coding.modules.workers.support.merger_agent_messages import MERGER_PROFILE
+from suites.coding.modules.workers.agent_messages.merger_line_available_message import MergerLineAvailableMessage
 from suites.coding.modules.workers.support.merge_ready_lines import MergeReadyLines
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
@@ -56,7 +56,7 @@ class MergerRetry:
     def retry_line(self, container: Container, line: MergerLine) -> None:
         if not self.is_merger_idle(container):
             return
-        container.get(Bus).run(StartMerger(MergerLineAvailableMessage.declared().nudge(line=line.id), line.creation_timestamp()), Actor.core(), environment_id=line.environment_id)
+        container.get(Bus).run(StartMerger(MergerLineAvailableMessage.declared().agent_message(line=line.id), line.creation_timestamp()), Actor.core(), environment_id=line.environment_id)
 
     @staticmethod
     def is_merger_idle(container: Container) -> bool:
@@ -86,5 +86,5 @@ class MergerRetry:
             return
         if git.uncommitted_overlap(environment.folder, worktree):
             return
-        line = container.get(MergeReadyLines).nudge(worktree).text
+        line = container.get(MergeReadyLines).agent_message(worktree).text
         container.get(Bus).run(StartMerger(line, worktree.merge_ready_at), Actor.core(), environment_id=worktree.environment_id)

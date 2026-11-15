@@ -1,9 +1,9 @@
 from collections.abc import Sequence
 
-from core.modules.tasks.nudges.task_reopened_message import TaskReopenedMessage
+from core.modules.tasks.agent_messages.task_reopened_message import TaskReopenedMessage
 from engine.database.kept_rows import KeptRows
 from engine.command.context import Context
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from engine.query.conditions.among import Among
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
@@ -28,8 +28,8 @@ KEPT_WAITS_REASON = "The open waits are read once and kept on the server, so a l
 class TaskWaits(KeptRowChanges[TaskWait]):
     """Ends a blocked task's waits, and opens the task when the last of them has ended."""
 
-    def __init__(self, queries: Queries, repository: Repository, nudger: MessageSender, kept: KeptRows, assignments: Assignments) -> None:
-        self.queries, self.repository, self.nudger, self.assignments = queries, repository, nudger, assignments
+    def __init__(self, queries: Queries, repository: Repository, message_sender: MessageSender, kept: KeptRows, assignments: Assignments) -> None:
+        self.queries, self.repository, self.message_sender, self.assignments = queries, repository, message_sender, assignments
         self.kept = kept
 
     def resolved(self, waits: Sequence[TaskWait], context: Context) -> None:
@@ -54,7 +54,7 @@ class TaskWaits(KeptRowChanges[TaskWait]):
         for agent in MainAgentFinder.rows(self.queries):
             for task in tasks:
                 if not actor_ids[task.id] or agent.id in actor_ids[task.id]:
-                    self.nudger.send(agent.id, TaskReopenedMessage.declared(), WAIT_ENDED_SOURCE, context, task=task.id)
+                    self.message_sender.send(agent.id, TaskReopenedMessage.declared(), WAIT_ENDED_SOURCE, context, task=task.id)
 
     def open_waits(self, task_id: int):
         return self.queries.query(TaskWait).filter(task_id=task_id).matching(IsNull("ended_at"))

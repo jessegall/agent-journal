@@ -1,7 +1,7 @@
 from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_policy import EventPolicy
-from core.modules.processes.nudges.move_ban_message import MoveBanMessage
+from core.modules.processes.agent_messages.move_ban_message import MoveBanMessage
 
 CHANGE_WORD = "cd"
 
@@ -20,5 +20,5 @@ class FolderChangePolicy(EventPolicy):
         folder = str(event.raw.get("cwd", "")).rstrip("/")
         for part in shell.parts:
             if part.program == CHANGE_WORD and [argument.rstrip("/") for argument in part.arguments] != [folder]:
-                return MoveBanMessage.declared().nudge(folder=folder or "the project")
+                return MoveBanMessage.declared().agent_message(folder=folder or "the project")
         return None

@@ -17,7 +17,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from core.modules.helpers.commands.record_unsaved_report.record_unsaved_report import RecordUnsavedReport
 from core.modules.helpers.needs.job_work_needs import HELPER_TYPE
-from core.modules.helpers.nudges.unsaved_report_message import UnsavedReportMessage
+from core.modules.helpers.agent_messages.unsaved_report_message import UnsavedReportMessage
 from core.modules.helpers.support.helper_report_text import HelperReportText
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
 
@@ -62,8 +62,8 @@ class JobReportEffect(Effect):
         event, job = record.action.event, self.jobs.open_job(view.agent.agent_id)
         helper = self.agents.find(view.agent.agent_id)
         if event is None or job is None:
-            return RuleAnswer(refusal=UnsavedReportMessage.declared().nudge().text)
+            return RuleAnswer(refusal=UnsavedReportMessage.declared().agent_message().text)
         keep = RecordUnsavedReport(job.id, self.report_text.text(event, helper))
         if job.handover_failures == 0:
-            return RuleAnswer(refusal=UnsavedReportMessage.declared().nudge().text, commands=tuple([keep]))
+            return RuleAnswer(refusal=UnsavedReportMessage.declared().agent_message().text, commands=tuple([keep]))
         return RuleAnswer(commands=tuple([keep]))

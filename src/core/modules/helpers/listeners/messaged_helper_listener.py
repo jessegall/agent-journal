@@ -8,7 +8,7 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.enums.dispatch import Dispatch
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.agent_standing import AgentStanding
-from core.modules.agents.support.report_nudges import PARENT_REPORT_SOURCE
+from core.modules.agents.support.report_agent_messages import PARENT_REPORT_SOURCE
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.helpers.support.helper_resume import HelperResume

@@ -6,7 +6,7 @@ from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.plan_wait import PlanWait
 from core.modules.plans.support.plan_main_agents import PlanMainAgents
-from core.modules.plans.nudges.plan_opened_message import PlanOpenedMessage
+from core.modules.plans.agent_messages.plan_opened_message import PlanOpenedMessage
 
 WAIT_ENDED_SOURCE = "plans.wait-ended"
 

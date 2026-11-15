@@ -17,5 +17,5 @@ class ReaderRequestLines(EventLineSource):
     def __init__(self, blocks: ReaderRequestBlocks) -> None:
         self.blocks = blocks
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        return self.blocks.answer(event, agent_id).nudges if event is not None else []
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+        return self.blocks.answer(event, agent_id).agent_messages if event is not None else []

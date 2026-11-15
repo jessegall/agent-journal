@@ -10,7 +10,7 @@ class OpenBlock:
     """A hold as a step judges it: an open agent_block row, or a plan of this step that has no row yet,
     with its scopes, whether each grace has passed, and the reason it refuses with."""
 
-    nudge_key: str
+    agent_message_key: str
     block_id: int | None
     reason: Reason
     scope_tools: bool

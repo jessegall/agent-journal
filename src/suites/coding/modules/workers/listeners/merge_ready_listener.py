@@ -29,4 +29,4 @@ class MergeReadyListener(CommitListener[Moved[Worktree]]):
             return
         if self.bus.run(CloseClaimedWorktreeTasks(event.row.id), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id):
             return
-        self.bus.run(StartMerger(self.lines.nudge(event.row), event.row.merge_ready_at), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)
+        self.bus.run(StartMerger(self.lines.agent_message(event.row), event.row.merge_ready_at), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)

@@ -8,13 +8,13 @@ from engine.scope.environment_scope import EnvironmentScope
 from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from engine.setting.setting_values import SettingValues
 from core.modules.settings.models.setting import Setting
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.nudges.worker_limit_raised_message import WorkerLimitRaisedMessage
+from suites.coding.modules.workers.agent_messages.worker_limit_raised_message import WorkerLimitRaisedMessage
 from suites.coding.modules.workers.support.worker_settings import DEFAULT_WORKER_COUNT, WORKER_RUN_LIMIT
 from engine.event.changed import Changed
 from engine.event.deleted import Deleted
@@ -28,8 +28,8 @@ class WorkerCountRaisedListener(SaveListener[Changed[Setting]]):
     name = "workers.limit-raised"
     disabled_scopes = [ActorScope, EnvironmentScope]
 
-    def __init__(self, queries: Queries, nudger: MessageSender, worktrees: WorktreeQuery, settings: SettingValues, scopes: Scopes) -> None:
-        self.queries, self.nudger, self.worktrees, self.settings, self.scopes = queries, nudger, worktrees, settings, scopes
+    def __init__(self, queries: Queries, message_sender: MessageSender, worktrees: WorktreeQuery, settings: SettingValues, scopes: Scopes) -> None:
+        self.queries, self.message_sender, self.worktrees, self.settings, self.scopes = queries, message_sender, worktrees, settings, scopes
 
     def handle(self, event: Changed[Setting], context: Context) -> None:
         if isinstance(event, Deleted):
@@ -42,7 +42,7 @@ class WorkerCountRaisedListener(SaveListener[Changed[Setting]]):
             return
         for agent in self.main_agents(setting):
             with self.scopes.opened(None, agent.environment_id):
-                self.nudger.send(agent.id, WorkerLimitRaisedMessage.declared(), self.name, context, limit=limit, workers=len(self.worktrees.open_worktrees()), count=self.undelegated())
+                self.message_sender.send(agent.id, WorkerLimitRaisedMessage.declared(), self.name, context, limit=limit, workers=len(self.worktrees.open_worktrees()), count=self.undelegated())
 
     # The limit the row replaces: its own old value, else what an environment's row falls back to, the project's.
     def previous_limit(self, old: Setting | None, setting: Setting) -> int:

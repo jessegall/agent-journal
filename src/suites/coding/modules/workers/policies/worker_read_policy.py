@@ -7,7 +7,7 @@ from pathlib import Path
 
 from engine.provider.providers import Providers
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.nudges.worker_read_refusal_message import WorkerReadRefusalMessage
+from suites.coding.modules.workers.agent_messages.worker_read_refusal_message import WorkerReadRefusalMessage
 
 SHARED_FOLDERS = ("/tmp", "/private/tmp")
 
@@ -36,4 +36,4 @@ class WorkerReadPolicy(EventPolicy):
         paths = [Path(normpath(join(worktree.folder, path))) for path in tool.files]
         if all(any(path.is_relative_to(folder) for folder in readable) and not (path.is_relative_to(others) and not path.is_relative_to(worktree.folder)) for path in paths):
             return None
-        return WorkerReadRefusalMessage.declared().nudge()
+        return WorkerReadRefusalMessage.declared().agent_message()

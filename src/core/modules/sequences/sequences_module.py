@@ -10,7 +10,7 @@ from core.modules.sequences.skills.declarations.sequences_skills import SEQUENCE
 from core.modules.sequences.migrations.m009_environment_index import SequenceRunsEnvironmentIndexMigration
 from core.modules.sequences.migrations.m008_sequence_session import SequenceSessionMigration
 from core.modules.sequences.migrations.m007_open_run_order_index import OpenRunOrderIndexMigration
-from core.modules.sequences.support.sequence_nudges import SEQUENCE_NUDGES
+from core.modules.sequences.support.sequence_agent_messages import SEQUENCE_AGENT_MESSAGES
 from engine.module.module import Module
 from core.modules.sequences.listeners.sequence_event_index_listener import SequenceEventIndexListener
 from core.modules.sequences.commands.abandon_sequence.abandon_sequence_subcommand import AbandonSequenceSubcommand
@@ -60,7 +60,7 @@ class SequencesModule(Module):
     lines = [SequenceTriggerLines]
     needs = [UnstartedStepNeeds, SequenceWorkNeeds]
     policies = [StepCommandPolicy, StepGuardPolicy]
-    nudges = SEQUENCE_NUDGES
+    agent_messages = SEQUENCE_AGENT_MESSAGES
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.documents", "journal.core.plans", "journal.core.questions"]
     block_conditions = [SequenceStepStarted]

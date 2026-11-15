@@ -16,7 +16,7 @@ NOW = Timestamp(datetime(2026, 11, 15, 9, tzinfo=timezone.utc))
 
 def line(delivery: LineDelivery = LineDelivery.WAKE_HOOK):
     return SimpleNamespace(id=7, session_agent_id=3, wakes_agent=True, source="sample.wake", text="wake up", delivery=delivery, repeats_without_hook=False,
-                           state=AgentLineState.WAITING, nudge=SimpleNamespace(text="wake up"))
+                           state=AgentLineState.WAITING, agent_message=SimpleNamespace(text="wake up"))
 
 
 class EnteredLines:

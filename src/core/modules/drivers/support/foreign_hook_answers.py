@@ -13,8 +13,8 @@ from engine.query.queries import Queries
 from engine.request.request_values import RequestValues
 from core.modules.drivers.commands.record_agent_notice.record_agent_notice import RecordAgentNotice
 from core.modules.drivers.models.hook_call import HookCall
-from core.modules.drivers.nudges.managed_hook_line_message import ManagedHookLineMessage
-from core.modules.drivers.nudges.managed_hook_refusal_message import ManagedHookRefusalMessage
+from core.modules.drivers.agent_messages.managed_hook_line_message import ManagedHookLineMessage
+from core.modules.drivers.agent_messages.managed_hook_refusal_message import ManagedHookRefusalMessage
 
 MANAGED_HOOKS_KEY = "drivers.managed-hooks"
 
@@ -26,7 +26,7 @@ class ForeignHookAnswer:
     none dropped, and their terminal text."""
 
     refusal: AgentMessage | None
-    nudges: tuple[AgentMessage, ...]
+    agent_messages: tuple[AgentMessage, ...]
     commands: tuple[Command[object], ...]
     updated_input: dict[str, object] = field(default_factory=dict[str, object])
     source_name: str = ""
@@ -57,12 +57,12 @@ class ForeignHookAnswers:
         takes_instructions = reads_text and event.event not in provider.line_events
         lines = [line for answer in answers for line in (self.named_lines(answer.name, answer.lines) if takes_instructions else self.new_lines(agent_id, answer.name, answer.lines))]
         commands: list[Command[object]] = [RecordAgentNotice(agent_id, line, MANAGED_HOOKS_KEY) for line in lines] if reads_text else []
-        nudges = [ManagedHookLineMessage.declared().nudge(line=line) for line in lines] if reads_text else []
+        agent_messages = [ManagedHookLineMessage.declared().agent_message(line=line) for line in lines] if reads_text else []
         refusal = None
         if refusal_text:
             commands.append(RecordAgentNotice(agent_id, refusal_text, MANAGED_HOOKS_KEY))
-            refusal = ManagedHookRefusalMessage.declared().nudge(agent=self.numbers.number(AGENT_MODEL_NAME, agent_id))
-        return ForeignHookAnswer(refusal, tuple(nudges), tuple(commands), dict(rewritten.updated_input) if rewritten is not None else {}, rewritten.name if rewritten is not None else "",
+            refusal = ManagedHookRefusalMessage.declared().agent_message(agent=self.numbers.number(AGENT_MODEL_NAME, agent_id))
+        return ForeignHookAnswer(refusal, tuple(agent_messages), tuple(commands), dict(rewritten.updated_input) if rewritten is not None else {}, rewritten.name if rewritten is not None else "",
                                  0 if reads_text else len(lines), "\n".join(answer.terminal for answer in answers if answer.terminal))
 
     @staticmethod

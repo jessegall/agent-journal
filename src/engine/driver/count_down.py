@@ -25,8 +25,8 @@ class CountDown:
     def declaration(self) -> MessageTemplate:
         return MessageTemplate(self.key, AgentMessageType.STEERING, f"{self.action} due: {{remaining}} {self.span.unit}", turn_limited=False)
 
-    def nudge(self, remaining: object, **fields: object) -> AgentMessage:
-        return self.declaration.nudge(remaining=remaining, **fields)
+    def agent_message(self, remaining: object, **fields: object) -> AgentMessage:
+        return self.declaration.agent_message(remaining=remaining, **fields)
 
     def remaining_after(self, used_count: int) -> int:
         return max(self.span.count - used_count, 0)
@@ -34,4 +34,4 @@ class CountDown:
     def line_at(self, remaining: int, **fields: object) -> AgentMessage | None:
         if self.is_silent or remaining >= self.line_limit:
             return None
-        return self.nudge(remaining, **fields)
+        return self.agent_message(remaining, **fields)

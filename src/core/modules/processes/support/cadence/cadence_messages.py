@@ -2,12 +2,12 @@ from core.modules.processes.models.enums.notice_type import NoticeType
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.support.cadence.cadence_notice import CadenceNotice
-from core.modules.processes.nudges.run_frozen_message import RunFrozenMessage
-from core.modules.processes.nudges.run_sparse_message import RunSparseMessage
-from core.modules.processes.nudges.silent_run_message import SilentRunMessage
-from core.modules.processes.nudges.silent_saved_packages_message import SilentSavedPackagesMessage
-from core.modules.processes.nudges.silent_saved_run_message import SilentSavedRunMessage
-from core.modules.processes.nudges.stalled_run_message import StalledRunMessage
+from core.modules.processes.agent_messages.run_frozen_message import RunFrozenMessage
+from core.modules.processes.agent_messages.run_sparse_message import RunSparseMessage
+from core.modules.processes.agent_messages.silent_run_message import SilentRunMessage
+from core.modules.processes.agent_messages.silent_saved_packages_message import SilentSavedPackagesMessage
+from core.modules.processes.agent_messages.silent_saved_run_message import SilentSavedRunMessage
+from core.modules.processes.agent_messages.stalled_run_message import StalledRunMessage
 from core.modules.processes.support.streaming_hints import StreamingHints
 
 

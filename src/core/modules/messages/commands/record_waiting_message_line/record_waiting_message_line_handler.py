@@ -2,9 +2,9 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.model.model import Model
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from core.modules.messages.commands.record_waiting_message_line.record_waiting_message_line import RecordWaitingMessageLine
-from core.modules.messages.nudges.new_message_notice import NewMessageNotice
+from core.modules.messages.agent_messages.new_message_notice import NewMessageNotice
 from core.modules.messages.support.waiting_message_lines import WAITING_MESSAGE_SOURCE, WaitingMessageLines
 from core.modules.agents.support.agent_rows import AgentRows
 
@@ -20,8 +20,8 @@ class RecordWaitingMessageLineHandler(Handler[RecordWaitingMessageLine, Model | 
 
     command = RecordWaitingMessageLine
 
-    def __init__(self, nudger: MessageSender, hook_calls: HookCallQuery, lines: WaitingMessageLines, agents: AgentRows) -> None:
-        self.nudger, self.hook_calls, self.lines = nudger, hook_calls, lines
+    def __init__(self, message_sender: MessageSender, hook_calls: HookCallQuery, lines: WaitingMessageLines, agents: AgentRows) -> None:
+        self.message_sender, self.hook_calls, self.lines = message_sender, hook_calls, lines
         self.agents = agents
 
     def handle(self, command: RecordWaitingMessageLine, context: Context) -> Model | None:
@@ -36,4 +36,4 @@ class RecordWaitingMessageLineHandler(Handler[RecordWaitingMessageLine, Model | 
         waiting = self.lines.waiting(agent.id).take(MOST_WAITING_LINES)
         if len(waiting) == MOST_WAITING_LINES or (waiting and waiting[0].creation_timestamp().elapsed_seconds(context.timestamp) < RETRY_SECONDS):
             return None
-        return self.nudger.send(agent.id, NewMessageNotice.declared(), WAITING_MESSAGE_SOURCE, context, message=message.id)
+        return self.message_sender.send(agent.id, NewMessageNotice.declared(), WAITING_MESSAGE_SOURCE, context, message=message.id)

@@ -140,7 +140,7 @@ from core.modules.processes.commands.halt_run_queue.halt_run_queue_subcommand im
 from core.modules.processes.commands.resume_run_queue.resume_run_queue_handler import ResumeRunQueueHandler
 from core.modules.processes.commands.resume_run_queue.resume_run_queue_subcommand import ResumeRunQueueSubcommand
 from core.modules.processes.listeners.waiting_message_run_listener import WaitingMessageRunListener
-from core.modules.processes.support.process_nudges import PROCESS_NUDGES
+from core.modules.processes.support.process_agent_messages import PROCESS_AGENT_MESSAGES
 from engine.driver.watched_runs import WatchedRuns
 from core.modules.processes.support.monitored_runs import MonitoredRuns
 from engine.module.module import Module
@@ -310,7 +310,7 @@ class ProcessesModule(Module):
     effects = [LeftoverRunEffect, LongRunDockEffect, OrphanProcessEffect, ReaderRequestEffect, RunnerStartEffect, WatchLinesEffect]
     policies = [FolderChangePolicy, HandMadeMonitorPolicy, JournalChainPolicy, JournalPipePolicy, ReadCommandOutputPolicy, ReadingPolicy, RetryLoopPolicy, RunnerSandboxPolicy, SleepPollPolicy]
     lines = [AliasSuggestionLines, DockTitleLines, EndedOutputLineLines, OrphanProcessLines, OutputStatusMonitorLines, ReadAdviceLines, ReaderRequestLines, ReadingLines, RunnerMissingLines, RunQueueHaltedLines, RunTitleLines, WatchLinesLines]
-    nudges = PROCESS_NUDGES
+    agent_messages = PROCESS_AGENT_MESSAGES
     tick_handlers = [OutputReadingTickHandler, RunSlotGrantTickHandler,
                      RunTimeoutsTickHandler, HangWatchTickHandler, CadenceWatchTickHandler, OutputChecksTickHandler,
                      RunEndRecoveryTickHandler,

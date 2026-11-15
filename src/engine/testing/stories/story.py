@@ -383,19 +383,19 @@ class Story(KitRows):
         missing = [line for line in expected_lines if not contains_line(reply.lines, line)]
         self.expected(not missing, f"the hook's lines {list(reply.lines)} hold none of {missing}")
 
-    def expect_hook_nudges(self, session: str, sample: HookSample, *nudges: ExpectedMessage) -> HookReply:
+    def expect_hook_agent_messages(self, session: str, sample: HookSample, *agent_messages: ExpectedMessage) -> HookReply:
         self.checked(f"hook {sample.action}")
         reply = self.hook(session, sample)
         informed = [*reply.lines, reply.refusal]
-        missing = [nudge.declaration.key for nudge in nudges if not nudge.matches_lines(informed)]
+        missing = [agent_message.declaration.key for agent_message in agent_messages if not agent_message.matches_lines(informed)]
         self.expected(not missing, f"the hook told {informed}, without {missing}")
         return reply
 
-    def expect_no_hook_nudge(self, session: str, sample: HookSample, nudge: ExpectedMessage) -> HookReply:
+    def expect_no_hook_agent_message(self, session: str, sample: HookSample, agent_message: ExpectedMessage) -> HookReply:
         self.checked(f"hook {sample.action}")
         reply = self.hook(session, sample)
         informed = [*reply.lines, reply.refusal]
-        self.expected(not nudge.matches_lines(informed), f"the hook told {nudge.declaration.key}: {informed}")
+        self.expected(not agent_message.matches_lines(informed), f"the hook told {agent_message.declaration.key}: {informed}")
         return reply
 
     def expect_ordered_hook_lines(self, session: str, sample: HookSample, *texts: str) -> None:

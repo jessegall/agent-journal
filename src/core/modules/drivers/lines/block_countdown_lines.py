@@ -21,12 +21,12 @@ class BlockCountdownLines(EventLineSource):
     def __init__(self, open_blocks: OpenBlockRows) -> None:
         self.open_blocks = open_blocks
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         counted = [block for block in self.open_blocks.rows(agent_id) if block.countdown_text and block.grace_tool_uses]
         if not counted:
             return []
         uses = self.open_blocks.grace_uses(agent_id)
-        return [nudge for block in counted if (nudge := self.countdown(block, uses.get(block.id, 0))) is not None]
+        return [agent_message for block in counted if (agent_message := self.countdown(block, uses.get(block.id, 0))) is not None]
 
     @staticmethod
     def countdown(block: AgentBlock, tool_uses: int) -> AgentMessage | None:

@@ -97,7 +97,7 @@ AGENT_CARDS_SELECT = Select("agents").selecting(
     Aliased(empty_fallback(ScalarSubselect(holder_started_tasks().selecting(Column("tasks.title")))), "started_task_title"),
     Aliased(CARD_TASKS, "tasks"),
     Aliased(running_window(ScalarSubselect(OPEN_BLOCKS.selecting(FunctionCall(SqlFunction.MIN, [Column("agent_blocks.created_at")])))), "block_started_at"),
-    Aliased(running_window(ScalarSubselect(OPEN_BLOCKS.selecting(Column("agent_blocks.nudge_text")).ordered("agent_blocks.id", False).sliced(1, 0))), "block_reason"),
+    Aliased(running_window(ScalarSubselect(OPEN_BLOCKS.selecting(Column("agent_blocks.agent_message_text")).ordered("agent_blocks.id", False).sliced(1, 0))), "block_reason"),
     Aliased(Inlined(Conjunction([IsNull("agents.ended_at"), Exists(Select("tasks").matching(ColumnCompare("tasks.holder_id", "=", "agents.id"))
                                                             .matching(Equal("tasks.state", "blocked")))])), "task_blocked"),
     Aliased(empty_fallback(ScalarSubselect(agent_rows("hook_calls").selecting(Column("hook_calls.created_at")).ordered("hook_calls.id", True).sliced(1, 0))),

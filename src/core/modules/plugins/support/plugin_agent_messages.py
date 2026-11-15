@@ -1,0 +1,5 @@
+from core.modules.plugins.agent_messages.plugin_refusal_message import PluginRefusalMessage
+from core.modules.plugins.agent_messages.plugin_program_off_message import PluginProgramOffMessage
+
+
+PLUGIN_AGENT_MESSAGES = [PluginProgramOffMessage, PluginRefusalMessage]

@@ -5,7 +5,7 @@ from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.enums.actor_type import ActorType
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES, SHORT_PROOF_SOURCE
-from suites.coding.modules.workers.nudges.proof_waits_message import ProofWaitsMessage
+from suites.coding.modules.workers.agent_messages.proof_waits_message import ProofWaitsMessage
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_value_with
 
@@ -34,7 +34,7 @@ def expect_terminal_line(text, typing) -> None:
 
 
 def test_the_line_of_a_proof_with_no_test_names_the_check_and_wakes_the_main_agent():
-    line = ProofWaitsMessage.declared().nudge(worker=7, proofs="3 4").text
+    line = ProofWaitsMessage.declared().agent_message(worker=7, proofs="3 4").text
     expect_value_with(line, "proofs 3 4")
     expect_value_with(line, "waits on your check")
     expect_wakes_agent_proof(ProofWaitsMessage.declared())

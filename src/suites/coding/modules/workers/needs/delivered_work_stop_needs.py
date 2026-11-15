@@ -13,7 +13,7 @@ from engine.driver.agent_message import AgentMessage
 from engine.enums.agent_role import AgentRole
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.nudges.proof_check_message import ProofCheckMessage
+from suites.coding.modules.workers.agent_messages.proof_check_message import ProofCheckMessage
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.worker_worktrees import WorkerWorktrees
 from suites.coding.modules.workers.support.block_conditions.delivered_proofs_checked import DeliveredProofsChecked
@@ -42,10 +42,10 @@ class DeliveredWorkStopNeeds(StateSource):
     def plans(self, worktree: Worktree) -> list[BlockPlan]:
         proofs = [proof for proof in self.proofs.delivered_proofs(worktree.id).every_row(DELIVERED_PROOFS_REASON)
                   if worktree.state is WorktreeState.DELIVERED or not proof.test_command]
-        return [BlockPlan(nudge, DeliveredProofsChecked(worktree.id), DELIVERED_WORK_STOP_KEY, self.rank, members=tuple([task_id]), scope_tools=False, scope_stop=True)
-                for task_id, nudge in self.task_nudges(worktree, proofs)]
+        return [BlockPlan(agent_message, DeliveredProofsChecked(worktree.id), DELIVERED_WORK_STOP_KEY, self.rank, members=tuple([task_id]), scope_tools=False, scope_stop=True)
+                for task_id, agent_message in self.task_agent_messages(worktree, proofs)]
 
-    def task_nudges(self, worktree: Worktree, proofs: list[Proof]) -> list[tuple[int, AgentMessage]]:
+    def task_agent_messages(self, worktree: Worktree, proofs: list[Proof]) -> list[tuple[int, AgentMessage]]:
         worker = self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)
-        return [(task_id, ProofCheckMessage.declared().nudge(worker=worker, task=task_id, proofs=", ".join(str(proof.id) for proof in proofs if proof.task_id == task_id)))
+        return [(task_id, ProofCheckMessage.declared().agent_message(worker=worker, task=task_id, proofs=", ".join(str(proof.id) for proof in proofs if proof.task_id == task_id)))
                 for task_id in dict.fromkeys(proof.task_id for proof in proofs)]

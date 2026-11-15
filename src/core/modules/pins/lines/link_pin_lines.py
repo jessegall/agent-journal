@@ -18,10 +18,10 @@ class LinkPinLines(EventLineSource):
     def __init__(self, check: LinkPinCheck) -> None:
         self.check = check
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         tool = event.tool
         if tool is None or self.check.is_file_read_tool(tool):
             return []
-        part_nudges = [nudge for part_text in (tool.shell.part_texts if tool.shell is not None else ()) for nudge in self.check.nudges(part_text)]
+        part_agent_messages = [agent_message for part_text in (tool.shell.part_texts if tool.shell is not None else ()) for agent_message in self.check.agent_messages(part_text)]
         response = self.check.joined_text(event.raw.get("tool_response"))
-        return [*part_nudges, *self.check.nudges("", response)]
+        return [*part_agent_messages, *self.check.agent_messages("", response)]

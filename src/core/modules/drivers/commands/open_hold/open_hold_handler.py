@@ -26,7 +26,7 @@ class OpenHoldHandler(Handler[OpenHold, AgentBlock]):
     def handle(self, command: OpenHold, context: Context) -> AgentBlock:
         if not command.condition.has_target(self.container):
             raise MissingBlockTargetRefusal(command.condition.name, command.condition.text)
-        line_blocks = self.queries.query(AgentBlock).filter(session_agent_id=command.agent_id, nudge_key=command.nudge.key).matching(IsNull("closed_at"))
+        line_blocks = self.queries.query(AgentBlock).filter(session_agent_id=command.agent_id, agent_message_key=command.agent_message.key).matching(IsNull("closed_at"))
         query = line_blocks.filter(condition_text=command.condition.text) if command.condition.subject_scoped else line_blocks
         existing = self.kept.read(query, query.first, name="drivers.open_block")
         saved = self.save_block(command, context, existing)
@@ -35,9 +35,9 @@ class OpenHoldHandler(Handler[OpenHold, AgentBlock]):
 
     def save_block(self, command: OpenHold, context: Context, existing: AgentBlock | None) -> AgentBlock:
         if existing is not None:
-            return self.repository.update(existing, context, nudge_text=command.nudge.text, condition_name=command.condition.name, condition_text=command.condition.text,
+            return self.repository.update(existing, context, agent_message_text=command.agent_message.text, condition_name=command.condition.name, condition_text=command.condition.text,
                                       countdown_text=command.countdown.text if command.countdown else existing.countdown_text)
-        return self.repository.save(AgentBlock(session_agent_id=command.agent_id, creator_id=context.actor.id, nudge_key=command.nudge.key, nudge_text=command.nudge.text,
+        return self.repository.save(AgentBlock(session_agent_id=command.agent_id, creator_id=context.actor.id, agent_message_key=command.agent_message.key, agent_message_text=command.agent_message.text,
                                                condition_name=command.condition.name, condition_text=command.condition.text, grace_tool_uses=self.tool_uses(command.after),
                                                grace_seconds=command.after.seconds if command.after is not None else 0, countdown_key=command.countdown.key if command.countdown else "",
                                                countdown_text=command.countdown.text if command.countdown else "", blocks_stop=command.blocks_stop, strict=command.strict, is_skippable=command.is_skippable, countdown_limit=command.countdown_limit), context)

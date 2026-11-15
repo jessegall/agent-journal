@@ -1,7 +1,7 @@
 from engine.listener.save_listener import SaveListener
 from engine.scope.actor_scope import ActorScope
 from core.modules.drivers.support.driver_settings import DRIVER_SETTINGS, SUITE_SETTING
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.settings.models.setting import Setting
 from engine.event.changed import Changed
@@ -16,8 +16,8 @@ class NewDriverLinesListener(SaveListener[Changed[Setting]]):
     name = "drivers.new-driver-lines"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, agents: AgentRows, nudger: MessageSender, choice: SuiteChoice) -> None:
-        self.agents, self.nudger, self.choice = agents, nudger, choice
+    def __init__(self, agents: AgentRows, message_sender: MessageSender, choice: SuiteChoice) -> None:
+        self.agents, self.message_sender, self.choice = agents, message_sender, choice
 
     def handle(self, event: Changed[Setting], context: Context) -> None:
         setting = event.row
@@ -26,4 +26,4 @@ class NewDriverLinesListener(SaveListener[Changed[Setting]]):
         for agent in self.agents.running():
             driver = self.choice.driver(agent.role)
             for line in driver.instructions if driver is not None else ():
-                self.nudger.send_text(agent.id, line, self.name, context)
+                self.message_sender.send_text(agent.id, line, self.name, context)

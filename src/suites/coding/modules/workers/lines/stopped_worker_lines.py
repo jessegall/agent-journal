@@ -13,9 +13,9 @@ from engine.setting.setting_values import SettingValues
 from engine.driver.message_template import MessageTemplate
 from suites.coding.modules.workers.support.escalations import Escalations
 from suites.coding.modules.workers.support.worker_handoff import WorkerHandoff
-from suites.coding.modules.workers.nudges.worker_asking_stopped_message import WorkerAskingStoppedMessage
-from suites.coding.modules.workers.nudges.worker_limit_stopped_message import WorkerLimitStoppedMessage
-from suites.coding.modules.workers.nudges.worker_process_ended_message import WorkerProcessEndedMessage
+from suites.coding.modules.workers.agent_messages.worker_asking_stopped_message import WorkerAskingStoppedMessage
+from suites.coding.modules.workers.agent_messages.worker_limit_stopped_message import WorkerLimitStoppedMessage
+from suites.coding.modules.workers.agent_messages.worker_process_ended_message import WorkerProcessEndedMessage
 from suites.coding.modules.workers.support.worker_round import WorkerRound
 from suites.coding.modules.workers.support.worker_settings import MERGER_WAIT_MINUTES, WORKER_RUN_LIMIT
 from suites.coding.modules.workers.support.worker_started_work import WorkerStartedWork
@@ -41,22 +41,22 @@ class StoppedWorkerLines(EventLineSource):
         self.queries, self.stop, self.unfinished, self.started_work, self.settings = queries, stop, unfinished, started_work, settings
         self.clock = clock
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         if self.settings.number(WORKER_RUN_LIMIT) == 0:
             return []
         wait_seconds = self.settings.minutes(MERGER_WAIT_MINUTES).count
         stopped = [worker for worker in self.started_work.stopped_workers() if worker.ended_at is not None and worker.ended_at.elapsed_seconds(self.clock.timestamp()) >= wait_seconds]
         with_tasks = {worker.id for worker in self.started_work.with_tasks(stopped)}
-        named = [nudge for nudge in map(self.nudge, [worker for worker in stopped if worker.id in with_tasks]) if nudge is not None]
-        named_keys = {nudge.key for nudge in named}
-        asking = [self.asking_nudge(worker) for worker in stopped if self.escalations.is_open(worker.id) and not self.stop.was_stopped(worker)]
-        return [*named, *[nudge for nudge in asking if nudge.key not in named_keys]]
+        named = [agent_message for agent_message in map(self.agent_message, [worker for worker in stopped if worker.id in with_tasks]) if agent_message is not None]
+        named_keys = {agent_message.key for agent_message in named}
+        asking = [self.asking_agent_message(worker) for worker in stopped if self.escalations.is_open(worker.id) and not self.stop.was_stopped(worker)]
+        return [*named, *[agent_message for agent_message in asking if agent_message.key not in named_keys]]
 
-    def asking_nudge(self, worker: Agent) -> AgentMessage:
+    def asking_agent_message(self, worker: Agent) -> AgentMessage:
         tasks = {task.id: task for task in (*self.unfinished.rows(worker.id), *self.unfinished.committed(worker.id))}
-        return replace(WorkerAskingStoppedMessage.declared().nudge(worker=worker.number, tasks=self.unfinished.names(tuple(tasks.values()))), key=f"{WorkerAskingStoppedMessage.declared().key}.{worker.id}")
+        return replace(WorkerAskingStoppedMessage.declared().agent_message(worker=worker.number, tasks=self.unfinished.names(tuple(tasks.values()))), key=f"{WorkerAskingStoppedMessage.declared().key}.{worker.id}")
 
-    def nudge(self, worker: Agent) -> AgentMessage | None:
+    def agent_message(self, worker: Agent) -> AgentMessage | None:
         worker_round = self.unfinished.steps.round(worker.id)
         tasks = self.unfinished.round_rows(worker_round)
         if not tasks:
@@ -64,7 +64,7 @@ class StoppedWorkerLines(EventLineSource):
         if self.stop.was_stopped(worker) or self.unfinished.has_running_process(worker.id) or self.handoff.is_pending(worker):
             return None
         declaration = self.declaration(worker, worker_round)
-        return replace(declaration.nudge(worker=worker.number, tasks=self.unfinished.names(tasks)), key=f"{declaration.key}.{worker.id}")
+        return replace(declaration.agent_message(worker=worker.number, tasks=self.unfinished.names(tasks)), key=f"{declaration.key}.{worker.id}")
 
     def declaration(self, worker: Agent, worker_round: WorkerRound) -> MessageTemplate:
         if worker_round.is_asking:

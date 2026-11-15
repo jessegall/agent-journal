@@ -2,7 +2,7 @@ from datetime import timedelta
 
 import pytest
 
-from suites.coding.modules.workers.nudges.worker_asking_stopped_message import WorkerAskingStoppedMessage
+from suites.coding.modules.workers.agent_messages.worker_asking_stopped_message import WorkerAskingStoppedMessage
 from suites.coding.modules.workers.support.worker_settings import MERGER_WAIT_MINUTES
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.worker_ask import asking_worker

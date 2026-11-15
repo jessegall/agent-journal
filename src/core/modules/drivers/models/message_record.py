@@ -11,7 +11,7 @@ class MessageRecord(Prunable, Model):
 
     kept_rows = 20000
 
-    model_name = "nudge_record"
+    model_name = "agent_message_record"
     cli_name = "nudge-record"
 
     session_agent_id: int

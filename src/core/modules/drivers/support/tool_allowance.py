@@ -23,14 +23,14 @@ class ToolAllowance:
         if tool is None or provider.uses_web_reader(event):
             return None
         if tool.category not in self.tools or (tool.category is ToolType.SHELL and tool.shell is None):
-            return self.refusal.nudge(category=tool.category.value)
+            return self.refusal.agent_message(category=tool.category.value)
         shell = tool.shell
         if shell is None:
             return None
         allowed = tuple(category.value for category in self.commands)
         if shell.parse_error or not shell.parts:
-            return self.refusal.nudge(category=CommandCategory.UNKNOWN.value)
+            return self.refusal.agent_message(category=CommandCategory.UNKNOWN.value)
         if shell.has_non_journal_file_writes and CommandCategory.EDIT.value not in allowed:
-            return self.refusal.nudge(category=CommandCategory.EDIT.value)
+            return self.refusal.agent_message(category=CommandCategory.EDIT.value)
         refused = shell.disallowed_part(allowed)
-        return self.refusal.nudge(category=refused.classification.category.value) if refused is not None else None
+        return self.refusal.agent_message(category=refused.classification.category.value) if refused is not None else None

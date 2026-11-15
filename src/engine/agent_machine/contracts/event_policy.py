@@ -28,8 +28,8 @@ class EventPolicy(Policy):
         event = question.event
         if event is None or event.event not in self.events:
             return []
-        nudge = self.refusal(event, view.agent.agent_id)
-        return [Reason(self.key, DecisionClass.REFUSE, self.rank, nudge.text, is_safety=nudge.type is AgentMessageType.SAFETY_REFUSAL)] if nudge is not None else []
+        agent_message = self.refusal(event, view.agent.agent_id)
+        return [Reason(self.key, DecisionClass.REFUSE, self.rank, agent_message.text, is_safety=agent_message.type is AgentMessageType.SAFETY_REFUSAL)] if agent_message is not None else []
 
     # the line that refuses this event, or nothing
     @abstractmethod

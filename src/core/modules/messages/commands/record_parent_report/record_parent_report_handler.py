@@ -10,7 +10,7 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
 from core.modules.agents.models.agent import Agent
 from core.modules.profiles.support.profile_files import ProfileFiles
-from core.modules.agents.support.report_nudges import EMPTY_REPORT_TEXT
+from core.modules.agents.support.report_agent_messages import EMPTY_REPORT_TEXT
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.messages.commands.send_agent_message.send_agent_message import SendAgentMessage
 from core.modules.messages.models.message import Message

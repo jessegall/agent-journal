@@ -45,7 +45,7 @@ from core.modules.messages.migrations.m008_message_peer import MessagePeerMigrat
 from core.modules.messages.commands.record_message_updated_line.record_message_updated_line_handler import RecordMessageUpdatedLineHandler
 from core.modules.messages.listeners.message_edited_mark_listener import MessageEditedMarkListener
 from core.modules.messages.listeners.read_message_edit_listener import ReadMessageEditListener
-from core.modules.messages.support.message_nudges import MESSAGE_NUDGES
+from core.modules.messages.support.message_agent_messages import MESSAGE_AGENT_MESSAGES
 from core.modules.messages.guards.one_reply_per_message_guard import OneReplyPerMessageGuard
 from core.modules.messages.guards.repeated_message_guard import RepeatedMessageGuard
 from core.modules.messages.guards.question_message_guard import QuestionMessageGuard
@@ -114,7 +114,7 @@ class MessagesModule(Module):
 
     name = "journal.core.messages"
     agent_listeners = [MessageStepListener]
-    nudges = MESSAGE_NUDGES
+    agent_messages = MESSAGE_AGENT_MESSAGES
     settings = MESSAGE_SETTINGS
     requires_engine = ">=5,<6"
     block_conditions = [MessagesRead, MessagesAnswered]

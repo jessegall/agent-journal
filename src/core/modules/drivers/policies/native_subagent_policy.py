@@ -5,8 +5,8 @@ from engine.driver.tool import Tool
 from engine.enums.tool_type import ToolType
 from engine.provider.providers import Providers
 from core.modules.agents.support.agent_standing import AgentStanding
-from core.modules.drivers.nudges.native_subagent_message import NativeSubagentMessage
-from core.modules.drivers.nudges.unlaunched_native_subagent_message import UnlaunchedNativeSubagentMessage
+from core.modules.drivers.agent_messages.native_subagent_message import NativeSubagentMessage
+from core.modules.drivers.agent_messages.unlaunched_native_subagent_message import UnlaunchedNativeSubagentMessage
 
 SPAWN_SUFFIX = "spawn_agent"
 COLLABORATION_PREFIX = "collaboration"
@@ -27,7 +27,7 @@ class NativeSubagentPolicy(EventPolicy):
         tool = event.tool
         if tool is None or not (event.child_agent or self.is_spawn_tool(tool)) or self.providers.provider(event.program).uses_web_reader(event):
             return None
-        return (NativeSubagentMessage.declared() if self.standings.is_launcher_running else UnlaunchedNativeSubagentMessage.declared()).nudge()
+        return (NativeSubagentMessage.declared() if self.standings.is_launcher_running else UnlaunchedNativeSubagentMessage.declared()).agent_message()
 
     @staticmethod
     def is_spawn_tool(tool: Tool) -> bool:

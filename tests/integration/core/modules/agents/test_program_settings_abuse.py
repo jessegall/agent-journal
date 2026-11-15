@@ -3,7 +3,7 @@ import os
 import stat
 from pathlib import Path
 
-from core.modules.agents.nudges.program_settings_ban_message import ProgramSettingsBanMessage
+from core.modules.agents.agent_messages.program_settings_ban_message import ProgramSettingsBanMessage
 from core.modules.agents.ticks.program_settings_watch import ProgramSettingsWatch
 from engine.enums.command_category import CommandCategory
 from engine.enums.command_effect import CommandEffect
@@ -18,7 +18,7 @@ SETTINGS_EDIT = [CommandEffect.WRITES_FILES]
 
 
 def ban() -> str:
-    return ProgramSettingsBanMessage.declared().nudge().text
+    return ProgramSettingsBanMessage.declared().agent_message().text
 
 
 def test_an_injected_agent_cannot_add_a_hook_that_sends_secrets_out(played):

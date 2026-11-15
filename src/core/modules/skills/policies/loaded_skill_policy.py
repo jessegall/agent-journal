@@ -7,7 +7,7 @@ from engine.agent_machine.contracts.policy import Policy
 from engine.agent_machine.record.question import Question
 from engine.enums.decision_class import DecisionClass
 from engine.enums.grant_type import GrantType
-from core.modules.skills.nudges.loaded_skill_refusal_message import LoadedSkillRefusalMessage
+from core.modules.skills.agent_messages.loaded_skill_refusal_message import LoadedSkillRefusalMessage
 from core.modules.skills.support.agent_skill_rows import AgentSkillRows
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 
@@ -30,4 +30,4 @@ class LoadedSkillPolicy(Policy):
             return []
         folders = {PurePath(path).parent.name for path in tool.files}
         loaded = [skill.folder for skill in self.catalogue.skills() if skill.folder in folders and self.rows.is_loaded(view.agent.agent_id, skill.folder, skill.digest)]
-        return [Reason(self.key, DecisionClass.REFUSE, self.rank, LoadedSkillRefusalMessage.declared().nudge(name=loaded[0]).text)] if loaded else []
+        return [Reason(self.key, DecisionClass.REFUSE, self.rank, LoadedSkillRefusalMessage.declared().agent_message(name=loaded[0]).text)] if loaded else []

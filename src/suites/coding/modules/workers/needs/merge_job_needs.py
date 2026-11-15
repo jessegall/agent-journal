@@ -17,7 +17,7 @@ from engine.query.queries import Queries
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
-from suites.coding.modules.workers.nudges.unfinished_merge_message import UnfinishedMergeMessage
+from suites.coding.modules.workers.agent_messages.unfinished_merge_message import UnfinishedMergeMessage
 
 MERGER_TYPE = "merger"
 # a Working frame is ordered by its push time, never by a rank key
@@ -48,7 +48,7 @@ class MergeJobNeeds(StateSource):
             if job is None:
                 continue
             running = running_merges.get(merger_id)
-            text = UnfinishedMergeMessage.declared().nudge(worker=running.worker_id).text if running is not None else f"job {job.id} is open"
+            text = UnfinishedMergeMessage.declared().agent_message(worker=running.worker_id).text if running is not None else f"job {job.id} is open"
             stop_reason = Reason(UNFINISHED_MERGE_KEY, DecisionClass.HOLD, MERGE_JOB_RANK, text)
             merger_jobs[merger_id] = tuple([RequiredState(Working(WorkReference(WorkType.MERGE_JOB, job.id, f"merge job {job.id}"), running is not None, stop_reason),
                                                       MERGE_JOB_RANK, StateKey("Working", RowReference("helper_job", job.id), f"job:{job.id}"))])

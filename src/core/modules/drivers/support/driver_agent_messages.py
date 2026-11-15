@@ -1,0 +1,37 @@
+from core.modules.drivers.agent_messages.escalation_answered_message import EscalationAnsweredMessage
+from core.modules.drivers.agent_messages.escalation_help_message import EscalationHelpMessage
+from core.modules.drivers.agent_messages.wake_obligation_message import WakeObligationMessage
+from core.modules.drivers.agent_messages.ignored_wake_message import IgnoredWakeMessage
+from core.modules.drivers.agent_messages.agent_line_available_message import AgentLineAvailableMessage
+from engine.driver.count_down import CountDown
+from core.modules.drivers.support.access_agent_messages import ACCESS_AGENT_MESSAGES
+from core.modules.drivers.models.support.tool_use_window import ToolUseWindow
+from core.modules.drivers.agent_messages.opening_line_message import OpeningLineMessage
+from core.modules.drivers.agent_messages.managed_hook_line_message import ManagedHookLineMessage
+from core.modules.drivers.agent_messages.journal_started_message import JournalStartedMessage
+from core.modules.drivers.agent_messages.project_hook_wake_message import ProjectHookWakeMessage
+from core.modules.drivers.agent_messages.compaction_instructions_message import CompactionInstructionsMessage
+from core.modules.drivers.agent_messages.managed_hook_refusal_message import ManagedHookRefusalMessage
+from core.modules.drivers.agent_messages.hooks_unchecked_message import HooksUncheckedMessage
+from core.modules.drivers.agent_messages.hook_timeouts_message import HookTimeoutsMessage
+from core.modules.drivers.agent_messages.permission_requested_message import PermissionRequestedMessage
+from core.modules.drivers.agent_messages.safeguards_stopped_message import SafeguardsStoppedMessage
+from core.modules.drivers.agent_messages.agent_compacted_message import AgentCompactedMessage
+from core.modules.drivers.agent_messages.cache_keepalive_message import CacheKeepaliveMessage
+from core.modules.drivers.agent_messages.continued_session_message import ContinuedSessionMessage
+from core.modules.drivers.agent_messages.takeover_message import TakeoverMessage
+from core.modules.drivers.agent_messages.paused_refusal_message import PausedRefusalMessage
+from core.modules.drivers.agent_messages.missing_model_message import MissingModelMessage
+from core.modules.drivers.agent_messages.unbound_dispatch_message import UnboundDispatchMessage
+from core.modules.drivers.agent_messages.long_output_message import LongOutputMessage
+from core.modules.drivers.agent_messages.agent_resumed_message import AgentResumedMessage
+from core.modules.drivers.agent_messages.required_command_refusal_message import RequiredCommandRefusalMessage
+from core.modules.drivers.agent_messages.compaction_notice_message import CompactionNoticeMessage
+from core.modules.drivers.agent_messages.agent_notice_message import AgentNoticeMessage
+from core.modules.drivers.agent_messages.file_loaded_message import FileLoadedMessage
+
+
+REQUIRED_COMMAND_TOOL_USES = 5
+REQUIRED_COMMAND_SPAN = ToolUseWindow(REQUIRED_COMMAND_TOOL_USES)
+REQUIRED_COMMAND_COUNTDOWN = CountDown("drivers.required_command_countdown", "{subject}", REQUIRED_COMMAND_SPAN)
+DRIVER_AGENT_MESSAGES = [JournalStartedMessage, ProjectHookWakeMessage, CompactionInstructionsMessage, EscalationHelpMessage, EscalationAnsweredMessage, WakeObligationMessage, IgnoredWakeMessage, HookTimeoutsMessage, PermissionRequestedMessage, SafeguardsStoppedMessage, AgentCompactedMessage, CompactionNoticeMessage, CacheKeepaliveMessage, ContinuedSessionMessage, AgentLineAvailableMessage, *ACCESS_AGENT_MESSAGES, ManagedHookLineMessage, ManagedHookRefusalMessage, AgentResumedMessage, HooksUncheckedMessage, REQUIRED_COMMAND_COUNTDOWN.declaration, RequiredCommandRefusalMessage, OpeningLineMessage, TakeoverMessage, PausedRefusalMessage, MissingModelMessage, UnboundDispatchMessage, LongOutputMessage, FileLoadedMessage, AgentNoticeMessage]

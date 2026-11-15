@@ -31,8 +31,8 @@ class AgentBlock(ClosedPrunable, Model):
 
     session_agent_id: int
     creator_id: int
-    nudge_key: str
-    nudge_text: str
+    agent_message_key: str
+    agent_message_text: str
     condition_name: str
     condition_text: str
     closed_at: Timestamp | None = None
@@ -98,7 +98,7 @@ class AgentBlock(ClosedPrunable, Model):
     # the refusal's text names the block by its number, which only the saved row knows
     @property
     def refusal_text(self) -> str:
-        return self.nudge_text.replace("{block}", str(self.id))
+        return self.agent_message_text.replace("{block}", str(self.id))
 
     @property
     def grace(self) -> Interval | None:

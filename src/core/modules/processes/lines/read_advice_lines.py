@@ -16,7 +16,7 @@ class ReadAdviceLines(EventLineSource):
     def __init__(self, outputs: OutputQuery, hint: ReadAdvice) -> None:
         self.outputs, self.advice = outputs, hint
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         shell = event.tool.shell if event.tool is not None else None
         full_reads = [part for part in shell.parts_running_journal_command("output read") if "--all" in part.arguments] if shell is not None else []
         numbers = [int(term) for part in full_reads for term in part.arguments if term.isdigit()]

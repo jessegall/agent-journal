@@ -12,8 +12,8 @@ from core.modules.tasks.models.support.task_priority import URGENT_PRIORITY
 from core.modules.tasks.models.task import Task
 from core.modules.transcriptions.models.transcription import Transcription
 from core.modules.drivers.support.main_agent_line import MainAgentLine
-from core.modules.transcriptions.support.transcription_nudges import LINE_SOURCE
-from core.modules.transcriptions.nudges.transcription_changed_message import TranscriptionChangedMessage
+from core.modules.transcriptions.support.transcription_agent_messages import LINE_SOURCE
+from core.modules.transcriptions.agent_messages.transcription_changed_message import TranscriptionChangedMessage
 from engine.event.changed import Changed
 from engine.event.deleted import Deleted
 from engine.command.context import Context
@@ -41,7 +41,7 @@ class TranscriptionTaskListener(SaveListener[Changed[Transcription]]):
             return
         with self.scopes.row_scope(row):
             task_id = self.unfinished_task_id(row) or self.new_task_id(row, context)
-            self.line.send_nudge(TranscriptionChangedMessage.declared().nudge(transcription=row.id, task=task_id), LINE_SOURCE, context)
+            self.line.send_agent_message(TranscriptionChangedMessage.declared().agent_message(transcription=row.id, task=task_id), LINE_SOURCE, context)
 
     def unfinished_task_id(self, row: Transcription) -> int | None:
         linked = self.queries.query(Link).filter(source_model=row.model_name, source_id=row.id, target_model=Task.model_name).get()

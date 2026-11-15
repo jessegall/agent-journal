@@ -3,7 +3,7 @@ from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_policy import EventPolicy
 from core.modules.sequences.queries.sequence_query import SequenceQuery
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
-from core.modules.sequences.nudges.step_edit_ban_message import StepEditBanMessage
+from core.modules.sequences.agent_messages.step_edit_ban_message import StepEditBanMessage
 
 
 class StepGuardPolicy(EventPolicy):
@@ -28,4 +28,4 @@ class StepGuardPolicy(EventPolicy):
             return None
         if tool.shell is not None and any(tool.shell.has_part_matching(pattern) for pattern in guard.allowed_commands):
             return None
-        return StepEditBanMessage.declared().nudge(sequence=run.sequence_id, step=run.step_number)
+        return StepEditBanMessage.declared().agent_message(sequence=run.sequence_id, step=run.step_number)

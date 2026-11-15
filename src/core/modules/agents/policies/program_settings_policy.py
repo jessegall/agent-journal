@@ -5,7 +5,7 @@ from pathlib import Path
 
 from engine.driver.tool import Tool
 from engine.journal.journal_home import JournalHome
-from core.modules.agents.nudges.program_settings_ban_message import ProgramSettingsBanMessage
+from core.modules.agents.agent_messages.program_settings_ban_message import ProgramSettingsBanMessage
 from engine.journal.journal_home import JOURNAL_FOLDER
 
 
@@ -25,7 +25,7 @@ class ProgramSettingsPolicy(EventPolicy):
         tool = event.tool
         if tool is None or not any(spelling in text for text in self.tool_write_texts(tool) for spelling in self.spellings()):
             return None
-        return ProgramSettingsBanMessage.declared().nudge()
+        return ProgramSettingsBanMessage.declared().agent_message()
 
     @staticmethod
     def tool_write_texts(tool: Tool) -> tuple[str, ...]:

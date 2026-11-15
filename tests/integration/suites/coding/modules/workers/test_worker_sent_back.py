@@ -1,6 +1,6 @@
 from engine.testing.examples.hook_samples import HookSamples
 from core.modules.agents.models.agent import Agent
-from suites.coding.modules.workers.nudges.worker_unfinished_tasks_message import WorkerUnfinishedTasksMessage
+from suites.coding.modules.workers.agent_messages.worker_unfinished_tasks_message import WorkerUnfinishedTasksMessage
 from tests.stories.core.support.agent_labels import agent_number
 from tests.integration.suites.coding.modules.workers.test_ask_ledger import ANSWER, HELP_REQUEST_LINE, questions
 from tests.stories.suites.coding.modules.workers.merger_cases import MergerCase, case  # noqa: F401

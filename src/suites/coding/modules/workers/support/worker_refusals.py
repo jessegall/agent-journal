@@ -9,8 +9,8 @@ from core.modules.drivers.support.countdowns import Countdowns
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worker_refusal_count import WorkerRefusalCount
-from suites.coding.modules.workers.nudges.worker_refusal_message import WORKER_REFUSAL_INTERVAL
-from suites.coding.modules.workers.nudges.worker_refusal_message import WorkerRefusalMessage
+from suites.coding.modules.workers.agent_messages.worker_refusal_message import WORKER_REFUSAL_INTERVAL
+from suites.coding.modules.workers.agent_messages.worker_refusal_message import WorkerRefusalMessage
 
 REFUSAL_LIMIT_COUNT = 5
 REFUSAL_COUNTDOWN = CountDown("workers.worker_refusal", "worker refusal", TimeWindow(REFUSAL_LIMIT_COUNT), is_silent=True)
@@ -32,8 +32,8 @@ class WorkerRefusals:
         if refusal.notice_at is not None and refusal.notice_at.elapsed_seconds(context.timestamp) < WORKER_REFUSAL_INTERVAL.seconds:
             return
         count = self.countdowns.used_count(REFUSAL_COUNTDOWN, worktree.session_agent_id)
-        notice = WorkerRefusalMessage.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), count=count, task=worktree.task_id)
-        self.main_agent_line.send_nudge(notice, "workers.repeated-refusal", context)
+        notice = WorkerRefusalMessage.declared().agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), count=count, task=worktree.task_id)
+        self.main_agent_line.send_agent_message(notice, "workers.repeated-refusal", context)
         self.repository.save(refusal.changed(notice_at=context.timestamp), context)
 
     def clear(self, worktree: Worktree, context: Context) -> None:

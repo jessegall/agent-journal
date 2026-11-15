@@ -5,7 +5,7 @@ from suites.coding.modules.workers.types.worker import Worker
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.protected_folders import ProtectedFolders
 from core.modules.agents.support.agent_rows import AgentRows
-from suites.coding.modules.workers.nudges.protected_folder_message import ProtectedFolderMessage
+from suites.coding.modules.workers.agent_messages.protected_folder_message import ProtectedFolderMessage
 
 
 class ProtectedFolderPolicy(EventPolicy):
@@ -32,5 +32,5 @@ class ProtectedFolderPolicy(EventPolicy):
         for path in paths:
             folder = self.protected.match(worktree.folder, path, profile)
             if folder:
-                return ProtectedFolderMessage.declared().nudge(folder=folder)
+                return ProtectedFolderMessage.declared().agent_message(folder=folder)
         return None

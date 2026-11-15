@@ -6,7 +6,7 @@ from engine.driver.hook_event import HookEvent
 from engine.driver.agent_message import AgentMessage
 from engine.enums.hook_event_name import HookEventName
 from core.modules.tasks.support.task_write_count import TaskWriteCount
-from core.modules.tasks.support.task_nudges import LOG_REQUEST, LOG_REQUEST_WRITES
+from core.modules.tasks.support.task_agent_messages import LOG_REQUEST, LOG_REQUEST_WRITES
 
 
 class LogRequestLines(EventLineSource):
@@ -20,8 +20,8 @@ class LogRequestLines(EventLineSource):
     def __init__(self, task_writes: TaskWriteCount) -> None:
         self.task_writes = task_writes
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         counted = self.task_writes.count(event, agent_id) if event is not None else None
         if counted is None or counted[1] != LOG_REQUEST_WRITES:
             return []
-        return [LOG_REQUEST.nudge(LOG_REQUEST_WRITES, task=counted[0].task.id)]
+        return [LOG_REQUEST.agent_message(LOG_REQUEST_WRITES, task=counted[0].task.id)]

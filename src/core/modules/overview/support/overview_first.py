@@ -1,7 +1,7 @@
 from engine.driver.open_hold import OpenHold
 from core.modules.overview.support.block_conditions.recent_overview_read import RecentOverviewRead
-from core.modules.overview.support.overview_nudges import OVERVIEW_COMMAND
-from core.modules.overview.nudges.overview_refusal_message import OverviewRefusalMessage
+from core.modules.overview.support.overview_agent_messages import OVERVIEW_COMMAND
+from core.modules.overview.agent_messages.overview_refusal_message import OverviewRefusalMessage
 
 
 class OverviewFirst:
@@ -11,4 +11,4 @@ class OverviewFirst:
     is_required = True
 
     def block(self, agent_id: int) -> OpenHold:
-        return OpenHold(agent_id, OverviewRefusalMessage.declared().nudge(), RecentOverviewRead(OVERVIEW_COMMAND), strict=True)
+        return OpenHold(agent_id, OverviewRefusalMessage.declared().agent_message(), RecentOverviewRead(OVERVIEW_COMMAND), strict=True)

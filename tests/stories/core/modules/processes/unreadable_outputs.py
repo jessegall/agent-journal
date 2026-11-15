@@ -5,10 +5,10 @@ from tests.stories.core.modules.processes.support.cadence_probe import kept_line
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.modules.processes.support.reading_scenarios import LONG_RUN, STEPS, ended_after_a_while, received
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
-from core.modules.processes.nudges.unreadable_declaration_message import UnreadableDeclarationMessage
-from core.modules.processes.nudges.unreadable_lifted_message import UnreadableLiftedMessage
-from engine.testing.expectations.expected_message import expected_nudge
-from core.modules.processes.nudges.unreadable_audit_message import UnreadableAuditMessage
+from core.modules.processes.agent_messages.unreadable_declaration_message import UnreadableDeclarationMessage
+from core.modules.processes.agent_messages.unreadable_lifted_message import UnreadableLiftedMessage
+from engine.testing.expectations.expected_message import expected_agent_message
+from core.modules.processes.agent_messages.unreadable_audit_message import UnreadableAuditMessage
 
 SPINNER = "\r[###] working" * 1000
 
@@ -49,8 +49,8 @@ def test_a_person_marks_a_runs_command_from_its_card_so_its_agent_is_asked_no_re
     after_mark = received(story)
     story.expect_success(f"output readable {silent.id} --environment main", actor=story.user)
     resumed = received(story)
-    story.expect_rows(expected_nudge(UnreadableDeclarationMessage.declared(), name='make serve').matches_text(flagged), f"Output {silent.id} ended" in after_mark, "No reader reads" not in after_mark,
-                      expected_nudge(UnreadableLiftedMessage.declared(), name='make serve').matches_text(resumed), detail=f"{flagged}\n{after_mark}\n{resumed}")
+    story.expect_rows(expected_agent_message(UnreadableDeclarationMessage.declared(), name='make serve').matches_text(flagged), f"Output {silent.id} ended" in after_mark, "No reader reads" not in after_mark,
+                      expected_agent_message(UnreadableLiftedMessage.declared(), name='make serve').matches_text(resumed), detail=f"{flagged}\n{after_mark}\n{resumed}")
     story.expect_text("unreadable-mark show 1", f"creator_id: {story.user.id}", f"lifter_id: {story.user.id}", actor=story.user)
 
 
@@ -66,7 +66,7 @@ def test_the_main_agent_hears_once_how_many_commands_agents_marked_unreadable(ne
         story.hook("s-1", HookSamples.session_start())
         story.run_listeners()
     lines = kept_lines(story, actor=story.user)
-    story.expect_rows(lines.count(UnreadableAuditMessage.declared().nudge(count=3).text) == 1, detail=lines)
+    story.expect_rows(lines.count(UnreadableAuditMessage.declared().agent_message(count=3).text) == 1, detail=lines)
 
 
 BINARY = "\x00\x01\x02 header\x00" * 40 + "\n"

@@ -24,11 +24,11 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import C
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from engine.testing.expectations.expect_reply import expect_absent_reply_refusal
 from tests.stories.support.story_checks import expect_value
-from suites.coding.modules.workers.nudges.worker_task_reassignment_message import WorkerTaskReassignmentMessage
-from suites.coding.modules.workers.nudges.worker_task_reassigned_message import WorkerTaskReassignedMessage
-from engine.testing.expectations.expected_message import expected_nudge
-from suites.coding.modules.workers.nudges.worker_comment_copy_message import WorkerCommentCopyMessage
-from suites.coding.modules.workers.nudges.worker_task_comment_message import WorkerTaskCommentMessage
+from suites.coding.modules.workers.agent_messages.worker_task_reassignment_message import WorkerTaskReassignmentMessage
+from suites.coding.modules.workers.agent_messages.worker_task_reassigned_message import WorkerTaskReassignedMessage
+from engine.testing.expectations.expected_message import expected_agent_message
+from suites.coding.modules.workers.agent_messages.worker_comment_copy_message import WorkerCommentCopyMessage
+from suites.coding.modules.workers.agent_messages.worker_task_comment_message import WorkerTaskCommentMessage
 from suites.coding.support.shipped_profiles import WORKER_MEDIOR_PROFILE
 
 

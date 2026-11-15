@@ -1,0 +1,3 @@
+from core.modules.claude_code.agent_messages.native_memory_ban_message import NativeMemoryBanMessage
+
+CLAUDE_CODE_AGENT_MESSAGES = [NativeMemoryBanMessage]

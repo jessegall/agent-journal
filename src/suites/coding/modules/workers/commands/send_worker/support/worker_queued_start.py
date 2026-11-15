@@ -3,7 +3,7 @@ from dataclasses import replace
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.command.context import Context
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from engine.query.queries import Queries
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.tasks.queries.task_query import TaskQuery
@@ -19,8 +19,8 @@ class WorkerQueuedStart:
     main agent's next batch; a worker left with only tasks that wait on a task nobody works on is named to the
     main agent with that task."""
 
-    def __init__(self, tasks: TaskQuery, bus: Bus, queries: Queries, external_waits: OutsideWaits, labels: AssigneeLabel, nudger: MessageSender) -> None:
-        self.tasks, self.bus, self.queries, self.outside_waits, self.labels, self.nudger = tasks, bus, queries, external_waits, labels, nudger
+    def __init__(self, tasks: TaskQuery, bus: Bus, queries: Queries, external_waits: OutsideWaits, labels: AssigneeLabel, message_sender: MessageSender) -> None:
+        self.tasks, self.bus, self.queries, self.outside_waits, self.labels, self.message_sender = tasks, bus, queries, external_waits, labels, message_sender
 
     def start(self, worker_id: int, context: Context) -> None:
         queued_ids = tuple(task.id for task in self.tasks.assigned_ready(worker_id))
@@ -37,4 +37,4 @@ class WorkerQueuedStart:
             return
         kept = ", ".join(f"task:{task.id}" for task in waiting)
         text = f"{self.labels.text(worker_id)} has only {kept}, and all wait on task:{blocker.id}, which no worker works on: {self.labels.task_label(blocker)} must do it"
-        self.nudger.send_text(main_agent.id, text, OUTSIDE_WAIT_SOURCE, replace(context, actor=Actor.core()))
+        self.message_sender.send_text(main_agent.id, text, OUTSIDE_WAIT_SOURCE, replace(context, actor=Actor.core()))

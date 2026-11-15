@@ -10,7 +10,7 @@ from engine.enums.hook_event_name import HookEventName
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.support.block_conditions.started_task_exists import StartedTaskExists
 from suites.coding.drivers.worker.worker_agent_driver import WorkerAgentDriver
-from suites.coding.nudges.worker_task_unstarted_message import WorkerTaskUnstartedMessage
+from suites.coding.agent_messages.worker_task_unstarted_message import WorkerTaskUnstartedMessage
 
 WORKER_TASK_START_KEY = "workers.journal-only-without-task"
 WORKER_TASK_START_RANK = "workers.no-task"
@@ -28,7 +28,7 @@ class WorkerTaskStartNeeds(StateSource):
     def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[RequiredState | BlockPlan]]:
         if question.event is None or question.event.event is not HookEventName.PRE_TOOL_USE:
             return {}
-        return {agent.agent_id: [BlockPlan(WorkerTaskUnstartedMessage.declared().nudge(), StartedTaskExists(), WORKER_TASK_START_KEY, WORKER_TASK_START_RANK, scope_tools=True, scope_stop=False)]
+        return {agent.agent_id: [BlockPlan(WorkerTaskUnstartedMessage.declared().agent_message(), StartedTaskExists(), WORKER_TASK_START_KEY, WORKER_TASK_START_RANK, scope_tools=True, scope_stop=False)]
                 for agent in agents if self.is_waiting(agent.agent_id)}
 
     def is_waiting(self, agent_id: int) -> bool:

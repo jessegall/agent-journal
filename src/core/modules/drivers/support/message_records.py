@@ -6,7 +6,7 @@ from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from core.modules.drivers.models.message_record import MessageRecord
 
-NUDGE_LINES_REASON = "every record of the nudges asked about decides whether each is due again"
+AGENT_MESSAGE_LINES_REASON = "every record of the nudges asked about decides whether each is due again"
 
 
 class MessageRecords:
@@ -19,12 +19,12 @@ class MessageRecords:
         newest = self.queries.query(MessageRecord).filter(session_agent_id=agent_id, key=key).descending("last_delivered_at")
         return self.kept.read(newest, newest.first, name="drivers.nudges.newest")
 
-    def nudge_rows(self, agent_id: int, nudges: Sequence[AgentMessage]) -> list[MessageRecord]:
-        records = self.queries.query(MessageRecord).filter(session_agent_id=agent_id).matching(Among("key", tuple(sorted({nudge.key for nudge in nudges}))))
-        return self.kept.read(records, lambda: self.loaded_rows(agent_id, nudges), name=f"drivers.nudges:{sorted({nudge.text for nudge in nudges})}")
+    def agent_message_rows(self, agent_id: int, agent_messages: Sequence[AgentMessage]) -> list[MessageRecord]:
+        records = self.queries.query(MessageRecord).filter(session_agent_id=agent_id).matching(Among("key", tuple(sorted({agent_message.key for agent_message in agent_messages}))))
+        return self.kept.read(records, lambda: self.loaded_rows(agent_id, agent_messages), name=f"drivers.nudges:{sorted({agent_message.text for agent_message in agent_messages})}")
 
-    def loaded_rows(self, agent_id: int, nudges: Sequence[AgentMessage]) -> list[MessageRecord]:
-        clock_keys = sorted({nudge.key for nudge in nudges if nudge.interval})
+    def loaded_rows(self, agent_id: int, agent_messages: Sequence[AgentMessage]) -> list[MessageRecord]:
+        clock_keys = sorted({agent_message.key for agent_message in agent_messages if agent_message.interval})
         newest = [row for row in (self.newest_row(agent_id, key) for key in clock_keys) if row is not None]
-        lines = self.queries.query(MessageRecord).filter(session_agent_id=agent_id).matching(Among("key", tuple(sorted({nudge.key for nudge in nudges})))).matching(Among("text", tuple(sorted({nudge.text for nudge in nudges})))).every_row(NUDGE_LINES_REASON)
+        lines = self.queries.query(MessageRecord).filter(session_agent_id=agent_id).matching(Among("key", tuple(sorted({agent_message.key for agent_message in agent_messages})))).matching(Among("text", tuple(sorted({agent_message.text for agent_message in agent_messages})))).every_row(AGENT_MESSAGE_LINES_REASON)
         return [*newest, *lines]

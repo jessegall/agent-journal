@@ -26,8 +26,8 @@ class EventLineSource(LineSource):
             cls.carrier = LineChannel.WAITING
 
     def lines(self, question: Question, view: AgentView) -> Sequence[Line]:
-        return [Line.of_nudge(nudge, self.carrier) for nudge in self.nudges(question.event, view.agent.agent_id)]
+        return [Line.of_agent_message(agent_message, self.carrier) for agent_message in self.agent_messages(question.event, view.agent.agent_id)]
 
     # the lines this event tells the agent; no event is the agent's minute step
     @abstractmethod
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]: ...
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]: ...

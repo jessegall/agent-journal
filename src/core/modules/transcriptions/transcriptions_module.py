@@ -12,7 +12,7 @@ from core.modules.transcriptions.listeners.transcription_task_listener import Tr
 from core.modules.transcriptions.migrations.m001_transcriptions import TranscriptionsTableMigration
 from core.modules.transcriptions.models.transcription import Transcription
 from core.modules.transcriptions.seeders.transcriptions_seeder import TranscriptionsSeeder
-from core.modules.transcriptions.support.transcription_nudges import TRANSCRIPTION_NUDGES
+from core.modules.transcriptions.support.transcription_agent_messages import TRANSCRIPTION_AGENT_MESSAGES
 
 
 class TranscriptionsModule(Module):
@@ -28,7 +28,7 @@ class TranscriptionsModule(Module):
     migrations = [TranscriptionsTableMigration, TranscriptionsEnvironmentIndexMigration]
     handlers = [AddTranscriptionLinkHandler, RequestTranscriptionFetchHandler]
     subcommands = [AddTranscriptionLinkSubcommand, RequestTranscriptionFetchSubcommand, TranscriptionSourcesSubcommand]
-    nudges = TRANSCRIPTION_NUDGES
+    agent_messages = TRANSCRIPTION_AGENT_MESSAGES
     listeners = [TranscriptionTaskListener]
     seeders = [TranscriptionsSeeder]
     windows = TRANSCRIPTIONS_WINDOWS

@@ -7,8 +7,8 @@ from engine.enums.command_category import CommandCategory
 from engine.driver.agent_message import AgentMessage
 from core.modules.processes.support.background_commands import BackgroundCommands
 from core.modules.processes.support.reader_demands import ASKING_FLAGS
-from suites.coding.modules.workers.nudges.worker_test_commands_missing_message import WorkerTestCommandsMissingMessage
-from suites.coding.modules.workers.nudges.worker_test_line_refusal_message import WorkerTestLineRefusalMessage
+from suites.coding.modules.workers.agent_messages.worker_test_commands_missing_message import WorkerTestCommandsMissingMessage
+from suites.coding.modules.workers.agent_messages.worker_test_line_refusal_message import WorkerTestLineRefusalMessage
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
 
 
@@ -36,4 +36,4 @@ class WorkerTestLinePolicy(EventPolicy):
 
     def refused_line(self, worker_id: int) -> AgentMessage:
         names = self.names.names_text(worker_id)
-        return WorkerTestLineRefusalMessage.declared().nudge(names=names) if names else WorkerTestCommandsMissingMessage.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worker_id))
+        return WorkerTestLineRefusalMessage.declared().agent_message(names=names) if names else WorkerTestCommandsMissingMessage.declared().agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, worker_id))

@@ -5,7 +5,7 @@ from engine.driver.hook_event import HookEvent
 from engine.driver.agent_message import AgentMessage
 from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
-from core.modules.drivers.nudges.cache_keepalive_message import CacheKeepaliveMessage
+from core.modules.drivers.agent_messages.cache_keepalive_message import CacheKeepaliveMessage
 from suites.coding.modules.workers.support.cache_keepalive import CACHE_KEEPALIVE_KEY, CacheKeepalive
 
 
@@ -19,5 +19,5 @@ class CacheRefreshLines(EventLineSource):
     def __init__(self, keepalive: CacheKeepalive) -> None:
         self.keepalive = keepalive
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        return [CacheKeepaliveMessage.declared().nudge()] if self.keepalive.is_due(agent_id) else []
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+        return [CacheKeepaliveMessage.declared().agent_message()] if self.keepalive.is_due(agent_id) else []

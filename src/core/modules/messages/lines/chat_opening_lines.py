@@ -4,9 +4,9 @@ from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
-from core.modules.messages.nudges.journal_chat_rule_message import JournalChatRuleMessage
-from core.modules.messages.nudges.journal_laws_message import JournalLawsMessage
-from core.modules.messages.nudges.journal_line_note_message import JournalLineNoteMessage
+from core.modules.messages.agent_messages.journal_chat_rule_message import JournalChatRuleMessage
+from core.modules.messages.agent_messages.journal_laws_message import JournalLawsMessage
+from core.modules.messages.agent_messages.journal_line_note_message import JournalLineNoteMessage
 
 
 class ChatOpeningLines(EventLineSource):
@@ -18,5 +18,5 @@ class ChatOpeningLines(EventLineSource):
     events = [HookEventName.SESSION_START]
     agent_types = [AgentRole.MAIN.value]
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        return [JournalLineNoteMessage.declared().nudge(), JournalChatRuleMessage.declared().nudge(), JournalLawsMessage.declared().nudge()]
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+        return [JournalLineNoteMessage.declared().agent_message(), JournalChatRuleMessage.declared().agent_message(), JournalLawsMessage.declared().agent_message()]

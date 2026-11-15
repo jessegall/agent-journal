@@ -6,7 +6,7 @@ from core.modules.schedules.migrations.m004_schedule_session import ScheduleSess
 from core.modules.schedules.migrations.m005_environment_index import ScheduledJobsEnvironmentIndexMigration
 from core.modules.schedules.migrations.m002_stop_requested import StopRequestedMigration
 from core.modules.schedules.marks.schedule_run_mark import ScheduleRunMark
-from core.modules.schedules.support.schedule_nudges import SCHEDULE_NUDGES
+from core.modules.schedules.support.schedule_agent_messages import SCHEDULE_AGENT_MESSAGES
 from engine.module.module import Module
 from core.modules.schedules.commands.end_scheduled_job.end_scheduled_job_handler import EndScheduledJobHandler
 from core.modules.schedules.commands.record_scheduled_job.record_scheduled_job_handler import RecordScheduledJobHandler
@@ -27,7 +27,7 @@ class SchedulesModule(Module):
 
     name = "journal.core.schedules"
     effects = [ScheduledJobEffect, ScheduledJobRunEffect]
-    nudges = SCHEDULE_NUDGES
+    agent_messages = SCHEDULE_AGENT_MESSAGES
     moves = [SchedulesMove]
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.environments", "journal.core.drivers", "journal.core.chat"]

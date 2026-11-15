@@ -18,5 +18,5 @@ class BlockReviewLines(EventLineSource):
     def __init__(self, review: BlockReviewRound) -> None:
         self.review = review
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         return self.review.answer(event, agent_id).notices if event is not None else []

@@ -9,7 +9,7 @@ from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock
 from core.modules.drivers.models.agent_block import AgentBlock
-from core.modules.drivers.nudges.required_command_refusal_message import RequiredCommandRefusalMessage
+from core.modules.drivers.agent_messages.required_command_refusal_message import RequiredCommandRefusalMessage
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
 
@@ -27,7 +27,7 @@ class WorkerMergeBlockListener(SaveListener[Moved[Worktree]]):
     def handle(self, event: Moved[Worktree], context: Context) -> None:
         command = self.merge_command(event.row)
         key = f"{RequiredCommandRefusalMessage.declared().key}:{command}"
-        blocks = self.queries.query(AgentBlock).filter(nudge_key=key, condition_text=command).matching(IsNull("closed_at")).get()
+        blocks = self.queries.query(AgentBlock).filter(agent_message_key=key, condition_text=command).matching(IsNull("closed_at")).get()
         for block in blocks:
             self.bus.dispatch(CloseAgentBlock(block.id), context)
 

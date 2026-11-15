@@ -14,8 +14,8 @@ from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.watch import UNANNOUNCED_PERCENT, Watch
 from core.modules.processes.support.block_conditions.output_monitored import OutputMonitored
-from core.modules.processes.nudges.required_monitor_message import RequiredMonitorMessage
-from core.modules.processes.nudges.required_monitor_command_message import RequiredMonitorCommandMessage
+from core.modules.processes.agent_messages.required_monitor_message import RequiredMonitorMessage
+from core.modules.processes.agent_messages.required_monitor_command_message import RequiredMonitorCommandMessage
 from engine.command.context import Context
 
 
@@ -35,8 +35,8 @@ class BackgroundRunWatchListener(SaveListener[Moved[Process]]):
         monitor_tool = self.monitor_tool(process)
         if monitor_tool is not None:
             declaration = RequiredMonitorMessage.declared() if monitor_tool is ToolType.MONITOR else RequiredMonitorCommandMessage.declared()
-            nudge = declaration.nudge(output=process.id)
-            self.bus.dispatch(OpenHold(process.session_agent_id, replace(nudge, key=f"{nudge.key}.{process.id}"), OutputMonitored(process.id), blocks_stop=True), context)
+            agent_message = declaration.agent_message(output=process.id)
+            self.bus.dispatch(OpenHold(process.session_agent_id, replace(agent_message, key=f"{agent_message.key}.{process.id}"), OutputMonitored(process.id), blocks_stop=True), context)
 
     def monitor_tool(self, process: Process) -> ToolType | None:
         agent = self.queries.query(Agent).find(process.session_agent_id)

@@ -21,6 +21,6 @@ class AgentTextPinLines(EventLineSource):
     def __init__(self, check: LinkPinCheck) -> None:
         self.check = check
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         text = LinkPinCheck.finished_text(event)
-        return self.check.nudges(text) if text is not None else []
+        return self.check.agent_messages(text) if text is not None else []

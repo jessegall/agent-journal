@@ -23,8 +23,8 @@ from core.modules.drivers.models.support.tool_use_window import ToolUseWindow
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
-from core.modules.tasks.nudges.stop_task_message import StopTaskMessage
-from core.modules.tasks.nudges.stop_tasks_message import StopTasksMessage
+from core.modules.tasks.agent_messages.stop_task_message import StopTaskMessage
+from core.modules.tasks.agent_messages.stop_tasks_message import StopTasksMessage
 from core.modules.tasks.support.current_tasks import CurrentTasks
 from core.modules.tasks.support.suite_task_assigners import SuiteTaskAssigners
 
@@ -78,5 +78,5 @@ class TaskWorkNeeds(StateSource):
     @staticmethod
     def stop_text(started: Sequence[Task]) -> str:
         if len(started) > 1:
-            return StopTasksMessage.declared().nudge(tasks=", ".join(f"task:{task.id}" for task in started)).text
-        return StopTaskMessage.declared().nudge(task=started[0].id).text
+            return StopTasksMessage.declared().agent_message(tasks=", ".join(f"task:{task.id}" for task in started)).text
+        return StopTaskMessage.declared().agent_message(task=started[0].id).text

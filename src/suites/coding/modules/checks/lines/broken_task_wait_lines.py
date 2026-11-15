@@ -7,7 +7,7 @@ from engine.enums.hook_event_name import HookEventName
 from core.modules.tasks.models.task_wait import TaskWait
 from engine.query.queries import Queries
 from suites.coding.modules.checks.queries.check_query import CheckQuery
-from suites.coding.modules.checks.nudges.broken_task_wait_message import BrokenTaskWaitMessage
+from suites.coding.modules.checks.agent_messages.broken_task_wait_message import BrokenTaskWaitMessage
 
 
 class BrokenTaskWaitLines(EventLineSource):
@@ -21,8 +21,8 @@ class BrokenTaskWaitLines(EventLineSource):
     def __init__(self, checks: CheckQuery, queries: Queries) -> None:
         self.checks, self.queries = checks, queries
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         broken = self.checks.broken_task_waits()
         waits = self.queries.query(TaskWait).find_many([check.task_wait_id for check in broken if check.task_wait_id is not None])
         tasks = {wait.id: wait.task_id for wait in waits}
-        return [*(BrokenTaskWaitMessage.declared().nudge(task=tasks[check.task_wait_id], output=check.last_output.strip()) for check in broken if check.task_wait_id is not None)]
+        return [*(BrokenTaskWaitMessage.declared().agent_message(task=tasks[check.task_wait_id], output=check.last_output.strip()) for check in broken if check.task_wait_id is not None)]

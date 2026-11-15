@@ -1,6 +1,6 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from engine.listener.rows.event_rows import EventRows
 from core.modules.processes.commands.lift_run_unreadable.lift_run_unreadable import LiftRunUnreadable
 from core.modules.processes.models.process import Process
@@ -18,12 +18,12 @@ class LiftRunUnreadableHandler(Handler[LiftRunUnreadable, UnreadableMark]):
 
     command = LiftRunUnreadable
 
-    def __init__(self, rows: EventRows, terms: RunCommandTerms, marks: UnreadableMarkRegistry, nudger: MessageSender) -> None:
-        self.rows, self.words, self.marks, self.nudger = rows, terms, marks, nudger
+    def __init__(self, rows: EventRows, terms: RunCommandTerms, marks: UnreadableMarkRegistry, message_sender: MessageSender) -> None:
+        self.rows, self.words, self.marks, self.message_sender = rows, terms, marks, message_sender
 
     def handle(self, command: LiftRunUnreadable, context: Context) -> UnreadableMark:
         process = self.rows.required(Process, command.process_id)
         mark = self.marks.lift(self.words.words(process), context.actor.id, context)
-        for nudge in ReadingNotices.mark_nudges(process, tuple([mark])):
-            self.nudger.send_nudge(process.session_agent_id, nudge, SOURCE, context)
+        for agent_message in ReadingNotices.mark_agent_messages(process, tuple([mark])):
+            self.message_sender.send_agent_message(process.session_agent_id, agent_message, SOURCE, context)
         return mark

@@ -9,7 +9,7 @@ from engine.query.queries import Queries
 from engine.testing.stories.story import Story
 from suites.coding.modules.workers.commands.record_worker_refusal.record_worker_refusal import RecordWorkerRefusal
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.nudges.worker_libraries_linked_message import WorkerLibrariesLinkedMessage
+from suites.coding.modules.workers.agent_messages.worker_libraries_linked_message import WorkerLibrariesLinkedMessage
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
@@ -28,7 +28,7 @@ LOG_LINE = "The cart total rounds down"
 FULL_SUITE = "pytest"
 WHY = "the rounding only shows in a real run"
 MERGER_QUESTION = 'merger tell "Which tax applies?" --tried "Read the brief" --option "Dutch tax" --option "No tax" --recommend "Dutch tax"'
-LINKED_LINE = WorkerLibrariesLinkedMessage.declared().nudge().text
+LINKED_LINE = WorkerLibrariesLinkedMessage.declared().agent_message().text
 LIBRARY_FILE = "index.js"
 LIBRARY_TEXT = "module.exports = 1\n"
 

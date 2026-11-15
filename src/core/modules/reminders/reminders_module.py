@@ -11,7 +11,7 @@ from core.modules.reminders.commands.make_reminder.make_reminder_subcommand impo
 from core.modules.reminders.commands.record_reminder_fired.record_reminder_fired_handler import RecordReminderFiredHandler
 from core.modules.reminders.listeners.reminder_made_mark_listener import ReminderMadeMarkListener
 from core.modules.reminders.migrations.m001_reminders import RemindersTableMigration
-from core.modules.reminders.support.reminder_nudges import REMINDER_NUDGES
+from core.modules.reminders.support.reminder_agent_messages import REMINDER_AGENT_MESSAGES
 
 
 class RemindersModule(Module):
@@ -31,5 +31,5 @@ class RemindersModule(Module):
     handlers = [MakeReminderHandler, RecordReminderFiredHandler]
     subcommands = [MakeReminderSubcommand]
     listeners = [ReminderMadeMarkListener]
-    nudges = REMINDER_NUDGES
+    agent_messages = REMINDER_AGENT_MESSAGES
     windows = REMINDERS_WINDOWS

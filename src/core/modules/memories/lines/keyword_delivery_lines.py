@@ -5,7 +5,7 @@ from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.driver.hook_event import HookEvent
 from engine.driver.agent_message import AgentMessage
 from engine.enums.hook_event_name import HookEventName
-from core.modules.memories.nudges.memory_line_message import MemoryLineMessage
+from core.modules.memories.agent_messages.memory_line_message import MemoryLineMessage
 from core.modules.memories.support.keyword_memories import KeywordMemories
 
 KEYWORD_DELIVERY_KEY = "memories.keyword-delivery"
@@ -23,6 +23,6 @@ class KeywordDeliveryLines(EventLineSource):
     def __init__(self, memories: KeywordMemories) -> None:
         self.memories = memories
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         memory_ids = self.memories.memory_ids(event, agent_id) if event is not None else ()
-        return [MemoryLineMessage.declared().nudge(memory=memory_id) for memory_id in memory_ids]
+        return [MemoryLineMessage.declared().agent_message(memory=memory_id) for memory_id in memory_ids]

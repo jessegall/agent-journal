@@ -40,4 +40,4 @@ class Effect(ABC):
     # what a required effect answers once its save failed and was rolled back, in a fresh write: by default the stop or
     # action is refused with its failure line
     def failed(self, view: AgentView, record: "DecisionRecord") -> RuleAnswer:
-        return RuleAnswer(refusal=self.failure.declared().nudge().text if self.failure is not None else "")
+        return RuleAnswer(refusal=self.failure.declared().agent_message().text if self.failure is not None else "")

@@ -18,6 +18,6 @@ class GraphifySearchLines(EventLineSource):
     def __init__(self, searches: GraphifySearches) -> None:
         self.searches = searches
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        nudge = self.searches.answer(event, agent_id).nudge if event is not None else None
-        return [nudge] if nudge is not None else []
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+        agent_message = self.searches.answer(event, agent_id).agent_message if event is not None else None
+        return [agent_message] if agent_message is not None else []

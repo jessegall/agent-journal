@@ -12,7 +12,7 @@ from core.modules.helpers.listeners.helpers_listeners import HELPERS_LISTENERS
 from core.modules.helpers.skills.declarations.helpers_skills import HELPERS_SKILLS
 from engine.module.module import Module
 from core.modules.helpers.marks.program_outage_mark import ProgramOutageMark
-from core.modules.helpers.support.helper_nudges import HELPER_NUDGES
+from core.modules.helpers.support.helper_agent_messages import HELPER_AGENT_MESSAGES
 from core.modules.helpers.support.helper_settings import HELPER_SETTINGS
 from core.modules.helpers.types.helper import Helper
 from core.modules.helpers.tick_handlers.helper_limits_tick_handler import HelperLimitsTickHandler
@@ -40,7 +40,7 @@ class HelpersModule(Module):
     guards = HELPERS_GUARDS
     handlers = HELPERS_HANDLERS
     tick_handlers = [KeptReportRetriesTickHandler, HelperLimitsTickHandler, UsageLimitMarkerTickHandler, UnstartedJobStartsTickHandler]
-    nudges = HELPER_NUDGES
+    agent_messages = HELPER_AGENT_MESSAGES
     skills = HELPERS_SKILLS
     subcommands = HELPERS_SUBCOMMANDS
     listeners = HELPERS_LISTENERS

@@ -4,7 +4,7 @@ from engine.agent_machine.contracts.event_policy import EventPolicy
 import re
 
 from engine.enums.command_effect import CommandEffect
-from core.modules.claude_code.nudges.native_memory_ban_message import NativeMemoryBanMessage
+from core.modules.claude_code.agent_messages.native_memory_ban_message import NativeMemoryBanMessage
 
 NATIVE_MEMORY_PATH = re.compile(r"\.claude/projects/[^/\s]+/memory(/|\b)")
 
@@ -24,6 +24,6 @@ class NativeMemoryPolicy(EventPolicy):
             return None
         writing_texts = (*(part.text for part in tool.shell.parts if CommandEffect.WRITES_FILES in part.classification.effects), *tool.shell.redirects) if tool.shell is not None else ()
         if any(NATIVE_MEMORY_PATH.search(text) for text in (*tool.files, *writing_texts)):
-            return NativeMemoryBanMessage.declared().nudge()
+            return NativeMemoryBanMessage.declared().agent_message()
         return None
 

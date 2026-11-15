@@ -3,7 +3,7 @@ from engine.driver.agent_message import AgentMessage
 from engine.query.conditions.among import Among
 from engine.request.request_values import RequestValues
 from core.modules.messages.models.message import Message
-from core.modules.messages.nudges.image_tag_request_message import ImageTagRequestMessage
+from core.modules.messages.agent_messages.image_tag_request_message import ImageTagRequestMessage
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.support.message_captions import MessageCaptions
 
@@ -33,5 +33,5 @@ class MessageReads:
         return unread
 
     @staticmethod
-    def image_nudges(message: Message) -> list[AgentMessage]:
-        return [ImageTagRequestMessage.declared().nudge(message=message.id, name=name) for name in MessageCaptions.untagged_images(message)]
+    def image_agent_messages(message: Message) -> list[AgentMessage]:
+        return [ImageTagRequestMessage.declared().agent_message(message=message.id, name=name) for name in MessageCaptions.untagged_images(message)]

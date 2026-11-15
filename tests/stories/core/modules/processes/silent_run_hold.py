@@ -19,10 +19,10 @@ from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story import Story
 from tests.integration.core.modules.processes.test_hang_watch import ActiveBuild, started_tree, watch_tick
 from tests.stories.core.modules.processes.support.process_samples import end_run
-from core.modules.processes.nudges.silent_run_blocked_message import SilentRunBlockedMessage
-from core.modules.drivers.support.driver_nudges import REQUIRED_COMMAND_TOOL_USES
+from core.modules.processes.agent_messages.silent_run_blocked_message import SilentRunBlockedMessage
+from core.modules.drivers.support.driver_agent_messages import REQUIRED_COMMAND_TOOL_USES
 from core.modules.drivers.support.required_commands import RequiredCommands
-from engine.testing.expectations.expected_message import expected_nudge
+from engine.testing.expectations.expected_message import expected_agent_message
 
 HANG_SECONDS = 300
 TASK_LIST = HookSamples.shell("journal task list", ShellPart("journal", CommandCategory.JOURNAL, ["task", "list"]))
@@ -51,7 +51,7 @@ def silent_story(new_story, seconds: int = HANG_SECONDS + 1) -> Story:
 def test_a_run_silent_for_the_hang_time_holds_the_next_tool_use_and_names_what_to_read(new_story):
     story = silent_story(new_story)
     story.expect_hook_refusal("s-1", EDIT, BLOCKED)
-    story.expect_hook_refusal("s-1", EDIT, expected_nudge(SilentRunBlockedMessage.declared(), output=1, seconds=301, processor='not known', hint='read'))
+    story.expect_hook_refusal("s-1", EDIT, expected_agent_message(SilentRunBlockedMessage.declared(), output=1, seconds=301, processor='not known', hint='read'))
 
 
 def test_the_hold_says_the_processor_time_is_rising_when_it_moved_since_the_run_went_silent(new_story):
@@ -143,7 +143,7 @@ def test_one_read_of_a_stopped_silent_run_that_printed_nothing_clears_the_read_i
     story.advance(timedelta(seconds=HANG_SECONDS + 1))
     story.expect_success("output stop 1", actor=story.agent)
     # the hold's line opens its read block when a hook answer delivers it, as it did for the stopped runs of report 125728
-    held = RequiredCommands.block(story.agent.id, SilentRunBlockedMessage.declared().nudge(output=1, seconds=HANG_SECONDS + 1, processor="not known", hint="read"))
+    held = RequiredCommands.block(story.agent.id, SilentRunBlockedMessage.declared().agent_message(output=1, seconds=HANG_SECONDS + 1, processor="not known", hint="read"))
     story.container.get(Bus).run(held, story.agent, environment_id=1)
     for _ in range(REQUIRED_COMMAND_TOOL_USES):
         story.advance(timedelta(seconds=1))

@@ -24,8 +24,8 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story
-from core.modules.developer.nudges.exception_line_message import ExceptionLineMessage
-from engine.testing.expectations.expected_message import expected_nudge
+from core.modules.developer.agent_messages.exception_line_message import ExceptionLineMessage
+from engine.testing.expectations.expected_message import expected_agent_message
 
 LINES = "agent-line list --agent {agent}"
 REPEATED_READ = Statement("SELECT 1")
@@ -117,7 +117,7 @@ def test_the_report_reaches_the_main_agent_through_its_error_line(played, monkey
     run_as_core(story)
     monkeypatch.undo()
     story.run_listeners()
-    story.expect_text(LINES.format(agent=story.agent.id), expected_nudge(ExceptionLineMessage.declared()))
+    story.expect_text(LINES.format(agent=story.agent.id), expected_agent_message(ExceptionLineMessage.declared()))
     story.expect_text("journal-exception show 1", "RepeatedCallsError", actor=story.agent)
 
 

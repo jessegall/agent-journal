@@ -21,12 +21,12 @@ class ContextLineSplit:
             return cls(tuple(lines), ())
         kept: list[AgentMessage] = []
         used = 0
-        for index, nudge in enumerate(lines):
-            size = len(nudge.text) + (LINE_BREAK if kept else 0)
+        for index, agent_message in enumerate(lines):
+            size = len(agent_message.text) + (LINE_BREAK if kept else 0)
             if used + size > limit:
                 if not kept:
-                    return cls((replace(nudge, text=nudge.text[:limit]),), tuple(lines[index + 1:]))
+                    return cls((replace(agent_message, text=agent_message.text[:limit]),), tuple(lines[index + 1:]))
                 return cls(tuple(kept), tuple(lines[index:]))
-            kept.append(nudge)
+            kept.append(agent_message)
             used += size
         return cls(tuple(kept), ())

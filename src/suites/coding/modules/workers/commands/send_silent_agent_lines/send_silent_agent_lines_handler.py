@@ -13,7 +13,7 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_activity import AgentActivity
 from core.modules.drivers.models.agent_line import AgentLine
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from engine.setting.setting_values import SettingValues
 from core.modules.tasks.queries.task_query import TaskQuery
@@ -26,10 +26,10 @@ from suites.coding.modules.workers.support.main_agent_work import MainAgentWork
 from suites.coding.modules.workers.support.worker_job import SILENT_AGENT_SOURCE, RESUMING_SOURCES
 from suites.coding.modules.workers.support.worker_places import WorkerPlaces
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
-from suites.coding.modules.workers.nudges.silent_worker_continue_message import SilentWorkerContinueMessage
-from suites.coding.modules.workers.nudges.inactive_worker_message import InactiveWorkerMessage
-from suites.coding.modules.workers.nudges.inactive_worker_tasks_message import InactiveWorkerTasksMessage
-from suites.coding.modules.workers.nudges.silent_agent_continue_message import SilentAgentContinueMessage
+from suites.coding.modules.workers.agent_messages.silent_worker_continue_message import SilentWorkerContinueMessage
+from suites.coding.modules.workers.agent_messages.inactive_worker_message import InactiveWorkerMessage
+from suites.coding.modules.workers.agent_messages.inactive_worker_tasks_message import InactiveWorkerTasksMessage
+from suites.coding.modules.workers.agent_messages.silent_agent_continue_message import SilentAgentContinueMessage
 from suites.coding.modules.workers.support.worker_settings import SILENT_AGENT_MINUTES, IDLE_WORKER_MINUTES, IDLE_WORKER_REPEAT_MINUTES, RESUME_SILENT_AGENTS, SILENT_RECOVERY_ATTEMPTS
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from core.modules.agents.support.agent_rows import AgentRows
@@ -55,11 +55,11 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
     disabled_scopes = [ActorScope]
 
     def __init__(self, home: JournalHome, queries: Queries, settings: SettingValues,
-                 work: MainAgentWork, nudger: MessageSender, bus: Bus, stop: WorkerStop, main_line: MainAgentLine, places: WorkerPlaces, task_query: TaskQuery, agent_rows: AgentRows, inbox: MergerInbox, questions: WorkerQuestions, assigner: NextTask, worktree_query: WorktreeQuery) -> None:
+                 work: MainAgentWork, message_sender: MessageSender, bus: Bus, stop: WorkerStop, main_line: MainAgentLine, places: WorkerPlaces, task_query: TaskQuery, agent_rows: AgentRows, inbox: MergerInbox, questions: WorkerQuestions, assigner: NextTask, worktree_query: WorktreeQuery) -> None:
         self.assigner, self.worktree_query = assigner, worktree_query
         self.task_query,self.agent_rows, self.inbox, self.questions = task_query, agent_rows, inbox, questions
         self.home, self.queries, self.settings = home, queries, settings
-        self.work, self.nudger, self.bus, self.stop, self.main_line, self.places = work, nudger, bus, stop, main_line, places
+        self.work, self.message_sender, self.bus, self.stop, self.main_line, self.places = work, message_sender, bus, stop, main_line, places
 
     def handle(self, command: SendSilentAgentLines, context: Context) -> None:
         agents = tuple(agent for agent in self.checked_agents() if agent.halted_at is None)
@@ -98,7 +98,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
                 self.bus.dispatch(ReportSilentAgent(agent.id, f"{attempt_limit} waking lines got no hook", activity_at), context)
                 continue
             declaration = SilentWorkerContinueMessage.declared() if agent.id in workers else SilentAgentContinueMessage.declared()
-            self.nudger.send(agent.id, declaration, SILENT_AGENT_SOURCE, context)
+            self.message_sender.send(agent.id, declaration, SILENT_AGENT_SOURCE, context)
 
     def report_idle_workers(self, context: Context, agents: tuple[Agent, ...], activities: dict[int, AgentActivity], working: set[int],
                             worktrees: tuple[Worktree, ...], excluded: set[int]) -> None:
@@ -126,13 +126,13 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
             if source_key in idle_lines and idle_lines[source_key].is_recent_repeat(activity_at, context.timestamp, repeat):
                 continue
             with self.bus.scopes.row_scope(worker):
-                self.inbox.deliver(MergerLine(text=line.text, fallback_source=InactiveWorkerMessage.declared().key, nudge_json=line.stored.json, worker_id=worker.id, source_key=source_key), context)
+                self.inbox.deliver(MergerLine(text=line.text, fallback_source=InactiveWorkerMessage.declared().key, agent_message_json=line.stored.json, worker_id=worker.id, source_key=source_key), context)
 
     def idle_line(self, worker: Agent) -> AgentMessage:
         started = self.task_query.started_tasks(worker.id)
         if not started:
-            return InactiveWorkerMessage.declared().nudge(worker=worker.number)
-        return InactiveWorkerTasksMessage.declared().nudge(worker=worker.number, tasks=", ".join(f"task:{task.id}" for task in started))
+            return InactiveWorkerMessage.declared().agent_message(worker=worker.number)
+        return InactiveWorkerTasksMessage.declared().agent_message(worker=worker.number, tasks=", ".join(f"task:{task.id}" for task in started))
 
     @staticmethod
     def has_stale_idle_line(worker: Agent, idle_lines: dict[str | None, MergerLine]) -> bool:

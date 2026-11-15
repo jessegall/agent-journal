@@ -1,7 +1,7 @@
 from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_policy import EventPolicy
-from core.modules.processes.nudges.cut_journal_command_message import CutJournalCommandMessage
+from core.modules.processes.agent_messages.cut_journal_command_message import CutJournalCommandMessage
 from engine.driver.part import Part
 from engine.registry.registry import Registry
 from engine.subcommand.subcommand import is_subcommand_class
@@ -25,7 +25,7 @@ class JournalPipePolicy(EventPolicy):
             return None
         for part in shell.parts:
             if part.program == JOURNAL and part.pipe_target is not None and shell.parts[part.pipe_target].program in CUTTING_PROGRAMS and not self.allows_pipes(part):
-                return CutJournalCommandMessage.declared().nudge()
+                return CutJournalCommandMessage.declared().agent_message()
         return None
 
     def allows_pipes(self, part: Part) -> bool:

@@ -1,0 +1,16 @@
+from suites.coding.modules.workers.agent_messages.unfinished_merge_message import UnfinishedMergeMessage
+from suites.coding.modules.workers.support.behind_agent_messages import STALE_AGENT_MESSAGES
+from suites.coding.modules.workers.agent_messages.merger_line_available_message import MergerLineAvailableMessage
+from suites.coding.modules.workers.agent_messages.merger_passed_message import MergerPassedMessage
+from suites.coding.modules.workers.agent_messages.merge_hook_failed_message import MergeHookFailedMessage
+from suites.coding.modules.workers.agent_messages.unit_blocked_message import UnitBlockedMessage
+from suites.coding.modules.workers.agent_messages.unit_merged_message import UnitMergedMessage
+from suites.coding.modules.workers.agent_messages.unit_merge_waits_message import UnitMergeWaitsMessage
+from suites.coding.modules.workers.agent_messages.worker_merged_message import WorkerMergedMessage
+from suites.coding.modules.workers.agent_messages.taskless_worker_message import TasklessWorkerMessage
+from suites.coding.modules.workers.support.worker_agent_messages import WORKER_AGENT_MESSAGES
+from suites.coding.modules.workers.agent_messages.worker_test_count_unknown_message import WorkerTestCountUnknownMessage
+from suites.coding.modules.workers.agent_messages.worker_test_limit_refusal_message import WorkerTestLimitRefusalMessage
+from suites.coding.modules.workers.agent_messages.worker_test_limit_stop_message import WorkerTestLimitStopMessage
+
+WORKERS_MODULE_AGENT_MESSAGES = [UnfinishedMergeMessage, MergeHookFailedMessage, UnitBlockedMessage, UnitMergeWaitsMessage, UnitMergedMessage, TasklessWorkerMessage, MergerLineAvailableMessage, WorkerMergedMessage, MergerPassedMessage, *WORKER_AGENT_MESSAGES, *STALE_AGENT_MESSAGES, WorkerTestCountUnknownMessage, WorkerTestLimitStopMessage, WorkerTestLimitRefusalMessage]

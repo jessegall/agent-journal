@@ -24,13 +24,13 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 from tests.stories.support.story_checks import expect_value_line, expect_value_with, expect_value_without_line
-from core.modules.processes.nudges.output_ended_message import OutputEndedMessage
+from core.modules.processes.agent_messages.output_ended_message import OutputEndedMessage
 from tests.integration.support.fixture_journal import FixtureJournal
 
 READ_NOTES = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"]))
 AFTER = READ_NOTES.with_fields(event="post_tool_use")
 TESTS_REPORT = "collected 3 items\nFAILED tests/test_cart.py::test_total - assert 1 == 2\n2 failed, 1 passed in 0.4s\n"
-ENDED = OutputEndedMessage.declared().nudge(output=1).text
+ENDED = OutputEndedMessage.declared().agent_message(output=1).text
 
 
 def resolved(story) -> None:

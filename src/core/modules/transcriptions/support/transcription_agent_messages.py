@@ -1,0 +1,5 @@
+from core.modules.transcriptions.agent_messages.transcription_changed_message import TranscriptionChangedMessage
+from core.modules.transcriptions.agent_messages.transcription_import_request_message import TranscriptionImportRequestMessage
+
+LINE_SOURCE = "transcriptions"
+TRANSCRIPTION_AGENT_MESSAGES = [TranscriptionChangedMessage, TranscriptionImportRequestMessage]

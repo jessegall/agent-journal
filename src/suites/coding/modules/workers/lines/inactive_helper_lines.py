@@ -5,8 +5,8 @@ from engine.helper_type.helper_type_book import HelperTypeBook
 
 
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
-from suites.coding.modules.workers.nudges.helper_inactive_message import HelperInactiveMessage
-from suites.coding.modules.workers.nudges.unstarted_job_message import UnstartedJobMessage
+from suites.coding.modules.workers.agent_messages.helper_inactive_message import HelperInactiveMessage
+from suites.coding.modules.workers.agent_messages.unstarted_job_message import UnstartedJobMessage
 from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPER_GRACE_MINUTES, INACTIVE_HELPER_MINUTES
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from engine.enums.agent_role import AgentRole
@@ -55,7 +55,7 @@ class InactiveHelperLines(EventLineSource):
         self.agents, self.queries, self.activities, self.history, self.settings = agents, queries, activities, history, settings
         self.processes, self.workers, self.requests, self.types, self.stops, self.clock = processes, workers, requests, types, stops, clock
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         now = self.clock.timestamp()
         spoke_at = self.history.last_spoke(self.key, agent_id)
         if spoke_at is not None and spoke_at.elapsed_seconds(now) < self.settings.minutes(INACTIVE_HELPER_MINUTES).count:
@@ -68,8 +68,8 @@ class InactiveHelperLines(EventLineSource):
         if not inactive and not unstarted:
             return []
         notes = self.queue_notes(inactive)
-        return [*(HelperInactiveMessage.declared().nudge(name=helper.role, agent=helper.number, minutes=grace.minute_count, queue=notes[helper.id], action=self.action(helper)) for helper in inactive),
-                *(UnstartedJobMessage.declared().nudge(name=helper.role, agent=helper.number, minutes=grace.minute_count, action=self.action(helper)) for helper in unstarted)]
+        return [*(HelperInactiveMessage.declared().agent_message(name=helper.role, agent=helper.number, minutes=grace.minute_count, queue=notes[helper.id], action=self.action(helper)) for helper in inactive),
+                *(UnstartedJobMessage.declared().agent_message(name=helper.role, agent=helper.number, minutes=grace.minute_count, action=self.action(helper)) for helper in unstarted)]
 
     @staticmethod
     def action(helper: Agent) -> str:

@@ -11,6 +11,6 @@ class PhraseTriggerAnswer:
     that fire them and request the skill."""
 
     refusal: AgentMessage | None
-    nudges: tuple[AgentMessage, ...]
+    agent_messages: tuple[AgentMessage, ...]
     skill_block: tuple[AgentMessage, str] | None
     commands: tuple[Command[object], ...]

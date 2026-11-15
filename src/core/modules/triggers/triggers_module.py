@@ -18,7 +18,7 @@ from core.modules.triggers.listeners.trigger_approval_listener import TriggerApp
 from core.modules.triggers.migrations.m003_trigger_enabling import TriggerEnablingMigration
 from core.modules.triggers.marks.trigger_waiting_mark import TriggerWaitingMark
 from core.modules.triggers.support.trigger_settings import TRIGGER_SETTINGS
-from core.modules.triggers.support.trigger_nudges import TRIGGER_NUDGES
+from core.modules.triggers.support.trigger_agent_messages import TRIGGER_AGENT_MESSAGES
 from engine.module.module import Module
 from core.modules.triggers.commands.fire_trigger.fire_trigger_handler import FireTriggerHandler
 from core.modules.triggers.commands.make_trigger.make_trigger_handler import MakeTriggerHandler
@@ -52,7 +52,7 @@ class TriggersModule(Module):
     effects = [PhraseTriggerEffect, ScheduledTriggerEffect]
     lines = [PhraseTriggerLines, ScheduledTriggerLines]
     policies = [PhraseTriggerPolicy]
-    nudges = TRIGGER_NUDGES
+    agent_messages = TRIGGER_AGENT_MESSAGES
     settings = TRIGGER_SETTINGS
     marks = [TriggerWaitingMark]
     guards = [AgentTriggerGuard]

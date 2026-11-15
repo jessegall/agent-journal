@@ -37,7 +37,7 @@ from core.modules.assign_rules.migrations.m001_assign_rules import AssignRulesMi
 from core.modules.assign_rules.migrations.m002_decision_indexes import DecisionIndexesMigration
 from core.modules.assign_rules.migrations.m003_rule_target_agent import RuleTargetAgentMigration
 from core.modules.assign_rules.migrations.m004_enabled_rule_index import EnabledRuleIndexMigration
-from core.modules.assign_rules.support.assign_rules_nudges import ASSIGN_RULES_NUDGES
+from core.modules.assign_rules.support.assign_rules_agent_messages import ASSIGN_RULES_AGENT_MESSAGES
 from core.modules.assign_rules.support.rules.rule_assignment_reasons import RuleAssignmentReasons
 from core.modules.assignments.support.assignment_reasons import AssignmentReasons
 from core.modules.assign_rules.tick_handlers.judge_skipped_tasks_tick_handler import JudgeSkippedTasksTickHandler
@@ -63,5 +63,5 @@ class AssignRulesModule(Module):
                    ApplyAssignRuleSubcommand, MoveRuleTasksSubcommand, ReturnRuleTasksSubcommand]
     guards = [AssignRulePersonGuard, AssignRuleTargetGuard]
     bindings = {AssignmentReasons: RuleAssignmentReasons}
-    nudges = ASSIGN_RULES_NUDGES
+    agent_messages = ASSIGN_RULES_AGENT_MESSAGES
     tick_handlers = [JudgeSkippedTasksTickHandler]

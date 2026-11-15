@@ -10,11 +10,11 @@ from engine.scope.environment_scope import EnvironmentScope
 from core.modules.agents.models.agent import Agent
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_state import ApprovalState
-from core.modules.approvals.nudges.approval_pending_message import ApprovalPendingMessage
-from core.modules.approvals.nudges.approval_decided_message import ApprovalDecidedMessage
-from core.modules.approvals.nudges.approval_failed_message import ApprovalFailedMessage
-from core.modules.approvals.nudges.approval_review_message import ApprovalReviewMessage
-from core.modules.drivers.commands.record_agent_nudge.record_agent_message import RecordAgentMessage
+from core.modules.approvals.agent_messages.approval_pending_message import ApprovalPendingMessage
+from core.modules.approvals.agent_messages.approval_decided_message import ApprovalDecidedMessage
+from core.modules.approvals.agent_messages.approval_failed_message import ApprovalFailedMessage
+from core.modules.approvals.agent_messages.approval_review_message import ApprovalReviewMessage
+from core.modules.drivers.commands.record_agent_agent_message.record_agent_message import RecordAgentMessage
 
 
 class ApprovalNoticeListener(CommitListener[Changed[ApprovalRequest]]):
@@ -44,6 +44,6 @@ class ApprovalNoticeListener(CommitListener[Changed[ApprovalRequest]]):
             declaration = ApprovalFailedMessage.declared()
         if review:
             declaration = ApprovalReviewMessage.declared()
-        notice = declaration.nudge(approval=request.id, recipient=recipient) if declaration is ApprovalReviewMessage.declared() else declaration.nudge(approval=request.id)
+        notice = declaration.agent_message(approval=request.id, recipient=recipient) if declaration is ApprovalReviewMessage.declared() else declaration.agent_message(approval=request.id)
         self.bus.run(RecordAgentMessage(agent.id, notice, declaration.key), self.actors.actor("journal.core.approvals"),
                      cause_id=logged.id, environment_id=request.environment_id)

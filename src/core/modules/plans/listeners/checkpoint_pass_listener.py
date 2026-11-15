@@ -9,7 +9,7 @@ from core.modules.plans.models.lifecycles.checkpoint_lifecycle import Checkpoint
 from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.support.plan_main_agents import PlanMainAgents
-from core.modules.plans.nudges.checkpoint_finished_message import CheckpointFinishedMessage
+from core.modules.plans.agent_messages.checkpoint_finished_message import CheckpointFinishedMessage
 from core.modules.plans.support.plan_checkpoints import PlanCheckpoints
 from core.modules.tasks.commands.make_task_log.make_task_log import MakeTaskLog
 

@@ -79,7 +79,7 @@ from core.modules.plans.listeners.started_plan_dock_listener import StartedPlanD
 from core.modules.plans.listeners.ready_plan_sync_listener import ReadyPlanSyncListener
 from core.modules.plans.commands.plan_timeline.plan_timeline_subcommand import PlanTimelineSubcommand
 from core.modules.plans.marks.plan_mark import PlanMark
-from core.modules.plans.support.plan_nudges import PLAN_NUDGES
+from core.modules.plans.support.plan_agent_messages import PLAN_AGENT_MESSAGES
 from core.modules.plans.seeders.plans_seeder import PlansSeeder
 from core.modules.plans.support.block_conditions.plan_approved import PlanApproved
 from core.modules.plans.support.block_conditions.plan_finished import PlanFinished
@@ -144,7 +144,7 @@ class PlansModule(Module):
     listeners = [CheckpointReachListener, StartedPlanCheckpointsListener, CheckpointPassListener, PlanWaitListener, TaskPlanRowsListener, ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
                  FinishedPlanListener, PassedPlanListener, CheckpointRunListener, FinishedPlanLineListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener, NextPlanTaskStarterListener, ReadyPlanSyncListener]
     marks = [PlanMark]
-    nudges = PLAN_NUDGES
+    agent_messages = PLAN_AGENT_MESSAGES
     needs = [PlanContextNeeds]
     lines = [PlanContextLines, PlanFocusLines, PlanOrderLines, PlanStateLines, PlanTaskEndLines]
     docks = PLANS_DOCKS

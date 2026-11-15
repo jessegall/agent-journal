@@ -7,9 +7,9 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.judge_refusal_skip.judge_refusal_skip import JudgeRefusalSkip
 from core.modules.drivers.commands.skip_refusal.skip_refusal_handler import SKIP_SOURCE
 from core.modules.drivers.models.refusal_skip import RefusalSkip
-from core.modules.drivers.nudges.skip_approved_message import SkipApprovedMessage
-from core.modules.drivers.nudges.skip_declined_message import SkipDeclinedMessage
-from engine.driver.nudger import MessageSender
+from core.modules.drivers.agent_messages.skip_approved_message import SkipApprovedMessage
+from core.modules.drivers.agent_messages.skip_declined_message import SkipDeclinedMessage
+from engine.driver.message_sender import MessageSender
 from core.modules.agents.support.agent_label import AgentLabel
 
 
@@ -20,8 +20,8 @@ class JudgeRefusalSkipHandler(Handler[JudgeRefusalSkip, RefusalSkip]):
 
     command = JudgeRefusalSkip
 
-    def __init__(self, queries: Queries, repository: Repository, nudger: MessageSender) -> None:
-        self.queries, self.repository, self.nudger = queries, repository, nudger
+    def __init__(self, queries: Queries, repository: Repository, message_sender: MessageSender) -> None:
+        self.queries, self.repository, self.message_sender = queries, repository, message_sender
 
     def handle(self, command: JudgeRefusalSkip, context: Context) -> RefusalSkip:
         skip = self.queries.query(RefusalSkip).find(command.skip_id)
@@ -32,8 +32,8 @@ class JudgeRefusalSkipHandler(Handler[JudgeRefusalSkip, RefusalSkip]):
             raise Refusal(f"skip {skip.id} is for {AgentLabel.labelled(self.queries.query(Agent).find(agent.parent_id)).text} to answer", "only the agent's parent or a user answers it")
         if command.is_approved:
             answered = self.repository.update(skip, context, needs_approval=False, approved_at=context.timestamp)
-            self.nudger.send(agent.id, SkipApprovedMessage.declared(), SKIP_SOURCE, context, refusal=skip.id)
+            self.message_sender.send(agent.id, SkipApprovedMessage.declared(), SKIP_SOURCE, context, refusal=skip.id)
             return answered
         answered = self.repository.update(skip, context, needs_approval=False, cancelled_at=context.timestamp)
-        self.nudger.send(agent.id, SkipDeclinedMessage.declared(), SKIP_SOURCE, context, refusal=skip.id)
+        self.message_sender.send(agent.id, SkipDeclinedMessage.declared(), SKIP_SOURCE, context, refusal=skip.id)
         return answered

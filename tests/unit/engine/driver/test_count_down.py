@@ -17,5 +17,5 @@ class SampleSpan:
 
 
 def test_a_count_down_says_the_action_due_and_what_remains_in_the_unit_of_its_span():
-    assert CountDown("a", "read message {messages}", SampleSpan(20)).nudge(3, messages=12).text == "read message 12 due: 3 tool uses"
-    assert CountDown("b", "look again", Seconds(60)).nudge(30).text == "look again due: 30 seconds"
+    assert CountDown("a", "read message {messages}", SampleSpan(20)).agent_message(3, messages=12).text == "read message 12 due: 3 tool uses"
+    assert CountDown("b", "look again", Seconds(60)).agent_message(30).text == "look again due: 30 seconds"

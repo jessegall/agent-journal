@@ -8,7 +8,7 @@ from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
 from engine.enums.line_category import LineCategory
 from engine.time.clock import Clock
-from core.modules.reminders.nudges.reminder_line_message import ReminderLineMessage
+from core.modules.reminders.agent_messages.reminder_line_message import ReminderLineMessage
 from core.modules.reminders.support.due_reminders import DUE_REMINDER_KEY, DueReminders
 
 
@@ -25,5 +25,5 @@ class DueReminderLines(LineSource):
         self.reminders, self.clock = reminders, clock
 
     def lines(self, question: Question, view: AgentView) -> Sequence[Line]:
-        nudges = [ReminderLineMessage.declared().nudge(reminder=reminder.id) for reminder in self.reminders.due(view.agent.agent_id, self.clock.timestamp())]
-        return [Line.of_nudge(nudge, self.carrier, self.category) for nudge in nudges]
+        agent_messages = [ReminderLineMessage.declared().agent_message(reminder=reminder.id) for reminder in self.reminders.due(view.agent.agent_id, self.clock.timestamp())]
+        return [Line.of_agent_message(agent_message, self.carrier, self.category) for agent_message in agent_messages]

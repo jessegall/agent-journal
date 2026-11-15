@@ -1,6 +1,6 @@
 from engine.command.context import Context
 from engine.driver.message_template import MessageTemplate
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
@@ -12,8 +12,8 @@ class PlanMainAgents:
     """Sends a line about a plan to the main agent that works it: the agent the plan is assigned to, else
     every main agent."""
 
-    def __init__(self, queries: Queries, nudger: MessageSender, assignments: Assignments) -> None:
-        self.queries, self.nudger, self.assignments = queries, nudger, assignments
+    def __init__(self, queries: Queries, message_sender: MessageSender, assignments: Assignments) -> None:
+        self.queries, self.message_sender, self.assignments = queries, message_sender, assignments
 
     def newest(self) -> Agent | None:
         return MainAgentFinder.newest(self.queries)
@@ -24,4 +24,4 @@ class PlanMainAgents:
         is_main_assignee = any(agent.id == assignee_id for agent in main_agents)
         for agent in main_agents:
             if not is_main_assignee or agent.id == assignee_id:
-                self.nudger.send(agent.id, declaration, source, context, plan=plan.id, **fields)
+                self.message_sender.send(agent.id, declaration, source, context, plan=plan.id, **fields)

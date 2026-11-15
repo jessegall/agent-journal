@@ -6,11 +6,11 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from engine.testing.expectations.expect_reply import expect_absent_reply_line
 from tests.stories.support.story_checks import expect_startswith_listed, expect_value_with, expect_value_without
-from suites.coding.nudges.task_assignment_message import TaskAssignmentMessage
+from suites.coding.agent_messages.task_assignment_message import TaskAssignmentMessage
 
 MASTER = "journal.core.developer.tools"
 HOOKS = "journal.core.developer.tools.hooks"
-TERMINAL_NUDGES = f"{HOOKS}.terminal-nudges"
+TERMINAL_AGENT_MESSAGES = f"{HOOKS}.terminal-nudges"
 
 
 def terminal_line(story) -> str:
@@ -53,13 +53,13 @@ def test_the_agent_is_never_told_what_a_hook_cost_and_the_terminal_says_when_it_
     expect_terminal_reply_with(reply, "over the 1 a hook may cost")
 
 
-def test_each_line_sent_to_the_agent_shows_in_the_terminal_while_the_nudges_setting_is_on(new_story):
+def test_each_line_sent_to_the_agent_shows_in_the_terminal_while_the_agent_messages_setting_is_on(new_story):
     story = new_story(fixture=UserBuilder)
     expect_terminal_hook_without(story, "s-1", "to the agent:")
     story.run(f"setting switch {MASTER} on --project", actor=story.user)
-    story.expect_success(f"setting set {TERMINAL_NUDGES} true --project", actor=story.user)
+    story.expect_success(f"setting set {TERMINAL_AGENT_MESSAGES} true --project", actor=story.user)
     story.run('task make "Fix the cart" --environment main', actor=story.user)
-    expect_terminal_hook_with(story, "s-1", TaskAssignmentMessage.declared().nudge(task=1).text)
+    expect_terminal_hook_with(story, "s-1", TaskAssignmentMessage.declared().agent_message(task=1).text)
 
 
 class HookLogging(StoryFixture):
@@ -70,7 +70,7 @@ class HookLogging(StoryFixture):
     def steps(self, story):
         story.run(f'setting switch {MASTER} on --project', actor=story.user)
         story.expect_success(f'setting set {HOOK_DURATIONS_SETTING} true --project', actor=story.user)
-        story.expect_success(f'setting set {TERMINAL_NUDGES} true --project', actor=story.user)
+        story.expect_success(f'setting set {TERMINAL_AGENT_MESSAGES} true --project', actor=story.user)
 
 
 def expect_terminal_line(story, expected) -> None:

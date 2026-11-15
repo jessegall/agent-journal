@@ -3,7 +3,7 @@ from core.modules.pins.lines.link_pin_lines import LinkPinLines
 from core.modules.pins.effects.agent_text_pin_effect import AgentTextPinEffect
 from core.modules.pins.effects.automatic_link_pin_effect import AutomaticLinkPinEffect
 from core.modules.pins.models.declarations.pin_model_declaration import PinModelDeclaration
-from core.modules.pins.support.pin_nudges import PIN_NUDGES
+from core.modules.pins.support.pin_agent_messages import PIN_AGENT_MESSAGES
 from engine.module.module import Module
 from core.modules.pins.commands.close_pin.close_pin_handler import ClosePinHandler
 from core.modules.pins.commands.close_pin.close_pin_subcommand import ClosePinSubcommand
@@ -23,7 +23,7 @@ class PinsModule(Module):
     lines = [AgentTextPinLines, LinkPinLines]
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.drivers"]
-    nudges = PIN_NUDGES
+    agent_messages = PIN_AGENT_MESSAGES
     seeders = [PinsSeeder]
     models = [PinModelDeclaration]
     migrations = [PinsTableMigration]

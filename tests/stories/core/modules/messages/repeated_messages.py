@@ -9,8 +9,8 @@ from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value
-from core.modules.messages.nudges.repeated_closing_message import RepeatedClosingMessage
-from engine.testing.expectations.expected_message import expected_nudge
+from core.modules.messages.agent_messages.repeated_closing_message import RepeatedClosingMessage
+from engine.testing.expectations.expected_message import expected_agent_message
 
 FIRST = "Merges are blocked until you accept approval card 15 or switch Auto on"
 REWORDED = "Merges stay blocked until you accept approval card 15 or turn Auto on"
@@ -77,5 +77,5 @@ def test_closing_words_much_like_an_earlier_turns_message_are_held_and_the_agent
     story.hook("s-1", HookSamples.message_display(REWORDED))
     # a shown text's hook carries no lines, so the line waits for the agent's next hook
     shown = story.hook("s-1", HookSamples.edit("src/cart.py"))
-    expect_value(expected_nudge(RepeatedClosingMessage.declared(), message=3).matches_lines(shown.lines), True)
+    expect_value(expected_agent_message(RepeatedClosingMessage.declared(), message=3).matches_lines(shown.lines), True)
     expect_value(REWORDED not in story.run("message list", actor=story.user).output_text, True)

@@ -10,7 +10,7 @@ from suites.coding.modules.workers.commands.decide_behind_check.order_worker_upd
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState as State
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.support.behind_decisions import BehindDecisions
-from suites.coding.modules.workers.nudges.update_ordered_message import UpdateOrderedMessage
+from suites.coding.modules.workers.agent_messages.update_ordered_message import UpdateOrderedMessage
 from tests.unit.suites.coding.modules.workers.support.test_behind_check_closing import WORKTREE
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 from suites.coding.modules.workers.types.merger import Merger
@@ -85,7 +85,7 @@ class Visits:
         self.closed += 1
 
 
-class Nudger:
+class MessageSender:
     def __init__(self) -> None:
         self.sent: list[tuple[int, object, dict]] = []
 
@@ -98,27 +98,27 @@ class Reader:
         return SimpleNamespace(overlap=("src/cart.py", "src/tax.py"), commits_lagging=4, base_tip="abc")
 
 
-def handler(checks: Checks, worktrees: Worktrees | None = None) -> tuple[OrderWorkerUpdateHandler, Repository, Visits, Nudger]:
-    repository, visits, nudger = Repository(), Visits(), Nudger()
+def handler(checks: Checks, worktrees: Worktrees | None = None) -> tuple[OrderWorkerUpdateHandler, Repository, Visits, MessageSender]:
+    repository, visits, message_sender = Repository(), Visits(), MessageSender()
     decisions = BehindDecisions(worktrees or Worktrees(), checks, Numbers())
-    return OrderWorkerUpdateHandler(Agents(), decisions, Reader(), checks, repository, visits, nudger), repository, visits, nudger
+    return OrderWorkerUpdateHandler(Agents(), decisions, Reader(), checks, repository, visits, message_sender), repository, visits, message_sender
 
 
 def ordering_actor(actor_id: int, checks: Checks, worktrees: Worktrees | None = None):
-    order, repository, visits, nudger = handler(checks, worktrees)
+    order, repository, visits, message_sender = handler(checks, worktrees)
     command = OrderWorkerUpdate(WORKER, "cart.py is changed on both sides")
     order.prepare(command, Actor(actor_id, ActorType.AGENT))
     order.handle(command, SimpleNamespace(actor=Actor(actor_id, ActorType.AGENT)))
-    return repository, visits, nudger
+    return repository, visits, message_sender
 
 
 def test_the_merger_orders_the_update_with_who_and_why_and_the_worker_is_woken_with_how_far_its_base_moved():
-    repository, visits, nudger = ordering_actor(MERGER, Checks(State.OPEN))
+    repository, visits, message_sender = ordering_actor(MERGER, Checks(State.OPEN))
     check = repository.saved[0]
     assert (check.state, check.decider_id, check.reason, visits.closed) == (State.ORDERED, MERGER, "cart.py is changed on both sides", 1)
-    worker, declaration, fields = nudger.sent[0]
+    worker, declaration, fields = message_sender.sent[0]
     assert (worker, declaration, fields) == (WORKER, UpdateOrderedMessage.declared(), {"count": 4})
-    assert UpdateOrderedMessage.declared().nudge(**fields).text.startswith(f"Your base branch moved {fields['count']} commits")
+    assert UpdateOrderedMessage.declared().agent_message(**fields).text.startswith(f"Your base branch moved {fields['count']} commits")
 
 
 def test_the_main_agent_may_order_after_a_pass_and_another_agent_is_refused():

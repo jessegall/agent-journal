@@ -3,12 +3,12 @@ from engine.listener.save_listener import SaveListener
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.reader_request import ReaderRequest
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
-from suites.coding.modules.workers.nudges.reader_sample_ready_message import ReaderSampleReadyMessage
+from suites.coding.modules.workers.agent_messages.reader_sample_ready_message import ReaderSampleReadyMessage
 from engine.event.updated import Updated
 from engine.command.context import Context
 
@@ -19,8 +19,8 @@ class ReaderSampleReadyListener(SaveListener[Updated[ReaderRequest]]):
     name = "workers.reader-sample-ready"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, nudger: MessageSender) -> None:
-        self.queries, self.nudger = queries, nudger
+    def __init__(self, queries: Queries, message_sender: MessageSender) -> None:
+        self.queries, self.message_sender = queries, message_sender
 
     def handle(self, event: Updated[ReaderRequest], context: Context) -> None:
         request = event.row
@@ -33,4 +33,4 @@ class ReaderSampleReadyListener(SaveListener[Updated[ReaderRequest]]):
             return
         reader = self.queries.query(Reader).find(request.reader_id)
         if self.queries.query(Agent).find(sample.session_agent_id).role == Worker.key:
-            self.nudger.send(sample.session_agent_id, ReaderSampleReadyMessage.declared(), WORKER_JOB_SOURCE, context, output=sample.id, reader=reader.name)
+            self.message_sender.send(sample.session_agent_id, ReaderSampleReadyMessage.declared(), WORKER_JOB_SOURCE, context, output=sample.id, reader=reader.name)

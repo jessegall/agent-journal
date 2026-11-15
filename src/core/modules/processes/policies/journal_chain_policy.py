@@ -1,7 +1,7 @@
 from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_policy import EventPolicy
-from core.modules.processes.nudges.journal_command_last_message import JournalCommandLastMessage
+from core.modules.processes.agent_messages.journal_command_last_message import JournalCommandLastMessage
 import re
 
 from engine.driver.part import Part
@@ -26,7 +26,7 @@ class JournalChainPolicy(EventPolicy):
         has_long_part = False
         for part in shell.parts:
             if self.is_journal_loop(part) or (part.program == JOURNAL and has_long_part):
-                return JournalCommandLastMessage.declared().nudge()
+                return JournalCommandLastMessage.declared().agent_message()
             has_long_part = has_long_part or not part.classification.category.is_short
         return None
 

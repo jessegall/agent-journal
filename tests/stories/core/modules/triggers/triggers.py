@@ -2,21 +2,21 @@ from datetime import timedelta
 
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
-from core.modules.triggers.nudges.trigger_denies_message import TriggerDeniesMessage
-from core.modules.triggers.nudges.trigger_line_message import TriggerLineMessage
+from core.modules.triggers.agent_messages.trigger_denies_message import TriggerDeniesMessage
+from core.modules.triggers.agent_messages.trigger_line_message import TriggerLineMessage
 
 
 def test_a_phrase_trigger_tells_the_agent_its_text_when_the_users_prompt_holds_a_phrase(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_success('trigger make "deploy, release" "Run the release sequence"', "trigger 1: deploy, release -> nudge", actor=story.user)
-    story.expect_hook_allowed("s-1", HookSamples.prompt("please release it"), TriggerLineMessage.declared().nudge(trigger=1).text)
+    story.expect_hook_allowed("s-1", HookSamples.prompt("please release it"), TriggerLineMessage.declared().agent_message(trigger=1).text)
     story.expect_text("trigger show 1", "Run the release sequence", actor=story.agent)
 
 
 def test_a_deny_trigger_refuses_a_tool_call_that_holds_its_phrase(new_story):
     story = new_story(fixture=UserJoined)
     story.run('trigger make "rm -rf" "never remove folders" --do deny', actor=story.user)
-    story.expect_hook_refusal("s-1", HookSamples.prompt("rm -rf build"), TriggerDeniesMessage.declared().nudge(trigger=1).text)
+    story.expect_hook_refusal("s-1", HookSamples.prompt("rm -rf build"), TriggerDeniesMessage.declared().agent_message(trigger=1).text)
 
 
 def test_a_scheduled_trigger_fires_once_its_time_comes_and_ends_after_its_times(new_story):
@@ -24,7 +24,7 @@ def test_a_scheduled_trigger_fires_once_its_time_comes_and_ends_after_its_times(
     story.expect_text('trigger schedule "Check the build" --every 30 --times 1', "next at", actor=story.user)
     story.advance(timedelta(minutes=31))
     story.expect_hook_allowed("s-1", HookSamples.stop())
-    story.expect_text(f"agent-line list --agent {story.agent.id} --state waiting", TriggerLineMessage.declared().nudge(trigger=1).text, actor=story.user)
+    story.expect_text(f"agent-line list --agent {story.agent.id} --state waiting", TriggerLineMessage.declared().agent_message(trigger=1).text, actor=story.user)
     story.expect_absent("trigger list", "Check the build", actor=story.user)
 
 
@@ -44,4 +44,4 @@ def test_a_trigger_has_its_phrases_action_and_text_changed(new_story):
     story = new_story(fixture=UserJoined)
     story.run('trigger make "deploy" "Run the release sequence"', actor=story.user)
     story.run('trigger edit 1 --phrases "ship it" "go live" --action deny --text "Not on a Friday"', actor=story.user)
-    story.expect_hook_refusal("s-1", HookSamples.prompt("go live now"), TriggerDeniesMessage.declared().nudge(trigger=1).text)
+    story.expect_hook_refusal("s-1", HookSamples.prompt("go live now"), TriggerDeniesMessage.declared().agent_message(trigger=1).text)

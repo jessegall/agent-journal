@@ -20,7 +20,7 @@ from core.modules.memories.migrations.m007_memory_session import MemorySessionMi
 from core.modules.memories.migrations.m008_memory_removed_index import MemoryRemovedIndexMigration
 from core.modules.memories.migrations.m005_memory_scope_index import MemoryScopeIndexMigration
 from core.modules.memories.migrations.m006_memory_owner import MemoryOwnerMigration
-from core.modules.memories.support.memory_nudges import MEMORY_NUDGES
+from core.modules.memories.support.memory_agent_messages import MEMORY_AGENT_MESSAGES
 from engine.module.model_declaration import ModelDeclaration
 from core.modules.memories.commands.memory_counts.memory_counts_subcommand import MemoryCountsSubcommand
 from core.modules.memories.commands.memory_page.memory_page_subcommand import MemoryPageSubcommand
@@ -74,7 +74,7 @@ class MemoriesModule(Module):
     keywords that bring one back and the context marks that ask the agent to weigh them."""
 
     name = "journal.core.memories"
-    nudges = MEMORY_NUDGES
+    agent_messages = MEMORY_AGENT_MESSAGES
     requires_engine = ">=5,<6"
     block_conditions = [MemoriesWeighed]
     settings = MEMORY_SETTINGS

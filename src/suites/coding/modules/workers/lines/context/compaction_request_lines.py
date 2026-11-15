@@ -9,7 +9,7 @@ from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
 from suites.coding.modules.workers.effects.context.request_compaction_effect import RequestCompactionEffect
 from suites.coding.modules.workers.needs.compaction_needs import COMPACTION_STOP_RULE
-from suites.coding.modules.workers.nudges.context_compacted_message import ContextCompactedMessage
+from suites.coding.modules.workers.agent_messages.context_compacted_message import ContextCompactedMessage
 from suites.coding.modules.workers.types.worker import Worker
 
 
@@ -26,4 +26,4 @@ class CompactionRequestLines(LineSource):
         self.effect = effect
 
     def lines(self, question: Question, view: AgentView) -> Sequence[Line]:
-        return [Line.of_nudge(ContextCompactedMessage.declared().nudge(), self.carrier)] if self.effect.asks(view) else []
+        return [Line.of_agent_message(ContextCompactedMessage.declared().agent_message(), self.carrier)] if self.effect.asks(view) else []

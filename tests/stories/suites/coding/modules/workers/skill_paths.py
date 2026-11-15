@@ -2,7 +2,7 @@ from datetime import timedelta
 
 import pytest
 
-from core.modules.skills.support.skill_nudges import SKILL_TOOL_USES
+from core.modules.skills.support.skill_agent_messages import SKILL_TOOL_USES
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.skills.support.skill_samples import PATH

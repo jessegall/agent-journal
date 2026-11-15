@@ -31,20 +31,20 @@ from core.modules.aliases.seeders.aliases_seeder import AliasesSeeder
 from core.modules.aliases.support.alias_shell_aliases import AliasShellAliases
 from core.modules.aliases.upgrade.aliases_move import AliasesMove
 from core.modules.aliases.commands.skip_saved_command.skip_saved_command_subcommand import SkipSavedCommandSubcommand
-from core.modules.aliases.nudges.command_type_unknown_message import CommandTypeUnknownMessage
-from core.modules.aliases.nudges.alias_access_refusal_message import AliasAccessRefusalMessage
-from core.modules.aliases.nudges.alias_missing_message import AliasMissingMessage
-from core.modules.aliases.nudges.alias_plugin_off_message import AliasPluginOffMessage
-from core.modules.aliases.nudges.alias_unexpanded_message import AliasUnexpandedMessage
-from core.modules.aliases.nudges.saved_command_choices_message import SavedCommandChoicesMessage
-from core.modules.aliases.nudges.saved_command_direct_message import SavedCommandDirectMessage
-from core.modules.aliases.nudges.saved_command_mixed_message import SavedCommandMixedMessage
-from core.modules.aliases.nudges.saved_command_piped_message import SavedCommandPipedMessage
-from core.modules.aliases.nudges.saved_command_silent_message import SavedCommandSilentMessage
-from core.modules.aliases.nudges.saved_command_helper_message import SavedCommandHelperMessage
-from core.modules.aliases.nudges.saved_command_unknown_message import SavedCommandUnknownMessage
-from core.modules.aliases.nudges.saved_command_unread_message import SavedCommandUnreadMessage
-from core.modules.aliases.nudges.saved_command_timeout_message import SavedCommandTimeoutMessage
+from core.modules.aliases.agent_messages.command_type_unknown_message import CommandTypeUnknownMessage
+from core.modules.aliases.agent_messages.alias_access_refusal_message import AliasAccessRefusalMessage
+from core.modules.aliases.agent_messages.alias_missing_message import AliasMissingMessage
+from core.modules.aliases.agent_messages.alias_plugin_off_message import AliasPluginOffMessage
+from core.modules.aliases.agent_messages.alias_unexpanded_message import AliasUnexpandedMessage
+from core.modules.aliases.agent_messages.saved_command_choices_message import SavedCommandChoicesMessage
+from core.modules.aliases.agent_messages.saved_command_direct_message import SavedCommandDirectMessage
+from core.modules.aliases.agent_messages.saved_command_mixed_message import SavedCommandMixedMessage
+from core.modules.aliases.agent_messages.saved_command_piped_message import SavedCommandPipedMessage
+from core.modules.aliases.agent_messages.saved_command_silent_message import SavedCommandSilentMessage
+from core.modules.aliases.agent_messages.saved_command_helper_message import SavedCommandHelperMessage
+from core.modules.aliases.agent_messages.saved_command_unknown_message import SavedCommandUnknownMessage
+from core.modules.aliases.agent_messages.saved_command_unread_message import SavedCommandUnreadMessage
+from core.modules.aliases.agent_messages.saved_command_timeout_message import SavedCommandTimeoutMessage
 from core.modules.aliases.tick_handlers.silent_alias_marking_tick_handler import SilentAliasMarkingTickHandler
 
 
@@ -66,4 +66,4 @@ class AliasesModule(Module):
     listeners = [AliasFileListener, PluginAliasesListener, EndedRunSilenceListener]
     tick_handlers = [SilentAliasMarkingTickHandler]
     guards = [ReaderAliasGuard, SavedCommandGuard]
-    nudges = [CommandTypeUnknownMessage, AliasUnexpandedMessage, AliasMissingMessage, AliasPluginOffMessage, AliasAccessRefusalMessage, SavedCommandMixedMessage, SavedCommandUnknownMessage, SavedCommandChoicesMessage, SavedCommandHelperMessage, SavedCommandDirectMessage, SavedCommandPipedMessage, SavedCommandUnreadMessage, SavedCommandSilentMessage, SavedCommandTimeoutMessage]
+    agent_messages = [CommandTypeUnknownMessage, AliasUnexpandedMessage, AliasMissingMessage, AliasPluginOffMessage, AliasAccessRefusalMessage, SavedCommandMixedMessage, SavedCommandUnknownMessage, SavedCommandChoicesMessage, SavedCommandHelperMessage, SavedCommandDirectMessage, SavedCommandPipedMessage, SavedCommandUnreadMessage, SavedCommandSilentMessage, SavedCommandTimeoutMessage]

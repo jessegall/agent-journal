@@ -7,7 +7,7 @@ from engine.agent_machine.needs.block_plan import BlockPlan
 from engine.agent_machine.needs.required_state import RequiredState
 from engine.agent_machine.needs.state_source import StateSource
 from engine.agent_machine.record.question import Question
-from core.modules.plans.nudges.plan_context_message import PlanContextMessage
+from core.modules.plans.agent_messages.plan_context_message import PlanContextMessage
 from core.modules.plans.support.block_conditions.plan_context_read import PlanContextRead
 from core.modules.plans.support.plan_context_delivery import PlanContextDelivery
 
@@ -33,5 +33,5 @@ class PlanContextNeeds(StateSource):
         plan_id = self.delivery.unread_plan(agent_id)
         if plan_id is None:
             return None
-        return BlockPlan(PlanContextMessage.declared().nudge(plan=plan_id), PlanContextRead(plan_id), PLAN_CONTEXT_RULE, PLAN_CONTEXT_RANK,
+        return BlockPlan(PlanContextMessage.declared().agent_message(plan=plan_id), PlanContextRead(plan_id), PLAN_CONTEXT_RULE, PLAN_CONTEXT_RANK,
                          subject=RowReference("plan", plan_id), lifting_lines=tuple([f"journal plan context {plan_id}"]))

@@ -18,5 +18,5 @@ class OrphanProcessLines(EventLineSource):
     def __init__(self, check: OrphanCheck) -> None:
         self.check = check
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        return self.check.orphaned(event, agent_id).nudges
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+        return self.check.orphaned(event, agent_id).agent_messages

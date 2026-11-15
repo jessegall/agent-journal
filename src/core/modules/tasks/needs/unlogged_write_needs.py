@@ -12,7 +12,7 @@ from engine.driver.hook_event import HookEvent
 from engine.driver.agent_message import AgentMessage
 from engine.enums.hook_event_name import HookEventName
 from core.modules.drivers.support.block_conditions.any_condition import AnyCondition
-from core.modules.tasks.nudges.unlogged_writes_message import UnloggedWritesMessage
+from core.modules.tasks.agent_messages.unlogged_writes_message import UnloggedWritesMessage
 from core.modules.tasks.support.task_write_count import TaskWriteCount
 from core.modules.tasks.support.block_conditions.task_logged import TaskLogged
 from core.modules.tasks.support.block_conditions.task_stopped import TaskStopped
@@ -46,4 +46,4 @@ class UnloggedWriteNeeds(StateSource):
         if counted is None or counted[1] < UNLOGGED_WRITES_CEILING:
             return None
         task_id = counted[0].task.id
-        return UnloggedWritesMessage.declared().nudge(task=task_id), AnyCondition(TaskLogged(task_id), TaskStopped(task_id))
+        return UnloggedWritesMessage.declared().agent_message(task=task_id), AnyCondition(TaskLogged(task_id), TaskStopped(task_id))

@@ -12,7 +12,7 @@ from engine.agent_stack.row_reference import RowReference
 from engine.agent_stack.work_reference import WorkReference
 from engine.enums.decision_class import DecisionClass
 from engine.enums.work_type import WorkType
-from core.modules.sequences.nudges.sequence_unfinished_message import SequenceUnfinishedMessage
+from core.modules.sequences.agent_messages.sequence_unfinished_message import SequenceUnfinishedMessage
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.modules.sequences.support.sequence_stop_blockers import SequenceStopBlockers
 
@@ -40,6 +40,6 @@ class SequenceWorkNeeds(StateSource):
         run = self.runs.current(agent_id)
         if run is None:
             return []
-        reason = Reason(SEQUENCE_STOP_KEY, DecisionClass.HOLD, SEQUENCE_RANK, SequenceUnfinishedMessage.declared().nudge(sequence=run.sequence_id, step=run.step_number).text)
+        reason = Reason(SEQUENCE_STOP_KEY, DecisionClass.HOLD, SEQUENCE_RANK, SequenceUnfinishedMessage.declared().agent_message(sequence=run.sequence_id, step=run.step_number).text)
         return [RequiredState(Working(WorkReference(WorkType.SEQUENCE, run.id, f"sequence {run.sequence_id}"), not self.blockers.is_waiting(agent_id), reason), SEQUENCE_RANK,
                      StateKey("Working", RowReference(SEQUENCE_SUBJECT, run.id), f"sequence_run:{run.id}"))]

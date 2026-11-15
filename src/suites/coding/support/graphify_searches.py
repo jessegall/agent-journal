@@ -8,9 +8,9 @@ from engine.journal.journal_home import JournalHome
 from engine.request.request_values import RequestValues
 from engine.setting.setting_values import SettingValues
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from suites.coding.nudges.graphify_first_message import GraphifyFirstMessage
-from suites.coding.nudges.use_graphify_message import UseGraphifyMessage
-from suites.coding.support.graphify_settings import GRAPHIFY_BLOCK_AFTER, GRAPHIFY_NUDGE_AFTER
+from suites.coding.agent_messages.graphify_first_message import GraphifyFirstMessage
+from suites.coding.agent_messages.use_graphify_message import UseGraphifyMessage
+from suites.coding.support.graphify_settings import GRAPHIFY_BLOCK_AFTER, GRAPHIFY_AGENT_MESSAGE_AFTER
 from suites.coding.support.graphify_tool import GRAPHIFY
 
 SCANNED_BLOCK_TOOL_USES = 3
@@ -23,7 +23,7 @@ class GraphifyAnswer:
     nudge count on."""
 
     refusal: AgentMessage | None = None
-    nudge: AgentMessage | None = None
+    agent_message: AgentMessage | None = None
 
 
 class GraphifySearches:
@@ -47,9 +47,9 @@ class GraphifySearches:
         block_after = self.settings.number(GRAPHIFY_BLOCK_AFTER)
         searches = self.code_searches_after_graphify(agent_id, block_after * SCANNED_BLOCK_TOOL_USES)
         if searches >= block_after:
-            return GraphifyAnswer(refusal=GraphifyFirstMessage.declared().nudge(count=searches))
-        if searches + 1 >= self.settings.number(GRAPHIFY_NUDGE_AFTER):
-            return GraphifyAnswer(nudge=UseGraphifyMessage.declared().nudge(count=searches + 1))
+            return GraphifyAnswer(refusal=GraphifyFirstMessage.declared().agent_message(count=searches))
+        if searches + 1 >= self.settings.number(GRAPHIFY_AGENT_MESSAGE_AFTER):
+            return GraphifyAnswer(agent_message=UseGraphifyMessage.declared().agent_message(count=searches + 1))
         return GraphifyAnswer()
 
     # The searches of the code among the agent's newest tool uses since its last use of Graphify.

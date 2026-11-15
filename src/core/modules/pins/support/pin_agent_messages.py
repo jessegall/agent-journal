@@ -1,0 +1,7 @@
+from core.modules.pins.agent_messages.link_pin_request_message import LinkPinRequestMessage
+from core.modules.pins.agent_messages.unpinned_claim_message import UnpinnedClaimMessage
+from core.modules.pins.agent_messages.bang_button_request_message import BangButtonRequestMessage
+
+
+
+PIN_AGENT_MESSAGES = [LinkPinRequestMessage, UnpinnedClaimMessage, BangButtonRequestMessage]

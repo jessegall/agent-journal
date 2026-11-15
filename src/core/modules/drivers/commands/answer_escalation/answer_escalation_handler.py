@@ -1,4 +1,4 @@
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.enums.responder import Responder
@@ -7,7 +7,7 @@ from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.listeners.escalation_responder_listener import ESCALATION_SOURCE
-from core.modules.drivers.nudges.escalation_answered_message import EscalationAnsweredMessage
+from core.modules.drivers.agent_messages.escalation_answered_message import EscalationAnsweredMessage
 from core.modules.drivers.commands.answer_escalation.answer_escalation import AnswerEscalation
 from core.modules.drivers.models.agent_escalation import AgentEscalation
 from core.modules.drivers.models.agent_stack import AgentStack
@@ -20,8 +20,8 @@ class AnswerEscalationHandler(Handler[AnswerEscalation, AgentEscalation]):
 
     command = AnswerEscalation
 
-    def __init__(self, queries: Queries, repository: Repository, agents: AgentRows, nudger: MessageSender) -> None:
-        self.queries, self.repository, self.agents, self.nudger = queries, repository, agents, nudger
+    def __init__(self, queries: Queries, repository: Repository, agents: AgentRows, message_sender: MessageSender) -> None:
+        self.queries, self.repository, self.agents, self.message_sender = queries, repository, agents, message_sender
 
     def handle(self, command: AnswerEscalation, context: Context) -> AgentEscalation:
         row = self.queries.query(AgentEscalation).filter(id=command.escalation_id).first()
@@ -35,5 +35,5 @@ class AnswerEscalationHandler(Handler[AnswerEscalation, AgentEscalation]):
             self.repository.save(stack.changed(stop_refusals=0, tool_refusals=0), context)
         answered = self.repository.save(row.changed(state=EscalationState.CONTINUED, answer=command.text, ended_at=context.timestamp), context)
         # the answer wakes the agent, whose wakes waited while the escalation was open (doc 1310 section 4.6)
-        self.nudger.send(row.session_agent_id, EscalationAnsweredMessage.declared(), ESCALATION_SOURCE, context, escalation=row.id)
+        self.message_sender.send(row.session_agent_id, EscalationAnsweredMessage.declared(), ESCALATION_SOURCE, context, escalation=row.id)
         return answered

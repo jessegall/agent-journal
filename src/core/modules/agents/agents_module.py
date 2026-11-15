@@ -77,7 +77,7 @@ from core.modules.agents.migrations.m026_agent_announced_at import AgentAnnounce
 from core.modules.agents.commands.agent_standing.agent_standing_subcommand import AgentStandingSubcommand
 from core.modules.agents.commands.stop_unused_launcher.stop_unused_launcher_handler import StopUnusedLauncherHandler
 from core.modules.agents.commands.check_agent_programs.check_agent_programs_handler import CheckAgentProgramsHandler
-from core.modules.agents.nudges.program_settings_ban_message import ProgramSettingsBanMessage
+from core.modules.agents.agent_messages.program_settings_ban_message import ProgramSettingsBanMessage
 from core.modules.agents.support.agent_program_sessions import AgentProgramSessions
 from engine.agent.program_sessions import ProgramSessions
 from core.modules.agents.commands.start_agent_program.start_agent_program_handler import StartAgentProgramHandler
@@ -101,7 +101,7 @@ from core.modules.agents.inspectors.agent_inspector import AgentInspector
 from engine.caller.caller_resolver import CallerResolver
 from engine.module.module import Module
 from core.modules.agents.migrations.m009_agent_access import AgentAccessMigration
-from core.modules.agents.nudges.agent_start_failed_message import AgentStartFailedMessage
+from core.modules.agents.agent_messages.agent_start_failed_message import AgentStartFailedMessage
 from core.modules.agents.commands.record_agent_process.record_agent_process_handler import RecordAgentProcessHandler
 from engine.agent.agent_checkouts import AgentCheckouts
 from core.modules.agents.bindings.agent_caller_resolver import AgentCallerResolver
@@ -116,7 +116,7 @@ from core.modules.agents.migrations.m019_agent_launched_at import AgentLaunchCol
 from core.modules.agents.migrations.m020_agent_halted_at import AgentHaltColumnMigration
 from core.modules.agents.commands.halt_agent.halt_agent_handler import HaltAgentHandler
 from core.modules.agents.commands.end_agent_halt.end_agent_halt_handler import EndAgentHaltHandler
-from core.modules.agents.support.report_nudges import REPORT_NUDGES
+from core.modules.agents.support.report_agent_messages import REPORT_AGENT_MESSAGES
 from core.modules.agents.commands.remove_instruction_import.remove_instruction_import_handler import RemoveInstructionImportHandler
 from core.modules.agents.commands.remove_instruction_import.remove_instruction_import_subcommand import RemoveInstructionImportSubcommand
 from core.modules.agents.commands.warn_instruction_imports.warn_instruction_imports_handler import WarnInstructionImportsHandler
@@ -139,7 +139,7 @@ class AgentsModule(Module):
     models = [AgentModelDeclaration, MenuAnswerModelDeclaration, AgentFoldModelDeclaration, AgentFoldRowModelDeclaration, AgentSessionModelDeclaration]
     moves = [AgentsMove]
     migrations = [FoldMainAgentsMigration, AgentFoldsMigration, AgentAnnouncedColumnMigration, AgentLaunchFailureColumnMigration, MainAgentParentMigration, AgentSessionsMigration, AgentNumberMigration, MenuAnswerAgentIndexMigration, AgentHaltColumnMigration, AgentLaunchColumnMigration, PlainColumnNamesMigration, AgentInterruptMigration, AgentUsageCapMigration, KeptAgentsIndexMigration, AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
-    nudges = [AgentStartFailedMessage, *REPORT_NUDGES, ProgramSettingsBanMessage]
+    agent_messages = [AgentStartFailedMessage, *REPORT_AGENT_MESSAGES, ProgramSettingsBanMessage]
     guards = [AgentNameGuard, NumberGuard, RetiredRowGuard, RetiredDeleteGuard, AgentChatGuard]
     tick_handlers = [AgentReconcileTickHandler,
                      ProgramSettingsWatchTickHandler]

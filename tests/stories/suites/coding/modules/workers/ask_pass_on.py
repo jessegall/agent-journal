@@ -9,8 +9,8 @@ from tests.integration.suites.coding.modules.workers.test_ask_ledger import QUES
 from tests.stories.suites.coding.modules.workers.merger_cases import case  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import SHOWN_SETTINGS, apply_work_setting
-from suites.coding.modules.workers.nudges.merger_line_available_message import MergerLineAvailableMessage
-from engine.testing.expectations.expected_message import expected_nudge
+from suites.coding.modules.workers.agent_messages.merger_line_available_message import MergerLineAvailableMessage
+from engine.testing.expectations.expected_message import expected_agent_message
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.modules.workers.support.worker_settings import MERGER_GROUP_MESSAGE_LIMIT
 from core.modules.asks.support.ask_settings import QUESTION_ANSWER_MINUTES, QUESTION_FORWARD_MINUTES, QUESTION_VISITS_LIMIT
@@ -109,7 +109,7 @@ def test_the_main_agent_hears_nothing_of_an_ask_the_merger_answered_and_the_task
     line = questions(case.story)[0]
     case.story.expect_success(f'merger answer {line.id} "Use the compiler in tools/bin"', actor=case.merger)
     lines = case.main_lines()
-    case.story.expect_rows(QUESTION not in lines, "Use the compiler" not in lines, not expected_nudge(MergerLineAvailableMessage.declared()).matches_text(lines), detail=lines)
+    case.story.expect_rows(QUESTION not in lines, "Use the compiler" not in lines, not expected_agent_message(MergerLineAvailableMessage.declared()).matches_text(lines), detail=lines)
     case.story.expect_text("task-log list --task 1", "asked the merger about tool", "ended as answered: Use the compiler in tools/bin", actor=case.story.agent)
 
 

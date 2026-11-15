@@ -22,9 +22,9 @@ def escalation(responder: Responder, refusal_count: int, block_ids: tuple[int, .
 
 def woken_parents(row, old_row) -> list[int]:
     woken: list[int] = []
-    nudger = SimpleNamespace(send=lambda agent_id, declaration, source, context, **values: woken.append(agent_id))
+    message_sender = SimpleNamespace(send=lambda agent_id, declaration, source, context, **values: woken.append(agent_id))
     agents = SimpleNamespace(find=lambda agent_id: SimpleNamespace(number=2, parent_id=1))
-    EscalationResponderListener(agents, nudger).handle(SimpleNamespace(row=row, old_row=old_row), SimpleNamespace())
+    EscalationResponderListener(agents, message_sender).handle(SimpleNamespace(row=row, old_row=old_row), SimpleNamespace())
     return woken
 
 

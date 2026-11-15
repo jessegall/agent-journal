@@ -1,4 +1,4 @@
-from core.modules.skills.support.skill_nudges import SKILL_COUNTDOWN
+from core.modules.skills.support.skill_agent_messages import SKILL_COUNTDOWN
 from collections.abc import Mapping, Sequence
 
 from engine.agent.enums.role_group import RoleGroup
@@ -10,7 +10,7 @@ from engine.agent_machine.record.question import Question
 from engine.agent_stack.states.blocked import Blocked
 from engine.enums.hook_event_name import HookEventName
 from core.modules.skills.support.block_conditions.skill_loaded import SkillLoaded
-from core.modules.skills.support.skill_nudges import SKILL_TOOL_USES
+from core.modules.skills.support.skill_agent_messages import SKILL_TOOL_USES
 from core.modules.triggers.support.phrase_trigger_match import PHRASE_TRIGGER_KEY, PhraseTriggerMatch
 
 PHRASE_SKILL_RANK = "triggers.skill"
@@ -32,5 +32,5 @@ class PhraseTriggerNeeds(StateSource):
             return {}
         holds = {agent.agent_id: self.match.answer(event, agent.agent_id).skill_block for agent in agents}
         return {agent_id: [BlockPlan(hold[0], SkillLoaded(hold[1]), PHRASE_TRIGGER_KEY, PHRASE_SKILL_RANK, tool_grace_uses=SKILL_TOOL_USES, scope_tools=True, scope_stop=False,
-                                     countdown=SKILL_COUNTDOWN.nudge("{left}", skill=hold[1]))]
+                                     countdown=SKILL_COUNTDOWN.agent_message("{left}", skill=hold[1]))]
                 for agent_id, hold in holds.items() if hold is not None}

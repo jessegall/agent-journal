@@ -6,7 +6,7 @@ from core.modules.questions.migrations.m005_question_session import QuestionSess
 from core.modules.questions.migrations.m007_question_context import QuestionContextMigration
 from core.modules.questions.migrations.m006_question_environment_state_index import QuestionEnvironmentStateIndexMigration
 from core.modules.questions.migrations.m003_question_agent_state_index import QuestionAgentStateIndexMigration
-from core.modules.questions.support.question_nudges import QUESTION_NUDGES
+from core.modules.questions.support.question_agent_messages import QUESTION_AGENT_MESSAGES
 from engine.module.module import Module
 from core.modules.questions.commands.answer_question.answer_question_handler import AnswerQuestionHandler
 from core.modules.questions.commands.ask_question.ask_question_handler import AskQuestionHandler
@@ -39,7 +39,7 @@ class QuestionsModule(Module):
 
     name = "journal.core.questions"
     policies = [OwnQuestionToolPolicy]
-    nudges = QUESTION_NUDGES
+    agent_messages = QUESTION_AGENT_MESSAGES
     requires_engine = ">=5,<6"
     block_conditions = [QuestionAnswered, QuestionsClosed]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages", "journal.core.waits", "journal.core.chat", "journal.core.documents", "journal.core.tasks", "journal.core.plans", "journal.core.docking"]

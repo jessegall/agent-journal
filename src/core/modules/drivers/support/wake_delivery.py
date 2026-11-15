@@ -33,7 +33,7 @@ class WakeDelivery:
             self.bus.run(ClaimAgentLine(line.id), actor)
         except Refusal:
             return False
-        if not self.waiters.offer(agent_id, f"{TERMINAL_PREFIX}{line.nudge.text}", line.id, now):
+        if not self.waiters.offer(agent_id, f"{TERMINAL_PREFIX}{line.agent_message.text}", line.id, now):
             self.bus.run(ReleaseAgentLine(line.id), actor)
             return False
         return True

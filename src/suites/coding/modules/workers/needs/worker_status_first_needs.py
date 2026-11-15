@@ -7,7 +7,7 @@ from engine.agent_machine.needs.state_source import StateSource
 from engine.agent_machine.record.question import Question
 from engine.agent_stack.states.blocked import Blocked
 from engine.driver.conditions.ran_command import RanCommand
-from suites.coding.modules.workers.nudges.worker_status_first_message import WorkerStatusFirstMessage
+from suites.coding.modules.workers.agent_messages.worker_status_first_message import WorkerStatusFirstMessage
 from suites.coding.modules.workers.types.worker import Worker
 
 STATUS_COMMAND = "journal worker status"
@@ -28,4 +28,4 @@ class WorkerStatusFirstNeeds(StateSource):
 
     @staticmethod
     def plan() -> BlockPlan:
-        return BlockPlan(WorkerStatusFirstMessage.declared().nudge(), RanCommand(STATUS_COMMAND), WORKER_STATUS_FIRST_KEY, WORKER_STATUS_FIRST_KEY, scope_tools=True, scope_stop=False)
+        return BlockPlan(WorkerStatusFirstMessage.declared().agent_message(), RanCommand(STATUS_COMMAND), WORKER_STATUS_FIRST_KEY, WORKER_STATUS_FIRST_KEY, scope_tools=True, scope_stop=False)

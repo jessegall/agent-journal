@@ -16,7 +16,7 @@ class RuleAnswer:
     the commands the journal runs for it, and the commands it runs only when no rule refused the hook."""
 
     refusal: str = ""
-    nudges: Sequence[AgentMessage] = ()
+    agent_messages: Sequence[AgentMessage] = ()
     commands: Sequence[Command[object]] = ()
     commands_unrefused: Sequence[Command[object]] = ()
     last: bool = False
@@ -34,44 +34,44 @@ class RuleAnswer:
         return cls(reason=reason)
 
     @classmethod
-    def with_nudges(cls, *nudges: AgentMessage) -> "RuleAnswer":
-        return cls(nudges=nudges)
+    def with_agent_messages(cls, *agent_messages: AgentMessage) -> "RuleAnswer":
+        return cls(agent_messages=agent_messages)
 
     @classmethod
-    def refused(cls, nudge: AgentMessage) -> "RuleAnswer":
-        return cls(refusal=nudge.text, nudges=tuple([nudge]), last=True)
+    def refused(cls, agent_message: AgentMessage) -> "RuleAnswer":
+        return cls(refusal=agent_message.text, agent_messages=tuple([agent_message]), last=True)
 
     def role_variant(self, role: str) -> "RuleAnswer":
-        nudges = tuple(nudge.role_variant(role) for nudge in self.nudges)
-        if all(new is old for new, old in zip(nudges, self.nudges)):
+        agent_messages = tuple(agent_message.role_variant(role) for agent_message in self.agent_messages)
+        if all(new is old for new, old in zip(agent_messages, self.agent_messages)):
             return self
-        refusal = next((new.text for new, old in zip(nudges, self.nudges) if old.text == self.refusal), self.refusal)
-        return replace(self, nudges=nudges, refusal=refusal)
+        refusal = next((new.text for new, old in zip(agent_messages, self.agent_messages) if old.text == self.refusal), self.refusal)
+        return replace(self, agent_messages=agent_messages, refusal=refusal)
 
     @classmethod
     def rewritten(cls, tool_input: Mapping[str, object]) -> "RuleAnswer":
         return cls(updated_input=tool_input)
 
     @classmethod
-    def final_allowance(cls, *nudges: AgentMessage) -> "RuleAnswer":
-        return cls(nudges=nudges, last=True)
+    def final_allowance(cls, *agent_messages: AgentMessage) -> "RuleAnswer":
+        return cls(agent_messages=agent_messages, last=True)
 
     @classmethod
-    def blocked(cls, hook: AgentHook, nudge: AgentMessage, condition: BlockCondition) -> "RuleAnswer":
+    def blocked(cls, hook: AgentHook, agent_message: AgentMessage, condition: BlockCondition) -> "RuleAnswer":
         tool = hook.event.tool
-        answer = cls.allowed() if tool is None or tool.block_exempt else cls.refused(nudge)
-        return answer.running(OpenHold(hook.agent_id, nudge, condition))
+        answer = cls.allowed() if tool is None or tool.block_exempt else cls.refused(agent_message)
+        return answer.running(OpenHold(hook.agent_id, agent_message, condition))
 
     @classmethod
-    def refusals(cls, nudges: Sequence[AgentMessage]) -> "RuleAnswer":
-        return cls(refusal="\n".join(nudge.text for nudge in nudges), nudges=tuple(nudges), last=True)
+    def refusals(cls, agent_messages: Sequence[AgentMessage]) -> "RuleAnswer":
+        return cls(refusal="\n".join(agent_message.text for agent_message in agent_messages), agent_messages=tuple(agent_messages), last=True)
 
     @classmethod
-    def refused_with_block(cls, hook: AgentHook, nudge: AgentMessage, condition: BlockCondition) -> "RuleAnswer":
-        return cls.refused(nudge).running(OpenHold(hook.agent_id, nudge, condition))
+    def refused_with_block(cls, hook: AgentHook, agent_message: AgentMessage, condition: BlockCondition) -> "RuleAnswer":
+        return cls.refused(agent_message).running(OpenHold(hook.agent_id, agent_message, condition))
 
-    def blocking_after(self, hook: AgentHook, nudge: AgentMessage, condition: BlockCondition, after: Interval, countdown: AgentMessage, strict: bool = False) -> "RuleAnswer":
-        return self.running(OpenHold(hook.agent_id, nudge, condition, after, countdown, strict=strict))
+    def blocking_after(self, hook: AgentHook, agent_message: AgentMessage, condition: BlockCondition, after: Interval, countdown: AgentMessage, strict: bool = False) -> "RuleAnswer":
+        return self.running(OpenHold(hook.agent_id, agent_message, condition, after, countdown, strict=strict))
 
     def running(self, *commands: Command[object]) -> "RuleAnswer":
         return replace(self, commands=[*self.commands, *commands])
@@ -86,12 +86,12 @@ class RuleAnswer:
         return replace(self, commands=[*self.commands, command], ends_layer=True)
 
     @property
-    def line_nudges(self) -> tuple[AgentMessage, ...]:
-        return tuple(nudge for nudge in self.nudges if nudge.text != self.refusal)
+    def line_agent_messages(self) -> tuple[AgentMessage, ...]:
+        return tuple(agent_message for agent_message in self.agent_messages if agent_message.text != self.refusal)
 
     @property
     def lines(self) -> tuple[str, ...]:
-        return tuple(nudge.text for nudge in self.line_nudges)
+        return tuple(agent_message.text for agent_message in self.line_agent_messages)
 
     @property
     def rewrites(self) -> bool:
@@ -103,7 +103,7 @@ class RuleAnswer:
 
     @property
     def is_safety_refusal(self) -> bool:
-        return bool(self.refusal) and any(nudge.type is AgentMessageType.SAFETY_REFUSAL for nudge in self.nudges)
+        return bool(self.refusal) and any(agent_message.type is AgentMessageType.SAFETY_REFUSAL for agent_message in self.agent_messages)
 
     @property
     def outcome(self) -> str:

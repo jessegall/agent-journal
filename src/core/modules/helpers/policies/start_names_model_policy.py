@@ -1,7 +1,7 @@
 from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_policy import EventPolicy
-from core.modules.helpers.nudges.start_model_missing_message import StartModelMissingMessage
+from core.modules.helpers.agent_messages.start_model_missing_message import StartModelMissingMessage
 
 MODEL_FLAG = "--model"
 
@@ -21,5 +21,5 @@ class StartNamesModelPolicy(EventPolicy):
             return None
         starts = [part for start in self.starts for part in shell.parts_running_journal_command(start)]
         starts_without_model = [part for part in starts if not any(argument.split("=")[0] == MODEL_FLAG for argument in part.arguments)]
-        return StartModelMissingMessage.declared().nudge() if starts_without_model else None
+        return StartModelMissingMessage.declared().agent_message() if starts_without_model else None
 

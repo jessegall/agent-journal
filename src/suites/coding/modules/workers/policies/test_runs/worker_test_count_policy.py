@@ -4,7 +4,7 @@ from engine.agent_machine.contracts.event_policy import EventPolicy
 from suites.coding.modules.workers.types.worker import Worker
 from engine.enums.command_category import CommandCategory
 from suites.coding.modules.workers.bindings.worker_test_listings import WorkerTestListings
-from suites.coding.modules.workers.nudges.worker_test_limit_refusal_message import WorkerTestLimitRefusalMessage
+from suites.coding.modules.workers.agent_messages.worker_test_limit_refusal_message import WorkerTestLimitRefusalMessage
 from engine.setting.setting_values import SettingValues
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 from core.modules.processes.support.reader_demands import ASKING_FLAGS
@@ -31,5 +31,5 @@ class WorkerTestCountPolicy(EventPolicy):
         for line in test_lines:
             count = self.listings.previous_count(line)
             if count > limit:
-                return WorkerTestLimitRefusalMessage.declared().nudge(count=count, limit=limit)
+                return WorkerTestLimitRefusalMessage.declared().agent_message(count=count, limit=limit)
         return None

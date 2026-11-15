@@ -12,7 +12,7 @@ from engine.query.queries import Queries
 from engine.time.clock import Clock
 from core.modules.waits.models.enums.wait_state import WaitState
 from core.modules.waits.models.wait import Wait
-from core.modules.waits.nudges.wait_check_message import WaitCheckMessage
+from core.modules.waits.agent_messages.wait_check_message import WaitCheckMessage
 
 OPEN_WAITS_REASON = "the open waits of one agent, a few at most"
 LONG_WAIT_RULE = "waits.long-wait"
@@ -33,11 +33,11 @@ class LongWaitLines(LineSource):
         self.queries, self.clock = queries, clock
 
     def lines(self, question: Question, view: AgentView) -> Sequence[Line]:
-        return [Line.of_nudge(nudge, self.carrier, self.category) for nudge in self.nudges(view.agent.agent_id)]
+        return [Line.of_agent_message(agent_message, self.carrier, self.category) for agent_message in self.agent_messages(view.agent.agent_id)]
 
     # a check line for each wait of the agent open ten minutes or more
-    def nudges(self, agent_id: int) -> list[AgentMessage]:
+    def agent_messages(self, agent_id: int) -> list[AgentMessage]:
         now = self.clock.timestamp()
         waits = self.queries.query(Wait).filter(session_agent_id=agent_id, state=WaitState.OPEN).every_row(OPEN_WAITS_REASON)
-        return [WaitCheckMessage.declared().nudge(minutes=wait.opened_at.elapsed_minutes(now), wait=wait.id) for wait in waits
+        return [WaitCheckMessage.declared().agent_message(minutes=wait.opened_at.elapsed_minutes(now), wait=wait.id) for wait in waits
                 if wait.opened_at.elapsed_minutes(now) >= LONG_WAIT_MINUTES]

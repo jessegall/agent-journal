@@ -4,7 +4,7 @@ from engine.agent_machine.contracts.event_policy import EventPolicy
 import re
 
 from engine.driver.part import Part
-from core.modules.drivers.nudges.private_corpus_message import PrivateCorpusMessage
+from core.modules.drivers.agent_messages.private_corpus_message import PrivateCorpusMessage
 
 CORPUS_FOLDER = ".journal/corpus"
 SANDBOXED_TEST = re.compile(r"^(?:\S+=\S+\s+)*go\s+(?:-C\s+\S+\s+)?test\b")
@@ -26,7 +26,7 @@ class PrivateCorpusPolicy(EventPolicy):
         if shell is None:
             return None
         names_corpus = any(CORPUS_FOLDER in redirect for redirect in shell.redirects) or any(self.has_private_corpus(part) for part in shell.parts)
-        return PrivateCorpusMessage.declared().nudge() if names_corpus else None
+        return PrivateCorpusMessage.declared().agent_message() if names_corpus else None
 
     @staticmethod
     def has_private_corpus(part: Part) -> bool:

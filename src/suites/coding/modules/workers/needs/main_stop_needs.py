@@ -20,8 +20,8 @@ from engine.time.clock import Clock
 from suites.coding.modules.workers.support.available_work import AvailableWork
 from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions
 from suites.coding.modules.workers.support.main_agent_work import MainAgentWork
-from suites.coding.nudges.task_assignment_message import TaskAssignmentMessage
-from suites.coding.nudges.unfinished_tasks_message import UnfinishedTasksMessage
+from suites.coding.agent_messages.task_assignment_message import TaskAssignmentMessage
+from suites.coding.agent_messages.unfinished_tasks_message import UnfinishedTasksMessage
 from suites.coding.support.next_task import NextTask
 from suites.coding.support.stop_notices import UNFINISHED_TASKS_TEXT, StopNotices
 
@@ -57,7 +57,7 @@ class MainStopNeeds(StateSource):
             return []
         handed = self.work.answer(agent_id).assigned_task
         if handed is not None:
-            reason = Reason(MAIN_STOP_KEY, DecisionClass.HOLD, MAIN_STOP_RANK, TaskAssignmentMessage.declared().nudge(task=handed.id).text)
+            reason = Reason(MAIN_STOP_KEY, DecisionClass.HOLD, MAIN_STOP_RANK, TaskAssignmentMessage.declared().agent_message(task=handed.id).text)
             return [RequiredState(Working(WorkReference(WorkType.HANDED_TASK, handed.id, f"task {handed.id}"), True, reason), MAIN_STOP_RANK,
                          StateKey("Working", RowReference(Task.model_name, handed.id), f"handed-task:{handed.id}"))]
         return self.own_tasks(agent_id) if is_stop else []
@@ -68,7 +68,7 @@ class MainStopNeeds(StateSource):
         task_ids = self.assigner.agent_tasks([agent_id]).get(agent_id, ())
         if not task_ids:
             return []
-        text = UnfinishedTasksMessage.declared().nudge(tasks=", ".join(str(task_id) for task_id in task_ids)).text
+        text = UnfinishedTasksMessage.declared().agent_message(tasks=", ".join(str(task_id) for task_id in task_ids)).text
         remains = not self.notices.has_notice(agent_id, text, UNFINISHED_TASKS_TEXT)
         tasks = ",".join(str(task_id) for task_id in task_ids)
         return [RequiredState(Working(WorkReference(WorkType.OWN_TASKS, agent_id, f"tasks {tasks}"), remains, Reason(MAIN_STOP_KEY, DecisionClass.HOLD, MAIN_STOP_RANK, text)),

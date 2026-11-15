@@ -1,0 +1,8 @@
+from core.modules.sequences.agent_messages.step_waits_message import StepWaitsMessage
+from core.modules.sequences.agent_messages.step_edit_ban_message import StepEditBanMessage
+from core.modules.sequences.agent_messages.sequence_started_message import SequenceStartedMessage
+from core.modules.sequences.agent_messages.step_refuses_command_message import StepRefusesCommandMessage
+from core.modules.sequences.agent_messages.sequence_unfinished_message import SequenceUnfinishedMessage
+
+
+SEQUENCE_AGENT_MESSAGES = [StepWaitsMessage, StepEditBanMessage, SequenceStartedMessage, StepRefusesCommandMessage, SequenceUnfinishedMessage]

@@ -55,23 +55,23 @@ class MessageTemplate:
     def is_mergeable(self) -> bool:
         return self.text != BARE_TEMPLATE and not self.required_command
 
-    def nudge(self, **fields: object) -> AgentMessage:
+    def agent_message(self, **fields: object) -> AgentMessage:
         return self.rendered(self.text, fields)
 
     @classmethod
     def restore(cls, text: str) -> AgentMessage:
         stored = StoredMessage.read(text)
         return cls(stored.key, AgentMessageType(stored.type), stored.text, plural_text=stored.plural_text,
-                   id_field=stored.id_field, required_command=stored.required_command, path_fields=stored.path_fields).nudge(**stored.fields)
+                   id_field=stored.id_field, required_command=stored.required_command, path_fields=stored.path_fields).agent_message(**stored.fields)
 
-    def merged(self, nudges: Sequence[AgentMessage]) -> AgentMessage:
-        values = {name: ", ".join(dict.fromkeys(str(dict(nudge.fields)[name]) for nudge in nudges)) for name, _ in nudges[0].fields}
+    def merged(self, agent_messages: Sequence[AgentMessage]) -> AgentMessage:
+        values = {name: ", ".join(dict.fromkeys(str(dict(agent_message.fields)[name]) for agent_message in agent_messages)) for name, _ in agent_messages[0].fields}
         text = self.plural_text or self.text
         if "count" not in values:
-            text = text.replace("{count}", str(len(nudges)))
+            text = text.replace("{count}", str(len(agent_messages)))
         rendered = self.rendered(text, values)
-        return replace(rendered, interval=nudges[0].interval, turn_limited=nudges[0].turn_limited,
-                       record_keys=tuple(dict.fromkeys(key for nudge in nudges for key in nudge.record_keys)))
+        return replace(rendered, interval=agent_messages[0].interval, turn_limited=agent_messages[0].turn_limited,
+                       record_keys=tuple(dict.fromkeys(key for agent_message in agent_messages for key in agent_message.record_keys)))
 
     def rendered(self, text: str, fields: Mapping[str, object]) -> AgentMessage:
         values = fields

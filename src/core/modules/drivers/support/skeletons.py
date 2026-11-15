@@ -1,7 +1,7 @@
 from engine.viewer.skeleton_part import SkeletonPart
 from engine.enums.skeleton_size import SkeletonSize
 
-DRIVERS_NUDGES_SKELETON = [
+DRIVERS_AGENT_MESSAGES_SKELETON = [
     SkeletonPart.stack([
         SkeletonPart.stack([
             SkeletonPart.row([SkeletonPart.line(SkeletonSize.MEDIUM, "120px"), SkeletonPart.line(SkeletonSize.SMALL, "60px"), SkeletonPart.line(SkeletonSize.SMALL, "90px")], spacing=10),

@@ -8,7 +8,7 @@ from engine.enums.effect_timing import EffectTiming
 from engine.enums.hook_event_name import HookEventName
 from engine.setting.setting_values import SettingValues
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.agents.support.report_nudges import REPORT_FIELD
+from core.modules.agents.support.report_agent_messages import REPORT_FIELD
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.support.work_units import WorkUnits

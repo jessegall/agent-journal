@@ -50,7 +50,7 @@ class StackBuilder:
 
     @staticmethod
     def block_key(block: OpenBlock) -> StateKey:
-        return StateKey("Blocked", block.subject, block.nudge_key)
+        return StateKey("Blocked", block.subject, block.agent_message_key)
 
     @staticmethod
     def capped(view: AgentView, work_count: int, blocked_frames: list[StackedState]) -> list[StackedState]:

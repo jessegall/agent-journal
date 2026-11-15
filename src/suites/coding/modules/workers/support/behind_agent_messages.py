@@ -1,0 +1,14 @@
+from suites.coding.modules.workers.agent_messages.fast_forwarded_message import FastForwardedMessage
+from suites.coding.modules.workers.agent_messages.merger_stale_worktree_message import MergerStaleWorktreeMessage
+from suites.coding.modules.workers.agent_messages.main_agent_stale_worktree_message import MainAgentStaleWorktreeMessage
+from suites.coding.modules.workers.agent_messages.merger_update_failed_message import MergerUpdateFailedMessage
+from suites.coding.modules.workers.agent_messages.update_ordered_message import UpdateOrderedMessage
+from suites.coding.modules.workers.agent_messages.stale_passed_message import StalePassedMessage
+from suites.coding.modules.workers.agent_messages.stale_choices_message import StaleChoicesMessage
+from suites.coding.modules.workers.agent_messages.update_reminder_message import UpdateReminderMessage
+from suites.coding.modules.workers.agent_messages.update_skipped_message import UpdateSkippedMessage
+from suites.coding.modules.workers.agent_messages.conflict_open_message import ConflictOpenMessage
+from suites.coding.modules.workers.agent_messages.conflict_repeated_message import ConflictRepeatedMessage
+
+STALE_SOURCE = "behind worktrees"
+STALE_AGENT_MESSAGES = [ConflictOpenMessage, ConflictRepeatedMessage, UpdateReminderMessage, UpdateSkippedMessage, FastForwardedMessage, MergerStaleWorktreeMessage, MainAgentStaleWorktreeMessage, MergerUpdateFailedMessage, UpdateOrderedMessage, StalePassedMessage, StaleChoicesMessage]

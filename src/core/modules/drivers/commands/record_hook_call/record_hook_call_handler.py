@@ -45,7 +45,7 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import DISPLAYED_MESSAGE_ID, DISPLAYED_PART, DISPLAYED_TEXT, MONITOR_DESCRIPTION, PROGRAM_SESSION, SUMMARY_CHARACTERS, HookCall
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from engine.driver.search_category import SearchCategory
 from core.modules.drivers.support.actor_loader import ActorLoader
 from engine.module.driver_entries import DRIVERS_MODULE
@@ -69,14 +69,14 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     runs_once = True
 
     def __init__(self, required_commands: RequiredCommands, bus: Bus, database: Database, queries: Queries, repository: Repository,
-                 history: LineHistoryWriter, timing: Timing, providers: Providers, nudges: MessageLog, nudger: MessageSender, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome, share: ContextShare, compaction_end: CompactionEndPercent, hook_calls: HookCallQuery, loader: ActorLoader, steps: StepWriter, displayed_blocks: DisplayedBlocks) -> None:
+                 history: LineHistoryWriter, timing: Timing, providers: Providers, agent_messages: MessageLog, message_sender: MessageSender, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome, share: ContextShare, compaction_end: CompactionEndPercent, hook_calls: HookCallQuery, loader: ActorLoader, steps: StepWriter, displayed_blocks: DisplayedBlocks) -> None:
         self.steps, self.displayed_blocks = steps, displayed_blocks
         self.home, self.share, self.compaction_end, self.hook_calls, self.loader = home, share, compaction_end, hook_calls, loader
         self.event_rows = event_rows
         self.system_log = system_log
         self.required_commands = required_commands
         self.agents = agents
-        self.nudges, self.nudger = nudges, nudger
+        self.agent_messages, self.message_sender = agent_messages, message_sender
         self.bus, self.database, self.queries, self.repository = bus, database, queries, repository
         self.history, self.timing, self.providers = history, timing, providers
 
@@ -95,11 +95,11 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         handed_lines = DeliveredLines.chosen(command.event, answers, tuple(waiting))
         split = ContextLineSplit.split(handed_lines.with_answers(answers), self.context_limit(command.event))
         lines = list(split.kept)
-        later = {nudge.text for nudge in split.rest}
-        handed_rows = [row for row in handed_lines.rows if row.nudge.text not in later]
+        later = {agent_message.text for agent_message in split.rest}
+        handed_rows = [row for row in handed_lines.rows if row.agent_message.text not in later]
         moves = OneMovePerRow.split(answers.commands)
         tool = command.event.tool
-        metadata = {**answers.metadata(), "foreign": [asdict(run) for run in command.event.foreign], "folder": str(command.event.raw.get("cwd", "")), "resumed": command.event.is_resume, "compaction_start": command.event.is_compaction_start, "stop_continuation": command.event.is_stop_continuation, "clear_start": command.event.is_clear_start, "ended_session": command.event.session if command.event.event == HookEventName.SESSION_END else "", "manual_compaction": command.event.is_manual_compaction, "search": SearchCategory.classify(tool, str(command.event.raw.get("cwd", "")), self.home.project_folder), "interrupted": command.event.is_interrupt, "background_work": command.event.has_background_work, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.delivered_nudges, *answers.refusal_nudges)]}
+        metadata = {**answers.metadata(), "foreign": [asdict(run) for run in command.event.foreign], "folder": str(command.event.raw.get("cwd", "")), "resumed": command.event.is_resume, "compaction_start": command.event.is_compaction_start, "stop_continuation": command.event.is_stop_continuation, "clear_start": command.event.is_clear_start, "ended_session": command.event.session if command.event.event == HookEventName.SESSION_END else "", "manual_compaction": command.event.is_manual_compaction, "search": SearchCategory.classify(tool, str(command.event.raw.get("cwd", "")), self.home.project_folder), "interrupted": command.event.is_interrupt, "background_work": command.event.has_background_work, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [agent_message.key for agent_message in (*answers.delivered_agent_messages, *answers.refusal_agent_messages)]}
         if command.event.event == HookEventName.COMPACT or command.event.is_compaction_start:
             percent = self.share.agent_percent(agent)
             if percent is not None:
@@ -121,13 +121,13 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
                                              writes_files=tool is not None and tool.is_writing_files(), lines_added=tool.lines_added if tool is not None else 0,
                                              lines_removed=tool.lines_removed if tool is not None else 0, suite=hook.suite,
                                              driver=hook.driver, answer=HookAnswer.REFUSED if answers.refusal else HookAnswer.ALLOWED, refusal=answers.refusal,
-                                             lines="\n".join(nudge.text for nudge in lines), updated_input=json.dumps(dict(answers.updated_input)),
+                                             lines="\n".join(agent_message.text for agent_message in lines), updated_input=json.dumps(dict(answers.updated_input)),
                                              metadata=Metadata({DRIVERS_MODULE: metadata})), context)
         refusing = [check.refusal_text for check in answers.stop_checks if check.is_refusal]
         if refusing:
             self.system_log.write(LogLevel.INFORMATION, f"stop {call.id} {AgentLabel.labelled(agent).text} refused: {'; '.join(refusing)}"[:LOG_LINE_CHARACTERS])
-        self.nudges.write(agent.id, answers, context)
-        self.required_commands.open(agent.id, answers.delivered_nudges, context)
+        self.agent_messages.write(agent.id, answers, context)
+        self.required_commands.open(agent.id, answers.delivered_agent_messages, context)
         self.timing.stamp("call_saved")
         for row in handed_rows:
             self.event_rows.remember(row)
@@ -136,7 +136,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         commit = self.steps.save(command.step.view, command.step.step, call.id, context) if command.step is not None else None
         if commit is not None and not commit.is_saved:
             raise StepConflictError()
-        self.leave_for_next_hook(agent.id, split.rest, answers, {row.nudge.text for row in handed_lines.rows}, context)
+        self.leave_for_next_hook(agent.id, split.rest, answers, {row.agent_message.text for row in handed_lines.rows}, context)
         outcomes = [(rule, *self.run_command(rule_command, context)) for rule, rule_command in moves.runnable if rule not in answers.refused_rewriters]
         refused = [(rule, line) for rule, line, _ in outcomes if line]
         output_tools = self.providers.provider(command.event.program).refusal_output_tools
@@ -145,8 +145,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
             self.repository.save(replace(call, updated_input=json.dumps(dict(updated_input))), context)
         if command.event.event == HookEventName.TICK:
             return self.save_waiting_lines(agent.id, answers, refused, call.id, context)
-        return HookReply(answers.refusal, [*(nudge.text for nudge in lines), *(line for _, line in refused)], call.id, updated_input, terminal=answers.terminal,
-                         labelled_lines=[*(nudge.labelled for nudge in (*lines, *answers.refusal_nudges)), *(f"journal: {line}" for _, line in refused)])
+        return HookReply(answers.refusal, [*(agent_message.text for agent_message in lines), *(line for _, line in refused)], call.id, updated_input, terminal=answers.terminal,
+                         labelled_lines=[*(agent_message.labelled for agent_message in (*lines, *answers.refusal_agent_messages)), *(f"journal: {line}" for _, line in refused)])
 
     def context_limit(self, event: HookEvent) -> int:
         limit = self.providers.provider(event.program).additional_context_limit
@@ -156,18 +156,18 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     # a waiting line that did not fit is not delivered, so it waits as it was
     def leave_for_next_hook(self, agent_id: int, rest: Sequence[AgentMessage], answers: RuleAnswers, waiting_texts: set[str], context: Context) -> None:
         sources = {text: rule for rule, text in answers.rule_lines}
-        for nudge in rest:
-            if nudge.text not in waiting_texts:
-                self.nudger.send_nudge(agent_id, nudge, sources.get(nudge.text, OVERFLOW_SOURCE), context)
+        for agent_message in rest:
+            if agent_message.text not in waiting_texts:
+                self.message_sender.send_agent_message(agent_id, agent_message, sources.get(agent_message.text, OVERFLOW_SOURCE), context)
 
     def save_waiting_lines(self, agent_id: int, answers: RuleAnswers, refused: list[tuple[str, str]], call_id: int, context: Context) -> HookReply:
-        nudges = {nudge.text: nudge for nudge in answers.delivered_nudges}
+        agent_messages = {agent_message.text: agent_message for agent_message in answers.delivered_agent_messages}
         for rule, text in [*answers.rule_lines, *refused]:
-            nudge = nudges.get(text)
-            if nudge is not None:
-                self.nudger.send_nudge(agent_id, nudge, rule, context)
+            agent_message = agent_messages.get(text)
+            if agent_message is not None:
+                self.message_sender.send_agent_message(agent_id, agent_message, rule, context)
                 continue
-            self.nudger.send_text(agent_id, text, rule, context)
+            self.message_sender.send_text(agent_id, text, rule, context)
         return HookReply("", [], call_id)
 
     def run_command(self, rule_command: Command[object], context: Context) -> tuple[str, object]:

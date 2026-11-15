@@ -20,9 +20,9 @@ from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.support.block_conditions.reader_request_completed import ReaderRequestCompleted
-from core.modules.processes.support.process_nudges import READER_REQUEST_COUNTDOWN, READER_REQUEST_SPAN
-from core.modules.processes.nudges.reader_block_message import ReaderBlockMessage
-from core.modules.processes.nudges.reader_request_refusal_message import ReaderRequestRefusalMessage
+from core.modules.processes.support.process_agent_messages import READER_REQUEST_COUNTDOWN, READER_REQUEST_SPAN
+from core.modules.processes.agent_messages.reader_block_message import ReaderBlockMessage
+from core.modules.processes.agent_messages.reader_request_refusal_message import ReaderRequestRefusalMessage
 from core.modules.processes.support.reader_block_keys import ReaderBlockKeys
 from core.modules.processes.support.reader_request_notices import ReaderRequestNotices
 from core.modules.processes.support.reader_request_text import ReaderRequestText
@@ -43,9 +43,9 @@ class ReaderRequestBlocks:
         request = self.requests.find(part.reader_request_id)
         if request.completed_at is not None or request.expires_at <= self.clock.timestamp():
             return
-        nudge = ReaderBlockMessage.declared().nudge(output=part.process_id, request=request.id)
+        agent_message = ReaderBlockMessage.declared().agent_message(output=part.process_id, request=request.id)
         ends = AnyCondition(ReaderRequestCompleted(request.id), TimeReached(request.expires_at.text))
-        self.bus.dispatch(OpenHold(process.session_agent_id, ReaderBlockKeys.keyed(nudge, request.id), ends), context)
+        self.bus.dispatch(OpenHold(process.session_agent_id, ReaderBlockKeys.keyed(agent_message, request.id), ends), context)
 
     # what the reader requests say at one hook of the agent, read once a hook; the minute step reads the tick it replaces
     def answer(self, event: HookEvent | None, agent_id: int) -> ReaderRequestAnswer:
@@ -69,9 +69,9 @@ class ReaderRequestBlocks:
     # the hold that asks the main agent to help with a request whose saves failed or that expired
     @staticmethod
     def help_hold(request: ReaderRequest) -> ReaderHelpHold:
-        refusal = ReaderRequestRefusalMessage.declared().nudge(request=request.id, command=request.command, block="{block}")
+        refusal = ReaderRequestRefusalMessage.declared().agent_message(request=request.id, command=request.command, block="{block}")
         return ReaderHelpHold(ReaderBlockKeys.keyed(refusal, request.id), ReaderRequestCompleted(request.id), request.command)
 
     @staticmethod
     def help_block(agent_id: int, hold: ReaderHelpHold) -> OpenHold:
-        return OpenHold(agent_id, hold.nudge, hold.condition, after=Interval(READER_REQUEST_SPAN), countdown=READER_REQUEST_COUNTDOWN.nudge("{left}", command=hold.command))
+        return OpenHold(agent_id, hold.agent_message, hold.condition, after=Interval(READER_REQUEST_SPAN), countdown=READER_REQUEST_COUNTDOWN.agent_message("{left}", command=hold.command))

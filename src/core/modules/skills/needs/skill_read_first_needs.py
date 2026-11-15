@@ -1,4 +1,4 @@
-from core.modules.skills.support.skill_nudges import SKILL_COUNTDOWN
+from core.modules.skills.support.skill_agent_messages import SKILL_COUNTDOWN
 from typing import Any
 from collections.abc import Mapping, Sequence
 
@@ -13,11 +13,11 @@ from engine.registry.registry import Registry
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.skills.commands.load_skill.support.kept_skills import KeptSkills
 from core.modules.skills.support.agent_profile_skills import AgentProfileSkills
-from core.modules.skills.nudges.read_skill_first_message import ReadSkillFirstMessage
-from core.modules.skills.nudges.unread_skills_message import UnreadSkillsMessage
+from core.modules.skills.agent_messages.read_skill_first_message import ReadSkillFirstMessage
+from core.modules.skills.agent_messages.unread_skills_message import UnreadSkillsMessage
 from core.modules.skills.support.block_conditions.skill_loaded import SkillLoaded
 from core.modules.skills.support.skill_files import SkillFiles
-from core.modules.skills.support.skill_nudges import SKILL_TOOL_USES
+from core.modules.skills.support.skill_agent_messages import SKILL_TOOL_USES
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.modules.skills.support.unread_skills import UnreadSkills
 from core.modules.skills.needs.command_skill_needs import SKILL_COMMAND
@@ -59,21 +59,21 @@ class SkillReadFirstNeeds(StateSource):
         if not missing:
             return None
         row = self.agents.find(agent.agent_id)
-        tool_nudge = ReadSkillFirstMessage.instructed(self.files.agent_instruction(missing[0], row))
-        stop_nudge = UnreadSkillsMessage.naming(names)
-        return SkillReadFirstNeeds.read_plan(tool_nudge, missing[0], TOOL_RULE, stop_check_key=STOP_RULE, tool_grace_uses=SKILL_TOOL_USES, scope_stop=True,
-                                             stop_nudge=stop_nudge, countdown=SKILL_COUNTDOWN.nudge("{left}", skill=missing[0]))
+        tool_agent_message = ReadSkillFirstMessage.instructed(self.files.agent_instruction(missing[0], row))
+        stop_agent_message = UnreadSkillsMessage.naming(names)
+        return SkillReadFirstNeeds.read_plan(tool_agent_message, missing[0], TOOL_RULE, stop_check_key=STOP_RULE, tool_grace_uses=SKILL_TOOL_USES, scope_stop=True,
+                                             stop_agent_message=stop_agent_message, countdown=SKILL_COUNTDOWN.agent_message("{left}", skill=missing[0]))
 
     def profile_plan(self, agent: AgentReference) -> BlockPlan | None:
         required = self.profile_skills.required(agent.agent_id)
         unread = [folder for folder in self.unread.names(agent.agent_id) if folder in required]
         if not unread:
             return None
-        nudge = ReadSkillFirstMessage.instructed(self.files.agent_instruction(unread[0], self.agents.find(agent.agent_id)))
-        return SkillReadFirstNeeds.read_plan(nudge, unread[0], PROFILE_RULE)
+        agent_message = ReadSkillFirstMessage.instructed(self.files.agent_instruction(unread[0], self.agents.find(agent.agent_id)))
+        return SkillReadFirstNeeds.read_plan(agent_message, unread[0], PROFILE_RULE)
 
     # the block an agent lifts by reading the skill itself
     @staticmethod
-    def read_plan(nudge: AgentMessage, skill: str, rule: str, **block_fields: Any) -> BlockPlan:
-        return BlockPlan(nudge, SkillLoaded(skill), rule, SKILL_READ_RANK, closer_roles=tuple([CloserRole.AGENT]), lifting_lines=tuple([f"{SKILL_COMMAND} {skill}"]),
+    def read_plan(agent_message: AgentMessage, skill: str, rule: str, **block_fields: Any) -> BlockPlan:
+        return BlockPlan(agent_message, SkillLoaded(skill), rule, SKILL_READ_RANK, closer_roles=tuple([CloserRole.AGENT]), lifting_lines=tuple([f"{SKILL_COMMAND} {skill}"]),
                          **block_fields)

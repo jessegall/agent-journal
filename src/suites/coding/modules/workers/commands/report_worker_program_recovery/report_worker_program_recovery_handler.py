@@ -3,7 +3,7 @@ from engine.command.handler import Handler
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from suites.coding.modules.workers.commands.report_worker_program_recovery.report_worker_program_recovery import ReportWorkerProgramRecovery
 
 
@@ -12,8 +12,8 @@ class ReportWorkerProgramRecoveryHandler(Handler[ReportWorkerProgramRecovery, No
 
     command = ReportWorkerProgramRecovery
 
-    def __init__(self, queries: Queries, nudger: MessageSender) -> None:
-        self.queries, self.nudger = queries, nudger
+    def __init__(self, queries: Queries, message_sender: MessageSender) -> None:
+        self.queries, self.message_sender = queries, message_sender
 
     def handle(self, command: ReportWorkerProgramRecovery, context: Context) -> None:
         worker = self.queries.query(Agent).find(command.worker_id)
@@ -22,4 +22,4 @@ class ReportWorkerProgramRecoveryHandler(Handler[ReportWorkerProgramRecovery, No
         notices = self.queries.query(AgentLine).filter(session_agent_id=worker.parent_id)
         if not notices.filter(source=command.waiting_source).exists() or notices.filter(source=f"{command.waiting_source}:back").exists():
             return
-        self.nudger.send_nudge(worker.parent_id, command.notice, f"{command.waiting_source}:back", context)
+        self.message_sender.send_agent_message(worker.parent_id, command.notice, f"{command.waiting_source}:back", context)

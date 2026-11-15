@@ -19,9 +19,9 @@ from engine.types.type_guards import is_list, is_mapping
 from core.modules.pins.commands.make_pin.make_pin import MakePin
 from core.modules.pins.models.pin import Pin
 from core.modules.pins.support.project_repositories import ProjectRepositories
-from core.modules.pins.nudges.bang_button_request_message import BangButtonRequestMessage
-from core.modules.pins.nudges.link_pin_request_message import LinkPinRequestMessage
-from core.modules.pins.nudges.unpinned_claim_message import UnpinnedClaimMessage
+from core.modules.pins.agent_messages.bang_button_request_message import BangButtonRequestMessage
+from core.modules.pins.agent_messages.link_pin_request_message import LinkPinRequestMessage
+from core.modules.pins.agent_messages.unpinned_claim_message import UnpinnedClaimMessage
 
 FILE_TOOLS = (ToolType.READ, ToolType.SEARCH, ToolType.EDIT, ToolType.NEW_FILE)
 LINK = re.compile(r"https?://[^\s<>()\[\]\"'`]+")
@@ -57,17 +57,17 @@ class LinkPinCheck:
         text = event.raw.get("delta") if event is not None else None
         return text if event is not None and event.raw.get("final") is True and isinstance(text, str) else None
 
-    def nudges(self, agent_text: str, tool_output: str = "") -> list[AgentMessage]:
+    def agent_messages(self, agent_text: str, tool_output: str = "") -> list[AgentMessage]:
         if self.claims_missing_pin(agent_text):
-            return [UnpinnedClaimMessage.declared().nudge()]
+            return [UnpinnedClaimMessage.declared().agent_message()]
         unpinned = self.first_unpinned(f"{agent_text}\n{tool_output}")
-        nudges = [self.keyed(LinkPinRequestMessage.declared().nudge(url=unpinned), unpinned)] if unpinned is not None else []
+        agent_messages = [self.keyed(LinkPinRequestMessage.declared().agent_message(url=unpinned), unpinned)] if unpinned is not None else []
         command = self.first_unpinned_command(agent_text)
-        return [*nudges, self.keyed(BangButtonRequestMessage.declared().nudge(), command)] if command is not None else nudges
+        return [*agent_messages, self.keyed(BangButtonRequestMessage.declared().agent_message(), command)] if command is not None else agent_messages
 
     @staticmethod
-    def keyed(nudge: AgentMessage, name: str) -> AgentMessage:
-        return replace(nudge, key=f"{nudge.key}.{name}")
+    def keyed(agent_message: AgentMessage, name: str) -> AgentMessage:
+        return replace(agent_message, key=f"{agent_message.key}.{name}")
 
     def first_unpinned_command(self, text: str) -> str | None:
         commands = dict.fromkeys(f"! {line.strip()}" for line in BANG_COMMAND.findall(text))

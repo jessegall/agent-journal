@@ -1,10 +1,10 @@
-from core.modules.drivers.nudges.project_hook_wake_message import ProjectHookWakeMessage
+from core.modules.drivers.agent_messages.project_hook_wake_message import ProjectHookWakeMessage
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
 from core.modules.drivers.bindings.agent_wake_route import AgentWakeRoute
 from core.modules.drivers.commands.claim_agent_line.claim_agent_line import ClaimAgentLine
-from core.modules.drivers.commands.record_agent_nudge.record_agent_message import RecordAgentMessage
+from core.modules.drivers.commands.record_agent_agent_message.record_agent_message import RecordAgentMessage
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.support.wake_delivery import WakeDelivery
@@ -17,7 +17,7 @@ from engine.journal.journal_home import JournalHome
 from engine.time.clock import Clock
 from engine.time.timestamp import Timestamp
 
-WAKING = SimpleNamespace(id=7, session_agent_id=3, wakes_agent=True, delivery=LineDelivery.WAKE_HOOK, state=AgentLineState.WAITING, nudge=SimpleNamespace(text="new message 12: read it"))
+WAKING = SimpleNamespace(id=7, session_agent_id=3, wakes_agent=True, delivery=LineDelivery.WAKE_HOOK, state=AgentLineState.WAITING, agent_message=SimpleNamespace(text="new message 12: read it"))
 
 
 def agent(role: str = "main", launched: bool = False, session: str = "s-1", program: str = "claude"):
@@ -160,8 +160,8 @@ def test_a_project_hook_line_becomes_a_wake_line_for_the_agent(tmp_path):
     wake, bus = route(tmp_path)
     assert wake.line(WakeAsk("claude", "s-1", "", ""), "watch", "the build broke")
     [command] = bus.commands
-    assert isinstance(command, RecordAgentMessage) and command.agent_id == 3 and command.nudge.text == ProjectHookWakeMessage.declared().nudge(hook="watch", text="the build broke").text
-    assert command.nudge.declaration.delivery is LineDelivery.WAKE_HOOK
+    assert isinstance(command, RecordAgentMessage) and command.agent_id == 3 and command.agent_message.text == ProjectHookWakeMessage.declared().agent_message(hook="watch", text="the build broke").text
+    assert command.agent_message.declaration.delivery is LineDelivery.WAKE_HOOK
 
 
 def test_a_project_hook_line_for_a_helper_is_refused(tmp_path):

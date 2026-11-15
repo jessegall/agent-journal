@@ -24,7 +24,7 @@ def test_a_command_gets_the_hint_of_its_tool(command, hint_part):
     assert hint_part in StreamingHints.hint(command)
 
 
-def test_every_hint_fits_a_nudge_field_whole():
+def test_every_hint_fits_a_agent_message_field_whole():
     assert [hint for _, hint in STREAMING_HINTS if len(hint) > LONGEST_FIELD_CHARACTERS] == []
     assert len(GENERAL_HINT) <= LONGEST_FIELD_CHARACTERS
     assert len(SERIAL_PACKAGES_HINT) <= LONGEST_FIELD_CHARACTERS

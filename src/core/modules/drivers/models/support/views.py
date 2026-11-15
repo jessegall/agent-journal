@@ -30,8 +30,8 @@ AGENT_ACTIVITIES_SELECT = Select("agents").selecting(
                             .ordered("hook_calls.id", True).sliced(1, 0)), "last_hook_at"),
 ).view_sql()
 
-NUDGE_TOTALS_SELECT = Select("nudge_records").selecting(
-    Aliased(Column("key"), "nudge_key"),
+AGENT_MESSAGE_TOTALS_SELECT = Select("agent_message_records").selecting(
+    Aliased(Column("key"), "agent_message_key"),
     Aliased(FunctionCall(SqlFunction.SUM, [Column("delivery_count")]), "delivery_count"),
     Aliased(FunctionCall(SqlFunction.COALESCE, [FunctionCall(SqlFunction.MAX, [Column("last_delivered_at")]), Literal("")]), "last_delivered_at"),
 ).grouped("key").view_sql()

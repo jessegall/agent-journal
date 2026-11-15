@@ -53,7 +53,7 @@ from core.modules.plugins.commands.plugin_changes.plugin_changes_subcommand impo
 from core.modules.plugins.commands.plugin_checkout.plugin_checkout_subcommand import PluginCheckoutSubcommand
 from core.modules.plugins.commands.plugin_path.plugin_path_subcommand import PluginPathSubcommand
 from core.modules.plugins.commands.plugin_file.plugin_file_subcommand import PluginFileSubcommand
-from core.modules.plugins.support.plugin_nudges import PLUGIN_NUDGES
+from core.modules.plugins.support.plugin_agent_messages import PLUGIN_AGENT_MESSAGES
 from core.modules.plugins.support.plugin_project_reads import PluginProjectReads
 from engine.module.module import Module
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output_handler import AddPluginOutputHandler
@@ -120,7 +120,7 @@ class PluginsModule(Module):
     effects = [PluginEffect]
     lines = [PluginLines]
     policies = [PluginProgramPolicy, PluginPolicy]
-    nudges = PLUGIN_NUDGES
+    agent_messages = PLUGIN_AGENT_MESSAGES
     seed_reason = "a plugin is a program the user installs, which a demo has none of"
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.chat", "journal.core.skills",

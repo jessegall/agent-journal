@@ -11,7 +11,7 @@ from engine.query.queries import Queries
 from engine.instruction.instruction_imports import InstructionImports
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from core.modules.drivers.nudges.file_loaded_message import FileLoadedMessage
+from core.modules.drivers.agent_messages.file_loaded_message import FileLoadedMessage
 
 READ_TOOL = "Read"
 PART_FIELDS = ("offset", "limit", "pages")
@@ -27,7 +27,7 @@ class RepeatedFileReadLines(EventLineSource):
     def __init__(self, queries: Queries, home: JournalHome, hook_calls: HookCallQuery) -> None:
         self.queries, self.home, self.hook_calls = queries, home, hook_calls
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         tool = event.tool
         tool_input = event.tool_input()
         if tool is None or tool.name != READ_TOOL or any(field in tool_input for field in PART_FIELDS) or not tool.files:
@@ -35,7 +35,7 @@ class RepeatedFileReadLines(EventLineSource):
         path = tool.files[0]
         if not self.is_started_with(path) and not self.is_read_unchanged(agent_id, path):
             return []
-        return [FileLoadedMessage.declared().nudge(path=path)]
+        return [FileLoadedMessage.declared().agent_message(path=path)]
 
     def is_started_with(self, path: str) -> bool:
         project = self.home.project_folder

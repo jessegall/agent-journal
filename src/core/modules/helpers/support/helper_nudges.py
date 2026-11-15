@@ -1,9 +1,0 @@
-from core.modules.helpers.nudges.kept_report_message import KeptReportMessage
-from core.modules.helpers.nudges.unsaved_report_message import UnsavedReportMessage
-from core.modules.helpers.nudges.helper_limit_warning_message import HelperLimitWarningMessage
-from core.modules.helpers.nudges.helper_program_fault_message import HelperProgramFaultMessage
-from core.modules.helpers.nudges.helper_granted_message import HelperGrantedMessage
-from core.modules.helpers.nudges.lockdown_ended_message import LockdownEndedMessage
-from core.modules.helpers.nudges.start_model_missing_message import StartModelMissingMessage
-
-HELPER_NUDGES = [KeptReportMessage, UnsavedReportMessage, StartModelMissingMessage, LockdownEndedMessage, HelperGrantedMessage, HelperLimitWarningMessage, HelperProgramFaultMessage]

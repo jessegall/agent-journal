@@ -8,7 +8,7 @@ from engine.agent_machine.record.question import Question
 from engine.driver.agent_message import AgentMessage
 from engine.agent_stack.states.blocked import Blocked
 from core.modules.sequences.models.sequence_run import SequenceRun
-from core.modules.sequences.nudges.step_waits_message import StepWaitsMessage
+from core.modules.sequences.agent_messages.step_waits_message import StepWaitsMessage
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.modules.sequences.support.sequence_step_started import SequenceStepStarted
 
@@ -33,8 +33,8 @@ class UnstartedStepNeeds(StateSource):
 
     @staticmethod
     def plan(run: SequenceRun) -> BlockPlan:
-        return BlockPlan(UnstartedStepNeeds.nudge(run), SequenceStepStarted([run.id, run.step_number]), UNTAKEN_STEP_KEY, UNTAKEN_STEP_KEY, scope_tools=True, scope_stop=False)
+        return BlockPlan(UnstartedStepNeeds.agent_message(run), SequenceStepStarted([run.id, run.step_number]), UNTAKEN_STEP_KEY, UNTAKEN_STEP_KEY, scope_tools=True, scope_stop=False)
 
     @staticmethod
-    def nudge(run: SequenceRun) -> AgentMessage:
-        return StepWaitsMessage.declared().nudge(sequence=run.sequence_id, step=run.step_number)
+    def agent_message(run: SequenceRun) -> AgentMessage:
+        return StepWaitsMessage.declared().agent_message(sequence=run.sequence_id, step=run.step_number)

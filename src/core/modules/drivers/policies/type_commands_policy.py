@@ -13,7 +13,7 @@ from engine.helper_type.journal_line import JournalLine
 from engine.setting.setting_values import SettingValues
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.base_commands import BASE_COMMANDS
-from core.modules.drivers.nudges.helper_type_category_message import HelperTypeCategoryMessage
+from core.modules.drivers.agent_messages.helper_type_category_message import HelperTypeCategoryMessage
 from core.modules.drivers.support.read_only_access import HELP_FLAG
 from core.modules.drivers.support.type_command_check import TypeCommandCheck
 
@@ -36,7 +36,7 @@ class TypeCommandsPolicy(EventPolicy):
         helper_type = self.types.find(agent.role)
         refused_part = shell.disallowed_part(self.command_types(helper_type, BASE_COMMANDS.joined(helper_type.commands)))
         if refused_part is not None:
-            return HelperTypeCategoryMessage.declared().nudge(helper_type=helper_type.label.lower(), category=refused_part.classification.category.value,
+            return HelperTypeCategoryMessage.declared().agent_message(helper_type=helper_type.label.lower(), category=refused_part.classification.category.value,
                                                             hint=f". {helper_type.refusal_hint}" if helper_type.refusal_hint else "")
         return self.commands.refusal(agent, self.journal_lines(shell))
 

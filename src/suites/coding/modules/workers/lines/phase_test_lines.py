@@ -18,5 +18,5 @@ class PhaseTestLines(EventLineSource):
     def __init__(self, runs: PhaseTestRuns) -> None:
         self.runs = runs
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        return self.runs.answer(event, agent_id).nudges if event is not None else []
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+        return self.runs.answer(event, agent_id).agent_messages if event is not None else []

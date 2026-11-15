@@ -1,6 +1,6 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from engine.query.queries import Queries
 from core.modules.processes.commands.warn_cadence.warn_cadence import WarnCadence
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
@@ -16,8 +16,8 @@ class WarnCadenceHandler(Handler[WarnCadence, Process]):
 
     command = WarnCadence
 
-    def __init__(self, queries: Queries, nudger: MessageSender) -> None:
-        self.queries, self.nudger = queries, nudger
+    def __init__(self, queries: Queries, message_sender: MessageSender) -> None:
+        self.queries, self.message_sender = queries, message_sender
 
     def handle(self, command: WarnCadence, context: Context) -> Process:
         process = self.queries.query(Process).find(command.process_id)
@@ -27,5 +27,5 @@ class WarnCadenceHandler(Handler[WarnCadence, Process]):
         if part is None:
             return process
         notice = CadenceMessages.notice(command.notice_type, process, part, command.seconds, command.limit)
-        self.nudger.send(process.session_agent_id, notice.declaration, CADENCE_SOURCE, context, **notice.fields)
+        self.message_sender.send(process.session_agent_id, notice.declaration, CADENCE_SOURCE, context, **notice.fields)
         return process

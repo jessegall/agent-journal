@@ -16,10 +16,10 @@ from core.modules.approvals.listeners.approval_dock_listener import ApprovalDock
 from core.modules.approvals.listeners.approval_notice_listener import ApprovalNoticeListener
 from core.modules.approvals.listeners.pending_approval_dock_listener import PendingApprovalDockListener
 from core.modules.approvals.guards.approval_decision_guard import ApprovalDecisionGuard
-from core.modules.approvals.nudges.approval_pending_message import ApprovalPendingMessage
-from core.modules.approvals.nudges.approval_decided_message import ApprovalDecidedMessage
-from core.modules.approvals.nudges.approval_failed_message import ApprovalFailedMessage
-from core.modules.approvals.nudges.approval_review_message import ApprovalReviewMessage
+from core.modules.approvals.agent_messages.approval_pending_message import ApprovalPendingMessage
+from core.modules.approvals.agent_messages.approval_decided_message import ApprovalDecidedMessage
+from core.modules.approvals.agent_messages.approval_failed_message import ApprovalFailedMessage
+from core.modules.approvals.agent_messages.approval_review_message import ApprovalReviewMessage
 from core.modules.approvals.migrations.m001_approval_requests import ApprovalRequestsMigration
 from core.modules.approvals.migrations.m007_approval_failure import ApprovalFailureMigration
 from core.modules.approvals.migrations.m002_approval_recipients import ApprovalRecipientsMigration
@@ -61,7 +61,7 @@ class ApprovalsModule(Module):
     listeners = [StandingApprovalDockListener, StandingApprovalAcceptListener, EveryApprovalAcceptListener, StandingApprovalMarkListener, ApprovalDockListener, ApprovalNoticeListener, PendingApprovalDockListener]
     guards = [ApprovalDecisionGuard, StandingApprovalGuard]
     marks = [ApprovalStandingMark]
-    nudges = [ApprovalPendingMessage, ApprovalDecidedMessage, ApprovalFailedMessage, ApprovalReviewMessage]
+    agent_messages = [ApprovalPendingMessage, ApprovalDecidedMessage, ApprovalFailedMessage, ApprovalReviewMessage]
     docks = APPROVALS_DOCKS
     button_slots = list(APPROVAL_SLOT)
     buttons = [ApprovalsAcceptButton,

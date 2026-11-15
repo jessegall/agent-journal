@@ -2,7 +2,7 @@ from engine.enums.agent_role import AgentRole
 from engine.listener.save_listener import SaveListener
 from core.modules.agents.models.agent import Agent
 from core.modules.voices.support.voice_lines import VoiceLines
-from core.modules.voices.support.voice_nudges import VOICE_LINE, VOICE_INTRODUCTION
+from core.modules.voices.support.voice_agent_messages import VOICE_LINE, VOICE_INTRODUCTION
 from engine.event.created import Created
 from engine.command.context import Context
 

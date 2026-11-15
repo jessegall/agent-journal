@@ -8,7 +8,7 @@ from core.modules.developer.windows.system_logs.system_logs_window import System
 from core.modules.documents.windows.documents.documents_window import DocumentsWindow
 from core.modules.documents.windows.page.page_window import PageWindow
 from core.modules.drivers.windows.hook_calls.hook_calls_window import HookCallsWindow
-from core.modules.drivers.windows.nudges.messages_window import MessagesWindow
+from core.modules.drivers.windows.agent_messages.messages_window import MessagesWindow
 from core.modules.dumps.windows.dumps.dumps_window import DumpsWindow
 from core.modules.library.windows.teams.teams_window import TeamsWindow
 from core.modules.mcp.windows.integrations.integrations_window import IntegrationsWindow

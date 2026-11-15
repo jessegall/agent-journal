@@ -96,7 +96,7 @@ class Module:
     subjects: ClassVar[list[type[Model]]] = []
     agent_listeners: ClassVar[list[type[AgentListener[object]]]] = []
     performance_tools: ClassVar[list[type[PerformanceTool]]] = []
-    nudges: ClassVar[list[MessageTemplate | type[MessageTemplate]]] = []
+    agent_messages: ClassVar[list[MessageTemplate | type[MessageTemplate]]] = []
     tick_handlers: ClassVar[list[TickHandler | type[TickHandler]]] = []
     helper_question_topics: ClassVar[list[AskTopic | type[AskTopic]]] = []
     docks: ClassVar[list[DockDeclaration | type[DockDeclaration]]] = []
@@ -177,8 +177,8 @@ class Module:
 
     # a nudge written as a class gives its declaration; an inline nudge is its own
     @classmethod
-    def nudge_declarations(cls) -> list[MessageTemplate]:
-        return [nudge.declared() if isinstance(nudge, type) else nudge for nudge in cls.nudges]
+    def agent_message_declarations(cls) -> list[MessageTemplate]:
+        return [agent_message.declared() if isinstance(agent_message, type) else agent_message for agent_message in cls.agent_messages]
 
     # a tick handler written as a class gives its declaration; an inline handler is its own
     @classmethod

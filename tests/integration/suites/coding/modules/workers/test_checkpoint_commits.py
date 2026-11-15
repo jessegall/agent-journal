@@ -11,8 +11,8 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import C
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.held_tasks import worker_with_tasks, prove_task
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, start_planned_worker, unplanned_worker
-from suites.coding.modules.workers.nudges.worker_committed_unmerged_message import WorkerCommittedUnmergedMessage
-from engine.testing.expectations.expected_message import expected_nudge
+from suites.coding.modules.workers.agent_messages.worker_committed_unmerged_message import WorkerCommittedUnmergedMessage
+from engine.testing.expectations.expected_message import expected_agent_message
 
 COMMITTED = "committed"
 BUILD_TASKS = 3

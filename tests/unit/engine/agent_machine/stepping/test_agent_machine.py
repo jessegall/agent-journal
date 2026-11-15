@@ -75,9 +75,9 @@ def view(agent_type: str = "main", **changes: object) -> AgentView:
     return replace(sample, **{"rank_order": ORDER, "program": CARRIES_EVERYTHING, **changes})
 
 
-def block(nudge_key: str, rank: str, *lifting: str, block_id: int = 3, is_strict: bool = False, scope_stop: bool = True) -> OpenBlock:
-    reason = Reason(f"{rank}-key", DecisionClass.HOLD, rank, f"{nudge_key} first", lifting)
-    return OpenBlock(nudge_key, block_id, reason, True, scope_stop, True, True, is_strict)
+def block(agent_message_key: str, rank: str, *lifting: str, block_id: int = 3, is_strict: bool = False, scope_stop: bool = True) -> OpenBlock:
+    reason = Reason(f"{rank}-key", DecisionClass.HOLD, rank, f"{agent_message_key} first", lifting)
+    return OpenBlock(agent_message_key, block_id, reason, True, scope_stop, True, True, is_strict)
 
 
 def working(work_type: WorkType = WorkType.TASK, work_remains: bool = True) -> RequiredState:
@@ -140,7 +140,7 @@ def plan(tool_grace_uses: int) -> BlockPlan:
 
 
 def test_an_open_row_its_need_still_plans_decides_under_the_plans_rank_keys_and_stop_text() -> None:
-    stop_plan = replace(plan(0), scope_stop=True, stop_check_key="tasks.log-before-stop", stop_nudge=AgentMessage("tasks.unlogged-stop", AgentMessageType.STEERING, "log your task before you stop"))
+    stop_plan = replace(plan(0), scope_stop=True, stop_check_key="tasks.log-before-stop", stop_agent_message=AgentMessage("tasks.unlogged-stop", AgentMessageType.STEERING, "log your task before you stop"))
     row = block("tasks.unlogged-writes", "row-rank")
     shown = AgentStateMachine().step(view(blocks=(row,), plans=(stop_plan,)), STOP).record.shown_reason
     assert (shown.key, shown.rank, shown.text) == ("tasks.log-before-stop", "tasks.unlogged", "log your task before you stop")
@@ -244,7 +244,7 @@ def test_a_hold_no_one_can_judge_never_passes_and_asks_a_person_to_repair_it() -
 
 
 def test_the_fifth_stop_refused_by_an_open_row_its_need_still_plans_names_that_row_in_the_escalation() -> None:
-    stop_plan = replace(plan(0), scope_stop=True, stop_check_key="tasks.log-before-stop", stop_nudge=AgentMessage("tasks.unlogged-stop", AgentMessageType.STEERING, "log your task before you stop"))
+    stop_plan = replace(plan(0), scope_stop=True, stop_check_key="tasks.log-before-stop", stop_agent_message=AgentMessage("tasks.unlogged-stop", AgentMessageType.STEERING, "log your task before you stop"))
     record = AgentStateMachine().step(view(blocks=(block("tasks.unlogged-writes", "row-rank"),), plans=(stop_plan,), counts=RefusalCounts(4, 0)), STOP).record
     assert record.counts.escalation is not None and record.counts.escalation.block_ids == (3,)
 

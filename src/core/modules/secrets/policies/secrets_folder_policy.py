@@ -2,7 +2,7 @@ from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_policy import EventPolicy
 from functools import cache
-from core.modules.secrets.nudges.secrets_folder_ban_message import SecretsFolderBanMessage
+from core.modules.secrets.agent_messages.secrets_folder_ban_message import SecretsFolderBanMessage
 import json
 from pathlib import Path
 
@@ -30,7 +30,7 @@ class SecretsFolderPolicy(EventPolicy):
         tool_texts = (*tool.files, *(tool.shell.part_texts if tool.shell is not None else ()), json.dumps(dict(event.tool_input()), default=str))
         if not any(spelling in tool_text for tool_text in tool_texts for spelling in self.spellings()):
             return None
-        return SecretsFolderBanMessage.declared().nudge()
+        return SecretsFolderBanMessage.declared().agent_message()
 
     def spellings(self) -> tuple[str, ...]:
         return folder_spellings(str(self.folder.folder), str(Path.home()))

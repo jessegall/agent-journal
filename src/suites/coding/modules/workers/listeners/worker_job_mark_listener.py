@@ -6,7 +6,7 @@ from core.modules.messages.models.message import Message
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 from suites.coding.modules.workers.models.enums.worker_mark_type import WorkerMarkType
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
-from suites.coding.modules.workers.support.merger_nudges import MERGER_FINDINGS_PREFIX
+from suites.coding.modules.workers.support.merger_agent_messages import MERGER_FINDINGS_PREFIX
 from suites.coding.modules.workers.support.worker_recipient import WorkerRecipient
 from engine.event.created import Created
 

@@ -3,7 +3,7 @@ from core.modules.secrets.windows.secrets_windows import SECRETS_WINDOWS
 from core.modules.secrets.models.declarations.secret_model_declaration import SecretModelDeclaration
 from core.modules.secrets.skills.declarations.secrets_skills import SECRETS_SKILLS
 from core.modules.secrets.migrations.m002_active_secret_index import ActiveSecretIndexMigration
-from core.modules.secrets.support.secret_nudges import SECRET_NUDGES
+from core.modules.secrets.support.secret_agent_messages import SECRET_AGENT_MESSAGES
 from engine.module.module import Module
 from core.modules.secrets.commands.allow_program.allow_program_handler import AllowProgramHandler
 from core.modules.secrets.commands.delete_secret.delete_secret_handler import DeleteSecretHandler
@@ -37,7 +37,7 @@ class SecretsModule(Module):
 
     name = "journal.core.secrets"
     policies = [SecretsFolderPolicy]
-    nudges = SECRET_NUDGES
+    agent_messages = SECRET_AGENT_MESSAGES
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages"]
     skills = SECRETS_SKILLS

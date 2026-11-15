@@ -1,4 +1,4 @@
-from core.modules.messages.support.message_nudges import UNANSWERED_COUNTDOWN
+from core.modules.messages.support.message_agent_messages import UNANSWERED_COUNTDOWN
 from collections.abc import Mapping, Sequence
 
 from engine.agent_stack.states.blocked import Blocked
@@ -8,9 +8,9 @@ from engine.agent_machine.needs.required_state import RequiredState
 from engine.agent_machine.needs.state_source import StateSource
 from engine.agent_machine.record.question import Question
 from engine.enums.closer_role import CloserRole
-from core.modules.messages.nudges.unanswered_refusal_message import UnansweredRefusalMessage
+from core.modules.messages.agent_messages.unanswered_refusal_message import UnansweredRefusalMessage
 from core.modules.messages.support.block_conditions.messages_answered import MessagesAnswered
-from core.modules.messages.support.message_nudges import UNANSWERED_TOOL_USES
+from core.modules.messages.support.message_agent_messages import UNANSWERED_TOOL_USES
 from core.modules.messages.support.unanswered_messages import UnansweredMessages
 
 UNANSWERED_RANK = "messages.unanswered"
@@ -38,7 +38,7 @@ class UnansweredMessageNeeds(StateSource):
         if not unanswered:
             return None
         numbers = ", ".join(str(message.id) for message in unanswered)
-        refusal = UnansweredRefusalMessage.declared().nudge(messages=numbers, message=unanswered[0].id)
+        refusal = UnansweredRefusalMessage.declared().agent_message(messages=numbers, message=unanswered[0].id)
         return BlockPlan(refusal, MessagesAnswered([message.id for message in unanswered]), UNANSWERED_RULE, UNANSWERED_RANK,
                          members=tuple(message.id for message in unanswered), tool_grace_uses=UNANSWERED_TOOL_USES,
-                         closer_roles=tuple([CloserRole.AGENT]), lifting_lines=ANSWER_COMMANDS, countdown=UNANSWERED_COUNTDOWN.nudge("{left}", messages=numbers))
+                         closer_roles=tuple([CloserRole.AGENT]), lifting_lines=ANSWER_COMMANDS, countdown=UNANSWERED_COUNTDOWN.agent_message("{left}", messages=numbers))

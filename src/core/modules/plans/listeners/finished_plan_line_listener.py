@@ -5,7 +5,7 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.support.plan_main_agents import PlanMainAgents
-from core.modules.plans.nudges.plan_finished_message import PlanFinishedMessage
+from core.modules.plans.agent_messages.plan_finished_message import PlanFinishedMessage
 
 FINISHED_SOURCE = "plans.plan-finished"
 

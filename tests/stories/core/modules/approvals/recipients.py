@@ -12,8 +12,8 @@ from core.modules.docking.models.enums.dock_item_state import DockItemState
 from engine.testing.stories.story import Story
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
-from core.modules.approvals.nudges.approval_review_message import ApprovalReviewMessage
-from engine.testing.expectations.expected_message import expected_nudge
+from core.modules.approvals.agent_messages.approval_review_message import ApprovalReviewMessage
+from engine.testing.expectations.expected_message import expected_agent_message
 
 
 
@@ -36,7 +36,7 @@ def test_a_helpers_request_is_addressed_to_its_main_agent_and_has_no_person_card
     story, helper, approval = helper_request
     items = tuple(story.story_rows(DockItem, target_model="approval", target_id=approval.id, state=DockItemState.DOCKED))
     story.expect_rows(approval.recipient_agent_id == story.agent.id, not items)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(ApprovalReviewMessage.declared()), actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_agent_message(ApprovalReviewMessage.declared()), actor=story.agent)
     with viewer_client(story) as viewer:
         viewer.refusal("messages.chat", ["approval", "accept", str(approval.id)], "addressed to main agent")
 

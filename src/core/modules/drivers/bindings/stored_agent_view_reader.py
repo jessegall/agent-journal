@@ -43,7 +43,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.drivers.models.agent_escalation import AgentEscalation
 from core.modules.drivers.models.agent_stack import AgentStack
-from core.modules.drivers.nudges.paused_refusal_message import PausedRefusalMessage
+from core.modules.drivers.agent_messages.paused_refusal_message import PausedRefusalMessage
 from core.modules.drivers.models.driver_version import DriverVersion
 from core.modules.drivers.models.enums.escalation_state import EscalationState
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
@@ -113,7 +113,7 @@ class StoredAgentViewReader(AgentViewReader):
 
     def facts(self, agent: Agent) -> tuple[Fact, ...]:
         causes = tuple(PauseCause(paused.id, paused.id, paused.paused_at.value) for paused in self.agents.paused_line(agent.id) if paused.paused_at is not None)
-        pause = [PauseFact(None, causes, PausedRefusalMessage.declared().nudge().text)] if causes else []
+        pause = [PauseFact(None, causes, PausedRefusalMessage.declared().agent_message().text)] if causes else []
         return (*pause, *self.ended(agent))
 
     def ended(self, agent: Agent) -> list[Fact]:
@@ -131,9 +131,9 @@ class StoredAgentViewReader(AgentViewReader):
         return tuple(self.open_block(row, uses.get(row.id, 0)) for row in rows)
 
     def open_block(self, row: AgentBlock, tool_uses: int) -> OpenBlock:
-        reason = Reason(row.nudge_key, DecisionClass.HOLD, row.nudge_key, row.refusal_text, row.lifting_lines)
+        reason = Reason(row.agent_message_key, DecisionClass.HOLD, row.agent_message_key, row.refusal_text, row.lifting_lines)
         timestamp = self.clock.timestamp()
-        return OpenBlock(row.nudge_key, row.id, reason, row.has_tool_scope, row.has_stop_scope, row.is_active(tool_uses, timestamp),
+        return OpenBlock(row.agent_message_key, row.id, reason, row.has_tool_scope, row.has_stop_scope, row.is_active(tool_uses, timestamp),
                          row.creation_timestamp().elapsed_seconds(timestamp) >= row.stop_grace_seconds, row.strict)
 
     def escalation(self, agent_id: int) -> Escalation | None:

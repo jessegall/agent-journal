@@ -1,6 +1,6 @@
 from engine.scope.actor_scope import ActorScope
-from engine.driver.nudger import MessageSender
-from core.modules.dumps.nudges.dump_arrived_message import DumpArrivedMessage
+from engine.driver.message_sender import MessageSender
+from core.modules.dumps.agent_messages.dump_arrived_message import DumpArrivedMessage
 from engine.listener.save_listener import SaveListener
 from core.modules.dumps.models.dump import Dump
 from core.modules.agents.support.agent_rows import AgentRows
@@ -16,10 +16,10 @@ class DumpArrivalListener(SaveListener[Created[Dump]]):
     name = "dumps.arrival"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, agents: AgentRows, nudger: MessageSender) -> None:
-        self.agents, self.nudger = agents, nudger
+    def __init__(self, agents: AgentRows, message_sender: MessageSender) -> None:
+        self.agents, self.message_sender = agents, message_sender
 
     def handle(self, event: Created[Dump], context: Context) -> None:
         dump = event.row
         for agent in self.agents.running_main_agents():
-            self.nudger.send(agent.id, DumpArrivedMessage.declared(), LINE_SOURCE, context, dump=dump.id)
+            self.message_sender.send(agent.id, DumpArrivedMessage.declared(), LINE_SOURCE, context, dump=dump.id)

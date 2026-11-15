@@ -1,0 +1,7 @@
+from core.modules.questions.agent_messages.question_answered_message import QuestionAnsweredMessage
+from core.modules.questions.agent_messages.question_answer_source_message import QuestionAnswerSourceMessage
+from core.modules.questions.agent_messages.question_closed_message import QuestionClosedMessage
+from core.modules.questions.agent_messages.question_tool_message import QuestionToolMessage
+
+
+QUESTION_AGENT_MESSAGES = [QuestionAnsweredMessage, QuestionAnswerSourceMessage, QuestionClosedMessage, QuestionToolMessage]

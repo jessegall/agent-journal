@@ -9,8 +9,8 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 from tests.stories.suites.coding.modules.workers.support.phase_steps import planned_story
 from tests.stories.suites.coding.support.main_controls_fixture import scope_line
 from tests.stories.support.story_checks import expect_value
-from suites.coding.nudges.task_assignment_message import TaskAssignmentMessage
-from engine.testing.expectations.expected_message import expected_nudge
+from suites.coding.agent_messages.task_assignment_message import TaskAssignmentMessage
+from engine.testing.expectations.expected_message import expected_agent_message
 from suites.coding.support.coding_settings import WRITES_CODE_SETTING
 
 WRITES_CODE = f"{WRITES_CODE_SETTING}"
@@ -50,7 +50,7 @@ def test_a_reserved_task_reaches_a_stopping_main_agent_with_auto_mode_off(new_st
     story = new_story(fixture=OpenTaskOrchestrator)
     story.expect_success("driver choose coding.main --environment main")
     story.expect_success(f"task assign 1 --to {agent_number(story, story.agent.id)}", actor=story.agent)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), expected_nudge(TaskAssignmentMessage.declared()))
+    story.expect_hook_refusal("s-1", HookSamples.stop(), expected_agent_message(TaskAssignmentMessage.declared()))
     story.expect_text("task show 1", "state: started", f"holder_id: {story.agent.id}", actor=story.agent)
 
 

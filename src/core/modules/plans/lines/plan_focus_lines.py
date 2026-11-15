@@ -11,8 +11,8 @@ from core.modules.agents.models.agent import Agent
 from core.modules.plans.models.enums.focus_source import FocusSource
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
-from core.modules.plans.nudges.focus_suggested_message import FocusSuggestedMessage
-from core.modules.plans.nudges.unfocused_task_message import UnfocusedTaskMessage
+from core.modules.plans.agent_messages.focus_suggested_message import FocusSuggestedMessage
+from core.modules.plans.agent_messages.unfocused_task_message import UnfocusedTaskMessage
 from core.modules.plans.support.focus.judged_focus_tasks import JudgedFocusTasks
 from core.modules.plans.support.focus.new_focus_places import FOCUS_RULE_NAME, NewFocusPlaces
 from core.modules.plans.support.focus.plan_focus import PlanFocus
@@ -35,7 +35,7 @@ class PlanFocusLines(EventLineSource):
         self.queries, self.focus, self.new_places = queries, focus, new_places
         self.judged = JudgedFocusTasks.shared(home)
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         if event is None:
             return []
         starts_plan = NewFocusPlaces.starts_plan(event)
@@ -61,7 +61,7 @@ class PlanFocusLines(EventLineSource):
             return []
         if overview.current.source is FocusSource.DEFAULT:
             started_plans = ", ".join(str(started.plan.id) for started in overview.started)
-            return [FocusSuggestedMessage.declared().nudge(plans=started_plans, focus=work.plan.id)]
+            return [FocusSuggestedMessage.declared().agent_message(plans=started_plans, focus=work.plan.id)]
         waited_ids = work.unblockers.task_ids()
-        return [UnfocusedTaskMessage.declared().nudge(task=place.task_id, plan=place.plan_id, focus=work.plan.id)
+        return [UnfocusedTaskMessage.declared().agent_message(task=place.task_id, plan=place.plan_id, focus=work.plan.id)
                 for place in places if place.plan_id != work.plan.id and place.task_id not in waited_ids]

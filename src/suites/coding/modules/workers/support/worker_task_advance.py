@@ -6,7 +6,7 @@ from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.listener.rows.event_rows import EventRows
 from engine.repository.repository import Repository
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.commands.reset_task_reads.reset_task_reads import ResetTaskReads
 from core.modules.tasks.support.task_brief_blocks import TaskBriefBlocks
@@ -17,27 +17,27 @@ from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import W
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
-from suites.coding.modules.workers.nudges.worker_next_task_message import WorkerNextTaskMessage
-from suites.coding.modules.workers.nudges.worker_task_reassignment_message import WorkerTaskReassignmentMessage
-from suites.coding.modules.workers.nudges.worker_task_reassigned_message import WorkerTaskReassignedMessage
+from suites.coding.modules.workers.agent_messages.worker_next_task_message import WorkerNextTaskMessage
+from suites.coding.modules.workers.agent_messages.worker_task_reassignment_message import WorkerTaskReassignmentMessage
+from suites.coding.modules.workers.agent_messages.worker_task_reassigned_message import WorkerTaskReassignedMessage
 
 
 class WorkerTaskAdvance:
     """Starts a worker's next task on its worktree and tells the worker which one it is and how to read it."""
 
-    def __init__(self, bus: Bus, repository: Repository, nudger: MessageSender, blocks: TaskBriefBlocks, rows: EventRows, guidance: WorkerGuidance) -> None:
+    def __init__(self, bus: Bus, repository: Repository, message_sender: MessageSender, blocks: TaskBriefBlocks, rows: EventRows, guidance: WorkerGuidance) -> None:
         self.guidance = guidance
-        self.bus, self.repository, self.nudger = bus, repository, nudger
+        self.bus, self.repository, self.message_sender = bus, repository, message_sender
         self.blocks, self.rows = blocks, rows
 
     def next_task(self, worktree: Worktree, following: Task, context: Context) -> None:
         self.start(worktree, following, context)
-        self.nudger.send(worktree.session_agent_id, WorkerNextTaskMessage.declared(), WORKER_JOB_SOURCE, context, task=following.id, line=self.guidance.line(worktree.session_agent_id))
+        self.message_sender.send(worktree.session_agent_id, WorkerNextTaskMessage.declared(), WORKER_JOB_SOURCE, context, task=following.id, line=self.guidance.line(worktree.session_agent_id))
 
     def after_reassigned_task(self, worktree: Worktree, reassigned: Task, following: Task, context: Context) -> None:
         self.start(worktree, following, context)
-        self.nudger.send(worktree.session_agent_id, WorkerTaskReassignedMessage.declared(), WORKER_JOB_SOURCE, context, task=reassigned.id)
-        self.nudger.send(worktree.session_agent_id, WorkerTaskReassignmentMessage.declared(), WORKER_JOB_SOURCE, context, task=following.id)
+        self.message_sender.send(worktree.session_agent_id, WorkerTaskReassignedMessage.declared(), WORKER_JOB_SOURCE, context, task=reassigned.id)
+        self.message_sender.send(worktree.session_agent_id, WorkerTaskReassignmentMessage.declared(), WORKER_JOB_SOURCE, context, task=following.id)
 
     def start(self, worktree: Worktree, following: Task, context: Context) -> None:
         self.bus.dispatch(StartTask(following.id), replace(context, actor=Actor(worktree.session_agent_id, ActorType.AGENT)))

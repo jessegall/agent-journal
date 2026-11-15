@@ -9,7 +9,7 @@ from engine.enums.effect_timing import EffectTiming
 from engine.enums.hook_event_name import HookEventName
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.models.process import Process
-from core.modules.processes.nudges.runner_start_failed_message import RunnerStartFailedMessage
+from core.modules.processes.agent_messages.runner_start_failed_message import RunnerStartFailedMessage
 from core.modules.processes.support.run_count_lines import RunCountLines
 from core.modules.processes.support.runner_binary import RunnerBinary
 from core.modules.processes.support.runner_line import RunnerLine

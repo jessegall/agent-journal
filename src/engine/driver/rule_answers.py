@@ -56,26 +56,26 @@ class RuleAnswers:
     def rule_lines(self) -> list[tuple[str, str]]:
         first_rule: dict[str, str] = {}
         for rule in self.answered:
-            for nudge in rule.answer.line_nudges if rule.answer is not None else ():
-                first_rule.setdefault(nudge.key, rule.name)
-        return [(first_rule[nudge.key], nudge.text) for nudge in self.delivered_nudges]
+            for agent_message in rule.answer.line_agent_messages if rule.answer is not None else ():
+                first_rule.setdefault(agent_message.key, rule.name)
+        return [(first_rule[agent_message.key], agent_message.text) for agent_message in self.delivered_agent_messages]
 
     @property
-    def line_nudges(self) -> list[AgentMessage]:
-        return AgentMessage.collapsed(nudge for rule in self.answered if rule.answer is not None for nudge in rule.answer.line_nudges)
+    def line_agent_messages(self) -> list[AgentMessage]:
+        return AgentMessage.collapsed(agent_message for rule in self.answered if rule.answer is not None for agent_message in rule.answer.line_agent_messages)
 
     @property
-    def delivered_nudges(self) -> list[AgentMessage]:
-        delivered = {(nudge.key, nudge.text): nudge for nudge in self.line_nudges if (nudge.key, nudge.text) not in self.skipped_lines}
+    def delivered_agent_messages(self) -> list[AgentMessage]:
+        delivered = {(agent_message.key, agent_message.text): agent_message for agent_message in self.line_agent_messages if (agent_message.key, agent_message.text) not in self.skipped_lines}
         return list(delivered.values())
 
     @property
-    def refusal_nudges(self) -> list[AgentMessage]:
-        return [nudge for rule in self.answered if rule.answer is not None for nudge in rule.answer.nudges if rule.answer.refusal and nudge.text == rule.answer.refusal]
+    def refusal_agent_messages(self) -> list[AgentMessage]:
+        return [agent_message for rule in self.answered if rule.answer is not None for agent_message in rule.answer.agent_messages if rule.answer.refusal and agent_message.text == rule.answer.refusal]
 
     @property
     def labelled_lines(self) -> list[str]:
-        return [nudge.labelled for nudge in (*self.delivered_nudges, *self.refusal_nudges)]
+        return [agent_message.labelled for agent_message in (*self.delivered_agent_messages, *self.refusal_agent_messages)]
 
     @property
     def commands(self) -> list[tuple[str, Command[object]]]:

@@ -18,10 +18,10 @@ from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.modules.messages.delivery import KeptTyping, MessagingSession
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value, expect_value_with, expect_value_without
-from core.modules.overview.nudges.overview_line_message import OverviewLineMessage
-from core.modules.messages.nudges.new_message_notice import NewMessageNotice
-from core.modules.overview.nudges.overview_refusal_message import OverviewRefusalMessage
-from engine.testing.expectations.expected_message import expected_nudge
+from core.modules.overview.agent_messages.overview_line_message import OverviewLineMessage
+from core.modules.messages.agent_messages.new_message_notice import NewMessageNotice
+from core.modules.overview.agent_messages.overview_refusal_message import OverviewRefusalMessage
+from engine.testing.expectations.expected_message import expected_agent_message
 from core.modules.overview.support.overview_settings import COMMANDS_KEY
 
 
@@ -79,11 +79,11 @@ def test_after_a_session_start_nothing_passes_before_the_overview_but_a_skill_re
     story = overview_story(played)
     story.hook("s-1", HookSamples.session_start())
     story.run_listeners()
-    story.expect_hook_refusal("s-1", EDIT, expected_nudge(OverviewRefusalMessage.declared()))
+    story.expect_hook_refusal("s-1", EDIT, expected_agent_message(OverviewRefusalMessage.declared()))
     story.expect_hook_allowed("s-1", LISTING)
-    story.expect_hook_refusal("s-1", JOURNAL_LINE, expected_nudge(OverviewRefusalMessage.declared()))
+    story.expect_hook_refusal("s-1", JOURNAL_LINE, expected_agent_message(OverviewRefusalMessage.declared()))
     repeated = story.hook("s-1", EDIT).refusal
-    story.expect_rows(expected_nudge(OverviewRefusalMessage.declared()).matches_text(repeated), "refusal skip" not in repeated, detail=repeated)
+    story.expect_rows(expected_agent_message(OverviewRefusalMessage.declared()).matches_text(repeated), "refusal skip" not in repeated, detail=repeated)
     story.expect_hook_allowed("s-1", SKILL_READ)
     story.expect_hook_allowed("s-1", OVERVIEW_HOOK)
     story.expect_hook_allowed("s-1", EDIT)
@@ -108,7 +108,7 @@ def test_a_compaction_blocks_again_and_a_resume_does_not(played):
     story.hook("s-1", RESUME)
     story.expect_hook_allowed("s-1", EDIT)
     story.hook("s-1", COMPACTION)
-    story.expect_hook_refusal("s-1", EDIT, expected_nudge(OverviewRefusalMessage.declared()))
+    story.expect_hook_refusal("s-1", EDIT, expected_agent_message(OverviewRefusalMessage.declared()))
 
 
 class CartWork(StoryFixture):
@@ -144,9 +144,9 @@ def compacted(played):
 def test_a_whole_compaction_is_given_the_summary_instructions_and_the_start_after_it_the_overview_line(compacted):
     story, _, compaction_lines, start_lines = compacted
     expect_value(list(compaction_lines), [ClaudeCodeProvider.compaction_instructions])
-    expect_value(OverviewLineMessage.declared().nudge().text in start_lines and NewMessageNotice.declared().nudge(message=1).text in start_lines, True)
+    expect_value(OverviewLineMessage.declared().agent_message().text in start_lines and NewMessageNotice.declared().agent_message(message=1).text in start_lines, True)
     story.expect_hook_allowed("s-1", SKILL_READ)
-    story.expect_hook_refusal("s-1", EDIT, expected_nudge(OverviewRefusalMessage.declared()))
+    story.expect_hook_refusal("s-1", EDIT, expected_agent_message(OverviewRefusalMessage.declared()))
     story.expect_hook_allowed("s-1", OVERVIEW_HOOK)
     story.expect_hook_allowed("s-1", EDIT)
 

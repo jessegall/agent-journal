@@ -45,7 +45,7 @@ def rows_loaded(played: FixtureJournal, line: str) -> int:
     return counts.rows - previous_count
 
 
-def test_the_nudge_list_loads_one_row_for_each_nudge_however_often_it_was_said(started_task):
+def test_the_agent_message_list_loads_one_row_for_each_agent_message_however_often_it_was_said(started_task):
     previous_count = rows_loaded(started_task, "nudge list --json")
     repository, context = started_task.container.get(Repository), Context(Actor.core(), started_task.clock.timestamp(), ReadMessage(1))
     with started_task.journal.database.transaction():

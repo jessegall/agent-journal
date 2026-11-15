@@ -12,7 +12,7 @@ from suites.coding.modules.checks.migrations.m008_open_check_hidden_index import
 from suites.coding.modules.checks.migrations.m007_check_task_wait_index import CheckTaskWaitIndexMigration
 from suites.coding.modules.checks.migrations.m006_open_check_result_index import OpenCheckResultIndexMigration
 from suites.coding.modules.checks.commands.check_runs.check_runs_subcommand import CheckRunsSubcommand
-from suites.coding.modules.checks.support.check_nudges import CHECK_NUDGES
+from suites.coding.modules.checks.support.check_agent_messages import CHECK_AGENT_MESSAGES
 from engine.module.module import Module
 from engine.check.periodic_checks import PeriodicChecks
 from engine.check.step_checks import StepChecks
@@ -59,7 +59,7 @@ class ChecksModule(Module):
     effects = [FailedCheckEffect]
     lines = [BrokenTaskWaitLines, FailedCheckLines]
     window_extensions = [ShellChecksExtension]
-    nudges = CHECK_NUDGES
+    agent_messages = CHECK_AGENT_MESSAGES
     requires_engine = ">=5,<6"
     block_conditions = [CheckPassed]
     dependencies = ["journal.suites.coding", "journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.viewer"]

@@ -1,8 +1,8 @@
 from engine.module.performance_tools import PerformanceTools
 from core.modules.developer.support.slow_tick_tool import SlowTickTool
 from tests.stories.core.support.coding_fixtures import UserBuilder
-from core.modules.developer.nudges.exception_line_message import ExceptionLineMessage
-from engine.testing.expectations.expected_message import expected_nudge
+from core.modules.developer.agent_messages.exception_line_message import ExceptionLineMessage
+from engine.testing.expectations.expected_message import expected_agent_message
 from core.modules.developer.support.developer_settings import EXCEPTION_LINES_SETTING
 from core.modules.developer.support.developer_settings import SLOW_TICKS_SETTING
 
@@ -20,7 +20,7 @@ def test_a_slow_tick_shows_a_warning_mark_and_tells_the_main_agent_when_the_deve
     story.run_listeners()
     story.expect_text("chat-mark main --environment main --json", "A tick of the journal's clock cost 51 points", "tick costly")
     story.expect_no_text("message list --environment main", "over its limit")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(ExceptionLineMessage.declared()))
+    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_agent_message(ExceptionLineMessage.declared()))
     story.expect_text("journal-exception show 1", "source: clock tick", "cost 51 points", actor=story.agent)
 
 

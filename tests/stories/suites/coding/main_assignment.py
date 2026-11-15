@@ -13,8 +13,8 @@ from suites.coding.modules.workers.ticks.inactive_main_agent_prompt import Inact
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 from tests.stories.suites.coding.support.main_controls_fixture import scope_line
 from tests.stories.support.story_checks import expect_value
-from suites.coding.nudges.task_assignment_message import TaskAssignmentMessage
-from engine.testing.expectations.expected_message import expected_nudge
+from suites.coding.agent_messages.task_assignment_message import TaskAssignmentMessage
+from engine.testing.expectations.expected_message import expected_agent_message
 from suites.coding.modules.workers.support.worker_settings import DISPATCHES_WORKERS_SETTING
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
@@ -57,7 +57,7 @@ def main_story(new_story):
 
 def test_s01_the_main_driver_hands_the_open_task_to_a_stopping_main_agent_when_auto_is_on(new_story):
     story = main_story(new_story)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), expected_nudge(TaskAssignmentMessage.declared()))
+    story.expect_hook_refusal("s-1", HookSamples.stop(), expected_agent_message(TaskAssignmentMessage.declared()))
 
 
 def test_s02_s10_keep_going_does_not_hold_a_stop_for_a_free_worker_place_and_hands_the_task_over_once_no_worker_can_start(new_story):
@@ -66,7 +66,7 @@ def test_s02_s10_keep_going_does_not_hold_a_stop_for_a_free_worker_place_and_han
     story.expect_success(f"setting set {CONTINUE_SETTING} on --environment main")
     story.expect_hook_allowed("s-1", HookSamples.stop())
     story.expect_success(f"setting set {WORKER_LIMIT} 0 --environment main")
-    story.expect_hook_refusal("s-1", HookSamples.stop(), expected_nudge(TaskAssignmentMessage.declared()))
+    story.expect_hook_refusal("s-1", HookSamples.stop(), expected_agent_message(TaskAssignmentMessage.declared()))
 
 
 def waking_lines(story) -> list[str]:
@@ -89,7 +89,7 @@ def test_turning_keep_going_on_wakes_the_idle_main_agent_only_to_take_the_task_i
     first, repeated = waking_lines(story), waking_lines(story)
     story.expect_success(f"setting set {WORKER_LIMIT} 0 --environment main")
     last = waking_lines(story)
-    story.expect_rows(first == [], repeated == [], len(last) == 1, expected_nudge(TaskAssignmentMessage.declared()).matches_text(last[-1]), detail=str(last))
+    story.expect_rows(first == [], repeated == [], len(last) == 1, expected_agent_message(TaskAssignmentMessage.declared()).matches_text(last[-1]), detail=str(last))
 
 
 def test_a_second_open_task_brings_no_free_place_line_either(new_story):

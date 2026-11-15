@@ -4,12 +4,12 @@ from engine.enums.command_category import CommandCategory
 from datetime import timedelta
 
 from core.modules.tasks.needs.unlogged_write_needs import UNLOGGED_WRITES_CEILING
-from core.modules.tasks.support.task_nudges import LOG_REQUEST_WRITES
+from core.modules.tasks.support.task_agent_messages import LOG_REQUEST_WRITES
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
-from core.modules.tasks.nudges.unlogged_writes_message import UnloggedWritesMessage
-from engine.testing.expectations.expected_message import expected_nudge
+from core.modules.tasks.agent_messages.unlogged_writes_message import UnloggedWritesMessage
+from engine.testing.expectations.expected_message import expected_agent_message
 
 CART_EDIT = HookSamples.edit("src/cart.py")
 CART_SEARCH = HookSamples.shell("grep -n total src/cart.py", ShellPart("grep", CommandCategory.SEARCH, ["-n", "total", "src/cart.py"]))
@@ -35,7 +35,7 @@ def test_a_builder_that_logs_its_task_counts_its_writes_from_the_log(new_story):
 def test_a_builder_is_readonly_more_past_the_hold_count_until_it_logs(new_story):
     story = new_story(fixture=StartedTaskBuilder)
     edits(story, UNLOGGED_WRITES_CEILING - 1)
-    story.expect_hook_refusal("s-1", CART_EDIT, expected_nudge(UnloggedWritesMessage.declared(), task=1))
+    story.expect_hook_refusal("s-1", CART_EDIT, expected_agent_message(UnloggedWritesMessage.declared(), task=1))
     story.expect_hook_allowed("s-1", CART_SEARCH)
     story.advance(timedelta(minutes=1))
     story.run("task log 1 'the totals and the tax are done'", actor=story.agent)

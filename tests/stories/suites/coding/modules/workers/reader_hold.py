@@ -29,8 +29,8 @@ from core.modules.processes.support.run_visibility import RunVisibility
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from engine.testing.expectations.expect_reply import expect_reply_line
-from suites.coding.modules.workers.nudges.reader_sample_ready_message import ReaderSampleReadyMessage
-from engine.testing.expectations.expected_message import expected_nudge
+from suites.coding.modules.workers.agent_messages.reader_sample_ready_message import ReaderSampleReadyMessage
+from engine.testing.expectations.expected_message import expected_agent_message
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 
@@ -91,7 +91,7 @@ def test_a_worker_run_with_a_poor_reader_or_none_gets_only_the_ended_line(new_st
         bus.run(EndProcessPart(process.id, 1, 0), worker, environment_id=1)
         ended = bus.run(EndProcess(process.id, 0, 5000, 10), worker, environment_id=1)
         output = story.container.get(OutputQuery).process_output(ended.id)
-        story.expect_rows(story.container.get(ReadingNotices).nudges(ended, output, story.container.get(RunVisibility).parts(ended.id)) == ())
+        story.expect_rows(story.container.get(ReadingNotices).agent_messages(ended, output, story.container.get(RunVisibility).parts(ended.id)) == ())
     story.hook("s-8", HookSamples.stop())
     blocks = story.story_rows(AgentBlock, session_agent_id=worker.id, closed_at=None)
     story.expect_rows(not tuple(blocks))
@@ -138,7 +138,7 @@ def test_a_saved_proper_reader_frees_the_worker_and_starts_its_run_with_that_rea
     story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
     output = story.container.get(OutputQuery).process(process.id).page(1, 1).rows[0]
     story.expect_rows(output.reader_id == reader, output.read_offset == 0)
-    story.expect_text(f"agent-line list --agent {reader_worker(story).id}", expected_nudge(ReaderSampleReadyMessage.declared(), output=1, reader='proper'))
+    story.expect_text(f"agent-line list --agent {reader_worker(story).id}", expected_agent_message(ReaderSampleReadyMessage.declared(), output=1, reader='proper'))
 
 
 def test_a_reader_that_does_not_read_the_command_leaves_the_request_open(new_story):
@@ -220,7 +220,7 @@ def test_the_main_agent_is_held_after_five_tool_uses_with_a_countdown(notified_r
 def test_a_skipped_block_does_not_free_the_worker_and_comes_back(notified_reader_story):
     story = notified_reader_story
     blocks = story.story_rows(AgentBlock, session_agent_id=story.agent.id, closed_at=None)
-    block = next(block for block in blocks if block.nudge_key.startswith("processes.reader_request"))
+    block = next(block for block in blocks if block.agent_message_key.startswith("processes.reader_request"))
     story.run(f'agent-block skip {block.id} --reason "finish another change"', actor=story.agent)
     story.expect_rows(story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
     story.advance(timedelta(minutes=11))

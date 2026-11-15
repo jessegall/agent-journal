@@ -5,7 +5,7 @@ from engine.driver.hook_event import HookEvent
 from engine.driver.agent_message import AgentMessage
 from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
-from suites.coding.modules.checks.nudges.check_failed_message import CheckFailedMessage
+from suites.coding.modules.checks.agent_messages.check_failed_message import CheckFailedMessage
 from suites.coding.modules.checks.support.unreported_checks import UnreportedChecks
 
 FAILED_CHECK_RULE = "checks.failed"
@@ -22,5 +22,5 @@ class FailedCheckLines(EventLineSource):
     def __init__(self, checks: UnreportedChecks) -> None:
         self.checks = checks
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        return [CheckFailedMessage.declared().nudge(check=check.id) for check in self.checks.failing()]
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+        return [CheckFailedMessage.declared().agent_message(check=check.id) for check in self.checks.failing()]

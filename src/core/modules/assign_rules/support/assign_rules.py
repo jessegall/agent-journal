@@ -3,7 +3,7 @@ from typing import TypeGuard
 
 from engine.command.context import Context
 from engine.database.kept_rows import KeptRows
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from engine.enums.agent_role import AgentRole
 from engine.errors.refusal import Refusal
 from engine.query.queries import Queries
@@ -15,8 +15,8 @@ from core.modules.assign_rules.models.assign_rule_condition import AssignRuleCon
 from core.modules.assign_rules.models.enums.decision_outcome import DecisionOutcome
 from core.modules.assign_rules.models.support.task_facts import TaskFacts
 from core.modules.assign_rules.support.assign_rules_mode import AssignRulesMode
-from core.modules.assign_rules.support.assign_rules_nudges import RULE_NUDGE_SOURCE
-from core.modules.assign_rules.nudges.rule_task_message import RuleTaskMessage
+from core.modules.assign_rules.support.assign_rules_agent_messages import RULE_AGENT_MESSAGE_SOURCE
+from core.modules.assign_rules.agent_messages.rule_task_message import RuleTaskMessage
 from core.modules.assign_rules.support.decision_note import DecisionNote
 from core.modules.assign_rules.support.rules.enabled_rules import EnabledRules
 from core.modules.assign_rules.support.rules.environment_rules import EnvironmentRules
@@ -43,9 +43,9 @@ class AssignRules:
     task hears so. While the mode does not assign, the winner is recorded as a dry run."""
 
     def __init__(self, queries: Queries, facts_reader: TaskFactsReader, repository: Repository, mode: AssignRulesMode, targets: RuleTargets,
-                 conditions: RuleConditions, assignments: Assignments, nudger: MessageSender, kept: KeptRows) -> None:
+                 conditions: RuleConditions, assignments: Assignments, message_sender: MessageSender, kept: KeptRows) -> None:
         self.queries, self.facts_reader, self.repository, self.mode, self.targets = queries, facts_reader, repository, mode, targets
-        self.conditions, self.assignments, self.nudger, self.kept = conditions, assignments, nudger, kept
+        self.conditions, self.assignments, self.message_sender, self.kept = conditions, assignments, message_sender, kept
 
     def has_enabled_rules(self) -> bool:
         return self.queries.query(AssignRule).filter(enabled=True).exists()
@@ -140,7 +140,7 @@ class AssignRules:
         self.assignments.assign(task, actor_id, context, cascade=False)
         given = next(assignment for assignment in self.assignments.assignments(task) if assignment.actor_id == actor_id)
         self.repository.save_metadata(given, RuleMark(rule.id).stored_metadata(given.metadata), context)
-        self.nudge_main_agent(task, rule, actor_id, context)
+        self.agent_message_main_agent(task, rule, actor_id, context)
 
     def move(self, task: Task, rule: AssignRule, actor_id: int, context: Context) -> AssignDecision:
         self.assignments.unassign(task, context)
@@ -157,10 +157,10 @@ class AssignRules:
                 return rule
         return None
 
-    def nudge_main_agent(self, task: Task, rule: AssignRule, actor_id: int, context: Context) -> None:
+    def agent_message_main_agent(self, task: Task, rule: AssignRule, actor_id: int, context: Context) -> None:
         agent = self.assignments.agent_row(actor_id)
         if agent is not None and agent.role == AgentRole.MAIN:
-            self.nudger.send(agent.id, RuleTaskMessage.declared(), RULE_NUDGE_SOURCE, context, task=task.id, rule=rule.id)
+            self.message_sender.send(agent.id, RuleTaskMessage.declared(), RULE_AGENT_MESSAGE_SOURCE, context, task=task.id, rule=rule.id)
 
     def matched(self, task: Task, stored: AssignDecision | None, rule: AssignRule, usable: Usable, skipped: list[str], later_rules: list[AssignRule],
                 context: Context) -> AssignDecision:

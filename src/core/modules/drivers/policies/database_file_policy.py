@@ -5,7 +5,7 @@ import re
 
 from engine.driver.part import Part
 from engine.enums.command_category import CommandCategory
-from core.modules.drivers.nudges.database_file_message import DatabaseFileMessage
+from core.modules.drivers.agent_messages.database_file_message import DatabaseFileMessage
 
 DATABASE_PATH = re.compile(r"\.journal/version-5\.db(?:-wal|-shm)?(?![\w-])")
 READ_ONLY_FLAG = "-readonly"
@@ -27,7 +27,7 @@ class DatabaseFilePolicy(EventPolicy):
         if shell is None:
             return None
         writes = any(DATABASE_PATH.search(redirect) for redirect in shell.redirects) or any(self.writes_database(part) for part in shell.parts)
-        return DatabaseFileMessage.declared().nudge() if writes else None
+        return DatabaseFileMessage.declared().agent_message() if writes else None
 
     @staticmethod
     def writes_database(part: Part) -> bool:

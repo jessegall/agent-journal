@@ -3,7 +3,7 @@ from engine.listener.save_listener import SaveListener
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.voices.support.voice_lines import VoiceLines
-from core.modules.voices.support.voice_nudges import VOICE_LINE
+from core.modules.voices.support.voice_agent_messages import VOICE_LINE
 from core.modules.drivers.events.agent_compacted import AgentCompacted
 from engine.command.context import Context
 

@@ -14,7 +14,7 @@ from suites.coding.modules.workers.commands.send_merge_findings.send_merge_findi
 from suites.coding.modules.workers.commands.merger.require_merger import require_merger
 from suites.coding.modules.workers.commands.send_merger_report.send_merger_report import SendMergerReport
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.merger_nudges import MERGER_FINDINGS_PREFIX
+from suites.coding.modules.workers.support.merger_agent_messages import MERGER_FINDINGS_PREFIX
 from suites.coding.modules.workers.support.worker_settings import DELIVERY_FAILURE_LIMIT
 from suites.coding.modules.workers.support.merger_visits import MergerVisits
 

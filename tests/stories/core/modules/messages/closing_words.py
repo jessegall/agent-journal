@@ -4,8 +4,8 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.modules.documents.support.trail_fixtures import viewer
 from core.modules.agents.support.terminal_typing import TerminalTyping
-from core.modules.messages.nudges.message_reaction_notice import MessageReactionNotice
-from core.modules.messages.nudges.new_message_notice import NewMessageNotice
+from core.modules.messages.agent_messages.message_reaction_notice import MessageReactionNotice
+from core.modules.messages.agent_messages.new_message_notice import NewMessageNotice
 def chat(story) -> str:
     return story.run("message list --environment main", actor=story.user).output_text
 
@@ -28,7 +28,7 @@ def test_words_after_a_person_wrote_again_since_the_reply_reach_the_chat(new_sto
 def test_closing_words_that_ask_the_user_to_choose_reach_the_chat_after_a_reaction(new_story):
     story = new_story(fixture=UserBuilder)
     story.run('message send "Are you back at work" --environment main', actor=story.user)
-    story.hook("s-1", HookSamples.prompt(f"[journal] {NewMessageNotice.declared().nudge(message=1).text}"))
+    story.hook("s-1", HookSamples.prompt(f"[journal] {NewMessageNotice.declared().agent_message(message=1).text}"))
     story.run('message react 1 "👍"', actor=story.agent)
     text = "Everything came through intact: the summary (doc 1) and the briefing (doc 2).\n\nShall I set the research team on docs 1 and 2?"
     story.hook("s-1", HookSamples.message_display(text))
@@ -73,7 +73,7 @@ def reaction_turn(new_story, monkeypatch):
     viewer(story, "messages.chat", ["message", "react", "1", "👍"])
     story.expect_rows(len(lines) == 1, lines[0][0] == story.agent.id)
     line = lines[0][1]
-    story.expect_rows(MessageReactionNotice.declared().nudge(message=1).text in line, "👍" not in line)
+    story.expect_rows(MessageReactionNotice.declared().agent_message(message=1).text in line, "👍" not in line)
     story.hook("s-1", HookSamples.prompt(line))
     return story
 

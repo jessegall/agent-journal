@@ -4,7 +4,7 @@ from core.modules.drivers.models.agent_line import AgentLine
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.driver.count_down import CountDown
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from engine.driver.time_window import TimeWindow
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
@@ -17,8 +17,8 @@ from core.modules.drivers.models.agent_escalation import AgentEscalation
 from core.modules.drivers.commands.deliver_agent_wake.deliver_agent_wake import DeliverAgentWake
 from core.modules.drivers.models.agent_wake import AgentWake
 from core.modules.drivers.models.enums.wake_state import WakeState
-from core.modules.drivers.nudges.ignored_wake_message import IgnoredWakeMessage
-from core.modules.drivers.nudges.wake_obligation_message import WakeObligationMessage
+from core.modules.drivers.agent_messages.ignored_wake_message import IgnoredWakeMessage
+from core.modules.drivers.agent_messages.wake_obligation_message import WakeObligationMessage
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.support.countdowns import Countdowns
 from core.modules.drivers.support.driver_settings import WAKE_ATTEMPTS_SETTING, WAKE_RETRY_SETTING
@@ -39,9 +39,9 @@ class DeliverAgentWakeHandler(Handler[DeliverAgentWake, None]):
     command = DeliverAgentWake
 
     def __init__(self, queries: Queries, repository: Repository, agents: AgentRows, settings: SettingValues, hook_calls: HookCallQuery,
-                 nudger: MessageSender, typing: WaitingLineTyping, countdowns: Countdowns) -> None:
+                 message_sender: MessageSender, typing: WaitingLineTyping, countdowns: Countdowns) -> None:
         self.queries, self.repository, self.agents, self.settings = queries, repository, agents, settings
-        self.hook_calls, self.nudger, self.typing, self.countdowns = hook_calls, nudger, typing, countdowns
+        self.hook_calls, self.message_sender, self.typing, self.countdowns = hook_calls, message_sender, typing, countdowns
 
     def handle(self, command: DeliverAgentWake, context: Context) -> None:
         wake = self.queries.query(AgentWake).find(command.wake_id)
@@ -61,7 +61,7 @@ class DeliverAgentWakeHandler(Handler[DeliverAgentWake, None]):
         self.repository.save(wake.changed(state=WakeState.DELIVERED, attempts=attempts.span.count - remaining, next_attempt_at=retry, transport=self.transport(agent)), context)
         # the wake types the lines its step left waiting, such as a new message's; with none it says that work waits
         if not self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING).exists():
-            self.nudger.send(agent.id, WakeObligationMessage.declared(), WAKE_SOURCE, context)
+            self.message_sender.send(agent.id, WakeObligationMessage.declared(), WAKE_SOURCE, context)
         if agent.is_main:
             self.typing.release_for_wake(agent.id, context.actor.id)
 
@@ -82,4 +82,4 @@ class DeliverAgentWakeHandler(Handler[DeliverAgentWake, None]):
     def ended(self, wake: AgentWake, agent: Agent, context: Context) -> None:
         self.repository.save(wake.changed(state=WakeState.EXPIRED, failure=f"no turn after {wake.attempts} wakes"), context)
         if agent.parent_id is not None:
-            self.nudger.send(agent.parent_id, IgnoredWakeMessage.declared(), WAKE_SOURCE, context, agent=agent.number, count=wake.attempts)
+            self.message_sender.send(agent.parent_id, IgnoredWakeMessage.declared(), WAKE_SOURCE, context, agent=agent.number, count=wake.attempts)

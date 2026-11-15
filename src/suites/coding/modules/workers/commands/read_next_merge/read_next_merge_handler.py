@@ -14,7 +14,7 @@ from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.models.merger_visit import MergerVisit
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.merger_nudges import NO_WORKER_WAITING
+from suites.coding.modules.workers.support.merger_agent_messages import NO_WORKER_WAITING
 from suites.coding.modules.workers.support.worker_log_lines import WorkerLogLines
 from suites.coding.modules.workers.support.merge_ask_section import MergeAskSection
 from suites.coding.modules.workers.support.merger_work import MergerWork
@@ -51,8 +51,8 @@ class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
 
     # The lines to the merger and the next worker waiting with its tasks, or that no worker waits.
     def waiting_text(self, lines: tuple[MergerLine, ...], worktree: Worktree | None) -> str:
-        nudges = [AgentMessage(line.fallback_source, AgentMessageType.NOTICE, line.text) if line.nudge_json is None else MessageTemplate.restore(line.nudge_json) for line in lines]
-        messages = "\n".join(f"line: {nudge.text}" for nudge in AgentMessage.collapsed(nudges))
+        agent_messages = [AgentMessage(line.fallback_source, AgentMessageType.NOTICE, line.text) if line.agent_message_json is None else MessageTemplate.restore(line.agent_message_json) for line in lines]
+        messages = "\n".join(f"line: {agent_message.text}" for agent_message in AgentMessage.collapsed(agent_messages))
         if worktree is None:
             return messages or NO_WORKER_WAITING
         review = self.log_lines.review(worktree)

@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from core.modules.agents.nudges.program_settings_ban_message import ProgramSettingsBanMessage
+from core.modules.agents.agent_messages.program_settings_ban_message import ProgramSettingsBanMessage
 from engine.enums.command_category import CommandCategory
 from engine.enums.command_effect import CommandEffect
 from engine.testing.examples.hook_samples import HookSamples
@@ -13,7 +13,7 @@ SHELL_WRITES = [("sed", ["-i", "s/never/on-request/"]), ("chmod", ["u+w"]), ("rm
 
 
 def ban() -> str:
-    return ProgramSettingsBanMessage.declared().nudge().text
+    return ProgramSettingsBanMessage.declared().agent_message().text
 
 
 def spelled_paths(story) -> list[str]:

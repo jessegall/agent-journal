@@ -5,7 +5,7 @@ from core.modules.developer.migrations.m003_private_data_mark_environment_index 
 from core.modules.developer.commands.record_private_data_finding.record_private_data_finding_handler import RecordPrivateDataFindingHandler
 from core.modules.developer.listeners.private_data_mark_listener import PrivateDataMarkListener
 from core.modules.developer.migrations.m002_private_data_marks import PrivateDataFlagsMigration
-from core.modules.developer.support.developer_nudges import DEVELOPER_NUDGES
+from core.modules.developer.support.developer_agent_messages import DEVELOPER_AGENT_MESSAGES
 from core.modules.developer.listeners.exception_line_listener import ExceptionLineListener
 from core.modules.developer.support.reader_time_tool import ReaderTimeTool
 from engine.performance.route_cost_tool import RouteCostTool
@@ -44,7 +44,7 @@ class DeveloperModule(Module):
     tick_handlers = [PrivateDataTickHandler, RequestTraceImportTickHandler]
     handlers = [RecordPrivateDataFindingHandler, ResetHookNumbersHandler, RecordMarkMotionHandler]
     listeners = [ExceptionLineListener, PrivateDataMarkListener]
-    nudges = DEVELOPER_NUDGES
+    agent_messages = DEVELOPER_AGENT_MESSAGES
     bindings = {RouteCostTool: DeveloperRouteCostTool, RequestWatch: ReportingRequestWatch}
     performance_tools = [SlowTickTool, ReaderTimeTool, RouteCostTool]
     subcommands = [SystemLogsSubcommand, HookNumbersSubcommand, HookRequestsSubcommand, ResetHookNumbersSubcommand, RecordMarkMotionSubcommand, MarkMotionsSubcommand, CodeMapSubcommand]

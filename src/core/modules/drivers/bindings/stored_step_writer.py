@@ -10,7 +10,7 @@ from collections.abc import Mapping, Sequence
 from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.contracts.effect import Effect
 from engine.agent_machine.stepping.grant_ledger import GrantLedger
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from engine.agent_machine.decision_record import DecisionRecord
 from engine.agent_machine.needs.block_plan import BlockPlan
 from engine.agent_machine.record.block_closing import BlockClosing
@@ -50,9 +50,9 @@ class StoredStepWriter(StepWriter):
     effects when the step admits (a required one that fails raises and rolls everything back), and the
     wake. A step outside a hook that changed nothing runs only its unconditional effects."""
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus, database: Database, grant_store: GrantLedger, nudger: MessageSender, stacks: AnswerBasisRows,
-                 effect_commands: EffectCommands, nudge_log: MessageLog, history: LineHistoryWriter, required_commands: RequiredCommands) -> None:
-        self.nudger, self.stacks, self.effect_commands, self.nudge_log, self.history = nudger, stacks, effect_commands, nudge_log, history
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus, database: Database, grant_store: GrantLedger, message_sender: MessageSender, stacks: AnswerBasisRows,
+                 effect_commands: EffectCommands, agent_message_log: MessageLog, history: LineHistoryWriter, required_commands: RequiredCommands) -> None:
+        self.message_sender, self.stacks, self.effect_commands, self.agent_message_log, self.history = message_sender, stacks, effect_commands, agent_message_log, history
         self.required_commands = required_commands
         self.grant_store = grant_store
         self.queries, self.repository, self.bus, self.database = queries, repository, bus, database
@@ -88,12 +88,12 @@ class StoredStepWriter(StepWriter):
     def queue_waiting_lines(self, view: AgentView, record: DecisionRecord, context: Context) -> None:
         agent_id = view.agent.agent_id
         said = [(line, line.said()) for line in record.waiting_lines]
-        held = self.nudge_log.held_back(agent_id, [nudge for _, nudge in said], context.timestamp)
-        queued = [(line, nudge) for line, nudge in said if (nudge.key, nudge.text) not in held]
-        for line, nudge in queued:
-            self.nudger.send_nudge(agent_id, nudge, line.source_key or line.key, context)
-        self.nudge_log.write_said(agent_id, [nudge for _, nudge in queued], context)
-        self.required_commands.open(agent_id, [nudge for _, nudge in queued], context)
+        held = self.agent_message_log.held_back(agent_id, [agent_message for _, agent_message in said], context.timestamp)
+        queued = [(line, agent_message) for line, agent_message in said if (agent_message.key, agent_message.text) not in held]
+        for line, agent_message in queued:
+            self.message_sender.send_agent_message(agent_id, agent_message, line.source_key or line.key, context)
+        self.agent_message_log.write_said(agent_id, [agent_message for _, agent_message in queued], context)
+        self.required_commands.open(agent_id, [agent_message for _, agent_message in queued], context)
         self.history.record_said(agent_id, [line.source_key for line, _ in queued if line.source_key], context)
 
     # the grants that passed a refusing policy are spent in this write, and a journal command leaves its receipt
@@ -127,8 +127,8 @@ class StoredStepWriter(StepWriter):
 
     def open_blocks(self, plans: Sequence[BlockPlan], view: AgentView, record: DecisionRecord, context: Context) -> None:
         for plan in plans:
-            self.repository.save(AgentBlock(session_agent_id=view.agent.agent_id, creator_id=view.agent.agent_id, nudge_key=plan.nudge.key,
-                                            nudge_text=plan.nudge.text, condition_name=type(plan.condition).name, condition_text=plan.condition.text,
+            self.repository.save(AgentBlock(session_agent_id=view.agent.agent_id, creator_id=view.agent.agent_id, agent_message_key=plan.agent_message.key,
+                                            agent_message_text=plan.agent_message.text, condition_name=type(plan.condition).name, condition_text=plan.condition.text,
                                             grace_tool_uses=plan.tool_grace_uses, blocks_stop=plan.scope_stop and not plan.scope_tools, strict=plan.is_strict,
                                             scope_tools=plan.scope_tools, scope_stop=plan.scope_stop, stop_grace_seconds=plan.stop_grace_seconds,
                                             subject_model=plan.subject.model if plan.subject is not None else "",

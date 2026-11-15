@@ -25,7 +25,7 @@ class TypeCommandCheck:
         helper_type = self.types.find(agent.role)
         commands = self.commands(helper_type, agent.profile)
         refused_line = commands.refused_line(lines)
-        return CommandRefusalText(helper_type.label, commands).nudge(refused_line) if refused_line is not None else None
+        return CommandRefusalText(helper_type.label, commands).agent_message(refused_line) if refused_line is not None else None
 
     def commands(self, helper_type: HelperTypeEntry, profile_name: str) -> CommandAllowList:
         profile = self.profiles.registered(profile_name) if profile_name else None

@@ -2,7 +2,7 @@ from suites.coding.modules.workers.commands.record_failed_update.record_failed_u
 from suites.coding.modules.workers.commands.record_failed_update.record_failed_update_handler import RecordFailedUpdateHandler
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState as State
 from suites.coding.modules.workers.support.behind_check_closing import BehindCheckClosing
-from suites.coding.modules.workers.nudges.merger_update_failed_message import MergerUpdateFailedMessage
+from suites.coding.modules.workers.agent_messages.merger_update_failed_message import MergerUpdateFailedMessage
 from tests.unit.suites.coding.modules.workers.support.test_behind_check_closing import WORKTREE, Store
 
 REASONS = ("branch version-5 does not exist in /work", "after the rebase, git stash apply failed: they stay in its stash abc123", "git rebase took longer than 60 seconds")
@@ -17,8 +17,8 @@ class Inbox:
     def __init__(self) -> None:
         self.sent: list[object] = []
 
-    def send_nudge(self, nudge, source, context) -> None:
-        self.sent.append(nudge)
+    def send_agent_message(self, agent_message, source, context) -> None:
+        self.sent.append(agent_message)
 
 
 class Numbers:
@@ -43,7 +43,7 @@ def test_the_merger_hears_once_per_failure_with_the_worker_and_the_check_that_ke
     failed(store, inbox, REASONS[1])
     assert "stash abc123" in store.rows[1].failure
     failed(store, inbox, REASONS[2])
-    assert [nudge.key for nudge in inbox.sent] == [MergerUpdateFailedMessage.declared().key] * 2
+    assert [agent_message.key for agent_message in inbox.sent] == [MergerUpdateFailedMessage.declared().key] * 2
     assert "worker:4" in inbox.sent[0].text and "journal behind-check show 1 says why" in inbox.sent[0].text
 
 

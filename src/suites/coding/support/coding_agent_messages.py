@@ -1,0 +1,14 @@
+from suites.coding.agent_messages.worker_task_started_message import WorkerTaskStartedMessage
+from suites.coding.agent_messages.worker_task_unstarted_message import WorkerTaskUnstartedMessage
+from suites.coding.agent_messages.worker_git_ban_message import WorkerGitBanMessage
+from suites.coding.agent_messages.main_helper_ban_message import MainHelperBanMessage
+from suites.coding.agent_messages.main_code_edit_refusal_message import MainCodeEditRefusalMessage
+from suites.coding.agent_messages.task_assignment_message import TaskAssignmentMessage
+from suites.coding.agent_messages.unfinished_tasks_message import UnfinishedTasksMessage
+from suites.coding.agent_messages.introduction_message import IntroductionMessage
+from suites.coding.agent_messages.waiting_items_message import WaitingItemsMessage
+from suites.coding.agent_messages.worker_full_test_run_message import WorkerFullTestRunMessage
+from suites.coding.agent_messages.failed_full_run_message import FailedFullRunMessage
+
+
+CODING_AGENT_MESSAGES = [FailedFullRunMessage, WorkerFullTestRunMessage, IntroductionMessage, WaitingItemsMessage, WorkerTaskStartedMessage, WorkerTaskUnstartedMessage, WorkerGitBanMessage, MainHelperBanMessage, MainCodeEditRefusalMessage, TaskAssignmentMessage, UnfinishedTasksMessage]

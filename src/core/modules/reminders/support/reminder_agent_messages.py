@@ -1,0 +1,4 @@
+from core.modules.reminders.agent_messages.reminder_line_message import ReminderLineMessage
+from core.modules.reminders.agent_messages.reminder_block_message import ReminderBlockMessage
+
+REMINDER_AGENT_MESSAGES = [ReminderLineMessage, ReminderBlockMessage]

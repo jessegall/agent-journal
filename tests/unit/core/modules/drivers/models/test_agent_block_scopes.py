@@ -2,7 +2,7 @@ from core.modules.drivers.models.agent_block import AgentBlock
 
 
 def block(**fields: object) -> AgentBlock:
-    return AgentBlock(session_agent_id=4, creator_id=4, nudge_key="documents.open", nudge_text="close document 41", condition_name="doc-closed",
+    return AgentBlock(session_agent_id=4, creator_id=4, agent_message_key="documents.open", agent_message_text="close document 41", condition_name="doc-closed",
                       condition_text="41", **fields)
 
 

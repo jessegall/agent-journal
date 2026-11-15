@@ -9,8 +9,8 @@ from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story import Story
 from core.modules.processes.commands.move_process.move_process import MoveProcess
 from core.modules.processes.models.process import Process
-from core.modules.processes.nudges.run_name_message import RunNameMessage
-from core.modules.processes.nudges.shared_title_message import SharedTitleMessage
+from core.modules.processes.agent_messages.run_name_message import RunNameMessage
+from core.modules.processes.agent_messages.shared_title_message import SharedTitleMessage
 from tests.stories.core.modules.processes.support.cadence_probe import side_run
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, started_run
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
@@ -58,7 +58,7 @@ def test_a_process_run_that_moves_to_the_background_gets_its_mark_at_the_move(ma
 
 def test_a_background_script_is_docked_asked_for_a_title_once_and_its_mark_ends_with_it(main_story):
     process = moved(main_story, started_run(main_story, SCRIPT, CommandCategory.PROCESS))
-    expect_value_line(docked(main_story), RunNameMessage.declared().nudge(process=process.id).text)
+    expect_value_line(docked(main_story), RunNameMessage.declared().agent_message(process=process.id).text)
     main_story.expect_text(DOCK, "processes.output", actor=main_story.user)
     main_story.expect_success(f'output title {process.id} "Serving the docs"', actor=main_story.agent)
     main_story.expect_rows(not any("has its raw command as its title" in line for line in main_story.hook("s-1", READ).lines))
@@ -74,7 +74,7 @@ def test_a_helpers_background_run_gets_the_card_and_the_title_ask(new_story):
     story.run_command(MoveProcess(process.id), worker, 1)
     lines = docked(story, "s-reader")
     story.expect_text(DOCK, "processes.output", f"Output {process.id}", actor=story.user)
-    expect_value_line(lines, RunNameMessage.declared().nudge(process=process.id).text)
+    expect_value_line(lines, RunNameMessage.declared().agent_message(process=process.id).text)
 
 
 def test_a_run_moved_by_the_foreground_limit_keeps_its_card_and_its_title_ask(main_story):
@@ -84,7 +84,7 @@ def test_a_run_moved_by_the_foreground_limit_keeps_its_card_and_its_title_ask(ma
     lines = docked(main_story)
     main_story.expect_text(MARKS, f"process:{process.id}", actor=main_story.user)
     main_story.expect_text(DOCK, "processes.output", actor=main_story.user)
-    expect_value_line(lines, RunNameMessage.declared().nudge(process=process.id).text)
+    expect_value_line(lines, RunNameMessage.declared().agent_message(process=process.id).text)
 
 
 def test_a_plugin_run_a_read_that_moved_and_a_quick_read_never_show_a_card(main_story):
@@ -130,4 +130,4 @@ def test_two_background_runs_with_one_title_are_asked_to_take_their_own(main_sto
     second = moved(main_story, started_run(main_story, "make docs", CommandCategory.BUILD))
     for process in (first, second):
         main_story.expect_success(f'output title {process.id} "Building the viewer"', actor=main_story.agent)
-    expect_value_line(docked(main_story), SharedTitleMessage.declared().nudge(outputs=f"{first.id}, {second.id}").text)
+    expect_value_line(docked(main_story), SharedTitleMessage.declared().agent_message(outputs=f"{first.id}, {second.id}").text)

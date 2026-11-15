@@ -1,7 +1,7 @@
-from core.modules.approvals.nudges.approval_decided_message import ApprovalDecidedMessage
-from core.modules.tasks.nudges.task_reopened_message import TaskReopenedMessage
-from core.modules.waits.nudges.wait_ended_message import WaitEndedMessage
-from engine.testing.expectations.expected_message import expected_nudge
+from core.modules.approvals.agent_messages.approval_decided_message import ApprovalDecidedMessage
+from core.modules.tasks.agent_messages.task_reopened_message import TaskReopenedMessage
+from core.modules.waits.agent_messages.wait_ended_message import WaitEndedMessage
+from engine.testing.expectations.expected_message import expected_agent_message
 from datetime import timedelta
 
 from core.modules.processes.commands.end_process.end_process import EndProcess
@@ -30,7 +30,7 @@ def test_an_agent_stopped_on_a_wait_on_a_task_is_woken_when_the_task_ends(new_st
     story.expect_rows(entered == [])
     story.expect_success(f'task cancel {task} --reason "no longer needed"', actor=story.agent)
     story.run_listeners()
-    expect_entered(story, entered, expected_nudge(WaitEndedMessage.declared(), wait=1))
+    expect_entered(story, entered, expected_agent_message(WaitEndedMessage.declared(), wait=1))
 
 
 def test_an_agent_stopped_on_a_wait_on_an_output_is_woken_when_the_output_ends(new_story):
@@ -40,7 +40,7 @@ def test_an_agent_stopped_on_a_wait_on_an_output_is_woken_when_the_output_ends(n
     story.expect_rows(entered == [])
     story.run_command(EndProcess(process.id, 0, 40, 3), story.agent, 1)
     story.run_listeners()
-    expect_entered(story, entered, expected_nudge(WaitEndedMessage.declared(), wait=1))
+    expect_entered(story, entered, expected_agent_message(WaitEndedMessage.declared(), wait=1))
 
 
 def test_an_agent_stopped_while_a_person_decides_its_approval_is_woken_by_the_decision(new_story):
@@ -52,7 +52,7 @@ def test_an_agent_stopped_while_a_person_decides_its_approval_is_woken_by_the_de
     story.expect_rows(entered == [])
     story.expect_success("approval refuse 1", actor=story.user)
     story.run_listeners()
-    expect_entered(story, entered, expected_nudge(ApprovalDecidedMessage.declared(), approval=1))
+    expect_entered(story, entered, expected_agent_message(ApprovalDecidedMessage.declared(), approval=1))
 
 
 def test_an_agent_stopped_with_a_task_blocked_on_a_question_is_woken_when_the_question_is_answered(new_story):
@@ -67,10 +67,10 @@ def test_an_agent_stopped_with_a_task_blocked_on_a_question_is_woken_when_the_qu
     story.expect_rows(entered == [])
     story.expect_success(f"question answer {question} --answer sqlite", actor=story.user)
     story.run_listeners()
-    expect_entered(story, entered, expected_nudge(TaskReopenedMessage.declared(), task=1), expected_nudge(WaitEndedMessage.declared(), wait=1))
+    expect_entered(story, entered, expected_agent_message(TaskReopenedMessage.declared(), task=1), expected_agent_message(WaitEndedMessage.declared(), wait=1))
     story.expect_text(f"task show {task}", "state: open", actor=story.agent)
 
 
-def expect_entered(story, entered, *nudges) -> None:
+def expect_entered(story, entered, *agent_messages) -> None:
     """The main agent was typed these nudges, in this order, and nothing else."""
-    story.expect_rows(len(entered) == len(nudges), all(agent_id == story.agent.id and nudge.matches_text(text) for (agent_id, text), nudge in zip(entered, nudges)), detail=str(entered))
+    story.expect_rows(len(entered) == len(agent_messages), all(agent_id == story.agent.id and agent_message.matches_text(text) for (agent_id, text), agent_message in zip(entered, agent_messages)), detail=str(entered))

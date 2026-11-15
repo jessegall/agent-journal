@@ -38,8 +38,8 @@ def test_a_worker_naming_another_worker_is_refused():
 
 
 def test_the_main_agent_orders_a_worker_with_no_check_open_and_one_is_opened_and_ordered():
-    repository, _, nudger = ordering_actor(MAIN, Checks())
-    assert [row.state for row in repository.saved] == [State.OPEN, State.ORDERED] and nudger.sent[0][0] == WORKER
+    repository, _, message_sender = ordering_actor(MAIN, Checks())
+    assert [row.state for row in repository.saved] == [State.OPEN, State.ORDERED] and message_sender.sent[0][0] == WORKER
 
 
 def test_the_merger_still_needs_an_open_check():

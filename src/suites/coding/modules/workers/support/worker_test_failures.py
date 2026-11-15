@@ -12,7 +12,7 @@ from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.models.enums.failed_test_source import FailedTestSource
 from suites.coding.modules.workers.models.worker_test_failure import WorkerTestFailure
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
-from suites.coding.modules.workers.support.merger_nudges import MERGER_SOURCE
+from suites.coding.modules.workers.support.merger_agent_messages import MERGER_SOURCE
 from suites.coding.modules.workers.support.worker_settings import DELIVERY_FAILURE_LIMIT, WORKER_RUN_FAILURE_LIMIT
 from core.modules.agents.support.agent_label import AgentLabel
 from engine.cli.row_numbers import RowNumbers

@@ -14,7 +14,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent, resumable_session
 from tests.stories.core.modules.processes.support.process_samples import start_process
-from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
+from suites.coding.modules.workers.support.merger_agent_messages import MERGER_PROFILE
 from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPER_GRACE_MINUTES
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator, BuilderHelper
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session

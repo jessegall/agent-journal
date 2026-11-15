@@ -1,6 +1,6 @@
 from engine.database.migration import Migration
 from engine.database.timestamp_sql import TIMESTAMP_SQL
-from core.modules.sequences.nudges.step_waits_message import StepWaitsMessage
+from core.modules.sequences.agent_messages.step_waits_message import StepWaitsMessage
 
 
 class CloseLegacyStepBlocksMigration(Migration):

@@ -6,10 +6,10 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.support.alias_access import AliasAccess
-from core.modules.aliases.nudges.alias_missing_message import AliasMissingMessage
-from core.modules.aliases.nudges.alias_access_refusal_message import AliasAccessRefusalMessage
-from core.modules.aliases.nudges.alias_plugin_off_message import AliasPluginOffMessage
-from core.modules.aliases.nudges.alias_unexpanded_message import AliasUnexpandedMessage
+from core.modules.aliases.agent_messages.alias_missing_message import AliasMissingMessage
+from core.modules.aliases.agent_messages.alias_access_refusal_message import AliasAccessRefusalMessage
+from core.modules.aliases.agent_messages.alias_plugin_off_message import AliasPluginOffMessage
+from core.modules.aliases.agent_messages.alias_unexpanded_message import AliasUnexpandedMessage
 
 
 class AliasExpansionPolicy(EventPolicy):
@@ -28,13 +28,13 @@ class AliasExpansionPolicy(EventPolicy):
         if shell is None or not shell.alias_names:
             return None
         if shell.parse_error:
-            return AliasUnexpandedMessage.declared().nudge()
+            return AliasUnexpandedMessage.declared().agent_message()
         for name in shell.alias_names:
             alias = self.aliases.saved(name)
             if alias is None:
-                return AliasMissingMessage.declared().nudge()
+                return AliasMissingMessage.declared().agent_message()
             if self.access.is_plugin_disabled(alias):
-                return AliasPluginOffMessage.declared().nudge(plugin=alias.plugin_id)
+                return AliasPluginOffMessage.declared().agent_message(plugin=alias.plugin_id)
             if self.access.refusal(alias, Caller(Actor(agent_id, ActorType.AGENT))):
-                return AliasAccessRefusalMessage.declared().nudge()
+                return AliasAccessRefusalMessage.declared().agent_message()
         return None

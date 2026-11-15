@@ -6,7 +6,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 from tests.stories.core.support.coding_fixtures import UserBuilder
-from core.modules.messages.nudges.new_message_notice import NewMessageNotice
+from core.modules.messages.agent_messages.new_message_notice import NewMessageNotice
 
 CLOSING = "I fixed the cart total and the stories pass."
 STEP = timedelta(seconds=5)
@@ -38,7 +38,7 @@ class MessageToStoppedAgent(StoryFixture):
         story.hook("s-1", HookSamples.stop())
         story.advance(STEP)
         person_message(story, "Is the cart done?")
-        story.hook("s-1", HookSamples.prompt(f"[journal] {NewMessageNotice.declared().nudge(message=1).text}"))
+        story.hook("s-1", HookSamples.prompt(f"[journal] {NewMessageNotice.declared().agent_message(message=1).text}"))
         story.advance(STEP)
 
 

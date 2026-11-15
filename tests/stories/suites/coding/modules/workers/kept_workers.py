@@ -5,7 +5,7 @@ from tests.stories.core.support.agent_labels import agent_number
 import pytest
 from engine.provider.context_window import ContextWindow
 from core.modules.messages.commands.read_message.read_message import ReadMessage
-from engine.driver.nudger import MessageSender
+from engine.driver.message_sender import MessageSender
 from engine.command.context import Context
 from core.modules.tasks.models.task import Task
 from engine.testing.examples.hook_samples import HookSamples

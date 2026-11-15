@@ -5,7 +5,7 @@ from engine.driver.hook_event import HookEvent
 from engine.driver.agent_message import AgentMessage
 from engine.enums.hook_event_name import HookEventName
 from engine.provider.providers import Providers
-from core.modules.drivers.nudges.compaction_instructions_message import CompactionInstructionsMessage
+from core.modules.drivers.agent_messages.compaction_instructions_message import CompactionInstructionsMessage
 
 # Claude Code cuts a PreCompact hook's plain output at 10,000 characters
 INSTRUCTIONS_LIMIT = 10_000
@@ -22,6 +22,6 @@ class CompactionInstructionsLines(EventLineSource):
     def __init__(self, providers: Providers) -> None:
         self.providers = providers
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+    def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         instructions = self.providers.provider(event.program).compaction_instructions[:INSTRUCTIONS_LIMIT] if event is not None else ""
-        return [CompactionInstructionsMessage.declared().nudge(text=instructions)] if instructions else []
+        return [CompactionInstructionsMessage.declared().agent_message(text=instructions)] if instructions else []

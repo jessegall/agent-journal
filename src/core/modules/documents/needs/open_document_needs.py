@@ -10,8 +10,8 @@ from engine.agent_machine.record.question import Question
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from core.modules.documents.models.open_document import OpenDocument
-from core.modules.documents.nudges.document_open_message import DocumentOpenMessage
-from core.modules.documents.nudges.document_stop_refusal_message import DocumentStopRefusalMessage
+from core.modules.documents.agent_messages.document_open_message import DocumentOpenMessage
+from core.modules.documents.agent_messages.document_stop_refusal_message import DocumentStopRefusalMessage
 from core.modules.documents.support.document_closed import DocumentClosed
 
 OPEN_DOCUMENT_RANK = "documents.open"
@@ -35,6 +35,6 @@ class OpenDocumentNeeds(StateSource):
 
     @staticmethod
     def plan(row: OpenDocument) -> BlockPlan:
-        return BlockPlan(DocumentOpenMessage.declared().nudge(doc=row.doc_id), DocumentClosed(row.doc_id), TOOL_RULE, OPEN_DOCUMENT_RANK, stop_check_key=STOP_RULE,
+        return BlockPlan(DocumentOpenMessage.declared().agent_message(doc=row.doc_id), DocumentClosed(row.doc_id), TOOL_RULE, OPEN_DOCUMENT_RANK, stop_check_key=STOP_RULE,
                          scope_stop=True, subject=RowReference("document", row.doc_id), lifting_lines=tuple([f"journal doc close {row.doc_id}"]),
-                         stop_nudge=DocumentStopRefusalMessage.declared().nudge(doc=row.doc_id))
+                         stop_agent_message=DocumentStopRefusalMessage.declared().agent_message(doc=row.doc_id))
