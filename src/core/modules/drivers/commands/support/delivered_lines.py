@@ -23,7 +23,7 @@ class DeliveredLines:
 
     @classmethod
     def chosen(cls, event: HookEvent, answers: RuleAnswers, waiting: Sequence[AgentLine]) -> "DeliveredLines":
-        if answers.delays_lines or event.event == HookEventName.TICK or not event.accepts_lines or (event.event == HookEventName.STOP and not answers.refusal):
+        if event.event == HookEventName.TICK or not event.accepts_lines or (event.event == HookEventName.STOP and not answers.refusal):
             return cls([])
         pending = {row.id: row.nudge for row in waiting}
         groups = Nudge.collapsed(pending.values())

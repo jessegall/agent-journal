@@ -45,7 +45,7 @@ def test_a_clock_nudge_going_back_to_an_older_text_keeps_one_row_for_that_text(p
     def write(nudge: Nudge) -> None:
         answer = RuleAnswer.with_nudges(nudge)
         with story.container.get(Database).transaction():
-            log.write(story.agent.id, RuleAnswers(["lead"], [RuleRecord("sample", "lead", answer.outcome, answer)]), context)
+            log.write(story.agent.id, RuleAnswers([RuleRecord("sample", answer.outcome, answer)]), context)
 
     write(Nudge("sample.clock", NudgeType.STEERING, "first text", turn_limited=False))
     write(Nudge("sample.clock", NudgeType.STEERING, "second text", turn_limited=False))
@@ -85,7 +85,7 @@ def test_many_nudges_read_records_together(played):
     database = story.container.get(Database)
     nudges = [Nudge(f"sample.{number}", NudgeType.STEERING, f"Line {number}") for number in range(12)]
     answer = RuleAnswer.with_nudges(*nudges)
-    answers = RuleAnswers(["lead"], [RuleRecord("sample", "lead", answer.outcome, answer)])
+    answers = RuleAnswers([RuleRecord("sample", answer.outcome, answer)])
     context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
     with patch.object(database, "rows", wraps=database.rows) as reads:
         log.skipped_lines(story.agent.id, answers, context.timestamp)
@@ -103,7 +103,7 @@ def test_a_hook_reads_only_the_records_of_its_own_lines(played):
     answer = RuleAnswer.with_nudges(*remaining_nudges, selected_nudge)
     context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
     with story.container.get(Database).transaction():
-        log.write(story.agent.id, RuleAnswers(["lead"], [RuleRecord("sample", "lead", answer.outcome, answer)]), context)
+        log.write(story.agent.id, RuleAnswers([RuleRecord("sample", answer.outcome, answer)]), context)
     rows = story.container.get(NudgeRecords).nudge_rows(story.agent.id, [selected_nudge])
     expect_value([row.key for row in rows], ["sample.own"])
 
@@ -117,7 +117,7 @@ def test_a_line_on_a_clock_finds_its_newest_record_though_its_text_changed(playe
     answer = RuleAnswer.with_nudges(first)
     context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
     with story.container.get(Database).transaction():
-        log.write(story.agent.id, RuleAnswers(["lead"], [RuleRecord("sample", "lead", answer.outcome, answer)]), context)
+        log.write(story.agent.id, RuleAnswers([RuleRecord("sample", answer.outcome, answer)]), context)
     rows = story.container.get(NudgeRecords).nudge_rows(story.agent.id, [changed])
     expect_value([row.text for row in rows], ["Used 10"])
 
@@ -128,7 +128,7 @@ def test_a_reader_request_notice_sees_its_last_reminder(played):
     answer = RuleAnswer.with_nudges(Nudge(f"{ReaderRequestNudge.declared().key}.7", NudgeType.STEERING, "Add a reader"))
     context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
     with story.container.get(Database).transaction():
-        log.write(story.agent.id, RuleAnswers(["lead"], [RuleRecord("sample", "lead", answer.outcome, answer)]), context)
+        log.write(story.agent.id, RuleAnswers([RuleRecord("sample", answer.outcome, answer)]), context)
     expect_value(story.container.get(ReaderRequestNotices).has_recent_notice(story.agent.id, 7, story.clock.timestamp()), True)
 
 

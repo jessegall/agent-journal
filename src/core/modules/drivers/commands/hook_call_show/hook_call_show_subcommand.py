@@ -8,7 +8,7 @@ from core.modules.drivers.commands.support.hook_call_view import HookCallView
 
 
 class HookCallShowSubcommand(ReadSubcommand[HookCallView]):
-    """`journal hook-call show <id>`: one hook with the layers that were active and each rule's outcome."""
+    """`journal hook-call show <id>`: one hook with its answer and each source's outcome."""
 
     cli_name = "hook-call"
     name = "show"
@@ -22,4 +22,4 @@ class HookCallShowSubcommand(ReadSubcommand[HookCallView]):
     def read(self, arguments: Namespace, caller: Caller) -> HookCallView:
         call = self.queries.query(HookCall).find(arguments.id)
         return HookCallView(call.id, call.session_agent_id, call.hook, call.suite, call.driver, call.answer, call.refusal, call.lines.replace("\n", " | "),
-                            ", ".join(call.layers), ", ".join(call.rule_outcomes), ", ".join(call.state_outcomes), ", ".join(call.dropped_commands))
+                            ", ".join(call.rule_outcomes), ", ".join(call.dropped_commands))

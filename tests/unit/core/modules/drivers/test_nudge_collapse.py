@@ -17,8 +17,8 @@ def read_answers(*nudges: Nudge) -> RuleAnswers:
 
 
 def rule_answers(*rules: list[Nudge]) -> RuleAnswers:
-    records = [RuleRecord(f"rule_{number}", "lead", answer.outcome, answer) for number, answer in enumerate(RuleAnswer.with_nudges(*nudges) for nudges in rules)]
-    return RuleAnswers(["lead"], records)
+    records = [RuleRecord(f"rule_{number}", answer.outcome, answer) for number, answer in enumerate(RuleAnswer.with_nudges(*nudges) for nudges in rules)]
+    return RuleAnswers(records)
 
 
 def expect_key_nudge_type(answers, expected) -> None:
@@ -95,6 +95,6 @@ def test_a_line_said_twice_with_the_same_words_stays_one_line():
 
 def test_a_collapsed_line_that_was_skipped_is_not_delivered():
     rules = read_answers(QUEUED.nudge(task=1, worker=4), QUEUED.nudge(task=2, worker=4)).rules
-    answers = RuleAnswers(["lead"], rules, skipped_lines=frozenset({("shop.queued", "tasks 1, 2 are still queued for worker 4")}))
+    answers = RuleAnswers(rules, skipped_lines=frozenset({("shop.queued", "tasks 1, 2 are still queued for worker 4")}))
     expect_row(answers, lines=[])
     expect_row(answers, delivered_nudges=[])

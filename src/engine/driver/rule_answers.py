@@ -1,23 +1,20 @@
 from collections.abc import Mapping, Sequence
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 
 from engine.command.command import Command
 from engine.driver.nudge import Nudge
 from engine.driver.rule_record import RuleRecord
-from engine.driver.state_record import StateRecord
-from engine.driver.stop_check import StopCheck
+from engine.agent_machine.record.stop_check import StopCheck
 
 
 @dataclass(frozen=True)
 class RuleAnswers:
-    """What the rules on one hook said, in the order they were asked, with the layers that were active."""
+    """What one hook's answer said, source by source: its refusal, its lines, its commands and how each
+    constraint judged a stop."""
 
-    layers: Sequence[str]
     rules: Sequence[RuleRecord]
-    delays_lines: bool = False
     skipped_lines: frozenset[tuple[str, str]] = frozenset()
     stop_checks: Sequence[StopCheck] = ()
-    states: Sequence[StateRecord] = ()
 
     @property
     def answered(self) -> list[RuleRecord]:
@@ -26,19 +23,11 @@ class RuleAnswers:
     @property
     def refusal(self) -> str:
         refused = [rule.answer for rule in self.answered if rule.answer is not None and rule.answer.refusal]
-        refusal = max(refused, key=lambda answer: answer.refusal_priority).refusal if refused else ""
-        return refusal or self.double_rewrite
+        return max(refused, key=lambda answer: answer.refusal_priority).refusal if refused else ""
 
     @property
     def rewriters(self) -> list[RuleRecord]:
         return [rule for rule in self.answered if rule.answer is not None and rule.answer.rewrites]
-
-    @property
-    def double_rewrite(self) -> str:
-        names = [rule.answer.source_name or rule.name for rule in self.rewriters if rule.answer is not None]
-        if len(names) < 2:
-            return ""
-        return f"{', '.join(names[:-1])} and {names[-1]} each rewrite the input of this tool, and only one rule may"
 
     @property
     def rewriter(self) -> RuleRecord | None:
@@ -97,5 +86,4 @@ class RuleAnswers:
         return "\n".join(rule.answer.terminal for rule in self.answered if rule.answer is not None and rule.answer.terminal)
 
     def metadata(self) -> dict[str, object]:
-        return {"layers": list(self.layers), "rules": [rule.saved_fields for rule in self.rules], "terminal": self.terminal,
-                "stop_checks": [asdict(check) for check in self.stop_checks], "states": [asdict(state) for state in self.states]}
+        return {"rules": [rule.saved_fields for rule in self.rules], "terminal": self.terminal, "stop_checks": [check.saved_fields for check in self.stop_checks]}

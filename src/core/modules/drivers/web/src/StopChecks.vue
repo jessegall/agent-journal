@@ -6,7 +6,7 @@ defineProps({checks: {type: Array, required: true}});
 <template>
     <details data-stop-checks>
         <summary>Stop checks</summary>
-        <template v-for="check in checks" :key="`${check.rule}:${check.layer || ''}`">
+        <template v-for="check in checks" :key="check.rule">
             <div class="check" data-stop-check>
                 <strong>{{ ruleLabel(check.rule) }}</strong><span>{{ checkOutcomeLabel(check.outcome) }}</span>
                 <template v-if="!check.applied"><span class="note">Not applied</span></template>

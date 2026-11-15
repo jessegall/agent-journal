@@ -21,7 +21,7 @@ from core.modules.drivers.support.assembled_answer import AssembledAnswer
 from core.modules.drivers.support.assembled_step import AssembledStep
 from core.modules.drivers.support.machine_assembly import MachineAssembly
 
-NEW_DRIVER_LAYER = "agent machine"
+MACHINE_SOURCE = "drivers.machine"
 
 
 class DecisionAssembler:
@@ -46,7 +46,7 @@ class DecisionAssembler:
         if assembled.step is None:
             return assembled.answers
         view, record = assembled.step.view, assembled.step.step.record
-        failed = [RuleRecord(type(effect).__name__, NEW_DRIVER_LAYER, "refused", effect.failed(view, record)) for effect in record.admission_effects if effect.is_required]
+        failed = [RuleRecord(type(effect).__name__, "refused", effect.failed(view, record)) for effect in record.admission_effects if effect.is_required]
         return replace(assembled.answers, rules=[*failed, *assembled.answers.rules])
 
     @staticmethod
@@ -55,12 +55,10 @@ class DecisionAssembler:
         shown = record.shown_reason
         safety = tuple([Nudge(shown.key, NudgeType.SAFETY_REFUSAL, shown.text)]) if is_refusal and shown.is_safety else ()
         refusal = RuleAnswer(refusal=shown.text, nudges=safety)
-        refusals = [RuleRecord(shown.key or NEW_DRIVER_LAYER, NEW_DRIVER_LAYER, refusal.outcome, refusal)] if is_refusal else []
-        return RuleAnswers((), [*refusals, *DecisionAssembler.line_records(record.lines)])
+        refusals = [RuleRecord(shown.key or MACHINE_SOURCE, refusal.outcome, refusal)] if is_refusal else []
+        return RuleAnswers([*refusals, *DecisionAssembler.line_records(record.lines)], stop_checks=tuple(record.stop_checks))
 
-    # one record of lines for each old rule a source answers for, under its name and no layer, so the rule history
-    # notes when that rule last spoke as the old walk noted it; lines of a source that answers for no rule share one, and
-    # a terminal line is printed to the terminal
+    # one record of lines for each source of the step, under its key; a terminal line is printed to the terminal
     @staticmethod
     def line_records(lines: list[Line]) -> list[RuleRecord]:
         sources = list(dict.fromkeys(line.source_key for line in lines))
@@ -69,5 +67,5 @@ class DecisionAssembler:
             said = [line for line in lines if line.source_key == source]
             answer = RuleAnswer(nudges=tuple(line.said() for line in said if line.carrier is not LineCarrier.TERMINAL),
                                 terminal="\n".join(line.text for line in said if line.carrier is LineCarrier.TERMINAL))
-            records.append(RuleRecord(source or NEW_DRIVER_LAYER, "" if source else NEW_DRIVER_LAYER, answer.outcome, answer))
+            records.append(RuleRecord(source or MACHINE_SOURCE, answer.outcome, answer))
         return records

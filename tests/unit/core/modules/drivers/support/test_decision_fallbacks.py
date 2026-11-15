@@ -6,8 +6,8 @@ from engine.testing.examples.hook_samples import HookSamples
 from core.modules.drivers.commands.request_agent_step.request_agent_step import RequestAgentStep
 from core.modules.drivers.support.decision_fallbacks import BUSY_TEXT, MISSED_CHECK, DecisionFallbacks
 
-WALK = RuleAnswers([], [RuleRecord("messages.unread-write", "", "refused", RuleAnswer(refusal="read your messages", commands=tuple([RequestAgentStep(tuple([4]), "walk")])))])
-TRIGGERED = RuleAnswers([], [RuleRecord("triggers.phrase", "", "refused", RuleAnswer(refusal="that phrase is denied"))])
+WALK = RuleAnswers([RuleRecord("messages.unread-write", "refused", RuleAnswer(refusal="read your messages", commands=tuple([RequestAgentStep(tuple([4]), "walk")])))])
+TRIGGERED = RuleAnswers([RuleRecord("triggers.phrase", "refused", RuleAnswer(refusal="that phrase is denied"))])
 
 
 def lost(sample, answers: RuleAnswers = WALK) -> RuleAnswers:

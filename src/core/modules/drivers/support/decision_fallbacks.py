@@ -31,4 +31,4 @@ class DecisionFallbacks:
 
     @staticmethod
     def with_answer(answers: RuleAnswers, answer: RuleAnswer) -> RuleAnswers:
-        return RuleAnswers(answers.layers, [RuleRecord(MISSED_CHECK, MISSED_CHECK, answer.outcome, answer)])
+        return RuleAnswers([RuleRecord(MISSED_CHECK, answer.outcome, answer)])
