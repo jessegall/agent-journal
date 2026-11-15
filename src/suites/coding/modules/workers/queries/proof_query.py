@@ -70,6 +70,11 @@ class ProofQuery(Query[Proof]):
     def delivered_proofs(self, worktree_id: int) -> Self:
         return self.waiting_proofs(worktree_id).matching(ProofTaskTesting())
 
+    # the worktrees with a shown proof of a task in testing: the only ones a stalled test can be queued for
+    def delivered_worktree_ids(self) -> tuple[int, ...]:
+        proofs = self.filter(state=ProofState.SHOWN).matching(ProofTaskTesting())
+        return tuple(sorted({proof.worktree_id for proof in proofs.every_row(PROOFS_REASON)}))
+
     def test_rows(self) -> tuple[Proof, ...]:
         proofs = self.test_waiting()
         return self.kept.read(proofs, lambda: tuple(proofs.every_row(PROOFS_REASON)), name="workers.test_proofs")

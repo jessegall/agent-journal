@@ -4,6 +4,7 @@ from engine.scope.actor_scope import ActorScope
 from suites.coding.modules.workers.commands.queue_worker_tests.queue_stalled_tests import QueueStalledTests
 from core.modules.plans.support.task_plans import TaskPlans
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
+from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 
@@ -16,11 +17,11 @@ class QueueStalledTestsHandler(Handler[QueueStalledTests, None]):
     command = QueueStalledTests
     disabled_scopes = [ActorScope]
 
-    def __init__(self, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue, plans: TaskPlans) -> None:
-        self.worktrees, self.proof_queue, self.plans = worktrees, proof_queue, plans
+    def __init__(self, worktrees: WorktreeQuery, proofs: ProofQuery, proof_queue: WorkerProofQueue, plans: TaskPlans) -> None:
+        self.worktrees, self.proofs, self.proof_queue, self.plans = worktrees, proofs, proof_queue, plans
 
     def handle(self, command: QueueStalledTests, context: Context) -> None:
-        worktrees = self.worktrees.all_worktrees()
+        worktrees = self.worktrees.worktrees_among(self.proofs.delivered_worktree_ids())
         self.plans.prepare([worktree.task_id for worktree in worktrees])
         for worktree in worktrees:
             if self.plans.is_started_plan(worktree.task_id):
