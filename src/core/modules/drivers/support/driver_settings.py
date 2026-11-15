@@ -36,7 +36,7 @@ DRIVERS_SETTINGS = [
     SettingValue("comparison", "Compare the new driver", "Whether the new driver answers every agent event beside the old one, without acting, so the two can be compared.",
                  SettingType.FLAG, default=False, scope=SettingScope.ENVIRONMENT, person_set=True, is_driving=True),
     SettingValue("active-slices", "Active parts of the new driver", "The parts of the new driver that answer agents in this environment, each optionally for one program.",
-                 SettingType.LIST, default=(), scope=SettingScope.ENVIRONMENT, person_set=True, is_driving=True),
+                 SettingType.LIST, default=(), scope=SettingScope.ENVIRONMENT, is_driving=True),
     SettingValue("most-stop-refusals", "Refused stops before asking", "How many stops of an agent may be refused one after another before its parent or a user is asked.",
                  SettingType.NUMBER, default=5, scope=SettingScope.PROJECT, is_driving=True),
     SettingValue("most-tool-refusals", "Refused tool calls before asking", "How many tool calls a block may refuse one after another before the agent's parent or a user is asked.",
