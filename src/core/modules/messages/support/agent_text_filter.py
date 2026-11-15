@@ -1,7 +1,7 @@
+from engine.driver.hook_event import HookEvent
 import re
 
 from engine.enums.hook_event_name import HookEventName
-from engine.driver.agent_hook import AgentHook
 from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.queries.hook_call_query import HookCallQuery, TOOL_HOOKS
@@ -68,9 +68,9 @@ class AgentTextFilter:
         prompt = self.hook_calls.latest_prompt(agent_id, created_at)
         return prompt is not None and self.is_reaction_prompt(prompt.summary)
 
-    def is_closing(self, hook: AgentHook, created_at: Timestamp) -> bool:
-        following = self.hook_calls.next_turn_event(hook.agent_id, created_at)
-        return hook.event.tool is None if following is None else following.hook not in TOOL_HOOKS
+    def is_closing(self, event: HookEvent, agent_id: int, created_at: Timestamp) -> bool:
+        following = self.hook_calls.next_turn_event(agent_id, created_at)
+        return event.tool is None if following is None else following.hook not in TOOL_HOOKS
 
     def is_acknowledgement(self, agent_id: int, text: str, created_at: Timestamp) -> bool:
         prompt = self.hook_calls.latest_prompt(agent_id, created_at)

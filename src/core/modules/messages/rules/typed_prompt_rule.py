@@ -1,33 +1,21 @@
-from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from engine.provider.transcript_author import USER_AUTHOR, TranscriptAuthor
-from engine.query.conditions.is_null import IsNull
-from engine.query.queries import Queries
-from core.modules.messages.commands.record_typed_prompt.record_typed_prompt import RecordTypedPrompt
-from core.modules.schedules.models.scheduled_job import ScheduledJob
-
-PROGRAM_COMMAND = "/"
+from engine.enums.agent_role import AgentRole
+from engine.enums.hook_event_name import HookEventName
+from core.modules.messages.effects.typed_prompt_effect import TypedPromptEffect
 
 
 class TypedPromptRule(DriverRule):
-    """Record a user's terminal prompt as a chat message."""
+    """The old walk's answer for TypedPromptEffect, which owns it, until the walk is deleted."""
 
-    name = "messages.typed-prompt"
+    name = TypedPromptEffect.key
     hook = HookEventName.PROMPT
     drivers = ["*"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, effect: TypedPromptEffect) -> None:
+        self.effect = effect
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        text = (hook.event.prompt or "").strip()
-        if not text or text.startswith(PROGRAM_COMMAND) or TranscriptAuthor.author(USER_AUTHOR, text) != USER_AUTHOR or self.is_scheduled_job(hook, text):
-            return RuleAnswer.allowed()
-        return RuleAnswer.allowed().running(RecordTypedPrompt(text))
-
-    def is_scheduled_job(self, hook: AgentHook, text: str) -> bool:
-        return self.queries.query(ScheduledJob).filter(session_agent_id=hook.agent_id, prompt=text).matching(IsNull("ended_at")).exists()
+        return RuleAnswer.allowed().running(*self.effect.commands_of(hook.event, hook.agent_id))

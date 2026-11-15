@@ -2,7 +2,6 @@ from engine.row.metadata import Metadata
 from core.modules.messages.support.message_reactions import MessageReactions
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.enums.agent_role import AgentRole
 from core.modules.agents.models.agent import Agent
 from engine.command.context import Context
 from engine.command.handler import Handler

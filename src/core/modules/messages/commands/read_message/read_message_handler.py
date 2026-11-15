@@ -4,7 +4,6 @@ from engine.listener.rows.event_rows import EventRows
 from engine.repository.repository import Repository
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.modules.messages.models.message import Message
-from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.support.work_sources import WorkSources

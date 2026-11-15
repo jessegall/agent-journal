@@ -1,6 +1,5 @@
 from engine.scope.actor_scope import ActorScope
 from core.modules.messages.nudges.message_reaction_nudge import MessageReactionNudge
-from engine.enums.actor_type import ActorType
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.listener.rows.event_rows import EventRows

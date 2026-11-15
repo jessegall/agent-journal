@@ -1,8 +1,22 @@
-from engine.rule_backed.rule_effect import RuleEffect
-from core.modules.messages.rules.message_delivery_rule import MessageDeliveryRule
+from collections.abc import Sequence
+
+from engine.agent_machine.contracts.event_effect import EventEffect
+from engine.command.command import Command
+from engine.driver.hook_event import HookEvent
+from core.modules.messages.commands.record_message_delivery.record_message_delivery import RecordMessageDelivery
+from core.modules.messages.lines.new_message_lines import DELIVERY_EVENTS, MESSAGE_DELIVERY_KEY
+from core.modules.messages.support.undelivered_messages import UndeliveredMessages
 
 
-class MessageDeliveryEffect(RuleEffect):
-    """The effect that records the delivery of the messages told, as today's MessageDeliveryRule runs it."""
+class MessageDeliveryEffect(EventEffect):
+    """Records the delivery of each message the hook named to its target agent."""
 
-    rule = MessageDeliveryRule
+    key = MESSAGE_DELIVERY_KEY
+    events = DELIVERY_EVENTS
+
+    def __init__(self, undelivered: UndeliveredMessages) -> None:
+        self.undelivered = undelivered
+
+    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+        batch = self.undelivered.batch(event, agent_id) if event is not None else None
+        return [RecordMessageDelivery(message.id) for message in batch.messages] if batch is not None else []

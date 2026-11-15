@@ -1,44 +1,22 @@
-from engine.driver.nudge import Nudge
-from core.modules.messages.nudges.message_file_nudge import MessageFileNudge
-from core.modules.messages.nudges.new_message_nudge import NewMessageNudge
-from core.modules.messages.nudges.new_messages_nudge import NewMessagesNudge
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
-from engine.enums.hook_wildcard import HookWildcard
 from engine.driver.rule_answer import RuleAnswer
-from engine.query.queries import Queries
-from core.modules.messages.queries.message_query import MessageQuery
-from core.modules.drivers.models.agent_line import AgentLine
-from core.modules.drivers.models.enums.agent_line_state import AgentLineState
-from core.modules.messages.commands.record_message_delivery.record_message_delivery import RecordMessageDelivery
-from core.modules.messages.models.message import Message
-from core.modules.messages.support.waiting_message_lines import WAITING_MESSAGE_SOURCE
-
-LISTED_MESSAGES = 5
+from engine.enums.hook_wildcard import HookWildcard
+from core.modules.messages.effects.message_delivery_effect import MessageDeliveryEffect
+from core.modules.messages.lines.new_message_lines import MESSAGE_DELIVERY_KEY, NewMessageLines
 
 
 class MessageDeliveryRule(DriverRule):
-    """Delivers each user's message to its target agent, at most five per hook."""
+    """The old walk's answer for NewMessageLines and MessageDeliveryEffect, which own it, until the walk is deleted."""
 
-    name = "messages.delivery"
+    name = MESSAGE_DELIVERY_KEY
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
     overlay_proof = True
     is_notice = True
 
-    def __init__(self, queries: Queries, messages: MessageQuery) -> None:
-        self.queries, self.messages = queries, messages
+    def __init__(self, lines: NewMessageLines, effect: MessageDeliveryEffect) -> None:
+        self.lines, self.effect = lines, effect
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if not hook.event.accepts_lines or hook.event.event == HookEventName.TICK:
-            return RuleAnswer.allowed()
-        messages = self.messages.oldest_undelivered(hook.agent_id, LISTED_MESSAGES)
-        if not messages or self.queries.query(AgentLine).filter(session_agent_id=hook.agent_id, source=WAITING_MESSAGE_SOURCE, state=AgentLineState.TYPING).exists():
-            return RuleAnswer.allowed()
-        waiting = self.messages.undelivered(hook.agent_id).count()
-        heading = NewMessageNudge.declared().nudge(message=messages[0].id) if waiting == 1 else NewMessagesNudge.declared().nudge(count=waiting)
-        return RuleAnswer.with_nudges(heading, *(nudge for message in messages for nudge in self.file_nudges(message))).running(*(RecordMessageDelivery(message.id) for message in messages))
-
-    def file_nudges(self, message: Message) -> list[Nudge]:
-        return [MessageFileNudge.declared().nudge(message=message.id, name=name) for name in message.files]
+        return RuleAnswer.with_nudges(*self.lines.nudges(hook.event, hook.agent_id)).running(*self.effect.commands_of(hook.event, hook.agent_id))

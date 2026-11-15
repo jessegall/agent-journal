@@ -1,5 +1,4 @@
 import re
-import shutil
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome

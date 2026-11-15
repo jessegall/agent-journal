@@ -7,6 +7,7 @@ from engine.enums.state_tier import StateTier
 from engine.time.timestamp import Timestamp
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
+from core.modules.messages.lines.unanswered_message_lines import UnansweredMessageLines
 from core.modules.messages.rules.unanswered_message_rule import UnansweredMessageRule
 from core.modules.messages.states.messages_unanswered import MessagesUnanswered
 from core.modules.messages.support.unanswered_messages import UnansweredMessages
@@ -35,7 +36,8 @@ def test_the_state_is_asked_in_place_and_gates_the_unanswered_rule():
 def test_with_nothing_read_in_the_session_the_state_is_closed_and_the_rule_answers_allowed_alone():
     none = session_reads([])
     assert MessagesUnanswered(none).open_rows(HOOK) == []
-    assert UnansweredMessageRule(UnansweredMessages(Untouched(), none, Untouched(), RequestValues(), SimpleNamespace(change_mark=Untouched))).answer(HOOK) == RuleAnswer.allowed()
+    unanswered = UnansweredMessages(Untouched(), none, Untouched(), RequestValues(), SimpleNamespace(change_mark=Untouched))
+    assert UnansweredMessageRule(unanswered, UnansweredMessageLines(unanswered)).answer(HOOK) == RuleAnswer.allowed()
 
 
 def test_a_message_read_in_the_session_opens_the_state_on_it():
