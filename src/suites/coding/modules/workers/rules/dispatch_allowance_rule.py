@@ -1,6 +1,7 @@
 from suites.coding.modules.workers.nudges.main_workers_refused_nudge import MainWorkersRefusedNudge
 from suites.coding.support.auto_advice import AutoAdvice
 from engine.driver.agent_hook import AgentHook
+from suites.coding.modules.workers.support.journal_command_allowance import JournalCommandAllowance
 from engine.enums.command_category import CommandCategory
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -24,9 +25,7 @@ class DispatchAllowanceRule(DriverRule):
         self.settings, self.guidance = settings, guidance
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        shell = hook.event.tool.shell if hook.event.tool is not None else None
-        dispatches = shell is not None and any(part.classification.category is CommandCategory.JOURNAL and part.arguments[:2] == DISPATCH_ARGUMENTS
-                                               for part in shell.parts)
+        dispatches = hook.event.tool is not None and JournalCommandAllowance.runs_command(hook.event.tool.shell, tuple(DISPATCH_ARGUMENTS))
         if not dispatches or self.settings.value(DISPATCHES_WORKERS_SETTING) is not False:
             return RuleAnswer.allowed()
         return RuleAnswer.refused(MainWorkersRefusedNudge.declared().nudge(then=self.guidance.without_workers()))
