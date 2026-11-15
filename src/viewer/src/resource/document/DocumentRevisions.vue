@@ -29,8 +29,8 @@ async function restore() {
             <Btn small bordered data-close-revision @click="emit('close-revision')">Close the open revision</Btn>
         </template>
         <template v-if="revisions.length">
-            <template v-for="row in revisions" :key="row.number">
-                <Btn variant="text" :data-text-revision="row.number" @click="open(row)">Revision {{ row.number }}: {{ row.change }} · {{ row.author_name }} · <time :datetime="row.created_at">{{ row.created_at.slice(0, 16).replace("T", " ") }}</time></Btn>
+            <template v-for="(row, place) in revisions" :key="row.number">
+                <Btn variant="text" :data-text-revision="row.number" @click="open(row)">Revision {{ row.number }}<template v-if="!place"> · current</template>: {{ row.change }} · {{ row.author_name }} · <time :datetime="row.created_at">{{ row.created_at.slice(0, 16).replace("T", " ") }}</time></Btn>
             </template>
             <template v-if="failure">
                 <p class="revision-failure" role="alert" data-text-revision-failure>{{ failure }}</p>

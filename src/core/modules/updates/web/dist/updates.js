@@ -1,4 +1,4 @@
-if (!document.getElementById("window-styles-66f064723290")) { const style = document.createElement("style"); style.id = "window-styles-66f064723290"; style.textContent = ".failure[data-v-cabb8c9b]{margin:0;padding:4px var(--inset);color:var(--bad, var(--text-2));font-size:12px}.cover[data-v-cabb8c9b],.arrived[data-v-cabb8c9b],.standing[data-v-cabb8c9b]{display:flex;align-items:center;gap:10px;padding:6px var(--inset);font-size:13px}.line[data-v-cabb8c9b]{flex:1}.detail[data-v-cabb8c9b]{margin:0;padding:4px var(--inset);color:var(--text-3);font-size:12px}button[data-v-cabb8c9b]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-8d45be9f5618")) { const style = document.createElement("style"); style.id = "window-styles-8d45be9f5618"; style.textContent = ".failure[data-v-c29664d4]{margin:0;padding:4px var(--inset);color:var(--bad, var(--text-2));font-size:12px}.cover[data-v-c29664d4],.arrived[data-v-c29664d4],.standing[data-v-c29664d4]{display:flex;align-items:center;gap:10px;padding:6px var(--inset);font-size:13px}.line[data-v-c29664d4]{flex:1}.detail[data-v-c29664d4]{margin:0;padding:4px var(--inset);color:var(--text-3);font-size:12px}button[data-v-c29664d4]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
 import { computed as h, ref as d, watch as N, openBlock as n, createBlock as f, unref as o, withCtx as c, createVNode as x, createElementBlock as i, Fragment as j, createTextVNode as R, createCommentVNode as p, createElementVNode as g, toDisplayString as k } from "vue";
 import { useWindow as E, ListReaderLayout as O, Reader as q, TextDisplay as A, Skeleton as H, PageHeader as W, Btn as U, copying as z } from "@journal/window-kit";
 const G = (y, a) => {
@@ -32,7 +32,7 @@ const G = (y, a) => {
 }, te = {
   __name: "UpdatesPanel",
   setup(y) {
-    const a = E(), v = a.props.releases, { failure: r } = a.props.standing, s = h(() => r.value ? null : a.props.standing.data.value), b = d(!1), m = d(""), D = d(!1), I = h(() => {
+    const a = E(), v = a.props.releases, { failure: r } = a.props.standing, s = h(() => r.value ? null : a.props.standing.data.value), m = d(!1), b = d(""), D = d(!1), I = h(() => {
       var e, l, t;
       return D.value && ((e = s.value) == null ? void 0 : e.is_current) && ((t = (l = s.value) == null ? void 0 : l.installation) == null ? void 0 : t.step) === "finished";
     }), w = d([]), C = d(1), P = h(() => {
@@ -47,9 +47,9 @@ const G = (y, a) => {
       await a.reload("standing");
     }
     async function L() {
-      b.value = !0;
+      m.value = !0;
       const e = await a.run(["update", "install"]);
-      m.value = e.ok ? "" : e.error, b.value = !1, await a.reload({ only: e.ok ? ["releases", "standing"] : ["releases"] }), e.ok && (D.value = !0);
+      b.value = e.ok ? "" : e.error, m.value = !1, await a.reload({ only: e.ok ? ["releases", "standing"] : ["releases"] }), e.ok && (D.value = !0);
     }
     async function F(e) {
       C.value = e, a.state["notes.page"] = String(e), await a.reload("notes");
@@ -80,7 +80,7 @@ const G = (y, a) => {
     }, {
       top: c(() => [
         x(o(W), { title: "Updates" }),
-        b.value ? (n(), i("div", J, "Updating the journal. This takes a short while.")) : p("", !0),
+        m.value ? (n(), i("div", J, "Updating the journal. This takes a short while.")) : p("", !0),
         I.value ? (n(), i("div", K, [
           l[3] || (l[3] = g("span", { class: "line" }, "The update is installed. Reload the page to see it.", -1)),
           x(o(U), {
@@ -95,7 +95,7 @@ const G = (y, a) => {
             _: 1
           })
         ])) : p("", !0),
-        o(r) || m.value ? (n(), i("p", M, k(o(r) || m.value), 1)) : p("", !0),
+        o(r) || b.value ? (n(), i("p", M, k(o(r) || b.value), 1)) : p("", !0),
         g("div", Q, [
           g("span", X, k(T.value), 1),
           g("button", {
@@ -159,7 +159,7 @@ const G = (y, a) => {
       _: 1
     }, 8, ["chosen", "items"]));
   }
-}, se = /* @__PURE__ */ G(te, [["__scopeId", "data-v-cabb8c9b"]]);
+}, se = /* @__PURE__ */ G(te, [["__scopeId", "data-v-c29664d4"]]);
 export {
   se as default
 };

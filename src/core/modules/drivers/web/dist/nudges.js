@@ -1,7 +1,7 @@
-if (!document.getElementById("window-styles-d1117b94f7d2")) { const style = document.createElement("style"); style.id = "window-styles-d1117b94f7d2"; style.textContent = "details[data-v-ebe6bd00]{width:100%;font-size:12px}summary[data-v-ebe6bd00]{cursor:pointer}.check[data-v-ebe6bd00]{padding:8px 0;border-bottom:1px solid var(--border)}.check span[data-v-ebe6bd00]{margin-left:8px}.note[data-v-ebe6bd00]{color:var(--text-3)}p[data-v-ebe6bd00]{margin:4px 0 0;white-space:pre-wrap}.activity[data-v-b781af7b]{width:100%}.summary[data-v-b781af7b]{display:flex;gap:10px}.main[data-v-b781af7b]{flex:1}.note[data-v-b781af7b]{color:var(--text-3);font-size:12px}.nudge[data-v-7cdcc629]{min-width:0;padding:6px 0}.nudge-head[data-v-7cdcc629]{display:flex;gap:10px;align-items:baseline;margin:0 0 2px;font-size:12px}.nudge-key[data-v-7cdcc629]{color:var(--text);font-weight:500}.nudge-type[data-v-7cdcc629],.nudge-count[data-v-7cdcc629]{color:var(--text-3)}.nudge-type[data-type=refusal][data-v-7cdcc629]{color:var(--tone-bad)}.nudge-type[data-type=steering][data-v-7cdcc629]{color:var(--accent-text)}.nudge-text[data-v-7cdcc629]{margin:0;color:var(--text-2);font-size:12.5px;overflow-wrap:anywhere}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-69f07e8605fe")) { const style = document.createElement("style"); style.id = "window-styles-69f07e8605fe"; style.textContent = "details[data-v-ef2335fe]{width:100%;font-size:12px}summary[data-v-ef2335fe]{cursor:pointer}.check[data-v-ef2335fe]{padding:8px 0;border-bottom:1px solid var(--border)}.check span[data-v-ef2335fe]{margin-left:8px}.note[data-v-ef2335fe]{color:var(--text-3)}p[data-v-ef2335fe]{margin:4px 0 0;white-space:pre-wrap}.activity[data-v-d4f200c4]{width:100%}.summary[data-v-d4f200c4]{display:flex;gap:10px}.main[data-v-d4f200c4]{flex:1}.note[data-v-d4f200c4]{color:var(--text-3);font-size:12px}.nudge[data-v-ec205110]{min-width:0;padding:6px 0}.nudge-head[data-v-ec205110]{display:flex;gap:10px;align-items:baseline;margin:0 0 2px;font-size:12px}.nudge-key[data-v-ec205110]{color:var(--text);font-weight:500}.nudge-type[data-v-ec205110],.nudge-count[data-v-ec205110]{color:var(--text-3)}.nudge-type[data-type=refusal][data-v-ec205110]{color:var(--tone-bad)}.nudge-type[data-type=steering][data-v-ec205110]{color:var(--accent-text)}.nudge-text[data-v-ec205110]{margin:0;color:var(--text-2);font-size:12.5px;overflow-wrap:anywhere}\n"; document.head.appendChild(style); }
 import { openBlock as u, createBlock as l, unref as t, withCtx as a, createVNode as _, createElementVNode as s, toDisplayString as o } from "vue";
 import { useWindow as p, WindowRoom as r, RowList as g } from "@journal/window-kit";
-import { _ as m, n as y } from "./_plugin-vue_export-helper-B_V_vggM.js";
+import { _ as m, n as y } from "./_plugin-vue_export-helper-B_V_vggM.mjs";
 const f = {
   class: "nudge",
   "data-nudge": ""
@@ -37,7 +37,7 @@ const f = {
       _: 1
     }));
   }
-}, W = /* @__PURE__ */ m(L, [["__scopeId", "data-v-7cdcc629"]]);
+}, W = /* @__PURE__ */ m(L, [["__scopeId", "data-v-ec205110"]]);
 export {
   W as default
 };

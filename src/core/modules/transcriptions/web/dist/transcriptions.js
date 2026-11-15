@@ -1,4 +1,4 @@
-if (!document.getElementById("window-styles-d1cb5454e379")) { const style = document.createElement("style"); style.id = "window-styles-d1cb5454e379"; style.textContent = "textarea[data-v-e2362fec]{box-sizing:border-box;width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface, none);color:inherit;font:inherit}.note[data-v-05213ab6]{margin:0;padding:4px var(--inset);color:var(--text-3);font-size:12px}.failed[data-v-05213ab6]{color:var(--danger)}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-6c57fd0bbbc1")) { const style = document.createElement("style"); style.id = "window-styles-6c57fd0bbbc1"; style.textContent = "textarea[data-v-72d65e66]{box-sizing:border-box;width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface, none);color:inherit;font:inherit}.note[data-v-ab9db684]{margin:0;padding:4px var(--inset);color:var(--text-3);font-size:12px}.failed[data-v-ab9db684]{color:var(--danger)}\n"; document.head.appendChild(style); }
 import { ref as y, openBlock as r, createBlock as k, unref as a, withCtx as d, withDirectives as H, createElementBlock as w, vModelText as M, createVNode as D, createTextVNode as L, computed as R, Fragment as C, renderList as P, toDisplayString as S, createCommentVNode as _ } from "vue";
 import { useWindow as V, Reader as W, ResourceLinks as j, Btn as N, peekRef as q, defaultFilter as z, applyFilter as A, ListReaderLayout as E, Skeleton as K, PageHeader as Y, FilterBar as G, copying as F } from "@journal/window-kit";
 const O = (c, v) => {
@@ -68,7 +68,7 @@ const O = (c, v) => {
       _: 1
     }, 8, ["tab", "title", "number"]));
   }
-}, Q = /* @__PURE__ */ O(J, [["__scopeId", "data-v-e2362fec"]]), X = {
+}, Q = /* @__PURE__ */ O(J, [["__scopeId", "data-v-72d65e66"]]), X = {
   key: 0,
   class: "note",
   "data-transcription-notice": ""
@@ -160,7 +160,7 @@ const O = (c, v) => {
       _: 1
     }, 8, ["chosen", "items"]));
   }
-}, re = /* @__PURE__ */ O(ae, [["__scopeId", "data-v-05213ab6"]]);
+}, re = /* @__PURE__ */ O(ae, [["__scopeId", "data-v-ab9db684"]]);
 export {
   re as default
 };

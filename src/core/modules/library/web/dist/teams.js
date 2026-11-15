@@ -1,4 +1,4 @@
-if (!document.getElementById("window-styles-2db6a4f3301d")) { const style = document.createElement("style"); style.id = "window-styles-2db6a4f3301d"; style.textContent = ".connect[data-v-b69f5dd5]{display:flex;flex-direction:column;gap:12px;max-width:420px}.connect-lead[data-v-b69f5dd5]{margin:0;color:var(--text-2);font-size:13px}.connect-failure[data-v-b69f5dd5]{margin:0;color:var(--danger);font-size:13px}.person[data-v-21161250]{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 0}.person-name[data-v-21161250]{min-width:120px;font-weight:600}.person-facts[data-v-21161250],.person-tokens[data-v-21161250]{color:var(--text-3);font-size:12px}.person-tokens[data-v-21161250]{flex-basis:100%;margin:0;padding:0 0 0 16px;list-style:none}.person-tokens li[data-v-21161250]{display:flex;align-items:center;gap:10px;padding:2px 0}.person-failure[data-v-21161250]{flex-basis:100%;margin:0;color:var(--danger);font-size:13px}.people[data-v-ebd0ab68]{display:flex;flex-direction:column;gap:10px}.people-add[data-v-ebd0ab68]{display:flex;align-items:flex-end;gap:10px}.people-token[data-v-ebd0ab68]{margin:0;font-family:var(--mono);font-size:12px;word-break:break-all}.people-failure[data-v-ebd0ab68]{margin:0;color:var(--danger);font-size:13px}.compare[data-v-a6494d43]{display:flex;flex-direction:column;gap:10px}.compare-help[data-v-a6494d43]{margin:0;color:var(--text-3);font-size:12px}.when[data-v-a44b2241],.loss[data-v-a44b2241]{margin:8px 0;color:var(--text-3);font-size:12.5px}.versions[data-v-a44b2241]{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none;font-size:12.5px}.versions li[data-v-a44b2241]{display:flex;align-items:center;justify-content:space-between;gap:8px}.failure[data-v-13a6a680]{margin:0;padding:6px var(--inset);color:var(--bad, var(--text-2));font-size:12px}.quiet[data-v-13a6a680]{color:var(--text-4);font-size:12px;white-space:nowrap}.badge-update[data-v-13a6a680]{padding:1px 7px;border-radius:999px;background:var(--accent-dim);color:var(--accent-text);font-size:11.5px;font-weight:500}.note[data-v-13a6a680]{margin:0 0 8px;color:var(--text-2);font-size:13px}pre[data-v-13a6a680]{margin:0;padding:8px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px}.teams[data-v-0a68d8f5]{display:flex;flex:1;flex-direction:column;gap:6px;min-height:0}.teams-header[data-v-0a68d8f5]{display:flex;flex-wrap:wrap;gap:6px 18px;padding:0 var(--inset);color:var(--text-2);font-size:13px}.teams-note[data-v-0a68d8f5]{margin:0;padding:0 var(--inset);color:var(--text-2);font-size:13px}.failure[data-v-0a68d8f5]{color:var(--danger)}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-26b4fc9ee084")) { const style = document.createElement("style"); style.id = "window-styles-26b4fc9ee084"; style.textContent = ".connect[data-v-c80072d8]{display:flex;flex-direction:column;gap:12px;max-width:420px}.connect-lead[data-v-c80072d8]{margin:0;color:var(--text-2);font-size:13px}.connect-failure[data-v-c80072d8]{margin:0;color:var(--danger);font-size:13px}.person[data-v-4a453da6]{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 0}.person-name[data-v-4a453da6]{min-width:120px;font-weight:600}.person-facts[data-v-4a453da6],.person-tokens[data-v-4a453da6]{color:var(--text-3);font-size:12px}.person-tokens[data-v-4a453da6]{flex-basis:100%;margin:0;padding:0 0 0 16px;list-style:none}.person-tokens li[data-v-4a453da6]{display:flex;align-items:center;gap:10px;padding:2px 0}.person-failure[data-v-4a453da6]{flex-basis:100%;margin:0;color:var(--danger);font-size:13px}.people[data-v-1c77317b]{display:flex;flex-direction:column;gap:10px}.people-add[data-v-1c77317b]{display:flex;align-items:flex-end;gap:10px}.people-token[data-v-1c77317b]{margin:0;font-family:var(--mono);font-size:12px;word-break:break-all}.people-failure[data-v-1c77317b]{margin:0;color:var(--danger);font-size:13px}.compare[data-v-4ed17c46]{display:flex;flex-direction:column;gap:10px}.compare-help[data-v-4ed17c46]{margin:0;color:var(--text-3);font-size:12px}.when[data-v-7c3e1afd],.loss[data-v-7c3e1afd]{margin:8px 0;color:var(--text-3);font-size:12.5px}.versions[data-v-7c3e1afd]{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none;font-size:12.5px}.versions li[data-v-7c3e1afd]{display:flex;align-items:center;justify-content:space-between;gap:8px}.failure[data-v-86bffdc6]{margin:0;padding:6px var(--inset);color:var(--bad, var(--text-2));font-size:12px}.quiet[data-v-86bffdc6]{color:var(--text-4);font-size:12px;white-space:nowrap}.badge-update[data-v-86bffdc6]{padding:1px 7px;border-radius:999px;background:var(--accent-dim);color:var(--accent-text);font-size:11.5px;font-weight:500}.note[data-v-86bffdc6]{margin:0 0 8px;color:var(--text-2);font-size:13px}pre[data-v-86bffdc6]{margin:0;padding:8px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px}.teams[data-v-abe6365a]{display:flex;flex:1;flex-direction:column;gap:6px;min-height:0}.teams-header[data-v-abe6365a]{display:flex;flex-wrap:wrap;gap:6px 18px;padding:0 var(--inset);color:var(--text-2);font-size:13px}.teams-note[data-v-abe6365a]{margin:0;padding:0 var(--inset);color:var(--text-2);font-size:13px}.failure[data-v-abe6365a]{color:var(--danger)}\n"; document.head.appendChild(style); }
 import { ref as $, openBlock as n, createElementBlock as u, withModifiers as re, createElementVNode as A, createVNode as b, unref as t, withCtx as f, toDisplayString as _, createCommentVNode as w, createTextVNode as q, Fragment as E, renderList as Y, createBlock as D, computed as V, useModel as ue, watch as le, mergeModels as ee, createSlots as de } from "vue";
 import { useWindow as U, FormField as M, TextInput as G, Btn as N, useRunLine as z, Segmented as J, RowList as ce, CreateDialog as me, DiffCard as ve, copying as pe, Reader as ye, TimeAgo as H, ActionsMenu as be, defaultFilter as fe, applyFilter as he, ListReaderLayout as ke, Skeleton as we, FilterBar as ge, Dialog as _e, WindowRoom as $e, PageHeader as Se, SwitchCase as Ce } from "@journal/window-kit";
 const W = (a, h) => {
@@ -77,7 +77,7 @@ const W = (a, h) => {
       }, 8, ["busy", "disabled"])
     ], 32));
   }
-}, xe = /* @__PURE__ */ W(Te, [["__scopeId", "data-v-b69f5dd5"]]), Oe = ["data-people-user"], Le = { class: "person-name" }, Ve = {
+}, xe = /* @__PURE__ */ W(Te, [["__scopeId", "data-v-c80072d8"]]), Oe = ["data-people-user"], Le = { class: "person-name" }, Ve = {
   key: 0,
   class: "person-facts",
   "data-people-removed": ""
@@ -170,7 +170,7 @@ const W = (a, h) => {
       ])) : w("", !0)
     ], 8, Oe));
   }
-}, Ne = /* @__PURE__ */ W(De, [["__scopeId", "data-v-21161250"]]), Ee = {
+}, Ne = /* @__PURE__ */ W(De, [["__scopeId", "data-v-4a453da6"]]), Ee = {
   class: "people",
   "data-library-people": ""
 }, Ue = {
@@ -257,7 +257,7 @@ const W = (a, h) => {
       ]);
     };
   }
-}, Be = /* @__PURE__ */ W(Pe, [["__scopeId", "data-v-ebd0ab68"]]), Fe = {
+}, Be = /* @__PURE__ */ W(Pe, [["__scopeId", "data-v-1c77317b"]]), Fe = {
   __name: "ShareDialog",
   emits: ["close", "shared"],
   setup(a, { emit: h }) {
@@ -321,7 +321,7 @@ const Ge = {
       }, null, 8, ["path", "added", "removed", "at", "rows"]))), 128))
     ]));
   }
-}, Ye = /* @__PURE__ */ W(Ke, [["__scopeId", "data-v-a6494d43"]]), K = { doc: "Document", sequence: "Sequence", check: "Check" }, ze = { doc: "Documents", sequence: "Sequences", check: "Checks" }, P = { update: "Update", current: "Up to date", unfollowed: "Not followed" }, se = ["doc"], Je = ["unsent", "sending", "agent", "denied", "rejected", "paused"], ne = (a) => a ? a.status === "synced" ? "current" : "update" : "unfollowed", te = (a) => ne(a) !== "update" ? "" : a.status === "removed" ? "Removed from the library" : Je.includes(a.status) ? "Changed here" : "Newer in library", F = [
+}, Ye = /* @__PURE__ */ W(Ke, [["__scopeId", "data-v-4ed17c46"]]), K = { doc: "Document", sequence: "Sequence", check: "Check" }, ze = { doc: "Documents", sequence: "Sequences", check: "Checks" }, P = { update: "Update", current: "Up to date", unfollowed: "Not followed" }, se = ["doc"], Je = ["unsent", "sending", "agent", "denied", "rejected", "paused"], ne = (a) => a ? a.status === "synced" ? "current" : "update" : "unfollowed", te = (a) => ne(a) !== "update" ? "" : a.status === "removed" ? "Removed from the library" : Je.includes(a.status) ? "Changed here" : "Newer in library", F = [
   { key: "kind", label: "Type", options: Object.entries(K), get: (a) => a.row.share },
   { key: "state", label: "State", options: Object.entries(P), get: (a) => a.state }
 ];
@@ -479,7 +479,7 @@ const Ze = {
       _: 1
     }, 8, ["tab", "title", "number", "abstract", "tabs", "facts"]));
   }
-}, nt = /* @__PURE__ */ W(st, [["__scopeId", "data-v-a44b2241"]]), ot = {
+}, nt = /* @__PURE__ */ W(st, [["__scopeId", "data-v-7c3e1afd"]]), ot = {
   key: 0,
   class: "failure",
   role: "alert",
@@ -611,7 +611,7 @@ const Ze = {
       })) : w("", !0)
     ], 64));
   }
-}, ae = /* @__PURE__ */ W(mt, [["__scopeId", "data-v-13a6a680"]]), vt = {
+}, ae = /* @__PURE__ */ W(mt, [["__scopeId", "data-v-86bffdc6"]]), vt = {
   class: "teams",
   "data-teams": ""
 }, pt = {
@@ -776,7 +776,7 @@ const Ze = {
       _: 1
     }));
   }
-}, Tt = /* @__PURE__ */ W(St, [["__scopeId", "data-v-0a68d8f5"]]);
+}, Tt = /* @__PURE__ */ W(St, [["__scopeId", "data-v-abe6365a"]]);
 export {
   Tt as default
 };

@@ -1,4 +1,4 @@
-if (!document.getElementById("window-styles-7ab6b64b9b5e")) { const style = document.createElement("style"); style.id = "window-styles-7ab6b64b9b5e"; style.textContent = ".plugin-guide h3[data-v-c43c5dd2]{margin:0 0 8px;color:var(--text-3);font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}.plugin-guide p[data-v-c43c5dd2],.plugin-guide li[data-v-c43c5dd2],.plugin-guide dd[data-v-c43c5dd2]{margin:0 0 12px;color:var(--text-2);font-size:12.5px}.plugin-guide dt[data-v-c43c5dd2]{font-size:12.5px;font-weight:500}.plugin-guide pre[data-v-c43c5dd2]{margin:0 0 16px;padding:10px;border-radius:6px;background:var(--hover);font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}.preview-from[data-v-e45112f7],.preview-lead[data-v-e45112f7]{margin:0 0 10px;color:var(--text-2);font-size:12.5px}.preview-row[data-v-e45112f7]{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;padding:5px 0;border-top:1px solid var(--border)}.preview-category[data-v-e45112f7]{flex:0 0 90px;color:var(--text-3);font-size:12px}.preview-command[data-v-e45112f7]{flex-basis:100%;font-size:12px;overflow-wrap:anywhere}.ask[data-v-c66b8d93]{display:flex;flex-direction:column;gap:8px}.ask-lead[data-v-c66b8d93]{margin:0 0 4px;color:var(--text-3);font-size:12.5px}.wish[data-v-c66b8d93]{padding:7px 9px;border:1px solid var(--border-2);border-radius:7px;background:var(--bg);color:var(--text);font:inherit;font-size:12.5px;resize:vertical}.wish[data-v-c66b8d93]:focus{outline:none;border-color:var(--accent)}.plugin-output-time[data-v-d48a2f91]{margin:10px 0 2px;color:var(--text-3);font-size:11px}.plugin-output[data-v-d48a2f91]{margin:0;font-size:13px;white-space:pre-wrap}.plugin-note[data-v-d48a2f91]{margin:0;color:var(--text-3);font-size:12px}.remove-lead[data-v-40655f7f]{margin:0 0 8px;color:var(--text-3);font-size:12.5px}.service-terminal[data-v-15733e57]{display:flex;flex:1;flex-direction:column;min-width:0;min-height:0;background:var(--bg-2)}.service-bar[data-v-15733e57]{flex:none;display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--raised)}.service-state[data-v-15733e57]{flex:1;min-width:0;color:var(--text-3);font-size:12px;font-variant-numeric:tabular-nums}.service-terminal[data-v-15733e57] .output-lines{flex:1;min-height:0;margin:0;padding:8px 12px;font-family:var(--mono, monospace);font-size:11.5px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}.service-failure[data-v-15733e57]{flex:none;margin:0;padding:6px 12px;color:var(--danger);font-size:12px}.runs[data-v-2a4b9489]{display:flex;flex-direction:column;gap:2px;padding-top:10px;border-top:1px solid var(--border)}.label[data-v-2a4b9489]{margin-bottom:4px;color:var(--text-4);font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}.service[data-v-2a4b9489]{display:flex;flex-direction:column;gap:1px;align-items:flex-start;box-sizing:border-box;width:100%;min-width:0;padding:5px 8px;border:0;border-radius:6px;background:none;font:inherit;text-align:left;cursor:pointer}.service[data-v-2a4b9489]:hover{background:var(--hover)}.service-name[data-v-2a4b9489],.service-state[data-v-2a4b9489]{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.service-name[data-v-2a4b9489]{color:var(--text);font-size:12.5px;font-weight:500}.service-state[data-v-2a4b9489]{color:var(--text-3);font-size:12px;font-variant-numeric:tabular-nums}.plugin-settings[data-v-be462efa]{display:flex;flex-direction:column;gap:14px}.plugin-settings-head[data-v-be462efa]{display:flex;gap:10px;align-items:center}.plugin-settings-version[data-v-be462efa]{padding:1px 7px;border-radius:6px;background:var(--chip);color:var(--text-2);font-size:11.5px}.plugin-settings-on[data-v-be462efa]{display:inline-flex;gap:8px;align-items:center;margin-left:auto;color:var(--text-3);font-size:12.5px}.plugin-settings-line[data-v-be462efa]{margin:0;color:var(--text-2);font-size:13px;line-height:1.5}.plugin-output[data-v-2825ff7b]{margin:0 0 6px;font-size:13px;white-space:pre-wrap}.plugin-note[data-v-2825ff7b]{margin:0;color:var(--text-3);font-size:12px}.plugins[data-v-634a1616]{display:flex;flex-direction:column;height:100%;min-height:0}.lead[data-v-634a1616]{margin:0;padding-top:8px;color:var(--text-3);font-size:12.5px;line-height:1.55}.asked[data-v-634a1616]{margin:0;padding:0 var(--inset);color:var(--accent-text);font-size:12.5px}.none[data-v-634a1616]{margin:0;color:var(--text-3);font-size:12.5px}.plugin-note[data-v-634a1616]{margin:0;color:var(--text-3);font-size:12px}.plugin-fault[data-v-634a1616]{margin:0;padding:0 var(--inset);color:var(--danger);font-size:12px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-0e162108d971")) { const style = document.createElement("style"); style.id = "window-styles-0e162108d971"; style.textContent = ".plugin-guide h3[data-v-abbbac67]{margin:0 0 8px;color:var(--text-3);font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}.plugin-guide p[data-v-abbbac67],.plugin-guide li[data-v-abbbac67],.plugin-guide dd[data-v-abbbac67]{margin:0 0 12px;color:var(--text-2);font-size:12.5px}.plugin-guide dt[data-v-abbbac67]{font-size:12.5px;font-weight:500}.plugin-guide pre[data-v-abbbac67]{margin:0 0 16px;padding:10px;border-radius:6px;background:var(--hover);font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}.preview-from[data-v-3d8d264a],.preview-lead[data-v-3d8d264a]{margin:0 0 10px;color:var(--text-2);font-size:12.5px}.preview-row[data-v-3d8d264a]{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;padding:5px 0;border-top:1px solid var(--border)}.preview-category[data-v-3d8d264a]{flex:0 0 90px;color:var(--text-3);font-size:12px}.preview-command[data-v-3d8d264a]{flex-basis:100%;font-size:12px;overflow-wrap:anywhere}.ask[data-v-86894412]{display:flex;flex-direction:column;gap:8px}.ask-lead[data-v-86894412]{margin:0 0 4px;color:var(--text-3);font-size:12.5px}.wish[data-v-86894412]{padding:7px 9px;border:1px solid var(--border-2);border-radius:7px;background:var(--bg);color:var(--text);font:inherit;font-size:12.5px;resize:vertical}.wish[data-v-86894412]:focus{outline:none;border-color:var(--accent)}.plugin-output-time[data-v-8f2b6bdb]{margin:10px 0 2px;color:var(--text-3);font-size:11px}.plugin-output[data-v-8f2b6bdb]{margin:0;font-size:13px;white-space:pre-wrap}.plugin-note[data-v-8f2b6bdb]{margin:0;color:var(--text-3);font-size:12px}.remove-lead[data-v-6acf2ac2]{margin:0 0 8px;color:var(--text-3);font-size:12.5px}.service-terminal[data-v-5662e6d7]{display:flex;flex:1;flex-direction:column;min-width:0;min-height:0;background:var(--bg-2)}.service-bar[data-v-5662e6d7]{flex:none;display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--raised)}.service-state[data-v-5662e6d7]{flex:1;min-width:0;color:var(--text-3);font-size:12px;font-variant-numeric:tabular-nums}.service-terminal[data-v-5662e6d7] .output-lines{flex:1;min-height:0;margin:0;padding:8px 12px;font-family:var(--mono, monospace);font-size:11.5px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}.service-failure[data-v-5662e6d7]{flex:none;margin:0;padding:6px 12px;color:var(--danger);font-size:12px}.runs[data-v-89f89c6f]{display:flex;flex-direction:column;gap:2px;padding-top:10px;border-top:1px solid var(--border)}.label[data-v-89f89c6f]{margin-bottom:4px;color:var(--text-4);font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}.service[data-v-89f89c6f]{display:flex;flex-direction:column;gap:1px;align-items:flex-start;box-sizing:border-box;width:100%;min-width:0;padding:5px 8px;border:0;border-radius:6px;background:none;font:inherit;text-align:left;cursor:pointer}.service[data-v-89f89c6f]:hover{background:var(--hover)}.service-name[data-v-89f89c6f],.service-state[data-v-89f89c6f]{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.service-name[data-v-89f89c6f]{color:var(--text);font-size:12.5px;font-weight:500}.service-state[data-v-89f89c6f]{color:var(--text-3);font-size:12px;font-variant-numeric:tabular-nums}.plugin-settings[data-v-67da3069]{display:flex;flex-direction:column;gap:14px}.plugin-settings-head[data-v-67da3069]{display:flex;gap:10px;align-items:center}.plugin-settings-version[data-v-67da3069]{padding:1px 7px;border-radius:6px;background:var(--chip);color:var(--text-2);font-size:11.5px}.plugin-settings-on[data-v-67da3069]{display:inline-flex;gap:8px;align-items:center;margin-left:auto;color:var(--text-3);font-size:12.5px}.plugin-settings-line[data-v-67da3069]{margin:0;color:var(--text-2);font-size:13px;line-height:1.5}.plugin-output[data-v-b22c9986]{margin:0 0 6px;font-size:13px;white-space:pre-wrap}.plugin-note[data-v-b22c9986]{margin:0;color:var(--text-3);font-size:12px}.plugins[data-v-a39ac206]{display:flex;flex-direction:column;height:100%;min-height:0}.lead[data-v-a39ac206]{margin:0;padding-top:8px;color:var(--text-3);font-size:12.5px;line-height:1.55}.asked[data-v-a39ac206]{margin:0;padding:0 var(--inset);color:var(--accent-text);font-size:12.5px}.none[data-v-a39ac206]{margin:0;color:var(--text-3);font-size:12.5px}.plugin-note[data-v-a39ac206]{margin:0;color:var(--text-3);font-size:12px}.plugin-fault[data-v-a39ac206]{margin:0;padding:0 var(--inset);color:var(--danger);font-size:12px}\n"; document.head.appendChild(style); }
 import { openBlock as o, createBlock as C, unref as p, withCtx as v, createElementVNode as s, createTextVNode as h, toDisplayString as m, createElementBlock as f, Fragment as j, renderList as _, createCommentVNode as $, createVNode as k, useModel as se, withModifiers as re, withDirectives as _e, vModelText as Ne, mergeModels as xe, ref as S, computed as q, watch as ue } from "vue";
 import { Dialog as T, Btn as O, TextInput as de, useWindow as pe, usePoll as Re, OutputLines as Ee, Switch as ce, CardPage as Ue, ActionsMenu as le, Skeleton as De, Dashboard as Le, copying as qe, runChanged as Fe } from "@journal/window-kit";
 import { useSettingsDraft as Ve, SettingsScreen as Je, ChangeFoot as Me } from "@journal/setting-components";
@@ -183,7 +183,7 @@ const P = (a, t) => {
       _: 1
     }));
   }
-}, Ye = /* @__PURE__ */ P(Ke, [["__scopeId", "data-v-c43c5dd2"]]), Xe = { "data-plugin-preview": "" }, ze = { class: "preview-from" }, Qe = {
+}, Ye = /* @__PURE__ */ P(Ke, [["__scopeId", "data-v-abbbac67"]]), Xe = { "data-plugin-preview": "" }, ze = { class: "preview-from" }, Qe = {
   key: 0,
   class: "preview-lead"
 }, Ze = ["data-preview-category"], et = { class: "preview-category" }, tt = { class: "preview-label" }, nt = { class: "preview-command" }, ie = "wrong key", at = {
@@ -236,7 +236,7 @@ const P = (a, t) => {
       _: 1
     }, 8, ["title"]));
   }
-}, st = /* @__PURE__ */ P(at, [["__scopeId", "data-v-e45112f7"]]), lt = {
+}, st = /* @__PURE__ */ P(at, [["__scopeId", "data-v-3d8d264a"]]), lt = {
   __name: "PluginMakeDialog",
   props: {
     repository: { type: String, default: "" },
@@ -303,7 +303,7 @@ const P = (a, t) => {
       _: 1
     }));
   }
-}, it = /* @__PURE__ */ P(lt, [["__scopeId", "data-v-c66b8d93"]]), ot = { "data-plugin-record-body": "" }, rt = {
+}, it = /* @__PURE__ */ P(lt, [["__scopeId", "data-v-86894412"]]), ot = { "data-plugin-record-body": "" }, rt = {
   key: 0,
   class: "plugin-note",
   "data-plugin-services": ""
@@ -354,7 +354,7 @@ const P = (a, t) => {
       _: 1
     }, 8, ["title"]));
   }
-}, gt = /* @__PURE__ */ P(ct, [["__scopeId", "data-v-d48a2f91"]]), vt = {
+}, gt = /* @__PURE__ */ P(ct, [["__scopeId", "data-v-8f2b6bdb"]]), vt = {
   __name: "PluginRemoveDialog",
   props: { title: { type: String, required: !0 } },
   emits: ["close", "remove"],
@@ -401,7 +401,7 @@ const P = (a, t) => {
       _: 1
     }, 8, ["title"]));
   }
-}, ft = /* @__PURE__ */ P(vt, [["__scopeId", "data-v-40655f7f"]]), mt = {
+}, ft = /* @__PURE__ */ P(vt, [["__scopeId", "data-v-6acf2ac2"]]), mt = {
   class: "service-terminal",
   "data-plugin-service-terminal": ""
 }, ht = {
@@ -468,7 +468,7 @@ const P = (a, t) => {
       }, null, 8, ["lines"])
     ]));
   }
-}, $t = /* @__PURE__ */ P(bt, [["__scopeId", "data-v-15733e57"]]), St = {
+}, $t = /* @__PURE__ */ P(bt, [["__scopeId", "data-v-5662e6d7"]]), St = {
   key: 0,
   class: "runs",
   "data-plugin-runs": ""
@@ -509,7 +509,7 @@ const P = (a, t) => {
       }, 8, ["title"])) : $("", !0)
     ], 64));
   }
-}, Tt = /* @__PURE__ */ P(At, [["__scopeId", "data-v-2a4b9489"]]);
+}, Tt = /* @__PURE__ */ P(At, [["__scopeId", "data-v-89f89c6f"]]);
 function Z(a) {
   const { value: t } = a, u = typeof t == "string" && /^[[{"]|^(true|false)$/.test(t) ? JSON.parse(t) : t;
   return Array.isArray(u) ? u.join(`
@@ -609,7 +609,7 @@ const Ut = (a) => a.filter((t) => t.type === ge), Dt = {
       _: 1
     }, 8, ["title"]));
   }
-}, Gt = /* @__PURE__ */ P(Wt, [["__scopeId", "data-v-be462efa"]]), Bt = { "data-plugin-upgrade-body": "" }, Ht = { class: "plugin-note" }, Kt = {
+}, Gt = /* @__PURE__ */ P(Wt, [["__scopeId", "data-v-67da3069"]]), Bt = { "data-plugin-upgrade-body": "" }, Ht = { class: "plugin-note" }, Kt = {
   key: 0,
   class: "plugin-note"
 }, Yt = {
@@ -657,7 +657,7 @@ const Ut = (a) => a.filter((t) => t.type === ge), Dt = {
       _: 1
     }, 8, ["title"]));
   }
-}, Xt = /* @__PURE__ */ P(Yt, [["__scopeId", "data-v-2825ff7b"]]), zt = {
+}, Xt = /* @__PURE__ */ P(Yt, [["__scopeId", "data-v-b22c9986"]]), zt = {
   class: "plugins",
   "data-plugins": ""
 }, Qt = {
@@ -982,7 +982,7 @@ const Ut = (a) => a.filter((t) => t.type === ge), Dt = {
       }, 8, ["title"])) : $("", !0)
     ]));
   }
-}, pn = /* @__PURE__ */ P(on, [["__scopeId", "data-v-634a1616"]]);
+}, pn = /* @__PURE__ */ P(on, [["__scopeId", "data-v-a39ac206"]]);
 export {
   pn as default
 };

@@ -15,6 +15,6 @@ class DocumentBodyWindow(Window):
     place = WindowPlace.SECTION
     icon = WindowIcon.DOCUMENT
     skeleton = [SkeletonPart.line()]
-    reads = ["doc inspect", "report inspect", "doc comments", "report comments", "doc revisions", "doc revision", "question list"]
-    runs = ["doc comment", "report comment", "doc close", "doc edit", "report edit"]
+    reads = ["doc inspect", "report inspect", "doc comments", "report comments", "doc revisions", "doc revision", "question list", "link list", "agent people"]
+    runs = ["doc comment", "report comment", "doc close", "doc settle", "report close", "doc edit", "report edit"]
     events = ["doc.*", "report.*", "question.*"]

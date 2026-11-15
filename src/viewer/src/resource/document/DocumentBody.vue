@@ -2,23 +2,29 @@
 import {computed, inject, nextTick, ref, watch} from "vue";
 import {INSPECTOR_ACTIONS} from "../../../kit/windowContextKey.js";
 import {render} from "../../text/index.js";
-import Btn from "../../kit/Btn.vue";
+import ActionsMenu from "../../../kit/ActionsMenu.vue";
 import DropList from "../../kit/DropList.vue";
 import Skeleton from "../../kit/Skeleton.vue";
 import TimeAgo from "../../../kit/TimeAgo.vue";
 import {useMeasuredWidth} from "../../composables/measuredWidth.js";
+import InspectorLinks from "../../kit/InspectorLinks.vue";
+import {copying} from "../../domain/contextItems.js";
+import {peek} from "../../route.js";
+import {peopleOf} from "../rowPeople.js";
 import CommentCard from "./CommentCard.vue";
 import CommentComposer from "./CommentComposer.vue";
 import DocumentSidebar from "./DocumentSidebar.vue";
 import DocumentEditDialog from "./DocumentEditDialog.vue";
 import {useTextComments} from "../../composables/textComments.js";
 import DocumentRevisions from "./DocumentRevisions.vue";
+import DocumentSettleDialog from "./DocumentSettleDialog.vue";
 import DocumentText from "./DocumentText.vue";
 import {numbered} from "./documentMarks.js";
 
-// the body of a document or a report: its tabs, its text with the comments beside it, and at the foot the comment box; the head, the actions and the links belong to the shared inspector layout
+// the body of a document or a report: its tabs (Text with the comments beside it, Revisions, Links, Details), its Actions menu, and at the foot the comment box; the head belongs to the shared inspector layout.
+// textOnly leaves out Links, Details and the Actions menu, for a page that draws them around the body itself
 const NARROW_WIDTH = 760;
-const props = defineProps({term: {type: String, required: true}, id: {type: Number, required: true}, read: {type: Function, required: true}});
+const props = defineProps({term: {type: String, required: true}, id: {type: Number, required: true}, read: {type: Function, required: true}, textOnly: Boolean});
 const actionBar = inject(INSPECTOR_ACTIONS, ref(null));
 const panel = ref(null);
 const width = useMeasuredWidth(panel);
@@ -37,6 +43,8 @@ const lost = ref([]);
 const selection = ref(null);
 const draft = ref("");
 const editing = ref(false);
+const settling = ref(false);
+const creator = ref("");
 const words = ref(null);
 const composer = ref(null);
 let reading = 0;
@@ -48,7 +56,15 @@ const annotationTotal = computed(() => notesMode.value === "questions" ? annotat
 const html = computed(() => (row.value?.body ? render(row.value.body, {env: "", rowNames: false, document: true}) : ""));
 const chapters = computed(() => (row.value?.body ?? "").split("\n").filter((line) => /^#{1,4} /.test(line)).map((line, position) => ({key: String(position), value: position, label: line.replace(/^#+ /, "")})));
 const inlineComment = computed(() => comments.value.find((comment) => comment.id === inline.value));
-const stateLabel = computed(() => (row.value?.close_reason ? "Closed" : "Open"));
+const closed = computed(() => Boolean(row.value?.close_reason));
+const stateLabel = computed(() => (closed.value ? "Closed" : "Open"));
+const environment = new URLSearchParams(location.search).get("environment") ?? "";
+const menu = computed(() => [
+    {label: "Edit", group: "own", run: () => (editing.value = true)},
+    ...(closed.value ? [] : [{label: "Settle", group: "own", run: () => (settling.value = true)}]),
+    {label: "Documents", group: "open", run: () => window.open(`?page=documents.page&environment=${encodeURIComponent(environment)}`, "_blank", "noopener")},
+    {label: "Copy command", group: "copy", run: ({say}) => copying(`journal ${props.term} show ${props.id}`, "the command", say)},
+]);
 const shownTab = computed(() => (tab.value === "comments" && !narrow.value ? "text" : tab.value));
 const rowsOf = (answer) => (answer.ok ? answer.value.rows ?? [] : []);
 
@@ -58,9 +74,11 @@ async function load() {
     if (turn !== reading) return;
     failure.value = answer.ok ? "" : answer.error;
     row.value = answer.ok ? answer.value : null;
+    const people = answer.ok && !props.textOnly ? await peopleOf(props.read, row.value) : {creator: ""};
     const questionsAnswer = await props.read(["question", "list", "--all", "--row", `${props.term}:${props.id}`]);
     const revisionsAnswer = props.term === "doc" ? await props.read(["doc", "revisions", String(props.id)]) : null;
     if (turn !== reading) return;
+    creator.value = people.creator;
     questions.value = rowsOf(questionsAnswer);
     questionFailure.value = questionsAnswer.ok ? "" : questionsAnswer.error;
     revisions.value = revisionsAnswer ? rowsOf(revisionsAnswer) : [];
@@ -108,6 +126,7 @@ async function showInText(id) {
 
 function saved() {
     editing.value = false;
+    settling.value = false;
     load();
 }
 
@@ -134,7 +153,9 @@ watch(notesMode, () => {
         <template v-if="row">
             <Teleport :to="actionBar" :disabled="!actionBar">
                 <span :class="['document-actions', {placed: actionBar}]" data-document-actions>
-                    <Btn bordered data-text-edit @click="editing = true">Edit</Btn>
+                    <template v-if="!textOnly">
+                        <ActionsMenu :items="menu" :head="row.title" />
+                    </template>
                     <template v-if="shownTab === 'text' && chapters.length > 1">
                         <DropList :label="narrow ? '' : 'Chapters'" icon="list" :items="chapters" data-text-chapters @pick="words?.showHeading($event.value)" />
                     </template>
@@ -152,6 +173,10 @@ watch(notesMode, () => {
             <template v-if="term === 'doc'">
                 <button type="button" :class="['document-tab-button', {on: shownTab === 'revisions'}]" data-document-tab="revisions" @click="tab = 'revisions'">Revisions <em>{{ revisions.length || "" }}</em></button>
             </template>
+            <template v-if="!textOnly">
+                <button type="button" :class="['document-tab-button', {on: shownTab === 'links'}]" data-document-tab="links" @click="tab = 'links'">Links</button>
+                <button type="button" :class="['document-tab-button', {on: shownTab === 'details'}]" data-document-tab="details" @click="tab = 'details'">Details</button>
+            </template>
         </nav>
         <div class="document-body">
             <template v-if="failure">
@@ -163,6 +188,24 @@ watch(notesMode, () => {
             <template v-else-if="shownTab === 'revisions'">
                 <DocumentRevisions :id="id" :revisions="revisions" :text="row.body" :read="read" :editing="row.open_author_id !== null && row.open_author_id !== undefined" @close-revision="closeRevision" @restored="load" />
             </template>
+            <template v-else-if="shownTab === 'links'">
+                <div class="document-pane" data-document-links>
+                    <InspectorLinks :model="term" :id="id" :read="read" open @open="peek($event.table, $event.id)" />
+                </div>
+            </template>
+            <template v-else-if="shownTab === 'details'">
+                <dl class="document-details" data-resource-fields>
+                    <template v-if="creator">
+                        <dt>By</dt><dd>{{ creator }}</dd>
+                    </template>
+                    <dt>State</dt><dd>{{ stateLabel }}</dd>
+                    <template v-if="row.close_reason">
+                        <dt>Why settled</dt><dd>{{ row.close_reason }}</dd>
+                    </template>
+                    <dt>Created</dt><dd><TimeAgo :at="row.created_at" /></dd>
+                    <dt>Updated</dt><dd><TimeAgo :at="row.updated_at" /></dd>
+                </dl>
+            </template>
             <template v-else-if="shownTab === 'comments'">
                 <DocumentSidebar v-model:mode="notesMode" tab :comments="comments" :questions="questions" :hot="hot" :lost="lost" :failure="questionFailure" :read="read" :comment-more="Boolean(textComments.nextPage.value)" :comment-loading="textComments.loading.value" :comment-failure="textComments.failure.value" :comment-total="textComments.total.value" @more="textComments.loadMore" @show="showInText" @changed="load" />
             </template>
@@ -173,15 +216,6 @@ watch(notesMode, () => {
                             <CommentCard :comment="inlineComment" hot @show="showInText(inlineComment.id)" />
                         </template>
                     </template>
-                    <dl class="document-details" data-resource-fields>
-                        <h4>Details</h4>
-                        <dt>State</dt><dd>{{ stateLabel }}</dd>
-                        <template v-if="row.close_reason">
-                            <dt>Why closed</dt><dd>{{ row.close_reason }}</dd>
-                        </template>
-                        <dt>Created</dt><dd><TimeAgo :at="row.created_at" /></dd>
-                        <dt>Updated</dt><dd><TimeAgo :at="row.updated_at" /></dd>
-                    </dl>
                 </DocumentText>
                 <template v-if="!narrow && notesOpen">
                     <DocumentSidebar v-model:mode="notesMode" :comments="comments" :questions="questions" :hot="hot" :lost="lost" :failure="questionFailure" :read="read" :comment-more="Boolean(textComments.nextPage.value)" :comment-loading="textComments.loading.value" :comment-failure="textComments.failure.value" :comment-total="textComments.total.value" @more="textComments.loadMore" @show="showInText" @changed="load" />
@@ -190,6 +224,9 @@ watch(notesMode, () => {
         </div>
         <template v-if="row">
             <CommentComposer ref="composer" v-model:draft="draft" :selection="selection" :send="send" :narrow="narrow" @clear="selection = null" />
+        </template>
+        <template v-if="settling">
+            <DocumentSettleDialog :term="term" :id="id" :read="read" @close="settling = false" @saved="saved" />
         </template>
         <template v-if="editing">
             <DocumentEditDialog :term="term" :id="id" :row="row" :read="read" @close="editing = false" @saved="saved" />
@@ -273,21 +310,21 @@ watch(notesMode, () => {
 
 .document-details {
     display: grid;
+    flex: 1;
     grid-template-columns: 110px 1fr;
     gap: 4px 12px;
+    align-content: start;
     max-width: 660px;
-    margin: 26px 0 0;
-    padding-top: 14px;
-    border-top: 1px solid var(--border);
+    margin: 0;
+    padding: 20px;
     font-size: 12px;
 }
 
-.document-details h4 {
-    grid-column: 1 / -1;
-    margin: 0 0 4px;
-    color: var(--text-3);
-    font-size: 12px;
-    font-weight: 600;
+.document-pane {
+    flex: 1;
+    min-width: 0;
+    overflow-y: auto;
+    padding: 12px 20px;
 }
 
 .document-details dt {

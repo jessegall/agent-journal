@@ -1,6 +1,6 @@
-if (!document.getElementById("window-styles-c4a725096007")) { const style = document.createElement("style"); style.id = "window-styles-c4a725096007"; style.textContent = ".note[data-v-f65ffe9a]{margin:0;color:var(--text-3);font-size:12.5px}.checked[data-v-f65ffe9a]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
-import { openBlock as i, createBlock as p, unref as s, ref as w, computed as C, watch as V, createElementBlock as v, Fragment as L, createVNode as b, withCtx as m, createCommentVNode as g, createTextVNode as f, toDisplayString as E } from "vue";
-import { copying as G, useWindow as F, CreateDialog as O, added as K, CardPage as W, ActionsMenu as U, Btn as y, Skeleton as z, TimeAgo as H, removed as j } from "@journal/window-kit";
+if (!document.getElementById("window-styles-a3d2122006a3")) { const style = document.createElement("style"); style.id = "window-styles-a3d2122006a3"; style.textContent = ".note[data-v-3395a19a]{margin:0;color:var(--text-3);font-size:12.5px}.checked[data-v-3395a19a]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+import { openBlock as i, createBlock as p, unref as s, ref as w, computed as C, watch as V, createElementBlock as v, Fragment as L, createVNode as b, withCtx as m, createCommentVNode as g, createTextVNode as y, toDisplayString as E } from "vue";
+import { copying as G, useWindow as F, CreateDialog as O, added as K, CardPage as W, ActionsMenu as U, Btn as f, Skeleton as z, TimeAgo as H, removed as j } from "@journal/window-kit";
 const S = "Connected", I = "Failed", N = "Suggested", h = "Installed", J = [{ key: "status", label: "State", options: [[S, S], [I, I]], get: (e) => e.status }], Q = (e) => e.url || [e.command, ...e.args].join(" "), X = (e) => (e ?? "").replace(/:\s*journal .*$/, ""), Y = (e, a) => e.standing === "needs its key" || /^(needs|missing)/.test(a ?? "");
 function Z(e, a) {
   const o = Y(e, a);
@@ -119,30 +119,30 @@ const ie = {
         "data-integrations": ""
       }, {
         primary: m(() => [
-          b(s(y), {
+          b(s(f), {
             small: "",
             variant: "primary",
             "data-mcp-new": "",
             onClick: n[0] || (n[0] = (l) => d.value = !0)
           }, {
             default: m(() => [...n[3] || (n[3] = [
-              f("Add server", -1)
+              y("Add server", -1)
             ])]),
             _: 1
           })
         ]),
         actions: m(() => [
           k.value ? (i(), v("span", ue, [
-            n[4] || (n[4] = f("Checked ", -1)),
+            n[4] || (n[4] = y("Checked ", -1)),
             b(s(H), { at: k.value }, null, 8, ["at"])
           ])) : g("", !0),
-          b(s(y), {
+          b(s(f), {
             small: "",
             "data-mcp-refresh": "",
             onClick: $
           }, {
             default: m(() => [...n[5] || (n[5] = [
-              f("Refresh", -1)
+              y("Refresh", -1)
             ])]),
             _: 1
           })
@@ -160,7 +160,7 @@ const ie = {
           _.value && l.group === s(h) ? (i(), v("p", ge, E(_.value), 1)) : g("", !0)
         ]),
         foot: m(({ item: l }) => [
-          l.group === s(N) ? (i(), p(s(y), {
+          l.group === s(N) ? (i(), p(s(f), {
             key: 0,
             small: "",
             bordered: "",
@@ -168,10 +168,10 @@ const ie = {
             onClick: (P) => A(l.row)
           }, {
             default: m(() => [...n[6] || (n[6] = [
-              f("Install", -1)
+              y("Install", -1)
             ])]),
             _: 1
-          }, 8, ["onClick"])) : l.fault ? (i(), p(s(y), {
+          }, 8, ["onClick"])) : l.fault ? (i(), p(s(f), {
             key: 1,
             small: "",
             bordered: "",
@@ -179,10 +179,10 @@ const ie = {
             onClick: $
           }, {
             default: m(() => [...n[7] || (n[7] = [
-              f("Check", -1)
+              y("Check", -1)
             ])]),
             _: 1
-          })) : l.row.auth === "oauth" ? (i(), p(s(y), {
+          })) : l.row.auth === "oauth" ? (i(), p(s(f), {
             key: 2,
             small: "",
             bordered: "",
@@ -190,7 +190,7 @@ const ie = {
             onClick: (P) => x(l.row)
           }, {
             default: m(() => [...n[8] || (n[8] = [
-              f("Sign in", -1)
+              y("Sign in", -1)
             ])]),
             _: 1
           }, 8, ["onClick"])) : g("", !0)
@@ -215,7 +215,7 @@ const ie = {
       }, null, 8, ["row"])) : g("", !0)
     ], 64));
   }
-}, ye = /* @__PURE__ */ ce(ke, [["__scopeId", "data-v-f65ffe9a"]]);
+}, fe = /* @__PURE__ */ ce(ke, [["__scopeId", "data-v-3395a19a"]]);
 export {
-  ye as default
+  fe as default
 };

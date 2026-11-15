@@ -8,4 +8,4 @@ class ReportInspector(InspectorDeclaration):
 
     @classmethod
     def declared(cls) -> InspectorDeclaration:
-        return text_inspector(Report, "report", "report close", "Report")
+        return text_inspector(Report, "report", "Report")

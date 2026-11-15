@@ -27,22 +27,22 @@ async function drawn(bar) {
     return element;
 }
 
-test("inside an inspector, Edit and Chapters join the action bar and leave no row of their own", async () => {
+test("inside an inspector, the Actions menu and Chapters join the action bar and leave no row of their own", async () => {
     const bar = document.createElement("div");
     document.body.append(bar);
     bar.append(Object.assign(document.createElement("button"), {textContent: "Mark the report as needing no action"}));
     const element = await drawn(bar);
-    expect(bar.querySelector("[data-text-edit]")).not.toBeNull();
+    expect(bar.querySelector("[data-actions-menu]")).not.toBeNull();
     expect(bar.querySelector("[data-text-chapters]")).not.toBeNull();
     expect(bar.querySelectorAll("button, [data-drop-head]").length).toBeGreaterThanOrEqual(3);
-    expect(element.querySelector("[data-text-edit]")).toBeNull();
+    expect(element.querySelector("[data-actions-menu]")).toBeNull();
     expect(element.querySelector("[data-document-actions]")).toBeNull();
 });
 
-test("with no action bar around it, the body keeps Edit and Chapters in one row of its own", async () => {
+test("with no action bar around it, the body keeps the Actions menu and Chapters in one row of its own", async () => {
     const element = await drawn(null);
     const row = element.querySelector("[data-document-actions]");
-    expect(row.querySelector("[data-text-edit]")).not.toBeNull();
+    expect(row.querySelector("[data-actions-menu]")).not.toBeNull();
     expect(row.querySelector("[data-text-chapters]")).not.toBeNull();
 });
 
