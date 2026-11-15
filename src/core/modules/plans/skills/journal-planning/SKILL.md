@@ -21,16 +21,14 @@ and finish it without having to decide anything for itself.
 - Phases are done in order, but the tasks inside a phase, and the waits between phases, run in whatever order the work
   allows: a plan is not a chain. The phase order already keeps a later phase back, so never make a task wait only to keep
   the list in order. A task waits on another only when it truly needs that task's result.
-- For every task, go down this ladder and stop at the first yes:
-  1. Does it need code, a file, a table, a command or a decision that another task makes? It depends on exactly that
-     task: `journal task depend <task> --on <other>`. Name the task that makes it, never simply the task above it.
-  2. Does it need several such pieces? It depends on each of those tasks, and on nothing else.
-  3. Would it change the same lines as another task of the same phase, so the two would clash if worked at once? It
-     depends on one of them, and says so in its brief.
-  4. Otherwise it waits on nothing: `journal task waits-on-nothing <task> --why "<why>"`, for example "phase order is
-     enough" or "a separate file". Tasks that wait on nothing can be worked at the same time.
-  Every task but the plan's first says one or the other, or `journal plan ready` refuses the plan. A loop of waits is
-  always refused.
+- For every task, ask both questions; each yes adds its dependencies with `journal task depend <task> --on <other>`:
+  1. Does it need code, a file, a table, a command or a decision that other tasks make? It depends on each task that
+     makes one of those pieces, and on no other. Name the tasks that make them, never simply the task above it.
+  2. Would it change the same lines as another task of the same phase, so the two would clash if worked at once? It
+     also depends on one of them, and says so in its brief.
+  When neither question says yes, it waits on nothing: `journal task waits-on-nothing <task> --why "<why>"`, for example
+  "phase order is enough" or "a separate file". Tasks that wait on nothing can be worked at the same time. Every task but
+  the plan's first says one or the other, or `journal plan ready` refuses the plan. A loop of waits is always refused.
 - Point at code with an excerpt or `file:line`. Never put whole code in a task: the worker writes the code.
 - Order the phases so each one leaves the project working, and put a checkpoint where the user should look.
 - A phase runs without tests until its end, so keep phases small: a mistake early in a phase is found only there.
