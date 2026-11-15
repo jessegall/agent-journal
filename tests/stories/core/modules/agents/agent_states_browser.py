@@ -8,4 +8,4 @@ def test_the_open_agent_inspector_shows_the_states_the_agent_is_in_with_their_st
     story = new_story(fixture=UserBuilder)
     story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
     with server_story(story) as server:
-        expect_browser(server, "agentStates.browser.mjs", [str(story.agent.id), "tasks.main-agent"])
+        expect_browser(server, "agentStates.browser.mjs", [str(story.agent.id), "Stopped"])

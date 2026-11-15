@@ -1,7 +1,7 @@
 from engine.helper_type.command_allow_list import CommandAllowList
 from engine.enums.access import Access
 from engine.agent_machine.driver import Driver
-from engine.agent_machine.needs.rank_order import RankOrder
+from core.modules.drivers.drivers.helper.helper_agent_driver import HelperAgentDriver
 from engine.enums.work_stop import WorkStop
 from engine.helper_type.helper_type import HelperType
 from core.modules.helpers.types.helper import Helper
@@ -86,7 +86,8 @@ class ClerkDriver(Driver):
     name = "coding.clerk"
     suite = CodingSuite.name
     agent_type = "clerk"
-    rank_order = RankOrder((), ())
+    gathers = [HelperAgentDriver]
+    rank_order = HelperAgentDriver.rank_order
     work_stop = WorkStop.HANDOVER
 
 

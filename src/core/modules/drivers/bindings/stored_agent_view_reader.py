@@ -21,6 +21,7 @@ from engine.provider.providers import Providers
 from engine.agent_machine.stepping.grant import Grant
 from engine.agent_machine.stepping.grant_ledger import GrantLedger
 from engine.agent_machine.driver import CORE_SUITE, Driver
+from core.modules.drivers.support.suite_choice import SuiteChoice
 from engine.agent_machine.needs.agent_reference import AgentReference
 from engine.agent_machine.needs.ended_fact import EndedFact
 from engine.agent_machine.needs.fact import Fact
@@ -58,10 +59,10 @@ class StoredAgentViewReader(AgentViewReader):
     holds none."""
 
     def __init__(self, agents: AgentRows, queries: Queries, settings: SettingValues, hook_calls: HookCallQuery, finder: ModuleFinder, clock: Clock, grant_store: GrantLedger, providers: Providers, judgement: BlockJudgement,
-                 skips: RefusalSkips, open_blocks: OpenBlockRows, stacks: AnswerBasisRows, types: HelperTypeBook) -> None:
+                 skips: RefusalSkips, open_blocks: OpenBlockRows, stacks: AnswerBasisRows, types: HelperTypeBook, choice: SuiteChoice) -> None:
         self.providers, self.skips, self.open_blocks, self.stacks, self.types = providers, skips, open_blocks, stacks, types
         self.agents, self.queries, self.settings, self.hook_calls, self.finder, self.clock = agents, queries, settings, hook_calls, finder, clock
-        self.grant_store, self.judgement = grant_store, judgement
+        self.grant_store, self.judgement, self.choice = grant_store, judgement, choice
 
     def read(self, agent_id: int, question: Question) -> AgentView:
         agent = self.agents.find(agent_id)
@@ -141,10 +142,16 @@ class StoredAgentViewReader(AgentViewReader):
             return None
         return Escalation(row.id, row.escalation_type, row.responder, row.block_ids, tuple(NeedKey("Working", None, key) for key in row.work_keys), row.refusal_count)
 
-    # a helper type with no driver of its own is driven by the driver of the type it is built on, as the registry finds it
+    # the environment's suite names the driver, a helper type with no driver of its own taking the one of the type it is
+    # built on; with no suite chosen, the core driver of that type drives
     def driver(self, agent_type: str) -> type[Driver]:
+        drivers = [driver for module in self.finder.modules() for driver in module.agent_drivers]
+        chosen = self.choice.driver(agent_type)
+        named = [driver for driver in drivers if chosen is not None and driver.name == chosen.name]
+        if named:
+            return named[0]
         for type_key in self.types.type_keys(agent_type):
-            drivers = [driver for module in self.finder.modules() for driver in module.agent_drivers if driver.agent_type == type_key]
-            if drivers:
-                return sorted(drivers, key=lambda driver: driver.suite == CORE_SUITE)[0]
+            core = [driver for driver in drivers if driver.agent_type == type_key and driver.suite == CORE_SUITE]
+            if core:
+                return core[0]
         raise LookupError(f"no driver drives {agent_type} or a type it is built on")

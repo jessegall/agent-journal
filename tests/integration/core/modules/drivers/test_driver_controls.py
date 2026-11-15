@@ -14,7 +14,7 @@ def test_a_new_driver_shows_its_contract_and_its_compiled_table(played):
 
 def test_an_unknown_driver_is_refused_with_the_drivers_there_are(played):
     story = played(BuilderStarted)
-    assert "the drivers are coding.main, coding.merger, coding.worker, core.helper, core.main" in output(story, "driver table coding.robot")
+    assert "the drivers are coding.helper, coding.main, coding.merger, coding.worker, core.helper, core.main" in output(story, "driver table coding.robot")
 
 
 def test_the_main_agent_may_not_pop_a_frame(played):

@@ -1,7 +1,7 @@
 from engine.helper_type.command_allow_list import CommandAllowList
 from core.modules.helpers.types.helper import Helper
 from engine.agent_machine.driver import Driver
-from engine.agent_machine.needs.rank_order import RankOrder
+from core.modules.drivers.drivers.helper.helper_agent_driver import HelperAgentDriver
 from engine.enums.work_stop import WorkStop
 from engine.helper_type.helper_type import HelperType
 from engine.module.module import Module
@@ -21,7 +21,8 @@ class ScribeDriver(Driver):
     name = "scribe.scribe"
     suite = SCRIBE_SUITE
     agent_type = Scribe.key
-    rank_order = RankOrder((), ())
+    gathers = [HelperAgentDriver]
+    rank_order = HelperAgentDriver.rank_order
     work_stop = WorkStop.HANDOVER
 
 

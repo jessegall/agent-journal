@@ -3470,7 +3470,6 @@
     "fields": [
       "receiver_id",
       "session_agent_id",
-      "slowest_rule",
       "timeout_count"
     ]
   },
@@ -3483,7 +3482,6 @@
     "fields": [
       "receiver_id",
       "session_agent_id",
-      "slowest_rule",
       "timeout_count"
     ]
   },
@@ -3496,7 +3494,6 @@
     "fields": [
       "receiver_id",
       "session_agent_id",
-      "slowest_rule",
       "timeout_count"
     ]
   },

@@ -4,7 +4,7 @@ from engine.agent.agent_roster import AgentRoster
 from engine.helper_type.helper_type import HelperType
 from core.modules.helpers.types.helper import Helper
 from engine.agent_machine.driver import Driver
-from engine.agent_machine.needs.rank_order import RankOrder
+from core.modules.drivers.drivers.helper.helper_agent_driver import HelperAgentDriver
 from engine.enums.work_stop import WorkStop
 from engine.module.suite import Suite
 from engine.module.module import Module
@@ -125,7 +125,8 @@ class UnknownDriver(Driver):
     name = "sample.unknown"
     suite = SampleSuite.name
     agent_type = "missing-driver-role"
-    rank_order = RankOrder((), ())
+    gathers = [HelperAgentDriver]
+    rank_order = HelperAgentDriver.rank_order
     work_stop = WorkStop.HANDOVER
 
 

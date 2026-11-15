@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from engine.enums.agent_role import AgentRole
+from engine.enums.actor_type import ActorType
 from engine.command.command import Command
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -10,7 +11,8 @@ from engine.database.migration import Migration
 from engine.enums.command_category import CommandCategory
 from engine.enums.command_effect import CommandEffect
 from engine.agent_machine.driver import Driver
-from engine.agent_machine.needs.rank_order import RankOrder
+from core.modules.drivers.drivers.main.main_agent_driver import MainAgentDriver
+from engine.enums.responder import Responder
 from engine.enums.work_stop import WorkStop
 from engine.module.suite import Suite
 from engine.guard.guard import Guard
@@ -92,11 +94,13 @@ class SampleNumberHandler(Handler[SampleNumber, int]):
 
 
 class LeadLockGuard(Guard[Created[EditLock]]):
-    """An agent the lead drives makes no edit lock; a user and other agents may."""
+    """An agent makes no edit lock; a user may."""
 
     name = "samples.lead-lock-guard"
 
     def check(self, event: Created[EditLock], context: Context) -> None:
+        if context.actor.type is not ActorType.AGENT:
+            return None
         raise Refusal("the lead makes no edit lock itself", "a user makes one with journal edit-lock make <agent>")
 
 
@@ -112,8 +116,10 @@ class Lead(Driver):
     name = LEAD
     suite = SampleSuite.name
     agent_type = AgentRole.MAIN
-    rank_order = RankOrder((), ())
-    work_stop = WorkStop.HANDOVER
+    gathers = [MainAgentDriver]
+    rank_order = MainAgentDriver.rank_order
+    work_stop = WorkStop.REFUSE_WHILE_WORK_REMAINS
+    responder = Responder.PERSON
     instructions = ["You are the sample lead"]
 
 
@@ -129,8 +135,10 @@ class ControlLead(Driver):
     name = "control.lead"
     suite = ControlSuite.name
     agent_type = AgentRole.MAIN
-    rank_order = RankOrder((), ())
-    work_stop = WorkStop.HANDOVER
+    gathers = [MainAgentDriver]
+    rank_order = MainAgentDriver.rank_order
+    work_stop = WorkStop.REFUSE_WHILE_WORK_REMAINS
+    responder = Responder.PERSON
     instructions = ["You are the control lead"]
 
 

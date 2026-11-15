@@ -76,7 +76,7 @@
     "restricted_alias": false,
     "saved_command": true,
     "queue_limit_settings": [],
-    "driver": "coding.helper",
+    "driver": "coding.merger",
     "layout": "agent",
     "access": "read-only",
     "separate_folder": false,

@@ -4584,7 +4584,7 @@ const Ov = { class: "band" }, Tv = { key: 0 }, Iv = {
       e.moves.length ? k("", !0) : (r(), d("p", fg, "Nothing yet."))
     ], 64));
   }
-}, hg = /* @__PURE__ */ V(mg, [["__scopeId", "data-v-58f0db57"]]), pg = ["title"], vg = { class: "name" }, gg = { class: "tier" }, yg = {
+}, hg = /* @__PURE__ */ V(mg, [["__scopeId", "data-v-58f0db57"]]), pg = ["title"], vg = { class: "name" }, gg = { class: "state-type" }, yg = {
   __name: "AgentStates",
   props: { states: { type: Array, required: !0 } },
   setup(e) {
@@ -4599,10 +4599,10 @@ const Ov = { class: "band" }, Tv = { key: 0 }, Iv = {
         key: a.name,
         class: "state",
         "data-agent-open-state": "",
-        title: `${a.name} (${a.tier}): ${a.rows.join(", ")}`
+        title: `${a.name} (${a.state}): ${a.rows.join(", ")}`
       }, [
         h("span", vg, v(a.name), 1),
-        h("span", gg, v(a.tier), 1),
+        h("span", gg, v(a.state), 1),
         A(Ye, {
           class: "since",
           at: a.since
@@ -4610,7 +4610,7 @@ const Ov = { class: "band" }, Tv = { key: 0 }, Iv = {
       ], 8, pg))), 128))
     ], 64)) : k("", !0);
   }
-}, bg = /* @__PURE__ */ V(yg, [["__scopeId", "data-v-13371b39"]]), kg = {
+}, bg = /* @__PURE__ */ V(yg, [["__scopeId", "data-v-eac1ab07"]]), kg = {
   class: "strip",
   "data-agent-strip": ""
 }, wg = ["data-agent-cell"], $g = {
@@ -16977,7 +16977,7 @@ const xC = /* @__PURE__ */ kC($C), SC = ["width", "height", "viewBox"], MC = ["w
       ])
     ]));
   }
-}, iB = /* @__PURE__ */ V(nA, [["__scopeId", "data-v-b494c444"]]), rB = Xu(() => import("./VoiceFigure-CWdp75Ki.js").then((e) => e.V)), uB = "1.2.0", cB = "3.5";
+}, iB = /* @__PURE__ */ V(nA, [["__scopeId", "data-v-b494c444"]]), rB = Xu(() => import("./VoiceFigure-BE_re7Y4.js").then((e) => e.V)), uB = "1.2.0", cB = "3.5";
 export {
   Um as $,
   Oe as A,
