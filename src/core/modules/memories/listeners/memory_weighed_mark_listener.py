@@ -8,10 +8,10 @@ from core.modules.memories.models.memory import Memory
 
 class MemoryWeighedMarkListener(MemoryMarkListener[Updated[Memory]]):
     """When a memory's weight is set, its chat shows a mark naming the memory and the new weight; a fade,
-    which lowers weights by itself, has its own mark."""
+    which lowers weights by itself, has its own mark, and an edit of the text has the edited mark, which also names a weight set with it."""
 
     name = "memories.weighed-mark"
 
     def handle(self, event: Updated[Memory], logged: LoggedEvent) -> None:
-        if "weight" in logged.data and logged.command != FadeMemories.label():
+        if "weight" in logged.data and "text" not in logged.data and logged.command != FadeMemories.label():
             self.show_memory(logged, MemoryMarkVariant.WEIGHED, f"Memory {logged.row_id}: weight set to {logged.data["weight"][1]}", row_id=logged.row_id)

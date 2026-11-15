@@ -29,12 +29,15 @@ def test_a_memory_weighed_to_a_new_weight_shows_the_new_weight(fact_memory):
     shown_after_commit(story, f"memory weigh {memory_id} 8", f"Memory {memory_id}: weight set to 8")
 
 
-def test_a_memory_edited_without_a_new_weight_shows_no_weighed_mark(fact_memory):
+def test_a_memory_edited_shows_an_edited_mark_with_its_new_text(fact_memory):
     story, memory_id = fact_memory
-    starting_count = mark_count(story)
-    story.expect_success(f'memory edit {memory_id} --text "The cart total is in euro cents"', actor=story.agent)
-    story.run_listeners()
-    expect_mark_count(story, starting_count)
+    shown_after_commit(story, f'memory edit {memory_id} --text "The cart total is in euro cents"', f"Memory {memory_id}: edited")
+    expect_marks_text(story, "The cart total is in euro cents")
+
+
+def test_a_memory_edited_with_a_new_weight_shows_one_mark(fact_memory):
+    story, memory_id = fact_memory
+    shown_after_commit(story, f'memory edit {memory_id} --text "The cart total is in euro cents" --weight 8', f"Memory {memory_id}: edited, weight set to 8")
 
 
 def test_a_memory_removed_shows_its_mark(fact_memory):
