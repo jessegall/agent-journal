@@ -35,15 +35,15 @@ class TableRefusalSkips(RefusalSkips):
         return UseRefusalSkip(skip.id) if skip is not None else None
 
     def is_skipped(self, agent_id: int, rule: str, window: Interval, timestamp: Timestamp) -> bool:
-        return self.kept.scoped_current(lambda: self.skipped_within(agent_id, rule, window, timestamp), name=f"drivers.skip_window:{agent_id}:{rule}:{timestamp.text}")
+        return self.kept.scoped_current(lambda: self.has_open_skip_window(agent_id, rule, window, timestamp), name=f"drivers.skip_window:{agent_id}:{rule}:{timestamp.text}")
 
-    def skipped_within(self, agent_id: int, rule: str, window: Interval, timestamp: Timestamp) -> bool:
+    def has_open_skip_window(self, agent_id: int, rule: str, window: Interval, timestamp: Timestamp) -> bool:
         skip = self.queries.query(RefusalSkip).filter(session_agent_id=agent_id, name=rule, cancelled_at=None).newest().first()
         return skip is not None and not window.has_passed(self.spans, agent_id, skip.creation_timestamp(), timestamp)
 
-    def has_refused(self, agent_id: int, rule: str) -> bool:
+    def last_refused_rules(self, agent_id: int) -> frozenset[str]:
         call = self.queries.query(HookCall).filter(session_agent_id=agent_id, answer=HookAnswer.REFUSED).newest().first()
-        return call is not None and any(row.get("rule") == rule for row in call.refused_rules)
+        return frozenset(str(row.get("rule")) for row in call.refused_rules) if call is not None else frozenset()
 
     def check_guards(self, actor: Actor, guards: Sequence[str], reason: str) -> None:
         if actor.type is ActorType.AGENT:

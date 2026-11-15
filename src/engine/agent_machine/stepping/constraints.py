@@ -1,3 +1,6 @@
+from engine.enums.hook_event_name import HookEventName
+from engine.driver.refusal_skip_hint import RefusalSkipHint
+from dataclasses import replace
 from collections.abc import Sequence
 
 from engine.driver.tool import Tool
@@ -49,7 +52,7 @@ class Constraints:
         return tool.shell is None or not tool.shell.has_only_parts(lambda part: BlockExemptions.names(part, MESSAGE_COMMAND))
 
     def policy_reasons(self, question: Question, view: AgentView) -> list[Reason]:
-        return [reason for _, refusals, grant in self.judged_policies(question, view) if grant is None for reason in refusals]
+        return [Constraints.skip_hinted(reason, policy, question, view) for policy, refusals, grant in self.judged_policies(question, view) if grant is None for reason in refusals]
 
     # the grants that pass a refusing policy of the action, which an admitted step spends
     def spent_grants(self, question: Question, view: AgentView) -> list[Grant]:
@@ -67,6 +70,13 @@ class Constraints:
             if refusals:
                 judged.append((policy, refusals, self.passing_grant(policy, view, fingerprint)))
         return judged
+
+    # a policy that refused the agent's last refused hook too names the command that skips it once, at a tool use
+    @staticmethod
+    def skip_hinted(refusal: Reason, policy: Policy, question: Question, view: AgentView) -> Reason:
+        if policy.is_safety or question.event is None or question.event.event != HookEventName.PRE_TOOL_USE or policy.key not in view.last_refused_rules:
+            return refusal
+        return replace(refusal, text=RefusalSkipHint.text(refusal.text, policy.key))
 
     @staticmethod
     def passing_grant(policy: Policy, view: AgentView, fingerprint: str) -> Grant | None:

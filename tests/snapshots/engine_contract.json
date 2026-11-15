@@ -191,6 +191,7 @@
         "block_outcomes: Mapping[int, ConditionOutcome]",
         "newest_hook_at: datetime | None",
         "journal_started_at: datetime | None",
+        "last_refused_rules: frozenset[str]",
         "subject_ends: Mapping[SubjectReference, FrameEnd]"
       ],
       "methods": []
@@ -851,6 +852,7 @@
         "policy_reasons(self, question: Question, view: AgentView) -> list[Reason]",
         "spent_grants(self, question: Question, view: AgentView) -> list[Grant]",
         "judged_policies(self, question: Question, view: AgentView) -> list[tuple[Policy, Sequence[Reason], Grant | None]]",
+        "skip_hinted(refusal: Reason, policy: Policy, question: Question, view: AgentView) -> Reason",
         "passing_grant(policy: Policy, view: AgentView, fingerprint: str) -> Grant | None",
         "block_reasons(question: Question, view: AgentView, stack: Stack) -> list[Reason]",
         "stop_reasons(view: AgentView, stack: Stack) -> list[Reason]"
@@ -3684,6 +3686,7 @@
       "bases": [],
       "fields": [],
       "methods": [
+        "text(refusal: str, rule_name: str) -> str",
         "hinted(answer: RuleAnswer, rule_name: str) -> RuleAnswer"
       ]
     },
@@ -3693,6 +3696,7 @@
       "methods": [
         "waiting(self, agent_id: int, rule: str) -> Command[object] | None",
         "has_refused(self, agent_id: int, rule: str) -> bool",
+        "last_refused_rules(self, agent_id: int) -> frozenset[str]",
         "is_skipped(self, agent_id: int, rule: str, window: Interval, timestamp: Timestamp) -> bool",
         "check_guards(self, actor: Actor, guards: Sequence[str], reason: str) -> None"
       ]

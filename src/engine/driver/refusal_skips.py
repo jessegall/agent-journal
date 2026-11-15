@@ -15,7 +15,11 @@ class RefusalSkips:
         return None
 
     def has_refused(self, agent_id: int, rule: str) -> bool:
-        return False
+        return rule in self.last_refused_rules(agent_id)
+
+    # the rules that refused the agent's last refused hook
+    def last_refused_rules(self, agent_id: int) -> frozenset[str]:
+        return frozenset()
 
     def is_skipped(self, agent_id: int, rule: str, window: Interval, timestamp: Timestamp) -> bool:
         return False

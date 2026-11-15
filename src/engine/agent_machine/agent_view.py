@@ -60,5 +60,7 @@ class AgentView:
     newest_hook_at: datetime | None = None
     # when the journal last started, which the journal-started wake compares with the newest hook
     journal_started_at: datetime | None = None
+    # the rules that refused the agent's last refused hook: a policy among them offers its skip at a tool use
+    last_refused_rules: frozenset[str] = frozenset()
     # how the subjects of frames that left this step ended, as their need sources tell
     subject_ends: Mapping[SubjectReference, FrameEnd] = field(default_factory=dict)
