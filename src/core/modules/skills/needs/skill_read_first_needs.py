@@ -53,6 +53,8 @@ class SkillReadFirstNeeds(NeedSource):
         if not book.behaviours(agent.agent_type).takes_prompts:
             return None
         names = self.unread.names(agent.agent_id)
+        if not names:
+            return None
         missing = names if self.kept.is_recorded(agent.agent_id) or question.event is None else self.kept.unloaded(agent.agent_id, question.event.transcript, names)
         if not missing:
             return None

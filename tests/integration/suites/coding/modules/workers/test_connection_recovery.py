@@ -339,7 +339,7 @@ def test_a_delivery_without_tests_passed_is_reported_as_stopped(recovery):
     story.expect_success('proof make 1 --task 1 "cart.py:1, checked"', actor=worker)
     story.expect_success("proof check 1", actor=story.agent)
     story.expect_success("worker commit --wait --differences none", actor=worker)
-    story.container.get(Database).update(Statement("UPDATE worker_worktrees SET tests_passed_at = NULL, merge_ready_at = NULL WHERE session_agent_id = ?", [worker.id]))
+    story.container.get(Database).update(Statement("UPDATE worker_worktrees SET tests_passed_at = NULL, merge_ready_at = NULL, version = version + 1 WHERE session_agent_id = ?", [worker.id]))
     story.end_session(worker)
     recovery.advance(20 * 60)
     story.tick("s-1")
