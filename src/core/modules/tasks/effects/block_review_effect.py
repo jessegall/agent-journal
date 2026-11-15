@@ -1,8 +1,23 @@
-from engine.rule_backed.rule_effect import RuleEffect
-from core.modules.tasks.rules.unopenable_block_rule import UnopenableBlockRule
+from collections.abc import Sequence
+
+from engine.agent_machine.contracts.event_effect import EventEffect
+from engine.command.command import Command
+from engine.driver.hook_event import HookEvent
+from engine.enums.agent_role import AgentRole
+from engine.enums.hook_event_name import HookEventName
+from core.modules.tasks.support.block_review_round import BLOCK_REVIEW_KEY, BlockReviewRound
 
 
-class BlockReviewEffect(RuleEffect):
-    """The effect that records a round of the blocked tasks' reminder, as today's UnopenableBlockRule runs it."""
+class BlockReviewEffect(EventEffect):
+    """Records a round of the blocked tasks' reminder, so its third pass holds the agent."""
 
-    rule = UnopenableBlockRule
+    key = BLOCK_REVIEW_KEY
+    events = [HookEventName.POST_TOOL_USE]
+    agent_types = [AgentRole.MAIN.value]
+
+    def __init__(self, review: BlockReviewRound) -> None:
+        self.review = review
+
+    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+        record = self.review.answer(event, agent_id).record if event is not None else None
+        return [record] if record is not None else []

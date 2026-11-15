@@ -1,34 +1,22 @@
-from core.modules.tasks.nudges.unlogged_writes_nudge import UnloggedWritesNudge
+from engine.agent.enums.role_group import RoleGroup
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.tasks.rules.support.task_write_count import TaskWriteCount
-from engine.agent.enums.role_group import RoleGroup
-from core.modules.tasks.support.block_conditions.task_logged import TaskLogged
-from core.modules.drivers.support.block_conditions.any_condition import AnyCondition
-from core.modules.tasks.support.block_conditions.task_stopped import TaskStopped
-
-UNLOGGED_WRITES_CEILING = 50
+from engine.enums.hook_event_name import HookEventName
+from core.modules.tasks.needs.unlogged_write_needs import UNLOGGED_WRITE_KEY, UnloggedWriteNeeds
 
 
 class UnloggedWriteRule(DriverRule):
-    """Once 50 writes have been made since the task in hand was last logged, the agent is blocked until
-    the task gets a log line."""
+    """The old walk's answer for UnloggedWriteNeeds, which owns it, until the walk is deleted."""
 
-    name = "tasks.log-before-more-writes"
+    name = UNLOGGED_WRITE_KEY
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     role_group = RoleGroup.TASK
 
-    def __init__(self, task_writes: TaskWriteCount) -> None:
-        self.task_writes = task_writes
+    def __init__(self, needs: UnloggedWriteNeeds) -> None:
+        self.needs = needs
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        counted = self.task_writes.count(hook)
-        if counted is None:
-            return RuleAnswer.allowed()
-        current, writes = counted
-        if writes < UNLOGGED_WRITES_CEILING:
-            return RuleAnswer.allowed()
-        return RuleAnswer.blocked(hook, UnloggedWritesNudge.declared().nudge(task=current.task.id), AnyCondition(TaskLogged(current.task.id), TaskStopped(current.task.id)))
+        hold = self.needs.hold(hook.event, hook.agent_id)
+        return RuleAnswer.blocked(hook, *hold) if hold is not None else RuleAnswer.allowed()

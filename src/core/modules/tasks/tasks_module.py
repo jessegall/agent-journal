@@ -9,7 +9,6 @@ from core.modules.tasks.lines.quiet_task_lines import QuietTaskLines
 from core.modules.tasks.lines.log_request_lines import LogRequestLines
 from core.modules.tasks.lines.task_filed_lines import TaskFiledLines
 from core.modules.tasks.lines.task_name_lines import TaskNameLines
-from core.modules.tasks.lines.task_return_lines import TaskReturnLines
 from core.modules.tasks.lines.still_held_lines import StillHeldLines
 from core.modules.tasks.lines.one_in_hand_lines import OneInHandLines
 from core.modules.tasks.lines.session_start_summary_lines import SessionStartSummaryLines
@@ -172,7 +171,7 @@ class TasksModule(Module):
     docks = TASKS_DOCKS
     needs = [TaskWorkNeeds, UnloggedWriteNeeds, BlockReviewNeeds]
     effects = [BlockReviewEffect]
-    lines = [BlockedWorkLines, QuietTaskLines, LogRequestLines, TaskFiledLines, TaskNameLines, TaskReturnLines, StillHeldLines, OneInHandLines, SessionStartSummaryLines, WaitInWordsLines, BlockReviewLines]
+    lines = [BlockedWorkLines, QuietTaskLines, LogRequestLines, TaskFiledLines, TaskNameLines, StillHeldLines, OneInHandLines, SessionStartSummaryLines, WaitInWordsLines, BlockReviewLines]
     driver_rules = [TaskFiledRule, TaskStartRule, TaskReturnReminderRule, WaitDescriptionRule, UnopenableBlockRule, TaskStopRule, AutoModeTaskStopRule, BlockedWorkRule]
     windows = TASKS_WINDOWS
     inspectors = [TaskInspector]

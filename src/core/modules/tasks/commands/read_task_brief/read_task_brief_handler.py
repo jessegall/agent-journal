@@ -1,4 +1,3 @@
-from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
 from engine.command.context import Context
 from engine.command.handler import Handler

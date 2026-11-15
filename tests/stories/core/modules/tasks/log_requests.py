@@ -3,8 +3,8 @@ from engine.testing.stories.story_fixture import StoryFixture
 from engine.enums.command_category import CommandCategory
 from datetime import timedelta
 
-from core.modules.tasks.rules.unlogged_write_rule import UNLOGGED_WRITES_CEILING
-from core.modules.tasks.rules.log_request_rule import LOG_REQUEST_WRITES
+from core.modules.tasks.needs.unlogged_write_needs import UNLOGGED_WRITES_CEILING
+from core.modules.tasks.support.task_nudges import LOG_REQUEST_WRITES
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder

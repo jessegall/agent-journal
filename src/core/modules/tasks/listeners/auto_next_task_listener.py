@@ -29,7 +29,6 @@ class AutoNextTaskListener(CommitListener[Moved[Task]]):
         self.bus, self.rows, self.current, self.assigners, self.slices = bus, rows, current, assigners, slices
 
     def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:
-        closed_task = event.row
         assigner = self.assigners.assigner()
         if assigner is None or not assigner.is_automatic():
             return

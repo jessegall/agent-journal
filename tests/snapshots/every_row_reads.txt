@@ -209,7 +209,7 @@ src/core/modules/tasks/listeners/task_tag_remover_listener.py:a deleted task tak
 src/core/modules/tasks/needs/task_work_needs.py:the ended tasks whose frames one step takes off one agent's stack, a few at most
 src/core/modules/tasks/queries/task_query.py:an agent's current tasks are every task it holds started, which its open-task setting bounds
 src/core/modules/tasks/queries/task_query.py:the tasks assigned to an agent are its whole unit of work, which can hold more than fifty tasks
-src/core/modules/tasks/rules/unopenable_block_rule.py:every task the agent blocked by hand is checked for a review of its block
+src/core/modules/tasks/support/block_review_round.py:every task the agent blocked by hand is checked for a review of its block
 src/core/modules/tasks/support/dependency_waits.py:Every dependency that names one of the tasks that changed, to or from it; a task many others wait on has many.
 src/core/modules/tasks/support/task_assignment_reasons.py:the assignments of every task shown are read in one query
 src/core/modules/tasks/support/task_tags.py:the tags of the tasks asked about are read in one query

@@ -13,6 +13,9 @@ from core.modules.tasks.rules.inactive_task_reminder_rule import InactiveTaskRem
 from core.modules.tasks.rules.log_request_rule import LogRequestRule
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
 from core.modules.tasks.rules.support.task_write_count import TaskWriteCount
+from core.modules.tasks.lines.log_request_lines import LogRequestLines
+from core.modules.tasks.lines.quiet_task_lines import QuietTaskLines
+from core.modules.tasks.needs.unlogged_write_needs import UnloggedWriteNeeds
 from core.modules.tasks.rules.task_name_rule import TaskNameRule
 from core.modules.tasks.rules.task_return_line_rule import TaskReturnLineRule
 from core.modules.tasks.rules.task_summary_line_rule import TaskSummaryLineRule
@@ -43,10 +46,10 @@ def no_current() -> CurrentTasks:
 
 GATED = [
     lambda: TaskReturnLineRule(no_current()),
-    lambda: LogRequestRule(TaskWriteCount(no_current(), Untouched(), Untouched())),
-    lambda: UnloggedWriteRule(TaskWriteCount(no_current(), Untouched(), Untouched())),
+    lambda: LogRequestRule(LogRequestLines(TaskWriteCount(no_current(), Untouched(), Untouched()))),
+    lambda: UnloggedWriteRule(UnloggedWriteNeeds(TaskWriteCount(no_current(), Untouched(), Untouched()))),
     lambda: TaskNameRule(TaskNameLines(Untouched(), no_current())),
-    lambda: InactiveTaskReminderRule(no_current(), Untouched(), Untouched(), Untouched(), Untouched()),
+    lambda: InactiveTaskReminderRule(QuietTaskLines(no_current(), Untouched(), Untouched(), Untouched(), Untouched(), Untouched())),
     lambda: TaskSummaryLineRule(SessionStartSummaryLines(no_current())),
 ]
 

@@ -64,7 +64,7 @@ class InactiveHelperRule(DriverRule):
         if self.hook_history.has_recent_answer(self.name, hook, self.settings.minutes(INACTIVE_HELPER_MINUTES)):
             return RuleAnswer.allowed()
         grace = self.settings.minutes(INACTIVE_HELPER_GRACE_MINUTES)
-        activities = self.activities.read(hook)
+        activities = self.activities.read(hook.event, hook.agent_id)
         requesters = self.requests.active_requester_ids(hook.timestamp)
         inactive = [helper for helper in self.helpers(hook.agent_id) if helper.id in activities and helper.id not in requesters and activities[helper.id].is_inactive(hook.timestamp, grace.count)]
         unstarted = self.unstarted(hook, grace)

@@ -34,7 +34,7 @@ class InactiveWorkerStopRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         hours = self.settings.number(WORKER_IDLE_HOURS)
-        activities = self.activities.read(hook)
+        activities = self.activities.read(hook.event, hook.agent_id)
         idle = [worktree for worktree in self.worktrees.main_worktrees() if worktree.state is WorktreeState.CUT and worktree.session_agent_id in activities and self.is_idle(activities[worktree.session_agent_id], hook, hours)]
         commands = [EndInactiveWorker(worktree.session_agent_id) for worktree in idle]
         return RuleAnswer.with_nudges(*(WorkerIdleStoppedNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), task=worktree.task_id) for worktree in idle)).running(*commands)

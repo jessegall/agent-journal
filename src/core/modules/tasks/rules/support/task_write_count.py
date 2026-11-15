@@ -1,4 +1,4 @@
-from engine.driver.agent_hook import AgentHook
+from engine.driver.hook_event import HookEvent
 from engine.database.kept_rows import KeptRows
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.tasks.rules.support.current_task import CurrentTask
@@ -13,11 +13,11 @@ class TaskWriteCount:
         self.current_tasks, self.calls = current_tasks, calls
         self.kept = kept
 
-    def count(self, hook: AgentHook) -> tuple[CurrentTask, int] | None:
-        tool = hook.event.tool
-        current = self.current_tasks.current(hook.agent_id) if tool is not None and tool.is_writing_files() else None
+    def count(self, event: HookEvent, agent_id: int) -> tuple[CurrentTask, int] | None:
+        tool = event.tool
+        current = self.current_tasks.current(agent_id) if tool is not None and tool.is_writing_files() else None
         if current is None:
             return None
-        writes = self.calls.writes_after(hook.agent_id, current.count_start)
+        writes = self.calls.writes_after(agent_id, current.count_start)
         count = self.kept.read(writes, writes.count, name="tasks.write_count")
         return current, count + 1
