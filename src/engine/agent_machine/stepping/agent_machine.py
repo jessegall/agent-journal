@@ -116,8 +116,8 @@ class AgentMachine:
     def record(self, view: AgentView, question: Question, decision: Decision, judgement: Judgement, rewrite: Rewrite, counts: RefusalCounts,
                stack: Stack, moves: tuple, reasons: list[Reason]) -> DecisionRecord:
         lines = self.lines(question, view)
-        unconditional = [effect for effect in self.effects(question) if effect.timing is EffectTiming.UNCONDITIONAL]
-        admission = [effect for effect in self.effects(question) if effect.timing is EffectTiming.ON_ADMISSION] if question.is_action() else []
+        unconditional = [effect for effect in self.effects(question, view) if effect.timing is EffectTiming.UNCONDITIONAL]
+        admission = [effect for effect in self.effects(question, view) if effect.timing is EffectTiming.ON_ADMISSION] if question.is_action() else []
         return DecisionRecord(
             identity=self.identity(view, question), action=question, decision=decision, shown_reason=decision.reason,
             outranked_reasons=judgement.outranked_reasons, rewrite=rewrite if decision.admits() else Rewrite.unchanged(),
@@ -143,15 +143,20 @@ class AgentMachine:
 
     def lines(self, question: Question, view: AgentView) -> list[Line]:
         event = question.event
-        sources = [source for source in self.line_sources if (event is not None and event.event in source.events) or (event is None and source.includes_steps)]
+        sources = [source for source in self.line_sources if self.applies(source.agent_types, view) and ((event is not None and event.event in source.events) or (event is None and source.includes_steps))]
         lines = [line for source in sources for line in source.lines(question, view)]
         if event is None or view.program.supports(CapabilityPart.LINES, event.event):
             return lines
         return [replace(line, carrier=LineCarrier.WAITING) for line in lines]
 
-    def effects(self, question: Question) -> list[Effect]:
+    def effects(self, question: Question, view: AgentView) -> list[Effect]:
         event = question.event
-        return [effect for effect in self.effect_sources if (event is not None and event.event in effect.events) or (event is None and effect.includes_steps)]
+        return [effect for effect in self.effect_sources if self.applies(effect.agent_types, view)
+                and ((event is not None and event.event in effect.events) or (event is None and effect.includes_steps))]
+
+    @staticmethod
+    def applies(agent_types: Sequence[str], view: AgentView) -> bool:
+        return not agent_types or view.agent.agent_type in agent_types
 
     @staticmethod
     def closings(view: AgentView) -> list[BlockClosing]:

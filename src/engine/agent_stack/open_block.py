@@ -19,6 +19,7 @@ class OpenBlock:
     stop_grace_passed: bool
     is_strict: bool
     subject: SubjectReference | None = None
+    stop_reason: Reason | None = None
 
     def refuses_tools(self) -> bool:
         return self.scope_tools and self.tool_grace_passed
@@ -28,4 +29,4 @@ class OpenBlock:
         return self.scope_stop and self.stop_grace_passed and not deferred
 
     def stop_refusal(self) -> Reason:
-        return self.reason
+        return self.stop_reason if self.stop_reason is not None else self.reason

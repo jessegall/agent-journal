@@ -1,3 +1,6 @@
+from core.modules.reminders.lines.due_reminder_lines import DueReminderLines
+from core.modules.reminders.effects.due_reminder_effect import DueReminderEffect
+from core.modules.reminders.needs.due_reminder_needs import DueReminderNeeds
 from core.modules.reminders.models.declarations.reminder_model_declaration import ReminderModelDeclaration
 from core.modules.reminders.windows.reminders_windows import REMINDERS_WINDOWS
 from core.modules.reminders.migrations.m002_open_reminder_index import OpenReminderIndexMigration
@@ -17,6 +20,9 @@ class RemindersModule(Module):
     to with a block, and the Reminders page."""
 
     name = "journal.core.reminders"
+    needs = [DueReminderNeeds]
+    effects = [DueReminderEffect]
+    lines = [DueReminderLines]
     seed_reason = "a reminder speaks at a time the demo does not reach"
     move_reason = "version 4's reminders move with the memories"
     requires_engine = ">=5,<6"

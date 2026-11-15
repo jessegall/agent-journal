@@ -1,3 +1,16 @@
+from core.modules.drivers.lines.continued_session_lines import ContinuedSessionLines
+from core.modules.drivers.lines.foreign_hooks_lines import ForeignHooksLines
+from core.modules.drivers.lines.long_output_lines import LongOutputLines
+from core.modules.drivers.lines.opening_lines_lines import OpeningLinesLines
+from core.modules.drivers.lines.repeated_file_read_lines import RepeatedFileReadLines
+from core.modules.drivers.lines.takeover_lines import TakeoverLines
+from core.modules.drivers.policies.database_file_policy import DatabaseFilePolicy
+from core.modules.drivers.policies.foreign_hooks_policy import ForeignHooksPolicy
+from core.modules.drivers.policies.panic_file_policy import PanicFilePolicy
+from core.modules.drivers.policies.private_corpus_policy import PrivateCorpusPolicy
+from core.modules.drivers.policies.type_commands_policy import TypeCommandsPolicy
+from core.modules.drivers.effects.foreign_hooks_effect import ForeignHooksEffect
+from core.modules.drivers.effects.safeguards_stop_effect import SafeguardsStopEffect
 from core.modules.drivers.windows.drivers_windows import DRIVERS_WINDOWS
 from core.modules.drivers.models.declarations.countdown_model_declaration import CountdownModelDeclaration
 from core.modules.drivers.models.declarations.hook_timeout_notice_model_declaration import HookTimeoutNoticeModelDeclaration
@@ -289,6 +302,9 @@ class DriversModule(Module):
     through the suites, drivers and rules of the installed modules."""
 
     name = "journal.core.drivers"
+    effects = [ForeignHooksEffect, SafeguardsStopEffect]
+    policies = [DatabaseFilePolicy, ForeignHooksPolicy, PanicFilePolicy, PrivateCorpusPolicy, TypeCommandsPolicy]
+    lines = [ContinuedSessionLines, ForeignHooksLines, LongOutputLines, OpeningLinesLines, RepeatedFileReadLines, TakeoverLines]
     nudges = DRIVER_NUDGES
     profiles = [REVIEWER_PROFILE]
     move_reason = "version 4 kept hook records in its own bookkeeping tables, which stay in the backup"

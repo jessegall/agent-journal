@@ -1,4 +1,4 @@
-from engine.agent_machine.contracts.rank_order import RankOrder
+from core.modules.drivers.drivers.rank_orders import HELPER_RANK_ORDER
 from engine.agent_machine.driver import Driver
 from engine.enums.responder import Responder
 from engine.enums.work_stop import WorkStop
@@ -12,6 +12,6 @@ class HelperAgentDriver(Driver):
     name = "core.helper"
     agent_type = "helper"
     suite = "core"
-    rank_order = RankOrder((), ())
+    rank_order = HELPER_RANK_ORDER
     work_stop = WorkStop.HANDOVER
     responder = Responder.PARENT

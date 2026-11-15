@@ -1,3 +1,25 @@
+from core.modules.processes.lines.alias_suggestion_lines import AliasSuggestionLines
+from core.modules.processes.lines.ended_output_line_lines import EndedOutputLineLines
+from core.modules.processes.lines.orphan_process_lines import OrphanProcessLines
+from core.modules.processes.lines.output_status_monitor_lines import OutputStatusMonitorLines
+from core.modules.processes.lines.read_advice_lines import ReadAdviceLines
+from core.modules.processes.lines.run_queue_halted_lines import RunQueueHaltedLines
+from core.modules.processes.lines.run_title_lines import RunTitleLines
+from core.modules.processes.lines.watch_lines_lines import WatchLinesLines
+from core.modules.processes.policies.folder_change_policy import FolderChangePolicy
+from core.modules.processes.policies.hand_made_monitor_policy import HandMadeMonitorPolicy
+from core.modules.processes.policies.journal_chain_policy import JournalChainPolicy
+from core.modules.processes.policies.journal_pipe_policy import JournalPipePolicy
+from core.modules.processes.policies.read_command_output_policy import ReadCommandOutputPolicy
+from core.modules.processes.policies.reading_policy import ReadingPolicy
+from core.modules.processes.policies.retry_loop_policy import RetryLoopPolicy
+from core.modules.processes.policies.sleep_poll_policy import SleepPollPolicy
+from core.modules.processes.effects.leftover_run_effect import LeftoverRunEffect
+from core.modules.processes.effects.long_run_dock_effect import LongRunDockEffect
+from core.modules.processes.effects.watch_lines_effect import WatchLinesEffect
+from core.modules.processes.needs.long_run_dock_needs import LongRunDockNeeds
+from core.modules.processes.needs.reader_request_needs import ReaderRequestNeeds
+from core.modules.processes.needs.silent_run_block_needs import SilentRunBlockNeeds
 from core.modules.processes.story_steps.processes_story_steps import PROCESSES_STORY_STEPS
 from core.modules.processes.windows.extensions.agents_processes_extension import AgentsProcessesExtension
 from core.modules.processes.windows.extensions.helpers_processes_extension import HelpersProcessesExtension
@@ -288,6 +310,10 @@ class ProcessesModule(Module):
     output."""
 
     name = "journal.core.processes"
+    needs = [LongRunDockNeeds, ReaderRequestNeeds, SilentRunBlockNeeds]
+    effects = [LeftoverRunEffect, LongRunDockEffect, WatchLinesEffect]
+    policies = [FolderChangePolicy, HandMadeMonitorPolicy, JournalChainPolicy, JournalPipePolicy, ReadCommandOutputPolicy, ReadingPolicy, RetryLoopPolicy, SleepPollPolicy]
+    lines = [AliasSuggestionLines, EndedOutputLineLines, OrphanProcessLines, OutputStatusMonitorLines, ReadAdviceLines, RunQueueHaltedLines, RunTitleLines, WatchLinesLines]
     nudges = PROCESS_NUDGES
     tick_handlers = [OutputReadingTickHandler, RunSlotGrantTickHandler,
                      RunTimeoutsTickHandler, HangWatchTickHandler, CadenceWatchTickHandler, OutputChecksTickHandler,

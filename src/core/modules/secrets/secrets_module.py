@@ -1,3 +1,4 @@
+from core.modules.secrets.policies.secrets_folder_policy import SecretsFolderPolicy
 from core.modules.secrets.windows.secrets_windows import SECRETS_WINDOWS
 from core.modules.secrets.models.declarations.secret_model_declaration import SecretModelDeclaration
 from core.modules.secrets.skills.declarations.secrets_skills import SECRETS_SKILLS
@@ -36,6 +37,7 @@ class SecretsModule(Module):
     keep a value out of every tool and row."""
 
     name = "journal.core.secrets"
+    policies = [SecretsFolderPolicy]
     nudges = SECRET_NUDGES
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages"]

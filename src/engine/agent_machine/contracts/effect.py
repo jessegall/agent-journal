@@ -18,6 +18,7 @@ class Effect(ABC):
 
     events: ClassVar[Sequence[HookEventName]]
     includes_steps: ClassVar[bool] = False
+    agent_types: ClassVar[Sequence[str]] = ()
     timing: ClassVar[EffectTiming]
     is_required: ClassVar[bool] = False
     failure: ClassVar[type[NudgeDeclaration] | None] = None

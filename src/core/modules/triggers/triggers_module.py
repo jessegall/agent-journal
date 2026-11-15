@@ -1,3 +1,9 @@
+from core.modules.triggers.policies.phrase_trigger_policy import PhraseTriggerPolicy
+from core.modules.triggers.lines.phrase_trigger_lines import PhraseTriggerLines
+from core.modules.triggers.lines.scheduled_trigger_lines import ScheduledTriggerLines
+from core.modules.triggers.effects.phrase_trigger_effect import PhraseTriggerEffect
+from core.modules.triggers.effects.scheduled_trigger_effect import ScheduledTriggerEffect
+from core.modules.triggers.needs.phrase_trigger_needs import PhraseTriggerNeeds
 from core.modules.triggers.windows.triggers_windows import TRIGGERS_WINDOWS
 from core.modules.triggers.models.declarations.trigger_model_declaration import TriggerModelDeclaration
 from core.modules.triggers.models.declarations.trigger_action_run_model_declaration import TriggerActionRunModelDeclaration
@@ -44,6 +50,10 @@ class TriggersModule(Module):
     refuses."""
 
     name = "journal.core.triggers"
+    needs = [PhraseTriggerNeeds]
+    effects = [PhraseTriggerEffect, ScheduledTriggerEffect]
+    lines = [PhraseTriggerLines, ScheduledTriggerLines]
+    policies = [PhraseTriggerPolicy]
     nudges = TRIGGER_NUDGES
     settings = TRIGGER_SETTINGS
     marks = [TriggerWaitingMark]

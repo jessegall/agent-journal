@@ -58,7 +58,7 @@ class DeclarationCheck:
         if entry.contribution_type is ContributionType.SUBJECT and entry.key in MACHINE_TABLES:
             fixes.append("the machine's own tables are no subject")
         if self.has_unsupported_line(entry):
-            fixes.append(f"no program supports lines on {', '.join(entry.events)}: give the line a waiting carrier")
+            fixes.append(f"no program carries lines on any of {', '.join(entry.events)}: give the line a waiting carrier")
         forbidden = FORBIDDEN_TYPES.get(entry.contribution_type, ())
         fixes += [f"it takes a {name}: read rows through injected queries only" for name in entry.constructor_types if name in forbidden]
         if entry.contribution_type is ContributionType.EFFECT and entry.is_required and not entry.has_failure:
@@ -74,7 +74,7 @@ class DeclarationCheck:
         return is_line and entry.carrier is not LineCarrier.WAITING and not self.supports_events(entry.events)
 
     def supports_events(self, events: Sequence[HookEventName]) -> bool:
-        return all(any(program.capabilities.supports(CapabilityPart.LINES, event) for program in self.programs) for event in events)
+        return any(program.capabilities.supports(CapabilityPart.LINES, event) for program in self.programs for event in events)
 
     def rank_refusals(self) -> list[DeclarationFinding]:
         declared = {entry.rank for module in self.modules for entry in module.contributions if entry.rank}

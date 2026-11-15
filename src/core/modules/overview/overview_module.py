@@ -1,4 +1,6 @@
 from engine.module.module import Module
+from core.modules.overview.lines.overview_first_lines import OverviewFirstLines
+from core.modules.overview.needs.overview_first_needs import OverviewFirstNeeds
 from core.modules.overview.commands.overview.overview_subcommand import OverviewSubcommand
 from core.modules.overview.overlays.overview_overlay import OverviewOverlay
 from core.modules.overview.rules.overview_compaction_rule import OverviewCompactionRule
@@ -23,3 +25,5 @@ class OverviewModule(Module):
     settings = OVERVIEW_SETTINGS
     subcommands = [OverviewSubcommand]
     block_conditions = [RecentOverviewRead]
+    needs = [OverviewFirstNeeds]
+    lines = [OverviewFirstLines]

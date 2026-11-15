@@ -1,3 +1,6 @@
+from core.modules.aliases.policies.alias_expansion_policy import AliasExpansionPolicy
+from core.modules.aliases.policies.saved_command_policy import SavedCommandPolicy
+from core.modules.aliases.policies.unknown_command_policy import UnknownCommandPolicy
 from core.modules.aliases.models.declarations.alias_model_declaration import AliasModelDeclaration
 from core.modules.aliases.migrations.m007_alias_category_index import AliasCategoryIndexMigration
 from engine.cli.shell_aliases import ShellAliases
@@ -52,6 +55,7 @@ class AliasesModule(Module):
     """Adds aliases: words of the project's own that run a shell line, `journal <name> [args]`."""
 
     name = "journal.core.aliases"
+    policies = [AliasExpansionPolicy, SavedCommandPolicy, UnknownCommandPolicy]
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.processes", "journal.core.plugins", "journal.core.drivers"]
     models = [AliasModelDeclaration, ModelDeclaration(CommandType)]

@@ -1,4 +1,3 @@
-from engine.agent_machine.contracts.rank_order import RankOrder
 from engine.agent_machine.driver import Driver
 from engine.enums.responder import Responder
 from engine.enums.work_stop import WorkStop
@@ -13,6 +12,6 @@ class CodingMainAgentDriver(Driver):
     agent_type = "main"
     suite = "coding"
     gathers = [MainAgentDriver]
-    rank_order = RankOrder((), ())
+    rank_order = MainAgentDriver.rank_order
     work_stop = WorkStop.REFUSE_WHILE_WORK_REMAINS
     responder = Responder.PERSON

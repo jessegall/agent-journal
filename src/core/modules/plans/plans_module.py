@@ -1,3 +1,8 @@
+from core.modules.plans.needs.plan_context_needs import PlanContextNeeds
+from core.modules.plans.lines.plan_focus_lines import PlanFocusLines
+from core.modules.plans.lines.plan_order_lines import PlanOrderLines
+from core.modules.plans.lines.plan_state_lines import PlanStateLines
+from core.modules.plans.lines.plan_task_end_lines import PlanTaskEndLines
 from core.modules.plans.windows.extensions.chat_running_agents_extension import ChatRunningAgentsExtension
 from core.modules.plans.windows.plans_windows import PLANS_WINDOWS
 from core.modules.plans.models.declarations.plan_model_declaration import PlanModelDeclaration
@@ -145,6 +150,8 @@ class PlansModule(Module):
     marks = [PlanMark]
     nudges = PLAN_NUDGES
     driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule, PlanContextRule]
+    needs = [PlanContextNeeds]
+    lines = [PlanFocusLines, PlanOrderLines, PlanStateLines, PlanTaskEndLines]
     agent_states = [PlanFocusDue]
     docks = PLANS_DOCKS
     window_extensions = [ChatRunningAgentsExtension]

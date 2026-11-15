@@ -1,3 +1,7 @@
+from core.modules.skills.effects.record_kept_skills_effect import RecordKeptSkillsEffect
+from core.modules.skills.needs.command_skill_needs import CommandSkillNeeds
+from core.modules.skills.needs.skill_read_first_needs import SkillReadFirstNeeds
+from core.modules.skills.policies.loaded_skill_policy import LoadedSkillPolicy
 from core.modules.skills.windows.skills_windows import SKILLS_WINDOWS
 from core.modules.skills.models.declarations.agent_skill_model_declaration import AgentSkillModelDeclaration
 from core.modules.skills.models.declarations.skill_request_model_declaration import SkillRequestModelDeclaration
@@ -71,6 +75,9 @@ class SkillsModule(Module):
     listeners = [SkillPublishListener, SkillReadListener, SkillPartReadListener, CommandSkillListener, KeptSkillsListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener, SkillRequestSaveListener]
     marks = [SkillMark]
     driver_rules = [LoadedSkillRule, ProfileSkillFirstRule, UnreadSkillStopRule]
+    needs = [SkillReadFirstNeeds, CommandSkillNeeds]
+    policies = [LoadedSkillPolicy]
+    effects = [RecordKeptSkillsEffect]
     agent_states = [SkillLoadRequired, SkillCommandRun, SkillBlockCountdown, KeptSkillsRecord]
     windows = SKILLS_WINDOWS
     inspectors = [SkillInspector]

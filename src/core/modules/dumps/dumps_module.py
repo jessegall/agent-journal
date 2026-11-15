@@ -1,3 +1,4 @@
+from core.modules.dumps.lines.open_dump_lines import OpenDumpLines
 from core.modules.dumps.windows.dumps_windows import DUMPS_WINDOWS
 from core.modules.dumps.models.declarations.dump_model_declaration import DumpModelDeclaration
 from core.modules.dumps.models.declarations.dump_item_model_declaration import DumpItemModelDeclaration
@@ -31,6 +32,7 @@ class DumpsModule(Module):
     """Adds dumps: notes and files the user adds, which the agent makes rows from, item by item."""
 
     name = "journal.core.dumps"
+    lines = [OpenDumpLines]
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.docking", "journal.core.agents", "journal.core.drivers"]
     skills = DUMPS_SKILLS

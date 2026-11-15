@@ -1,3 +1,5 @@
+from core.modules.schedules.effects.scheduled_job_effect import ScheduledJobEffect
+from core.modules.schedules.effects.scheduled_job_run_effect import ScheduledJobRunEffect
 from core.modules.schedules.windows.schedules_windows import SCHEDULES_WINDOWS
 from core.modules.schedules.models.declarations.scheduled_job_model_declaration import ScheduledJobModelDeclaration
 from core.modules.schedules.migrations.m004_schedule_session import ScheduleSessionMigration
@@ -26,6 +28,7 @@ class SchedulesModule(Module):
     stopped."""
 
     name = "journal.core.schedules"
+    effects = [ScheduledJobEffect, ScheduledJobRunEffect]
     nudges = SCHEDULE_NUDGES
     moves = [SchedulesMove]
     requires_engine = ">=5,<6"

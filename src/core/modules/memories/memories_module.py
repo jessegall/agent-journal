@@ -1,3 +1,9 @@
+from core.modules.memories.needs.memory_mark_needs import MemoryMarkNeeds
+from core.modules.memories.lines.open_mark_lines import OpenMarkLines
+from core.modules.memories.lines.start_delivery_lines import StartDeliveryLines
+from core.modules.memories.lines.keyword_delivery_lines import KeywordDeliveryLines
+from core.modules.memories.effects.open_mark_effect import OpenMarkEffect
+from core.modules.memories.effects.give_memories_effect import GiveMemoriesEffect
 from core.modules.memories.windows.extensions.agents_memories_extension import AgentsMemoriesExtension
 from core.modules.memories.windows.extensions.helpers_memories_extension import HelpersMemoriesExtension
 from core.modules.memories.models.declarations.memory_model_declaration import MemoryModelDeclaration
@@ -85,6 +91,9 @@ class MemoriesModule(Module):
     views = [ActiveMemory, ContextMemory, KeywordMemory, MemoryHolder]
     guards = [AgentScopeGuard, AgentWeightGuard, KeywordScopeGuard]
     handlers = [MakeMemoryHandler, WeighMemoriesHandler, ReadMemoryHandler, FadeMemoriesHandler, GiveMemoriesHandler, OpenMemoryMarkHandler, SkipMemoryMarkHandler]
+    needs = [MemoryMarkNeeds]
+    lines = [OpenMarkLines, StartDeliveryLines, KeywordDeliveryLines]
+    effects = [OpenMarkEffect, GiveMemoriesEffect]
     driver_rules = [StartDeliveryRule, KeywordDeliveryRule, OpenMarkRule]
     overlays = [WeighingOverlay]
     listeners = [StartMemoriesListener, CompactionFaderListener, TaskMemoryRemoverListener, MemoryMadeMarkListener, MemoryEditedMarkListener, MemoryWeighedMarkListener,

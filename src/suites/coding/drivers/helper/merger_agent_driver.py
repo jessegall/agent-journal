@@ -1,4 +1,4 @@
-from engine.agent_machine.contracts.rank_order import RankOrder
+from core.modules.drivers.drivers.rank_orders import WORKER_RANK_ORDER
 from engine.agent_machine.driver import Driver
 from engine.enums.responder import Responder
 from engine.enums.work_stop import WorkStop
@@ -11,6 +11,6 @@ class MergerAgentDriver(Driver):
     name = "coding.merger"
     agent_type = "merger"
     suite = "coding"
-    rank_order = RankOrder((), ())
+    rank_order = WORKER_RANK_ORDER
     work_stop = WorkStop.MERGE_CONTRACT
     responder = Responder.PARENT

@@ -16,6 +16,7 @@ class LineSource(ABC):
 
     events: ClassVar[Sequence[HookEventName]]
     includes_steps: ClassVar[bool] = False
+    agent_types: ClassVar[Sequence[str]] = ()
     carrier: ClassVar[LineCarrier] = LineCarrier.NOW
     category: ClassVar[LineCategory] = LineCategory.INFORMATION
     interval_key: ClassVar[str] = ""

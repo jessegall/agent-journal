@@ -1,3 +1,21 @@
+from core.modules.messages.needs.unread_message_needs import UnreadMessageNeeds
+from core.modules.messages.needs.unanswered_message_needs import UnansweredMessageNeeds
+from core.modules.messages.policies.unread_message_show_policy import UnreadMessageShowPolicy
+from core.modules.messages.lines.new_message_lines import NewMessageLines
+from core.modules.messages.lines.unanswered_message_lines import UnansweredMessageLines
+from core.modules.messages.lines.message_read_lines import MessageReadLines
+from core.modules.messages.lines.chat_manners_lines import ChatMannersLines
+from core.modules.messages.lines.chat_opening_lines import ChatOpeningLines
+from core.modules.messages.lines.plain_code_lines import PlainCodeLines
+from core.modules.messages.lines.reply_note_lines import ReplyNoteLines
+from core.modules.messages.lines.agent_text_lines import AgentTextLines
+from core.modules.messages.effects.message_delivery_effect import MessageDeliveryEffect
+from core.modules.messages.effects.message_read_effect import MessageReadEffect
+from core.modules.messages.effects.agent_text_effect import AgentTextEffect
+from core.modules.messages.effects.text_before_tool_effect import TextBeforeToolEffect
+from core.modules.messages.effects.transcript_catch_up_effect import TranscriptCatchUpEffect
+from core.modules.messages.effects.typed_prompt_effect import TypedPromptEffect
+from core.modules.messages.effects.peer_message_effect import PeerMessageEffect
 from core.modules.messages.windows.messages_windows import MESSAGES_WINDOWS
 from core.modules.messages.models.declarations.message_model_declaration import MessageModelDeclaration
 from core.modules.messages.models.declarations.message_work_source_model_declaration import MessageWorkSourceModelDeclaration
@@ -124,6 +142,10 @@ class MessagesModule(Module):
     migrations = [MessageHookScanIndexesMigration, MainMessageTargetsMigration, MessageSessionMigration, MessageTargetMigration, VisibleMessageIndexMigration, MessageReplyIndexMigration, MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration, MessagePeerMigration, MessageRecipientMigration, MessageHookIndexesMigration, MessageVisibilityMigration, MessageTypeIndexesMigration, MessageWorkSourcesMigration, WorkSourceSelectionsMigration, MessageParentEnvironmentMigration, MessageAgentTextMigration, MessageWorkSourcesEnvironmentIndexMigration]
     guards = [OneReplyPerMessageGuard, RepeatedMessageGuard, QuestionMessageGuard]
     handlers = [ReportSafeguardsStopHandler, RecordTypedPromptHandler, ResetMessageDeliveriesHandler, RecordParentReportHandler, RecordPeerMessageHandler, RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, SendAgentMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordWaitingMessageLineHandler, ChooseWorkSourceHandler, ClearWorkSourceHandler, NoteMessageReadHandler]
+    needs = [UnreadMessageNeeds, UnansweredMessageNeeds]
+    policies = [UnreadMessageShowPolicy]
+    lines = [NewMessageLines, UnansweredMessageLines, MessageReadLines, ChatMannersLines, ChatOpeningLines, PlainCodeLines, ReplyNoteLines, AgentTextLines]
+    effects = [MessageDeliveryEffect, MessageReadEffect, AgentTextEffect, TextBeforeToolEffect, TranscriptCatchUpEffect, TypedPromptEffect, PeerMessageEffect]
     driver_rules = [WaitingMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, ToolMessageRule, TranscriptMessageRule, TypedPromptRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule, PeerMessageRule, ReplyNoteRule]
     agent_states = [MessagesUnread, MessagesUnanswered, UnreadCountdown]
     subcommands = [MessageConversationsSubcommand, AgentReportsSubcommand, UnreadReportsSubcommand, AttachmentListSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand, ChooseWorkSourceSubcommand, ClearWorkSourceSubcommand, WorkSourceSubcommand]

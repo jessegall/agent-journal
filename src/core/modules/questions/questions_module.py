@@ -1,3 +1,4 @@
+from core.modules.questions.policies.own_question_tool_policy import OwnQuestionToolPolicy
 from core.modules.questions.models.declarations.question_model_declaration import QuestionModelDeclaration
 from core.modules.questions.docks.questions_docks import QUESTIONS_DOCKS
 from core.modules.questions.windows.questions_windows import QUESTIONS_WINDOWS
@@ -38,6 +39,7 @@ class QuestionsModule(Module):
     """Adds questions an agent asks the user, with the options it offers and the answer it gets."""
 
     name = "journal.core.questions"
+    policies = [OwnQuestionToolPolicy]
     nudges = QUESTION_NUDGES
     requires_engine = ">=5,<6"
     block_conditions = [QuestionAnswered, QuestionsClosed]

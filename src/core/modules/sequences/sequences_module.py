@@ -1,3 +1,8 @@
+from core.modules.sequences.policies.step_command_policy import StepCommandPolicy
+from core.modules.sequences.policies.step_guard_policy import StepGuardPolicy
+from core.modules.sequences.needs.unstarted_step_needs import UnstartedStepNeeds
+from core.modules.sequences.lines.sequence_trigger_lines import SequenceTriggerLines
+from core.modules.sequences.effects.sequence_trigger_effect import SequenceTriggerEffect
 from core.modules.sequences.windows.sequences_windows import SEQUENCES_WINDOWS
 from core.modules.sequences.models.declarations.sequence_model_declaration import SequenceModelDeclaration
 from core.modules.sequences.models.declarations.sequence_run_model_declaration import SequenceRunModelDeclaration
@@ -55,6 +60,10 @@ class SequencesModule(Module):
     time."""
 
     name = "journal.core.sequences"
+    effects = [SequenceTriggerEffect]
+    lines = [SequenceTriggerLines]
+    needs = [UnstartedStepNeeds]
+    policies = [StepCommandPolicy, StepGuardPolicy]
     nudges = SEQUENCE_NUDGES
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.documents", "journal.core.plans", "journal.core.questions"]

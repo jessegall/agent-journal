@@ -1,3 +1,4 @@
+from core.modules.agents.policies.program_settings_policy import ProgramSettingsPolicy
 from core.modules.agents.windows.agents_windows import AGENTS_WINDOWS
 from core.modules.agents.models.declarations.agent_model_declaration import AgentModelDeclaration
 from core.modules.agents.models.declarations.menu_answer_model_declaration import MenuAnswerModelDeclaration
@@ -131,6 +132,7 @@ class AgentsModule(Module):
     """Adds agents, one per session of an agent program, each an actor with the same number."""
 
     name = "journal.core.agents"
+    policies = [ProgramSettingsPolicy]
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
     models = [AgentModelDeclaration, MenuAnswerModelDeclaration, AgentFoldModelDeclaration, AgentFoldRowModelDeclaration, AgentSessionModelDeclaration]

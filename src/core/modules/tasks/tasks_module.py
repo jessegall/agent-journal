@@ -1,3 +1,18 @@
+from core.modules.tasks.needs.task_work_needs import TaskWorkNeeds
+from core.modules.tasks.needs.unlogged_write_needs import UnloggedWriteNeeds
+from core.modules.tasks.needs.block_review_needs import BlockReviewNeeds
+from core.modules.tasks.effects.block_review_effect import BlockReviewEffect
+from core.modules.tasks.lines.blocked_work_lines import BlockedWorkLines
+from core.modules.tasks.lines.quiet_task_lines import QuietTaskLines
+from core.modules.tasks.lines.log_request_lines import LogRequestLines
+from core.modules.tasks.lines.task_filed_lines import TaskFiledLines
+from core.modules.tasks.lines.task_name_lines import TaskNameLines
+from core.modules.tasks.lines.where_you_stand_lines import WhereYouStandLines
+from core.modules.tasks.lines.still_held_lines import StillHeldLines
+from core.modules.tasks.lines.one_in_hand_lines import OneInHandLines
+from core.modules.tasks.lines.session_start_summary_lines import SessionStartSummaryLines
+from core.modules.tasks.lines.wait_in_words_lines import WaitInWordsLines
+from core.modules.tasks.lines.block_review_lines import BlockReviewLines
 from core.modules.tasks.windows.tasks_windows import TASKS_WINDOWS
 from core.modules.tasks.models.declarations.task_model_declaration import TaskModelDeclaration
 from core.modules.tasks.models.declarations.task_tag_model_declaration import TaskTagModelDeclaration
@@ -153,6 +168,9 @@ class TasksModule(Module):
     marks = [TaskMark]
     former_event_keys = {"core.tasks.task.drop_hold": "core.tasks.task.release_holder"}
     docks = TASKS_DOCKS
+    needs = [TaskWorkNeeds, UnloggedWriteNeeds, BlockReviewNeeds]
+    effects = [BlockReviewEffect]
+    lines = [BlockedWorkLines, QuietTaskLines, LogRequestLines, TaskFiledLines, TaskNameLines, WhereYouStandLines, StillHeldLines, OneInHandLines, SessionStartSummaryLines, WaitInWordsLines, BlockReviewLines]
     driver_rules = [TaskFiledRule, TaskStartRule, TaskReturnReminderRule, WaitDescriptionRule, UnopenableBlockRule, TaskStopRule, AutoModeTaskStopRule, BlockedWorkRule]
     windows = TASKS_WINDOWS
     inspectors = [TaskInspector]

@@ -26,3 +26,4 @@ class BlockPlan:
     subject: SubjectReference | None = None
     context_generation: int | None = None
     lifting_lines: tuple[str, ...] = ()
+    stop_nudge: Nudge | None = None

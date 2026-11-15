@@ -1,3 +1,7 @@
+from core.modules.plugins.policies.plugin_program_policy import PluginProgramPolicy
+from core.modules.plugins.policies.plugin_policy import PluginPolicy
+from core.modules.plugins.lines.plugin_lines import PluginLines
+from core.modules.plugins.effects.plugin_effect import PluginEffect
 from core.modules.plugins.windows.plugins_windows import PLUGINS_WINDOWS
 from core.modules.plugins.models.declarations.queued_run_model_declaration import QueuedRunModelDeclaration
 from core.modules.plugins.models.declarations.plugin_model_declaration import PluginModelDeclaration
@@ -115,6 +119,9 @@ class PluginsModule(Module):
     an agent may only propose."""
 
     name = "journal.core.plugins"
+    effects = [PluginEffect]
+    lines = [PluginLines]
+    policies = [PluginProgramPolicy, PluginPolicy]
     nudges = PLUGIN_NUDGES
     seed_reason = "a plugin is a program the user installs, which a demo has none of"
     requires_engine = ">=5,<6"

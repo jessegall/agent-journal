@@ -1,3 +1,4 @@
+from core.modules.helpers.policies.start_names_model_policy import StartNamesModelPolicy
 from core.modules.helpers.models.helpers_models import HELPERS_MODELS
 from core.modules.helpers.migrations.helpers_migrations import HELPERS_MIGRATIONS
 from core.modules.helpers.commands.helpers_handlers import HELPERS_HANDLERS
@@ -21,6 +22,7 @@ class HelpersModule(Module):
     from them by message."""
 
     name = "journal.core.helpers"
+    policies = [StartNamesModelPolicy]
     seed_reason = "demo programs have no outages"
     move_reason = "version 4 had no helpers"
     requires_engine = ">=5,<6"

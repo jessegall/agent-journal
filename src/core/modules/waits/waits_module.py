@@ -1,3 +1,5 @@
+from core.modules.waits.lines.long_wait_lines import LongWaitLines
+from core.modules.waits.effects.work_ends_wait_effect import WorkEndsWaitEffect
 from core.modules.waits.models.declarations.wait_model_declaration import WaitModelDeclaration
 from core.modules.waits.models.declarations.wait_target_model_declaration import WaitTargetModelDeclaration
 from core.modules.waits.migrations.m004_wait_session import WaitSessionMigration
@@ -26,6 +28,8 @@ class WaitsModule(Module):
     is open it takes control of the agent as an exclusive overlay."""
 
     name = "journal.core.waits"
+    effects = [WorkEndsWaitEffect]
+    lines = [LongWaitLines]
     move_reason = "version 4 had no table for waits"
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.chat"]
