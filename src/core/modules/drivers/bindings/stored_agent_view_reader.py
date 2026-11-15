@@ -1,4 +1,5 @@
 from datetime import datetime
+from core.modules.drivers.support.driver_settings import CAPABILITY_PROOFS_SETTING
 from core.modules.drivers.support.block_judgement import BlockJudgement
 from core.modules.drivers.models.agent_frame_suppression import OPEN_SUPPRESSIONS_REASON, AgentFrameSuppression
 from engine.driver.refusal_skips import RefusalSkips
@@ -78,7 +79,7 @@ class StoredAgentViewReader(AgentViewReader):
             escalation=escalation, settings={key: self.settings.number(key) for key in (STOP_LIMIT_SETTING, TOOL_LIMIT_SETTING)},
             is_resting=self.hook_calls.has_ended_turn(agent_id), pinned_slices=row.pinned_slices if row is not None else (),
             table_digest=row.table_digest if row is not None else "", work_stop=driver.work_stop, responder=self.responder(driver.responder, agent), rank_order=driver.rank_order,
-            depth_limit=driver.depth_limit, program=self.providers.provider(agent.program).capabilities(), counts=counts, block_outcomes=self.judgement.outcomes(rows, question, agent_id), newest_hook_at=self.newest_hook_at(agent_id), last_refused_rules=self.skips.last_refused_rules(agent_id),
+            depth_limit=driver.depth_limit, program=self.providers.provider(agent.program).capabilities().proved(agent.program, self.settings.texts(CAPABILITY_PROOFS_SETTING)), counts=counts, block_outcomes=self.judgement.outcomes(rows, question, agent_id), newest_hook_at=self.newest_hook_at(agent_id), last_refused_rules=self.skips.last_refused_rules(agent_id),
             journal_started_at=driver_epoch.started_at.value if driver_epoch is not None and driver_epoch.started_at is not None else None)
 
     def suppressions(self, agent_id: int) -> tuple[NeedKey, ...]:
