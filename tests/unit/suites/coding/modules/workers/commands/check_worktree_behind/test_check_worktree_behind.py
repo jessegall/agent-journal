@@ -17,7 +17,7 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.nudges.main_agent_stale_worktree_nudge import MainAgentStaleWorktreeNudge
 from suites.coding.modules.workers.nudges.fast_forwarded_nudge import FastForwardedNudge
-from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED, MAIN_UPDATE_COMMITS
+from suites.coding.modules.workers.support.worker_settings import FORCED_UPDATE_COMMITS, MERGER_ENABLED, MAIN_UPDATE_COMMITS
 from suites.coding.modules.workers.ticks.behind_worktrees import BehindWorktrees
 
 TIP = "0123456789abcdef"
@@ -77,8 +77,8 @@ class Repository:
 
 
 class Settings:
-    def __init__(self, main_count: int = 0, merger: bool = True) -> None:
-        self.values = {MAIN_UPDATE_COMMITS: main_count, MERGER_ENABLED: merger}
+    def __init__(self, main_count: int = 0, merger: bool = True, forced_count: int = 0) -> None:
+        self.values = {MAIN_UPDATE_COMMITS: main_count, MERGER_ENABLED: merger, FORCED_UPDATE_COMMITS: forced_count}
 
     def number(self, key: str) -> int:
         return int(self.values[key])

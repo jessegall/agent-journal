@@ -5,7 +5,7 @@ import pytest
 
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from tests.stories.core.modules.plugins.support.worker_step_samples import step_plugin_folder
-from tests.integration.suites.coding.modules.workers.test_checkpoint_runs import merge
+from tests.stories.suites.coding.modules.workers.checkpoint_runs import merge
 from tests.integration.suites.coding.modules.workers.test_hand_in_rebase import expect_tip
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT, COMMIT_COMMAND
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE

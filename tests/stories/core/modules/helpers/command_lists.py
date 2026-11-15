@@ -1,9 +1,10 @@
+from core.modules.drivers.support.driver_settings import AUTOMATIC_APPROVAL
 from tests.stories.core.modules.helpers.support.journal_hook_lines import journal_hook_line
 from tests.stories.core.modules.helpers.support.list_workers import WORKER_SESSION, worker_story
 
 __all__ = ["worker_story"]
 
-SETTING_LINE = ("setting", "set", "journal.core.helpers.accept-every-approval", "true")
+SETTING_LINE = ("setting", "set", AUTOMATIC_APPROVAL, "true")
 WORKER_REFUSAL = "A worker may not run setting set: it runs the groups proof, worker, todo-item, memory and the lines message unread, message read"
 
 
@@ -11,12 +12,14 @@ def test_a_worker_runs_a_line_its_type_lists(worker_story):
     story, worker = worker_story
     story.expect_hook_allowed(WORKER_SESSION, journal_hook_line("task", "show", "1"))
     story.expect_text("task show 1", "state: started", actor=worker)
+    # the list lets a worker read any task: the scope, not the list, judges which ones it may see
+    story.expect_hook_allowed(WORKER_SESSION, journal_hook_line("task", "show", "2"))
 
 
 def test_a_worker_is_refused_a_line_its_type_does_not_list_and_nothing_changes(worker_story):
     story, worker = worker_story
     story.expect_hook_refusal(WORKER_SESSION, journal_hook_line(*SETTING_LINE), WORKER_REFUSAL)
-    story.expect_text("setting show journal.core.helpers.accept-every-approval", "false")
+    story.expect_text(f"setting show {AUTOMATIC_APPROVAL}", "false")
 
 
 def test_the_refusal_names_the_allowed_groups_and_lines_and_what_to_do(worker_story):
@@ -38,6 +41,3 @@ def test_the_main_agent_runs_every_command(worker_story):
 
 
 # The scope half of story 301, a worker refused a task it cannot read, waits on plan 1111's actor scope.
-def test_the_list_lets_a_worker_read_a_task_the_scope_then_judges(worker_story):
-    story, worker = worker_story
-    story.expect_hook_allowed(WORKER_SESSION, journal_hook_line("task", "show", "2"))

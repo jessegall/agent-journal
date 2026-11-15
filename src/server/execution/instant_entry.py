@@ -17,6 +17,7 @@ class InstantEntry:
     def reading(self) -> dict[str, object]:
         parent = self.ticket.parent
         return {"line": self.ticket.line, "class": self.ticket.execution_class.name, "priority": self.ticket.priority.label, "starter": self.ticket.starter.label,
+                "slot_cost": self.ticket.execution_class.slot_cost,
                 "seconds": self.waited_seconds, "is_running": self.is_running, "parent_line": parent.line if parent is not None else ""}
 
     @property

@@ -5,9 +5,9 @@ from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.actor.actor import Actor
 from core.modules.profiles.support.profile_files import ProfileFiles
 from engine.enums.actor_type import ActorType
-from tests.integration.core.modules.agents.test_agent_kind_controls import ALLOWED_MODELS, set_options
-from tests.integration.core.modules.helpers.test_helper_jobs import JOB, helper_agent, read_jobs, resumable_session
-from tests.integration.core.modules.helpers.test_occupant_rotation import job_launch
+from tests.stories.core.modules.agents.agent_kind_controls import ALLOWED_MODELS, set_options
+from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, read_jobs, resumable_session
+from tests.stories.core.modules.helpers.occupant_rotation import job_launch
 from tests.stories.core.modules.helpers.support.rotating_helper import START_ROTATING, EndedEachLaunchHelper, story_with_profile_file
 from tests.stories.core.support.agent_labels import agent_number
 from suites.coding.support.shipped_profiles import MERGER_PROFILE

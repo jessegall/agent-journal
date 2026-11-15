@@ -19,7 +19,7 @@ from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story_fixture import StoryFixture
-from tests.integration.core.modules.helpers.test_helper_jobs import StartedHelper, helper_agent
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 

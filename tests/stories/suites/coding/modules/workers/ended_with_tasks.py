@@ -7,7 +7,7 @@ from engine.command.bus import Bus
 from suites.coding.modules.workers.commands.end_inactive_worker.end_inactive_worker import EndInactiveWorker
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.integration.suites.coding.modules.workers.test_gone_workers import missing_program, running_worker, worker_story
+from tests.stories.suites.coding.modules.workers.gone_workers import missing_program, running_worker, worker_story
 from tests.integration.suites.coding.modules.workers.test_stopped_with_tasks import MAIN_SESSION, ended, expect_worker_restart, main_agent_lines, retried, two_task_worker
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH

@@ -3,7 +3,7 @@ from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.drivers.agent_pause import FakeTyping
 from tests.stories.core.modules.drivers.refusal_skips import guard_skips
-from tests.integration.core.modules.helpers.test_helper_jobs import START, EndedHelper, helper_agent
+from tests.stories.core.modules.helpers.helper_jobs import START, EndedHelper, helper_agent
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.large_reads import seeded_children, seeded_finished_jobs
 from tests.stories.core.support.read_limit import limit_reads

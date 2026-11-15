@@ -18,8 +18,8 @@ from core.modules.helpers.support.kept_helpers import KeptHelpers
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
-from tests.integration.core.modules.helpers.test_helper_jobs import StartedHelper, helper_agent, resumable_session
-from tests.integration.core.modules.helpers.test_helper_jobs import EndedHelper as ReportedHelper
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent, resumable_session
+from tests.stories.core.modules.helpers.helper_jobs import EndedHelper as ReportedHelper
 from tests.stories.server.support.server_client import server_story
 from tests.integration.support.server_harness import viewer_answer
 from tests.stories.server.support.browser_story import expect_browser

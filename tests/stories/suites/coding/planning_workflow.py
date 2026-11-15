@@ -90,9 +90,9 @@ def test_the_functional_designer_must_read_the_user_stories_skill_and_is_given_i
     bundled_story.expect_rows("journal-user-stories" in designer.body, "mandatory" in designer.body, "journal-user-stories" in designer.skills, detail=designer.body)
 
 
-def test_the_planner_turns_stories_into_story_books_of_one_task_each(bundled_story):
+def test_the_planner_plans_the_steps_and_never_the_tests(bundled_story):
     planner = profile(bundled_story, PLANNER)
-    bundled_story.expect_rows("story books" in planner.body, "one task" in planner.body, "names each story" in planner.body, "when the book is done" in planner.body, detail=planner.body)
+    bundled_story.expect_rows("never turn stories into story books or test tasks" in planner.body, "when its step is done" in planner.body, detail=planner.body)
 
 
 def test_with_helpers_switched_off_the_main_agent_cannot_start_a_functional_designer(bundled_story):

@@ -9,6 +9,7 @@ from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story_fixture import StoryFixture
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.messages.rules.unread_message_write_rule import UnreadMessageWriteRule
+from tests.integration.support.fixture_journal import FixtureJournal
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 
@@ -18,14 +19,14 @@ LONG_LISTING = HookSamples.shell("ls -l", ShellPart("ls", CommandCategory.READ, 
 
 @pytest.fixture(autouse=True)
 def listeners_run_at_hook(monkeypatch):
-    original = Story.hook
+    original = FixtureJournal.hook
 
     def hook_after_listeners(story, *arguments, **options):
         story.run_listeners()
         story.advance(timedelta(seconds=1))
         return original(story, *arguments, **options)
 
-    monkeypatch.setattr(Story, "hook", hook_after_listeners)
+    monkeypatch.setattr(FixtureJournal, "hook", hook_after_listeners)
 
 
 def test_a_module_starts_a_countdown_in_one_line_and_the_agent_reads_the_same_line_as_before(played):

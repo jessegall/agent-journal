@@ -9,10 +9,10 @@ LOOKUP = "SELECT id FROM tasks WHERE id = ?"
 
 
 class PlannedDatabase:
-    """A stand-in database that counts how often it is asked for a query plan, under a schema a test can change."""
+    """A stand-in database that counts how often it is asked for a query plan."""
 
-    def __init__(self, schema: str = "CREATE TABLE tasks (id INTEGER PRIMARY KEY)", version: int = 1) -> None:
-        self.schema, self.version, self.plans_asked = schema, version, 0
+    def __init__(self) -> None:
+        self.plans_asked = 0
 
     def content_mark(self) -> tuple[int, int, int]:
         return (1, 0, 0)
@@ -23,12 +23,6 @@ class PlannedDatabase:
 
     def is_partial_index(self, name: str) -> bool:
         return False
-
-    def schema_version(self) -> int:
-        return self.version
-
-    def schema_text(self, sql: str) -> str:
-        return self.schema
 
 
 @pytest.fixture(autouse=True)
@@ -52,10 +46,10 @@ def test_a_query_shape_is_planned_once_across_two_repeated_works():
     assert database.plans_asked == 1
 
 
-def test_a_new_schema_version_plans_again():
+def test_a_sync_plans_again():
     database = PlannedDatabase()
     read_once(database, 1)
-    database.schema, database.version = "CREATE TABLE tasks (id INTEGER PRIMARY KEY, title TEXT)", 2
+    QueryPlans.forget()
     read_once(database, 1)
     assert database.plans_asked == 2
 

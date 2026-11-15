@@ -101,6 +101,7 @@ src/core/modules/plans/bindings/focused_block_review_scope.py:the focus keeps ev
 src/core/modules/plans/bindings/plan_row_authors.py:every edit asked about is matched to the plan it belongs to
 src/core/modules/plans/commands/plan_places/plan_places_subcommand.py:Every phase of the newest unclosed plans is a place a task can go to, with the tasks already in it.
 src/core/modules/plans/commands/repair_plan_states/repair_plan_states_handler.py:every blocked plan and its open waits are checked against the plans they wait on
+src/core/modules/plans/commands/repair_plan_states/repair_plan_states_handler.py:every started plan is checked for a failed checkpoint run its finished tasks left behind
 src/core/modules/plans/guards/one_task_phase_guard.py:the check counts the phases of every task of the plan
 src/core/modules/plans/listeners/cancel_open_plan_tasks_listener.py:a cancelled plan cancels every open task it holds
 src/core/modules/plans/listeners/checkpoint_reach_listener.py:every changed task may reach a checkpoint of its plan
@@ -195,11 +196,13 @@ src/core/modules/usage/commands/profile_list/profile_list_subcommand.py:Two coun
 src/core/modules/usage/commands/statistic_list/statistic_list_subcommand.py:One number for each counter the code and the profiles name, never for stored journal rows.
 src/core/modules/usage/commands/usage_agents/usage_agents_subcommand.py:The agents that have not ended, which the running programs bound; every reader of a request shares this one kept load.
 src/core/modules/usage/commands/usage_show/usage_show_subcommand.py:The agents that have not ended, which the running programs bound; every reader of a request shares this one kept load.
+src/core/modules/usage/conditions/agent_activity.py:the agents list keeps every agent waiting on an answer or on help among the working ones
+src/core/modules/usage/conditions/agent_activity.py:the agents list keeps every agent waiting on the answer to its question among the working ones
 src/core/modules/viewer/commands/prune_window_permissions/prune_window_permissions_handler.py:pruning checks every window permission of the environment for a subject that is gone
 src/core/modules/waits/listeners/target_resolution_listener.py:Every save of a row asks whether an open wait waits on it, so the unresolved targets are one kept load that the open waits bound.
 src/engine/listener/rows/event_rows.py:every row the logged events name is read once for the listeners
 src/engine/repository/standard_rows.py:the rows a version comes with are compared by title with every stored one
-src/engine/testing/stories/story.py:the story kit lists every row of a table for an assertion
+src/engine/testing/stories/kit_rows.py:the story kit lists every row of a table for an assertion
 src/suites/coding/listeners/full_test_run_listener.py:a full test run speaks for every task in testing and its holder
 src/suites/coding/modules/checks/listeners/ended_check_runs_listener.py:at a start every check left running is ended
 src/suites/coding/modules/checks/queries/check_query.py:The checks of a project are a catalogue a user or an agent makes one at a time, and a round runs every one of them.
@@ -274,12 +277,12 @@ src/suites/coding/modules/workers/support/worker_task_copies.py:every task of th
 src/suites/coding/modules/workers/support/worker_test_failures.py:the flagged lines name every test failure of the tasks asked about
 src/suites/coding/modules/workers/support/worker_unfinished_tasks.py:a worker's unit is every task assigned to it, which can hold more than fifty
 src/suites/coding/modules/workers/ticks/merger_retry.py:the tick retries the merger in every environment with an unread line or an open visit
+src/suites/coding/modules/workers/ticks/stopped_worker_runs.py:the tick reports in every environment with a run of a stopped worker
+src/suites/coding/modules/workers/ticks/worker_resume_retry.py:every worker with a waiting resume line is tried again
 src/suites/coding/modules/workers/ticks/worker_tests/stalled_worker_test_runs.py:every started plan is looked at for a checkpoint run that has no tests
 src/suites/coding/modules/workers/ticks/worker_tests/stalled_worker_test_runs.py:every test of a checkpoint run still shown as running is looked at
 src/suites/coding/modules/workers/ticks/worker_tests/stalled_worker_test_runs.py:the run of every proof still shown as running is looked at
 src/suites/coding/modules/workers/ticks/worker_tests/stalled_worker_test_runs.py:the runs and checkpoints of those tests are read in one query each
-src/suites/coding/modules/workers/ticks/stopped_worker_runs.py:the tick reports in every environment with a run of a stopped worker
 src/suites/coding/modules/workers/ticks/worker_tests/unlaunched_worker_test_runs.py:every running run may be a worker test that never launched
 src/suites/coding/modules/workers/ticks/worker_tests/unlaunched_worker_test_runs.py:every test of a checkpoint run still shown as running may be one that never launched
-src/suites/coding/modules/workers/ticks/worker_resume_retry.py:every worker with a waiting resume line is tried again
 src/suites/coding/support/next_task.py:the own tasks of an agent are every task it holds or is assigned

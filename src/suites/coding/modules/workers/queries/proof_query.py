@@ -50,16 +50,30 @@ class ProofQuery(Query[Proof]):
     def waiting_proofs(self, worktree_id: int) -> Self:
         return self.worktree_proofs(worktree_id).filter(state=ProofState.SHOWN)
 
+    # every proof row of these tasks, those an older worktree made and a newer one replaced too
+    def task_rows(self, task_ids: Sequence[int]) -> tuple[Proof, ...]:
+        proofs = self.matching(Among("task_id", task_ids))
+        return self.kept.read(proofs, lambda: tuple(proofs.every_row(PROOFS_REASON)), name="workers.task_proofs")
+
     def task_proofs(self, task_ids: Sequence[int]) -> tuple[Proof, ...]:
-        proofs = self.matching(Among("task_id", task_ids)).every_row(PROOFS_REASON)
+        proofs = self.task_rows(task_ids)
         current = {(proof.task_id, proof.point): proof for proof in sorted(proofs, key=lambda proof: (proof.worktree_id, proof.id))}
         return tuple(sorted(current.values(), key=lambda proof: proof.id))
+
+    # every worktree a proof of these tasks was made or returned in, an older one whose proof a newer one replaced too
+    def task_worktree_ids(self, task_ids: Sequence[int]) -> tuple[int, ...]:
+        return tuple(sorted({proof.worktree_id for proof in self.task_rows(task_ids)}))
 
     def committed_proofs(self, task_ids: Sequence[int]) -> Self:
         return self.filter(state=ProofState.COMMITTED).matching(Among("task_id", task_ids))
 
     def delivered_proofs(self, worktree_id: int) -> Self:
         return self.waiting_proofs(worktree_id).matching(ProofTaskTesting())
+
+    # the worktrees with a shown proof of a task in testing: the only ones a stalled test can be queued for
+    def delivered_worktree_ids(self) -> tuple[int, ...]:
+        proofs = self.filter(state=ProofState.SHOWN).matching(ProofTaskTesting())
+        return tuple(sorted({proof.worktree_id for proof in proofs.every_row(PROOFS_REASON)}))
 
     def test_rows(self) -> tuple[Proof, ...]:
         proofs = self.test_waiting()

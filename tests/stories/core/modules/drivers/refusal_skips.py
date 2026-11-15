@@ -17,7 +17,7 @@ from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner
-from tests.integration.core.modules.helpers.test_helper_jobs import StartedHelper, helper_agent
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 

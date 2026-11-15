@@ -85,6 +85,19 @@ class PlanCheckpoints:
             if completed and not passes_only and run_tasks.get(checkpoint.id) != completed:
                 self.repository.save(CheckpointReach.started(context.actor.id, plan_id, checkpoint.id, completed), context)
 
+    # A plan whose windows are all reached but one holds a failed run from before its tasks last ended is looked at
+    # again once: that window gets one new run, or passes when it has no completed task, and the plan closes on the
+    # pass of its last window. The new run is newer than every end, so a failure of it is never run again here.
+    def rerun_stale(self, plan_id: int, context: Context) -> None:
+        windows = self.windows(plan_id)
+        if not windows.phases:
+            return
+        reaches = self.reaches(plan_id)
+        newest = {reach.phase_id: reach for reach in reaches if reach.source.opens_phases()}
+        if not self.running_phase_ids(reaches) and any(windows.is_failed_before_end(checkpoint, newest[checkpoint.id])
+                                                       for checkpoint in windows.checkpoint_phases() if checkpoint.id in newest):
+            self.record(plan_id, context)
+
     # a checkpoint whose run passed and that no person was set to check gets its pass, as one whose run passed after this change does
     def release_unchecked(self, plan_id: int, windows: CheckpointWindows, reaches: tuple[CheckpointReach, ...], passed: frozenset[int], context: Context) -> frozenset[int]:
         unchecked = frozenset(phase.id for phase in windows.phases if not phase.person_check)

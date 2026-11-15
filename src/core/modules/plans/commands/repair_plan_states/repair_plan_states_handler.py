@@ -6,21 +6,26 @@ from core.modules.plans.commands.repair_plan_states.repair_plan_states import Re
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.plan_wait import PlanWait
+from engine.actor.actor import Actor
+from engine.command.bus import Bus
+from core.modules.plans.commands.rerun_stale_checkpoints.rerun_stale_checkpoints import RerunStaleCheckpoints
 from core.modules.plans.support.plan_waits import PlanWaits
 from core.modules.tasks.support.task_waits import TaskWaits
 
 PLAN_TARGET = "plans:"
 ENDED_PLAN_STATES = (PlanState.COMPLETED, PlanState.CANCELLED)
 OPEN_WAITS_REASON = "every blocked plan and its open waits are checked against the plans they wait on"
+STARTED_PLANS_REASON = "every started plan is checked for a failed checkpoint run its finished tasks left behind"
 
 
 class RepairPlanStatesHandler(Handler[RepairPlanStates, int]):
-    """Ends the waits on each plan that has ended, which opens the plans and tasks whose last wait it was."""
+    """Ends the waits on each plan that has ended, which opens the plans and tasks whose last wait it was, and gives
+    a started plan whose checkpoint holds a failed run from before its tasks last ended one new run of it."""
 
     command = RepairPlanStates
 
-    def __init__(self, queries: Queries, plan_waits: PlanWaits, task_waits: TaskWaits) -> None:
-        self.queries, self.plan_waits, self.task_waits = queries, plan_waits, task_waits
+    def __init__(self, queries: Queries, plan_waits: PlanWaits, task_waits: TaskWaits, bus: Bus) -> None:
+        self.queries, self.plan_waits, self.task_waits, self.bus = queries, plan_waits, task_waits, bus
 
     def handle(self, command: RepairPlanStates, context: Context) -> int:
         blocked_ids = [plan.id for plan in self.queries.query(Plan).filter(state=PlanState.BLOCKED).every_row(OPEN_WAITS_REASON)]
@@ -32,4 +37,6 @@ class RepairPlanStatesHandler(Handler[RepairPlanStates, int]):
             self.plan_waits.ended(plan, context)
         stale_task_waits = [wait for wait, plan_id in task_waits if plan_id in ended]
         self.task_waits.resolved(stale_task_waits, context)
+        for plan in self.queries.query(Plan).filter(state=PlanState.STARTED).every_row(STARTED_PLANS_REASON):
+            self.bus.run(RerunStaleCheckpoints(plan.id), Actor.core(), cause_id=context.cause_id, environment_id=plan.environment_id)
         return sum(wait.blocker_id in ended for wait in open_waits) + len(stale_task_waits)

@@ -15,8 +15,8 @@ from core.modules.agents.support.dispatch_policy import DispatchPolicy
 from core.modules.agents.support.receivers import Receivers
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.helpers.support.helper_resume import HelperResume
-from tests.integration.core.modules.helpers.test_helper_jobs import EndedHelper, JOB, StartedHelper, helper_agent, resumable_session
-from tests.integration.core.modules.helpers.test_helper_reports import LINES
+from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, JOB, StartedHelper, helper_agent, resumable_session
+from tests.stories.core.modules.helpers.helper_reports import LINES
 from tests.stories.core.modules.agents.support import sample_suite_start
 from tests.stories.core.modules.agents.support.sample_suite_start import SampleSuiteStart
 from tests.stories.core.modules.agents.support.strict_policy import STRICT_POLICY, StrictPolicy

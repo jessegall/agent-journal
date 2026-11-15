@@ -12,7 +12,7 @@ from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from pathlib import Path
-from tests.integration.core.modules.helpers.test_start_helper import START, started
+from tests.stories.core.modules.helpers.start_helper import START, started
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.suites.coding.modules.workers.support.program_split import (
     SAMPLE_MODULE, dispatch, exit_program, expect_program, new_task, outage, real_program_checks,

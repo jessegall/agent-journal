@@ -78,3 +78,13 @@ def test_an_action_that_raises_ends_the_request_failed_and_the_agent_asks_again(
     story.expect_rows(len(open_ids) == 1, request.id not in open_ids, detail=str(open_ids))
     phone_viewer.value("messages.chat", ["approval", "accept", str(open_ids[0])])
     story.expect_rows(story.row(ApprovalRequest, open_ids[0]).state is ApprovalState.ACCEPTED)
+
+
+def test_a_registry_refresh_removes_a_stale_closed_approval_card(phone_request, phone_viewer):
+    story, request = phone_request
+    phone_viewer.value("messages.chat", ["approval", "refuse", str(request.id)])
+    story.new_row_id(f"dock add approvals.request approval {request.id} --environment main", actor=story.user)
+    story.expect_sync_success(UPGRADE)
+    story.run_listeners()
+    items = tuple(story.story_rows(DockItem, target_model="approval", target_id=request.id, state=DockItemState.DOCKED))
+    story.expect_rows(not items)

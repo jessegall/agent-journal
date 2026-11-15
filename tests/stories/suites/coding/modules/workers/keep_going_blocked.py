@@ -5,7 +5,7 @@ import pytest
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.nudges.worker_task_blocked_nudge import WorkerTaskBlockedNudge
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.integration.suites.coding.modules.workers.test_gone_workers import RESUMED_PID, missing_program, running_worker, start_launcher, worker_story
+from tests.stories.suites.coding.modules.workers.gone_workers import RESUMED_PID, missing_program, running_worker, start_launcher, worker_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from suites.coding.modules.workers.nudges.worker_task_blocked_nudge import WorkerTaskBlockedNudge

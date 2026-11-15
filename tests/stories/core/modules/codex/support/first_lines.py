@@ -46,7 +46,9 @@ def expect_read_request(story) -> None:
 def expect_image_read(story) -> None:
     story.expect_success("skill write")
     story.agent = hook_agent(story, story.hook("s-1", HookSamples.session_start().with_fields(program="codex")))
-    story.container.get(SkillRequirement).is_required = True
+    requirement = SkillRequirement()
+    requirement.is_required = True
+    story.bind(SkillRequirement, requirement)
     home = story.home.folder
     (home.parent / ".journal").symlink_to(home, target_is_directory=True)
     binary = GoBuild.built("journal-hook", home.parent / "journal-hook")

@@ -8,8 +8,8 @@ from engine.testing.stories.story_fixture import StoryFixture
 from engine.testing.examples.hook_samples import HookSamples
 from engine.enums.tool_type import ToolType
 from tests.stories.core.modules.documents.support.trail_fixtures import SelectedTrail, Scenario, feature
-from tests.integration.core.modules.helpers.test_start_helper import started
-from tests.integration.core.modules.helpers.test_helper_jobs import resumable_session, helper_agent
+from tests.stories.core.modules.helpers.start_helper import started
+from tests.stories.core.modules.helpers.helper_jobs import resumable_session, helper_agent
 from suites.coding.support.shipped_profiles import PLANNER_PROFILE
 
 

@@ -5,6 +5,7 @@ from types import SimpleNamespace
 import pytest
 
 from engine.testing.pytest_wiring import pytest_plugin
+from engine.testing.templates import template_databases
 from engine.testing.pytest_wiring.pytest_plugin import TEMPLATE_FOLDER_VARIABLE, chooses_template_folder, run_template_folder
 from engine.testing.runs.run_size import RunSize
 from engine.testing.cache.template_cache import TemplateCache
@@ -35,7 +36,7 @@ def test_no_run_builds_a_template_before_it_starts(first_process, target):
         pytest.fail("a template was built before the run started")
 
     first_process.setattr(pytest_plugin, "run_template_folder", lambda: None)
-    first_process.setattr(pytest_plugin, "TemplateDatabases", refuse_build)
+    first_process.setattr(template_databases, "TemplateDatabases", refuse_build)
     pytest_plugin.pytest_cmdline_main(run_config(target))
 
 

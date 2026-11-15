@@ -8,7 +8,7 @@ from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.helpers.testing.story_helper_programs import StoryHelperPrograms
 from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
-from tests.integration.core.modules.helpers.test_start_helper import started
+from tests.stories.core.modules.helpers.start_helper import started
 from tests.stories.core.support.coding_fixtures import UserBuilder, OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from tests.integration.suites.coding.modules.workers.test_test_queue import PROOF, recording_launch

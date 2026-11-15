@@ -23,6 +23,7 @@ from engine.testing.selection.affected_tests import AffectedTests
 from engine.testing.selection.selection_misses import SelectionMisses
 from engine.testing.templates.touched_code import TouchedCode
 from engine.testing.stories.story_fixture import StoryFixture
+from engine.testing.stories.internal_story_files import InternalStoryFiles
 from engine.testing.stories.story_overlap import StoryOverlap
 from engine.testing.stories.story_steps import StorySteps
 from engine.testing.stories.story_budget import BUDGET_MARKER, POINTS_BUDGET, StoryBudget
@@ -35,6 +36,7 @@ if TYPE_CHECKING:
     from engine.testing.templates.template_databases import TemplateDatabases
 
 STORY_OVERLAP = pytest.StashKey[StoryOverlap]()
+INTERNAL_FILES = pytest.StashKey[InternalStoryFiles]()
 STORY_RUNS = pytest.StashKey[list[StorySteps]]()
 RUN_FOLDER = pytest.StashKey[Path]()
 CALL_PASSED = pytest.StashKey[bool]()
@@ -117,6 +119,7 @@ def pytest_configure(config: pytest.Config) -> None:
         config.stash[RECORDER] = TestMapRecorder()
         config.stash[TEMPLATE_FILES] = {}
         config.stash[RECORDER].start()
+    config.stash[INTERNAL_FILES] = InternalStoryFiles(config.rootpath)
     if config.option.basetemp is None and not hasattr(config, "workerinput"):
         config.stash[RUN_FOLDER] = config.option.basetemp = TempFolders().start()
 
@@ -169,10 +172,14 @@ def templates() -> Generator["TemplateDatabases"]:
 @pytest.fixture
 def new_story(templates: "TemplateDatabases", tmp_path: Path, request: pytest.FixtureRequest) -> Generator[Callable[..., "Story"]]:
     overlap = request.config.stash[STORY_OVERLAP]
+    internal_files = request.config.stash[INTERNAL_FILES]
     item: pytest.Item = getattr(request, "node")
     created = item.stash[STORY_RUNS]
 
-    def started(*modules: str, fixture: type[StoryFixture] | None = None, environment: str | None = None) -> "Story":
+    def started(*arguments: str | type[StoryFixture], fixture: type[StoryFixture] | None = None, environment: str | None = None) -> "Story":
+        # a helper written for the played journal hands its fixture as a plain argument, as played() takes it
+        modules = tuple(argument for argument in arguments if isinstance(argument, str))
+        fixture = fixture if fixture is not None else next((argument for argument in arguments if isinstance(argument, type)), None)
         story = templates.story(tmp_path / "journal", modules, fixture)
         story.environment = environment
         story.use_fixture_environment(fixture.line_environment() if fixture else None)
@@ -183,7 +190,7 @@ def new_story(templates: "TemplateDatabases", tmp_path: Path, request: pytest.Fi
         return story
     yield started
     for steps in created if item.stash.get(CALL_PASSED, False) else []:
-        overlap.add(item.nodeid, steps.start, steps.lines(), steps.path(), steps.fixture, steps.checks())
+        overlap.add(item.nodeid, steps.start, steps.lines(), [] if internal_files.holds(item.path) else steps.path(), steps.fixture, steps.checks())
         steps.story.close()
     created.clear()
     if item.stash.get(CALL_PASSED, False):

@@ -12,12 +12,12 @@ try {
     await button.waitFor();
     await button.click();
     await page.locator("[data-queue-controls]").waitFor();
-    const note = page.locator("[data-queue-update-waits]");
+    const note = page.locator('[data-lane="long"] [data-lane-note]');
     await note.waitFor();
-    assert.match(await note.innerText(), /An update waits for the running commands to end\./);
-    assert.match(await note.innerText(), /gets its place once the update is done/);
-    assert.equal(await page.locator("[data-queue-held]").count(), 0);
-    assert.match(await page.locator('[data-queue-row="waiting"]').innerText(), /make checks/);
+    assert.match(await note.innerText(), /Held for an update\. The update waits for the running commands to end\./);
+    assert.match(await note.innerText(), /the 1 waiting keep their place/);
+    assert.equal(await page.locator("[data-lane-resume]").count(), 0);
+    assert.match(await page.locator('[data-lane="long"] [data-lane-entry="waiting"]').innerText(), /make checks/);
     await page.screenshot({path: capture, fullPage: true});
     assert.deepEqual(errors, []);
 } finally {

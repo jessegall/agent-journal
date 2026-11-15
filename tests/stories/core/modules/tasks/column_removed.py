@@ -6,7 +6,7 @@ from engine.database.statement import Statement
 from tests.stories.core.modules.tasks.support.assignment_migration_fixtures import DELEGATED_TASKS, PreRemovalTasks, worker
 from tests.stories.support.story_checks import expect_value_4
 
-SOURCE_FOLDER = Path(__file__).resolve().parents[4] / "src"
+SOURCE_FOLDER = Path(__file__).resolve().parents[5] / "src"
 TASK_MIGRATIONS = SOURCE_FOLDER / "core" / "modules" / "tasks" / "migrations"
 HISTORY_MIGRATIONS = ("m007_task_delegated_to.py", "m008_delegated_task_index.py", "m017_block_waiting_tasks.py", "m022_assign_held_tasks.py",
                       "m025_task_assignments.py", "m026_drop_task_delegation.py")

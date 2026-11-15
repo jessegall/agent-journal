@@ -6,7 +6,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.messages.models.message import Message
 from tests.stories.core.support.agent_labels import agent_number
-from tests.integration.core.modules.helpers.test_helper_jobs import StartedHelper, helper_agent
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from core.modules.agents.nudges.parent_report_nudge import ParentReportNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
 

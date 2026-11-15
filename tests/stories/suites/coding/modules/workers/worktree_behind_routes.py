@@ -21,6 +21,7 @@ SEVERAL_WORKERS = 5
 
 
 def b24_far_behind_goes_to_the_main_agent_without_the_merger(story, repository: GitRepository, worker: Actor) -> None:
+    setting(story, "forced-update-commits", 0)
     setting(story, "update-to-main-commits", 20)
     worker_commits(repository, worker.id, 1)
     base_commits(repository, 25)

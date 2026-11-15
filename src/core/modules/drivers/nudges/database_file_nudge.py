@@ -7,5 +7,5 @@ class DatabaseFileNudge(NudgeDeclaration):
 
     key = "drivers.database_file"
     type = NudgeType.SAFETY_REFUSAL
-    text = "The journal's database file is changed only by the journal's commands: find the command for what you want with journal --help, or say in your report what is missing"
+    text = "The journal's database changes only through journal commands: find yours with journal --help, or report what is missing"
     full_text = True

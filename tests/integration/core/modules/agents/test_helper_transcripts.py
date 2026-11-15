@@ -10,7 +10,7 @@ from engine.database.database import READ_LIMIT_ROWS, Database
 from engine.repository.repository import Repository
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.messages.commands.read_message.read_message import ReadMessage
-from tests.integration.core.modules.usage.test_usage import HELPER_START
+from tests.stories.core.modules.usage.usage import HELPER_START
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 FIXED_TIME = "2026-11-03T05:00:00.000Z"

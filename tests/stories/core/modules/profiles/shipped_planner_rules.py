@@ -9,6 +9,6 @@ BODIES = {profile.name: profile.body for profile in HELPER_PROFILES}
 RULES_FOR_HANDING_OUT_WORK = ("journal worker send", "journal helper send", "journal agent retire", "Running limits", "kept limits")
 
 
-def test_a_planner_still_writes_story_books_and_states_what_each_task_waits_on():
-    expect_value("story books" in BODIES[f"{PLANNER_PROFILE.name}"], True)
+def test_a_planner_plans_no_tests_and_states_what_each_task_waits_on():
+    expect_value("never plan which tests to write" in BODIES[f"{PLANNER_PROFILE.name}"], True)
     expect_value("state what every task waits on" in BODIES[f"{PLANNER_PROFILE.name}"], True)

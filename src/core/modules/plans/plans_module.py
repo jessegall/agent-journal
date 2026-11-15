@@ -95,6 +95,7 @@ from core.modules.plans.commands.assign_plan.assign_plan_handler import AssignPl
 from core.modules.plans.commands.record_plan_agent.record_plan_agent_handler import RecordPlanAgentHandler
 from core.modules.plans.commands.assign_plan.assign_plan_subcommand import AssignPlanSubcommand
 from core.modules.plans.commands.record_checkpoints.record_checkpoints_handler import RecordCheckpointsHandler
+from core.modules.plans.commands.rerun_stale_checkpoints.rerun_stale_checkpoints_handler import RerunStaleCheckpointsHandler
 from core.modules.plans.commands.approve_checkpoint.approve_checkpoint_handler import ApproveCheckpointHandler
 from core.modules.plans.migrations.m013_checkpoint_reviews import CheckpointReviewsMigration
 from core.modules.plans.migrations.m014_checkpoint_review_report import CheckpointReviewReportMigration
@@ -132,7 +133,7 @@ class PlansModule(Module):
     models = [PlanModelDeclaration, ModelDeclaration(Phase), PhaseTaskModelDeclaration, PlanContextReadModelDeclaration, PlanWaitModelDeclaration, CheckpointReachModelDeclaration, CheckpointPassModelDeclaration]
     migrations = [PlanAssignmentsMigration, PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration, PlanContextReadsMigration, PlanWaitsMigration, CheckpointsMigration, CheckpointReachSourceMigration, PlanContextReadsEnvironmentIndexMigration, CheckpointReviewsMigration, CheckpointReviewReportMigration, AgentCommitReachesMigration, PlanContextStartEventUnboundMigration, StartedPlansKeepNoWaitReasonMigration, PhasePersonCheckMigration]
     tick_handlers = [PlanStateSweepTickHandler]
-    handlers = [RepairPlanStatesHandler, ApproveCheckpointHandler, CheckPlanHandler, RecordCheckpointsHandler, StartCheckpointRunHandler, WaitPlanHandler, AssignPlanHandler, RecordPlanAgentHandler, ChoosePlanFocusHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]
+    handlers = [RepairPlanStatesHandler, ApproveCheckpointHandler, CheckPlanHandler, RecordCheckpointsHandler, RerunStaleCheckpointsHandler, StartCheckpointRunHandler, WaitPlanHandler, AssignPlanHandler, RecordPlanAgentHandler, ChoosePlanFocusHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]
     moves = [PlansMove]
     subcommands = [ApproveCheckpointSubcommand, CheckPlanSubcommand, WaitPlanSubcommand, AssignPlanSubcommand, ChoosePlanFocusSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanPlacesSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
                    PlacePhaseSubcommand, PlanProgressSubcommand, MakeTaskSubcommand]

@@ -1,7 +1,7 @@
 import pytest
 
-from tests.integration.suites.coding.modules.workers.test_checkpoint_failures import end_run, failure_lines, output_id, produce_output
-from tests.integration.suites.coding.modules.workers.test_checkpoint_runs import branch_runs, commit_tasks, merge, run_lines
+from tests.stories.suites.coding.modules.workers.checkpoint_failures import end_run, failure_lines, output_id, produce_output
+from tests.stories.suites.coding.modules.workers.checkpoint_runs import branch_runs, commit_tasks, merge, run_lines
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story
 
 PHASE_TEST = "pytest tests/phase"

@@ -9,7 +9,7 @@ from engine.enums.tool_type import ToolType
 from suites.coding.modules.checks.support.due_check_runs import DueCheckRuns
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from tests.integration.core.modules.drivers.test_hook_durations import UserBuilder
+from tests.stories.core.modules.drivers.hook_durations import UserBuilder
 from tests.stories.core.modules.processes.support.process_samples import moved_run
 from tests.stories.support.story_checks import expect_absent_value, expect_total_cost_less, expect_greater
 
