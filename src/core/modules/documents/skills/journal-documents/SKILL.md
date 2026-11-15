@@ -13,11 +13,15 @@ trace, a review or a check, and has no revisions. Debuggers, researchers and rev
 journal-researcher, journal-code-reviewer, journal-plan-reviewer) file reports only: `journal doc make` and
 `journal doc edit` are refused to them with a line that names `journal report make`. Designers and planners file docs.
 
-- `journal doc make "<title>" --abstract "<one line>" --body "<text>"` writes one; `--file <path>` takes the text from a
-  file. `journal report make` takes the same.
+- `journal doc make "<title>" --abstract "<one line>" --file <path>` writes one from a file; `--body "<text>"` takes a short
+  text in place. `journal report make` takes the same.
+- Write a whole document or report as a file first, then file it at once: an agent that may write files writes the whole
+  text to a temporary file (your scratchpad, or the system's temporary folder) and runs `journal doc make ... --file <path>`.
+  The file needs no shell quoting, no word in it reads as a command, and you can read it over before you file it. Edit an
+  existing document section by section instead (below).
 - A read-only helper files its own documents and reports with these commands, even though it writes no files: they show in the
   viewer and dock in the chat. Name the number in your report rather than handing the text back.
-- A long text goes through standard input, so no word in it reads as a command, and a read-only agent files it this way:
+- A read-only agent writes no file, so it streams a long text in through standard input instead, the same idea with no file:
   `journal report make "<title>" --body - <<'EOF'`, the text, then a line `EOF`. Keep the quotes around `'EOF'`.
   On macOS, a read-only shell running `/bin/bash` cannot use a here document: use zsh or pass the text to `--body`.
 - `journal doc show <n>` gives its outline; ask for a section, its bullets, a search or the whole with the flags

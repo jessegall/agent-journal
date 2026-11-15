@@ -10,7 +10,7 @@ READ_COMMANDS = (
 )
 
 DOCUMENT_COMMANDS = (
-    "\n\nFile findings with journal doc make \"<title>\" --abstract \"<one line>\" --body \"<markdown>\" "
+    "\n\nFile findings with journal doc make \"<title>\" --abstract \"<one line>\" --body - <<'EOF', the text, then a line EOF (a long text streams in through standard input, since you write no file) "
     "or journal report make with the same options. Use --environment <name> to name the environment. "
     "Read and revise documents with journal doc list, journal doc show, journal doc inspect, journal doc edit, "
     "journal doc revision, journal doc revisions, journal doc comment and journal doc comments. "
@@ -20,7 +20,7 @@ DOCUMENT_COMMANDS = (
 )
 
 REPORT_COMMANDS = (
-    "\n\nFile findings with journal report make \"<title>\" --abstract \"<one line>\" --body \"<markdown>\". "
+    "\n\nFile findings with journal report make \"<title>\" --abstract \"<one line>\" --body - <<'EOF', the text, then a line EOF (a long text streams in through standard input, since you write no file). "
     "Use --environment <name> to name the environment. A report is a one-time answer to a question and has no revisions; "
     "journal doc make and journal doc edit are refused to you, because documents are for designs and plans. "
     "Read reports with journal report list, journal report show, journal report inspect, journal report edit, "
