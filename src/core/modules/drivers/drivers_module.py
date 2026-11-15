@@ -1,3 +1,7 @@
+from engine.agent_machine.contracts.slice_answers import SliceAnswers
+from core.modules.drivers.bindings.agent_slice_answers import AgentSliceAnswers
+from core.modules.drivers.wake_causes.journal_started_wake import JournalStartedWake
+from core.modules.drivers.wake_causes.turn_failed_wake import TurnFailedWake
 from core.modules.drivers.marks.escalation_mark import EscalationMark
 from core.modules.drivers.listeners.escalation_mark_listener import EscalationMarkListener
 from core.modules.drivers.tick_handlers.agent_wake_delivery_tick_handler import AgentWakeDeliveryTickHandler
@@ -353,6 +357,7 @@ class DriversModule(Module):
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]
     listeners = [EscalationMarkListener, WakeAcknowledgementListener, NewJobPinListener, AssignedWorkSuppressionListener, AgentPermissionBasisListener, PermissionRequestBasisListener, AgentRowBasisListener, DrivingSettingBasisListener, JournalStartBasisListener, DriverTableSyncListener, CompactionNoticeMarkListener, InstructionImportsListener, HookTimeoutMarkListener, JournalStartedListener, ManageHooksListener, AgentBlockSkipMarkListener, BypassLogListener, DeferredRulesListener, HookWaitFileListener, TypedLineListener, StopLineTypingListener, ClaimedLineReleaseListener, NewDriverLinesListener]
+    wake_causes = [JournalStartedWake, TurnFailedWake]
     overlays = [PausedOverlay]
     marks = [RequiredCommandSkippedMark, BypassMark, DispatchMark, CompactionMark, EscalationMark]
     performance_tools = [HookCostTool]
@@ -361,7 +366,7 @@ class DriversModule(Module):
                      EventPruningTickHandler]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed]
     driver_rules = [RepeatedFileReadRule, SafeguardsStopRule, PanicFileRule, BlockStopRule, LongOutputRule, ForeignHooksRule, CompactionDueStopRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, ContinuedSessionRule, AgentBlockRule, TakeoverRule, AccessRule, TypeCommandsRule, NativeSubagentRule, PrivateCorpusRule, DatabaseFileRule]
-    bindings = {ShellParser: HookClientShellParser, StepRequests: TableStepRequests, GrantLedger: TableGrantLedger, RuleHooks: RuleHook, AgentViewReader: StoredAgentViewReader, StepWriter: StoredStepWriter, OpenBlocks: AgentOpenBlocks, CallerLineCheck: AgentLineCheck, ContextChangeRequests: RecordedContextChangeRequests, Nudger: AgentLineNudger, OverviewReads: TableOverviewReads, RefusalSkips: TableRefusalSkips, ManagedHookHistoryReader: ManagedHookHistoryQuery, TranscriptAuthors: LineTranscriptAuthors, HookHistory: TableHookHistory, AgentStateOpenness: BoardStateOpenness,HookRoute: AgentHookRoute, ChangeFilter: DriverChangeFilter,
+    bindings = {SliceAnswers: AgentSliceAnswers, ShellParser: HookClientShellParser, StepRequests: TableStepRequests, GrantLedger: TableGrantLedger, RuleHooks: RuleHook, AgentViewReader: StoredAgentViewReader, StepWriter: StoredStepWriter, OpenBlocks: AgentOpenBlocks, CallerLineCheck: AgentLineCheck, ContextChangeRequests: RecordedContextChangeRequests, Nudger: AgentLineNudger, OverviewReads: TableOverviewReads, RefusalSkips: TableRefusalSkips, ManagedHookHistoryReader: ManagedHookHistoryQuery, TranscriptAuthors: LineTranscriptAuthors, HookHistory: TableHookHistory, AgentStateOpenness: BoardStateOpenness,HookRoute: AgentHookRoute, ChangeFilter: DriverChangeFilter,
                 EssentialAllowances: SettingEssentialAllowances}
     windows = DRIVERS_WINDOWS
     seed_reason = "each suite chooses the drivers used by its demo"

@@ -1,3 +1,4 @@
+from engine.agent_machine.contracts.slice_answers import WAITING_SLICE
 from engine.agent_machine.contracts.effect import Effect
 from engine.agent_machine.contracts.line_source import LineSource
 from engine.agent_machine.contracts.policy import Policy
@@ -12,7 +13,7 @@ from engine.module.module_finder import ModuleFinder
 
 # the old rule that let a stop through after repeated refusals, which the escalation of section 4.6 replaces
 REPEATED_STOP_RELEASE = "drivers.repeated-stop-release"
-SAFETY_SLICE, ADMISSION_SLICE, WAITING_SLICE, LINES_SLICE = "safety", "admission", "waiting", "lines"
+SAFETY_SLICE, ADMISSION_SLICE, LINES_SLICE = "safety", "admission", "lines"
 Contribution = NeedSource | Policy | LineSource | Effect | Transform | WakeCause
 
 

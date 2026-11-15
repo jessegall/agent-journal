@@ -1,3 +1,4 @@
+from engine.agent_machine.contracts.slice_answers import WAITING_SLICE, SliceAnswers
 from engine.actor.actor import Actor
 from engine.event.journal_booting import JournalBooting
 from engine.event.logged_event import LoggedEvent
@@ -14,9 +15,13 @@ class JournalStartedListener(CommitListener[JournalBooting]):
 
     name = "drivers.journal-started"
 
-    def __init__(self, queries: Queries, bus: Bus) -> None:
+    def __init__(self, queries: Queries, bus: Bus, slices: SliceAnswers) -> None:
+        self.slices = slices
         self.queries, self.bus = queries, bus
 
     def handle(self, event: JournalBooting, logged: LoggedEvent) -> None:
         for agent in MainAgentFinder.all_running(self.queries):
+            # the waiting slice wakes the agent through the one wake owner (the journal-started wake cause)
+            if self.slices.answers(agent.id, WAITING_SLICE):
+                continue
             self.bus.run(SendJournalStartedLine(agent.id), Actor.core(), cause_id=logged.id, environment_id=agent.environment_id)

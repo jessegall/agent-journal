@@ -1,3 +1,4 @@
+from core.modules.dumps.wake_causes.dump_arrived_wake import DumpArrivedWake
 from core.modules.dumps.lines.open_dump_lines import OpenDumpLines
 from core.modules.dumps.windows.dumps_windows import DUMPS_WINDOWS
 from core.modules.dumps.models.declarations.dump_model_declaration import DumpModelDeclaration
@@ -45,6 +46,7 @@ class DumpsModule(Module):
     nudges = DUMP_NUDGES
     driver_rules = [OpenDumpRule]
     listeners = [DumpArrivalListener, DumpDockListener]
+    wake_causes = [DumpArrivedWake]
     docks = DUMPS_DOCKS
     windows = DUMPS_WINDOWS
     seeders = [DumpsSeeder]

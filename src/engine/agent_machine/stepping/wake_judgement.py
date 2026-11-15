@@ -25,7 +25,7 @@ class WakeJudgement:
         self.causes = causes
 
     def change(self, view: AgentView, stack: Stack) -> WakeChange:
-        causes = self.attention(view, stack) if view.is_resting else []
+        causes = self.attention(view, stack) if view.is_resting else [cause.key for cause in self.causes if cause.wakes_mid_turn and cause.needs_wake(view)]
         if not causes:
             return WakeChange.unchanged()
         move = WakeMove.INHIBITED if stack.has(Paused) or stack.has(Compacting) else WakeMove.WRITTEN
@@ -36,7 +36,7 @@ class WakeJudgement:
         causes = [STOP_CAUSE] if work.stop_answer(view.work_stop, view.escalation).answer_type is StopAnswerType.REFUSED else []
         if self.has_open_job(view, stack):
             causes.append(JOB_CAUSE)
-        return [*causes, *(cause.key for cause in self.causes if cause.needs_wake(view) and not cause.is_inhibited(view))]
+        return [*causes, *(cause.key for cause in self.causes if not cause.wakes_mid_turn and cause.needs_wake(view) and not cause.is_inhibited(view))]
 
     @staticmethod
     def has_open_job(view: AgentView, stack: Stack) -> bool:

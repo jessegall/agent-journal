@@ -1,3 +1,4 @@
+from engine.agent_machine.contracts.slice_answers import WAITING_SLICE, SliceAnswers
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.container.container import Container
@@ -25,5 +26,7 @@ class ReleasedSessionWake:
         sessions = tuple(dict.fromkeys(blocked.claimed_lines()))
         if sessions:
             for agent in container.get(Queries).query(Agent).matching(Among("session", sessions)).matching(IsNull("retired_at")).every_row(RELEASED_SESSIONS_REASON):
-                container.get(Bus).run(SendJournalStartedLine(agent.id), Actor.core(), environment_id=agent.environment_id)
+                # the waiting slice wakes the agent through the one wake owner and its boot step
+                if not container.get(SliceAnswers).answers(agent.id, WAITING_SLICE):
+                    container.get(Bus).run(SendJournalStartedLine(agent.id), Actor.core(), environment_id=agent.environment_id)
         blocked.archive()

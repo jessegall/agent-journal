@@ -1,3 +1,4 @@
+from datetime import datetime
 from core.modules.drivers.support.block_judgement import BlockJudgement
 from core.modules.drivers.models.agent_frame_suppression import AgentFrameSuppression
 from engine.agent_stack.answer_basis import AnswerBasis
@@ -67,24 +68,30 @@ class StoredAgentViewReader(AgentViewReader):
         counts = RefusalCounts(row.stop_refusals, row.tool_refusals, escalation) if row is not None else RefusalCounts(0, 0, escalation)
         reference = AgentReference(agent.id, agent.parent_id, agent.environment_id, agent.role)
         rows = self.open_rows(agent_id)
+        # the driver epoch moves at each journal start, so its row's time is the last start
+        driver_epoch = self.queries.query(DriverEpoch).first()
         return AgentView(
-            basis=self.basis(row, agent), agent=reference, program_name=agent.program,
+            basis=self.basis(row, agent, driver_epoch), agent=reference, program_name=agent.program,
             session=agent.session, profile=agent.profile, driver_name=driver.name, session_generation=1, stepped_at=self.clock.timestamp().value,
             stack=self.stack(row, agent), facts=self.facts(agent), needs=(), plans=(), blocks=self.blocks(rows, agent_id), grants=self.grants(reference), suppressions=self.suppressions(agent_id),
             escalation=escalation, settings={key: self.settings.number(key) for key in (STOP_LIMIT_SETTING, TOOL_LIMIT_SETTING)},
             is_resting=self.hook_calls.has_ended_turn(agent_id), pinned_slices=row.pinned_slices if row is not None else (),
             table_digest=row.table_digest if row is not None else "", work_stop=driver.work_stop, responder=driver.responder, rank_order=driver.rank_order,
-            depth_limit=driver.depth_limit, program=self.providers.provider(agent.program).capabilities(), counts=counts, block_outcomes=self.judgement.outcomes(rows, question, agent_id))
+            depth_limit=driver.depth_limit, program=self.providers.provider(agent.program).capabilities(), counts=counts, block_outcomes=self.judgement.outcomes(rows, question, agent_id), newest_hook_at=self.newest_hook_at(agent_id),
+            journal_started_at=driver_epoch.update_timestamp().value if driver_epoch is not None else None)
 
     def suppressions(self, agent_id: int) -> tuple[NeedKey, ...]:
         rows = self.queries.query(AgentFrameSuppression).filter(session_agent_id=agent_id, ended_at=None).every_row(OPEN_SUPPRESSIONS_REASON)
         return tuple(FrameCodec.decoded_key(row.need_key) for row in rows)
 
+    def newest_hook_at(self, agent_id: int) -> datetime | None:
+        hook = self.hook_calls.newest_agent_hook(agent_id)
+        return hook.creation_timestamp().value if hook is not None else None
+
     def grants(self, agent: AgentReference) -> tuple[Grant, ...]:
         return tuple(self.grant_store.usable_grants([agent]).get(agent.agent_id, ()))
 
-    def basis(self, row: AgentStack | None, agent: Agent) -> AnswerBasis:
-        driver_epoch = self.queries.query(DriverEpoch).first()
+    def basis(self, row: AgentStack | None, agent: Agent, driver_epoch: DriverEpoch | None) -> AnswerBasis:
         program_epoch = self.queries.query(ProgramEpoch).filter(program=agent.program).first()
         return AnswerBasis(row.version if row is not None else 0, driver_epoch.epoch if driver_epoch is not None else 0,
                            program_epoch.epoch if program_epoch is not None else 0)

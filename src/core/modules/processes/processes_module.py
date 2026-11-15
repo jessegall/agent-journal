@@ -1,3 +1,4 @@
+from core.modules.processes.wake_causes.run_ended_wake import RunEndedWake
 from core.modules.processes.listeners.run_end_step_listener import RunEndStepListener
 from core.modules.processes.listeners.watch_step_listener import WatchStepListener
 from core.modules.processes.needs.watched_run_needs import WatchedRunNeeds
@@ -343,6 +344,7 @@ class ProcessesModule(Module):
     driver_rules = [ReadingRule, RetryLoopRule, ReaderRequestRule, LeftoverRunRule, HandMadeMonitorRule, AliasSuggestionRule, ReadAdviceRule, RunTitleRule, SleepPollRule, JournalChainRule, ReadCommandOutputRule, JournalPipeRule, SilentRunBlockRule, OutputStatusMonitorRule, LongRunDockRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, WatchLinesRule, OrphanProcessRule]
     agent_states = [RunQueueHalted]
     listeners = [BootedRunsListener, ReaderRunCountResetListener, UnreadableMarkRunCountResetListener, EndDecisionListener, EndedRunLineListener, FullOutputReadListener, StockReadersPublishListener, StartReadersListener, ReaderFailureListener, ReaderBlockListener, ReaderRequestCompleteListener, ProcessFolderRemovalListener, RunSlotListener, ActiveTestsMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, ReaderProofListener, ProcessPruneListener, ProcessRemovalListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, ProcessPartStartMarkListener, ProcessMoveMarkListener, ProcessOutputMarkListener, ProcessOutputListener]
+    wake_causes = [RunEndedWake]
     marks = [ProcessCommandMark]
     bindings = {WatchedRuns: MonitoredRuns, WaitTargets: ProcessWaitTargets, RunOwners: ProcessRunOwners, RunPlacement: ProcessRunPlacement, RunPauses: AgentRunPauses, RequestRecords: ProcessRowWrapper, PersonClasses: StoredExecutionClasses}
     docks = PROCESSES_DOCKS

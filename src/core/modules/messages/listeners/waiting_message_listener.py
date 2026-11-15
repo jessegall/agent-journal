@@ -1,3 +1,4 @@
+from engine.agent_machine.contracts.slice_answers import WAITING_SLICE, SliceAnswers
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.event.logged_event import LoggedEvent
@@ -16,12 +17,14 @@ class WaitingMessageListener(CommitListener[Created[Message]]):
     name = "messages.idle-message"
     run_order = -2
 
-    def __init__(self, bus: Bus, targets: MessageTargets) -> None:
+    def __init__(self, bus: Bus, targets: MessageTargets, slices: SliceAnswers) -> None:
+        self.slices = slices
         self.bus, self.targets = bus, targets
 
     def handle(self, event: Created[Message], logged: LoggedEvent) -> None:
         if logged.environment_id is None or event.row.type not in PERSON_MESSAGE_TYPES:
             return
         agent = self.targets.recipient(event.row)
-        if agent is not None:
+        # the waiting slice wakes the agent through its message step and the one wake owner
+        if agent is not None and not self.slices.answers(agent.id, WAITING_SLICE):
             self.bus.run(RecordWaitingMessageLine(agent.id), Actor(logged.actor_id, ActorType.USER))

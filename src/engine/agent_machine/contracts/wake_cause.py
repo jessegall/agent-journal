@@ -9,6 +9,8 @@ class WakeCause(ABC):
     inhibits it."""
 
     key: ClassVar[str]
+    # a cause that wakes an agent whose turn never ended, such as one cut short by a server stop
+    wakes_mid_turn: ClassVar[bool] = False
 
     @abstractmethod
     def needs_wake(self, view: AgentView) -> bool: ...

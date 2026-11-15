@@ -54,3 +54,7 @@ class AgentView:
     program: Capabilities
     counts: RefusalCounts
     block_outcomes: Mapping[int, ConditionOutcome]
+    # when the agent's newest hook came, which a wake cause compares its own rows with
+    newest_hook_at: datetime | None = None
+    # when the journal last started, which the journal-started wake compares with the newest hook
+    journal_started_at: datetime | None = None
