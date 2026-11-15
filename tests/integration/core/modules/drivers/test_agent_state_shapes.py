@@ -12,6 +12,7 @@ from core.modules.messages.rules.unread_message_write_rule import UnreadMessageW
 from tests.integration.support.fixture_journal import FixtureJournal
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
+from tests.integration.support.fixture_journal import FixtureJournal
 
 LISTING = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, []))
 LONG_LISTING = HookSamples.shell("ls -l", ShellPart("ls", CommandCategory.READ, ["-l"]))
