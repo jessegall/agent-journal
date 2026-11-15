@@ -101,8 +101,8 @@ src/core/modules/memories/commands/fade_memories/fade_memories_handler.py:fading
 src/core/modules/memories/commands/memory_page/memory_page_subcommand.py:the page names the holder of every memory it shows
 src/core/modules/memories/listeners/start_memories_listener.py:A session start gives its agent every active memory it may read; memories fade at each compaction, which bounds them.
 src/core/modules/memories/listeners/task_memory_remover_listener.py:an ended task removes every memory tied to it
-src/core/modules/memories/rules/keyword_delivery_rule.py:every memory whose keyword the hook names may be delivered
-src/core/modules/memories/rules/open_mark_rule.py:at a mark the agent weighs every memory it holds
+src/core/modules/memories/support/keyword_memories.py:every memory whose keyword the hook names may be delivered
+src/core/modules/memories/support/reached_mark.py:at a mark the agent weighs every memory it holds
 src/core/modules/messages/commands/agent_reports/agent_reports_subcommand.py:the report list shows every report the agent sent, newest first
 src/core/modules/messages/commands/attachment_list/attachment_list_subcommand.py:the attachment search looks through every attached file
 src/core/modules/messages/commands/message_conversations/message_conversations_subcommand.py:every agent in the conversations is named by its label
