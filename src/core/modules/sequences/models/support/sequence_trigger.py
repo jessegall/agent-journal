@@ -4,7 +4,7 @@ from fnmatch import fnmatch
 from typing import Self
 import re
 
-from engine.driver.agent_hook import AgentHook
+from engine.driver.hook_event import HookEvent
 from engine.enums.hook_event_name import HookEventName
 from engine.errors.refusal import Refusal
 
@@ -65,8 +65,7 @@ class SequenceTrigger:
     def end_event_names(self) -> tuple[str, ...]:
         return tuple(name.strip() for name in self.end_events.split(",") if name.strip())
 
-    def matches_hook(self, hook: AgentHook) -> bool:
-        event = hook.event
+    def matches_hook(self, event: HookEvent) -> bool:
         category = self.trigger_type
         if category == PHRASE_TRIGGER:
             return event.event is HookEventName.PROMPT and event.prompt is not None and self.text.lower() in event.prompt.lower()

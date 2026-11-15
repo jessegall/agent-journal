@@ -30,6 +30,7 @@ class RuleNeedSource(NeedSource):
         # a rule a driver lists names no role, so its need source names the driver's agent type itself
         cls.agent_types = cls.__dict__.get("agent_types") or RuleEvents.agent_types(cls.rule)
         cls.replaced_rules = tuple([cls.rule.name])
+        cls.role_group = cls.rule.role_group
 
     def __init__(self, hooks: RuleHooks) -> None:
         self.hooks = hooks
