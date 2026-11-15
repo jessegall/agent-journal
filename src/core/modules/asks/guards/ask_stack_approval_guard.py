@@ -7,7 +7,7 @@ from engine.guard.guard import Guard
 from core.modules.asks.models.ask_stack import AskStack
 
 
-class AgentStackGuard(Guard[Changed[AskStack]]):
+class AskStackApprovalGuard(Guard[Changed[AskStack]]):
     """An agent's question stack waits for the user: an agent can save one only as waiting, and cannot put one into
     force, since a stack decides which helpers start and what they cost."""
 

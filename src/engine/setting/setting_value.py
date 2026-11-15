@@ -35,6 +35,7 @@ class SettingValue:
     screen: str = ""
     section: str = ""
     component: SettingComponent | None = None
+    is_driving: bool = False
 
     def accepts(self, value: object) -> bool:
         match self.type:
@@ -57,7 +58,8 @@ class SettingValue:
     def declaration(self) -> SettingDeclaration:
         return SettingDeclaration(self.title, self.description, self.type.value, None if self.secret else self.default, self.secret, self.scope.value,
                                   tuple(self.choices), False, True, person_set=self.person_set, rule=SettingRuleText.rule_text(self.rule), requires_main_agent=self.requires_main_agent, required_settings=tuple(self.required_settings),
-                                  screen=self.screen, section=self.section, component="" if self.component is None else self.component.value)
+                                  screen=self.screen, section=self.section, component="" if self.component is None else self.component.value,
+                                  is_driving=self.is_driving)
 
     def members(self) -> Sequence[SettingNode]:
         return ()

@@ -33,3 +33,4 @@ class SettingDeclaration:
     screen: str = ""
     section: str = ""
     component: str = ""
+    is_driving: bool = False

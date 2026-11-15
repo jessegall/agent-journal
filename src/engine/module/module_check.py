@@ -1,3 +1,4 @@
+from engine.module.machine_check import MachineCheck
 from collections.abc import Sequence
 from engine.event.change import METADATA
 from engine.enums.event_form import EventForm
@@ -45,7 +46,8 @@ class ModuleCheck:
 
     def __init__(self, tables: Tables, suites: SuiteCheck, windows: WindowCheck, providers: ProviderCheck, marks: MarkCheck,
                  docks: DockCheck, settings: SettingCheck, skills: SkillCheck, moves: MoveCheck, templates: TemplateCheck,
-                 buttons: ButtonCheck, finder: ModuleFinder, states: StateCheck, helper_types: HelperTypeCheck, profiles: ProfileCheck, inspectors: InspectorCheck, assignables: AssignableCheck) -> None:
+                 buttons: ButtonCheck, finder: ModuleFinder, states: StateCheck, helper_types: HelperTypeCheck, profiles: ProfileCheck, inspectors: InspectorCheck, assignables: AssignableCheck,
+                 machine: MachineCheck) -> None:
         self.tables, self.suites, self.windows, self.providers, self.marks, self.docks = tables, suites, windows, providers, marks, docks
         self.settings, self.skills, self.moves = settings, skills, moves
         self.templates = templates
@@ -55,6 +57,7 @@ class ModuleCheck:
         self.buttons, self.finder = buttons, finder
         self.inspectors = inspectors
         self.assignables = assignables
+        self.machine = machine
 
     def known_events(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
         book = modules_book(modules)
@@ -83,7 +86,8 @@ class ModuleCheck:
                     + self.providers.problems(modules) + self.marks.problems(modules) + self.docks.problems(modules) + self.settings.problems(modules)
                     + self.skills.problems(modules, self.known_events(modules)) + self.moves.problems(modules) + self.templates.problems(modules) + self.states.problems(modules) + self.assignables.problems(modules)
                     + self.buttons.declared_problems(modules, frozenset(module.name for module in self.finder.default_modules()))
-                    + self.helper_types.problems(modules, rules, self.finder.suite_list()) + self.profiles.problems(modules, self.finder.suite_list()))
+                    + self.helper_types.problems(modules, rules, self.finder.suite_list()) + self.profiles.problems(modules, self.finder.suite_list())
+                    + self.machine.problems(modules))
         if problems:
             raise ModuleError("the modules cannot be synced: " + "; ".join(problems))
 

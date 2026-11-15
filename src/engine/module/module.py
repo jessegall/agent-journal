@@ -17,6 +17,16 @@ from engine.command.command import Command
 from engine.command.handler import Handler
 from engine.database.migration import Migration
 from engine.driver.driver import Driver
+from engine.agent_machine.contracts.agent_listener import AgentListener
+from engine.agent_machine.contracts.effect import Effect
+from engine.agent_machine.contracts.line_source import LineSource
+from engine.agent_machine.contracts.policy import Policy
+from engine.agent_machine.contracts.transform import Transform
+from engine.agent_machine.contracts.wake_cause import WakeCause
+from engine.agent_machine.driver import Driver as AgentDriver
+from engine.agent_machine.needs.fact_source import FactSource
+from engine.agent_machine.needs.need_source import NeedSource
+from engine.model.model import Model
 from engine.driver.driver_rule import DriverRule
 from engine.driver.overlay import Overlay
 from engine.guard.guard import Guard
@@ -83,6 +93,16 @@ class Module:
     window_extensions: ClassVar[list[WindowExtension | type[WindowExtension]]] = []
     marks: ClassVar[list[MarkDeclaration | type[MarkDeclaration]]] = []
     block_conditions: ClassVar[list[type[BlockCondition]]] = []
+    agent_drivers: ClassVar[list[type[AgentDriver]]] = []
+    needs: ClassVar[list[type[NeedSource]]] = []
+    facts: ClassVar[list[type[FactSource]]] = []
+    policies: ClassVar[list[type[Policy]]] = []
+    lines: ClassVar[list[type[LineSource]]] = []
+    transforms: ClassVar[list[type[Transform]]] = []
+    effects: ClassVar[list[type[Effect]]] = []
+    wake_causes: ClassVar[list[type[WakeCause]]] = []
+    subjects: ClassVar[list[type[Model]]] = []
+    agent_listeners: ClassVar[list[type[AgentListener[object]]]] = []
     performance_tools: ClassVar[list[type[PerformanceTool]]] = []
     nudges: ClassVar[list[NudgeDeclaration | type[NudgeDeclaration]]] = []
     tick_handlers: ClassVar[list[TickHandler | type[TickHandler]]] = []

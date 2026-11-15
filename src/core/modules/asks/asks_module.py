@@ -9,7 +9,7 @@ from core.modules.asks.migrations.m002_ask_stacks import AskStacksTableMigration
 from core.modules.asks.commands.approve_ask_stack.approve_ask_stack_handler import ApproveAskStackHandler
 from core.modules.asks.commands.approve_ask_stack.approve_ask_stack_subcommand import ApproveAskStackSubcommand
 from core.modules.asks.commands.end_replaced_ask_stacks.end_replaced_ask_stacks_handler import EndReplacedAskStacksHandler
-from core.modules.asks.guards.agent_stack_guard import AgentStackGuard
+from core.modules.asks.guards.ask_stack_approval_guard import AskStackApprovalGuard
 from core.modules.asks.guards.question_times_guard import QuestionTimesGuard
 from core.modules.asks.migrations.m003_ask_setting_keys import AskSettingKeysMigration
 from core.modules.asks.migrations.m004_environment_indexes import AsksEnvironmentIndexesMigration
@@ -31,7 +31,7 @@ class AsksModule(Module):
     settings = QUESTION_SETTINGS
     ask_topics = [GeneralAskTopic]
     bindings = {AskFacts: HelperAskFacts}
-    guards = [AgentStackGuard, QuestionTimesGuard]
+    guards = [AskStackApprovalGuard, QuestionTimesGuard]
     handlers = [ApproveAskStackHandler, EndReplacedAskStacksHandler]
     subcommands = [ApproveAskStackSubcommand]
     listeners = [AskStackListener]
