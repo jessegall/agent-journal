@@ -6,7 +6,7 @@ from engine.enums.rule_priority import RulePriority
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from suites.coding.modules.workers.bindings.worker_test_listings import WorkerTestListings
-from suites.coding.modules.workers.nudges.test_limit_refusal_nudge import TestLimitRefusalNudge
+from suites.coding.modules.workers.nudges.worker_test_limit_refusal_nudge import WorkerTestLimitRefusalNudge
 from engine.setting.setting_values import SettingValues
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 from core.modules.processes.support.reader_demands import ASKING_FLAGS
@@ -35,5 +35,5 @@ class WorkerTestCountRule(DriverRule):
         for line in test_lines:
             count = self.listings.previous_count(line)
             if count > limit:
-                return RuleAnswer.refused(TestLimitRefusalNudge.declared().nudge(count=count, limit=limit))
+                return RuleAnswer.refused(WorkerTestLimitRefusalNudge.declared().nudge(count=count, limit=limit))
         return RuleAnswer.allowed()

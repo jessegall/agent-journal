@@ -3,7 +3,7 @@ from engine.enums.nudge_type import NudgeType
 from suites.coding.models.enums.ask_topic import AskTopic
 
 
-class TestLimitRefusalNudge(NudgeDeclaration):
+class WorkerTestLimitRefusalNudge(NudgeDeclaration):
     """The nudge processes.test_run_over_limit."""
 
     key = "processes.test_run_over_limit"

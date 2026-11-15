@@ -5,7 +5,7 @@ from engine.enums.nudge_type import NudgeType
 from suites.coding.models.enums.ask_topic import AskTopic
 
 
-class TestCountUnknownNudge(NudgeDeclaration):
+class WorkerTestCountUnknownNudge(NudgeDeclaration):
     """The nudge processes.test_count_unknown."""
 
     key = "processes.test_count_unknown"

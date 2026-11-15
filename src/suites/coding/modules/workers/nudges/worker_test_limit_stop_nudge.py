@@ -2,7 +2,7 @@ from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.enums.nudge_type import NudgeType
 
 
-class TestLimitStopNudge(NudgeDeclaration):
+class WorkerTestLimitStopNudge(NudgeDeclaration):
     """The nudge processes.run_over_test_limit."""
 
     key = "processes.run_over_test_limit"
