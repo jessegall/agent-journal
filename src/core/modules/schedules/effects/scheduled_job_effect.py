@@ -14,7 +14,7 @@ from core.modules.schedules.commands.record_scheduled_job.record_scheduled_job i
 if TYPE_CHECKING:
     from engine.agent_machine.decision_record import DecisionRecord
 
-SCHEDULED_JOB_RULE = "schedules.scheduled-job"
+SCHEDULED_JOB_KEY = "schedules.scheduled-job"
 SCHEDULE_TOOL = "CronCreate"
 REMOVAL_TOOL = "CronDelete"
 JOB_ID = re.compile(r"\b[0-9a-f]{8}\b")

@@ -15,7 +15,7 @@ from core.modules.messages.support.block_conditions.messages_read import Message
 from core.modules.messages.support.message_agent_messages import UNREAD_TOOL_USES
 
 UNREAD_RANK = "messages.unread"
-TOOL_RULE, STOP_RULE = "messages.unread-write", "messages.unread-at-stop"
+TOOL_KEY, STOP_KEY = "messages.unread-write", "messages.unread-at-stop"
 MESSAGE_COUNT_SHOWN = 3
 READ_COMMANDS = ("journal message read", "journal message unread")
 
@@ -41,7 +41,7 @@ class UnreadMessageStates(StateSource):
             return None
         count = unread.count() if len(shown) == MESSAGE_COUNT_SHOWN else len(shown)
         refusal = UnreadRefusalMessage.declared().agent_message(count=count, messages=", ".join(str(message.id) for message in shown))
-        return BlockPlan(refusal, MessagesRead([message.id for message in shown]), TOOL_RULE, UNREAD_RANK, stop_check_key=STOP_RULE,
+        return BlockPlan(refusal, MessagesRead([message.id for message in shown]), TOOL_KEY, UNREAD_RANK, stop_check_key=STOP_KEY,
                          members=tuple(message.id for message in shown), tool_grace_uses=UNREAD_TOOL_USES, scope_stop=True,
                          closer_roles=tuple([CloserRole.AGENT]), lifting_lines=READ_COMMANDS,
                          stop_agent_message=UnreadMessageStopNotice.declared().agent_message(message=shown[0].id),

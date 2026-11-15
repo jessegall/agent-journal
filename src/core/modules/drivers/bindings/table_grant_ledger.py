@@ -1,6 +1,6 @@
 from collections.abc import Mapping, Sequence
 
-from engine.agent_machine.stepping.admission_receipt import AdmissionReceipt
+from engine.agent_machine.stepping.used_grant import UsedGrant
 from engine.agent_machine.stepping.grant import NEXT_ACTION, Grant
 from engine.agent_machine.stepping.grant_ledger import GrantLedger
 from engine.agent_machine.states.agent_reference import AgentReference
@@ -14,7 +14,7 @@ from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.drivers.commands.use_permission.use_permission import UsePermission
 from core.modules.drivers.commands.use_refusal_skip.use_refusal_skip import UseRefusalSkip
-from core.modules.drivers.models.admission_receipt import AdmissionReceipt as ReceiptRow
+from core.modules.drivers.models.used_grant_record import UsedGrantRecord
 from core.modules.drivers.models.driver_grant import DriverGrant
 from core.modules.drivers.models.enums.permission_state import PermissionState
 from core.modules.drivers.models.permission_request import PermissionRequest
@@ -47,9 +47,9 @@ class TableGrantLedger(GrantLedger):
                   *(self.permission_grant(permission) for permission in permissions), *(self.driver_grant(row) for row in granted)]
         return {agent_id: [grant for grant in grants if grant.agent_id == agent_id] for agent_id in agent_ids}
 
-    def open_receipt(self, agent_id: int, command_fingerprint: str, policy_key: str) -> AdmissionReceipt | None:
-        row = self.queries.query(ReceiptRow).filter(session_agent_id=agent_id, command_fingerprint=command_fingerprint, policy_key=policy_key, consumed_at=None).first()
-        return AdmissionReceipt(row.session_agent_id, row.event_id, row.command_fingerprint, row.policy_key, row.grant_id) if row is not None else None
+    def open_receipt(self, agent_id: int, command_fingerprint: str, policy_key: str) -> UsedGrant | None:
+        row = self.queries.query(UsedGrantRecord).filter(session_agent_id=agent_id, command_fingerprint=command_fingerprint, policy_key=policy_key, consumed_at=None).first()
+        return UsedGrant(row.session_agent_id, row.event_id, row.command_fingerprint, row.policy_key, row.grant_id) if row is not None else None
 
     def spend(self, grant: Grant, event_id: str, command_fingerprint: str, context: Context) -> None:
         if not self.is_spendable(grant):
@@ -62,7 +62,7 @@ class TableGrantLedger(GrantLedger):
             row = self.queries.query(DriverGrant).find(grant.grant_id)
             self.repository.save_change(row, row.changed(grant_state=GrantState.SPENT, spending_event_id=event_id), context)
         if command_fingerprint:
-            self.repository.save(ReceiptRow(session_agent_id=grant.agent_id, event_id=event_id, command_fingerprint=command_fingerprint, policy_key=grant.policy_key,
+            self.repository.save(UsedGrantRecord(session_agent_id=grant.agent_id, event_id=event_id, command_fingerprint=command_fingerprint, policy_key=grant.policy_key,
                                             grant_id=grant.grant_id), context)
 
     # the step read the grant before its write began; the write reads it again, so a grant spent or withdrawn meanwhile admits nothing

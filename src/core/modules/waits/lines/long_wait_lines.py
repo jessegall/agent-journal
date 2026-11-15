@@ -15,7 +15,7 @@ from core.modules.waits.models.wait import Wait
 from core.modules.waits.agent_messages.wait_check_message import WaitCheckMessage
 
 OPEN_WAITS_REASON = "the open waits of one agent, a few at most"
-LONG_WAIT_RULE = "waits.long-wait"
+LONG_WAIT_KEY = "waits.long-wait"
 LONG_WAIT_MINUTES = 10
 
 
@@ -25,7 +25,7 @@ class LongWaitLines(LineSource):
 
     events = [HookEventName.TICK]
     includes_steps = True
-    key = LONG_WAIT_RULE
+    key = LONG_WAIT_KEY
     channel = LineChannel.WAITING
     category = LineCategory.STEERING
 

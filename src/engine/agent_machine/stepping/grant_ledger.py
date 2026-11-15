@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from collections.abc import Mapping, Sequence
 
-from engine.agent_machine.stepping.admission_receipt import AdmissionReceipt
+from engine.agent_machine.stepping.used_grant import UsedGrant
 from engine.agent_machine.stepping.grant import Grant
 from engine.command.context import Context
 from engine.agent_machine.states.agent_reference import AgentReference
@@ -14,7 +14,7 @@ class GrantLedger(ABC):
     def usable_grants(self, agents: Sequence[AgentReference]) -> Mapping[int, Sequence[Grant]]: ...
 
     @abstractmethod
-    def open_receipt(self, agent_id: int, command_fingerprint: str, policy_key: str) -> AdmissionReceipt | None: ...
+    def open_receipt(self, agent_id: int, command_fingerprint: str, policy_key: str) -> UsedGrant | None: ...
 
     # spends the grant in the step's own write; a grant no longer usable raises, which withdraws the admission
     @abstractmethod

@@ -13,7 +13,7 @@ from core.modules.overview.support.overview_first import OverviewFirst
 from core.modules.overview.support.overview_agent_messages import OVERVIEW_COMMAND
 
 OVERVIEW_RANK = "overview.first"
-OVERVIEW_RULE = "overview.overview-first"
+OVERVIEW_KEY = "overview.overview-first"
 
 
 class OverviewFirstStates(StateSource):
@@ -30,6 +30,6 @@ class OverviewFirstStates(StateSource):
         event = question.event
         if not self.first.is_required or event is None or event.event is not HookEventName.SESSION_START or event.is_resume:
             return {}
-        plan = BlockPlan(OverviewRefusalMessage.declared().agent_message(), RecentOverviewRead(OVERVIEW_COMMAND), OVERVIEW_RULE, OVERVIEW_RANK, is_strict=True,
+        plan = BlockPlan(OverviewRefusalMessage.declared().agent_message(), RecentOverviewRead(OVERVIEW_COMMAND), OVERVIEW_KEY, OVERVIEW_RANK, is_strict=True,
                          lifting_lines=tuple([OVERVIEW_COMMAND]))
         return {agent.agent_id: [plan] for agent in agents}

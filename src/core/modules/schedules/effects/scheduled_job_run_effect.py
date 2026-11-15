@@ -15,7 +15,7 @@ from core.modules.schedules.models.scheduled_job import ScheduledJob
 if TYPE_CHECKING:
     from engine.agent_machine.decision_record import DecisionRecord
 
-SCHEDULED_JOB_RUN_RULE = "schedules.scheduled-job-run"
+SCHEDULED_JOB_RUN_KEY = "schedules.scheduled-job-run"
 
 
 class ScheduledJobRunEffect(Effect):

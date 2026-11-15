@@ -21,7 +21,7 @@ from core.modules.helpers.agent_messages.unsaved_report_message import UnsavedRe
 from core.modules.helpers.support.helper_report_text import HelperReportText
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
 
-REPORT_RULE = "helpers.report"
+REPORT_KEY = "helpers.report"
 
 
 class JobReportEffect(Effect):

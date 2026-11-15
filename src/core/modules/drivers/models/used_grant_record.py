@@ -5,11 +5,11 @@ from engine.time.timestamp import Timestamp
 
 
 @dataclass(frozen=True, kw_only=True)
-class AdmissionReceipt(Model):
+class UsedGrantRecord(Model):
     """The record that a hook admitted a journal command by spending a grant; the command's own entrance accepts it
     once in place of a second grant."""
 
-    model_name = "admission_receipt"
+    model_name = "used_grant_record"
     cli_name = "admission-receipt"
 
     session_agent_id: int

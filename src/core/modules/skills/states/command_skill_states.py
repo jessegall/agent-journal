@@ -16,7 +16,7 @@ from core.modules.skills.support.skill_files import SkillFiles
 from core.modules.skills.support.skill_agent_messages import SKILL_TOOL_USES
 
 COMMAND_SKILL_RANK = "skills.command"
-COMMAND_RULE = "skills.command"
+COMMAND_KEY = "skills.command"
 SKILL_COMMAND = "journal skill read"
 
 
@@ -41,5 +41,5 @@ class CommandSkillStates(StateSource):
         if folder is None:
             return None
         agent_message = ReadCommandSkillFirstMessage.declared().agent_message(instruction=self.files.agent_instruction(folder, self.agents.find(agent_id)))
-        return BlockPlan(agent_message, SkillLoaded(folder), COMMAND_RULE, COMMAND_SKILL_RANK, tool_grace_uses=SKILL_TOOL_USES, is_strict=True,
+        return BlockPlan(agent_message, SkillLoaded(folder), COMMAND_KEY, COMMAND_SKILL_RANK, tool_grace_uses=SKILL_TOOL_USES, is_strict=True,
                          closer_roles=tuple([CloserRole.AGENT]), lifting_lines=tuple([f"{SKILL_COMMAND} {folder}"]), countdown=SKILL_COUNTDOWN.agent_message("{left}", skill=folder))

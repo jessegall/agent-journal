@@ -6,14 +6,14 @@ from engine.driver.hook_event import HookEvent
 from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
 from suites.coding.modules.checks.commands.report_check.report_check import ReportCheck
-from suites.coding.modules.checks.lines.failed_check_lines import FAILED_CHECK_RULE
+from suites.coding.modules.checks.lines.failed_check_lines import FAILED_CHECK_KEY
 from suites.coding.modules.checks.support.unreported_checks import UnreportedChecks
 
 
 class FailedCheckEffect(EventEffect):
     """Records each failing check the main agent is told of, so it is told again only after an hour."""
 
-    key = FAILED_CHECK_RULE
+    key = FAILED_CHECK_KEY
     events = list(HookEventName)
     agent_types = [AgentRole.MAIN.value]
 

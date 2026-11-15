@@ -15,7 +15,7 @@ from core.modules.documents.agent_messages.document_stop_refusal_message import 
 from core.modules.documents.support.document_closed import DocumentClosed
 
 OPEN_DOCUMENT_RANK = "documents.open"
-TOOL_RULE, STOP_RULE = "documents.open-document", "documents.open-document-stop"
+TOOL_KEY, STOP_KEY = "documents.open-document", "documents.open-document-stop"
 OPEN_DOCUMENTS_REASON = "an agent holds at most one open document"
 
 
@@ -35,6 +35,6 @@ class OpenDocumentStates(StateSource):
 
     @staticmethod
     def plan(row: OpenDocument) -> BlockPlan:
-        return BlockPlan(DocumentOpenMessage.declared().agent_message(doc=row.doc_id), DocumentClosed(row.doc_id), TOOL_RULE, OPEN_DOCUMENT_RANK, stop_check_key=STOP_RULE,
+        return BlockPlan(DocumentOpenMessage.declared().agent_message(doc=row.doc_id), DocumentClosed(row.doc_id), TOOL_KEY, OPEN_DOCUMENT_RANK, stop_check_key=STOP_KEY,
                          scope_stop=True, subject=RowReference("document", row.doc_id), lifting_lines=tuple([f"journal doc close {row.doc_id}"]),
                          stop_agent_message=DocumentStopRefusalMessage.declared().agent_message(doc=row.doc_id))

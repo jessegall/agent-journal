@@ -12,7 +12,7 @@ from core.modules.plans.support.block_conditions.plan_context_read import PlanCo
 from core.modules.plans.support.plan_context_delivery import PlanContextDelivery
 
 PLAN_CONTEXT_RANK = "plans.context"
-PLAN_CONTEXT_RULE = "plans.start-context"
+PLAN_CONTEXT_KEY = "plans.start-context"
 
 
 class PlanContextStates(StateSource):
@@ -33,5 +33,5 @@ class PlanContextStates(StateSource):
         plan_id = self.delivery.unread_plan(agent_id)
         if plan_id is None:
             return None
-        return BlockPlan(PlanContextMessage.declared().agent_message(plan=plan_id), PlanContextRead(plan_id), PLAN_CONTEXT_RULE, PLAN_CONTEXT_RANK,
+        return BlockPlan(PlanContextMessage.declared().agent_message(plan=plan_id), PlanContextRead(plan_id), PLAN_CONTEXT_KEY, PLAN_CONTEXT_RANK,
                          subject=RowReference("plan", plan_id), lifting_lines=tuple([f"journal plan context {plan_id}"]))

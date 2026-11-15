@@ -24,7 +24,7 @@ from core.modules.skills.states.command_skill_states import SKILL_COMMAND
 from engine.driver.agent_message import AgentMessage
 
 SKILL_READ_RANK = "skills.read-first"
-TOOL_RULE, STOP_RULE, PROFILE_RULE = "skills.read-first", "skills.unread-stop", "skills.profile-read-first"
+TOOL_KEY, STOP_KEY, PROFILE_KEY = "skills.read-first", "skills.unread-stop", "skills.profile-read-first"
 
 
 class SkillReadFirstStates(StateSource):
@@ -61,7 +61,7 @@ class SkillReadFirstStates(StateSource):
         row = self.agents.find(agent.agent_id)
         tool_agent_message = ReadSkillFirstMessage.instructed(self.files.agent_instruction(missing[0], row))
         stop_agent_message = UnreadSkillsMessage.naming(names)
-        return SkillReadFirstStates.read_plan(tool_agent_message, missing[0], TOOL_RULE, stop_check_key=STOP_RULE, tool_grace_uses=SKILL_TOOL_USES, scope_stop=True,
+        return SkillReadFirstStates.read_plan(tool_agent_message, missing[0], TOOL_KEY, stop_check_key=STOP_KEY, tool_grace_uses=SKILL_TOOL_USES, scope_stop=True,
                                              stop_agent_message=stop_agent_message, countdown=SKILL_COUNTDOWN.agent_message("{left}", skill=missing[0]))
 
     def profile_plan(self, agent: AgentReference) -> BlockPlan | None:
@@ -70,7 +70,7 @@ class SkillReadFirstStates(StateSource):
         if not unread:
             return None
         agent_message = ReadSkillFirstMessage.instructed(self.files.agent_instruction(unread[0], self.agents.find(agent.agent_id)))
-        return SkillReadFirstStates.read_plan(agent_message, unread[0], PROFILE_RULE)
+        return SkillReadFirstStates.read_plan(agent_message, unread[0], PROFILE_KEY)
 
     # the block an agent lifts by reading the skill itself
     @staticmethod

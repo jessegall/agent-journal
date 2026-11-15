@@ -8,14 +8,14 @@ from engine.enums.hook_event_name import HookEventName
 from suites.coding.modules.checks.agent_messages.check_failed_message import CheckFailedMessage
 from suites.coding.modules.checks.support.unreported_checks import UnreportedChecks
 
-FAILED_CHECK_RULE = "checks.failed"
+FAILED_CHECK_KEY = "checks.failed"
 
 
 class FailedCheckLines(EventLineSource):
     """The main agent is told once that a check fails, also while it waits, with the last 800 characters it
     printed, and again after an hour if it still fails."""
 
-    key = FAILED_CHECK_RULE
+    key = FAILED_CHECK_KEY
     events = list(HookEventName)
     agent_types = [AgentRole.MAIN.value]
 

@@ -10,7 +10,7 @@ from engine.enums.effect_timing import EffectTiming
 from engine.enums.hook_event_name import HookEventName
 from core.modules.drivers.models.enums.compaction_reason import CompactionReason
 from suites.coding.modules.workers.commands.compact_agent_context.compact_agent_context import CompactAgentContext
-from suites.coding.modules.workers.states.compaction_states import COMPACTION_STOP_RULE, DUE_CAUSE
+from suites.coding.modules.workers.states.compaction_states import COMPACTION_STOP_KEY, DUE_CAUSE
 from suites.coding.modules.workers.types.worker import Worker
 from suites.coding.support.context_limit_check import ContextLimitCheck
 

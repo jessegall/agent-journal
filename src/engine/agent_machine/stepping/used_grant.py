@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
-class AdmissionReceipt:
+class UsedGrant:
     """The record that a hook admitted a journal command by spending a grant, which the command's own entrance
     accepts once."""
 

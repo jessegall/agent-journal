@@ -28,7 +28,7 @@ from core.modules.tasks.agent_messages.stop_tasks_message import StopTasksMessag
 from core.modules.tasks.support.current_tasks import CurrentTasks
 from core.modules.tasks.support.suite_task_assigners import SuiteTaskAssigners
 
-TASK_STOP_RULE = "tasks.carry-on-at-stop"
+TASK_STOP_KEY = "tasks.carry-on-at-stop"
 TASK_STOP_SKIP_WINDOW = Interval(ToolUseWindow(25), Seconds(1500))
 # a Working frame is ordered by its push time, never by a rank key
 TASK_RANK = ""
@@ -57,14 +57,14 @@ class TaskWorkStates(StateSource):
         if not started:
             return []
         remains = self.holds_stop(agent_id)
-        reason = Reason(TASK_STOP_RULE, DecisionClass.HOLD, TASK_RANK, self.stop_text(started))
+        reason = Reason(TASK_STOP_KEY, DecisionClass.HOLD, TASK_RANK, self.stop_text(started))
         return [RequiredState(Working(WorkReference(WorkType.TASK, task.id, f"task {task.id}"), remains, reason), TASK_RANK,
                      StateKey("Working", RowReference(Task.model_name, task.id), f"task:{task.id}")) for task in started]
 
     # the tasks in hand hold the agent's stop unless a run of its goes, its suite lets it stop with them, or it skipped
     # the stop refusal within the last 25 tool uses or 25 minutes, as today's tasks.carry-on-at-stop lets it
     def holds_stop(self, agent_id: int) -> bool:
-        if self.runs.has_run(agent_id) or self.skips.is_skipped(agent_id, TASK_STOP_RULE, TASK_STOP_SKIP_WINDOW, self.clock.timestamp()):
+        if self.runs.has_run(agent_id) or self.skips.is_skipped(agent_id, TASK_STOP_KEY, TASK_STOP_SKIP_WINDOW, self.clock.timestamp()):
             return False
         assigner = self.assigners.assigner()
         return assigner is None or not assigner.allows_stop_with_tasks(agent_id)

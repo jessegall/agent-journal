@@ -8,7 +8,7 @@ from engine.testing.agent_machine.question_samples import QuestionSamples
 from engine.testing.agent_machine.view_samples import ViewSamples
 from engine.testing.examples.hook_samples import HookSamples
 from core.modules.overview.lines.overview_first_lines import OverviewFirstLines
-from core.modules.overview.states.overview_first_states import OVERVIEW_RULE, OverviewFirstStates
+from core.modules.overview.states.overview_first_states import OVERVIEW_KEY, OverviewFirstStates
 from core.modules.overview.agent_messages.overview_line_message import OverviewLineMessage
 from core.modules.overview.support.overview_first import OverviewFirst
 
@@ -22,7 +22,7 @@ VIEW = ViewSamples.view("main", WorkStop.REFUSE_WHILE_WORK_REMAINS, has_parent=F
 def test_a_session_start_plans_the_strict_overview_block_and_a_resume_does_not() -> None:
     states = OverviewFirstStates(OverviewFirst())
     plan = states.states([MAIN], START)[4][0]
-    assert (plan.tool_check_key, plan.is_strict, plan.lifting_lines) == (OVERVIEW_RULE, True, ("journal overview",))
+    assert (plan.tool_check_key, plan.is_strict, plan.lifting_lines) == (OVERVIEW_KEY, True, ("journal overview",))
     assert states.states([MAIN], RESUME) == {}
 
 

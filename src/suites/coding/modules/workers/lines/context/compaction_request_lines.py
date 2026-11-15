@@ -8,7 +8,7 @@ from engine.agent_machine.record.question import Question
 from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
 from suites.coding.modules.workers.effects.context.request_compaction_effect import RequestCompactionEffect
-from suites.coding.modules.workers.states.compaction_states import COMPACTION_STOP_RULE
+from suites.coding.modules.workers.states.compaction_states import COMPACTION_STOP_KEY
 from suites.coding.modules.workers.agent_messages.context_compacted_message import ContextCompactedMessage
 from suites.coding.modules.workers.types.worker import Worker
 
@@ -18,7 +18,7 @@ class CompactionRequestLines(LineSource):
 
     events = [HookEventName.STOP]
     agent_types = [AgentRole.MAIN, Worker.key]
-    key = COMPACTION_STOP_RULE
+    key = COMPACTION_STOP_KEY
     # no program carries a line on a stop, so it waits for the agent's next event
     channel = LineChannel.WAITING
 

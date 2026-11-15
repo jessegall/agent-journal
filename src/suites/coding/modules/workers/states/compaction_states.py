@@ -14,7 +14,7 @@ from core.modules.drivers.support.context_compactions import ContextCompactions
 from suites.coding.modules.workers.types.worker import Worker
 from suites.coding.support.context_limit_check import ContextLimitCheck
 
-COMPACTION_STOP_RULE = "drivers.compaction-due-stop"
+COMPACTION_STOP_KEY = "drivers.compaction-due-stop"
 DUE_CAUSE = "due"
 RETRY_ATTEMPT, FIRST_ATTEMPT = 2, 1
 

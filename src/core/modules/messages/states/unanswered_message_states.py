@@ -14,7 +14,7 @@ from core.modules.messages.support.message_agent_messages import UNANSWERED_TOOL
 from core.modules.messages.support.unanswered_messages import UnansweredMessages
 
 UNANSWERED_RANK = "messages.unanswered"
-UNANSWERED_RULE = "messages.unanswered"
+UNANSWERED_KEY = "messages.unanswered"
 ANSWER_COMMANDS = ("journal message", "journal task make")
 ANSWERING_TYPES = ("main", "helper")
 
@@ -39,6 +39,6 @@ class UnansweredMessageStates(StateSource):
             return None
         numbers = ", ".join(str(message.id) for message in unanswered)
         refusal = UnansweredRefusalMessage.declared().agent_message(messages=numbers, message=unanswered[0].id)
-        return BlockPlan(refusal, MessagesAnswered([message.id for message in unanswered]), UNANSWERED_RULE, UNANSWERED_RANK,
+        return BlockPlan(refusal, MessagesAnswered([message.id for message in unanswered]), UNANSWERED_KEY, UNANSWERED_RANK,
                          members=tuple(message.id for message in unanswered), tool_grace_uses=UNANSWERED_TOOL_USES,
                          closer_roles=tuple([CloserRole.AGENT]), lifting_lines=ANSWER_COMMANDS, countdown=UNANSWERED_COUNTDOWN.agent_message("{left}", messages=numbers))

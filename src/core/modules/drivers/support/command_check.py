@@ -12,7 +12,7 @@ from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.drivers.models.admission_receipt import AdmissionReceipt
+from core.modules.drivers.models.used_grant_record import UsedGrantRecord
 
 
 class CommandCheck:
@@ -44,7 +44,7 @@ class CommandCheck:
         return [self.container.get(policy) for policy in listed if self.assembly.covers(policy, agent.role)]
 
     def is_passed(self, policy: Policy, agent: AgentReference, context: Context) -> bool:
-        receipt = self.queries.query(AdmissionReceipt).filter(session_agent_id=agent.agent_id, policy_key=policy.key, consumed_at=None).first()
+        receipt = self.queries.query(UsedGrantRecord).filter(session_agent_id=agent.agent_id, policy_key=policy.key, consumed_at=None).first()
         if receipt is not None:
             self.repository.save_change(receipt, receipt.changed(consumed_at=context.timestamp), context)
             return True

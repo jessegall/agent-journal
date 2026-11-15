@@ -3,12 +3,13 @@ from engine.database.migration import Migration
 
 class PlainMachineNamesMigration(Migration):
     """Gives the agent machine's stored tables and columns the plain names its code uses: a hook's event id, the
-    stack's stacked states, the session and work numbers, the driver and program versions and the hidden states."""
+    stack's stacked states, the session and work numbers, the driver and program versions, the used grants and the hidden states."""
 
     number = 77
     statements = [
         "ALTER TABLE hook_calls RENAME COLUMN firing TO event_id",
         "ALTER TABLE admission_receipts RENAME COLUMN firing TO event_id",
+        "ALTER TABLE admission_receipts RENAME TO used_grant_records",
         "ALTER TABLE agent_blocks RENAME COLUMN opening_firing TO opening_event_id",
         "ALTER TABLE driver_grants RENAME COLUMN spending_firing TO spending_event_id",
         "ALTER TABLE agent_launches RENAME COLUMN session_generation TO session_number",

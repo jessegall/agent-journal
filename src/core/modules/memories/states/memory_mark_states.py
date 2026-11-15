@@ -18,7 +18,7 @@ from core.modules.memories.support.marks.mark_tracker import MarkTracker
 from core.modules.memories.support.memory_settings import MARK_TOOL_USES_SETTING, MARKS_SETTING
 
 MARK_RANK = "memories.mark"
-TOOL_RULE, STOP_RULE = "memories.open-mark", "memories.weigh-first-stop"
+TOOL_KEY, STOP_KEY = "memories.open-mark", "memories.weigh-first-stop"
 WEIGH_COMMANDS = ("journal memory weigh", "journal memory skip", "journal memory remove", "journal memory edit")
 
 
@@ -46,5 +46,5 @@ class MemoryMarkStates(StateSource):
         tool_uses = self.settings.numbers(MARK_TOOL_USES_SETTING)
         uses = dict(zip(self.settings.numbers(MARKS_SETTING), tool_uses)).get(marks[0].percent, tool_uses[-1]) if marks else reaching.tool_uses
         agent_message = WeighFirstMessage.declared().agent_message()
-        return BlockPlan(agent_message, MemoriesWeighed(), TOOL_RULE, MARK_RANK, stop_check_key=STOP_RULE, tool_grace_uses=uses, scope_stop=True,
+        return BlockPlan(agent_message, MemoriesWeighed(), TOOL_KEY, MARK_RANK, stop_check_key=STOP_KEY, tool_grace_uses=uses, scope_stop=True,
                          closer_roles=tuple([CloserRole.AGENT]), lifting_lines=WEIGH_COMMANDS, stop_agent_message=agent_message, countdown=WEIGH_COUNTDOWN.agent_message("{left}"))
