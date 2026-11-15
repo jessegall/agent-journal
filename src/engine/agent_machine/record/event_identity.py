@@ -16,11 +16,12 @@ class EventIdentity:
     environment_id: int
     agent_type: str
     profile: str
+    driver_name: str
     pinned_slices: tuple[str, ...]
     child_agent: str = ""
 
     @classmethod
-    def identified(cls, event: HookEvent, session_generation: int, agent_id: int, environment_id: int, agent_type: str, profile: str,
-                pinned_slices: tuple[str, ...]) -> "EventIdentity":
-        return cls(event.program, event.session, session_generation, event.firing, agent_id, environment_id, agent_type, profile,
+    def identified(cls, event: HookEvent, session_generation: int, agent_id: int, environment_id: int, agent_type: str, profile: str, driver_name: str,
+                   pinned_slices: tuple[str, ...]) -> "EventIdentity":
+        return cls(event.program, event.session, session_generation, event.firing, agent_id, environment_id, agent_type, profile, driver_name,
                    pinned_slices, event.child_agent)

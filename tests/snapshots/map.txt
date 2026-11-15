@@ -4,6 +4,7 @@ engine  The building blocks every module stands on; it imports no module.
     agent  What the engine knows of agents: groups, roles, policy, checkouts and where an agent may write.
     agent_machine  The agent machine's contracts: the decision record of a step, the view it reads, the driver of an agent type and what modules and providers contribute.
     agent_stack  An agent's continuation stack: its seven states, its frames, the reasons they give and the answer basis a step saves against.
+    agent_step  Reading an agent's view and saving its step: the contracts the drivers module binds, the result of a save and the codec of the stack's frames.
     area  The marker every engine area folder declares itself with: what the area is for and who may import it.
     caller  Who runs a command line: the caller, its request and the chain of processes it came through.
     chat  Declarations of chat marks, their buttons and docked items.

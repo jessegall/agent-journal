@@ -13,7 +13,7 @@ from engine.enums.frame_end import FrameEnd
 from engine.enums.question_type import QuestionType
 from engine.enums.stack_move_type import StackMoveType
 
-STOP_LIMIT_SETTING, TOOL_LIMIT_SETTING = "drivers.most-stop-refusals", "drivers.most-tool-refusals"
+STOP_LIMIT_SETTING, TOOL_LIMIT_SETTING = "journal.core.drivers.most-stop-refusals", "journal.core.drivers.most-tool-refusals"
 STOP_LIMIT, TOOL_LIMIT = 5, 25
 PROGRESS_ENDS = (FrameEnd.SATISFIED, FrameEnd.CLOSED, FrameEnd.HANDED_IN, FrameEnd.DELIVERED, FrameEnd.ANSWERED)
 

@@ -32,6 +32,7 @@ class AgentView:
     program_name: str
     session: str
     profile: str
+    driver_name: str
     session_generation: int
     stepped_at: datetime
     stack: Stack

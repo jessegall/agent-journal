@@ -8,8 +8,9 @@ OLD_PATH_STORY_FILES = "tests/stories/old_path_story_files.txt"
 
 @dataclass(frozen=True)
 class OldPathStoryFiles:
-    """The story files pinned to the old driving path while the new driver is built (doc 1310 section 15.2): each line
-    names a story file, the slice that broke it and the test that replaces it, and the kit runs those files with no slice live."""
+    """The story files pinned to the old driving path while the new driver is built (doc 1310 section 15.2):
+    each line names a story file, the slice that broke it and the test that replaces it, and the kit runs
+    those files with no slice live."""
 
     slices: dict[str, str]
     replacements: dict[str, str]

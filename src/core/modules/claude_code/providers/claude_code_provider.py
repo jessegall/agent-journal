@@ -1,3 +1,7 @@
+from engine.agent_machine.contracts.capability import Capability
+from engine.enums.capability_fallback import CapabilityFallback
+from engine.enums.capability_part import CapabilityPart
+from engine.enums.capability_proof import CapabilityProof
 from engine.file.kept_bytes import KeptBytes
 from engine.provider.model_efforts import ModelEfforts
 from core.modules.claude_code.support.claude_code_settings import MODEL_EFFORTS
@@ -92,6 +96,7 @@ class ClaudeCodeProvider(Provider):
                    "Stop": HookEventName.STOP, "StopFailure": HookEventName.STOP_FAILURE,
                    
                    "SessionEnd": HookEventName.SESSION_END, "MessageDisplay": HookEventName.MESSAGE_DISPLAY}
+    new_capabilities = [Capability(CapabilityPart.WAKE_HOOK, HookEventName.STOP, CapabilityProof.DOCUMENTED_UPSTREAM, CapabilityFallback.TYPING_OR_RESUME)]
     line_events = [HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE]
     plain_output_events = [HookEventName.SESSION_START, HookEventName.PROMPT]
     refusals = {HookEventName.PRE_TOOL_USE: RefusalStyle.DENY, HookEventName.PROMPT: RefusalStyle.BLOCK, HookEventName.STOP: RefusalStyle.BLOCK}

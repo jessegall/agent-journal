@@ -29,6 +29,11 @@ from engine.provider.peer_note import PeerNote
 from engine.provider.program_model import ProgramModel
 from engine.provider.program_server_file import ProgramServerFile
 from engine.enums.halt_style import HaltStyle
+from engine.agent_machine.capabilities import Capabilities
+from engine.agent_machine.contracts.capability import Capability
+from engine.enums.answer_encoding import AnswerEncoding
+from engine.enums.capability_part import CapabilityPart
+from engine.enums.capability_proof import CapabilityProof
 from engine.enums.refusal_style import RefusalStyle
 from engine.provider.session_line import SessionLine
 from engine.provider.transcript_author import AGENT_AUTHOR, USER_AUTHOR
@@ -72,6 +77,7 @@ class Provider(ABC):
     controls: ClassVar[Sequence[ControlGroup]] = ()
     compacts_headless: ClassVar[bool] = False
     has_windowed_compaction: ClassVar[bool] = False
+    new_capabilities: ClassVar[Sequence[Capability]] = ()
     # a program that cannot start without its launch variables refuses a launcher that passes none
     needs_launch_variables: ClassVar[bool] = False
     session_variable: ClassVar[str]
@@ -79,6 +85,21 @@ class Provider(ABC):
     models: ClassVar[Sequence[ProgramModel]]
     session_tier: ClassVar[ModelTier] = ModelTier.GENERAL
     profile_model_setting: ClassVar[str] = ""
+
+    # What the program carries of a decision, read from what this provider already declares about its answers; the
+    # parts that are new with the agent machine come from new_capabilities, each labelled by how it is known.
+    @classmethod
+    def capabilities(cls) -> Capabilities:
+        denial = AnswerEncoding.JSON_DECISION if HookEventName.PRE_TOOL_USE in cls.refusals else AnswerEncoding.STDERR_EXIT_TWO
+        derived = [*(Capability(CapabilityPart.LINES, event, CapabilityProof.IMPLEMENTED_HERE) for event in cls.line_events),
+                   *(Capability(CapabilityPart.HALT, event, CapabilityProof.IMPLEMENTED_HERE) for event in cls.halts),
+                   *(Capability(CapabilityPart.STOP_REFUSAL, event, CapabilityProof.IMPLEMENTED_HERE, encoding=AnswerEncoding.BLOCK)
+                     for event in cls.refusals if event is HookEventName.STOP),
+                   *(Capability(CapabilityPart.PROMPT_REFUSAL, event, CapabilityProof.IMPLEMENTED_HERE) for event in cls.refusals if event is HookEventName.PROMPT),
+                   Capability(CapabilityPart.TOOL_DENIAL, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_HERE, encoding=denial),
+                   Capability(CapabilityPart.REWRITE, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_HERE)]
+        declared = {(capability.part, capability.event) for capability in cls.new_capabilities}
+        return Capabilities(*(capability for capability in derived if (capability.part, capability.event) not in declared), *cls.new_capabilities)
 
     def __init__(self, folders: ProgramFolders) -> None:
         self.folders = folders

@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.step_result import StepResult
 from engine.agent_step.step_commit import StepCommit
 from engine.command.context import Context
@@ -10,4 +11,4 @@ class StepWriter(ABC):
     changed since it was read; a required admission effect that fails raises and rolls the whole write back."""
 
     @abstractmethod
-    def save(self, result: StepResult, hook_call_id: int | None, context: Context) -> StepCommit: ...
+    def save(self, view: AgentView, step: StepResult, hook_call_id: int | None, context: Context) -> StepCommit: ...

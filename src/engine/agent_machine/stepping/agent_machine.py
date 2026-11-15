@@ -137,9 +137,9 @@ class AgentMachine:
     def identity(view: AgentView, question: Question) -> EventIdentity:
         if question.event is not None:
             return EventIdentity.identified(question.event, view.session_generation, view.agent.agent_id, view.agent.environment_id, view.agent.agent_type,
-                                            view.profile, view.pinned_slices)
+                                            view.profile, view.driver_name, view.pinned_slices)
         return EventIdentity(view.program_name, view.session, view.session_generation, STEP_FIRING.format(version=view.basis.stack_version),
-                             view.agent.agent_id, view.agent.environment_id, view.agent.agent_type, view.profile, view.pinned_slices)
+                             view.agent.agent_id, view.agent.environment_id, view.agent.agent_type, view.profile, view.driver_name, view.pinned_slices)
 
     def lines(self, question: Question, view: AgentView) -> list[Line]:
         event = question.event

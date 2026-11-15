@@ -8,7 +8,7 @@ from engine.agent_machine.record.refusal_counts import RefusalCounts
 from engine.agent_machine.record.rewrite import Rewrite
 from engine.agent_machine.record.wake_change import WakeChange
 
-SAMPLE_IDENTITY = EventIdentity("claude", "s-1", 1, "story-1", 4, 1, "main", "", ())
+SAMPLE_IDENTITY = EventIdentity("claude", "s-1", 1, "story-1", 4, 1, "main", "main profile", "samples.main", ())
 
 
 class RecordSamples:

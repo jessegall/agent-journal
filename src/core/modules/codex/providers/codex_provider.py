@@ -1,3 +1,7 @@
+from engine.agent_machine.contracts.capability import Capability
+from engine.enums.capability_fallback import CapabilityFallback
+from engine.enums.capability_part import CapabilityPart
+from engine.enums.capability_proof import CapabilityProof
 from engine.provider.model_efforts import ModelEfforts
 from core.modules.codex.support.codex_settings import MODEL_EFFORTS
 from engine.provider.context_window import ContextWindow
@@ -70,6 +74,9 @@ class CodexProvider(Provider):
     title = "Codex"
     executable = "codex"
     hook_events = {event.value: event.event for event in CodexHookEvent}
+    new_capabilities = [Capability(CapabilityPart.REWRITE, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_HERE, CapabilityFallback.PROCESS_RUN_REFUSAL),
+                        Capability(CapabilityPart.WAKE_HOOK, HookEventName.STOP, CapabilityProof.DOCUMENTED_UPSTREAM, CapabilityFallback.TYPING_OR_RESUME),
+                        Capability(CapabilityPart.COMPACTION_END, HookEventName.COMPACT, CapabilityProof.DOCUMENTED_UPSTREAM)]
     line_events = [HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE]
     plain_output_events = [HookEventName.SESSION_START, HookEventName.PROMPT]
     refusals = {HookEventName.STOP: RefusalStyle.BLOCK}

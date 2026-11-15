@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 
+from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import Model
 from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.enums.wake_state import WakeState
 
 
 @dataclass(frozen=True, kw_only=True)
-class AgentWake(Model):
+class AgentWake(EnvironmentScoped, Model):
     """The durable obligation to give an agent a turn for its causes in one work generation, from the step that
     wrote it to the turn that acknowledged it; one active row per agent and work generation."""
 
@@ -14,7 +15,7 @@ class AgentWake(Model):
     cli_name = "agent-wake"
 
     session_agent_id: int
-    environment_id: int
+    environment_id: int = 0
     work_generation: str
     session_generation: int
     causes: str = "[]"

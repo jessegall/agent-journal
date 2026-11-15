@@ -49,13 +49,13 @@ class SampleModule(Module):
     needs = [UnreadNeeds]
 
 
-def problems(*needs: type[NeedSource]) -> list[str]:
+def problems(*needs: type[NeedSource]) -> tuple[str, ...]:
     module = type("CheckedModule", (SampleModule,), {"needs": [UnreadNeeds, *needs]})
     return MachineCheck(ContributionReader()).problems([module])
 
 
 def test_a_module_whose_lists_follow_the_contracts_syncs() -> None:
-    assert problems() == []
+    assert problems() == ()
 
 
 def test_a_need_source_that_takes_a_bus_is_refused_with_its_fix() -> None:
