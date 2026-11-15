@@ -9,5 +9,4 @@ class StackMoveType(StrEnum):
     EXITED = "exited"
     DATA_CHANGED = "data-changed"
     PERSON_EXIT = "person-exit"
-    REPINNED = "repinned"
     RESEEDED = "reseeded"

@@ -26,7 +26,7 @@ from engine.enums.work_stop import WorkStop
 class AgentView:
     """Everything one step reads, in one snapshot that begins with the answer basis: the stack, the facts, the
     needs and hold plans, the open holds, the usable grants, the suppressions, the open escalation, the
-    settings, whether the agent rests, its pin, its driver's contract and its program's capabilities, the
+    settings, whether the agent rests, its driver's contract and its program's capabilities, the
     refusal counts kept so far, how each open hold's condition was judged, and when the step runs."""
 
     basis: AnswerBasis

@@ -21,4 +21,5 @@ class AgentLineHistoriesMigration(Migration):
         "DROP TABLE driver_comparisons",
         "DROP TABLE driver_comparison_stacks",
         "ALTER TABLE agent_stacks DROP COLUMN pinned_slices",
+        "ALTER TABLE hook_timeout_notices DROP COLUMN slowest_rule",
     ]

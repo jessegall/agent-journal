@@ -13,8 +13,7 @@ class HookTimeoutNotice(Model):
     session_agent_id: int
     receiver_id: int
     timeout_count: int
-    slowest_rule: str
 
     @property
     def text(self) -> str:
-        return f"Agent {self.session_agent_id}: {self.timeout_count} hook timeouts in ten minutes, slowest rule {self.slowest_rule}"
+        return f"Agent {self.session_agent_id}: {self.timeout_count} hook timeouts in ten minutes"

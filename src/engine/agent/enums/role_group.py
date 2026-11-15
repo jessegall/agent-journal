@@ -6,8 +6,8 @@ from engine.helper_type.helper_type_book import HelperTypeBook
 
 class RoleGroup(StrEnum):
     """A group of agent roles whose members the registered helper types say by one of their behaviours, or, for
-    read-only helpers, by their access. A rule that names AgentRole.HELPER in its roles covers
-    every helper of any kind; one that holds only for read-only helpers says so with READ_ONLY_HELPERS."""
+    read-only helpers, by their access. A contribution of the group ANY covers every agent; one that holds
+    only for read-only helpers says so with HELPERS."""
 
     ANY = "any"
     TASK = "task"

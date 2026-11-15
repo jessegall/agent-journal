@@ -6,7 +6,6 @@ from core.modules.drivers.nudges.agent_line_available_nudge import AgentLineAvai
 from engine.driver.count_down import CountDown
 from core.modules.drivers.support.access_nudges import ACCESS_NUDGES
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
-from engine.driver.rule_outcome import RULE_FAILED
 from core.modules.drivers.nudges.opening_line_nudge import OpeningLineNudge
 from core.modules.drivers.nudges.managed_hook_line_nudge import ManagedHookLineNudge
 from core.modules.drivers.nudges.journal_started_nudge import JournalStartedNudge
@@ -35,4 +34,4 @@ from core.modules.drivers.nudges.file_loaded_nudge import FileLoadedNudge
 REQUIRED_COMMAND_TOOL_USES = 5
 REQUIRED_COMMAND_SPAN = ToolUseSpan(REQUIRED_COMMAND_TOOL_USES)
 REQUIRED_COMMAND_COUNTDOWN = CountDown("drivers.required_command_countdown", "{subject}", REQUIRED_COMMAND_SPAN)
-DRIVER_NUDGES = [JournalStartedNudge, ProjectHookWokeNudge, CompactionInstructionsNudge, EscalationHelpNudge, EscalationAnsweredNudge, WakeObligationNudge, IgnoredWakeNudge, HookTimeoutsNudge, PermissionRequestedNudge, SafeguardsStoppedNudge, AgentCompactedNudge, CompactionNoticeNudge, CacheKeepaliveNudge, ContinuedSessionNudge, AgentLineAvailableNudge, *ACCESS_NUDGES, ManagedHookLineNudge, ManagedHookRefusalNudge, AgentResumedNudge, HooksUncheckedNudge, REQUIRED_COMMAND_COUNTDOWN.declaration, RequiredCommandRefusalNudge, OpeningLineNudge, RULE_FAILED, TakeoverNudge, PausedRefusalNudge, MissingModelNudge, UnboundDispatchNudge, LongOutputNudge, FileLoadedNudge, AgentNoticeNudge]
+DRIVER_NUDGES = [JournalStartedNudge, ProjectHookWokeNudge, CompactionInstructionsNudge, EscalationHelpNudge, EscalationAnsweredNudge, WakeObligationNudge, IgnoredWakeNudge, HookTimeoutsNudge, PermissionRequestedNudge, SafeguardsStoppedNudge, AgentCompactedNudge, CompactionNoticeNudge, CacheKeepaliveNudge, ContinuedSessionNudge, AgentLineAvailableNudge, *ACCESS_NUDGES, ManagedHookLineNudge, ManagedHookRefusalNudge, AgentResumedNudge, HooksUncheckedNudge, REQUIRED_COMMAND_COUNTDOWN.declaration, RequiredCommandRefusalNudge, OpeningLineNudge, TakeoverNudge, PausedRefusalNudge, MissingModelNudge, UnboundDispatchNudge, LongOutputNudge, FileLoadedNudge, AgentNoticeNudge]

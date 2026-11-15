@@ -54,8 +54,6 @@ from suites.coding.modules.workers.listeners.workers_listeners import WORKERS_LI
 from suites.coding.modules.workers.windows.extensions.workers_window_extensions import WORKERS_WINDOW_EXTENSIONS
 from suites.coding.modules.workers.skills.declarations.workers_skills import WORKERS_SKILLS
 from suites.coding.modules.workers.windows.workers_windows import WORKERS_WINDOWS
-from core.modules.drivers.support.compaction_stop import CompactionStop
-from suites.coding.modules.workers.bindings.worker_compaction_stop import WorkerCompactionStop
 from suites.coding.support.managed_files import ManagedFiles
 from suites.coding.modules.workers.support.journal_managed_files import JournalManagedFiles
 from suites.coding.modules.workers.bindings.record_worker_recovery_reports import RecordWorkerRecoveryReports
@@ -194,7 +192,7 @@ class WorkersModule(Module):
         "suites.coding.workers.worktree_behind_check.bring_up_to_date": "suites.coding.workers.worktree_behind_check.mark_updated",
         "suites.coding.workers.worktree_behind_check.hold": "suites.coding.workers.worktree_behind_check.pause",
     }
-    bindings = {DocumentFilers: ReportDocumentFilers, CheckpointBranchMoves: WorkerCheckpointBranchMoves, CheckpointRuns: CheckpointRunner, CompactionLimit: WorkerCompactionLimit, CompactionStop: WorkerCompactionStop, ManagedFiles: JournalManagedFiles, HelperGrantPolicy: WorkerGrantPolicy, ReadCommands: WorkerReadCommands, WorkerRecoveryReports: RecordWorkerRecoveryReports, AgentWork: WorkerAgentWork, AgentBriefPoints: WorkerBriefPoints, AssignedWorkSources: WorkerTaskSources, AgentFolders: WorkerFolders, DispatchPolicy: WorkerPolicy, AgentWriteFolder: WorkerWriteFolder, AgentSandboxChoice: WorkerSandboxChoice, AgentCheckouts: WorkerCheckouts, TaskAssignees: WorkerTaskAssignees, SkillProjects: WorkerSkillProjects, TaskWaitTargets: WorkerTaskWaitTargets, QueueRunWorkers: WorkerQueueRunWorkers, RunCounts: WorkerTestListings, PartVisibility: WorkerPartVisibility, RunWaits: WorkerRunWaits, RuleWarnings: RouteRuleWarnings}
+    bindings = {DocumentFilers: ReportDocumentFilers, CheckpointBranchMoves: WorkerCheckpointBranchMoves, CheckpointRuns: CheckpointRunner, CompactionLimit: WorkerCompactionLimit, ManagedFiles: JournalManagedFiles, HelperGrantPolicy: WorkerGrantPolicy, ReadCommands: WorkerReadCommands, WorkerRecoveryReports: RecordWorkerRecoveryReports, AgentWork: WorkerAgentWork, AgentBriefPoints: WorkerBriefPoints, AssignedWorkSources: WorkerTaskSources, AgentFolders: WorkerFolders, DispatchPolicy: WorkerPolicy, AgentWriteFolder: WorkerWriteFolder, AgentSandboxChoice: WorkerSandboxChoice, AgentCheckouts: WorkerCheckouts, TaskAssignees: WorkerTaskAssignees, SkillProjects: WorkerSkillProjects, TaskWaitTargets: WorkerTaskWaitTargets, QueueRunWorkers: WorkerQueueRunWorkers, RunCounts: WorkerTestListings, PartVisibility: WorkerPartVisibility, RunWaits: WorkerRunWaits, RuleWarnings: RouteRuleWarnings}
     listeners = [*WORKERS_LISTENERS]
     agent_listeners = [WorktreeStepListener, ProofStepListener]
     tick_handlers = [WorkerInstructionRefreshTickHandler, StoppedWorkerLibrariesTickHandler, MergerRetryTickHandler, InactiveMainAgentPromptTickHandler, BehindWorktreesTickHandler, BehindCheckPruningTickHandler, AskWatchTickHandler, StoppedWorkerRunsTickHandler, WorkerResumeRetryTickHandler, GoneWorkerRecoveryTickHandler, StalledWorkerTestRunsTickHandler, UnstartedWorkerProofsTickHandler, UnlaunchedWorkerTestRunsTickHandler]

@@ -14,9 +14,8 @@ from engine.enums.line_carrier import LineCarrier
 
 NEED_STATES = ("Working", "Waiting", "Blocked", "Compacting")
 ENGINE_PLACED_STATES = ("Stopped", "Paused", "Ended")
-MACHINE_TABLES = ("agent_stack", "agent_stack_move", "agent_subjects", "agent_frame_suppression", "agent_escalation", "agent_wake",
-                  "agent_step_request", "agent_launch", "driver_table", "driver_epoch", "program_epoch", "driver_grant", "admission_receipt",
-                  "driver_shadow", "driver_shadow_stack")
+MACHINE_TABLES = ("agent_stack", "agent_stack_move", "agent_frame_suppression", "agent_escalation", "agent_wake", "agent_step_request",
+                  "agent_launch", "driver_table", "driver_epoch", "program_epoch", "driver_grant", "admission_receipt")
 SOURCE_FORBIDDEN_TYPES = ("Bus", "Launcher", "ChildProcess", "FileAccess")
 FORBIDDEN_TYPES = {ContributionType.AGENT_LISTENER: ("Bus", "State"), ContributionType.NEED: SOURCE_FORBIDDEN_TYPES,
                    ContributionType.FACT: SOURCE_FORBIDDEN_TYPES, ContributionType.POLICY: SOURCE_FORBIDDEN_TYPES}

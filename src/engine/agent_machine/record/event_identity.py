@@ -6,7 +6,7 @@ from engine.driver.hook_event import HookEvent
 @dataclass(frozen=True)
 class EventIdentity:
     """Whose event a decision record answers: the program, session and firing of the hook, and the agent with
-    its type, profile and pin."""
+    its type and profile."""
 
     program: str
     session: str
