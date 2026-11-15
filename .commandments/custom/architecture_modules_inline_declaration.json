@@ -56,7 +56,7 @@
     "sin": {
         "name": "inline-declaration",
         "description": "A module or suite lists a declaration built in place, a call in its list, instead of the name of a class in its own file.",
-        "rule": "A module lists class names: make the declaration a class in its own file and list that class.",
+        "rule": "A module lists class names: make the declaration a class in its own file and list that class. docs/writing-a-module.md shows the form.",
         "skill": "module-registration"
     }
 }

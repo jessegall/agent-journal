@@ -101,7 +101,7 @@
     "sin": {
         "name": "list-entry-not-a-class",
         "description": "A module or suite attribute lists a call, a literal or a tuple instead of the names of classes.",
-        "rule": "A module lists class names: make each entry a class in its own file and list that class. A short ModelDeclaration(Model) with no other argument stays; dependencies name other modules by their keys, and file_events, declared_plugin_events and former_event_keys name events by their keys.",
+        "rule": "A module lists class names: make each entry a class in its own file and list that class. A short ModelDeclaration(Model) with no other argument stays; dependencies name other modules by their keys, and file_events, declared_plugin_events and former_event_keys name events by their keys. docs/writing-a-module.md shows the form.",
         "skill": "module-registration"
     }
 }

@@ -22,16 +22,36 @@ from .audit_plan_handler import AuditPlanHandler
 from .audit_plan_subcommand import AuditPlanSubcommand
 
 
+# templates/security_review_template.py: one template, one class, in its own file
+class SecurityReviewTemplate(TemplateDeclaration):
+    """The Security review template."""
+
+    title = "Security review"
+    targets = tuple(["plan"])
+    purpose = "critique"
+    brief = "Read the plan as an attacker. Name each way in and what closes it."
+
+
+# buttons/review_audit_button.py
+class ReviewAuditButton(ButtonDeclaration):
+    """The button review.audit."""
+
+    name = "review.audit"
+    slots = ("dock.plans.waiting", "row.plan")
+    label = "Audit"
+    runs = "acme audit {row_id}"
+    icon = "review"
+    condition = ButtonCondition("state", tuple(["ready"]))
+
+
 class AcmeReviewModule(Module):
     name = "acme.review"
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.plans", "journal.core.templates", "journal.core.viewer", "journal.suites.coding"]
     handlers = [AuditPlanHandler]
     subcommands = [AuditPlanSubcommand]
-    templates = [TemplateDeclaration(title="Security review", targets=tuple(["plan"]), purpose="critique",
-                                     brief="Read the plan as an attacker. Name each way in and what closes it.")]
-    buttons = [ButtonDeclaration("review.audit", ("dock.plans.waiting", "row.plan"), "Audit", "acme audit {row_id}", icon="review",
-                                 condition=ButtonCondition("state", tuple(["ready"])))]
+    templates = [SecurityReviewTemplate]
+    buttons = [ReviewAuditButton]
 
 
 class AcmeReviewModuleJoining(Suite):
@@ -148,20 +168,34 @@ Its complete `module.py` is:
 ```python
 from engine.module.module import Module
 from engine.viewer.skeleton_part import SkeletonPart
-from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window import Window
 from engine.enums.window_icon import WindowIcon
 from engine.enums.window_loading import WindowLoading
 from engine.enums.window_place import WindowPlace
 
 
+# windows/findings/findings_window.py: one window, one class, in its own file
+class FindingsWindow(Window):
+    """The findings of the suite's plans."""
+
+    name = "findings.findings"
+    title = "Findings"
+    entry = "findings.js"
+    loading = WindowLoading.COMPONENT
+    place = WindowPlace.PAGE
+    icon = WindowIcon.PLAN
+    reads = ["plan list", "plan show"]
+    events = ["plan.*"]
+    skeleton = tuple([SkeletonPart.line()])
+
+
+# acme_findings_module.py: the module lists the class
 class AcmeFindingsModule(Module):
     name = "acme.findings"
     requires_engine = ">=5,<6"
     dependencies = ["acme.suite", "journal.core.plans", "journal.core.viewer"]
     button_slots = ["findings.row"]
-    windows = [WindowDeclaration("findings.findings", "Findings", "findings.js", WindowLoading.COMPONENT,
-                                 place=WindowPlace.PAGE, icon=WindowIcon.PLAN, reads=["plan list", "plan show"], events=["plan.*"],
-                                 skeleton=tuple([SkeletonPart.line()]))]
+    windows = [FindingsWindow]
 ```
 
 ## Offer a slot in a window
@@ -185,24 +219,36 @@ its inspector in `inspectors`, and the journal draws it: the head, the action ba
 links section. A model with no declaration still gets a small inspector that reads `<noun> show`.
 
 ```python
+# models/declarations/thing_model_declaration.py
+class ThingModelDeclaration(ModelDeclaration):
+    """How the module declares Thing."""
+
+    model = Thing
+
+
+# inspectors/thing_inspector.py
+class ThingInspector(InspectorDeclaration):
+    """The inspector of Thing."""
+
+    model = Thing
+    reads = "thing show {row_id}"
+    label = "Thing {id} · {state}"
+    title = "{title}"
+    description = "{summary}"
+    width = InspectorWidth.MEDIUM
+    actions = (ButtonDeclaration("things.retire", (), "Retire the thing", "thing retire {row_id}", icon="stop", danger=True,
+                                 confirm="Retire the thing? It stays in the list.", condition=ButtonCondition("state", ("active",))),)
+    components = (InspectorComponent("things.history", tab="History"),)
+    comments = True
+    events = tuple(["thing.*"])
+    links = InspectorLinks(kinds=("doc",), page_size=10)
+
+
 class AcmeThingModule(Module):
     name = "acme.things"
     requires_engine = ">=5,<6"
-    models = [ModelDeclaration(Thing)]
-    inspectors = [InspectorDeclaration(
-        Thing,
-        reads="thing show {row_id}",
-        label="Thing {id} · {state}",
-        title="{title}",
-        description="{summary}",
-        width=InspectorWidth.MEDIUM,
-        actions=[ButtonDeclaration("things.retire", (), "Retire the thing", "thing retire {row_id}", icon="stop", danger=True,
-                                   confirm="Retire the thing? It stays in the list.", condition=ButtonCondition("state", ("active",)))],
-        components=[InspectorComponent("things.history", tab="History")],
-        comments=True,
-        events=("thing.*",),
-        links=InspectorLinks(kinds=("doc",), page_size=10),
-    )]
+    models = [ThingModelDeclaration]
+    inspectors = [ThingInspector]
 ```
 
 - **Words.** `label`, `title` and `description` are written with the row's fields in braces. A field
@@ -239,16 +285,41 @@ bundle, reads, permission, trust step and failure screen as any window. Each mod
 plans with no change in the plans module. Its `module.py` is:
 
 ```python
+# buttons/plan_notes_note_button.py
+class PlanNotesNoteButton(ButtonDeclaration):
+    """The button plan_notes.note."""
+
+    name = "plan_notes.note"
+    slots = tuple(["row.plan"])
+    label = "Note it"
+    runs = "plan-notes add {row_id}"
+    icon = "plan"
+
+
+# windows/notes/notes_window.py
+class NotesWindow(Window):
+    """The notes of the plan the inspector shows."""
+
+    name = "plan_notes.notes"
+    title = "Notes"
+    entry = "notes.js"
+    loading = WindowLoading.COMPONENT
+    place = WindowPlace.SECTION
+    slots = tuple(["inspector.plan"])
+    icon = WindowIcon.PLAN
+    reads = ["plan show"]
+    events = ["plan.*"]
+    skeleton = tuple([SkeletonPart.line()])
+
+
 class AcmePlanNotesModule(Module):
     name = "acme.plan_notes"
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.plans", "journal.core.viewer", "journal.suites.coding"]
     handlers = [NotePlanHandler]
     subcommands = [NotePlanSubcommand]
-    buttons = [ButtonDeclaration("plan_notes.note", tuple(["row.plan"]), "Note it", "plan-notes add {row_id}", icon="plan")]
-    windows = [WindowDeclaration("plan_notes.notes", "Notes", "notes.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION,
-                                 slots=tuple(["inspector.plan"]), icon=WindowIcon.PLAN, reads=["plan show"], events=["plan.*"],
-                                 skeleton=tuple([SkeletonPart.line()]))]
+    buttons = [PlanNotesNoteButton]
+    windows = [NotesWindow]
 ```
 
 The section reads the row it is shown for with `useWindow().option("row")` and draws its heading with
