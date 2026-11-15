@@ -29,6 +29,13 @@ func main() {
 		}
 		return
 	}
+	if len(os.Args) == 3 && os.Args[1] == "--parse-shell" {
+		if err := parseShell(os.Stdin, os.Stdout, os.Args[2]); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		return
+	}
 	if len(os.Args) == 2 && os.Args[1] == "--version" {
 		fmt.Println("journal-hook " + version)
 		return

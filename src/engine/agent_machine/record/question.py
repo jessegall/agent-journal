@@ -1,6 +1,7 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from engine.driver.hook_event import HookEvent
+from engine.driver.shell_line import ShellLine
 from engine.driver.tool import Tool
 from engine.enums.hook_event_name import HookEventName
 from engine.enums.question_type import QuestionType
@@ -35,6 +36,10 @@ class Question:
 
     def tool(self) -> Tool | None:
         return self.event.tool if self.event is not None else None
+
+    def with_shell(self, shell: ShellLine) -> "Question":
+        assert self.event is not None and self.event.tool is not None, "only a tool call's question has a shell line"
+        return replace(self, event=replace(self.event, tool=replace(self.event.tool, shell=shell)))
 
     def fingerprint(self) -> str:
         tool = self.tool()

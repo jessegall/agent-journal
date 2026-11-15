@@ -8,3 +8,5 @@ class RunnerTransform(RuleTransform):
 
     rule = RunnerRewriteRule
     slot = TransformSlot.RUNNER
+    # the runner wraps the line it was given, which is the action judged
+    replaces_action = False

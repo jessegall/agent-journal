@@ -1,6 +1,7 @@
 from typing import ClassVar
 
 from engine.agent_machine.agent_view import AgentView
+from engine.agent_machine.contracts.shell_parser import ShellParser
 from engine.agent_machine.contracts.transform import Transform
 from engine.agent_machine.record.question import Question
 from engine.agent_machine.record.rewrite import Rewrite
@@ -11,13 +12,14 @@ from engine.rule_backed.rule_hooks import RuleHooks
 
 class RuleTransform(Transform):
     """A transform of the agent machine whose rewrite is the one an old rule gives at its hook, the same input
-    in the same words. The rewritten action is judged as the action asked for, as today: a rewritten shell
-    line's parts come from the hook client's parser, so judging the final line again waits for those parts."""
+    in the same words. A rewritten shell line is parsed by the hook client's parser and judged again as the
+    final action, unless the transform only wraps the line it was given."""
 
     rule: ClassVar[type[DriverRule]]
+    replaces_action: ClassVar[bool] = True
 
-    def __init__(self, hooks: RuleHooks) -> None:
-        self.hooks = hooks
+    def __init__(self, hooks: RuleHooks, parser: ShellParser) -> None:
+        self.hooks, self.parser = hooks, parser
 
     def applied(self, question: Question, view: AgentView) -> Rewrite:
         if question.event is None or question.event.event not in RuleEvents.hook_events(self.rule):
@@ -25,4 +27,12 @@ class RuleTransform(Transform):
         answer = self.hooks.answer(self.rule, question, view.agent.agent_id)
         if answer is None or not answer.updated_input:
             return Rewrite.unchanged()
-        return Rewrite.replaced(answer.updated_input, tuple([self.slot]), "", question)
+        command = answer.updated_input.get("command")
+        final = self.final_question(question, command) if isinstance(command, str) else question
+        return Rewrite.replaced(answer.updated_input, tuple([self.slot]), "", final)
+
+    def final_question(self, question: Question, command: str) -> Question:
+        tool = question.tool()
+        if not self.replaces_action or tool is None or tool.shell is None:
+            return question
+        return question.with_shell(self.parser.line(command))
