@@ -5,12 +5,13 @@ from engine.agent_machine.agent_view import AgentView
 
 
 class WakeCause(ABC):
-    """A reason a resting agent must be given a turn: when it is due, the text that wakes it, and what inhibits it."""
+    """A reason a resting agent must be given a turn: when it is due, the text that wakes it, and what
+    inhibits it."""
 
     key: ClassVar[str]
 
     @abstractmethod
-    def is_due(self, view: AgentView) -> bool: ...
+    def needs_wake(self, view: AgentView) -> bool: ...
 
     @abstractmethod
     def text(self, view: AgentView) -> str: ...

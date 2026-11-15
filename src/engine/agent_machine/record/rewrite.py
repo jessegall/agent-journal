@@ -13,17 +13,18 @@ class Rewrite:
     tool_input: Mapping[str, object] | None = None
     slots: tuple[TransformSlot, ...] = ()
     validation: str = ""
+    final: Question | None = None
 
     @classmethod
     def unchanged(cls) -> "Rewrite":
         return cls()
 
     @classmethod
-    def replaced(cls, tool_input: Mapping[str, object], slots: tuple[TransformSlot, ...], validation: str) -> "Rewrite":
-        return cls(tool_input, slots, validation)
+    def replaced(cls, tool_input: Mapping[str, object], slots: tuple[TransformSlot, ...], validation: str, final: Question) -> "Rewrite":
+        return cls(tool_input, slots, validation, final)
 
     def changed(self) -> bool:
         return self.tool_input is not None
 
     def final_question(self, question: Question) -> Question:
-        return question
+        return self.final if self.final is not None else question

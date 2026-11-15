@@ -6,7 +6,8 @@ from engine.agent_machine.record.question import Question
 
 @dataclass(frozen=True)
 class PolicyRow:
-    """One row of a policy's decision table: what is asked, in which view, and the keys of the refusals it must give, none for allowed."""
+    """One row of a policy's decision table: what is asked, in which view, and the keys of the refusals it
+    must give, none for allowed."""
 
     name: str
     question: Question

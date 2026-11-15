@@ -1,6 +1,6 @@
 from engine.agent_machine.capabilities import Capabilities
 from engine.agent_machine.compiling.contribution_declaration import ContributionDeclaration
-from engine.agent_machine.compiling.declared_module import DeclaredModule
+from engine.agent_machine.compiling.module_contributions import ModuleContributions
 from engine.agent_machine.compiling.driver_declaration import DriverDeclaration
 from engine.agent_machine.compiling.program_declaration import ProgramDeclaration
 from engine.agent_machine.contracts.capability import Capability
@@ -8,8 +8,8 @@ from engine.agent_machine.contracts.rank_order import RankOrder
 from engine.enums.capability_fallback import CapabilityFallback
 from engine.enums.capability_part import CapabilityPart
 from engine.enums.capability_proof import CapabilityProof
-from engine.enums.contribution_kind import ContributionKind
-from engine.enums.hold_end import HoldEnd
+from engine.enums.contribution_type import ContributionType
+from engine.enums.block_end import BlockEnd
 from engine.enums.hook_event_name import HookEventName
 from engine.enums.line_carrier import LineCarrier
 from engine.enums.responder import Responder
@@ -17,79 +17,79 @@ from engine.enums.transform_slot import TransformSlot
 from engine.enums.work_stop import WorkStop
 
 AGENT_TYPES = ("main", "helper", "worker", "merger")
-EVERY_TYPE = ()
-MAIN, WORKER, HELPERS = ("main",), ("worker",), ("helper", "merger")
-NOT_MAIN = ("helper", "worker", "merger")
+UNLIMITED_TYPES = ()
+MAIN, WORKER, HELPERS = ["main"], ["worker"], ("helper", "merger")
+CHILD_TYPES = ("helper", "worker", "merger")
 SAFETY, ACCESS, SHELL = "safety.all", "access.all", "shell.all"
-WAIVABLE = (HoldEnd.SATISFIED, HoldEnd.WAIVED)
+WAIVABLE = (BlockEnd.SATISFIED, BlockEnd.WAIVED)
 
 # Doc 1310 revision 2, section 4.6: every hold, by its rank key, the agent types it applies to, the ends it may take
 # and the command lines that satisfy it.
 HOLDS = {
     "drivers": [],
-    "overview": [("overview.first", MAIN, WAIVABLE, ("journal overview",))],
-    "skills": [("skills.command", EVERY_TYPE, (*WAIVABLE, HoldEnd.TARGET_MISSING), ("journal skill read",)),
-               ("skills.read-first", EVERY_TYPE, (*WAIVABLE, HoldEnd.TARGET_MISSING), ("journal skill read",))],
-    "triggers": [("triggers.skill", EVERY_TYPE, (*WAIVABLE, HoldEnd.TARGET_MISSING), ("journal skill read",))],
-    "messages": [("messages.unread", EVERY_TYPE, (*WAIVABLE, HoldEnd.TARGET_MISSING), ("journal message read", "journal message unread")),
-                 ("messages.unanswered", EVERY_TYPE, (*WAIVABLE, HoldEnd.TARGET_MISSING), ("journal message reply",)),
-                 ("messages.tag-pictures", EVERY_TYPE, (*WAIVABLE, HoldEnd.TARGET_MISSING), ("journal message tag",))],
-    "documents": [("documents.open", EVERY_TYPE, (*WAIVABLE, HoldEnd.CANCELLED), ("journal doc close",))],
-    "memories": [("memories.mark", EVERY_TYPE, WAIVABLE, ("journal memory weigh", "journal memory skip"))],
-    "plans": [("plans.context", EVERY_TYPE, (*WAIVABLE, HoldEnd.CANCELLED), ("journal plan context",))],
-    "tasks": [("tasks.brief", EVERY_TYPE, (*WAIVABLE, HoldEnd.CANCELLED), ("journal task overview",)),
-              ("tasks.unlogged-writes", EVERY_TYPE, WAIVABLE, ("journal task log",)),
-              ("tasks.blocked-review", EVERY_TYPE, WAIVABLE, ("journal task block", "journal task unblock"))],
-    "sequences": [("sequences.untaken-step", EVERY_TYPE, (*WAIVABLE, HoldEnd.CANCELLED), ("journal sequence follow",))],
-    "processes": [("processes.reader-request", EVERY_TYPE, (*WAIVABLE, HoldEnd.EXPIRED), ("journal reader add",)),
-                  ("processes.reader-help", MAIN, WAIVABLE, ("journal reader add",)),
-                  ("processes.silent-run", EVERY_TYPE, (*WAIVABLE, HoldEnd.TARGET_MISSING), ("journal output read",)),
-                  ("processes.output-title", EVERY_TYPE, (*WAIVABLE, HoldEnd.TARGET_MISSING), ("journal output title",)),
-                  ("processes.background-watch", EVERY_TYPE, (*WAIVABLE, HoldEnd.TARGET_MISSING), ("journal output read",))],
-    "reminders": [("reminders.due", EVERY_TYPE, (*WAIVABLE, HoldEnd.EXPIRED, HoldEnd.CANCELLED), ("journal reminder done",))],
-    "plugins": [("plugins.request", EVERY_TYPE, (*WAIVABLE, HoldEnd.TARGET_MISSING), ("journal plugin answer",))],
-    "workers": [("workers.status-first", WORKER, WAIVABLE, ("journal worker status",)),
-                ("workers.no-task", WORKER, WAIVABLE, ("journal task start",)),
-                ("workers.failed-tests", WORKER, (*WAIVABLE, HoldEnd.CANCELLED), ("journal worker commit",)),
-                ("workers.update", WORKER, WAIVABLE, ("journal worker update",)),
-                ("workers.unmerged", MAIN, (*WAIVABLE, HoldEnd.TARGET_MISSING), ("journal worker merge",)),
-                ("workers.delivered-proofs", MAIN, WAIVABLE, ("journal proof check",))],
+    "overview": [("overview.first", MAIN, WAIVABLE, ["journal overview"])],
+    "skills": [("skills.command", UNLIMITED_TYPES, (*WAIVABLE, BlockEnd.TARGET_MISSING), ["journal skill read"]),
+               ("skills.read-first", UNLIMITED_TYPES, (*WAIVABLE, BlockEnd.TARGET_MISSING), ["journal skill read"])],
+    "triggers": [("triggers.skill", UNLIMITED_TYPES, (*WAIVABLE, BlockEnd.TARGET_MISSING), ["journal skill read"])],
+    "messages": [("messages.unread", UNLIMITED_TYPES, (*WAIVABLE, BlockEnd.TARGET_MISSING), ("journal message read", "journal message unread")),
+                 ("messages.unanswered", UNLIMITED_TYPES, (*WAIVABLE, BlockEnd.TARGET_MISSING), ["journal message reply"]),
+                 ("messages.tag-pictures", UNLIMITED_TYPES, (*WAIVABLE, BlockEnd.TARGET_MISSING), ["journal message tag"])],
+    "documents": [("documents.open", UNLIMITED_TYPES, (*WAIVABLE, BlockEnd.CANCELLED), ["journal doc close"])],
+    "memories": [("memories.mark", UNLIMITED_TYPES, WAIVABLE, ("journal memory weigh", "journal memory skip"))],
+    "plans": [("plans.context", UNLIMITED_TYPES, (*WAIVABLE, BlockEnd.CANCELLED), ["journal plan context"])],
+    "tasks": [("tasks.brief", UNLIMITED_TYPES, (*WAIVABLE, BlockEnd.CANCELLED), ["journal task overview"]),
+              ("tasks.unlogged-writes", UNLIMITED_TYPES, WAIVABLE, ["journal task log"]),
+              ("tasks.blocked-review", UNLIMITED_TYPES, WAIVABLE, ("journal task block", "journal task unblock"))],
+    "sequences": [("sequences.untaken-step", UNLIMITED_TYPES, (*WAIVABLE, BlockEnd.CANCELLED), ["journal sequence follow"])],
+    "processes": [("processes.reader-request", UNLIMITED_TYPES, (*WAIVABLE, BlockEnd.EXPIRED), ["journal reader add"]),
+                  ("processes.reader-help", MAIN, WAIVABLE, ["journal reader add"]),
+                  ("processes.silent-run", UNLIMITED_TYPES, (*WAIVABLE, BlockEnd.TARGET_MISSING), ["journal output read"]),
+                  ("processes.output-title", UNLIMITED_TYPES, (*WAIVABLE, BlockEnd.TARGET_MISSING), ["journal output title"]),
+                  ("processes.background-watch", UNLIMITED_TYPES, (*WAIVABLE, BlockEnd.TARGET_MISSING), ["journal output read"])],
+    "reminders": [("reminders.due", UNLIMITED_TYPES, (*WAIVABLE, BlockEnd.EXPIRED, BlockEnd.CANCELLED), ["journal reminder done"])],
+    "plugins": [("plugins.request", UNLIMITED_TYPES, (*WAIVABLE, BlockEnd.TARGET_MISSING), ["journal plugin answer"])],
+    "workers": [("workers.status-first", WORKER, WAIVABLE, ["journal worker status"]),
+                ("workers.no-task", WORKER, WAIVABLE, ["journal task start"]),
+                ("workers.failed-tests", WORKER, (*WAIVABLE, BlockEnd.CANCELLED), ["journal worker commit"]),
+                ("workers.update", WORKER, WAIVABLE, ["journal worker update"]),
+                ("workers.unmerged", MAIN, (*WAIVABLE, BlockEnd.TARGET_MISSING), ["journal worker merge"]),
+                ("workers.delivered-proofs", MAIN, WAIVABLE, ["journal proof check"])],
 }
 
 # Doc 1310 revision 2, section 4.4: what makes an agent work and what makes it wait, by the module that declares it.
 WORK = {
-    "tasks": [("tasks.task", MAIN)], "sequences": [("sequences.sequence", EVERY_TYPE)], "helpers": [("helpers.job", ("helper",))],
-    "workers": [("workers.unit", WORKER), ("workers.merge-job", ("merger",))], "coding": [("coding.handed-task", MAIN), ("coding.own-tasks", MAIN)],
+    "tasks": [("tasks.task", MAIN)], "sequences": [("sequences.sequence", UNLIMITED_TYPES)], "helpers": [("helpers.job", ["helper"])],
+    "workers": [("workers.unit", WORKER), ("workers.merge-job", ["merger"])], "coding": [("coding.handed-task", MAIN), ("coding.own-tasks", MAIN)],
 }
 WAITS = {
-    "waits": [("waits.wait", EVERY_TYPE)], "questions": [("questions.question", EVERY_TYPE)],
-    "processes": [("processes.run", EVERY_TYPE), ("processes.reader-request-wait", EVERY_TYPE)], "helpers": [("helpers.helper-running", EVERY_TYPE)],
+    "waits": [("waits.wait", UNLIMITED_TYPES)], "questions": [("questions.question", UNLIMITED_TYPES)],
+    "processes": [("processes.run", UNLIMITED_TYPES), ("processes.reader-request-wait", UNLIMITED_TYPES)], "helpers": [("helpers.helper-running", UNLIMITED_TYPES)],
     "workers": [("workers.tests", WORKER), ("workers.answer", WORKER), ("workers.blocked-task", WORKER), ("workers.merge", WORKER)],
 }
 
 # Doc 1310 revision 2, sections 10.1 to 10.5: the policies by their rule keys and rank groups, and the safety ones.
 POLICIES = {
-    "drivers": [("drivers.access", ACCESS, HELPERS), ("drivers.database-file", SAFETY, EVERY_TYPE), ("drivers.panic-file", SAFETY, EVERY_TYPE),
-                ("drivers.private-corpus", SAFETY, EVERY_TYPE), ("drivers.managed-hooks", "drivers.policies", EVERY_TYPE),
-                ("drivers.helper-type-commands", ACCESS, NOT_MAIN), ("drivers.native-subagent", "drivers.policies", EVERY_TYPE),
-                ("drivers.no-full-test-run", SHELL, EVERY_TYPE), ("drivers.no-git", SHELL, EVERY_TYPE), ("context.hard-limit", "drivers.policies", EVERY_TYPE)],
-    "messages": [("messages.unread-show", "messages.policies", EVERY_TYPE)],
-    "skills": [("skills.already-loaded", "skills.policies", EVERY_TYPE)],
-    "processes": [(f"processes.{key}", SHELL, EVERY_TYPE) for key in ("reading", "sleep-poll-refusal", "retry-loop", "journal-chain", "journal-pipe",
+    "drivers": [("drivers.access", ACCESS, HELPERS), ("drivers.database-file", SAFETY, UNLIMITED_TYPES), ("drivers.panic-file", SAFETY, UNLIMITED_TYPES),
+                ("drivers.private-corpus", SAFETY, UNLIMITED_TYPES), ("drivers.managed-hooks", "drivers.policies", UNLIMITED_TYPES),
+                ("drivers.helper-type-commands", ACCESS, CHILD_TYPES), ("drivers.native-subagent", "drivers.policies", UNLIMITED_TYPES),
+                ("context.hard-limit", "drivers.policies", UNLIMITED_TYPES)],
+    "messages": [("messages.unread-show", "messages.policies", UNLIMITED_TYPES)],
+    "skills": [("skills.already-loaded", "skills.policies", UNLIMITED_TYPES)],
+    "processes": [(f"processes.{key}", SHELL, UNLIMITED_TYPES) for key in ("reading", "sleep-poll-refusal", "retry-loop", "journal-chain", "journal-pipe",
                                                                        "read-command-output", "folder-change", "hand-made-monitor", "runner-line",
                                                                        "failed-full-run", "worker-test-limit-refusal")],
-    "helpers": [("helpers.start-names-model", "helpers.policies", EVERY_TYPE)],
-    "questions": [("questions.own-tool", "questions.policies", EVERY_TYPE)],
-    "aliases": [("aliases.saved-command", SHELL, EVERY_TYPE), ("aliases.unknown-command", SHELL, EVERY_TYPE), ("aliases.expansion-refusal", SHELL, EVERY_TYPE)],
-    "agents": [("agents.program-settings", SAFETY, EVERY_TYPE)],
-    "claude_code": [("claude_code.native-memory", SAFETY, EVERY_TYPE)],
-    "secrets": [("secrets.secrets-folder", SAFETY, EVERY_TYPE)],
-    "plugins": [("plugins.plugin-program", "plugins.policies", EVERY_TYPE), ("plugins.plugin-guard", "plugins.policies", EVERY_TYPE)],
-    "sequences": [("sequences.step-guard", "sequences.policies", EVERY_TYPE), ("sequences.step-refused-command", "sequences.policies", EVERY_TYPE)],
-    "triggers": [("triggers.phrase", "triggers.policies", EVERY_TYPE)],
-    "tools": [("tools.graphify-search", "tools.policies", EVERY_TYPE)],
+    "helpers": [("helpers.start-names-model", "helpers.policies", UNLIMITED_TYPES)],
+    "questions": [("questions.own-tool", "questions.policies", UNLIMITED_TYPES)],
+    "aliases": [("aliases.saved-command", SHELL, UNLIMITED_TYPES), ("aliases.unknown-command", SHELL, UNLIMITED_TYPES), ("aliases.expansion-refusal", SHELL, UNLIMITED_TYPES)],
+    "agents": [("agents.program-settings", SAFETY, UNLIMITED_TYPES)],
+    "claude_code": [("claude_code.native-memory", SAFETY, UNLIMITED_TYPES)],
+    "secrets": [("secrets.secrets-folder", SAFETY, UNLIMITED_TYPES)],
+    "plugins": [("plugins.plugin-program", "plugins.policies", UNLIMITED_TYPES), ("plugins.plugin-guard", "plugins.policies", UNLIMITED_TYPES)],
+    "sequences": [("sequences.step-guard", "sequences.policies", UNLIMITED_TYPES), ("sequences.step-refused-command", "sequences.policies", UNLIMITED_TYPES)],
+    "triggers": [("triggers.phrase", "triggers.policies", UNLIMITED_TYPES)],
+    "tools": [("tools.graphify-search", "tools.policies", UNLIMITED_TYPES)],
     "coding": [("coding.main-writes-no-code", ACCESS, MAIN)],
-    "workers": [(f"workers.{key}", ACCESS if key.startswith("worker-") or key in ("protected-folder", "outside-link") else "workers.policies", EVERY_TYPE)
+    "workers": [(f"workers.{key}", ACCESS if key.startswith("worker-") or key in ("protected-folder", "outside-link") else "workers.policies", UNLIMITED_TYPES)
                 for key in ("no-full-test-run", "no-git", "dispatch-allowed", "helper-allowed", "dispatch-names-model", "worker-reuse", "worker-file",
                             "protected-folder", "worker-read", "outside-link", "named-tests-only", "proved-delivery", "phase-tests")],
 }
@@ -100,8 +100,8 @@ LINES = {
     "drivers": ["continued-session", "opening-lines", "takeover", "long-output", "repeated-file-read", "managed-hooks-lines"],
     "messages": ["delivery", "unanswered-line", "read-marks-read", "agent-text-hints", "chat-manners", "chat-opening", "plain-code", "reply-note"],
     "tasks": ["blocked-work-at-stop", "quiet-task", "log-request", "start-with-one-in-hand", "filed", "named-task", "still-held", "where-you-stand",
-              "session-start-summary", "wait-in-words", "unopenable-blocks"],
-    "plans": ["focus", "task-order", "state-lines", "task-end-lines"],
+              "session-start-summary", "wait-in-tokens", "unopenable-blocks"],
+    "plans": ["focus-lines", "task-order", "state-lines", "task-end-lines"],
     "overview": ["overview-first-line"], "memories": ["open-mark-line", "start-delivery", "keyword-delivery"],
     "processes": ["orphan-process", "ended-output-line", "status-monitor", "read-advice", "run-titles", "alias-suggestion", "run-queue-halted", "watch-lines"],
     "dumps": ["open-dump"], "waits": ["long-wait"], "project_rules": ["start-rules"], "pins": ["link-pin", "agent-text-pin"],
@@ -111,7 +111,7 @@ LINES = {
                 "context-limit-stop-now", "unmerged-worker-line", "inactive-helper"],
 }
 WAITING_LINES = ("messages.agent-text-hints", "tasks.blocked-work-at-stop")
-STEP_LINES = ("processes.orphan-process",)
+STEP_LINES = ["processes.orphan-process"]
 
 # The effects: key, whether it is required (its failure line declared), and whether it runs after the commit.
 EFFECTS = {
@@ -130,7 +130,7 @@ EFFECTS = {
     "checks": [("checks.failed", False)], "coding": [("coding.assign-next-task", False)],
     "workers": [("workers.record-test-run", False), ("workers.report", False), ("workers.inactive-helper", False), ("workers.record-todo-list", False)],
 }
-AFTER_COMMIT_EFFECTS = ("plugins.delivery",)
+AFTER_COMMIT_EFFECTS = ["plugins.delivery"]
 TRANSFORMS = {"aliases": [("aliases.expansion", TransformSlot.ALIAS)], "drivers": [("drivers.managed-hooks-rewrite", TransformSlot.PROJECT_HOOK)],
               "processes": [("processes.runner-wrap", TransformSlot.RUNNER)]}
 WAKE_CAUSES = {"drivers": ["drivers.turn-failed"], "coding": ["coding.cache-refresh"], "helpers": ["helpers.launch-failed"]}
@@ -153,39 +153,40 @@ POLICY_ORDER = (SAFETY, ACCESS, SHELL, *MODULE_POLICY_ORDER)
 
 
 class DesignDeclarations:
-    """Every contribution and driver doc 1310 revision 2 asks for (sections 4.4, 4.6, 5.1 and 10), as the inert manifest
-    phase 0 compiles through sync's checks before any module declares a class; the keys are the census's rule keys."""
+    """Every contribution and driver doc 1310 revision 2 asks for (sections 4.4, 4.6, 5.1 and 10), as the
+    inert manifest phase 0 compiles through sync's checks before any module declares a class; the keys are
+    the census's rule keys."""
 
     @staticmethod
-    def modules() -> list[DeclaredModule]:
+    def modules() -> list[ModuleContributions]:
         names = sorted({*HOLDS, *WORK, *WAITS, *POLICIES, *LINES, *EFFECTS, *TRANSFORMS, *WAKE_CAUSES, *AGENT_LISTENERS, *SUBJECTS})
-        return [DeclaredModule(name, name not in SUITE_MODULES, (), tuple(DesignDeclarations.contributions(name))) for name in names]
+        return [ModuleContributions(name, name not in SUITE_MODULES, (), tuple(DesignDeclarations.contributions(name))) for name in names]
 
     @staticmethod
     def contributions(module: str) -> list[ContributionDeclaration]:
         holds = [declaration for rank, agent_types, ends, lifting in HOLDS.get(module, []) for declaration in (
-            ContributionDeclaration(f"{rank}-needs", ContributionKind.NEED, rank, agent_types, "Blocked"),
-            ContributionDeclaration(f"{rank}-condition", ContributionKind.BLOCK_CONDITION, ends=ends, lifting_lines=lifting))]
-        work = [ContributionDeclaration(key, ContributionKind.NEED, "", agent_types, "Working") for key, agent_types in WORK.get(module, [])]
-        waits = [ContributionDeclaration(key, ContributionKind.NEED, "", agent_types, "Waiting") for key, agent_types in WAITS.get(module, [])]
-        policies = [ContributionDeclaration(key, ContributionKind.POLICY, rank, agent_types, is_safety=rank == SAFETY) for key, rank, agent_types in POLICIES.get(module, [])]
-        lines = [ContributionDeclaration(key, ContributionKind.LINE, events=(HookEventName.TICK,) if key in STEP_LINES else (HookEventName.PRE_TOOL_USE,),
+            ContributionDeclaration(f"{rank}-needs", ContributionType.NEED, rank, tuple(agent_types), "Blocked"),
+            ContributionDeclaration(f"{rank}-condition", ContributionType.BLOCK_CONDITION, ends=tuple(ends), lifting_lines=tuple(lifting)))]
+        work = [ContributionDeclaration(key, ContributionType.NEED, "", tuple(agent_types), "Working") for key, agent_types in WORK.get(module, [])]
+        waits = [ContributionDeclaration(key, ContributionType.NEED, "", tuple(agent_types), "Waiting") for key, agent_types in WAITS.get(module, [])]
+        policies = [ContributionDeclaration(key, ContributionType.POLICY, rank, tuple(agent_types), is_safety=rank == SAFETY) for key, rank, agent_types in POLICIES.get(module, [])]
+        lines = [ContributionDeclaration(key, ContributionType.LINE, events=tuple([HookEventName.TICK if key in STEP_LINES else HookEventName.PRE_TOOL_USE]),
                                          carrier=LineCarrier.WAITING if key in WAITING_LINES else LineCarrier.NOW)
                  for key in (f"{module}.{name}" for name in LINES.get(module, []))]
-        effects = [ContributionDeclaration(key, ContributionKind.EFFECT, is_required=required, has_failure=required) for key, required in EFFECTS.get(module, [])]
-        transforms = [ContributionDeclaration(key, ContributionKind.TRANSFORM, slot=slot) for key, slot in TRANSFORMS.get(module, [])]
-        wakes = [ContributionDeclaration(key, ContributionKind.WAKE_CAUSE) for key in WAKE_CAUSES.get(module, [])]
-        listeners = [ContributionDeclaration(key, ContributionKind.AGENT_LISTENER) for key in AGENT_LISTENERS.get(module, [])]
-        subjects = [ContributionDeclaration(key, ContributionKind.SUBJECT) for key in SUBJECTS.get(module, [])]
-        compaction = [ContributionDeclaration("drivers.compaction-due", ContributionKind.NEED, "", EVERY_TYPE, "Compacting")] if module == "drivers" else []
+        effects = [ContributionDeclaration(key, ContributionType.EFFECT, is_required=required, has_failure=required) for key, required in EFFECTS.get(module, [])]
+        transforms = [ContributionDeclaration(key, ContributionType.TRANSFORM, slot=slot) for key, slot in TRANSFORMS.get(module, [])]
+        wakes = [ContributionDeclaration(key, ContributionType.WAKE_CAUSE) for key in WAKE_CAUSES.get(module, [])]
+        listeners = [ContributionDeclaration(key, ContributionType.AGENT_LISTENER) for key in AGENT_LISTENERS.get(module, [])]
+        subjects = [ContributionDeclaration(key, ContributionType.SUBJECT) for key in SUBJECTS.get(module, [])]
+        compaction = [ContributionDeclaration("drivers.compaction-due", ContributionType.NEED, "", UNLIMITED_TYPES, "Compacting")] if module == "drivers" else []
         return [*holds, *work, *waits, *compaction, *policies, *lines, *effects, *transforms, *wakes, *listeners, *subjects]
 
     @staticmethod
     def drivers() -> list[DriverDeclaration]:
         main_order = RankOrder(POLICY_ORDER, MAIN_HOLD_ORDER)
         return [DriverDeclaration("core.main", "main", "core", (), main_order, WorkStop.REFUSE_WHILE_WORK_REMAINS, Responder.PERSON),
-                DriverDeclaration("core.helper", "helper", "core", (), RankOrder(POLICY_ORDER, HELPER_HOLD_ORDER), WorkStop.HAND_IN, Responder.PARENT),
-                DriverDeclaration("coding.main", "main", "coding", ("core.main",), main_order, WorkStop.REFUSE_WHILE_WORK_REMAINS, Responder.PERSON),
+                DriverDeclaration("core.helper", "helper", "core", (), RankOrder(POLICY_ORDER, HELPER_HOLD_ORDER), WorkStop.HANDOVER, Responder.PARENT),
+                DriverDeclaration("coding.main", "main", "coding", ["core.main"], main_order, WorkStop.REFUSE_WHILE_WORK_REMAINS, Responder.PERSON),
                 DriverDeclaration("coding.worker", "worker", "coding", (), RankOrder(POLICY_ORDER, WORKER_HOLD_ORDER), WorkStop.REFUSE_WHILE_WORK_REMAINS, Responder.PARENT),
                 DriverDeclaration("coding.merger", "merger", "coding", (), RankOrder(POLICY_ORDER, HELPER_HOLD_ORDER), WorkStop.MERGE_CONTRACT, Responder.PARENT)]
 

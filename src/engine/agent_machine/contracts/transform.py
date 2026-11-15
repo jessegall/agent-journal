@@ -8,7 +8,8 @@ from engine.enums.transform_slot import TransformSlot
 
 
 class Transform(ABC):
-    """Rewrites an admitted tool input in its one slot; the changed action is judged again and never transformed a second time."""
+    """Rewrites an admitted tool input in its one slot; the changed action is judged again and never
+    transformed a second time."""
 
     slot: ClassVar[TransformSlot]
 

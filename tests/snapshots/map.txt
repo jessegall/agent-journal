@@ -2,6 +2,8 @@ engine  The building blocks every module stands on; it imports no module.
   contract
     actor  Who acts on the journal: the actor a command carries, and the check that an actor is a user.
     agent  What the engine knows of agents: groups, roles, policy, checkouts and where an agent may write.
+    agent_machine  The agent machine's contracts: the decision record of a step, the view it reads, the driver of an agent type and what modules and providers contribute.
+    agent_stack  An agent's continuation stack: its seven states, its frames, the reasons they give and the answer basis a step saves against.
     area  The marker every engine area folder declares itself with: what the area is for and who may import it.
     caller  Who runs a command line: the caller, its request and the chain of processes it came through.
     chat  Declarations of chat marks, their buttons and docked items.

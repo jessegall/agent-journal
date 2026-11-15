@@ -18,7 +18,7 @@ class Reason:
     text: str
     lifting_lines: tuple[str, ...] = ()
     subject: SubjectReference | None = None
-    hand_in: WorkReference | None = field(default=None, compare=False)
+    handover: WorkReference | None = field(default=None, compare=False)
 
     @classmethod
     def allowed(cls) -> "Reason":

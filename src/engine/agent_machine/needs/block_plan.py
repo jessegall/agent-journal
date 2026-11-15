@@ -7,12 +7,14 @@ from engine.enums.closer_role import CloserRole
 
 
 @dataclass(frozen=True)
-class HoldPlan:
-    """A hold a need source asks for, as pure data: the step judges the action against it as if it were open and opens its row in the same save."""
+class BlockPlan:
+    """A hold a need source asks for, as pure data: the step judges the action against it as if it were open
+    and opens its row in the same save."""
 
     nudge: Nudge
     condition: BlockCondition
     tool_check_key: str
+    rank: str
     stop_check_key: str = ""
     members: tuple[int, ...] = ()
     tool_grace_uses: int = 0
@@ -23,3 +25,4 @@ class HoldPlan:
     closer_roles: tuple[CloserRole, ...] = ()
     subject: SubjectReference | None = None
     context_generation: int | None = None
+    lifting_lines: tuple[str, ...] = ()

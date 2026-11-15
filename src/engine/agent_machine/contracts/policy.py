@@ -10,8 +10,9 @@ from engine.enums.grant_type import GrantType
 
 
 class Policy(ABC):
-    """A pure judgement of an action from the agent's rows, type and profile, the settings and the usable grants;
-    it never moves the stack, and the commands it names ask it again at their entrance. A safety policy is passed by no grant."""
+    """A pure judgement of an action from the agent's rows, type and profile, the settings and the usable
+    grants; it never moves the stack, and the commands it names ask it again at their entrance. A safety
+    policy is passed by no grant."""
 
     key: ClassVar[str]
     rank: ClassVar[str]

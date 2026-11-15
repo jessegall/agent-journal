@@ -17,7 +17,7 @@ class Question:
     event: HookEvent | None = None
 
     @classmethod
-    def of(cls, event: HookEvent) -> "Question":
+    def posed(cls, event: HookEvent) -> "Question":
         return cls(QUESTION_TYPES.get(event.event, QuestionType.OBSERVATION), event)
 
     @classmethod
@@ -35,3 +35,9 @@ class Question:
 
     def tool(self) -> Tool | None:
         return self.event.tool if self.event is not None else None
+
+    def fingerprint(self) -> str:
+        tool = self.tool()
+        if tool is None:
+            return self.question_type
+        return f"{tool.name}:{' '.join(tool.shell.part_texts) if tool.shell is not None else ','.join(tool.files)}"

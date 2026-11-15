@@ -8,7 +8,8 @@ from engine.enums.lane import Lane
 
 @dataclass(frozen=True)
 class Paused(State):
-    """The agent or an ancestor is paused: everything but its allow-list is refused and a stop is a safety rest."""
+    """The agent or an ancestor is paused: everything but its allow-list is refused and a stop is a safety
+    rest."""
 
     lane: ClassVar[Lane] = Lane.SAFETY
     rank: ClassVar[int] = 50

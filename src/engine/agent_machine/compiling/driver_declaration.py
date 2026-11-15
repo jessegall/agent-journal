@@ -8,8 +8,8 @@ from engine.enums.work_stop import WorkStop
 
 @dataclass(frozen=True)
 class DriverDeclaration:
-    """A driver as sync compiles it: its name, agent type and suite, the drivers it gathers, its rank order, its
-    work-stop contract (none when the class leaves it out, which sync refuses) and its responder."""
+    """A driver as sync compiles it: its name, agent type and suite, the drivers it gathers, its rank order,
+    its work-stop contract (none when the class leaves it out, which sync refuses) and its responder."""
 
     name: str
     agent_type: str
@@ -20,6 +20,6 @@ class DriverDeclaration:
     responder: Responder
 
     @classmethod
-    def of(cls, driver: type[Driver]) -> "DriverDeclaration":
+    def described(cls, driver: type[Driver]) -> "DriverDeclaration":
         work_stop = driver.work_stop if hasattr(driver, "work_stop") else None
         return cls(driver.name, driver.agent_type, driver.suite, tuple(gathered.name for gathered in driver.gathers), driver.rank_order, work_stop, driver.responder)

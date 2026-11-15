@@ -1,9 +1,9 @@
 from engine.agent_machine.compiling.contribution_declaration import ContributionDeclaration
-from engine.agent_machine.compiling.declared_module import DeclaredModule
+from engine.agent_machine.compiling.module_contributions import ModuleContributions
 from engine.agent_machine.compiling.driver_compiler import DriverCompiler
 from engine.agent_machine.compiling.driver_declaration import DriverDeclaration
 from engine.agent_machine.contracts.rank_order import RankOrder
-from engine.enums.contribution_kind import ContributionKind
+from engine.enums.contribution_type import ContributionType
 from engine.enums.responder import Responder
 from engine.enums.work_stop import WorkStop
 
@@ -14,14 +14,14 @@ WORKER = DriverDeclaration("coding.worker", "worker", "coding", (), ORDER, WorkS
 
 
 def need(key: str, rank: str, *agent_types: str) -> ContributionDeclaration:
-    return ContributionDeclaration(key, ContributionKind.NEED, rank, agent_types, "Blocked")
+    return ContributionDeclaration(key, ContributionType.NEED, rank, agent_types, "Blocked")
 
 
 MODULES = [
-    DeclaredModule("messages", True, ("overview",), (need("messages.unread-needs", "messages.unread"),
-                                                     ContributionDeclaration("messages.show", ContributionKind.POLICY, "messages.show"))),
-    DeclaredModule("overview", True, (), (need("overview.first-needs", "overview.first", "main"),
-                                          ContributionDeclaration("drivers.database-file", ContributionKind.POLICY, "safety.all", is_safety=True))),
+    ModuleContributions("messages", True, ("overview",), (need("messages.unread-needs", "messages.unread"),
+                                                     ContributionDeclaration("messages.show", ContributionType.POLICY, "messages.show"))),
+    ModuleContributions("overview", True, (), (need("overview.first-needs", "overview.first", "main"),
+                                          ContributionDeclaration("drivers.database-file", ContributionType.POLICY, "safety.all", is_safety=True))),
 ]
 
 

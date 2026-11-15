@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
-class DeclarationRefusal:
+class DeclarationFinding:
     """One thing sync refuses in the declarations: the module or driver, the declaration and the fix."""
 
     owner: str

@@ -17,7 +17,7 @@ class Effect(ABC):
     required effect that fails withdraws the admission and says its failure line."""
 
     events: ClassVar[Sequence[HookEventName]]
-    at_step: ClassVar[bool] = False
+    includes_steps: ClassVar[bool] = False
     timing: ClassVar[EffectTiming]
     is_required: ClassVar[bool] = False
     failure: ClassVar[type[NudgeDeclaration] | None] = None

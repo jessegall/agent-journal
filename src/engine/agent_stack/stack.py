@@ -13,7 +13,8 @@ from engine.enums.work_stop import WorkStop
 
 @dataclass(frozen=True)
 class Stack:
-    """An agent's frames from the bottom: Stopped, the work lane, the hold lane, then Compacting, Paused and Ended."""
+    """An agent's frames from the bottom: Stopped, the work lane, the hold lane, then Compacting, Paused and
+    Ended."""
 
     frames: Sequence[Frame]
 

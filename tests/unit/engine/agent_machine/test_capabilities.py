@@ -12,12 +12,12 @@ TABLE = Capabilities(
 
 
 def test_a_part_written_here_is_carried() -> None:
-    assert TABLE.carries(CapabilityPart.REWRITE, HookEventName.PRE_TOOL_USE)
+    assert TABLE.supports(CapabilityPart.REWRITE, HookEventName.PRE_TOOL_USE)
 
 
 def test_a_part_documented_upstream_waits_for_its_proof() -> None:
-    assert not TABLE.carries(CapabilityPart.WAKE_HOOK, HookEventName.STOP)
+    assert not TABLE.supports(CapabilityPart.WAKE_HOOK, HookEventName.STOP)
 
 
 def test_an_undeclared_part_is_not_carried() -> None:
-    assert not TABLE.carries(CapabilityPart.REWRITE, HookEventName.STOP)
+    assert not TABLE.supports(CapabilityPart.REWRITE, HookEventName.STOP)

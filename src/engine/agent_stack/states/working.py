@@ -20,9 +20,9 @@ class Working(State):
     stop_reason: Reason
 
     def stop_answer(self, contract: WorkStop) -> StopAnswer:
-        is_own_job = self.work.is_job() and contract is not WorkStop.REFUSE_WHILE_WORK_REMAINS
-        if self.work_remains and not (is_own_job and contract is WorkStop.HAND_IN):
+        is_job_contract = self.work.is_job() and contract is not WorkStop.REFUSE_WHILE_WORK_REMAINS
+        if self.work_remains and not (is_job_contract and contract is WorkStop.HANDOVER):
             return StopAnswer.refusal(self.stop_reason)
-        if is_own_job:
-            return StopAnswer.hand_in(self.work)
+        if is_job_contract:
+            return StopAnswer.handover(self.work)
         return StopAnswer.allowed()

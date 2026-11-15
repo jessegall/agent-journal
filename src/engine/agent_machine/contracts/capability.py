@@ -11,7 +11,7 @@ USABLE_PROOFS = (CapabilityProof.IMPLEMENTED_HERE, CapabilityProof.PROVED_LIVE)
 
 @dataclass(frozen=True)
 class Capability:
-    """Whether a program carries one part of an answer on one event, how that is known, how it is encoded and
+    """Whether a program supports one part of an answer on one event, how that is known, how it is encoded and
     what the step does instead where it cannot."""
 
     part: CapabilityPart
@@ -22,3 +22,6 @@ class Capability:
 
     def is_usable(self) -> bool:
         return self.proof in USABLE_PROOFS
+
+    def used_fallback(self) -> CapabilityFallback:
+        return CapabilityFallback.NONE if self.is_usable() else self.fallback

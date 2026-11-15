@@ -8,7 +8,8 @@ from engine.enums.work_stop import WorkStop
 
 
 class State:
-    """One of the seven states an agent's stack is built from, used as an instance with its data; a module never defines one."""
+    """One of the seven states an agent's stack is built from, used as an instance with its data; a module
+    never defines one."""
 
     lane: ClassVar[Lane]
     rank: ClassVar[int]

@@ -5,7 +5,7 @@ import pytest
 from engine.agent_machine.capabilities import Capabilities
 from engine.agent_machine.compiling.contribution_declaration import ContributionDeclaration
 from engine.agent_machine.compiling.declaration_check import DeclarationCheck
-from engine.agent_machine.compiling.declared_module import DeclaredModule
+from engine.agent_machine.compiling.module_contributions import ModuleContributions
 from engine.agent_machine.compiling.driver_declaration import DriverDeclaration
 from engine.agent_machine.compiling.open_owners import OpenOwners
 from engine.agent_machine.compiling.program_declaration import ProgramDeclaration
@@ -14,8 +14,8 @@ from engine.agent_machine.contracts.rank_order import RankOrder
 from engine.enums.capability_fallback import CapabilityFallback
 from engine.enums.capability_part import CapabilityPart
 from engine.enums.capability_proof import CapabilityProof
-from engine.enums.contribution_kind import ContributionKind
-from engine.enums.hold_end import HoldEnd
+from engine.enums.contribution_type import ContributionType
+from engine.enums.block_end import BlockEnd
 from engine.enums.hook_event_name import HookEventName
 from engine.enums.line_carrier import LineCarrier
 from engine.enums.responder import Responder
@@ -27,12 +27,12 @@ PROGRAM = ProgramDeclaration("claude", Capabilities(
     Capability(CapabilityPart.TOOL_DENIAL, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_HERE),
     Capability(CapabilityPart.STOP_REFUSAL, HookEventName.STOP, CapabilityProof.IMPLEMENTED_HERE),
     Capability(CapabilityPart.LINES, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_HERE)))
-UNREAD = ContributionDeclaration("messages.unread-needs", ContributionKind.NEED, "messages.unread", state_name="Blocked")
-SHOW = ContributionDeclaration("messages.show-policy", ContributionKind.POLICY, "messages.show")
-MESSAGES = DeclaredModule("messages", True, (), (UNREAD, SHOW))
+UNREAD = ContributionDeclaration("messages.unread-needs", ContributionType.NEED, "messages.unread", state_name="Blocked")
+SHOW = ContributionDeclaration("messages.show-policy", ContributionType.POLICY, "messages.show")
+MESSAGES = ModuleContributions("messages", True, (), (UNREAD, SHOW))
 
 
-def fixes(*contributions: ContributionDeclaration, module: DeclaredModule = MESSAGES, drivers=(MAIN,), programs=(PROGRAM,)) -> list[str]:
+def fixes(*contributions: ContributionDeclaration, module: ModuleContributions = MESSAGES, drivers=(MAIN,), programs=(PROGRAM,)) -> list[str]:
     modules = [replace(module, contributions=(*module.contributions, *contributions))]
     return [refusal.text() for refusal in DeclarationCheck(drivers, modules, programs, ["main"]).refusals()]
 
@@ -42,17 +42,17 @@ def test_the_sample_declarations_compile_clean() -> None:
 
 
 @pytest.mark.parametrize("contribution, fix", [
-    (ContributionDeclaration("messages.worker-needs", ContributionKind.NEED, "messages.unread", ("robot",), "Working"), "agent type robot has no driver"),
-    (ContributionDeclaration("messages.odd-needs", ContributionKind.NEED, state_name="Sleeping"), "state Sleeping is unknown"),
-    (ContributionDeclaration("messages.pause-needs", ContributionKind.NEED, state_name="Paused"), "a need may not ask for Paused"),
-    (ContributionDeclaration("agent_stack", ContributionKind.SUBJECT), "the machine's own tables are no subject"),
-    (ContributionDeclaration("messages.late-line", ContributionKind.LINE, events=(HookEventName.STOP,)), "give the line a waiting carrier"),
-    (ContributionDeclaration("messages.bus-listener", ContributionKind.AGENT_LISTENER, constructor_types=("Bus",)), "it takes a Bus"),
-    (ContributionDeclaration("messages.file-needs", ContributionKind.NEED, "messages.unread", state_name="Blocked", constructor_types=("FileAccess",)), "it takes a FileAccess"),
-    (ContributionDeclaration("messages.hand-in", ContributionKind.EFFECT, is_required=True), "declares its failure kind and text"),
-    (ContributionDeclaration("messages.read", ContributionKind.BLOCK_CONDITION), "declares the ends it may take"),
-    (ContributionDeclaration("messages.answered", ContributionKind.BLOCK_CONDITION, ends=(HoldEnd.SATISFIED,)), "names the command lines that satisfy it"),
-    (ContributionDeclaration("messages.ranked", ContributionKind.POLICY, "messages.nowhere"), "no driver lists the rank key messages.nowhere"),
+    (ContributionDeclaration("messages.worker-needs", ContributionType.NEED, "messages.unread", ("robot",), "Working"), "agent type robot has no driver"),
+    (ContributionDeclaration("messages.odd-needs", ContributionType.NEED, state_name="Sleeping"), "state Sleeping is unknown"),
+    (ContributionDeclaration("messages.pause-needs", ContributionType.NEED, state_name="Paused"), "a need may not ask for Paused"),
+    (ContributionDeclaration("agent_stack", ContributionType.SUBJECT), "the machine's own tables are no subject"),
+    (ContributionDeclaration("messages.late-line", ContributionType.LINE, events=(HookEventName.STOP,)), "give the line a waiting carrier"),
+    (ContributionDeclaration("messages.bus-listener", ContributionType.AGENT_LISTENER, constructor_types=("Bus",)), "it takes a Bus"),
+    (ContributionDeclaration("messages.file-needs", ContributionType.NEED, "messages.unread", state_name="Blocked", constructor_types=("FileAccess",)), "it takes a FileAccess"),
+    (ContributionDeclaration("messages.hand-in", ContributionType.EFFECT, is_required=True), "declares its failure line and text"),
+    (ContributionDeclaration("messages.read", ContributionType.BLOCK_CONDITION), "declares the ends it may take"),
+    (ContributionDeclaration("messages.answered", ContributionType.BLOCK_CONDITION, ends=(BlockEnd.SATISFIED,)), "names the command lines that satisfy it"),
+    (ContributionDeclaration("messages.ranked", ContributionType.POLICY, "messages.nowhere"), "no driver lists the rank key messages.nowhere"),
     (SHOW, "a policy key is declared once"),
 ])
 def test_each_misuse_is_refused_with_its_fix(contribution: ContributionDeclaration, fix: str) -> None:
@@ -60,17 +60,17 @@ def test_each_misuse_is_refused_with_its_fix(contribution: ContributionDeclarati
 
 
 def test_a_line_with_a_waiting_carrier_may_sit_on_an_event_no_program_carries() -> None:
-    assert fixes(ContributionDeclaration("messages.late-line", ContributionKind.LINE, events=(HookEventName.STOP,), carrier=LineCarrier.WAITING)) == []
+    assert fixes(ContributionDeclaration("messages.late-line", ContributionType.LINE, events=(HookEventName.STOP,), carrier=LineCarrier.WAITING)) == []
 
 
 def test_a_safety_policy_from_a_suite_module_is_refused() -> None:
-    suite_module = DeclaredModule("workers", False, (), (UNREAD, SHOW, ContributionDeclaration("workers.safety", ContributionKind.POLICY, "messages.show", is_safety=True)))
+    suite_module = ModuleContributions("workers", False, (), (UNREAD, SHOW, ContributionDeclaration("workers.safety", ContributionType.POLICY, "messages.show", is_safety=True)))
     assert fixes(module=suite_module) == ["workers: workers.safety: a safety policy may only come from a core module"]
 
 
 def test_two_transforms_in_one_slot_name_both_owners() -> None:
-    first = ContributionDeclaration("messages.alias-one", ContributionKind.TRANSFORM, slot=TransformSlot.ALIAS)
-    second = ContributionDeclaration("messages.alias-two", ContributionKind.TRANSFORM, slot=TransformSlot.ALIAS)
+    first = ContributionDeclaration("messages.alias-one", ContributionType.TRANSFORM, slot=TransformSlot.ALIAS)
+    second = ContributionDeclaration("messages.alias-two", ContributionType.TRANSFORM, slot=TransformSlot.ALIAS)
     assert fixes(first, second) == ["messages messages.alias-one, messages messages.alias-two: slot alias for main: one transform to a slot for each agent type"]
 
 
@@ -114,7 +114,7 @@ class CountedOwners(OpenOwners):
         return {"documents": 2}.get(module, 0)
 
 
-def test_removing_a_module_that_owns_open_holds_is_refused_unless_a_migration_ships() -> None:
+def test_removing_a_module_that_owns_open_blocks_is_refused_unless_a_migration_ships() -> None:
     check = DeclarationCheck([MAIN], [MESSAGES], [PROGRAM], ["main"])
     assert [refusal.owner for refusal in check.removal_refusals(["documents", "pins"], [], CountedOwners())] == ["documents"]
     assert check.removal_refusals(["documents"], ["documents"], CountedOwners()) == []

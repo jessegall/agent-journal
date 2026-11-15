@@ -6,7 +6,8 @@ from engine.agent_machine.needs.fact_source import FactSource
 
 
 class FakeFactSource(FactSource):
-    """A fact source that gives each agent the facts a test hands it, and records which agents it was asked for."""
+    """A fact source that gives each agent the facts a test hands it, and records which agents it was asked
+    for."""
 
     fact_types = [Fact]
 

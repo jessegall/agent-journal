@@ -20,15 +20,15 @@ class StopAnswer:
 
     @classmethod
     def refusal(cls, reason: Reason) -> "StopAnswer":
-        return cls(StopAnswerType.REFUSED, (reason,))
+        return cls(StopAnswerType.REFUSED, tuple([reason]))
 
     @classmethod
     def refusals(cls, reasons: "list[Reason]") -> "StopAnswer":
         return cls(StopAnswerType.REFUSED, tuple(reasons))
 
     @classmethod
-    def hand_in(cls, work: WorkReference) -> "StopAnswer":
-        return cls(StopAnswerType.HAND_IN, work=work)
+    def handover(cls, work: WorkReference) -> "StopAnswer":
+        return cls(StopAnswerType.HANDOVER, work=work)
 
     @classmethod
     def safety_rest(cls) -> "StopAnswer":

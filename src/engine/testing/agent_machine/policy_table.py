@@ -5,7 +5,8 @@ from engine.testing.agent_machine.policy_row import PolicyRow
 
 
 class PolicyTable:
-    """A policy's decision table: every row asked of the policy, and each row whose refusals differ from the row's named with both."""
+    """A policy's decision table: every row asked of the policy, and each row whose refusals differ from the
+    row's named with both."""
 
     def __init__(self, rows: Sequence[PolicyRow]) -> None:
         self.rows = rows

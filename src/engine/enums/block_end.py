@@ -1,7 +1,7 @@
 from enum import StrEnum
 
 
-class HoldEnd(StrEnum):
+class BlockEnd(StrEnum):
     """The declared ends of a hold row; a hold ends by one of these and by nothing else."""
 
     SATISFIED = "satisfied"

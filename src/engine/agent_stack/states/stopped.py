@@ -8,7 +8,8 @@ from engine.enums.lane import Lane
 
 @dataclass(frozen=True)
 class Stopped(State):
-    """The bottom of every stack: the agent has no work in hand, since when, why, and whether it can be resumed."""
+    """The bottom of every stack: the agent has no work in hand, since when, why, and whether it can be
+    resumed."""
 
     lane: ClassVar[Lane] = Lane.BOTTOM
     rank: ClassVar[int] = 0

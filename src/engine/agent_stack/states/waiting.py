@@ -9,7 +9,8 @@ from engine.enums.wait_mode import WaitMode
 
 @dataclass(frozen=True)
 class Waiting(State):
-    """The agent waits on subjects, any or all of them, by its own choice or not; a stop under it hands in nothing."""
+    """The agent waits on subjects, any or all of them, by its own choice or not; a stop under it hands in
+    nothing."""
 
     lane: ClassVar[Lane] = Lane.WORK
     rank: ClassVar[int] = 10

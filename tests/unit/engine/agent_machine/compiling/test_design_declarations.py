@@ -1,6 +1,6 @@
 from engine.agent_machine.compiling.declaration_check import DeclarationCheck
 from engine.agent_machine.compiling.driver_compiler import DriverCompiler
-from engine.testing.agent_machine.design_declarations import AGENT_TYPES, DesignDeclarations
+from tests.unit.engine.agent_machine.compiling.design_declarations import AGENT_TYPES, DesignDeclarations
 
 
 def test_the_complete_declarations_of_the_design_pass_every_check_of_sync() -> None:

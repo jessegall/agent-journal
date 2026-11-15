@@ -1,7 +1,7 @@
 from enum import StrEnum
 
 
-class ContributionKind(StrEnum):
+class ContributionType(StrEnum):
     """The ten lists a module gives the agent machine."""
 
     NEED = "need"

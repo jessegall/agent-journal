@@ -6,7 +6,7 @@ from engine.agent_stack.subject_reference import SubjectReference
 
 
 @dataclass(frozen=True)
-class OpenHold:
+class OpenBlock:
     """A hold as a step judges it: an open agent_block row, or a plan of this step that has no row yet,
     with its scopes, whether each grace has passed, and the reason it refuses with."""
 
@@ -19,6 +19,9 @@ class OpenHold:
     stop_grace_passed: bool
     is_strict: bool
     subject: SubjectReference | None = None
+
+    def refuses_tools(self) -> bool:
+        return self.scope_tools and self.tool_grace_passed
 
     def refuses_stop(self, escalation: Escalation | None) -> bool:
         deferred = escalation is not None and escalation.defers(self.block_id)

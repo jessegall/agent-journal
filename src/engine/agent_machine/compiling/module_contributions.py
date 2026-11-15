@@ -4,9 +4,9 @@ from engine.agent_machine.compiling.contribution_declaration import Contribution
 
 
 @dataclass(frozen=True)
-class DeclaredModule:
-    """A module as sync compiles it: its name, whether it is a core module, the modules it depends on, its contributions
-    and the names of any state classes it defines, which sync refuses."""
+class ModuleContributions:
+    """A module as sync compiles it: its name, whether it is a core module, the modules it depends on, its
+    contributions and the names of any state classes it defines, which sync refuses."""
 
     name: str
     is_core: bool
