@@ -71,6 +71,7 @@ EFFORT_CHOICES = (("low", "Low"), ("medium", "Medium"), ("high", "High"), ("xhig
 
 SETTINGS_FLAGS = ("--settings", "--setting-sources")
 SETTING_SOURCES = "project"
+LOCAL_SETTINGS = Path(".claude/settings.local.json")
 SERVER_FILE = "mcp.json"
 SERVERS_KEY = "mcpServers"
 COPIED_SETTINGS = ("env", "apiKeyHelper", "awsAuthRefresh", "awsCredentialExport", "forceLoginMethod", "forceLoginOrgUUID", "otelHeadersHelper",
@@ -78,6 +79,8 @@ COPIED_SETTINGS = ("env", "apiKeyHelper", "awsAuthRefresh", "awsCredentialExport
 BYPASS_PERMISSIONS = {"defaultMode": "bypassPermissions"}
 
 COMPACT_LINE = "/compact"
+# the status line also runs every 30 seconds, so the status file of an idle session stays fresh (statusline page: seconds)
+STATUS_REFRESH_SECONDS = 30
 # the largest timeout Claude Code was seen to accept on an asyncRewake hook, which it enforces (report 1427, P3)
 WAKE_TIMEOUT_SECONDS = 86_400
 COMPACTION_INSTRUCTIONS = "Focus on continuing the work at once: what you were doing last, what comes next, and the facts those depend on. Keep every instruction, request, direction and correction the user gave you. Leave out the rest of the earlier history and old messages: the journal gives back recent messages, tasks, memories and rules."
@@ -277,6 +280,9 @@ class ClaudeCodeProvider(Provider):
         person_settings = self.person_settings(person_data.get(person_file, b""))
         unreadable = tuple(path for path in [person_file] if FileAccess.is_file(path) and (path not in person_data or person_settings is None))
         person_values = {key: value for key, value in (person_settings or {}).items() if key in COPIED_SETTINGS}
+        local_env = self.local_env(root)
+        if local_env:
+            person_values["env"] = {**(person_values.get("env") if isinstance(person_values.get("env"), dict) else {}), **local_env}
         settings = {**person_values, "permissions": BYPASS_PERMISSIONS, **self.hook_settings(runner, root),
                     "hooks": ProgramHooks.journal(type(self), path).journal_blocks(runner, root, managed)}
         state = self.state_file()
@@ -287,6 +293,14 @@ class ClaudeCodeProvider(Provider):
         server_file = SettingsFile(self.server_file(home), json.dumps({SERVERS_KEY: servers if is_mapping(servers) else {}}, indent=2, sort_keys=True) + "\n")
         return ProgramSettings(self.name, (SettingsFile(path, json.dumps(settings, indent=2, sort_keys=True) + "\n"), server_file),
                                person_files=self.user_hook_files(), person_data=person_data, unreadable_person_files=unreadable)
+
+    # Claude Code started with --setting-sources project does not read the project's local settings file, so its env is
+    # carried into the journal's own settings; its hooks are taken over as managed hooks
+    def local_env(self, root: Path) -> Mapping[str, object]:
+        path = root / LOCAL_SETTINGS
+        local = self.person_settings(KeptBytes.read(path)) if FileAccess.is_file(path) else None
+        env = (local or {}).get("env")
+        return env if isinstance(env, dict) else {}
 
     @staticmethod
     def person_settings(data: bytes) -> Mapping[str, object] | None:
@@ -319,7 +333,8 @@ class ClaudeCodeProvider(Provider):
 
     @classmethod
     def hook_settings(cls, runner: str, root: Path) -> Mapping[str, object]:
-        return {"autoMemoryEnabled": False, "statusLine": {"type": "command", "command": f'{runner} --status "{root}"', "padding": 0}}
+        return {"autoMemoryEnabled": False, "statusLine": {"type": "command", "command": f'{runner} --status "{root}"', "padding": 0,
+                                                             "refreshInterval": STATUS_REFRESH_SECONDS}}
 
     def peer_note(self, line: str) -> Sequence[PeerNote]:
         return ClaudePeerNotes.note(line)
