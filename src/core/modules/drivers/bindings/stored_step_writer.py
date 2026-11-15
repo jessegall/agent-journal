@@ -133,11 +133,20 @@ class StoredStepWriter(StepWriter):
             return
         if escalation.escalation_id:
             row = self.queries.query(AgentEscalation).find(escalation.escalation_id)
-            self.repository.save(row.changed(block_ids=escalation.block_ids, refusal_count=escalation.refusal_count), context)
+            self.repository.save(row.changed(block_ids=escalation.block_ids, work_keys=tuple(key.generation for key in escalation.work_keys),
+                                             refusal_count=escalation.refusal_count), context)
+            self.mark_escalated_blocks(row.id, escalation.block_ids, context)
             return
-        self.repository.save(AgentEscalation(session_agent_id=view.agent.agent_id, escalation_type=escalation.escalation_type,
-                                             responder=escalation.responder, refusal_count=escalation.refusal_count, block_ids=escalation.block_ids,
-                                             work_keys=tuple(key.generation for key in escalation.work_keys)), context)
+        row = self.repository.save(AgentEscalation(session_agent_id=view.agent.agent_id, escalation_type=escalation.escalation_type,
+                                                   responder=escalation.responder, refusal_count=escalation.refusal_count, block_ids=escalation.block_ids,
+                                                   work_keys=tuple(key.generation for key in escalation.work_keys)), context)
+        self.mark_escalated_blocks(row.id, escalation.block_ids, context)
+
+    # the holds an escalation defers name it, so a card and a person's answer find them (doc 1310 section 4.6)
+    def mark_escalated_blocks(self, escalation_id: int, block_ids: tuple[int, ...], context: Context) -> None:
+        for block in self.queries.query(AgentBlock).find_many(list(block_ids)):
+            if block.escalation_id != escalation_id:
+                self.repository.save(block.changed(escalation_id=escalation_id), context)
 
     def run_effects(self, effects: Sequence[Effect], view: AgentView, record: DecisionRecord, is_admission: bool, context: Context) -> list[str]:
         failures = []

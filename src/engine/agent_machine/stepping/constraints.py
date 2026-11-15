@@ -88,4 +88,7 @@ class Constraints:
         if stack.has(Paused) or stack.has(Compacting):
             return []
         refusals = [block.stop_refusal() for block in JudgedBlocks.constraining(view) if block.refuses_stop(view.escalation)]
-        return [*refusals, *stack.work_lane_top().state.stop_answer(view.work_stop).refusal_reasons()]
+        top = stack.work_lane_top()
+        if view.escalation is not None and view.escalation.defers_work(top.need_key):
+            return refusals
+        return [*refusals, *top.state.stop_answer(view.work_stop).refusal_reasons()]

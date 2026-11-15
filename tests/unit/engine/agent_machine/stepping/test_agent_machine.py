@@ -229,6 +229,14 @@ def test_the_fifth_refused_stop_opens_an_escalation_and_says_who_was_asked() -> 
     assert record.shown_reason.text.endswith("A person was asked: you may stop and wait for the answer.")
 
 
+
+def test_the_fifth_stop_refused_by_a_started_task_names_it_and_the_next_stop_rests_while_new_work_still_refuses() -> None:
+    fifth = AgentMachine().step(view(needs=(working(),), counts=RefusalCounts(4, 0)), STOP).record
+    escalation = fifth.counts.escalation
+    assert not fifth.decision.admits() and escalation is not None and escalation.work_keys == tuple([working().key])
+    assert AgentMachine().step(view(needs=(working(),), escalation=escalation), STOP).record.decision.admits()
+    assert not AgentMachine().step(view(needs=(working(WorkType.JOB),), escalation=escalation), STOP).record.decision.admits()
+
 def test_an_open_escalation_defers_the_stop_scope_of_its_blocks() -> None:
     deferred = Escalation(5, EscalationType.STOPS, Responder.PERSON, (3,), (), 5)
     assert AgentMachine().step(view(blocks=(block("messages.unread", "messages.unread"),), escalation=deferred), STOP).record.decision.admits()

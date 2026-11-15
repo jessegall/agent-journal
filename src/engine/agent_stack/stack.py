@@ -35,4 +35,7 @@ class Stack:
         refusals = [frame.state.stop_refusal() for frame in self.lane(Lane.HOLD) if frame.state.refuses_stop(escalation)]
         if refusals:
             return StopAnswer.refusals(refusals)
-        return self.work_lane_top().state.stop_answer(contract)
+        top = self.work_lane_top()
+        if escalation is not None and escalation.defers_work(top.need_key):
+            return StopAnswer.allowed()
+        return top.state.stop_answer(contract)

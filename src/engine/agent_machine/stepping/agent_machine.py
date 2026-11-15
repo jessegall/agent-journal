@@ -78,7 +78,7 @@ class AgentMachine:
         rewrite, reasons = self.with_supported_rewrite(rewrite, reasons, view, question)
         judgement = Judgement.combined(reasons, view.rank_order)
         decision = self.with_handover(judgement.decision, question, view, built.stack)
-        counts = self.counting.after(decision, question, view, built.moves, reasons)
+        counts = self.counting.after(decision, question, view, built, reasons)
         decision = self.escalated(decision, counts, view)
         record = self.record(view, question, decision, judgement, rewrite, counts, built.stack, built.moves, reasons)
         if decision.admits() and question.is_action():

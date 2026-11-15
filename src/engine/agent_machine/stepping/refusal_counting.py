@@ -2,11 +2,14 @@ from dataclasses import replace
 
 from engine.agent_stack.escalation import Escalation
 from engine.agent_stack.reason import Reason
+from engine.agent_machine.record.stack_move import StackMove
+from engine.agent_stack.stack import Stack
+from engine.agent_machine.stepping.built_stack import BuiltStack
+from engine.agent_stack.states.working import Working
 from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.decision import Decision
 from engine.agent_machine.record.question import Question
 from engine.agent_machine.record.refusal_counts import RefusalCounts
-from engine.agent_machine.record.stack_move import StackMove
 from engine.enums.decision_class import DecisionClass
 from engine.enums.escalation_type import EscalationType
 from engine.enums.frame_end import FrameEnd
@@ -23,15 +26,15 @@ class RefusalCounting:
     is joined when a count reaches its limit (doc 1310 section 4.6): progress sets both back to 0, a
     policy's refusal counts nothing, and a limit of 0 is off."""
 
-    def after(self, decision: Decision, question: Question, view: AgentView, moves: tuple[StackMove, ...], reasons: list[Reason]) -> RefusalCounts:
-        if self.is_progress(decision, question, moves):
+    def after(self, decision: Decision, question: Question, view: AgentView, built: BuiltStack, reasons: list[Reason]) -> RefusalCounts:
+        if self.is_progress(decision, question, built.moves):
             return RefusalCounts(0, 0, view.escalation)
         counts = view.counts
         if question.is_stop() and not decision.admits():
             counts = replace(counts, stop_refusals=counts.stop_refusals + 1)
         if question.is_tool_call() and decision.decision_class is DecisionClass.HOLD:
             counts = replace(counts, tool_refusals=counts.tool_refusals + 1)
-        return replace(counts, escalation=self.escalation(counts, view, reasons))
+        return replace(counts, escalation=self.escalation(counts, view, built.stack, reasons))
 
     @staticmethod
     def is_progress(decision: Decision, question: Question, moves: tuple[StackMove, ...]) -> bool:
@@ -41,7 +44,7 @@ class RefusalCounting:
                    for move in moves)
 
     @staticmethod
-    def escalation(counts: RefusalCounts, view: AgentView, reasons: list[Reason]) -> Escalation | None:
+    def escalation(counts: RefusalCounts, view: AgentView, stack: Stack, reasons: list[Reason]) -> Escalation | None:
         limits = ((EscalationType.STOPS, counts.stop_refusals, int(view.settings.get(STOP_LIMIT_SETTING, STOP_LIMIT))),
                   (EscalationType.TOOLS, counts.tool_refusals, int(view.settings.get(TOOL_LIMIT_SETTING, TOOL_LIMIT))))
         reached = [(escalation_type, count) for escalation_type, count, limit in limits if limit and count >= limit]
@@ -49,6 +52,9 @@ class RefusalCounting:
             return view.escalation
         escalation_type, count = reached[0]
         block_ids = tuple(block.block_id for block in view.blocks if block.block_id is not None and block.reason in reasons)
+        # the Working frames whose stop answer refused, which the escalation defers with the holds it names
+        work_keys = tuple(frame.need_key for frame in stack.frames if isinstance(frame.state, Working) and frame.state.stop_reason in reasons)
         if view.escalation is not None:
-            return replace(view.escalation, block_ids=tuple(dict.fromkeys([*view.escalation.block_ids, *block_ids])), refusal_count=count)
-        return Escalation(0, escalation_type, view.responder, block_ids, (), count)
+            return replace(view.escalation, block_ids=tuple(dict.fromkeys([*view.escalation.block_ids, *block_ids])),
+                           work_keys=tuple(dict.fromkeys([*view.escalation.work_keys, *work_keys])), refusal_count=count)
+        return Escalation(0, escalation_type, view.responder, block_ids, work_keys, count)

@@ -19,3 +19,7 @@ class Escalation:
 
     def defers(self, block_id: int | None) -> bool:
         return block_id is not None and block_id in self.block_ids
+
+    # a Working frame whose stop answer it names rests the agent's next stop; a new constraint still refuses
+    def defers_work(self, key: NeedKey) -> bool:
+        return key in self.work_keys
