@@ -8,4 +8,4 @@ class DocInspector(InspectorDeclaration):
 
     @classmethod
     def declared(cls) -> InspectorDeclaration:
-        return text_inspector(Doc, "doc", "doc settle", "Document")
+        return text_inspector(Doc, "doc", "Document")

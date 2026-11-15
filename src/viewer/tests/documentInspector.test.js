@@ -18,31 +18,44 @@ globalThis.ResizeObserver ??= class {
     disconnect() {}
 };
 
-function drawn(comments = [onWords, whole], width = 980) {
+function drawn(comments = [onWords, whole], width = 980, term = "doc", closeReason = "", textOnly = false, oldestFirst = false) {
     vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockReturnValue(width);
     const ran = [];
     const read = async (line) => {
         ran.push(line);
-        if (line[1] === "inspect") return {ok: true, value: {...ROW, comments}};
+        if (line[1] === "inspect") return {ok: true, value: {...ROW, close_reason: closeReason, comments}};
         if (line[1] === "comments") return {ok: true, value: {rows: comments, total: comments.length}};
         if (line[1] === "comment" && line.at(-1) === "no") return {ok: false, error: "refused"};
         if (line[0] === "link") return {ok: true, value: {rows: [], counterparts: [{endpoint: {model: "plan", id: 3, title: "plan:3", exists: true, unavailable: false, open_ref: "plans:3"}, relations: ["mentions"], link_ids: [1]}], total: 1}};
-        if (line[1] === "revisions") return {ok: true, value: {rows: [{number: 2, change: "Totals", author_name: "Lady Lovelace", created_at: "2026-11-01"}, {number: 1, change: "First", author_name: "Unknown", created_at: "2026-10-31"}]}};
+        if (line[1] === "revisions") {
+            const rows = [{number: 2, change: "Totals", author_name: "Lady Lovelace", created_at: "2026-11-01"}, {number: 1, change: "First", author_name: "Unknown", created_at: "2026-10-31"}];
+            return {ok: true, value: {rows: oldestFirst ? rows.reverse() : rows}};
+        }
         if (line[1] === "revision") return {ok: true, value: {body: "the old text"}};
         return {ok: true, value: {rows: []}};
     };
     const element = document.createElement("div");
     document.body.append(element);
-    createApp({render: () => h(DocumentBody, {term: "doc", id: 4, read})}).mount(element);
+    createApp({render: () => h(DocumentBody, {term, id: 4, read, textOnly})}).mount(element);
     return {element, ran};
 }
 
-test("the body holds Edit above its tabs, and the comment box stays at the foot", async () => {
+const itemButton = (label) => [...document.body.querySelectorAll("[data-menu-item]")].find((item) => item.textContent.trim() === label);
+
+async function choose(element, label) {
+    element.querySelector("[data-actions-menu]").click();
+    await settle();
+    itemButton(label).click();
+    await settle();
+    await settle();
+}
+
+test("the body holds the Actions menu above its tabs, and the comment box stays at the foot", async () => {
     const {element} = drawn();
     await settle();
     const actions = element.querySelector("[data-document-actions]");
     expect(element.querySelector("[data-comment-input]")).not.toBeNull();
-    expect(actions.textContent).toContain("Edit");
+    expect(actions.textContent).toContain("Actions");
     expect(actions.textContent).not.toContain("Close");
     expect(actions.compareDocumentPosition(element.querySelector("[data-document-tab]")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(element.querySelector("[data-resource-close]")).toBeNull();
@@ -162,8 +175,7 @@ test("a user can close the agent's open revision from the inspector", async () =
 test("editing starts from the text as it is and saves abstract and body", async () => {
     const {element, ran} = drawn();
     await settle();
-    element.querySelector("[data-text-edit]").click();
-    await settle();
+    await choose(element, "Edit");
     const form = document.body.querySelector("[data-text-form]");
     expect(form.querySelector("input").value).toBe("How the cart counts");
     typeInto(form.querySelector("textarea"), "new text");
@@ -237,4 +249,75 @@ test("a table row and a line of code are tinted whole", () => {
 test("comments are numbered in the order of their place, one on the whole document has no number", () => {
     const list = numbered([{id: 1, quote: "b", position: 9}, {id: 2, quote: "", position: null}, {id: 3, quote: "a", position: 2}]);
     expect(list.map((comment) => [comment.id, comment.number])).toEqual([[2, undefined], [3, 1], [1, 2]]);
+});
+
+test("the Actions menu has Documents, Copy command, Edit and Settle", async () => {
+    const {element} = drawn();
+    await settle();
+    element.querySelector("[data-actions-menu]").click();
+    await settle();
+    const labels = [...document.body.querySelectorAll("[data-menu-item]")].map((item) => item.textContent.trim());
+    expect(labels).toEqual(["Documents", "Copy command", "Edit", "Settle"]);
+});
+
+test("a document is settled with its reason, and a settled one offers no Settle", async () => {
+    const {element, ran} = drawn();
+    await settle();
+    await choose(element, "Settle");
+    expect(document.body.querySelector("[data-settle-save]").disabled).toBe(true);
+    typeInto(document.body.querySelector("[data-settle-why]"), "Done another way");
+    await settle();
+    document.body.querySelector("[data-settle-save]").click();
+    await settle();
+    expect(ran).toContainEqual(["doc", "settle", "4", "--why", "Done another way"]);
+});
+
+test("a report is settled with report close", async () => {
+    const {element, ran} = drawn([], 980, "report");
+    await settle();
+    await choose(element, "Settle");
+    typeInto(document.body.querySelector("[data-settle-why]"), "Read");
+    await settle();
+    document.body.querySelector("[data-settle-save]").click();
+    await settle();
+    expect(ran).toContainEqual(["report", "close", "4", "--why", "Read"]);
+});
+
+test("a settled document shows no Settle and says why in its Details", async () => {
+    const {element} = drawn([], 980, "doc", "Made another way");
+    await settle();
+    element.querySelector("[data-actions-menu]").click();
+    await settle();
+    expect(itemButton("Settle")).toBeUndefined();
+    element.querySelector('[data-document-tab="details"]').click();
+    await settle();
+    expect(element.querySelector("[data-resource-fields]").textContent).toContain("Made another way");
+});
+
+test("Links is a tab that reads the row's links, and a report has no Revisions tab", async () => {
+    const {element, ran} = drawn([], 980, "report");
+    await settle();
+    expect(element.querySelector('[data-document-tab="revisions"]')).toBeNull();
+    element.querySelector('[data-document-tab="links"]').click();
+    await settle();
+    expect(ran.some((line) => line[0] === "link" && line[1] === "list")).toBe(true);
+    expect(element.querySelector("[data-document-links]")).not.toBeNull();
+});
+
+test("a text-only body draws no Actions menu, Links or Details", async () => {
+    const {element} = drawn([], 980, "doc", "", true);
+    await settle();
+    expect(element.querySelector("[data-actions-menu]")).toBeNull();
+    expect(element.querySelector('[data-document-tab="links"]')).toBeNull();
+    expect(element.querySelector('[data-document-tab="details"]')).toBeNull();
+});
+
+test("the newest revision comes first and is the current one, whatever order the journal lists them in", async () => {
+    const {element} = drawn([], 980, "doc", "", false, true);
+    await settle();
+    element.querySelector('[data-document-tab="revisions"]').click();
+    await settle();
+    const rows = [...element.querySelectorAll("[data-text-revision]")];
+    expect(rows.map((row) => row.dataset.textRevision)).toEqual(["2", "1"]);
+    expect(rows[0].textContent).toContain("current");
 });

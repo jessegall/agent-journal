@@ -17,7 +17,7 @@ const facts = computed(() => [{name: "state", label: "State", value: isClosed(pr
             <ActionsMenu :items="items" :head="row.title" />
         </template>
         <SwitchCase :value="tab">
-            <template #text><DocumentBody :key="`${term}:${row.id}`" :term="term" :id="row.id" :read="read" /></template>
+            <template #text><DocumentBody :key="`${term}:${row.id}`" :term="term" :id="row.id" :read="read" text-only /></template>
             <template #revisions><DocumentRevisionList :key="row.id" :id="row.id" /></template>
             <template #links><ReaderLinks :model="term" :id="row.id" /></template>
         </SwitchCase>
