@@ -15,7 +15,7 @@ class RunQueueHaltedLines(EventLineSource):
     waits for. A restart's own hold is not reminded of."""
 
     key = "processes.run-queue-halted"
-    events = [event for event in HookEventName if event is not HookEventName.TICK]
+    events = list(HookEventName)
     agent_types = [AgentRole.MAIN.value]
 
     main_role_reason = "only the main agent resumes a halted queue or lets a waiting update go on"

@@ -1,31 +1,27 @@
-from suites.coding.modules.checks.nudges.check_failed_nudge import CheckFailedNudge
-from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_wildcard import HookWildcard
 from engine.driver.rule_answer import RuleAnswer
-from suites.coding.modules.checks.commands.report_check.report_check import ReportCheck
-from suites.coding.modules.checks.queries.check_query import CheckQuery
-
-REPEAT_MINUTES = 60
+from engine.enums.agent_role import AgentRole
+from engine.enums.hook_wildcard import HookWildcard
+from suites.coding.modules.checks.effects.failed_check_effect import FailedCheckEffect
+from suites.coding.modules.checks.lines.failed_check_lines import FAILED_CHECK_RULE, FailedCheckLines
 
 
 class FailedCheckRule(DriverRule):
-    """The main agent is told once that a check fails, also while it waits, with the last 800 characters it printed,
-    and again after an hour if it still fails."""
+    """The old walk's answer for FailedCheckLines and FailedCheckEffect, which own it, until the walk is deleted."""
 
-    name = "checks.failed"
+    name = FAILED_CHECK_RULE
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
     roles = [AgentRole.MAIN]
     overlay_proof = True
     is_notice = True
 
-    def __init__(self, checks: CheckQuery) -> None:
-        self.checks = checks
+    def __init__(self, lines: FailedCheckLines, effect: FailedCheckEffect) -> None:
+        self.lines, self.effect = lines, effect
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        failing = self.checks.unreported(hook.timestamp, REPEAT_MINUTES)
-        if not failing:
+        nudges = self.lines.nudges(hook.event, hook.agent_id)
+        if not nudges:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(*(CheckFailedNudge.declared().nudge(check=check.id) for check in failing)).running(*(ReportCheck(check.id) for check in failing))
+        return RuleAnswer.with_nudges(*nudges).running(*self.effect.commands_of(hook.event, hook.agent_id))
