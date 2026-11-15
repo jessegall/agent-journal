@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from engine.command.command import Command
-from engine.driver.agent_hook import AgentHook
+from engine.driver.hook_event import HookEvent
 from engine.enums.command_category import CommandCategory
 from engine.enums.process_type import ProcessType
 from engine.driver.shell_line import ShellLine
@@ -56,9 +56,9 @@ class StartProcess(Command[Process]):
         return cls(agent_id, None, line, folder, category, limit_seconds, [PartSpec(line, line.split()[0], False, category)], plugin=plugin, run_name=part_category)
 
     @classmethod
-    def build(cls, hook: AgentHook, shell: ShellLine, run: ForegroundRun) -> "StartProcess":
-        folder = hook.event.raw.get("cwd")
+    def build(cls, agent_id: int, event: HookEvent, shell: ShellLine, run: ForegroundRun) -> "StartProcess":
+        folder = event.raw.get("cwd")
         parts = tuple(PartSpec(part.text, part.program, part.pipe_target is not None, command.category, command.command, command.named_reader_id,
                               part.arguments[0] if part.program == "journal" and part.arguments else " ".join(value for value in (Path(part.program).name, part.subcommand) if value))
                       for part, command in zip(shell.parts, run.part_commands, strict=True))
-        return cls(hook.agent_id, None, shell.runner_text, folder if isinstance(folder, str) else "", run.category or shell.watched_part_category, run.seconds, parts, run.reader_id, shell.has_full_test_run, timeout_durations=run.timeout_durations)
+        return cls(agent_id, None, shell.runner_text, folder if isinstance(folder, str) else "", run.category or shell.watched_part_category, run.seconds, parts, run.reader_id, shell.has_full_test_run, timeout_durations=run.timeout_durations)

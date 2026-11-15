@@ -1,3 +1,4 @@
+from engine.agent_step.step_commit import StepCommit
 from core.modules.settings.bindings.support.context_share import ContextShare
 import json
 from collections.abc import Mapping
@@ -115,7 +116,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         self.nudges.write(agent.id, answers, context)
         self.required_commands.open(agent.id, answers.delivered_nudges, context)
         self.timing.stamp("call_saved")
-        if command.step is not None and not self.steps.save(command.step.view, command.step.step, call.id, context).is_saved:
+        commit = self.steps.save(command.step.view, command.step.step, call.id, context) if command.step is not None else None
+        if commit is not None and not commit.is_saved:
             raise StepConflictError()
         for row in handed_lines.rows:
             self.event_rows.remember(row)
@@ -124,7 +126,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         outcomes = [(rule, *self.run_command(rule_command, context)) for rule, rule_command in moves.runnable if rule not in answers.refused_rewriters]
         refused = [(rule, line) for rule, line, _ in outcomes if line]
         output_tools = self.providers.provider(command.event.program).refusal_output_tools
-        updated_input = RefusalLine.tool_input(command.event, answers.refusal, output_tools) or self.updated_input(answers, outcomes)
+        updated_input = RefusalLine.tool_input(command.event, answers.refusal, output_tools) or self.updated_input(answers, outcomes) or self.machine_input(command, commit)
         if updated_input != answers.updated_input:
             self.repository.save(replace(call, updated_input=json.dumps(dict(updated_input))), context)
         if command.event.event == HookEventName.TICK:
@@ -157,6 +159,17 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         if rewriter is None or build is None or any(rule == rewriter.name and line for rule, line, _ in outcomes):
             return answers.updated_input
         return build([command_value for rule, _, command_value in outcomes if rule == rewriter.name])
+
+    # the input the new driver runs an admitted action with: the one its effects built, such as the runner's line, or
+    # else the transforms' rewrite; nothing when the old walk still rewrote it
+    @staticmethod
+    def machine_input(command: RecordHookCall, commit: StepCommit | None) -> Mapping[str, object]:
+        if command.step is None or commit is None:
+            return {}
+        record = command.step.step.record
+        if commit.updated_input:
+            return commit.updated_input
+        return record.rewrite.tool_input if record.rewrite.tool_input is not None and record.decision.admits() else {}
 
     @staticmethod
     def summary(command: RecordHookCall, displayed_text: str) -> str:

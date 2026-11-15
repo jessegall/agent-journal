@@ -9,9 +9,9 @@ RUN = SimpleNamespace(id=7, line="make test")
 
 
 def plans(title: str):
-    processes = SimpleNamespace(agent=lambda agent_id: SimpleNamespace(running=lambda: SimpleNamespace(docked_runs=lambda: SimpleNamespace(get=lambda: [RUN]))))
+    docking = SimpleNamespace(docked_runs=lambda agent_id: (RUN,))
     outputs = SimpleNamespace(matching=lambda condition: SimpleNamespace(every_row=lambda reason: [SimpleNamespace(process_id=7, title=title)]))
-    return LongRunDockNeeds(processes, outputs).needs([AGENT], Question.none()).get(AGENT.agent_id, [])
+    return LongRunDockNeeds(docking, outputs).needs([AGENT], Question.none()).get(AGENT.agent_id, [])
 
 
 def test_a_docked_run_titled_by_its_raw_command_is_held_after_five_uses_until_it_is_titled():

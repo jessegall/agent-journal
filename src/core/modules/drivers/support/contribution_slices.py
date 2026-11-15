@@ -1,4 +1,3 @@
-from engine.rule_backed.rule_transform import RuleTransform
 from engine.agent_machine.contracts.slice_answers import WAITING_SLICE
 from engine.agent_machine.contracts.effect import Effect
 from engine.agent_machine.contracts.line_source import LineSource
@@ -67,9 +66,7 @@ class ContributionSlices:
             for contribution in (*module.needs, *module.policies, *module.lines, *module.effects, *module.transforms):
                 for rule in contribution.replaced_rules:
                     slices.setdefault(rule, set()).add(self.slice_name(contribution, module, agent_type))
-        # a rule a transform stands for still gives today's input, since the transforms only judge the final action
-        rewriters = {transform.rule.name for module in self.finder.modules() for transform in module.transforms if issubclass(transform, RuleTransform)}
-        answered = frozenset(rule for rule, rule_slices in slices.items() if rule_slices <= agent_slices and rule not in rewriters)
+        answered = frozenset(rule for rule, rule_slices in slices.items() if rule_slices <= agent_slices)
         blocked = self.blocked_slices(agent_type)
         return answered | {REPEATED_STOP_RELEASE, OLD_BLOCK_RULE} if blocked and blocked <= agent_slices else answered
 

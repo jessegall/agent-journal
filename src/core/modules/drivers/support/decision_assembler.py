@@ -1,3 +1,4 @@
+from engine.enums.line_carrier import LineCarrier
 from dataclasses import replace
 
 from engine.agent_machine.record.line import Line
@@ -75,13 +76,16 @@ class DecisionAssembler:
         return replace(answers, rules=[*refusals, *DecisionAssembler.line_records(new_lines), *rules])
 
     # one record of lines for each old rule a source answers for, under its name and no layer, so the rule history
-    # notes when that rule last spoke as the old walk noted it; lines of a source that answers for no rule share one
+    # notes when that rule last spoke as the old walk noted it; lines of a source that answers for no rule share one, and
+    # a terminal line is printed to the terminal
     @staticmethod
     def line_records(lines: list[Line]) -> list[RuleRecord]:
         sources = list(dict.fromkeys(line.source_key for line in lines))
         records = []
         for source in sources:
-            answer = RuleAnswer(nudges=tuple(line.said() for line in lines if line.source_key == source))
+            said = [line for line in lines if line.source_key == source]
+            answer = RuleAnswer(nudges=tuple(line.said() for line in said if line.carrier is not LineCarrier.TERMINAL),
+                                terminal="\n".join(line.text for line in said if line.carrier is LineCarrier.TERMINAL))
             records.append(RuleRecord(source or NEW_DRIVER_LAYER, "" if source else NEW_DRIVER_LAYER, answer.outcome, answer))
         return records
 

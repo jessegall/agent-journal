@@ -20,6 +20,7 @@ from core.modules.drivers.listeners.assigned_work_suppression_listener import As
 from core.modules.drivers.transforms.project_hook_transform import ProjectHookTransform
 from core.modules.drivers.lines.continued_session_lines import ContinuedSessionLines
 from core.modules.drivers.lines.foreign_hooks_lines import ForeignHooksLines
+from core.modules.drivers.lines.foreign_hook_terminal_lines import ForeignHookTerminalLines
 from core.modules.drivers.lines.long_output_lines import LongOutputLines
 from core.modules.drivers.lines.opening_lines_lines import OpeningLinesLines
 from core.modules.drivers.lines.repeated_file_read_lines import RepeatedFileReadLines
@@ -349,7 +350,7 @@ class DriversModule(Module):
     transforms = [ProjectHookTransform]
     effects = [ForeignHooksEffect, SafeguardsStopEffect]
     policies = [DatabaseFilePolicy, ForeignHooksPolicy, PanicFilePolicy, PrivateCorpusPolicy, TypeCommandsPolicy]
-    lines = [ContinuedSessionLines, ForeignHooksLines, LongOutputLines, OpeningLinesLines, RepeatedFileReadLines, TakeoverLines]
+    lines = [ContinuedSessionLines, ForeignHookTerminalLines, ForeignHooksLines, LongOutputLines, OpeningLinesLines, RepeatedFileReadLines, TakeoverLines]
     nudges = DRIVER_NUDGES
     profiles = [REVIEWER_PROFILE]
     move_reason = "version 4 kept hook records in its own bookkeeping tables, which stay in the backup"

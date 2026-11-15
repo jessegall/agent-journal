@@ -10,8 +10,7 @@ from engine.agent_stack.subject_reference import SubjectReference
 from engine.query.conditions.among import Among
 from core.modules.processes.nudges.run_name_nudge import RunNameNudge
 from core.modules.processes.queries.output_query import OutputQuery
-from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.processes.support.run_docking import LONG_RUN_DOCK_KEY
+from core.modules.processes.support.run_docking import LONG_RUN_DOCK_KEY, RunDocking
 from core.modules.processes.support.block_conditions.output_titled import OutputTitled
 from core.modules.processes.support.run_title import RunTitle
 
@@ -30,13 +29,13 @@ class LongRunDockNeeds(NeedSource):
     state_type = Blocked
     rank = OUTPUT_TITLE_RANK
 
-    def __init__(self, processes: ProcessQuery, outputs: OutputQuery) -> None:
-        self.processes, self.outputs = processes, outputs
+    def __init__(self, docking: RunDocking, outputs: OutputQuery) -> None:
+        self.docking, self.outputs = docking, outputs
 
     def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]:
         plans: dict[int, list[Need | BlockPlan]] = {}
         for agent in agents:
-            docked = list(self.processes.agent(agent.agent_id).running().docked_runs().get())
+            docked = list(self.docking.docked_runs(agent.agent_id))
             if not docked:
                 continue
             outputs = {output.process_id: output for output in self.outputs.matching(Among("process_id", [run.id for run in docked])).every_row(DOCKED_OUTPUTS_REASON)}

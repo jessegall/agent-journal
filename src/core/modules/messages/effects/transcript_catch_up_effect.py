@@ -56,14 +56,14 @@ class TranscriptCatchUpEffect(EventEffect):
         if not rows:
             return []
         earliest_at = max(self.settings.minutes(TRANSCRIPT_OLDEST_MINUTES).deducted(now), agent.creation_timestamp())
-        return [command for row in rows if row.created_at >= earliest_at for command in self.commands(event, agent_id, row)]
+        return [command for row in rows if row.created_at >= earliest_at for command in self.row_commands(event, agent_id, row)]
 
     def session_file(self, event: HookEvent, environment_id: int, provider: Provider) -> Path | None:
         if event.event is not HookEventName.TICK:
             return provider.transcript_path(event)
         return provider.transcript(Path(self.queries.query(Environment).find(environment_id).folder), event.session)
 
-    def commands(self, event: HookEvent, agent_id: int, row: TranscriptEntry) -> list[Command[object]]:
+    def row_commands(self, event: HookEvent, agent_id: int, row: TranscriptEntry) -> list[Command[object]]:
         cutoff_at = self.settings.seconds(TRANSCRIPT_LOOKBACK_SECONDS).deducted(row.created_at)
         if row.is_prompt:
             has_hook = self.hook_calls.has_call_after(agent_id, HookEventName.PROMPT, HookCall.summarize(row.text), cutoff_at)

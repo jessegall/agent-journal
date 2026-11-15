@@ -1,6 +1,6 @@
 from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
-from itertools import count
+from uuid import uuid4
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
@@ -27,11 +27,10 @@ SKIP = f'refusal skip {RULE} --reason "the failure is fixed" --environment main'
 GUARD_SKIP = f'refusal skip {GUARD} --reason "it does not apply" --environment main'
 REFUSED = "Your last full test run failed"
 TRIED = "ran the failed tests by name and they pass"
-FIRINGS = count(1)
 
 
 def full_line():
-    return HookSamples.shell("pytest", ShellPart("pytest", CommandCategory.TEST_RUN, [], is_full_test_run=True)).with_fields(firing=f"full-{next(FIRINGS)}")
+    return HookSamples.shell("pytest", ShellPart("pytest", CommandCategory.TEST_RUN, [], is_full_test_run=True)).with_fields(firing=f"full-{uuid4().hex}")
 
 
 class FailedFullRun(StoryFixture):

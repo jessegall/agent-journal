@@ -23,6 +23,7 @@ from core.modules.processes.support.run_title import RunTitle
 from dataclasses import dataclass
 from engine.command.command import Command
 from engine.driver.hook_event import HookEvent
+from engine.database.database import Database
 from engine.request.request_values import RequestValues
 from engine.time.clock import Clock
 
@@ -49,9 +50,9 @@ class RunDocking:
     costs a few rows and docks them over the next hooks. Read once a hook, so the lines and the docking agree."""
 
     def __init__(self, processes: ProcessQuery, outputs: OutputQuery, folder: OutputFolder, visibility: RunVisibility, queries: Queries, room: DockRoom, settings: ProcessSettings,
-                 spans: SpanQueries, clock: Clock, request_values: RequestValues) -> None:
+                 spans: SpanQueries, clock: Clock, request_values: RequestValues, database: Database) -> None:
         self.processes, self.outputs, self.folder, self.visibility = processes, outputs, folder, visibility
-        self.queries, self.room, self.settings, self.spans, self.clock, self.request_values = queries, room, settings, spans, clock, request_values
+        self.queries, self.room, self.settings, self.spans, self.clock, self.request_values, self.database = queries, room, settings, spans, clock, request_values, database
 
     def docked(self, event: HookEvent | None, agent_id: int) -> DockedRuns:
         firing = event.firing if event is not None else "step"
@@ -62,7 +63,7 @@ class RunDocking:
         now = self.clock.timestamp()
         dock = Interval(self.settings.seconds(ProcessSetting.DOCK_AFTER_SECONDS))
         runs = self.processes.agent(agent_id)
-        docked = tuple(runs.running().docked_runs().get())
+        docked = self.docked_runs(agent_id)
         new = tuple(runs.running().new_long_runs(now, dock.seconds).oldest().take(RUNS_CONSIDERED))
         if not docked and not new:
             return DockedRuns((), ())
@@ -74,6 +75,10 @@ class RunDocking:
         shown = [*docked, *placed]
         outputs = {output.process_id: output for output in self.outputs.matching(Among("process_id", [process.id for process in shown])).every_row(DOCK_RUNS_REASON)} if shown else {}
         return DockedRuns(tuple(self.title_nudges(shown, outputs)), tuple(AddDockItem(ProcessDockType.OUTPUT.value, process.model_name, process.id) for process in placed))
+
+    # the agent's docked runs, read once a request by the docking and by the hold on their titles
+    def docked_runs(self, agent_id: int) -> tuple[Process, ...]:
+        return self.request_values.read(f"processes.docked:{agent_id}", self.database.change_mark, lambda: tuple(self.processes.agent(agent_id).running().docked_runs().get()))
 
     def title_nudges(self, due: list[Process], outputs: dict[int, Output]) -> list[Nudge]:
         return [RunNameNudge.declared().nudge(process=process.id) for process in due if process.id in outputs and not RunTitle.is_descriptive(outputs[process.id].title, process.line)]

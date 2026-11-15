@@ -1,3 +1,6 @@
+from core.modules.processes.effects.runner_start_effect import RunnerStartEffect
+from core.modules.processes.lines.runner_missing_lines import RunnerMissingLines
+from core.modules.processes.policies.runner_sandbox_policy import RunnerSandboxPolicy
 from core.modules.processes.effects.reader_request_effect import ReaderRequestEffect
 from core.modules.processes.lines.reader_request_lines import ReaderRequestLines
 from core.modules.processes.lines.reading_lines import ReadingLines
@@ -9,7 +12,6 @@ from core.modules.processes.needs.watched_run_needs import WatchedRunNeeds
 from core.modules.processes.migrations.m085_process_claim import ProcessClaimMigration
 from core.modules.processes.commands.claim_process.claim_process_subcommand import ClaimProcessSubcommand
 from core.modules.processes.commands.claim_process.claim_process_handler import ClaimProcessHandler
-from core.modules.processes.transforms.runner_transform import RunnerTransform
 from core.modules.processes.lines.alias_suggestion_lines import AliasSuggestionLines
 from core.modules.processes.lines.ended_output_line_lines import EndedOutputLineLines
 from core.modules.processes.lines.orphan_process_lines import OrphanProcessLines
@@ -323,11 +325,10 @@ class ProcessesModule(Module):
 
     name = "journal.core.processes"
     agent_listeners = [RunEndStepListener, WatchStepListener]
-    transforms = [RunnerTransform]
     needs = [WatchedRunNeeds, LongRunDockNeeds, ReaderRequestNeeds, SilentRunBlockNeeds]
-    effects = [LeftoverRunEffect, LongRunDockEffect, OrphanProcessEffect, ReaderRequestEffect, WatchLinesEffect]
-    policies = [FolderChangePolicy, HandMadeMonitorPolicy, JournalChainPolicy, JournalPipePolicy, ReadCommandOutputPolicy, ReadingPolicy, RetryLoopPolicy, SleepPollPolicy]
-    lines = [AliasSuggestionLines, EndedOutputLineLines, OrphanProcessLines, OutputStatusMonitorLines, ReadAdviceLines, ReaderRequestLines, ReadingLines, RunQueueHaltedLines, RunTitleLines, WatchLinesLines]
+    effects = [LeftoverRunEffect, LongRunDockEffect, OrphanProcessEffect, ReaderRequestEffect, RunnerStartEffect, WatchLinesEffect]
+    policies = [FolderChangePolicy, HandMadeMonitorPolicy, JournalChainPolicy, JournalPipePolicy, ReadCommandOutputPolicy, ReadingPolicy, RetryLoopPolicy, RunnerSandboxPolicy, SleepPollPolicy]
+    lines = [AliasSuggestionLines, EndedOutputLineLines, OrphanProcessLines, OutputStatusMonitorLines, ReadAdviceLines, ReaderRequestLines, ReadingLines, RunnerMissingLines, RunQueueHaltedLines, RunTitleLines, WatchLinesLines]
     nudges = PROCESS_NUDGES
     tick_handlers = [OutputReadingTickHandler, RunSlotGrantTickHandler,
                      RunTimeoutsTickHandler, HangWatchTickHandler, CadenceWatchTickHandler, OutputChecksTickHandler,

@@ -1,5 +1,5 @@
 import json
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 
 from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.contracts.effect import Effect
@@ -66,13 +66,15 @@ class StoredStepWriter(StepWriter):
         self.open_blocks(record.blocks_opened, view, record, context)
         self.close_blocks(record.blocks_closed, context)
         self.save_escalation(view, record, context)
-        failures = self.run_effects(record.unconditional_effects, view, record, False, context)
+        failures, _ = self.run_effects(record.unconditional_effects, view, record, False, context)
+        updated_input = None
         if record.decision.admits():
             self.spend_grants(record, context)
-            failures += self.run_effects(record.admission_effects, view, record, True, context)
+            admitted, updated_input = self.run_effects(record.admission_effects, view, record, True, context)
+            failures += admitted
         self.queue_waiting_lines(view, record, context)
         self.save_wake(view, record.wake, context)
-        return StepCommit.saved(hook_call_id, tuple(failures))
+        return StepCommit.saved(hook_call_id, tuple(failures), updated_input)
 
     # a line the program cannot carry at this event waits in today's line queue for the agent's next event that can
     def queue_waiting_lines(self, view: AgentView, record: DecisionRecord, context: Context) -> None:
@@ -148,18 +150,22 @@ class StoredStepWriter(StepWriter):
             if block.escalation_id != escalation_id:
                 self.repository.save(block.changed(escalation_id=escalation_id), context)
 
-    def run_effects(self, effects: Sequence[Effect], view: AgentView, record: DecisionRecord, is_admission: bool, context: Context) -> list[str]:
-        failures = []
+    # the lines of the effects that failed, and the tool input the first effect that gives one runs the action with
+    def run_effects(self, effects: Sequence[Effect], view: AgentView, record: DecisionRecord, is_admission: bool, context: Context) -> tuple[list[str], Mapping[str, object] | None]:
+        failures: list[str] = []
+        updated_input: Mapping[str, object] | None = None
         for effect in effects:
+            results: list[object] = []
             for command in effect.commands(view, record):
                 try:
                     with self.database.savepoint(type(command).__name__):
-                        self.bus.dispatch(command, context.nested(command))
+                        results.append(self.bus.dispatch(command, context.nested(command)))
                 except Refusal as refusal:
                     if is_admission and effect.is_required:
                         raise RequiredEffectError(f"{type(effect).__name__} failed: {refusal}") from refusal
                     failures.append(f"the journal could not run {type(command).__name__}: {refusal}")
-        return failures
+            updated_input = updated_input or effect.input_after(view, record, results)
+        return failures, updated_input
 
     def save_wake(self, view: AgentView, wake: WakeChange, context: Context) -> None:
         if wake.wake_move is WakeMove.UNCHANGED:

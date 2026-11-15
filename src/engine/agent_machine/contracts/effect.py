@@ -1,6 +1,6 @@
 from engine.agent.enums.role_group import RoleGroup
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING, ClassVar
 
 from engine.agent_machine.agent_view import AgentView
@@ -33,6 +33,11 @@ class Effect(ABC):
 
     @abstractmethod
     def commands(self, view: AgentView, record: DecisionRecord) -> Sequence[Command[object]]: ...
+
+    # the tool input the action is run with once this effect's commands gave their results, such as a line wrapped in
+    # the runner with the process its command made; none leaves the input as the transforms left it
+    def input_after(self, view: AgentView, record: DecisionRecord, results: Sequence[object]) -> Mapping[str, object] | None:
+        return None
 
     # what a required effect answers once its save failed and was rolled back, in a fresh write: by default the stop or
     # action is refused with its failure line

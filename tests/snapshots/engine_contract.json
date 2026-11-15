@@ -379,6 +379,7 @@
       ],
       "methods": [
         "commands(self, view: AgentView, record: DecisionRecord) -> Sequence[Command[object]]",
+        "input_after(self, view: AgentView, record: DecisionRecord, results: Sequence[object]) -> Mapping[str, object] | None",
         "failed(self, view: AgentView, record: 'DecisionRecord') -> RuleAnswer"
       ]
     },
@@ -1310,10 +1311,11 @@
       "fields": [
         "is_saved: bool",
         "hook_call_id: int | None",
-        "failures: tuple[str, ...]"
+        "failures: tuple[str, ...]",
+        "updated_input: Mapping[str, object] | None"
       ],
       "methods": [
-        "saved(cls, hook_call_id: int | None, failures: tuple[str, ...]) -> 'StepCommit'",
+        "saved(cls, hook_call_id: int | None, failures: tuple[str, ...], updated_input: Mapping[str, object] | None) -> 'StepCommit'",
         "conflict(cls) -> 'StepCommit'"
       ]
     },
