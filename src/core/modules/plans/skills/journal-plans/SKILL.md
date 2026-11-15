@@ -42,6 +42,17 @@ and then it is followed.
   read files through its returned `--message M --attachment "name"` command. These reads do not select a request.
   The first task's overview inherits its plan context; approval, checkpoints and task order still apply.
 
+## Working a plan
+
+Whoever works a plan, the main agent or a worker, works it phase by phase in one go:
+
+- Work a phase whole: write the code of every task in it, one after another, and run barely any tests in between,
+  preferably none. A test run between two tasks of a phase costs more than it finds.
+- At the end of the phase, before closing it, run the tests written or touched for that phase, together, once; fix what
+  they find and run only what failed again.
+- Run the full suite only at a checkpoint that asks for it, never between phases and never in a loop.
+- Go straight on to the next phase: do not stop between phases or tasks to report or to ask whether to go on.
+
 ## How its tasks are handed out
 
 Every agent has a plan focus of its own: the plan it works on first. With none named, the focus is the oldest started
