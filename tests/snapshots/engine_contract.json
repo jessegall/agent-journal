@@ -742,7 +742,8 @@
         "text: str",
         "category: LineCategory",
         "interval_key: str",
-        "carrier: LineCarrier"
+        "carrier: LineCarrier",
+        "source_key: str"
       ],
       "methods": []
     },

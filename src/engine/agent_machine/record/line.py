@@ -14,3 +14,5 @@ class Line:
     category: LineCategory
     interval_key: str
     carrier: LineCarrier
+    # the old rule the source that gave it answers for, whose history records when it last spoke
+    source_key: str = ""

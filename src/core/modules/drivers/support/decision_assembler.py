@@ -1,5 +1,6 @@
 from dataclasses import replace
 
+from engine.agent_machine.record.line import Line
 from engine.actor.actor import Actor
 from engine.agent_machine.decision_record import DecisionRecord
 from engine.agent_machine.record.question import Question
@@ -67,14 +68,26 @@ class DecisionAssembler:
 
     def merged(self, answers: RuleAnswers, record: DecisionRecord, new_commands: list[Command[object]]) -> RuleAnswers:
         old_lines = {nudge.text for rule in answers.answered if rule.answer is not None for nudge in rule.answer.nudges}
-        nudges = tuple(Nudge(line.key, NudgeType.STEERING if line.category is LineCategory.STEERING else NudgeType.NOTICE, line.text)
-                       for line in record.lines if line.text not in old_lines)
+        new_lines = [line for line in record.lines if line.text not in old_lines]
         is_new_refusal = record.decision.decision_class is not DecisionClass.ALLOW and record.shown_reason.rank != WALK_RANK
         rules = [self.without_commands(rule, new_commands) for rule in answers.rules]
-        if not nudges and not is_new_refusal:
+        if not new_lines and not is_new_refusal:
             return replace(answers, rules=rules)
-        answer = RuleAnswer(refusal=record.shown_reason.text if is_new_refusal else "", nudges=nudges, refusal_priority=NEW_REFUSAL_PRIORITY)
-        return replace(answers, rules=[RuleRecord(record.shown_reason.key or NEW_DRIVER_LAYER, NEW_DRIVER_LAYER, answer.outcome, answer), *rules])
+        refusal = RuleAnswer(refusal=record.shown_reason.text if is_new_refusal else "", refusal_priority=NEW_REFUSAL_PRIORITY)
+        refusals = [RuleRecord(record.shown_reason.key or NEW_DRIVER_LAYER, NEW_DRIVER_LAYER, refusal.outcome, refusal)] if is_new_refusal else []
+        return replace(answers, rules=[*refusals, *DecisionAssembler.line_records(new_lines), *rules])
+
+    # one record of lines for each old rule a source answers for, under its name and no layer, so the rule history
+    # notes when that rule last spoke as the old walk noted it; lines of a source that answers for no rule share one
+    @staticmethod
+    def line_records(lines: list[Line]) -> list[RuleRecord]:
+        sources = list(dict.fromkeys(line.source_key for line in lines))
+        records = []
+        for source in sources:
+            answer = RuleAnswer(nudges=tuple(Nudge(line.key, NudgeType.STEERING if line.category is LineCategory.STEERING else NudgeType.NOTICE, line.text)
+                                             for line in lines if line.source_key == source))
+            records.append(RuleRecord(source or NEW_DRIVER_LAYER, "" if source else NEW_DRIVER_LAYER, answer.outcome, answer))
+        return records
 
     @staticmethod
     def without_commands(rule: RuleRecord, new_commands: list[Command[object]]) -> RuleRecord:
