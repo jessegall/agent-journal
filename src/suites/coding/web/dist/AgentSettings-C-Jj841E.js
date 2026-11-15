@@ -1,7 +1,7 @@
 import { openBlock as n, createElementBlock as c, createElementVNode as u, Fragment as M, renderList as D, createBlock as L, unref as l, createVNode as C, withModifiers as _e, withCtx as B, createTextVNode as X, ref as E, computed as y, onMounted as ne, toDisplayString as k, createCommentVNode as _, normalizeClass as Q, watch as ce, withDirectives as oe, vModelSelect as xe, vModelText as pe, nextTick as Ne, renderSlot as Ee, onBeforeUnmount as Ie } from "vue";
 import { TextInput as Be, Btn as ee, useWindow as J, useNow as je, agentTitle as Pe, age as Le, agentNumber as qe, TabBody as Fe, SwitchCase as $e, WindowRoom as Me, InnerTabs as Ve } from "@journal/window-kit";
 import { SettingPresetCard as ge, SettingPresetCompareTable as Ue, SettingEmptyState as We, isFull as fe, SettingBackPath as De, SettingPerTypeOverrideRow as me, SettingsScreen as Se, SettingRow as ye, SettingEntryList as He, SettingThreeWayCap as Ke, SettingBanner as Ge, SettingHelperTypeTable as ze, sectionsOf as Ye, SettingSectionList as Xe, useSettingsDraft as Je, currentPreset as Ze, SettingPresetBand as Qe, FindBox as et, ChangeFoot as tt } from "@journal/setting-components";
-import { _ as H } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
+import { _ as H } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const nt = {
   class: "page",
   "data-agent-settings-presets": ""
@@ -44,7 +44,7 @@ const nt = {
       ])
     ]));
   }
-}, it = /* @__PURE__ */ H(rt, [["__scopeId", "data-v-0d0e399d"]]), ut = { class: "action-buttons" }, dt = {
+}, it = /* @__PURE__ */ H(rt, [["__scopeId", "data-v-cf40939d"]]), ut = { class: "action-buttons" }, dt = {
   __name: "AgentRetireForm",
   props: { reason: String, pending: Boolean },
   emits: ["submit", "cancel", "update:reason"],
@@ -86,7 +86,7 @@ const nt = {
       ])
     ], 32));
   }
-}, ct = /* @__PURE__ */ H(dt, [["__scopeId", "data-v-818a34c9"]]), vt = {
+}, ct = /* @__PURE__ */ H(dt, [["__scopeId", "data-v-92de7dd6"]]), vt = {
   class: "type-agents",
   "data-type-agents": ""
 }, pt = { class: "models" }, gt = ["data-count-agent"], ft = { class: "person-text" }, mt = {
@@ -191,7 +191,7 @@ const nt = {
       h.value ? (n(), c("p", mt, k(h.value), 1)) : T.value ? (n(), c("p", yt, k(T.value), 1)) : _("", !0)
     ]));
   }
-}, ht = /* @__PURE__ */ H(kt, [["__scopeId", "data-v-77081f39"]]), Y = "journal.core.helpers", bt = `${Y}.context-limit-on`, ve = `${Y}.context-limit-tokens`, Oe = `${Y}.context-limit-kinds`, te = `${Y}.context-limit-profiles`, le = `${Y}.read-only-helper-profile-limits`, wt = `${Y}.read-only-helper-run-limit`, _t = `${Y}.read-only-helper-kept-limit`, re = "journal.suites.coding.workers.merge-hooks", $t = "none", Ce = (t) => `${t / 1e3}k`, Ae = (t) => {
+}, ht = /* @__PURE__ */ H(kt, [["__scopeId", "data-v-67f17bfa"]]), Y = "journal.core.helpers", bt = `${Y}.context-limit-on`, ve = `${Y}.context-limit-tokens`, Oe = `${Y}.context-limit-kinds`, te = `${Y}.context-limit-profiles`, le = `${Y}.read-only-helper-profile-limits`, wt = `${Y}.read-only-helper-run-limit`, _t = `${Y}.read-only-helper-kept-limit`, re = "journal.suites.coding.workers.merge-hooks", $t = "none", Ce = (t) => `${t / 1e3}k`, Ae = (t) => {
   const r = t.lastIndexOf(":");
   return { name: t.slice(0, r).trim(), value: t.slice(r + 1).trim() };
 }, Te = (t) => {
@@ -345,7 +345,7 @@ const xt = {
       ])
     ]));
   }
-}, Pt = /* @__PURE__ */ H(jt, [["__scopeId", "data-v-58b75fb2"]]), Lt = {
+}, Pt = /* @__PURE__ */ H(jt, [["__scopeId", "data-v-e1a5e7a3"]]), Lt = {
   class: "agents",
   "data-agent-settings-agents": ""
 }, qt = {
@@ -376,7 +376,7 @@ const xt = {
       }, null, 8, ["rows"]))
     ]));
   }
-}, Ft = /* @__PURE__ */ H(qt, [["__scopeId", "data-v-c7e6716c"]]), Mt = {
+}, Ft = /* @__PURE__ */ H(qt, [["__scopeId", "data-v-05cc036a"]]), Mt = {
   class: "activity",
   "data-assign-activity": ""
 }, Vt = {
@@ -392,7 +392,7 @@ const xt = {
       t.activity.last_skip ? (n(), c("span", Vt, "Last skipped: " + k(t.activity.last_skip), 1)) : _("", !0)
     ], 64));
   }
-}, Wt = /* @__PURE__ */ H(Ut, [["__scopeId", "data-v-130ec465"]]), Dt = {
+}, Wt = /* @__PURE__ */ H(Ut, [["__scopeId", "data-v-51520c3a"]]), Dt = {
   class: "changes",
   "data-assign-task-change": ""
 }, Ht = ["title", "data-assign-change", "onClick"], Kt = {
@@ -449,7 +449,7 @@ const xt = {
       ])) : _("", !0)
     ], 64));
   }
-}, Xt = /* @__PURE__ */ H(Yt, [["__scopeId", "data-v-3666f39e"]]), Jt = {
+}, Xt = /* @__PURE__ */ H(Yt, [["__scopeId", "data-v-a0c23201"]]), Jt = {
   class: "assign",
   "data-agent-settings-assign": ""
 }, Zt = {
@@ -702,7 +702,7 @@ const xt = {
       ]);
     };
   }
-}, Nn = /* @__PURE__ */ H(xn, [["__scopeId", "data-v-1a948275"]]), En = { class: "screen" }, In = { class: "rail" }, Bn = {
+}, Nn = /* @__PURE__ */ H(xn, [["__scopeId", "data-v-7f403ea3"]]), En = { class: "screen" }, In = { class: "rail" }, Bn = {
   __name: "AgentSettingsScreen",
   props: { nodes: { type: Array, required: !0 }, draft: { type: Object, required: !0 }, readOnly: { type: Boolean, default: !1 }, extras: { type: Object, default: () => ({}) }, found: { type: String, default: "" } },
   setup(t) {
@@ -739,7 +739,7 @@ const xt = {
       ], 512)
     ]));
   }
-}, ue = /* @__PURE__ */ H(Bn, [["__scopeId", "data-v-ab3a8dd5"]]), jn = {
+}, ue = /* @__PURE__ */ H(Bn, [["__scopeId", "data-v-1cab27ca"]]), jn = {
   key: 0,
   class: "hint",
   "data-work-hint": ""
@@ -933,7 +933,7 @@ const xt = {
       _: 1
     }));
   }
-}, Xn = /* @__PURE__ */ H(Hn, [["__scopeId", "data-v-98c86e91"]]);
+}, Xn = /* @__PURE__ */ H(Hn, [["__scopeId", "data-v-edbec32a"]]);
 export {
   Xn as A
 };

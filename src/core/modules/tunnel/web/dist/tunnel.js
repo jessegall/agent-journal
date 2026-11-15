@@ -1,4 +1,4 @@
-if (!document.getElementById("window-styles-cbcaa7840498")) { const style = document.createElement("style"); style.id = "window-styles-cbcaa7840498"; style.textContent = ".tunnel[data-v-85cbdd28]{display:flex;flex-direction:column;gap:6px}.tunnel-state[data-v-85cbdd28]{margin:0;font-weight:500}.tunnel-address[data-v-85cbdd28]{margin:0;color:var(--text-2);overflow-wrap:anywhere}.tunnel-reason[data-v-85cbdd28]{margin:0;color:var(--text-3);font-size:12.5px}.tunnel-failure[data-v-85cbdd28]{margin:0;color:var(--danger);font-size:12.5px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-4e368db8e266")) { const style = document.createElement("style"); style.id = "window-styles-4e368db8e266"; style.textContent = ".tunnel[data-v-7dc45bef]{display:flex;flex-direction:column;gap:6px}.tunnel-state[data-v-7dc45bef]{margin:0;font-weight:500}.tunnel-address[data-v-7dc45bef]{margin:0;color:var(--text-2);overflow-wrap:anywhere}.tunnel-reason[data-v-7dc45bef]{margin:0;color:var(--text-3);font-size:12.5px}.tunnel-failure[data-v-7dc45bef]{margin:0;color:var(--danger);font-size:12.5px}\n"; document.head.appendChild(style); }
 import { openBlock as n, createBlock as l, unref as e, withCtx as i, createElementVNode as u, createElementBlock as a, toDisplayString as c, Fragment as p, createCommentVNode as _ } from "vue";
 import { useWindow as m, WindowRoom as f, Skeleton as k } from "@journal/window-kit";
 const h = (r, d) => {
@@ -44,7 +44,7 @@ const h = (r, d) => {
       _: 1
     }));
   }
-}, S = /* @__PURE__ */ h(W, [["__scopeId", "data-v-85cbdd28"]]);
+}, S = /* @__PURE__ */ h(W, [["__scopeId", "data-v-7dc45bef"]]);
 export {
   S as default
 };

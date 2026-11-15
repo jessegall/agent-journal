@@ -1,6 +1,6 @@
-import { computed as u, ref as f, watch as x, openBlock as l, createBlock as B, unref as c, withCtx as v, createElementVNode as d, createElementBlock as n, createCommentVNode as k, Fragment as C, renderList as M, createTextVNode as _, toDisplayString as b, withModifiers as N, createVNode as h } from "vue";
+import { computed as u, ref as p, watch as x, openBlock as l, createBlock as B, unref as c, withCtx as v, createElementVNode as s, createElementBlock as n, createCommentVNode as k, Fragment as C, renderList as M, createTextVNode as _, toDisplayString as b, withModifiers as N, createVNode as h } from "vue";
 import { useWindow as S, eventMayBeChildOf as A, InspectorPart as F, TextInput as I, Btn as T } from "@journal/window-kit";
-import { _ as $ } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
+import { _ as $ } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const E = {
   class: "memory-facts",
   "data-memory-keywords": ""
@@ -15,35 +15,35 @@ const E = {
   __name: "MemoryFacts",
   props: { row: { type: Object, default: null } },
   setup(V) {
-    const o = S(), y = V, m = y.row ? u(() => y.row) : o.option("row"), s = u(() => `keywords.${m.value.id}`), w = u(() => o.props[s.value].rows.value), r = f(""), i = f("");
-    async function p(t) {
+    const o = S(), y = V, m = y.row ? u(() => y.row) : o.option("row"), d = u(() => `keywords.${m.value.id}`), w = u(() => o.props[d.value].rows.value), r = p(""), i = p("");
+    async function f(t) {
       const e = await o.run(t);
-      return i.value = e.ok ? "" : e.error, e.ok && o.reload(s.value), e.ok;
+      return i.value = e.ok ? "" : e.error, e.ok && o.reload(d.value), e.ok;
     }
     async function g() {
-      r.value.trim() && await p(["memory-keyword", "make", String(m.value.id), r.value.trim()]) && (r.value = "");
+      r.value.trim() && await f(["memory-keyword", "make", String(m.value.id), r.value.trim()]) && (r.value = "");
     }
-    return x(s, (t) => o.reload(t), { immediate: !0 }), o.follow(["memory_keyword.*"], (t) => A(t, "memory_id", /* @__PURE__ */ new Set([m.value.id])) && o.reload(s.value)), (t, e) => (l(), B(c(F), { title: "Keywords" }, {
+    return x(d, (t) => o.reload(t), { immediate: !0 }), o.follow(["memory_keyword.*"], (t) => A(t, "memory_id", /* @__PURE__ */ new Set([m.value.id])) && o.reload(d.value)), (t, e) => (l(), B(c(F), { title: "Keywords" }, {
       default: v(() => [
-        d("section", E, [
+        s("section", E, [
           w.value.length ? k("", !0) : (l(), n("p", O, "No keywords: this memory comes back only as the conversation fills up.")),
-          d("div", j, [
+          s("div", j, [
             (l(!0), n(C, null, M(w.value, (a) => (l(), n("span", {
               key: a.id,
               class: "memory-word",
               "data-memory-word": ""
             }, [
               _(b(a.word), 1),
-              d("button", {
+              s("button", {
                 type: "button",
                 class: "memory-word-off",
                 "aria-label": `Take off ${a.word}`,
                 "data-memory-word-off": "",
-                onClick: (P) => p(["memory-keyword", "delete", String(a.id)])
+                onClick: (P) => f(["memory-keyword", "delete", String(a.id)])
               }, "×", 8, D)
             ]))), 128))
           ]),
-          d("form", {
+          s("form", {
             class: "memory-add",
             "data-memory-word-form": "",
             onSubmit: N(g, ["prevent"])
@@ -72,7 +72,7 @@ const E = {
       _: 1
     }));
   }
-}, z = /* @__PURE__ */ $(L, [["__scopeId", "data-v-98663dc6"]]);
+}, z = /* @__PURE__ */ $(L, [["__scopeId", "data-v-09dd9f4c"]]);
 export {
   z as M
 };

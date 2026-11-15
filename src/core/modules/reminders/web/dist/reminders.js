@@ -1,4 +1,4 @@
-if (!document.getElementById("window-styles-c089d0289482")) { const style = document.createElement("style"); style.id = "window-styles-c089d0289482"; style.textContent = ".rule[data-v-83e2ad8b]{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.holds[data-v-83e2ad8b]{flex:none;padding:0 6px;border:1px solid var(--warn);border-radius:999px;color:var(--warn);font-size:11px}.agent[data-v-83e2ad8b]{flex:none;margin-left:auto}.next[data-v-60675398]{color:var(--text-3);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}.failure[data-v-60675398]{margin:0;padding:6px var(--inset);color:var(--bad, var(--text-2));font-size:12px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-8a7a0c38af18")) { const style = document.createElement("style"); style.id = "window-styles-8a7a0c38af18"; style.textContent = ".rule[data-v-7aae2810]{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.holds[data-v-7aae2810]{flex:none;padding:0 6px;border:1px solid var(--warn);border-radius:999px;color:var(--warn);font-size:11px}.agent[data-v-7aae2810]{flex:none;margin-left:auto}.next[data-v-fc28fe47]{color:var(--text-3);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}.failure[data-v-fc28fe47]{margin:0;padding:6px var(--inset);color:var(--bad, var(--text-2));font-size:12px}\n"; document.head.appendChild(style); }
 import { openBlock as d, createElementBlock as h, Fragment as T, createElementVNode as C, toDisplayString as w, unref as n, createCommentVNode as N, createVNode as u, computed as _, createBlock as f, withCtx as l, ref as p, createTextVNode as S } from "vue";
 import { optionsOf as M, AgentBadge as L, Reader as q, useWindow as P, defaultFilter as G, applyFilter as K, ListReaderLayout as J, Skeleton as Y, PageHeader as z, Btn as Q, FilterBar as X, CreateDialog as Z, copying as ee, short as te, deleteItem as ne, removed as re, added as se } from "@journal/window-kit";
 const ae = 60, D = 3600, oe = [["minutes", "Minutes"], ["tool_uses", "Tool uses"], ["tasks", "Closed tasks"], ["once", "Once"]];
@@ -63,7 +63,7 @@ const k = "main agent", ce = (e) => [
       }, null, 8, ["name"])
     ], 64));
   }
-}, fe = /* @__PURE__ */ H(_e, [["__scopeId", "data-v-83e2ad8b"]]), he = {
+}, fe = /* @__PURE__ */ H(_e, [["__scopeId", "data-v-7aae2810"]]), he = {
   __name: "ReminderReader",
   props: { row: { type: Object, required: !0 } },
   setup(e) {
@@ -216,7 +216,7 @@ const we = (e) => `journal ${j(e).map((t) => /\s/.test(t) ? JSON.stringify(t) : 
       _: 1
     }, 8, ["chosen", "items"]));
   }
-}, De = /* @__PURE__ */ H($e, [["__scopeId", "data-v-60675398"]]);
+}, De = /* @__PURE__ */ H($e, [["__scopeId", "data-v-fc28fe47"]]);
 export {
   De as default
 };
