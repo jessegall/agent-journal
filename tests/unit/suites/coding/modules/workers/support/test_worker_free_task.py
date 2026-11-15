@@ -59,12 +59,12 @@ class Bus:
         self.commands.append(command)
 
 
-def given(tasks: Tasks, committed: tuple[SimpleNamespace, ...] = ()) -> list[int]:
+def given(tasks: Tasks, handed_in_ids: tuple[int, ...] = ()) -> list[int]:
     bus = Bus()
     rows = SimpleNamespace(required=lambda model, row_id: SimpleNamespace(id=row_id, ended_at=None))
     places = SimpleNamespace(running=lambda: [], run_limit=lambda: 2)
     plans = SimpleNamespace(plan_exclusion=lambda: None)
-    WorkerFreeTask(tasks, plans, bus, rows, places).give_next(WORKER, committed, Asker())
+    WorkerFreeTask(tasks, plans, bus, rows, places).give_next(WORKER, handed_in_ids, Asker())
     return [command.task_id for command in bus.commands]
 
 
@@ -80,4 +80,4 @@ def test_a_worker_that_still_has_a_task_is_given_none(tasks):
 
 def test_the_task_the_commit_just_sent_to_its_tests_does_not_hold_the_free_task_back():
     committed = SimpleNamespace(id=3, state=TaskState.TESTING)
-    assert given(Tasks(testing=[committed]), (committed,)) == [FREE_TASK.id]
+    assert given(Tasks(testing=[committed]), (committed.id,)) == [FREE_TASK.id]

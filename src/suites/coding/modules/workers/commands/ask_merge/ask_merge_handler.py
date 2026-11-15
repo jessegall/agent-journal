@@ -14,18 +14,23 @@ from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import W
 from suites.coding.modules.workers.models.merge_ask import MergeAsk
 from suites.coding.modules.workers.support.merge_ask_outcome import MergeAskOutcome
 from suites.coding.modules.workers.support.merge_ask_scope import MergeAskScope
+from suites.coding.modules.workers.support.worker_free_task import WorkerFreeTask
 
 
 class AskMergeHandler(Handler[AskMerge, MergeAskOutcome]):
     """Records a worker's ask for the merge of its whole unit after the checks of MergeAskScope, and delivers
-    its worktree ready for the merge, which starts the merger; an ask up to a task or commit leaves the
-    worktree open and waits for the merger's next visit; with the merger off the main agent hears of it."""
+    its worktree ready for the merge, which starts the merger. Just before, while the worktree is still cut so
+    the task is not sent at once, it gives the worker the next free task it may take once the merge is done;
+    the ask names its tasks before that, so the free task is never part of it.
+    An ask up to a task or commit leaves the worktree open and waits for the merger's next visit; with the
+    merger off the main agent hears of it."""
 
     command = AskMerge
     disabled_scopes = [ActorScope]
 
-    def __init__(self, scope: MergeAskScope, repository: Repository, settings: SettingValues, main_line: MainAgentLine, numbers: RowNumbers) -> None:
+    def __init__(self, scope: MergeAskScope, repository: Repository, settings: SettingValues, main_line: MainAgentLine, numbers: RowNumbers, free_task: WorkerFreeTask) -> None:
         self.scope, self.repository, self.settings, self.main_line, self.numbers = scope, repository, settings, main_line, numbers
+        self.free_task = free_task
 
     def check_rows(self, command: AskMerge, actor: Actor) -> None:
         self.scope.checked(command.worker_id, command.note, command.last_task)
@@ -37,6 +42,7 @@ class AskMergeHandler(Handler[AskMerge, MergeAskOutcome]):
                                                   note=command.note, is_full=part.is_full), context)
         worktree = part.worktree
         if part.is_full:
+            self.free_task.give_next(command.worker_id, part.task_ids, context)
             worktree = self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.deliver, delivered_at=context.timestamp, merge_ready_at=context.timestamp), context)
         if not self.settings.flag(MERGER_ENABLED):
             worker = self.numbers.number(AGENT_MODEL_NAME, command.worker_id)
