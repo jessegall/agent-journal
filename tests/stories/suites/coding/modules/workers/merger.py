@@ -57,6 +57,8 @@ from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 from suites.coding.support.shipped_profiles import PLANNER_PROFILE
 from suites.coding.modules.workers.support.worker_settings import MERGER_COMMANDS
+from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE, commit_tasks_singly
+from tests.stories.suites.coding.modules.workers.support.phase_steps import unplanned_group_worker
 
 
 
@@ -230,6 +232,28 @@ def test_a_worker_sent_one_task_given_the_next_free_task_on_its_commit_waits_for
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_text(f"merger merge --wait {agent_number(story, worker.id)}", f"{agent_label(story, worker.id)} merged into", actor=actor)
     story.expect_text("merger next", "no worker waits", actor=actor)
+
+
+def test_a_unit_committed_whole_gets_the_free_task_only_on_its_ask_and_reaches_the_merger_without_it(new_story):
+    worker = unplanned_group_worker(new_story)
+    story = worker.story
+    number = agent_number(story, worker.worker.id)
+    free_task = story.new_row_id('task make "Check rounding" --brief "Check the rounding" --complexity 1 --environment main', actor=story.agent)
+    for task_id in (1, 2, 3):
+        commit_tasks_singly(worker, tuple([task_id]))
+        worker.end_test(worker.started[-1])
+    given = f'"helper_name": "Worker {number}"'
+    story.expect_rows(given not in story.run(f"task inspect {free_task} --json", actor=story.agent).output_text)
+    with running_launcher(story):
+        story.expect_success(REQUEST_MERGE, actor=worker.worker)
+        story.run_listeners()
+    story.expect_text("merge-ask show 1 --environment main", "unit_name: tasks 1, 2, 3", "task_ids: 1,2,3", actor=story.agent)
+    story.expect_text(f"task inspect {free_task} --json", given, actor=story.agent)
+    actor = Actor(merger_agent(story).id, ActorType.AGENT)
+    story.expect_text("merger next", agent_label(story, worker.worker.id), "merge-ask 1", actor=actor)
+    worker.repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_text(f"merger merge --wait {number}", f"{agent_label(story, worker.worker.id)} merged into", actor=actor)
+    story.expect_text(f"task show {free_task}", "state: started", actor=story.agent)
 
 
 def test_the_merger_and_a_worker_message_each_other_but_two_workers_do_not(new_story):
