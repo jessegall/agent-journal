@@ -43,3 +43,11 @@ def test_the_setting_switched_on_for_the_environment_alone_accepts_a_request_at_
     story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
     story.expect_text(f"agent resume {agent_number(story, story.agent.id)} --reason needed", "the setting Accept every approval accepted approval", actor=story.agent)
     story.expect_rows(requests(story)[0].state is ApprovalState.ACCEPTED, story.row(Agent, story.agent.id).paused_at is None)
+
+
+def test_with_the_setting_on_a_rule_an_agent_proposes_is_approved_once_its_request_is_saved(new_story):
+    story = new_story(NOTES, fixture=EveryApprovalAccepted)
+    story.expect_success('rule make "Name things plainly"', actor=story.agent)
+    story.run_listeners()
+    story.expect_text("rule show 1", "state: active", actor=story.agent)
+    story.expect_rows([request.state for request in requests(story)] == [ApprovalState.ACCEPTED])

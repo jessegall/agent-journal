@@ -32,6 +32,7 @@ from core.modules.approvals.guards.standing_approval_guard import StandingApprov
 from core.modules.approvals.commands.make_standing_approval.make_standing_approval_handler import MakeStandingApprovalHandler
 from core.modules.approvals.commands.accept_covered_approval.accept_covered_approval_handler import AcceptCoveredApprovalHandler
 from core.modules.approvals.listeners.standing_approval_accept_listener import StandingApprovalAcceptListener
+from core.modules.approvals.listeners.every_approval_accept_listener import EveryApprovalAcceptListener
 from core.modules.approvals.listeners.standing_approval_dock_listener import StandingApprovalDockListener
 from core.modules.approvals.listeners.standing_approval_mark_listener import StandingApprovalMarkListener
 from core.modules.approvals.marks.approval_standing_mark import ApprovalStandingMark
@@ -57,7 +58,7 @@ class ApprovalsModule(Module):
     handlers = [AcceptCoveredApprovalHandler, MakeStandingApprovalHandler, CheckApprovalWorksHandler, RequestUserApprovalHandler, MoveApprovalHandler, AnswerApprovalHandler, CloseUserApprovalHandler, RelayApprovalHandler, AnswerAgentApprovalHandler, RecoverApprovalsHandler]
     tick_handlers = [RecoverApprovalsTickHandler]
     subcommands = [AcceptApprovalSubcommand, DenyApprovalSubcommand, PendingApprovalsSubcommand, RelayApprovalSubcommand, AnswerAgentApprovalSubcommand]
-    listeners = [StandingApprovalDockListener, StandingApprovalAcceptListener, StandingApprovalMarkListener, ApprovalDockListener, ApprovalNoticeListener, PendingApprovalDockListener]
+    listeners = [StandingApprovalDockListener, StandingApprovalAcceptListener, EveryApprovalAcceptListener, StandingApprovalMarkListener, ApprovalDockListener, ApprovalNoticeListener, PendingApprovalDockListener]
     guards = [ApprovalDecisionGuard, StandingApprovalGuard]
     marks = [ApprovalStandingMark]
     nudges = [ApprovalPendingNudge, ApprovalDecidedNudge, ApprovalFailedNudge, ApprovalReviewNudge]
