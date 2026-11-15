@@ -163,10 +163,10 @@ src/core/modules/processes/needs/watched_run_needs.py:the open watches of the ag
 src/core/modules/processes/queries/output_query.py:the output of every process asked about is read
 src/core/modules/processes/queries/process_part_query.py:a run is judged by all of its parts, and one shell line may have more than fifty
 src/core/modules/processes/queries/reader_request_query.py:the open reader requests are read once and kept until one completes
-src/core/modules/processes/rules/ended_output_line_rule.py:the agent is told of every run of its that ended since the last answer
-src/core/modules/processes/rules/leftover_run_rule.py:every run the agent left running when it stopped is orphaned
-src/core/modules/processes/rules/long_run_dock_rule.py:every long run the dock considers is read with its parts and output
-src/core/modules/processes/rules/orphan_process_rule.py:every run the agent started and still has running is checked for an orphan
+src/core/modules/processes/lines/ended_output_line_lines.py:the agent is told of every run of its that ended since the last answer
+src/core/modules/processes/effects/leftover_run_effect.py:every run the agent left running when it stopped is orphaned
+src/core/modules/processes/support/run_docking.py:every long run the dock considers is read with its parts and output
+src/core/modules/processes/support/orphan_check.py:every run the agent started and still has running is checked for an orphan
 src/core/modules/processes/support/active_output_readers.py:a new reader is offered to every running output that has none
 src/core/modules/processes/support/block_conditions/output_monitored.py:every monitor call since the run began may still be watching it
 src/core/modules/processes/support/blocked_runs.py:every old running run of the agent is checked for the silence that holds it

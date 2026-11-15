@@ -1,10 +1,11 @@
+from engine.request.request_values import RequestValues
 import re
 
-from engine.driver.agent_hook import AgentHook
+from engine.driver.hook_event import HookEvent
 from engine.driver.nudge import Nudge
 from engine.driver.part import Part
 from engine.driver.shell_line import ShellLine
-from engine.driver.rule_answer import RuleAnswer
+from core.modules.processes.support.reading.reading_answer import ReadingAnswer
 from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from core.modules.processes.queries.reading_decision_query import ReadingDecisionQuery
 from core.modules.processes.support.decisions.command_run_counts import CommandRunCounts
@@ -40,22 +41,28 @@ class ReadingEnforcer:
     its next start with every exit stated. A command marked unreadable is asked nothing, and a
     command that takes an exit always passes."""
 
-    def __init__(self, runs: SilentStartRuns, folder: OutputFolder, readers: ReaderRows, marks: UnreadableMarkRegistry, run_counts: CommandRunCounts, decisions: ReadingDecisionQuery) -> None:
+    def __init__(self, runs: SilentStartRuns, folder: OutputFolder, readers: ReaderRows, marks: UnreadableMarkRegistry, run_counts: CommandRunCounts, decisions: ReadingDecisionQuery,
+                 request_values: RequestValues) -> None:
         self.runs, self.folder, self.readers, self.marks, self.run_counts, self.decisions = runs, folder, readers, marks, run_counts, decisions
+        self.request_values = request_values
 
-    def answer(self, hook: AgentHook) -> RuleAnswer:
-        shell = hook.event.tool.shell if hook.event.tool is not None else None
-        if shell is None or shell.parse_error or ReadingEnforcer.is_exit_command(hook):
-            return RuleAnswer.allowed()
+    # read once a hook, so the refusal and the lines that come with it agree
+    def answer(self, event: HookEvent) -> ReadingAnswer:
+        return self.request_values.read(f"processes.reading:{event.firing}", lambda: event.firing, lambda: self.found(event))
+
+    def found(self, event: HookEvent) -> ReadingAnswer:
+        shell = event.tool.shell if event.tool is not None else None
+        if shell is None or shell.parse_error or ReadingEnforcer.is_exit_command(event):
+            return ReadingAnswer()
         redirected = list(dict.fromkeys(part.program for part in shell.parts if self.is_redirected(part, shell)))
         if redirected:
-            return RuleAnswer.refused(RedirectedRunNudge.declared().nudge(programs=', '.join(redirected)))
+            return ReadingAnswer(RedirectedRunNudge.declared().nudge(programs=', '.join(redirected)))
         names = tuple(dict.fromkeys(SilentStartRuns.name(part.text, part.program, part.classification.category) for part in shell.parts if self.is_watched(part)))
         answers = [self.answer_name(name) for name in names if not self.marks.excuses(name)]
-        refused = next((answer for answer in answers if answer.refusal), None)
+        refused = next((answer for answer in answers if answer.refusal is not None), None)
         if refused is not None:
             return refused
-        return RuleAnswer.with_nudges(*(nudge for answer in answers for nudge in answer.nudges))
+        return ReadingAnswer(None, tuple(nudge for answer in answers for nudge in answer.nudges))
 
     @staticmethod
     def is_redirected(part: Part, shell: ShellLine) -> bool:
@@ -65,18 +72,18 @@ class ReadingEnforcer:
     def is_watched(part: Part) -> bool:
         return part.classification.category.is_watched
 
-    def answer_name(self, name: str) -> RuleAnswer:
+    def answer_name(self, name: str) -> ReadingAnswer:
         runs = self.runs.runs(name)
         count = SilentStartRuns.silent_run_count(runs)
         if count >= SILENT_RUN_LIMIT_COUNT:
             return self.silent_refusal(name, runs[0])
         if count:
-            return RuleAnswer.with_nudges(self.taught(name, runs[0]))
+            return ReadingAnswer(None, tuple([self.taught(name, runs[0])]))
         if len(runs) > 1 and runs[0].shows_percent and runs[1].is_silent:
-            return RuleAnswer.with_nudges(SilentStartFixedNudge.declared().nudge(name=name))
+            return ReadingAnswer(None, tuple([SilentStartFixedNudge.declared().nudge(name=name)]))
         if self.run_counts.runs_without_reader([name])[name] >= PREVENT_AFTER_RUNS:
             return self.prevented(name)
-        return RuleAnswer.allowed()
+        return ReadingAnswer()
 
     def shape(self, run: SilentRun) -> RunShape | None:
         return RunShapes.found(self.folder.head_output(run.process.id, INSPECTED_CHARACTERS))
@@ -85,26 +92,26 @@ class ReadingEnforcer:
         shape = self.shape(run)
         return SilentStartTaughtNudge.declared().nudge(name=name, seconds=run.seconds, shape=shape.label if shape else UNKNOWN_SHAPE, hint=shape.total_note if shape else MISSING_TOTAL_TEXT)
 
-    def silent_refusal(self, name: str, run: SilentRun) -> RuleAnswer:
+    def silent_refusal(self, name: str, run: SilentRun) -> ReadingAnswer:
         if self.reader_changed_after(run):
-            return RuleAnswer.allowed()
+            return ReadingAnswer()
         refused = SilentStartRefusedNudge.declared().nudge(name=name)
         shape = self.shape(run)
         if shape is None:
-            return RuleAnswer.refused(refused)
+            return ReadingAnswer(refused)
         ready = SilentStartReadyNudge.declared().nudge(name=name, shape=shape.label, reader=f'journal reader add {name.split()[-1]} --commands "{run.part.command or run.part.text}" --title "{name}" {shape.reader_options()}')
-        return RuleAnswer(refusal=refused.text, nudges=(refused, ready), last=True)
+        return ReadingAnswer(refused, tuple([ready]))
 
-    def prevented(self, name: str) -> RuleAnswer:
+    def prevented(self, name: str) -> ReadingAnswer:
         last = self.decisions.command_key_decisions(name).filter(phase=ReadingPhase.END).descending("decided_at", "id").first()
         output = last.process_id if last is not None else 0
-        return RuleAnswer.refused(ReadRefusalNudge.declared().nudge(output=output, name=name))
+        return ReadingAnswer(ReadRefusalNudge.declared().nudge(output=output, name=name))
 
     def reader_changed_after(self, run: SilentRun) -> bool:
         selected = ReaderSelection.choose(self.readers.all(), [run.part], self.readers.layers())
         return selected is not None and run.process.created_at is not None and selected.reader.update_timestamp().value > run.process.created_at.value
 
     @staticmethod
-    def is_exit_command(hook: AgentHook) -> bool:
-        shell = hook.event.tool.shell if hook.event.tool is not None else None
+    def is_exit_command(event: HookEvent) -> bool:
+        shell = event.tool.shell if event.tool is not None else None
         return shell is not None and shell.is_journal_command_line(*EXIT_COMMANDS)

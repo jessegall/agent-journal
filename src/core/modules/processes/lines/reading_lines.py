@@ -1,0 +1,21 @@
+from collections.abc import Sequence
+
+from engine.agent_machine.contracts.event_line_source import EventLineSource
+from engine.driver.hook_event import HookEvent
+from engine.driver.nudge import Nudge
+from engine.enums.hook_event_name import HookEventName
+from core.modules.processes.policies.reading_policy import READING_KEY
+from core.modules.processes.support.reading.reading_enforcer import ReadingEnforcer
+
+
+class ReadingLines(EventLineSource):
+    """The lines that teach an agent to read its runs, and the reader a refused silent start is offered."""
+
+    key = READING_KEY
+    events = [HookEventName.PRE_TOOL_USE]
+
+    def __init__(self, enforcer: ReadingEnforcer) -> None:
+        self.enforcer = enforcer
+
+    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
+        return self.enforcer.answer(event).nudges if event is not None else []

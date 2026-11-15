@@ -1,16 +1,17 @@
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_wildcard import HookWildcard
 from engine.driver.rule_answer import RuleAnswer
+from engine.enums.hook_wildcard import HookWildcard
 from engine.scope.actor_scope import ActorScope
+from core.modules.processes.needs.reader_request_needs import READER_REQUEST_KEY
 from core.modules.processes.support.reading.reader_request_blocks import ReaderRequestBlocks
 
 
 class ReaderRequestRule(DriverRule):
-    """Asks an agent for its reader and the main agent for help after failed saves, through the reader
-    request blocks."""
+    """The old walk's answer for ReaderRequestNeeds, ReaderRequestLines and ReaderRequestEffect, which own it, until
+    the walk is deleted."""
 
-    name = "processes.reader-request"
+    name = READER_REQUEST_KEY
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
     history = True
@@ -20,4 +21,5 @@ class ReaderRequestRule(DriverRule):
         self.blocks = blocks
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return self.blocks.request_answer(hook)
+        answer = self.blocks.answer(hook.event, hook.agent_id)
+        return RuleAnswer.with_nudges(*answer.nudges).running(*answer.commands, *(ReaderRequestBlocks.help_block(hook.agent_id, hold) for hold in answer.holds))

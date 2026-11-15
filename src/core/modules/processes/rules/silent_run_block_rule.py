@@ -1,33 +1,23 @@
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.processes.support.blocked_runs import BlockedRuns
-from core.modules.processes.models.enums.pressure_level import PressureLevel
-from core.modules.processes.nudges.silent_run_blocked_nudge import SilentRunBlockedNudge
-from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
+from engine.enums.hook_event_name import HookEventName
+from core.modules.processes.needs.silent_run_block_needs import SILENT_RUN_KEY, SilentRunBlockNeeds
 
 
 class SilentRunBlockRule(DriverRule):
-    """Holds the tool uses of an agent whose run has printed nothing for the hang time, naming the run
-    and what its processor time does, until the agent reads its output or stops it, or a user
-    releases it; the exits are said in the shared wording. Like every block it lets reads and
-    journal commands through."""
+    """The old walk's answer for SilentRunBlockNeeds, which owns it: the walk refuses each tool while the run is
+    silent, until the walk is deleted."""
 
-    name = "processes.silent-run-hold"
+    name = SILENT_RUN_KEY
     single_action_refusal = "A tool is refused while a silent run is held, naming the run and its exits; the hold keeps its own rule"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
 
-    def __init__(self, blocked_runs: BlockedRuns) -> None:
-        self.held_runs = blocked_runs
+    def __init__(self, needs: SilentRunBlockNeeds) -> None:
+        self.needs = needs
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
-        if tool is None or tool.block_exempt:
-            return RuleAnswer.allowed()
-        silent_run = self.held_runs.found(hook.agent_id, hook.timestamp)
-        if silent_run is None:
-            return RuleAnswer.allowed()
-        return RuleAnswer.refused(SilentRunBlockedNudge.declared().nudge(output=silent_run.process.id, seconds=silent_run.seconds, processor=silent_run.processor,
-                                                    hint=ExitTexts.sentences(PressureLevel.FREEZE.exits)))
+        run = self.needs.held(hook.agent_id) if tool is not None and not tool.block_exempt else None
+        return RuleAnswer.refused(SilentRunBlockNeeds.nudge(run)) if run is not None else RuleAnswer.allowed()

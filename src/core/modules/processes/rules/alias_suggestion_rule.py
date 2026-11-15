@@ -1,36 +1,19 @@
-from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from engine.query.conditions.prefix import Prefix
-from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.processes.nudges.alias_suggestion_nudge import AliasSuggestionNudge
-
-OFTEN_RUN_COUNT = 8
-SHAPE_TERMS = 3
-SKIPPED_TERMS = ("journal", "git", "ls", "cat", "grep", "sed", "for", "set", "cd", "python3")
+from engine.enums.hook_event_name import HookEventName
+from core.modules.processes.lines.alias_suggestion_lines import AliasSuggestionLines
 
 
 class AliasSuggestionRule(DriverRule):
-    """A command an agent keeps running, as a part of its runs opening on the same words as this one,
-    teaches it to add an alias, for the roles the suite policy has use saved commands; only a shell
-    line asks, and it only counts."""
+    """The old walk's answer for AliasSuggestionLines, which owns it, until the walk is deleted."""
 
-    name = "processes.alias-suggestion"
+    name = AliasSuggestionLines.key
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
 
-    def __init__(self, processes: ProcessQuery, types: HelperTypeBook) -> None:
-        self.processes, self.types = processes, types
+    def __init__(self, lines: AliasSuggestionLines) -> None:
+        self.lines = lines
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        shell = hook.event.tool.shell if hook.event.tool is not None else None
-        if shell is None or not self.types.behaviours(hook.role).runs_saved_commands:
-            return RuleAnswer.allowed()
-        commands = [part.text.split()[:SHAPE_TERMS] for part in shell.parts if part.text.split()[0] not in SKIPPED_TERMS and not part.saved_command]
-        if not commands:
-            return RuleAnswer.allowed()
-        shape = " ".join(commands[0])
-        count = self.processes.agent(hook.agent_id).with_part(Prefix("text", shape)).count()
-        return RuleAnswer.with_nudges(AliasSuggestionNudge.declared().nudge(shape=shape, count=count)) if count >= OFTEN_RUN_COUNT else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(*self.lines.nudges(hook.event, hook.agent_id))

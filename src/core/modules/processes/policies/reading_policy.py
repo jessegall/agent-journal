@@ -1,9 +1,20 @@
-from engine.rule_backed.rule_policy import RulePolicy
-from core.modules.processes.rules.reading_rule import ReadingRule
+from engine.agent_machine.contracts.event_policy import EventPolicy
+from engine.driver.hook_event import HookEvent
+from engine.driver.nudge import Nudge
+from core.modules.processes.support.reading.reading_enforcer import ReadingEnforcer
+
+READING_KEY = "processes.reading"
 
 
-class ReadingPolicy(RulePolicy):
-    """The refusal of ReadingRule, with today's text, as a policy of the new driver."""
+class ReadingPolicy(EventPolicy):
+    """A command that ran without a good reader is refused its next start until a reader or a reason is given, for
+    every role."""
 
-    rule = ReadingRule
+    key = READING_KEY
     rank = "shell.all"
+
+    def __init__(self, enforcer: ReadingEnforcer) -> None:
+        self.enforcer = enforcer
+
+    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+        return self.enforcer.answer(event).refusal

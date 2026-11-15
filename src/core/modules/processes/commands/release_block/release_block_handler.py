@@ -2,7 +2,6 @@ from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.driver.nudger import Nudger
-from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
 from engine.query.queries import Queries
 from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock

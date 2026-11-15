@@ -1,3 +1,7 @@
+from core.modules.processes.effects.reader_request_effect import ReaderRequestEffect
+from core.modules.processes.lines.reader_request_lines import ReaderRequestLines
+from core.modules.processes.lines.reading_lines import ReadingLines
+from core.modules.processes.effects.orphan_process_effect import OrphanProcessEffect
 from core.modules.processes.wake_causes.run_ended_wake import RunEndedWake
 from core.modules.processes.listeners.run_end_step_listener import RunEndStepListener
 from core.modules.processes.listeners.watch_step_listener import WatchStepListener
@@ -321,9 +325,9 @@ class ProcessesModule(Module):
     agent_listeners = [RunEndStepListener, WatchStepListener]
     transforms = [RunnerTransform]
     needs = [WatchedRunNeeds, LongRunDockNeeds, ReaderRequestNeeds, SilentRunBlockNeeds]
-    effects = [LeftoverRunEffect, LongRunDockEffect, WatchLinesEffect]
+    effects = [LeftoverRunEffect, LongRunDockEffect, OrphanProcessEffect, ReaderRequestEffect, WatchLinesEffect]
     policies = [FolderChangePolicy, HandMadeMonitorPolicy, JournalChainPolicy, JournalPipePolicy, ReadCommandOutputPolicy, ReadingPolicy, RetryLoopPolicy, SleepPollPolicy]
-    lines = [AliasSuggestionLines, EndedOutputLineLines, OrphanProcessLines, OutputStatusMonitorLines, ReadAdviceLines, RunQueueHaltedLines, RunTitleLines, WatchLinesLines]
+    lines = [AliasSuggestionLines, EndedOutputLineLines, OrphanProcessLines, OutputStatusMonitorLines, ReadAdviceLines, ReaderRequestLines, ReadingLines, RunQueueHaltedLines, RunTitleLines, WatchLinesLines]
     nudges = PROCESS_NUDGES
     tick_handlers = [OutputReadingTickHandler, RunSlotGrantTickHandler,
                      RunTimeoutsTickHandler, HangWatchTickHandler, CadenceWatchTickHandler, OutputChecksTickHandler,

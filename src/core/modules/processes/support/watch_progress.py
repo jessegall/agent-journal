@@ -1,0 +1,48 @@
+from dataclasses import dataclass
+
+from engine.command.command import Command
+from engine.driver.hook_event import HookEvent
+from engine.driver.nudge import Nudge
+from engine.request.request_values import RequestValues
+from core.modules.processes.commands.record_given_percent.record_given_percent import RecordGivenPercent
+from core.modules.processes.models.watch import UNANNOUNCED_PERCENT, Watch
+from core.modules.processes.nudges.output_progress_nudge import OutputProgressNudge
+from core.modules.processes.nudges.output_running_nudge import OutputRunningNudge
+from core.modules.processes.queries.process_query import ProcessQuery
+from core.modules.processes.queries.watch_query import WatchQuery
+
+PROGRESS_STEP_PERCENT = 10
+
+
+@dataclass(frozen=True)
+class WatchedProgress:
+    """The lines about the runs an agent watches, and the commands that record the percent each line gave."""
+
+    nudges: tuple[Nudge, ...]
+    commands: tuple[Command[object], ...]
+
+
+class WatchProgress:
+    """After every tool use, an agent watching a run is told once that it runs, then its progress only as it passes
+    each 10 percent; the run's end has its own line, and its output is read on request. Read once a hook, so the lines
+    and the percent they record agree."""
+
+    def __init__(self, watches: WatchQuery, processes: ProcessQuery, request_values: RequestValues) -> None:
+        self.watches, self.processes, self.request_values = watches, processes, request_values
+
+    def progress(self, event: HookEvent, agent_id: int) -> WatchedProgress:
+        # read once a hook whatever changes meanwhile: the percent it records is what the next read compares with
+        return self.request_values.read(f"processes.watch-progress:{agent_id}:{event.firing}", lambda: event.firing, lambda: self.found(agent_id))
+
+    def found(self, agent_id: int) -> WatchedProgress:
+        given = [line for watch in tuple(self.watches.progress_due(agent_id, PROGRESS_STEP_PERCENT).oldest().get()) if (line := self.given(watch)) is not None]
+        return WatchedProgress(tuple(nudge for nudge, _ in given), tuple(command for _, command in given))
+
+    def given(self, watch: Watch) -> tuple[Nudge, Command[object]] | None:
+        if watch.given_percent == UNANNOUNCED_PERCENT:
+            return OutputRunningNudge.declared().nudge(output=watch.process_id), RecordGivenPercent(watch.id, 0)
+        progress = self.processes.find(watch.process_id).progress
+        step = progress - progress % PROGRESS_STEP_PERCENT
+        if step <= watch.given_percent:
+            return None
+        return OutputProgressNudge.declared().nudge(output=watch.process_id, percent=progress), RecordGivenPercent(watch.id, step)

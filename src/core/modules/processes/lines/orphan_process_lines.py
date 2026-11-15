@@ -1,8 +1,22 @@
-from engine.rule_backed.rule_line_source import RuleLineSource
-from core.modules.processes.rules.orphan_process_rule import OrphanProcessRule
+from collections.abc import Sequence
+
+from engine.agent_machine.contracts.event_line_source import EventLineSource
+from engine.driver.hook_event import HookEvent
+from engine.driver.nudge import Nudge
+from engine.enums.hook_event_name import HookEventName
+from core.modules.processes.support.orphan_check import OrphanCheck
+
+ORPHAN_PROCESS_KEY = "processes.orphan-process"
 
 
-class OrphanProcessLines(RuleLineSource):
-    """The lines of OrphanProcessRule, in today's words."""
+class OrphanProcessLines(EventLineSource):
+    """Tells the agent of each run of its that was lost."""
 
-    rule = OrphanProcessRule
+    key = ORPHAN_PROCESS_KEY
+    events = [HookEventName.TICK]
+
+    def __init__(self, check: OrphanCheck) -> None:
+        self.check = check
+
+    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
+        return self.check.orphaned(event, agent_id).nudges

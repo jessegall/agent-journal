@@ -1,6 +1,5 @@
 from dataclasses import replace
 
-from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler

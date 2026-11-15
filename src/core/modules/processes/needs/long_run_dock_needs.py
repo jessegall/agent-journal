@@ -11,7 +11,7 @@ from engine.query.conditions.among import Among
 from core.modules.processes.nudges.run_name_nudge import RunNameNudge
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.processes.rules.long_run_dock_rule import LongRunDockRule
+from core.modules.processes.support.run_docking import LONG_RUN_DOCK_KEY
 from core.modules.processes.support.block_conditions.output_titled import OutputTitled
 from core.modules.processes.support.run_title import RunTitle
 
@@ -26,7 +26,7 @@ class LongRunDockNeeds(NeedSource):
     required command row): the docked run is the request, its tools held after five uses until journal output
     title, never a line that counts. LongRunDockEffect docks the run, as today's rule does."""
 
-    replaced_rules = tuple([LongRunDockRule.name])
+    replaced_rules = tuple([LONG_RUN_DOCK_KEY])
     state_type = Blocked
     rank = OUTPUT_TITLE_RANK
 
@@ -47,5 +47,5 @@ class LongRunDockNeeds(NeedSource):
 
     @staticmethod
     def plan(process_id: int) -> BlockPlan:
-        return BlockPlan(RunNameNudge.declared().nudge(process=process_id), OutputTitled(process_id), LongRunDockRule.name, OUTPUT_TITLE_RANK,
+        return BlockPlan(RunNameNudge.declared().nudge(process=process_id), OutputTitled(process_id), LONG_RUN_DOCK_KEY, OUTPUT_TITLE_RANK,
                          tool_grace_uses=TITLE_GRACE_USES, subject=SubjectReference("process", process_id), lifting_lines=tuple([f"journal output title {process_id}"]))
