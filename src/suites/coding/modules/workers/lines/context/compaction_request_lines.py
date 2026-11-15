@@ -7,7 +7,7 @@ from engine.enums.line_carrier import LineCarrier
 from engine.agent_machine.record.question import Question
 from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
-from suites.coding.modules.workers.effects.request_compaction_effect import RequestCompactionEffect
+from suites.coding.modules.workers.effects.context.request_compaction_effect import RequestCompactionEffect
 from suites.coding.modules.workers.needs.compaction_needs import COMPACTION_STOP_RULE
 from suites.coding.modules.workers.nudges.context_compacted_nudge import ContextCompactedNudge
 from suites.coding.modules.workers.types.worker import Worker

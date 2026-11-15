@@ -10,6 +10,7 @@ from core.modules.drivers.marks.escalation_mark import EscalationMark
 from core.modules.drivers.listeners.escalation_mark_listener import EscalationMarkListener
 from core.modules.drivers.tick_handlers.agent_wake_delivery_tick_handler import AgentWakeDeliveryTickHandler
 from core.modules.drivers.effects.compaction_wake_effect import CompactionWakeEffect
+from core.modules.drivers.effects.session_end_effect import SessionEndEffect
 from core.modules.drivers.commands.send_journal_started_line.send_journal_started_line_handler import SendJournalStartedLineHandler
 from core.modules.drivers.commands.deliver_agent_wake.deliver_agent_wake_handler import DeliverAgentWakeHandler
 from core.modules.drivers.listeners.wake_acknowledgement_listener import WakeAcknowledgementListener
@@ -303,7 +304,7 @@ class DriversModule(Module):
 
     name = "journal.core.drivers"
     transforms = [ProjectHookTransform]
-    effects = [CompactionWakeEffect, ForeignHooksEffect, SafeguardsStopEffect, UsePermissionEffect]
+    effects = [CompactionWakeEffect, ForeignHooksEffect, SafeguardsStopEffect, SessionEndEffect, UsePermissionEffect]
     policies = [AccessPolicy, DatabaseFilePolicy, ForeignHooksPolicy, NativeSubagentPolicy, PanicFilePolicy, PrivateCorpusPolicy, TypeCommandsPolicy]
     lines = [CompactionInstructionsLines, BlockCountdownLines, ContinuedSessionLines, ForeignHookTerminalLines, ForeignHooksLines, LongOutputLines, OpeningLinesLines, RepeatedFileReadLines, TakeoverLines]
     nudges = DRIVER_NUDGES

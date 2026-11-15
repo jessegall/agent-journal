@@ -8,13 +8,13 @@ from engine.command.command import Command
 from engine.enums.effect_timing import EffectTiming
 from engine.enums.hook_event_name import HookEventName
 from engine.enums.work_type import WorkType
-from core.modules.tasks.commands.assign_next_task.assign_next_task import AssignNextTask
-from suites.coding.modules.workers.needs.main_stop_needs import MAIN_STOP_KEY
+from core.modules.tasks.commands.start_task.start_task import StartTask
 
 
 class HandedTaskEffect(Effect):
-    """The always-effect of a step that sees Working(handed task): the main agent's next task is started through
-    AssignNextTask in the step's own save, at a stop and off a hook (doc 1310 section 4.11)."""
+    """The always-effect of a step that sees Working(handed task): the task handed to the main agent is started in
+    the step's own save, at a stop and off a hook, whether auto mode is on or a task was reserved for the agent
+    (doc 1310 section 4.11)."""
 
     events = [HookEventName.STOP]
     includes_steps = True
@@ -22,5 +22,5 @@ class HandedTaskEffect(Effect):
     timing = EffectTiming.UNCONDITIONAL
 
     def commands(self, view: AgentView, record: DecisionRecord) -> Sequence[Command[object]]:
-        handed = any(isinstance(need.state, Working) and need.state.work.work_type is WorkType.HANDED_TASK for need in view.needs)
-        return [AssignNextTask(view.agent.agent_id)] if handed else []
+        handed = [need.state.work.work_id for need in view.needs if isinstance(need.state, Working) and need.state.work.work_type is WorkType.HANDED_TASK]
+        return [StartTask(task_id) for task_id in handed[:1]]

@@ -15,7 +15,7 @@ from suites.coding.modules.workers.listeners.worktree_step_listener import Workt
 from suites.coding.modules.workers.listeners.proof_step_listener import ProofStepListener
 from suites.coding.modules.workers.guards.proved_delivery_guard import ProvedDeliveryGuard
 from suites.coding.modules.workers.policies.proved_delivery_policy import ProvedDeliveryPolicy
-from suites.coding.modules.workers.effects.request_compaction_effect import RequestCompactionEffect
+from suites.coding.modules.workers.effects.context.request_compaction_effect import RequestCompactionEffect
 from suites.coding.modules.workers.policies.context_hard_limit_policy import ContextHardLimitPolicy
 from suites.coding.modules.workers.needs.compaction_needs import CompactionNeeds
 from suites.coding.modules.workers.policies.checkout_write_code_policy import CheckoutWriteCodePolicy
@@ -137,6 +137,8 @@ from suites.coding.modules.workers.buttons.workers_send_job_button import Worker
 from suites.coding.modules.workers.buttons.workers_merge_button import WorkersMergeButton
 from suites.coding.modules.workers.buttons.workers_release_button import WorkersReleaseButton
 from suites.coding.modules.workers.policies.worker_git_policy import WorkerGitPolicy
+from suites.coding.modules.workers.policies.worker_judge_scope_policy import WorkerJudgeScopePolicy
+from suites.coding.modules.workers.effects.context.full_context_compaction_effect import FullContextCompactionEffect
 from suites.coding.modules.workers.needs.main_stop_needs import MainStopNeeds
 from suites.coding.modules.workers.effects.handed_task_effect import HandedTaskEffect
 from suites.coding.modules.workers.needs.worker_unit_needs import WorkerUnitNeeds
@@ -150,11 +152,11 @@ class WorkersModule(Module):
 
     name = "journal.suites.coding.workers"
     line_sources = [InactiveWorkerStopLines, CacheRefreshLines]
-    effects = [HandedTaskEffect, WorkerReportEffect, OrphanWorktreeEffect, MissingProcessEffect, InactiveWorkerStopEffect, CacheRefreshEffect, MergeJobReportEffect, RequestCompactionEffect, InactiveHelperEffect, PhaseTestEffect, RecordTodoListEffect, UnmergedWorkerEffect]
+    effects = [HandedTaskEffect, FullContextCompactionEffect, WorkerReportEffect, OrphanWorktreeEffect, MissingProcessEffect, InactiveWorkerStopEffect, CacheRefreshEffect, MergeJobReportEffect, RequestCompactionEffect, InactiveHelperEffect, PhaseTestEffect, RecordTodoListEffect, UnmergedWorkerEffect]
     block_conditions = [DeliveredProofsChecked]
     needs = [MainStopNeeds, WorkerUnitNeeds, MergeJobNeeds, CompactionNeeds, DeliveredWorkStopNeeds, WorkerStatusFirstNeeds]
     lines = [WorkerBlockedTaskLines, CompactionRequestLines, ContextStopNowLines, InactiveHelperLines, MergeCheckoutLines, PhaseTestLines, SmallBatchLines, StoppedWorkerLines, UnmergedWorkerLines, UnstartedWorkerLines, WorkerLogDueLines, WorkersOutLines]
-    policies = [WorkerGitPolicy, DispatchNamesModelPolicy, ProvedDeliveryPolicy, ContextHardLimitPolicy, CheckoutWriteCodePolicy, DispatchAllowancePolicy, PhaseTestPolicy, ProtectedFolderPolicy, ReadonlyHelperAllowancePolicy, WorkerFilePolicy, WorkerOutsideLinkPolicy, WorkerReadPolicy, WorkerReusePolicy, WorkerTestLinePolicy, WorkerTestCountPolicy]
+    policies = [WorkerGitPolicy, WorkerJudgeScopePolicy, DispatchNamesModelPolicy, ProvedDeliveryPolicy, ContextHardLimitPolicy, CheckoutWriteCodePolicy, DispatchAllowancePolicy, PhaseTestPolicy, ProtectedFolderPolicy, ReadonlyHelperAllowancePolicy, WorkerFilePolicy, WorkerOutsideLinkPolicy, WorkerReadPolicy, WorkerReusePolicy, WorkerTestLinePolicy, WorkerTestCountPolicy]
     profiles = WORKER_PROFILES
     helper_types = [Worker, Merger]
     templates = WORKER_TEMPLATES
