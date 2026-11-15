@@ -12,6 +12,9 @@ from engine.request.request_values import RequestValues
 from engine.log.system_log_writer import SystemLogWriter
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.hook_reply import HookReply
+from engine.driver.rule_answers import RuleAnswers
+from engine.log.error_log import ErrorLog
+from engine.performance.timing import Timing
 from engine.driver.hook_route import HookRoute
 from engine.driver.lockdown import Lockdown
 from engine.driver.program_lockdown import ProgramLockdown
@@ -31,6 +34,8 @@ from core.modules.drivers.nudges.ended_agent_nudge import EndedAgentNudge
 from core.modules.drivers.nudges.replaced_session_nudge import ReplacedSessionNudge
 from core.modules.drivers.nudges.unknown_agent_nudge import UnknownAgentNudge
 from core.modules.drivers.support.hook_rule_answers import HookRuleAnswers
+from core.modules.drivers.support.driver_comparison_step import DriverComparisonStep
+from core.modules.drivers.support.driver_settings import COMPARISON_SETTING
 from core.modules.drivers.commands.record_hook_call.record_hook_call import RecordHookCall
 from core.modules.drivers.commands.record_hook_timeout.record_hook_timeout import RecordHookTimeout
 from core.modules.drivers.support.hook_durations import HookDurations
@@ -59,7 +64,9 @@ class AgentHookRoute(HookRoute):
     unknown agent when the event does not require an agent check. The row of a recorded hook is kept once
     its call is committed; a tick that brought nothing keeps none."""
 
-    def __init__(self, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, rule_answers: HookRuleAnswers, request_values: RequestValues, clock: Clock, providers: Providers, lockdown: ProgramLockdown, sessions: AgentSessions, request_records: RequestRecords) -> None:
+    def __init__(self, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, rule_answers: HookRuleAnswers, request_values: RequestValues, clock: Clock, providers: Providers, lockdown: ProgramLockdown, sessions: AgentSessions, request_records: RequestRecords,
+                 comparison: DriverComparisonStep, errors: ErrorLog, timing: Timing) -> None:
+        self.comparison, self.errors, self.timing = comparison, errors, timing
         self.lockdown, self.sessions, self.request_records = lockdown, sessions, request_records
         self.clock, self.providers = clock, providers
         self.rule_answers, self.request_values = rule_answers, request_values
@@ -84,13 +91,27 @@ class AgentHookRoute(HookRoute):
         actor = Actor(agent.id, ActorType.AGENT)
         with self.bus.scopes.command_scope((), actor, agent.environment_id):
             answers = self.rule_answers.evaluate(event, agent)
+        self.timing.stamp("rules_asked")
         reply = self.bus.run(RecordHookCall(event, agent.id, answers), actor, environment_id=agent.environment_id)
+        self.compare(event, agent, actor, answers, reply)
         if reply.hook_call_id is not None:
             self.request_records.recorded_hook(agent.id, agent.environment_id, hook_row_line(event), REFUSED_HOOK_EXIT_CODE if reply.refusal else 0)
         self.note_timeout(event, agent, actor)
         with self.bus.scopes.read_scope((), None, agent.environment_id):
             measured = self.durations.measured(event, reply.labelled_lines or [*reply.lines, reply.refusal])
         return replace(reply, terminal="\n".join(line for line in (reply.terminal, measured) if line))
+
+    def compare(self, event: HookEvent, agent: Agent, actor: Actor, answers: RuleAnswers, reply: HookReply) -> None:
+        with self.bus.scopes.read_scope((), None, agent.environment_id):
+            is_compared = self.settings.flag(COMPARISON_SETTING)
+        if not is_compared:
+            return
+        try:
+            self.comparison.compared(event, agent, actor, answers, reply)
+        # the comparison never changes the live answer (doc 1310 section 13.3): a fault in it is logged and the hook answers
+        except Exception as error:
+            self.errors.reported(["driver comparison", hook_row_line(event)], error, agent.environment_id)
+        self.timing.stamp("driver_decided")
 
     def note_timeout(self, event: HookEvent, agent: Agent, actor: Actor) -> None:
         if event.event == HookEventName.TICK:

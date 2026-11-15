@@ -5,7 +5,6 @@ from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.contracts.line_source import LineSource
 from engine.agent_machine.record.line import Line
 from engine.agent_machine.record.question import Question
-from engine.container.container import Container
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.enums.line_carrier import LineCarrier
@@ -25,8 +24,8 @@ class RuleLineSource(LineSource):
 
     rule: ClassVar[type[DriverRule]]
 
-    def __init__(self, container: Container, hooks: RuleHooks) -> None:
-        self.container, self.hooks = container, hooks
+    def __init__(self, hooks: RuleHooks) -> None:
+        self.hooks = hooks
 
     def __init_subclass__(cls, **kwargs: object) -> None:
         super().__init_subclass__(**kwargs)
@@ -36,9 +35,8 @@ class RuleLineSource(LineSource):
             cls.carrier = LineCarrier.WAITING
 
     def lines(self, question: Question, view: AgentView) -> Sequence[Line]:
-        hook = self.hooks.built(question, view)
-        if hook is None:
+        answer = self.hooks.answer(self.rule, question, view.agent.agent_id)
+        if answer is None:
             return []
-        answer = self.container.get(self.rule).answer(hook)
         return [Line(nudge.key, nudge.text, LineCategory.STEERING if nudge.type is NudgeType.STEERING else LineCategory.INFORMATION, nudge.key, self.carrier)
                 for nudge in answer.nudges]

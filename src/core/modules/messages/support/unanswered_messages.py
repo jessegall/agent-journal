@@ -1,4 +1,6 @@
+from engine.database.database import Database
 from engine.query.conditions.equal import Equal
+from engine.request.request_values import RequestValues
 from engine.query.conditions.excluding import Excluding
 from core.modules.agents.conditions.active_agent_rows import ActiveAgentRows
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES, MessageType
@@ -16,11 +18,15 @@ class UnansweredMessages:
     """The messages an agent read and has not answered: those read since its current session began or since its last
     message, from a person or from a running agent other than itself; the newest 50 of the agents' are checked."""
 
-    def __init__(self, messages: MessageQuery, reads: SessionReadMessages, replies: MessageReplies) -> None:
-        self.messages, self.reads, self.replies = messages, reads, replies
+    def __init__(self, messages: MessageQuery, reads: SessionReadMessages, replies: MessageReplies, request_values: RequestValues, database: Database) -> None:
+        self.messages, self.reads, self.replies, self.request_values, self.database = messages, reads, replies, request_values, database
+
+    # the walk's rule and the agent machine's need both ask on one hook: read once until a row changes
+    def unanswered(self, agent_id: int) -> tuple[Message, ...]:
+        return self.request_values.read(f"messages.unanswered.{agent_id}", self.database.change_mark, lambda: self.read_unanswered(agent_id))
 
     # nothing read in the current session leaves nothing unanswered, which one look settles on most tool calls
-    def unanswered(self, agent_id: int) -> tuple[Message, ...]:
+    def read_unanswered(self, agent_id: int) -> tuple[Message, ...]:
         agent_start = self.reads.agent_start(agent_id)
         if not self.reads.read_after(agent_id, READ_TYPES, agent_start).exists():
             return ()

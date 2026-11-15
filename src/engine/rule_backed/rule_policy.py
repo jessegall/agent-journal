@@ -5,7 +5,6 @@ from engine.agent_stack.reason import Reason
 from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.contracts.policy import Policy
 from engine.agent_machine.record.question import Question
-from engine.container.container import Container
 from engine.driver.driver_rule import DriverRule
 from engine.enums.decision_class import DecisionClass
 from engine.enums.grant_type import GrantType
@@ -22,8 +21,8 @@ class RulePolicy(Policy):
     rule: ClassVar[type[DriverRule]]
     grant_types = [GrantType.REFUSAL_SKIP]
 
-    def __init__(self, container: Container, hooks: RuleHooks) -> None:
-        self.container, self.hooks = container, hooks
+    def __init__(self, hooks: RuleHooks) -> None:
+        self.hooks = hooks
 
     def __init_subclass__(cls, **kwargs: object) -> None:
         super().__init_subclass__(**kwargs)
@@ -31,8 +30,9 @@ class RulePolicy(Policy):
         cls.key = cls.rule.name
 
     def refusals(self, question: Question, view: AgentView) -> Sequence[Reason]:
-        hook = self.hooks.built(question, view)
-        if hook is None or hook.event.event not in RuleEvents.hook_events(self.rule):
+        if question.event is None or question.event.event not in RuleEvents.hook_events(self.rule):
             return []
-        answer = self.container.get(self.rule).answer(hook)
+        answer = self.hooks.answer(self.rule, question, view.agent.agent_id)
+        if answer is None:
+            return []
         return [Reason(self.key, DecisionClass.REFUSE, self.rank, answer.refusal)] if answer.refusal else []

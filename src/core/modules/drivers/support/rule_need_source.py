@@ -7,7 +7,6 @@ from engine.agent_machine.needs.block_plan import BlockPlan
 from engine.agent_machine.needs.need import Need
 from engine.agent_machine.needs.need_source import NeedSource
 from engine.agent_machine.record.question import Question
-from engine.container.container import Container
 from engine.driver.block_until import BlockUntil
 from engine.driver.driver_rule import DriverRule
 from engine.enums.closer_role import CloserRole
@@ -30,8 +29,8 @@ class RuleNeedSource(NeedSource):
         super().__init_subclass__(**kwargs)
         cls.agent_types = RuleEvents.agent_types(cls.rule)
 
-    def __init__(self, container: Container, hooks: RuleHooks) -> None:
-        self.container, self.hooks = container, hooks
+    def __init__(self, hooks: RuleHooks) -> None:
+        self.hooks = hooks
 
     def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]:
         if question.event is None or question.event.event not in RuleEvents.hook_events(self.rule) or question.event.event is HookEventName.TICK:
@@ -40,10 +39,9 @@ class RuleNeedSource(NeedSource):
         return {agent_id: list(found) for agent_id, found in plans.items() if found}
 
     def plans(self, agent_id: int, question: Question) -> list[BlockPlan]:
-        hook = self.hooks.agent_hook(question, agent_id)
-        if hook is None:
+        answer = self.hooks.answer(self.rule, question, agent_id)
+        if answer is None:
             return []
-        answer = self.container.get(self.rule).answer(hook)
         return [self.plan(command) for command in (*answer.commands, *answer.commands_unrefused) if isinstance(command, BlockUntil)]
 
     def plan(self, block: BlockUntil) -> BlockPlan:

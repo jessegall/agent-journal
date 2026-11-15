@@ -5,7 +5,6 @@ from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.contracts.effect import Effect
 from engine.agent_machine.decision_record import DecisionRecord
 from engine.command.command import Command
-from engine.container.container import Container
 from engine.driver.block_until import BlockUntil
 from engine.driver.driver_rule import DriverRule
 from engine.enums.effect_timing import EffectTiming
@@ -21,8 +20,8 @@ class RuleEffect(Effect):
     rule: ClassVar[type[DriverRule]]
     timing = EffectTiming.UNCONDITIONAL
 
-    def __init__(self, container: Container, hooks: RuleHooks) -> None:
-        self.container, self.hooks = container, hooks
+    def __init__(self, hooks: RuleHooks) -> None:
+        self.hooks = hooks
 
     def __init_subclass__(cls, **kwargs: object) -> None:
         super().__init_subclass__(**kwargs)
@@ -30,8 +29,7 @@ class RuleEffect(Effect):
         cls.events = RuleEvents.hook_events(cls.rule)
 
     def commands(self, view: AgentView, record: DecisionRecord) -> Sequence[Command[object]]:
-        hook = self.hooks.built(record.action, view)
-        if hook is None:
+        answer = self.hooks.answer(self.rule, record.action, view.agent.agent_id)
+        if answer is None:
             return []
-        answer = self.container.get(self.rule).answer(hook)
         return [command for command in (*answer.commands, *answer.commands_unrefused) if not isinstance(command, BlockUntil)]
