@@ -1,3 +1,4 @@
+from engine.agent_machine.step_result import StepResult
 from engine.agent_step.errors.required_effect_error import RequiredEffectError
 from core.modules.drivers.commands.record_repeated_hook_answer.record_repeated_hook_answer import RecordRepeatedHookAnswer
 from engine.agent_machine.stepping.constraints import Constraints
@@ -43,6 +44,7 @@ from core.modules.drivers.nudges.paused_refusal_nudge import PausedRefusalNudge
 from core.modules.drivers.support.agent_slices import AgentSlices
 from core.modules.drivers.support.contribution_slices import SAFETY_SLICE
 from core.modules.drivers.support.decision_fallbacks import DecisionFallbacks
+from core.modules.drivers.support.assembled_answer import AssembledAnswer
 from core.modules.drivers.support.driver_comparison_step import DriverComparisonStep
 from core.modules.drivers.support.driver_settings import COMPARISON_SETTING, RETRY_RESERVE_SETTING
 from core.modules.drivers.commands.record_hook_call.record_hook_call import RecordHookCall
@@ -98,8 +100,10 @@ class AgentHookRoute(HookRoute):
         if agent is None:
             return self.ended_agent_reply(event)
         actor = Actor(agent.id, ActorType.AGENT)
-        reply, answers = self.recorded(event, agent, actor)
-        self.compare(event, agent, actor, answers, reply)
+        assembled = self.assembler.assembled(event, agent, actor)
+        compared = self.compared_step(event, agent, actor, assembled.answers)
+        reply, answers = self.recorded(event, agent, actor, assembled)
+        self.compare(event, agent, actor, answers, reply, compared)
         if reply.hook_call_id is not None:
             self.request_records.recorded_hook(agent.id, agent.environment_id, hook_row_line(event), REFUSED_HOOK_EXIT_CODE if reply.refusal else 0)
         self.note_timeout(event, agent, actor)
@@ -108,8 +112,7 @@ class AgentHookRoute(HookRoute):
         return replace(reply, terminal="\n".join(line for line in (reply.terminal, measured) if line))
 
     # a step whose save lost its check is checked once more while time is left, else answered by the fallback of 6.6
-    def recorded(self, event: HookEvent, agent: Agent, actor: Actor) -> tuple[HookReply, RuleAnswers]:
-        assembled = self.assembler.assembled(event, agent, actor)
+    def recorded(self, event: HookEvent, agent: Agent, actor: Actor, assembled: AssembledAnswer) -> tuple[HookReply, RuleAnswers]:
         for attempt in range(CHECK_ATTEMPTS):
             if attempt:
                 if not self.has_check_time(event, agent):
@@ -159,14 +162,25 @@ class AgentHookRoute(HookRoute):
         paused_later = [paused for paused in self.agents.paused_line(agent.id) if paused.paused_at is not None and paused.paused_at.value >= stored_call.creation_timestamp().value]
         return PausedRefusalNudge.declared().nudge().text if paused_later else ""
 
-    def compare(self, event: HookEvent, agent: Agent, actor: Actor, answers: RuleAnswers, reply: HookReply) -> None:
+    # the new driver steps on the walk's own rule answers, before the walk saves, so both answer the same state: the
+    # walk's save spends skips and moves countdowns the new step would otherwise read as spent and moved
+    def compared_step(self, event: HookEvent, agent: Agent, actor: Actor, answers: RuleAnswers) -> StepResult | None:
         with self.bus.scopes.read_scope((), None, agent.environment_id):
             is_compared = self.settings.flag(COMPARISON_SETTING)
         if not is_compared:
+            return None
+        try:
+            return self.comparison.stepped(event, agent, actor, answers)
+        # the comparison never changes the live answer (doc 1310 section 13.3): a fault in it is logged and the hook answers
+        except Exception as error:
+            self.errors.reported(["driver comparison", hook_row_line(event)], error, agent.environment_id)
+            return None
+
+    def compare(self, event: HookEvent, agent: Agent, actor: Actor, answers: RuleAnswers, reply: HookReply, stepped: StepResult | None) -> None:
+        if stepped is None:
             return
         try:
-            self.comparison.compared(event, agent, actor, answers, reply)
-        # the comparison never changes the live answer (doc 1310 section 13.3): a fault in it is logged and the hook answers
+            self.comparison.compared(event, agent, actor, answers, reply, stepped)
         except Exception as error:
             self.errors.reported(["driver comparison", hook_row_line(event)], error, agent.environment_id)
         self.timing.stamp("driver_decided")

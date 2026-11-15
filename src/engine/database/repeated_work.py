@@ -107,6 +107,15 @@ class RepeatedWork(PointTally):
         self.started_mark: tuple[int, int, int] | None = None
 
     @contextmanager
+    def counted_separately(self) -> Generator[None]:
+        kept = self.reads, self.read_origins, self.read_texts
+        self.reads, self.read_origins, self.read_texts = Counter(), {}, Counter()
+        try:
+            yield
+        finally:
+            self.reads, self.read_origins, self.read_texts = kept
+
+    @contextmanager
     def request(self) -> Generator[None]:
         self.reads, self.read_texts, self.commands, self.findings = Counter(), Counter(), Counter(), []
         self.request_read_texts = Counter()

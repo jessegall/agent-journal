@@ -2,7 +2,6 @@ from dataclasses import replace
 from time import perf_counter
 
 from engine.container.container import Container
-from engine.guard.errors.guard_refusal import SKIP_ALLOWED_CASE
 from engine.driver.rule_call import RuleCall
 from engine.driver.rule_record import RuleRecord
 from engine.driver.stop_check import StopCheck
@@ -16,6 +15,7 @@ from engine.driver.overlay import Overlay
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.refusal_skips import RefusalSkips
 from engine.driver.rule_answer import RuleAnswer
+from engine.driver.refusal_skip_hint import RefusalSkipHint
 from engine.driver.rule_answers import RuleAnswers
 from engine.driver.rule_outcome import RuleOutcome
 from engine.driver.rule_timings import RuleTimings
@@ -186,7 +186,7 @@ class DriverRules:
             return RuleAnswer.allowed().running(skip)
         if hook.hook_name != HookEventName.PRE_TOOL_USE or not self.skips.has_refused(hook.agent_id, entry.name):
             return answer
-        return replace(answer, refusal=f"{answer.refusal} ({SKIP_ALLOWED_CASE}: journal refusal skip {entry.name} --reason '<why it is wrong here>')")
+        return RefusalSkipHint.hinted(answer, entry.name)
 
     # a rule is asked when it is switched on and the new driver does not answer for it at this agent's hook
     def is_active_rule(self, entry: DriverRuleEntry, hook: AgentHook) -> bool:

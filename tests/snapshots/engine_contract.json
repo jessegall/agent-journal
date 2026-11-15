@@ -2664,6 +2664,7 @@
       "fields": [],
       "methods": [
         "mark_read(self) -> None",
+        "counted_separately(self) -> Generator[None]",
         "loaded(self, rows: Sequence[sqlite3.Row], statement: Statement) -> None",
         "count_write(self, sql: str) -> None",
         "add(self, points: Points) -> None",
@@ -2788,6 +2789,7 @@
       ],
       "fields": [],
       "methods": [
+        "counted_separately(self) -> Generator[None]",
         "request(self) -> Generator[None]",
         "finish(self) -> None",
         "loaded(self, rows: Sequence[sqlite3.Row], statement: Statement) -> None",
@@ -3676,6 +3678,13 @@
       "fields": [],
       "methods": [
         "tool_input(event: HookEvent, refusal: str, output_tools: Sequence[ToolType]) -> Mapping[str, object]"
+      ]
+    },
+    "driver.refusal_skip_hint.RefusalSkipHint": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "hinted(answer: RuleAnswer, rule_name: str) -> RuleAnswer"
       ]
     },
     "driver.refusal_skips.RefusalSkips": {
@@ -10101,6 +10110,7 @@
       "fields": [],
       "methods": [
         "opened(self) -> Generator[None]",
+        "keep(self, key: str, version_reader: Callable[[], object], value: object) -> None",
         "read(self, key: str, version_reader: Callable[[], object], loader: Callable[[], T]) -> T"
       ]
     },

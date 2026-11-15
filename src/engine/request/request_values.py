@@ -25,6 +25,11 @@ class RequestValues:
             self.is_open = False
             self.values.clear()
 
+    # a value another reader of this request already has, kept as if it had been read
+    def keep(self, key: str, version_reader: Callable[[], object], value: object) -> None:
+        if self.is_open:
+            self.values[key] = (version_reader(), value)
+
     def read(self, key: str, version_reader: Callable[[], object], loader: Callable[[], T]) -> T:
         if not self.is_open:
             return loader()

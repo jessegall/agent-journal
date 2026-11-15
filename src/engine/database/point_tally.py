@@ -1,5 +1,6 @@
 from collections import Counter
-from collections.abc import Sequence
+from collections.abc import Generator, Sequence
+from contextlib import contextmanager
 from engine.database.points import Points
 from engine.database.statement import Statement
 import re
@@ -24,6 +25,11 @@ class PointTally:
 
     def mark_read(self) -> None:
         return
+
+    # a shadow evaluation of the same request, whose reads repeat the request's own by design and are counted apart
+    @contextmanager
+    def counted_separately(self) -> Generator[None]:
+        yield
 
     def loaded(self, rows: Sequence[sqlite3.Row], statement: Statement) -> None:
         sql = statement.sql

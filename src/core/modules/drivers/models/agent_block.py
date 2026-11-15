@@ -95,6 +95,11 @@ class AgentBlock(ClosedPrunable, Model):
     def refusal_type(self) -> NudgeType:
         return NudgeType.SAFETY_REFUSAL if self.strict else NudgeType.REFUSAL
 
+    # the refusal's text names the block by its number, which only the saved row knows
+    @property
+    def refusal_text(self) -> str:
+        return self.nudge_text.replace("{block}", str(self.id))
+
     @property
     def grace(self) -> Interval | None:
         spans = [span for span in (ToolUseSpan(self.grace_tool_uses), Seconds(self.grace_seconds)) if span.count]
