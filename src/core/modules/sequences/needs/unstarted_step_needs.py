@@ -17,8 +17,6 @@ UNTAKEN_STEP_KEY = "sequences.untaken-step"
 
 class UnstartedStepNeeds(NeedSource):
     """An agent whose sequence step is not taken up yet is blocked until it runs journal sequence follow."""
-
-    replaced_rules = tuple([UNTAKEN_STEP_KEY])
     state_type = Blocked
     rank = UNTAKEN_STEP_KEY
 

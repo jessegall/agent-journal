@@ -5,7 +5,7 @@ from datetime import timedelta
 from engine.actor.actor import Actor
 from engine.provider.launch_command import LaunchCommand
 from engine.enums.actor_type import ActorType
-from engine.driver.block_until import BlockUntil
+from engine.driver.open_hold import OpenHold
 from core.modules.tasks.commands.reset_task_reads.reset_task_reads import ResetTaskReads
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
@@ -140,7 +140,7 @@ class WorkerResume:
         if self.requirement.is_required:
             worker_actor = Actor(worker.id, ActorType.AGENT)
             self.bus.run(ResetTaskReads(worker.id), worker_actor, environment_id=worktree.environment_id)
-            self.bus.run(BlockUntil(worker.id, TaskBriefFirstNudge.declared().nudge(task=worktree.task_id), TaskBriefRead(worktree.task_id)),
+            self.bus.run(OpenHold(worker.id, TaskBriefFirstNudge.declared().nudge(task=worktree.task_id), TaskBriefRead(worktree.task_id)),
                          worker_actor, environment_id=worktree.environment_id)
         job = self.queries.query(AgentLine).find(job.id)
         if job.state is AgentLineState.WAITING and self.rows.required(Agent, worker.id).pid is not None:

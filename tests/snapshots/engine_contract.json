@@ -3186,7 +3186,7 @@
         "is_true(self, check: BlockCheck) -> bool"
       ]
     },
-    "driver.block_until.BlockUntil": {
+    "driver.block_until.OpenHold": {
       "bases": [
         "Command[object]"
       ],
@@ -4060,7 +4060,7 @@
       ],
       "methods": [
         "keys(self) -> Sequence[str]",
-        "start(cls, hook: AgentHook, condition: BlockCondition, refusal_fields: Mapping[str, object] | None) -> BlockUntil"
+        "start(cls, hook: AgentHook, condition: BlockCondition, refusal_fields: Mapping[str, object] | None) -> OpenHold"
       ]
     },
     "driver.states.hook_triggered_state.HookTriggeredState": {

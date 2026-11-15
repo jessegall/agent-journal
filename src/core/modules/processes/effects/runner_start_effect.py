@@ -24,7 +24,6 @@ class RunnerStartEffect(Effect):
     is the final one, after the transforms; a run that cannot be made withdraws the admission."""
 
     events = [HookEventName.PRE_TOOL_USE]
-    replaced_rules = tuple([RUNNER_REWRITE_KEY])
     timing = EffectTiming.ON_ADMISSION
     is_required = True
     failure = RunnerStartFailedNudge

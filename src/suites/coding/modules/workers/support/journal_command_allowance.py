@@ -18,7 +18,7 @@ from suites.coding.support.auto_advice import AutoAdvice
 
 class JournalCommandAllowance(Policy):
     """A journal command the main agent runs only while a setting allows it (doc 1310 section 10.9): asked at
-    the hook of a line that runs the command and at the command's entrance, with today's text, so the CLI,
+    the hook of a line that runs the command and at the command's entrance, with one text, so the CLI,
     MCP and the hook refuse alike. A subclass names its command words, its setting and its text."""
 
     arguments: ClassVar[tuple[str, ...]]
@@ -32,7 +32,6 @@ class JournalCommandAllowance(Policy):
 
     def __init_subclass__(cls, **kwargs: object) -> None:
         super().__init_subclass__(**kwargs)
-        cls.replaced_rules = tuple([cls.key])
 
     def refusals(self, question: Question, view: AgentView) -> Sequence[Reason]:
         tool = question.tool()

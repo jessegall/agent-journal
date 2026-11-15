@@ -18,7 +18,7 @@ class DueReminderLines(LineSource):
     events = [event for event in HookEventName if event is not HookEventName.TICK]
     includes_steps = True
     agent_types = [AgentRole.MAIN.value]
-    replaced_rules = tuple([DUE_REMINDER_KEY])
+    key = DUE_REMINDER_KEY
     category = LineCategory.STEERING
 
     def __init__(self, reminders: DueReminders, clock: Clock) -> None:

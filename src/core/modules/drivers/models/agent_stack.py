@@ -7,9 +7,9 @@ EMPTY_FRAMES = "[]"
 
 @dataclass(frozen=True, kw_only=True)
 class AgentStack(Model):
-    """One agent's continuation stack as the machine saves it: its driver and table digest, the slices it is
-    pinned to, the schema of its frames, the frames from the bottom as JSON, and its refusal counts. The row's
-    version is the agent's part of the answer basis."""
+    """One agent's continuation stack as the machine saves it: its driver and table digest, the schema of its
+    frames, the frames from the bottom as JSON, and its refusal counts. The row's version is the agent's part of
+    the answer basis."""
 
     model_name = "agent_stack"
     cli_name = "agent-stack"
@@ -18,7 +18,6 @@ class AgentStack(Model):
     # a row a permission change made before the agent's first step names no driver or table yet
     driver_name: str = ""
     table_digest: str = ""
-    pinned_slices: tuple[str, ...] = ()
     frame_schema: int = 1
     frames: str = EMPTY_FRAMES
     stop_refusals: int = 0

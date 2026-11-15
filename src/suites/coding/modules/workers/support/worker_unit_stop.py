@@ -19,10 +19,9 @@ HELP_COMMAND_TEXT = AskTopic.GENERAL.question_line()
 
 
 class WorkerUnitStop:
-    """Whether a worker's stop is held, as today's workers.stop-once-delivered decides it: it may stop with no
-    task, at a point of its round that waits, while a run or a helper of its own continues, while a reader is
-    needed, or between tasks to be compacted; at a merge that is due, or else, it hears what to do now. With no
-    task left it is told of each task of its that is blocked."""
+    """Whether a worker's stop is held: it may stop with no task, at a point of its round that waits, while a run
+    or a helper of its own continues, while a reader is needed, or between tasks to be compacted; at a merge that is
+    due, or else, it hears what to do now. With no task left it is told of each task of its that is blocked."""
 
     def __init__(self, tasks: TaskQuery, processes: ProcessQuery, requests: ReaderRequestQuery, clock: Clock, agents: AgentRows, compaction: WorkerCompaction,
                  guidance: WorkerGuidance, numbers: RowNumbers) -> None:

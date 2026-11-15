@@ -27,13 +27,12 @@ REPORT_RULE = "helpers.report"
 class JobReportEffect(Effect):
     """The hand-in (doc 1310 section 4.9): the allowed, decided stop of a hand-in helper whose work lane holds its
     open job, with nothing waiting above it and neither Paused nor Compacting, saves its report with the stop,
-    in the stop's own write, as today's helpers.report does."""
+    in the stop's own write."""
 
     events = tuple([HookEventName.STOP])
     agent_types = [HELPER_TYPE]
     # the work stop under which this type's allowed stop hands its job in
     report_contract: ClassVar[WorkStop] = WorkStop.HANDOVER
-    replaced_rules = tuple([REPORT_RULE])
     timing = EffectTiming.ON_ADMISSION
     is_required = True
     completes_work = True

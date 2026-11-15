@@ -11,7 +11,7 @@ from engine.journal.journal_home import JOURNAL_FOLDER
 
 class ProgramSettingsPolicy(EventPolicy):
     """A write to the journal's own Claude Code or Codex settings, or to a file they depend on, is refused, under
-    every overlay: the journal writes them at every start."""
+    every agent: the journal writes them at every start."""
 
     key = "agents.program-settings"
     rank = "safety.all"

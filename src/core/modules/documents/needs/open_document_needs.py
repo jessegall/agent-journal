@@ -22,9 +22,7 @@ OPEN_DOCUMENTS_REASON = "an agent holds at most one open document"
 class OpenDocumentNeeds(NeedSource):
     """Plans the block of a document an agent has open (doc 1310 section 4.6), read for a batch of agents at once: its
     tools at once (reads and journal commands pass), its stop at once, until journal doc close; the scopes keep the two
-    rule names and today's two texts."""
-
-    replaced_rules = (TOOL_RULE, STOP_RULE)
+    keys and their two texts."""
     state_type = Blocked
     rank = OPEN_DOCUMENT_RANK
 

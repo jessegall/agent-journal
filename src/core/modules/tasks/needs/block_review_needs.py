@@ -17,8 +17,6 @@ BLOCK_REVIEW_RANK = "tasks.blocked-review"
 class BlockReviewNeeds(NeedSource):
     """The third reminder of tasks the main agent blocked by hand, none of them moved, holds its tools until it acts
     on them or skips the hold with a reason."""
-
-    replaced_rules = tuple([BLOCK_REVIEW_KEY])
     state_type = Blocked
     rank = BLOCK_REVIEW_RANK
     agent_types = [AgentRole.MAIN.value]

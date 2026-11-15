@@ -18,8 +18,6 @@ WORKER_TASK_START_RANK = "workers.no-task"
 
 class WorkerTaskStartNeeds(NeedSource):
     """A worker with no started task is held, before its tools, until the journal starts its task."""
-
-    replaced_rules = tuple([WORKER_TASK_START_KEY])
     state_type = Blocked
     rank = WORKER_TASK_START_RANK
     agent_types = [WorkerAgentDriver.agent_type]

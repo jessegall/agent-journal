@@ -47,7 +47,6 @@ class AgentView:
     escalation: Escalation | None
     settings: Mapping[str, object]
     is_resting: bool
-    pinned_slices: tuple[str, ...]
     table_digest: str
     work_stop: WorkStop
     responder: Responder

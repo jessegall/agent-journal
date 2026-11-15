@@ -8,7 +8,7 @@ from engine.driver.nudge import Nudge
 
 
 @dataclass(frozen=True)
-class BlockUntil(Command[object]):
+class OpenHold(Command[object]):
     """Blocks an agent until the condition is true; each tool it may not use is refused with the nudge. With
     an interval in after, the block holds only once that grace has passed, and the countdown nudge is shown
     while it runs: {block} in the nudge is the block's number and {left} in the countdown the tool uses

@@ -30,10 +30,8 @@ TOOL_RULE, STOP_RULE, PROFILE_RULE = "skills.read-first", "skills.unread-stop", 
 class SkillReadFirstNeeds(NeedSource):
     """Plans the one block of an agent's due skills (doc 1310 section 4.6): its tools after three uses, its stop
     at once, waived by the agent; a skill the program put back after a compaction counts as read. The two
-    scopes keep the two rule names and today's two texts. A read-only helper is held at once, and only for the
-    skills its profile requires, as today's skills.profile-read-first does; it has no stop scope."""
-
-    replaced_rules = (TOOL_RULE, STOP_RULE, PROFILE_RULE)
+    scopes keep their two keys and their two texts. A read-only helper is held at once, and only for the
+    skills its profile requires; it has no stop scope."""
     state_type = Blocked
     rank = SKILL_READ_RANK
 

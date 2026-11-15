@@ -24,4 +24,4 @@ class ViewSamples:
         agent = replace(SAMPLE_AGENT, agent_type=agent_type, parent_id=1 if has_parent else None)
         responder = Responder.PARENT if has_parent else Responder.PERSON
         return AgentView(AnswerBasis(1, 1, 1), agent, "claude", "s-1", f"{agent_type} profile", f"samples.{agent_type}", 1, SAMPLE_TIME, StackSamples.built(*states), (), (), (), (), (), (), None, settings, False,
-                         (), "sample-digest", work_stop, responder, RankOrder((), ()), 16, Capabilities(), RefusalCounts(0, 0), {})
+                         "sample-digest", work_stop, responder, RankOrder((), ()), 16, Capabilities(), RefusalCounts(0, 0), {})

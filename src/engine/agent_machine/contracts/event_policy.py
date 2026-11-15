@@ -15,7 +15,7 @@ from engine.enums.hook_event_name import HookEventName
 
 
 class EventPolicy(Policy):
-    """A policy that judges the event alone, refusing with one line; its key is the old rule's name it replaces,
+    """A policy that judges the event alone, refusing with one line under its key,
     and a refusal skip passes it as it passed that rule, unless it is a safety policy."""
 
     events: ClassVar[Sequence[HookEventName]] = (HookEventName.PRE_TOOL_USE,)
@@ -23,7 +23,6 @@ class EventPolicy(Policy):
 
     def __init_subclass__(cls, **kwargs: object) -> None:
         super().__init_subclass__(**kwargs)
-        cls.replaced_rules = tuple([cls.key])
 
     def refusals(self, question: Question, view: AgentView) -> Sequence[Reason]:
         event = question.event

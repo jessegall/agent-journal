@@ -12,7 +12,6 @@ class ProjectHookTransform(Transform):
     judged again as the final action."""
 
     slot = TransformSlot.PROJECT_HOOK
-    replaced_rules = tuple([MANAGED_HOOKS_KEY])
 
     def __init__(self, answers: ForeignHookAnswers, parser: ShellParser) -> None:
         self.answers, self.parser = answers, parser

@@ -17,7 +17,6 @@ class UsePermissionEffect(Effect):
     admission."""
 
     events = [HookEventName.PRE_TOOL_USE]
-    replaced_rules = tuple(["drivers.access"])
     timing = EffectTiming.ON_ADMISSION
     is_required = True
     failure = PermissionUseFailedNudge

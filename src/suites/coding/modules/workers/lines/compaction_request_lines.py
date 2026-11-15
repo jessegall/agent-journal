@@ -18,7 +18,7 @@ class CompactionRequestLines(LineSource):
 
     events = [HookEventName.STOP]
     agent_types = [AgentRole.MAIN, Worker.key]
-    replaced_rules = tuple([COMPACTION_STOP_RULE])
+    key = COMPACTION_STOP_RULE
     # no program carries a line on a stop, so it waits for the agent's next event
     carrier = LineCarrier.WAITING
 

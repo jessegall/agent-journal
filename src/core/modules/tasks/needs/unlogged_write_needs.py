@@ -25,8 +25,6 @@ UNLOGGED_WRITE_RANK = "tasks.unlogged-writes"
 class UnloggedWriteNeeds(NeedSource):
     """Once 50 writes have been made since the task in hand was last logged, the agent is blocked until the task
     gets a log line or stops."""
-
-    replaced_rules = tuple([UNLOGGED_WRITE_KEY])
     state_type = Blocked
     rank = UNLOGGED_WRITE_RANK
     role_group = RoleGroup.TASK

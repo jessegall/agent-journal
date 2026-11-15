@@ -25,7 +25,7 @@ class LongWaitLines(LineSource):
 
     events = [HookEventName.TICK]
     includes_steps = True
-    replaced_rules = tuple([LONG_WAIT_RULE])
+    key = LONG_WAIT_RULE
     carrier = LineCarrier.WAITING
     category = LineCategory.STEERING
 

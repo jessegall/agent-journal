@@ -25,7 +25,6 @@ class ScheduledJobEffect(Effect):
 
     events = [HookEventName.POST_TOOL_USE]
     timing = EffectTiming.UNCONDITIONAL
-    replaced_rules = tuple([SCHEDULED_JOB_RULE])
 
     def commands(self, view: AgentView, record: "DecisionRecord") -> Sequence[Command[object]]:
         event = record.action.event

@@ -2,7 +2,7 @@ import json
 from datetime import timedelta
 
 from engine.actor.actor import Actor
-from engine.driver.block_until import BlockUntil
+from engine.driver.open_hold import OpenHold
 from engine.driver.conditions.ran_command import RanCommand
 from engine.driver.nudge import Nudge
 from engine.enums.nudge_type import NudgeType
@@ -18,7 +18,7 @@ CARD = "usage agents --environment main --json"
 
 def story_with_refusing_block(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
-    story.run_command(BlockUntil(story.agent.id, Nudge("samples.wait", NudgeType.REFUSAL, REFUSAL_TEXT), RanCommand("journal overview")), Actor.core())
+    story.run_command(OpenHold(story.agent.id, Nudge("samples.wait", NudgeType.REFUSAL, REFUSAL_TEXT), RanCommand("journal overview")), Actor.core())
     return story
 
 
@@ -57,7 +57,7 @@ def test_a_worker_with_a_started_task_does_not_show_a_hook_hold_as_a_block(new_s
     story = new_story(fixture=OrchestratorWithPerson)
     repository_environment(story)
     worker = dispatched_worker(story)
-    story.run_command(BlockUntil(worker.id, Nudge("samples.wait", NudgeType.REFUSAL, REFUSAL_TEXT), RanCommand("journal overview")), Actor.core())
+    story.run_command(OpenHold(worker.id, Nudge("samples.wait", NudgeType.REFUSAL, REFUSAL_TEXT), RanCommand("journal overview")), Actor.core())
     story.advance(timedelta(seconds=121))
     rows = json.loads(story.run(CARD, actor=story.user).output_text)["rows"]
     card = next(row for row in rows if row["id"] == worker.id)

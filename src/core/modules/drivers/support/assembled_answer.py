@@ -6,8 +6,7 @@ from core.modules.drivers.support.assembled_step import AssembledStep
 
 @dataclass(frozen=True)
 class AssembledAnswer:
-    """What one hook is answered with: the walk's answers with the new driver's decision among them, and the
-    new driver's step to save when some of its slices answer the agent."""
+    """What one hook is answered with: the answer built from the agent machine's decision, and the step to save."""
 
     answers: RuleAnswers
     step: AssembledStep | None = None

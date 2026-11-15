@@ -17,8 +17,6 @@ READER_REQUEST_KEY = "processes.reader-request"
 class ReaderRequestNeeds(NeedSource):
     """Holds the main agent's tools, after the request's tool uses, until it helps with each reader request whose
     saves failed or that expired."""
-
-    replaced_rules = tuple([READER_REQUEST_KEY])
     state_type = Blocked
     rank = READER_REQUEST_KEY
 

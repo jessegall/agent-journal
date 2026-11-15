@@ -16,13 +16,11 @@ UNCARRIED_EVENTS = {HookEventName.TICK, HookEventName.MESSAGE_DISPLAY}
 
 class EventLineSource(LineSource):
     """A line source that tells an agent lines from the event alone, or at its minute step when it keeps time;
-    its key is the old rule's name it replaces."""
+    its lines are recorded under its key."""
 
-    key: str
 
     def __init_subclass__(cls, **kwargs: object) -> None:
         super().__init_subclass__(**kwargs)
-        cls.replaced_rules = tuple([cls.key])
         cls.includes_steps = HookEventName.TICK in cls.events
         if set(cls.events) <= UNCARRIED_EVENTS:
             cls.carrier = LineCarrier.WAITING

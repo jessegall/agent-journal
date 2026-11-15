@@ -3,7 +3,7 @@ import pytest
 from datetime import timedelta
 
 from engine.actor.actor import Actor
-from engine.driver.block_until import BlockUntil
+from engine.driver.open_hold import OpenHold
 from engine.enums.command_category import CommandCategory
 from engine.driver.conditions.ran_command import RanCommand
 from engine.driver.interval import Interval
@@ -103,7 +103,7 @@ def test_a_line_that_names_no_command_opens_no_debt(new_story):
 
 def test_a_block_that_waits_for_no_grace_cannot_be_skipped(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    story.run_command(BlockUntil(story.agent.id, Nudge("samples.wait", NudgeType.REFUSAL, "wait"), RanCommand("journal overview")), Actor.core())
+    story.run_command(OpenHold(story.agent.id, Nudge("samples.wait", NudgeType.REFUSAL, "wait"), RanCommand("journal overview")), Actor.core())
     story.expect_refusal('agent-block skip 1 --reason "no grace"', "cannot be skipped", actor=story.agent)
 
 
@@ -137,7 +137,7 @@ def grace_countdown(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     refusal = Nudge("samples.pay", NudgeType.REFUSAL, "pay the {block} fee: journal agent-block skip {block} --reason '<why>'")
     countdown = Nudge("samples.pay_countdown", NudgeType.STEERING, "fee due: {left} tool uses")
-    story.run_command(BlockUntil(story.agent.id, refusal, RanCommand("journal pay"), Interval(ToolUseSpan(2)), countdown), Actor.core())
+    story.run_command(OpenHold(story.agent.id, refusal, RanCommand("journal pay"), Interval(ToolUseSpan(2)), countdown), Actor.core())
     first, second, third = spend(story, 3)
     return story, refusal, countdown, first, second, third
 

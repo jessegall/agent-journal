@@ -8,8 +8,7 @@ from core.modules.drivers.models.program_epoch import ProgramEpoch
 
 class AnswerBasisRows:
     """The rows a step's answer basis is read from, the agent's stack and the environment's driver epoch and the program's epoch, each read once
-    a request until a write changes it: the view of a step, the slices the agent is pinned to and the basis check of
-    the save share one read."""
+    a request until a write changes it: the view of a step and the basis check of the save share one read."""
 
     def __init__(self, queries: Queries, request_values: RequestValues, database: Database) -> None:
         self.queries, self.request_values, self.database = queries, request_values, database
@@ -23,16 +22,3 @@ class AnswerBasisRows:
 
     def program_epoch(self, program: str) -> ProgramEpoch | None:
         return self.request_values.read(f"drivers.program-epoch:{program}", self.database.change_mark, lambda: self.queries.query(ProgramEpoch).filter(program=program).first())
-
-    # the slices the agent is pinned to, kept for the request once taken, since a pin never changes until the next
-    # session start; an agent pinned to none is read again, as its first hook may pin it
-    def pins(self, agent_id: int) -> frozenset[str]:
-        key = f"drivers.pins:{agent_id}"
-        kept = self.request_values.read(key, lambda: 0, lambda: None)
-        if kept:
-            return kept
-        row = self.row(agent_id)
-        pins = frozenset(row.pinned_slices if row is not None else ())
-        if pins:
-            self.request_values.keep(key, lambda: 0, pins)
-        return pins

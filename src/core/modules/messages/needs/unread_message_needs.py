@@ -22,10 +22,8 @@ READ_COMMANDS = ("journal message read", "journal message unread")
 
 class UnreadMessageNeeds(NeedSource):
     """Plans the one block over an agent's unread messages, told of or not yet (doc 1310 section 4.6): its tools
-    after twenty uses, its stop at once, naming the oldest; the two scopes keep the two rule names and today's
+    after twenty uses, its stop at once, naming the oldest; the two scopes keep their two keys and their
     two texts."""
-
-    replaced_rules = (TOOL_RULE, STOP_RULE)
     state_type = Blocked
     rank = UNREAD_RANK
 

@@ -2,7 +2,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.container.container import Container
 from engine.database.kept_rows import KeptRows
-from engine.driver.block_until import BlockUntil
+from engine.driver.open_hold import OpenHold
 from engine.driver.interval import Interval
 from engine.driver.seconds import Seconds
 from engine.query.conditions.is_null import IsNull
@@ -13,17 +13,17 @@ from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
 
 
-class BlockUntilHandler(Handler[BlockUntil, AgentBlock]):
+class OpenHoldHandler(Handler[OpenHold, AgentBlock]):
     """Opens a block, or brings the open one with the same line up to date with its words; a block on a row
     that does not exist is refused, since it could never close."""
 
-    command = BlockUntil
+    command = OpenHold
 
     def __init__(self, queries: Queries, repository: Repository, kept: KeptRows, container: Container) -> None:
         self.queries, self.repository = queries, repository
         self.kept, self.container = kept, container
 
-    def handle(self, command: BlockUntil, context: Context) -> AgentBlock:
+    def handle(self, command: OpenHold, context: Context) -> AgentBlock:
         if not command.condition.has_target(self.container):
             raise MissingBlockTargetRefusal(command.condition.name, command.condition.text)
         line_blocks = self.queries.query(AgentBlock).filter(session_agent_id=command.agent_id, nudge_key=command.nudge.key).matching(IsNull("closed_at"))
@@ -33,7 +33,7 @@ class BlockUntilHandler(Handler[BlockUntil, AgentBlock]):
         self.kept.update(query, lambda previous: saved, name="drivers.open_block")
         return saved
 
-    def save_block(self, command: BlockUntil, context: Context, existing: AgentBlock | None) -> AgentBlock:
+    def save_block(self, command: OpenHold, context: Context, existing: AgentBlock | None) -> AgentBlock:
         if existing is not None:
             return self.repository.update(existing, context, nudge_text=command.nudge.text, condition_name=command.condition.name, condition_text=command.condition.text,
                                       countdown_text=command.countdown.text if command.countdown else existing.countdown_text)

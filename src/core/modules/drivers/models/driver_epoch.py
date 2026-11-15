@@ -7,7 +7,7 @@ from engine.model.model import Model
 
 @dataclass(frozen=True, kw_only=True)
 class DriverEpoch(EnvironmentScoped, Model):
-    """An environment's part of the answer basis: raised by every change of a driving setting, a live slice, the
+    """An environment's part of the answer basis: raised by every change of a driving setting, the
     driver or suite, a profile, a table digest, and a server boot, with the time of that boot, which no
     driving setting moves."""
 

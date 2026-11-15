@@ -23,9 +23,7 @@ AGENT_SUBJECT = "agent"
 
 class WorkerUnitNeeds(NeedSource):
     """One Working frame for a worker's unit (doc 1310 section 10.5): work remains while its stop is held, as
-    today's workers.stop-once-delivered holds it, and the stop text says what to do now."""
-
-    replaced_rules = tuple([WORKER_STOP_KEY])
+    the worker's unit stop holds it, and the stop text says what to do now."""
     state_type = Working
     rank = WORKER_STOP_RANK
     agent_types = [Worker.key]

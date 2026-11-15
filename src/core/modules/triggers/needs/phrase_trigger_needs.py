@@ -19,8 +19,6 @@ PHRASE_SKILL_RANK = "triggers.skill"
 class PhraseTriggerNeeds(NeedSource):
     """A tool call whose words a skill trigger watches holds the agent's tools, after the skill countdown's uses,
     until it has read that skill."""
-
-    replaced_rules = tuple([PHRASE_TRIGGER_KEY])
     state_type = Blocked
     rank = PHRASE_SKILL_RANK
     role_group = RoleGroup.PROMPT

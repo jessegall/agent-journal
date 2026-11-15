@@ -23,10 +23,8 @@ class CompactionNeeds(NeedSource):
     """Compacting on the stack of a main agent or a worker (doc 1310 section 4.10): while the journal's request
     is open, asked within its retry time or started, and while compaction is due and the journal may still
     ask, once and once more when the first did not start in time. A failed compaction asks no more until a
-    person or the program compacts. Due is today's ContextLimitCheck: past the limit and grown enough, with
+    person or the program compacts. Due is ContextLimitCheck: past the limit and grown enough, with
     no task to finish first or past the second limit."""
-
-    replaced_rules = tuple([COMPACTION_STOP_RULE])
     state_type = Compacting
     rank = ""
     agent_types = [AgentRole.MAIN, Worker.key]

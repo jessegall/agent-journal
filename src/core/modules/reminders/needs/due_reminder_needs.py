@@ -20,7 +20,6 @@ class DueReminderNeeds(NeedSource):
     state_type = Blocked
     rank = "reminders.due"
     agent_types = [AgentRole.MAIN.value]
-    replaced_rules = tuple([DUE_REMINDER_KEY])
 
     def __init__(self, reminders: DueReminders, conditions: BlockConditions, clock: Clock) -> None:
         self.reminders, self.conditions, self.clock = reminders, conditions, clock

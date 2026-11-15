@@ -11,7 +11,7 @@ from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.engine.driver.support.samples import SAMPLES
 from engine.command.bus import Bus
 from engine.actor.actor import Actor
-from engine.driver.block_until import BlockUntil
+from engine.driver.open_hold import OpenHold
 from engine.driver.nudge import Nudge
 from engine.enums.nudge_type import NudgeType
 
@@ -24,7 +24,7 @@ LINE = "wait for it"
 def blocked_story(new_story, condition):
     story = new_story(SAMPLES, fixture=LeadStarted)
     agent = story.agent
-    story.container.get(Bus).run(BlockUntil(agent.id, Nudge("samples.wait", NudgeType.REFUSAL, LINE), condition), Actor.core())
+    story.container.get(Bus).run(OpenHold(agent.id, Nudge("samples.wait", NudgeType.REFUSAL, LINE), condition), Actor.core())
     return story
 
 

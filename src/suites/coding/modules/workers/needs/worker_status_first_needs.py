@@ -17,8 +17,6 @@ WORKER_STATUS_FIRST_KEY = "workers.status-first"
 class WorkerStatusFirstNeeds(NeedSource):
     """After a compaction a worker is held until it has run journal worker status, which says where it stands and
     which skills it must load; a new start needs none, since the brief is its prompt."""
-
-    replaced_rules = tuple([WORKER_STATUS_FIRST_KEY])
     state_type = Blocked
     rank = WORKER_STATUS_FIRST_KEY
     agent_types = [Worker.key]

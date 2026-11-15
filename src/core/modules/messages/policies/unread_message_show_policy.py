@@ -14,8 +14,6 @@ MESSAGES_POLICY_RANK = "messages.policies"
 
 class UnreadMessageShowPolicy(Policy):
     """Refuses journal message show of a user's unread message: it is read with journal message read."""
-
-    replaced_rules = tuple(["messages.unread-show"])
     key = "messages.unread-show"
     rank = MESSAGES_POLICY_RANK
 

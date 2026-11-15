@@ -15,14 +15,13 @@ if TYPE_CHECKING:
 
 class EventEffect(Effect):
     """An effect that runs commands from the event alone, whatever the decision, or at the agent's minute step
-    when it keeps time; its key is the old rule's name it replaces."""
+    when it keeps time."""
 
     key: str
     timing = EffectTiming.UNCONDITIONAL
 
     def __init_subclass__(cls, **kwargs: object) -> None:
         super().__init_subclass__(**kwargs)
-        cls.replaced_rules = tuple([cls.key])
         cls.includes_steps = HookEventName.TICK in cls.events
 
     def commands(self, view: AgentView, record: "DecisionRecord") -> Sequence[Command[object]]:

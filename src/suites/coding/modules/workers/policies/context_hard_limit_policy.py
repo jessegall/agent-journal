@@ -29,7 +29,6 @@ class ContextHardLimitPolicy(Policy):
     rank = "access.all"
     grant_types = []
     agent_types = [AgentRole.MAIN, Worker.key]
-    replaced_rules = tuple([HARD_LIMIT_RULE])
 
     def __init__(self, limits: ContextLimitCheck, watch_call: OutputWatchCall) -> None:
         self.limits, self.watch_call = limits, watch_call

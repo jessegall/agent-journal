@@ -2,7 +2,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
-from engine.driver.block_until import BlockUntil
+from engine.driver.open_hold import OpenHold
 from engine.driver.nudge import Nudge
 from engine.enums.nudge_type import NudgeType
 from engine.testing.examples.hook_samples import HookSamples
@@ -16,7 +16,7 @@ MISSING_OUTPUT = 999_999
 
 
 def block_on(story, output_id: int) -> None:
-    story.container.get(Bus).run(BlockUntil(story.agent.id, Nudge("samples.read-output", NudgeType.REFUSAL, LINE), OutputRead(output_id)), Actor.core())
+    story.container.get(Bus).run(OpenHold(story.agent.id, Nudge("samples.read-output", NudgeType.REFUSAL, LINE), OutputRead(output_id)), Actor.core())
 
 
 def test_a_block_on_an_output_that_does_not_exist_is_refused_when_made(new_story):

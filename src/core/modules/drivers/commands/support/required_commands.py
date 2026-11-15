@@ -5,7 +5,7 @@ from dataclasses import replace
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.driver.block_condition import BlockCondition
-from engine.driver.block_until import BlockUntil
+from engine.driver.open_hold import OpenHold
 from engine.driver.conditions.ran_command import RanCommand
 from engine.driver.interval import Interval
 from engine.driver.nudge import Nudge
@@ -26,13 +26,13 @@ class RequiredCommands:
                 self.bus.dispatch(self.block(agent_id, nudge), context)
 
     @staticmethod
-    def block(agent_id: int, nudge: Nudge) -> BlockUntil:
+    def block(agent_id: int, nudge: Nudge) -> OpenHold:
         parts = nudge.required_command.split()
         # the verb, the noun and the row it names, such as read output 4120: a flag after the row (--tail 5) is no row
         subject = " ".join(dict.fromkeys((*parts[2:3], parts[1], *parts[3:4])))
         refusal = RequiredCommandRefusalNudge.declared().nudge(subject=subject, block="{block}")
         countdown = REQUIRED_COMMAND_COUNTDOWN.nudge("{left}", subject=subject)
-        return BlockUntil(agent_id, replace(refusal, key=f"{refusal.key}:{nudge.required_command}"), RequiredCommands.condition(nudge), Interval(REQUIRED_COMMAND_SPAN), countdown)
+        return OpenHold(agent_id, replace(refusal, key=f"{refusal.key}:{nudge.required_command}"), RequiredCommands.condition(nudge), Interval(REQUIRED_COMMAND_SPAN), countdown)
 
     @staticmethod
     def condition(nudge: Nudge) -> BlockCondition:

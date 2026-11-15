@@ -6,7 +6,7 @@ from engine.driver.hook_event import HookEvent
 from engine.request.request_values import RequestValues
 from core.modules.drivers.support.minute_tick import MinuteTick
 from core.modules.processes.support.reading.reader_request_answer import ReaderHelpHold, ReaderRequestAnswer
-from engine.driver.block_until import BlockUntil
+from engine.driver.open_hold import OpenHold
 from engine.driver.conditions.time_reached import TimeReached
 from engine.driver.interval import Interval
 from engine.enums.actor_type import ActorType
@@ -45,7 +45,7 @@ class ReaderRequestBlocks:
             return
         nudge = ReaderBlockNudge.declared().nudge(output=part.process_id, request=request.id)
         ends = AnyCondition(ReaderRequestCompleted(request.id), TimeReached(request.expires_at.text))
-        self.bus.dispatch(BlockUntil(process.session_agent_id, ReaderBlockKeys.keyed(nudge, request.id), ends), context)
+        self.bus.dispatch(OpenHold(process.session_agent_id, ReaderBlockKeys.keyed(nudge, request.id), ends), context)
 
     # what the reader requests say at one hook of the agent, read once a hook; the minute step reads the tick it replaces
     def answer(self, event: HookEvent | None, agent_id: int) -> ReaderRequestAnswer:
@@ -73,5 +73,5 @@ class ReaderRequestBlocks:
         return ReaderHelpHold(ReaderBlockKeys.keyed(refusal, request.id), ReaderRequestCompleted(request.id), request.command)
 
     @staticmethod
-    def help_block(agent_id: int, hold: ReaderHelpHold) -> BlockUntil:
-        return BlockUntil(agent_id, hold.nudge, hold.condition, after=Interval(READER_REQUEST_SPAN), countdown=READER_REQUEST_COUNTDOWN.nudge("{left}", command=hold.command))
+    def help_block(agent_id: int, hold: ReaderHelpHold) -> OpenHold:
+        return OpenHold(agent_id, hold.nudge, hold.condition, after=Interval(READER_REQUEST_SPAN), countdown=READER_REQUEST_COUNTDOWN.nudge("{left}", command=hold.command))

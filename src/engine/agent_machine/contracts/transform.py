@@ -13,7 +13,6 @@ class Transform(ABC):
     transformed a second time."""
 
     slot: ClassVar[TransformSlot]
-    replaced_rules: ClassVar[Sequence[str]] = ()
 
     @abstractmethod
     def applied(self, question: Question, view: AgentView) -> Rewrite: ...

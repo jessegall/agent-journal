@@ -23,7 +23,6 @@ class ScheduledJobRunEffect(Effect):
 
     events = [HookEventName.PROMPT]
     timing = EffectTiming.UNCONDITIONAL
-    replaced_rules = tuple([SCHEDULED_JOB_RUN_RULE])
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

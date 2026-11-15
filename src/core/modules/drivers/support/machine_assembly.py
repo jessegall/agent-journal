@@ -20,7 +20,7 @@ Contribution = TypeVar("Contribution")
 
 
 class MachineAssembly:
-    """The one assembler of the agent machine (doc 1310 section 13.2): every contribution the installed modules
+    """The one assembler of the agent machine: every contribution the installed modules
     list, built through the container, and for one agent type the machine of those that cover it and its
     view filled with the needs and plans its need sources give."""
 

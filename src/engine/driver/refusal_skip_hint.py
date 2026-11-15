@@ -6,7 +6,7 @@ from engine.guard.errors.guard_refusal import SKIP_ALLOWED_CASE
 
 class RefusalSkipHint:
     """The refusal of a rule that refused the agent's last refused hook too, with the command that skips it once;
-    the old walk and every policy of the new driver give it alike, and a refusal that has it gets it once."""
+    every policy gives it alike, and a refusal that has it gets it once."""
 
     @staticmethod
     def text(refusal: str, rule_name: str) -> str:

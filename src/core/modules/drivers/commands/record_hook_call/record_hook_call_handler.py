@@ -39,7 +39,7 @@ from core.modules.drivers.commands.support.compaction_end_percent import Compact
 from core.modules.drivers.commands.support.required_commands import RequiredCommands
 from core.modules.drivers.support.nudge_log import NudgeLog
 from core.modules.drivers.commands.support.one_move_per_row import OneMovePerRow
-from core.modules.drivers.commands.support.rule_history_writer import RuleHistoryWriter
+from core.modules.drivers.commands.support.line_history_writer import LineHistoryWriter
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from engine.enums.hook_answer import HookAnswer
@@ -69,7 +69,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     runs_once = True
 
     def __init__(self, required_commands: RequiredCommands, bus: Bus, database: Database, queries: Queries, repository: Repository,
-                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome, share: ContextShare, compaction_end: CompactionEndPercent, hook_calls: HookCallQuery, loader: ActorLoader, steps: StepWriter, displayed_blocks: DisplayedBlocks) -> None:
+                 history: LineHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome, share: ContextShare, compaction_end: CompactionEndPercent, hook_calls: HookCallQuery, loader: ActorLoader, steps: StepWriter, displayed_blocks: DisplayedBlocks) -> None:
         self.steps, self.displayed_blocks = steps, displayed_blocks
         self.home, self.share, self.compaction_end, self.hook_calls, self.loader = home, share, compaction_end, hook_calls, loader
         self.event_rows = event_rows

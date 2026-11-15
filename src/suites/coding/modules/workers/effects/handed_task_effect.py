@@ -19,7 +19,6 @@ class HandedTaskEffect(Effect):
     events = [HookEventName.STOP]
     includes_steps = True
     agent_types = ["main"]
-    replaced_rules = tuple([MAIN_STOP_KEY])
     timing = EffectTiming.UNCONDITIONAL
 
     def commands(self, view: AgentView, record: DecisionRecord) -> Sequence[Command[object]]:

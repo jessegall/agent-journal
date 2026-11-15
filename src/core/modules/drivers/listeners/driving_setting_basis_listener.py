@@ -7,7 +7,7 @@ from core.modules.settings.models.setting import Setting
 
 
 class DrivingSettingBasisListener(SaveListener[Changed[Setting]]):
-    """A setting declared as driving, the driver or suite chosen and the active slices among them, moves the driver
+    """A setting declared as driving, and the driver or suite chosen, moves the driver
     epoch of its environment in the same write, and of every environment when it is the project's."""
 
     name = "drivers.driving-setting-basis"

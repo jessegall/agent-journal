@@ -107,7 +107,7 @@ class StoredStepWriter(StepWriter):
                     or record.wake.wake_move is not WakeMove.UNCHANGED or step.stack != view.stack)
 
     def saved_stack(self, row: AgentStack | None, view: AgentView, step: StepResult, context: Context) -> AgentStack:
-        values = {"driver_name": view.driver_name, "table_digest": view.table_digest, "pinned_slices": view.pinned_slices,
+        values = {"driver_name": view.driver_name, "table_digest": view.table_digest,
                   "frames": FrameCodec.encoded(step.stack.frames), "stop_refusals": step.record.counts.stop_refusals,
                   "tool_refusals": step.record.counts.tool_refusals}
         stack = row.changed(**values) if row is not None else AgentStack(session_agent_id=view.agent.agent_id, **values)

@@ -10,7 +10,7 @@ NATIVE_MEMORY_PATH = re.compile(r"\.claude/projects/[^/\s]+/memory(/|\b)")
 
 
 class NativeMemoryPolicy(EventPolicy):
-    """A write into Claude Code's own memory folder is refused, under every overlay: the journal keeps the
+    """A write into Claude Code's own memory folder is refused for every agent: the journal keeps the
     memories."""
 
     key = "claude_code.native-memory"

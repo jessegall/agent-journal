@@ -7,8 +7,8 @@ from suites.coding.modules.workers.models.merge_ask import MergeAsk
 
 
 class ProvedDeliveryGuard(Guard[Created[MergeAsk]]):
-    """A merge ask's own write asks workers.proved-delivery at AskMerge's entrance once the admission slice answers
-    the worker, so the CLI, MCP and the hook refuse alike; until then today's merge checks stand alone."""
+    """A merge ask's own write asks workers.proved-delivery at AskMerge's entrance, so the CLI, MCP and the hook
+    refuse alike."""
 
     name = "workers.proved-delivery"
 

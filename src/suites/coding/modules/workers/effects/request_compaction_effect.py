@@ -23,7 +23,6 @@ class RequestCompactionEffect(Effect):
     events = [HookEventName.STOP]
     timing = EffectTiming.ON_ADMISSION
     agent_types = [AgentRole.MAIN, Worker.key]
-    replaced_rules = tuple([COMPACTION_STOP_RULE])
 
     def __init__(self, limits: ContextLimitCheck) -> None:
         self.limits = limits

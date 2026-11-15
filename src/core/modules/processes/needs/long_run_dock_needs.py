@@ -20,9 +20,7 @@ TITLE_GRACE_USES = 5
 class LongRunDockNeeds(NeedSource):
     """Plans the hold on each docked run whose output has no descriptive title (doc 1310 section 4.6, the
     required command row): the docked run is the request, its tools held after five uses until journal output
-    title, never a line that counts. LongRunDockEffect docks the run, as today's rule does."""
-
-    replaced_rules = tuple([LONG_RUN_DOCK_KEY])
+    title, never a line that counts. LongRunDockEffect docks the run."""
     state_type = Blocked
     rank = OUTPUT_TITLE_RANK
 

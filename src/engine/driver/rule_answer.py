@@ -4,7 +4,7 @@ from dataclasses import dataclass, field, replace
 from engine.command.command import Command
 from engine.driver.agent_hook import AgentHook
 from engine.driver.block_condition import BlockCondition
-from engine.driver.block_until import BlockUntil
+from engine.driver.open_hold import OpenHold
 from engine.driver.interval import Interval
 from engine.driver.nudge import Nudge
 from engine.enums.nudge_type import NudgeType
@@ -12,7 +12,7 @@ from engine.enums.nudge_type import NudgeType
 
 @dataclass(frozen=True)
 class RuleAnswer:
-    """What one driver rule says about a hook: nothing, nudges, a refusal or a new input for the tool, with
+    """What one part of a hook's answer says: nothing, nudges, a refusal or a new input for the tool, with
     the commands the journal runs for it, and the commands it runs only when no rule refused the hook."""
 
     refusal: str = ""
@@ -60,7 +60,7 @@ class RuleAnswer:
     def blocked(cls, hook: AgentHook, nudge: Nudge, condition: BlockCondition) -> "RuleAnswer":
         tool = hook.event.tool
         answer = cls.allowed() if tool is None or tool.block_exempt else cls.refused(nudge)
-        return answer.running(BlockUntil(hook.agent_id, nudge, condition))
+        return answer.running(OpenHold(hook.agent_id, nudge, condition))
 
     @classmethod
     def refusals(cls, nudges: Sequence[Nudge]) -> "RuleAnswer":
@@ -68,10 +68,10 @@ class RuleAnswer:
 
     @classmethod
     def refused_with_block(cls, hook: AgentHook, nudge: Nudge, condition: BlockCondition) -> "RuleAnswer":
-        return cls.refused(nudge).running(BlockUntil(hook.agent_id, nudge, condition))
+        return cls.refused(nudge).running(OpenHold(hook.agent_id, nudge, condition))
 
     def blocking_after(self, hook: AgentHook, nudge: Nudge, condition: BlockCondition, after: Interval, countdown: Nudge, strict: bool = False) -> "RuleAnswer":
-        return self.running(BlockUntil(hook.agent_id, nudge, condition, after, countdown, strict=strict))
+        return self.running(OpenHold(hook.agent_id, nudge, condition, after, countdown, strict=strict))
 
     def running(self, *commands: Command[object]) -> "RuleAnswer":
         return replace(self, commands=[*self.commands, *commands])

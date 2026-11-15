@@ -24,7 +24,6 @@ class WorkEndsWaitEffect(Effect):
 
     events = [HookEventName.PRE_TOOL_USE]
     timing = EffectTiming.UNCONDITIONAL
-    replaced_rules = tuple([WORK_ENDS_WAIT_KEY])
 
     def commands(self, view: AgentView, record: "DecisionRecord") -> Sequence[Command[object]]:
         tool = record.action.tool()

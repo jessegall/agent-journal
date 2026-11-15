@@ -10,10 +10,7 @@ from core.modules.skills.commands.record_kept_skills.record_kept_skills import R
 
 
 class RecordKeptSkillsEffect(Effect):
-    """After a tool use, records the skills the program put back into the agent's context, in the save of the step;
-    today's skills.record-kept did it after the reply."""
-
-    replaced_rules = tuple(["skills.record-kept"])
+    """After a tool use, records the skills the program put back into the agent's context, in the save of the step."""
     events = [HookEventName.POST_TOOL_USE]
     timing = EffectTiming.UNCONDITIONAL
 

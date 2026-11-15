@@ -129,7 +129,7 @@ class AgentMachine:
             blocks_closed=self.closings(view) if decision.admits() or not question.is_action() else (), waiting_lines=[line for line in lines if line.carrier is LineCarrier.WAITING],
             stop_checks=self.stop_checks(question, reasons), counts=counts, wake=self.wakes.change(view, stack), basis=view.basis,
             printing=self.printing(question, view, decision, rewrite),
-            inputs=DecisionInputs(view.table_digest, view.pinned_slices, tuple(need.key for need in view.needs),
+            inputs=DecisionInputs(view.table_digest, tuple(need.key for need in view.needs),
                                   tuple(block.block_id for block in view.blocks if block.block_id is not None), tuple(grant.grant_id for grant in view.grants)))
 
     @staticmethod
@@ -140,15 +140,15 @@ class AgentMachine:
     def identity(view: AgentView, question: Question) -> EventIdentity:
         if question.event is not None:
             return EventIdentity.identified(question.event, view.session_generation, view.agent.agent_id, view.agent.environment_id, view.agent.agent_type,
-                                            view.profile, view.driver_name, view.pinned_slices)
+                                            view.profile, view.driver_name)
         return EventIdentity(view.program_name, view.session, view.session_generation, STEP_FIRING.format(version=view.basis.stack_version),
-                             view.agent.agent_id, view.agent.environment_id, view.agent.agent_type, view.profile, view.driver_name, view.pinned_slices)
+                             view.agent.agent_id, view.agent.environment_id, view.agent.agent_type, view.profile, view.driver_name)
 
     def lines(self, question: Question, view: AgentView) -> list[Line]:
         event = question.event
         sources = [source for source in self.line_sources if ((event is not None and event.event in source.events) or (event is None and source.includes_steps))
                    and not (source.start_line and event is not None and event.is_resume)]
-        lines = [replace(line, source_key=source.replaced_rules[0] if source.replaced_rules else "") for source in sources for line in source.lines(question, view)]
+        lines = [replace(line, source_key=source.key) for source in sources for line in source.lines(question, view)]
         # a step answers no hook, so its lines wait for the agent's next event or its wake, as at an event its program cannot carry
         if event is not None and view.program.supports(CapabilityPart.LINES, event.event):
             return lines

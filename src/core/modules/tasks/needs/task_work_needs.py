@@ -40,9 +40,7 @@ TASK_ENDS = {TaskState.COMPLETED: FrameEnd.CLOSED, TaskState.CANCELLED: FrameEnd
 class TaskWorkNeeds(NeedSource):
     """One Working frame for each task a main agent holds started (doc 1310 section 4.4): work remains while it
     is started, unless the suite lets the agent stop with its tasks in hand; the stop text names every started
-    task, as today's tasks.carry-on-at-stop does. A run going is the processes module's Waiting need on top."""
-
-    replaced_rules = tuple([TASK_STOP_RULE])
+    task. A run going is the processes module's Waiting need on top."""
     state_type = Working
     rank = TASK_RANK
     agent_types = ["main"]

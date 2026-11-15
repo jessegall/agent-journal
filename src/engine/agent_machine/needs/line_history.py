@@ -4,7 +4,7 @@ from engine.time.timestamp import Timestamp
 
 
 class LineHistory(ABC):
-    """When a line source last gave an agent a line, under the key of the old rule it answers for: what a source
+    """When a line source last gave an agent a line, under its key: what a source
     that speaks once until something new happens reads. The drivers module binds it."""
 
     @abstractmethod
