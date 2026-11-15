@@ -39,7 +39,7 @@ from core.modules.drivers.commands.support.compaction_end_percent import Compact
 from core.modules.drivers.support.required_commands import RequiredCommands
 from core.modules.drivers.support.nudge_log import NudgeLog
 from core.modules.drivers.commands.support.one_move_per_row import OneMovePerRow
-from core.modules.drivers.commands.support.line_history_writer import LineHistoryWriter
+from core.modules.drivers.support.line_history_writer import LineHistoryWriter
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from engine.enums.hook_answer import HookAnswer
@@ -129,13 +129,13 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         self.nudges.write(agent.id, answers, context)
         self.required_commands.open(agent.id, answers.delivered_nudges, context)
         self.timing.stamp("call_saved")
-        commit = self.steps.save(command.step.view, command.step.step, call.id, context) if command.step is not None else None
-        if commit is not None and not commit.is_saved:
-            raise StepConflictError()
         for row in handed_rows:
             self.event_rows.remember(row)
         for row in handed_rows:
             self.bus.dispatch(DeliverAgentLine(row.id, call.id, context.timestamp), context)
+        commit = self.steps.save(command.step.view, command.step.step, call.id, context) if command.step is not None else None
+        if commit is not None and not commit.is_saved:
+            raise StepConflictError()
         self.leave_for_next_hook(agent.id, split.rest, answers, {row.nudge.text for row in handed_lines.rows}, context)
         outcomes = [(rule, *self.run_command(rule_command, context)) for rule, rule_command in moves.runnable if rule not in answers.refused_rewriters]
         refused = [(rule, line) for rule, line, _ in outcomes if line]

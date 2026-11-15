@@ -1,7 +1,7 @@
 from core.modules.drivers.support.effect_commands import EffectCommands
 from core.modules.drivers.support.nudge_log import NudgeLog
 from core.modules.drivers.support.required_commands import RequiredCommands
-from core.modules.drivers.commands.support.line_history_writer import LineHistoryWriter
+from core.modules.drivers.support.line_history_writer import LineHistoryWriter
 from core.modules.drivers.support.answer_basis_rows import AnswerBasisRows
 from engine.enums.closer_role import CloserRole
 import json

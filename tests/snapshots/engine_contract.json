@@ -10852,6 +10852,7 @@
         "run_tick_handler(self, label: str) -> None",
         "run_ticker_round(self) -> None",
         "wake_ask(self, session: str, token: str, program: str, launch: str) -> WakeReply",
+        "wake_line(self, session: str, limit_seconds: float) -> WakeReply",
         "wake_received(self, answer: WakeReply) -> bool",
         "expect_wake_line(self, answer: WakeReply, text: ExpectedText) -> None",
         "expect_no_wake(self, answer: WakeReply) -> None",

@@ -167,6 +167,7 @@ def test_worker_compaction_requires_current_task_context(assigned_worker):
     worker_scenario.story.expect_success("task overview 1", actor=worker)
     session = worker_session(worker_scenario.story, worker)
     worker_scenario.story.hook(session, HookSamples.sample("compact"))
+    worker_scenario.story.run_listeners()
     worker_scenario.story.expect_hook_refusal(session, HookSamples.edit("src/cart.py"), TaskBriefFirstNudge.declared().nudge(task=1).text)
     outcome = worker_scenario.story.run("task overview 1", actor=worker)
     worker_scenario.story.expect_rows(outcome.code == 0, detail=outcome.output_text)

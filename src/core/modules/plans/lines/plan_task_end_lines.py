@@ -16,11 +16,10 @@ from core.modules.plans.nudges.checkpoint_reached_nudge import CheckpointReached
 from core.modules.plans.nudges.phase_finished_nudge import PhaseFinishedNudge
 from core.modules.plans.nudges.plan_stalled_nudge import PlanStalledNudge
 from core.modules.tasks.models.enums.task_state import UNFINISHED_STATES, TaskState
-from core.modules.tasks.models.task import Task
+from core.modules.tasks.queries.task_query import TaskQuery
 
 BLOCKED_STATES = (TaskState.OPEN, TaskState.BLOCKED)
 ACTIVE_STATES = (TaskState.STARTED, TaskState.TESTING)
-NAMED_TASKS_REASON = "the tasks one shell line ends, a few at most; a number with no task is no task"
 
 class PlanTaskEndLines(EventLineSource):
     """A task the main agent has ended tells it the phase that ended, and a plan with nothing left that can
@@ -31,13 +30,13 @@ class PlanTaskEndLines(EventLineSource):
     events = [HookEventName.POST_TOOL_USE]
     agent_types = [AgentRole.MAIN.value]
 
-    def __init__(self, queries: Queries, focus: PlanFocus) -> None:
-        self.queries, self.focus = queries, focus
+    def __init__(self, queries: Queries, focus: PlanFocus, tasks: TaskQuery) -> None:
+        self.queries, self.focus, self.tasks = queries, focus, tasks
 
     def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
         shell = event.tool.shell if event.tool is not None else None
         numbers = shell.journal_command_numbers("task close", "task cancel", "task block", "task release") if shell is not None else ()
-        named = self.queries.query(Task).matching(Among("id", tuple(numbers))).every_row(NAMED_TASKS_REASON) if numbers else []
+        named = self.tasks.named_tasks(numbers)
         ended = [task for task in named if task.state is not TaskState.STARTED]
         if not ended:
             return []

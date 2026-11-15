@@ -12,4 +12,5 @@ def test_compaction_removes_links_to_deleted_task_reads(played):
     links = story.container.get(Queries).query(Link).filter(target_model="task_read", target_id=read.id)
     story.expect_rows(links.exists())
     story.expect_hook_allowed("s-1", HookSamples.sample("compact"))
+    story.run_listeners()
     story.expect_rows(not links.exists())

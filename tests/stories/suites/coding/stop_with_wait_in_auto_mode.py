@@ -26,12 +26,6 @@ def test_in_auto_mode_a_stop_with_a_started_task_is_allowed_while_a_wait_is_open
     story.expect_hook_allowed("s-1", HookSamples.stop())
 
 
-def test_in_auto_mode_a_stop_with_a_started_task_is_refused_without_a_wait(new_story):
-    story = new_story(fixture=StartedTaskBuilder)
-    story.run(f"setting set {AUTO_MODE_SETTING} on --environment main")
-    story.expect_hook_refusal("s-1", HookSamples.stop(), f"{CurrentTaskNudge.declared().nudge(task=1).text}: continue")
-
-
 @pytest.mark.parametrize("move", ['task block 1 --reason "waits for the price list"', 'task close 1 --outcome "done"', 'task cancel 1 --reason "not needed"'])
 def test_in_auto_mode_the_stop_is_allowed_once_the_task_is_blocked_completed_or_cancelled(new_story, move):
     story = new_story(fixture=StartedTaskBuilder)

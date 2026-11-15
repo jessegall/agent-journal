@@ -2,6 +2,7 @@ from collections.abc import Sequence
 
 from engine.query.conditions.among import Among
 from engine.query.conditions.greater import Greater
+from engine.request.request_values import RequestValues
 from engine.query.queries import Queries
 from engine.time.timestamp import Timestamp
 from core.modules.processes.models.reader_request import ReaderRequest
@@ -16,17 +17,17 @@ WAITING_WORK_REASON = "every run, wait, proof, review and request that keeps an 
 
 
 class MainAgentWork:
-    """Whether an agent waits on something of its own, read one way by the main agent's stop rule and by the lines
-    that wake silent agents: a run, a wait, a proof's test, a review or a reader request."""
+    """Whether an agent waits on something of its own, read one way, once a request, by the main agent's stop and by
+    the lines that wake silent agents: a run, a wait, a proof's test, a review or a reader request."""
 
-    def __init__(self, queries: Queries, processes: ProcessQuery, open_waits: OpenWaits) -> None:
-        self.queries, self.processes, self.open_waits = queries, processes, open_waits
+    def __init__(self, queries: Queries, processes: ProcessQuery, open_waits: OpenWaits, request_values: RequestValues) -> None:
+        self.queries, self.processes, self.open_waits, self.request_values = queries, processes, open_waits, request_values
 
     def waiting_agents(self, agent_ids: Sequence[int], timestamp: Timestamp) -> set[int]:
-        waiting = {row.session_agent_id for row in self.processes.running().every_row(WAITING_WORK_REASON)}
+        waiting = set(self.request_values.read("workers.running-agents", lambda: 0, lambda: frozenset(row.session_agent_id for row in self.processes.running().every_row(WAITING_WORK_REASON))))
         waiting.update(row.session_agent_id for row in self.open_waits.of(agent_ids))
         waiting.update(row.creator_id for row in self.queries.query(Proof).matching(Among("creator_id", agent_ids)).matching(Among("state", TEST_WAITING_STATES)).every_row(WAITING_WORK_REASON))
-        waiting.update(row.requester_id for row in self.queries.query(Review).matching(Among("state", [ReviewState.QUEUED, ReviewState.REVIEWING])).every_row(WAITING_WORK_REASON))
+        waiting.update(self.request_values.read("workers.reviewed-agents", lambda: 0, lambda: frozenset(row.requester_id for row in self.queries.query(Review).matching(Among("state", [ReviewState.QUEUED, ReviewState.REVIEWING])).every_row(WAITING_WORK_REASON))))
         waiting.update(row.creator_id for row in self.queries.query(ReaderRequest).matching(Among("creator_id", agent_ids)).filter(completed_at=None)
                        .matching(Greater("expires_at", timestamp.text)).every_row(WAITING_WORK_REASON))
         return waiting

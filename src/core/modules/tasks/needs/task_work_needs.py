@@ -13,7 +13,6 @@ from engine.agent_machine.record.question import Question
 from engine.enums.decision_class import DecisionClass
 from engine.enums.frame_end import FrameEnd
 from engine.enums.work_type import WorkType
-from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.driver.interval import Interval
 from engine.driver.refusal_skips import RefusalSkips
@@ -23,6 +22,7 @@ from engine.driver.watched_runs import WatchedRuns
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
+from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.nudges.stop_task_nudge import StopTaskNudge
 from core.modules.tasks.nudges.stop_tasks_nudge import StopTasksNudge
 from core.modules.tasks.support.current_tasks import CurrentTasks
@@ -44,8 +44,8 @@ class TaskWorkNeeds(NeedSource):
     rank = TASK_RANK
     agent_types = ["main"]
 
-    def __init__(self, current_tasks: CurrentTasks, assigners: SuiteTaskAssigners, queries: Queries, runs: WatchedRuns, skips: RefusalSkips, clock: Clock) -> None:
-        self.current_tasks, self.assigners, self.queries = current_tasks, assigners, queries
+    def __init__(self, current_tasks: CurrentTasks, assigners: SuiteTaskAssigners, queries: Queries, runs: WatchedRuns, skips: RefusalSkips, clock: Clock, tasks: TaskQuery) -> None:
+        self.current_tasks, self.assigners, self.queries, self.tasks = current_tasks, assigners, queries, tasks
         self.runs, self.skips, self.clock = runs, skips, clock
 
     def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]:
@@ -72,7 +72,7 @@ class TaskWorkNeeds(NeedSource):
     # a task's frame leaves closed when the task completed and cancelled when it was cancelled, which is no progress
     def ends(self, subjects: Sequence[SubjectReference]) -> Mapping[SubjectReference, FrameEnd]:
         task_ids = [subject.row_id for subject in subjects if subject.model == Task.model_name]
-        tasks = self.queries.query(Task).matching(Among("id", task_ids)).every_row(ENDED_TASKS_REASON) if task_ids else []
+        tasks = self.tasks.named_tasks(task_ids)
         return {SubjectReference(Task.model_name, task.id): TASK_ENDS[task.state] for task in tasks if task.state in TASK_ENDS}
 
     @staticmethod

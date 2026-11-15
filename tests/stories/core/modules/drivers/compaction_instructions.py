@@ -71,6 +71,6 @@ def test_a_compaction_ends_at_its_post_compact_hook(new_story):
     story.advance(timedelta(seconds=11))
     story.tick(SESSION)
     story.run_listeners()
-    AgentWakeDelivery()(story.container)
+    story.tick_handler_points(AgentWakeDelivery())
     story.run_listeners()
     story.expect_rows(any("New message 1" in line for _, line in typing.typed), detail=str(typing.typed))

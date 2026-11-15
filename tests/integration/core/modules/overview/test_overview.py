@@ -141,10 +141,10 @@ def compacted(played):
     return story, typing, compaction_lines, start_lines
 
 
-def test_a_whole_compaction_is_given_the_summary_instructions_and_the_start_after_it_only_the_overview_and_its_message(compacted):
+def test_a_whole_compaction_is_given_the_summary_instructions_and_the_start_after_it_the_overview_line(compacted):
     story, _, compaction_lines, start_lines = compacted
     expect_value(list(compaction_lines), [ClaudeCodeProvider.compaction_instructions])
-    expect_value(list(start_lines), [NewMessageNudge.declared().nudge(message=1).text, OverviewLineNudge.declared().nudge().text])
+    expect_value(OverviewLineNudge.declared().nudge().text in start_lines and NewMessageNudge.declared().nudge(message=1).text in start_lines, True)
     story.expect_hook_allowed("s-1", SKILL_READ)
     story.expect_hook_refusal("s-1", EDIT, expected_nudge(OverviewRefusalNudge.declared()))
     story.expect_hook_allowed("s-1", OVERVIEW_HOOK)

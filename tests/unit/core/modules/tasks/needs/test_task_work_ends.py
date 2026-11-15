@@ -7,8 +7,8 @@ from core.modules.tasks.needs.task_work_needs import TaskWorkNeeds
 
 
 def ends(*tasks: SimpleNamespace):
-    queries = SimpleNamespace(query=lambda model: SimpleNamespace(matching=lambda condition: SimpleNamespace(every_row=lambda reason: list(tasks))))
-    return TaskWorkNeeds(None, None, queries, None, None, None).ends([SubjectReference("task", task.id) for task in tasks])
+    named = SimpleNamespace(named_tasks=lambda task_ids: tuple(tasks))
+    return TaskWorkNeeds(None, None, None, None, None, None, named).ends([SubjectReference("task", task.id) for task in tasks])
 
 
 def test_a_completed_task_ends_its_frame_closed_and_a_cancelled_one_cancelled():

@@ -15,13 +15,13 @@ WAKE_WAIT_SECONDS = 10
 
 
 class CompactionWakeEffect(EventEffect):
-    """Wakes an agent that takes tasks when a context change left it at its prompt with no turn running: at once
-    after a typed /clear, and at its minute step once a compaction is ten seconds old with no tool call after it,
-    so an agent already working again is not told to read the overview. A compaction wakes its agent once, and a
-    paused agent never (doc 1310 section 6.4)."""
+    """At its minute step, wakes an agent that takes tasks which a compaction left at its prompt with no turn
+    running, once the compaction is ten seconds old with no tool call after it, so an agent already working again
+    is not told to read the overview. A compaction wakes its agent once, and a paused agent never; a clear wakes
+    nobody by itself (doc 1310 section 6.4)."""
 
     key = "drivers.compaction-wake"
-    events = [HookEventName.SESSION_START, HookEventName.TICK]
+    events = [HookEventName.TICK]
     role_group = RoleGroup.TASK
 
     def __init__(self, hook_calls: HookCallQuery, compactions: ContextCompactions, clock: Clock, agents: AgentRows) -> None:
@@ -30,8 +30,6 @@ class CompactionWakeEffect(EventEffect):
     def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         if self.agents.find(agent_id).is_paused:
             return []
-        if event is not None and event.event is HookEventName.SESSION_START:
-            return [WakeCompactedAgent(agent_id)] if event.is_clear_start else []
         return [WakeCompactedAgent(agent_id)] if self.is_left_at_its_prompt(agent_id) else []
 
     def is_left_at_its_prompt(self, agent_id: int) -> bool:

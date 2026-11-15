@@ -96,6 +96,7 @@ src/core/modules/drivers/ticks/agent_minute_steps.py:the minute step reaches eve
 src/core/modules/drivers/ticks/agent_step_round.py:the oldest open step requests of one round, a few dozen at most
 src/core/modules/drivers/ticks/agent_step_round.py:the oldest open step requests of one round, a few dozen at most
 src/core/modules/drivers/ticks/agent_wake_delivery.py:the wake obligations that may be due, one active row for each agent and work generation
+src/core/modules/drivers/ticks/released_session_wake.py:every kept agent of a released session is woken
 src/core/modules/dumps/commands/dump_board/dump_board_subcommand.py:the board shows every item of the dumps on its page
 src/core/modules/dumps/commands/dump_items/dump_items_subcommand.py:the item list shows every item of the dump
 src/core/modules/dumps/commands/move_dump_item/move_dump_item_handler.py:a moved item renumbers every item of its dump
@@ -151,7 +152,6 @@ src/core/modules/plans/commands/repair_plan_states/repair_plan_states_handler.py
 src/core/modules/plans/commands/repair_plan_states/repair_plan_states_handler.py:every started plan is checked for a failed checkpoint run its finished tasks left behind
 src/core/modules/plans/guards/one_task_phase_guard.py:the check counts the phases of every task of the plan
 src/core/modules/plans/lines/plan_state_lines.py:every plan whose state changed since the last answer is told to the agent
-src/core/modules/plans/lines/plan_task_end_lines.py:the tasks one shell line ends, a few at most; a number with no task is no task
 src/core/modules/plans/listeners/cancel_open_plan_tasks_listener.py:a cancelled plan cancels every open task it holds
 src/core/modules/plans/listeners/checkpoint_reach_listener.py:every changed task may reach a checkpoint of its plan
 src/core/modules/plans/support/focus/focused_plan_tasks.py:the free task with the highest priority is chosen among every ready task
@@ -254,12 +254,12 @@ src/core/modules/tasks/guards/task_tag_word_guard.py:the refusal lists every tag
 src/core/modules/tasks/listeners/dependency_remover_listener.py:a removed task takes every dependency it is part of with it
 src/core/modules/tasks/listeners/dependency_remover_listener.py:a removed task takes every dependency it is part of with it
 src/core/modules/tasks/listeners/task_tag_remover_listener.py:a deleted task takes every tag it carries with it
-src/core/modules/tasks/needs/task_work_needs.py:the ended tasks whose frames one step takes off one agent's stack, a few at most
 src/core/modules/tasks/queries/task_query.py:an agent's current tasks are every task it holds started, which its open-task setting bounds
 src/core/modules/tasks/queries/task_query.py:the tasks assigned to an agent are its whole unit of work, which can hold more than fifty tasks
 src/core/modules/tasks/queries/task_query.py:the tasks assigned to an agent are its whole unit of work, which can hold more than fifty tasks
 src/core/modules/tasks/queries/task_query.py:the tasks assigned to an agent are its whole unit of work, which can hold more than fifty tasks
 src/core/modules/tasks/queries/task_query.py:the tasks assigned to an agent are its whole unit of work, which can hold more than fifty tasks
+src/core/modules/tasks/queries/task_query.py:the tasks one step names by number, a few at most; a number with no task is no task
 src/core/modules/tasks/support/block_review_round.py:every task the agent blocked by hand is checked for a review of its block
 src/core/modules/tasks/support/dependency_waits.py:Every dependency that names one of the tasks that changed, to or from it; a task many others wait on has many.
 src/core/modules/tasks/support/dependency_waits.py:Every dependency that names one of the tasks that changed, to or from it; a task many others wait on has many.
