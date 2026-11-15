@@ -1,3 +1,4 @@
+from core.modules.plans.lines.plan_focus_lines import PlanFocusLines
 import itertools
 from pathlib import Path
 
@@ -54,9 +55,9 @@ def rule(started=(), answered_at=None, explicit_id=None, focus_id=1, source=Focu
     current = None if focus_id is None else SimpleNamespace(source=source)
     overview = SimpleNamespace(current=current, started=works, focus_work=next((work for work in works if work.plan.id == focus_id), None))
     focus = SimpleNamespace(explicit_plan_id=lambda agent: explicit_id, overview=lambda agent: overview)
-    history = SimpleNamespace(last_answer=lambda name, hook: answered_at)
+    history = SimpleNamespace(last_spoke=lambda source_key, agent_id: answered_at)
     queries = SimpleNamespace(query=lambda model: PlaceRows(plan_count=len(plan_ids)))
-    return PlanFocusRule(queries, focus, NewFocusPlaces(queries, tasks, history), home or JournalHome(Path(f"/journals/{next(HOME_FOLDERS)}")))
+    return PlanFocusRule(PlanFocusLines(queries, focus, NewFocusPlaces(queries, tasks, history), home or JournalHome(Path(f"/journals/{next(HOME_FOLDERS)}"))))
 
 
 def texts(answer):
@@ -99,9 +100,9 @@ def test_tasks_judged_silently_are_not_judged_again_at_the_next_hook():
     home = JournalHome(Path("/journals/silent"))
     overviews = []
     first = rule(started=[(11, 5)], focus_id=None, home=home)
-    first.focus.overview = lambda agent: overviews.append(agent) or SimpleNamespace(current=None, started=(), focus_work=None)
+    first.lines.focus.overview = lambda agent: overviews.append(agent) or SimpleNamespace(current=None, started=(), focus_work=None)
     first.answer(hook())
     second = rule(started=[(11, 5)], focus_id=None, home=home)
-    second.focus.overview = first.focus.overview
+    second.lines.focus.overview = first.lines.focus.overview
     second.answer(hook())
     assert len(overviews) == 1

@@ -608,6 +608,15 @@
         "facts(self, agents: Sequence[AgentReference]) -> Mapping[int, Sequence[Fact]]"
       ]
     },
+    "agent_machine.needs.line_history.LineHistory": {
+      "bases": [
+        "ABC"
+      ],
+      "fields": [],
+      "methods": [
+        "last_spoke(self, source_key: str, agent_id: int) -> Timestamp | None"
+      ]
+    },
     "agent_machine.needs.need.Need": {
       "bases": [],
       "fields": [

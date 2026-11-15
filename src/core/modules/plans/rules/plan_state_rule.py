@@ -1,58 +1,23 @@
-from engine.driver.hook_history import HookHistory
-from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
-from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.driver.nudge import Nudge
 from engine.driver.rule_answer import RuleAnswer
-from engine.query.conditions.greater import Greater
-from engine.query.conditions.among import Among
-from engine.query.queries import Queries
-from core.modules.agents.models.agent import Agent
-from core.modules.plans.models.enums.plan_state import PlanState
-from core.modules.plans.models.plan import Plan
-from core.modules.plans.queries.plan_query import PlanQuery
-from core.modules.plans.nudges.plan_approved_nudge import PlanApprovedNudge
-from core.modules.plans.nudges.plan_approved_with_message_nudge import PlanApprovedWithMessageNudge
-from core.modules.plans.nudges.plan_blocked_nudge import PlanBlockedNudge
-from core.modules.plans.nudges.plan_cancelled_nudge import PlanCancelledNudge
-from core.modules.plans.nudges.plan_waiting_nudge import PlanWaitingNudge
-from core.modules.plans.support.plan_approval import PlanApproval
-
-CHANGED_PLANS_REASON = "every plan whose state changed since the last answer is told to the agent"
-
-STATE_NUDGES: dict[PlanState, NudgeDeclaration] = {
-    PlanState.READY: PlanWaitingNudge.declared(),
-    PlanState.APPROVED: PlanApprovedNudge.declared(),
-    PlanState.CANCELLED: PlanCancelledNudge.declared(),
-    PlanState.BLOCKED: PlanBlockedNudge.declared(),
-}
+from engine.enums.agent_role import AgentRole
+from engine.enums.hook_event_name import HookEventName
+from core.modules.plans.lines.plan_state_lines import PlanStateLines
 
 
 class PlanStateRule(DriverRule):
-    """A plan of the environment ready, approved, cancelled or blocked since this rule last spoke is named to the
-    main agent."""
+    """The old walk's answer for PlanStateLines, which owns it, until the walk is deleted."""
 
-    name = "plans.state-lines"
+    name = PlanStateLines.key
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
     roles = [AgentRole.MAIN]
     history = True
 
-    def __init__(self, plans: PlanQuery, hook_history: HookHistory, queries: Queries) -> None:
-        self.plans, self.hook_history, self.queries = plans, hook_history, queries
+    def __init__(self, lines: PlanStateLines) -> None:
+        self.lines = lines
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        answered_at = self.hook_history.last_answer(self.name, hook)
-        start = answered_at or self.queries.query(Agent).find(hook.agent_id).creation_timestamp()
-        changed = self.plans.matching(Greater("updated_at", start.text)).matching(Among("state", tuple(STATE_NUDGES))).every_row(CHANGED_PLANS_REASON)
-        return RuleAnswer.with_nudges(*(self.plan_nudge(plan) for plan in changed))
-
-    def plan_nudge(self, plan: Plan) -> Nudge:
-        if plan.state is not PlanState.APPROVED:
-            return STATE_NUDGES[plan.state].nudge(plan=plan.id)
-        message_id = PlanApproval.message_id(plan)
-        if message_id is None:
-            return PlanApprovedNudge.declared().nudge(plan=plan.id)
-        return PlanApprovedWithMessageNudge.declared().nudge(plan=plan.id, message=message_id)
+        nudges = self.lines.nudges(hook.event, hook.agent_id)
+        return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

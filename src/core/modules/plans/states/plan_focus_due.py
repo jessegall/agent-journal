@@ -24,7 +24,7 @@ class PlanFocusDue(AgentState):
         self.new_places = new_places
 
     def open_rows(self, hook: AgentHook) -> Sequence[OpenRow]:
-        if NewFocusPlaces.starts_plan(hook):
+        if NewFocusPlaces.starts_plan(hook.event):
             return [OpenRow(PLAN_START_TABLE, 0, hook.timestamp)]
-        place = self.new_places.first(hook)
+        place = self.new_places.first(hook.event, hook.agent_id)
         return [] if place is None else [OpenRow(Task.model_name, place.task_id, hook.timestamp)]

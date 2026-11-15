@@ -9,7 +9,7 @@ from tests.integration.core.modules.plans.rules.test_plan_focus_rule import AGEN
 
 
 def state_of(focus_rule: PlanFocusRule) -> PlanFocusDue:
-    return PlanFocusDue(focus_rule.new_places)
+    return PlanFocusDue(focus_rule.lines.new_places)
 
 
 def test_the_state_is_asked_in_place_and_gates_the_focus_rule():
@@ -20,7 +20,7 @@ def test_with_no_new_place_and_no_plan_start_the_state_is_closed_and_the_rule_an
     focus_rule = rule(started=[])
     assert state_of(focus_rule).open_rows(hook()) == []
     assert focus_rule.answer(hook()) == RuleAnswer.allowed()
-    assert focus_rule.judged.judged == {}
+    assert focus_rule.lines.judged.judged == {}
 
 
 def test_a_plan_start_in_the_shell_line_opens_the_state():
