@@ -1,11 +1,11 @@
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_policy import EventPolicy
 from suites.coding.modules.workers.types.worker import Worker
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.protected_folders import ProtectedFolders
 from core.modules.agents.support.agent_rows import AgentRows
-from suites.coding.modules.workers.nudges.protected_folder_nudge import ProtectedFolderNudge
+from suites.coding.modules.workers.nudges.protected_folder_message import ProtectedFolderMessage
 
 
 class ProtectedFolderPolicy(EventPolicy):
@@ -18,7 +18,7 @@ class ProtectedFolderPolicy(EventPolicy):
     def __init__(self, worktrees: WorktreeQuery, protected: ProtectedFolders, agents: AgentRows) -> None:
         self.worktrees, self.protected, self.agents = worktrees, protected, agents
 
-    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+    def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         tool = event.tool
         if tool is None or not tool.is_writing_files():
             return None
@@ -32,5 +32,5 @@ class ProtectedFolderPolicy(EventPolicy):
         for path in paths:
             folder = self.protected.match(worktree.folder, path, profile)
             if folder:
-                return ProtectedFolderNudge.declared().nudge(folder=folder)
+                return ProtectedFolderMessage.declared().nudge(folder=folder)
         return None

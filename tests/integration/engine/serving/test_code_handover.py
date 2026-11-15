@@ -18,7 +18,7 @@ from engine.file.copies.code_copy import IGNORED
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from engine.testing.expectations.expect_row import expect_row
-from engine.serving.code_handover import CodeHandover
+from engine.serving.code_delivery import CodeDelivery
 from install.update.install_journal import InstallJournal
 from engine.connection.unix_connection import UnixConnection
 from engine.serving.server_files import ServerFiles
@@ -86,7 +86,7 @@ def test_an_update_hands_over_to_a_new_server_on_the_same_sockets_and_refuses_no
     asking = threading.Thread(target=repeated_health_requests)
     asking.start()
     try:
-        CodeHandover(home).run(SOURCE)
+        CodeDelivery(home).run(SOURCE)
     finally:
         finished.set()
         asking.join(START_LIMIT_SECONDS)
@@ -106,7 +106,7 @@ def test_two_updates_in_a_row_leave_the_server_on_the_newest_code_with_the_one_b
     for source, text in ((first, "# first update\n"), (second, "# second update\n")):
         shutil.copytree(SOURCE, source, ignore=shutil.ignore_patterns(*IGNORED))
         (source / "update_note.py").write_text(text)
-        CodeHandover(home).run(source)
+        CodeDelivery(home).run(source)
         wait_started(home)
     expect_folder_home_src(home, "src", "update_note.py", "# second update\n")
     expect_health_status(home, 200)
@@ -119,7 +119,7 @@ def test_new_code_that_fails_its_proof_leaves_the_old_server_serving(home, tmp_p
     (broken / "server").mkdir(parents=True)
     (broken / "server" / "server.py").write_text("raise SystemExit(1)\n")
     with pytest.raises(Refusal):
-        CodeHandover(home).run(broken)
+        CodeDelivery(home).run(broken)
     expect_pid_file_server(home, running_pid)
     expect_health_status(home, 200)
     expect_absent_symlink_folder_home(home, "src")
@@ -134,7 +134,7 @@ def test_an_external_module_still_loads_after_a_server_handover(home, tmp_path):
                            {"argv": ["module", "add", str(folder)], "variables": {}, "folder": str(tmp_path)})
     expect_row(added, status=200, exit_code=0)
     running_pid = ServerFiles(home).pid_file.read_text()
-    CodeHandover(home).run(SOURCE)
+    CodeDelivery(home).run(SOURCE)
     wait_started(home)
     expect_changed_pid_file_server(home, running_pid)
     listed = wait_for_template_list(home, tmp_path, "Folder review")

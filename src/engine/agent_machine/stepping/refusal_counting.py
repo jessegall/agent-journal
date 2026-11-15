@@ -14,14 +14,14 @@ from engine.agent_machine.record.refusal_counts import RefusalCounts
 from engine.enums.condition_outcome import ConditionOutcome
 from engine.enums.decision_class import DecisionClass
 from engine.enums.escalation_type import EscalationType
-from engine.enums.frame_end import FrameEnd
+from engine.enums.state_end import StateEnd
 from engine.enums.question_type import QuestionType
 from engine.enums.responder import Responder
 from engine.enums.stack_move_type import StackMoveType
 
 STOP_LIMIT_SETTING, TOOL_LIMIT_SETTING = "journal.core.drivers.most-stop-refusals", "journal.core.drivers.most-tool-refusals"
 STOP_LIMIT, TOOL_LIMIT = 5, 25
-PROGRESS_ENDS = (FrameEnd.SATISFIED, FrameEnd.CLOSED, FrameEnd.HANDED_IN, FrameEnd.DELIVERED, FrameEnd.ANSWERED)
+PROGRESS_ENDS = (StateEnd.SATISFIED, StateEnd.CLOSED, StateEnd.HANDED_IN, StateEnd.DELIVERED, StateEnd.ANSWERED)
 
 
 class RefusalCounting:

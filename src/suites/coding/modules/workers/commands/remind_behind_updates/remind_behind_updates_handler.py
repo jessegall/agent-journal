@@ -5,7 +5,7 @@ from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from engine.listener.rows.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
@@ -17,16 +17,16 @@ from suites.coding.modules.workers.models.enums.behind_check_state import Behind
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.support.behind_nudges import STALE_SOURCE
-from suites.coding.modules.workers.nudges.conflict_open_nudge import ConflictOpenNudge
-from suites.coding.modules.workers.nudges.conflict_repeated_nudge import ConflictRepeatedNudge
-from suites.coding.modules.workers.nudges.update_skipped_nudge import UpdateSkippedNudge
-from suites.coding.modules.workers.nudges.update_reminder_nudge import UpdateReminderNudge
+from suites.coding.modules.workers.nudges.conflict_open_message import ConflictOpenMessage
+from suites.coding.modules.workers.nudges.conflict_repeated_message import ConflictRepeatedMessage
+from suites.coding.modules.workers.nudges.update_skipped_message import UpdateSkippedMessage
+from suites.coding.modules.workers.nudges.update_reminder_message import UpdateReminderMessage
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_settings import UPDATE_REMINDERS, UPDATE_WAIT_MINUTES
 
 CHECKS_REASON = "every behind check in that state is reminded of"
-CONFLICT_LINES = (ConflictOpenNudge.declared(), ConflictRepeatedNudge.declared())
+CONFLICT_LINES = (ConflictOpenMessage.declared(), ConflictRepeatedMessage.declared())
 
 
 class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
@@ -39,7 +39,7 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
     command = RemindBehindUpdates
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, rows: EventRows, repository: Repository, settings: SettingValues, nudger: Nudger, inbox: MergerInbox, numbers: RowNumbers, git: WorktreeGit) -> None:
+    def __init__(self, queries: Queries, rows: EventRows, repository: Repository, settings: SettingValues, nudger: MessageSender, inbox: MergerInbox, numbers: RowNumbers, git: WorktreeGit) -> None:
         self.queries, self.rows, self.repository, self.settings, self.nudger, self.inbox, self.numbers, self.git = queries, rows, repository, settings, nudger, inbox, numbers, git
         self.clashing: set[int] = set()
 
@@ -75,7 +75,7 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
 
     def remind(self, check: WorktreeBehindCheck, worktree: Worktree, limit: int, context: Context) -> None:
         if check.reminders < limit:
-            self.nudger.send(worktree.session_agent_id, UpdateReminderNudge.declared(), STALE_SOURCE, context, count=check.commits_lagging)
+            self.nudger.send(worktree.session_agent_id, UpdateReminderMessage.declared(), STALE_SOURCE, context, count=check.commits_lagging)
         else:
-            self.inbox.send_nudge(UpdateSkippedNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)), STALE_SOURCE, context)
+            self.inbox.send_nudge(UpdateSkippedMessage.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)), STALE_SOURCE, context)
         self.repository.save_change(check, check.reminded(), context)

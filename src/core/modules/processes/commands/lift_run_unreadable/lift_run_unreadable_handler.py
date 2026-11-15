@@ -1,6 +1,6 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from engine.listener.rows.event_rows import EventRows
 from core.modules.processes.commands.lift_run_unreadable.lift_run_unreadable import LiftRunUnreadable
 from core.modules.processes.models.process import Process
@@ -18,7 +18,7 @@ class LiftRunUnreadableHandler(Handler[LiftRunUnreadable, UnreadableMark]):
 
     command = LiftRunUnreadable
 
-    def __init__(self, rows: EventRows, terms: RunCommandTerms, marks: UnreadableMarkRegistry, nudger: Nudger) -> None:
+    def __init__(self, rows: EventRows, terms: RunCommandTerms, marks: UnreadableMarkRegistry, nudger: MessageSender) -> None:
         self.rows, self.words, self.marks, self.nudger = rows, terms, marks, nudger
 
     def handle(self, command: LiftRunUnreadable, context: Context) -> UnreadableMark:

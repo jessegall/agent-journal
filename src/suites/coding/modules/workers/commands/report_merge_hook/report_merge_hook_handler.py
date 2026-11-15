@@ -4,7 +4,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from suites.coding.modules.workers.commands.report_merge_hook.report_merge_hook import ReportMergeHook
-from suites.coding.modules.workers.nudges.merge_hook_failed_nudge import MergeHookFailedNudge
+from suites.coding.modules.workers.nudges.merge_hook_failed_message import MergeHookFailedMessage
 
 
 class ReportMergeHookHandler(Handler[ReportMergeHook, None]):
@@ -15,4 +15,4 @@ class ReportMergeHookHandler(Handler[ReportMergeHook, None]):
 
     def handle(self, command: ReportMergeHook, context: Context) -> None:
         worker = self.numbers.number(AGENT_MODEL_NAME, command.worker_id)
-        self.main_line.send_nudge(MergeHookFailedNudge.declared().nudge(command=command.command, worker=worker), MergeHookFailedNudge.declared().key, context)
+        self.main_line.send_nudge(MergeHookFailedMessage.declared().nudge(command=command.command, worker=worker), MergeHookFailedMessage.declared().key, context)

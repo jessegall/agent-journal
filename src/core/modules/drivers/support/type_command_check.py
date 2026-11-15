@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.helper_type.command_allow_list import CommandAllowList
 from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.helper_type.helper_type_entry import HelperTypeEntry
@@ -19,7 +19,7 @@ class TypeCommandCheck:
     def __init__(self, types: HelperTypeBook, profiles: ProfileFiles) -> None:
         self.types, self.profiles = types, profiles
 
-    def refusal(self, agent: Agent, lines: Sequence[JournalLine]) -> Nudge | None:
+    def refusal(self, agent: Agent, lines: Sequence[JournalLine]) -> AgentMessage | None:
         if not self.types.is_helper(agent.role):
             return None
         helper_type = self.types.find(agent.role)

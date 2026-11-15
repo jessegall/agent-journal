@@ -8,7 +8,7 @@ from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.reader_judge import FEW_LINES, SAMPLE_OUTPUTS, WIDTH_LINE_COUNT, ReaderJudge
-from core.modules.processes.support.reader_judgement import ReaderJudgement
+from core.modules.processes.support.reader_check import ReaderCheck
 
 
 def test_npx_title_validation():
@@ -88,11 +88,11 @@ def test_a_test_reader_can_use_steps_and_count_for_progress():
 
 
 def test_a_judgement_reports_its_missing_fields_and_misses():
-    judgement = ReaderJudgement(tuple(["--title"]), tuple(["--summary found nothing"]))
+    judgement = ReaderCheck(tuple(["--title"]), tuple(["--summary found nothing"]))
     assert not judgement.is_valid
     assert judgement.text == "--title, --summary found nothing"
-    assert ReaderJudgement().is_valid
-    assert ReaderJudgement().text == ""
+    assert ReaderCheck().is_valid
+    assert ReaderCheck().text == ""
 
 
 def test_samples_use_the_newest_matching_kept_parts_up_to_the_limit():

@@ -1,10 +1,10 @@
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_policy import EventPolicy
 import re
 
 from engine.driver.part import Part
-from core.modules.drivers.nudges.private_corpus_nudge import PrivateCorpusNudge
+from core.modules.drivers.nudges.private_corpus_message import PrivateCorpusMessage
 
 CORPUS_FOLDER = ".journal/corpus"
 SANDBOXED_TEST = re.compile(r"^(?:\S+=\S+\s+)*go\s+(?:-C\s+\S+\s+)?test\b")
@@ -21,12 +21,12 @@ class PrivateCorpusPolicy(EventPolicy):
     grant_types = []
 
 
-    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+    def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         shell = event.tool.shell if event.tool is not None else None
         if shell is None:
             return None
         names_corpus = any(CORPUS_FOLDER in redirect for redirect in shell.redirects) or any(self.has_private_corpus(part) for part in shell.parts)
-        return PrivateCorpusNudge.declared().nudge() if names_corpus else None
+        return PrivateCorpusMessage.declared().nudge() if names_corpus else None
 
     @staticmethod
     def has_private_corpus(part: Part) -> bool:

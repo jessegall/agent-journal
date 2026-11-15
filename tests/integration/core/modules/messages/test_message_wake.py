@@ -1,6 +1,6 @@
 from engine.testing.examples.hook_samples import HookSamples
 from core.modules.agents.support.terminal_typing import TerminalTyping
-from core.modules.messages.nudges.new_message_nudge import NewMessageNudge
+from core.modules.messages.nudges.new_message_notice import NewMessageNotice
 from tests.stories.core.modules.messages.delivery import MessagingTurn
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.engine.driver.support.samples import SAMPLES
@@ -25,7 +25,7 @@ def test_a_message_to_a_resting_main_agent_is_typed_by_the_wake_its_step_opens_i
     story.run_listeners()
     story.run_tick_handler("agent step round")
     story.run_tick_handler("agent wake delivery")
-    assert typing.typed == [(agent.id, f"[journal] {NewMessageNudge.declared().nudge(message=1).text}")]
+    assert typing.typed == [(agent.id, f"[journal] {NewMessageNotice.declared().nudge(message=1).text}")]
 
 
 def test_lines_a_stop_cannot_carry_wait_for_the_agents_next_event_instead_of_riding_on_the_stop(played):

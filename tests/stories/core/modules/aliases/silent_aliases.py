@@ -15,14 +15,14 @@ from tests.stories.core.modules.aliases.saved_commands import BuildSaved, read_h
 from tests.stories.core.modules.processes.support.cadence_probe import cadence_tick
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, parts_started
 from tests.stories.support.story_checks import expect_value
-from core.modules.processes.nudges.silent_saved_run_nudge import SilentSavedRunNudge
-from engine.testing.expectations.expected_nudge import expected_nudge
-from core.modules.aliases.nudges.saved_command_silent_nudge import SavedCommandSilentNudge
+from core.modules.processes.nudges.silent_saved_run_message import SilentSavedRunMessage
+from engine.testing.expectations.expected_message import expected_nudge
+from core.modules.aliases.nudges.saved_command_silent_message import SavedCommandSilentMessage
 
 READ_NOTES = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"]))
-SILENT_LINE = expected_nudge(SilentSavedRunNudge.declared(), name='build-npm', seconds=30)
+SILENT_LINE = expected_nudge(SilentSavedRunMessage.declared(), name='build-npm', seconds=30)
 PACKAGES_LINE = "Alias gotest printed nothing for 30s: go test holds each package's output until it is done, so run one package at a time or with -p 1"
-REFUSAL = SavedCommandSilentNudge.declared().nudge(name="build-npm").text
+REFUSAL = SavedCommandSilentMessage.declared().nudge(name="build-npm").text
 RUN = "journal build-npm --tail 5"
 EDITED_LINE = "npm run build --verbose"
 

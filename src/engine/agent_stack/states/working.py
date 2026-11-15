@@ -5,7 +5,7 @@ from engine.agent_stack.reason import Reason
 from engine.agent_stack.states.state import State
 from engine.agent_stack.stop_answer import StopAnswer
 from engine.agent_stack.work_reference import WorkReference
-from engine.enums.lane import Lane
+from engine.enums.stack_level import StackLevel
 from engine.enums.work_stop import WorkStop
 
 
@@ -13,7 +13,7 @@ from engine.enums.work_stop import WorkStop
 class Working(State):
     """Work in hand, as its module described it: what it is, the text that names it and whether any remains."""
 
-    lane: ClassVar[Lane] = Lane.WORK
+    lane: ClassVar[StackLevel] = StackLevel.WORK
     rank: ClassVar[int] = 10
     work: WorkReference
     work_remains: bool

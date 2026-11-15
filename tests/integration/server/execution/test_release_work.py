@@ -4,7 +4,7 @@ import pytest
 
 from engine.database.errors.wait_in_write_turn_error import WaitInWriteTurnError
 from engine.database.never_waiting_write_turns import NeverWaitingWriteTurns
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_priority import ExecutionPriority
 from engine.execution.execution_order import ExecutionOrder
 from engine.execution.limits.default_lane_limits import DEFAULT_LANE_LIMITS
@@ -14,7 +14,7 @@ from server.execution.execution_priorities import ExecutionPriorities
 from server.execution.execution_queue import ExecutionQueue
 from server.execution.session_starters import SessionStarters
 
-CAPACITY = DEFAULT_LANE_LIMITS.capacity(ExecutionLane.INSTANT)
+CAPACITY = DEFAULT_LANE_LIMITS.capacity(ExecutionLength.INSTANT)
 
 
 def priorities(tmp_path) -> ExecutionPriorities:

@@ -8,8 +8,8 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
-from suites.coding.nudges.testing_tasks_failed_run_nudge import TestingTasksFailedRunNudge
-from engine.testing.expectations.expected_nudge import expected_nudge
+from suites.coding.nudges.testing_tasks_failed_run_message import TestingTasksFailedRunMessage
+from engine.testing.expectations.expected_message import expected_nudge
 
 SUITE_SAMPLE = HookSamples.shell("pytest tests", ShellPart("pytest", CommandCategory.TEST_RUN, ["tests"], is_full_test_run=True))
 CART_SAMPLE = HookSamples.shell("pytest tests/cart.py", ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/cart.py"]))
@@ -50,7 +50,7 @@ def test_a_failed_full_run_leaves_the_tasks_and_names_them(full_suite_process):
     story, process = full_suite_process
     end_run(story, process, "boom\n", exit_code=1)
     story.expect_text("task show 1", "state: testing", actor=story.agent)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(TestingTasksFailedRunNudge.declared(), tasks='task:1'))
+    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(TestingTasksFailedRunMessage.declared(), tasks='task:1'))
 
 
 @pytest.fixture

@@ -3,7 +3,7 @@ from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from engine.listener.rows.event_rows import EventRows
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
@@ -16,9 +16,9 @@ from suites.coding.modules.workers.models.worktree_behind_check import WorktreeB
 from suites.coding.modules.workers.queries.worker_operation_query import WorkerOperationQuery
 from suites.coding.modules.workers.support.behind_checks import BehindChecks
 from suites.coding.modules.workers.support.behind_nudges import STALE_SOURCE
-from suites.coding.modules.workers.nudges.main_agent_stale_worktree_nudge import MainAgentStaleWorktreeNudge
-from suites.coding.modules.workers.nudges.fast_forwarded_nudge import FastForwardedNudge
-from suites.coding.modules.workers.nudges.update_ordered_nudge import UpdateOrderedNudge
+from suites.coding.modules.workers.nudges.main_agent_stale_worktree_message import MainAgentStaleWorktreeMessage
+from suites.coding.modules.workers.nudges.fast_forwarded_message import FastForwardedMessage
+from suites.coding.modules.workers.nudges.update_ordered_message import UpdateOrderedMessage
 from suites.coding.modules.workers.support.worker_settings import FORCED_UPDATE_COMMITS, MAIN_UPDATE_COMMITS
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
@@ -34,7 +34,7 @@ class CheckWorktreeBehindHandler(Handler[CheckWorktreeBehind, BehindRoute]):
     disabled_scopes = [ActorScope]
 
     def __init__(self, rows: EventRows, git: WorktreeGit, checks: BehindChecks, repository: Repository, settings: SettingValues, operations: WorkerOperationQuery,
-                 main_line: MainAgentLine, nudger: Nudger, numbers: RowNumbers) -> None:
+                 main_line: MainAgentLine, nudger: MessageSender, numbers: RowNumbers) -> None:
         self.rows, self.git, self.checks, self.repository, self.settings, self.operations = rows, git, checks, repository, settings, operations
         self.main_line, self.nudger, self.numbers = main_line, nudger, numbers
         self.behind, self.tip, self.moved = 0, "", False
@@ -60,16 +60,16 @@ class CheckWorktreeBehindHandler(Handler[CheckWorktreeBehind, BehindRoute]):
         if self.moved:
             self.repository.save_change(check, check.updated(), context)
             self.repository.save_change(worktree, worktree.updated(self.tip), context)
-            self.nudger.send(worktree.session_agent_id, FastForwardedNudge.declared(), STALE_SOURCE, context)
+            self.nudger.send(worktree.session_agent_id, FastForwardedMessage.declared(), STALE_SOURCE, context)
             return BehindRoute.FAST_FORWARDED
         forced = self.settings.number(FORCED_UPDATE_COMMITS)
         if forced > 0 and self.behind >= forced:
             self.repository.save_change(check, check.ordered(context.actor.id, f"{self.behind} commits behind, at least {forced}"), context)
-            self.nudger.send(worktree.session_agent_id, UpdateOrderedNudge.declared(), STALE_SOURCE, context, count=self.behind)
+            self.nudger.send(worktree.session_agent_id, UpdateOrderedMessage.declared(), STALE_SOURCE, context, count=self.behind)
             return BehindRoute.UPDATE_ORDERED
         target_main = self.settings.number(MAIN_UPDATE_COMMITS)
         if target_main > 0 and self.behind >= target_main:
             self.repository.save_change(check, check.escalated(f"{self.behind} commits behind, at least {target_main}"), context)
-            self.main_line.send_nudge(MainAgentStaleWorktreeNudge.declared().nudge(worker=worker, count=self.behind), STALE_SOURCE, context)
+            self.main_line.send_nudge(MainAgentStaleWorktreeMessage.declared().nudge(worker=worker, count=self.behind), STALE_SOURCE, context)
             return BehindRoute.MAIN_AGENT
         return BehindRoute.MERGER

@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.enums.hook_event_name import HookEventName
 from core.modules.processes.support.watch_progress import WatchProgress
 
@@ -18,5 +18,5 @@ class WatchLinesLines(EventLineSource):
     def __init__(self, progress: WatchProgress) -> None:
         self.progress = progress
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
+    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         return self.progress.progress(event, agent_id).nudges if event is not None else []

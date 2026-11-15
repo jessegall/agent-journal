@@ -1,6 +1,6 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
@@ -10,7 +10,7 @@ from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
-from suites.coding.modules.workers.nudges.worker_phase_tests_failed_nudge import WorkerPhaseTestsFailedNudge
+from suites.coding.modules.workers.nudges.worker_phase_tests_failed_message import WorkerPhaseTestsFailedMessage
 
 
 class ReportReturnedTasksHandler(Handler[ReportReturnedTasks, None]):
@@ -21,7 +21,7 @@ class ReportReturnedTasksHandler(Handler[ReportReturnedTasks, None]):
     command = ReportReturnedTasks
     disabled_scopes = [ActorScope]
 
-    def __init__(self, proofs: ProofQuery, worktrees: WorktreeQuery, repository: Repository, nudger: Nudger, guidance: WorkerGuidance, queries: Queries) -> None:
+    def __init__(self, proofs: ProofQuery, worktrees: WorktreeQuery, repository: Repository, nudger: MessageSender, guidance: WorkerGuidance, queries: Queries) -> None:
         self.proofs, self.worktrees, self.repository, self.nudger, self.guidance, self.queries = proofs, worktrees, repository, nudger, guidance, queries
 
     def handle(self, command: ReportReturnedTasks, context: Context) -> None:
@@ -31,4 +31,4 @@ class ReportReturnedTasksHandler(Handler[ReportReturnedTasks, None]):
             self.repository.save_change(proof, proof.returned(worktree.id), context)
         outputs = ", ".join(str(output_id) for output_id in returned.output_ids)
         failed = "; ".join(process.line for process in self.queries.query(Process).find_many(list(returned.output_ids)))
-        self.nudger.send(returned.worker_id, WorkerPhaseTestsFailedNudge.declared(), MERGE_CONFLICT_SOURCE, context, phase=command.phase_id, outputs=outputs, line=self.guidance.line(returned.worker_id), failed=failed)
+        self.nudger.send(returned.worker_id, WorkerPhaseTestsFailedMessage.declared(), MERGE_CONFLICT_SOURCE, context, phase=command.phase_id, outputs=outputs, line=self.guidance.line(returned.worker_id), failed=failed)

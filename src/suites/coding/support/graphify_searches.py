@@ -1,15 +1,15 @@
 from dataclasses import dataclass
 
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.search_category import CODE, GRAPHIFY as GRAPHIFY_SEARCH, SearchCategory
 from engine.enums.hook_event_name import HookEventName
 from engine.journal.journal_home import JournalHome
 from engine.request.request_values import RequestValues
 from engine.setting.setting_values import SettingValues
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from suites.coding.nudges.graphify_first_nudge import GraphifyFirstNudge
-from suites.coding.nudges.use_graphify_nudge import UseGraphifyNudge
+from suites.coding.nudges.graphify_first_message import GraphifyFirstMessage
+from suites.coding.nudges.use_graphify_message import UseGraphifyMessage
 from suites.coding.support.graphify_settings import GRAPHIFY_BLOCK_AFTER, GRAPHIFY_NUDGE_AFTER
 from suites.coding.support.graphify_tool import GRAPHIFY
 
@@ -22,8 +22,8 @@ class GraphifyAnswer:
     """What a search of the code that does not use Graphify gets: a refusal past the block count, or a line from the
     nudge count on."""
 
-    refusal: Nudge | None = None
-    nudge: Nudge | None = None
+    refusal: AgentMessage | None = None
+    nudge: AgentMessage | None = None
 
 
 class GraphifySearches:
@@ -47,9 +47,9 @@ class GraphifySearches:
         block_after = self.settings.number(GRAPHIFY_BLOCK_AFTER)
         searches = self.code_searches_after_graphify(agent_id, block_after * SCANNED_BLOCK_TOOL_USES)
         if searches >= block_after:
-            return GraphifyAnswer(refusal=GraphifyFirstNudge.declared().nudge(count=searches))
+            return GraphifyAnswer(refusal=GraphifyFirstMessage.declared().nudge(count=searches))
         if searches + 1 >= self.settings.number(GRAPHIFY_NUDGE_AFTER):
-            return GraphifyAnswer(nudge=UseGraphifyNudge.declared().nudge(count=searches + 1))
+            return GraphifyAnswer(nudge=UseGraphifyMessage.declared().nudge(count=searches + 1))
         return GraphifyAnswer()
 
     # The searches of the code among the agent's newest tool uses since its last use of Graphify.

@@ -9,8 +9,8 @@ from engine.enums.tool_type import ToolType
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.documents.support.trail_fixtures import ApprovedTrailPlan, StartedTrailPlan, Scenario, feature, viewer_answer
-from core.modules.processes.nudges.read_command_output_nudge import ReadCommandOutputNudge
-from engine.testing.expectations.expected_nudge import expected_nudge
+from core.modules.processes.nudges.read_command_output_message import ReadCommandOutputMessage
+from engine.testing.expectations.expected_message import expected_nudge
 
 
 @pytest.fixture
@@ -102,10 +102,10 @@ def test_redirecting_or_piping_plan_context_does_not_release_the_context_block(s
     story = scenario.story
     scenario.tick()
     part = ShellPart("journal", CommandCategory.JOURNAL, ["plan", "context", "1"], subcommand="plan")
-    story.expect_hook_refusal("s-1", HookSamples.shell("journal plan context 1 > /tmp/plan", part, redirects=["> /tmp/plan"]), expected_nudge(ReadCommandOutputNudge.declared()))
+    story.expect_hook_refusal("s-1", HookSamples.shell("journal plan context 1 > /tmp/plan", part, redirects=["> /tmp/plan"]), expected_nudge(ReadCommandOutputMessage.declared()))
     piped = ShellPart("journal", CommandCategory.JOURNAL, ["plan", "context", "1"], subcommand="plan", pipe_target=1)
     reader = ShellPart("cat", CommandCategory.READ, [])
-    story.expect_hook_refusal("s-1", HookSamples.shell("journal plan context 1 && cat", piped, reader), expected_nudge(ReadCommandOutputNudge.declared()))
+    story.expect_hook_refusal("s-1", HookSamples.shell("journal plan context 1 && cat", piped, reader), expected_nudge(ReadCommandOutputMessage.declared()))
     story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "Plan 1 started")
     scenario.context("plan")
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))

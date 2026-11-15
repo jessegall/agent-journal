@@ -4,7 +4,7 @@ from collections.abc import Sequence
 
 from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.enums.hook_event_name import HookEventName
 from core.modules.processes.support.run_docking import LONG_RUN_DOCK_KEY, RunDocking
 
@@ -19,6 +19,6 @@ class DockTitleLines(EventLineSource):
     def __init__(self, docking: RunDocking) -> None:
         self.docking = docking
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
+    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         # the hold is LongRunDockNeeds', so the line opens no required-command hold of its own
         return [replace(nudge, required_command="") for nudge in self.docking.docked(event, agent_id).nudges]

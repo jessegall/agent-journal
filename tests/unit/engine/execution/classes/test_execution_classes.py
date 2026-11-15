@@ -2,7 +2,7 @@ from engine.execution.classes.person_classes import PersonClasses
 import pytest
 
 from engine.enums.command_category import CommandCategory
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_priority import ExecutionPriority
 from engine.enums.execution_source import ExecutionSource
 from engine.enums.starter_type import StarterType
@@ -51,7 +51,7 @@ def test_worker_short_line_is_agent():
 
 def test_main_agent_test_run_is_agent_cost_four():
     test_class = CLASSES.match(line(MAIN_AGENT, CommandCategory.TEST_RUN))
-    assert (test_class.lane, test_class.priority, test_class.slot_cost) == (ExecutionLane.LONG, ExecutionPriority.AGENT, 4)
+    assert (test_class.lane, test_class.priority, test_class.slot_cost) == (ExecutionLength.LONG, ExecutionPriority.AGENT, 4)
 
 
 def test_helper_test_run_is_agent():
@@ -64,11 +64,11 @@ def test_background_job_costs_zero():
 
 def test_mixed_line_takes_longest_lane_and_highest_cost():
     mixed = CLASSES.for_line([line(WORKER, CommandCategory.READ), line(WORKER, CommandCategory.PACKAGE), line(WORKER, CommandCategory.TEST_RUN)])
-    assert (mixed.lane, mixed.slot_cost) == (ExecutionLane.LONG, 4)
+    assert (mixed.lane, mixed.slot_cost) == (ExecutionLength.LONG, 4)
 
 
 def test_person_pattern_class_wins():
-    personal = ExecutionClass("slow suite", ExecutionLane.LONG, 8, ExecutionPriority.NORMAL, line_pattern=r"^pytest tests/stories")
+    personal = ExecutionClass("slow suite", ExecutionLength.LONG, 8, ExecutionPriority.NORMAL, line_pattern=r"^pytest tests/stories")
     assert ExecutionClasses(SamplePersonClasses(personal)).match(line(WORKER, CommandCategory.TEST_RUN, "pytest tests/stories -x")) == personal
 
 
@@ -78,7 +78,7 @@ def test_plugin_named_like_a_journal_kind_keeps_its_class():
 
 
 def test_cost_above_capacity_is_refused_with_the_text():
-    too_dear = ExecutionClass("huge build", ExecutionLane.LONG, 10, ExecutionPriority.AGENT)
+    too_dear = ExecutionClass("huge build", ExecutionLength.LONG, 10, ExecutionPriority.AGENT)
     with pytest.raises(Refusal) as refused:
         ExecutionClasses.validate(too_dear, 8)
     assert "costs 10 but the long lane holds 8: lower the cost or raise the capacity" in refused.value.text

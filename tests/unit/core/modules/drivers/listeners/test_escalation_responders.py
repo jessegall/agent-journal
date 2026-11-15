@@ -7,7 +7,7 @@ from engine.enums.responder import Responder
 from engine.time.timestamp import Timestamp
 from core.modules.drivers.listeners.escalation_responder_listener import EscalationResponderListener
 from core.modules.drivers.listeners.retired_responder_listener import RetiredResponderListener
-from core.modules.drivers.models.driver_epoch import DriverEpoch
+from core.modules.drivers.models.driver_version import DriverVersion
 from core.modules.drivers.models.enums.escalation_state import EscalationState
 from core.modules.drivers.support.answer_basis_writers import AnswerBasisWriters
 
@@ -56,8 +56,8 @@ def test_a_retirement_cancels_the_agents_own_escalations_and_passes_its_children
 
 
 def test_a_driving_setting_moves_the_epoch_but_keeps_the_journals_start():
-    saved: list[DriverEpoch] = []
-    epoch = DriverEpoch(epoch=4, started_at=BOOT)
+    saved: list[DriverVersion] = []
+    epoch = DriverVersion(epoch=4, started_at=BOOT)
     queries = SimpleNamespace(query=lambda model: SimpleNamespace(first=lambda: epoch))
     repository = SimpleNamespace(save_change=lambda old, new, context: saved.append(new))
     writers = AnswerBasisWriters(queries, repository, SimpleNamespace(), SimpleNamespace(command_scope=lambda *values: nullcontext()))

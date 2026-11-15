@@ -1,7 +1,7 @@
 from core.modules.processes.support.installed_plugins import InstalledPlugins
 from dataclasses import replace
 
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.execution.limits.default_lane_limits import DEFAULT_LANE_LIMITS
 from engine.execution.classes.execution_class import ExecutionClass
 from engine.execution.classes.execution_classes import ExecutionClasses
@@ -13,8 +13,8 @@ from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.models.execution_class_row import ExecutionClassRow
 from core.modules.processes.support.process_settings import ProcessSettings
 
-CAPACITY_SETTINGS = {ExecutionLane.INSTANT: ProcessSetting.LANE_CAPACITY_INSTANT, ExecutionLane.SHORT: ProcessSetting.LANE_CAPACITY_SHORT,
-                     ExecutionLane.LONG: ProcessSetting.LANE_CAPACITY_LONG}
+CAPACITY_SETTINGS = {ExecutionLength.INSTANT: ProcessSetting.LANE_CAPACITY_INSTANT, ExecutionLength.SHORT: ProcessSetting.LANE_CAPACITY_SHORT,
+                     ExecutionLength.LONG: ProcessSetting.LANE_CAPACITY_LONG}
 STORED_CLASSES_REASON = "The person's classes are few, and a match reads every one of them."
 PERCENT = 100
 

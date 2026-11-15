@@ -32,12 +32,12 @@ from core.modules.agents.support.agent_program import AgentProgram
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.agents.support.agent_sessions import AgentSessions
-from core.modules.drivers.nudges.ended_agent_nudge import EndedAgentNudge
-from core.modules.drivers.nudges.replaced_session_nudge import ReplacedSessionNudge
-from core.modules.drivers.nudges.unknown_agent_nudge import UnknownAgentNudge
+from core.modules.drivers.nudges.ended_agent_message import EndedAgentMessage
+from core.modules.drivers.nudges.replaced_session_message import ReplacedSessionMessage
+from core.modules.drivers.nudges.unknown_agent_message import UnknownAgentMessage
 from core.modules.drivers.support.decision_assembler import DecisionAssembler
 from engine.agent_step.errors.step_conflict_error import StepConflictError
-from core.modules.drivers.nudges.paused_refusal_nudge import PausedRefusalNudge
+from core.modules.drivers.nudges.paused_refusal_message import PausedRefusalMessage
 from core.modules.drivers.support.decision_fallbacks import DecisionFallbacks
 from core.modules.drivers.support.assembled_answer import AssembledAnswer
 from core.modules.drivers.support.driver_settings import RETRY_RESERVE_SETTING
@@ -141,14 +141,14 @@ class AgentHookRoute(HookRoute):
 
     def repeated_answer(self, event: HookEvent, agent: Agent, stored_call: HookCall) -> str:
         if agent.retired_at is not None:
-            return EndedAgentNudge.declared().nudge().text
+            return EndedAgentMessage.declared().nudge().text
         if self.sessions.replaced_agent_id(event.session) is not None:
-            return ReplacedSessionNudge.declared().nudge(agent=agent.number).text
+            return ReplacedSessionMessage.declared().nudge(agent=agent.number).text
         # a pause since then refuses only a tool Paused refuses, never a read, a search, journal message or a prompt
         if event.tool is None or not Constraints.pause_refuses(event.tool):
             return ""
         paused_later = [paused for paused in self.agents.paused_line(agent.id) if paused.paused_at is not None and paused.paused_at.value >= stored_call.creation_timestamp().value]
-        return PausedRefusalNudge.declared().nudge().text if paused_later else ""
+        return PausedRefusalMessage.declared().nudge().text if paused_later else ""
 
     def note_timeout(self, event: HookEvent, agent: Agent, actor: Actor) -> None:
         if event.event == HookEventName.TICK:
@@ -165,14 +165,14 @@ class AgentHookRoute(HookRoute):
         if event.event != HookEventName.PRE_TOOL_USE:
             return HookReply.allowed()
         self.program.request_stop(row)
-        return HookReply(refusal=EndedAgentNudge.declared().nudge().text)
+        return HookReply(refusal=EndedAgentMessage.declared().nudge().text)
 
     def agentless_reply(self, event: HookEvent) -> HookReply:
         replaced_agent_id = self.sessions.replaced_agent_id(event.session)
         if replaced_agent_id is not None and event.event == HookEventName.PRE_TOOL_USE:
-            return HookReply(refusal=ReplacedSessionNudge.declared().nudge(agent=self.agents.find_unscoped(replaced_agent_id).number).text)
+            return HookReply(refusal=ReplacedSessionMessage.declared().nudge(agent=self.agents.find_unscoped(replaced_agent_id).number).text)
         if replaced_agent_id is None and event.is_check_required:
-            return HookReply(refusal=UnknownAgentNudge.declared().nudge().text)
+            return HookReply(refusal=UnknownAgentMessage.declared().nudge().text)
         return HookReply.allowed()
 
     def passes_lockdown(self, event: HookEvent) -> bool:

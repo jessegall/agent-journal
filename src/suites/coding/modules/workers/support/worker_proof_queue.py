@@ -18,7 +18,7 @@ from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import Proo
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
-from suites.coding.modules.workers.nudges.proof_waits_nudge import ProofWaitsNudge
+from suites.coding.modules.workers.nudges.proof_waits_message import ProofWaitsMessage
 from suites.coding.modules.workers.models.affected_test import AffectedTest
 from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
 from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND, PROJECT_TEST_COMMAND
@@ -81,4 +81,4 @@ class WorkerProofQueue:
 
     def send_waiting_line(self, worktree: Worktree, proofs: Sequence[Proof], context: Context) -> None:
         if proofs:
-            self.main_agent_line.send_nudge(ProofWaitsNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), proofs=" ".join(str(proof.id) for proof in proofs)), PROOF_WAITS_SOURCE, context)
+            self.main_agent_line.send_nudge(ProofWaitsMessage.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), proofs=" ".join(str(proof.id) for proof in proofs)), PROOF_WAITS_SOURCE, context)

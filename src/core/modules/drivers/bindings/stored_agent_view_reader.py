@@ -4,13 +4,13 @@ from core.modules.drivers.support.open_block_rows import OpenBlockRows
 from datetime import datetime
 from core.modules.drivers.support.driver_settings import CAPABILITY_PROOFS_SETTING
 from core.modules.drivers.support.block_judgement import BlockJudgement
-from core.modules.drivers.models.agent_frame_suppression import OPEN_SUPPRESSIONS_REASON, AgentFrameSuppression
+from core.modules.drivers.models.hidden_state import OPEN_SUPPRESSIONS_REASON, HiddenState
 from engine.driver.refusal_skips import RefusalSkips
 from engine.enums.responder import Responder
-from engine.agent_stack.answer_basis import AnswerBasis
+from engine.agent_stack.read_versions import ReadVersions
 from engine.agent_stack.escalation import Escalation
-from engine.agent_stack.frame import Frame
-from engine.agent_stack.need_key import NeedKey
+from engine.agent_stack.stacked_state import StackedState
+from engine.agent_stack.state_key import StateKey
 from engine.agent_stack.open_block import OpenBlock
 from engine.agent_stack.reason import Reason
 from engine.agent_stack.stack import Stack
@@ -30,7 +30,7 @@ from engine.agent_machine.record.question import Question
 from engine.agent_machine.record.refusal_counts import RefusalCounts
 from engine.agent_machine.stepping.refusal_counting import STOP_LIMIT_SETTING, TOOL_LIMIT_SETTING
 from engine.agent_step.agent_view_reader import AgentViewReader
-from engine.agent_step.frame_codec import FrameCodec
+from engine.agent_step.stack_codec import StackCodec
 from engine.enums.decision_class import DecisionClass
 from engine.module.module_finder import ModuleFinder
 from engine.query.queries import Queries
@@ -43,12 +43,12 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.drivers.models.agent_escalation import AgentEscalation
 from core.modules.drivers.models.agent_stack import AgentStack
-from core.modules.drivers.nudges.paused_refusal_nudge import PausedRefusalNudge
-from core.modules.drivers.models.driver_epoch import DriverEpoch
+from core.modules.drivers.nudges.paused_refusal_message import PausedRefusalMessage
+from core.modules.drivers.models.driver_version import DriverVersion
 from core.modules.drivers.models.enums.escalation_state import EscalationState
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 
-BOTTOM_KEY = NeedKey("Stopped", None, "bottom")
+BOTTOM_KEY = StateKey("Stopped", None, "bottom")
 
 
 class StoredAgentViewReader(AgentViewReader):
@@ -83,9 +83,9 @@ class StoredAgentViewReader(AgentViewReader):
             depth_limit=driver.depth_limit, program=self.providers.provider(agent.program).capabilities().proved(agent.program, self.settings.texts(CAPABILITY_PROOFS_SETTING)), counts=counts, block_outcomes=self.judgement.outcomes(rows, question, agent_id), newest_hook_at=self.newest_hook_at(agent_id), last_refused_rules=self.skips.last_refused_rules(agent_id),
             journal_started_at=driver_epoch.started_at.value if driver_epoch is not None and driver_epoch.started_at is not None else None)
 
-    def suppressions(self, agent_id: int) -> tuple[NeedKey, ...]:
-        rows = self.queries.query(AgentFrameSuppression).filter(session_agent_id=agent_id, ended_at=None).every_row(OPEN_SUPPRESSIONS_REASON)
-        return tuple(FrameCodec.decoded_key(row.need_key) for row in rows)
+    def suppressions(self, agent_id: int) -> tuple[StateKey, ...]:
+        rows = self.queries.query(HiddenState).filter(session_agent_id=agent_id, ended_at=None).every_row(OPEN_SUPPRESSIONS_REASON)
+        return tuple(StackCodec.decoded_key(row.need_key) for row in rows)
 
     def newest_hook_at(self, agent_id: int) -> datetime | None:
         hook = self.hook_calls.newest_agent_hook(agent_id)
@@ -101,19 +101,19 @@ class StoredAgentViewReader(AgentViewReader):
     def grants(self, agent: AgentReference) -> tuple[Grant, ...]:
         return tuple(self.grant_store.usable_grants([agent]).get(agent.agent_id, ()))
 
-    def basis(self, row: AgentStack | None, agent: Agent, driver_epoch: DriverEpoch | None) -> AnswerBasis:
+    def basis(self, row: AgentStack | None, agent: Agent, driver_epoch: DriverVersion | None) -> ReadVersions:
         program_epoch = self.stacks.program_epoch(agent.program)
-        return AnswerBasis(row.version if row is not None else 0, driver_epoch.epoch if driver_epoch is not None else 0,
+        return ReadVersions(row.version if row is not None else 0, driver_epoch.epoch if driver_epoch is not None else 0,
                            program_epoch.epoch if program_epoch is not None else 0)
 
     def stack(self, row: AgentStack | None, agent: Agent) -> Stack:
         # a row a permission change made before the agent's first step holds no frame yet, and reads as a fresh stack
-        frames = FrameCodec.decoded(row.frames) if row is not None else []
-        return Stack(frames or [Frame(Stopped(agent.creation_timestamp().value, "started", True), BOTTOM_KEY, agent.creation_timestamp().value)])
+        frames = StackCodec.decoded(row.frames) if row is not None else []
+        return Stack(frames or [StackedState(Stopped(agent.creation_timestamp().value, "started", True), BOTTOM_KEY, agent.creation_timestamp().value)])
 
     def facts(self, agent: Agent) -> tuple[Fact, ...]:
         causes = tuple(PauseCause(paused.id, paused.id, paused.paused_at.value) for paused in self.agents.paused_line(agent.id) if paused.paused_at is not None)
-        pause = [PauseFact(None, causes, PausedRefusalNudge.declared().nudge().text)] if causes else []
+        pause = [PauseFact(None, causes, PausedRefusalMessage.declared().nudge().text)] if causes else []
         return (*pause, *self.ended(agent))
 
     def ended(self, agent: Agent) -> list[Fact]:
@@ -140,7 +140,7 @@ class StoredAgentViewReader(AgentViewReader):
         row = self.queries.query(AgentEscalation).filter(session_agent_id=agent_id, state=EscalationState.OPEN).first()
         if row is None:
             return None
-        return Escalation(row.id, row.escalation_type, row.responder, row.block_ids, tuple(NeedKey("Working", None, key) for key in row.work_keys), row.refusal_count)
+        return Escalation(row.id, row.escalation_type, row.responder, row.block_ids, tuple(StateKey("Working", None, key) for key in row.work_keys), row.refusal_count)
 
     # the environment's suite names the driver, a helper type with no driver of its own taking the one of the type it is
     # built on; with no suite chosen, the core driver of that type drives

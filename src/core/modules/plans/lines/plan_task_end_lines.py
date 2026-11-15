@@ -3,7 +3,7 @@ from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.query.query import Query
@@ -12,9 +12,9 @@ from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.plan_progress import PlanProgress
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.support.focus.plan_focus import PlanFocus
-from core.modules.plans.nudges.checkpoint_reached_nudge import CheckpointReachedNudge
-from core.modules.plans.nudges.phase_finished_nudge import PhaseFinishedNudge
-from core.modules.plans.nudges.plan_stalled_nudge import PlanStalledNudge
+from core.modules.plans.nudges.checkpoint_reached_message import CheckpointReachedMessage
+from core.modules.plans.nudges.phase_finished_message import PhaseFinishedMessage
+from core.modules.plans.nudges.plan_stalled_message import PlanStalledMessage
 from core.modules.tasks.models.enums.task_state import UNFINISHED_STATES, TaskState
 from core.modules.tasks.queries.task_query import TaskQuery
 
@@ -33,7 +33,7 @@ class PlanTaskEndLines(EventLineSource):
     def __init__(self, queries: Queries, focus: PlanFocus, tasks: TaskQuery) -> None:
         self.queries, self.focus, self.tasks = queries, focus, tasks
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
+    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         shell = event.tool.shell if event.tool is not None else None
         numbers = shell.journal_command_numbers("task close", "task cancel", "task block", "task release") if shell is not None else ()
         named = self.tasks.named_tasks(numbers)
@@ -42,7 +42,7 @@ class PlanTaskEndLines(EventLineSource):
             return []
         return [*(nudge for task in ended for nudge in self.plan_nudges(task.id, agent_id))]
 
-    def plan_nudges(self, task_id: int, agent_id: int) -> list[Nudge]:
+    def plan_nudges(self, task_id: int, agent_id: int) -> list[AgentMessage]:
         place = self.queries.query(PlanTask).filter(task_id=task_id).first()
         if place is None:
             return []
@@ -56,14 +56,14 @@ class PlanTaskEndLines(EventLineSource):
         overview = self.focus.overview(self.queries.query(Agent).find(agent_id))
         if not overview.has_ready_task(place.plan_id):
             waits = overview.waits_text(place.plan_id)
-            nudges.append(PlanStalledNudge.declared().nudge(plan=place.plan_id, count=blocked_count, waits=f": {waits}" if waits else ""))
+            nudges.append(PlanStalledMessage.declared().nudge(plan=place.plan_id, count=blocked_count, waits=f": {waits}" if waits else ""))
         return nudges
 
-    def phase_nudges(self, place: PlanTask) -> list[Nudge]:
+    def phase_nudges(self, place: PlanTask) -> list[AgentMessage]:
         if self.unfinished("phase_id", place.phase_id).exists():
             return []
         phase = self.queries.query(Phase).find(place.phase_id)
-        declaration = CheckpointReachedNudge.declared() if phase.checkpoint else PhaseFinishedNudge.declared()
+        declaration = CheckpointReachedMessage.declared() if phase.checkpoint else PhaseFinishedMessage.declared()
         return [declaration.nudge(plan=place.plan_id, phase=phase.title)]
 
     def unfinished(self, column: str, value: int) -> Query[PlanTask]:

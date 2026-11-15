@@ -7,8 +7,8 @@ from engine.repository.repository import Repository
 from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_stack import AgentStack
-from core.modules.drivers.models.driver_epoch import DriverEpoch
-from core.modules.drivers.models.program_epoch import ProgramEpoch
+from core.modules.drivers.models.driver_version import DriverVersion
+from core.modules.drivers.models.program_version import ProgramVersion
 from core.modules.environments.models.environment import Environment
 
 CHILD_AGENTS_REASON = "the running agents one level of a tree started, a handful each, a few levels deep"
@@ -59,9 +59,9 @@ class AnswerBasisWriters:
 
     def bumped_epoch(self, environment_id: int, context: Context, started_at: Timestamp | None) -> None:
         with self.scopes.command_scope((), context.actor, environment_id):
-            epoch = self.queries.query(DriverEpoch).first()
+            epoch = self.queries.query(DriverVersion).first()
             if epoch is None:
-                self.repository.save(DriverEpoch(epoch=1, started_at=started_at), context)
+                self.repository.save(DriverVersion(epoch=1, started_at=started_at), context)
                 return
             self.repository.save_change(epoch, epoch.changed(epoch=epoch.epoch + 1, started_at=started_at or epoch.started_at), context)
 
@@ -76,8 +76,8 @@ class AnswerBasisWriters:
             self.bumped_epoch(environment.id, context, context.timestamp)
 
     def bump_program(self, program: str, context: Context) -> None:
-        epoch = self.queries.query(ProgramEpoch).filter(program=program).first()
+        epoch = self.queries.query(ProgramVersion).filter(program=program).first()
         if epoch is None:
-            self.repository.save(ProgramEpoch(program=program, epoch=1), context)
+            self.repository.save(ProgramVersion(program=program, epoch=1), context)
             return
         self.repository.save_change(epoch, epoch.changed(epoch=epoch.epoch + 1), context)

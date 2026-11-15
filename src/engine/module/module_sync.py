@@ -52,7 +52,7 @@ from engine.registry.move_entry import MoveEntry
 from engine.registry.skill_entry import SkillEntry
 from engine.skill.skill_declaration import SKILLS_FOLDER
 from engine.registry.mark_entry import MarkEntry
-from engine.registry.nudge_entry import NudgeEntry
+from engine.registry.message_entry import MessageEntry
 from engine.registry.window_entry import WindowEntry
 from engine.module.window_check import unavailable_reason
 from engine.module.module import GuardClass, ListenerClass, Module
@@ -208,8 +208,8 @@ class ModuleSync:
                                mark.process, mark.full_width, mark.card, module in shipped, unavailable_reason(mark.kit))
                      for module in modules for mark in module.mark_declarations())
 
-    def nudges(self, modules: tuple[type[Module], ...]) -> tuple[NudgeEntry, ...]:
-        return tuple(NudgeEntry(nudge.key, module.name, nudge.type.value, nudge.text, nudge.interval.seconds if nudge.interval else 0, nudge.limit) for module in modules for nudge in module.nudge_declarations())
+    def nudges(self, modules: tuple[type[Module], ...]) -> tuple[MessageEntry, ...]:
+        return tuple(MessageEntry(nudge.key, module.name, nudge.type.value, nudge.text, nudge.interval.seconds if nudge.interval else 0, nudge.limit) for module in modules for nudge in module.nudge_declarations())
 
     def docks(self, modules: tuple[type[Module], ...]) -> tuple[DockEntry, ...]:
         shipped = set(self.finder.default_modules())

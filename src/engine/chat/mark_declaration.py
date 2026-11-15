@@ -5,7 +5,7 @@ from string import Formatter
 
 from engine.chat.mark_button import MarkButton
 from engine.enums.mark_click import MarkClick
-from engine.chat.mark_family import MarkFamily
+from engine.chat.mark_category import MarkCategory
 from engine.enums.mark_grouping import MarkGrouping
 from engine.types.class_fields import class_fields
 
@@ -21,7 +21,7 @@ class MarkDeclaration:
 
     type: StrEnum
     variants: type[StrEnum]
-    family: MarkFamily
+    family: MarkCategory
     label: str
     mark_icon: str
     click: MarkClick = MarkClick.UNFOLD

@@ -3,7 +3,7 @@ from engine.database.migration import Migration
 COMMON = " version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(metadata)), created_at TEXT NOT NULL, updated_at TEXT NOT NULL) STRICT"
 
 
-class NudgeRecordsMigration(Migration):
+class MessageRecordsMigration(Migration):
     """Keeps how often each agent was told each line of a nudge, and when last."""
 
     number = 4

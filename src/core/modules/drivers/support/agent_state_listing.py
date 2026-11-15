@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from engine.agent_step.frame_codec import FrameCodec
+from engine.agent_step.stack_codec import StackCodec
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_stack import AgentStack
@@ -29,4 +29,4 @@ class AgentStateListing:
             return []
         return [OpenState(type(frame.state).__name__, frame.need_key.state_name,
                           tuple([f"{frame.need_key.subject.model} {frame.need_key.subject.row_id}"]) if frame.need_key.subject is not None else (),
-                          frame.entered_at.isoformat()) for frame in FrameCodec.decoded(row.frames)]
+                          frame.entered_at.isoformat()) for frame in StackCodec.decoded(row.frames)]

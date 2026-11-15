@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, ClassVar
 
 from engine.agent_machine.agent_view import AgentView
 from engine.command.command import Command
-from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.message_template import MessageTemplate
 from engine.driver.rule_answer import RuleAnswer
 from engine.enums.effect_timing import EffectTiming
 from engine.enums.hook_event_name import HookEventName
@@ -27,7 +27,7 @@ class Effect(ABC):
     is_required: ClassVar[bool] = False
     # an effect that completes the agent's work, such as a helper's hand-in, belongs to its type's working slice
     completes_work: ClassVar[bool] = False
-    failure: ClassVar[type[NudgeDeclaration] | None] = None
+    failure: ClassVar[type[MessageTemplate] | None] = None
 
     @abstractmethod
     def commands(self, view: AgentView, record: DecisionRecord) -> Sequence[Command[object]]: ...

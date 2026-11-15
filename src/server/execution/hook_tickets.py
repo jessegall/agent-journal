@@ -1,7 +1,7 @@
 from collections.abc import Generator
 from contextlib import contextmanager
 
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_priority import ExecutionPriority
 from engine.enums.starter_type import StarterType
 from engine.execution.classes.execution_class import ExecutionClass
@@ -28,5 +28,5 @@ class HookTickets:
     def ticket(self, priority: ExecutionPriority, event_name: str) -> ExecutionTicket:
         starter = ExecutionStarter(StarterType.MAIN_AGENT if priority.is_unlimited else StarterType.HELPER)
         entered_at = self.clock.timestamp()
-        execution_class = ExecutionClass("main agent hook" if priority.is_unlimited else "agent hook", ExecutionLane.INSTANT, 1, priority)
+        execution_class = ExecutionClass("main agent hook" if priority.is_unlimited else "agent hook", ExecutionLength.INSTANT, 1, priority)
         return ExecutionTicket(execution_class, priority, priority, starter, event_name, entered_at, entered_at)

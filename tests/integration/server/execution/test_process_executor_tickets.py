@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from engine.database.never_waiting_write_turns import NeverWaitingWriteTurns
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_priority import ExecutionPriority
 from engine.enums.process_type import ProcessType
 from engine.enums.starter_type import StarterType
@@ -31,7 +31,7 @@ def test_quick_git_run_is_admitted_in_the_short_lane(tmp_path):
     door = admission(tmp_path)
     with door.admitted(PlacedRun(GIT_STATUS, None, False)):
         entries = door.queue.read()
-    assert [(entry.ticket.execution_class.lane, entry.ticket.execution_class.name) for entry in entries] == [(ExecutionLane.SHORT, "journal short git")]
+    assert [(entry.ticket.execution_class.lane, entry.ticket.execution_class.name) for entry in entries] == [(ExecutionLength.SHORT, "journal short git")]
 
 
 def test_run_gets_its_class_and_starter(tmp_path):
@@ -71,4 +71,4 @@ def test_a_plugin_script_run_by_a_listener_event_is_an_execution_with_a_class_an
     script = PlacedRun(ExecutionRequest(["/plugins/sample/listen.sh"], Path("/plugins/sample"), ProcessType.PLUGIN, 60), None, False)
     with CurrentExecution(event.priority, "event", event.line, event).applied(), door.admitted(script):
         ticket = door.queue.read()[0].ticket
-    assert (ticket.execution_class.name, ticket.execution_class.lane, ticket.parent) == ("journal short git", ExecutionLane.SHORT, event)
+    assert (ticket.execution_class.name, ticket.execution_class.lane, ticket.parent) == ("journal short git", ExecutionLength.SHORT, event)

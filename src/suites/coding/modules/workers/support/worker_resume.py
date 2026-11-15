@@ -9,7 +9,7 @@ from engine.driver.open_hold import OpenHold
 from core.modules.tasks.commands.reset_task_reads.reset_task_reads import ResetTaskReads
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
-from core.modules.tasks.nudges.task_brief_first_nudge import TaskBriefFirstNudge
+from core.modules.tasks.nudges.task_brief_first_message import TaskBriefFirstMessage
 from core.modules.tasks.support.block_conditions.task_brief_read import TaskBriefRead
 from engine.listener.rows.event_rows import EventRows
 from engine.time.clock import Clock
@@ -46,7 +46,7 @@ from core.modules.helpers.support.agent_admission import AgentAdmission
 from pathlib import Path
 from suites.coding.modules.workers.commands.report_worker_program_recovery.report_worker_program_recovery import ReportWorkerProgramRecovery
 from suites.coding.modules.workers.support.worker_instruction_files import WorkerInstructionFiles
-from suites.coding.modules.workers.nudges.worker_program_resumed_nudge import WorkerProgramResumedNudge
+from suites.coding.modules.workers.nudges.worker_program_resumed_message import WorkerProgramResumedMessage
 
 ENTERED_LINES_REASON = "every line typed to the worker since its last hook may be the job it lost"
 
@@ -136,11 +136,11 @@ class WorkerResume:
         if answer is not Dispatch.STARTED:
             return answer
         stopped_at = worker.ended_at if worker.ended_at is not None else worker.creation_timestamp()
-        self.bus.run(ReportWorkerProgramRecovery(worker.id, stopped_at, WorkerProgramResumedNudge.declared().nudge(worker=worker.id)), Actor.core(), environment_id=worktree.environment_id)
+        self.bus.run(ReportWorkerProgramRecovery(worker.id, stopped_at, WorkerProgramResumedMessage.declared().nudge(worker=worker.id)), Actor.core(), environment_id=worktree.environment_id)
         if self.requirement.is_required:
             worker_actor = Actor(worker.id, ActorType.AGENT)
             self.bus.run(ResetTaskReads(worker.id), worker_actor, environment_id=worktree.environment_id)
-            self.bus.run(OpenHold(worker.id, TaskBriefFirstNudge.declared().nudge(task=worktree.task_id), TaskBriefRead(worktree.task_id)),
+            self.bus.run(OpenHold(worker.id, TaskBriefFirstMessage.declared().nudge(task=worktree.task_id), TaskBriefRead(worktree.task_id)),
                          worker_actor, environment_id=worktree.environment_id)
         job = self.queries.query(AgentLine).find(job.id)
         if job.state is AgentLineState.WAITING and self.rows.required(Agent, worker.id).pid is not None:

@@ -6,7 +6,7 @@ from engine.scope.actor_scope import ActorScope
 from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
-from suites.coding.modules.workers.nudges.worker_retired_with_tasks_nudge import WorkerRetiredWithTasksNudge
+from suites.coding.modules.workers.nudges.retired_worker_tasks_message import RetiredWorkerTasksMessage
 from suites.coding.modules.workers.support.worker_questions import WorkerQuestions
 from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks
 
@@ -31,4 +31,4 @@ class RetiredWorkerListener(SaveListener[Updated[Agent]]):
         tasks = self.unfinished.rows(worker.id)
         if tasks:
             with self.scopes.row_scope(worker):
-                self.inbox.send_nudge(WorkerRetiredWithTasksNudge.declared().nudge(worker=worker.number, tasks=self.unfinished.names(tasks)), SOURCE, context)
+                self.inbox.send_nudge(RetiredWorkerTasksMessage.declared().nudge(worker=worker.number, tasks=self.unfinished.names(tasks)), SOURCE, context)

@@ -14,7 +14,7 @@ from core.modules.updates.models.enums.update_step import UpdateStep
 from core.modules.updates.commands.record_release_install.record_release_install import RecordReleaseInstall
 from core.modules.updates.support.release_install_steps import ReleaseInstallSteps
 from core.modules.updates.support.release_source import ReleaseSource
-from engine.serving.code_handover import CodeHandover
+from engine.serving.code_delivery import CodeDelivery
 
 
 class InstallReleaseHandler(Handler[InstallRelease, ReleaseInstall]):
@@ -33,7 +33,7 @@ class InstallReleaseHandler(Handler[InstallRelease, ReleaseInstall]):
             tag = CodeVersions(self.home).add(self.source.unpacked(release, Path(folder)), self.clock)
         install = self.repository.save(ReleaseInstall(creator_id=context.actor.id, checksum=release.checksum,
                                                       tag=release.tag, code_version=tag), context)
-        handover = CodeHandover(self.home, ReleaseInstallSteps(self.home, install.id))
+        handover = CodeDelivery(self.home, ReleaseInstallSteps(self.home, install.id))
         running_pid = handover.server_pid()
         if not running_pid:
             handover.request_takeover(tag, "")

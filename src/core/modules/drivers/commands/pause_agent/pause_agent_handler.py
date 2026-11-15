@@ -7,8 +7,8 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.pause_agent.pause_agent import PauseAgent
 from core.modules.drivers.listeners.typed_line_listener import PAUSE_SOURCE
-from core.modules.drivers.nudges.paused_refusal_nudge import PausedRefusalNudge
-from engine.driver.nudger import Nudger
+from core.modules.drivers.nudges.paused_refusal_message import PausedRefusalMessage
+from engine.driver.nudger import MessageSender
 from core.modules.agents.support.agent_label import AgentLabel
 
 
@@ -19,7 +19,7 @@ class PauseAgentHandler(Handler[PauseAgent, Agent]):
     command = PauseAgent
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, repository: Repository, nudger: Nudger) -> None:
+    def __init__(self, queries: Queries, repository: Repository, nudger: MessageSender) -> None:
         self.queries, self.repository, self.nudger = queries, repository, nudger
 
     def handle(self, command: PauseAgent, context: Context) -> Agent:
@@ -29,5 +29,5 @@ class PauseAgentHandler(Handler[PauseAgent, Agent]):
         if agent.paused_at is not None:
             raise Refusal(f"{AgentLabel.labelled(agent).text} is paused already")
         paused = self.repository.update(agent, context, paused_at=context.timestamp)
-        self.nudger.send(agent.id, PausedRefusalNudge.declared(), PAUSE_SOURCE, context)
+        self.nudger.send(agent.id, PausedRefusalMessage.declared(), PAUSE_SOURCE, context)
         return paused

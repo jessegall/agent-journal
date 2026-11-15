@@ -1,4 +1,4 @@
-from engine.chat.mark_family import MarkFamily
+from engine.chat.mark_category import MarkCategory
 from engine.enums.mark_group import MarkGroup
 
-QUESTIONS_FAMILY = MarkFamily("questions.questions", "Questions", "question", MarkGroup.AGENT)
+QUESTIONS_FAMILY = MarkCategory("questions.questions", "Questions", "question", MarkGroup.AGENT)

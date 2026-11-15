@@ -8,7 +8,7 @@ from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.stop_facts import StopFacts
 from suites.coding.modules.workers.support.worker_handoff import WorkerHandoff
 from suites.coding.modules.workers.support.worker_job import ENDED_WORKER_SOURCE, UNFINISHED_TASKS_SOURCE
-from suites.coding.modules.workers.nudges.worker_ended_with_tasks_nudge import WorkerEndedWithTasksNudge
+from suites.coding.modules.workers.nudges.ended_worker_tasks_message import EndedWorkerTasksMessage
 from suites.coding.modules.workers.support.worker_launch_failures import WorkerLaunchFailures
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
 from suites.coding.modules.workers.support.worker_round import WorkerRound
@@ -50,4 +50,4 @@ class StopFactsReader:
 
     def is_main_agent_informed(self, worker: Agent, progress: Minimum) -> bool:
         lines = self.queries.query(AgentLine).filter(source=ENDED_WORKER_SOURCE).matching(progress).every_row(ENDED_LINES_REASON)
-        return any(line.nudge.key == WorkerEndedWithTasksNudge.declared().key and dict(line.nudge.fields)["worker"] == str(worker.number) for line in lines)
+        return any(line.nudge.key == EndedWorkerTasksMessage.declared().key and dict(line.nudge.fields)["worker"] == str(worker.number) for line in lines)

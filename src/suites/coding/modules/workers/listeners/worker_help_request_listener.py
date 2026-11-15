@@ -6,7 +6,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.waits.models.enums.wait_type import WaitType
 from core.modules.waits.models.wait import Wait
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
-from suites.coding.modules.workers.nudges.worker_help_request_nudge import WorkerHelpRequestNudge
+from suites.coding.modules.workers.nudges.worker_help_request_message import WorkerHelpRequestMessage
 from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks
 from engine.event.created import Created
 from engine.command.context import Context
@@ -36,6 +36,6 @@ class WorkerHelpRequestListener(SaveListener[Created[Wait]]):
         should_notify = worker.role == Worker.key and worker.parent_id is not None and not self.unfinished.has_running_process(worker.id)
         if should_notify:
             tasks = self.unfinished.rows(worker.id)
-            nudge = WorkerHelpRequestNudge.declared().nudge(worker=worker.number, tasks=self.unfinished.names(tasks), wait=wait.id)
+            nudge = WorkerHelpRequestMessage.declared().nudge(worker=worker.number, tasks=self.unfinished.names(tasks), wait=wait.id)
             line = MergerLine(text=nudge.text, fallback_source=SOURCE, nudge_json=nudge.stored.json, topic=AskTopic.GENERAL, worker_id=worker.id)
             self.inbox.deliver(self.questions.timed(line, wait.id, tasks[0].id if tasks else None, context.timestamp), context)

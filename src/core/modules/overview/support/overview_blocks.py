@@ -2,7 +2,7 @@ from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from engine.query.query import Query
 from core.modules.drivers.models.agent_block import AgentBlock
-from core.modules.overview.nudges.overview_refusal_nudge import OverviewRefusalNudge
+from core.modules.overview.nudges.overview_refusal_message import OverviewRefusalMessage
 
 
 class OverviewBlocks:
@@ -12,7 +12,7 @@ class OverviewBlocks:
         self.queries = queries
 
     def open_blocks(self, agent_id: int) -> Query[AgentBlock]:
-        return self.queries.query(AgentBlock).filter(session_agent_id=agent_id, nudge_key=OverviewRefusalNudge.declared().key).matching(IsNull("closed_at"))
+        return self.queries.query(AgentBlock).filter(session_agent_id=agent_id, nudge_key=OverviewRefusalMessage.declared().key).matching(IsNull("closed_at"))
 
     def oldest_open(self, agent_id: int) -> AgentBlock | None:
         return self.open_blocks(agent_id).oldest().first()

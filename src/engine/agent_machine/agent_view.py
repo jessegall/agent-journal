@@ -2,11 +2,11 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from engine.enums.frame_end import FrameEnd
-from engine.agent_stack.subject_reference import SubjectReference
-from engine.agent_stack.answer_basis import AnswerBasis
+from engine.enums.state_end import StateEnd
+from engine.agent_stack.row_reference import RowReference
+from engine.agent_stack.read_versions import ReadVersions
 from engine.agent_stack.escalation import Escalation
-from engine.agent_stack.need_key import NeedKey
+from engine.agent_stack.state_key import StateKey
 from engine.agent_stack.open_block import OpenBlock
 from engine.agent_stack.stack import Stack
 from engine.agent_machine.capabilities import Capabilities
@@ -15,7 +15,7 @@ from engine.agent_machine.needs.rank_order import RankOrder
 from engine.agent_machine.needs.block_plan import BlockPlan
 from engine.agent_machine.needs.agent_reference import AgentReference
 from engine.agent_machine.needs.fact import Fact
-from engine.agent_machine.needs.need import Need
+from engine.agent_machine.needs.required_state import RequiredState
 from engine.agent_machine.record.refusal_counts import RefusalCounts
 from engine.enums.condition_outcome import ConditionOutcome
 from engine.enums.responder import Responder
@@ -29,7 +29,7 @@ class AgentView:
     settings, whether the agent rests, its driver's contract and its program's capabilities, the
     refusal counts kept so far, how each open hold's condition was judged, and when the step runs."""
 
-    basis: AnswerBasis
+    basis: ReadVersions
     agent: AgentReference
     program_name: str
     session: str
@@ -39,11 +39,11 @@ class AgentView:
     stepped_at: datetime
     stack: Stack
     facts: tuple[Fact, ...]
-    needs: tuple[Need, ...]
+    needs: tuple[RequiredState, ...]
     plans: tuple[BlockPlan, ...]
     blocks: tuple[OpenBlock, ...]
     grants: tuple[Grant, ...]
-    suppressions: tuple[NeedKey, ...]
+    suppressions: tuple[StateKey, ...]
     escalation: Escalation | None
     settings: Mapping[str, object]
     is_resting: bool
@@ -62,4 +62,4 @@ class AgentView:
     # the rules that refused the agent's last refused hook: a policy among them offers its skip at a tool use
     last_refused_rules: frozenset[str] = frozenset()
     # how the subjects of frames that left this step ended, as their need sources tell
-    subject_ends: Mapping[SubjectReference, FrameEnd] = field(default_factory=dict)
+    subject_ends: Mapping[RowReference, StateEnd] = field(default_factory=dict)

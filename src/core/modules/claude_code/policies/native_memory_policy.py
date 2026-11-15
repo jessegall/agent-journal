@@ -1,10 +1,10 @@
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_policy import EventPolicy
 import re
 
 from engine.enums.command_effect import CommandEffect
-from core.modules.claude_code.nudges.native_memory_ban_nudge import NativeMemoryBanNudge
+from core.modules.claude_code.nudges.native_memory_ban_message import NativeMemoryBanMessage
 
 NATIVE_MEMORY_PATH = re.compile(r"\.claude/projects/[^/\s]+/memory(/|\b)")
 
@@ -18,12 +18,12 @@ class NativeMemoryPolicy(EventPolicy):
     is_safety = True
     grant_types = []
 
-    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+    def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         tool = event.tool
         if tool is None or not tool.is_writing_files():
             return None
         writing_texts = (*(part.text for part in tool.shell.parts if CommandEffect.WRITES_FILES in part.classification.effects), *tool.shell.redirects) if tool.shell is not None else ()
         if any(NATIVE_MEMORY_PATH.search(text) for text in (*tool.files, *writing_texts)):
-            return NativeMemoryBanNudge.declared().nudge()
+            return NativeMemoryBanMessage.declared().nudge()
         return None
 

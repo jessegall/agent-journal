@@ -1,4 +1,4 @@
-from core.modules.reminders.nudges.reminder_line_nudge import ReminderLineNudge
-from core.modules.reminders.nudges.reminder_block_nudge import ReminderBlockNudge
+from core.modules.reminders.nudges.reminder_line_message import ReminderLineMessage
+from core.modules.reminders.nudges.reminder_block_message import ReminderBlockMessage
 
-REMINDER_NUDGES = [ReminderLineNudge, ReminderBlockNudge]
+REMINDER_NUDGES = [ReminderLineMessage, ReminderBlockMessage]

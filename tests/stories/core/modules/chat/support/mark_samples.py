@@ -12,7 +12,7 @@ from engine.subcommand.subcommand import Subcommand
 from core.modules.chat.models.chat_mark import ChatMark
 from engine.chat.mark_button import MarkButton
 from engine.chat.mark_declaration import MarkDeclaration
-from engine.chat.mark_family import MarkFamily
+from engine.chat.mark_category import MarkCategory
 from engine.enums.mark_group import MarkGroup
 from engine.database.database import Database
 from engine.database.statement import Statement
@@ -20,7 +20,7 @@ from engine.module.module import Module
 from engine.testing.stories.story import Story
 
 SAMPLE = "tests.stories.core.modules.chat.support.mark_samples:ChatSampleModule"
-FAMILY = MarkFamily("sample", "Samples", "words", MarkGroup.WORK)
+FAMILY = MarkCategory("sample", "Samples", "words", MarkGroup.WORK)
 
 
 class SampleMarkType(StrEnum):

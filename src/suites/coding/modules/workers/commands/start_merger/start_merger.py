@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.command.command import Command
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.time.timestamp import Timestamp
 
 
@@ -12,5 +12,5 @@ class StartMerger(Command[None]):
 
     lock = False
 
-    fallback_line: str | Nudge
+    fallback_line: str | AgentMessage
     started_at: Timestamp | None = None

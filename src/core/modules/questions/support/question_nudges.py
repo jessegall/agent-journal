@@ -1,7 +1,7 @@
-from core.modules.questions.nudges.question_answered_nudge import QuestionAnsweredNudge
-from core.modules.questions.nudges.question_answer_source_nudge import QuestionAnswerSourceNudge
-from core.modules.questions.nudges.question_closed_nudge import QuestionClosedNudge
-from core.modules.questions.nudges.question_tool_nudge import QuestionToolNudge
+from core.modules.questions.nudges.question_answered_message import QuestionAnsweredMessage
+from core.modules.questions.nudges.question_answer_source_message import QuestionAnswerSourceMessage
+from core.modules.questions.nudges.question_closed_message import QuestionClosedMessage
+from core.modules.questions.nudges.question_tool_message import QuestionToolMessage
 
 
-QUESTION_NUDGES = [QuestionAnsweredNudge, QuestionAnswerSourceNudge, QuestionClosedNudge, QuestionToolNudge]
+QUESTION_NUDGES = [QuestionAnsweredMessage, QuestionAnswerSourceMessage, QuestionClosedMessage, QuestionToolMessage]

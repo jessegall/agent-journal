@@ -6,7 +6,7 @@ from engine.agent_machine.record.line import Line
 from engine.agent_machine.record.rewrite import Rewrite
 from engine.agent_step.reply_printer import ReplyPrinter
 from engine.enums.decision_class import DecisionClass
-from engine.enums.line_carrier import LineCarrier
+from engine.enums.line_channel import LineChannel
 from engine.enums.line_category import LineCategory
 from engine.enums.transform_slot import TransformSlot
 from engine.testing.agent_machine.question_samples import QuestionSamples
@@ -14,7 +14,7 @@ from engine.testing.agent_machine.record_samples import RecordSamples
 from engine.testing.examples.hook_samples import HookSamples
 
 EDIT = QuestionSamples.question(HookSamples.edit("a.py"))
-LINE = Line("messages.delivery", "message 7 waits", LineCategory.INFORMATION, "", LineCarrier.NOW)
+LINE = Line("messages.delivery", "message 7 waits", LineCategory.INFORMATION, "", LineChannel.NOW)
 
 
 def test_an_allowed_call_prints_its_lines_and_the_rewrite_the_step_kept() -> None:

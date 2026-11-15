@@ -4,7 +4,7 @@ from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.scope.actor_scope import ActorScope
@@ -43,7 +43,7 @@ class StartMergerHandler(Handler[StartMerger, None]):
                 raise Refusal("no main agent runs")
             self.assign_job(Actor(main_agent.id, ActorType.AGENT), context)
         except Exception as failure:
-            fallback = command.fallback_line.text if isinstance(command.fallback_line, Nudge) else command.fallback_line
+            fallback = command.fallback_line.text if isinstance(command.fallback_line, AgentMessage) else command.fallback_line
             reason = failure.reason if isinstance(failure, Refusal) else f"an unexpected fault, {type(failure).__name__}: {failure}"
             text = f"{fallback} (the merger did not start: {reason})"
             existing = self.queries.query(AgentLine).filter(source=MERGER_SOURCE, state=AgentLineState.WAITING, text=text).first()

@@ -14,8 +14,8 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.ticks.behind_worktrees import BehindWorktrees
-from suites.coding.modules.workers.nudges.fast_forwarded_nudge import FastForwardedNudge
-from engine.testing.expectations.expected_nudge import expected_nudge
+from suites.coding.modules.workers.nudges.fast_forwarded_message import FastForwardedMessage
+from engine.testing.expectations.expected_message import expected_nudge
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 SETTING = "journal.suites.coding.workers"
@@ -159,7 +159,7 @@ def s10_an_open_check_is_not_doubled(story, repository, worker: Actor) -> None:
 def s12_a_worktree_with_nothing_of_its_own_moves_with_no_merger(story, repository, worker: Actor) -> None:
     base_commits(repository, 3)
     stale_check(story)
-    story.expect_text(f"agent-line list --agent {worker.id}", expected_nudge(FastForwardedNudge.declared()), actor=worker)
+    story.expect_text(f"agent-line list --agent {worker.id}", expected_nudge(FastForwardedMessage.declared()), actor=worker)
     story.expect_rows(behind_lines(story) == [], detail=str(behind_lines(story)))
 
 

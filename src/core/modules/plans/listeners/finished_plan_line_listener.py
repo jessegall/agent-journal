@@ -5,7 +5,7 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.support.plan_main_agents import PlanMainAgents
-from core.modules.plans.nudges.plan_finished_nudge import PlanFinishedNudge
+from core.modules.plans.nudges.plan_finished_message import PlanFinishedMessage
 
 FINISHED_SOURCE = "plans.plan-finished"
 
@@ -22,4 +22,4 @@ class FinishedPlanLineListener(SaveListener[Moved[Plan]]):
         self.main_agents = main_agents
 
     def handle(self, event: Moved[Plan], context: Context) -> None:
-        self.main_agents.send(event.row, PlanFinishedNudge.declared(), FINISHED_SOURCE, context)
+        self.main_agents.send(event.row, PlanFinishedMessage.declared(), FINISHED_SOURCE, context)

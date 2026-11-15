@@ -1,11 +1,11 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from engine.scope.actor_scope import ActorScope
 from suites.coding.modules.workers.commands.wake_waiting_worker.wake_waiting_worker import WakeWaitingWorker
 from suites.coding.modules.workers.support.work_units import WorkUnits
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
-from suites.coding.modules.workers.nudges.worker_unit_run_passed_nudge import WorkerUnitRunPassedNudge
+from suites.coding.modules.workers.nudges.worker_unit_run_passed_message import WorkerUnitRunPassedMessage
 
 WAKE_SOURCE = "workers.unit-run-passed"
 
@@ -17,11 +17,11 @@ class WakeWaitingWorkerHandler(Handler[WakeWaitingWorker, None]):
     command = WakeWaitingWorker
     disabled_scopes = [ActorScope]
 
-    def __init__(self, units: WorkUnits, guidance: WorkerGuidance, nudger: Nudger) -> None:
+    def __init__(self, units: WorkUnits, guidance: WorkerGuidance, nudger: MessageSender) -> None:
         self.units, self.guidance, self.nudger = units, guidance, nudger
 
     def handle(self, command: WakeWaitingWorker, context: Context) -> None:
         unit = self.units.unit(command.worker_id)
         if not unit.is_committed_unit:
             return
-        self.nudger.send(command.worker_id, WorkerUnitRunPassedNudge.declared(), WAKE_SOURCE, context, phase=command.phase_id, line=self.guidance.line(command.worker_id))
+        self.nudger.send(command.worker_id, WorkerUnitRunPassedMessage.declared(), WAKE_SOURCE, context, phase=command.phase_id, line=self.guidance.line(command.worker_id))

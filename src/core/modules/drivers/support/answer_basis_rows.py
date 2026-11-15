@@ -2,8 +2,8 @@ from engine.database.database import Database
 from engine.query.queries import Queries
 from engine.request.request_values import RequestValues
 from core.modules.drivers.models.agent_stack import AgentStack
-from core.modules.drivers.models.driver_epoch import DriverEpoch
-from core.modules.drivers.models.program_epoch import ProgramEpoch
+from core.modules.drivers.models.driver_version import DriverVersion
+from core.modules.drivers.models.program_version import ProgramVersion
 
 
 class AnswerBasisRows:
@@ -17,8 +17,8 @@ class AnswerBasisRows:
         return self.request_values.read(f"drivers.stack-row:{agent_id}", self.database.change_mark,
                                         lambda: self.queries.query(AgentStack).filter(session_agent_id=agent_id).first())
 
-    def driver_epoch(self) -> DriverEpoch | None:
-        return self.request_values.read("drivers.driver-epoch", self.database.change_mark, lambda: self.queries.query(DriverEpoch).first())
+    def driver_epoch(self) -> DriverVersion | None:
+        return self.request_values.read("drivers.driver-epoch", self.database.change_mark, lambda: self.queries.query(DriverVersion).first())
 
-    def program_epoch(self, program: str) -> ProgramEpoch | None:
-        return self.request_values.read(f"drivers.program-epoch:{program}", self.database.change_mark, lambda: self.queries.query(ProgramEpoch).filter(program=program).first())
+    def program_epoch(self, program: str) -> ProgramVersion | None:
+        return self.request_values.read(f"drivers.program-epoch:{program}", self.database.change_mark, lambda: self.queries.query(ProgramVersion).filter(program=program).first())

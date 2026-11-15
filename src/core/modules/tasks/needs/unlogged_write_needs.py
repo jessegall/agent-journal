@@ -3,16 +3,16 @@ from collections.abc import Mapping, Sequence
 from engine.agent.enums.role_group import RoleGroup
 from engine.agent_machine.needs.agent_reference import AgentReference
 from engine.agent_machine.needs.block_plan import BlockPlan
-from engine.agent_machine.needs.need import Need
-from engine.agent_machine.needs.need_source import NeedSource
+from engine.agent_machine.needs.required_state import RequiredState
+from engine.agent_machine.needs.state_source import StateSource
 from engine.agent_machine.record.question import Question
 from engine.agent_stack.states.blocked import Blocked
 from engine.driver.block_condition import BlockCondition
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.enums.hook_event_name import HookEventName
 from core.modules.drivers.support.block_conditions.any_condition import AnyCondition
-from core.modules.tasks.nudges.unlogged_writes_nudge import UnloggedWritesNudge
+from core.modules.tasks.nudges.unlogged_writes_message import UnloggedWritesMessage
 from core.modules.tasks.support.task_write_count import TaskWriteCount
 from core.modules.tasks.support.block_conditions.task_logged import TaskLogged
 from core.modules.tasks.support.block_conditions.task_stopped import TaskStopped
@@ -22,7 +22,7 @@ UNLOGGED_WRITE_KEY = "tasks.log-before-more-writes"
 UNLOGGED_WRITE_RANK = "tasks.unlogged-writes"
 
 
-class UnloggedWriteNeeds(NeedSource):
+class UnloggedWriteNeeds(StateSource):
     """Once 50 writes have been made since the task in hand was last logged, the agent is blocked until the task
     gets a log line or stops."""
     state_type = Blocked
@@ -32,7 +32,7 @@ class UnloggedWriteNeeds(NeedSource):
     def __init__(self, task_writes: TaskWriteCount) -> None:
         self.task_writes = task_writes
 
-    def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]:
+    def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[RequiredState | BlockPlan]]:
         event = question.event
         if event is None or event.event is not HookEventName.PRE_TOOL_USE:
             return {}
@@ -41,9 +41,9 @@ class UnloggedWriteNeeds(NeedSource):
                 for agent_id, hold in holds.items() if hold is not None}
 
     # the line and the condition of the hold this write opens, if it reaches the ceiling
-    def hold(self, event: HookEvent, agent_id: int) -> tuple[Nudge, BlockCondition] | None:
+    def hold(self, event: HookEvent, agent_id: int) -> tuple[AgentMessage, BlockCondition] | None:
         counted = self.task_writes.count(event, agent_id)
         if counted is None or counted[1] < UNLOGGED_WRITES_CEILING:
             return None
         task_id = counted[0].task.id
-        return UnloggedWritesNudge.declared().nudge(task=task_id), AnyCondition(TaskLogged(task_id), TaskStopped(task_id))
+        return UnloggedWritesMessage.declared().nudge(task=task_id), AnyCondition(TaskLogged(task_id), TaskStopped(task_id))

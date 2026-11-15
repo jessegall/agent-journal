@@ -3,8 +3,8 @@ from collections.abc import Sequence
 from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.agent_machine.needs.line_history import LineHistory
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
-from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.agent_message import AgentMessage
+from engine.driver.message_template import MessageTemplate
 from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
 from engine.query.conditions.among import Among
@@ -13,20 +13,20 @@ from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
-from core.modules.plans.nudges.plan_approved_nudge import PlanApprovedNudge
-from core.modules.plans.nudges.plan_approved_with_message_nudge import PlanApprovedWithMessageNudge
-from core.modules.plans.nudges.plan_blocked_nudge import PlanBlockedNudge
-from core.modules.plans.nudges.plan_cancelled_nudge import PlanCancelledNudge
-from core.modules.plans.nudges.plan_waiting_nudge import PlanWaitingNudge
+from core.modules.plans.nudges.plan_approved_message import PlanApprovedMessage
+from core.modules.plans.nudges.plan_approval_note_message import PlanApprovalNoteMessage
+from core.modules.plans.nudges.plan_blocked_message import PlanBlockedMessage
+from core.modules.plans.nudges.plan_cancelled_message import PlanCancelledMessage
+from core.modules.plans.nudges.plan_waiting_message import PlanWaitingMessage
 from core.modules.plans.queries.plan_query import PlanQuery
 from core.modules.plans.support.plan_approval import PlanApproval
 
 CHANGED_PLANS_REASON = "every plan whose state changed since the last answer is told to the agent"
-STATE_NUDGES: dict[PlanState, NudgeDeclaration] = {
-    PlanState.READY: PlanWaitingNudge.declared(),
-    PlanState.APPROVED: PlanApprovedNudge.declared(),
-    PlanState.CANCELLED: PlanCancelledNudge.declared(),
-    PlanState.BLOCKED: PlanBlockedNudge.declared(),
+STATE_NUDGES: dict[PlanState, MessageTemplate] = {
+    PlanState.READY: PlanWaitingMessage.declared(),
+    PlanState.APPROVED: PlanApprovedMessage.declared(),
+    PlanState.CANCELLED: PlanCancelledMessage.declared(),
+    PlanState.BLOCKED: PlanBlockedMessage.declared(),
 }
 
 
@@ -41,16 +41,16 @@ class PlanStateLines(EventLineSource):
     def __init__(self, plans: PlanQuery, history: LineHistory, queries: Queries) -> None:
         self.plans, self.history, self.queries = plans, history, queries
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
+    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         start = self.history.last_spoke(self.key, agent_id) or self.queries.query(Agent).find(agent_id).creation_timestamp()
         changed = self.plans.matching(Greater("updated_at", start.text)).matching(Among("state", tuple(STATE_NUDGES))).every_row(CHANGED_PLANS_REASON)
         return [self.plan_nudge(plan) for plan in changed]
 
     @staticmethod
-    def plan_nudge(plan: Plan) -> Nudge:
+    def plan_nudge(plan: Plan) -> AgentMessage:
         if plan.state is not PlanState.APPROVED:
             return STATE_NUDGES[plan.state].nudge(plan=plan.id)
         message_id = PlanApproval.message_id(plan)
         if message_id is None:
-            return PlanApprovedNudge.declared().nudge(plan=plan.id)
-        return PlanApprovedWithMessageNudge.declared().nudge(plan=plan.id, message=message_id)
+            return PlanApprovedMessage.declared().nudge(plan=plan.id)
+        return PlanApprovalNoteMessage.declared().nudge(plan=plan.id, message=message_id)

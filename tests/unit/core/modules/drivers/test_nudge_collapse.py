@@ -1,22 +1,22 @@
-from engine.driver.nudge import Nudge
-from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.agent_message import AgentMessage
+from engine.driver.message_template import MessageTemplate
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.rule_answers import RuleAnswers
 from engine.driver.rule_record import RuleRecord
-from engine.enums.nudge_type import NudgeType
+from engine.enums.agent_message_type import AgentMessageType
 from engine.testing.expectations.expect_row import expect_row
 
-QUEUED = NudgeDeclaration("shop.queued", NudgeType.STEERING, "task {task} is still queued for worker {worker}", plural_text="tasks {task} are still queued for worker {worker}")
-STALE = NudgeDeclaration("shop.stale", NudgeType.STEERING, "cart {cart} is stale")
-CHARGED = NudgeDeclaration("shop.charged", NudgeType.STEERING, "charge {cart}", required_command="shop charge {cart}")
-FREE_TEXT = NudgeDeclaration("shop.free", NudgeType.STEERING, "{text}")
+QUEUED = MessageTemplate("shop.queued", AgentMessageType.STEERING, "task {task} is still queued for worker {worker}", plural_text="tasks {task} are still queued for worker {worker}")
+STALE = MessageTemplate("shop.stale", AgentMessageType.STEERING, "cart {cart} is stale")
+CHARGED = MessageTemplate("shop.charged", AgentMessageType.STEERING, "charge {cart}", required_command="shop charge {cart}")
+FREE_TEXT = MessageTemplate("shop.free", AgentMessageType.STEERING, "{text}")
 
 
-def read_answers(*nudges: Nudge) -> RuleAnswers:
+def read_answers(*nudges: AgentMessage) -> RuleAnswers:
     return rule_answers(*[[nudge] for nudge in nudges])
 
 
-def rule_answers(*rules: list[Nudge]) -> RuleAnswers:
+def rule_answers(*rules: list[AgentMessage]) -> RuleAnswers:
     records = [RuleRecord(f"rule_{number}", answer.outcome, answer) for number, answer in enumerate(RuleAnswer.with_nudges(*nudges) for nudges in rules)]
     return RuleAnswers(records)
 
@@ -74,7 +74,7 @@ def test_tasks_for_different_workers_stay_separate():
 
 def test_the_collapsed_line_keeps_its_key_type_and_labelled_words():
     answers = read_answers(QUEUED.nudge(task=1, worker=425), QUEUED.nudge(task=2, worker=425))
-    expect_key_nudge_type(answers, [("shop.queued", NudgeType.STEERING)])
+    expect_key_nudge_type(answers, [("shop.queued", AgentMessageType.STEERING)])
     expect_labelled_lines_answers(answers, ["journal: tasks 1, 2 are still queued for worker 425"])
 
 

@@ -7,7 +7,7 @@ from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.setting.setting_values import SettingValues
 from core.modules.drivers.support.main_agent_line import MainAgentLine
-from suites.coding.modules.workers.nudges.unit_merge_waits_nudge import UnitMergeWaitsNudge
+from suites.coding.modules.workers.nudges.unit_merge_waits_message import UnitMergeWaitsMessage
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.modules.workers.commands.ask_merge.ask_merge import AskMerge
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
@@ -46,5 +46,5 @@ class AskMergeHandler(Handler[AskMerge, MergeAskOutcome]):
             worktree = self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.deliver, delivered_at=context.timestamp, merge_ready_at=context.timestamp), context)
         if not self.settings.flag(MERGER_ENABLED):
             worker = self.numbers.number(AGENT_MODEL_NAME, command.worker_id)
-            self.main_line.send_nudge(UnitMergeWaitsNudge.declared().nudge(worker=worker, merge_ask=merge_request.id), UnitMergeWaitsNudge.declared().key, context)
+            self.main_line.send_nudge(UnitMergeWaitsMessage.declared().nudge(worker=worker, merge_ask=merge_request.id), UnitMergeWaitsMessage.declared().key, context)
         return MergeAskOutcome(merge_request, worktree, part.unit)

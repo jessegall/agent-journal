@@ -2,20 +2,20 @@ from collections.abc import Mapping, Sequence
 
 from engine.agent_machine.needs.agent_reference import AgentReference
 from engine.agent_machine.needs.block_plan import BlockPlan
-from engine.agent_machine.needs.need import Need
-from engine.agent_machine.needs.need_source import NeedSource
+from engine.agent_machine.needs.required_state import RequiredState
+from engine.agent_machine.needs.state_source import StateSource
 from engine.agent_machine.record.question import Question
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.agent_stack.states.blocked import Blocked
 from core.modules.sequences.models.sequence_run import SequenceRun
-from core.modules.sequences.nudges.step_waits_nudge import StepWaitsNudge
+from core.modules.sequences.nudges.step_waits_message import StepWaitsMessage
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.modules.sequences.support.sequence_step_started import SequenceStepStarted
 
 UNTAKEN_STEP_KEY = "sequences.untaken-step"
 
 
-class UnstartedStepNeeds(NeedSource):
+class UnstartedStepNeeds(StateSource):
     """An agent whose sequence step is not taken up yet is blocked until it runs journal sequence follow."""
     state_type = Blocked
     rank = UNTAKEN_STEP_KEY
@@ -23,7 +23,7 @@ class UnstartedStepNeeds(NeedSource):
     def __init__(self, runs: SequenceRunQuery) -> None:
         self.runs = runs
 
-    def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]:
+    def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[RequiredState | BlockPlan]]:
         runs = {agent.agent_id: self.untaken(agent.agent_id) for agent in agents}
         return {agent_id: [self.plan(run)] for agent_id, run in runs.items() if run is not None}
 
@@ -36,5 +36,5 @@ class UnstartedStepNeeds(NeedSource):
         return BlockPlan(UnstartedStepNeeds.nudge(run), SequenceStepStarted([run.id, run.step_number]), UNTAKEN_STEP_KEY, UNTAKEN_STEP_KEY, scope_tools=True, scope_stop=False)
 
     @staticmethod
-    def nudge(run: SequenceRun) -> Nudge:
-        return StepWaitsNudge.declared().nudge(sequence=run.sequence_id, step=run.step_number)
+    def nudge(run: SequenceRun) -> AgentMessage:
+        return StepWaitsMessage.declared().nudge(sequence=run.sequence_id, step=run.step_number)

@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_priority import ExecutionPriority
 from engine.enums.starter_type import StarterType
 from engine.execution.limits.default_lane_limits import DEFAULT_LANE_LIMITS
@@ -57,8 +57,8 @@ def test_equal_priority_goes_in_entry_order():
 
 
 def test_capacity_counts_slot_units():
-    running = [ticket(AGENT, ExecutionLane.LONG, slot_cost=4)]
-    first, second = ticket(AGENT, ExecutionLane.LONG, 4, 0, line="first"), ticket(AGENT, ExecutionLane.LONG, 4, 1, line="second")
+    running = [ticket(AGENT, ExecutionLength.LONG, slot_cost=4)]
+    first, second = ticket(AGENT, ExecutionLength.LONG, 4, 0, line="first"), ticket(AGENT, ExecutionLength.LONG, 4, 1, line="second")
     assert started_tickets([first, second], running) == [first]
 
 
@@ -72,8 +72,8 @@ def test_full_priority_does_not_block_lower():
 
 
 def test_ticket_that_does_not_fit_is_passed_over():
-    running = [ticket(AGENT, ExecutionLane.LONG, slot_cost=4), ticket(AGENT, ExecutionLane.LONG, slot_cost=2)]
-    test_run, merge = ticket(AGENT, ExecutionLane.LONG, 4, 0), ticket(AGENT, ExecutionLane.LONG, 1, 5)
+    running = [ticket(AGENT, ExecutionLength.LONG, slot_cost=4), ticket(AGENT, ExecutionLength.LONG, slot_cost=2)]
+    test_run, merge = ticket(AGENT, ExecutionLength.LONG, 4, 0), ticket(AGENT, ExecutionLength.LONG, 1, 5)
     assert started_tickets([test_run, merge], running) == [merge]
 
 
@@ -144,9 +144,9 @@ def test_a_run_that_costs_nothing_passes_a_full_starter_cap():
 
 
 def test_class_at_limit_does_not_block_a_build_behind():
-    merge_class = ExecutionClass("merge", ExecutionLane.LONG, 1, AGENT, class_limit=1)
+    merge_class = ExecutionClass("merge", ExecutionLength.LONG, 1, AGENT, class_limit=1)
     merge = ExecutionTicket(merge_class, AGENT, AGENT, starter(1), "merge", seconds_after_start(0), seconds_after_start(0))
-    build = ticket(AGENT, lane=ExecutionLane.LONG, slot_cost=1, starter=starter(2), entered_second=1)
+    build = ticket(AGENT, lane=ExecutionLength.LONG, slot_cost=1, starter=starter(2), entered_second=1)
     assert started_tickets([merge, build], [replace(merge, starter=starter(3))]) == [build]
 
 
@@ -157,7 +157,7 @@ def test_waits_for_reader_is_passed_over_and_still_raised():
 
 
 def test_halted_lane_starts_none_and_counts_no_wait():
-    waiting = ticket(NORMAL, lane=ExecutionLane.LONG)
+    waiting = ticket(NORMAL, lane=ExecutionLength.LONG)
     assert ORDER.starting([waiting], [], seconds_after_start(3600), True) == ()
     assert raised_priority(waiting, 3600, is_halted=True) is NORMAL
 
@@ -180,13 +180,13 @@ def test_nothing_waits_forever_under_a_steady_stream():
 
 
 def test_a_starter_with_nothing_running_starts_a_run_costing_more_than_its_cap():
-    small_lane = replace(DEFAULT_LANE_LIMITS, capacities={**DEFAULT_LANE_LIMITS.capacities, ExecutionLane.LONG: 4}, starter_caps={**DEFAULT_LANE_LIMITS.starter_caps, ExecutionLane.LONG: 2})
-    test_run = ticket(ExecutionPriority.AGENT, ExecutionLane.LONG, slot_cost=4)
+    small_lane = replace(DEFAULT_LANE_LIMITS, capacities={**DEFAULT_LANE_LIMITS.capacities, ExecutionLength.LONG: 4}, starter_caps={**DEFAULT_LANE_LIMITS.starter_caps, ExecutionLength.LONG: 2})
+    test_run = ticket(ExecutionPriority.AGENT, ExecutionLength.LONG, slot_cost=4)
     assert ExecutionOrder(small_lane).starting([test_run], [], seconds_after_start(0), False) == tuple([test_run])
 
 
 def test_a_run_that_costs_more_than_its_narrowed_lane_starts_alone_and_waits_beside_another():
-    narrowed = ExecutionOrder(DEFAULT_LANE_LIMITS.with_capacities({**DEFAULT_LANE_LIMITS.capacities, ExecutionLane.LONG: 4}))
-    full_run, test_run = ticket(AGENT, ExecutionLane.LONG, slot_cost=8), ticket(AGENT, ExecutionLane.LONG, slot_cost=4)
+    narrowed = ExecutionOrder(DEFAULT_LANE_LIMITS.with_capacities({**DEFAULT_LANE_LIMITS.capacities, ExecutionLength.LONG: 4}))
+    full_run, test_run = ticket(AGENT, ExecutionLength.LONG, slot_cost=8), ticket(AGENT, ExecutionLength.LONG, slot_cost=4)
     assert list(narrowed.starting([full_run], [], CHECK_TIME, False)) == [full_run]
     assert list(narrowed.starting([full_run], [test_run], CHECK_TIME, False)) == []

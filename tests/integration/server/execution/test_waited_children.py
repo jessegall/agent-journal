@@ -2,7 +2,7 @@ from dataclasses import replace
 from contextlib import ExitStack
 from pathlib import Path
 
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_priority import ExecutionPriority
 from engine.enums.process_type import ProcessType
 from engine.execution.current_execution import CurrentExecution
@@ -28,9 +28,9 @@ def door(tmp_path) -> tuple[TicketAdmission, ExecutionPriorities]:
 # immediate tickets fill each lane to its capacity, since they never wait
 def full_lanes(admission: TicketAdmission, priorities: ExecutionPriorities, running: ExitStack) -> None:
     current_time = Clock().timestamp()
-    for number in range(DEFAULT_LANE_LIMITS.capacity(ExecutionLane.SHORT)):
+    for number in range(DEFAULT_LANE_LIMITS.capacity(ExecutionLength.SHORT)):
         running.enter_context(admission.queue.admitted(replace(priorities.journal_run_ticket(f"git log {number}", current_time), priority=ExecutionPriority.IMMEDIATE)))
-    for number in range(DEFAULT_LANE_LIMITS.capacity(ExecutionLane.INSTANT)):
+    for number in range(DEFAULT_LANE_LIMITS.capacity(ExecutionLength.INSTANT)):
         running.enter_context(admission.queue.admitted(priorities.release_ticket(f"release {number}", current_time)))
 
 

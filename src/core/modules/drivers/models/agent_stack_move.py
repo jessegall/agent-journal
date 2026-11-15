@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from engine.enums.frame_end import FrameEnd
+from engine.enums.state_end import StateEnd
 from engine.enums.stack_move_type import StackMoveType
 from engine.model.model import Model
 from engine.query.rows.prunable import Prunable
@@ -26,5 +26,5 @@ class AgentStackMove(Prunable, Model):
     version_after: int
     step_cause: str
     hook_call_id: int | None = None
-    frame_end: FrameEnd | None = None
+    frame_end: StateEnd | None = None
     actor_id: int | None = None

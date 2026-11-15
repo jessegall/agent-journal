@@ -5,7 +5,7 @@ from engine.cli.errors.usage_error import UsageError
 from engine.cli.shell_handoff import RUNNER_VARIABLE
 from engine.cli.subcommand_lookup import SubcommandLookup
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.run_owners import RunOwners
 from engine.driver.shell_line import ShellLine
 from engine.driver.tool import Tool
@@ -21,11 +21,11 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.drivers.models.enums.permission_state import PermissionState
 from core.modules.drivers.models.permission_request import PermissionRequest
-from core.modules.drivers.nudges.limited_tool_nudge import LimitedToolNudge
-from core.modules.drivers.nudges.old_hook_line_nudge import OldHookLineNudge
-from core.modules.drivers.nudges.outward_journal_line_nudge import OutwardJournalLineNudge
-from core.modules.drivers.nudges.readonly_nudge import ReadonlyNudge
-from core.modules.drivers.nudges.unjudged_line_nudge import UnjudgedLineNudge
+from core.modules.drivers.nudges.limited_tool_message import LimitedToolMessage
+from core.modules.drivers.nudges.old_hook_line_message import OldHookLineMessage
+from core.modules.drivers.nudges.external_journal_line_message import ExternalJournalLineMessage
+from core.modules.drivers.nudges.readonly_message import ReadonlyMessage
+from core.modules.drivers.nudges.unjudged_line_message import UnjudgedLineMessage
 from core.modules.drivers.support.tool_allowance import ToolAllowance
 from core.modules.profiles.support.profile_files import ProfileFiles
 
@@ -34,7 +34,7 @@ MCP_PREFIX = "mcp__"
 LIMITED_TOOL_TYPES = (ToolType.QUESTION, ToolType.UNCATEGORISED)
 HELP_FLAG = "--help"
 RUN_STOP_LINE = "output stop"
-READ_ONLY = ToolAllowance((ToolType.READ, ToolType.SEARCH, ToolType.SHELL), tuple(category for category in CommandCategory if category.is_readonly), ReadonlyNudge.declared())
+READ_ONLY = ToolAllowance((ToolType.READ, ToolType.SEARCH, ToolType.SHELL), tuple(category for category in CommandCategory if category.is_readonly), ReadonlyMessage.declared())
 
 
 class ReadOnlyAccess:
@@ -48,20 +48,20 @@ class ReadOnlyAccess:
         self.registry, self.providers, self.profiles, self.queries, self.lookup = registry, providers, profiles, queries, lookup
         self.plan_authors, self.folders, self.run_owners = plan_authors, folders, run_owners
 
-    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+    def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         tool = event.tool
         agent = self.queries.query(Agent).find(agent_id)
         if not self.is_limited(event, agent) or tool is None or self.permission(event, agent) is not None:
             return None
         if tool.category in LIMITED_TOOL_TYPES:
-            return LimitedToolNudge.declared().nudge(tool=tool.name)
+            return LimitedToolMessage.declared().nudge(tool=tool.name)
         shell = tool.shell
         if shell is not None and shell.has_old_hook_part:
-            return OldHookLineNudge.declared().nudge()
+            return OldHookLineMessage.declared().nudge()
         if shell is not None and shell.has_uncertain_part:
-            return UnjudgedLineNudge.declared().nudge()
+            return UnjudgedLineMessage.declared().nudge()
         if shell is not None and self.reaches_outward(shell, agent_id):
-            return OutwardJournalLineNudge.declared().nudge()
+            return ExternalJournalLineMessage.declared().nudge()
         return READ_ONLY.refused(event, self.providers.provider(event.program))
 
     # the allowed request for leave this action spends, when the agent's read-only access would refuse it otherwise

@@ -16,8 +16,8 @@ from engine.scope.actor_scope import ActorScope
 from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from engine.model.model import Model
-from engine.driver.nudger import Nudger
-from suites.coding.modules.workers.nudges.worker_task_joins_nudge import WorkerTaskJoinsNudge
+from engine.driver.nudger import MessageSender
+from suites.coding.modules.workers.nudges.worker_task_joins_message import WorkerTaskJoinsMessage
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 from core.modules.tasks.models.task import Task
@@ -61,7 +61,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
     runs_once = True
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources, kept_tasks: KeptWorkerTasks, environments: EnvironmentRows, settings: SettingValues, scopes: Scopes, admission: AgentAdmission, libraries: LibraryFolders, release: StartedTaskRelease, timing: Timing, places: WorkerPlaces) -> None:
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: MessageSender, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources, kept_tasks: KeptWorkerTasks, environments: EnvironmentRows, settings: SettingValues, scopes: Scopes, admission: AgentAdmission, libraries: LibraryFolders, release: StartedTaskRelease, timing: Timing, places: WorkerPlaces) -> None:
         self.timing, self.places = timing, places
         self.admission, self.libraries, self.release = admission, libraries, release
         self.rows, self.worktrees, self.repository, self.git, self.nudger = rows, worktrees, repository, git, nudger
@@ -167,7 +167,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
 
     def inform_joined(self, worker_id: int, context: Context) -> None:
         for task_id in self.task_ids:
-            self.nudger.send(worker_id, WorkerTaskJoinsNudge.declared(), WorkerTaskJoinsNudge.declared().key, context, task=task_id)
+            self.nudger.send(worker_id, WorkerTaskJoinsMessage.declared(), WorkerTaskJoinsMessage.declared().key, context, task=task_id)
 
     def handle(self, command: SendWorker, context: Context) -> Model:
         if command.test_commands:

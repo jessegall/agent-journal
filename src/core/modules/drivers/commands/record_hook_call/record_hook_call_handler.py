@@ -4,7 +4,7 @@ from core.modules.settings.bindings.support.context_share import ContextShare
 import json
 from collections.abc import Mapping, Sequence
 
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from dataclasses import asdict, replace
 from engine.command.bus import Bus
@@ -37,7 +37,7 @@ from core.modules.drivers.commands.support.context_line_split import ContextLine
 from core.modules.drivers.commands.support.delivered_lines import DeliveredLines
 from core.modules.drivers.commands.support.compaction_end_percent import CompactionEndPercent
 from core.modules.drivers.support.required_commands import RequiredCommands
-from core.modules.drivers.support.nudge_log import NudgeLog
+from core.modules.drivers.support.message_log import MessageLog
 from core.modules.drivers.commands.support.one_move_per_row import OneMovePerRow
 from core.modules.drivers.support.line_history_writer import LineHistoryWriter
 from core.modules.drivers.models.agent_line import AgentLine
@@ -45,7 +45,7 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import DISPLAYED_MESSAGE_ID, DISPLAYED_PART, DISPLAYED_TEXT, MONITOR_DESCRIPTION, PROGRAM_SESSION, SUMMARY_CHARACTERS, HookCall
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from engine.driver.search_category import SearchCategory
 from core.modules.drivers.support.actor_loader import ActorLoader
 from engine.module.driver_entries import DRIVERS_MODULE
@@ -69,7 +69,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     runs_once = True
 
     def __init__(self, required_commands: RequiredCommands, bus: Bus, database: Database, queries: Queries, repository: Repository,
-                 history: LineHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome, share: ContextShare, compaction_end: CompactionEndPercent, hook_calls: HookCallQuery, loader: ActorLoader, steps: StepWriter, displayed_blocks: DisplayedBlocks) -> None:
+                 history: LineHistoryWriter, timing: Timing, providers: Providers, nudges: MessageLog, nudger: MessageSender, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome, share: ContextShare, compaction_end: CompactionEndPercent, hook_calls: HookCallQuery, loader: ActorLoader, steps: StepWriter, displayed_blocks: DisplayedBlocks) -> None:
         self.steps, self.displayed_blocks = steps, displayed_blocks
         self.home, self.share, self.compaction_end, self.hook_calls, self.loader = home, share, compaction_end, hook_calls, loader
         self.event_rows = event_rows
@@ -154,7 +154,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
 
     # the lines of a reply past the program's limit wait for the agent's next hook, each with the source it came from;
     # a waiting line that did not fit is not delivered, so it waits as it was
-    def leave_for_next_hook(self, agent_id: int, rest: Sequence[Nudge], answers: RuleAnswers, waiting_texts: set[str], context: Context) -> None:
+    def leave_for_next_hook(self, agent_id: int, rest: Sequence[AgentMessage], answers: RuleAnswers, waiting_texts: set[str], context: Context) -> None:
         sources = {text: rule for rule, text in answers.rule_lines}
         for nudge in rest:
             if nudge.text not in waiting_texts:

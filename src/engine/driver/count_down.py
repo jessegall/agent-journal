@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
-from engine.driver.nudge import Nudge
-from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.enums.nudge_type import NudgeType
+from engine.driver.agent_message import AgentMessage
+from engine.driver.message_template import MessageTemplate
+from engine.enums.agent_message_type import AgentMessageType
 from engine.driver.span import Span
-from engine.driver.times_span import TimesSpan
+from engine.driver.time_window import TimeWindow
 
 COUNTDOWN_TOOL_USES = 3
 
@@ -17,21 +17,21 @@ class CountDown:
 
     key: str
     action: str
-    span: Span | TimesSpan
+    span: Span | TimeWindow
     is_silent: bool = False
     line_limit: int = COUNTDOWN_TOOL_USES
 
     @property
-    def declaration(self) -> NudgeDeclaration:
-        return NudgeDeclaration(self.key, NudgeType.STEERING, f"{self.action} due: {{remaining}} {self.span.unit}", turn_limited=False)
+    def declaration(self) -> MessageTemplate:
+        return MessageTemplate(self.key, AgentMessageType.STEERING, f"{self.action} due: {{remaining}} {self.span.unit}", turn_limited=False)
 
-    def nudge(self, remaining: object, **fields: object) -> Nudge:
+    def nudge(self, remaining: object, **fields: object) -> AgentMessage:
         return self.declaration.nudge(remaining=remaining, **fields)
 
     def remaining_after(self, used_count: int) -> int:
         return max(self.span.count - used_count, 0)
 
-    def line_at(self, remaining: int, **fields: object) -> Nudge | None:
+    def line_at(self, remaining: int, **fields: object) -> AgentMessage | None:
         if self.is_silent or remaining >= self.line_limit:
             return None
         return self.nudge(remaining, **fields)

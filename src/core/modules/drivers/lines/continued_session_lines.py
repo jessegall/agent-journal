@@ -1,12 +1,12 @@
 from collections.abc import Sequence
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
-from core.modules.drivers.nudges.continued_session_nudge import ContinuedSessionNudge
+from core.modules.drivers.nudges.continued_session_message import ContinuedSessionMessage
 
 
 class ContinuedSessionLines(EventLineSource):
@@ -22,5 +22,5 @@ class ContinuedSessionLines(EventLineSource):
     def __init__(self, numbers: RowNumbers) -> None:
         self.numbers = numbers
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
-        return [ContinuedSessionNudge.declared().nudge(agent=self.numbers.number(AGENT_MODEL_NAME, agent_id))] if event.is_resume else []
+    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
+        return [ContinuedSessionMessage.declared().nudge(agent=self.numbers.number(AGENT_MODEL_NAME, agent_id))] if event.is_resume else []

@@ -6,8 +6,8 @@ from engine.driver.agent_hook import AgentHook
 from engine.driver.block_condition import BlockCondition
 from engine.driver.open_hold import OpenHold
 from engine.driver.interval import Interval
-from engine.driver.nudge import Nudge
-from engine.enums.nudge_type import NudgeType
+from engine.driver.agent_message import AgentMessage
+from engine.enums.agent_message_type import AgentMessageType
 
 
 @dataclass(frozen=True)
@@ -16,7 +16,7 @@ class RuleAnswer:
     the commands the journal runs for it, and the commands it runs only when no rule refused the hook."""
 
     refusal: str = ""
-    nudges: Sequence[Nudge] = ()
+    nudges: Sequence[AgentMessage] = ()
     commands: Sequence[Command[object]] = ()
     commands_unrefused: Sequence[Command[object]] = ()
     last: bool = False
@@ -34,11 +34,11 @@ class RuleAnswer:
         return cls(reason=reason)
 
     @classmethod
-    def with_nudges(cls, *nudges: Nudge) -> "RuleAnswer":
+    def with_nudges(cls, *nudges: AgentMessage) -> "RuleAnswer":
         return cls(nudges=nudges)
 
     @classmethod
-    def refused(cls, nudge: Nudge) -> "RuleAnswer":
+    def refused(cls, nudge: AgentMessage) -> "RuleAnswer":
         return cls(refusal=nudge.text, nudges=tuple([nudge]), last=True)
 
     def role_variant(self, role: str) -> "RuleAnswer":
@@ -53,24 +53,24 @@ class RuleAnswer:
         return cls(updated_input=tool_input)
 
     @classmethod
-    def final_allowance(cls, *nudges: Nudge) -> "RuleAnswer":
+    def final_allowance(cls, *nudges: AgentMessage) -> "RuleAnswer":
         return cls(nudges=nudges, last=True)
 
     @classmethod
-    def blocked(cls, hook: AgentHook, nudge: Nudge, condition: BlockCondition) -> "RuleAnswer":
+    def blocked(cls, hook: AgentHook, nudge: AgentMessage, condition: BlockCondition) -> "RuleAnswer":
         tool = hook.event.tool
         answer = cls.allowed() if tool is None or tool.block_exempt else cls.refused(nudge)
         return answer.running(OpenHold(hook.agent_id, nudge, condition))
 
     @classmethod
-    def refusals(cls, nudges: Sequence[Nudge]) -> "RuleAnswer":
+    def refusals(cls, nudges: Sequence[AgentMessage]) -> "RuleAnswer":
         return cls(refusal="\n".join(nudge.text for nudge in nudges), nudges=tuple(nudges), last=True)
 
     @classmethod
-    def refused_with_block(cls, hook: AgentHook, nudge: Nudge, condition: BlockCondition) -> "RuleAnswer":
+    def refused_with_block(cls, hook: AgentHook, nudge: AgentMessage, condition: BlockCondition) -> "RuleAnswer":
         return cls.refused(nudge).running(OpenHold(hook.agent_id, nudge, condition))
 
-    def blocking_after(self, hook: AgentHook, nudge: Nudge, condition: BlockCondition, after: Interval, countdown: Nudge, strict: bool = False) -> "RuleAnswer":
+    def blocking_after(self, hook: AgentHook, nudge: AgentMessage, condition: BlockCondition, after: Interval, countdown: AgentMessage, strict: bool = False) -> "RuleAnswer":
         return self.running(OpenHold(hook.agent_id, nudge, condition, after, countdown, strict=strict))
 
     def running(self, *commands: Command[object]) -> "RuleAnswer":
@@ -86,7 +86,7 @@ class RuleAnswer:
         return replace(self, commands=[*self.commands, command], ends_layer=True)
 
     @property
-    def line_nudges(self) -> tuple[Nudge, ...]:
+    def line_nudges(self) -> tuple[AgentMessage, ...]:
         return tuple(nudge for nudge in self.nudges if nudge.text != self.refusal)
 
     @property
@@ -103,7 +103,7 @@ class RuleAnswer:
 
     @property
     def is_safety_refusal(self) -> bool:
-        return bool(self.refusal) and any(nudge.type is NudgeType.SAFETY_REFUSAL for nudge in self.nudges)
+        return bool(self.refusal) and any(nudge.type is AgentMessageType.SAFETY_REFUSAL for nudge in self.nudges)
 
     @property
     def outcome(self) -> str:

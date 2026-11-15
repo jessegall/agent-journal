@@ -1,8 +1,8 @@
-from engine.enums.nudge_type import NudgeType
-from engine.driver.nudge import Nudge
-from core.modules.drivers.support.nudge_log import NudgeLog
+from engine.enums.agent_message_type import AgentMessageType
+from engine.driver.agent_message import AgentMessage
+from core.modules.drivers.support.message_log import MessageLog
 from engine.time.clock import Clock
-from engine.enums.line_carrier import LineCarrier
+from engine.enums.line_channel import LineChannel
 from dataclasses import replace
 
 from engine.agent_machine.record.line import Line
@@ -28,7 +28,7 @@ class DecisionAssembler:
     """Builds the one answer of a hook from the agent machine's step: its decision, lines and effects, with the
     lines held back by their intervals and turns."""
 
-    def __init__(self, reader: AgentViewReader, assembly: MachineAssembly, bus: Bus, nudges: NudgeLog, clock: Clock) -> None:
+    def __init__(self, reader: AgentViewReader, assembly: MachineAssembly, bus: Bus, nudges: MessageLog, clock: Clock) -> None:
         self.reader, self.assembly, self.bus, self.nudges, self.clock = reader, assembly, bus, nudges, clock
 
     def assembled(self, event: HookEvent, agent: Agent, actor: Actor) -> AssembledAnswer:
@@ -53,7 +53,7 @@ class DecisionAssembler:
     def answers(record: DecisionRecord) -> RuleAnswers:
         is_refusal = record.decision.decision_class is not DecisionClass.ALLOW
         shown = record.shown_reason
-        safety = tuple([Nudge(shown.key, NudgeType.SAFETY_REFUSAL, shown.text)]) if is_refusal and shown.is_safety else ()
+        safety = tuple([AgentMessage(shown.key, AgentMessageType.SAFETY_REFUSAL, shown.text)]) if is_refusal and shown.is_safety else ()
         refusal = RuleAnswer(refusal=shown.text, nudges=safety)
         refusals = [RuleRecord(shown.key or MACHINE_SOURCE, refusal.outcome, refusal)] if is_refusal else []
         return RuleAnswers([*refusals, *DecisionAssembler.line_records(record.lines)], stop_checks=tuple(record.stop_checks))
@@ -65,7 +65,7 @@ class DecisionAssembler:
         records = []
         for source in sources:
             said = [line for line in lines if line.source_key == source]
-            answer = RuleAnswer(nudges=tuple(line.said() for line in said if line.carrier is not LineCarrier.TERMINAL),
-                                terminal="\n".join(line.text for line in said if line.carrier is LineCarrier.TERMINAL))
+            answer = RuleAnswer(nudges=tuple(line.said() for line in said if line.carrier is not LineChannel.TERMINAL),
+                                terminal="\n".join(line.text for line in said if line.carrier is LineChannel.TERMINAL))
             records.append(RuleRecord(source or MACHINE_SOURCE, answer.outcome, answer))
         return records

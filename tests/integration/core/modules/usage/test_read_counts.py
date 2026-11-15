@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from core.modules.drivers.models.nudge_record import NudgeRecord
+from core.modules.drivers.models.message_record import MessageRecord
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from engine.actor.actor import Actor
 from engine.command.context import Context
@@ -50,7 +50,7 @@ def test_the_nudge_list_loads_one_row_for_each_nudge_however_often_it_was_said(s
     repository, context = started_task.container.get(Repository), Context(Actor.core(), started_task.clock.timestamp(), ReadMessage(1))
     with started_task.journal.database.transaction():
         for number in range(6):
-            repository.save(NudgeRecord(session_agent_id=started_task.agent.id, creator_id=started_task.agent.id, key="samples.said", text=f"said {number}",
+            repository.save(MessageRecord(session_agent_id=started_task.agent.id, creator_id=started_task.agent.id, key="samples.said", text=f"said {number}",
                                         delivery_count=1, last_delivered_at=started_task.clock.timestamp()), context)
     assert rows_loaded(started_task, "nudge list --json") == previous_count + 1
 

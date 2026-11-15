@@ -1,7 +1,7 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.modules.triggers.support.trigger_settings import AGENTS_ENABLE_SETTING
-from core.modules.triggers.nudges.trigger_line_nudge import TriggerLineNudge
+from core.modules.triggers.nudges.trigger_line_message import TriggerLineMessage
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
@@ -18,7 +18,7 @@ class AgentTriggerMade(StoryFixture):
 
 TRIGGER_LINE = 'trigger make "deploy" "Check the release notes" --environment main'
 PROMPT = HookSamples.prompt("We deploy now")
-TRIGGER_TEXT = TriggerLineNudge.declared().nudge(trigger=1).text
+TRIGGER_TEXT = TriggerLineMessage.declared().nudge(trigger=1).text
 
 
 def prompt_lines(story) -> list[str]:

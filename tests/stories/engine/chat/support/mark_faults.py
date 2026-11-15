@@ -4,13 +4,13 @@ from engine.chat.dock_declaration import DockDeclaration
 from engine.chat.mark_button import MarkButton
 from engine.enums.mark_click import MarkClick
 from engine.chat.mark_declaration import MarkDeclaration
-from engine.chat.mark_family import MarkFamily
+from engine.chat.mark_category import MarkCategory
 from engine.enums.mark_group import MarkGroup
 from engine.module.module import Module
 
 PATH = "tests.stories.engine.chat.support.mark_faults"
 DEPENDENCIES = ["journal.core.tasks", "journal.core.plans", "journal.core.viewer"]
-FAMILY = MarkFamily("notes", "Notes", "words", MarkGroup.WORK)
+FAMILY = MarkCategory("notes", "Notes", "words", MarkGroup.WORK)
 
 
 class Variant(StrEnum):

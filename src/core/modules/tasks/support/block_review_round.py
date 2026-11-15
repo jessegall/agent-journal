@@ -12,14 +12,14 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task_block_review import TaskBlockReview
 from core.modules.tasks.support.block_conditions.task_blocks_reviewed import TaskBlocksReviewed
 from core.modules.tasks.support.block_review_scope import BlockReviewScope
-from core.modules.tasks.nudges.block_review_nudge import BLOCK_REVIEW_REMINDER
-from core.modules.tasks.nudges.block_review_nudge import BlockReviewNudge
-from core.modules.tasks.nudges.block_review_required_nudge import BlockReviewRequiredNudge
-from core.modules.tasks.nudges.user_block_review_nudge import UserBlockReviewNudge
+from core.modules.tasks.nudges.block_review_message import BLOCK_REVIEW_REMINDER
+from core.modules.tasks.nudges.block_review_message import BlockReviewMessage
+from core.modules.tasks.nudges.block_review_required_message import BlockReviewRequiredMessage
+from core.modules.tasks.nudges.user_block_review_message import UserBlockReviewMessage
 
 from engine.command.command import Command
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.request.request_values import RequestValues
 
 BLOCKED_TASKS_REASON = "every task the agent blocked by hand is checked for a review of its block"
@@ -35,9 +35,9 @@ class BlockReviewAnswer:
     """One round of the blocked tasks' reminder: a line for each task due, the command that records the round, and
     the line and condition of the hold its third pass opens."""
 
-    notices: tuple[Nudge, ...]
+    notices: tuple[AgentMessage, ...]
     record: Command[object] | None
-    hold: tuple[Nudge, TaskBlocksReviewed] | None
+    hold: tuple[AgentMessage, TaskBlocksReviewed] | None
 
 
 class BlockReviewRound:
@@ -60,7 +60,7 @@ class BlockReviewRound:
         tasks = self.unskipped(agent_id, self.scope.covered(agent_id, blocked)) if blocked else ()
         if not tasks:
             return nothing
-        block = self.queries.query(AgentBlock).filter(session_agent_id=agent_id, nudge_key=BlockReviewRequiredNudge.declared().key).matching(IsNull("closed_at")).first()
+        block = self.queries.query(AgentBlock).filter(session_agent_id=agent_id, nudge_key=BlockReviewRequiredMessage.declared().key).matching(IsNull("closed_at")).first()
         if block is not None and TaskBlocksReviewed.stored(block.condition_text).pending(tasks):
             return nothing
         passed = BLOCK_REVIEW_REMINDER.interval.has_passed_many(self.spans, agent_id, [task.reviewed_at for task in tasks], self.clock.timestamp())
@@ -68,16 +68,16 @@ class BlockReviewRound:
         if not due:
             return nothing
         reminder = self.passes.round(agent_id, BLOCK_REVIEW_REMINDER, [ReminderSubject(str(task.task_id), task.moved_at) for task in due])
-        notices = tuple(replace((UserBlockReviewNudge.declared() if task.user_wait else BlockReviewNudge.declared()).nudge(task=task.task_id),
-                                interval=None, record_keys=tuple([f"{BlockReviewNudge.declared().key}.{task.task_id}"])) for task in due)
+        notices = tuple(replace((UserBlockReviewMessage.declared() if task.user_wait else BlockReviewMessage.declared()).nudge(task=task.task_id),
+                                interval=None, record_keys=tuple([f"{BlockReviewMessage.declared().key}.{task.task_id}"])) for task in due)
         blocking = [task for task in due if str(task.task_id) in reminder.blocking]
         if not blocking:
             return BlockReviewAnswer(notices, reminder.record, None)
-        refusal = BlockReviewRequiredNudge.declared().nudge(tasks=", ".join(str(task.task_id) for task in blocking), block="{block}")
+        refusal = BlockReviewRequiredMessage.declared().nudge(tasks=", ".join(str(task.task_id) for task in blocking), block="{block}")
         return BlockReviewAnswer(notices, reminder.record, (refusal, TaskBlocksReviewed.build(blocking)))
 
     def unskipped(self, agent_id: int, tasks: tuple[TaskBlockReview, ...]) -> tuple[TaskBlockReview, ...]:
-        skipped = self.queries.query(AgentBlock).filter(session_agent_id=agent_id, nudge_key=BlockReviewRequiredNudge.declared().key).matching(Greater("skip_reason", "")).newest().take(SKIPPED_REVIEWS_READ)
+        skipped = self.queries.query(AgentBlock).filter(session_agent_id=agent_id, nudge_key=BlockReviewRequiredMessage.declared().key).matching(Greater("skip_reason", "")).newest().take(SKIPPED_REVIEWS_READ)
         skipped_at: dict[int, Timestamp] = {}
         for block in reversed(skipped):
             for task_id in TaskBlocksReviewed.stored(block.condition_text).task_ids():

@@ -4,33 +4,33 @@ from datetime import timedelta
 import pytest
 
 from engine.command.bus import Bus
-from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.message_template import MessageTemplate
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story import Story
 from core.modules.aliases.policies.unknown_command_policy import UNCLASSIFIED_HINT
-from core.modules.aliases.nudges.command_type_unknown_nudge import CommandTypeUnknownNudge
-from core.modules.aliases.nudges.saved_command_silent_nudge import SavedCommandSilentNudge
-from core.modules.aliases.nudges.saved_command_unknown_nudge import SavedCommandUnknownNudge
+from core.modules.aliases.nudges.command_type_unknown_message import CommandTypeUnknownMessage
+from core.modules.aliases.nudges.saved_command_silent_message import SavedCommandSilentMessage
+from core.modules.aliases.nudges.saved_command_unknown_message import SavedCommandUnknownMessage
 from core.modules.processes.commands.move_process.move_process import MoveProcess
 from core.modules.processes.models.enums.pressure_level import PressureLevel
 from core.modules.processes.models.process import Process
-from suites.coding.nudges.failed_full_run_nudge import FailedFullRunNudge
-from core.modules.processes.nudges.reader_block_nudge import ReaderBlockNudge
-from core.modules.processes.nudges.redirected_run_nudge import RedirectedRunNudge
-from core.modules.processes.nudges.required_monitor_nudge import RequiredMonitorNudge
-from core.modules.processes.nudges.silent_run_blocked_nudge import SilentRunBlockedNudge
-from core.modules.processes.nudges.silent_start_refused_nudge import SilentStartRefusedNudge
+from suites.coding.nudges.failed_full_run_message import FailedFullRunMessage
+from core.modules.processes.nudges.reader_block_message import ReaderBlockMessage
+from core.modules.processes.nudges.redirected_run_message import RedirectedRunMessage
+from core.modules.processes.nudges.required_monitor_message import RequiredMonitorMessage
+from core.modules.processes.nudges.silent_run_blocked_message import SilentRunBlockedMessage
+from core.modules.processes.nudges.silent_start_refusal_message import SilentStartRefusalMessage
 from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
 from tests.integration.core.modules.processes.test_hang_watch import HANG_SECONDS
-from suites.coding.modules.workers.nudges.worker_test_count_unknown_nudge import WorkerTestCountUnknownNudge
+from suites.coding.modules.workers.nudges.worker_test_count_unknown_message import WorkerTestCountUnknownMessage
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 from tests.stories.core.modules.processes.support.reading_scenarios import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
-from core.modules.processes.nudges.reader_block_nudge import ReaderBlockNudge
-from engine.testing.expectations.expected_nudge import expected_nudge
+from core.modules.processes.nudges.reader_block_message import ReaderBlockMessage
+from engine.testing.expectations.expected_message import expected_nudge
 
 EDIT = HookSamples.edit("cart.py")
 JOURNAL_COMMAND = re.compile(r"journal ([a-z][a-z-]*) ([a-z][a-z-]*)")
@@ -43,17 +43,17 @@ EXIT_LINES = {
     "mark it unreadable": 'journal reader unreadable "zork-build bundle" --reason "it prints one line"',
     "say its type": 'journal command-type make "zork-build" build',
 }
-REFUSALS: dict[str, tuple[NudgeDeclaration, dict[str, object], str]] = {
-    "silent run hold": (SilentRunBlockedNudge.declared(), {"output": 1, "seconds": 301, "processor": "0.1 seconds", "hint": ExitTexts.sentences(PressureLevel.FREEZE.exits)}, "read it"),
-    "reader block": (ReaderBlockNudge.declared(), {"output": 1, "request": 1}, "journal reader draft 1 --save"),
-    "silent start refusal": (SilentStartRefusedNudge.declared(), {"name": "zork-build bundle"}, "skip once and say why"),
-    "monitor block": (RequiredMonitorNudge.declared(), {"output": 1}, "set a Monitor on its wait"),
-    "unknown command": (CommandTypeUnknownNudge.declared(), {"program": "zork-build", "hint": UNCLASSIFIED_HINT}, "say what type the command is"),
-    "saved command refusal": (SavedCommandUnknownNudge.declared(), {"category": "build"}, "Save this command as an alias"),
-    "alias claimed silent": (SavedCommandSilentNudge.declared(), {"name": "bundle"}, "make it print each step"),
-    "worker count stop": (WorkerTestCountUnknownNudge.declared(), {"output": 1, "name": 1}, "journal reader draft 1 --save"),
-    "failed full run": (FailedFullRunNudge.declared(), {}, "rerun the failed tests by name"),
-    "redirected run": (RedirectedRunNudge.declared(), {"programs": "zork-build"}, "run it without the redirect"),
+REFUSALS: dict[str, tuple[MessageTemplate, dict[str, object], str]] = {
+    "silent run hold": (SilentRunBlockedMessage.declared(), {"output": 1, "seconds": 301, "processor": "0.1 seconds", "hint": ExitTexts.sentences(PressureLevel.FREEZE.exits)}, "read it"),
+    "reader block": (ReaderBlockMessage.declared(), {"output": 1, "request": 1}, "journal reader draft 1 --save"),
+    "silent start refusal": (SilentStartRefusalMessage.declared(), {"name": "zork-build bundle"}, "skip once and say why"),
+    "monitor block": (RequiredMonitorMessage.declared(), {"output": 1}, "set a Monitor on its wait"),
+    "unknown command": (CommandTypeUnknownMessage.declared(), {"program": "zork-build", "hint": UNCLASSIFIED_HINT}, "say what type the command is"),
+    "saved command refusal": (SavedCommandUnknownMessage.declared(), {"category": "build"}, "Save this command as an alias"),
+    "alias claimed silent": (SavedCommandSilentMessage.declared(), {"name": "bundle"}, "make it print each step"),
+    "worker count stop": (WorkerTestCountUnknownMessage.declared(), {"output": 1, "name": 1}, "journal reader draft 1 --save"),
+    "failed full run": (FailedFullRunMessage.declared(), {}, "rerun the failed tests by name"),
+    "redirected run": (RedirectedRunMessage.declared(), {"programs": "zork-build"}, "run it without the redirect"),
 }
 
 
@@ -84,7 +84,7 @@ def test_an_exit_passes_under_a_silent_run_hold(new_story, line):
 def test_an_exit_passes_under_a_reader_block(new_story, line):
     story = new_story(fixture=ForcedReaders)
     process = worker_run(story)
-    story.expect_hook_refusal("s-reader", EDIT, expected_nudge(ReaderBlockNudge.declared()))
+    story.expect_hook_refusal("s-reader", EDIT, expected_nudge(ReaderBlockMessage.declared()))
     story.expect_hook_allowed("s-reader", journal_line(line.format(output=process.id)))
 
 

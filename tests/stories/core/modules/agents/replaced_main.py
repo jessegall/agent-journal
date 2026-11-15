@@ -2,7 +2,7 @@ from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from engine.process.leftover_process import LeftoverProcess
-from core.modules.drivers.nudges.replaced_session_nudge import ReplacedSessionNudge
+from core.modules.drivers.nudges.replaced_session_message import ReplacedSessionMessage
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.fixtures import SampleSuiteChoice
@@ -22,7 +22,7 @@ def test_the_replaced_sessions_next_tool_is_refused_with_no_record(replaced_stor
     story, old = replaced_story
     story.hook("s-2", HookSamples.session_start())
     recorded_hook_rows = story.run(f"hook-call list --agent {old.id}").output_text
-    story.expect_hook_refusal("s-1", HookSamples.edit("a.py"), ReplacedSessionNudge.declared().nudge(agent=1).text)
+    story.expect_hook_refusal("s-1", HookSamples.edit("a.py"), ReplacedSessionMessage.declared().nudge(agent=1).text)
     story.expect_rows(story.run(f"hook-call list --agent {old.id}").output_text == recorded_hook_rows)
 
 

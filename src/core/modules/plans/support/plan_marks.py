@@ -1,9 +1,9 @@
-from engine.chat.mark_family import MarkFamily
+from engine.chat.mark_category import MarkCategory
 from engine.enums.mark_group import MarkGroup
 from core.modules.plans.models.enums.plan_dock_type import PlanDockType
 
 PLANS_MODULE = "journal.core.plans"
-PLANS_FAMILY = MarkFamily("plans.plans", "Plans", "plan", MarkGroup.WORK)
+PLANS_FAMILY = MarkCategory("plans.plans", "Plans", "plan", MarkGroup.WORK)
 
 
 PLAN_DOCK_READS = ["plan inspect", "plan show"]

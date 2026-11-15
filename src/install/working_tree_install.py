@@ -7,7 +7,7 @@ from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
 from install.update.built_bundles import BuiltBundles
-from engine.serving.code_handover import CodeHandover
+from engine.serving.code_delivery import CodeDelivery
 from install.update.code_replacement import CodeReplacement
 from install.update.run_drain import RunDrain
 from install.update.chat_update_steps import ChatUpdateSteps
@@ -17,7 +17,7 @@ OLD_SERVER_STATUS = 404
 UNANSWERED_STATUS = 0
 
 
-class WorkingTreeInstall(CodeHandover):
+class WorkingTreeInstall(CodeDelivery):
     """What `journal server update` runs: a project's own source tree goes into its journal by a hand-over once
     no run is going; a running server too old to hand over is stopped as before, a server that does not answer
     is killed, and the next command starts the new code."""

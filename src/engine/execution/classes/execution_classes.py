@@ -2,14 +2,14 @@ import re
 from collections.abc import Sequence
 from dataclasses import replace
 
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.execution.classes.builtin_classes import BUILTIN_CLASSES
 from engine.execution.errors.execution_class_cost_error import ExecutionClassCostError
 from engine.execution.classes.execution_class import ExecutionClass
 from engine.execution.execution_subject import ExecutionSubject
 from engine.execution.classes.person_classes import PersonClasses
 
-LANE_LENGTHS = {ExecutionLane.INSTANT: 0, ExecutionLane.SHORT: 1, ExecutionLane.LONG: 2}
+LANE_LENGTHS = {ExecutionLength.INSTANT: 0, ExecutionLength.SHORT: 1, ExecutionLength.LONG: 2}
 
 
 class ExecutionClasses:

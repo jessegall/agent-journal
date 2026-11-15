@@ -1,5 +1,5 @@
-from suites.coding.nudges.use_graphify_nudge import UseGraphifyNudge
-from suites.coding.nudges.graphify_first_nudge import GraphifyFirstNudge
+from suites.coding.nudges.use_graphify_message import UseGraphifyMessage
+from suites.coding.nudges.graphify_first_message import GraphifyFirstMessage
 
 
-TOOL_NUDGES = [UseGraphifyNudge, GraphifyFirstNudge]
+TOOL_NUDGES = [UseGraphifyMessage, GraphifyFirstMessage]

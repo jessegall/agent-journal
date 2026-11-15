@@ -31,20 +31,20 @@ from core.modules.aliases.seeders.aliases_seeder import AliasesSeeder
 from core.modules.aliases.support.alias_shell_aliases import AliasShellAliases
 from core.modules.aliases.upgrade.aliases_move import AliasesMove
 from core.modules.aliases.commands.skip_saved_command.skip_saved_command_subcommand import SkipSavedCommandSubcommand
-from core.modules.aliases.nudges.command_type_unknown_nudge import CommandTypeUnknownNudge
-from core.modules.aliases.nudges.alias_access_refused_nudge import AliasAccessRefusedNudge
-from core.modules.aliases.nudges.alias_missing_nudge import AliasMissingNudge
-from core.modules.aliases.nudges.alias_plugin_off_nudge import AliasPluginOffNudge
-from core.modules.aliases.nudges.alias_unexpanded_nudge import AliasUnexpandedNudge
-from core.modules.aliases.nudges.saved_command_choices_nudge import SavedCommandChoicesNudge
-from core.modules.aliases.nudges.saved_command_direct_nudge import SavedCommandDirectNudge
-from core.modules.aliases.nudges.saved_command_mixed_nudge import SavedCommandMixedNudge
-from core.modules.aliases.nudges.saved_command_piped_nudge import SavedCommandPipedNudge
-from core.modules.aliases.nudges.saved_command_silent_nudge import SavedCommandSilentNudge
-from core.modules.aliases.nudges.saved_command_helper_nudge import SavedCommandHelperNudge
-from core.modules.aliases.nudges.saved_command_unknown_nudge import SavedCommandUnknownNudge
-from core.modules.aliases.nudges.saved_command_unread_nudge import SavedCommandUnreadNudge
-from core.modules.aliases.nudges.saved_command_timeout_nudge import SavedCommandTimeoutNudge
+from core.modules.aliases.nudges.command_type_unknown_message import CommandTypeUnknownMessage
+from core.modules.aliases.nudges.alias_access_refusal_message import AliasAccessRefusalMessage
+from core.modules.aliases.nudges.alias_missing_message import AliasMissingMessage
+from core.modules.aliases.nudges.alias_plugin_off_message import AliasPluginOffMessage
+from core.modules.aliases.nudges.alias_unexpanded_message import AliasUnexpandedMessage
+from core.modules.aliases.nudges.saved_command_choices_message import SavedCommandChoicesMessage
+from core.modules.aliases.nudges.saved_command_direct_message import SavedCommandDirectMessage
+from core.modules.aliases.nudges.saved_command_mixed_message import SavedCommandMixedMessage
+from core.modules.aliases.nudges.saved_command_piped_message import SavedCommandPipedMessage
+from core.modules.aliases.nudges.saved_command_silent_message import SavedCommandSilentMessage
+from core.modules.aliases.nudges.saved_command_helper_message import SavedCommandHelperMessage
+from core.modules.aliases.nudges.saved_command_unknown_message import SavedCommandUnknownMessage
+from core.modules.aliases.nudges.saved_command_unread_message import SavedCommandUnreadMessage
+from core.modules.aliases.nudges.saved_command_timeout_message import SavedCommandTimeoutMessage
 from core.modules.aliases.tick_handlers.silent_alias_marking_tick_handler import SilentAliasMarkingTickHandler
 
 
@@ -66,4 +66,4 @@ class AliasesModule(Module):
     listeners = [AliasFileListener, PluginAliasesListener, EndedRunSilenceListener]
     tick_handlers = [SilentAliasMarkingTickHandler]
     guards = [ReaderAliasGuard, SavedCommandGuard]
-    nudges = [CommandTypeUnknownNudge, AliasUnexpandedNudge, AliasMissingNudge, AliasPluginOffNudge, AliasAccessRefusedNudge, SavedCommandMixedNudge, SavedCommandUnknownNudge, SavedCommandChoicesNudge, SavedCommandHelperNudge, SavedCommandDirectNudge, SavedCommandPipedNudge, SavedCommandUnreadNudge, SavedCommandSilentNudge, SavedCommandTimeoutNudge]
+    nudges = [CommandTypeUnknownMessage, AliasUnexpandedMessage, AliasMissingMessage, AliasPluginOffMessage, AliasAccessRefusalMessage, SavedCommandMixedMessage, SavedCommandUnknownMessage, SavedCommandChoicesMessage, SavedCommandHelperMessage, SavedCommandDirectMessage, SavedCommandPipedMessage, SavedCommandUnreadMessage, SavedCommandSilentMessage, SavedCommandTimeoutMessage]

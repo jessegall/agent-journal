@@ -1,4 +1,4 @@
-from engine.chat.mark_family import MarkFamily
+from engine.chat.mark_category import MarkCategory
 from engine.enums.mark_group import MarkGroup
 
-JOBS_FAMILY = MarkFamily("schedules.jobs", "Scheduled jobs", "update", MarkGroup.AGENT)
+JOBS_FAMILY = MarkCategory("schedules.jobs", "Scheduled jobs", "update", MarkGroup.AGENT)

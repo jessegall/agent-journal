@@ -1,4 +1,4 @@
-from core.modules.secrets.nudges.secrets_folder_ban_nudge import SecretsFolderBanNudge
+from core.modules.secrets.nudges.secrets_folder_ban_message import SecretsFolderBanMessage
 
 
-SECRET_NUDGES = [SecretsFolderBanNudge]
+SECRET_NUDGES = [SecretsFolderBanMessage]

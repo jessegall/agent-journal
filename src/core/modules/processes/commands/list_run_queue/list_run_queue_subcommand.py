@@ -18,7 +18,7 @@ from core.modules.processes.models.enums.queue_section import QueueSection
 from core.modules.processes.support.active_queue_runs import ActiveQueueRuns
 from core.modules.processes.support.process_queue_page import ProcessQueuePage
 from core.modules.processes.support.lane_load import ExecutionSnapshot
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_source import ExecutionSource
 from engine.enums.starter_type import StarterType
 from engine.execution.classes.execution_classes import ExecutionClasses
@@ -71,7 +71,7 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         waiting = [row.inspector_json() for row in active if row.section is QueueSection.WAITING]
         recent = [{**row.inspector_json(), "lane": self.lane(row).value} for row in self.recent_rows(query, max(1, arguments.recent))]
         copy = self.status.snapshot()
-        long_lane = copy.lane(ExecutionLane.LONG.value)
+        long_lane = copy.lane(ExecutionLength.LONG.value)
         inspector: QueueInspectorJson = {
             "environment_id": environment_id,
             "environment_name": self.queries.query(Environment).find(environment_id).name,
@@ -90,7 +90,7 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         return tuple(line for line in copy.lines() if not line.startswith("  ") or all(text in line for text in wanted)), copy.json()
 
     # the lane a run ran in: its stored class's, or for a class nobody declares any more, the lane its line matches now
-    def lane(self, row: ProcessQueueRow) -> ExecutionLane:
+    def lane(self, row: ProcessQueueRow) -> ExecutionLength:
         named = self.classes.named(row.execution_class)
         if named is not None:
             return named.lane

@@ -3,9 +3,9 @@ from dataclasses import replace
 
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.driver.nudge import Nudge
-from engine.enums.nudge_type import NudgeType
-from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.agent_message import AgentMessage
+from engine.enums.agent_message_type import AgentMessageType
+from engine.driver.message_template import MessageTemplate
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.agents.support.agent_rows import AgentRows
@@ -51,8 +51,8 @@ class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
 
     # The lines to the merger and the next worker waiting with its tasks, or that no worker waits.
     def waiting_text(self, lines: tuple[MergerLine, ...], worktree: Worktree | None) -> str:
-        nudges = [Nudge(line.fallback_source, NudgeType.NOTICE, line.text) if line.nudge_json is None else NudgeDeclaration.restore(line.nudge_json) for line in lines]
-        messages = "\n".join(f"line: {nudge.text}" for nudge in Nudge.collapsed(nudges))
+        nudges = [AgentMessage(line.fallback_source, AgentMessageType.NOTICE, line.text) if line.nudge_json is None else MessageTemplate.restore(line.nudge_json) for line in lines]
+        messages = "\n".join(f"line: {nudge.text}" for nudge in AgentMessage.collapsed(nudges))
         if worktree is None:
             return messages or NO_WORKER_WAITING
         review = self.log_lines.review(worktree)

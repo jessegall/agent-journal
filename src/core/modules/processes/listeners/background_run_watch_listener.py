@@ -14,8 +14,8 @@ from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.watch import UNANNOUNCED_PERCENT, Watch
 from core.modules.processes.support.block_conditions.output_monitored import OutputMonitored
-from core.modules.processes.nudges.required_monitor_nudge import RequiredMonitorNudge
-from core.modules.processes.nudges.required_monitor_command_nudge import RequiredMonitorCommandNudge
+from core.modules.processes.nudges.required_monitor_message import RequiredMonitorMessage
+from core.modules.processes.nudges.required_monitor_command_message import RequiredMonitorCommandMessage
 from engine.command.context import Context
 
 
@@ -34,7 +34,7 @@ class BackgroundRunWatchListener(SaveListener[Moved[Process]]):
         self.repository.save(Watch(session_agent_id=process.session_agent_id, process_id=process.id, creator_id=process.session_agent_id, given_percent=UNANNOUNCED_PERCENT), context)
         monitor_tool = self.monitor_tool(process)
         if monitor_tool is not None:
-            declaration = RequiredMonitorNudge.declared() if monitor_tool is ToolType.MONITOR else RequiredMonitorCommandNudge.declared()
+            declaration = RequiredMonitorMessage.declared() if monitor_tool is ToolType.MONITOR else RequiredMonitorCommandMessage.declared()
             nudge = declaration.nudge(output=process.id)
             self.bus.dispatch(OpenHold(process.session_agent_id, replace(nudge, key=f"{nudge.key}.{process.id}"), OutputMonitored(process.id), blocks_stop=True), context)
 

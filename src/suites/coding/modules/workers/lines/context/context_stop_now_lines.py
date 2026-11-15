@@ -3,14 +3,14 @@ from collections.abc import Sequence
 from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.agent_machine.needs.line_history import LineHistory
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.seconds import Seconds
 from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
 from engine.time.clock import Clock
 from core.modules.tasks.queries.task_query import TaskQuery
-from suites.coding.modules.workers.nudges.context_stop_after_task_nudge import ContextStopAfterTaskNudge
-from suites.coding.modules.workers.nudges.context_stop_immediate_nudge import ContextStopImmediateNudge
+from suites.coding.modules.workers.nudges.task_end_context_stop_message import TaskEndContextStopMessage
+from suites.coding.modules.workers.nudges.context_stop_immediate_message import ContextStopImmediateMessage
 from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
 from suites.coding.modules.workers.types.worker import Worker
 from suites.coding.support.context_limit_check import ContextLimitCheck
@@ -29,12 +29,12 @@ class ContextStopNowLines(EventLineSource):
     def __init__(self, history: LineHistory, limit_check: ContextLimitCheck, tasks: TaskQuery, compaction: WorkerCompaction, clock: Clock) -> None:
         self.history, self.limit_check, self.tasks, self.compaction, self.clock = history, limit_check, tasks, compaction, clock
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
+    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         if self.compaction.is_after_task(agent_id):
-            return [ContextStopAfterTaskNudge.declared().nudge()]
+            return [TaskEndContextStopMessage.declared().nudge()]
         if self.limit_check.tokens(agent_id) is None or self.tasks.started_tasks(agent_id) or self.spoke_recently(agent_id):
             return []
-        return [ContextStopImmediateNudge.declared().nudge()]
+        return [ContextStopImmediateMessage.declared().nudge()]
 
     def spoke_recently(self, agent_id: int) -> bool:
         spoke_at = self.history.last_spoke(self.key, agent_id)

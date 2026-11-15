@@ -1,5 +1,5 @@
-from core.modules.waits.nudges.wait_check_nudge import WaitCheckNudge
-from core.modules.waits.nudges.wait_ended_nudge import WaitEndedNudge
+from core.modules.waits.nudges.wait_check_message import WaitCheckMessage
+from core.modules.waits.nudges.wait_ended_message import WaitEndedMessage
 
 
-WAIT_NUDGES = [WaitCheckNudge, WaitEndedNudge]
+WAIT_NUDGES = [WaitCheckMessage, WaitEndedMessage]

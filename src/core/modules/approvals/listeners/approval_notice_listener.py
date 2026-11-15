@@ -10,11 +10,11 @@ from engine.scope.environment_scope import EnvironmentScope
 from core.modules.agents.models.agent import Agent
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_state import ApprovalState
-from core.modules.approvals.nudges.approval_pending_nudge import ApprovalPendingNudge
-from core.modules.approvals.nudges.approval_decided_nudge import ApprovalDecidedNudge
-from core.modules.approvals.nudges.approval_failed_nudge import ApprovalFailedNudge
-from core.modules.approvals.nudges.approval_review_nudge import ApprovalReviewNudge
-from core.modules.drivers.commands.record_agent_nudge.record_agent_nudge import RecordAgentNudge
+from core.modules.approvals.nudges.approval_pending_message import ApprovalPendingMessage
+from core.modules.approvals.nudges.approval_decided_message import ApprovalDecidedMessage
+from core.modules.approvals.nudges.approval_failed_message import ApprovalFailedMessage
+from core.modules.approvals.nudges.approval_review_message import ApprovalReviewMessage
+from core.modules.drivers.commands.record_agent_nudge.record_agent_message import RecordAgentMessage
 
 
 class ApprovalNoticeListener(CommitListener[Changed[ApprovalRequest]]):
@@ -39,11 +39,11 @@ class ApprovalNoticeListener(CommitListener[Changed[ApprovalRequest]]):
         agent = self.rows.find(Agent, recipient)
         if agent is None:
             return
-        declaration = ApprovalPendingNudge.declared() if pending else ApprovalDecidedNudge.declared()
+        declaration = ApprovalPendingMessage.declared() if pending else ApprovalDecidedMessage.declared()
         if request.state is ApprovalState.FAILED:
-            declaration = ApprovalFailedNudge.declared()
+            declaration = ApprovalFailedMessage.declared()
         if review:
-            declaration = ApprovalReviewNudge.declared()
-        notice = declaration.nudge(approval=request.id, recipient=recipient) if declaration is ApprovalReviewNudge.declared() else declaration.nudge(approval=request.id)
-        self.bus.run(RecordAgentNudge(agent.id, notice, declaration.key), self.actors.actor("journal.core.approvals"),
+            declaration = ApprovalReviewMessage.declared()
+        notice = declaration.nudge(approval=request.id, recipient=recipient) if declaration is ApprovalReviewMessage.declared() else declaration.nudge(approval=request.id)
+        self.bus.run(RecordAgentMessage(agent.id, notice, declaration.key), self.actors.actor("journal.core.approvals"),
                      cause_id=logged.id, environment_id=request.environment_id)

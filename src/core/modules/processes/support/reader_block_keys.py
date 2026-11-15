@@ -1,11 +1,11 @@
 import re
 from dataclasses import replace
 
-from engine.driver.nudge import Nudge
-from core.modules.processes.nudges.reader_block_nudge import ReaderBlockNudge
-from core.modules.processes.nudges.reader_request_refusal_nudge import ReaderRequestRefusalNudge
+from engine.driver.agent_message import AgentMessage
+from core.modules.processes.nudges.reader_block_message import ReaderBlockMessage
+from core.modules.processes.nudges.reader_request_refusal_message import ReaderRequestRefusalMessage
 
-READER_BLOCK_KEY = re.compile(rf"(?:{re.escape(ReaderBlockNudge.declared().key)}|{re.escape(ReaderRequestRefusalNudge.declared().key)})\.(\d+)")
+READER_BLOCK_KEY = re.compile(rf"(?:{re.escape(ReaderBlockMessage.declared().key)}|{re.escape(ReaderRequestRefusalMessage.declared().key)})\.(\d+)")
 
 
 class ReaderBlockKeys:
@@ -13,7 +13,7 @@ class ReaderBlockKeys:
     one place that writes it and the one place that reads the request back."""
 
     @staticmethod
-    def keyed(nudge: Nudge, request_id: int) -> Nudge:
+    def keyed(nudge: AgentMessage, request_id: int) -> AgentMessage:
         return replace(nudge, key=f"{nudge.key}.{request_id}")
 
     @staticmethod

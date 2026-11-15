@@ -1,16 +1,16 @@
-from suites.coding.modules.workers.nudges.unfinished_merge_nudge import UnfinishedMergeNudge
+from suites.coding.modules.workers.nudges.unfinished_merge_message import UnfinishedMergeMessage
 from suites.coding.modules.workers.support.behind_nudges import STALE_NUDGES
-from suites.coding.modules.workers.nudges.merger_line_available_nudge import MergerLineAvailableNudge
-from suites.coding.modules.workers.nudges.merger_passed_nudge import MergerPassedNudge
-from suites.coding.modules.workers.nudges.merge_hook_failed_nudge import MergeHookFailedNudge
-from suites.coding.modules.workers.nudges.unit_blocked_nudge import UnitBlockedNudge
-from suites.coding.modules.workers.nudges.unit_merged_nudge import UnitMergedNudge
-from suites.coding.modules.workers.nudges.unit_merge_waits_nudge import UnitMergeWaitsNudge
-from suites.coding.modules.workers.nudges.worker_merged_nudge import WorkerMergedNudge
-from suites.coding.modules.workers.nudges.worker_without_tasks_nudge import WorkerWithoutTasksNudge
+from suites.coding.modules.workers.nudges.merger_line_available_message import MergerLineAvailableMessage
+from suites.coding.modules.workers.nudges.merger_passed_message import MergerPassedMessage
+from suites.coding.modules.workers.nudges.merge_hook_failed_message import MergeHookFailedMessage
+from suites.coding.modules.workers.nudges.unit_blocked_message import UnitBlockedMessage
+from suites.coding.modules.workers.nudges.unit_merged_message import UnitMergedMessage
+from suites.coding.modules.workers.nudges.unit_merge_waits_message import UnitMergeWaitsMessage
+from suites.coding.modules.workers.nudges.worker_merged_message import WorkerMergedMessage
+from suites.coding.modules.workers.nudges.taskless_worker_message import TasklessWorkerMessage
 from suites.coding.modules.workers.support.worker_nudges import WORKER_NUDGES
-from suites.coding.modules.workers.nudges.worker_test_count_unknown_nudge import WorkerTestCountUnknownNudge
-from suites.coding.modules.workers.nudges.worker_test_limit_refusal_nudge import WorkerTestLimitRefusalNudge
-from suites.coding.modules.workers.nudges.worker_test_limit_stop_nudge import WorkerTestLimitStopNudge
+from suites.coding.modules.workers.nudges.worker_test_count_unknown_message import WorkerTestCountUnknownMessage
+from suites.coding.modules.workers.nudges.worker_test_limit_refusal_message import WorkerTestLimitRefusalMessage
+from suites.coding.modules.workers.nudges.worker_test_limit_stop_message import WorkerTestLimitStopMessage
 
-WORKERS_MODULE_NUDGES = [UnfinishedMergeNudge, MergeHookFailedNudge, UnitBlockedNudge, UnitMergeWaitsNudge, UnitMergedNudge, WorkerWithoutTasksNudge, MergerLineAvailableNudge, WorkerMergedNudge, MergerPassedNudge, *WORKER_NUDGES, *STALE_NUDGES, WorkerTestCountUnknownNudge, WorkerTestLimitStopNudge, WorkerTestLimitRefusalNudge]
+WORKERS_MODULE_NUDGES = [UnfinishedMergeMessage, MergeHookFailedMessage, UnitBlockedMessage, UnitMergeWaitsMessage, UnitMergedMessage, TasklessWorkerMessage, MergerLineAvailableMessage, WorkerMergedMessage, MergerPassedMessage, *WORKER_NUDGES, *STALE_NUDGES, WorkerTestCountUnknownMessage, WorkerTestLimitStopMessage, WorkerTestLimitRefusalMessage]

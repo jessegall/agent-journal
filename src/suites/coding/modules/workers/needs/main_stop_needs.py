@@ -5,13 +5,13 @@ from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from engine.agent_machine.needs.agent_reference import AgentReference
 from engine.agent_machine.needs.block_plan import BlockPlan
-from engine.agent_machine.needs.need import Need
-from engine.agent_machine.needs.need_source import NeedSource
+from engine.agent_machine.needs.required_state import RequiredState
+from engine.agent_machine.needs.state_source import StateSource
 from engine.agent_machine.record.question import Question
-from engine.agent_stack.need_key import NeedKey
+from engine.agent_stack.state_key import StateKey
 from engine.agent_stack.reason import Reason
 from engine.agent_stack.states.working import Working
-from engine.agent_stack.subject_reference import SubjectReference
+from engine.agent_stack.row_reference import RowReference
 from engine.agent_stack.work_reference import WorkReference
 from engine.enums.decision_class import DecisionClass
 from engine.enums.hook_event_name import HookEventName
@@ -20,8 +20,8 @@ from engine.time.clock import Clock
 from suites.coding.modules.workers.support.available_work import AvailableWork
 from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions
 from suites.coding.modules.workers.support.main_agent_work import MainAgentWork
-from suites.coding.nudges.task_assignment_nudge import TaskAssignmentNudge
-from suites.coding.nudges.unfinished_tasks_nudge import UnfinishedTasksNudge
+from suites.coding.nudges.task_assignment_message import TaskAssignmentMessage
+from suites.coding.nudges.unfinished_tasks_message import UnfinishedTasksMessage
 from suites.coding.support.next_task import NextTask
 from suites.coding.support.stop_notices import UNFINISHED_TASKS_TEXT, StopNotices
 
@@ -30,7 +30,7 @@ MAIN_STOP_KEY = "coding.main-stop"
 MAIN_STOP_RANK = ""
 
 
-class MainStopNeeds(NeedSource):
+class MainStopNeeds(StateSource):
     """A main agent's work at a stop (doc 1310 sections 4.11 and 10.5), none while it waits: with no task
     started and one it may act on, Working(handed task), whose always-effect starts it, at a stop and, while keep
     going is on, off a hook; with unfinished tasks of its own and none started, Working(own open tasks), whose stop is
@@ -45,31 +45,31 @@ class MainStopNeeds(NeedSource):
         self.work, self.options, self.unfinished_work, self.assigner, self.notices, self.clock = work, options, unfinished_work, assigner, notices, clock
         self.tasks = tasks
 
-    def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]:
+    def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[RequiredState | BlockPlan]]:
         is_stop = question.event is not None and question.event.event is HookEventName.STOP
         if not is_stop and (question.event is not None or not self.options.options().continues_work):
             return {}
         needs = {agent.agent_id: self.working(agent.agent_id, is_stop) for agent in agents if agent.agent_type == "main"}
         return {agent_id: frames for agent_id, frames in needs.items() if frames}
 
-    def working(self, agent_id: int, is_stop: bool) -> list[Need | BlockPlan]:
+    def working(self, agent_id: int, is_stop: bool) -> list[RequiredState | BlockPlan]:
         if agent_id in self.unfinished_work.waiting_agents([agent_id], self.clock.timestamp()):
             return []
         handed = self.work.answer(agent_id).assigned_task
         if handed is not None:
-            reason = Reason(MAIN_STOP_KEY, DecisionClass.HOLD, MAIN_STOP_RANK, TaskAssignmentNudge.declared().nudge(task=handed.id).text)
-            return [Need(Working(WorkReference(WorkType.HANDED_TASK, handed.id, f"task {handed.id}"), True, reason), MAIN_STOP_RANK,
-                         NeedKey("Working", SubjectReference(Task.model_name, handed.id), f"handed-task:{handed.id}"))]
+            reason = Reason(MAIN_STOP_KEY, DecisionClass.HOLD, MAIN_STOP_RANK, TaskAssignmentMessage.declared().nudge(task=handed.id).text)
+            return [RequiredState(Working(WorkReference(WorkType.HANDED_TASK, handed.id, f"task {handed.id}"), True, reason), MAIN_STOP_RANK,
+                         StateKey("Working", RowReference(Task.model_name, handed.id), f"handed-task:{handed.id}"))]
         return self.own_tasks(agent_id) if is_stop else []
 
-    def own_tasks(self, agent_id: int) -> list[Need | BlockPlan]:
+    def own_tasks(self, agent_id: int) -> list[RequiredState | BlockPlan]:
         if self.work.is_stop_compacting(agent_id) or self.tasks.started_tasks(agent_id):
             return []
         task_ids = self.assigner.agent_tasks([agent_id]).get(agent_id, ())
         if not task_ids:
             return []
-        text = UnfinishedTasksNudge.declared().nudge(tasks=", ".join(str(task_id) for task_id in task_ids)).text
+        text = UnfinishedTasksMessage.declared().nudge(tasks=", ".join(str(task_id) for task_id in task_ids)).text
         remains = not self.notices.has_notice(agent_id, text, UNFINISHED_TASKS_TEXT)
         tasks = ",".join(str(task_id) for task_id in task_ids)
-        return [Need(Working(WorkReference(WorkType.OWN_TASKS, agent_id, f"tasks {tasks}"), remains, Reason(MAIN_STOP_KEY, DecisionClass.HOLD, MAIN_STOP_RANK, text)),
-                     MAIN_STOP_RANK, NeedKey("Working", SubjectReference(Agent.model_name, agent_id), f"own-tasks:{tasks}"))]
+        return [RequiredState(Working(WorkReference(WorkType.OWN_TASKS, agent_id, f"tasks {tasks}"), remains, Reason(MAIN_STOP_KEY, DecisionClass.HOLD, MAIN_STOP_RANK, text)),
+                     MAIN_STOP_RANK, StateKey("Working", RowReference(Agent.model_name, agent_id), f"own-tasks:{tasks}"))]

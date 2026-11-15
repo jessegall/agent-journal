@@ -1,7 +1,7 @@
 from dataclasses import replace
 
 from engine.enums.command_category import CommandCategory
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_priority import ExecutionPriority
 from engine.enums.execution_source import ExecutionSource
 from engine.enums.starter_type import StarterType
@@ -15,8 +15,8 @@ from tests.unit.engine.execution.tickets import seconds_after_start
 
 MAIN_AGENT = ExecutionStarter(StarterType.MAIN_AGENT, agent_id=1)
 ROOMY_LONG_LANE = 32
-ROOMY = ExecutionOrder(replace(DEFAULT_LANE_LIMITS.with_capacities({**DEFAULT_LANE_LIMITS.capacities, ExecutionLane.LONG: ROOMY_LONG_LANE}),
-                               starter_caps={lane: ROOMY_LONG_LANE for lane in ExecutionLane}))
+ROOMY = ExecutionOrder(replace(DEFAULT_LANE_LIMITS.with_capacities({**DEFAULT_LANE_LIMITS.capacities, ExecutionLength.LONG: ROOMY_LONG_LANE}),
+                               starter_caps={lane: ROOMY_LONG_LANE for lane in ExecutionLength}))
 GRAPHIFY = CLASSES.match(ExecutionSubject(ExecutionSource.GRAPHIFY, MAIN_AGENT, category=CommandCategory.BACKGROUND_JOB))
 BUILD = CLASSES.match(ExecutionSubject(ExecutionSource.SHELL_LINE, WORKER, category=CommandCategory.BUILD))
 
@@ -26,7 +26,7 @@ def update(entered_second: float, run_id: int) -> ExecutionTicket:
 
 
 def test_update_takes_cost_eight():
-    assert (GRAPHIFY.lane, GRAPHIFY.slot_cost, GRAPHIFY.class_limit, GRAPHIFY.priority) == (ExecutionLane.LONG, 8, 1, ExecutionPriority.BACKGROUND)
+    assert (GRAPHIFY.lane, GRAPHIFY.slot_cost, GRAPHIFY.class_limit, GRAPHIFY.priority) == (ExecutionLength.LONG, 8, 1, ExecutionPriority.BACKGROUND)
 
 
 def test_second_update_waits_on_the_class_limit():

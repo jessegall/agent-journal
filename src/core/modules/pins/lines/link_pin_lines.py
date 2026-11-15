@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.enums.agent_role import AgentRole
@@ -18,7 +18,7 @@ class LinkPinLines(EventLineSource):
     def __init__(self, check: LinkPinCheck) -> None:
         self.check = check
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
+    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         tool = event.tool
         if tool is None or self.check.is_file_read_tool(tool):
             return []

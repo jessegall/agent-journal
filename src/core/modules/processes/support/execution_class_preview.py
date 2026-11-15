@@ -1,4 +1,4 @@
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_priority import ExecutionPriority
 from engine.enums.execution_source import ExecutionSource
 from engine.enums.starter_type import StarterType
@@ -24,7 +24,7 @@ class ExecutionClassPreview:
         self.queries = queries
 
     def matched(self, line_pattern: str, plugin: str) -> list[str]:
-        candidate = ExecutionClass("preview", ExecutionLane.LONG, 1, ExecutionPriority.NORMAL, line_pattern=line_pattern, plugin=plugin)
+        candidate = ExecutionClass("preview", ExecutionLength.LONG, 1, ExecutionPriority.NORMAL, line_pattern=line_pattern, plugin=plugin)
         processes = self.queries.query(Process).newest().limit(RECENT_ROWS, RECENT_REASON).get()
         runs = self.queries.query(RequestRun).newest().limit(RECENT_ROWS, RECENT_REASON).get()
         timed = [(process.creation_timestamp().text, process.line, process.plugin) for process in processes] + [(run.ended_at.text, run.line, "") for run in runs]

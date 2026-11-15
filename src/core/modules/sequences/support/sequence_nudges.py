@@ -1,8 +1,8 @@
-from core.modules.sequences.nudges.step_waits_nudge import StepWaitsNudge
-from core.modules.sequences.nudges.step_edit_ban_nudge import StepEditBanNudge
-from core.modules.sequences.nudges.sequence_started_nudge import SequenceStartedNudge
-from core.modules.sequences.nudges.step_refuses_command_nudge import StepRefusesCommandNudge
-from core.modules.sequences.nudges.sequence_unfinished_nudge import SequenceUnfinishedNudge
+from core.modules.sequences.nudges.step_waits_message import StepWaitsMessage
+from core.modules.sequences.nudges.step_edit_ban_message import StepEditBanMessage
+from core.modules.sequences.nudges.sequence_started_message import SequenceStartedMessage
+from core.modules.sequences.nudges.step_refuses_command_message import StepRefusesCommandMessage
+from core.modules.sequences.nudges.sequence_unfinished_message import SequenceUnfinishedMessage
 
 
-SEQUENCE_NUDGES = [StepWaitsNudge, StepEditBanNudge, SequenceStartedNudge, StepRefusesCommandNudge, SequenceUnfinishedNudge]
+SEQUENCE_NUDGES = [StepWaitsMessage, StepEditBanMessage, SequenceStartedMessage, StepRefusesCommandMessage, SequenceUnfinishedMessage]

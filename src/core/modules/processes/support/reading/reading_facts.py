@@ -19,7 +19,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.support.reader_demands import ReaderDemands
 from core.modules.processes.support.reader_judge import ReaderJudge
-from core.modules.processes.support.reader_judgement import ReaderJudgement
+from core.modules.processes.support.reader_check import ReaderCheck
 from core.modules.processes.support.reader_run import ReaderRun
 from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.reader_selection import ReaderSelection
@@ -97,7 +97,7 @@ class ReadingFacts:
     def layer(self, reader: Reader | None) -> ReaderLayer | None:
         return None if reader is None else self.readers.layers().layer(reader)
 
-    def judgement(self, process: Process, part: ProcessPart, reader: Reader | None) -> ReaderJudgement | None:
+    def judgement(self, process: Process, part: ProcessPart, reader: Reader | None) -> ReaderCheck | None:
         scope = ReaderSampleScope(process.session_agent_id, part.command or part.text)
         return None if reader is None else self.judge.judged_command(reader, part.category, scope)
 

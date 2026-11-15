@@ -2,9 +2,9 @@ from core.modules.skills.commands.request_skill.request_skill import RequestSkil
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.loaded_skills import LoadedSkills
 from core.modules.skills.support.skill_files import SkillFiles
-from core.modules.skills.nudges.read_skill_first_nudge import ReadSkillFirstNudge
-from core.modules.triggers.nudges.trigger_denies_nudge import TriggerDeniesNudge
-from core.modules.triggers.nudges.trigger_line_nudge import TriggerLineNudge
+from core.modules.skills.nudges.read_skill_first_message import ReadSkillFirstMessage
+from core.modules.triggers.nudges.trigger_denies_message import TriggerDeniesMessage
+from core.modules.triggers.nudges.trigger_line_message import TriggerLineMessage
 from engine.enums.hook_event_name import HookEventName
 from core.modules.triggers.commands.fire_trigger.fire_trigger import FireTrigger
 from core.modules.triggers.models.enums.trigger_action import TriggerAction
@@ -44,17 +44,17 @@ class PhraseTriggerMatch:
         matching = [trigger for trigger in matching if trigger.action is not TriggerAction.SKILL or trigger.skill in skills]
         deny = next((trigger for trigger in matching if trigger.action is TriggerAction.DENY), None)
         if deny is not None:
-            return PhraseTriggerAnswer(TriggerDeniesNudge.declared().nudge(trigger=deny.id), (), None, tuple([FireTrigger(deny.id)]))
+            return PhraseTriggerAnswer(TriggerDeniesMessage.declared().nudge(trigger=deny.id), (), None, tuple([FireTrigger(deny.id)]))
         if not matching:
             return PhraseTriggerAnswer(None, (), None, ())
         loaded = self.loaded.names(agent_id) if skills else ()
         missing = [trigger for trigger in matching if trigger.action is TriggerAction.SKILL and trigger.skill is not None and trigger.skill not in loaded]
         commands = (*(RequestSkill(agent_id, folder) for folder in dict.fromkeys(trigger.skill for trigger in missing) if folder is not None), *(FireTrigger(trigger.id) for trigger in matching))
-        nudges = [TriggerLineNudge.declared().nudge(trigger=trigger.id) for trigger in matching if trigger.action is not TriggerAction.SKILL]
+        nudges = [TriggerLineMessage.declared().nudge(trigger=trigger.id) for trigger in matching if trigger.action is not TriggerAction.SKILL]
         folder = missing[0].skill if missing else None
         if folder is None:
             return PhraseTriggerAnswer(None, tuple(nudges), None, commands)
-        nudge = ReadSkillFirstNudge.instructed(self.files.agent_instruction(folder, self.agents.find(agent_id)))
+        nudge = ReadSkillFirstMessage.instructed(self.files.agent_instruction(folder, self.agents.find(agent_id)))
         # before a tool the skill holds the agent's tools; at a prompt it is asked for in a line
         if event.event is HookEventName.PRE_TOOL_USE:
             return PhraseTriggerAnswer(None, tuple(nudges), (nudge, folder), commands)

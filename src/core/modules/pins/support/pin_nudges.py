@@ -1,7 +1,7 @@
-from core.modules.pins.nudges.link_pin_request_nudge import LinkPinRequestNudge
-from core.modules.pins.nudges.unpinned_claim_nudge import UnpinnedClaimNudge
-from core.modules.pins.nudges.bang_button_request_nudge import BangButtonRequestNudge
+from core.modules.pins.nudges.link_pin_request_message import LinkPinRequestMessage
+from core.modules.pins.nudges.unpinned_claim_message import UnpinnedClaimMessage
+from core.modules.pins.nudges.bang_button_request_message import BangButtonRequestMessage
 
 
 
-PIN_NUDGES = [LinkPinRequestNudge, UnpinnedClaimNudge, BangButtonRequestNudge]
+PIN_NUDGES = [LinkPinRequestMessage, UnpinnedClaimMessage, BangButtonRequestMessage]

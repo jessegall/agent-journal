@@ -1,6 +1,6 @@
 from engine.agent_machine.contracts.event_policy import EventPolicy
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.enums.hook_event_name import HookEventName
 from core.modules.drivers.support.foreign_hook_answers import MANAGED_HOOKS_KEY, ForeignHookAnswers
 
@@ -16,5 +16,5 @@ class ForeignHooksPolicy(EventPolicy):
     def __init__(self, answers: ForeignHookAnswers) -> None:
         self.answers = answers
 
-    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+    def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         return self.answers.answer(event, agent_id).refusal

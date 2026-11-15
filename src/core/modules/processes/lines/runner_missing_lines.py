@@ -3,9 +3,9 @@ from collections.abc import Sequence
 from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.agent_machine.needs.line_history import LineHistory
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.enums.hook_event_name import HookEventName
-from core.modules.processes.nudges.runner_missing_nudge import RunnerMissingNudge
+from core.modules.processes.nudges.runner_missing_message import RunnerMissingMessage
 from core.modules.processes.support.runner_binary import RunnerBinary
 from core.modules.processes.support.runner_plan import RUNNER_REWRITE_KEY, RunnerPlan
 
@@ -19,7 +19,7 @@ class RunnerMissingLines(EventLineSource):
     def __init__(self, plan: RunnerPlan, runner: RunnerBinary, history: LineHistory) -> None:
         self.plan, self.runner, self.history = plan, runner, history
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
+    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         if event is None or not self.plan.of_event(event, agent_id).runner_missing or self.history.last_spoke(self.key, agent_id) is not None:
             return []
-        return [RunnerMissingNudge.declared().nudge(folder=self.runner.path.parent)]
+        return [RunnerMissingMessage.declared().nudge(folder=self.runner.path.parent)]

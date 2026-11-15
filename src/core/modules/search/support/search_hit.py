@@ -6,7 +6,7 @@ from typing import Any
 from engine.model.model import Model
 from engine.text.search_term import SearchTerm
 from engine.time.timestamp import Timestamp
-from engine.driver.nudge_declaration import CUT_MARK
+from engine.driver.message_template import CUT_MARK
 
 EXCERPT_CHARACTERS = 160
 LEAD_CHARACTERS = 40

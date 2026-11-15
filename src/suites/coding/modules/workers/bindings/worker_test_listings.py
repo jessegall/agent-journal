@@ -20,10 +20,10 @@ from core.modules.processes.support.reader_run import ReaderRun
 from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.run_visibility import RunVisibility
 from core.modules.processes.commands.stop_process.stop_process import StopProcess
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from core.modules.processes.commands.request_count_reader.request_count_reader import RequestCountReader
 from suites.coding.modules.workers.support.worker_test_limit_nudges import WORKER_TEST_LIMIT_SOURCE
-from suites.coding.modules.workers.nudges.worker_test_count_unknown_nudge import WorkerTestCountUnknownNudge
+from suites.coding.modules.workers.nudges.worker_test_count_unknown_message import WorkerTestCountUnknownMessage
 from suites.coding.modules.workers.support.part_test_listing import PartTestListing
 from suites.coding.modules.workers.support.worker_own_runs import WorkerOwnRuns
 
@@ -33,7 +33,7 @@ LISTINGS_REASON = "the count of a test command comes from the newest kept output
 class WorkerTestListings(RunCounts):
     """Builds per-part listings and adds their counts for a queued worker run."""
 
-    def __init__(self, queries: Queries, settings: SettingValues, run: ReaderRun, folder: OutputFolder, outputs: OutputQuery, readers: ReaderRows, visibility: RunVisibility, rows: EventRows, bus: Bus, nudger: Nudger, worker_runs: WorkerOwnRuns, types: HelperTypeBook) -> None:
+    def __init__(self, queries: Queries, settings: SettingValues, run: ReaderRun, folder: OutputFolder, outputs: OutputQuery, readers: ReaderRows, visibility: RunVisibility, rows: EventRows, bus: Bus, nudger: MessageSender, worker_runs: WorkerOwnRuns, types: HelperTypeBook) -> None:
         self.queries, self.settings, self.run, self.folder, self.outputs, self.readers, self.visibility, self.rows = queries, settings, run, folder, outputs, readers, visibility, rows
         self.bus, self.nudger, self.own_runs, self.types = bus, nudger, worker_runs, types
 
@@ -85,7 +85,7 @@ class WorkerTestListings(RunCounts):
             return
         self.bus.dispatch(StopProcess(process.id), context)
         request = self.bus.run(RequestCountReader(process.id), Actor.core(), environment_id=process.environment_id)
-        self.nudger.send(process.session_agent_id, WorkerTestCountUnknownNudge.declared(), WORKER_TEST_LIMIT_SOURCE, context, output=process.id, name=request)
+        self.nudger.send(process.session_agent_id, WorkerTestCountUnknownMessage.declared(), WORKER_TEST_LIMIT_SOURCE, context, output=process.id, name=request)
 
     def counting_reader(self, part: ProcessPart, output: Output | None, readers: tuple[Reader, ...]) -> Reader | None:
         first_answer = self.reader(part, output, readers)

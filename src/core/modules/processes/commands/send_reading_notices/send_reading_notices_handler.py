@@ -1,6 +1,6 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from engine.listener.rows.event_rows import EventRows
 from core.modules.processes.commands.send_reading_notices.send_reading_notices import SendReadingNotices
 from core.modules.processes.models.process import Process
@@ -19,7 +19,7 @@ class SendReadingNoticesHandler(Handler[SendReadingNotices, None]):
 
     command = SendReadingNotices
 
-    def __init__(self, rows: EventRows, outputs: OutputQuery, visibility: RunVisibility, notices: ReadingNotices, nudger: Nudger, marker: UnreadableMarker) -> None:
+    def __init__(self, rows: EventRows, outputs: OutputQuery, visibility: RunVisibility, notices: ReadingNotices, nudger: MessageSender, marker: UnreadableMarker) -> None:
         self.rows, self.outputs, self.visibility, self.notices, self.nudger, self.marker = rows, outputs, visibility, notices, nudger, marker
 
     def handle(self, command: SendReadingNotices, context: Context) -> None:

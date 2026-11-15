@@ -6,7 +6,7 @@ from engine.listener.rows.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from core.modules.processes.commands.stop_process.stop_process import StopProcess
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.output import Output
@@ -15,7 +15,7 @@ from core.modules.processes.models.process_part import ProcessPart
 from engine.setting.setting_values import SettingValues
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 from suites.coding.modules.workers.support.worker_test_limit_nudges import WORKER_TEST_LIMIT_SOURCE
-from suites.coding.modules.workers.nudges.worker_test_limit_stop_nudge import WorkerTestLimitStopNudge
+from suites.coding.modules.workers.nudges.worker_test_limit_stop_message import WorkerTestLimitStopMessage
 from suites.coding.modules.workers.support.worker_own_runs import WorkerOwnRuns
 from engine.event.changed import Changed
 from engine.event.deleted import Deleted
@@ -28,7 +28,7 @@ class WorkerTestCountListener(SaveListener[Changed[Output]]):
     name = WORKER_TEST_LIMIT_SOURCE
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, settings: SettingValues, bus: Bus, nudger: Nudger, rows: EventRows, worker_runs: WorkerOwnRuns) -> None:
+    def __init__(self, queries: Queries, settings: SettingValues, bus: Bus, nudger: MessageSender, rows: EventRows, worker_runs: WorkerOwnRuns) -> None:
         self.queries, self.settings, self.bus, self.nudger = queries, settings, bus, nudger
         self.rows, self.own_runs = rows, worker_runs
 
@@ -52,5 +52,5 @@ class WorkerTestCountListener(SaveListener[Changed[Output]]):
             parts = parts.filter(position=output.reader_position)
         if not parts.exists():
             return
-        self.nudger.send(process.session_agent_id, WorkerTestLimitStopNudge.declared(), self.name, context, output=process.id, count=output.test_count, limit=limit)
+        self.nudger.send(process.session_agent_id, WorkerTestLimitStopMessage.declared(), self.name, context, output=process.id, count=output.test_count, limit=limit)
         self.bus.dispatch(StopProcess(process.id), context)

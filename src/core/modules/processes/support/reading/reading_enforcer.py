@@ -2,7 +2,7 @@ from engine.request.request_values import RequestValues
 import re
 
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.part import Part
 from engine.driver.shell_line import ShellLine
 from core.modules.processes.support.reading.reading_answer import ReadingAnswer
@@ -11,12 +11,12 @@ from core.modules.processes.queries.reading_decision_query import ReadingDecisio
 from core.modules.processes.support.decisions.command_run_counts import CommandRunCounts
 from core.modules.processes.support.decisions.reading_decider import PREVENT_AFTER_RUNS
 from core.modules.processes.support.output_folder import OutputFolder
-from core.modules.processes.nudges.redirected_run_nudge import RedirectedRunNudge
-from core.modules.processes.nudges.read_refusal_nudge import ReadRefusalNudge
-from core.modules.processes.nudges.silent_start_fixed_nudge import SilentStartFixedNudge
-from core.modules.processes.nudges.silent_start_ready_nudge import SilentStartReadyNudge
-from core.modules.processes.nudges.silent_start_refused_nudge import SilentStartRefusedNudge
-from core.modules.processes.nudges.silent_start_taught_nudge import SilentStartTaughtNudge
+from core.modules.processes.nudges.redirected_run_message import RedirectedRunMessage
+from core.modules.processes.nudges.read_refusal_message import ReadRefusalMessage
+from core.modules.processes.nudges.silent_start_fixed_message import SilentStartFixedMessage
+from core.modules.processes.nudges.silent_start_ready_message import SilentStartReadyMessage
+from core.modules.processes.nudges.silent_start_refusal_message import SilentStartRefusalMessage
+from core.modules.processes.nudges.silent_start_taught_message import SilentStartTaughtMessage
 from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.unreadable.unreadable_mark_registry import UnreadableMarkRegistry
@@ -56,7 +56,7 @@ class ReadingEnforcer:
             return ReadingAnswer()
         redirected = list(dict.fromkeys(part.program for part in shell.parts if self.is_redirected(part, shell)))
         if redirected:
-            return ReadingAnswer(RedirectedRunNudge.declared().nudge(programs=', '.join(redirected)))
+            return ReadingAnswer(RedirectedRunMessage.declared().nudge(programs=', '.join(redirected)))
         names = tuple(dict.fromkeys(SilentStartRuns.name(part.text, part.program, part.classification.category) for part in shell.parts if self.is_watched(part)))
         answers = [self.answer_name(name) for name in names if not self.marks.excuses(name)]
         refused = next((answer for answer in answers if answer.refusal is not None), None)
@@ -80,7 +80,7 @@ class ReadingEnforcer:
         if count:
             return ReadingAnswer(None, tuple([self.taught(name, runs[0])]))
         if len(runs) > 1 and runs[0].shows_percent and runs[1].is_silent:
-            return ReadingAnswer(None, tuple([SilentStartFixedNudge.declared().nudge(name=name)]))
+            return ReadingAnswer(None, tuple([SilentStartFixedMessage.declared().nudge(name=name)]))
         if self.run_counts.runs_without_reader([name])[name] >= PREVENT_AFTER_RUNS:
             return self.prevented(name)
         return ReadingAnswer()
@@ -88,24 +88,24 @@ class ReadingEnforcer:
     def shape(self, run: SilentRun) -> RunShape | None:
         return RunShapes.found(self.folder.head_output(run.process.id, INSPECTED_CHARACTERS))
 
-    def taught(self, name: str, run: SilentRun) -> Nudge:
+    def taught(self, name: str, run: SilentRun) -> AgentMessage:
         shape = self.shape(run)
-        return SilentStartTaughtNudge.declared().nudge(name=name, seconds=run.seconds, shape=shape.label if shape else UNKNOWN_SHAPE, hint=shape.total_note if shape else MISSING_TOTAL_TEXT)
+        return SilentStartTaughtMessage.declared().nudge(name=name, seconds=run.seconds, shape=shape.label if shape else UNKNOWN_SHAPE, hint=shape.total_note if shape else MISSING_TOTAL_TEXT)
 
     def silent_refusal(self, name: str, run: SilentRun) -> ReadingAnswer:
         if self.reader_changed_after(run):
             return ReadingAnswer()
-        refused = SilentStartRefusedNudge.declared().nudge(name=name)
+        refused = SilentStartRefusalMessage.declared().nudge(name=name)
         shape = self.shape(run)
         if shape is None:
             return ReadingAnswer(refused)
-        ready = SilentStartReadyNudge.declared().nudge(name=name, shape=shape.label, reader=f'journal reader add {name.split()[-1]} --commands "{run.part.command or run.part.text}" --title "{name}" {shape.reader_options()}')
+        ready = SilentStartReadyMessage.declared().nudge(name=name, shape=shape.label, reader=f'journal reader add {name.split()[-1]} --commands "{run.part.command or run.part.text}" --title "{name}" {shape.reader_options()}')
         return ReadingAnswer(refused, tuple([ready]))
 
     def prevented(self, name: str) -> ReadingAnswer:
         last = self.decisions.command_key_decisions(name).filter(phase=ReadingPhase.END).descending("decided_at", "id").first()
         output = last.process_id if last is not None else 0
-        return ReadingAnswer(ReadRefusalNudge.declared().nudge(output=output, name=name))
+        return ReadingAnswer(ReadRefusalMessage.declared().nudge(output=output, name=name))
 
     def reader_changed_after(self, run: SilentRun) -> bool:
         selected = ReaderSelection.choose(self.readers.all(), [run.part], self.readers.layers())

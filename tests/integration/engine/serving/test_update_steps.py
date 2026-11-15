@@ -5,7 +5,7 @@ import pytest
 from engine.time.clock import Clock
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
-from engine.serving.code_handover import CodeHandover
+from engine.serving.code_delivery import CodeDelivery
 from engine.serving.update_steps import UpdateSteps
 
 
@@ -25,8 +25,8 @@ class FixedVersions:
         return "tag-one"
 
 
-def handover_with(tmp_path: Path, steps: RecordedSteps, pids: list[str], status: int = 200) -> CodeHandover:
-    handover = CodeHandover(JournalHome(tmp_path / ".journal"), steps)
+def handover_with(tmp_path: Path, steps: RecordedSteps, pids: list[str], status: int = 200) -> CodeDelivery:
+    handover = CodeDelivery(JournalHome(tmp_path / ".journal"), steps)
     handover.versions = FixedVersions()
     handover.server_pid = lambda: pids.pop(0) if len(pids) > 1 else pids[0]
     handover.takeover_status = lambda tag: status

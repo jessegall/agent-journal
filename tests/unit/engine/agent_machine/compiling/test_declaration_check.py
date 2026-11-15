@@ -17,7 +17,7 @@ from engine.enums.capability_proof import CapabilityProof
 from engine.enums.contribution_type import ContributionType
 from engine.enums.block_end import BlockEnd
 from engine.enums.hook_event_name import HookEventName
-from engine.enums.line_carrier import LineCarrier
+from engine.enums.line_channel import LineChannel
 from engine.enums.responder import Responder
 from engine.enums.transform_slot import TransformSlot
 from engine.enums.work_stop import WorkStop
@@ -60,7 +60,7 @@ def test_each_misuse_is_refused_with_its_fix(contribution: ContributionDeclarati
 
 
 def test_a_line_with_a_waiting_carrier_may_sit_on_an_event_no_program_carries() -> None:
-    assert fixes(ContributionDeclaration("messages.late-line", ContributionType.LINE, events=(HookEventName.STOP,), carrier=LineCarrier.WAITING)) == []
+    assert fixes(ContributionDeclaration("messages.late-line", ContributionType.LINE, events=(HookEventName.STOP,), carrier=LineChannel.WAITING)) == []
 
 
 def test_a_safety_policy_from_a_suite_module_is_refused() -> None:

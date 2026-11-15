@@ -21,8 +21,8 @@ from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.support.block_conditions.reader_request_completed import ReaderRequestCompleted
 from core.modules.processes.support.process_nudges import READER_REQUEST_COUNTDOWN, READER_REQUEST_SPAN
-from core.modules.processes.nudges.reader_block_nudge import ReaderBlockNudge
-from core.modules.processes.nudges.reader_request_refusal_nudge import ReaderRequestRefusalNudge
+from core.modules.processes.nudges.reader_block_message import ReaderBlockMessage
+from core.modules.processes.nudges.reader_request_refusal_message import ReaderRequestRefusalMessage
 from core.modules.processes.support.reader_block_keys import ReaderBlockKeys
 from core.modules.processes.support.reader_request_notices import ReaderRequestNotices
 from core.modules.processes.support.reader_request_text import ReaderRequestText
@@ -43,7 +43,7 @@ class ReaderRequestBlocks:
         request = self.requests.find(part.reader_request_id)
         if request.completed_at is not None or request.expires_at <= self.clock.timestamp():
             return
-        nudge = ReaderBlockNudge.declared().nudge(output=part.process_id, request=request.id)
+        nudge = ReaderBlockMessage.declared().nudge(output=part.process_id, request=request.id)
         ends = AnyCondition(ReaderRequestCompleted(request.id), TimeReached(request.expires_at.text))
         self.bus.dispatch(OpenHold(process.session_agent_id, ReaderBlockKeys.keyed(nudge, request.id), ends), context)
 
@@ -69,7 +69,7 @@ class ReaderRequestBlocks:
     # the hold that asks the main agent to help with a request whose saves failed or that expired
     @staticmethod
     def help_hold(request: ReaderRequest) -> ReaderHelpHold:
-        refusal = ReaderRequestRefusalNudge.declared().nudge(request=request.id, command=request.command, block="{block}")
+        refusal = ReaderRequestRefusalMessage.declared().nudge(request=request.id, command=request.command, block="{block}")
         return ReaderHelpHold(ReaderBlockKeys.keyed(refusal, request.id), ReaderRequestCompleted(request.id), request.command)
 
     @staticmethod

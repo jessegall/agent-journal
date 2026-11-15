@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from engine.driver.foreign_answer import ForeignAnswer
+from engine.driver.project_hook_answer import ProjectHookAnswer
 from engine.driver.foreign_run import ForeignRun
 
 
@@ -14,7 +14,7 @@ class ForeignOutcome(StrEnum):
     FAILED = "failed"
 
     @classmethod
-    def detected(cls, run: ForeignRun, answer: ForeignAnswer) -> "ForeignOutcome":
+    def detected(cls, run: ForeignRun, answer: ProjectHookAnswer) -> "ForeignOutcome":
         if run.timed_out:
             return cls.TIMEOUT
         if answer.refusal:

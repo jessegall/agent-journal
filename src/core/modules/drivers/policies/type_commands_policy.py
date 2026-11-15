@@ -1,6 +1,6 @@
 from engine.agent_machine.contracts.event_policy import EventPolicy
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from collections.abc import Sequence
 
 from engine.cli.subcommand_lookup import SubcommandLookup
@@ -13,7 +13,7 @@ from engine.helper_type.journal_line import JournalLine
 from engine.setting.setting_values import SettingValues
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.base_commands import BASE_COMMANDS
-from core.modules.drivers.nudges.helper_type_category_nudge import HelperTypeCategoryNudge
+from core.modules.drivers.nudges.helper_type_category_message import HelperTypeCategoryMessage
 from core.modules.drivers.support.read_only_access import HELP_FLAG
 from core.modules.drivers.support.type_command_check import TypeCommandCheck
 
@@ -28,7 +28,7 @@ class TypeCommandsPolicy(EventPolicy):
     def __init__(self, types: HelperTypeBook, lookup: SubcommandLookup, settings: SettingValues, commands: TypeCommandCheck, agents: AgentRows) -> None:
         self.types, self.lookup, self.settings, self.commands, self.agents = types, lookup, settings, commands, agents
 
-    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+    def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         shell = event.tool.shell if event.tool is not None else None
         agent = self.agents.find(agent_id)
         if shell is None or not self.types.is_helper(agent.role):
@@ -36,7 +36,7 @@ class TypeCommandsPolicy(EventPolicy):
         helper_type = self.types.find(agent.role)
         refused_part = shell.disallowed_part(self.command_types(helper_type, BASE_COMMANDS.joined(helper_type.commands)))
         if refused_part is not None:
-            return HelperTypeCategoryNudge.declared().nudge(helper_type=helper_type.label.lower(), category=refused_part.classification.category.value,
+            return HelperTypeCategoryMessage.declared().nudge(helper_type=helper_type.label.lower(), category=refused_part.classification.category.value,
                                                             hint=f". {helper_type.refusal_hint}" if helper_type.refusal_hint else "")
         return self.commands.refusal(agent, self.journal_lines(shell))
 

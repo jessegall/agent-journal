@@ -1,7 +1,7 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.driver.nudge import Nudge
-from engine.driver.nudger import Nudger
+from engine.driver.agent_message import AgentMessage
+from engine.driver.nudger import MessageSender
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
@@ -10,7 +10,7 @@ from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from suites.coding.modules.workers.commands.remind_inactive_main_agent.remind_inactive_main_agent import RemindInactiveMainAgent
 from suites.coding.modules.workers.support.available_work import AvailableWork
 from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions
-from suites.coding.nudges.task_assignment_nudge import TaskAssignmentNudge
+from suites.coding.nudges.task_assignment_message import TaskAssignmentMessage
 
 WAKE_SOURCE = "coding.keep-going"
 
@@ -23,7 +23,7 @@ class RemindInactiveMainAgentHandler(Handler[RemindInactiveMainAgent, None]):
     command = RemindInactiveMainAgent
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, options: CodingMainOptions, work: AvailableWork, hook_calls: HookCallQuery, nudger: Nudger) -> None:
+    def __init__(self, queries: Queries, options: CodingMainOptions, work: AvailableWork, hook_calls: HookCallQuery, nudger: MessageSender) -> None:
         self.queries, self.options, self.work, self.hook_calls, self.nudger = queries, options, work, hook_calls, nudger
 
     def handle(self, command: RemindInactiveMainAgent, context: Context) -> None:
@@ -37,12 +37,12 @@ class RemindInactiveMainAgentHandler(Handler[RemindInactiveMainAgent, None]):
                 continue
             self.nudger.send_nudge(agent.id, nudge, WAKE_SOURCE, context, wakes_agent=True)
 
-    def waking_nudge(self, agent_id: int) -> Nudge | None:
+    def waking_nudge(self, agent_id: int) -> AgentMessage | None:
         available = self.work.answer(agent_id)
         if available.assigned_task is not None:
-            return TaskAssignmentNudge.declared().nudge(task=available.assigned_task.id)
+            return TaskAssignmentMessage.declared().nudge(task=available.assigned_task.id)
         return None
 
-    def was_informed(self, agent_id: int, nudge: Nudge) -> bool:
+    def was_informed(self, agent_id: int, nudge: AgentMessage) -> bool:
         last = self.queries.query(AgentLine).filter(session_agent_id=agent_id, source=WAKE_SOURCE).newest().first()
         return last is not None and last.text == nudge.text

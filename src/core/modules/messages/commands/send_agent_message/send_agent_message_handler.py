@@ -9,8 +9,8 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.receivers import Receivers
 from core.modules.agents.support.report_nudges import PARENT_REPORT_SOURCE
-from core.modules.agents.nudges.parent_report_nudge import ParentReportNudge
-from engine.driver.nudger import Nudger
+from core.modules.agents.nudges.parent_report_message import ParentReportMessage
+from engine.driver.nudger import MessageSender
 from core.modules.messages.commands.send_agent_message.send_agent_message import SendAgentMessage
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
@@ -24,7 +24,7 @@ class SendAgentMessageHandler(Handler[SendAgentMessage, Message]):
     command = SendAgentMessage
     disabled_scopes = [ActorScope]
 
-    def __init__(self, repository: Repository, nudger: Nudger, receivers: Receivers, agents: AgentRows, routes: AgentMessageRoutes, numbers: RowNumbers) -> None:
+    def __init__(self, repository: Repository, nudger: MessageSender, receivers: Receivers, agents: AgentRows, routes: AgentMessageRoutes, numbers: RowNumbers) -> None:
         self.numbers = numbers
         self.repository, self.nudger, self.receivers, self.agents, self.routes = repository, nudger, receivers, agents, routes
 
@@ -37,7 +37,7 @@ class SendAgentMessageHandler(Handler[SendAgentMessage, Message]):
         message = self.repository.save(Message(session_agent_id=sender_id, target_agent_id=None if receiver.is_main else receiver.id, creator_id=context.actor.id,
                                                type=MessageType.AGENT, text=command.text, is_chat_visible=False), context)
         if command.notifies:
-            self.nudger.send(self.receivers.message_receiver(command.recipient_agent_id).id, ParentReportNudge.declared(), PARENT_REPORT_SOURCE, context, agent=self.sender_number(message), message=message.id)
+            self.nudger.send(self.receivers.message_receiver(command.recipient_agent_id).id, ParentReportMessage.declared(), PARENT_REPORT_SOURCE, context, agent=self.sender_number(message), message=message.id)
         return message
 
     def sender_number(self, message: Message) -> int:

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.command.command import Command
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 
 
 @dataclass(frozen=True)
@@ -10,7 +10,7 @@ class PhraseTriggerAnswer:
     the skill a trigger holds the agent to before its next tools, with the line that asks for it, and the commands
     that fire them and request the skill."""
 
-    refusal: Nudge | None
-    nudges: tuple[Nudge, ...]
-    skill_block: tuple[Nudge, str] | None
+    refusal: AgentMessage | None
+    nudges: tuple[AgentMessage, ...]
+    skill_block: tuple[AgentMessage, str] | None
     commands: tuple[Command[object], ...]

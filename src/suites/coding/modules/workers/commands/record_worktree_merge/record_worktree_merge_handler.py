@@ -6,7 +6,7 @@ from engine.listener.rows.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
@@ -22,7 +22,7 @@ from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.checkpoint_wait_text import CheckpointWaitText
 from suites.coding.modules.workers.support.merge_outcome import MergeOutcome
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
-from suites.coding.modules.workers.nudges.worker_merge_conflict_nudge import WorkerMergeConflictNudge
+from suites.coding.modules.workers.nudges.worker_merge_conflict_message import WorkerMergeConflictMessage
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
 from suites.coding.modules.workers.support.work_units import UNIT_TASKS_REASON
@@ -41,7 +41,7 @@ class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
     runs_once = True
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, rows: EventRows, repository: Repository, nudger: Nudger, advance: WorkerTaskAdvance, guidance: WorkerGuidance, wait_text: CheckpointWaitText, proofs: ProofQuery) -> None:
+    def __init__(self, queries: Queries, rows: EventRows, repository: Repository, nudger: MessageSender, advance: WorkerTaskAdvance, guidance: WorkerGuidance, wait_text: CheckpointWaitText, proofs: ProofQuery) -> None:
         self.wait_text, self.proofs = wait_text, proofs
         self.queries, self.rows, self.repository, self.nudger, self.advance, self.guidance = queries, rows, repository, nudger, advance, guidance
 
@@ -75,5 +75,5 @@ class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
             if proof.state is not ProofState.SHORT:
                 self.repository.save_change(proof, proof.moved(ProofLifecycle.short, shortfall=CONFLICT_SHORTFALL.format(files=files)), context)
         self.advance.restart_task(worktree, task, context)
-        self.nudger.send(worktree.session_agent_id, WorkerMergeConflictNudge.declared(), MERGE_CONFLICT_SOURCE, context, branch=worktree.base_branch, lines=files, line=self.guidance.conflict_line(task, files))
+        self.nudger.send(worktree.session_agent_id, WorkerMergeConflictMessage.declared(), MERGE_CONFLICT_SOURCE, context, branch=worktree.base_branch, lines=files, line=self.guidance.conflict_line(task, files))
         return self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context)

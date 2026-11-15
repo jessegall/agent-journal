@@ -10,8 +10,8 @@ from engine.query.queries import Queries
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.drivers.support.block_conditions.any_condition import AnyCondition
 from core.modules.sequences.sequences_module import SequencesModule
-from core.modules.sequences.nudges.step_waits_nudge import StepWaitsNudge
-from core.modules.sequences.nudges.step_edit_ban_nudge import StepEditBanNudge
+from core.modules.sequences.nudges.step_waits_message import StepWaitsMessage
+from core.modules.sequences.nudges.step_edit_ban_message import StepEditBanMessage
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 
@@ -32,8 +32,8 @@ def expect_tools_allowed(story) -> None:
 def repair_legacy_blocks(story) -> None:
     bus = story.container.get(Bus)
     condition = AnyCondition(RanCommand("journal sequence follow"), RanCommand("journal sequence abandon"))
-    legacy = bus.run(OpenHold(story.agent.id, StepWaitsNudge.declared().nudge(sequence=1, step=1), condition), story.agent)
-    edit_block = bus.run(OpenHold(story.agent.id, StepEditBanNudge.declared().nudge(sequence=1, step=1), RanCommand("journal overview")), story.agent)
+    legacy = bus.run(OpenHold(story.agent.id, StepWaitsMessage.declared().nudge(sequence=1, step=1), condition), story.agent)
+    edit_block = bus.run(OpenHold(story.agent.id, StepEditBanMessage.declared().nudge(sequence=1, step=1), RanCommand("journal overview")), story.agent)
     database = story.container.get(Database)
     database.update(Statement("DELETE FROM migrations WHERE module = ? AND number > 3", [SequencesModule.name]))
     schema = story.container.get(Schema)

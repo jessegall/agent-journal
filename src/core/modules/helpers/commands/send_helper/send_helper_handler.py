@@ -9,7 +9,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from core.modules.helpers.commands.send_helper.send_helper import SendHelper
 from core.modules.helpers.support.helper_job_source import HELPER_JOB_SOURCE
 from core.modules.helpers.support.helper_limits import HelperLimits
@@ -34,7 +34,7 @@ class SendHelperHandler(Handler[SendHelper, int]):
 
     command = SendHelper
 
-    def __init__(self, reach: HelperReach, limits: HelperLimits, jobs: HelperJobRows, nudger: Nudger, repository: Repository, folders: AgentFolders, sources: WorkSources, scopes: Scopes, providers: Providers, kept: KeptHelpers, files: StatusFiles, occupants: OccupantRotation, profiles: ProfileFiles) -> None:
+    def __init__(self, reach: HelperReach, limits: HelperLimits, jobs: HelperJobRows, nudger: MessageSender, repository: Repository, folders: AgentFolders, sources: WorkSources, scopes: Scopes, providers: Providers, kept: KeptHelpers, files: StatusFiles, occupants: OccupantRotation, profiles: ProfileFiles) -> None:
         self.reach, self.limits, self.jobs, self.nudger, self.repository, self.folders = reach, limits, jobs, nudger, repository, folders
         self.sources = sources
         self.scopes = scopes

@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from dataclasses import replace
 
 from engine.enums.agent_role import AgentRole
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_source import ExecutionSource
 from engine.enums.starter_type import StarterType
 from engine.execution.classes.execution_class import ExecutionClass
@@ -29,28 +29,28 @@ class ExecutionTickets:
     def __init__(self, classes: ExecutionClasses, category_limits: ProcessTypeLimits, admission: RunAdmission, rows: EventRows, clock: Clock) -> None:
         self.classes, self.kind_limits, self.admission, self.rows, self.clock = classes, category_limits, admission, rows, clock
 
-    def of_rows(self, processes: Sequence[Process], lane: ExecutionLane) -> LaneTickets:
+    def of_rows(self, processes: Sequence[Process], lane: ExecutionLength) -> LaneTickets:
         return self.lanes_of_rows(processes)[lane]
 
-    def lanes_of_rows(self, processes: Sequence[Process]) -> dict[ExecutionLane, LaneTickets]:
+    def lanes_of_rows(self, processes: Sequence[Process]) -> dict[ExecutionLength, LaneTickets]:
         return self.lanes(processes, self.kind_limits.admissions([process for process in processes if process.queued_at is not None]))
 
     # every row is read once for all lanes: its agent, its kind's class and its parts
-    def lanes(self, processes: Sequence[Process], categories: ProcessTypeAdmission) -> dict[ExecutionLane, LaneTickets]:
+    def lanes(self, processes: Sequence[Process], categories: ProcessTypeAdmission) -> dict[ExecutionLength, LaneTickets]:
         agents = self.rows.required_index(Agent, [process.session_agent_id for process in processes])
         category_classes = categories.kind_classes()
         parts = self.admission.waiting_parts([process for process in processes if process.queued_at is not None])
         tickets = [(process, self.ticket(process, agents[process.session_agent_id], category_classes, parts)) for process in processes]
         return {lane: LaneTickets(tuple(ticket for process, ticket in tickets if ticket.execution_class.lane is lane and process.queued_at is not None),
                                   tuple(ticket for process, ticket in tickets if ticket.execution_class.lane is lane and process.queued_at is None))
-                for lane in ExecutionLane}
+                for lane in ExecutionLength}
 
     def ticket(self, process: Process, agent: Agent, category_classes: dict[tuple[str, str], ExecutionClass], parts: dict) -> ExecutionTicket:
         starter = self.starter(process, agent)
         execution_class = self.execution_class(process, starter, category_classes)
         # a line moved to the background gives its short place back and counts in the long lane at its own cost
-        if process.state is ProcessState.BACKGROUND and execution_class.lane is not ExecutionLane.LONG:
-            execution_class = replace(execution_class, name=f"{execution_class.name} in the background", lane=ExecutionLane.LONG)
+        if process.state is ProcessState.BACKGROUND and execution_class.lane is not ExecutionLength.LONG:
+            execution_class = replace(execution_class, name=f"{execution_class.name} in the background", lane=ExecutionLength.LONG)
         entered_at = process.queued_at or process.started_at or process.creation_timestamp()
         waits_reader = process.queued_at is not None and self.admission.waits_for_reader(process, parts.get(process.id, ()), self.clock.timestamp())
         return ExecutionTicket(execution_class, process.first_priority, process.priority, starter, process.line, entered_at, process.raised_at or entered_at,

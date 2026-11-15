@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from engine.agent_stack.subject_reference import SubjectReference
+from engine.agent_stack.row_reference import RowReference
 from engine.agent_stack.work_reference import WorkReference
 from engine.enums.decision_class import DecisionClass
 
@@ -17,7 +17,7 @@ class Reason:
     rank: str
     text: str
     lifting_lines: tuple[str, ...] = ()
-    subject: SubjectReference | None = None
+    subject: RowReference | None = None
     handover: WorkReference | None = field(default=None, compare=False)
     # a safety refusal has no skip, which the refusal skip command reads from the record
     is_safety: bool = False

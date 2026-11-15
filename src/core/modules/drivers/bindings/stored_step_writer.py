@@ -1,5 +1,5 @@
 from core.modules.drivers.support.effect_commands import EffectCommands
-from core.modules.drivers.support.nudge_log import NudgeLog
+from core.modules.drivers.support.message_log import MessageLog
 from core.modules.drivers.support.required_commands import RequiredCommands
 from core.modules.drivers.support.line_history_writer import LineHistoryWriter
 from core.modules.drivers.support.answer_basis_rows import AnswerBasisRows
@@ -10,14 +10,14 @@ from collections.abc import Mapping, Sequence
 from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.contracts.effect import Effect
 from engine.agent_machine.stepping.grant_ledger import GrantLedger
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from engine.agent_machine.decision_record import DecisionRecord
 from engine.agent_machine.needs.block_plan import BlockPlan
 from engine.agent_machine.record.block_closing import BlockClosing
 from engine.agent_machine.record.wake_change import WakeChange
 from engine.agent_machine.step_result import StepResult
 from engine.agent_step.errors.required_effect_error import RequiredEffectError
-from engine.agent_step.frame_codec import FrameCodec
+from engine.agent_step.stack_codec import StackCodec
 from engine.agent_step.step_commit import StepCommit
 from engine.agent_step.step_writer import StepWriter
 from engine.command.bus import Bus
@@ -50,8 +50,8 @@ class StoredStepWriter(StepWriter):
     effects when the step admits (a required one that fails raises and rolls everything back), and the
     wake. A step outside a hook that changed nothing runs only its unconditional effects."""
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus, database: Database, grant_store: GrantLedger, nudger: Nudger, stacks: AnswerBasisRows,
-                 effect_commands: EffectCommands, nudge_log: NudgeLog, history: LineHistoryWriter, required_commands: RequiredCommands) -> None:
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus, database: Database, grant_store: GrantLedger, nudger: MessageSender, stacks: AnswerBasisRows,
+                 effect_commands: EffectCommands, nudge_log: MessageLog, history: LineHistoryWriter, required_commands: RequiredCommands) -> None:
         self.nudger, self.stacks, self.effect_commands, self.nudge_log, self.history = nudger, stacks, effect_commands, nudge_log, history
         self.required_commands = required_commands
         self.grant_store = grant_store
@@ -120,7 +120,7 @@ class StoredStepWriter(StepWriter):
 
     def saved_stack(self, row: AgentStack | None, view: AgentView, step: StepResult, context: Context) -> AgentStack:
         values = {"driver_name": view.driver_name, "table_digest": view.table_digest,
-                  "frames": FrameCodec.encoded(step.stack.frames), "stop_refusals": step.record.counts.stop_refusals,
+                  "frames": StackCodec.encoded(step.stack.frames), "stop_refusals": step.record.counts.stop_refusals,
                   "tool_refusals": step.record.counts.tool_refusals}
         stack = row.changed(**values) if row is not None else AgentStack(session_agent_id=view.agent.agent_id, **values)
         return self.repository.save(stack, context)

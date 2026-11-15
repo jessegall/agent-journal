@@ -1,7 +1,7 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.model.model import Model
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from suites.coding.modules.workers.commands.send_unfinished_tasks_line.send_unfinished_tasks_line import SendUnfinishedTasksLine
 
 
@@ -10,7 +10,7 @@ class SendUnfinishedTasksLineHandler(Handler[SendUnfinishedTasksLine, Model]):
 
     command = SendUnfinishedTasksLine
 
-    def __init__(self, nudger: Nudger) -> None:
+    def __init__(self, nudger: MessageSender) -> None:
         self.nudger = nudger
 
     def handle(self, command: SendUnfinishedTasksLine, context: Context) -> Model:

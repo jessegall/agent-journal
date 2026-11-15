@@ -1,6 +1,6 @@
-from engine.chat.mark_family import MarkFamily
+from engine.chat.mark_category import MarkCategory
 from engine.enums.mark_group import MarkGroup
 
-BYPASS_FAMILY = MarkFamily("drivers.bypass", "Unchecked work", "stop", MarkGroup.JOURNAL)
+BYPASS_FAMILY = MarkCategory("drivers.bypass", "Unchecked work", "stop", MarkGroup.JOURNAL)
 
-REQUIRED_COMMANDS_FAMILY = MarkFamily("drivers.required_commands", "Skipped lines", "stop", MarkGroup.JOURNAL)
+REQUIRED_COMMANDS_FAMILY = MarkCategory("drivers.required_commands", "Skipped lines", "stop", MarkGroup.JOURNAL)

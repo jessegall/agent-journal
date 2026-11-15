@@ -9,7 +9,7 @@ from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.enums.reading_exit import ReadingExit
 from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from core.modules.processes.models.enums.unreadable_reason import UnreadableReason
-from core.modules.processes.support.reader_judgement import ReaderJudgement
+from core.modules.processes.support.reader_check import ReaderCheck
 from core.modules.processes.support.decisions.output_facts import OutputFacts
 from core.modules.processes.models.enums.reader_layer import ReaderLayer
 from core.modules.processes.support.decisions.reading_case import ReadingCase
@@ -49,8 +49,8 @@ def test_a_short_run_that_failed_still_needs_a_reader():
 
 def test_a_reader_is_suitable_only_when_its_judgement_finds_nothing_missing():
     assert not RUNNING_TESTS.has_suitable_reader
-    assert replace(RUNNING_TESTS, reader_layer=ReaderLayer.PROJECT, reader_judgement=ReaderJudgement()).has_suitable_reader
-    assert not replace(RUNNING_TESTS, reader_layer=ReaderLayer.STOCK, reader_judgement=ReaderJudgement(missing=tuple(["--count"]))).has_suitable_reader
+    assert replace(RUNNING_TESTS, reader_layer=ReaderLayer.PROJECT, reader_judgement=ReaderCheck()).has_suitable_reader
+    assert not replace(RUNNING_TESTS, reader_layer=ReaderLayer.STOCK, reader_judgement=ReaderCheck(missing=tuple(["--count"]))).has_suitable_reader
 
 
 def test_the_unreadable_reason_comes_from_a_mark_first_then_from_the_output():

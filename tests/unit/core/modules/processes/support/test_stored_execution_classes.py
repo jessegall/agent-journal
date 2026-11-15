@@ -2,7 +2,7 @@ from core.modules.processes.support.installed_plugins import InstalledPlugins
 import pytest
 
 from engine.enums.command_category import CommandCategory
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_priority import ExecutionPriority
 from engine.enums.execution_source import ExecutionSource
 from engine.enums.starter_type import StarterType
@@ -58,18 +58,18 @@ def line(text: str, category: CommandCategory) -> ExecutionSubject:
 
 
 def test_person_row_overrides_a_built_in_class():
-    override = ExecutionClassRow(name="slow tests", lane=ExecutionLane.LONG, slot_cost=8, priority=ExecutionPriority.NORMAL, line_pattern="pytest", is_override=True)
+    override = ExecutionClassRow(name="slow tests", lane=ExecutionLength.LONG, slot_cost=8, priority=ExecutionPriority.NORMAL, line_pattern="pytest", is_override=True)
     assert ExecutionClasses(stored(override)).match(line("pytest tests", CommandCategory.TEST_RUN)).name == "slow tests"
 
 
 def test_person_pattern_row_matches_a_line():
-    personal = ExecutionClassRow(name="docs build", lane=ExecutionLane.LONG, slot_cost=2, priority=ExecutionPriority.BACKGROUND, line_pattern=r"^make docs")
+    personal = ExecutionClassRow(name="docs build", lane=ExecutionLength.LONG, slot_cost=2, priority=ExecutionPriority.BACKGROUND, line_pattern=r"^make docs")
     assert ExecutionClasses(stored(personal)).match(line("make docs", CommandCategory.BUILD)).priority is ExecutionPriority.BACKGROUND
 
 
 def test_lane_limits_follow_the_settings():
     limits = stored(LANE_CAPACITY_LONG=16, STARTER_CAP_PERCENT=25).lane_limits()
-    assert (limits.capacity(ExecutionLane.LONG), limits.starter_cap(ExecutionLane.LONG)) == (16, 4)
+    assert (limits.capacity(ExecutionLength.LONG), limits.starter_cap(ExecutionLength.LONG)) == (16, 4)
 
 
 def test_no_rows_gives_the_built_in_table():
@@ -79,4 +79,4 @@ def test_no_rows_gives_the_built_in_table():
 
 def test_row_with_cost_above_capacity_is_refused():
     with pytest.raises(Refusal):
-        stored().validated(ExecutionClass("huge", ExecutionLane.LONG, 10, ExecutionPriority.AGENT))
+        stored().validated(ExecutionClass("huge", ExecutionLength.LONG, 10, ExecutionPriority.AGENT))

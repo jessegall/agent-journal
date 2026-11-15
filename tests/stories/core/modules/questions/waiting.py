@@ -5,9 +5,9 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.support.coding_fixtures import BuilderStarted, CodingEnvironment
 from engine.enums.tool_type import ToolType
-from core.modules.questions.nudges.question_closed_nudge import QuestionClosedNudge
-from engine.testing.expectations.expected_nudge import expected_nudge
-from core.modules.questions.nudges.question_answered_nudge import QuestionAnsweredNudge
+from core.modules.questions.nudges.question_closed_message import QuestionClosedMessage
+from engine.testing.expectations.expected_message import expected_nudge
+from core.modules.questions.nudges.question_answered_message import QuestionAnsweredMessage
 
 QUESTION_LINE = 'question ask "Which database?" --context "A story asks this so its card and answer can be checked." --options sqlite postgres --environment main'
 QUESTION_TOOL = HookSamples.sample("pre_tool_use", {"name": "AskUserQuestion", "category": ToolType.QUESTION, "files": [], "diff": None})
@@ -65,14 +65,14 @@ def test_an_agent_that_asked_may_stop_and_stays_waiting_on_its_stack(new_story):
 def test_a_late_answer_is_told_to_the_agent_once(new_story):
     story = new_story(fixture=BuilderQuestion)
     story.run("question answer 1 --answer sqlite")
-    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), QuestionAnsweredNudge.declared().nudge(question=1).text)
+    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), QuestionAnsweredMessage.declared().nudge(question=1).text)
     story.expect_absent_hook_line("s-1", HookSamples.prompt("and on"), "question 1 is answered")
 
 
 def test_a_closed_question_is_told_to_the_agent_once(new_story):
     story = new_story(fixture=BuilderQuestion)
     story.run("question close 1")
-    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), expected_nudge(QuestionClosedNudge.declared(), question=1))
+    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), expected_nudge(QuestionClosedMessage.declared(), question=1))
     story.expect_absent_hook_line("s-1", HookSamples.prompt("and on"), "the user closed question 1")
 
 

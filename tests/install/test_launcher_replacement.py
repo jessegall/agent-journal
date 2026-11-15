@@ -5,7 +5,7 @@ import pytest
 
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
-from engine.serving.code_handover import CodeHandover
+from engine.serving.code_delivery import CodeDelivery
 from engine.serving.launcher_replacement import LauncherReplacement
 
 
@@ -55,7 +55,7 @@ def test_a_timed_out_replacement_keeps_its_cause(launcher_home, monkeypatch):
 
 
 def test_code_handover_updates_the_launcher_after_switching_the_code(tmp_path, monkeypatch):
-    handover = CodeHandover(JournalHome(tmp_path / ".journal"))
+    handover = CodeDelivery(JournalHome(tmp_path / ".journal"))
     changes = []
     monkeypatch.setattr(handover.versions, "switch", lambda tag: changes.append(tag))
     monkeypatch.setattr(LauncherReplacement, "run", lambda self: changes.append("launcher"))
@@ -64,7 +64,7 @@ def test_code_handover_updates_the_launcher_after_switching_the_code(tmp_path, m
 
 
 def test_a_refused_server_handover_keeps_the_launcher(tmp_path, monkeypatch):
-    handover = CodeHandover(JournalHome(tmp_path / ".journal"))
+    handover = CodeDelivery(JournalHome(tmp_path / ".journal"))
     replace = Mock()
     monkeypatch.setattr(handover, "takeover_status", lambda tag: 503)
     monkeypatch.setattr(LauncherReplacement, "run", replace)

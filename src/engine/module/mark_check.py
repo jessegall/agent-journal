@@ -3,7 +3,7 @@ from collections.abc import Sequence
 
 from engine.viewer.declaration_names import DeclarationNames
 from engine.enums.mark_click import MarkClick
-from engine.chat.mark_family import MarkFamily
+from engine.chat.mark_category import MarkCategory
 from engine.module.button_check import ButtonCheck
 from engine.module.module import Module
 from engine.module.name_groups import NameGroups
@@ -45,7 +45,7 @@ class MarkCheck:
         return problems
 
     def family_problems(self, modules: Sequence[type[Module]]) -> list[str]:
-        declared: dict[str, tuple[str, MarkFamily]] = {}
+        declared: dict[str, tuple[str, MarkCategory]] = {}
         problems: list[str] = []
         for module in modules:
             for mark in module.mark_declarations():

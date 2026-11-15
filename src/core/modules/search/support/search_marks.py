@@ -1,4 +1,4 @@
-from engine.chat.mark_family import MarkFamily
+from engine.chat.mark_category import MarkCategory
 from engine.enums.mark_group import MarkGroup
 
-SEARCHES_FAMILY = MarkFamily("search.searches", "Searches", "search", MarkGroup.AGENT)
+SEARCHES_FAMILY = MarkCategory("search.searches", "Searches", "search", MarkGroup.AGENT)

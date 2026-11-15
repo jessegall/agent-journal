@@ -1,6 +1,6 @@
 from core.modules.plugins.support.heard_event import HeardEvent
 from core.modules.plugins.models.plugin_delivery import PluginDelivery
-from core.modules.plugins.nudges.plugin_refusal_nudge import PluginRefusalNudge
+from core.modules.plugins.nudges.plugin_refusal_message import PluginRefusalMessage
 from core.modules.drivers.commands.record_agent_notice.record_agent_notice import RecordAgentNotice
 import json
 
@@ -79,7 +79,7 @@ class PluginHookRun:
             for group in self.window_groups(manifest, [event for event in reached if event.name in manifest.window_names()]):
                 refusal = self.refusal_text(hook_event, agent_id, runnable, group, lines, commands, facts)
                 if refusal:
-                    notice = PluginRefusalNudge.declared().nudge(plugin=plugin.id)
+                    notice = PluginRefusalMessage.declared().nudge(plugin=plugin.id)
                     commands.extend(RecordAgentNotice(agent_id, line, PLUGIN_RULE_NAME) for line in [*lines, refusal])
                     return PluginHookAnswer(notice, tuple(commands))
         return PluginHookAnswer(None, (*commands, *(RecordAgentNotice(agent_id, line, PLUGIN_RULE_NAME) for line in lines)))

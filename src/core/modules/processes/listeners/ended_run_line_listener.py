@@ -1,10 +1,10 @@
 from engine.event.moved import Moved
 from engine.command.context import Context
 from engine.listener.save_listener import SaveListener
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
 from core.modules.processes.models.process import Process
-from core.modules.processes.nudges.output_ended_nudge import OutputEndedNudge
+from core.modules.processes.nudges.output_ended_message import OutputEndedMessage
 
 LINE_SOURCE = "processes.output-ended"
 
@@ -16,10 +16,10 @@ class EndedRunLineListener(SaveListener[Moved[Process]]):
     name = "processes.ended-run-line"
     moves = (ProcessLifecycle.finish, ProcessLifecycle.fail)
 
-    def __init__(self, nudger: Nudger) -> None:
+    def __init__(self, nudger: MessageSender) -> None:
         self.nudger = nudger
 
     def handle(self, event: Moved[Process], context: Context) -> None:
         process = event.row
         if process.moved_at is not None:
-            self.nudger.send(process.session_agent_id, OutputEndedNudge.declared(), LINE_SOURCE, context, output=process.id)
+            self.nudger.send(process.session_agent_id, OutputEndedMessage.declared(), LINE_SOURCE, context, output=process.id)

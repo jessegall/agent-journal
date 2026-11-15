@@ -1,6 +1,6 @@
 from engine.agent_machine.contracts.event_policy import EventPolicy
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from suites.coding.modules.workers.support.phase_test_runs import PHASE_TESTS_KEY, PhaseTestRuns
 from suites.coding.modules.workers.types.worker import Worker
 
@@ -15,5 +15,5 @@ class PhaseTestPolicy(EventPolicy):
     def __init__(self, runs: PhaseTestRuns) -> None:
         self.runs = runs
 
-    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+    def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         return self.runs.answer(event, agent_id).refusal

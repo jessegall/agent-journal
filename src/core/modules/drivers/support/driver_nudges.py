@@ -1,37 +1,37 @@
-from core.modules.drivers.nudges.escalation_answered_nudge import EscalationAnsweredNudge
-from core.modules.drivers.nudges.escalation_help_nudge import EscalationHelpNudge
-from core.modules.drivers.nudges.wake_obligation_nudge import WakeObligationNudge
-from core.modules.drivers.nudges.ignored_wake_nudge import IgnoredWakeNudge
-from core.modules.drivers.nudges.agent_line_available_nudge import AgentLineAvailableNudge
+from core.modules.drivers.nudges.escalation_answered_message import EscalationAnsweredMessage
+from core.modules.drivers.nudges.escalation_help_message import EscalationHelpMessage
+from core.modules.drivers.nudges.wake_obligation_message import WakeObligationMessage
+from core.modules.drivers.nudges.ignored_wake_message import IgnoredWakeMessage
+from core.modules.drivers.nudges.agent_line_available_message import AgentLineAvailableMessage
 from engine.driver.count_down import CountDown
 from core.modules.drivers.support.access_nudges import ACCESS_NUDGES
-from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
-from core.modules.drivers.nudges.opening_line_nudge import OpeningLineNudge
-from core.modules.drivers.nudges.managed_hook_line_nudge import ManagedHookLineNudge
-from core.modules.drivers.nudges.journal_started_nudge import JournalStartedNudge
-from core.modules.drivers.nudges.project_hook_woke_nudge import ProjectHookWokeNudge
-from core.modules.drivers.nudges.compaction_instructions_nudge import CompactionInstructionsNudge
-from core.modules.drivers.nudges.managed_hook_refusal_nudge import ManagedHookRefusalNudge
-from core.modules.drivers.nudges.hooks_unchecked_nudge import HooksUncheckedNudge
-from core.modules.drivers.nudges.hook_timeouts_nudge import HookTimeoutsNudge
-from core.modules.drivers.nudges.permission_requested_nudge import PermissionRequestedNudge
-from core.modules.drivers.nudges.safeguards_stopped_nudge import SafeguardsStoppedNudge
-from core.modules.drivers.nudges.agent_compacted_nudge import AgentCompactedNudge
-from core.modules.drivers.nudges.cache_keepalive_nudge import CacheKeepaliveNudge
-from core.modules.drivers.nudges.continued_session_nudge import ContinuedSessionNudge
-from core.modules.drivers.nudges.takeover_nudge import TakeoverNudge
-from core.modules.drivers.nudges.paused_refusal_nudge import PausedRefusalNudge
-from core.modules.drivers.nudges.missing_model_nudge import MissingModelNudge
-from core.modules.drivers.nudges.unbound_dispatch_nudge import UnboundDispatchNudge
-from core.modules.drivers.nudges.long_output_nudge import LongOutputNudge
-from core.modules.drivers.nudges.agent_resumed_nudge import AgentResumedNudge
-from core.modules.drivers.nudges.required_command_refusal_nudge import RequiredCommandRefusalNudge
-from core.modules.drivers.nudges.compaction_notice_nudge import CompactionNoticeNudge
-from core.modules.drivers.nudges.agent_notice_nudge import AgentNoticeNudge
-from core.modules.drivers.nudges.file_loaded_nudge import FileLoadedNudge
+from core.modules.drivers.models.support.tool_use_window import ToolUseWindow
+from core.modules.drivers.nudges.opening_line_message import OpeningLineMessage
+from core.modules.drivers.nudges.managed_hook_line_message import ManagedHookLineMessage
+from core.modules.drivers.nudges.journal_started_message import JournalStartedMessage
+from core.modules.drivers.nudges.project_hook_wake_message import ProjectHookWakeMessage
+from core.modules.drivers.nudges.compaction_instructions_message import CompactionInstructionsMessage
+from core.modules.drivers.nudges.managed_hook_refusal_message import ManagedHookRefusalMessage
+from core.modules.drivers.nudges.hooks_unchecked_message import HooksUncheckedMessage
+from core.modules.drivers.nudges.hook_timeouts_message import HookTimeoutsMessage
+from core.modules.drivers.nudges.permission_requested_message import PermissionRequestedMessage
+from core.modules.drivers.nudges.safeguards_stopped_message import SafeguardsStoppedMessage
+from core.modules.drivers.nudges.agent_compacted_message import AgentCompactedMessage
+from core.modules.drivers.nudges.cache_keepalive_message import CacheKeepaliveMessage
+from core.modules.drivers.nudges.continued_session_message import ContinuedSessionMessage
+from core.modules.drivers.nudges.takeover_message import TakeoverMessage
+from core.modules.drivers.nudges.paused_refusal_message import PausedRefusalMessage
+from core.modules.drivers.nudges.missing_model_message import MissingModelMessage
+from core.modules.drivers.nudges.unbound_dispatch_message import UnboundDispatchMessage
+from core.modules.drivers.nudges.long_output_message import LongOutputMessage
+from core.modules.drivers.nudges.agent_resumed_message import AgentResumedMessage
+from core.modules.drivers.nudges.required_command_refusal_message import RequiredCommandRefusalMessage
+from core.modules.drivers.nudges.compaction_notice_message import CompactionNoticeMessage
+from core.modules.drivers.nudges.agent_notice_message import AgentNoticeMessage
+from core.modules.drivers.nudges.file_loaded_message import FileLoadedMessage
 
 
 REQUIRED_COMMAND_TOOL_USES = 5
-REQUIRED_COMMAND_SPAN = ToolUseSpan(REQUIRED_COMMAND_TOOL_USES)
+REQUIRED_COMMAND_SPAN = ToolUseWindow(REQUIRED_COMMAND_TOOL_USES)
 REQUIRED_COMMAND_COUNTDOWN = CountDown("drivers.required_command_countdown", "{subject}", REQUIRED_COMMAND_SPAN)
-DRIVER_NUDGES = [JournalStartedNudge, ProjectHookWokeNudge, CompactionInstructionsNudge, EscalationHelpNudge, EscalationAnsweredNudge, WakeObligationNudge, IgnoredWakeNudge, HookTimeoutsNudge, PermissionRequestedNudge, SafeguardsStoppedNudge, AgentCompactedNudge, CompactionNoticeNudge, CacheKeepaliveNudge, ContinuedSessionNudge, AgentLineAvailableNudge, *ACCESS_NUDGES, ManagedHookLineNudge, ManagedHookRefusalNudge, AgentResumedNudge, HooksUncheckedNudge, REQUIRED_COMMAND_COUNTDOWN.declaration, RequiredCommandRefusalNudge, OpeningLineNudge, TakeoverNudge, PausedRefusalNudge, MissingModelNudge, UnboundDispatchNudge, LongOutputNudge, FileLoadedNudge, AgentNoticeNudge]
+DRIVER_NUDGES = [JournalStartedMessage, ProjectHookWakeMessage, CompactionInstructionsMessage, EscalationHelpMessage, EscalationAnsweredMessage, WakeObligationMessage, IgnoredWakeMessage, HookTimeoutsMessage, PermissionRequestedMessage, SafeguardsStoppedMessage, AgentCompactedMessage, CompactionNoticeMessage, CacheKeepaliveMessage, ContinuedSessionMessage, AgentLineAvailableMessage, *ACCESS_NUDGES, ManagedHookLineMessage, ManagedHookRefusalMessage, AgentResumedMessage, HooksUncheckedMessage, REQUIRED_COMMAND_COUNTDOWN.declaration, RequiredCommandRefusalMessage, OpeningLineMessage, TakeoverMessage, PausedRefusalMessage, MissingModelMessage, UnboundDispatchMessage, LongOutputMessage, FileLoadedMessage, AgentNoticeMessage]

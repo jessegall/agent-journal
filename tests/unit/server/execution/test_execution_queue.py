@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_priority import ExecutionPriority
 from engine.enums.starter_type import StarterType
 from engine.execution.limits.default_lane_limits import DEFAULT_LANE_LIMITS
@@ -18,17 +18,17 @@ from server.errors.lane_busy_error import LaneBusyError
 from server.execution.execution_queue import ExecutionQueue
 
 ENTERED = Timestamp(datetime(2026, 11, 13, 12, tzinfo=timezone.utc))
-CAPACITY = DEFAULT_LANE_LIMITS.capacity(ExecutionLane.INSTANT)
-RESERVED_LIMIT = DEFAULT_LANE_LIMITS.priority_limit(ExecutionLane.INSTANT, ExecutionPriority.RESERVED).running_limit
+CAPACITY = DEFAULT_LANE_LIMITS.capacity(ExecutionLength.INSTANT)
+RESERVED_LIMIT = DEFAULT_LANE_LIMITS.priority_limit(ExecutionLength.INSTANT, ExecutionPriority.RESERVED).running_limit
 
 
 def ticket(priority: ExecutionPriority, line: str = "PreToolUse", agent: int = 1) -> ExecutionTicket:
-    execution_class = ExecutionClass(f"{priority.name.lower()} hook", ExecutionLane.INSTANT, 1, priority)
+    execution_class = ExecutionClass(f"{priority.name.lower()} hook", ExecutionLength.INSTANT, 1, priority)
     return ExecutionTicket(execution_class, priority, priority, ExecutionStarter(StarterType.HELPER, agent_id=agent, agent_role="worker"), line, ENTERED, ENTERED)
 
 
 def queue() -> ExecutionQueue:
-    return ExecutionQueue(ExecutionOrder(replace(DEFAULT_LANE_LIMITS, starter_caps={lane: CAPACITY for lane in ExecutionLane})), Clock())
+    return ExecutionQueue(ExecutionOrder(replace(DEFAULT_LANE_LIMITS, starter_caps={lane: CAPACITY for lane in ExecutionLength})), Clock())
 
 
 def test_immediate_hook_starts_in_a_full_lane():

@@ -2,20 +2,20 @@ from dataclasses import replace
 from enum import StrEnum
 
 from engine.chat.mark_declaration import MarkDeclaration
-from engine.chat.mark_family import MarkFamily
+from engine.chat.mark_category import MarkCategory
 from engine.enums.mark_group import MarkGroup
 from engine.module.button_check import ButtonCheck
 from engine.module.mark_check import MarkCheck
 from engine.module.module import Module
 
-FAMILY = MarkFamily("notes", "Notes", "words", MarkGroup.WORK)
+FAMILY = MarkCategory("notes", "Notes", "words", MarkGroup.WORK)
 
 
 class Variant(StrEnum):
     PLAIN = "plain"
 
 
-def mark(value: str, family: MarkFamily = FAMILY) -> MarkDeclaration:
+def mark(value: str, family: MarkCategory = FAMILY) -> MarkDeclaration:
     return MarkDeclaration(type=StrEnum("Type", {"NOTE": value}).NOTE, variants=Variant, family=family, label="Notes", mark_icon="words")
 
 

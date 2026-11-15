@@ -9,7 +9,7 @@ from engine.repository.repository import Repository
 from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from engine.model.model import Model
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.messages.support.work_sources import WorkSources
 from core.modules.tasks.models.task import Task
@@ -35,7 +35,7 @@ class KeptWorkerTasks:
     its delivery mergeable, the tasks wait and start once it is merged; a merged worker gets a new cut in
     its old folder on the same session; an unmerged branch is never overwritten."""
 
-    def __init__(self, queries: Queries, repository: Repository, worktrees: WorktreeQuery, git: WorktreeGit, nudger: Nudger,
+    def __init__(self, queries: Queries, repository: Repository, worktrees: WorktreeQuery, git: WorktreeGit, nudger: MessageSender,
                  environments: EnvironmentRows, sources: WorkSources, copies: WorkerTaskCopies,
                  proof_queue: WorkerProofQueue, scopes: Scopes, kept: KeptRows, dependency_waits: DependencyWaits, assignments: WorkerAssignments, reservations: MainReservedTasks, task_assignments: Assignments, assigned_worker_tasks: AssignedWorkerTasks, external_waits: OutsideWaits) -> None:
         self.task_assignments, self.assigned_worker_tasks, self.outside_waits = task_assignments, assigned_worker_tasks, external_waits

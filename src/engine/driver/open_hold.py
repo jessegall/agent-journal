@@ -4,7 +4,7 @@ from engine.command.command import Command
 from engine.driver.block_condition import BlockCondition
 from engine.driver.count_down import COUNTDOWN_TOOL_USES
 from engine.driver.interval import Interval
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 
 
 @dataclass(frozen=True)
@@ -17,10 +17,10 @@ class OpenHold(Command[object]):
     through reads and journal commands."""
 
     agent_id: int
-    nudge: Nudge
+    nudge: AgentMessage
     condition: BlockCondition
     after: Interval | None = None
-    countdown: Nudge | None = None
+    countdown: AgentMessage | None = None
     blocks_stop: bool = False
     strict: bool = False
     is_skippable: bool = False

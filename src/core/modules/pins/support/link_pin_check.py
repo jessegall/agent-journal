@@ -6,7 +6,7 @@ from urllib.parse import parse_qs, unquote, urlsplit
 
 from engine.time.clock import Clock
 from engine.database.kept_rows import KeptRows
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.tool import Tool
 from engine.enums.tool_type import ToolType
 from engine.query.conditions.among import Among
@@ -19,9 +19,9 @@ from engine.types.type_guards import is_list, is_mapping
 from core.modules.pins.commands.make_pin.make_pin import MakePin
 from core.modules.pins.models.pin import Pin
 from core.modules.pins.support.project_repositories import ProjectRepositories
-from core.modules.pins.nudges.bang_button_request_nudge import BangButtonRequestNudge
-from core.modules.pins.nudges.link_pin_request_nudge import LinkPinRequestNudge
-from core.modules.pins.nudges.unpinned_claim_nudge import UnpinnedClaimNudge
+from core.modules.pins.nudges.bang_button_request_message import BangButtonRequestMessage
+from core.modules.pins.nudges.link_pin_request_message import LinkPinRequestMessage
+from core.modules.pins.nudges.unpinned_claim_message import UnpinnedClaimMessage
 
 FILE_TOOLS = (ToolType.READ, ToolType.SEARCH, ToolType.EDIT, ToolType.NEW_FILE)
 LINK = re.compile(r"https?://[^\s<>()\[\]\"'`]+")
@@ -57,16 +57,16 @@ class LinkPinCheck:
         text = event.raw.get("delta") if event is not None else None
         return text if event is not None and event.raw.get("final") is True and isinstance(text, str) else None
 
-    def nudges(self, agent_text: str, tool_output: str = "") -> list[Nudge]:
+    def nudges(self, agent_text: str, tool_output: str = "") -> list[AgentMessage]:
         if self.claims_missing_pin(agent_text):
-            return [UnpinnedClaimNudge.declared().nudge()]
+            return [UnpinnedClaimMessage.declared().nudge()]
         unpinned = self.first_unpinned(f"{agent_text}\n{tool_output}")
-        nudges = [self.keyed(LinkPinRequestNudge.declared().nudge(url=unpinned), unpinned)] if unpinned is not None else []
+        nudges = [self.keyed(LinkPinRequestMessage.declared().nudge(url=unpinned), unpinned)] if unpinned is not None else []
         command = self.first_unpinned_command(agent_text)
-        return [*nudges, self.keyed(BangButtonRequestNudge.declared().nudge(), command)] if command is not None else nudges
+        return [*nudges, self.keyed(BangButtonRequestMessage.declared().nudge(), command)] if command is not None else nudges
 
     @staticmethod
-    def keyed(nudge: Nudge, name: str) -> Nudge:
+    def keyed(nudge: AgentMessage, name: str) -> AgentMessage:
         return replace(nudge, key=f"{nudge.key}.{name}")
 
     def first_unpinned_command(self, text: str) -> str | None:

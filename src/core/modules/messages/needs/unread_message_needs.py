@@ -4,12 +4,12 @@ from collections.abc import Mapping, Sequence
 from engine.agent_stack.states.blocked import Blocked
 from engine.agent_machine.needs.agent_reference import AgentReference
 from engine.agent_machine.needs.block_plan import BlockPlan
-from engine.agent_machine.needs.need import Need
-from engine.agent_machine.needs.need_source import NeedSource
+from engine.agent_machine.needs.required_state import RequiredState
+from engine.agent_machine.needs.state_source import StateSource
 from engine.agent_machine.record.question import Question
 from engine.enums.closer_role import CloserRole
-from core.modules.messages.nudges.unread_message_stop_nudge import UnreadMessageStopNudge
-from core.modules.messages.nudges.unread_refusal_nudge import UnreadRefusalNudge
+from core.modules.messages.nudges.unread_message_stop_notice import UnreadMessageStopNotice
+from core.modules.messages.nudges.unread_refusal_message import UnreadRefusalMessage
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.support.block_conditions.messages_read import MessagesRead
 from core.modules.messages.support.message_nudges import UNREAD_TOOL_USES
@@ -20,7 +20,7 @@ MESSAGE_COUNT_SHOWN = 3
 READ_COMMANDS = ("journal message read", "journal message unread")
 
 
-class UnreadMessageNeeds(NeedSource):
+class UnreadMessageNeeds(StateSource):
     """Plans the one block over an agent's unread messages, told of or not yet (doc 1310 section 4.6): its tools
     after twenty uses, its stop at once, naming the oldest; the two scopes keep their two keys and their
     two texts."""
@@ -30,7 +30,7 @@ class UnreadMessageNeeds(NeedSource):
     def __init__(self, messages: MessageQuery) -> None:
         self.messages = messages
 
-    def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]:
+    def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[RequiredState | BlockPlan]]:
         plans = {agent.agent_id: self.plan(agent.agent_id) for agent in agents}
         return {agent_id: [plan] for agent_id, plan in plans.items() if plan is not None}
 
@@ -40,9 +40,9 @@ class UnreadMessageNeeds(NeedSource):
         if not shown:
             return None
         count = unread.count() if len(shown) == MESSAGE_COUNT_SHOWN else len(shown)
-        refusal = UnreadRefusalNudge.declared().nudge(count=count, messages=", ".join(str(message.id) for message in shown))
+        refusal = UnreadRefusalMessage.declared().nudge(count=count, messages=", ".join(str(message.id) for message in shown))
         return BlockPlan(refusal, MessagesRead([message.id for message in shown]), TOOL_RULE, UNREAD_RANK, stop_check_key=STOP_RULE,
                          members=tuple(message.id for message in shown), tool_grace_uses=UNREAD_TOOL_USES, scope_stop=True,
                          closer_roles=tuple([CloserRole.AGENT]), lifting_lines=READ_COMMANDS,
-                         stop_nudge=UnreadMessageStopNudge.declared().nudge(message=shown[0].id),
+                         stop_nudge=UnreadMessageStopNotice.declared().nudge(message=shown[0].id),
                          countdown=UNREAD_COUNTDOWN.nudge("{left}", messages=", ".join(str(message.id) for message in shown)))

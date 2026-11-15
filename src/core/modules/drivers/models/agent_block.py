@@ -8,10 +8,10 @@ from dataclasses import dataclass
 from engine.driver.count_down import COUNTDOWN_TOOL_USES
 from engine.driver.interval import Interval
 from engine.driver.seconds import Seconds
-from engine.enums.nudge_type import NudgeType
+from engine.enums.agent_message_type import AgentMessageType
 from engine.model.model import Model
 from engine.time.timestamp import Timestamp
-from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
+from core.modules.drivers.models.support.tool_use_window import ToolUseWindow
 
 
 OPEN_BLOCKS_REASON = "the open blocks of one agent are few: each is closed or skipped before the agent goes on"
@@ -92,8 +92,8 @@ class AgentBlock(ClosedPrunable, Model):
     # A strict block refuses the skip of its own refusal too, so its refusal offers none and names only the command that
     # ends it.
     @property
-    def refusal_type(self) -> NudgeType:
-        return NudgeType.SAFETY_REFUSAL if self.strict else NudgeType.REFUSAL
+    def refusal_type(self) -> AgentMessageType:
+        return AgentMessageType.SAFETY_REFUSAL if self.strict else AgentMessageType.REFUSAL
 
     # the refusal's text names the block by its number, which only the saved row knows
     @property
@@ -102,6 +102,6 @@ class AgentBlock(ClosedPrunable, Model):
 
     @property
     def grace(self) -> Interval | None:
-        spans = [span for span in (ToolUseSpan(self.grace_tool_uses), Seconds(self.grace_seconds)) if span.count]
+        spans = [span for span in (ToolUseWindow(self.grace_tool_uses), Seconds(self.grace_seconds)) if span.count]
         return Interval(*spans) if spans else None
 

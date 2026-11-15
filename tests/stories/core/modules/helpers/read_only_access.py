@@ -8,11 +8,11 @@ from engine.caller.caller_request import SESSION_VARIABLE
 from engine.enums.command_category import CommandCategory
 from engine.enums.command_effect import CommandEffect
 from engine.enums.tool_type import ToolType
-from core.modules.drivers.nudges.ended_agent_nudge import EndedAgentNudge
-from core.modules.drivers.nudges.old_hook_line_nudge import OldHookLineNudge
-from core.modules.drivers.nudges.outward_journal_line_nudge import OutwardJournalLineNudge
-from core.modules.drivers.nudges.limited_tool_nudge import LimitedToolNudge
-from core.modules.drivers.nudges.unjudged_line_nudge import UnjudgedLineNudge
+from core.modules.drivers.nudges.ended_agent_message import EndedAgentMessage
+from core.modules.drivers.nudges.old_hook_line_message import OldHookLineMessage
+from core.modules.drivers.nudges.external_journal_line_message import ExternalJournalLineMessage
+from core.modules.drivers.nudges.limited_tool_message import LimitedToolMessage
+from core.modules.drivers.nudges.unjudged_line_message import UnjudgedLineMessage
 from core.modules.documents.models.report import Report
 from engine.testing.expectations.expect_reply import expect_reply_allowed
 from core.modules.agents.testing.fake_launcher import FakeLauncher
@@ -98,7 +98,7 @@ def test_a_read_only_helper_never_edits_a_file(new_story, helper_fixture, name, 
 @pytest.mark.parametrize("sample", [tool("mcp__wiki__edit"), tool("AskUserQuestion", ToolType.QUESTION)], ids=["mcp", "question"])
 def test_a_tool_outside_the_list_is_refused_with_a_way_on(new_story, helper_fixture, sample):
     story, session = helper_story(new_story, helper_fixture)
-    story.expect_hook_refusal(session, sample, LimitedToolNudge.declared().nudge(tool=sample.body["tool"]["name"]).text)
+    story.expect_hook_refusal(session, sample, LimitedToolMessage.declared().nudge(tool=sample.body["tool"]["name"]).text)
 
 
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
@@ -122,7 +122,7 @@ def journal_line(*arguments):
                                           (f"journal task list && echo {SESSION_VARIABLE}", part("echo", CommandCategory.READ, SESSION_VARIABLE))], ids=["second part sets it", "second part names it"])
 def test_a_chain_is_refused_by_the_part_that_names_a_session(new_story, helper_fixture, line, second):
     story, session = helper_story(new_story, helper_fixture)
-    story.expect_hook_refusal(session, shell(line, part("journal", CommandCategory.JOURNAL, "task", "list"), second), OutwardJournalLineNudge.declared().nudge().text)
+    story.expect_hook_refusal(session, shell(line, part("journal", CommandCategory.JOURNAL, "task", "list"), second), ExternalJournalLineMessage.declared().nudge().text)
 
 
 REPORT_TEXT = "Run `rm -rf a` in $HOME and \"tests/stories/core/a.py\" with python3 and curl.\n" * 800
@@ -138,7 +138,7 @@ def test_an_ended_helper_is_refused_its_next_tool_and_writes_no_second_report(ne
     story, session = helper_story(new_story, StartedHelper)
     story.expect_success(f"agent end {helper_agent(story).id}", actor=story.user)
     story.run_listeners()
-    story.expect_hook_refusal(session, tool("Edit", ToolType.EDIT), EndedAgentNudge.declared().nudge().text)
+    story.expect_hook_refusal(session, tool("Edit", ToolType.EDIT), EndedAgentMessage.declared().nudge().text)
     final_lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.user).output_text
     story.hook(session, HookSamples.stop())
     story.run_listeners()
@@ -148,7 +148,7 @@ def test_an_ended_helper_is_refused_its_next_tool_and_writes_no_second_report(ne
 def test_a_codex_helper_ended_before_its_first_hook_is_refused_an_edit(new_story):
     story, launch_name = helper_story(new_story, StartedCodexHelper)
     story.expect_success(f"agent end {helper_agent(story).id}", actor=story.user)
-    story.expect_hook_refusal("t-9", tool("Edit", ToolType.EDIT).with_fields(program="codex", launch=launch_name), EndedAgentNudge.declared().nudge().text)
+    story.expect_hook_refusal("t-9", tool("Edit", ToolType.EDIT).with_fields(program="codex", launch=launch_name), EndedAgentMessage.declared().nudge().text)
 
 
 def main_story(new_story):

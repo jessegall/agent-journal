@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.enums.hook_event_name import HookEventName
 from core.modules.processes.needs.reader_request_needs import READER_REQUEST_KEY
 from core.modules.processes.support.reading.reader_request_blocks import ReaderRequestBlocks
@@ -17,5 +17,5 @@ class ReaderRequestLines(EventLineSource):
     def __init__(self, blocks: ReaderRequestBlocks) -> None:
         self.blocks = blocks
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
+    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         return self.blocks.answer(event, agent_id).nudges if event is not None else []

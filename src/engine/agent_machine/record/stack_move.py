@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from engine.agent_stack.need_key import NeedKey
-from engine.enums.frame_end import FrameEnd
+from engine.agent_stack.state_key import StateKey
+from engine.enums.state_end import StateEnd
 from engine.enums.stack_move_type import StackMoveType
 
 
@@ -11,7 +11,7 @@ class StackMove:
     rows it named."""
 
     move_type: StackMoveType
-    frame_key: NeedKey | None
+    frame_key: StateKey | None
     reason_text: str
-    frame_end: FrameEnd | None = None
+    frame_end: StateEnd | None = None
     actor_id: int | None = None

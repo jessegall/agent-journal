@@ -8,8 +8,8 @@ from engine.repository.repository import Repository
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.drivers.models.hook_timeout_notice import HookTimeoutNotice
 from core.modules.drivers.commands.record_hook_timeout.record_hook_timeout import RecordHookTimeout
-from core.modules.drivers.nudges.hook_timeouts_nudge import HookTimeoutsNudge
-from engine.driver.nudger import Nudger
+from core.modules.drivers.nudges.hook_timeouts_message import HookTimeoutsMessage
+from engine.driver.nudger import MessageSender
 
 LINE_SOURCE = "drivers.hook-timeouts"
 
@@ -20,7 +20,7 @@ class RecordHookTimeoutHandler(Handler[RecordHookTimeout, None]):
 
     command = RecordHookTimeout
 
-    def __init__(self, timeouts: HookTimeouts, nudger: Nudger, repository: Repository, queries: Queries, numbers: RowNumbers) -> None:
+    def __init__(self, timeouts: HookTimeouts, nudger: MessageSender, repository: Repository, queries: Queries, numbers: RowNumbers) -> None:
         self.numbers = numbers
         self.timeouts, self.nudger, self.repository, self.queries = timeouts, nudger, repository, queries
 
@@ -31,5 +31,5 @@ class RecordHookTimeoutHandler(Handler[RecordHookTimeout, None]):
         self.timeouts.notify(command.agent_id, context.timestamp)
         main = MainAgentFinder.newest(self.queries)
         receiver = main.id if main is not None else command.agent_id
-        self.nudger.send(receiver, HookTimeoutsNudge.declared(), LINE_SOURCE, context, agent=self.numbers.number(AGENT_MODEL_NAME, command.agent_id), count=count)
+        self.nudger.send(receiver, HookTimeoutsMessage.declared(), LINE_SOURCE, context, agent=self.numbers.number(AGENT_MODEL_NAME, command.agent_id), count=count)
         self.repository.save(HookTimeoutNotice(session_agent_id=command.agent_id, receiver_id=receiver, timeout_count=count), context)

@@ -1,12 +1,12 @@
 from collections.abc import Sequence
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_line_source import EventLineSource
 from collections import defaultdict
 
 from engine.enums.hook_event_name import HookEventName
 from core.modules.processes.queries.output_query import OutputQuery
-from core.modules.processes.nudges.shared_title_nudge import SharedTitleNudge
+from core.modules.processes.nudges.shared_title_message import SharedTitleMessage
 
 
 class RunTitleLines(EventLineSource):
@@ -18,10 +18,10 @@ class RunTitleLines(EventLineSource):
     def __init__(self, outputs: OutputQuery) -> None:
         self.outputs = outputs
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
+    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         titled = self.outputs.running_titles(agent_id).get()
         identical: defaultdict[str, list[str]] = defaultdict(list)
         for output in titled:
             identical[output.title].append(str(output.process_id))
-        shared = [SharedTitleNudge.declared().nudge(outputs=", ".join(numbers)) for numbers in identical.values() if len(numbers) > 1]
+        shared = [SharedTitleMessage.declared().nudge(outputs=", ".join(numbers)) for numbers in identical.values() if len(numbers) > 1]
         return [*shared]

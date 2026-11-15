@@ -1,9 +1,9 @@
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_policy import EventPolicy
 from core.modules.sequences.queries.sequence_query import SequenceQuery
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
-from core.modules.sequences.nudges.step_edit_ban_nudge import StepEditBanNudge
+from core.modules.sequences.nudges.step_edit_ban_message import StepEditBanMessage
 
 
 class StepGuardPolicy(EventPolicy):
@@ -16,7 +16,7 @@ class StepGuardPolicy(EventPolicy):
     def __init__(self, runs: SequenceRunQuery, sequences: SequenceQuery) -> None:
         self.runs, self.sequences = runs, sequences
 
-    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+    def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         tool = event.tool
         if tool is None or tool.is_journal_line or not tool.is_writing_files():
             return None
@@ -28,4 +28,4 @@ class StepGuardPolicy(EventPolicy):
             return None
         if tool.shell is not None and any(tool.shell.has_part_matching(pattern) for pattern in guard.allowed_commands):
             return None
-        return StepEditBanNudge.declared().nudge(sequence=run.sequence_id, step=run.step_number)
+        return StepEditBanMessage.declared().nudge(sequence=run.sequence_id, step=run.step_number)

@@ -5,9 +5,9 @@ from core.modules.agents.commands.end_agent_halt.end_agent_halt import EndAgentH
 from core.modules.agents.support.agent_rows import AgentRows
 from engine.repository.repository import Repository
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from core.modules.helpers.commands.end_agent_lockdown.end_agent_lockdown import EndAgentLockdown
-from core.modules.helpers.nudges.lockdown_ended_nudge import LockdownEndedNudge
+from core.modules.helpers.nudges.lockdown_ended_message import LockdownEndedMessage
 
 LOCKDOWN_SOURCE = "helpers.lockdown-ended"
 
@@ -18,7 +18,7 @@ class EndAgentLockdownHandler(Handler[EndAgentLockdown, None]):
 
     command = EndAgentLockdown
 
-    def __init__(self, agents: AgentRows, bus: Bus, nudger: Nudger, jobs: HelperJobRows, repository: Repository) -> None:
+    def __init__(self, agents: AgentRows, bus: Bus, nudger: MessageSender, jobs: HelperJobRows, repository: Repository) -> None:
         self.agents, self.bus, self.nudger, self.jobs, self.repository = agents, bus, nudger, jobs, repository
 
     def handle(self, command: EndAgentLockdown, context: Context) -> None:
@@ -29,4 +29,4 @@ class EndAgentLockdownHandler(Handler[EndAgentLockdown, None]):
         if job is not None:
             self.repository.save(job.changed(halted_seconds=job.halted_seconds + halted_at.elapsed_seconds(context.timestamp)), context)
         self.bus.dispatch(EndAgentHalt(command.agent_id), context)
-        self.nudger.send(command.agent_id, LockdownEndedNudge.declared(), LOCKDOWN_SOURCE, context)
+        self.nudger.send(command.agent_id, LockdownEndedMessage.declared(), LOCKDOWN_SOURCE, context)

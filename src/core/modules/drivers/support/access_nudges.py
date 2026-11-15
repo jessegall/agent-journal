@@ -1,23 +1,23 @@
-from core.modules.drivers.nudges.readonly_nudge import ReadonlyNudge
-from core.modules.drivers.nudges.permission_use_failed_nudge import PermissionUseFailedNudge
-from core.modules.drivers.nudges.unjudged_line_nudge import UnjudgedLineNudge
-from core.modules.drivers.nudges.old_hook_line_nudge import OldHookLineNudge
-from core.modules.drivers.nudges.helper_type_category_nudge import HelperTypeCategoryNudge
-from core.modules.drivers.nudges.helper_type_command_nudge import HelperTypeCommandNudge
-from core.modules.drivers.nudges.outward_journal_line_nudge import OutwardJournalLineNudge
-from core.modules.drivers.nudges.limited_tool_nudge import LimitedToolNudge
-from core.modules.drivers.nudges.unknown_agent_nudge import UnknownAgentNudge
-from core.modules.drivers.nudges.ended_agent_nudge import EndedAgentNudge
-from core.modules.drivers.nudges.replaced_session_nudge import ReplacedSessionNudge
-from core.modules.drivers.nudges.native_subagent_nudge import NativeSubagentNudge
-from core.modules.drivers.nudges.native_subagent_without_launch_nudge import NativeSubagentWithoutLaunchNudge
-from core.modules.drivers.nudges.panic_file_nudge import PanicFileNudge
-from core.modules.drivers.nudges.private_corpus_nudge import PrivateCorpusNudge
-from core.modules.drivers.nudges.database_file_nudge import DatabaseFileNudge
-from core.modules.drivers.nudges.skip_needs_approval_nudge import SkipNeedsApprovalNudge
-from core.modules.drivers.nudges.skip_approved_nudge import SkipApprovedNudge
-from core.modules.drivers.nudges.skip_declined_nudge import SkipDeclinedNudge
-from core.modules.drivers.nudges.skips_spent_nudge import SkipsSpentNudge
+from core.modules.drivers.nudges.readonly_message import ReadonlyMessage
+from core.modules.drivers.nudges.permission_use_failed_message import PermissionUseFailedMessage
+from core.modules.drivers.nudges.unjudged_line_message import UnjudgedLineMessage
+from core.modules.drivers.nudges.old_hook_line_message import OldHookLineMessage
+from core.modules.drivers.nudges.helper_type_category_message import HelperTypeCategoryMessage
+from core.modules.drivers.nudges.helper_type_command_message import HelperTypeCommandMessage
+from core.modules.drivers.nudges.external_journal_line_message import ExternalJournalLineMessage
+from core.modules.drivers.nudges.limited_tool_message import LimitedToolMessage
+from core.modules.drivers.nudges.unknown_agent_message import UnknownAgentMessage
+from core.modules.drivers.nudges.ended_agent_message import EndedAgentMessage
+from core.modules.drivers.nudges.replaced_session_message import ReplacedSessionMessage
+from core.modules.drivers.nudges.native_subagent_message import NativeSubagentMessage
+from core.modules.drivers.nudges.unlaunched_native_subagent_message import UnlaunchedNativeSubagentMessage
+from core.modules.drivers.nudges.panic_file_message import PanicFileMessage
+from core.modules.drivers.nudges.private_corpus_message import PrivateCorpusMessage
+from core.modules.drivers.nudges.database_file_message import DatabaseFileMessage
+from core.modules.drivers.nudges.skip_approval_message import SkipApprovalMessage
+from core.modules.drivers.nudges.skip_approved_message import SkipApprovedMessage
+from core.modules.drivers.nudges.skip_declined_message import SkipDeclinedMessage
+from core.modules.drivers.nudges.skips_spent_message import SkipsSpentMessage
 
 
-ACCESS_NUDGES = [PermissionUseFailedNudge, PanicFileNudge, PrivateCorpusNudge, DatabaseFileNudge, SkipsSpentNudge, SkipNeedsApprovalNudge, SkipApprovedNudge, SkipDeclinedNudge, NativeSubagentNudge, NativeSubagentWithoutLaunchNudge, EndedAgentNudge, ReplacedSessionNudge, UnknownAgentNudge, UnjudgedLineNudge, OldHookLineNudge, OutwardJournalLineNudge, HelperTypeCategoryNudge, HelperTypeCommandNudge, LimitedToolNudge, ReadonlyNudge]
+ACCESS_NUDGES = [PermissionUseFailedMessage, PanicFileMessage, PrivateCorpusMessage, DatabaseFileMessage, SkipsSpentMessage, SkipApprovalMessage, SkipApprovedMessage, SkipDeclinedMessage, NativeSubagentMessage, UnlaunchedNativeSubagentMessage, EndedAgentMessage, ReplacedSessionMessage, UnknownAgentMessage, UnjudgedLineMessage, OldHookLineMessage, ExternalJournalLineMessage, HelperTypeCategoryMessage, HelperTypeCommandMessage, LimitedToolMessage, ReadonlyMessage]

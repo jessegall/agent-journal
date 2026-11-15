@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_priority import ExecutionPriority
 from engine.errors.refusal import Refusal
 from engine.execution.classes.execution_class import ExecutionClass
@@ -27,5 +27,5 @@ class AddExecutionClassSubcommand(Subcommand[SaveExecutionClass, str]):
     def command(self, arguments: Namespace, caller: Caller) -> SaveExecutionClass:
         if not arguments.pattern and not arguments.plugin:
             raise Refusal("a class of your own names the lines it holds", "add --pattern \"<regular expression>\" or --plugin <name>")
-        start = ExecutionClass(arguments.class_name, ExecutionLane.LONG, 1, ExecutionPriority.AGENT, line_pattern=arguments.pattern, plugin=arguments.plugin)
+        start = ExecutionClass(arguments.class_name, ExecutionLength.LONG, 1, ExecutionPriority.AGENT, line_pattern=arguments.pattern, plugin=arguments.plugin)
         return SaveExecutionClass(ExecutionClassOptions.changed(start, arguments), is_override=False)

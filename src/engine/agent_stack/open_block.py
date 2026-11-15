@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from engine.agent_stack.escalation import Escalation
 from engine.agent_stack.reason import Reason
-from engine.agent_stack.subject_reference import SubjectReference
+from engine.agent_stack.row_reference import RowReference
 
 
 @dataclass(frozen=True)
@@ -18,7 +18,7 @@ class OpenBlock:
     tool_grace_passed: bool
     stop_grace_passed: bool
     is_strict: bool
-    subject: SubjectReference | None = None
+    subject: RowReference | None = None
     stop_reason: Reason | None = None
 
     def refuses_tools(self) -> bool:

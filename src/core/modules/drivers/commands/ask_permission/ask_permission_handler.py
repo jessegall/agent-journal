@@ -11,10 +11,10 @@ from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.drivers.commands.allow_permission.allow_permission import AllowPermission
 from core.modules.drivers.commands.ask_permission.ask_permission import AskPermission
-from core.modules.drivers.commands.record_agent_nudge.record_agent_nudge import RecordAgentNudge
+from core.modules.drivers.commands.record_agent_nudge.record_agent_message import RecordAgentMessage
 from core.modules.drivers.models.enums.permission_state import PermissionState
 from core.modules.drivers.models.permission_request import PermissionRequest
-from core.modules.drivers.nudges.permission_requested_nudge import PermissionRequestedNudge
+from core.modules.drivers.nudges.permission_requested_message import PermissionRequestedMessage
 from core.modules.agents.support.agent_label import AgentLabel
 from core.modules.agents.models.agent import Agent
 
@@ -44,5 +44,5 @@ class AskPermissionHandler(Handler[AskPermission, PermissionRequest]):
             return request
         main = MainAgentFinder.newest(self.queries)
         if main is not None:
-            self.bus.dispatch(RecordAgentNudge(main.id, PermissionRequestedNudge.declared().nudge(agent=self.numbers.number(AGENT_MODEL_NAME, context.actor.id), request=request.id), SOURCE), context)
+            self.bus.dispatch(RecordAgentMessage(main.id, PermissionRequestedMessage.declared().nudge(agent=self.numbers.number(AGENT_MODEL_NAME, context.actor.id), request=request.id), SOURCE), context)
         return request

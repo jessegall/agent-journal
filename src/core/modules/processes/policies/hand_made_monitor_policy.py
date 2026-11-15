@@ -1,11 +1,11 @@
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_policy import EventPolicy
 from engine.enums.tool_type import ToolType
 from engine.provider.providers import Providers
 from core.modules.processes.support.output_watch_call import MONITOR_LINE
-from core.modules.processes.nudges.hand_made_monitor_nudge import HandMadeMonitorNudge
-from core.modules.processes.nudges.monitor_tool_required_nudge import MonitorToolRequiredNudge
+from core.modules.processes.nudges.hand_made_monitor_message import HandMadeMonitorMessage
+from core.modules.processes.nudges.monitor_tool_required_message import MonitorToolRequiredMessage
 
 OUTPUT_LINE = "journal output "
 
@@ -21,15 +21,15 @@ class HandMadeMonitorPolicy(EventPolicy):
     def __init__(self, providers: Providers) -> None:
         self.providers = providers
 
-    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+    def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         tool = event.tool
         if self.providers.provider(event.program).monitor_tool is not ToolType.MONITOR:
             return None
         if tool is not None and tool.shell is not None and any(part.text.startswith(MONITOR_LINE) for part in tool.shell.parts):
-            return MonitorToolRequiredNudge.declared().nudge()
+            return MonitorToolRequiredMessage.declared().nudge()
         if tool is None or tool.category != ToolType.MONITOR:
             return None
         command = str(event.tool_input().get("command", ""))
         if OUTPUT_LINE in command and MONITOR_LINE not in command:
-            return HandMadeMonitorNudge.declared().nudge()
+            return HandMadeMonitorMessage.declared().nudge()
         return None

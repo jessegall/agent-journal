@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_priority import ExecutionPriority
 from engine.execution.classes.execution_class import UNLIMITED, ExecutionClass
 from engine.model.model import Model
@@ -14,7 +14,7 @@ class ExecutionClassRow(Model):
     cli_name = "execution-class"
 
     name: str
-    lane: ExecutionLane
+    lane: ExecutionLength
     slot_cost: int
     priority: ExecutionPriority
     class_limit: int = UNLIMITED

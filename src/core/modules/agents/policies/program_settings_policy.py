@@ -1,11 +1,11 @@
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_policy import EventPolicy
 from pathlib import Path
 
 from engine.driver.tool import Tool
 from engine.journal.journal_home import JournalHome
-from core.modules.agents.nudges.program_settings_ban_nudge import ProgramSettingsBanNudge
+from core.modules.agents.nudges.program_settings_ban_message import ProgramSettingsBanMessage
 from engine.journal.journal_home import JOURNAL_FOLDER
 
 
@@ -21,11 +21,11 @@ class ProgramSettingsPolicy(EventPolicy):
     def __init__(self, home: JournalHome) -> None:
         self.home = home
 
-    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+    def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         tool = event.tool
         if tool is None or not any(spelling in text for text in self.tool_write_texts(tool) for spelling in self.spellings()):
             return None
-        return ProgramSettingsBanNudge.declared().nudge()
+        return ProgramSettingsBanMessage.declared().nudge()
 
     @staticmethod
     def tool_write_texts(tool: Tool) -> tuple[str, ...]:

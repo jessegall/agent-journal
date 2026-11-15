@@ -1,14 +1,14 @@
 from engine.command.context import Context
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from engine.event.moved import Moved
 from engine.listener.save_listener import SaveListener
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from core.modules.questions.models.lifecycles.question_lifecycle import QuestionLifecycle
 from core.modules.questions.models.question import Question
-from core.modules.questions.nudges.question_answer_source_nudge import QuestionAnswerSourceNudge
-from core.modules.questions.nudges.question_answered_nudge import QuestionAnsweredNudge
-from core.modules.questions.nudges.question_closed_nudge import QuestionClosedNudge
+from core.modules.questions.nudges.question_answer_source_message import QuestionAnswerSourceMessage
+from core.modules.questions.nudges.question_answered_message import QuestionAnsweredMessage
+from core.modules.questions.nudges.question_closed_message import QuestionClosedMessage
 from core.modules.waits.listeners.wait_end_listener import WORK_CONTINUED
 from core.modules.waits.models.enums.wait_state import WaitState
 from core.modules.waits.models.wait import Wait
@@ -28,18 +28,18 @@ class QuestionAnswerLineListener(SaveListener[Moved[Question]]):
     moves = (QuestionLifecycle.answer, QuestionLifecycle.close)
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, nudger: Nudger) -> None:
+    def __init__(self, queries: Queries, nudger: MessageSender) -> None:
         self.queries, self.nudger = queries, nudger
 
     def handle(self, event: Moved[Question], context: Context) -> None:
         question = event.row
         wakes_agent = not self.has_waking_wait(question, context)
         if event.required_move is QuestionLifecycle.close:
-            self.nudger.send_nudge(question.session_agent_id, QuestionClosedNudge.declared().nudge(question=question.id), CLOSED_SOURCE, context, wakes_agent=wakes_agent)
+            self.nudger.send_nudge(question.session_agent_id, QuestionClosedMessage.declared().nudge(question=question.id), CLOSED_SOURCE, context, wakes_agent=wakes_agent)
             return
-        self.nudger.send_nudge(question.session_agent_id, QuestionAnsweredNudge.declared().nudge(question=question.id), ANSWER_SOURCE, context, wakes_agent=wakes_agent)
+        self.nudger.send_nudge(question.session_agent_id, QuestionAnsweredMessage.declared().nudge(question=question.id), ANSWER_SOURCE, context, wakes_agent=wakes_agent)
         if question.message_id is not None:
-            self.nudger.send(question.session_agent_id, QuestionAnswerSourceNudge.declared(), ANSWER_SOURCE, context, question=question.id, message=question.message_id,
+            self.nudger.send(question.session_agent_id, QuestionAnswerSourceMessage.declared(), ANSWER_SOURCE, context, question=question.id, message=question.message_id,
                              reference=f"question:{question.id} message:{question.message_id}")
 
     # Whether a wait on the question is still open, or this answer ended it without the agent working again.

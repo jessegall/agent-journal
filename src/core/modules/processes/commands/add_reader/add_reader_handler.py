@@ -11,7 +11,7 @@ from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.queries.conditions.reader_sample_scope import ReaderSampleScope
 from core.modules.processes.support.reader_judge import ReaderJudge
-from core.modules.processes.support.reader_judgement import ReaderJudgement
+from core.modules.processes.support.reader_check import ReaderCheck
 from core.modules.processes.support.reader_writers import ReaderWriters
 from core.modules.processes.errors.reader_save_refusal import ReaderSaveRefusal
 from engine.driver.shell_line import JOURNAL_PROGRAM
@@ -55,7 +55,7 @@ class AddReaderHandler(Handler[AddReader, Reader]):
                 raise
             raise ReaderSaveRefusal.failed_save(request.id, refusal) from refusal
 
-    def save(self, reader: Reader, judgement: ReaderJudgement, context: Context) -> Reader:
+    def save(self, reader: Reader, judgement: ReaderCheck, context: Context) -> Reader:
         if judgement.missed:
             raise Refusal(f"reader {reader.name} missed {'; '.join(judgement.missed)}", "try the patterns on the named output")
         return self.repository.save(replace(reader, proved_on=judgement.output_id), context)

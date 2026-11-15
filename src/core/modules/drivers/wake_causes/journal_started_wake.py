@@ -1,7 +1,7 @@
 from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.needs.wake_cause import WakeCause
 from engine.enums.hook_event_name import HookEventName
-from core.modules.drivers.nudges.journal_started_nudge import JournalStartedNudge
+from core.modules.drivers.nudges.journal_started_message import JournalStartedMessage
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 
 # the hooks after which an agent is between turns, so a journal start cut nothing short
@@ -25,4 +25,4 @@ class JournalStartedWake(WakeCause):
         return view.journal_started_at > hook.creation_timestamp().value
 
     def text(self, view: AgentView) -> str:
-        return JournalStartedNudge.declared().nudge().text
+        return JournalStartedMessage.declared().nudge().text

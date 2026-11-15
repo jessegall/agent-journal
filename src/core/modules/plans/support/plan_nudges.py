@@ -1,20 +1,20 @@
-from core.modules.plans.nudges.plan_finished_nudge import PlanFinishedNudge
-from core.modules.plans.nudges.phase_finished_nudge import PhaseFinishedNudge
-from core.modules.plans.nudges.checkpoint_reached_nudge import CheckpointReachedNudge
-from core.modules.plans.nudges.checkpoint_finished_nudge import CheckpointFinishedNudge
-from core.modules.plans.nudges.plan_stalled_nudge import PlanStalledNudge
-from core.modules.plans.nudges.focus_suggested_nudge import FocusSuggestedNudge
-from core.modules.plans.nudges.unfocused_task_nudge import UnfocusedTaskNudge
-from core.modules.plans.nudges.plan_approved_nudge import PlanApprovedNudge
-from core.modules.plans.nudges.plan_approved_with_message_nudge import PlanApprovedWithMessageNudge
-from core.modules.plans.nudges.plan_waiting_nudge import PlanWaitingNudge
-from core.modules.plans.nudges.plan_cancelled_nudge import PlanCancelledNudge
-from core.modules.plans.nudges.plan_blocked_nudge import PlanBlockedNudge
-from core.modules.plans.nudges.plan_opened_nudge import PlanOpenedNudge
-from core.modules.plans.nudges.plan_context_nudge import PlanContextNudge
-from core.modules.plans.nudges.unlinked_tasks_nudge import UnlinkedTasksNudge
+from core.modules.plans.nudges.plan_finished_message import PlanFinishedMessage
+from core.modules.plans.nudges.phase_finished_message import PhaseFinishedMessage
+from core.modules.plans.nudges.checkpoint_reached_message import CheckpointReachedMessage
+from core.modules.plans.nudges.checkpoint_finished_message import CheckpointFinishedMessage
+from core.modules.plans.nudges.plan_stalled_message import PlanStalledMessage
+from core.modules.plans.nudges.focus_suggested_message import FocusSuggestedMessage
+from core.modules.plans.nudges.unfocused_task_message import UnfocusedTaskMessage
+from core.modules.plans.nudges.plan_approved_message import PlanApprovedMessage
+from core.modules.plans.nudges.plan_approval_note_message import PlanApprovalNoteMessage
+from core.modules.plans.nudges.plan_waiting_message import PlanWaitingMessage
+from core.modules.plans.nudges.plan_cancelled_message import PlanCancelledMessage
+from core.modules.plans.nudges.plan_blocked_message import PlanBlockedMessage
+from core.modules.plans.nudges.plan_opened_message import PlanOpenedMessage
+from core.modules.plans.nudges.plan_context_message import PlanContextMessage
+from core.modules.plans.nudges.unlinked_tasks_message import UnlinkedTasksMessage
 
 
-PLAN_NUDGES = [UnlinkedTasksNudge, PlanFinishedNudge, PhaseFinishedNudge, CheckpointReachedNudge, CheckpointFinishedNudge, PlanStalledNudge, PlanApprovedNudge,
-               PlanWaitingNudge, PlanApprovedWithMessageNudge, PlanCancelledNudge, PlanBlockedNudge, PlanOpenedNudge, PlanContextNudge, FocusSuggestedNudge,
-               UnfocusedTaskNudge]
+PLAN_NUDGES = [UnlinkedTasksMessage, PlanFinishedMessage, PhaseFinishedMessage, CheckpointReachedMessage, CheckpointFinishedMessage, PlanStalledMessage, PlanApprovedMessage,
+               PlanWaitingMessage, PlanApprovalNoteMessage, PlanCancelledMessage, PlanBlockedMessage, PlanOpenedMessage, PlanContextMessage, FocusSuggestedMessage,
+               UnfocusedTaskMessage]

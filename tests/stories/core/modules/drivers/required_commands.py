@@ -7,9 +7,9 @@ from engine.driver.open_hold import OpenHold
 from engine.enums.command_category import CommandCategory
 from engine.driver.conditions.ran_command import RanCommand
 from engine.driver.interval import Interval
-from engine.driver.nudge import Nudge
-from engine.enums.nudge_type import NudgeType
-from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
+from engine.driver.agent_message import AgentMessage
+from engine.enums.agent_message_type import AgentMessageType
+from core.modules.drivers.models.support.tool_use_window import ToolUseWindow
 from engine.enums.tool_type import ToolType
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
@@ -103,7 +103,7 @@ def test_a_line_that_names_no_command_opens_no_debt(new_story):
 
 def test_a_block_that_waits_for_no_grace_cannot_be_skipped(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    story.run_command(OpenHold(story.agent.id, Nudge("samples.wait", NudgeType.REFUSAL, "wait"), RanCommand("journal overview")), Actor.core())
+    story.run_command(OpenHold(story.agent.id, AgentMessage("samples.wait", AgentMessageType.REFUSAL, "wait"), RanCommand("journal overview")), Actor.core())
     story.expect_refusal('agent-block skip 1 --reason "no grace"', "cannot be skipped", actor=story.agent)
 
 
@@ -135,9 +135,9 @@ def required_command_limit(counted_required_command):
 @pytest.fixture
 def grace_countdown(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    refusal = Nudge("samples.pay", NudgeType.REFUSAL, "pay the {block} fee: journal agent-block skip {block} --reason '<why>'")
-    countdown = Nudge("samples.pay_countdown", NudgeType.STEERING, "fee due: {left} tool uses")
-    story.run_command(OpenHold(story.agent.id, refusal, RanCommand("journal pay"), Interval(ToolUseSpan(2)), countdown), Actor.core())
+    refusal = AgentMessage("samples.pay", AgentMessageType.REFUSAL, "pay the {block} fee: journal agent-block skip {block} --reason '<why>'")
+    countdown = AgentMessage("samples.pay_countdown", AgentMessageType.STEERING, "fee due: {left} tool uses")
+    story.run_command(OpenHold(story.agent.id, refusal, RanCommand("journal pay"), Interval(ToolUseWindow(2)), countdown), Actor.core())
     first, second, third = spend(story, 3)
     return story, refusal, countdown, first, second, third
 

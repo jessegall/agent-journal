@@ -6,9 +6,9 @@ from dataclasses import dataclass
 from engine.model.model import Model
 from engine.model.session_private import SessionPrivate
 from engine.time.timestamp import Timestamp
-from engine.driver.nudge import Nudge
-from core.modules.drivers.nudges.agent_line_available_nudge import AgentLineAvailableNudge
-from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.agent_message import AgentMessage
+from core.modules.drivers.nudges.agent_line_available_message import AgentLineAvailableMessage
+from engine.driver.message_template import MessageTemplate
 from core.modules.drivers.models.lifecycles.agent_line_lifecycle import AgentLineLifecycle
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 
@@ -41,10 +41,10 @@ class AgentLine(Prunable, SessionPrivate, Model):
     nudge_json: str | None = None
 
     @property
-    def nudge(self) -> Nudge:
+    def nudge(self) -> AgentMessage:
         if self.nudge_json is None:
-            return AgentLineAvailableNudge.declared().nudge(line=self.id)
-        return NudgeDeclaration.restore(self.nudge_json)
+            return AgentLineAvailableMessage.declared().nudge(line=self.id)
+        return MessageTemplate.restore(self.nudge_json)
 
     @classmethod
     def prunable(cls, query, table):

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from engine.command.command import Command
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.part import Part
 from engine.driver.shell_line import ShellLine
 from engine.enums.command_category import CommandCategory
@@ -13,8 +13,8 @@ from core.modules.processes.support.reader_demands import ASKING_FLAGS
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.record_worker_test_run.record_worker_test_run import RecordWorkerTestRun
-from suites.coding.modules.workers.nudges.phase_test_refused_nudge import PhaseTestRefusedNudge
-from suites.coding.modules.workers.nudges.phase_test_run_allowed_nudge import PhaseTestRunAllowedNudge
+from suites.coding.modules.workers.nudges.phase_test_refusal_message import PhaseTestRefusalMessage
+from suites.coding.modules.workers.nudges.phase_test_run_allowed_message import PhaseTestRunAllowedMessage
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.commit_window import CommitWindow
 from suites.coding.modules.workers.support.worker_steps import WorkerSteps
@@ -28,8 +28,8 @@ class PhaseTestAnswer:
     """What a worker's test runs get between two commits: the refusal once the allowance is spent, or a line for each
     run with the runs left and the commands that count them."""
 
-    refusal: Nudge | None = None
-    nudges: tuple[Nudge, ...] = ()
+    refusal: AgentMessage | None = None
+    nudges: tuple[AgentMessage, ...] = ()
     records: tuple[Command[object], ...] = ()
 
 
@@ -58,10 +58,10 @@ class PhaseTestRuns:
             return PhaseTestAnswer()
         remaining = self.window.test_runs_available(worktree)
         if remaining - test_part_count < 0:
-            return PhaseTestAnswer(PhaseTestRefusedNudge.declared().nudge())
+            return PhaseTestAnswer(PhaseTestRefusalMessage.declared().nudge())
         key = self.window.key(worktree)
         lefts = [remaining - position for position in range(test_part_count)]
-        return PhaseTestAnswer(None, tuple(PhaseTestRunAllowedNudge.declared().nudge(remaining=left - 1) for left in lefts), tuple(RecordWorkerTestRun(agent_id, key) for _ in lefts))
+        return PhaseTestAnswer(None, tuple(PhaseTestRunAllowedMessage.declared().nudge(remaining=left - 1) for left in lefts), tuple(RecordWorkerTestRun(agent_id, key) for _ in lefts))
 
     def is_test_part(self, part: Part, shell: ShellLine) -> bool:
         return (WorkerTestNames.is_worker_test(part) or self.commands.part_command(part, shell).category is CommandCategory.TEST_RUN) and not ASKING_FLAGS.intersection(part.arguments)

@@ -15,8 +15,8 @@ from suites.coding.modules.workers.models.enums.behind_check_state import Behind
 from suites.coding.modules.workers.models.enums.behind_route import BehindRoute
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.nudges.main_agent_stale_worktree_nudge import MainAgentStaleWorktreeNudge
-from suites.coding.modules.workers.nudges.fast_forwarded_nudge import FastForwardedNudge
+from suites.coding.modules.workers.nudges.main_agent_stale_worktree_message import MainAgentStaleWorktreeMessage
+from suites.coding.modules.workers.nudges.fast_forwarded_message import FastForwardedMessage
 from suites.coding.modules.workers.support.worker_settings import FORCED_UPDATE_COMMITS, MERGER_ENABLED, MAIN_UPDATE_COMMITS
 from suites.coding.modules.workers.ticks.behind_worktrees import BehindWorktrees
 
@@ -126,7 +126,7 @@ def test_a_worktree_with_nothing_of_its_own_moves_onto_the_base_at_once_and_its_
     git = Git(4)
     route, repository, _, nudger = routed(git)
     states = [row.state for row in repository.saved if hasattr(row, "commits_lagging")]
-    assert (route, git.forwarded, states[-1], nudger.sent[0][1]) == (BehindRoute.FAST_FORWARDED, [TIP], BehindCheckState.UPDATED, FastForwardedNudge.declared())
+    assert (route, git.forwarded, states[-1], nudger.sent[0][1]) == (BehindRoute.FAST_FORWARDED, [TIP], BehindCheckState.UPDATED, FastForwardedMessage.declared())
 
 
 def test_no_fast_forward_while_a_command_of_the_worker_runs_or_when_git_refuses_it():
@@ -139,7 +139,7 @@ def test_no_fast_forward_while_a_command_of_the_worker_runs_or_when_git_refuses_
 def test_at_twenty_to_the_main_agent_twenty_five_behind_goes_to_the_main_agent_and_nineteen_to_the_merger():
     far, _, main_line, _ = routed(Git(25, own_work=True), Settings(main_count=20))
     near = routed(Git(19, own_work=True), Settings(main_count=20))[0]
-    assert (far, near, main_line.sent[0].key) == (BehindRoute.MAIN_AGENT, BehindRoute.MERGER, MainAgentStaleWorktreeNudge.declared().key)
+    assert (far, near, main_line.sent[0].key) == (BehindRoute.MAIN_AGENT, BehindRoute.MERGER, MainAgentStaleWorktreeMessage.declared().key)
 
 
 class Bus:

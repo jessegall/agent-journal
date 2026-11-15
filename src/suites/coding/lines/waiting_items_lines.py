@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.enums.agent_role import AgentRole
@@ -13,7 +13,7 @@ from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.models.question import Question
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
-from suites.coding.nudges.waiting_items_nudge import WaitingItemsNudge
+from suites.coding.nudges.waiting_items_message import WaitingItemsMessage
 
 
 class WaitingItemsLines(EventLineSource):
@@ -27,9 +27,9 @@ class WaitingItemsLines(EventLineSource):
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
+    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         counts = (("open tasks", self.queries.query(Task).filter(state=TaskState.OPEN).count()),
                   ("unread messages", self.queries.query(Message).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).count()),
                   ("open questions", self.queries.query(Question).filter(state=QuestionState.OPEN).count()))
         items = ", ".join(f"{count} {name}" for name, count in counts if count)
-        return [WaitingItemsNudge.declared().nudge(items=items)] if items else []
+        return [WaitingItemsMessage.declared().nudge(items=items)] if items else []

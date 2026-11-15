@@ -1,7 +1,7 @@
 from collections import defaultdict
 
-from engine.driver.nudge import Nudge
-from core.modules.processes.nudges.run_name_nudge import RunNameNudge
+from engine.driver.agent_message import AgentMessage
+from core.modules.processes.nudges.run_name_message import RunNameMessage
 from engine.driver.interval import Interval
 from engine.driver.span_queries import SpanQueries
 from engine.query.conditions.among import Among
@@ -40,7 +40,7 @@ LONG_RUN_DOCK_KEY = "processes.long-run-dock"
 class DockedRuns:
     """The lines asking a name for each docked run that has none, and the commands that dock the runs now due."""
 
-    nudges: tuple[Nudge, ...]
+    nudges: tuple[AgentMessage, ...]
     commands: tuple[Command[object], ...]
     # the docked runs, those docked now among them, whose output has no descriptive title
     untitled: tuple[int, ...] = ()
@@ -77,7 +77,7 @@ class RunDocking:
         shown = [*docked, *placed]
         outputs = self.run_outputs(tuple(process.id for process in shown))
         untitled = tuple(process.id for process in shown if process.id in outputs and not RunTitle.is_descriptive(outputs[process.id].title, process.line))
-        return DockedRuns(tuple(RunNameNudge.declared().nudge(process=process_id) for process_id in untitled),
+        return DockedRuns(tuple(RunNameMessage.declared().nudge(process=process_id) for process_id in untitled),
                           tuple(AddDockItem(ProcessDockType.OUTPUT.value, process.model_name, process.id) for process in placed), untitled)
 
     # the agent's docked runs, read once a request by the docking and by the hold on their titles

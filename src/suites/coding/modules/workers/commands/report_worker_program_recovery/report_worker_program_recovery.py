@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.command.command import Command
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.time.timestamp import Timestamp
 
 
@@ -11,7 +11,7 @@ class ReportWorkerProgramRecovery(Command[None]):
 
     worker_id: int
     stopped_at: Timestamp
-    notice: Nudge
+    notice: AgentMessage
 
     @property
     def waiting_source(self) -> str:

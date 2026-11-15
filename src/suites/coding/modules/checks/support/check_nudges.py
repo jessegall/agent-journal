@@ -1,5 +1,5 @@
-from suites.coding.modules.checks.nudges.check_failed_nudge import CheckFailedNudge
-from suites.coding.modules.checks.nudges.broken_task_wait_nudge import BrokenTaskWaitNudge
+from suites.coding.modules.checks.nudges.check_failed_message import CheckFailedMessage
+from suites.coding.modules.checks.nudges.broken_task_wait_message import BrokenTaskWaitMessage
 
 
-CHECK_NUDGES = [BrokenTaskWaitNudge, CheckFailedNudge]
+CHECK_NUDGES = [BrokenTaskWaitMessage, CheckFailedMessage]

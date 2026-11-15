@@ -9,16 +9,16 @@ from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.commands.announce_behind_checks.announce_behind_checks import AnnounceBehindChecks
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
-from engine.driver.nudge import Nudge
-from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.agent_message import AgentMessage
+from engine.driver.message_template import MessageTemplate
 from suites.coding.modules.workers.support.behind_nudges import STALE_SOURCE
-from suites.coding.modules.workers.nudges.stale_choices_nudge import StaleChoicesNudge
-from suites.coding.modules.workers.nudges.merger_stale_worktree_nudge import MergerStaleWorktreeNudge
+from suites.coding.modules.workers.nudges.stale_choices_message import StaleChoicesMessage
+from suites.coding.modules.workers.nudges.merger_stale_worktree_message import MergerStaleWorktreeMessage
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 
-class AnnounceBehindChecksHandler(Handler[AnnounceBehindChecks, tuple[Nudge, ...]]):
+class AnnounceBehindChecksHandler(Handler[AnnounceBehindChecks, tuple[AgentMessage, ...]]):
     """Leaves a line for each worktree behind its base where the merger reads it, so journal merger next lists
     them all; with the merger off the lines go to the main agent as other merger lines do, naming its choices.
     The look starts the merger once afterwards, outside this write."""
@@ -29,14 +29,14 @@ class AnnounceBehindChecksHandler(Handler[AnnounceBehindChecks, tuple[Nudge, ...
     def __init__(self, rows: EventRows, queries: Queries, inbox: MergerInbox, settings: SettingValues, numbers: RowNumbers) -> None:
         self.rows, self.queries, self.inbox, self.settings, self.numbers = rows, queries, inbox, settings, numbers
 
-    def handle(self, command: AnnounceBehindChecks, context: Context) -> tuple[Nudge, ...]:
+    def handle(self, command: AnnounceBehindChecks, context: Context) -> tuple[AgentMessage, ...]:
         merger_enabled = self.settings.flag(MERGER_ENABLED)
         worktrees = self.rows.required_index(Worktree, command.worktree_ids)
-        nudges = tuple(self.nudge(worktrees[worktree_id], MergerStaleWorktreeNudge.declared() if merger_enabled else StaleChoicesNudge.declared()) for worktree_id in command.worktree_ids)
+        nudges = tuple(self.nudge(worktrees[worktree_id], MergerStaleWorktreeMessage.declared() if merger_enabled else StaleChoicesMessage.declared()) for worktree_id in command.worktree_ids)
         for nudge in nudges:
             self.inbox.send_nudge(nudge, STALE_SOURCE, context)
         return nudges
 
-    def nudge(self, worktree: Worktree, declaration: NudgeDeclaration) -> Nudge:
+    def nudge(self, worktree: Worktree, declaration: MessageTemplate) -> AgentMessage:
         check = self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).newest().first()
         return declaration.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), count=check.commits_lagging if check else 0)

@@ -1,4 +1,4 @@
-from engine.driver.foreign_answer import ForeignAnswer
+from engine.driver.project_hook_answer import ProjectHookAnswer
 from engine.driver.enums.foreign_outcome import ForeignOutcome
 from engine.database.database import Database
 from engine.model.tables import Tables
@@ -20,7 +20,7 @@ class ManagedHookHistoryQuery(Query[HookCall]):
     def read(self, hook: ManagedHook) -> ManagedHookHistory:
         calls = self.matching(ForeignHook(hook.id)).newest().take(HISTORY_RUNS)
         records = [run for call in calls for run in reversed(call.foreign_runs) if run.id == hook.id][:HISTORY_RUNS]
-        answers = [ForeignAnswer.read(run) for run in records]
+        answers = [ProjectHookAnswer.read(run) for run in records]
         return ManagedHookHistory(runs=len(records), refused=sum(bool(answer.refusal) for answer in answers),
                                   rewritten=sum(bool(answer.updated_input) for answer in answers),
                                   timed_out=sum(record.timed_out for record in records),

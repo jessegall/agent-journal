@@ -11,7 +11,7 @@ from core.modules.processes.models.enums.reader_state import ReaderState
 from core.modules.processes.models.enums.reading_exit import ReadingExit
 from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from core.modules.processes.models.enums.reason_code import ReasonCode
-from core.modules.processes.support.reader_judgement import ReaderJudgement
+from core.modules.processes.support.reader_check import ReaderCheck
 from core.modules.processes.support.decisions.output_facts import OutputFacts
 from core.modules.processes.models.enums.reader_layer import ReaderLayer
 from core.modules.processes.support.decisions.reading_case import ReadingCase
@@ -36,7 +36,7 @@ def ended(case: ReadingCase, sample: bytes = TEST_OUTPUT, exit_code: int = 0, ag
                    output=OutputFacts.measured(sample, len(sample), exit_code, case.category))
 
 
-def with_reader(case: ReadingCase, judgement: ReaderJudgement) -> ReadingCase:
+def with_reader(case: ReadingCase, judgement: ReaderCheck) -> ReadingCase:
     return replace(case, reader_layer=ReaderLayer.PROJECT, reader_judgement=judgement)
 
 
@@ -49,13 +49,13 @@ TABLE = {
     "rejected command": (ended(MAIN_BUILD, b"usage: build [options]\nunknown option --fast\n", exit_code=2), NOTHING_NEEDED),
     "plugin run": (replace(MAIN_BUILD, is_plugin_run=True), NOTHING_NEEDED),
     "short successful run": (ended(MAIN_BUILD, age_seconds=3), NOTHING_NEEDED),
-    "suitable reader": (with_reader(ended(MAIN_BUILD), ReaderJudgement()), (ReaderState.SUITABLE, ReaderAction.IGNORE, PressureLevel.SUGGEST, ())),
+    "suitable reader": (with_reader(ended(MAIN_BUILD), ReaderCheck()), (ReaderState.SUITABLE, ReaderAction.IGNORE, PressureLevel.SUGGEST, ())),
     "marked unreadable": (replace(MAIN_BUILD, has_unreadable_mark=True), (ReaderState.UNREADABLE, ReaderAction.IGNORE, PressureLevel.SUGGEST, SUGGEST)),
     "found unreadable": (ended(MAIN_BUILD, b"", exit_code=1), (ReaderState.UNREADABLE, ReaderAction.DECLARE_UNREADABLE, PressureLevel.SUGGEST, SUGGEST)),
     "missing at start": (MAIN_BUILD, (ReaderState.MISSING, ReaderAction.IGNORE, PressureLevel.SUGGEST, SUGGEST)),
     "missing while running": (replace(MAIN_BUILD, phase=ReadingPhase.RUNNING), (ReaderState.MISSING, ReaderAction.IGNORE, PressureLevel.SUGGEST, SUGGEST)),
     "missing at end": (ended(MAIN_BUILD), (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
-    "poor at end": (with_reader(ended(MAIN_BUILD), ReaderJudgement(missing=tuple(["--summary"]))), (ReaderState.POOR, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
+    "poor at end": (with_reader(ended(MAIN_BUILD), ReaderCheck(missing=tuple(["--summary"]))), (ReaderState.POOR, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
     "draftable at end": (replace(ended(MAIN_BUILD), draft_fits=True), (ReaderState.DRAFTABLE, ReaderAction.DRAFT_READY, PressureLevel.SUGGEST, SUGGEST)),
     "worker with a waiting request": (replace(WORKER_BUILD, waiting_request=True), (ReaderState.MISSING, ReaderAction.REQUIRE, PressureLevel.BLOCK, BLOCK)),
     "main after 0 runs": (ended(MAIN_BUILD), (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
@@ -65,7 +65,7 @@ TABLE = {
     "worker after 2 runs": (replace(WORKER_BUILD, runs_without_change=2), (ReaderState.MISSING, ReaderAction.REQUIRE, PressureLevel.PREVENT, PREVENT)),
     "skipped after 3 runs": (replace(ended(MAIN_BUILD), runs_without_change=3, skipped=True), (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
     "redirected line": (replace(MAIN_BUILD, output_hidden=True), (ReaderState.MISSING, ReaderAction.IGNORE, PressureLevel.PREVENT, PREVENT)),
-    "suitable reader without the count a worker needs": (replace(with_reader(ended(WORKER_BUILD), ReaderJudgement()), count_missing=True),
+    "suitable reader without the count a worker needs": (replace(with_reader(ended(WORKER_BUILD), ReaderCheck()), count_missing=True),
                                                          (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
     "unknown command": (replace(ended(MAIN_BUILD), category=CommandCategory.UNKNOWN, classification_recognized=False),
                         (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.SUGGEST, (*SUGGEST, ReadingExit.CLASSIFY))),
@@ -83,7 +83,7 @@ def test_the_decision_of_each_case(case, expected):
     (replace(WORKER_BUILD, waiting_request=True), ReasonCode.REQUEST_WAITING),
     (ended(MAIN_BUILD), ReasonCode.READER_MISSING),
     (replace(ended(MAIN_BUILD), draft_fits=True), ReasonCode.DRAFT_FITS),
-    (replace(with_reader(ended(WORKER_BUILD), ReaderJudgement()), count_missing=True), ReasonCode.COUNT_MISSING),
+    (replace(with_reader(ended(WORKER_BUILD), ReaderCheck()), count_missing=True), ReasonCode.COUNT_MISSING),
 ], ids=["redirected", "request waiting", "reader missing", "draft fits", "count missing"])
 def test_the_reason_of_a_pressing_decision(case, reason):
     assert ReadingDecider().decide(case).reason is reason

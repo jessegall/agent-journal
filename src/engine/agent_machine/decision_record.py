@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from engine.agent_machine.stepping.grant import Grant
-from engine.agent_stack.answer_basis import AnswerBasis
+from engine.agent_stack.read_versions import ReadVersions
 from engine.agent_stack.reason import Reason
 from engine.agent_machine.contracts.effect import Effect
 from engine.agent_machine.decision import Decision
@@ -44,7 +44,7 @@ class DecisionRecord:
     stop_checks: Sequence[StopCheck]
     counts: RefusalCounts
     wake: WakeChange
-    basis: AnswerBasis
+    basis: ReadVersions
     printing: Sequence[EncodedPart]
     inputs: DecisionInputs
     # the grants that passed a refusing policy of an admitted action, which the save spends in its own write

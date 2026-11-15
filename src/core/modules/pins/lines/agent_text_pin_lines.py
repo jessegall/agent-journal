@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
 from core.modules.pins.support.link_pin_check import LinkPinCheck
@@ -21,6 +21,6 @@ class AgentTextPinLines(EventLineSource):
     def __init__(self, check: LinkPinCheck) -> None:
         self.check = check
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
+    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         text = LinkPinCheck.finished_text(event)
         return self.check.nudges(text) if text is not None else []

@@ -4,8 +4,8 @@ from collections.abc import Mapping, Sequence
 from engine.agent.enums.role_group import RoleGroup
 from engine.agent_machine.needs.agent_reference import AgentReference
 from engine.agent_machine.needs.block_plan import BlockPlan
-from engine.agent_machine.needs.need import Need
-from engine.agent_machine.needs.need_source import NeedSource
+from engine.agent_machine.needs.required_state import RequiredState
+from engine.agent_machine.needs.state_source import StateSource
 from engine.agent_machine.record.question import Question
 from engine.agent_stack.states.blocked import Blocked
 from engine.enums.hook_event_name import HookEventName
@@ -16,7 +16,7 @@ from core.modules.triggers.support.phrase_trigger_match import PHRASE_TRIGGER_KE
 PHRASE_SKILL_RANK = "triggers.skill"
 
 
-class PhraseTriggerNeeds(NeedSource):
+class PhraseTriggerNeeds(StateSource):
     """A tool call whose words a skill trigger watches holds the agent's tools, after the skill countdown's uses,
     until it has read that skill."""
     state_type = Blocked
@@ -26,7 +26,7 @@ class PhraseTriggerNeeds(NeedSource):
     def __init__(self, match: PhraseTriggerMatch) -> None:
         self.match = match
 
-    def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]:
+    def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[RequiredState | BlockPlan]]:
         event = question.event
         if event is None or event.event is not HookEventName.PRE_TOOL_USE:
             return {}

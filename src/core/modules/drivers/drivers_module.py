@@ -43,7 +43,7 @@ from core.modules.drivers.models.declarations.context_compaction_model_declarati
 from core.modules.drivers.models.declarations.context_compaction_notice_model_declaration import ContextCompactionNoticeModelDeclaration
 from core.modules.drivers.models.declarations.helper_job_model_declaration import HelperJobModelDeclaration
 from core.modules.drivers.models.declarations.agent_block_model_declaration import AgentBlockModelDeclaration
-from core.modules.drivers.models.declarations.nudge_record_model_declaration import NudgeRecordModelDeclaration
+from core.modules.drivers.models.declarations.message_record_model_declaration import MessageRecordModelDeclaration
 from core.modules.drivers.models.declarations.hook_call_model_declaration import HookCallModelDeclaration
 from core.modules.drivers.models.declarations.agent_line_model_declaration import AgentLineModelDeclaration
 from core.modules.drivers.models.declarations.agent_line_history_model_declaration import AgentLineHistoryModelDeclaration
@@ -138,7 +138,7 @@ from core.modules.drivers.commands.record_reminder_passes.record_reminder_passes
 from core.modules.drivers.commands.hook_call_stops.hook_call_stops_subcommand import HookCallStopsSubcommand
 from core.modules.drivers.migrations.m026_driver_session import DriverSessionMigration
 from core.modules.drivers.migrations.m023_agent_line_repeats import AgentLineRepeatsMigration
-from core.modules.drivers.migrations.m022_nudge_total_index import NudgeTotalIndexMigration
+from core.modules.drivers.migrations.m022_nudge_total_index import MessageTotalIndexMigration
 from core.modules.drivers.migrations.m021_agent_line_text_index import AgentLineTextIndexMigration
 from core.modules.drivers.migrations.m020_block_stop_name import BlockStopNameMigration
 from core.modules.drivers.migrations.m010_subagent_dispatches import SubagentDispatchesMigration
@@ -153,18 +153,18 @@ from core.modules.drivers.migrations.m014_block_graces import BlockGracePeriodsM
 from core.modules.drivers.migrations.m016_agent_line_wakes import AgentLineWakesMigration
 from core.modules.drivers.migrations.m017_stop_blocks import StopBlocksMigration
 from core.modules.drivers.migrations.m015_agent_line_state_index import AgentLineStateIndexMigration
-from core.modules.drivers.migrations.m005_nudge_debts import NudgeDebtsMigration
+from core.modules.drivers.migrations.m005_nudge_debts import MessageDebtsMigration
 from core.modules.drivers.migrations.m006_required_commands import RequiredCommandsMigration
-from core.modules.drivers.migrations.m007_nudge_record_delivery import NudgeRecordDeliveryMigration
+from core.modules.drivers.migrations.m007_nudge_record_delivery import MessageRecordDeliveryMigration
 from core.modules.drivers.migrations.m045_hook_timeout_notices import HookTimeoutNoticesMigration
 from core.modules.drivers.listeners.hook_timeout_mark_listener import HookTimeoutMarkListener
 from core.modules.drivers.migrations.m008_required_command_type import RequiredCommandTypeMigration
 from core.modules.drivers.support.driver_nudges import DRIVER_NUDGES
 from engine.agent_machine.needs.line_history import LineHistory
 from engine.driver.refusal_skips import RefusalSkips
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from core.modules.drivers.bindings.table_refusal_skips import TableRefusalSkips
-from core.modules.drivers.bindings.agent_line_nudger import AgentLineNudger
+from core.modules.drivers.bindings.agent_line_sender import AgentLineSender
 from core.modules.drivers.commands.restore_refusal_skip.restore_refusal_skip_handler import RestoreRefusalSkipHandler
 from core.modules.drivers.commands.restore_refusal_skip.restore_refusal_skip_subcommand import RestoreRefusalSkipSubcommand
 from core.modules.drivers.commands.skip_refusal.skip_refusal_handler import SkipRefusalHandler
@@ -175,7 +175,7 @@ from core.modules.drivers.migrations.m032_helper_job_sources import HelperJobSou
 from core.modules.drivers.migrations.m033_helper_job_new_agent_reason import HelperJobNewAgentReasonMigration
 from core.modules.drivers.migrations.m034_helper_job_reason_name import HelperJobReasonNameMigration
 from core.modules.drivers.migrations.m035_helper_job_review_plan import HelperJobReviewPlanMigration
-from core.modules.drivers.migrations.m037_agent_line_nudge import AgentLineNudgeMigration
+from core.modules.drivers.migrations.m037_agent_line_nudge import AgentLineMessageMigration
 from core.modules.drivers.migrations.m030_hook_call_partial_indexes import HookCallPartialIndexesMigration
 from engine.driver.hook_route import HookRoute
 from engine.module.module import Module
@@ -195,7 +195,7 @@ from core.modules.drivers.marks.required_command_skipped_mark import RequiredCom
 from core.modules.drivers.marks.bypass_mark import BypassMark
 from core.modules.drivers.listeners.hook_wait_file_listener import HookWaitFileListener
 from core.modules.drivers.commands.record_agent_notice.record_agent_notice_handler import RecordAgentNoticeHandler
-from core.modules.drivers.commands.record_agent_nudge.record_agent_nudge_handler import RecordAgentNudgeHandler
+from core.modules.drivers.commands.record_agent_nudge.record_agent_message_handler import RecordAgentMessageHandler
 from core.modules.drivers.listeners.claimed_line_release_listener import ClaimedLineReleaseListener
 from core.modules.drivers.listeners.stop_line_typing_listener import StopLineTypingListener
 from core.modules.drivers.commands.choose_driver.choose_driver_handler import ChooseDriverHandler
@@ -207,7 +207,7 @@ from core.modules.drivers.commands.hook_call_feed.hook_call_feed_subcommand impo
 from core.modules.drivers.commands.hook_call_show.hook_call_show_subcommand import HookCallShowSubcommand
 from core.modules.drivers.models.hook_call_row import HookCallRow
 from core.modules.drivers.models.agent_activity import AgentActivity
-from core.modules.drivers.models.nudge_total import NudgeTotal
+from core.modules.drivers.models.message_total import MessageTotal
 from core.modules.drivers.guards.driver_setting_guard import DriverSettingGuard
 from core.modules.drivers.migrations.m001_drivers import DriversTablesMigration
 from core.modules.drivers.migrations.m002_hook_call_updated_input import HookCallUpdatedInputMigration
@@ -257,12 +257,12 @@ from core.modules.drivers.migrations.m031_helper_job_created_index import Helper
 from core.modules.drivers.migrations.m027_helper_jobs_closed import HelperJobsClosedMigration
 from core.modules.drivers.support.agent_line_check import AgentLineCheck
 from engine.cli.caller_line_check import CallerLineCheck
-from core.modules.drivers.migrations.m004_nudge_records import NudgeRecordsMigration
+from core.modules.drivers.migrations.m004_nudge_records import MessageRecordsMigration
 from core.modules.drivers.migrations.m028_read_indexes import ReadIndexesMigration
 from core.modules.drivers.migrations.m047_plain_column_names import PlainColumnNamesMigration
 from core.modules.drivers.migrations.m048_countdowns import CountdownsMigration
 from core.modules.drivers.migrations.m049_countdown_limit_name import CountdownCapNameMigration
-from core.modules.drivers.commands.nudge_list.nudge_list_subcommand import NudgeListSubcommand
+from core.modules.drivers.commands.nudge_list.message_list_subcommand import MessageListSubcommand
 from core.modules.drivers.commands.choose_suite.choose_suite_handler import ChooseSuiteHandler
 from core.modules.drivers.commands.choose_suite.choose_suite_subcommand import ChooseSuiteSubcommand
 from core.modules.drivers.commands.suite_current.suite_current_subcommand import SuiteCurrentSubcommand
@@ -313,11 +313,11 @@ class DriversModule(Module):
     settings = DRIVERS_SETTINGS
     agent_drivers = [MainAgentDriver, HelperAgentDriver]
     dependencies = ["journal.core.chat", "journal.core.developer", "journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.assignments", "journal.core.settings", "journal.core.profiles"]
-    models = [CountdownModelDeclaration, HookTimeoutNoticeModelDeclaration, PermissionRequestModelDeclaration, ReminderPassModelDeclaration, RefusalSkipModelDeclaration, ContextCompactionModelDeclaration, ContextCompactionNoticeModelDeclaration, HelperJobModelDeclaration, AgentBlockModelDeclaration, NudgeRecordModelDeclaration, HookCallModelDeclaration, AgentLineModelDeclaration, AgentLineHistoryModelDeclaration, OverviewReadModelDeclaration, AgentStackModelDeclaration, AgentStackMoveModelDeclaration, AgentFrameSuppressionModelDeclaration, AgentEscalationModelDeclaration, AgentWakeModelDeclaration, AgentStepRequestModelDeclaration, AgentLaunchModelDeclaration, DriverTableModelDeclaration, DriverEpochModelDeclaration, ProgramEpochModelDeclaration, DriverGrantModelDeclaration, AdmissionReceiptModelDeclaration]
-    views = [HookCallRow, NudgeTotal, AgentActivity, EnvironmentMenuRow]
-    migrations = [AgentLineHistoriesMigration, AgentLineDeliveryMigration, ComparisonAgreementMigration, AgentMachineListIndexesMigration, DriverEpochJournalStartMigration, AgentWakeAgentIndexMigration, HookCallRepeatedAnswerMigration, AgentStackPermissionChangesMigration, AllowedHookCallToolIndexMigration, HookCallToolAnswerIndexMigration, ContextCompactionNoticesMigration, HookCallEnvironmentIndexMigration, ContextCompactionWakeMigration, ContextCompactionsMigration, HelperJobNewSessionMigration, HelperJobProgramMigration, PermissionRequestEnvironmentIndexMigration, HookTimeoutNoticeAgentIndexMigration, HelperJobHaltedSecondsMigration, HelperJobTitleMigration, CountdownsMigration, CountdownCapNameMigration, PlainColumnNamesMigration, HookTimeoutNoticesMigration, SkipApprovalMigration, ForeignRunIndexMigration, HookCallReadIndexesMigration, PermissionRequestsMigration, ConfirmedSkipsMigration, HelperJobCostBaselineMigration, ReminderPassesMigration, AgentBlockKeyIndexMigration, AgentLineNudgeMigration, HelperJobReviewPlanMigration, HelperJobReasonNameMigration, HelperJobNewAgentReasonMigration, HelperJobSourcesMigration, HelperJobCreatedIndexMigration, HelperJobsClosedMigration, DriverSessionMigration, HelperJobHelperIndexMigration, HelperJobsMigration, AgentLineRepeatsMigration, NudgeTotalIndexMigration, AgentLineTextIndexMigration, BlockStopNameMigration, StrictBlocksMigration, HookChangeNamesMigration, StopBlocksMigration, DriversTablesMigration, HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration, NudgeDebtsMigration, RequiredCommandsMigration, NudgeRecordDeliveryMigration, RequiredCommandTypeMigration, AgentBlocksMigration, SubagentDispatchesMigration, DispatchSubagentMigration, HookCallLineChangesMigration, HookCallTimeIndexesMigration, BlockGracePeriodsMigration, AgentLineStateIndexMigration, AgentLineWakesMigration, ReadIndexesMigration, SkippedRefusalsTableMigration, HookCallPartialIndexesMigration, OverviewReadsMigration, HookCallAnswerTimeIndexMigration, ResumedTimeColumnMigration, ResumeColumnRepairMigration, AgentMachineTablesMigration, AgentBlockScopesMigration, HelperJobHandoverMigration]
-    handlers = [SendJournalStartedLineHandler, DeliverAgentWakeHandler, RecordRepeatedHookAnswerHandler, RunAgentStepHandler, CountStepFailureHandler, RequestAgentStepHandler, AdvanceDriverEpochsHandler, RecordDriverTablesHandler, AnswerEscalationHandler, RemoveStackFrameHandler, RestoreStackFrameHandler, RecordProgramCompactionHandler, EndProgramCompactionHandler, ReportCompactionFaultsHandler, ReportCompactionFaultHandler, SendExceptionLineHandler, RecordAgentLaunchFailureHandler, JudgeRefusalSkipHandler, RecordHookTimeoutHandler, AskPermissionHandler, AllowPermissionHandler, DeclinePermissionHandler, UsePermissionHandler, WakeCompactedAgentHandler, WakeInactiveAgentHandler, TypeWaitingLinesHandler, AnswerRefusalSkipHandler, RecordReminderPassesHandler, RecordAgentNoticeHandler, RecordAgentNudgeHandler, SkipRefusalHandler, UseRefusalSkipHandler, RestoreRefusalSkipHandler, PruneTempFoldersHandler, PruneRuntimeFoldersHandler, OpenHoldHandler, CloseAgentBlockHandler, CloseAgentBlocksHandler, EndSilentHelpersHandler, RecordBypassLineHandler, RecordMissingPromptHandler, PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneEventsHandler, ChooseSuiteHandler, ChooseDriverHandler, RecordOverviewReadHandler, WakeSafeguardsStoppedAgentHandler]
-    subcommands = [DriverTableSubcommand, DriverStackSubcommand, DriverAttentionSubcommand, EscalationListSubcommand, EscalationShowSubcommand, AnswerEscalationSubcommand, RemoveStackFrameSubcommand, RestoreStackFrameSubcommand, CheckSuiteSubcommand, ApproveRefusalSkipSubcommand, DeclineRefusalSkipSubcommand, AskPermissionSubcommand, AllowPermissionSubcommand, DeclinePermissionSubcommand, ConfirmRefusalSkipSubcommand, CancelRefusalSkipSubcommand, HookCallStopsSubcommand, EnvironmentMenuSubcommand, SkipRefusalSubcommand, RestoreRefusalSkipSubcommand, SkipAgentBlockSubcommand,PauseAgentSubcommand, ResumeAgentSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneEventsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand]
+    models = [CountdownModelDeclaration, HookTimeoutNoticeModelDeclaration, PermissionRequestModelDeclaration, ReminderPassModelDeclaration, RefusalSkipModelDeclaration, ContextCompactionModelDeclaration, ContextCompactionNoticeModelDeclaration, HelperJobModelDeclaration, AgentBlockModelDeclaration, MessageRecordModelDeclaration, HookCallModelDeclaration, AgentLineModelDeclaration, AgentLineHistoryModelDeclaration, OverviewReadModelDeclaration, AgentStackModelDeclaration, AgentStackMoveModelDeclaration, AgentFrameSuppressionModelDeclaration, AgentEscalationModelDeclaration, AgentWakeModelDeclaration, AgentStepRequestModelDeclaration, AgentLaunchModelDeclaration, DriverTableModelDeclaration, DriverEpochModelDeclaration, ProgramEpochModelDeclaration, DriverGrantModelDeclaration, AdmissionReceiptModelDeclaration]
+    views = [HookCallRow, MessageTotal, AgentActivity, EnvironmentMenuRow]
+    migrations = [AgentLineHistoriesMigration, AgentLineDeliveryMigration, ComparisonAgreementMigration, AgentMachineListIndexesMigration, DriverEpochJournalStartMigration, AgentWakeAgentIndexMigration, HookCallRepeatedAnswerMigration, AgentStackPermissionChangesMigration, AllowedHookCallToolIndexMigration, HookCallToolAnswerIndexMigration, ContextCompactionNoticesMigration, HookCallEnvironmentIndexMigration, ContextCompactionWakeMigration, ContextCompactionsMigration, HelperJobNewSessionMigration, HelperJobProgramMigration, PermissionRequestEnvironmentIndexMigration, HookTimeoutNoticeAgentIndexMigration, HelperJobHaltedSecondsMigration, HelperJobTitleMigration, CountdownsMigration, CountdownCapNameMigration, PlainColumnNamesMigration, HookTimeoutNoticesMigration, SkipApprovalMigration, ForeignRunIndexMigration, HookCallReadIndexesMigration, PermissionRequestsMigration, ConfirmedSkipsMigration, HelperJobCostBaselineMigration, ReminderPassesMigration, AgentBlockKeyIndexMigration, AgentLineMessageMigration, HelperJobReviewPlanMigration, HelperJobReasonNameMigration, HelperJobNewAgentReasonMigration, HelperJobSourcesMigration, HelperJobCreatedIndexMigration, HelperJobsClosedMigration, DriverSessionMigration, HelperJobHelperIndexMigration, HelperJobsMigration, AgentLineRepeatsMigration, MessageTotalIndexMigration, AgentLineTextIndexMigration, BlockStopNameMigration, StrictBlocksMigration, HookChangeNamesMigration, StopBlocksMigration, DriversTablesMigration, HookCallUpdatedInputMigration, HookCallHookIndexMigration, MessageRecordsMigration, MessageDebtsMigration, RequiredCommandsMigration, MessageRecordDeliveryMigration, RequiredCommandTypeMigration, AgentBlocksMigration, SubagentDispatchesMigration, DispatchSubagentMigration, HookCallLineChangesMigration, HookCallTimeIndexesMigration, BlockGracePeriodsMigration, AgentLineStateIndexMigration, AgentLineWakesMigration, ReadIndexesMigration, SkippedRefusalsTableMigration, HookCallPartialIndexesMigration, OverviewReadsMigration, HookCallAnswerTimeIndexMigration, ResumedTimeColumnMigration, ResumeColumnRepairMigration, AgentMachineTablesMigration, AgentBlockScopesMigration, HelperJobHandoverMigration]
+    handlers = [SendJournalStartedLineHandler, DeliverAgentWakeHandler, RecordRepeatedHookAnswerHandler, RunAgentStepHandler, CountStepFailureHandler, RequestAgentStepHandler, AdvanceDriverEpochsHandler, RecordDriverTablesHandler, AnswerEscalationHandler, RemoveStackFrameHandler, RestoreStackFrameHandler, RecordProgramCompactionHandler, EndProgramCompactionHandler, ReportCompactionFaultsHandler, ReportCompactionFaultHandler, SendExceptionLineHandler, RecordAgentLaunchFailureHandler, JudgeRefusalSkipHandler, RecordHookTimeoutHandler, AskPermissionHandler, AllowPermissionHandler, DeclinePermissionHandler, UsePermissionHandler, WakeCompactedAgentHandler, WakeInactiveAgentHandler, TypeWaitingLinesHandler, AnswerRefusalSkipHandler, RecordReminderPassesHandler, RecordAgentNoticeHandler, RecordAgentMessageHandler, SkipRefusalHandler, UseRefusalSkipHandler, RestoreRefusalSkipHandler, PruneTempFoldersHandler, PruneRuntimeFoldersHandler, OpenHoldHandler, CloseAgentBlockHandler, CloseAgentBlocksHandler, EndSilentHelpersHandler, RecordBypassLineHandler, RecordMissingPromptHandler, PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneEventsHandler, ChooseSuiteHandler, ChooseDriverHandler, RecordOverviewReadHandler, WakeSafeguardsStoppedAgentHandler]
+    subcommands = [DriverTableSubcommand, DriverStackSubcommand, DriverAttentionSubcommand, EscalationListSubcommand, EscalationShowSubcommand, AnswerEscalationSubcommand, RemoveStackFrameSubcommand, RestoreStackFrameSubcommand, CheckSuiteSubcommand, ApproveRefusalSkipSubcommand, DeclineRefusalSkipSubcommand, AskPermissionSubcommand, AllowPermissionSubcommand, DeclinePermissionSubcommand, ConfirmRefusalSkipSubcommand, CancelRefusalSkipSubcommand, HookCallStopsSubcommand, EnvironmentMenuSubcommand, SkipRefusalSubcommand, RestoreRefusalSkipSubcommand, SkipAgentBlockSubcommand,PauseAgentSubcommand, ResumeAgentSubcommand, MessageListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneEventsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand]
     guards = [DriverSettingGuard]
     listeners = [RetiredResponderListener, EscalationResponderListener, EscalationMarkListener, WakeAcknowledgementListener, AssignedWorkSuppressionListener, AgentPermissionBasisListener, PermissionRequestBasisListener, AgentRowBasisListener, DrivingSettingBasisListener, JournalStartBasisListener, DriverTableSyncListener, CompactionNoticeMarkListener, InstructionImportsListener, HookTimeoutMarkListener, ManageHooksListener, AgentBlockSkipMarkListener, BypassLogListener, HookWaitFileListener, TypedLineListener, StopLineTypingListener, ClaimedLineReleaseListener, NewDriverLinesListener]
     wake_causes = [JournalStartedWake, TurnFailedWake]
@@ -327,6 +327,6 @@ class DriversModule(Module):
                      HookPruningTickHandler, RowPruningTickHandler,
                      EventPruningTickHandler]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed]
-    bindings = {WakeRoute: AgentWakeRoute, ShellParser: HookClientShellParser, StepRequests: TableStepRequests, GrantLedger: TableGrantLedger, AgentViewReader: StoredAgentViewReader, StepWriter: StoredStepWriter, CallerLineCheck: AgentLineCheck, ContextChangeRequests: RecordedContextChangeRequests, Nudger: AgentLineNudger, OverviewReads: TableOverviewReads, RefusalSkips: TableRefusalSkips, ManagedHookHistoryReader: ManagedHookHistoryQuery, TranscriptAuthors: LineTranscriptAuthors, LineHistory: TableLineHistory, HookRoute: AgentHookRoute}
+    bindings = {WakeRoute: AgentWakeRoute, ShellParser: HookClientShellParser, StepRequests: TableStepRequests, GrantLedger: TableGrantLedger, AgentViewReader: StoredAgentViewReader, StepWriter: StoredStepWriter, CallerLineCheck: AgentLineCheck, ContextChangeRequests: RecordedContextChangeRequests, MessageSender: AgentLineSender, OverviewReads: TableOverviewReads, RefusalSkips: TableRefusalSkips, ManagedHookHistoryReader: ManagedHookHistoryQuery, TranscriptAuthors: LineTranscriptAuthors, LineHistory: TableLineHistory, HookRoute: AgentHookRoute}
     windows = DRIVERS_WINDOWS
     seed_reason = "each suite chooses the drivers used by its demo"

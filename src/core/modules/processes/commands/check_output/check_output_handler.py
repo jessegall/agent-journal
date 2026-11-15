@@ -4,14 +4,14 @@ from engine.command.handler import Handler
 from engine.listener.rows.event_rows import EventRows
 from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from core.modules.processes.commands.check_output.check_output import CheckOutput
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.enums.watch_state import WatchState
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.watch import Watch
 from core.modules.processes.support.output_check_schedule import MINUTE_SECONDS, OutputCheckSchedule
-from core.modules.processes.nudges.output_check_nudge import OutputCheckNudge
+from core.modules.processes.nudges.output_check_message import OutputCheckMessage
 
 
 
@@ -21,7 +21,7 @@ class CheckOutputHandler(Handler[CheckOutput, Watch]):
 
     command = CheckOutput
 
-    def __init__(self, rows: EventRows, repository: Repository, nudger: Nudger, types: HelperTypeBook, schedule: OutputCheckSchedule) -> None:
+    def __init__(self, rows: EventRows, repository: Repository, nudger: MessageSender, types: HelperTypeBook, schedule: OutputCheckSchedule) -> None:
         self.rows, self.repository, self.nudger, self.types, self.schedule = rows, repository, nudger, types, schedule
 
     def handle(self, command: CheckOutput, context: Context) -> Watch:
@@ -32,5 +32,5 @@ class CheckOutputHandler(Handler[CheckOutput, Watch]):
         if not waiting or self.types.behaviours(agent.role).watches_runs_automatically or not self.schedule.wait_elapsed(watch, context.timestamp):
             return watch
         minutes = round(watch.creation_timestamp().elapsed_seconds(context.timestamp) / MINUTE_SECONDS)
-        self.nudger.send(agent.id, OutputCheckNudge.declared(), "processes.output_check", context, output=process.id, minutes=minutes)
+        self.nudger.send(agent.id, OutputCheckMessage.declared(), "processes.output_check", context, output=process.id, minutes=minutes)
         return self.repository.update(watch, context, notified_at=context.timestamp, awaits_confirm=True)

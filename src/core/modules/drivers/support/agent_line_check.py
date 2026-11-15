@@ -1,6 +1,6 @@
 from engine.caller.caller import Caller
 from engine.database.actor_table import ActorTable
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.cli.caller_line_check import CallerLineCheck
 from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
@@ -26,7 +26,7 @@ class AgentLineCheck(CallerLineCheck):
             raise Refusal(refusal.text)
 
     # a line from a plugin's script is the plugin's, judged by what the plugin declares, not by the agent's list
-    def refusal(self, caller: Caller, line: JournalLine) -> Nudge | None:
+    def refusal(self, caller: Caller, line: JournalLine) -> AgentMessage | None:
         if caller.actor.type is not ActorType.AGENT or caller.plugin_script:
             return None
         owner = self.actors.row_owner(caller.actor.id)

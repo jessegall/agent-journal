@@ -2,15 +2,15 @@ from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.agent_line import AgentLine
-from core.modules.drivers.support.nudge_records import NudgeRecords
-from core.modules.processes.nudges.reader_request_nudge import READER_REQUEST_REMINDER
-from core.modules.processes.nudges.reader_request_nudge import ReaderRequestNudge
+from core.modules.drivers.support.message_records import MessageRecords
+from core.modules.processes.nudges.reader_request_message import READER_REQUEST_REMINDER
+from core.modules.processes.nudges.reader_request_message import ReaderRequestMessage
 
 
 class ReaderRequestNotices:
     """Tracks reader request notices sent to an idle main agent."""
 
-    def __init__(self, queries: Queries, records: NudgeRecords, kept: KeptRows) -> None:
+    def __init__(self, queries: Queries, records: MessageRecords, kept: KeptRows) -> None:
         self.queries, self.records, self.kept = queries, records, kept
 
     @staticmethod
@@ -20,7 +20,7 @@ class ReaderRequestNotices:
     def has_recent_notice(self, agent_id: int, request_id: int, current_time: Timestamp) -> bool:
         lines = self.queries.query(AgentLine).filter(session_agent_id=agent_id, source=self.source(request_id)).newest()
         last_line = self.kept.read(lines, lines.first, name="processes.reader-request-notice")
-        record = self.records.newest_row(agent_id, f"{ReaderRequestNudge.declared().key}.{request_id}")
+        record = self.records.newest_row(agent_id, f"{ReaderRequestMessage.declared().key}.{request_id}")
         timestamps = [last_line.creation_timestamp()] if last_line is not None else []
         if record is not None and record.last_delivered_at is not None:
             timestamps.append(record.last_delivered_at)

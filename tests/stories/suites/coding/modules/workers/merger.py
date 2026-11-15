@@ -13,7 +13,7 @@ from suites.coding.modules.workers.models.merger_line import MergerLine
 from tests.stories.core.modules.processes.support.process_samples import end_run, start_process
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.file.file_access import FileAccess
@@ -43,16 +43,16 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import c
 from tests.stories.suites.coding.modules.workers.merge import expect_marks_text
 from tests.integration.suites.coding.modules.workers.test_test_queue import PROOF, ended, queued_story, recording_launch
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from suites.coding.modules.workers.nudges.merger_passed_nudge import MergerPassedNudge
+from suites.coding.modules.workers.nudges.merger_passed_message import MergerPassedMessage
 from tests.stories.core.support.agent_labels import agent_label
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.suites.coding.modules.workers.quiet_helpers import StartedMerger
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import running_launcher
-from suites.coding.modules.workers.nudges.merger_passed_nudge import MergerPassedNudge
-from suites.coding.modules.workers.nudges.worker_tests_passed_nudge import WorkerTestsPassedNudge
-from engine.testing.expectations.expected_nudge import expected_nudge
-from core.modules.agents.nudges.parent_report_nudge import ParentReportNudge
-from core.modules.helpers.nudges.helper_program_fault_nudge import HelperProgramFaultNudge
+from suites.coding.modules.workers.nudges.merger_passed_message import MergerPassedMessage
+from suites.coding.modules.workers.nudges.worker_tests_passed_message import WorkerTestsPassedMessage
+from engine.testing.expectations.expected_message import expected_nudge
+from core.modules.agents.nudges.parent_report_message import ParentReportMessage
+from core.modules.helpers.nudges.helper_program_fault_message import HelperProgramFaultMessage
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 from suites.coding.support.shipped_profiles import PLANNER_PROFILE
@@ -95,7 +95,7 @@ def test_when_the_merger_cannot_start_the_main_agent_hears_what_waits(new_story,
     ended(story, started[0], 0)
     story.expect_rows(failure == "no main agent" or reached == [failure])
     lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text
-    notice = WorkerTestsPassedNudge.declared().nudge(worker=agent_number(story, worker.id)).text
+    notice = WorkerTestsPassedMessage.declared().nudge(worker=agent_number(story, worker.id)).text
     story.expect_rows(lines.count(notice) == 1, "agent:0" not in lines, detail=lines)
     log = story.home.system_log
     story.expect_rows(not log.exists() or "merger start failed" not in FileAccess.read(log))
@@ -113,7 +113,7 @@ def test_a_merge_waits_until_a_main_agent_returns(new_story, monkeypatch):
     MergerRetry()(story.container)
     MergerRetry()(story.container)
     lines = story.run(f"agent-line list --agent {main.id}", actor=main).output_text
-    story.expect_rows(lines.count(WorkerTestsPassedNudge.declared().nudge(worker=agent_number(story, worker.id)).text) == 1, detail=lines)
+    story.expect_rows(lines.count(WorkerTestsPassedMessage.declared().nudge(worker=agent_number(story, worker.id)).text) == 1, detail=lines)
 
 
 def test_a_retry_that_fails_again_does_not_repeat_the_line_once_the_main_agent_has_read_it(new_story, monkeypatch):
@@ -132,7 +132,7 @@ def test_a_retry_that_fails_again_does_not_repeat_the_line_once_the_main_agent_h
         story.hook("new-main", HookSamples.prompt("go on"))
         story.clock.advance(timedelta(minutes=1))
     lines = story.run(f"agent-line list --agent {main.id}", actor=main).output_text
-    story.expect_rows(lines.count(WorkerTestsPassedNudge.declared().nudge(worker=agent_number(story, worker.id)).text) == 1, detail=lines)
+    story.expect_rows(lines.count(WorkerTestsPassedMessage.declared().nudge(worker=agent_number(story, worker.id)).text) == 1, detail=lines)
 
 
 @pytest.mark.parametrize("merger_enabled", [True, False])
@@ -160,7 +160,7 @@ def test_delivery_with_only_checked_proofs_reaches_the_merger_or_main_agent(new_
         story.expect_text("merger next", agent_label(story, worker.id), actor=Actor(merger.id, ActorType.AGENT))
     else:
         story.expect_rows(merger_agent(story) is None)
-        story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(WorkerTestsPassedNudge.declared()), actor=story.agent)
+        story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(WorkerTestsPassedMessage.declared()), actor=story.agent)
 
 
 def test_only_the_merger_runs_its_commands(new_story):
@@ -267,9 +267,9 @@ def test_the_merger_and_a_worker_message_each_other_but_two_workers_do_not(new_s
     merger = Actor(merger_agent(story).id, ActorType.AGENT)
     second_agent = Actor(story.new_row_id(f"agent start s-other claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
     story.expect_success(f'merger advise {agent_number(story, worker.id)} "Rebase on main first"', actor=merger)
-    story.expect_text(f"agent-line list --agent {worker.id}", expected_nudge(ParentReportNudge.declared()), actor=worker)
+    story.expect_text(f"agent-line list --agent {worker.id}", expected_nudge(ParentReportMessage.declared()), actor=worker)
     story.expect_success(f'message send "Rebased" --to agent:{agent_number(story, merger.id)}', actor=worker)
-    story.expect_text(f"agent-line list --agent {merger.id}", expected_nudge(ParentReportNudge.declared()), actor=merger)
+    story.expect_text(f"agent-line list --agent {merger.id}", expected_nudge(ParentReportMessage.declared()), actor=merger)
     story.expect_refusal(f'message send "Hello" --to agent:{agent_number(story, second_agent.id)}', "not yours to message", actor=worker)
 
 
@@ -391,12 +391,12 @@ def ended_merger_lines(new_story, end) -> tuple[object, str]:
 @pytest.mark.parametrize("exit_code, fault", [(0, False), (137, True)])
 def test_the_merger_whose_program_exits_without_a_report_does_not_notify_the_main_agent(new_story, exit_code, fault):
     story, lines = ended_merger_lines(new_story, lambda story, merger: story.expect_success(f"agent exited {merger.id} {exit_code}", actor=merger))
-    story.expect_rows(expected_nudge(HelperProgramFaultNudge.declared()).matches_text(lines) == fault)
+    story.expect_rows(expected_nudge(HelperProgramFaultMessage.declared()).matches_text(lines) == fault)
 
 
 def test_the_merger_whose_session_ends_without_a_report_does_not_notify_the_main_agent(new_story):
     story, lines = ended_merger_lines(new_story, lambda story, merger: story.end_session(merger))
-    story.expect_rows(not expected_nudge(HelperProgramFaultNudge.declared()).matches_text(lines))
+    story.expect_rows(not expected_nudge(HelperProgramFaultMessage.declared()).matches_text(lines))
 
 
 def test_a_worker_left_to_the_main_agent_is_not_reported_as_stopped(new_story):
@@ -536,7 +536,7 @@ def test_a_worker_the_merger_passes_on_is_named_to_the_main_agent_with_its_merge
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.expect_success(f'merger pass {agent_number(story, worker.id)} "important differences need the main agent"', actor=merger)
     story.run_listeners()
-    story.expect_text(main_lines, expected_nudge(MergerPassedNudge.declared()))
+    story.expect_text(main_lines, expected_nudge(MergerPassedMessage.declared()))
     story.tick("s-1")
     story.expect_text(main_lines, f"worker:{agent_number(story, worker.id)} committed")
     first = story.run(main_lines).output_text.count(f"worker:{agent_number(story, worker.id)} committed")

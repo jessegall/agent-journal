@@ -7,8 +7,8 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.answer_refusal_skip.answer_refusal_skip import AnswerRefusalSkip
 from core.modules.drivers.commands.skip_refusal.skip_refusal_handler import SKIP_SOURCE
 from core.modules.drivers.models.refusal_skip import RefusalSkip
-from core.modules.drivers.nudges.skip_needs_approval_nudge import SkipNeedsApprovalNudge
-from engine.driver.nudger import Nudger
+from core.modules.drivers.nudges.skip_approval_message import SkipApprovalMessage
+from engine.driver.nudger import MessageSender
 from core.modules.drivers.support.driver_settings import SKIPS_NEED_APPROVAL
 from engine.setting.setting_values import SettingValues
 
@@ -21,7 +21,7 @@ class AnswerRefusalSkipHandler(Handler[AnswerRefusalSkip, RefusalSkip]):
 
     command = AnswerRefusalSkip
 
-    def __init__(self, queries: Queries, repository: Repository, nudger: Nudger, settings: SettingValues) -> None:
+    def __init__(self, queries: Queries, repository: Repository, nudger: MessageSender, settings: SettingValues) -> None:
         self.queries, self.repository, self.nudger, self.settings = queries, repository, nudger, settings
 
     def handle(self, command: AnswerRefusalSkip, context: Context) -> RefusalSkip:
@@ -39,5 +39,5 @@ class AnswerRefusalSkipHandler(Handler[AnswerRefusalSkip, RefusalSkip]):
         approver_id = agent.parent_id if not agent.is_main and self.settings.flag(SKIPS_NEED_APPROVAL) else None
         confirmed = self.repository.update(skip, context, confirmed_at=context.timestamp, tried=tried, needs_approval=approver_id is not None)
         if approver_id is not None:
-            self.nudger.send(approver_id, SkipNeedsApprovalNudge.declared(), SKIP_SOURCE, context, agent=agent.number, refusal=skip.id)
+            self.nudger.send(approver_id, SkipApprovalMessage.declared(), SKIP_SOURCE, context, agent=agent.number, refusal=skip.id)
         return confirmed

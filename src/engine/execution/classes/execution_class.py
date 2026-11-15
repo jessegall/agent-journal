@@ -1,7 +1,7 @@
 import sys
 from dataclasses import dataclass
 
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_priority import ExecutionPriority
 
 # a limit no count of running executions reaches
@@ -14,7 +14,7 @@ class ExecutionClass:
     with and how many of its class may run at once."""
 
     name: str
-    lane: ExecutionLane
+    lane: ExecutionLength
     slot_cost: int
     priority: ExecutionPriority
     class_limit: int = UNLIMITED

@@ -1,4 +1,4 @@
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.agent_machine.contracts.event_policy import EventPolicy
 import re
 
@@ -6,7 +6,7 @@ from engine.driver.hook_event import HookEvent
 from engine.driver.program_lockdown import ProgramLockdown
 from engine.file.file_access import FileAccess
 from engine.journal.journal_home import JournalHome
-from core.modules.drivers.nudges.panic_file_nudge import PanicFileNudge
+from core.modules.drivers.nudges.panic_file_message import PanicFileMessage
 
 PANIC_PATH = re.compile(r"\.journal/panic(?![\w.-])")
 
@@ -25,10 +25,10 @@ class PanicFilePolicy(EventPolicy):
     def __init__(self, home: JournalHome, lockdown: ProgramLockdown) -> None:
         self.home, self.lockdown = home, lockdown
 
-    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+    def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         if not self.is_panic_file_line(event) or self.server_unreachable() or self.lockdown.lockdown(event.program).is_active:
             return None
-        return PanicFileNudge.declared().nudge()
+        return PanicFileMessage.declared().nudge()
 
     @staticmethod
     def is_panic_file_line(event: HookEvent) -> bool:

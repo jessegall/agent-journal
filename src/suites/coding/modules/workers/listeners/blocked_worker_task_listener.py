@@ -5,10 +5,10 @@ from engine.enums.agent_role import AgentRole
 from engine.listener.save_listener import SaveListener
 from engine.scope.actor_scope import ActorScope
 from core.modules.drivers.support.main_agent_line import MainAgentLine
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from core.modules.tasks.models.task import Task
-from suites.coding.modules.workers.nudges.blocked_worker_task_nudge import BlockedWorkerTaskNudge
-from suites.coding.modules.workers.nudges.worker_task_blocked_nudge import WorkerTaskBlockedNudge
+from suites.coding.modules.workers.nudges.blocked_worker_task_message import BlockedWorkerTaskMessage
+from suites.coding.modules.workers.nudges.worker_task_blocked_message import WorkerTaskBlockedMessage
 from engine.event.moved import Moved
 from engine.command.context import Context
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
@@ -22,7 +22,7 @@ class BlockedWorkerTaskListener(SaveListener[Moved[Task]]):
     moves = tuple([TaskLifecycle.block])
     disabled_scopes = [ActorScope]
 
-    def __init__(self, main_agent_line: MainAgentLine, nudger: Nudger, numbers: RowNumbers, assignments: Assignments) -> None:
+    def __init__(self, main_agent_line: MainAgentLine, nudger: MessageSender, numbers: RowNumbers, assignments: Assignments) -> None:
         self.numbers, self.assignments = numbers, assignments
         self.main_agent_line, self.nudger = main_agent_line, nudger
 
@@ -32,7 +32,7 @@ class BlockedWorkerTaskListener(SaveListener[Moved[Task]]):
         if worker is None or worker.role == AgentRole.MAIN:
             return
         if worker.id != context.actor.id:
-            self.nudger.send(worker.id, BlockedWorkerTaskNudge.declared(), self.name, context, task=task.id)
+            self.nudger.send(worker.id, BlockedWorkerTaskMessage.declared(), self.name, context, task=task.id)
             return
-        notice = WorkerTaskBlockedNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worker.id), task=task.id)
+        notice = WorkerTaskBlockedMessage.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worker.id), task=task.id)
         self.main_agent_line.send_nudge(notice, self.name, context)

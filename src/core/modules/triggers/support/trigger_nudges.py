@@ -1,5 +1,5 @@
-from core.modules.triggers.nudges.trigger_denies_nudge import TriggerDeniesNudge
-from core.modules.triggers.nudges.trigger_line_nudge import TriggerLineNudge
+from core.modules.triggers.nudges.trigger_denies_message import TriggerDeniesMessage
+from core.modules.triggers.nudges.trigger_line_message import TriggerLineMessage
 
 
-TRIGGER_NUDGES = [TriggerDeniesNudge, TriggerLineNudge]
+TRIGGER_NUDGES = [TriggerDeniesMessage, TriggerLineMessage]

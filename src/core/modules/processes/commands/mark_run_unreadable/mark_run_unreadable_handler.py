@@ -1,6 +1,6 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from engine.listener.rows.event_rows import EventRows
 from core.modules.processes.commands.mark_run_unreadable.mark_run_unreadable import MarkRunUnreadable
 from core.modules.processes.models.enums.unreadable_reason import UnreadableReason
@@ -19,7 +19,7 @@ class MarkRunUnreadableHandler(Handler[MarkRunUnreadable, UnreadableMark]):
 
     command = MarkRunUnreadable
 
-    def __init__(self, rows: EventRows, terms: RunCommandTerms, marks: UnreadableMarkRegistry, nudger: Nudger) -> None:
+    def __init__(self, rows: EventRows, terms: RunCommandTerms, marks: UnreadableMarkRegistry, nudger: MessageSender) -> None:
         self.rows, self.words, self.marks, self.nudger = rows, terms, marks, nudger
 
     def handle(self, command: MarkRunUnreadable, context: Context) -> UnreadableMark:

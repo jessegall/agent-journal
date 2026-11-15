@@ -2,19 +2,19 @@ from engine.query.conditions.among import Among
 from core.modules.assignments.support.assignments import Assignments
 from engine.enums.agent_role import AgentRole
 from engine.command.context import Context
-from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.message_template import MessageTemplate
 from engine.listener.save_listener import SaveListener
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
-from suites.coding.nudges.testing_tasks_failed_run_nudge import TestingTasksFailedRunNudge
-from suites.coding.nudges.testing_tasks_full_run_nudge import TestingTasksFullRunNudge
+from suites.coding.nudges.testing_tasks_failed_run_message import TestingTasksFailedRunMessage
+from suites.coding.nudges.testing_tasks_full_run_message import TestingTasksFullRunMessage
 from engine.event.created import Created
 from core.modules.processes.events.process_ended import ProcessEnded
 
@@ -31,7 +31,7 @@ class FullTestRunListener(SaveListener[Created[Process] | ProcessEnded]):
     name = "tasks.full-test-run"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, repository: Repository, nudger: Nudger, assignments: Assignments) -> None:
+    def __init__(self, queries: Queries, repository: Repository, nudger: MessageSender, assignments: Assignments) -> None:
         self.queries, self.repository, self.nudger, self.assignments = queries, repository, nudger, assignments
 
     def handle(self, event: Created[Process] | ProcessEnded, context: Context) -> None:
@@ -39,19 +39,19 @@ class FullTestRunListener(SaveListener[Created[Process] | ProcessEnded]):
         if not run.is_full_test_run:
             return
         if isinstance(event, Created):
-            self.line_sender(run, self.testing_tasks(run), TestingTasksFullRunNudge.declared(), context)
+            self.line_sender(run, self.testing_tasks(run), TestingTasksFullRunMessage.declared(), context)
             return
         self.ended(run, context)
 
     def ended(self, run: Process, context: Context) -> None:
         tasks = self.testing_tasks(run)
         if run.state is not ProcessState.FINISHED:
-            self.line_sender(run, tasks, TestingTasksFailedRunNudge.declared(), context)
+            self.line_sender(run, tasks, TestingTasksFailedRunMessage.declared(), context)
             return
         for task in tasks:
             self.repository.save(task.close(context.timestamp, context.actor, f"the full test run, process {run.id}, passed"), context)
 
-    def line_sender(self, run: Process, tasks: tuple[Task, ...], declaration: NudgeDeclaration, context: Context) -> None:
+    def line_sender(self, run: Process, tasks: tuple[Task, ...], declaration: MessageTemplate, context: Context) -> None:
         if tasks:
             names = ", ".join(f"task:{task.id}" for task in tasks)
             self.nudger.send(run.session_agent_id, declaration, SOURCE, context, tasks=names)

@@ -4,7 +4,7 @@ from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.driver.count_down import CountDown
-from engine.driver.times_span import TimesSpan
+from engine.driver.time_window import TimeWindow
 from engine.errors.refusal import Refusal
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.support.countdowns import Countdowns
@@ -47,7 +47,7 @@ class SendMergeFindingsHandler(Handler[SendMergeFindings, None]):
         if worktree is None:
             return
         limit = self.settings.number(DELIVERY_FAILURE_LIMIT)
-        refusals = CountDown(MERGE_REFUSAL_KEY, "merge refusal", TimesSpan(limit), is_silent=True)
+        refusals = CountDown(MERGE_REFUSAL_KEY, "merge refusal", TimeWindow(limit), is_silent=True)
         if not self.countdowns.tick(refusals, worker_id, str(worktree.id), context):
             self.countdowns.reset(refusals, worker_id, context)
             self.bus.dispatch(SendMergerReport(MERGE_REFUSAL_REPORT.format(worker=worker_id, count=limit)), context)

@@ -1,7 +1,7 @@
 import importlib.util
 from pathlib import Path
 
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.execution.classes.builtin_classes import BUILTIN_CLASSES
 from engine.execution.limits.default_lane_limits import DEFAULT_LANE_LIMITS
 
@@ -23,4 +23,4 @@ def test_every_built_in_class_is_printed():
 
 def test_capacities_printed():
     text = table_text()
-    assert all(f"| {lane} | {DEFAULT_LANE_LIMITS.capacity(lane)} |" in text for lane in ExecutionLane)
+    assert all(f"| {lane} | {DEFAULT_LANE_LIMITS.capacity(lane)} |" in text for lane in ExecutionLength)

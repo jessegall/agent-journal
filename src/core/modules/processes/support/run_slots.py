@@ -23,7 +23,7 @@ from core.modules.processes.support.run_admission import RunAdmission
 from core.modules.processes.support.process_type_limits import ProcessTypeLimits
 from core.modules.processes.support.execution_tickets import ExecutionTickets
 from core.modules.processes.support.stored_execution_classes import StoredExecutionClasses
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.enums.log_level import LogLevel
 from engine.execution.execution_order import ExecutionOrder
 from engine.execution.execution_ticket import ExecutionTicket
@@ -53,9 +53,9 @@ class RunSlots:
         processes = self.rows.required_index(Process, [process.id for process in waiting])
         categories = self.kind_limits.admissions(waiting)
         lanes = self.tickets.lanes(running, categories)
-        for lane in (ExecutionLane.SHORT, ExecutionLane.LONG):
+        for lane in (ExecutionLength.SHORT, ExecutionLength.LONG):
             lane_tickets = lanes[lane]
-            is_halted = self.halt.is_halted and lane is ExecutionLane.LONG
+            is_halted = self.halt.is_halted and lane is ExecutionLength.LONG
             for ticket in order.raised(lane_tickets.waiting, current_time, is_halted):
                 processes[ticket.run_id] = self.kept_raise(processes[ticket.run_id], ticket, context)
             if order.over_ceiling(lane_tickets.running):
@@ -67,7 +67,7 @@ class RunSlots:
                 if categories.is_blocked(process, self.admitted_runs()):
                     continue
                 self.folder.write_slot(process.id)
-                admitted = replace(process, queued_at=None, slot_assigned=lane is ExecutionLane.LONG, started_at=context.timestamp)
+                admitted = replace(process, queued_at=None, slot_assigned=lane is ExecutionLength.LONG, started_at=context.timestamp)
                 saved = self.repository.save_change(process, admitted, context)
                 self.remember(saved)
                 categories.admitted(saved)

@@ -10,7 +10,7 @@ from engine.enums.capability_part import CapabilityPart
 from engine.enums.contribution_type import ContributionType
 from engine.enums.block_end import BlockEnd
 from engine.enums.hook_event_name import HookEventName
-from engine.enums.line_carrier import LineCarrier
+from engine.enums.line_channel import LineChannel
 
 NEED_STATES = ("Working", "Waiting", "Blocked", "Compacting")
 ENGINE_PLACED_STATES = ("Stopped", "Paused", "Ended")
@@ -70,7 +70,7 @@ class DeclarationCheck:
 
     def has_unsupported_line(self, entry: ContributionDeclaration) -> bool:
         is_line = entry.contribution_type is ContributionType.LINE
-        return is_line and entry.carrier is not LineCarrier.WAITING and not self.supports_events(entry.events)
+        return is_line and entry.carrier is not LineChannel.WAITING and not self.supports_events(entry.events)
 
     def supports_events(self, events: Sequence[HookEventName]) -> bool:
         return any(program.capabilities.supports(CapabilityPart.LINES, event) for program in self.programs for event in events)

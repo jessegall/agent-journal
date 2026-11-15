@@ -1,7 +1,7 @@
 from engine.database.migration import Migration
 
 
-class NudgeRecordDeliveryMigration(Migration):
+class MessageRecordDeliveryMigration(Migration):
     """Names a nudge record's counts for what they hold: how often a line was delivered, and when last."""
 
     number = 7

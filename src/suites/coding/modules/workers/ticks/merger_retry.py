@@ -20,7 +20,7 @@ from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.models.merger_visit import MergerVisit
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
-from suites.coding.modules.workers.nudges.merger_line_available_nudge import MergerLineAvailableNudge
+from suites.coding.modules.workers.nudges.merger_line_available_message import MergerLineAvailableMessage
 from suites.coding.modules.workers.support.merge_ready_lines import MergeReadyLines
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
@@ -56,7 +56,7 @@ class MergerRetry:
     def retry_line(self, container: Container, line: MergerLine) -> None:
         if not self.is_merger_idle(container):
             return
-        container.get(Bus).run(StartMerger(MergerLineAvailableNudge.declared().nudge(line=line.id), line.creation_timestamp()), Actor.core(), environment_id=line.environment_id)
+        container.get(Bus).run(StartMerger(MergerLineAvailableMessage.declared().nudge(line=line.id), line.creation_timestamp()), Actor.core(), environment_id=line.environment_id)
 
     @staticmethod
     def is_merger_idle(container: Container) -> bool:

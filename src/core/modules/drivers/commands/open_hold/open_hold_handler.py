@@ -10,7 +10,7 @@ from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.drivers.errors.missing_block_target_refusal import MissingBlockTargetRefusal
 from core.modules.drivers.models.agent_block import AgentBlock
-from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
+from core.modules.drivers.models.support.tool_use_window import ToolUseWindow
 
 
 class OpenHoldHandler(Handler[OpenHold, AgentBlock]):
@@ -45,6 +45,6 @@ class OpenHoldHandler(Handler[OpenHold, AgentBlock]):
     @staticmethod
     def tool_uses(after: Interval | None) -> int:
         spans = after.spans if after is not None else ()
-        if any(not isinstance(span, (ToolUseSpan, Seconds)) for span in spans):
+        if any(not isinstance(span, (ToolUseWindow, Seconds)) for span in spans):
             raise ValueError("a block's grace holds tool uses and seconds only")
-        return next((span.count for span in spans if isinstance(span, ToolUseSpan)), 0)
+        return next((span.count for span in spans if isinstance(span, ToolUseWindow)), 0)

@@ -14,8 +14,8 @@ from tests.stories.core.modules.processes.support.cadence_probe import (HelperBe
                                                                        running_run, informed, tree_of, worker_agent)
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from core.modules.processes.nudges.hung_run_nudge import HungRunNudge
-from core.modules.processes.nudges.run_frozen_nudge import RunFrozenNudge
+from core.modules.processes.nudges.hung_run_message import HungRunMessage
+from core.modules.processes.nudges.run_frozen_message import RunFrozenMessage
 from tests.integration.support.fixture_journal import FixtureJournal
 
 MISSING_GROUP = 999999
@@ -198,11 +198,11 @@ def watched(story: FixtureJournal, seconds: int, tree: FakeGroupCpuTime | None =
 
 
 def hang_line(process_id: int, seconds: int = HALF) -> str:
-    return RunFrozenNudge.declared().nudge(output=process_id, seconds=seconds, limit=HANG_SECONDS).text
+    return RunFrozenMessage.declared().nudge(output=process_id, seconds=seconds, limit=HANG_SECONDS).text
 
 
 def hung_line(process_id: int) -> str:
-    return HungRunNudge.declared().nudge(output=process_id, seconds=HANG_SECONDS).text
+    return HungRunMessage.declared().nudge(output=process_id, seconds=HANG_SECONDS).text
 
 
 def test_a_stuck_test_run_wakes_its_agent_once_at_half_the_hang_time_and_is_stopped_at_the_hang_time(played):

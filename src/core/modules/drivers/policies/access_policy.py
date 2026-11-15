@@ -1,6 +1,6 @@
 from engine.agent_machine.contracts.event_policy import EventPolicy
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from core.modules.drivers.support.read_only_access import ReadOnlyAccess
 
 
@@ -14,5 +14,5 @@ class AccessPolicy(EventPolicy):
     def __init__(self, access: ReadOnlyAccess) -> None:
         self.access = access
 
-    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+    def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         return self.access.refusal(event, agent_id)

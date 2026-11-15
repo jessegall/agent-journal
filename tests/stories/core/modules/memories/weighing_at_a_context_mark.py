@@ -9,8 +9,8 @@ from engine.testing.examples.hook_samples import HookSamples
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
-from core.modules.memories.nudges.weigh_memories_nudge import WeighMemoriesNudge
-from engine.testing.expectations.expected_nudge import expected_nudge
+from core.modules.memories.nudges.weigh_memories_message import WeighMemoriesMessage
+from engine.testing.expectations.expected_message import expected_nudge
 
 EDITED = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use")
 EDIT = HookSamples.edit("src/cart.py")
@@ -22,7 +22,7 @@ MARK_TOOL_USES = [(55, 50, 10), (85, 80, 5), (95, 90, 2)]
 def fact_mark(story) -> int:
     fact_id = 1
     story.report_context_percent("s-1", 55)
-    story.expect_hook_allowed("s-1", EDITED, expected_nudge(WeighMemoriesNudge.declared()))
+    story.expect_hook_allowed("s-1", EDITED, expected_nudge(WeighMemoriesMessage.declared()))
     return fact_id
 
 
@@ -35,7 +35,7 @@ def test_each_mark_gives_its_tool_uses_with_a_countdown_then_holds_writes_and_le
     for percent, mark, uses in MARK_TOOL_USES:
         story.report_context_percent("s-1", percent)
         story.advance(SECOND)
-        story.expect_hook_allowed("s-1", EDITED, expected_nudge(WeighMemoriesNudge.declared()))
+        story.expect_hook_allowed("s-1", EDITED, expected_nudge(WeighMemoriesMessage.declared()))
         for remaining in reversed(range(uses)):
             story.advance(SECOND)
             story.expect_hook_allowed("s-1", EDIT, *([f"weigh memories due: {remaining} tool uses"] if remaining < COUNTDOWN_TOOL_USES else []))

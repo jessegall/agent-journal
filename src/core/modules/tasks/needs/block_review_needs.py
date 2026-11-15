@@ -3,8 +3,8 @@ from collections.abc import Mapping, Sequence
 from engine.agent_machine.needs.agent_reference import AgentReference
 from engine.agent_machine.needs.block_plan import BlockPlan
 from engine.enums.closer_role import CloserRole
-from engine.agent_machine.needs.need import Need
-from engine.agent_machine.needs.need_source import NeedSource
+from engine.agent_machine.needs.required_state import RequiredState
+from engine.agent_machine.needs.state_source import StateSource
 from engine.agent_machine.record.question import Question
 from engine.agent_stack.states.blocked import Blocked
 from engine.enums.agent_role import AgentRole
@@ -14,7 +14,7 @@ from core.modules.tasks.support.block_review_round import BLOCK_REVIEW_KEY, Bloc
 BLOCK_REVIEW_RANK = "tasks.blocked-review"
 
 
-class BlockReviewNeeds(NeedSource):
+class BlockReviewNeeds(StateSource):
     """The third reminder of tasks the main agent blocked by hand, none of them moved, holds its tools until it acts
     on them or skips the hold with a reason."""
     state_type = Blocked
@@ -24,7 +24,7 @@ class BlockReviewNeeds(NeedSource):
     def __init__(self, review: BlockReviewRound) -> None:
         self.review = review
 
-    def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]:
+    def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[RequiredState | BlockPlan]]:
         event = question.event
         if event is None or event.event is not HookEventName.POST_TOOL_USE:
             return {}

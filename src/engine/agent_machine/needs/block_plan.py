@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from engine.agent_stack.subject_reference import SubjectReference
+from engine.agent_stack.row_reference import RowReference
 from engine.driver.block_condition import BlockCondition
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.enums.closer_role import CloserRole
 
 
@@ -11,7 +11,7 @@ class BlockPlan:
     """A hold a need source asks for, as pure data: the step judges the action against it as if it were open
     and opens its row in the same save."""
 
-    nudge: Nudge
+    nudge: AgentMessage
     condition: BlockCondition
     tool_check_key: str
     rank: str
@@ -23,9 +23,9 @@ class BlockPlan:
     scope_stop: bool = False
     is_strict: bool = False
     closer_roles: tuple[CloserRole, ...] = ()
-    subject: SubjectReference | None = None
+    subject: RowReference | None = None
     context_generation: int | None = None
     lifting_lines: tuple[str, ...] = ()
-    stop_nudge: Nudge | None = None
+    stop_nudge: AgentMessage | None = None
     # the line that counts the tool uses left before the hold refuses, its {left} filled in at each use of the grace
-    countdown: Nudge | None = None
+    countdown: AgentMessage | None = None

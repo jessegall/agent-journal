@@ -4,12 +4,12 @@ from collections.abc import Mapping, Sequence
 from engine.agent_stack.states.blocked import Blocked
 from engine.agent_machine.needs.agent_reference import AgentReference
 from engine.agent_machine.needs.block_plan import BlockPlan
-from engine.agent_machine.needs.need import Need
-from engine.agent_machine.needs.need_source import NeedSource
+from engine.agent_machine.needs.required_state import RequiredState
+from engine.agent_machine.needs.state_source import StateSource
 from engine.agent_machine.record.question import Question
 from engine.enums.closer_role import CloserRole
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.skills.nudges.read_command_skill_first_nudge import ReadCommandSkillFirstNudge
+from core.modules.skills.nudges.read_command_skill_first_message import ReadCommandSkillFirstMessage
 from core.modules.skills.support.block_conditions.skill_loaded import SkillLoaded
 from core.modules.skills.support.missing_command_skill import MissingCommandSkill
 from core.modules.skills.support.skill_files import SkillFiles
@@ -20,7 +20,7 @@ COMMAND_RULE = "skills.command"
 SKILL_COMMAND = "journal skill read"
 
 
-class CommandSkillNeeds(NeedSource):
+class CommandSkillNeeds(StateSource):
     """Plans, from the tool call under judgement, the strict block of a journal command whose subject a skill covers and
     the agent has not loaded: three tool uses, then only that skill's read passes (doc 1310 section 4.6)."""
     state_type = Blocked
@@ -29,7 +29,7 @@ class CommandSkillNeeds(NeedSource):
     def __init__(self, missing: MissingCommandSkill, files: SkillFiles, agents: AgentRows) -> None:
         self.missing, self.files, self.agents = missing, files, agents
 
-    def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]:
+    def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[RequiredState | BlockPlan]]:
         tool = question.tool()
         if tool is None or not tool.journal_commands:
             return {}
@@ -40,6 +40,6 @@ class CommandSkillNeeds(NeedSource):
         folder = self.missing.first(agent_id, commands)
         if folder is None:
             return None
-        nudge = ReadCommandSkillFirstNudge.declared().nudge(instruction=self.files.agent_instruction(folder, self.agents.find(agent_id)))
+        nudge = ReadCommandSkillFirstMessage.declared().nudge(instruction=self.files.agent_instruction(folder, self.agents.find(agent_id)))
         return BlockPlan(nudge, SkillLoaded(folder), COMMAND_RULE, COMMAND_SKILL_RANK, tool_grace_uses=SKILL_TOOL_USES, is_strict=True,
                          closer_roles=tuple([CloserRole.AGENT]), lifting_lines=tuple([f"{SKILL_COMMAND} {folder}"]), countdown=SKILL_COUNTDOWN.nudge("{left}", skill=folder))

@@ -1,5 +1,5 @@
-from core.modules.plugins.nudges.plugin_refusal_nudge import PluginRefusalNudge
-from core.modules.plugins.nudges.plugin_program_off_nudge import PluginProgramOffNudge
+from core.modules.plugins.nudges.plugin_refusal_message import PluginRefusalMessage
+from core.modules.plugins.nudges.plugin_program_off_message import PluginProgramOffMessage
 
 
-PLUGIN_NUDGES = [PluginProgramOffNudge, PluginRefusalNudge]
+PLUGIN_NUDGES = [PluginProgramOffMessage, PluginRefusalMessage]

@@ -3,7 +3,7 @@ from dataclasses import replace
 from datetime import datetime, timezone
 
 from engine.enums.command_category import CommandCategory
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_priority import ExecutionPriority
 from engine.enums.starter_type import StarterType
 from engine.execution.classes.execution_classes import ExecutionClasses
@@ -57,27 +57,27 @@ def process(number: int, agent: int, category: CommandCategory, waiting: bool, e
 
 
 def test_waiting_rows_become_waiting_tickets():
-    lane = tickets().of_rows([process(1, 2, CommandCategory.TEST_RUN, waiting=True)], ExecutionLane.LONG)
+    lane = tickets().of_rows([process(1, 2, CommandCategory.TEST_RUN, waiting=True)], ExecutionLength.LONG)
     assert (len(lane.waiting), len(lane.running)) == (1, 0)
 
 
 def test_started_rows_are_running_tickets():
-    lane = tickets().of_rows([process(1, 2, CommandCategory.TEST_RUN, waiting=False)], ExecutionLane.LONG)
+    lane = tickets().of_rows([process(1, 2, CommandCategory.TEST_RUN, waiting=False)], ExecutionLength.LONG)
     assert (len(lane.waiting), len(lane.running)) == (0, 1)
 
 
 def test_starter_comes_from_the_agent_role():
-    lane = tickets().of_rows([process(1, 1, CommandCategory.TEST_RUN, waiting=True), process(2, 2, CommandCategory.TEST_RUN, waiting=True)], ExecutionLane.LONG)
+    lane = tickets().of_rows([process(1, 1, CommandCategory.TEST_RUN, waiting=True), process(2, 2, CommandCategory.TEST_RUN, waiting=True)], ExecutionLength.LONG)
     assert [ticket.starter.starter_type for ticket in lane.waiting] == [StarterType.MAIN_AGENT, StarterType.HELPER]
 
 
 def test_reader_request_sets_waits_for_reader():
-    lane = tickets(frozenset({1})).of_rows([process(1, 2, CommandCategory.TEST_RUN, waiting=True)], ExecutionLane.LONG)
+    lane = tickets(frozenset({1})).of_rows([process(1, 2, CommandCategory.TEST_RUN, waiting=True)], ExecutionLength.LONG)
     assert lane.waiting[0].has_open_reader_request
 
 
 def test_row_without_a_class_is_matched():
-    lane = tickets().of_rows([process(1, 2, CommandCategory.SEARCH, waiting=True)], ExecutionLane.SHORT)
+    lane = tickets().of_rows([process(1, 2, CommandCategory.SEARCH, waiting=True)], ExecutionLength.SHORT)
     assert lane.waiting[0].execution_class.name == "agent short line"
 
 
@@ -86,9 +86,9 @@ def moved(number: int, category: CommandCategory) -> Process:
 
 
 def test_move_frees_the_short_slot():
-    assert tickets().of_rows([moved(1, CommandCategory.SEARCH)], ExecutionLane.SHORT).running == ()
+    assert tickets().of_rows([moved(1, CommandCategory.SEARCH)], ExecutionLength.SHORT).running == ()
 
 
 def test_moved_row_counts_in_the_long_lane():
-    long_lane = tickets().of_rows([moved(1, CommandCategory.SEARCH)], ExecutionLane.LONG)
-    assert [(ticket.execution_class.lane, ticket.execution_class.slot_cost) for ticket in long_lane.running] == [(ExecutionLane.LONG, 1)]
+    long_lane = tickets().of_rows([moved(1, CommandCategory.SEARCH)], ExecutionLength.LONG)
+    assert [(ticket.execution_class.lane, ticket.execution_class.slot_cost) for ticket in long_lane.running] == [(ExecutionLength.LONG, 1)]

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.command.command import Command
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from core.modules.drivers.models.agent_line import AgentLine
 
 
@@ -10,5 +10,5 @@ class SendUnfinishedTasksLine(Command[AgentLine]):
     """Gives a stopped worker that holds started work the line that tells it to go on, which resumes it."""
 
     worker_id: int
-    line: Nudge
+    line: AgentMessage
     source: str

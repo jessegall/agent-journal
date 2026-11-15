@@ -16,14 +16,14 @@ from core.modules.processes.commands.orphan_process.orphan_process import Orphan
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 from core.modules.processes.support.runner_binary import RunnerBinary
 from core.modules.processes.errors.missing_runner_error import MissingRunnerError
-from suites.coding.modules.workers.nudges.proof_check_nudge import ProofCheckNudge
+from suites.coding.modules.workers.nudges.proof_check_message import ProofCheckMessage
 from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_marks_text
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.support.story_checks import expect_absent_value, expect_answers, expect_value, expect_value_with
-from suites.coding.modules.workers.nudges.worker_tests_passed_nudge import WorkerTestsPassedNudge
-from engine.testing.expectations.expected_nudge import expected_nudge
+from suites.coding.modules.workers.nudges.worker_tests_passed_message import WorkerTestsPassedMessage
+from engine.testing.expectations.expected_message import expected_nudge
 from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.modules.workers.support.worker_settings import PROJECT_TEST_COMMAND
@@ -86,7 +86,7 @@ def test_all_tests_passing_checks_the_proofs_and_tells_the_main_agent_and_the_me
     ended(story, started[0], 0)
     story.expect_text("proof show 1", "state: checked", actor=story.agent)
     expect_marks_text(story, "passed")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(WorkerTestsPassedNudge.declared()), actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(WorkerTestsPassedMessage.declared()), actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     request_merge(story, worker)
@@ -145,7 +145,7 @@ def test_passed_tests_with_a_proof_with_no_test_ask_for_the_check_not_the_merge(
     story, repository, worker, started = mixed_proof_story(played)
     ended(story, started[0], 0)
     lines = story.run(f"agent-line list --agent {story.agent.id}")
-    lines.expect_text(ProofCheckNudge.declared().nudge(worker=agent_number(story, worker.id), task=1, proofs="2").text)
+    lines.expect_text(ProofCheckMessage.declared().nudge(worker=agent_number(story, worker.id), task=1, proofs="2").text)
     lines.expect_no_text(f"journal worker merge {agent_number(story, worker.id)}")
     expect_marks_text(story, "passed")
     story.expect_success("proof check 2", actor=story.agent)

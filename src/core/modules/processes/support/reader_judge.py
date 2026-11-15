@@ -10,7 +10,7 @@ from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.queries.conditions.reader_sample_scope import ReaderSampleScope
 from core.modules.processes.support.output_folder import OutputFolder
-from core.modules.processes.support.reader_judgement import ReaderJudgement
+from core.modules.processes.support.reader_check import ReaderCheck
 from core.modules.processes.support.reader_run import ReaderRun
 from core.modules.processes.support.reader_selection import ReaderSelection
 
@@ -40,13 +40,13 @@ class ReaderJudge:
     def __init__(self, run: ReaderRun, folder: OutputFolder, parts: ProcessPartQuery) -> None:
         self.run, self.folder, self.parts = run, folder, parts
 
-    def judged(self, reader: Reader, category: CommandCategory) -> ReaderJudgement:
+    def judged(self, reader: Reader, category: CommandCategory) -> ReaderCheck:
         return self.judged_samples(reader, category, self.samples(reader))
 
-    def judged_command(self, reader: Reader, category: CommandCategory, scope: ReaderSampleScope) -> ReaderJudgement:
+    def judged_command(self, reader: Reader, category: CommandCategory, scope: ReaderSampleScope) -> ReaderCheck:
         return self.judged_samples(reader, category, self.command_samples(reader, scope))
 
-    def judged_samples(self, reader: Reader, category: CommandCategory, parts: Sequence[ProcessPart]) -> ReaderJudgement:
+    def judged_samples(self, reader: Reader, category: CommandCategory, parts: Sequence[ProcessPart]) -> ReaderCheck:
         samples = tuple(part for part in parts if part.category is category)
         missing = self.fields_missing(reader, category)
         if category is CommandCategory.TEST_RUN and any(self.has_argument(reader.title, part.text) for part in samples):
@@ -61,10 +61,10 @@ class ReaderJudge:
             arguments = arguments[1:]
         return any(argument in title_terms for argument in arguments if argument not in {"test", "tests", "run", "go"} and not argument.startswith("-"))
 
-    def tested(self, reader: Reader) -> ReaderJudgement:
+    def tested(self, reader: Reader) -> ReaderCheck:
         return self.tested_samples(reader, self.samples(reader))
 
-    def tested_samples(self, reader: Reader, parts: Sequence[ProcessPart]) -> ReaderJudgement:
+    def tested_samples(self, reader: Reader, parts: Sequence[ProcessPart]) -> ReaderCheck:
         sampled_ids: list[int] = []
         missed: list[str] = []
         for part in islice(parts, SAMPLE_OUTPUTS):
@@ -77,7 +77,7 @@ class ReaderJudge:
             if misses := self.misses(reader, part.category, text):
                 missed.append(f"on output {part.process_id}: {', '.join(misses)}")
         output_id = sampled_ids[0] if sampled_ids and not missed else None
-        return ReaderJudgement(missed=tuple(missed), output_id=output_id)
+        return ReaderCheck(missed=tuple(missed), output_id=output_id)
 
     @staticmethod
     def is_killed(exit_code: int | None, text: str) -> bool:

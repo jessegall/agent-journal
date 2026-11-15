@@ -1,3 +1,3 @@
-from core.modules.developer.nudges.exception_line_nudge import ExceptionLineNudge
+from core.modules.developer.nudges.exception_line_message import ExceptionLineMessage
 
-DEVELOPER_NUDGES = [ExceptionLineNudge]
+DEVELOPER_NUDGES = [ExceptionLineMessage]

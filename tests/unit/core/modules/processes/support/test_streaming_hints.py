@@ -3,7 +3,7 @@ import pytest
 from engine.enums.command_category import CommandCategory
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.support.silent_runs import SilentRuns
-from engine.driver.nudge_declaration import LONGEST_FIELD_CHARACTERS
+from engine.driver.message_template import LONGEST_FIELD_CHARACTERS
 from core.modules.processes.support.streaming_hints import GENERAL_HINT, SERIAL_PACKAGES_HINT, STREAMING_HINTS, StreamingHints
 
 

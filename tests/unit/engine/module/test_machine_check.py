@@ -8,8 +8,8 @@ from engine.agent_machine.needs.rank_order import RankOrder
 from engine.agent_machine.driver import Driver
 from engine.agent_machine.needs.agent_reference import AgentReference
 from engine.agent_machine.needs.block_plan import BlockPlan
-from engine.agent_machine.needs.need import Need
-from engine.agent_machine.needs.need_source import NeedSource
+from engine.agent_machine.needs.required_state import RequiredState
+from engine.agent_machine.needs.state_source import StateSource
 from engine.agent_machine.record.question import Question
 from engine.command.bus import Bus
 from engine.enums.responder import Responder
@@ -25,11 +25,11 @@ class SampleDriver(Driver):
     responder = Responder.PERSON
 
 
-class UnreadNeeds(NeedSource):
+class UnreadNeeds(StateSource):
     state_type = Blocked
     rank = "samples.unread"
 
-    def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]:
+    def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[RequiredState | BlockPlan]]:
         return {}
 
 
@@ -49,7 +49,7 @@ class SampleModule(Module):
     needs = [UnreadNeeds]
 
 
-def problems(*needs: type[NeedSource]) -> tuple[str, ...]:
+def problems(*needs: type[StateSource]) -> tuple[str, ...]:
     module = type("CheckedModule", (SampleModule,), {"needs": [UnreadNeeds, *needs]})
     return MachineCheck(ContributionReader()).problems([module])
 

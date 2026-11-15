@@ -3,14 +3,14 @@ from dataclasses import dataclass
 from engine.command.command import Command
 from engine.driver.hook_event import HookEvent
 from engine.driver.interval import Interval
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.span_queries import SpanQueries
 from engine.request.request_values import RequestValues
 from engine.time.clock import Clock
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.models.process import Process
-from core.modules.processes.nudges.process_missing_nudge import ProcessMissingNudge
+from core.modules.processes.nudges.process_missing_message import ProcessMissingMessage
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.run_folder_ends import RunFolderEnds
 from core.modules.processes.support.output_folder import OutputFolder
@@ -25,7 +25,7 @@ class OrphanedRuns:
     """The runs of one agent found ended or lost: the lines that tell it of the lost ones, and the commands that end
     them."""
 
-    nudges: tuple[Nudge, ...]
+    nudges: tuple[AgentMessage, ...]
     commands: tuple[Command[object], ...]
 
 
@@ -46,14 +46,14 @@ class OrphanCheck:
     def found(self, agent_id: int) -> OrphanedRuns:
         now = self.clock.timestamp()
         restarted = self.folder.tick_interval_seconds(agent_id, now) > TICK_INTERVAL_SECONDS
-        nudges: list[Nudge] = []
+        nudges: list[AgentMessage] = []
         commands: list[Command[object]] = []
         for process in tuple(self.processes.agent_started(agent_id).running().every_row(RUNNING_RUNS_REASON)):
             ended = self.ends.commands(process)
             if ended:
                 commands.extend(ended)
             elif self.is_lost(process, agent_id, restarted):
-                nudges.append(ProcessMissingNudge.declared().nudge(process=process.id))
+                nudges.append(ProcessMissingMessage.declared().nudge(process=process.id))
                 commands.append(OrphanProcess(process.id))
         return OrphanedRuns(tuple(nudges), tuple(commands))
 

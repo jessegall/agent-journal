@@ -1,7 +1,7 @@
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
@@ -19,7 +19,7 @@ class SendMergerReportHandler(Handler[SendMergerReport, None]):
         self.queries, self.bus = queries, bus
 
     def handle(self, command: SendMergerReport, context: Context) -> None:
-        text = command.text.text if isinstance(command.text, Nudge) else command.text
+        text = command.text.text if isinstance(command.text, AgentMessage) else command.text
         main_agent = MainAgentFinder.latest(self.queries)
         if main_agent is not None:
             self.bus.run(SendAgentMessage(main_agent.id, text), context.actor, environment_id=context.environment_id)

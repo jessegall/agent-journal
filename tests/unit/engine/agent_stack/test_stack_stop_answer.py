@@ -1,8 +1,8 @@
 from datetime import UTC, datetime
 
 from engine.agent_stack.escalation import Escalation
-from engine.agent_stack.frame import Frame
-from engine.agent_stack.need_key import NeedKey
+from engine.agent_stack.stacked_state import StackedState
+from engine.agent_stack.state_key import StateKey
 from engine.agent_stack.open_block import OpenBlock
 from engine.agent_stack.reason import Reason
 from engine.agent_stack.stack import Stack
@@ -28,8 +28,8 @@ TASK_REFUSAL = Reason("tasks.stop", DecisionClass.HOLD, "tasks.started", "task 6
 MESSAGES_REFUSAL = Reason("messages.unread-at-stop", DecisionClass.HOLD, "messages.unread", "read message 7")
 
 
-def frame(state: State, name: str) -> Frame:
-    return Frame(state, NeedKey(name, None, "1"), STARTED_AT)
+def frame(state: State, name: str) -> StackedState:
+    return StackedState(state, StateKey(name, None, "1"), STARTED_AT)
 
 
 def stack(*states: State) -> Stack:

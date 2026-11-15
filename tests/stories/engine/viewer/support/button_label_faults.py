@@ -2,7 +2,7 @@ from enum import StrEnum
 
 from engine.chat.mark_button import MarkButton
 from engine.chat.mark_declaration import MarkDeclaration
-from engine.chat.mark_family import MarkFamily
+from engine.chat.mark_category import MarkCategory
 from engine.enums.mark_group import MarkGroup
 from engine.module.module import Module
 from engine.viewer.button_declaration import ButtonDeclaration
@@ -42,5 +42,5 @@ class MarkButtonModule(Module):
     name = "marked"
     requires_engine = ">=5,<6"
     dependencies = DEPENDENCIES
-    marks = [MarkDeclaration(type=TaggedType.NOTE, variants=TaggedVariant, family=MarkFamily("marked", "Marked", "check", MarkGroup.WORK), label="Notes", mark_icon="check",
+    marks = [MarkDeclaration(type=TaggedType.NOTE, variants=TaggedVariant, family=MarkCategory("marked", "Marked", "check", MarkGroup.WORK), label="Notes", mark_icon="check",
                              buttons=[MarkButton("check", "Dismiss the note", "task start {row_id}")])]

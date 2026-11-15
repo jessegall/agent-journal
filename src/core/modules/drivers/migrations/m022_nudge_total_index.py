@@ -1,7 +1,7 @@
 from engine.database.migration import Migration
 
 
-class NudgeTotalIndexMigration(Migration):
+class MessageTotalIndexMigration(Migration):
     """Indexes the rows read together by their lookup fields."""
 
     number = 22

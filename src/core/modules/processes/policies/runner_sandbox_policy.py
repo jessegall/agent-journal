@@ -1,6 +1,6 @@
 from engine.agent_machine.contracts.event_policy import EventPolicy
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from core.modules.processes.support.runner_plan import RUNNER_REWRITE_KEY, RunnerPlan
 
 
@@ -14,5 +14,5 @@ class RunnerSandboxPolicy(EventPolicy):
     def __init__(self, plan: RunnerPlan) -> None:
         self.plan = plan
 
-    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+    def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         return self.plan.of_event(event, agent_id).refusal

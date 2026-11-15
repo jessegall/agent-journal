@@ -77,7 +77,7 @@ from core.modules.agents.migrations.m026_agent_announced_at import AgentAnnounce
 from core.modules.agents.commands.agent_standing.agent_standing_subcommand import AgentStandingSubcommand
 from core.modules.agents.commands.stop_unused_launcher.stop_unused_launcher_handler import StopUnusedLauncherHandler
 from core.modules.agents.commands.check_agent_programs.check_agent_programs_handler import CheckAgentProgramsHandler
-from core.modules.agents.nudges.program_settings_ban_nudge import ProgramSettingsBanNudge
+from core.modules.agents.nudges.program_settings_ban_message import ProgramSettingsBanMessage
 from core.modules.agents.support.agent_program_sessions import AgentProgramSessions
 from engine.agent.program_sessions import ProgramSessions
 from core.modules.agents.commands.start_agent_program.start_agent_program_handler import StartAgentProgramHandler
@@ -101,7 +101,7 @@ from core.modules.agents.inspectors.agent_inspector import AgentInspector
 from engine.caller.caller_resolver import CallerResolver
 from engine.module.module import Module
 from core.modules.agents.migrations.m009_agent_access import AgentAccessMigration
-from core.modules.agents.nudges.agent_start_failed_nudge import AgentStartFailedNudge
+from core.modules.agents.nudges.agent_start_failed_message import AgentStartFailedMessage
 from core.modules.agents.commands.record_agent_process.record_agent_process_handler import RecordAgentProcessHandler
 from engine.agent.agent_checkouts import AgentCheckouts
 from core.modules.agents.bindings.agent_caller_resolver import AgentCallerResolver
@@ -139,7 +139,7 @@ class AgentsModule(Module):
     models = [AgentModelDeclaration, MenuAnswerModelDeclaration, AgentFoldModelDeclaration, AgentFoldRowModelDeclaration, AgentSessionModelDeclaration]
     moves = [AgentsMove]
     migrations = [FoldMainAgentsMigration, AgentFoldsMigration, AgentAnnouncedColumnMigration, AgentLaunchFailureColumnMigration, MainAgentParentMigration, AgentSessionsMigration, AgentNumberMigration, MenuAnswerAgentIndexMigration, AgentHaltColumnMigration, AgentLaunchColumnMigration, PlainColumnNamesMigration, AgentInterruptMigration, AgentUsageCapMigration, KeptAgentsIndexMigration, AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
-    nudges = [AgentStartFailedNudge, *REPORT_NUDGES, ProgramSettingsBanNudge]
+    nudges = [AgentStartFailedMessage, *REPORT_NUDGES, ProgramSettingsBanMessage]
     guards = [AgentNameGuard, NumberGuard, RetiredRowGuard, RetiredDeleteGuard, AgentChatGuard]
     tick_handlers = [AgentReconcileTickHandler,
                      ProgramSettingsWatchTickHandler]

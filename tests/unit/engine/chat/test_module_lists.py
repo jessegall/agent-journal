@@ -2,7 +2,7 @@ from enum import StrEnum
 
 from engine.chat.dock_declaration import DockDeclaration
 from engine.chat.mark_declaration import MarkDeclaration
-from engine.chat.mark_family import MarkFamily
+from engine.chat.mark_category import MarkCategory
 from engine.enums.mark_group import MarkGroup
 from engine.module.module import Module
 
@@ -15,7 +15,7 @@ class SampleVariant(StrEnum):
     PLAIN = "plain"
 
 
-MARK = MarkDeclaration(type=SampleType.NOTE, variants=SampleVariant, family=MarkFamily("sample", "Samples", "note", MarkGroup.WORK), label="Notes", mark_icon="note")
+MARK = MarkDeclaration(type=SampleType.NOTE, variants=SampleVariant, family=MarkCategory("sample", "Samples", "note", MarkGroup.WORK), label="Notes", mark_icon="note")
 DOCK = DockDeclaration(type=SampleType.NOTE, icon="note", title="Note", body="note.js")
 
 

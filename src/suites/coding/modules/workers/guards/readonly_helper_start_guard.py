@@ -3,7 +3,7 @@ from engine.event.created import Created
 from engine.command.context import Context
 from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
-from core.modules.drivers.support.command_admission import CommandAdmission
+from core.modules.drivers.support.command_check import CommandCheck
 from core.modules.helpers.commands.start_helper.start_helper import StartHelper
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions
@@ -19,7 +19,7 @@ class ReadonlyHelperStartGuard(Guard[Created[Agent]]):
 
     name = "workers.main-starts-no-helper"
 
-    def __init__(self, caller: MainCaller, options: CodingMainOptions, admission: CommandAdmission) -> None:
+    def __init__(self, caller: MainCaller, options: CodingMainOptions, admission: CommandCheck) -> None:
         self.caller, self.options, self.admission = caller, options, admission
 
     def check(self, event: Created[Agent], context: Context) -> None:

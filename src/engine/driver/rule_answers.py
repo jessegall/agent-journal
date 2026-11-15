@@ -2,7 +2,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
 from engine.command.command import Command
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.rule_record import RuleRecord
 from engine.agent_machine.record.stop_check import StopCheck
 
@@ -61,16 +61,16 @@ class RuleAnswers:
         return [(first_rule[nudge.key], nudge.text) for nudge in self.delivered_nudges]
 
     @property
-    def line_nudges(self) -> list[Nudge]:
-        return Nudge.collapsed(nudge for rule in self.answered if rule.answer is not None for nudge in rule.answer.line_nudges)
+    def line_nudges(self) -> list[AgentMessage]:
+        return AgentMessage.collapsed(nudge for rule in self.answered if rule.answer is not None for nudge in rule.answer.line_nudges)
 
     @property
-    def delivered_nudges(self) -> list[Nudge]:
+    def delivered_nudges(self) -> list[AgentMessage]:
         delivered = {(nudge.key, nudge.text): nudge for nudge in self.line_nudges if (nudge.key, nudge.text) not in self.skipped_lines}
         return list(delivered.values())
 
     @property
-    def refusal_nudges(self) -> list[Nudge]:
+    def refusal_nudges(self) -> list[AgentMessage]:
         return [nudge for rule in self.answered if rule.answer is not None for nudge in rule.answer.nudges if rule.answer.refusal and nudge.text == rule.answer.refusal]
 
     @property

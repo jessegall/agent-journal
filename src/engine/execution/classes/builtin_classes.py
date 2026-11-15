@@ -1,5 +1,5 @@
 from engine.enums.command_category import CommandCategory
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_priority import ExecutionPriority
 from engine.enums.execution_source import ExecutionSource
 from engine.enums.process_type import ProcessType
@@ -8,7 +8,7 @@ from engine.execution.classes.builtin_class import BuiltinClass
 from engine.execution.classes.execution_class import ExecutionClass
 
 # the only place the built-in classes of doc 1266 are written; the first row that holds a subject gives its class
-INSTANT, SHORT, LONG = ExecutionLane.INSTANT, ExecutionLane.SHORT, ExecutionLane.LONG
+INSTANT, SHORT, LONG = ExecutionLength.INSTANT, ExecutionLength.SHORT, ExecutionLength.LONG
 BACKGROUND, NORMAL, AGENT, RESERVED, IMMEDIATE = (ExecutionPriority.BACKGROUND, ExecutionPriority.NORMAL, ExecutionPriority.AGENT,
                                                    ExecutionPriority.RESERVED, ExecutionPriority.IMMEDIATE)
 FIRST_HAND = frozenset({StarterType.MAIN_AGENT, StarterType.PERSON})

@@ -2,7 +2,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.support.output_folder import OutputFolder
@@ -15,7 +15,7 @@ OUTPUT_LIMIT_CHARACTERS = 12000
 class DeliverTriggerOutputHandler(Handler[DeliverTriggerOutput, TriggerActionRun]):
     command = DeliverTriggerOutput
 
-    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, nudger: Nudger) -> None:
+    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, nudger: MessageSender) -> None:
         self.queries, self.repository, self.folder, self.nudger = queries, repository, folder, nudger
 
     def handle(self, command: DeliverTriggerOutput, context: Context) -> TriggerActionRun:

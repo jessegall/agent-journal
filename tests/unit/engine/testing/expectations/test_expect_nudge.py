@@ -1,8 +1,8 @@
-from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.enums.nudge_type import NudgeType
-from engine.testing.expectations.expected_nudge import expected_nudge
+from engine.driver.message_template import MessageTemplate
+from engine.enums.agent_message_type import AgentMessageType
+from engine.testing.expectations.expected_message import expected_nudge
 
-PLAN_WAITS = NudgeDeclaration("sample.plan_waits", NudgeType.STEERING, "plan:{plan} is approved and {count} places are free")
+PLAN_WAITS = MessageTemplate("sample.plan_waits", AgentMessageType.STEERING, "plan:{plan} is approved and {count} places are free")
 
 
 def test_a_line_matches_its_declaration_with_the_values_given_in_any_case():
@@ -19,7 +19,7 @@ def test_another_value_does_not_match():
 
 
 def test_a_line_of_another_declaration_does_not_match():
-    different = NudgeDeclaration("sample.other", NudgeType.STEERING, "plan:{plan} was cancelled")
+    different = MessageTemplate("sample.other", AgentMessageType.STEERING, "plan:{plan} was cancelled")
     assert not expected_nudge(PLAN_WAITS).matches_lines([different.nudge(plan=4).text])
 
 

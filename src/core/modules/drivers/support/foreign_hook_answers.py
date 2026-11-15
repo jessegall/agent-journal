@@ -4,17 +4,17 @@ from dataclasses import dataclass, field
 from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.command.command import Command
-from engine.driver.foreign_answer import ForeignAnswer
+from engine.driver.project_hook_answer import ProjectHookAnswer
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.provider.providers import Providers
 from engine.query.conditions.contains_some import ContainsSome
 from engine.query.queries import Queries
 from engine.request.request_values import RequestValues
 from core.modules.drivers.commands.record_agent_notice.record_agent_notice import RecordAgentNotice
 from core.modules.drivers.models.hook_call import HookCall
-from core.modules.drivers.nudges.managed_hook_line_nudge import ManagedHookLineNudge
-from core.modules.drivers.nudges.managed_hook_refusal_nudge import ManagedHookRefusalNudge
+from core.modules.drivers.nudges.managed_hook_line_message import ManagedHookLineMessage
+from core.modules.drivers.nudges.managed_hook_refusal_message import ManagedHookRefusalMessage
 
 MANAGED_HOOKS_KEY = "drivers.managed-hooks"
 
@@ -25,8 +25,8 @@ class ForeignHookAnswer:
     the notices that record them, the input one replaced and the hook that replaced it, the lines a hook that takes
     none dropped, and their terminal text."""
 
-    refusal: Nudge | None
-    nudges: tuple[Nudge, ...]
+    refusal: AgentMessage | None
+    nudges: tuple[AgentMessage, ...]
     commands: tuple[Command[object], ...]
     updated_input: dict[str, object] = field(default_factory=dict[str, object])
     source_name: str = ""
@@ -48,7 +48,7 @@ class ForeignHookAnswers:
 
     def answered(self, event: HookEvent, agent_id: int) -> ForeignHookAnswer:
         provider = self.providers.provider(event.program)
-        answers = [ForeignAnswer.read(run) for run in event.foreign]
+        answers = [ProjectHookAnswer.read(run) for run in event.foreign]
         refusal_text = next((answer.reason() for answer in answers if answer.refusal), "")
         rewritten = next((answer for answer in answers if answer.updated_input), None)
         # an event whose text the program reads as instructions, such as a compaction, gets a hook's words every time;
@@ -57,11 +57,11 @@ class ForeignHookAnswers:
         takes_instructions = reads_text and event.event not in provider.line_events
         lines = [line for answer in answers for line in (self.named_lines(answer.name, answer.lines) if takes_instructions else self.new_lines(agent_id, answer.name, answer.lines))]
         commands: list[Command[object]] = [RecordAgentNotice(agent_id, line, MANAGED_HOOKS_KEY) for line in lines] if reads_text else []
-        nudges = [ManagedHookLineNudge.declared().nudge(line=line) for line in lines] if reads_text else []
+        nudges = [ManagedHookLineMessage.declared().nudge(line=line) for line in lines] if reads_text else []
         refusal = None
         if refusal_text:
             commands.append(RecordAgentNotice(agent_id, refusal_text, MANAGED_HOOKS_KEY))
-            refusal = ManagedHookRefusalNudge.declared().nudge(agent=self.numbers.number(AGENT_MODEL_NAME, agent_id))
+            refusal = ManagedHookRefusalMessage.declared().nudge(agent=self.numbers.number(AGENT_MODEL_NAME, agent_id))
         return ForeignHookAnswer(refusal, tuple(nudges), tuple(commands), dict(rewritten.updated_input) if rewritten is not None else {}, rewritten.name if rewritten is not None else "",
                                  0 if reads_text else len(lines), "\n".join(answer.terminal for answer in answers if answer.terminal))
 

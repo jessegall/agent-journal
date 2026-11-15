@@ -1,13 +1,13 @@
 from dataclasses import replace
 
 from engine.command.context import Context
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.repository.repository import Repository
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
 from suites.coding.modules.workers.models.merger_line import MergerLine
-from suites.coding.modules.workers.nudges.merger_line_available_nudge import MergerLineAvailableNudge
+from suites.coding.modules.workers.nudges.merger_line_available_message import MergerLineAvailableMessage
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 
@@ -26,7 +26,7 @@ class MergerInbox:
         enabled = self.settings.flag(MERGER_ENABLED)
         saved = self.repository.save(line if enabled else self.forwarded(line, context), context)
         if not enabled:
-            self.main_line.send_nudge(MergerLineAvailableNudge.declared().nudge(line=saved.id), line.fallback_source, context)
+            self.main_line.send_nudge(MergerLineAvailableMessage.declared().nudge(line=saved.id), line.fallback_source, context)
 
     @staticmethod
     def forwarded(line: MergerLine, context: Context) -> MergerLine:
@@ -34,7 +34,7 @@ class MergerInbox:
             return replace(line, read_at=context.timestamp)
         return replace(line, read_at=context.timestamp, outcome=AskOutcome.FORWARDED, closed_at=context.timestamp)
 
-    def send_nudge(self, nudge: Nudge, source: str, context: Context) -> None:
+    def send_nudge(self, nudge: AgentMessage, source: str, context: Context) -> None:
         if self.settings.flag(MERGER_ENABLED):
             self.repository.save(MergerLine(text=nudge.text, fallback_source=source, nudge_json=nudge.stored.json), context)
             return

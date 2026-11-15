@@ -2,9 +2,9 @@ from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from dataclasses import replace
 
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from core.modules.processes.models.reader_request import ReaderRequest
-from core.modules.processes.nudges.reader_request_nudge import ReaderRequestNudge
+from core.modules.processes.nudges.reader_request_message import ReaderRequestMessage
 
 
 class ReaderRequestText:
@@ -13,6 +13,6 @@ class ReaderRequestText:
     def __init__(self, numbers: RowNumbers) -> None:
         self.numbers = numbers
 
-    def line(self, request: ReaderRequest) -> Nudge:
-        nudge = ReaderRequestNudge.declared().nudge(request=request.id, agent=self.numbers.number(AGENT_MODEL_NAME, request.creator_id), command=request.command, output=request.sample_process_id)
+    def line(self, request: ReaderRequest) -> AgentMessage:
+        nudge = ReaderRequestMessage.declared().nudge(request=request.id, agent=self.numbers.number(AGENT_MODEL_NAME, request.creator_id), command=request.command, output=request.sample_process_id)
         return replace(nudge, key=f"{nudge.key}.{request.id}")

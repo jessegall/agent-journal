@@ -1,9 +1,9 @@
-from core.modules.drivers.nudges.journal_started_nudge import JournalStartedNudge
+from core.modules.drivers.nudges.journal_started_message import JournalStartedMessage
 from server.work.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.core.support.fixtures import MainEnvironment
 
-LINE = JournalStartedNudge.declared().nudge().text
+LINE = JournalStartedMessage.declared().nudge().text
 
 
 def started_journal(story):

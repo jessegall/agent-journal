@@ -4,11 +4,11 @@ from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from core.modules.helpers.nudges.start_without_model_nudge import StartWithoutModelNudge
-from engine.testing.expectations.expected_nudge import expected_nudge
+from core.modules.helpers.nudges.start_model_missing_message import StartModelMissingMessage
+from engine.testing.expectations.expected_message import expected_nudge
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
-REFUSAL = expected_nudge(StartWithoutModelNudge.declared())
+REFUSAL = expected_nudge(StartModelMissingMessage.declared())
 
 
 def journal_line(command: str):

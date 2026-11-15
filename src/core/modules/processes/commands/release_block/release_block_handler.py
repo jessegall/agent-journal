@@ -1,7 +1,7 @@
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from engine.errors.refusal import Refusal
 from engine.query.queries import Queries
 from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock
@@ -10,8 +10,8 @@ from core.modules.processes.commands.release_block.release_block import ReleaseB
 from core.modules.processes.support.cadence.run_silences import CHECKED_MARK
 from core.modules.processes.support.blocked_runs import BlockedRuns
 from core.modules.processes.support.output_folder import OutputFolder
-from core.modules.processes.nudges.block_lifted_nudge import BlockLiftedNudge
-from core.modules.processes.nudges.freeze_lifted_nudge import FreezeLiftedNudge
+from core.modules.processes.nudges.block_lifted_message import BlockLiftedMessage
+from core.modules.processes.nudges.freeze_lifted_message import FreezeLiftedMessage
 from core.modules.processes.support.reader_block_keys import ReaderBlockKeys
 
 SOURCE = "processes.hold-lifted"
@@ -23,7 +23,7 @@ class ReleaseBlockHandler(Handler[ReleaseBlock, int]):
 
     command = ReleaseBlock
 
-    def __init__(self, queries: Queries, blocked_runs: BlockedRuns, folder: OutputFolder, bus: Bus, nudger: Nudger) -> None:
+    def __init__(self, queries: Queries, blocked_runs: BlockedRuns, folder: OutputFolder, bus: Bus, nudger: MessageSender) -> None:
         self.queries, self.held_runs, self.folder, self.bus, self.nudger = queries, blocked_runs, folder, bus, nudger
 
     def handle(self, command: ReleaseBlock, context: Context) -> int:
@@ -33,7 +33,7 @@ class ReleaseBlockHandler(Handler[ReleaseBlock, int]):
         blocked = self.held_runs.found(command.agent_id, context.timestamp)
         if blocked is not None:
             self.folder.write_read_mark(blocked.process.id, CHECKED_MARK, context.timestamp.text)
-            self.nudger.send(command.agent_id, FreezeLiftedNudge.declared(), SOURCE, context, output=blocked.process.id)
+            self.nudger.send(command.agent_id, FreezeLiftedMessage.declared(), SOURCE, context, output=blocked.process.id)
             lifted += 1
         blocks = self.queries.query(AgentBlock).filter(session_agent_id=command.agent_id, closed_at=None).get()
         for block in tuple(blocks):
@@ -41,6 +41,6 @@ class ReleaseBlockHandler(Handler[ReleaseBlock, int]):
             if request_id is None:
                 continue
             self.bus.dispatch(CloseAgentBlock(block.id), context)
-            self.nudger.send(command.agent_id, BlockLiftedNudge.declared(), SOURCE, context, request=request_id)
+            self.nudger.send(command.agent_id, BlockLiftedMessage.declared(), SOURCE, context, request=request_id)
             lifted += 1
         return lifted

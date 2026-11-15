@@ -3,7 +3,7 @@ from dataclasses import replace
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.command.context import Context
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from engine.query.queries import Queries
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.tasks.queries.task_query import TaskQuery
@@ -19,7 +19,7 @@ class WorkerQueuedStart:
     main agent's next batch; a worker left with only tasks that wait on a task nobody works on is named to the
     main agent with that task."""
 
-    def __init__(self, tasks: TaskQuery, bus: Bus, queries: Queries, external_waits: OutsideWaits, labels: AssigneeLabel, nudger: Nudger) -> None:
+    def __init__(self, tasks: TaskQuery, bus: Bus, queries: Queries, external_waits: OutsideWaits, labels: AssigneeLabel, nudger: MessageSender) -> None:
         self.tasks, self.bus, self.queries, self.outside_waits, self.labels, self.nudger = tasks, bus, queries, external_waits, labels, nudger
 
     def start(self, worker_id: int, context: Context) -> None:

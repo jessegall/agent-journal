@@ -21,8 +21,8 @@ from core.modules.drivers.commands.skip_refusal.skip_refusal import SkipRefusal
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.models.refusal_skip import RefusalSkip
-from core.modules.drivers.nudges.skips_spent_nudge import SkipsSpentNudge
-from engine.driver.nudger import Nudger
+from core.modules.drivers.nudges.skips_spent_message import SkipsSpentMessage
+from engine.driver.nudger import MessageSender
 
 MOST_SKIP_COUNT = 5
 SKIP_SOURCE = "drivers.refusal-skip"
@@ -37,7 +37,7 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
 
     command = SkipRefusal
 
-    def __init__(self, queries: Queries, repository: Repository, refusals: RefusalLog, registry: Registry, nudger: Nudger, bus: Bus, numbers: RowNumbers) -> None:
+    def __init__(self, queries: Queries, repository: Repository, refusals: RefusalLog, registry: Registry, nudger: MessageSender, bus: Bus, numbers: RowNumbers) -> None:
         self.numbers = numbers
         self.queries, self.repository, self.refusals, self.registry = queries, repository, refusals, registry
         self.nudger, self.bus = nudger, bus
@@ -103,7 +103,7 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
             approval = self.restoration_approval(agent)
             self.bus.dispatch(RequestUserApproval(approval, approval.arguments, agent_id), context)
             return
-        self.nudger.send(agent.parent_id, SkipsSpentNudge.declared(), SKIP_SOURCE, context, agent=self.numbers.number(AGENT_MODEL_NAME, agent_id), count=MOST_SKIP_COUNT)
+        self.nudger.send(agent.parent_id, SkipsSpentMessage.declared(), SKIP_SOURCE, context, agent=self.numbers.number(AGENT_MODEL_NAME, agent_id), count=MOST_SKIP_COUNT)
 
     @staticmethod
     def restoration_approval(agent: Agent) -> UserApprovalRefusal:

@@ -7,7 +7,7 @@ from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.enums.reading_exit import ReadingExit
 from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from core.modules.processes.models.enums.unreadable_reason import UnreadableReason
-from core.modules.processes.support.reader_judgement import ReaderJudgement
+from core.modules.processes.support.reader_check import ReaderCheck
 from core.modules.processes.support.decisions.output_facts import OutputFacts
 from core.modules.processes.models.enums.reader_layer import ReaderLayer
 
@@ -33,7 +33,7 @@ class ReadingCase:
     cadence_state: CadenceState
     exit_code: int | None
     reader_layer: ReaderLayer | None
-    reader_judgement: ReaderJudgement | None
+    reader_judgement: ReaderCheck | None
     default_reader: bool
     reader_failed: bool
     count_missing: bool

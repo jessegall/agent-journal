@@ -8,7 +8,7 @@ from core.modules.developer.windows.system_logs.system_logs_window import System
 from core.modules.documents.windows.documents.documents_window import DocumentsWindow
 from core.modules.documents.windows.page.page_window import PageWindow
 from core.modules.drivers.windows.hook_calls.hook_calls_window import HookCallsWindow
-from core.modules.drivers.windows.nudges.nudges_window import NudgesWindow
+from core.modules.drivers.windows.nudges.messages_window import MessagesWindow
 from core.modules.dumps.windows.dumps.dumps_window import DumpsWindow
 from core.modules.library.windows.teams.teams_window import TeamsWindow
 from core.modules.mcp.windows.integrations.integrations_window import IntegrationsWindow
@@ -67,6 +67,6 @@ class AdminEntrance(Entrance):
     suite modules add their own windows in entrances of their own under the same key."""
 
     key = ADMIN_ENTRANCE_KEY
-    windows = [ChatWindow, AvatarWindow, WaitingWindow, QuestionsWindow, TasksWindow, TaskCountsWindow, PlansWindow, AgentsWindow, HelpersWindow, JobsWindow, MemoriesWindow, RulesWindow, TranscriptWindow, HookCallsWindow, FileFeedWindow, FileEditsWindow, FilesWindow, GitWindow, AttachmentsWindow, TerminalWindow, OutputsWindow, OutputWindow, SearchWindow, DumpsWindow, SecretsWindow, SkillsWindow, IntegrationsWindow, ProfilesWindow, TranscriptionsWindow, RemindersWindow, SharesWindow, TeamsWindow, TunnelWindow, UpdatesWindow, NumbersWindow, HookRequestsWindow, SystemLogsWindow, NudgesWindow, DocumentsWindow, PageWindow, SequencesWindow, TemplatesWindow, PluginsWindow, SettingsWindow, ProjectHooksWindow, ToolsWindow, TriggersWindow, LoadWindow, UsageWindow, CostWindow, ContextWindow, WorkModeWindow]
+    windows = [ChatWindow, AvatarWindow, WaitingWindow, QuestionsWindow, TasksWindow, TaskCountsWindow, PlansWindow, AgentsWindow, HelpersWindow, JobsWindow, MemoriesWindow, RulesWindow, TranscriptWindow, HookCallsWindow, FileFeedWindow, FileEditsWindow, FilesWindow, GitWindow, AttachmentsWindow, TerminalWindow, OutputsWindow, OutputWindow, SearchWindow, DumpsWindow, SecretsWindow, SkillsWindow, IntegrationsWindow, ProfilesWindow, TranscriptionsWindow, RemindersWindow, SharesWindow, TeamsWindow, TunnelWindow, UpdatesWindow, NumbersWindow, HookRequestsWindow, SystemLogsWindow, MessagesWindow, DocumentsWindow, PageWindow, SequencesWindow, TemplatesWindow, PluginsWindow, SettingsWindow, ProjectHooksWindow, ToolsWindow, TriggersWindow, LoadWindow, UsageWindow, CostWindow, ContextWindow, WorkModeWindow]
     layouts = {"home": HomeLayout, "agent": AgentLayout, "phone": PhoneLayout, "agent@coding.worker": WorkerAgentLayout}
     presets = {"home": HomePresets, "agent": AgentPresets}

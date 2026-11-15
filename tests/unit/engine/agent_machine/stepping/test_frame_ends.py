@@ -1,27 +1,27 @@
 from dataclasses import replace
 from datetime import datetime, timezone
 
-from engine.agent_stack.frame import Frame
-from engine.agent_stack.need_key import NeedKey
+from engine.agent_stack.stacked_state import StackedState
+from engine.agent_stack.state_key import StateKey
 from engine.agent_stack.open_block import OpenBlock
 from engine.agent_stack.reason import Reason
 from engine.agent_stack.states.blocked import Blocked
 from engine.agent_stack.states.paused import Paused
-from engine.agent_stack.subject_reference import SubjectReference
+from engine.agent_stack.row_reference import RowReference
 from engine.agent_machine.stepping.refusal_counting import PROGRESS_ENDS
 from engine.agent_machine.stepping.stack_builder import StackBuilder
 from engine.enums.condition_outcome import ConditionOutcome
 from engine.enums.decision_class import DecisionClass
-from engine.enums.frame_end import FrameEnd
+from engine.enums.state_end import StateEnd
 from engine.enums.work_stop import WorkStop
 from engine.testing.agent_machine.view_samples import ViewSamples
 
 ENTERED = datetime(2026, 10, 31, 9, 0, tzinfo=timezone.utc)
-HOLD = Frame(Blocked(OpenBlock("messages.unread", 3, Reason("messages.unread", DecisionClass.HOLD, "messages.unread", "read your messages"), True, True, True, True, False)),
-             NeedKey("Blocked", None, "messages.unread"), ENTERED)
+HOLD = StackedState(Blocked(OpenBlock("messages.unread", 3, Reason("messages.unread", DecisionClass.HOLD, "messages.unread", "read your messages"), True, True, True, True, False)),
+             StateKey("Blocked", None, "messages.unread"), ENTERED)
 
 
-def end(frame: Frame, **outcomes: ConditionOutcome) -> FrameEnd | None:
+def end(frame: StackedState, **outcomes: ConditionOutcome) -> StateEnd | None:
     view = replace(ViewSamples.view("main", WorkStop.REFUSE_WHILE_WORK_REMAINS), block_outcomes={3: outcome for outcome in outcomes.values()})
     return StackBuilder.frame_end(view, frame)
 
@@ -33,16 +33,16 @@ def test_a_satisfied_hold_ends_as_progress_and_a_cancelled_or_waived_one_does_no
 
 
 def test_a_resume_ends_no_work():
-    assert end(Frame(Paused((), "paused"), NeedKey("Paused", None, "pause"), ENTERED)) is None
+    assert end(StackedState(Paused((), "paused"), StateKey("Paused", None, "pause"), ENTERED)) is None
 
 
 def test_a_frame_whose_source_told_its_end_records_that_end():
-    work = Frame(Paused((), "paused"), NeedKey("Working", SubjectReference("task", 3), "task:3"), ENTERED)
-    view = replace(ViewSamples.view("main", WorkStop.REFUSE_WHILE_WORK_REMAINS), subject_ends={SubjectReference("task", 3): FrameEnd.CANCELLED})
-    assert StackBuilder.frame_end(view, work) is FrameEnd.CANCELLED and FrameEnd.CANCELLED not in PROGRESS_ENDS
+    work = StackedState(Paused((), "paused"), StateKey("Working", RowReference("task", 3), "task:3"), ENTERED)
+    view = replace(ViewSamples.view("main", WorkStop.REFUSE_WHILE_WORK_REMAINS), subject_ends={RowReference("task", 3): StateEnd.CANCELLED})
+    assert StackBuilder.frame_end(view, work) is StateEnd.CANCELLED and StateEnd.CANCELLED not in PROGRESS_ENDS
 
 
 def test_a_frame_a_person_removed_ends_waived_which_is_no_progress():
-    work = Frame(Paused((), "paused"), NeedKey("Working", None, "task:4"), ENTERED)
+    work = StackedState(Paused((), "paused"), StateKey("Working", None, "task:4"), ENTERED)
     view = replace(ViewSamples.view("main", WorkStop.REFUSE_WHILE_WORK_REMAINS), suppressions=tuple([work.need_key]))
-    assert StackBuilder.frame_end(view, work) is FrameEnd.WAIVED and FrameEnd.WAIVED not in PROGRESS_ENDS
+    assert StackBuilder.frame_end(view, work) is StateEnd.WAIVED and StateEnd.WAIVED not in PROGRESS_ENDS

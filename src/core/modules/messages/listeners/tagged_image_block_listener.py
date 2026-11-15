@@ -7,10 +7,10 @@ from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock
 from core.modules.drivers.models.agent_block import AgentBlock
-from core.modules.drivers.nudges.required_command_refusal_nudge import RequiredCommandRefusalNudge
+from core.modules.drivers.nudges.required_command_refusal_message import RequiredCommandRefusalMessage
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_captions import MessageCaptions
-from core.modules.messages.nudges.image_tag_request_nudge import ImageTagRequestNudge
+from core.modules.messages.nudges.image_tag_request_message import ImageTagRequestMessage
 
 IMAGE_TAG_BLOCKS_REASON = "every open block of the command is closed once its image is tagged"
 
@@ -29,7 +29,7 @@ class TaggedImageBlockListener(SaveListener[Updated[Message]]):
         message = event.row
         if message.captions == event.previous.captions or MessageCaptions.untagged_images(message):
             return
-        command = ImageTagRequestNudge.declared().nudge(message=message.id, name="").required_command
-        blocks = self.queries.query(AgentBlock).filter(nudge_key=f"{RequiredCommandRefusalNudge.declared().key}:{command}", condition_text=command).matching(IsNull("closed_at")).every_row(IMAGE_TAG_BLOCKS_REASON)
+        command = ImageTagRequestMessage.declared().nudge(message=message.id, name="").required_command
+        blocks = self.queries.query(AgentBlock).filter(nudge_key=f"{RequiredCommandRefusalMessage.declared().key}:{command}", condition_text=command).matching(IsNull("closed_at")).every_row(IMAGE_TAG_BLOCKS_REASON)
         for block in blocks:
             self.bus.dispatch(CloseAgentBlock(block.id), context)

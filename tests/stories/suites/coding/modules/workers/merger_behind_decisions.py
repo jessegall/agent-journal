@@ -16,10 +16,10 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.worktree_behind_check import checks, stale_check, setting
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
-from suites.coding.modules.workers.nudges.stale_choices_nudge import StaleChoicesNudge
-from suites.coding.modules.workers.nudges.stale_passed_nudge import StalePassedNudge
-from suites.coding.modules.workers.nudges.update_ordered_nudge import UpdateOrderedNudge
-from engine.testing.expectations.expected_nudge import expected_nudge
+from suites.coding.modules.workers.nudges.stale_choices_message import StaleChoicesMessage
+from suites.coding.modules.workers.nudges.stale_passed_message import StalePassedMessage
+from suites.coding.modules.workers.nudges.update_ordered_message import UpdateOrderedMessage
+from engine.testing.expectations.expected_message import expected_nudge
 
 MERGER_SESSION = "s-merger"
 HAIKU_DISPATCH = DISPATCH.replace("--model sonnet", "--model haiku")
@@ -53,14 +53,14 @@ def s15_another_area_is_left_alone_and_the_worker_is_not_woken(story, repository
     diverge_file(repository, worker, "src/core/modules/plans/plan_rows.py", "src/viewer/board.ts")
     stale_check(story)
     story.expect_success(f'merger leave {agent_number(story, worker.id)} --why "only the viewer moved"', actor=merger(story))
-    story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.IGNORED], not expected_nudge(UpdateOrderedNudge.declared()).matches_text(worker_lines(story, worker)), detail=str(checks(story)))
+    story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.IGNORED], not expected_nudge(UpdateOrderedMessage.declared()).matches_text(worker_lines(story, worker)), detail=str(checks(story)))
 
 
 def s16_an_overlap_is_ordered_and_the_worker_is_woken_with_the_order(story, repository, worker: Actor) -> None:
     diverge_file(repository, worker, "plan_checkpoints.py", "plan_checkpoints.py")
     stale_check(story)
     story.expect_success(f'merger update {agent_number(story, worker.id)} --why "plan_checkpoints.py moved on both sides"', actor=merger(story))
-    story.expect_rows(expected_nudge(UpdateOrderedNudge.declared()).matches_text(worker_lines(story, worker)), detail=worker_lines(story, worker))
+    story.expect_rows(expected_nudge(UpdateOrderedMessage.declared()).matches_text(worker_lines(story, worker)), detail=worker_lines(story, worker))
 
 
 def s17_a_sibling_file_is_same_folder_and_not_overlap(story, repository, worker: Actor) -> None:
@@ -80,7 +80,7 @@ def s18_a_large_update_for_a_small_model_is_passed_and_the_main_agent_reads_its_
     stale_check(story)
     story.expect_success(f'merger pass {agent_number(story, worker.id)} "it is too large for a small model"', actor=merger(story))
     check = checks(story)[0]
-    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(StalePassedNudge.declared()))
+    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(StalePassedMessage.declared()))
     story.expect_text(f"behind-check show {check.id}", "it is too large for a small model")
     story.expect_text(f"merger behind {agent_number(story, worker.id)}", f"part_{SEVERAL_FILES - 1}.py", "haiku")
     state = story.run(f"worker-worktree list --json").output_text
@@ -113,7 +113,7 @@ def s23_with_the_merger_off_the_main_agent_gets_the_check_and_its_choices(story,
     diverge_file(repository, worker, "plan_checkpoints.py", "plan_checkpoints.py")
     stale_check(story)
     number = agent_number(story, worker.id)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(StaleChoicesNudge.declared()))
+    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(StaleChoicesMessage.declared()))
 
 
 CASES: list[tuple[str, Callable[..., None]]] = [(DISPATCH, s15_another_area_is_left_alone_and_the_worker_is_not_woken), (DISPATCH, s16_an_overlap_is_ordered_and_the_worker_is_woken_with_the_order),

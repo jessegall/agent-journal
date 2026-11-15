@@ -1,10 +1,10 @@
 from engine.scope.actor_scope import ActorScope
-from core.modules.waits.nudges.wait_ended_nudge import WaitEndedNudge
+from core.modules.waits.nudges.wait_ended_message import WaitEndedMessage
 from engine.event.moved import Moved
 from engine.command.context import Context
 from engine.listener.save_listener import SaveListener
 from core.modules.waits.models.lifecycles.wait_lifecycle import WaitLifecycle
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from core.modules.waits.models.enums.wait_state import WaitState
 from core.modules.waits.models.wait import Wait
 
@@ -21,11 +21,11 @@ class WaitEndListener(SaveListener[Moved[Wait]]):
     moves = tuple([WaitLifecycle.end])
     disabled_scopes = [ActorScope]
 
-    def __init__(self, nudger: Nudger) -> None:
+    def __init__(self, nudger: MessageSender) -> None:
         self.nudger = nudger
 
     def handle(self, event: Moved[Wait], context: Context) -> None:
         wait = event.row
         if wait.state is not WaitState.ENDED or wait.outcome == WORK_CONTINUED:
             return
-        self.nudger.send(wait.session_agent_id, WaitEndedNudge.declared(), LINE_SOURCE, context, wait=wait.id)
+        self.nudger.send(wait.session_agent_id, WaitEndedMessage.declared(), LINE_SOURCE, context, wait=wait.id)

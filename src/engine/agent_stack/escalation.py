@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from engine.agent_stack.need_key import NeedKey
+from engine.agent_stack.state_key import StateKey
 from engine.enums.escalation_type import EscalationType
 from engine.enums.responder import Responder
 
@@ -14,7 +14,7 @@ class Escalation:
     escalation_type: EscalationType
     responder: Responder
     block_ids: tuple[int, ...]
-    work_keys: tuple[NeedKey, ...]
+    work_keys: tuple[StateKey, ...]
     refusal_count: int
 
     def defers(self, block_id: int | None) -> bool:
@@ -22,5 +22,5 @@ class Escalation:
 
     # a Working frame whose stop answer it names rests the agent's next stop; a new constraint still refuses
     # by the frame's generation, unique to its work, since the stored row keeps the generation alone
-    def defers_work(self, key: NeedKey) -> bool:
+    def defers_work(self, key: StateKey) -> bool:
         return key.generation in {work_key.generation for work_key in self.work_keys}

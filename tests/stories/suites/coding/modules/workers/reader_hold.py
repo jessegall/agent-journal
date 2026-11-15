@@ -29,8 +29,8 @@ from core.modules.processes.support.run_visibility import RunVisibility
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from engine.testing.expectations.expect_reply import expect_reply_line
-from suites.coding.modules.workers.nudges.reader_sample_ready_nudge import ReaderSampleReadyNudge
-from engine.testing.expectations.expected_nudge import expected_nudge
+from suites.coding.modules.workers.nudges.reader_sample_ready_message import ReaderSampleReadyMessage
+from engine.testing.expectations.expected_message import expected_nudge
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 
@@ -138,7 +138,7 @@ def test_a_saved_proper_reader_frees_the_worker_and_starts_its_run_with_that_rea
     story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
     output = story.container.get(OutputQuery).process(process.id).page(1, 1).rows[0]
     story.expect_rows(output.reader_id == reader, output.read_offset == 0)
-    story.expect_text(f"agent-line list --agent {reader_worker(story).id}", expected_nudge(ReaderSampleReadyNudge.declared(), output=1, reader='proper'))
+    story.expect_text(f"agent-line list --agent {reader_worker(story).id}", expected_nudge(ReaderSampleReadyMessage.declared(), output=1, reader='proper'))
 
 
 def test_a_reader_that_does_not_read_the_command_leaves_the_request_open(new_story):

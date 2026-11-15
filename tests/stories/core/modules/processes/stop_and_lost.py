@@ -13,12 +13,12 @@ from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
 from server.work.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_handler, expect_poll_second, expect_value_4
-from core.modules.processes.nudges.process_missing_nudge import ProcessMissingNudge
-from engine.testing.expectations.expected_nudge import expected_nudge
+from core.modules.processes.nudges.process_missing_message import ProcessMissingMessage
+from engine.testing.expectations.expected_message import expected_nudge
 
 GROUP_END_SECONDS = 5
 
-ORPHAN_LINE = expected_nudge(ProcessMissingNudge.declared(), process=1)
+ORPHAN_LINE = expected_nudge(ProcessMissingMessage.declared(), process=1)
 
 
 def test_a_stop_kills_the_group_of_the_runner_and_ends_a_wait_on_the_process(new_story):

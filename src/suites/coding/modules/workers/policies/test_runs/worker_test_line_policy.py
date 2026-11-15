@@ -4,11 +4,11 @@ from suites.coding.modules.workers.types.worker import Worker
 from engine.cli.row_numbers import RowNumbers
 from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.enums.command_category import CommandCategory
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from core.modules.processes.support.background_commands import BackgroundCommands
 from core.modules.processes.support.reader_demands import ASKING_FLAGS
-from suites.coding.modules.workers.nudges.worker_test_commands_missing_nudge import WorkerTestCommandsMissingNudge
-from suites.coding.modules.workers.nudges.worker_test_line_refused_nudge import WorkerTestLineRefusedNudge
+from suites.coding.modules.workers.nudges.worker_test_commands_missing_message import WorkerTestCommandsMissingMessage
+from suites.coding.modules.workers.nudges.worker_test_line_refusal_message import WorkerTestLineRefusalMessage
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
 
 
@@ -25,7 +25,7 @@ class WorkerTestLinePolicy(EventPolicy):
         self.numbers = numbers
         self.commands, self.names = commands, names
 
-    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+    def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         tool = event.tool
         if tool is None or tool.shell is None:
             return None
@@ -34,6 +34,6 @@ class WorkerTestLinePolicy(EventPolicy):
                 return self.refused_line(agent_id)
         return None
 
-    def refused_line(self, worker_id: int) -> Nudge:
+    def refused_line(self, worker_id: int) -> AgentMessage:
         names = self.names.names_text(worker_id)
-        return WorkerTestLineRefusedNudge.declared().nudge(names=names) if names else WorkerTestCommandsMissingNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worker_id))
+        return WorkerTestLineRefusalMessage.declared().nudge(names=names) if names else WorkerTestCommandsMissingMessage.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worker_id))

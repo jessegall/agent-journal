@@ -2,9 +2,9 @@ from dataclasses import replace
 
 from engine.actor.actor import Actor
 from engine.agent_machine.record.question import Question
-from engine.agent_machine.stepping.agent_machine import AgentMachine
+from engine.agent_machine.stepping.agent_state_machine import AgentStateMachine
 from engine.agent_step.agent_view_reader import AgentViewReader
-from engine.agent_step.frame_codec import FrameCodec
+from engine.agent_step.stack_codec import StackCodec
 from engine.agent_step.step_writer import StepWriter
 from engine.command.context import Context
 from engine.database.database import Database
@@ -17,7 +17,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 def step(story, question=Question.none()):
     view = story.container.get(AgentViewReader).read(story.agent.id, question)
-    return view, AgentMachine().step(view, question)
+    return view, AgentStateMachine().step(view, question)
 
 
 def saved(story, view, result, hook_call_id=None):
@@ -30,7 +30,7 @@ def test_a_first_step_seeds_the_stack_row_and_its_move(played):
     view, result = step(story)
     commit = saved(story, view, result)
     row = story.container.get(Queries).query(AgentStack).filter(session_agent_id=story.agent.id).first()
-    assert (commit.is_saved, row is not None, FrameCodec.decoded(row.frames) == list(result.stack.frames)) == (True, True, True)
+    assert (commit.is_saved, row is not None, StackCodec.decoded(row.frames) == list(result.stack.frames)) == (True, True, True)
 
 
 def test_a_step_that_changes_nothing_writes_nothing(played):
@@ -50,5 +50,5 @@ def test_a_save_whose_answer_basis_changed_is_a_conflict_and_writes_nothing(play
     view, result = step(story)
     saved(story, view, result)
     stale = replace(view, basis=replace(view.basis, stack_version=0))
-    commit = saved(story, stale, AgentMachine().step(stale, Question.none()))
+    commit = saved(story, stale, AgentStateMachine().step(stale, Question.none()))
     assert not commit.is_saved

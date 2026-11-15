@@ -1,6 +1,6 @@
 from collections.abc import Mapping, Sequence
 
-from engine.agent_step.frame_codec import FrameCodec
+from engine.agent_step.stack_codec import StackCodec
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from core.modules.drivers.models.agent_escalation import AgentEscalation
@@ -27,5 +27,5 @@ class AgentStackSummaries:
 
     @staticmethod
     def summary(stack: AgentStack, escalation_id: int | None) -> StackSummary:
-        top = FrameCodec.decoded(stack.frames)[-1]
+        top = StackCodec.decoded(stack.frames)[-1]
         return StackSummary(f"{type(top.state).__name__} {top.need_key.generation}", stack.stop_refusals, stack.tool_refusals, escalation_id)

@@ -1,9 +1,9 @@
 from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.nudges.worker_committed_nudge import WorkerCommittedNudge
-from suites.coding.modules.workers.nudges.worker_tests_passed_nudge import WorkerTestsPassedNudge
+from suites.coding.modules.workers.nudges.worker_committed_message import WorkerCommittedMessage
+from suites.coding.modules.workers.nudges.worker_tests_passed_message import WorkerTestsPassedMessage
 
 
 class MergeReadyLines:
@@ -13,6 +13,6 @@ class MergeReadyLines:
     def __init__(self, numbers: RowNumbers) -> None:
         self.numbers = numbers
 
-    def nudge(self, worktree: Worktree) -> Nudge:
-        declaration = WorkerCommittedNudge.declared() if worktree.tests_passed_at is None else WorkerTestsPassedNudge.declared()
+    def nudge(self, worktree: Worktree) -> AgentMessage:
+        declaration = WorkerCommittedMessage.declared() if worktree.tests_passed_at is None else WorkerTestsPassedMessage.declared()
         return declaration.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id))

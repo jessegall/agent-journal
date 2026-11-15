@@ -1,10 +1,10 @@
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_policy import EventPolicy
 import re
 
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins
-from core.modules.plugins.nudges.plugin_program_off_nudge import PluginProgramOffNudge
+from core.modules.plugins.nudges.plugin_program_off_message import PluginProgramOffMessage
 
 PLUGIN_PROGRAM = re.compile(r"(?:^|/)\.journal/plugins/([^/]+)/")
 
@@ -19,7 +19,7 @@ class PluginProgramPolicy(EventPolicy):
     def __init__(self, plugins: RunnablePlugins) -> None:
         self.plugins = plugins
 
-    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+    def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         shell = event.tool.shell if event.tool is not None else None
         if shell is None:
             return None
@@ -27,5 +27,5 @@ class PluginProgramPolicy(EventPolicy):
         for part in shell.parts:
             matched = PLUGIN_PROGRAM.search(part.program)
             if matched is not None and matched.group(1) not in enabled:
-                return PluginProgramOffNudge.declared().nudge(plugin=matched.group(1))
+                return PluginProgramOffMessage.declared().nudge(plugin=matched.group(1))
         return None

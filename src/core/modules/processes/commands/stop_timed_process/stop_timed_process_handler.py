@@ -5,12 +5,12 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from core.modules.processes.commands.stop_process.stop_process import StopProcess
 from core.modules.processes.commands.stop_timed_process.stop_timed_process import StopTimedProcess
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.process import Process
-from core.modules.processes.nudges.output_timeout_nudge import OutputTimeoutNudge
+from core.modules.processes.nudges.output_timeout_message import OutputTimeoutMessage
 
 
 class StopTimedProcessHandler(Handler[StopTimedProcess, Process]):
@@ -18,7 +18,7 @@ class StopTimedProcessHandler(Handler[StopTimedProcess, Process]):
 
     command = StopTimedProcess
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus, nudger: Nudger) -> None:
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus, nudger: MessageSender) -> None:
         self.queries, self.repository, self.bus, self.nudger = queries, repository, bus, nudger
 
     def handle(self, command: StopTimedProcess, context: Context) -> Process:
@@ -27,5 +27,5 @@ class StopTimedProcessHandler(Handler[StopTimedProcess, Process]):
             return process
         self.repository.save(replace(process, expired_at=context.timestamp), context)
         process = self.bus.dispatch(StopProcess(process.id), context)
-        self.nudger.send(process.session_agent_id, OutputTimeoutNudge.declared(), "processes.timeout", context, output=process.id, seconds=process.timeout_seconds)
+        self.nudger.send(process.session_agent_id, OutputTimeoutMessage.declared(), "processes.timeout", context, output=process.id, seconds=process.timeout_seconds)
         return process

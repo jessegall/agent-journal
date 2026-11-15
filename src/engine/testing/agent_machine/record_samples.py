@@ -1,4 +1,4 @@
-from engine.agent_stack.answer_basis import AnswerBasis
+from engine.agent_stack.read_versions import ReadVersions
 from engine.agent_machine.decision import Decision
 from engine.agent_machine.decision_record import DecisionRecord
 from engine.agent_machine.record.decision_inputs import DecisionInputs
@@ -18,4 +18,4 @@ class RecordSamples:
     @staticmethod
     def record(question: Question, decision: Decision) -> DecisionRecord:
         return DecisionRecord(SAMPLE_IDENTITY, question, decision, decision.reason, (), Rewrite.unchanged(), (), (), (), (), "", (), (), (), (), (),
-                              RefusalCounts(0, 0), WakeChange.unchanged(), AnswerBasis(1, 1, 1), (), DecisionInputs("", (), (), ()))
+                              RefusalCounts(0, 0), WakeChange.unchanged(), ReadVersions(1, 1, 1), (), DecisionInputs("", (), (), ()))

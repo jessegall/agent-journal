@@ -18,8 +18,8 @@ from tests.stories.suites.coding.modules.workers.support.commit_command import C
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import running_launcher
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, TEST_LINE, StoryWorker, dispatched_story_worker, file_proof_line, planned_story
-from suites.coding.modules.workers.nudges.worker_phase_tests_failed_nudge import WorkerPhaseTestsFailedNudge
-from engine.testing.expectations.expected_nudge import expected_nudge
+from suites.coding.modules.workers.nudges.worker_phase_tests_failed_message import WorkerPhaseTestsFailedMessage
+from engine.testing.expectations.expected_message import expected_nudge
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND
 from suites.coding.modules.workers.support.worker_settings import PROJECT_TEST_COMMAND
@@ -84,7 +84,7 @@ def test_180_a_failed_proof_test_returns_its_task_to_the_worker_that_held_it_and
     proof, failed_output_id, reach = task_proofs(worker)[1], output_id(worker, CART_COMMAND), rows(worker, REACHES)[0]
     expect_returned(worker, 1)
     story.expect_text("task show 3", "state: completed", actor=story.agent)
-    story.expect_rows(proof["state"] == "short", str(failed_output_id) in proof["shortfall"], expected_nudge(WorkerPhaseTestsFailedNudge.declared()).matches_text(' | '.join(failure_lines(worker))),
+    story.expect_rows(proof["state"] == "short", str(failed_output_id) in proof["shortfall"], expected_nudge(WorkerPhaseTestsFailedMessage.declared()).matches_text(' | '.join(failure_lines(worker))),
                       detail=f"{proof} | {worker.worker_lines()}")
     story.expect_rows(reach["state"] == "failed", reach["failed_task_ids"] == "1", WAITING_PHASE_TERMS in story.run(OUTLINE, actor=story.user).output_text, detail=str(reach))
 

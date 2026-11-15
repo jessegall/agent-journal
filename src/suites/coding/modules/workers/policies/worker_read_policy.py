@@ -1,4 +1,4 @@
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_policy import EventPolicy
 from suites.coding.modules.workers.types.worker import Worker
@@ -7,7 +7,7 @@ from pathlib import Path
 
 from engine.provider.providers import Providers
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.nudges.worker_read_refusal_nudge import WorkerReadRefusalNudge
+from suites.coding.modules.workers.nudges.worker_read_refusal_message import WorkerReadRefusalMessage
 
 SHARED_FOLDERS = ("/tmp", "/private/tmp")
 
@@ -23,7 +23,7 @@ class WorkerReadPolicy(EventPolicy):
     def __init__(self, worktrees: WorktreeQuery, providers: Providers) -> None:
         self.worktrees, self.providers = worktrees, providers
 
-    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+    def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         tool = event.tool
         if tool is None or not tool.category.reads_files:
             return None
@@ -36,4 +36,4 @@ class WorkerReadPolicy(EventPolicy):
         paths = [Path(normpath(join(worktree.folder, path))) for path in tool.files]
         if all(any(path.is_relative_to(folder) for folder in readable) and not (path.is_relative_to(others) and not path.is_relative_to(worktree.folder)) for path in paths):
             return None
-        return WorkerReadRefusalNudge.declared().nudge()
+        return WorkerReadRefusalMessage.declared().nudge()

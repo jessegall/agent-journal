@@ -1,5 +1,5 @@
-from core.modules.dumps.nudges.dump_open_nudge import DumpOpenNudge
-from core.modules.dumps.nudges.dump_arrived_nudge import DumpArrivedNudge
+from core.modules.dumps.nudges.dump_open_message import DumpOpenMessage
+from core.modules.dumps.nudges.dump_arrived_message import DumpArrivedMessage
 
 
-DUMP_NUDGES = [DumpOpenNudge, DumpArrivedNudge]
+DUMP_NUDGES = [DumpOpenMessage, DumpArrivedMessage]

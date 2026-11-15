@@ -1,3 +1,3 @@
-from core.modules.schedules.nudges.job_stopped_nudge import JobStoppedNudge
+from core.modules.schedules.nudges.job_stopped_message import JobStoppedMessage
 
-SCHEDULE_NUDGES = [JobStoppedNudge]
+SCHEDULE_NUDGES = [JobStoppedMessage]

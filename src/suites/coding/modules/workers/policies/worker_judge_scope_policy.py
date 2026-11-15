@@ -1,9 +1,9 @@
 from engine.agent_machine.contracts.event_policy import EventPolicy
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.part import Part
 from engine.driver.shell_line import JOURNAL_PROGRAM
-from suites.coding.modules.workers.nudges.worker_judge_scope_nudge import WorkerJudgeScopeNudge
+from suites.coding.modules.workers.nudges.worker_judge_scope_message import WorkerJudgeScopeMessage
 from suites.coding.modules.workers.types.worker import Worker
 
 JOURNAL_JUDGE = "sins"
@@ -18,10 +18,10 @@ class WorkerJudgeScopePolicy(EventPolicy):
     rank = "workers.policies"
     agent_types = [Worker.key]
 
-    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+    def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         shell = event.tool.shell if event.tool is not None else None
         if shell is not None and any(self.is_unscoped_judge(part) for part in shell.parts):
-            return WorkerJudgeScopeNudge.declared().nudge()
+            return WorkerJudgeScopeMessage.declared().nudge()
         return None
 
     @staticmethod

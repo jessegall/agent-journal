@@ -1,25 +1,25 @@
 from engine.agent.agent_role_reader import AgentRoleReader
 from engine.agent_machine.contracts.event_policy import EventPolicy
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.part import Part
 from engine.driver.shell_line import ShellLine
 from engine.errors.duration_error import DurationError
 from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.time.duration import Duration
-from core.modules.aliases.nudges.saved_command_choices_nudge import SavedCommandChoicesNudge
-from core.modules.aliases.nudges.saved_command_direct_nudge import SavedCommandDirectNudge
-from core.modules.aliases.nudges.saved_command_helper_nudge import SavedCommandHelperNudge
-from core.modules.aliases.nudges.saved_command_mixed_nudge import SavedCommandMixedNudge
-from core.modules.aliases.nudges.saved_command_piped_nudge import SavedCommandPipedNudge
-from core.modules.aliases.nudges.saved_command_silent_nudge import SavedCommandSilentNudge
-from core.modules.aliases.nudges.saved_command_timeout_nudge import SavedCommandTimeoutNudge
-from core.modules.aliases.nudges.saved_command_unknown_nudge import SavedCommandUnknownNudge
-from core.modules.aliases.nudges.saved_command_unread_nudge import SavedCommandUnreadNudge
+from core.modules.aliases.nudges.saved_command_choices_message import SavedCommandChoicesMessage
+from core.modules.aliases.nudges.saved_command_direct_message import SavedCommandDirectMessage
+from core.modules.aliases.nudges.saved_command_helper_message import SavedCommandHelperMessage
+from core.modules.aliases.nudges.saved_command_mixed_message import SavedCommandMixedMessage
+from core.modules.aliases.nudges.saved_command_piped_message import SavedCommandPipedMessage
+from core.modules.aliases.nudges.saved_command_silent_message import SavedCommandSilentMessage
+from core.modules.aliases.nudges.saved_command_timeout_message import SavedCommandTimeoutMessage
+from core.modules.aliases.nudges.saved_command_unknown_message import SavedCommandUnknownMessage
+from core.modules.aliases.nudges.saved_command_unread_message import SavedCommandUnreadMessage
 from core.modules.aliases.queries.alias_query import AliasQuery
 
 ASKING_FLAGS = ("--help", "-h", "--version", "-V")
-SKIPPED_KEYS = (SavedCommandUnknownNudge.declared().key, SavedCommandHelperNudge.declared().key, SavedCommandMixedNudge.declared().key, SavedCommandSilentNudge.declared().key)
+SKIPPED_KEYS = (SavedCommandUnknownMessage.declared().key, SavedCommandHelperMessage.declared().key, SavedCommandMixedMessage.declared().key, SavedCommandSilentMessage.declared().key)
 
 
 class SavedCommandPolicy(EventPolicy):
@@ -31,7 +31,7 @@ class SavedCommandPolicy(EventPolicy):
     def __init__(self, aliases: AliasQuery, types: HelperTypeBook, roles: AgentRoleReader) -> None:
         self.aliases, self.types, self.roles = aliases, types, roles
 
-    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+    def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         shell = event.tool.shell if event.tool is not None else None
         if shell is None or shell.parse_error:
             return None
@@ -41,7 +41,7 @@ class SavedCommandPolicy(EventPolicy):
                     continue
                 Duration.parse(part.timeout_duration)
         except DurationError:
-            return SavedCommandTimeoutNudge.declared().nudge()
+            return SavedCommandTimeoutMessage.declared().nudge()
         if not shell.aliases_loaded:
             return None
         role = self.roles.role(agent_id)
@@ -51,7 +51,7 @@ class SavedCommandPolicy(EventPolicy):
         refusal = next((nudge for nudge in refusals if nudge and not (shell.is_skip_line and nudge.key in SKIPPED_KEYS)), None)
         if refusal:
             return refusal
-        return SavedCommandMixedNudge.declared().nudge() if self.is_mixed(shell) else None
+        return SavedCommandMixedMessage.declared().nudge() if self.is_mixed(shell) else None
 
     @staticmethod
     def is_mixed(shell: ShellLine) -> bool:
@@ -59,7 +59,7 @@ class SavedCommandPolicy(EventPolicy):
         long_parts = [part for part in parts if part.classification.category.is_long_running and not set(ASKING_FLAGS) & set(part.arguments)]
         return bool(long_parts) and len(long_parts) != len(parts)
 
-    def part_refusal(self, part: Part, role: str) -> Nudge | None:
+    def part_refusal(self, part: Part, role: str) -> AgentMessage | None:
         if part.saved_command:
             return self.saved_refusal(part)
         category = part.classification.category
@@ -67,19 +67,19 @@ class SavedCommandPolicy(EventPolicy):
             return None
         exact = self.aliases.first_beginning(part.text, category)
         if exact:
-            return SavedCommandDirectNudge.declared().nudge(name=exact.name)
+            return SavedCommandDirectMessage.declared().nudge(name=exact.name)
         if self.aliases.with_category(category).exists():
-            return SavedCommandChoicesNudge.declared().nudge(category=category.value)
+            return SavedCommandChoicesMessage.declared().nudge(category=category.value)
         if role in self.types.read_access_keys():
-            return SavedCommandHelperNudge.declared().nudge(category=category.value)
-        return SavedCommandUnknownNudge.declared().nudge(command=part.text, category=category.value)
+            return SavedCommandHelperMessage.declared().nudge(category=category.value)
+        return SavedCommandUnknownMessage.declared().nudge(command=part.text, category=category.value)
 
-    def saved_refusal(self, part: Part) -> Nudge | None:
+    def saved_refusal(self, part: Part) -> AgentMessage | None:
         if part.pipe_target is not None:
-            return SavedCommandPipedNudge.declared().nudge(name=part.saved_command)
+            return SavedCommandPipedMessage.declared().nudge(name=part.saved_command)
         if set(ASKING_FLAGS) & set(part.arguments):
             return None
         if not part.read_flag:
-            return SavedCommandUnreadNudge.declared().nudge(name=part.saved_command)
+            return SavedCommandUnreadMessage.declared().nudge(name=part.saved_command)
         alias = self.aliases.saved(part.saved_command)
-        return SavedCommandSilentNudge.declared().nudge(name=alias.name) if alias is not None and alias.is_claimed else None
+        return SavedCommandSilentMessage.declared().nudge(name=alias.name) if alias is not None and alias.is_claimed else None

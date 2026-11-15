@@ -1,8 +1,8 @@
 from engine.agent_machine.contracts.event_policy import EventPolicy
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from suites.coding.drivers.worker.worker_agent_driver import WorkerAgentDriver
-from suites.coding.nudges.worker_full_test_run_nudge import WorkerFullTestRunNudge
+from suites.coding.nudges.worker_full_test_run_message import WorkerFullTestRunMessage
 
 WORKER_FULL_TEST_RUN_KEY = "workers.no-full-test-run"
 
@@ -15,6 +15,6 @@ class WorkerFullTestRunPolicy(EventPolicy):
     rank = "workers.policies"
     agent_types = [WorkerAgentDriver.agent_type]
 
-    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+    def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         shell = event.tool.shell if event.tool is not None else None
-        return WorkerFullTestRunNudge.declared().nudge() if shell is not None and shell.has_full_test_run else None
+        return WorkerFullTestRunMessage.declared().nudge() if shell is not None and shell.has_full_test_run else None

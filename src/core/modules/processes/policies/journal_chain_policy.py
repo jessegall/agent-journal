@@ -1,7 +1,7 @@
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_policy import EventPolicy
-from core.modules.processes.nudges.journal_command_last_nudge import JournalCommandLastNudge
+from core.modules.processes.nudges.journal_command_last_message import JournalCommandLastMessage
 import re
 
 from engine.driver.part import Part
@@ -19,14 +19,14 @@ class JournalChainPolicy(EventPolicy):
     key = "processes.journal-chain"
     rank = "shell.all"
 
-    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+    def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         shell = event.tool.shell if event.tool is not None else None
         if shell is None or shell.parse_error:
             return None
         has_long_part = False
         for part in shell.parts:
             if self.is_journal_loop(part) or (part.program == JOURNAL and has_long_part):
-                return JournalCommandLastNudge.declared().nudge()
+                return JournalCommandLastMessage.declared().nudge()
             has_long_part = has_long_part or not part.classification.category.is_short
         return None
 

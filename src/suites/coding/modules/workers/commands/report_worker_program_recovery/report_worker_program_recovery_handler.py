@@ -3,7 +3,7 @@ from engine.command.handler import Handler
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from suites.coding.modules.workers.commands.report_worker_program_recovery.report_worker_program_recovery import ReportWorkerProgramRecovery
 
 
@@ -12,7 +12,7 @@ class ReportWorkerProgramRecoveryHandler(Handler[ReportWorkerProgramRecovery, No
 
     command = ReportWorkerProgramRecovery
 
-    def __init__(self, queries: Queries, nudger: Nudger) -> None:
+    def __init__(self, queries: Queries, nudger: MessageSender) -> None:
         self.queries, self.nudger = queries, nudger
 
     def handle(self, command: ReportWorkerProgramRecovery, context: Context) -> None:

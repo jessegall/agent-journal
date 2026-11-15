@@ -6,7 +6,7 @@ from datetime import timedelta
 import pytest
 
 from core.modules.agents.testing.fake_launcher import FakeLauncher
-from core.modules.memories.nudges.start_memories_nudge import StartMemoriesNudge
+from core.modules.memories.nudges.start_memories_message import StartMemoriesMessage
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.testing.examples.hook_samples import HookSamples
@@ -70,7 +70,7 @@ def test_the_new_occupant_is_told_its_memories_and_reads_one_the_first_occupant_
     first_session = helper_agent(rotating).session
     job_launch(rotating)
     reply = rotating.hook(helper_agent(rotating).session, HookSamples.session_start())
-    rotating.expect_rows(helper_agent(rotating).session != first_session, StartMemoriesNudge.declared().nudge(count=1).text in reply.lines, detail=str(reply.lines))
+    rotating.expect_rows(helper_agent(rotating).session != first_session, StartMemoriesMessage.declared().nudge(count=1).text in reply.lines, detail=str(reply.lines))
     rotating.expect_text("memory list", MEMORY_TEXT, actor=helper)
 
 

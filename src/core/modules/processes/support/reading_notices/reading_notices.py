@@ -1,8 +1,8 @@
 from pathlib import PurePath
 
 from engine.actor.actor import Actor
-from engine.driver.nudge import Nudge
-from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.agent_message import AgentMessage
+from engine.driver.message_template import MessageTemplate
 from engine.enums.actor_type import ActorType
 from engine.listener.rows.event_rows import EventRows
 from core.modules.processes.models.enums.process_state import ProcessState
@@ -19,20 +19,20 @@ from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.reading_decision_row import ReadingDecisionRow
 from core.modules.processes.models.unreadable_mark import UnreadableMark
 from core.modules.processes.queries.reader_query import ReaderQuery
-from core.modules.processes.nudges.draft_ready_nudge import DraftReadyNudge
-from core.modules.processes.nudges.reader_draft_nudge import ReaderDraftNudge
-from core.modules.processes.nudges.reader_failed_nudge import ReaderFailedNudge
-from core.modules.processes.nudges.unreadable_binary_nudge import UnreadableBinaryNudge
-from core.modules.processes.nudges.unreadable_declared_nudge import UnreadableDeclaredNudge
-from core.modules.processes.nudges.unreadable_empty_nudge import UnreadableEmptyNudge
-from core.modules.processes.nudges.unreadable_interactive_nudge import UnreadableInteractiveNudge
-from core.modules.processes.nudges.unreadable_lifted_nudge import UnreadableLiftedNudge
-from core.modules.processes.nudges.unreadable_single_line_nudge import UnreadableSingleLineNudge
-from core.modules.processes.nudges.reader_missed_nudge import ReaderMissedNudge
-from core.modules.processes.nudges.reader_progress_missing_nudge import ReaderProgressMissingNudge
-from core.modules.processes.nudges.reader_summary_missing_nudge import ReaderSummaryMissingNudge
-from core.modules.processes.nudges.reader_width_nudge import ReaderWidthNudge
-from core.modules.processes.nudges.silent_saved_failure_nudge import SilentSavedFailureNudge
+from core.modules.processes.nudges.draft_ready_message import DraftReadyMessage
+from core.modules.processes.nudges.reader_draft_message import ReaderDraftMessage
+from core.modules.processes.nudges.reader_failed_message import ReaderFailedMessage
+from core.modules.processes.nudges.unreadable_binary_message import UnreadableBinaryMessage
+from core.modules.processes.nudges.unreadable_declaration_message import UnreadableDeclarationMessage
+from core.modules.processes.nudges.unreadable_empty_message import UnreadableEmptyMessage
+from core.modules.processes.nudges.unreadable_interactive_message import UnreadableInteractiveMessage
+from core.modules.processes.nudges.unreadable_lifted_message import UnreadableLiftedMessage
+from core.modules.processes.nudges.unreadable_single_line_message import UnreadableSingleLineMessage
+from core.modules.processes.nudges.reader_missed_message import ReaderMissedMessage
+from core.modules.processes.nudges.reader_progress_missing_message import ReaderProgressMissingMessage
+from core.modules.processes.nudges.reader_summary_missing_message import ReaderSummaryMissingMessage
+from core.modules.processes.nudges.reader_width_message import ReaderWidthMessage
+from core.modules.processes.nudges.silent_saved_failure_message import SilentSavedFailureMessage
 from core.modules.processes.support.decisions.reading_decisions import ReadingDecisions
 from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.reader_writers import ReaderWriters
@@ -41,13 +41,13 @@ from core.modules.processes.support.run_visibility import RunVisibility
 SELECTED_NONE = "--lines picked none"
 WIDTH_FIELDS = ("reader", "kept", "lines", "output")
 LISTED_FIELDS = ("reader", "output")
-MISS_NUDGES: dict[str, tuple[NudgeDeclaration, tuple[str, ...]]] = {"--lines picked nearly all": (ReaderWidthNudge.declared(), WIDTH_FIELDS),
-                                                                    "--summary found nothing": (ReaderSummaryMissingNudge.declared(), LISTED_FIELDS),
-                                                                    "--progress found nothing": (ReaderProgressMissingNudge.declared(), LISTED_FIELDS),
-                                                                    "--progress found only at the end": (ReaderProgressMissingNudge.declared(), LISTED_FIELDS)}
-MARK_NUDGES: dict[UnreadableReason, NudgeDeclaration] = {UnreadableReason.EMPTY: UnreadableEmptyNudge.declared(), UnreadableReason.BINARY: UnreadableBinaryNudge.declared(),
-                                                     UnreadableReason.SINGLE_LINE: UnreadableSingleLineNudge.declared(), UnreadableReason.INTERACTIVE: UnreadableInteractiveNudge.declared(),
-                                                     UnreadableReason.DECLARED: UnreadableDeclaredNudge.declared()}
+MISS_NUDGES: dict[str, tuple[MessageTemplate, tuple[str, ...]]] = {"--lines picked nearly all": (ReaderWidthMessage.declared(), WIDTH_FIELDS),
+                                                                    "--summary found nothing": (ReaderSummaryMissingMessage.declared(), LISTED_FIELDS),
+                                                                    "--progress found nothing": (ReaderProgressMissingMessage.declared(), LISTED_FIELDS),
+                                                                    "--progress found only at the end": (ReaderProgressMissingMessage.declared(), LISTED_FIELDS)}
+MARK_NUDGES: dict[UnreadableReason, MessageTemplate] = {UnreadableReason.EMPTY: UnreadableEmptyMessage.declared(), UnreadableReason.BINARY: UnreadableBinaryMessage.declared(),
+                                                     UnreadableReason.SINGLE_LINE: UnreadableSingleLineMessage.declared(), UnreadableReason.INTERACTIVE: UnreadableInteractiveMessage.declared(),
+                                                     UnreadableReason.DECLARED: UnreadableDeclarationMessage.declared()}
 SHELL_TERMS = frozenset(("journal", "set", "for", "while", "until", "if", "case", "{", "(", "cd", "export", "time", "bash", "sh", "zsh"))
 
 
@@ -59,7 +59,7 @@ class ReadingNotices:
     def __init__(self, readers: ReaderQuery, judge: ReaderJudge, writers: ReaderWriters, rows: EventRows, decisions: ReadingDecisions) -> None:
         self.readers, self.judge, self.writers, self.rows, self.decisions = readers, judge, writers, rows, decisions
 
-    def nudges(self, process: Process, output: Output | None, parts: tuple[ProcessPart, ...]) -> tuple[Nudge, ...]:
+    def nudges(self, process: Process, output: Output | None, parts: tuple[ProcessPart, ...]) -> tuple[AgentMessage, ...]:
         if process.moved_at is None:
             return ()
         failures = self.silent_failure_nudges(process, output, parts)
@@ -74,25 +74,25 @@ class ReadingNotices:
     # The one line about each mark made or lifted at the end of a run: a lifted mark names its command, a mark the
     # engine made names the output, and a declared mark names its command.
     @staticmethod
-    def mark_nudges(process: Process, changes: tuple[UnreadableMark, ...]) -> tuple[Nudge, ...]:
+    def mark_nudges(process: Process, changes: tuple[UnreadableMark, ...]) -> tuple[AgentMessage, ...]:
         return tuple(ReadingNotices.mark_nudge(process, mark) for mark in changes)
 
     @staticmethod
-    def mark_nudge(process: Process, mark: UnreadableMark) -> Nudge:
+    def mark_nudge(process: Process, mark: UnreadableMark) -> AgentMessage:
         if mark.lifted_at is not None:
-            return UnreadableLiftedNudge.declared().nudge(name=mark.terms)
+            return UnreadableLiftedMessage.declared().nudge(name=mark.terms)
         if mark.reason is UnreadableReason.DECLARED:
-            return UnreadableDeclaredNudge.declared().nudge(name=mark.terms)
+            return UnreadableDeclarationMessage.declared().nudge(name=mark.terms)
         return MARK_NUDGES[mark.reason].nudge(output=process.id)
 
     @staticmethod
-    def silent_failure_nudges(process: Process, output: Output | None, parts: tuple[ProcessPart, ...]) -> tuple[Nudge, ...]:
+    def silent_failure_nudges(process: Process, output: Output | None, parts: tuple[ProcessPart, ...]) -> tuple[AgentMessage, ...]:
         if process.state is not ProcessState.FAILED or output is None or output.byte_count:
             return ()
         saved = next((part.saved_command for part in parts if part.saved_command), "")
-        return tuple([SilentSavedFailureNudge.declared().nudge(name=saved)]) if saved else ()
+        return tuple([SilentSavedFailureMessage.declared().nudge(name=saved)]) if saved else ()
 
-    def draft_nudges(self, process: Process, output: Output | None, parts: tuple[ProcessPart, ...], decisions: dict[int, ReadingDecisionRow]) -> tuple[Nudge, ...]:
+    def draft_nudges(self, process: Process, output: Output | None, parts: tuple[ProcessPart, ...], decisions: dict[int, ReadingDecisionRow]) -> tuple[AgentMessage, ...]:
         read = next((part for part in parts if part.category.has_result_output), None)
         if output is None or output.reader_id is not None or not output.line_count or read is None or not read.program or read.program in SHELL_TERMS:
             return ()
@@ -100,22 +100,22 @@ class ReadingNotices:
         if self.readers.with_name(name).exists():
             return ()
         if read.position in decisions and decisions[read.position].action is ReaderAction.DRAFT_READY:
-            return tuple([DraftReadyNudge.declared().nudge(name=name, output=process.id)])
-        return tuple([ReaderDraftNudge.declared().nudge(name=name)])
+            return tuple([DraftReadyMessage.declared().nudge(name=name, output=process.id)])
+        return tuple([ReaderDraftMessage.declared().nudge(name=name)])
 
-    def reader_nudges(self, process: Process, output: Output | None, process_parts: tuple[ProcessPart, ...], decision: ReadingDecisionRow | None) -> tuple[Nudge, ...]:
+    def reader_nudges(self, process: Process, output: Output | None, process_parts: tuple[ProcessPart, ...], decision: ReadingDecisionRow | None) -> tuple[AgentMessage, ...]:
         if output is None or output.reader_id is None or not output.line_count:
             return ()
         reader = self.rows.required(Reader, output.reader_id)
         if decision is not None and decision.reason is ReasonCode.READER_FAILED:
-            return tuple([ReaderFailedNudge.declared().nudge(reader=reader.name, output=process.id)])
+            return tuple([ReaderFailedMessage.declared().nudge(reader=reader.name, output=process.id)])
         if reader.type is not ReaderType.PATTERN:
             return ()
         parts = [part for part in process_parts if not output.reader_position or part.position == output.reader_position]
         missed = tuple(dict.fromkeys(miss for part in parts for miss in self.judge.misses_read_output(reader, part.category, output)))
         if SELECTED_NONE in missed:
-            return tuple([ReaderMissedNudge.declared().nudge(reader=reader.name, lines=output.line_count, output=process.id)])
+            return tuple([ReaderMissedMessage.declared().nudge(reader=reader.name, lines=output.line_count, output=process.id)])
         values = {"reader": reader.name, "kept": output.reader_lines, "lines": output.line_count, "output": process.id}
-        hint = [nudge for miss, nudge in MISS_NUDGES.items() if miss in missed and (nudge[0] is not ReaderSummaryMissingNudge.declared() or reader.summary_pattern)]
+        hint = [nudge for miss, nudge in MISS_NUDGES.items() if miss in missed and (nudge[0] is not ReaderSummaryMissingMessage.declared() or reader.summary_pattern)]
         nudges = (declaration.nudge(**{field: values[field] for field in fields}) for declaration, fields in hint)
         return tuple({nudge.text: nudge for nudge in nudges}.values())

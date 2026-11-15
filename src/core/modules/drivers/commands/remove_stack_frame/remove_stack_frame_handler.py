@@ -1,5 +1,5 @@
 from engine.agent_stack.states.blocked import Blocked
-from engine.agent_step.frame_codec import FrameCodec
+from engine.agent_step.stack_codec import StackCodec
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
@@ -7,7 +7,7 @@ from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.drivers.commands.remove_stack_frame.remove_stack_frame import RemoveStackFrame
 from core.modules.drivers.models.agent_block import AgentBlock
-from core.modules.drivers.models.agent_frame_suppression import AgentFrameSuppression
+from core.modules.drivers.models.hidden_state import HiddenState
 from core.modules.drivers.models.agent_stack import AgentStack
 from engine.enums.block_end import BlockEnd
 
@@ -34,7 +34,7 @@ class RemoveStackFrameHandler(Handler[RemoveStackFrame, str]):
         if context.actor.is_agent():
             raise Refusal("only a person removes a frame from an agent's stack")
         row = self.queries.query(AgentStack).filter(session_agent_id=command.agent_id).first()
-        frames = [frame for frame in (FrameCodec.decoded(row.frames) if row is not None else []) if frame.need_key.generation == command.frame]
+        frames = [frame for frame in (StackCodec.decoded(row.frames) if row is not None else []) if frame.need_key.generation == command.frame]
         if not frames:
             raise Refusal(f"agent {command.agent_id} has no frame {command.frame}", f"journal driver stack {command.agent_id} lists its frames")
         state = frames[0].state
@@ -48,6 +48,6 @@ class RemoveStackFrameHandler(Handler[RemoveStackFrame, str]):
             return f"block {block.id} waived"
         if state_name not in SUPPRESSED_TEXTS:
             raise Refusal(f"a {state_name} frame cannot be removed", "journal driver stack lists the frames a person may remove")
-        self.repository.save(AgentFrameSuppression(session_agent_id=command.agent_id, need_key=FrameCodec.encoded_key(frames[0].need_key), person_id=context.actor.id,
+        self.repository.save(HiddenState(session_agent_id=command.agent_id, need_key=StackCodec.encoded_key(frames[0].need_key), person_id=context.actor.id,
                                                    reason=command.reason), context)
         return SUPPRESSED_TEXTS[state_name].format(frame=command.frame)

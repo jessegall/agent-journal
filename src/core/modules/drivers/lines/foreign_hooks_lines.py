@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.enums.hook_event_name import HookEventName
 from core.modules.drivers.support.foreign_hook_answers import MANAGED_HOOKS_KEY, ForeignHookAnswers
 
@@ -17,7 +17,7 @@ class ForeignHooksLines(EventLineSource):
     def __init__(self, answers: ForeignHookAnswers) -> None:
         self.answers = answers
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
+    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         if event is None:
             return []
         answer = self.answers.answer(event, agent_id)

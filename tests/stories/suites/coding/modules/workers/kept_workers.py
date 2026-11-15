@@ -5,7 +5,7 @@ from tests.stories.core.support.agent_labels import agent_number
 import pytest
 from engine.provider.context_window import ContextWindow
 from core.modules.messages.commands.read_message.read_message import ReadMessage
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from engine.command.context import Context
 from core.modules.tasks.models.task import Task
 from engine.testing.examples.hook_samples import HookSamples
@@ -290,7 +290,7 @@ def test_retire_hides_the_lines_still_waiting_for_the_worker(new_story):
     worker = dispatched_worker(story)
     stopped(story, worker)
     with story.container.get(Database).transaction():
-        story.container.get(Nudger).send_text(worker.id, "A line the worker never took", "sample.raw", Context(Actor.core(), story.clock.timestamp(), ReadMessage(1)))
+        story.container.get(MessageSender).send_text(worker.id, "A line the worker never took", "sample.raw", Context(Actor.core(), story.clock.timestamp(), ReadMessage(1)))
     story.expect_text(f"agent-line list --agent {worker.id} --json", '"state": "waiting"', actor=story.user)
     story.expect_success(f"agent retire {agent_number(story, worker.id)} {REASON}", f"retired {agent_label(story, worker.id)}", actor=story.user)
     story.expect_text(f"agent-line list --agent {worker.id} --json", '"state": "hidden"', actor=story.user)

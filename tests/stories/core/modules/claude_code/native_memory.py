@@ -1,10 +1,10 @@
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from core.modules.claude_code.nudges.native_memory_ban_nudge import NativeMemoryBanNudge
-from engine.testing.expectations.expected_nudge import expected_nudge
+from core.modules.claude_code.nudges.native_memory_ban_message import NativeMemoryBanMessage
+from engine.testing.expectations.expected_message import expected_nudge
 
 MEMORY_FILE = "/Users/ada/.claude/projects/-Users-ada-shop/memory/cart.md"
-BAN = expected_nudge(NativeMemoryBanNudge.declared())
+BAN = expected_nudge(NativeMemoryBanMessage.declared())
 
 
 def test_editing_a_native_memory_file_is_refused(new_story):

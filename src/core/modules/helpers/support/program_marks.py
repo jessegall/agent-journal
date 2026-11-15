@@ -1,4 +1,4 @@
-from engine.chat.mark_family import MarkFamily
+from engine.chat.mark_category import MarkCategory
 from engine.enums.mark_group import MarkGroup
 
-PROGRAMS_FAMILY = MarkFamily("helpers.programs", "Programs", "subagent", MarkGroup.JOURNAL)
+PROGRAMS_FAMILY = MarkCategory("helpers.programs", "Programs", "subagent", MarkGroup.JOURNAL)

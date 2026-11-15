@@ -1,20 +1,20 @@
 from engine.actor.actor import Actor
 from engine.agent_machine.record.question import Question
-from engine.agent_machine.stepping.agent_machine import AgentMachine
+from engine.agent_machine.stepping.agent_state_machine import AgentStateMachine
 from engine.agent_step.agent_view_reader import AgentViewReader
 from engine.agent_step.step_writer import StepWriter
 from engine.command.context import Context
 from engine.database.database import Database
 from engine.query.queries import Queries
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.drivers.models.driver_epoch import DriverEpoch
+from core.modules.drivers.models.driver_version import DriverVersion
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 
 def read_step(story):
     view = story.container.get(AgentViewReader).read(story.agent.id, Question.none())
-    return view, AgentMachine().step(view, Question.none())
+    return view, AgentStateMachine().step(view, Question.none())
 
 
 def saved(story, view, step):
@@ -23,7 +23,7 @@ def saved(story, view, step):
 
 
 def epoch(story) -> int:
-    row = story.container.get(Queries).query(DriverEpoch).every_environment("one test's environments").first()
+    row = story.container.get(Queries).query(DriverVersion).every_environment("one test's environments").first()
     return row.epoch if row is not None else 0
 
 

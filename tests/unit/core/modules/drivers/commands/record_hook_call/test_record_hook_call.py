@@ -1,9 +1,9 @@
 from core.modules.drivers.commands.record_hook_call.record_hook_call_handler import CONTEXT_LIMIT_MARGIN
 from core.modules.drivers.commands.support.context_line_split import ContextLineSplit
-from engine.driver.nudge_declaration import BARE_TEMPLATE, NudgeDeclaration
-from engine.enums.nudge_type import NudgeType
+from engine.driver.message_template import BARE_TEMPLATE, MessageTemplate
+from engine.enums.agent_message_type import AgentMessageType
 
-LINE = NudgeDeclaration("sample.line", NudgeType.NOTICE, BARE_TEMPLATE, full_text=True)
+LINE = MessageTemplate("sample.line", AgentMessageType.NOTICE, BARE_TEMPLATE, full_text=True)
 LIMIT = 10_000 - CONTEXT_LIMIT_MARGIN
 
 

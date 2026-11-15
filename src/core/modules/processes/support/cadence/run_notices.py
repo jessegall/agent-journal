@@ -2,7 +2,7 @@ import re
 
 from core.modules.processes.models.enums.notice_type import NoticeType
 from core.modules.processes.support.output_folder import OutputFolder
-from core.modules.processes.nudges.silent_run_nudge import SILENT_RUN_INTERVAL
+from core.modules.processes.nudges.silent_run_message import SILENT_RUN_INTERVAL
 
 NOTICES_FILE = "notices"
 MOST_NOTICES = 3

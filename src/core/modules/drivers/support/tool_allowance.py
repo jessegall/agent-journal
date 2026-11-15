@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
-from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.agent_message import AgentMessage
+from engine.driver.message_template import MessageTemplate
 from engine.enums.command_category import CommandCategory
 from engine.enums.tool_type import ToolType
 from engine.provider.provider import Provider
@@ -16,9 +16,9 @@ class ToolAllowance:
 
     tools: tuple[ToolType, ...]
     commands: tuple[CommandCategory, ...]
-    refusal: NudgeDeclaration
+    refusal: MessageTemplate
 
-    def refused(self, event: HookEvent, provider: Provider) -> Nudge | None:
+    def refused(self, event: HookEvent, provider: Provider) -> AgentMessage | None:
         tool = event.tool
         if tool is None or provider.uses_web_reader(event):
             return None

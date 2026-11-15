@@ -5,7 +5,7 @@ from engine.driver.seconds import Seconds
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import Model
 from engine.time.timestamp import Timestamp
-from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
+from core.modules.drivers.models.support.tool_use_window import ToolUseWindow
 from core.modules.tasks.support.closed_tasks import ClosedTasks
 
 
@@ -33,7 +33,7 @@ class Reminder(EnvironmentScoped, Model):
 
     @property
     def interval(self) -> Interval:
-        spans = (Seconds(self.interval_seconds) if self.interval_seconds else None, ToolUseSpan(self.interval_tool_uses) if self.interval_tool_uses else None, ClosedTasks(self.interval_tasks) if self.interval_tasks else None)
+        spans = (Seconds(self.interval_seconds) if self.interval_seconds else None, ToolUseWindow(self.interval_tool_uses) if self.interval_tool_uses else None, ClosedTasks(self.interval_tasks) if self.interval_tasks else None)
         return Interval(*(span for span in spans if span is not None))
 
     @property

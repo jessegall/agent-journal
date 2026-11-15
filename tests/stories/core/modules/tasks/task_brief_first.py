@@ -18,14 +18,14 @@ from core.modules.tasks.support.task_brief_requirement import TaskBriefRequireme
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted, ReadTaskBuilder, UnreadTaskBuilder, BriefedTaskBuilder
-from core.modules.processes.nudges.read_command_output_nudge import ReadCommandOutputNudge
-from engine.testing.expectations.expected_nudge import expected_nudge
-from core.modules.tasks.nudges.task_brief_first_nudge import TaskBriefFirstNudge
+from core.modules.processes.nudges.read_command_output_message import ReadCommandOutputMessage
+from engine.testing.expectations.expected_message import expected_nudge
+from core.modules.tasks.nudges.task_brief_first_message import TaskBriefFirstMessage
 
 EDIT = HookSamples.edit("src/cart.py")
 BRIEF_LINE = HookSamples.shell("journal task overview 1", ShellPart("journal", CommandCategory.JOURNAL, ["task", "overview", "1"], subcommand="task"))
 COMPACTION = HookSamples.sample("compact")
-BRIEF_REFUSAL = TaskBriefFirstNudge.declared().nudge(task=1).text
+BRIEF_REFUSAL = TaskBriefFirstMessage.declared().nudge(task=1).text
 
 
 def briefs_required(story) -> None:
@@ -95,7 +95,7 @@ def test_a_compaction_asks_only_for_the_last_started_task_and_the_earlier_one_wh
     story.expect_success("task overview 2", actor=story.agent)
     story.hook("s-1", COMPACTION)
     story.run_listeners()
-    story.expect_hook_refusal("s-1", EDIT, TaskBriefFirstNudge.declared().nudge(task=2).text)
+    story.expect_hook_refusal("s-1", EDIT, TaskBriefFirstMessage.declared().nudge(task=2).text)
     story.run("task overview 2", actor=story.agent)
     story.expect_hook_allowed("s-1", EDIT)
     story.run('task close 2 --outcome "done"', actor=story.agent)
@@ -168,10 +168,10 @@ def test_an_overview_that_cannot_read_its_context_records_no_task_read(new_story
 def test_redirecting_or_piping_a_task_overview_does_not_mark_the_brief_read(new_story):
     story = install_runner(new_story(fixture=UnreadTaskBuilder))
     part = ShellPart("journal", CommandCategory.JOURNAL, ["task", "overview", "1"], subcommand="task")
-    story.expect_hook_refusal("s-1", HookSamples.shell("journal task overview 1 > /tmp/task", part, redirects=["> /tmp/task"]), expected_nudge(ReadCommandOutputNudge.declared()))
+    story.expect_hook_refusal("s-1", HookSamples.shell("journal task overview 1 > /tmp/task", part, redirects=["> /tmp/task"]), expected_nudge(ReadCommandOutputMessage.declared()))
     piped = ShellPart("journal", CommandCategory.JOURNAL, ["task", "overview", "1"], subcommand="task", pipe_target=1)
     sink = ShellPart("cat", CommandCategory.READ, [])
-    story.expect_hook_refusal("s-1", HookSamples.shell("journal task overview 1 && cat", piped, sink), expected_nudge(ReadCommandOutputNudge.declared()))
+    story.expect_hook_refusal("s-1", HookSamples.shell("journal task overview 1 && cat", piped, sink), expected_nudge(ReadCommandOutputMessage.declared()))
     story.expect_rows(not story.row_exists(TaskRead, task_id=1, session_agent_id=story.agent.id))
     story.expect_success("task overview 1", actor=story.agent)
     story.expect_rows(story.row_exists(TaskRead, task_id=1, session_agent_id=story.agent.id))

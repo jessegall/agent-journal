@@ -1,3 +1,3 @@
-from core.modules.project_rules.nudges.start_rules_nudge import StartRulesNudge
+from core.modules.project_rules.nudges.start_rules_message import StartRulesMessage
 
-RULE_NUDGES = [StartRulesNudge]
+RULE_NUDGES = [StartRulesMessage]

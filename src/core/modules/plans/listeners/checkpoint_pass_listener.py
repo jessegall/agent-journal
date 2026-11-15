@@ -9,7 +9,7 @@ from core.modules.plans.models.lifecycles.checkpoint_lifecycle import Checkpoint
 from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.support.plan_main_agents import PlanMainAgents
-from core.modules.plans.nudges.checkpoint_finished_nudge import CheckpointFinishedNudge
+from core.modules.plans.nudges.checkpoint_finished_message import CheckpointFinishedMessage
 from core.modules.plans.support.plan_checkpoints import PlanCheckpoints
 from core.modules.tasks.commands.make_task_log.make_task_log import MakeTaskLog
 
@@ -35,7 +35,7 @@ class CheckpointPassListener(SaveListener[Moved[CheckpointReach]]):
         if reach.source.opens_phases():
             if self.checkpoints.saved_pass(reach.plan_id, reach.phase_id, context):
                 phase = self.rows.required(Phase, reach.phase_id)
-                self.main_agents.send(self.rows.required(Plan, reach.plan_id), CheckpointFinishedNudge.declared(), PASS_SOURCE, context, phase=phase.title)
+                self.main_agents.send(self.rows.required(Plan, reach.plan_id), CheckpointFinishedMessage.declared(), PASS_SOURCE, context, phase=phase.title)
         for task_id in reach.tasks():
             self.bus.dispatch(MakeTaskLog(task_id, PASS_LINE.format(phase=reach.phase_id)), context)
         self.checkpoints.record(reach.plan_id, context)

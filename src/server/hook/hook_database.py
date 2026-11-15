@@ -4,7 +4,7 @@ from dataclasses import replace
 
 from engine.database.database import Database
 from engine.database.write_turns import WriteTurns
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_priority import ExecutionPriority
 from engine.enums.log_level import LogLevel
 from engine.enums.log_source import LogSource
@@ -23,12 +23,12 @@ from server.execution.viewer_tickets import ViewerTickets
 
 CLOSE_WAIT_SECONDS = 60.0
 VIEWER_WAIT_LIMIT_SECONDS = 1.0
-INSTANT_CAPACITY = DEFAULT_LANE_LIMITS.capacity(ExecutionLane.INSTANT)
+INSTANT_CAPACITY = DEFAULT_LANE_LIMITS.capacity(ExecutionLength.INSTANT)
 
 
 # a session runs one hook at a time, so the instant lane needs no share per starter on top of that
 def instant_limits(capacity: int) -> LaneLimits:
-    capacities = {**DEFAULT_LANE_LIMITS.capacities, ExecutionLane.INSTANT: capacity}
+    capacities = {**DEFAULT_LANE_LIMITS.capacities, ExecutionLength.INSTANT: capacity}
     return replace(DEFAULT_LANE_LIMITS.with_capacities(capacities), starter_caps=dict(capacities))
 
 

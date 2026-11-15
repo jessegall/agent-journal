@@ -3,7 +3,7 @@ from engine.enums.command_category import CommandCategory
 from engine.sandbox.shell_sandbox import ShellSandbox
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from core.modules.processes.nudges.sandbox_runner_missing_nudge import SandboxRunnerMissingNudge
+from core.modules.processes.nudges.sandbox_runner_missing_message import SandboxRunnerMissingMessage
 from tests.stories.core.modules.processes.support.process_samples import install_runner, runner_line
 from tests.stories.core.support.coding_fixtures import BuilderHelper, BuilderStarted
 from tests.stories.support.story_checks import expect_updated_input_reply
@@ -30,5 +30,5 @@ def test_with_the_runner_slices_on_a_sandboxed_helper_is_refused_a_line_when_no_
     story = runner_slices_on(played(BuilderHelper))
     story.container.get(ShellSandbox).is_required = True
     reply = story.hook("sub-1", SERVER)
-    story.expect_rows(SandboxRunnerMissingNudge.declared().nudge().text in reply.refusal, detail=reply.refusal)
+    story.expect_rows(SandboxRunnerMissingMessage.declared().nudge().text in reply.refusal, detail=reply.refusal)
     story.expect_refusal("process show 1", "no process 1")

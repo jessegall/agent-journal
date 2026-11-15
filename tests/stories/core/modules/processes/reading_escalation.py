@@ -16,10 +16,10 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 from tests.stories.core.modules.processes.support.reading_scenarios import agent_number, end_decision, ended_after_a_while
 from tests.stories.core.support.coding_fixtures import UserBuilder
-from core.modules.processes.nudges.block_lifted_nudge import BlockLiftedNudge
-from core.modules.processes.nudges.freeze_lifted_nudge import FreezeLiftedNudge
-from engine.testing.expectations.expected_nudge import expected_nudge
-from core.modules.processes.nudges.reader_block_nudge import ReaderBlockNudge
+from core.modules.processes.nudges.block_lifted_message import BlockLiftedMessage
+from core.modules.processes.nudges.freeze_lifted_message import FreezeLiftedMessage
+from engine.testing.expectations.expected_message import expected_nudge
+from core.modules.processes.nudges.reader_block_message import ReaderBlockMessage
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 TEST_ROWS_REASON = "the test reads every row it checks"
@@ -88,7 +88,7 @@ def test_a_worker_is_blocked_while_its_reader_request_waits_and_freed_when_it_ex
     story.expect_success(f"setting set {ProcessSetting.READER_BLOCK_MINUTES.key} 2 --environment main", actor=story.user)
     worker = reader_worker(story)
     worker_run(story)
-    story.expect_hook_refusal("s-reader", EDIT, expected_nudge(ReaderBlockNudge.declared()))
+    story.expect_hook_refusal("s-reader", EDIT, expected_nudge(ReaderBlockMessage.declared()))
     story.expect_text("process holds", "block of reader request 1", actor=worker)
     story.advance(timedelta(minutes=3))
     story.expect_hook_allowed("s-reader", READ)
@@ -105,7 +105,7 @@ def test_a_person_lifts_a_silent_run_hold_and_the_agent_is_told_and_works_on(new
     story.expect_success("process holds", f"hold on output {process.id}: read it; stop it; a user releases it", actor=story.agent)
     story.expect_refusal(f"process lift-hold {agent_number(story, story.agent.id)} --environment main", "only a user lifts a hold", actor=story.agent)
     story.expect_success(f"process lift-hold {agent_number(story, story.agent.id)} --environment main", "1 holds lifted", actor=story.user)
-    story.expect_hook_allowed("s-1", EDIT, expected_nudge(FreezeLiftedNudge.declared()))
+    story.expect_hook_allowed("s-1", EDIT, expected_nudge(FreezeLiftedMessage.declared()))
 
 
 def test_a_person_lifts_a_workers_reader_block_and_the_worker_is_told_and_held_by_it_no_more(new_story):
@@ -116,5 +116,5 @@ def test_a_person_lifts_a_workers_reader_block_and_the_worker_is_told_and_held_b
     story.expect_text("process holds", "block of reader request 1: add or fix the reader; mark the command unreadable", actor=worker)
     person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success(f"process lift-hold {agent_number(story, worker.id)} --environment main", "1 holds lifted", actor=person)
-    story.expect_hook_allowed("s-reader", HookSamples.prompt("go on"), expected_nudge(BlockLiftedNudge.declared(), request=1))
+    story.expect_hook_allowed("s-reader", HookSamples.prompt("go on"), expected_nudge(BlockLiftedMessage.declared(), request=1))
     story.expect_hook_allowed("s-reader", EDIT)

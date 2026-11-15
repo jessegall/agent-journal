@@ -30,7 +30,7 @@ from engine.registry.template_entry import TemplateEntry
 from engine.registry.button_entry import ButtonEntry
 from engine.registry.inspector_entry import InspectorEntry
 from engine.registry.mark_entry import MarkEntry
-from engine.registry.nudge_entry import NudgeEntry
+from engine.registry.message_entry import MessageEntry
 from engine.registry.setting_entry import SettingEntry
 from engine.registry.tunnel_entry import TunnelEntry
 from engine.registry.model_entry import ModelEntry
@@ -73,7 +73,7 @@ class Registry:
     drivers: tuple[DriverEntry, ...] = ()
     windows: tuple[WindowEntry, ...] = ()
     marks: tuple[MarkEntry, ...] = ()
-    nudges: tuple[NudgeEntry, ...] = ()
+    nudges: tuple[MessageEntry, ...] = ()
     docks: tuple[DockEntry, ...] = ()
     templates: tuple[TemplateEntry, ...] = ()
     buttons: tuple[ButtonEntry, ...] = ()
@@ -154,7 +154,7 @@ class Registry:
                                       window.get("float_height", DEFAULT_FLOAT_SIZE.height), tuple(window.get("options", [])), window.get("count", ""), tuple(window.get("shared_reads", [])), window.get("group", ""), window.get("auto_scroll", ""), tuple(window.get("tabs", [])), dict(window.get("search", {})), window.get("shows", LEGACY_SHOWS.get(window["place"], "environment")), tuple(window.get("skeleton", [])), tuple(window.get("required_settings", [])), tuple(window.get("sources", [])), dict(window.get("links", {})), tuple(window.get("slots", [])))
                           for window in entries.get("windows", [])),
             marks=tuple(MarkEntry.restored(mark) for mark in entries.get("marks", [])),
-            nudges=tuple(NudgeEntry.restored(nudge) for nudge in entries.get("nudges", [])),
+            nudges=tuple(MessageEntry.restored(nudge) for nudge in entries.get("nudges", [])),
             docks=tuple(DockEntry.restored(dock) for dock in entries.get("docks", [])),
             templates=tuple(TemplateEntry.restored(template) for template in entries.get("templates", [])),
             buttons=tuple(ButtonEntry.restored(button) for button in entries.get("buttons", [])),

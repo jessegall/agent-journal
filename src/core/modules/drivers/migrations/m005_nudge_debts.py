@@ -3,7 +3,7 @@ from engine.database.migration import Migration
 COMMON = " version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(metadata)), created_at TEXT NOT NULL, updated_at TEXT NOT NULL) STRICT"
 
 
-class NudgeDebtsMigration(Migration):
+class MessageDebtsMigration(Migration):
     """Keeps the lines that named a command to run until the agent has run it or said why not."""
 
     number = 5

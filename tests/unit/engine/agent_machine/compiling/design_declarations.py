@@ -11,7 +11,7 @@ from engine.enums.capability_proof import CapabilityProof
 from engine.enums.contribution_type import ContributionType
 from engine.enums.block_end import BlockEnd
 from engine.enums.hook_event_name import HookEventName
-from engine.enums.line_carrier import LineCarrier
+from engine.enums.line_channel import LineChannel
 from engine.enums.responder import Responder
 from engine.enums.transform_slot import TransformSlot
 from engine.enums.work_stop import WorkStop
@@ -171,7 +171,7 @@ class DesignDeclarations:
         waits = [ContributionDeclaration(key, ContributionType.NEED, "", tuple(agent_types), "Waiting") for key, agent_types in WAITS.get(module, [])]
         policies = [ContributionDeclaration(key, ContributionType.POLICY, rank, tuple(agent_types), is_safety=rank == SAFETY) for key, rank, agent_types in POLICIES.get(module, [])]
         lines = [ContributionDeclaration(key, ContributionType.LINE, events=tuple([HookEventName.TICK if key in STEP_LINES else HookEventName.PRE_TOOL_USE]),
-                                         carrier=LineCarrier.WAITING if key in WAITING_LINES else LineCarrier.NOW)
+                                         carrier=LineChannel.WAITING if key in WAITING_LINES else LineChannel.NOW)
                  for key in (f"{module}.{name}" for name in LINES.get(module, []))]
         effects = [ContributionDeclaration(key, ContributionType.EFFECT, is_required=required, has_failure=required) for key, required in EFFECTS.get(module, [])]
         transforms = [ContributionDeclaration(key, ContributionType.TRANSFORM, slot=slot) for key, slot in TRANSFORMS.get(module, [])]

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from engine.enums.contribution_type import ContributionType
 from engine.enums.block_end import BlockEnd
 from engine.enums.hook_event_name import HookEventName
-from engine.enums.line_carrier import LineCarrier
+from engine.enums.line_channel import LineChannel
 from engine.enums.transform_slot import TransformSlot
 
 
@@ -21,7 +21,7 @@ class ContributionDeclaration:
     is_safety: bool = False
     slot: TransformSlot | None = None
     events: tuple[HookEventName, ...] = ()
-    carrier: LineCarrier = LineCarrier.NOW
+    carrier: LineChannel = LineChannel.NOW
     is_required: bool = False
     has_failure: bool = False
     constructor_types: tuple[str, ...] = ()

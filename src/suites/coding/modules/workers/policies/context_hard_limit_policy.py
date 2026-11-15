@@ -8,7 +8,7 @@ from engine.agent_stack.reason import Reason
 from engine.enums.agent_role import AgentRole
 from engine.enums.decision_class import DecisionClass
 from core.modules.processes.support.output_watch_call import OutputWatchCall
-from suites.coding.modules.workers.nudges.context_hard_stop_nudge import ContextHardStopNudge
+from suites.coding.modules.workers.nudges.context_hard_stop_message import ContextHardStopMessage
 from suites.coding.modules.workers.types.worker import Worker
 from suites.coding.support.context_limit_check import ContextLimitCheck
 
@@ -43,4 +43,4 @@ class ContextHardLimitPolicy(Policy):
             return []
         if not self.limits.exceeds_hard_limit(view.agent.agent_id):
             return []
-        return [Reason(self.key, DecisionClass.REFUSE, self.rank, ContextHardStopNudge.declared().nudge().text)]
+        return [Reason(self.key, DecisionClass.REFUSE, self.rank, ContextHardStopMessage.declared().nudge().text)]

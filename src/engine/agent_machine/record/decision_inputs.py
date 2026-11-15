@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from engine.agent_stack.need_key import NeedKey
+from engine.agent_stack.state_key import StateKey
 
 
 @dataclass(frozen=True)
@@ -8,6 +8,6 @@ class DecisionInputs:
     """What a decision was made from: the table digest, and the needs, holds and grants read."""
 
     table_digest: str
-    need_keys: tuple[NeedKey, ...]
+    need_keys: tuple[StateKey, ...]
     block_ids: tuple[int, ...]
     grant_ids: tuple[int, ...]

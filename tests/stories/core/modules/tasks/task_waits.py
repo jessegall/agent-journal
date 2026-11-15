@@ -10,11 +10,11 @@ from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import AgentStarted
-from core.modules.tasks.nudges.task_name_nudge import TaskNameNudge
-from engine.testing.expectations.expected_nudge import expected_nudge
+from core.modules.tasks.nudges.task_name_message import TaskNameMessage
+from engine.testing.expectations.expected_message import expected_nudge
 from core.modules.drivers.support.line_typing import TERMINAL_PREFIX
-from core.modules.tasks.nudges.task_reopened_nudge import TaskReopenedNudge
-from core.modules.waits.nudges.wait_ended_nudge import WaitEndedNudge
+from core.modules.tasks.nudges.task_reopened_message import TaskReopenedMessage
+from core.modules.waits.nudges.wait_ended_message import WaitEndedMessage
 
 
 def posted(line):
@@ -101,7 +101,7 @@ def test_a_task_whose_brief_names_an_open_task_is_told_how_to_block_on_it(new_st
     story = new_story(fixture=TwoTasks)
     story.run('task edit 1 --brief "Build on task 2 first"')
     story.run("task start 1", actor=story.agent)
-    story.expect_hook_allowed("s-1", posted("journal task start 1"), expected_nudge(TaskNameNudge.declared(), task=1, other=2))
+    story.expect_hook_allowed("s-1", posted("journal task start 1"), expected_nudge(TaskNameMessage.declared(), task=1, other=2))
 
 
 def test_the_graph_names_what_waits_on_what_by_a_dependency_or_a_block(new_story):
@@ -151,7 +151,7 @@ def test_an_idle_agent_is_typed_that_its_task_opened_and_the_line_is_not_said_tw
     story.advance(timedelta(seconds=31))
     story.run('task cancel 2 --reason "no"')
     story.run_listeners()
-    story.expect_rows(entered == [(story.agent.id, TERMINAL_PREFIX + TaskReopenedNudge.declared().nudge(task=1).text), (story.agent.id, TERMINAL_PREFIX + WaitEndedNudge.declared().nudge(wait=1).text)], detail=str(entered))
+    story.expect_rows(entered == [(story.agent.id, TERMINAL_PREFIX + TaskReopenedMessage.declared().nudge(task=1).text), (story.agent.id, TERMINAL_PREFIX + WaitEndedMessage.declared().nudge(wait=1).text)], detail=str(entered))
     story.expect_text(f"agent-line list --agent {story.agent.id} --state entered", "task:1 is open again")
 
 
@@ -168,7 +168,7 @@ def test_a_line_left_during_a_turn_is_typed_once_when_the_agent_stops(reopened_w
     stop = HookSamples.stop().with_fields(accepts_lines=False)
     story.hook("s-1", stop)
     story.run_listeners()
-    story.expect_rows(entered == [(story.agent.id, TERMINAL_PREFIX + TaskReopenedNudge.declared().nudge(task=1).text)])
+    story.expect_rows(entered == [(story.agent.id, TERMINAL_PREFIX + TaskReopenedMessage.declared().nudge(task=1).text)])
     story.hook("s-1", stop)
     story.run_listeners()
     story.expect_rows(len(entered) == 1)

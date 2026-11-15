@@ -2,7 +2,7 @@ from engine.event.created import Created
 from engine.command.context import Context
 from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
-from core.modules.drivers.support.command_admission import CommandAdmission
+from core.modules.drivers.support.command_check import CommandCheck
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions
@@ -14,7 +14,7 @@ class DispatchAllowanceGuard(Guard[Created[Worktree]]):
 
     name = "workers.main-sends-no-worker"
 
-    def __init__(self, caller: MainCaller, options: CodingMainOptions, admission: CommandAdmission) -> None:
+    def __init__(self, caller: MainCaller, options: CodingMainOptions, admission: CommandCheck) -> None:
         self.caller, self.options, self.admission = caller, options, admission
 
     def check(self, event: Created[Worktree], context: Context) -> None:

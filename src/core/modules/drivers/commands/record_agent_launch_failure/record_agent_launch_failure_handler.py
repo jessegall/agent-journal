@@ -8,10 +8,10 @@ from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.commands.record_agent_launch_failure.record_agent_launch_failure import RecordAgentLaunchFailure
-from core.modules.agents.nudges.agent_start_failed_nudge import AgentStartFailedNudge
+from core.modules.agents.nudges.agent_start_failed_message import AgentStartFailedMessage
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 
 SOURCE = "agents.launch-failed"
 
@@ -24,7 +24,7 @@ class RecordAgentLaunchFailureHandler(Handler[RecordAgentLaunchFailure, None]):
     command = RecordAgentLaunchFailure
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, nudger: Nudger, bus: Bus, types: HelperTypeBook, rows: EventRows, repository: Repository) -> None:
+    def __init__(self, queries: Queries, nudger: MessageSender, bus: Bus, types: HelperTypeBook, rows: EventRows, repository: Repository) -> None:
         self.queries, self.nudger, self.bus, self.types = queries, nudger, bus, types
         self.rows, self.repository = rows, repository
 
@@ -32,6 +32,6 @@ class RecordAgentLaunchFailureHandler(Handler[RecordAgentLaunchFailure, None]):
         agent = self.repository.update(self.rows.required(Agent, command.agent_id), context, launch_failed_at=context.timestamp)
         if agent.ended_at is None and not self.types.find(agent.role).separate_folder:
             self.bus.dispatch(EndAgent(agent.id), context)
-        notice = AgentStartFailedNudge.declared().nudge(agent=agent.number)
+        notice = AgentStartFailedMessage.declared().nudge(agent=agent.number)
         if agent.parent_id is not None and not self.queries.query(AgentLine).filter(source=SOURCE, text=notice.text).exists():
-            self.nudger.send(agent.parent_id, AgentStartFailedNudge.declared(), SOURCE, context, agent=agent.number)
+            self.nudger.send(agent.parent_id, AgentStartFailedMessage.declared(), SOURCE, context, agent=agent.number)

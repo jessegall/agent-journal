@@ -7,7 +7,7 @@ from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.record.line import Line
 from engine.agent_machine.record.question import Question
 from engine.enums.hook_event_name import HookEventName
-from engine.enums.line_carrier import LineCarrier
+from engine.enums.line_channel import LineChannel
 from engine.enums.line_category import LineCategory
 
 
@@ -24,7 +24,7 @@ class LineSource(ABC):
     role_group: ClassVar[RoleGroup] = RoleGroup.ANY
     # a line of a session's start, which a resumed session does not get
     start_line: ClassVar[bool] = False
-    carrier: ClassVar[LineCarrier] = LineCarrier.NOW
+    carrier: ClassVar[LineChannel] = LineChannel.NOW
     category: ClassVar[LineCategory] = LineCategory.INFORMATION
     interval_key: ClassVar[str] = ""
 

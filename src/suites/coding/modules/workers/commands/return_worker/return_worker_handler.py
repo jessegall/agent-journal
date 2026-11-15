@@ -6,12 +6,12 @@ from engine.repository.repository import Repository
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from suites.coding.modules.workers.models.merger_line import MergerLine
-from suites.coding.modules.workers.nudges.merger_line_available_nudge import MergerLineAvailableNudge
+from suites.coding.modules.workers.nudges.merger_line_available_message import MergerLineAvailableMessage
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.merger_nudges import MERGER_SOURCE
-from suites.coding.modules.workers.nudges.merger_passed_nudge import MergerPassedNudge
+from suites.coding.modules.workers.nudges.merger_passed_message import MergerPassedMessage
 from suites.coding.modules.workers.commands.return_worker.return_worker import ReturnWorker
 from suites.coding.modules.workers.commands.merger.require_merger import require_merger
 from suites.coding.modules.workers.support.merger_visits import MergerVisits
@@ -36,5 +36,5 @@ class ReturnWorkerHandler(Handler[ReturnWorker, None]):
             raise Refusal(f"{AgentLabel.labelled_row(command.worker_id, self.numbers, "worker").text} has nothing delivered")
         self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.return_worker, returned_at=context.timestamp, pass_reason=command.reason), context)
         line = self.repository.save(MergerLine(text=f"worker:{self.numbers.number(AGENT_MODEL_NAME, command.worker_id)}: {command.reason}", fallback_source=MERGER_SOURCE, read_at=context.timestamp), context)
-        self.main_line.send_nudge(MergerPassedNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, command.worker_id)), MERGER_SOURCE, context)
-        self.main_line.send_nudge(MergerLineAvailableNudge.declared().nudge(line=line.id), MERGER_SOURCE, context)
+        self.main_line.send_nudge(MergerPassedMessage.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, command.worker_id)), MERGER_SOURCE, context)
+        self.main_line.send_nudge(MergerLineAvailableMessage.declared().nudge(line=line.id), MERGER_SOURCE, context)

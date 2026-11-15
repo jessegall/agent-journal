@@ -2,16 +2,16 @@ from engine.actor.actor import Actor
 from engine.command.context import Context
 from engine.database.database import Database
 from engine.driver.count_down import CountDown
-from engine.driver.times_span import TimesSpan
+from engine.driver.time_window import TimeWindow
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.drivers.support.countdowns import Countdowns, is_unbounded
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
-REPEATED = CountDown("stories.repeated", "stop repeating", TimesSpan(3))
-SILENT = CountDown("stories.silent", "stop repeating", TimesSpan(3), is_silent=True)
-LATE_LINE = CountDown("stories.late_line", "stop repeating", TimesSpan(5), line_limit=2)
+REPEATED = CountDown("stories.repeated", "stop repeating", TimeWindow(3))
+SILENT = CountDown("stories.silent", "stop repeating", TimeWindow(3), is_silent=True)
+LATE_LINE = CountDown("stories.late_line", "stop repeating", TimeWindow(5), line_limit=2)
 
 
 def context_of(story) -> Context:

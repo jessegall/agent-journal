@@ -1,10 +1,10 @@
-from core.modules.drivers.nudges.project_hook_woke_nudge import ProjectHookWokeNudge
+from core.modules.drivers.nudges.project_hook_wake_message import ProjectHookWakeMessage
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
 from core.modules.drivers.bindings.agent_wake_route import AgentWakeRoute
 from core.modules.drivers.commands.claim_agent_line.claim_agent_line import ClaimAgentLine
-from core.modules.drivers.commands.record_agent_nudge.record_agent_nudge import RecordAgentNudge
+from core.modules.drivers.commands.record_agent_nudge.record_agent_message import RecordAgentMessage
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.support.wake_delivery import WakeDelivery
@@ -160,7 +160,7 @@ def test_a_project_hook_line_becomes_a_wake_line_for_the_agent(tmp_path):
     wake, bus = route(tmp_path)
     assert wake.line(WakeAsk("claude", "s-1", "", ""), "watch", "the build broke")
     [command] = bus.commands
-    assert isinstance(command, RecordAgentNudge) and command.agent_id == 3 and command.nudge.text == ProjectHookWokeNudge.declared().nudge(hook="watch", text="the build broke").text
+    assert isinstance(command, RecordAgentMessage) and command.agent_id == 3 and command.nudge.text == ProjectHookWakeMessage.declared().nudge(hook="watch", text="the build broke").text
     assert command.nudge.declaration.delivery is LineDelivery.WAKE_HOOK
 
 

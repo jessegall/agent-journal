@@ -9,7 +9,7 @@ from engine.helper_type.helper_type import HelperType
 from engine.profile.agent_profile import AgentProfile
 from engine.module.ask_topic import AskTopic
 
-from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.driver.message_template import MessageTemplate
 from engine.chat.dock_declaration import DockDeclaration
 from engine.chat.mark_declaration import MarkDeclaration
 from engine.command.command import Command
@@ -23,7 +23,7 @@ from engine.agent_machine.contracts.transform import Transform
 from engine.agent_machine.needs.wake_cause import WakeCause
 from engine.agent_machine.driver import CORE_SUITE, Driver
 from engine.agent_machine.needs.fact_source import FactSource
-from engine.agent_machine.needs.need_source import NeedSource
+from engine.agent_machine.needs.state_source import StateSource
 from engine.model.model import Model
 from engine.guard.guard import Guard
 from engine.listener.commit.commit_listener import CommitListener
@@ -86,7 +86,7 @@ class Module:
     marks: ClassVar[list[MarkDeclaration | type[MarkDeclaration]]] = []
     block_conditions: ClassVar[list[type[BlockCondition]]] = []
     agent_drivers: ClassVar[list[type[Driver]]] = []
-    needs: ClassVar[list[type[NeedSource]]] = []
+    needs: ClassVar[list[type[StateSource]]] = []
     facts: ClassVar[list[type[FactSource]]] = []
     policies: ClassVar[list[type[Policy]]] = []
     lines: ClassVar[list[type[LineSource]]] = []
@@ -96,7 +96,7 @@ class Module:
     subjects: ClassVar[list[type[Model]]] = []
     agent_listeners: ClassVar[list[type[AgentListener[object]]]] = []
     performance_tools: ClassVar[list[type[PerformanceTool]]] = []
-    nudges: ClassVar[list[NudgeDeclaration | type[NudgeDeclaration]]] = []
+    nudges: ClassVar[list[MessageTemplate | type[MessageTemplate]]] = []
     tick_handlers: ClassVar[list[TickHandler | type[TickHandler]]] = []
     helper_question_topics: ClassVar[list[AskTopic | type[AskTopic]]] = []
     docks: ClassVar[list[DockDeclaration | type[DockDeclaration]]] = []
@@ -177,7 +177,7 @@ class Module:
 
     # a nudge written as a class gives its declaration; an inline nudge is its own
     @classmethod
-    def nudge_declarations(cls) -> list[NudgeDeclaration]:
+    def nudge_declarations(cls) -> list[MessageTemplate]:
         return [nudge.declared() if isinstance(nudge, type) else nudge for nudge in cls.nudges]
 
     # a tick handler written as a class gives its declaration; an inline handler is its own

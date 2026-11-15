@@ -2,7 +2,7 @@ from engine.agent_machine.needs.pause_fact import PauseFact
 from engine.agent_machine.record.question import Question
 from engine.agent_step.agent_view_reader import AgentViewReader
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.drivers.nudges.paused_refusal_nudge import PausedRefusalNudge
+from core.modules.drivers.nudges.paused_refusal_message import PausedRefusalMessage
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 
 
@@ -19,7 +19,7 @@ def test_a_helper_paused_with_its_main_agent_holds_one_cause_for_each_in_todays_
     story.expect_success(f"agent pause {helper.number}", actor=story.user)
     pause = pause_fact(story, helper.id)
     assert pause is not None and {cause.paused_agent_id for cause in pause.causes} == {helper.id, main.id}
-    assert pause.refusal_text == PausedRefusalNudge.declared().nudge().text
+    assert pause.refusal_text == PausedRefusalMessage.declared().nudge().text
 
 
 def test_resuming_the_helper_leaves_the_cause_of_its_paused_main_agent(played):

@@ -11,7 +11,7 @@ from core.modules.updates.support.release_source import ReleaseSource
 from tests.stories.core.modules.updates.support.release_folder import ARCHIVE, installed_marker, published, released_story
 from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_absent_last, expect_answers
-from engine.serving.code_handover import CodeHandover
+from engine.serving.code_delivery import CodeDelivery
 from engine.serving.server_files import ServerFiles
 
 
@@ -39,7 +39,7 @@ def test_a_pending_handover_records_no_installed_release(played, tmp_path, monke
         finished.set()
         return 503
 
-    monkeypatch.setattr(CodeHandover, "takeover_status", takeover_status)
+    monkeypatch.setattr(CodeDelivery, "takeover_status", takeover_status)
     try:
         story.expect_success("update install", actor=story.agent)
         releases = json.loads(story.run("release list --json").output_text)["rows"]

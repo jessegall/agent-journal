@@ -1,14 +1,14 @@
-from suites.coding.nudges.worker_task_started_nudge import WorkerTaskStartedNudge
-from suites.coding.nudges.worker_task_unstarted_nudge import WorkerTaskUnstartedNudge
-from suites.coding.nudges.worker_git_ban_nudge import WorkerGitBanNudge
-from suites.coding.nudges.main_helper_ban_nudge import MainHelperBanNudge
-from suites.coding.nudges.main_code_edit_refused_nudge import MainCodeEditRefusedNudge
-from suites.coding.nudges.task_assignment_nudge import TaskAssignmentNudge
-from suites.coding.nudges.unfinished_tasks_nudge import UnfinishedTasksNudge
-from suites.coding.nudges.introduction_nudge import IntroductionNudge
-from suites.coding.nudges.waiting_items_nudge import WaitingItemsNudge
-from suites.coding.nudges.worker_full_test_run_nudge import WorkerFullTestRunNudge
-from suites.coding.nudges.failed_full_run_nudge import FailedFullRunNudge
+from suites.coding.nudges.worker_task_started_message import WorkerTaskStartedMessage
+from suites.coding.nudges.worker_task_unstarted_message import WorkerTaskUnstartedMessage
+from suites.coding.nudges.worker_git_ban_message import WorkerGitBanMessage
+from suites.coding.nudges.main_helper_ban_message import MainHelperBanMessage
+from suites.coding.nudges.main_code_edit_refusal_message import MainCodeEditRefusalMessage
+from suites.coding.nudges.task_assignment_message import TaskAssignmentMessage
+from suites.coding.nudges.unfinished_tasks_message import UnfinishedTasksMessage
+from suites.coding.nudges.introduction_message import IntroductionMessage
+from suites.coding.nudges.waiting_items_message import WaitingItemsMessage
+from suites.coding.nudges.worker_full_test_run_message import WorkerFullTestRunMessage
+from suites.coding.nudges.failed_full_run_message import FailedFullRunMessage
 
 
-CODING_NUDGES = [FailedFullRunNudge, WorkerFullTestRunNudge, IntroductionNudge, WaitingItemsNudge, WorkerTaskStartedNudge, WorkerTaskUnstartedNudge, WorkerGitBanNudge, MainHelperBanNudge, MainCodeEditRefusedNudge, TaskAssignmentNudge, UnfinishedTasksNudge]
+CODING_NUDGES = [FailedFullRunMessage, WorkerFullTestRunMessage, IntroductionMessage, WaitingItemsMessage, WorkerTaskStartedMessage, WorkerTaskUnstartedMessage, WorkerGitBanMessage, MainHelperBanMessage, MainCodeEditRefusalMessage, TaskAssignmentMessage, UnfinishedTasksMessage]

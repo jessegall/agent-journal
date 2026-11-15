@@ -11,9 +11,9 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, start_planned_worker, unplanned_worker
 from suites.coding.modules.workers.support.worker_nudges import UNFINISHED_TASKS_SOURCE
 from core.modules.drivers.models.agent_line import AgentLine
-from suites.coding.modules.workers.nudges.worker_restarted_nudge import WorkerRestartedNudge
-from suites.coding.modules.workers.nudges.worker_task_blocked_nudge import WorkerTaskBlockedNudge
-from engine.testing.expectations.expected_nudge import expected_nudge
+from suites.coding.modules.workers.nudges.worker_restarted_message import WorkerRestartedMessage
+from suites.coding.modules.workers.nudges.worker_task_blocked_message import WorkerTaskBlockedMessage
+from engine.testing.expectations.expected_message import expected_nudge
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 
@@ -28,7 +28,7 @@ def unfinished_lines(worker) -> tuple[AgentLine, ...]:
 
 def expect_silent_stop(worker) -> None:
     lines = worker.main_agent_lines()
-    worker.story.expect_rows(not unfinished_lines(worker), not any(expected_nudge(WorkerRestartedNudge.declared()).matches_text(line) or "ended with" in line for line in lines),
+    worker.story.expect_rows(not unfinished_lines(worker), not any(expected_nudge(WorkerRestartedMessage.declared()).matches_text(line) or "ended with" in line for line in lines),
                              not any("tasks left" in line for line in worker.worker_lines()), detail=str(lines))
 
 
@@ -112,7 +112,7 @@ def test_a_worker_with_failed_tests_that_stops_is_refused_with_the_status_line(f
 
 
 def test_a_worker_whose_program_crashed_while_building_is_started_again(crashed_building):
-    crashed_building.story.expect_rows(any(expected_nudge(WorkerRestartedNudge.declared()).matches_text(line) and "started again" in line for line in crashed_building.main_agent_lines()), len(unfinished_lines(crashed_building)) == 1)
+    crashed_building.story.expect_rows(any(expected_nudge(WorkerRestartedMessage.declared()).matches_text(line) and "started again" in line for line in crashed_building.main_agent_lines()), len(unfinished_lines(crashed_building)) == 1)
 
 
 def test_a_worker_with_an_open_ask_still_reaches_its_parent_when_it_ends(new_story):
@@ -137,4 +137,4 @@ def test_a_worker_with_only_blocked_tasks_may_stop_and_tells_who_blocked_them(ne
     worker = dispatched_worker(story)
     story.expect_success('task block 1 --reason "waits on a user"', actor=worker)
     reply = story.expect_hook_allowed(worker_session(story, worker), HookSamples.stop())
-    story.expect_rows(reply is None or expected_nudge(WorkerTaskBlockedNudge.declared()).matches_text(' '.join(reply.lines)))
+    story.expect_rows(reply is None or expected_nudge(WorkerTaskBlockedMessage.declared()).matches_text(' '.join(reply.lines)))

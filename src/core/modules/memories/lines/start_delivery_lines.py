@@ -1,10 +1,10 @@
 from collections.abc import Sequence
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.cli.row_numbers import RowNumbers
 from engine.cli.agent_number import AGENT_MODEL_NAME
-from core.modules.memories.nudges.start_memories_nudge import StartMemoriesNudge
+from core.modules.memories.nudges.start_memories_message import StartMemoriesMessage
 from engine.enums.hook_event_name import HookEventName
 from core.modules.memories.queries.active_memory_query import ActiveMemoryQuery
 
@@ -21,6 +21,6 @@ class StartDeliveryLines(EventLineSource):
         self.numbers = numbers
         self.memories = memories
 
-    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
+    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         count = self.memories.count()
-        return [StartMemoriesNudge.declared().nudge(count=count, agent=self.numbers.number(AGENT_MODEL_NAME, agent_id))] if count else []
+        return [StartMemoriesMessage.declared().nudge(count=count, agent=self.numbers.number(AGENT_MODEL_NAME, agent_id))] if count else []

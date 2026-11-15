@@ -11,11 +11,11 @@ from engine.query.queries import Queries
 from engine.time.clock import Clock
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.drivers.commands.record_agent_nudge.record_agent_nudge import RecordAgentNudge
+from core.modules.drivers.commands.record_agent_nudge.record_agent_message import RecordAgentMessage
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.models.enums.wake_outcome import WakeOutcome
-from core.modules.drivers.nudges.project_hook_woke_nudge import ProjectHookWokeNudge
+from core.modules.drivers.nudges.project_hook_wake_message import ProjectHookWakeMessage
 from core.modules.drivers.support.driver_settings import MODULE_KEY
 from core.modules.drivers.support.wake_delivery import WakeDelivery
 from core.modules.drivers.support.wake_waiters import WakeWaiters
@@ -68,8 +68,8 @@ class AgentWakeRoute(WakeRoute):
         agent = self.asking_agent(ask)
         if agent is None or not (agent.is_main or agent.is_launched_helper):
             return False
-        nudge = ProjectHookWokeNudge.declared().nudge(hook=hook, text=text[:PROJECT_HOOK_TEXT_CHARACTERS])
-        self.bus.run(RecordAgentNudge(agent.id, nudge, PROJECT_HOOK_SOURCE), self.actors.actor(MODULE_KEY), environment_id=agent.environment_id)
+        nudge = ProjectHookWakeMessage.declared().nudge(hook=hook, text=text[:PROJECT_HOOK_TEXT_CHARACTERS])
+        self.bus.run(RecordAgentMessage(agent.id, nudge, PROJECT_HOOK_SOURCE), self.actors.actor(MODULE_KEY), environment_id=agent.environment_id)
         return True
 
     def asking_agent(self, ask: WakeAsk) -> Agent | None:

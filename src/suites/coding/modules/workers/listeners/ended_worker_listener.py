@@ -5,14 +5,14 @@ from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from engine.scope.scopes import Scopes
 from core.modules.drivers.support.main_agent_line import MainAgentLine
-from engine.driver.nudger import Nudger
+from engine.driver.nudger import MessageSender
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_job import ENDED_WORKER_SOURCE, UNFINISHED_TASKS_SOURCE
-from suites.coding.modules.workers.nudges.worker_committed_unmerged_nudge import WorkerCommittedUnmergedNudge
-from suites.coding.modules.workers.nudges.worker_ended_with_tasks_nudge import WorkerEndedWithTasksNudge
-from suites.coding.modules.workers.nudges.worker_launch_failed_nudge import WorkerLaunchFailedNudge
-from suites.coding.modules.workers.nudges.worker_restarted_nudge import WorkerRestartedNudge
-from suites.coding.modules.workers.nudges.worker_unfinished_tasks_nudge import WorkerUnfinishedTasksNudge
+from suites.coding.modules.workers.nudges.worker_committed_unmerged_message import WorkerCommittedUnmergedMessage
+from suites.coding.modules.workers.nudges.ended_worker_tasks_message import EndedWorkerTasksMessage
+from suites.coding.modules.workers.nudges.worker_launch_failed_message import WorkerLaunchFailedMessage
+from suites.coding.modules.workers.nudges.worker_restarted_message import WorkerRestartedMessage
+from suites.coding.modules.workers.nudges.worker_unfinished_tasks_message import WorkerUnfinishedTasksMessage
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_handoff import WorkerHandoff
 from suites.coding.modules.workers.support.worker_launch_failures import WorkerLaunchFailures
@@ -46,7 +46,7 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
     name = "workers.ended-worker"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, nudger: Nudger, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop, resume: WorkerResume, waits: WorkerProgramWait, inbox: MergerInbox, scopes: Scopes, handoff: WorkerHandoff, launches: WorkerLaunchFailures, guidance: WorkerGuidance, main_line: MainAgentLine, stop_facts: StopFactsReader) -> None:
+    def __init__(self, nudger: MessageSender, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop, resume: WorkerResume, waits: WorkerProgramWait, inbox: MergerInbox, scopes: Scopes, handoff: WorkerHandoff, launches: WorkerLaunchFailures, guidance: WorkerGuidance, main_line: MainAgentLine, stop_facts: StopFactsReader) -> None:
         self.guidance, self.main_line, self.stop_facts = guidance, main_line, stop_facts
         self.nudger, self.queries, self.unfinished, self.stop = nudger, queries, unfinished, stop
         self.resume, self.waits, self.inbox, self.scopes = resume, waits, inbox, scopes
@@ -62,7 +62,7 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
             return
         stop_case = facts.reading()
         if stop_case.resumes_worker:
-            self.nudger.send(new.id, WorkerUnfinishedTasksNudge.declared(), UNFINISHED_TASKS_SOURCE, context, tasks=facts.task_names, line=self.guidance.round_point(worker_round).line)
+            self.nudger.send(new.id, WorkerUnfinishedTasksMessage.declared(), UNFINISHED_TASKS_SOURCE, context, tasks=facts.task_names, line=self.guidance.round_point(worker_round).line)
         if stop_case is StopReading.RESUMED_PROGRAM_STARTING:
             self.waits.notify_wait(new, context)
         if stop_case.line_target is None:
@@ -72,12 +72,12 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
 
     def send_lines(self, worker: Agent, stop_case: StopReading, facts: StopFacts, context: Context) -> None:
         if stop_case is StopReading.LAUNCH_FAILURE:
-            self.nudger.send(worker.parent_id, WorkerLaunchFailedNudge.declared(), SOURCE, context, worker=worker.number, line=self.launches.error_text(worker))
+            self.nudger.send(worker.parent_id, WorkerLaunchFailedMessage.declared(), SOURCE, context, worker=worker.number, line=self.launches.error_text(worker))
             return
-        declaration = WorkerRestartedNudge.declared() if stop_case.resumes_worker else WorkerEndedWithTasksNudge.declared()
+        declaration = WorkerRestartedMessage.declared() if stop_case.resumes_worker else EndedWorkerTasksMessage.declared()
         lines = [declaration.nudge(worker=worker.number, tasks=facts.task_names)]
         if facts.committed_names:
-            lines.append(WorkerCommittedUnmergedNudge.declared().nudge(worker=worker.number, tasks=facts.committed_names))
+            lines.append(WorkerCommittedUnmergedMessage.declared().nudge(worker=worker.number, tasks=facts.committed_names))
         receiver = self.main_line if stop_case.line_target is StopLineTarget.MAIN_AGENT else self.inbox
         for line in lines:
             receiver.send_nudge(line, SOURCE, context)

@@ -1,6 +1,6 @@
 
 from suites.coding.modules.workers.models.merger_line import MergerLine
-from suites.coding.modules.workers.nudges.worker_task_blocked_nudge import WorkerTaskBlockedNudge
+from suites.coding.modules.workers.nudges.worker_task_blocked_message import WorkerTaskBlockedMessage
 from tests.stories.suites.coding.modules.workers.gone_workers import missing_program, running_worker, worker_story
 from tests.stories.support.story_checks import expect_value_4
 
@@ -25,4 +25,4 @@ def refusal_text(story, line: str) -> str:
 
 
 def test_the_line_about_a_blocked_task_wakes_the_main_agent():
-    expect_value_4(WorkerTaskBlockedNudge.declared().wakes_agent)
+    expect_value_4(WorkerTaskBlockedMessage.declared().wakes_agent)

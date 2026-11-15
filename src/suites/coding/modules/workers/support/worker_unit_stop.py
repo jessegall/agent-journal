@@ -2,7 +2,7 @@ from engine.request.request_values import RequestValues
 from suites.coding.modules.workers.support.worker_unit_stop_answer import WorkerUnitStopAnswer
 from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
-from engine.driver.nudge import Nudge
+from engine.driver.agent_message import AgentMessage
 from engine.time.clock import Clock
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.processes.queries.process_query import ProcessQuery
@@ -11,11 +11,11 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.enums.worker_step import WorkerStep
-from suites.coding.modules.workers.nudges.worker_task_blocked_nudge import WorkerTaskBlockedNudge
+from suites.coding.modules.workers.nudges.worker_task_blocked_message import WorkerTaskBlockedMessage
 from suites.coding.modules.workers.support.work_units import UNIT_TASKS_REASON
 from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
-from suites.coding.nudges.worker_task_started_nudge import WorkerTaskStartedNudge
+from suites.coding.nudges.worker_task_started_message import WorkerTaskStartedMessage
 
 HELP_COMMAND_TEXT = AskTopic.GENERAL.question_line()
 
@@ -34,7 +34,7 @@ class WorkerUnitStop:
     def refusal(self, agent_id: int) -> str | None:
         return self.answer(agent_id).refusal
 
-    def blocked_lines(self, agent_id: int) -> list[Nudge]:
+    def blocked_lines(self, agent_id: int) -> list[AgentMessage]:
         return list(self.answer(agent_id).blocked_lines)
 
     # read once a request: the stop's need and its lines of one step ask the same rows
@@ -46,10 +46,10 @@ class WorkerUnitStop:
             return WorkerUnitStopAnswer(None, ())
         point = self.guidance.point(agent_id)
         if point.step is WorkerStep.MERGE_DUE:
-            return WorkerUnitStopAnswer(WorkerTaskStartedNudge.declared().nudge(line=point.line).text, ())
+            return WorkerUnitStopAnswer(WorkerTaskStartedMessage.declared().nudge(line=point.line).text, ())
         if not point.round.started and point.round.following is None:
             blocked = self.tasks.assignee_tasks(agent_id).filter(state=TaskState.BLOCKED).every_row(UNIT_TASKS_REASON)
-            return WorkerUnitStopAnswer(None, tuple(WorkerTaskBlockedNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, agent_id), task=row.id) for row in blocked))
+            return WorkerUnitStopAnswer(None, tuple(WorkerTaskBlockedMessage.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, agent_id), task=row.id) for row in blocked))
         if point.step.may_stop() or self.processes.agent(agent_id).running().exists() or self.agents.running_with_read_access(agent_id):
             return WorkerUnitStopAnswer(None, ())
-        return WorkerUnitStopAnswer(WorkerTaskStartedNudge.declared().nudge(line=f"{point.line} {HELP_COMMAND_TEXT}").text, ())
+        return WorkerUnitStopAnswer(WorkerTaskStartedMessage.declared().nudge(line=f"{point.line} {HELP_COMMAND_TEXT}").text, ())

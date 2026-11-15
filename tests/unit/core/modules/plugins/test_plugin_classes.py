@@ -1,5 +1,5 @@
 from engine.enums.command_category import CommandCategory
-from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_priority import ExecutionPriority
 from core.modules.plugins.support.manifest_run_type import ManifestRunType
 from core.modules.plugins.support.plugin_run_admission import PluginRunAdmission
@@ -13,7 +13,7 @@ def kind_rule(name: str, limit: int | None) -> PluginRunRule:
 def test_declared_kind_becomes_a_class_with_the_manifest_limit():
     classes = PluginRunAdmission({("sample", "judge", 1): kind_rule("judge", 1)}, 0, {}).kind_classes()
     judge = classes[("sample", "judge")]
-    assert (judge.lane, judge.slot_cost, judge.priority, judge.class_limit, judge.plugin) == (ExecutionLane.LONG, 4, ExecutionPriority.NORMAL, 1, "sample")
+    assert (judge.lane, judge.slot_cost, judge.priority, judge.class_limit, judge.plugin) == (ExecutionLength.LONG, 4, ExecutionPriority.NORMAL, 1, "sample")
 
 
 def test_a_plugin_named_like_a_journal_kind_keeps_its_own_class():

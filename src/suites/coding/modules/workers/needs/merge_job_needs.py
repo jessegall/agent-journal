@@ -2,13 +2,13 @@ from collections.abc import Mapping, Sequence
 
 from engine.agent_machine.needs.agent_reference import AgentReference
 from engine.agent_machine.needs.block_plan import BlockPlan
-from engine.agent_machine.needs.need import Need
-from engine.agent_machine.needs.need_source import NeedSource
+from engine.agent_machine.needs.required_state import RequiredState
+from engine.agent_machine.needs.state_source import StateSource
 from engine.agent_machine.record.question import Question
-from engine.agent_stack.need_key import NeedKey
+from engine.agent_stack.state_key import StateKey
 from engine.agent_stack.reason import Reason
 from engine.agent_stack.states.working import Working
-from engine.agent_stack.subject_reference import SubjectReference
+from engine.agent_stack.row_reference import RowReference
 from engine.agent_stack.work_reference import WorkReference
 from engine.enums.decision_class import DecisionClass
 from engine.enums.work_type import WorkType
@@ -17,7 +17,7 @@ from engine.query.queries import Queries
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
-from suites.coding.modules.workers.nudges.unfinished_merge_nudge import UnfinishedMergeNudge
+from suites.coding.modules.workers.nudges.unfinished_merge_message import UnfinishedMergeMessage
 
 MERGER_TYPE = "merger"
 # a Working frame is ordered by its push time, never by a rank key
@@ -26,7 +26,7 @@ UNFINISHED_MERGE_KEY = "workers.unfinished-merge"
 RUNNING_MERGES_REASON = "the merges the mergers of one step started that have not ended, one or two each"
 
 
-class MergeJobNeeds(NeedSource):
+class MergeJobNeeds(StateSource):
     """One Working frame for a merger's open job (doc 1310 section 4.4, the merge contract): work remains while a
     merge it started, accepted by the process queue, has not ended, so its stop is refused; once every merge
     ended, its stop hands the job in, with no report message, as its profile says."""
@@ -38,18 +38,18 @@ class MergeJobNeeds(NeedSource):
     def __init__(self, jobs: HelperJobRows, queries: Queries) -> None:
         self.jobs, self.queries = jobs, queries
 
-    def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]:
+    def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[RequiredState | BlockPlan]]:
         mergers = [agent.agent_id for agent in agents if agent.agent_type == MERGER_TYPE]
         merges = self.queries.query(WorkerOperation).filter(name=WorkerOperationName.MERGE, ended_at=None).matching(Among("creator_id", mergers)).every_row(RUNNING_MERGES_REASON) if mergers else []
         running_merges = {merge.creator_id: merge for merge in merges}
-        merger_jobs: dict[int, Sequence[Need | BlockPlan]] = {}
+        merger_jobs: dict[int, Sequence[RequiredState | BlockPlan]] = {}
         for merger_id in mergers:
             job = self.jobs.open_job(merger_id)
             if job is None:
                 continue
             running = running_merges.get(merger_id)
-            text = UnfinishedMergeNudge.declared().nudge(worker=running.worker_id).text if running is not None else f"job {job.id} is open"
+            text = UnfinishedMergeMessage.declared().nudge(worker=running.worker_id).text if running is not None else f"job {job.id} is open"
             stop_reason = Reason(UNFINISHED_MERGE_KEY, DecisionClass.HOLD, MERGE_JOB_RANK, text)
-            merger_jobs[merger_id] = tuple([Need(Working(WorkReference(WorkType.MERGE_JOB, job.id, f"merge job {job.id}"), running is not None, stop_reason),
-                                                      MERGE_JOB_RANK, NeedKey("Working", SubjectReference("helper_job", job.id), f"job:{job.id}"))])
+            merger_jobs[merger_id] = tuple([RequiredState(Working(WorkReference(WorkType.MERGE_JOB, job.id, f"merge job {job.id}"), running is not None, stop_reason),
+                                                      MERGE_JOB_RANK, StateKey("Working", RowReference("helper_job", job.id), f"job:{job.id}"))])
         return merger_jobs
