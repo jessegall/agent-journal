@@ -13,6 +13,7 @@ class ChatOpeningLines(EventLineSource):
     """A main agent's session start tells it what a journal line is, to keep the journal out of the chat, and
     that the laws apply."""
 
+    start_line = True
     key = "messages.chat-opening"
     events = [HookEventName.SESSION_START]
     agent_types = [AgentRole.MAIN.value]

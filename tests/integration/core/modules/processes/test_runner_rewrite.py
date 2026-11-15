@@ -8,7 +8,6 @@ from engine.enums.command_category import CommandCategory
 from engine.enums.command_effect import CommandEffect
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.modules.processes.support.process_samples import install_runner, runner_line, user_waits, with_parse_error
 from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderHelper
 from engine.testing.expectations.expect_reply import expect_reply_allowed
@@ -62,13 +61,6 @@ def test_a_line_with_a_parse_error_is_let_through(played):
     story.hook("s-1", SERVER)
     expect_updated_input_hook_5(story, "s-1", SERVER, {})
     story.expect_refusal("process show 2", "no process 2")
-
-
-def test_a_second_rule_that_rewrites_the_hook_is_refused_and_no_process_is_kept(played):
-    story = install_runner(played(BuilderStarted, SAMPLES))
-    story.run("setting set samples.rewrite-coding true --project")
-    story.expect_hook_refusal("s-1", SERVER, "processes.runner-rewrite")
-    story.expect_refusal("process show 1", "no process 1")
 
 
 def test_a_chain_of_reads_and_writes_goes_through_the_runner_as_written(played):

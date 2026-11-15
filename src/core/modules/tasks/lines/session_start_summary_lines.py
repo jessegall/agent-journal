@@ -13,6 +13,7 @@ class SessionStartSummaryLines(EventLineSource):
     """A session that starts again with a task in hand, after a compaction, is told the task
     and its newest log line."""
 
+    start_line = True
     key = "tasks.session-start-summary"
     events = [HookEventName.SESSION_START]
     agent_types = [AgentRole.MAIN.value]

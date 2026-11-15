@@ -1,6 +1,6 @@
+from core.modules.processes.support.run_output_rows import RunOutputRows
 from engine.driver.block_check import BlockCheck
 from core.modules.processes.support.block_conditions.process_condition import ProcessCondition
-from core.modules.processes.queries.output_query import OutputQuery
 
 
 class OutputReadSinceBlock(ProcessCondition):
@@ -9,5 +9,5 @@ class OutputReadSinceBlock(ProcessCondition):
     name = "output-read-since-block"
 
     def is_true(self, check: BlockCheck) -> bool:
-        output = check.container.get(OutputQuery).process(int(self.text)).first()
+        output = check.container.get(RunOutputRows).of_run(int(self.text))
         return output is None or (output.last_read_at is not None and output.last_read_at.value >= check.opened_at.value)

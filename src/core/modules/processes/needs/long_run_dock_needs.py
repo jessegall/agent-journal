@@ -1,3 +1,4 @@
+from core.modules.drivers.commands.support.required_commands import RequiredCommands
 from collections.abc import Mapping, Sequence
 
 from engine.agent_machine.needs.agent_reference import AgentReference
@@ -36,7 +37,9 @@ class LongRunDockNeeds(NeedSource):
                 plans[agent.agent_id] = [self.plan(process_id) for process_id in untitled]
         return plans
 
+    # the hold today's required command opens for the title line, in its words: "title output N is due" after the grace
     @staticmethod
     def plan(process_id: int) -> BlockPlan:
-        return BlockPlan(RunNameNudge.declared().nudge(process=process_id), OutputTitled(process_id), LONG_RUN_DOCK_KEY, OUTPUT_TITLE_RANK,
-                         tool_grace_uses=TITLE_GRACE_USES, subject=SubjectReference("process", process_id), lifting_lines=tuple([f"journal output title {process_id}"]))
+        block = RequiredCommands.block(0, RunNameNudge.declared().nudge(process=process_id))
+        return BlockPlan(block.nudge, OutputTitled(process_id), LONG_RUN_DOCK_KEY, OUTPUT_TITLE_RANK, tool_grace_uses=TITLE_GRACE_USES,
+                         subject=SubjectReference("process", process_id), lifting_lines=tuple([f"journal output title {process_id}"]), countdown=block.countdown)

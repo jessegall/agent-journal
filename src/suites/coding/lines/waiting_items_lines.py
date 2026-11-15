@@ -19,6 +19,7 @@ from suites.coding.nudges.waiting_items_nudge import WaitingItemsNudge
 class WaitingItemsLines(EventLineSource):
     """A main session's start names how many open tasks, unread messages and open questions wait for it."""
 
+    start_line = True
     key = "coding.waiting-items"
     events = [HookEventName.SESSION_START]
     agent_types = [AgentRole.MAIN.value]

@@ -13,6 +13,7 @@ from core.modules.drivers.support.actor_loader import ActorLoader
 class OpeningLinesLines(EventLineSource):
     """A session's start gives the agent its driver's opening lines."""
 
+    start_line = True
     key = "drivers.opening-lines"
     events = [HookEventName.SESSION_START]
 

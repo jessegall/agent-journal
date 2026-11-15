@@ -13,6 +13,7 @@ class StartDeliveryLines(EventLineSource):
     """At a session start and after a compaction, tells the agent how many active memories it is given;
     StartMemoriesListener records them."""
 
+    start_line = True
     key = "memories.start-delivery"
     events = [HookEventName.SESSION_START]
 

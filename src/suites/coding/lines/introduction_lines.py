@@ -10,6 +10,7 @@ from suites.coding.nudges.introduction_nudge import IntroductionNudge
 class IntroductionLines(EventLineSource):
     """A main session the journal started, from its launcher, is told to introduce itself in the chat."""
 
+    start_line = True
     key = "coding.introduction"
     events = [HookEventName.SESSION_START]
     agent_types = [AgentRole.MAIN.value]

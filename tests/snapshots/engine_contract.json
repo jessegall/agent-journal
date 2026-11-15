@@ -428,6 +428,7 @@
         "includes_steps: ClassVar[bool]",
         "agent_types: ClassVar[Sequence[str]]",
         "role_group: ClassVar[RoleGroup]",
+        "start_line: ClassVar[bool]",
         "replaced_rules: ClassVar[Sequence[str]]",
         "carrier: ClassVar[LineCarrier]",
         "category: ClassVar[LineCategory]",

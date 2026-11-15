@@ -1,3 +1,5 @@
+from core.modules.processes.support.block_conditions.run_heard_from import RunHeardFrom
+from core.modules.processes.lines.dock_title_lines import DockTitleLines
 from core.modules.processes.effects.runner_start_effect import RunnerStartEffect
 from core.modules.processes.lines.runner_missing_lines import RunnerMissingLines
 from core.modules.processes.policies.runner_sandbox_policy import RunnerSandboxPolicy
@@ -328,7 +330,7 @@ class ProcessesModule(Module):
     needs = [WatchedRunNeeds, LongRunDockNeeds, ReaderRequestNeeds, SilentRunBlockNeeds]
     effects = [LeftoverRunEffect, LongRunDockEffect, OrphanProcessEffect, ReaderRequestEffect, RunnerStartEffect, WatchLinesEffect]
     policies = [FolderChangePolicy, HandMadeMonitorPolicy, JournalChainPolicy, JournalPipePolicy, ReadCommandOutputPolicy, ReadingPolicy, RetryLoopPolicy, RunnerSandboxPolicy, SleepPollPolicy]
-    lines = [AliasSuggestionLines, EndedOutputLineLines, OrphanProcessLines, OutputStatusMonitorLines, ReadAdviceLines, ReaderRequestLines, ReadingLines, RunnerMissingLines, RunQueueHaltedLines, RunTitleLines, WatchLinesLines]
+    lines = [AliasSuggestionLines, DockTitleLines, EndedOutputLineLines, OrphanProcessLines, OutputStatusMonitorLines, ReadAdviceLines, ReaderRequestLines, ReadingLines, RunnerMissingLines, RunQueueHaltedLines, RunTitleLines, WatchLinesLines]
     nudges = PROCESS_NUDGES
     tick_handlers = [OutputReadingTickHandler, RunSlotGrantTickHandler,
                      RunTimeoutsTickHandler, HangWatchTickHandler, CadenceWatchTickHandler, OutputChecksTickHandler,
@@ -336,7 +338,7 @@ class ProcessesModule(Module):
                      ProcessPruningTickHandler, RequestLogImportTickHandler]
     skills = PROCESSES_SKILLS
     requires_engine = ">=5,<6"
-    block_conditions = [ReaderRequestCompleted, OutputEnded, OutputRead, OutputTitled, OutputReadSinceBlock, OutputMonitored]
+    block_conditions = [ReaderRequestCompleted, OutputEnded, OutputRead, OutputTitled, OutputReadSinceBlock, OutputMonitored, RunHeardFrom]
     settings = PROCESS_SETTINGS
     moves = [ProcessesMove]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits", "journal.core.messages", "journal.core.chat", "journal.core.docking", "journal.core.tasks", "journal.core.settings", "journal.core.developer", "journal.core.assignments"]

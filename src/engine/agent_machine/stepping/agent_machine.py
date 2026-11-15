@@ -145,7 +145,8 @@ class AgentMachine:
 
     def lines(self, question: Question, view: AgentView) -> list[Line]:
         event = question.event
-        sources = [source for source in self.line_sources if self.applies(source.agent_types, view) and ((event is not None and event.event in source.events) or (event is None and source.includes_steps))]
+        sources = [source for source in self.line_sources if self.applies(source.agent_types, view) and ((event is not None and event.event in source.events) or (event is None and source.includes_steps))
+                   and not (source.start_line and event is not None and event.is_resume)]
         lines = [replace(line, source_key=source.replaced_rules[0] if source.replaced_rules else "") for source in sources for line in source.lines(question, view)]
         # a step answers no hook, so its lines wait for the agent's next event or its wake, as at an event its program cannot carry
         if event is not None and view.program.supports(CapabilityPart.LINES, event.event):

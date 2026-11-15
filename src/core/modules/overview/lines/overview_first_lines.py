@@ -14,6 +14,7 @@ from core.modules.overview.support.overview_first import OverviewFirst
 class OverviewFirstLines(LineSource):
     """Tells a main agent at a session start that is no resume to run journal overview first, in the words of today's line."""
 
+    start_line = True
     events = [HookEventName.SESSION_START]
     category = LineCategory.STEERING
 

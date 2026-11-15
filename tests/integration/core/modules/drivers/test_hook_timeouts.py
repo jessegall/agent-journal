@@ -1,3 +1,4 @@
+import pytest
 from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
 from uuid import uuid4
@@ -11,6 +12,13 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.chat.support.mark_samples import marks_text
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.integration.support.fixture_journal import FixtureJournal
+from tests.integration.core.modules.drivers.support.walk_only import walk_only
+
+
+# the old walk's own machinery, tested with no slice of the new driver live until task 10324 deletes it with the walk
+@pytest.fixture
+def played(played):
+    return lambda *arguments, **fields: walk_only(played(*arguments, **fields))
 
 
 class SessionMain(StoryFixture):

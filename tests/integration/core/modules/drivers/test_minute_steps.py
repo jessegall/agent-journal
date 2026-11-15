@@ -1,3 +1,4 @@
+from tests.integration.core.modules.drivers.support.walk_only import walk_only
 from engine.command.bus import Bus
 from engine.query.queries import Queries
 from engine.testing.examples.hook_samples import HookSamples
@@ -29,7 +30,7 @@ def test_the_minute_step_asks_for_the_step_of_an_agent_the_waiting_slice_answers
 
 
 def test_with_no_slice_on_the_minute_step_writes_nothing(played):
-    story = played(BuilderStarted)
+    story = walk_only(played(BuilderStarted))
     AgentMinuteSteps()(story.container)
     assert open_causes(story) == []
 

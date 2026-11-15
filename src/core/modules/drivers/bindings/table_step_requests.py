@@ -1,3 +1,4 @@
+from engine.request.request_values import RequestValues
 from collections.abc import Sequence
 
 from engine.agent_machine.needs.step_requests import StepRequests
@@ -17,8 +18,8 @@ class TableStepRequests(StepRequests):
     open one, and joins the cause to the open ones; an agent no slice answers gets none, since its step
     would do nothing."""
 
-    def __init__(self, queries: Queries, repository: Repository, agents: AgentRows, slices: AgentSlices) -> None:
-        self.queries, self.repository, self.agents, self.slices = queries, repository, agents, slices
+    def __init__(self, queries: Queries, repository: Repository, agents: AgentRows, slices: AgentSlices, request_values: RequestValues) -> None:
+        self.queries, self.repository, self.agents, self.slices, self.request_values = queries, repository, agents, slices, request_values
 
     def requested(self, agent_ids: Sequence[int], cause: str, context: Context) -> None:
         if not self.slices.has_active_slice():
@@ -26,11 +27,20 @@ class TableStepRequests(StepRequests):
         agent_ids = [agent.id for agent in self.agents.find_many(list(agent_ids)) if self.slices.tick_slices(agent)]
         if not agent_ids:
             return
-        open_requests = {request.session_agent_id: request for request in self.queries.query(AgentStepRequest).matching(Among("session_agent_id", list(agent_ids)))
-                         .filter(served_at=None).every_row(OPEN_REQUESTS_REASON)}
+        open_requests = self.open_requests(agent_ids)
         for agent_id in agent_ids:
             request = open_requests.get(agent_id)
             if request is None:
-                self.repository.save(AgentStepRequest(session_agent_id=agent_id, causes=tuple([cause])), context)
+                open_requests[agent_id] = self.repository.save(AgentStepRequest(session_agent_id=agent_id, causes=tuple([cause])), context)
             elif cause not in request.causes:
-                self.repository.save_change(request, request.changed(causes=(*request.causes, cause)), context)
+                open_requests[agent_id] = self.repository.save_change(request, request.changed(causes=(*request.causes, cause)), context)
+
+    # the open requests of these agents, kept for the request as it opens and joins them, so each agent's is read once
+    def open_requests(self, agent_ids: list[int]) -> dict[int, AgentStepRequest | None]:
+        kept: dict[int, AgentStepRequest | None] = self.request_values.read("drivers.open-step-requests", lambda: 0, dict)
+        unread = [agent_id for agent_id in agent_ids if agent_id not in kept]
+        if unread:
+            found = {request.session_agent_id: request for request in self.queries.query(AgentStepRequest).matching(Among("session_agent_id", unread))
+                     .filter(served_at=None).every_row(OPEN_REQUESTS_REASON)}
+            kept.update({agent_id: found.get(agent_id) for agent_id in unread})
+        return kept

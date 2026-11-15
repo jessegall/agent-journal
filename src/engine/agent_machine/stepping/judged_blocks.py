@@ -10,6 +10,9 @@ from engine.enums.decision_class import DecisionClass
 CLOSING_OUTCOMES = (ConditionOutcome.SATISFIED, ConditionOutcome.CANCELLED, ConditionOutcome.TARGET_MISSING)
 
 
+BLOCK_FIELD = "{block}"
+
+
 class JudgedBlocks:
     """The blocks a step judges: every open row whose condition was not judged closed, and every plan of the
     step whose row is not open yet, judged as if it were; a plan with a grace lets the action that found it
@@ -22,13 +25,17 @@ class JudgedBlocks:
                 if block.block_id is None or view.block_outcomes.get(block.block_id, ConditionOutcome.PENDING) not in CLOSING_OUTCOMES]
         return [*rows, *(JudgedBlocks.planned(plan) for plan in JudgedBlocks.new_plans(view))]
 
-    # an open row whose need still plans it this step decides under the plan's rank, check keys, stop text and subject
+    # an open row whose need still plans it this step decides under the plan's rank, check keys, stop text and subject,
+    # its texts naming the row's number where they name the hold's
     @staticmethod
     def with_plan(block: OpenBlock, plan: BlockPlan | None) -> OpenBlock:
         if plan is None:
             return block
         planned = JudgedBlocks.planned(plan)
-        return replace(block, reason=planned.reason, stop_reason=planned.stop_reason, subject=planned.subject)
+        numbered = str(block.block_id)
+        reason = replace(planned.reason, text=planned.reason.text.replace(BLOCK_FIELD, numbered))
+        stop_reason = replace(planned.stop_reason, text=planned.stop_reason.text.replace(BLOCK_FIELD, numbered)) if planned.stop_reason is not None else None
+        return replace(block, reason=reason, stop_reason=stop_reason, subject=planned.subject)
 
     @staticmethod
     def new_plans(view: AgentView) -> list[BlockPlan]:

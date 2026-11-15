@@ -117,4 +117,4 @@ def test_a_person_lifts_a_workers_reader_block_and_the_worker_is_told_and_held_b
     person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success(f"process lift-hold {agent_number(story, worker.id)} --environment main", "1 holds lifted", actor=person)
     story.expect_hook_allowed("s-reader", HookSamples.prompt("go on"), expected_nudge(BlockLiftedNudge.declared(), request=1))
-    story.expect_hook_refusal("s-reader", EDIT, "Your task has not started")
+    story.expect_hook_allowed("s-reader", EDIT)

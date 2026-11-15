@@ -10,6 +10,13 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.integration.core.modules.drivers.support.walk_only import walk_only
+
+
+# the old walk's own machinery, tested with no slice of the new driver live until task 10324 deletes it with the walk
+@pytest.fixture
+def played(played):
+    return lambda *arguments, **fields: walk_only(played(*arguments, **fields))
 
 
 class WatchBuild(StoryFixture):

@@ -12,6 +12,7 @@ from core.modules.project_rules.nudges.start_rules_nudge import StartRulesNudge
 class StartRulesLines(EventLineSource):
     """At a session start and after a compaction, tells every agent how many project rules hold."""
 
+    start_line = True
     key = "project_rules.start-rules"
     events = [HookEventName.SESSION_START]
 

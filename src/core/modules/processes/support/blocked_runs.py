@@ -1,3 +1,5 @@
+from engine.database.database import Database
+from engine.request.request_values import RequestValues
 from engine.listener.rows.event_rows import EventRows
 from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
@@ -17,10 +19,16 @@ class BlockedRuns:
     last time the agent read it; an agent whose session ended is held by nothing. The processor time
     is told from the file the hang watch keeps in the run's folder."""
 
-    def __init__(self, processes: ProcessQuery, folder: OutputFolder, settings: ProcessSettings, silences: RunSilences, rows: EventRows) -> None:
+    def __init__(self, processes: ProcessQuery, folder: OutputFolder, settings: ProcessSettings, silences: RunSilences, rows: EventRows, request_values: RequestValues,
+                 database: Database) -> None:
         self.processes, self.folder, self.settings, self.silences, self.rows = processes, folder, settings, silences, rows
+        self.request_values, self.database = request_values, database
 
+    # read once a request until a write changes it: the hold, its condition and its line ask the same question
     def found(self, agent_id: int, timestamp: Timestamp) -> BlockedRun | None:
+        return self.request_values.read(f"processes.held-run:{agent_id}:{timestamp.text}", self.database.change_mark, lambda: self.held(agent_id, timestamp))
+
+    def held(self, agent_id: int, timestamp: Timestamp) -> BlockedRun | None:
         agent = self.rows.find(Agent, agent_id)
         if agent is None or agent.ended_at is not None:
             return None

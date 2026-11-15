@@ -14,6 +14,7 @@ class WorkersOutLines(EventLineSource):
     """A main agent's session starts with a line for each worker of its environment that still has a worktree
     out."""
 
+    start_line = True
     key = "workers.workers-out-at-start"
     events = [HookEventName.SESSION_START]
     agent_types = [AgentRole.MAIN.value]

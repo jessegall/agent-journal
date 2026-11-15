@@ -1,3 +1,4 @@
+import pytest
 from pathlib import Path
 
 from engine.enums.tool_type import ToolType
@@ -9,6 +10,13 @@ from engine.testing.stories.story_fixture import StoryFixture
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from tests.stories.core.modules.skills.due import DUE, JOURNAL_TASK_LIST, due_lines, start
 from tests.stories.core.support.coding_fixtures import CodingEnvironmentWithoutPlainWords
+from tests.integration.core.modules.drivers.support.walk_only import walk_only
+
+
+# the old walk's own machinery, tested with no slice of the new driver live until task 10324 deletes it with the walk
+@pytest.fixture
+def played(played):
+    return lambda *arguments, **fields: walk_only(played(*arguments, **fields))
 
 
 class SkillsDueAgent(StoryFixture):

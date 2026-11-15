@@ -128,8 +128,8 @@ class StoredStepWriter(StepWriter):
         rows = {row.id: row for row in self.queries.query(AgentBlock).matching(Among("id", [closing.block_id for closing in closings])).every_row(CLOSED_BLOCKS_REASON)}
         for closing in closings:
             row = rows[closing.block_id]
-            self.repository.save(row.changed(closed_at=context.timestamp, closed_reason=closing.block_end.value, closer=closing.closer,
-                                             closing_evidence=closing.closing_evidence), context)
+            self.repository.save_change(row, row.changed(closed_at=context.timestamp, closed_reason=closing.block_end.value, closer=closing.closer,
+                                                         closing_evidence=closing.closing_evidence), context)
 
     def save_escalation(self, view: AgentView, record: DecisionRecord, context: Context) -> None:
         escalation = record.counts.escalation
