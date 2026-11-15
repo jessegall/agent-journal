@@ -46,6 +46,16 @@ def text_argument(call: ast.Call, place: int) -> str:
     return argument.value if isinstance(argument, ast.Constant) and isinstance(argument.value, str) else ""
 
 
+def declared_nudge_texts() -> set[str]:
+    """The text of every nudge the source declares, as a call of NudgeDeclaration or as the text of a class built on it."""
+    texts = {text_argument(call, 2) for call in declared_calls(NUDGE_DECLARATION)}
+    for source in SOURCE_FOLDER.rglob("*.py"):
+        for node in source_tree(source).body:
+            if isinstance(node, ast.ClassDef) and any(getattr(base, "id", "") == NUDGE_DECLARATION for base in node.bases):
+                texts |= {fixed_text(member.value) or "" for member in node.body if isinstance(member, ast.Assign) and [target.id for target in member.targets if isinstance(target, ast.Name)] == ["text"]}
+    return texts - {""}
+
+
 def nudge_pattern(text: str) -> re.Pattern[str]:
     parts = [re.escape(literal) + ("" if field is None else NUDGE_VALUE) for literal, field, _, _ in Formatter().parse(text)]
     return re.compile("".join(parts))
@@ -53,8 +63,7 @@ def nudge_pattern(text: str) -> re.Pattern[str]:
 
 @cache
 def nudge_patterns() -> tuple[re.Pattern[str], ...]:
-    texts = {text_argument(call, 2) for call in declared_calls(NUDGE_DECLARATION)}
-    return tuple(nudge_pattern(text) for text in texts if sum(len(literal) for literal, *_ in Formatter().parse(text)) >= SHORTEST_NUDGE_TERMS)
+    return tuple(nudge_pattern(text) for text in declared_nudge_texts() if sum(len(literal) for literal, *_ in Formatter().parse(text)) >= SHORTEST_NUDGE_TERMS)
 
 
 @cache
@@ -158,9 +167,9 @@ def test_no_test_writes_a_value_the_code_declares():
 
 def test_the_scan_finds_a_raw_nudge_a_raw_setting_key_and_a_raw_profile_name(tmp_path):
     sample = tmp_path / "sample_test.py"
-    nudge = next(call for call in declared_calls(NUDGE_DECLARATION) if len(text_argument(call, 2)) >= SHORTEST_NUDGE_TERMS and all(field is None for *_, field, _, _ in Formatter().parse(text_argument(call, 2))))
+    nudge = next(text for text in sorted(declared_nudge_texts()) if len(text) >= SHORTEST_NUDGE_TERMS and all(field is None for *_, field, _, _ in Formatter().parse(text)))
     key = next(key for key in sorted(setting_keys()) if SETTING_KEY.fullmatch(f"journal.{key}"))
-    sample.write_text(f"NUDGE = {text_argument(nudge, 2)!r}\nKEY = 'journal.core.anything.{key}'\nPROFILE = '{RESEARCHER_PROFILE.name}'\n")
+    sample.write_text(f"NUDGE = {nudge!r}\nKEY = 'journal.core.anything.{key}'\nPROFILE = '{RESEARCHER_PROFILE.name}'\n")
     categories = {line.split(" ", 1)[1].split(" ")[0] + " " + line.split(" ", 1)[1].split(" ")[1] for line in module_raw_values(sample)}
     assert categories == {"nudge text", "setting key", "profile name"}, categories
 

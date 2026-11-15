@@ -8,8 +8,8 @@ from suites.coding.modules.workers.nudges.unit_merge_waits_nudge import UnitMerg
 from suites.coding.modules.workers.nudges.worker_merged_nudge import WorkerMergedNudge
 from suites.coding.modules.workers.nudges.worker_without_tasks_nudge import WorkerWithoutTasksNudge
 from suites.coding.modules.workers.support.worker_nudges import WORKER_NUDGES
-from suites.coding.modules.workers.nudges.test_count_unknown_nudge import TestCountUnknownNudge
-from suites.coding.modules.workers.nudges.test_limit_refusal_nudge import TestLimitRefusalNudge
-from suites.coding.modules.workers.nudges.test_limit_stop_nudge import TestLimitStopNudge
+from suites.coding.modules.workers.nudges.worker_test_count_unknown_nudge import WorkerTestCountUnknownNudge
+from suites.coding.modules.workers.nudges.worker_test_limit_refusal_nudge import WorkerTestLimitRefusalNudge
+from suites.coding.modules.workers.nudges.worker_test_limit_stop_nudge import WorkerTestLimitStopNudge
 
-WORKERS_MODULE_NUDGES = [MergeHookFailedNudge, UnitBlockedNudge, UnitMergeWaitsNudge, UnitMergedNudge, WorkerWithoutTasksNudge, MergerLineAvailableNudge, WorkerMergedNudge, MergerPassedNudge, *WORKER_NUDGES, *STALE_NUDGES, TestCountUnknownNudge, TestLimitStopNudge, TestLimitRefusalNudge]
+WORKERS_MODULE_NUDGES = [MergeHookFailedNudge, UnitBlockedNudge, UnitMergeWaitsNudge, UnitMergedNudge, WorkerWithoutTasksNudge, MergerLineAvailableNudge, WorkerMergedNudge, MergerPassedNudge, *WORKER_NUDGES, *STALE_NUDGES, WorkerTestCountUnknownNudge, WorkerTestLimitStopNudge, WorkerTestLimitRefusalNudge]

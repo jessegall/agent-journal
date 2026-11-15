@@ -24,7 +24,7 @@ from core.modules.processes.nudges.silent_run_blocked_nudge import SilentRunBloc
 from core.modules.processes.nudges.silent_start_refused_nudge import SilentStartRefusedNudge
 from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
 from tests.integration.core.modules.processes.test_hang_watch import HANG_SECONDS
-from suites.coding.modules.workers.nudges.test_count_unknown_nudge import TestCountUnknownNudge
+from suites.coding.modules.workers.nudges.worker_test_count_unknown_nudge import WorkerTestCountUnknownNudge
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 from tests.stories.core.modules.processes.support.reading_scenarios import agent_number
@@ -51,7 +51,7 @@ REFUSALS: dict[str, tuple[NudgeDeclaration, dict[str, object], str]] = {
     "unknown command": (CommandTypeUnknownNudge.declared(), {"program": "zork-build", "hint": UNCLASSIFIED_HINT}, "say what type the command is"),
     "saved command refusal": (SavedCommandUnknownNudge.declared(), {"category": "build"}, "Save this command as an alias"),
     "alias claimed silent": (SavedCommandSilentNudge.declared(), {"name": "bundle"}, "make it print each step"),
-    "worker count stop": (TestCountUnknownNudge.declared(), {"output": 1, "name": 1}, "journal reader draft 1 --save"),
+    "worker count stop": (WorkerTestCountUnknownNudge.declared(), {"output": 1, "name": 1}, "journal reader draft 1 --save"),
     "failed full run": (FailedFullRunNudge.declared(), {}, "rerun the failed tests by name"),
     "redirected run": (RedirectedRunNudge.declared(), {"programs": "zork-build"}, "run it without the redirect"),
 }
