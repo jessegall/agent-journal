@@ -23,6 +23,7 @@ from engine.query.conditions.among import Among
 from engine.query.conditions.excluding import Excluding
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
+from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.drivers.models.agent_escalation import AgentEscalation
 from core.modules.drivers.models.agent_stack import AgentStack
@@ -161,5 +162,15 @@ class StoredStepWriter(StepWriter):
             causes = sorted({*json.loads(active.causes), *wake.causes})
             self.repository.save(active.changed(causes=json.dumps(causes), state=state if active.state in (WakeState.OPEN, WakeState.INHIBITED) else active.state), context)
             return
+        if self.has_ended_wake(view.agent.agent_id, wake):
+            return
         self.repository.save(AgentWake(session_agent_id=view.agent.agent_id, work_generation=wake.work_generation,
                                        session_generation=view.session_generation, causes=json.dumps(list(wake.causes)), state=state), context)
+
+    # an expired wake stays final for its causes until a new cause, or a hook of the agent after it (doc 1310 section 6.4)
+    def has_ended_wake(self, agent_id: int, wake: WakeChange) -> bool:
+        expired = self.queries.query(AgentWake).filter(session_agent_id=agent_id, work_generation=wake.work_generation, state=WakeState.EXPIRED).newest().first()
+        if expired is None or not set(wake.causes) <= set(json.loads(expired.causes)):
+            return False
+        hook = self.queries.query(HookCall).filter(session_agent_id=agent_id).newest().first()
+        return hook is None or hook.creation_timestamp().value <= expired.update_timestamp().value

@@ -15,6 +15,8 @@ COMPARISON_SETTING = f"{MODULE_KEY}.comparison"
 COMPARISON_DAYS_SETTING = f"{MODULE_KEY}.comparison-days"
 RETRY_RESERVE_SETTING = f"{MODULE_KEY}.retry-reserve-ms"
 STEP_ROUND_AGENTS_SETTING = f"{MODULE_KEY}.step-round-agents"
+WAKE_RETRY_SETTING = f"{MODULE_KEY}.wake-retry-seconds"
+WAKE_ATTEMPTS_SETTING = f"{MODULE_KEY}.wake-attempts"
 # The parts of the new driver whose phase has passed its gate and so may become active; each phase adds its own.
 READY_SLICES: tuple[str, ...] = ()
 DRIVERS_SETTINGS = [

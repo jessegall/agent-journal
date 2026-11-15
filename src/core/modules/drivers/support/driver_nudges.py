@@ -1,3 +1,5 @@
+from core.modules.drivers.nudges.wake_obligation_nudge import WakeObligationNudge
+from core.modules.drivers.nudges.ignored_wake_nudge import IgnoredWakeNudge
 from core.modules.drivers.nudges.agent_line_available_nudge import AgentLineAvailableNudge
 from engine.driver.count_down import CountDown
 from core.modules.drivers.support.access_nudges import ACCESS_NUDGES
@@ -31,4 +33,4 @@ from core.modules.drivers.nudges.file_loaded_nudge import FileLoadedNudge
 REQUIRED_COMMAND_TOOL_USES = 5
 REQUIRED_COMMAND_SPAN = ToolUseSpan(REQUIRED_COMMAND_TOOL_USES)
 REQUIRED_COMMAND_COUNTDOWN = CountDown("drivers.required_command_countdown", "{subject}", REQUIRED_COMMAND_SPAN)
-DRIVER_NUDGES = [HookTimeoutsNudge, PermissionRequestedNudge, AgentInterruptedNudge, SafeguardsStoppedNudge, AgentCompactedNudge, CompactionNoticeNudge, CacheKeepaliveNudge, ContinuedSessionNudge, AgentLineAvailableNudge, JournalStartedNudge, *ACCESS_NUDGES, ManagedHookLineNudge, ManagedHookRefusalNudge, AgentResumedNudge, HooksUncheckedNudge, REQUIRED_COMMAND_COUNTDOWN.declaration, RequiredCommandRefusalNudge, RepeatedStopNudge, OpeningLineNudge, RULE_FAILED, TakeoverNudge, PausedRefusalNudge, MissingModelNudge, UnboundDispatchNudge, LongOutputNudge, FileLoadedNudge, AgentNoticeNudge]
+DRIVER_NUDGES = [WakeObligationNudge, IgnoredWakeNudge, HookTimeoutsNudge, PermissionRequestedNudge, AgentInterruptedNudge, SafeguardsStoppedNudge, AgentCompactedNudge, CompactionNoticeNudge, CacheKeepaliveNudge, ContinuedSessionNudge, AgentLineAvailableNudge, JournalStartedNudge, *ACCESS_NUDGES, ManagedHookLineNudge, ManagedHookRefusalNudge, AgentResumedNudge, HooksUncheckedNudge, REQUIRED_COMMAND_COUNTDOWN.declaration, RequiredCommandRefusalNudge, RepeatedStopNudge, OpeningLineNudge, RULE_FAILED, TakeoverNudge, PausedRefusalNudge, MissingModelNudge, UnboundDispatchNudge, LongOutputNudge, FileLoadedNudge, AgentNoticeNudge]
