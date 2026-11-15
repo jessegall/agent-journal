@@ -106,9 +106,13 @@ class FixtureJournal(KitRows):
     def repeated_work(self) -> RepeatedWork:
         return cast(RepeatedWork, self.journal.database.repeated_work)
 
-    # puts the instance in place of the type, and forgets what was already built on the old one, as a story does
+    # puts the instance in place of the type, and forgets what was already built on the old one, as a story does; a
+    # stand-in put in place with bind outlives the replacement of a class it is built on, as in every later container
     def replace(self, kind: type, instance: object) -> None:
         self.container.replace(kind, instance)
+        for bound_kind, bound in self.replacements.items():
+            if bound_kind is not kind and bound_kind not in self.container.instances:
+                self.container.replace(bound_kind, bound)
 
     # what an agent does after its session starts: it reads the overview and reads the file of each skill it must load,
     # through its program's Read tool, so the journal's own blocks and refusals lift as they do for a real agent
