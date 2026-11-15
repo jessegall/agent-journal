@@ -9,7 +9,7 @@ from engine.journal.journal_home import JournalHome
 from engine.module.journal_lines import JournalLines
 from engine.module.module_finder import ModuleFinder
 
-TABLE_FILE = Path(__file__).resolve().parents[6] / "tests" / "snapshots" / "command_lists.json"
+TABLE_FILE = Path(__file__).resolve().parents[5] / "tests" / "snapshots" / "command_lists.json"
 UPDATE_FLAG = "JOURNAL_UPDATE_COMMAND_LISTS"
 ALLOWED = "allowed"
 REFUSED = "refused"

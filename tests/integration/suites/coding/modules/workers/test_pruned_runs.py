@@ -8,7 +8,7 @@ from core.modules.processes.models.process import Process
 from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
-from tests.stories.core.modules.processes.process_retention import ProcessLog
+from tests.integration.core.modules.processes.test_process_retention import ProcessLog
 from tests.stories.core.modules.processes.support.process_samples import ended_run
 
 

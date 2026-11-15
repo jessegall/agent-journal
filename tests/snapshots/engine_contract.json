@@ -9967,6 +9967,17 @@
         "data(self) -> dict[str, object]"
       ]
     },
+    "text.pytest_line.PytestLine": {
+      "bases": [],
+      "fields": [
+        "line: str"
+      ],
+      "methods": [
+        "is_full_suite(targets: Sequence[str]) -> bool",
+        "is_full_run(self) -> bool",
+        "terms(self) -> list[str]"
+      ]
+    },
     "text.run_target.RunTarget": {
       "bases": [],
       "fields": [

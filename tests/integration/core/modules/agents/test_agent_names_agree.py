@@ -8,7 +8,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_label import AgentLabel
 from engine.agent.agent_name import AgentName, agent_name
 
-NAMES = json.loads((Path(__file__).resolve().parents[6] / "tests" / "snapshots" / "agent_names.json").read_text())
+NAMES = json.loads((Path(__file__).resolve().parents[5] / "tests" / "snapshots" / "agent_names.json").read_text())
 
 
 def sql_name(role: str, number: int) -> str:

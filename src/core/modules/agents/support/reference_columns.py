@@ -6,7 +6,7 @@ from engine.query.query import ROW_KEY
 from core.modules.agents.support.agent_columns import AgentColumns
 
 AGENT_TABLES = ("agents", "actors")
-AGENT_COLUMN_NAMES = ("actor_id", "holder_id", "delegated_to", "creator_id", "parent_id", "session_agent_id", "agent_id", "survivor_id",
+AGENT_COLUMN_NAMES = ("actor_id", "holder_id", "creator_id", "parent_id", "session_agent_id", "agent_id", "survivor_id",
                       "folded_agent_id", "lifter_id", "sender_id", "assignee_id", "owner_id", "test_agent_id")
 AGENT_COLUMN_SUFFIX = "_agent_id"
 POLYMORPHIC_PAIRS = (("row_model", "row_id"), ("subject_model", "subject_id"), ("target_model", "target_id"), ("source_model", "source_id"),

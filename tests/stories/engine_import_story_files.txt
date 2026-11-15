@@ -35,7 +35,6 @@ tests/stories/core/modules/aliases/saved_commands.py
 tests/stories/core/modules/aliases/shared_tests.py
 tests/stories/core/modules/aliases/silent_aliases.py
 tests/stories/core/modules/approvals/approval_commands.py
-tests/stories/core/modules/approvals/many_approvals.py
 tests/stories/core/modules/approvals/person_actions.py
 tests/stories/core/modules/approvals/recipients.py
 tests/stories/core/modules/approvals/restart_recovery.py
@@ -499,6 +498,7 @@ tests/stories/suites/coding/modules/checks/task_wait_checks.py
 tests/stories/suites/coding/modules/workers/agents_retired_by_a_person_alone.py
 tests/stories/suites/coding/modules/workers/assigned_work.py
 tests/stories/suites/coding/modules/workers/assigned_work_returned.py
+tests/stories/suites/coding/modules/workers/checkpoint_failures.py
 tests/stories/suites/coding/modules/workers/checkpoint_removals.py
 tests/stories/suites/coding/modules/workers/checkpoint_runs.py
 tests/stories/suites/coding/modules/workers/closed_task_conflict.py

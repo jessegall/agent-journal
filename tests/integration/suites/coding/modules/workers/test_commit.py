@@ -5,7 +5,7 @@ from tests.integration.core.modules.plugins.test_worker_steps import step_plugin
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.integration.suites.coding.modules.workers.test_hand_in_rebase import MAIN_TAX, MERGED_TAX, WORKER_TAX, moved_base_worker
-from tests.stories.suites.coding.modules.workers.refused_steps import REASON
+from tests.integration.suites.coding.modules.workers.test_refused_steps import REASON
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT, COMMIT_COMMAND
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DISPATCH, FIRST_PROOF, dispatched_worker, repository_environment
