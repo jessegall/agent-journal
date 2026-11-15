@@ -5,8 +5,8 @@ from engine.driver.rule_answer import RuleAnswer
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.states.unread_countdown import UnreadCountdown
 from core.modules.messages.support.block_conditions.messages_read import MessagesRead
+from core.modules.messages.needs.unread_message_needs import MESSAGE_COUNT_SHOWN
 
-MESSAGE_COUNT_SHOWN = 3
 
 
 class UnreadMessageWriteRule(DriverRule):

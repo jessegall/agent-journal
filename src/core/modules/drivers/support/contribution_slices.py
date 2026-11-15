@@ -4,7 +4,7 @@ from engine.agent_machine.contracts.effect import Effect
 from engine.agent_machine.contracts.line_source import LineSource
 from engine.agent_machine.contracts.policy import Policy
 from engine.agent_machine.contracts.transform import Transform
-from engine.agent_machine.contracts.wake_cause import WakeCause
+from engine.agent_machine.needs.wake_cause import WakeCause
 from engine.agent_machine.needs.need_source import NeedSource
 from engine.agent_stack.states.blocked import Blocked
 from engine.agent_stack.states.waiting import Waiting

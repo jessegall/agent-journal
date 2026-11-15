@@ -22,7 +22,7 @@ from engine.agent_machine.contracts.effect import Effect
 from engine.agent_machine.contracts.line_source import LineSource
 from engine.agent_machine.contracts.policy import Policy
 from engine.agent_machine.contracts.transform import Transform
-from engine.agent_machine.contracts.wake_cause import WakeCause
+from engine.agent_machine.needs.wake_cause import WakeCause
 from engine.agent_machine.driver import Driver as AgentDriver
 from engine.agent_machine.needs.fact_source import FactSource
 from engine.agent_machine.needs.need_source import NeedSource
@@ -106,7 +106,7 @@ class Module:
     performance_tools: ClassVar[list[type[PerformanceTool]]] = []
     nudges: ClassVar[list[NudgeDeclaration | type[NudgeDeclaration]]] = []
     tick_handlers: ClassVar[list[TickHandler | type[TickHandler]]] = []
-    ask_topics: ClassVar[list[AskTopic | type[AskTopic]]] = []
+    helper_question_topics: ClassVar[list[AskTopic | type[AskTopic]]] = []
     docks: ClassVar[list[DockDeclaration | type[DockDeclaration]]] = []
     templates: ClassVar[list[TemplateDeclaration | type[TemplateDeclaration]]] = []
     buttons: ClassVar[list[ButtonDeclaration | type[ButtonDeclaration]]] = []
@@ -202,7 +202,7 @@ class Module:
     # an ask topic written as a class gives its declaration; an inline topic is its own
     @classmethod
     def ask_topic_declarations(cls) -> list[AskTopic]:
-        return [topic.declared() if isinstance(topic, type) else topic for topic in cls.ask_topics]
+        return [topic.declared() if isinstance(topic, type) else topic for topic in cls.helper_question_topics]
 
     @classmethod
     def declared_buttons(cls) -> list[ButtonDeclaration]:

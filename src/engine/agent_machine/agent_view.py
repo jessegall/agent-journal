@@ -10,7 +10,7 @@ from engine.agent_stack.need_key import NeedKey
 from engine.agent_stack.open_block import OpenBlock
 from engine.agent_stack.stack import Stack
 from engine.agent_machine.capabilities import Capabilities
-from engine.agent_machine.contracts.grant import Grant
+from engine.agent_machine.stepping.grant import Grant
 from engine.agent_machine.contracts.rank_order import RankOrder
 from engine.agent_machine.needs.block_plan import BlockPlan
 from engine.agent_machine.needs.agent_reference import AgentReference

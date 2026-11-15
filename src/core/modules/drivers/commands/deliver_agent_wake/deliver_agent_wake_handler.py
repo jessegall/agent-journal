@@ -1,4 +1,3 @@
-import json
 
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -74,5 +73,4 @@ class DeliverAgentWakeHandler(Handler[DeliverAgentWake, None]):
     def ended(self, wake: AgentWake, agent: Agent, context: Context) -> None:
         self.repository.save(wake.changed(state=WakeState.EXPIRED, failure=f"no turn after {wake.attempts} wakes"), context)
         if agent.parent_id is not None:
-            self.nudger.send(agent.parent_id, IgnoredWakeNudge.declared(), WAKE_SOURCE, context, agent=agent.number, attempts=wake.attempts,
-                             causes=", ".join(json.loads(wake.causes)))
+            self.nudger.send(agent.parent_id, IgnoredWakeNudge.declared(), WAKE_SOURCE, context, agent=agent.number, count=wake.attempts)

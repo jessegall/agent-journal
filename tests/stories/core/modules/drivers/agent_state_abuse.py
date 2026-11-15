@@ -8,7 +8,8 @@ from tests.stories.core.modules.skills.due import DUE
 from tests.stories.core.support.agent_labels import agent_number
 
 # words a command would carry if it moved an agent in or out of a state
-STATE_MOVES = {"open", "close", "push", "pop", "enter", "leave", "clear"}
+# a person removes a Working frame with driver pop (doc 1310 section 4.3); no agent moves a state
+STATE_MOVES = {"open", "close", "push", "enter", "leave", "clear"}
 DATABASE_WRITE = HookSamples.shell("sqlite3 .journal/version-5.db \"UPDATE agent_skills SET state = 'loaded'\"",
                                    ShellPart("sqlite3", CommandCategory.EDIT, [".journal/version-5.db", "UPDATE agent_skills SET state = 'loaded'"]))
 
@@ -23,6 +24,7 @@ def test_no_driver_command_moves_an_agent_into_or_out_of_a_state(new_story):
     shown = story.run("driver --help", actor=story.agent).output_text
     verbs = {line.split()[0] for line in shown.splitlines()[1:] if line.strip()}
     story.expect_rows("states" in verbs, "state-types" in verbs, not verbs & STATE_MOVES, detail=shown)
+    story.expect_rows(story.run(f"driver pop {agent_number(story, story.agent.id)} Working --reason a", actor=story.agent).code != 0)
 
 
 def test_a_shell_line_that_writes_the_database_leaves_the_due_skill_state_open(new_story):

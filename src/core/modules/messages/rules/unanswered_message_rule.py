@@ -11,11 +11,10 @@ from core.modules.messages.nudges.unanswered_nudge import UnansweredNudge
 from core.modules.messages.nudges.unanswered_refusal_nudge import UnansweredRefusalNudge
 from core.modules.messages.support.unanswered_messages import UnansweredMessages
 from core.modules.messages.support.block_conditions.messages_answered import MessagesAnswered
+from core.modules.messages.support.unanswered_messages import NEWEST_AGENT_MESSAGES, OLDEST_PERSON_MESSAGES
 
 # a read ordered by the time a message was read searches the read index, where a walk by id would read the whole chat
-OLDEST_PERSON_MESSAGES = 50
 
-NEWEST_AGENT_MESSAGES = 50
 
 
 class UnansweredMessageRule(DriverRule):

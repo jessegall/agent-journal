@@ -5,10 +5,9 @@ from engine.listener.save_listener import SaveListener
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.assignments.models.assignment import Assignment
-from core.modules.drivers.models.agent_frame_suppression import AgentFrameSuppression
+from core.modules.drivers.models.agent_frame_suppression import OPEN_SUPPRESSIONS_REASON, AgentFrameSuppression
 
 WORK_KEY_SEPARATOR = ":"
-OPEN_SUPPRESSIONS_REASON = "the frames a person removed from one agent, a handful at most"
 
 
 class AssignedWorkSuppressionListener(SaveListener[Created[Assignment]]):

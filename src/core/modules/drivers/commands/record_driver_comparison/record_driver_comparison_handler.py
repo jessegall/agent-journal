@@ -20,7 +20,7 @@ class RecordDriverComparisonHandler(Handler[RecordDriverComparison, None]):
     def handle(self, command: RecordDriverComparison, context: Context) -> None:
         self.repository.save(DriverComparison(session_agent_id=command.session_agent_id, slice_name=command.slice_name, event_text=command.event_text,
                                               old_answer=command.old_answer, new_answer=command.new_answer, hook_call_id=command.hook_call_id,
-                                              is_replayable=command.is_replayable), context)
+                                              is_replayable=command.is_replayable, difference_state=command.difference_state), context)
         stack = self.queries.query(DriverComparisonStack).filter(session_agent_id=command.session_agent_id).first()
         moved = DriverComparisonStack(session_agent_id=command.session_agent_id, frames=command.frames, stop_refusals=command.stop_refusals,
                                       tool_refusals=command.tool_refusals)

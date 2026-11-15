@@ -1,7 +1,7 @@
 from dataclasses import replace
 
 from engine.agent_machine.agent_view import AgentView
-from engine.agent_machine.contracts.wake_cause import WakeCause
+from engine.agent_machine.needs.wake_cause import WakeCause
 from engine.agent_machine.stepping.wake_judgement import WakeJudgement
 from engine.enums.wake_move import WakeMove
 from engine.enums.work_stop import WorkStop

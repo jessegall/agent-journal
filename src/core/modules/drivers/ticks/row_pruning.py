@@ -6,8 +6,8 @@ from engine.query.rows.prunable import Prunable
 from engine.model.tables import Tables
 from engine.query.queries import Queries
 from engine.registry.registry import Registry
+from core.modules.drivers.support.prune_batch import BATCH_ROWS
 
-BATCH_ROWS = 500
 MOST_BATCHES = 20
 FREED_PAGES = 5000
 BATCH_REASON = "one batch of rows a model names prunable, deleted together"

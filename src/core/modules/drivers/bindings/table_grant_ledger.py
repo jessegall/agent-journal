@@ -1,10 +1,10 @@
 from collections.abc import Mapping, Sequence
 
-from engine.agent_machine.contracts.admission_receipt import AdmissionReceipt
-from engine.agent_machine.contracts.grant import NEXT_ACTION, Grant
-from engine.agent_machine.contracts.grant_ledger import GrantLedger
+from engine.agent_machine.stepping.admission_receipt import AdmissionReceipt
+from engine.agent_machine.stepping.grant import NEXT_ACTION, Grant
+from engine.agent_machine.stepping.grant_ledger import GrantLedger
 from engine.agent_machine.needs.agent_reference import AgentReference
-from engine.agent_step.errors.required_effect_failure import RequiredEffectFailure
+from engine.agent_step.errors.required_effect_error import RequiredEffectError
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.enums.grant_state import GrantState
@@ -53,7 +53,7 @@ class TableGrantLedger(GrantLedger):
 
     def spend(self, grant: Grant, firing: str, command_fingerprint: str, context: Context) -> None:
         if not self.is_spendable(grant):
-            raise RequiredEffectFailure(SPENT_TEXT)
+            raise RequiredEffectError(SPENT_TEXT)
         if grant.grant_type is GrantType.REFUSAL_SKIP:
             self.bus.dispatch(UseRefusalSkip(grant.grant_id), context)
         elif grant.grant_type is GrantType.PERMISSION:

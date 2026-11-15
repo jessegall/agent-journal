@@ -50,7 +50,7 @@ src/core/modules/drivers/bindings/table_grant_ledger.py:the open grants of the a
 src/core/modules/drivers/bindings/table_step_requests.py:the open step requests of the agents one change names, one each
 src/core/modules/drivers/commands/approve_difference/approve_difference_handler.py:the comparisons of one kind of difference are approved together
 src/core/modules/drivers/commands/driver_attention/driver_attention_subcommand.py:agents the journal cannot move on by itself are few: each waits for its responder
-src/core/modules/drivers/commands/driver_differences/driver_differences_subcommand.py:the kinds of difference are few: one per intended difference of the design and the unexplained rest
+src/core/modules/drivers/commands/driver_differences/driver_differences_subcommand.py:the kinds of difference are few: agreement, one per intended difference of the design and the unexplained rest
 src/core/modules/drivers/commands/environment_menu/environment_menu_subcommand.py:The menu names every environment of the project, a catalogue a user makes by hand.
 src/core/modules/drivers/commands/escalation_list/escalation_list_subcommand.py:open escalations are few: each waits for one answer
 src/core/modules/drivers/commands/nudge_list/nudge_list_subcommand.py:One total for each nudge the code declares, never for stored journal rows.
@@ -68,7 +68,8 @@ src/core/modules/drivers/rules/agent_block_rule.py:the open blocks of one agent 
 src/core/modules/drivers/rules/block_stop_rule.py:the open blocks of one agent are few: each is closed or skipped before the agent goes on
 src/core/modules/drivers/support/agent_activities.py:The open agents of one family, which the agent limits bound; every rule of the hook reads them from this one load.
 src/core/modules/drivers/support/agent_open_blocks.py:every open block of the agent for the state's nudges
-src/core/modules/drivers/support/answer_basis_writers.py:the agents one agent started, a few levels deep
+src/core/modules/drivers/support/answer_basis_writers.py:the running agents one level of a tree started, a handful each, a few levels deep
+src/core/modules/drivers/support/answer_basis_writers.py:the stacks of the agents one write moves: one agent, or a running tree of a few
 src/core/modules/drivers/support/answer_basis_writers.py:the environments of one project, a handful
 src/core/modules/drivers/support/hook_rule_histories.py:An agent has one history row for each driver rule and layer, so the read is bounded by the number of rules, and a hook checks every rule.
 src/core/modules/drivers/support/nudge_records.py:every record of the nudges asked about decides whether each is due again
@@ -314,3 +315,6 @@ src/suites/coding/modules/workers/ticks/worker_tests/stalled_worker_test_runs.py
 src/suites/coding/modules/workers/ticks/worker_tests/unlaunched_worker_test_runs.py:every running run may be a worker test that never launched
 src/suites/coding/modules/workers/ticks/worker_tests/unlaunched_worker_test_runs.py:every test of a checkpoint run still shown as running may be one that never launched
 src/suites/coding/support/next_task.py:the own tasks of an agent are every task it holds or is assigned
+src/core/modules/drivers/listeners/retired_responder_listener.py:the agents a retired agent started, a handful
+src/core/modules/drivers/listeners/retired_responder_listener.py:the open escalations of a retired agent's children, one each at most
+src/core/modules/drivers/listeners/retired_responder_listener.py:the open escalations of one retiring agent, one at most

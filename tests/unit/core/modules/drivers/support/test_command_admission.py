@@ -4,7 +4,7 @@ from types import SimpleNamespace
 import pytest
 
 from engine.actor.actor import Actor
-from engine.agent_machine.contracts.grant import NEXT_ACTION, Grant
+from engine.agent_machine.stepping.grant import NEXT_ACTION, Grant
 from engine.agent_machine.contracts.policy import Policy
 from engine.agent_stack.reason import Reason
 from engine.command.command import Command

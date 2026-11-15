@@ -1,3 +1,4 @@
+from engine.query.conditions.among import Among
 from engine.time.timestamp import Timestamp
 from engine.command.context import Context
 from engine.database.database import Database
@@ -10,7 +11,8 @@ from core.modules.drivers.models.driver_epoch import DriverEpoch
 from core.modules.drivers.models.program_epoch import ProgramEpoch
 from core.modules.environments.models.environment import Environment
 
-CHILD_AGENTS_REASON = "the agents one agent started, a few levels deep"
+CHILD_AGENTS_REASON = "the running agents one level of a tree started, a handful each, a few levels deep"
+MOVED_STACKS_REASON = "the stacks of the agents one write moves: one agent, or a running tree of a few"
 ENVIRONMENTS_REASON = "the environments of one project, a handful"
 
 
@@ -26,22 +28,31 @@ class AnswerBasisWriters:
         self.moved_write, self.moved_agents = 0, set[int]()
 
     def bump_agent(self, agent_id: int, context: Context) -> None:
+        self.bump_agents([agent_id], context)
+
+    def bump_agents(self, agent_ids: list[int], context: Context) -> None:
         if self.moved_write != self.database.write_number:
             self.moved_write, self.moved_agents = self.database.write_number, set[int]()
-        if agent_id in self.moved_agents:
+        unmoved = [agent_id for agent_id in agent_ids if agent_id not in self.moved_agents]
+        if not unmoved:
             return
-        self.moved_agents.add(agent_id)
-        row = self.queries.query(AgentStack).filter(session_agent_id=agent_id).first()
-        if row is None:
-            self.repository.save(AgentStack(session_agent_id=agent_id, permission_changes=1), context)
-            return
-        self.repository.save_change(row, row.changed(permission_changes=row.permission_changes + 1), context)
+        self.moved_agents.update(unmoved)
+        stacks = {row.session_agent_id: row for row in self.queries.query(AgentStack).matching(Among("session_agent_id", unmoved)).every_row(MOVED_STACKS_REASON)}
+        for agent_id in unmoved:
+            row = stacks.get(agent_id)
+            if row is None:
+                self.repository.save(AgentStack(session_agent_id=agent_id, permission_changes=1), context)
+                continue
+            self.repository.save_change(row, row.changed(permission_changes=row.permission_changes + 1), context)
 
-    # a pause or a resume reaches every agent below the one it names, in its environment
+    # a pause or a resume reaches every running agent below the one it names, read a level at a time; an ended
+    # agent answers no hook until it starts again, and its start reads its view anew
     def bump_agent_tree(self, agent: Agent, context: Context) -> None:
-        self.bump_agent(agent.id, context)
-        for child in self.queries.query(Agent).filter(parent_id=agent.id).every_row(CHILD_AGENTS_REASON):
-            self.bump_agent_tree(child, context)
+        tree, level = [agent.id], [agent.id]
+        while level:
+            level = [child.id for child in self.queries.query(Agent).filter(ended_at=None, retired_at=None).matching(Among("parent_id", level)).every_row(CHILD_AGENTS_REASON)]
+            tree.extend(level)
+        self.bump_agents(tree, context)
 
     def bump_environment(self, environment_id: int, context: Context) -> None:
         self.bumped_epoch(environment_id, context, None)

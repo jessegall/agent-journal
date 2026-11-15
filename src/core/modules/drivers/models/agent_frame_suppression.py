@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from engine.model.model import Model
 from engine.time.timestamp import Timestamp
 
+OPEN_SUPPRESSIONS_REASON = "the frames a person removed from one agent, a handful at most"
+
 
 @dataclass(frozen=True, kw_only=True)
 class AgentFrameSuppression(Model):

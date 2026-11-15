@@ -27,6 +27,11 @@ class KeptSkills:
         return [LoadSkill(agent_id, skill.folder, skill.digest) for skill in self.catalogue.skills()
                 if skill.folder in due and skill.folder in kept and kept[skill.folder] == SkillDigest.digest(SkillContents.read(Path(skill.path)).body)]
 
+    # the due skills the program did not put back: before the deferred record exists the transcript says which it did
+    def unloaded(self, agent_id: int, transcript: HookTranscript, due: list[str]) -> list[str]:
+        loaded = {entry.skill for entry in self.loads(agent_id, transcript, due)}
+        return [name for name in due if name not in loaded]
+
     # whether a deferred record of the agent's session and compaction has already loaded what was kept
     def is_recorded(self, agent_id: int) -> bool:
         return KeptSkillMark.is_recorded(self.agents.find(agent_id))

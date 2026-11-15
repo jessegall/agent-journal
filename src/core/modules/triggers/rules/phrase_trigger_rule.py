@@ -54,7 +54,7 @@ class PhraseTriggerRule(DriverRule):
         if missing:
             folder = missing[0].skill
             if folder is not None:
-                nudge = ReadSkillFirstNudge.declared().nudge(instruction=self.files.instruction(folder, hook))
+                nudge = ReadSkillFirstNudge.instructed(self.files.instruction(folder, hook))
                 if hook.event.event is HookEventName.PRE_TOOL_USE:
                     return SkillBlock.answer(hook, nudge, folder).running(*commands, *(FireTrigger(trigger.id) for trigger in matching))
                 nudges.append(nudge)

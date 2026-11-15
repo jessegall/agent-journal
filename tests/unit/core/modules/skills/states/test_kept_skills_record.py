@@ -83,11 +83,11 @@ def test_with_nothing_due_the_handler_reads_no_transcript_and_still_marks_the_re
 
 def test_the_read_first_rule_answers_the_same_from_the_transcript_before_the_record_and_from_the_rows_after():
     required = SimpleNamespace(is_required=True)
-    previous = SkillReadFirstRule(unread([due_skill()]), None, required, SimpleNamespace(is_recorded=lambda agent_id: False, loads=lambda agent_id, transcript, due: [READ_STEP]))
-    after = SkillReadFirstRule(unread([]), None, required, SimpleNamespace(is_recorded=lambda agent_id: True, loads=Untouched().loads))
+    previous = SkillReadFirstRule(unread([due_skill()]), None, required, SimpleNamespace(is_recorded=lambda agent_id: False, unloaded=lambda agent_id, transcript, due: []))
+    after = SkillReadFirstRule(unread([]), None, required, SimpleNamespace(is_recorded=lambda agent_id: True, unloaded=Untouched().loads))
     assert previous.answer(HOOK) == after.answer(HOOK) == RuleAnswer.allowed()
 
 
 def test_after_the_record_the_read_first_rule_does_not_read_the_transcript_for_a_skill_still_due():
-    rule = SkillReadFirstRule(unread([due_skill()]), None, SimpleNamespace(is_required=False), SimpleNamespace(is_recorded=lambda agent_id: True, loads=Untouched().loads))
+    rule = SkillReadFirstRule(unread([due_skill()]), None, SimpleNamespace(is_required=False), SimpleNamespace(is_recorded=lambda agent_id: True, unloaded=Untouched().loads))
     assert rule.answer(HOOK) == RuleAnswer.allowed()

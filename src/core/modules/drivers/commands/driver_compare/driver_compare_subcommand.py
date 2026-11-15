@@ -25,5 +25,5 @@ class DriverCompareSubcommand(ReadSubcommand[tuple[str, ...]]):
     def read(self, arguments: Namespace, caller: Caller) -> tuple[str, ...]:
         query = self.queries.query(DriverComparison).filter(difference_state=DifferenceState.UNEXPLAINED)
         rows = (query.filter(slice_name=arguments.slice) if arguments.slice else query).newest().page(1, COMPARISONS_SHOWN).rows
-        lines = tuple(f"agent {row.session_agent_id} {row.slice_name}: old {row.old_answer} new {row.new_answer}" for row in rows if row.old_answer != row.new_answer)
+        lines = tuple(f"agent {row.session_agent_id} {row.slice_name}: old {row.old_answer} new {row.new_answer}" for row in rows)
         return lines or tuple(["no unexplained difference"])

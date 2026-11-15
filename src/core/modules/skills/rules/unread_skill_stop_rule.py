@@ -22,4 +22,4 @@ class UnreadSkillStopRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         names = self.unread_skills.names(hook.agent_id)
-        return RuleAnswer.refused(UnreadSkillsNudge.declared().nudge(skills=', '.join(names))) if names and self.requirement.is_required else RuleAnswer.allowed("no required skill is unread")
+        return RuleAnswer.refused(UnreadSkillsNudge.naming(names)) if names and self.requirement.is_required else RuleAnswer.allowed("no required skill is unread")

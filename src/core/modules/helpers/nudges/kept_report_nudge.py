@@ -7,4 +7,4 @@ class KeptReportNudge(NudgeDeclaration):
 
     key = "helpers.kept-report"
     type = NudgeType.NOTICE
-    text = "helper {helper}'s report on job {job} could not be saved; its text is kept on the job: journal helper-job show {job}, then journal helper report-retry {helper} or report-drop {helper}"
+    text = "helper {agent}'s report on job {job} could not be saved; its text is kept on the job: journal helper-job show {job}, then journal helper report-retry {agent} or report-drop {agent}"

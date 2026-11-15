@@ -28,12 +28,7 @@ class SkillReadFirstRule(DriverRule):
         names = self.unread_skills.names(hook.agent_id)
         if not names:
             return RuleAnswer.allowed()
-        missing = names if self.kept.is_recorded(hook.agent_id) else self.not_kept(hook, names)
+        missing = names if self.kept.is_recorded(hook.agent_id) else self.kept.unloaded(hook.agent_id, hook.event.transcript, names)
         if not missing or not self.requirement.is_required:
             return RuleAnswer.allowed()
-        return SkillBlock.answer(hook, ReadSkillFirstNudge.declared().nudge(instruction=self.files.instruction(missing[0], hook)), missing[0])
-
-    # before the deferred record exists the transcript still says which due skills the program put back
-    def not_kept(self, hook: AgentHook, names: list[str]) -> list[str]:
-        kept_names = {entry.skill for entry in self.kept.loads(hook.agent_id, hook.event.transcript, names)}
-        return [name for name in names if name not in kept_names]
+        return SkillBlock.answer(hook, ReadSkillFirstNudge.instructed(self.files.instruction(missing[0], hook)), missing[0])

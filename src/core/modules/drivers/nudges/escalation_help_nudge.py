@@ -7,6 +7,6 @@ class EscalationHelpNudge(NudgeDeclaration):
 
     key = "drivers.escalation-help"
     type = NudgeType.STEERING
-    text = "Agent {agent} asks for your help after {count} refused {kind} in a row: journal escalation show {escalation}"
+    text = "Agent {agent} asks for your help after {count} refusals in a row: journal escalation show {escalation}"
     turn_limited = False
     wakes_agent = True

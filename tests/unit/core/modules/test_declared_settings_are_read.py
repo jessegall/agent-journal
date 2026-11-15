@@ -9,12 +9,14 @@ from engine.module.suite_list import SuiteList
 from suites import DEFAULT_SUITES
 from tests.unit.source_tree import source_tree
 from tunnels import DEFAULT_TUNNELS
+from core.modules.drivers.support.driver_settings import CAPABILITY_PROOFS_SETTING
 
 SOURCE = Path(__file__).resolve().parents[4] / "src"
 SKIPPED_FOLDERS = ("dist", "migrations", "__pycache__", "node_modules")
 
 # a declared setting nothing reads yet, with the task that gives it a reader or removes it
 UNREAD_SETTINGS: dict[str, str] = {
+    CAPABILITY_PROOFS_SETTING: "read by the program proofs of plan 1139 phase 8 (tasks 10316 to 10320), which run on installed releases",
 }
 
 

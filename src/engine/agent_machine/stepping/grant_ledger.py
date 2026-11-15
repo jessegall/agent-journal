@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from collections.abc import Mapping, Sequence
 
-from engine.agent_machine.contracts.admission_receipt import AdmissionReceipt
-from engine.agent_machine.contracts.grant import Grant
+from engine.agent_machine.stepping.admission_receipt import AdmissionReceipt
+from engine.agent_machine.stepping.grant import Grant
 from engine.command.context import Context
 from engine.agent_machine.needs.agent_reference import AgentReference
 

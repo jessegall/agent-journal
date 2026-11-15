@@ -27,7 +27,7 @@ class EscalationResponderListener(SaveListener[Changed[AgentEscalation]]):
         agent = self.agents.find(escalation.session_agent_id)
         if agent.parent_id is not None:
             self.nudger.send(agent.parent_id, EscalationHelpNudge.declared(), ESCALATION_SOURCE, context, agent=agent.number, count=escalation.refusal_count,
-                             kind=escalation.escalation_type.value, escalation=escalation.id)
+                             escalation=escalation.id)
 
     # a hold or a piece of work that joined; the refusal counts reset at each rest, so they cannot tell a join
     @staticmethod

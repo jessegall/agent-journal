@@ -2,7 +2,7 @@ from abc import abstractmethod
 from collections.abc import Sequence
 from typing import TypeVar
 
-from engine.agent_machine.contracts.step_requests import StepRequests
+from engine.agent_machine.needs.step_requests import StepRequests
 from engine.command.context import Context
 from engine.listener.save_listener import SaveListener
 

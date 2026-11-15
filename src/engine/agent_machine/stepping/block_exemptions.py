@@ -3,11 +3,11 @@ from collections.abc import Sequence
 from engine.agent_stack.open_block import OpenBlock
 from engine.driver.part import Part
 from engine.driver.tool import Tool
+from engine.driver.shell_line import JOURNAL_PROGRAM
 
 EXIT_COMMANDS = ("journal agent-block skip", "journal refusal skip", "journal refusal confirm", "journal refusal withdraw", "journal question ask",
                  "journal wait stuck", "journal permission ask")
 MESSAGE_COMMAND = "journal message"
-JOURNAL_PROGRAM = "journal"
 
 
 class BlockExemptions:

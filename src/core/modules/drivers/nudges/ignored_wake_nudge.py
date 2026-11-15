@@ -7,4 +7,4 @@ class IgnoredWakeNudge(NudgeDeclaration):
 
     key = "drivers.ignored-wake"
     type = NudgeType.NOTICE
-    text = "agent {agent} took no turn after {attempts} wakes: {causes}"
+    text = "agent {agent} took no turn after {count} wakes: journal agent-wake list --agent {agent}"

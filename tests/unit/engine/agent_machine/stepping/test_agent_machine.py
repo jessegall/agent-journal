@@ -13,7 +13,7 @@ from engine.agent_stack.work_reference import WorkReference
 from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.capabilities import Capabilities
 from engine.agent_machine.contracts.capability import Capability
-from engine.agent_machine.contracts.grant import Grant
+from engine.agent_machine.stepping.grant import Grant
 from engine.agent_machine.contracts.policy import Policy
 from engine.agent_machine.contracts.rank_order import RankOrder
 from engine.agent_machine.contracts.transform import Transform
@@ -60,7 +60,7 @@ EDIT = QuestionSamples.question(HookSamples.edit("a.py"))
 READ = QuestionSamples.question(HookSamples.tool_use("Read", ToolType.READ, ["a.py"], None))
 SKILL_READ = QuestionSamples.question(HookSamples.tool_use("Read", ToolType.READ, [".claude/skills/journal/SKILL.md"], None))
 CARRIES_EVERYTHING = Capabilities(*(Capability(part, event, CapabilityProof.IMPLEMENTED_HERE) for part in CapabilityPart for event in HookEventName))
-PAUSE_TEXT = "The user paused you: only journal commands and reads run until you are resumed; reply in the chat"
+PAUSE_TEXT = "a sample pause line the pause fact carries"
 
 
 def journal_line(line: str, *parts: Sequence[str]) -> Question:

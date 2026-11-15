@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from engine.agent_machine.contracts.step_requests import StepRequests
+from engine.agent_machine.needs.step_requests import StepRequests
 from engine.command.context import Context
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries

@@ -1,4 +1,4 @@
-from engine.agent_machine.contracts.step_requests import StepRequests
+from engine.agent_machine.needs.step_requests import StepRequests
 from engine.command.context import Context
 from engine.command.handler import Handler
 from core.modules.drivers.commands.request_agent_step.request_agent_step import RequestAgentStep

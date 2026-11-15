@@ -1,3 +1,4 @@
+from typing import Any
 from collections.abc import Mapping, Sequence
 
 from engine.agent_stack.states.blocked import Blocked
@@ -18,17 +19,18 @@ from core.modules.skills.support.skill_files import SkillFiles
 from core.modules.skills.support.skill_nudges import SKILL_TOOL_USES
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.modules.skills.support.unread_skills import UnreadSkills
+from core.modules.skills.needs.command_skill_needs import SKILL_COMMAND
+from engine.driver.nudge import Nudge
 
 SKILL_READ_RANK = "skills.read-first"
 TOOL_RULE, STOP_RULE, PROFILE_RULE = "skills.read-first", "skills.unread-stop", "skills.profile-read-first"
-SKILL_COMMAND = "journal skill read"
 
 
 class SkillReadFirstNeeds(NeedSource):
-    """Plans the one block of an agent's due skills (doc 1310 section 4.6): its tools after three uses, its stop at once,
-    waived by the agent; a skill the program put back after a compaction counts as read. The two scopes keep the two
-    rule names and today's two texts. A read-only helper is held at once, and only for the skills its profile requires,
-    as today's skills.profile-read-first does; it has no stop scope."""
+    """Plans the one block of an agent's due skills (doc 1310 section 4.6): its tools after three uses, its stop
+    at once, waived by the agent; a skill the program put back after a compaction counts as read. The two
+    scopes keep the two rule names and today's two texts. A read-only helper is held at once, and only for the
+    skills its profile requires, as today's skills.profile-read-first does; it has no stop scope."""
 
     replaced_rules = (TOOL_RULE, STOP_RULE, PROFILE_RULE)
     state_type = Blocked
@@ -52,24 +54,25 @@ class SkillReadFirstNeeds(NeedSource):
         if not book.behaviours(agent.agent_type).takes_prompts:
             return None
         names = self.unread.names(agent.agent_id)
-        missing = names if self.kept.is_recorded(agent.agent_id) or question.event is None else self.not_kept(agent, question, names)
+        missing = names if self.kept.is_recorded(agent.agent_id) or question.event is None else self.kept.unloaded(agent.agent_id, question.event.transcript, names)
         if not missing:
             return None
         row = self.agents.find(agent.agent_id)
-        tool_nudge = ReadSkillFirstNudge.declared().nudge(instruction=self.files.agent_instruction(missing[0], row))
-        stop_nudge = UnreadSkillsNudge.declared().nudge(skills=", ".join(names))
-        return BlockPlan(tool_nudge, SkillLoaded(missing[0]), TOOL_RULE, SKILL_READ_RANK, stop_check_key=STOP_RULE, tool_grace_uses=SKILL_TOOL_USES,
-                         scope_stop=True, closer_roles=tuple([CloserRole.AGENT]), lifting_lines=tuple([f"{SKILL_COMMAND} {missing[0]}"]), stop_nudge=stop_nudge)
+        tool_nudge = ReadSkillFirstNudge.instructed(self.files.agent_instruction(missing[0], row))
+        stop_nudge = UnreadSkillsNudge.naming(names)
+        return SkillReadFirstNeeds.read_plan(tool_nudge, missing[0], TOOL_RULE, stop_check_key=STOP_RULE, tool_grace_uses=SKILL_TOOL_USES, scope_stop=True,
+                                             stop_nudge=stop_nudge)
 
     def profile_plan(self, agent: AgentReference) -> BlockPlan | None:
         required = self.profile_skills.required(agent.agent_id)
         unread = [folder for folder in self.unread.names(agent.agent_id) if folder in required]
         if not unread:
             return None
-        nudge = ReadSkillFirstNudge.declared().nudge(instruction=self.files.agent_instruction(unread[0], self.agents.find(agent.agent_id)))
-        return BlockPlan(nudge, SkillLoaded(unread[0]), PROFILE_RULE, SKILL_READ_RANK, closer_roles=tuple([CloserRole.AGENT]),
-                         lifting_lines=tuple([f"{SKILL_COMMAND} {unread[0]}"]))
+        nudge = ReadSkillFirstNudge.instructed(self.files.agent_instruction(unread[0], self.agents.find(agent.agent_id)))
+        return SkillReadFirstNeeds.read_plan(nudge, unread[0], PROFILE_RULE)
 
-    def not_kept(self, agent: AgentReference, question: Question, names: list[str]) -> list[str]:
-        kept_names = {entry.skill for entry in self.kept.loads(agent.agent_id, question.event.transcript, names)}
-        return [name for name in names if name not in kept_names]
+    # the block an agent lifts by reading the skill itself
+    @staticmethod
+    def read_plan(nudge: Nudge, skill: str, rule: str, **block_fields: Any) -> BlockPlan:
+        return BlockPlan(nudge, SkillLoaded(skill), rule, SKILL_READ_RANK, closer_roles=tuple([CloserRole.AGENT]), lifting_lines=tuple([f"{SKILL_COMMAND} {skill}"]),
+                         **block_fields)

@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from engine.agent_machine.contracts.grant import Grant
+from engine.agent_machine.stepping.grant import Grant
 from engine.agent_stack.answer_basis import AnswerBasis
 from engine.agent_stack.reason import Reason
 from engine.agent_machine.contracts.effect import Effect

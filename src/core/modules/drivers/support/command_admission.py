@@ -1,5 +1,5 @@
-from engine.agent_machine.contracts.grant import NEXT_ACTION
-from engine.agent_machine.contracts.grant_ledger import GrantLedger
+from engine.agent_machine.stepping.grant import NEXT_ACTION
+from engine.agent_machine.stepping.grant_ledger import GrantLedger
 from engine.agent_machine.contracts.policy import Policy
 from engine.agent_machine.needs.agent_reference import AgentReference
 from engine.command.command import Command

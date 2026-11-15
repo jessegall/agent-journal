@@ -1,8 +1,8 @@
+from core.modules.skills.commands.load_skill.support.kept_skills import KeptSkills
 import json
 from pathlib import Path
 
 from engine.testing.examples.hook_samples import HookSamples
-from core.modules.skills.rules.skill_read_first_rule import SkillReadFirstRule
 from tests.stories.core.modules.skills.due import DUE, expect_due, expect_skills_absent
 from tests.stories.core.modules.skills.kept_after_compaction import CompactingClaude, FIRST_TOOL_USE, kept_skill_records, skill_body
 
@@ -13,13 +13,13 @@ class Reads:
 
     def __init__(self, monkeypatch) -> None:
         self.count = 0
-        discarded = SkillReadFirstRule.not_kept
+        discarded = KeptSkills.unloaded
 
-        def counted(rule, hook, names):
+        def counted(kept, agent_id, transcript, due):
             self.count += 1
-            return discarded(rule, hook, names)
+            return discarded(kept, agent_id, transcript, due)
 
-        monkeypatch.setattr(SkillReadFirstRule, "not_kept", counted)
+        monkeypatch.setattr(KeptSkills, "unloaded", counted)
 
 
 def compacted_session(story, folder: Path) -> dict[str, str]:

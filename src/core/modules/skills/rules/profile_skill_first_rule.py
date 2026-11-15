@@ -28,4 +28,4 @@ class ProfileSkillFirstRule(DriverRule):
             return RuleAnswer.allowed()
         required = self.profile_skills.required(hook.agent_id)
         unread = [folder for folder in self.unread_skills.names(hook.agent_id) if folder in required]
-        return RuleAnswer.refused(ReadSkillFirstNudge.declared().nudge(instruction=self.files.instruction(unread[0], hook))) if unread else RuleAnswer.allowed()
+        return RuleAnswer.refused(ReadSkillFirstNudge.instructed(self.files.instruction(unread[0], hook))) if unread else RuleAnswer.allowed()

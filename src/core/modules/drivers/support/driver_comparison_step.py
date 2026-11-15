@@ -17,6 +17,7 @@ from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.record_driver_comparison.record_driver_comparison import RecordDriverComparison
 from core.modules.drivers.models.driver_comparison_stack import DriverComparisonStack
+from core.modules.drivers.models.enums.difference_state import DifferenceState
 from core.modules.drivers.support.compared_answer import ComparedAnswer
 from core.modules.drivers.support.machine_assembly import MachineAssembly
 
@@ -43,7 +44,7 @@ class DriverComparisonStep:
         event_text = json.dumps(event.raw, sort_keys=True, default=str)
         command = RecordDriverComparison(agent.id, new.slice_name() or old.slice_name(), event_text[:INPUT_CHARACTERS_KEPT], old.text, new.text, reply.hook_call_id,
                                          len(event_text) <= INPUT_CHARACTERS_KEPT, FrameCodec.encoded(stepped.stack.frames), stepped.record.counts.stop_refusals,
-                                         stepped.record.counts.tool_refusals)
+                                         stepped.record.counts.tool_refusals, DifferenceState.AGREED if old.agrees(new) else DifferenceState.UNEXPLAINED)
         try:
             self.bus.run(command, actor, environment_id=agent.environment_id)
         # the secrets guard refuses a row that holds a secret's value: the event is kept without its input, as one that cannot be replayed

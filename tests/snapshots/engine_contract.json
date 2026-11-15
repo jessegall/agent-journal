@@ -152,6 +152,1133 @@
         "includes(self, task_id: int, closed_at: str) -> bool"
       ]
     },
+    "agent_machine.agent_machine_area.AgentMachineArea": {
+      "bases": [
+        "EngineArea"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "agent_machine.agent_view.AgentView": {
+      "bases": [],
+      "fields": [
+        "basis: AnswerBasis",
+        "agent: AgentReference",
+        "program_name: str",
+        "session: str",
+        "profile: str",
+        "driver_name: str",
+        "session_generation: int",
+        "stepped_at: datetime",
+        "stack: Stack",
+        "facts: tuple[Fact, ...]",
+        "needs: tuple[Need, ...]",
+        "plans: tuple[BlockPlan, ...]",
+        "blocks: tuple[OpenBlock, ...]",
+        "grants: tuple[Grant, ...]",
+        "suppressions: tuple[NeedKey, ...]",
+        "escalation: Escalation | None",
+        "settings: Mapping[str, object]",
+        "is_resting: bool",
+        "pinned_slices: tuple[str, ...]",
+        "table_digest: str",
+        "work_stop: WorkStop",
+        "responder: Responder",
+        "rank_order: RankOrder",
+        "depth_limit: int",
+        "program: Capabilities",
+        "counts: RefusalCounts",
+        "block_outcomes: Mapping[int, ConditionOutcome]",
+        "newest_hook_at: datetime | None",
+        "journal_started_at: datetime | None",
+        "subject_ends: Mapping[SubjectReference, FrameEnd]"
+      ],
+      "methods": []
+    },
+    "agent_machine.capabilities.Capabilities": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "capability(self, part: CapabilityPart, event: HookEventName) -> Capability | None",
+        "supports(self, part: CapabilityPart, event: HookEventName) -> bool"
+      ]
+    },
+    "agent_machine.compiling.contribution_declaration.ContributionDeclaration": {
+      "bases": [],
+      "fields": [
+        "key: str",
+        "contribution_type: ContributionType",
+        "rank: str",
+        "agent_types: tuple[str, ...]",
+        "state_name: str",
+        "is_safety: bool",
+        "slot: TransformSlot | None",
+        "events: tuple[HookEventName, ...]",
+        "carrier: LineCarrier",
+        "is_required: bool",
+        "has_failure: bool",
+        "constructor_types: tuple[str, ...]",
+        "ends: tuple[BlockEnd, ...]",
+        "lifting_lines: tuple[str, ...]"
+      ],
+      "methods": [
+        "covers(self, agent_type: str) -> bool"
+      ]
+    },
+    "agent_machine.compiling.contributions.Contributions": {
+      "bases": [],
+      "fields": [
+        "needs: tuple[type[NeedSource], ...]",
+        "facts: tuple[type[FactSource], ...]",
+        "policies: tuple[type[Policy], ...]",
+        "lines: tuple[type[LineSource], ...]",
+        "transforms: tuple[type[Transform], ...]",
+        "effects: tuple[type[Effect], ...]",
+        "wake_causes: tuple[type[WakeCause], ...]",
+        "subjects: tuple[type[Model], ...]",
+        "agent_listeners: tuple[type[AgentListener[object]], ...]",
+        "block_conditions: tuple[type[BlockCondition], ...]"
+      ],
+      "methods": []
+    },
+    "agent_machine.compiling.declaration_check.DeclarationCheck": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "refusals(self) -> list[DeclarationFinding]",
+        "removal_refusals(self, removed_modules: Sequence[str], migrated_modules: Sequence[str], owners: OpenOwners) -> list[DeclarationFinding]",
+        "contribution_refusals(self) -> list[DeclarationFinding]",
+        "entry_fixes(self, module: ModuleContributions, entry: ContributionDeclaration) -> list[str]",
+        "has_unsupported_line(self, entry: ContributionDeclaration) -> bool",
+        "supports_events(self, events: Sequence[HookEventName]) -> bool",
+        "rank_refusals(self) -> list[DeclarationFinding]",
+        "key_refusals(self) -> list[DeclarationFinding]",
+        "driver_refusals(self) -> list[DeclarationFinding]",
+        "gathering_cycle(driver: DriverDeclaration, driver_index: dict[str, DriverDeclaration]) -> list[str]",
+        "module_refusals(self) -> list[DeclarationFinding]",
+        "program_refusals(self) -> list[DeclarationFinding]"
+      ]
+    },
+    "agent_machine.compiling.declaration_finding.DeclarationFinding": {
+      "bases": [],
+      "fields": [
+        "owner: str",
+        "declaration: str",
+        "fix: str"
+      ],
+      "methods": [
+        "text(self) -> str"
+      ]
+    },
+    "agent_machine.compiling.driver_compiler.DriverCompiler": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "tables(self, drivers: Sequence[DriverDeclaration]) -> list[DriverTable]",
+        "table(self, driver: DriverDeclaration, agent_types: set[str]) -> DriverTable",
+        "rank_place(driver: DriverDeclaration, entry: ContributionDeclaration) -> int",
+        "dependency_order(self) -> list[ModuleContributions]"
+      ]
+    },
+    "agent_machine.compiling.driver_declaration.DriverDeclaration": {
+      "bases": [],
+      "fields": [
+        "name: str",
+        "agent_type: str",
+        "suite: str",
+        "gathers: tuple[str, ...]",
+        "rank_order: RankOrder",
+        "work_stop: WorkStop | None",
+        "responder: Responder"
+      ],
+      "methods": [
+        "described(cls, driver: type[Driver]) -> 'DriverDeclaration'"
+      ]
+    },
+    "agent_machine.compiling.driver_table.DriverTable": {
+      "bases": [],
+      "fields": [
+        "driver: str",
+        "agent_type: str",
+        "entries: tuple[tuple[str, ContributionDeclaration], ...]"
+      ],
+      "methods": [
+        "manifest(self) -> list[str]",
+        "digest(self) -> str",
+        "keys(self) -> list[str]"
+      ]
+    },
+    "agent_machine.compiling.module_contributions.ModuleContributions": {
+      "bases": [],
+      "fields": [
+        "name: str",
+        "is_core: bool",
+        "dependencies: tuple[str, ...]",
+        "contributions: tuple[ContributionDeclaration, ...]",
+        "state_classes: tuple[str, ...]"
+      ],
+      "methods": []
+    },
+    "agent_machine.compiling.open_owners.OpenOwners": {
+      "bases": [
+        "ABC"
+      ],
+      "fields": [],
+      "methods": [
+        "open_count(self, module: str) -> int"
+      ]
+    },
+    "agent_machine.compiling.program_declaration.ProgramDeclaration": {
+      "bases": [],
+      "fields": [
+        "name: str",
+        "capabilities: Capabilities"
+      ],
+      "methods": []
+    },
+    "agent_machine.contracts.agent_listener.AgentListener": {
+      "bases": [
+        "SaveListener[E]"
+      ],
+      "fields": [],
+      "methods": [
+        "agents(self, event: E) -> Sequence[int]",
+        "handle(self, event: E, context: Context) -> None"
+      ]
+    },
+    "agent_machine.contracts.capability.Capability": {
+      "bases": [],
+      "fields": [
+        "part: CapabilityPart",
+        "event: HookEventName",
+        "proof: CapabilityProof",
+        "fallback: CapabilityFallback",
+        "encoding: AnswerEncoding"
+      ],
+      "methods": [
+        "is_usable(self) -> bool",
+        "used_fallback(self) -> CapabilityFallback"
+      ]
+    },
+    "agent_machine.contracts.effect.Effect": {
+      "bases": [
+        "ABC"
+      ],
+      "fields": [
+        "events: ClassVar[Sequence[HookEventName]]",
+        "includes_steps: ClassVar[bool]",
+        "agent_types: ClassVar[Sequence[str]]",
+        "replaced_rules: ClassVar[Sequence[str]]",
+        "timing: ClassVar[EffectTiming]",
+        "is_required: ClassVar[bool]",
+        "completes_work: ClassVar[bool]",
+        "failure: ClassVar[type[NudgeDeclaration] | None]"
+      ],
+      "methods": [
+        "commands(self, view: AgentView, record: DecisionRecord) -> Sequence[Command[object]]",
+        "failed(self, view: AgentView, record: 'DecisionRecord') -> RuleAnswer"
+      ]
+    },
+    "agent_machine.contracts.line_source.LineSource": {
+      "bases": [
+        "ABC"
+      ],
+      "fields": [
+        "events: ClassVar[Sequence[HookEventName]]",
+        "includes_steps: ClassVar[bool]",
+        "agent_types: ClassVar[Sequence[str]]",
+        "replaced_rules: ClassVar[Sequence[str]]",
+        "carrier: ClassVar[LineCarrier]",
+        "category: ClassVar[LineCategory]",
+        "interval_key: ClassVar[str]"
+      ],
+      "methods": [
+        "lines(self, question: Question, view: AgentView) -> Sequence[Line]"
+      ]
+    },
+    "agent_machine.contracts.policy.Policy": {
+      "bases": [
+        "ABC"
+      ],
+      "fields": [
+        "key: ClassVar[str]",
+        "rank: ClassVar[str]",
+        "agent_types: ClassVar[Sequence[str]]",
+        "replaced_rules: ClassVar[Sequence[str]]",
+        "is_safety: ClassVar[bool]",
+        "grant_types: ClassVar[Sequence[GrantType]]",
+        "entrance_commands: ClassVar[Sequence[type[Command[object]]]]"
+      ],
+      "methods": [
+        "refusals(self, question: Question, view: AgentView) -> Sequence[Reason]",
+        "entrance_refusals(self, command: Command[object], agent: AgentReference) -> Sequence[Reason]"
+      ]
+    },
+    "agent_machine.contracts.printer.Printer": {
+      "bases": [
+        "ABC"
+      ],
+      "fields": [],
+      "methods": [
+        "encoded(self, record: DecisionRecord) -> HookReply"
+      ]
+    },
+    "agent_machine.contracts.rank_order.RankOrder": {
+      "bases": [],
+      "fields": [
+        "policies: tuple[str, ...]",
+        "blocks: tuple[str, ...]"
+      ],
+      "methods": [
+        "place(self, rank: str) -> int"
+      ]
+    },
+    "agent_machine.contracts.shell_parser.ShellParser": {
+      "bases": [
+        "ABC"
+      ],
+      "fields": [],
+      "methods": [
+        "line(self, text: str) -> ShellLine"
+      ]
+    },
+    "agent_machine.contracts.slice_answers.SliceAnswers": {
+      "bases": [
+        "ABC"
+      ],
+      "fields": [],
+      "methods": [
+        "answers(self, agent_id: int, slice_name: str) -> bool"
+      ]
+    },
+    "agent_machine.contracts.transform.Transform": {
+      "bases": [
+        "ABC"
+      ],
+      "fields": [
+        "slot: ClassVar[TransformSlot]",
+        "replaced_rules: ClassVar[Sequence[str]]"
+      ],
+      "methods": [
+        "applied(self, question: Question, view: AgentView) -> Rewrite"
+      ]
+    },
+    "agent_machine.decision.Decision": {
+      "bases": [],
+      "fields": [
+        "decision_class: DecisionClass",
+        "reason: Reason"
+      ],
+      "methods": [
+        "allowed(cls) -> 'Decision'",
+        "admits(self) -> bool"
+      ]
+    },
+    "agent_machine.decision_record.DecisionRecord": {
+      "bases": [],
+      "fields": [
+        "identity: EventIdentity",
+        "action: Question",
+        "decision: Decision",
+        "shown_reason: Reason",
+        "outranked_reasons: Sequence[Reason]",
+        "rewrite: Rewrite",
+        "lines: Sequence[Line]",
+        "unconditional_effects: Sequence[Effect]",
+        "admission_effects: Sequence[Effect]",
+        "after_commit: Sequence[Intent]",
+        "terminal: str",
+        "moves: Sequence[StackMove]",
+        "blocks_opened: Sequence[BlockPlan]",
+        "blocks_closed: Sequence[BlockClosing]",
+        "waiting_lines: Sequence[Line]",
+        "stop_checks: Sequence[StopCheck]",
+        "counts: RefusalCounts",
+        "wake: WakeChange",
+        "basis: AnswerBasis",
+        "printing: Sequence[EncodedPart]",
+        "inputs: DecisionInputs",
+        "spent_grants: Sequence[Grant]"
+      ],
+      "methods": [
+        "effects(self) -> list[Effect]"
+      ]
+    },
+    "agent_machine.driver.Driver": {
+      "bases": [],
+      "fields": [
+        "name: ClassVar[str]",
+        "agent_type: ClassVar[str]",
+        "suite: ClassVar[str]",
+        "gathers: ClassVar[Sequence[type['Driver']]]",
+        "rank_order: ClassVar[RankOrder]",
+        "work_stop: ClassVar[WorkStop]",
+        "responder: ClassVar[Responder]",
+        "opening_lines: ClassVar[Sequence[type[LineSource]]]",
+        "depth_limit: ClassVar[int]"
+      ],
+      "methods": []
+    },
+    "agent_machine.needs.agent_reference.AgentReference": {
+      "bases": [],
+      "fields": [
+        "agent_id: int",
+        "parent_id: int | None",
+        "environment_id: int",
+        "agent_type: str"
+      ],
+      "methods": []
+    },
+    "agent_machine.needs.block_plan.BlockPlan": {
+      "bases": [],
+      "fields": [
+        "nudge: Nudge",
+        "condition: BlockCondition",
+        "tool_check_key: str",
+        "rank: str",
+        "stop_check_key: str",
+        "members: tuple[int, ...]",
+        "tool_grace_uses: int",
+        "stop_grace_seconds: int",
+        "scope_tools: bool",
+        "scope_stop: bool",
+        "is_strict: bool",
+        "closer_roles: tuple[CloserRole, ...]",
+        "subject: SubjectReference | None",
+        "context_generation: int | None",
+        "lifting_lines: tuple[str, ...]",
+        "stop_nudge: Nudge | None"
+      ],
+      "methods": []
+    },
+    "agent_machine.needs.ended_fact.EndedFact": {
+      "bases": [
+        "Fact"
+      ],
+      "fields": [
+        "cause: str",
+        "actor_id: int"
+      ],
+      "methods": []
+    },
+    "agent_machine.needs.fact.Fact": {
+      "bases": [],
+      "fields": [
+        "subject: SubjectReference | None"
+      ],
+      "methods": []
+    },
+    "agent_machine.needs.fact_source.FactSource": {
+      "bases": [
+        "ABC"
+      ],
+      "fields": [
+        "fact_types: ClassVar[Sequence[type[Fact]]]",
+        "agent_types: ClassVar[Sequence[str]]"
+      ],
+      "methods": [
+        "facts(self, agents: Sequence[AgentReference]) -> Mapping[int, Sequence[Fact]]"
+      ]
+    },
+    "agent_machine.needs.need.Need": {
+      "bases": [],
+      "fields": [
+        "state: State",
+        "rank: str",
+        "key: NeedKey"
+      ],
+      "methods": []
+    },
+    "agent_machine.needs.need_source.NeedSource": {
+      "bases": [
+        "ABC"
+      ],
+      "fields": [
+        "state_type: ClassVar[type[State]]",
+        "rank: ClassVar[str]",
+        "agent_types: ClassVar[Sequence[str]]",
+        "replaced_rules: ClassVar[Sequence[str]]",
+        "subject_models: ClassVar[Sequence[str]]"
+      ],
+      "methods": [
+        "needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]",
+        "ends(self, subjects: Sequence[SubjectReference]) -> Mapping[SubjectReference, FrameEnd]"
+      ]
+    },
+    "agent_machine.needs.pause_fact.PauseFact": {
+      "bases": [
+        "Fact"
+      ],
+      "fields": [
+        "causes: tuple[PauseCause, ...]",
+        "refusal_text: str"
+      ],
+      "methods": []
+    },
+    "agent_machine.needs.step_requests.StepRequests": {
+      "bases": [
+        "ABC"
+      ],
+      "fields": [],
+      "methods": [
+        "requested(self, agent_ids: Sequence[int], cause: str, context: Context) -> None"
+      ]
+    },
+    "agent_machine.needs.wake_cause.WakeCause": {
+      "bases": [
+        "ABC"
+      ],
+      "fields": [
+        "key: ClassVar[str]",
+        "wakes_mid_turn: ClassVar[bool]"
+      ],
+      "methods": [
+        "needs_wake(self, view: AgentView) -> bool",
+        "text(self, view: AgentView) -> str",
+        "is_inhibited(self, view: AgentView) -> bool"
+      ]
+    },
+    "agent_machine.record.block_closing.BlockClosing": {
+      "bases": [],
+      "fields": [
+        "block_id: int",
+        "block_end: BlockEnd",
+        "closer: str",
+        "closing_evidence: str"
+      ],
+      "methods": []
+    },
+    "agent_machine.record.decision_inputs.DecisionInputs": {
+      "bases": [],
+      "fields": [
+        "table_digest: str",
+        "slices: tuple[str, ...]",
+        "need_keys: tuple[NeedKey, ...]",
+        "block_ids: tuple[int, ...]",
+        "grant_ids: tuple[int, ...]"
+      ],
+      "methods": []
+    },
+    "agent_machine.record.encoded_part.EncodedPart": {
+      "bases": [],
+      "fields": [
+        "part: CapabilityPart",
+        "proof: CapabilityProof",
+        "fallback: CapabilityFallback"
+      ],
+      "methods": []
+    },
+    "agent_machine.record.event_identity.EventIdentity": {
+      "bases": [],
+      "fields": [
+        "program: str",
+        "session: str",
+        "session_generation: int",
+        "firing: str",
+        "agent_id: int",
+        "environment_id: int",
+        "agent_type: str",
+        "profile: str",
+        "driver_name: str",
+        "pinned_slices: tuple[str, ...]",
+        "child_agent: str"
+      ],
+      "methods": [
+        "identified(cls, event: HookEvent, session_generation: int, agent_id: int, environment_id: int, agent_type: str, profile: str, driver_name: str, pinned_slices: tuple[str, ...]) -> 'EventIdentity'"
+      ]
+    },
+    "agent_machine.record.intent.Intent": {
+      "bases": [],
+      "fields": [
+        "intent_type: IntentType",
+        "agent_id: int",
+        "dedupe_key: str",
+        "text: str"
+      ],
+      "methods": []
+    },
+    "agent_machine.record.line.Line": {
+      "bases": [],
+      "fields": [
+        "key: str",
+        "text: str",
+        "category: LineCategory",
+        "interval_key: str",
+        "carrier: LineCarrier"
+      ],
+      "methods": []
+    },
+    "agent_machine.record.question.Question": {
+      "bases": [],
+      "fields": [
+        "question_type: QuestionType",
+        "event: HookEvent | None"
+      ],
+      "methods": [
+        "posed(cls, event: HookEvent) -> 'Question'",
+        "none(cls) -> 'Question'",
+        "is_stop(self) -> bool",
+        "is_tool_call(self) -> bool",
+        "is_action(self) -> bool",
+        "tool(self) -> Tool | None",
+        "with_shell(self, shell: ShellLine) -> 'Question'",
+        "fingerprint(self) -> str"
+      ]
+    },
+    "agent_machine.record.refusal_counts.RefusalCounts": {
+      "bases": [],
+      "fields": [
+        "stop_refusals: int",
+        "tool_refusals: int",
+        "escalation: Escalation | None"
+      ],
+      "methods": []
+    },
+    "agent_machine.record.rewrite.Rewrite": {
+      "bases": [],
+      "fields": [
+        "tool_input: Mapping[str, object] | None",
+        "slots: tuple[TransformSlot, ...]",
+        "validation: str",
+        "final: Question | None"
+      ],
+      "methods": [
+        "unchanged(cls) -> 'Rewrite'",
+        "replaced(cls, tool_input: Mapping[str, object], slots: tuple[TransformSlot, ...], validation: str, final: Question) -> 'Rewrite'",
+        "changed(self) -> bool",
+        "final_question(self, question: Question) -> Question"
+      ]
+    },
+    "agent_machine.record.stack_move.StackMove": {
+      "bases": [],
+      "fields": [
+        "move_type: StackMoveType",
+        "frame_key: NeedKey | None",
+        "reason_text: str",
+        "frame_end: FrameEnd | None",
+        "actor_id: int | None"
+      ],
+      "methods": []
+    },
+    "agent_machine.record.stop_check.StopCheck": {
+      "bases": [],
+      "fields": [
+        "rule: str",
+        "outcome: DecisionClass",
+        "reason_text: str",
+        "applied: bool"
+      ],
+      "methods": []
+    },
+    "agent_machine.record.wake_change.WakeChange": {
+      "bases": [],
+      "fields": [
+        "wake_move: WakeMove",
+        "work_generation: str",
+        "causes: tuple[str, ...]"
+      ],
+      "methods": [
+        "unchanged(cls) -> 'WakeChange'"
+      ]
+    },
+    "agent_machine.step_result.StepResult": {
+      "bases": [],
+      "fields": [
+        "basis: AnswerBasis",
+        "stack: Stack",
+        "record: DecisionRecord",
+        "wake: WakeChange"
+      ],
+      "methods": []
+    },
+    "agent_machine.stepping.admission_receipt.AdmissionReceipt": {
+      "bases": [],
+      "fields": [
+        "agent_id: int",
+        "firing: str",
+        "command_fingerprint: str",
+        "policy_key: str",
+        "grant_id: int",
+        "is_consumed: bool"
+      ],
+      "methods": []
+    },
+    "agent_machine.stepping.agent_machine.AgentMachine": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "step(self, view: AgentView, question: Question) -> StepResult",
+        "transformed(self, question: Question, view: AgentView) -> Rewrite",
+        "with_supported_rewrite(rewrite: Rewrite, reasons: list[Reason], view: AgentView, question: Question) -> tuple[Rewrite, list[Reason]]",
+        "with_handover(decision: Decision, question: Question, view: AgentView, stack: Stack) -> Decision",
+        "escalated(decision: Decision, counts: RefusalCounts, view: AgentView) -> Decision",
+        "record(self, view: AgentView, question: Question, decision: Decision, judgement: Judgement, rewrite: Rewrite, counts: RefusalCounts, stack: Stack, moves: tuple, reasons: list[Reason]) -> DecisionRecord",
+        "terminal(lines: list[Line]) -> str",
+        "identity(view: AgentView, question: Question) -> EventIdentity",
+        "lines(self, question: Question, view: AgentView) -> list[Line]",
+        "effects(self, question: Question, view: AgentView) -> list[Effect]",
+        "applies(agent_types: Sequence[str], view: AgentView) -> bool",
+        "closings(view: AgentView) -> list[BlockClosing]",
+        "stop_checks(question: Question, reasons: list[Reason]) -> list[StopCheck]",
+        "printing(question: Question, view: AgentView, decision: Decision, rewrite: Rewrite) -> list[EncodedPart]"
+      ]
+    },
+    "agent_machine.stepping.block_exemptions.BlockExemptions": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "passes(self, tool: Tool, block: OpenBlock) -> bool",
+        "is_universally_exempt(self, tool: Tool) -> bool",
+        "part_passes(self, part: Part) -> bool",
+        "names(part: Part, line: str) -> bool"
+      ]
+    },
+    "agent_machine.stepping.built_stack.BuiltStack": {
+      "bases": [],
+      "fields": [
+        "stack: Stack",
+        "moves: tuple[StackMove, ...]"
+      ],
+      "methods": []
+    },
+    "agent_machine.stepping.constraints.Constraints": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "reasons(self, question: Question, view: AgentView, stack: Stack) -> list[Reason]",
+        "pause_reasons(question: Question, stack: Stack) -> list[Reason]",
+        "pause_refuses(tool: Tool) -> bool",
+        "policy_reasons(self, question: Question, view: AgentView) -> list[Reason]",
+        "spent_grants(self, question: Question, view: AgentView) -> list[Grant]",
+        "judged_policies(self, question: Question, view: AgentView) -> list[tuple[Policy, Sequence[Reason], Grant | None]]",
+        "passing_grant(policy: Policy, view: AgentView, fingerprint: str) -> Grant | None",
+        "block_reasons(question: Question, view: AgentView, stack: Stack) -> list[Reason]",
+        "stop_reasons(view: AgentView, stack: Stack) -> list[Reason]"
+      ]
+    },
+    "agent_machine.stepping.grant.Grant": {
+      "bases": [],
+      "fields": [
+        "grant_id: int",
+        "grant_type: GrantType",
+        "policy_key: str",
+        "agent_id: int",
+        "environment_id: int",
+        "target: str",
+        "action_fingerprint: str",
+        "grant_state: GrantState",
+        "asker_id: int",
+        "responder_id: int | None",
+        "reason: str",
+        "tried: str",
+        "expires_at: datetime | None",
+        "spending_firing: str"
+      ],
+      "methods": [
+        "is_usable(self) -> bool",
+        "passes(self, policy_key: str, action_fingerprint: str) -> bool"
+      ]
+    },
+    "agent_machine.stepping.grant_ledger.GrantLedger": {
+      "bases": [
+        "ABC"
+      ],
+      "fields": [],
+      "methods": [
+        "usable_grants(self, agents: Sequence[AgentReference]) -> Mapping[int, Sequence[Grant]]",
+        "open_receipt(self, agent_id: int, command_fingerprint: str, policy_key: str) -> AdmissionReceipt | None",
+        "spend(self, grant: Grant, firing: str, command_fingerprint: str, context: Context) -> None"
+      ]
+    },
+    "agent_machine.stepping.judged_blocks.JudgedBlocks": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "constraining(view: AgentView) -> list[OpenBlock]",
+        "with_plan(block: OpenBlock, plan: BlockPlan | None) -> OpenBlock",
+        "new_plans(view: AgentView) -> list[BlockPlan]",
+        "planned(plan: BlockPlan) -> OpenBlock"
+      ]
+    },
+    "agent_machine.stepping.judgement.Judgement": {
+      "bases": [],
+      "fields": [
+        "decision: Decision",
+        "outranked_reasons: tuple[Reason, ...]"
+      ],
+      "methods": [
+        "combined(cls, reasons: Sequence[Reason], rank_order: RankOrder) -> 'Judgement'"
+      ]
+    },
+    "agent_machine.stepping.refusal_counting.RefusalCounting": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "after(self, decision: Decision, question: Question, view: AgentView, built: BuiltStack, reasons: list[Reason]) -> RefusalCounts",
+        "is_progress(decision: Decision, question: Question, moves: tuple[StackMove, ...]) -> bool",
+        "escalation(counts: RefusalCounts, view: AgentView, stack: Stack, reasons: list[Reason]) -> Escalation | None",
+        "repair(view: AgentView) -> Escalation | None"
+      ]
+    },
+    "agent_machine.stepping.stack_builder.StackBuilder": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "built(self, view: AgentView) -> BuiltStack",
+        "work_lane(view: AgentView) -> list[Frame]",
+        "block_lane(view: AgentView, old: dict[NeedKey, Frame]) -> list[Frame]",
+        "block_key(block: OpenBlock) -> NeedKey",
+        "capped(view: AgentView, work_count: int, blocked_frames: list[Frame]) -> list[Frame]",
+        "safety(view: AgentView, old: dict[NeedKey, Frame]) -> list[Frame]",
+        "moves(view: AgentView, new: Stack) -> list[StackMove]",
+        "frame_end(view: AgentView, frame: Frame) -> FrameEnd | None"
+      ]
+    },
+    "agent_machine.stepping.wake_judgement.WakeJudgement": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "change(self, view: AgentView, stack: Stack) -> WakeChange",
+        "attention(self, view: AgentView, stack: Stack) -> list[str]",
+        "has_open_job(view: AgentView, stack: Stack) -> bool",
+        "work_generation(stack: Stack) -> str"
+      ]
+    },
+    "agent_stack.agent_stack_area.AgentStackArea": {
+      "bases": [
+        "EngineArea"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "agent_stack.answer_basis.AnswerBasis": {
+      "bases": [],
+      "fields": [
+        "stack_version: int",
+        "driver_epoch: int",
+        "program_epoch: int",
+        "attempt: int"
+      ],
+      "methods": [
+        "matches(self, current: 'AnswerBasis') -> bool"
+      ]
+    },
+    "agent_stack.escalation.Escalation": {
+      "bases": [],
+      "fields": [
+        "escalation_id: int",
+        "escalation_type: EscalationType",
+        "responder: Responder",
+        "block_ids: tuple[int, ...]",
+        "work_keys: tuple[NeedKey, ...]",
+        "refusal_count: int"
+      ],
+      "methods": [
+        "defers(self, block_id: int | None) -> bool",
+        "defers_work(self, key: NeedKey) -> bool"
+      ]
+    },
+    "agent_stack.frame.Frame": {
+      "bases": [],
+      "fields": [
+        "state: State",
+        "need_key: NeedKey",
+        "entered_at: datetime"
+      ],
+      "methods": []
+    },
+    "agent_stack.need_key.NeedKey": {
+      "bases": [],
+      "fields": [
+        "state_name: str",
+        "subject: SubjectReference | None",
+        "generation: str"
+      ],
+      "methods": []
+    },
+    "agent_stack.open_block.OpenBlock": {
+      "bases": [],
+      "fields": [
+        "nudge_key: str",
+        "block_id: int | None",
+        "reason: Reason",
+        "scope_tools: bool",
+        "scope_stop: bool",
+        "tool_grace_passed: bool",
+        "stop_grace_passed: bool",
+        "is_strict: bool",
+        "subject: SubjectReference | None",
+        "stop_reason: Reason | None"
+      ],
+      "methods": [
+        "refuses_tools(self) -> bool",
+        "refuses_stop(self, escalation: Escalation | None) -> bool",
+        "stop_refusal(self) -> Reason"
+      ]
+    },
+    "agent_stack.reason.Reason": {
+      "bases": [],
+      "fields": [
+        "key: str",
+        "decision_class: DecisionClass",
+        "rank: str",
+        "text: str",
+        "lifting_lines: tuple[str, ...]",
+        "subject: SubjectReference | None",
+        "handover: WorkReference | None"
+      ],
+      "methods": [
+        "allowed(cls) -> 'Reason'"
+      ]
+    },
+    "agent_stack.stack.Stack": {
+      "bases": [],
+      "fields": [
+        "frames: Sequence[Frame]"
+      ],
+      "methods": [
+        "has(self, state_type: type[State]) -> bool",
+        "subjects_without(self, need_keys: set[NeedKey]) -> list[SubjectReference]",
+        "lane(self, lane: Lane) -> list[Frame]",
+        "work_lane_top(self) -> Frame",
+        "stop_answer(self, contract: WorkStop, escalation: Escalation | None) -> StopAnswer"
+      ]
+    },
+    "agent_stack.states.blocked.Blocked": {
+      "bases": [
+        "State"
+      ],
+      "fields": [
+        "lane: ClassVar[Lane]",
+        "rank: ClassVar[int]",
+        "block: OpenBlock"
+      ],
+      "methods": [
+        "refuses_stop(self, escalation: Escalation | None) -> bool",
+        "stop_refusal(self) -> Reason"
+      ]
+    },
+    "agent_stack.states.compacting.Compacting": {
+      "bases": [
+        "State"
+      ],
+      "fields": [
+        "lane: ClassVar[Lane]",
+        "rank: ClassVar[int]",
+        "context_generation: int",
+        "cause: str",
+        "attempt: int",
+        "is_running: bool"
+      ],
+      "methods": []
+    },
+    "agent_stack.states.ended.Ended": {
+      "bases": [
+        "State"
+      ],
+      "fields": [
+        "lane: ClassVar[Lane]",
+        "rank: ClassVar[int]",
+        "cause: str",
+        "actor_id: int"
+      ],
+      "methods": []
+    },
+    "agent_stack.states.pause_cause.PauseCause": {
+      "bases": [],
+      "fields": [
+        "actor_id: int",
+        "paused_agent_id: int",
+        "paused_at: datetime"
+      ],
+      "methods": []
+    },
+    "agent_stack.states.paused.Paused": {
+      "bases": [
+        "State"
+      ],
+      "fields": [
+        "lane: ClassVar[Lane]",
+        "rank: ClassVar[int]",
+        "causes: tuple[PauseCause, ...]",
+        "refusal_text: str"
+      ],
+      "methods": []
+    },
+    "agent_stack.states.state.State": {
+      "bases": [],
+      "fields": [
+        "lane: ClassVar[Lane]",
+        "rank: ClassVar[int]"
+      ],
+      "methods": [
+        "stop_answer(self, contract: WorkStop) -> StopAnswer",
+        "refuses_stop(self, escalation: Escalation | None) -> bool",
+        "stop_refusal(self) -> Reason"
+      ]
+    },
+    "agent_stack.states.stopped.Stopped": {
+      "bases": [
+        "State"
+      ],
+      "fields": [
+        "lane: ClassVar[Lane]",
+        "rank: ClassVar[int]",
+        "stopped_at: datetime",
+        "cause: str",
+        "can_resume: bool"
+      ],
+      "methods": []
+    },
+    "agent_stack.states.waiting.Waiting": {
+      "bases": [
+        "State"
+      ],
+      "fields": [
+        "lane: ClassVar[Lane]",
+        "rank: ClassVar[int]",
+        "subjects: tuple[SubjectReference, ...]",
+        "wait_mode: WaitMode",
+        "agent_chose: bool",
+        "text: str"
+      ],
+      "methods": []
+    },
+    "agent_stack.states.working.Working": {
+      "bases": [
+        "State"
+      ],
+      "fields": [
+        "lane: ClassVar[Lane]",
+        "rank: ClassVar[int]",
+        "work: WorkReference",
+        "work_remains: bool",
+        "stop_reason: Reason"
+      ],
+      "methods": [
+        "stop_answer(self, contract: WorkStop) -> StopAnswer"
+      ]
+    },
+    "agent_stack.stop_answer.StopAnswer": {
+      "bases": [],
+      "fields": [
+        "answer_type: StopAnswerType",
+        "reasons: tuple[Reason, ...]",
+        "work: WorkReference | None"
+      ],
+      "methods": [
+        "allowed(cls) -> 'StopAnswer'",
+        "refusal(cls, reason: Reason) -> 'StopAnswer'",
+        "refusals(cls, reasons: 'list[Reason]') -> 'StopAnswer'",
+        "handover(cls, work: WorkReference) -> 'StopAnswer'",
+        "safety_rest(cls) -> 'StopAnswer'",
+        "compaction_handoff(cls) -> 'StopAnswer'",
+        "refusal_reasons(self) -> tuple[Reason, ...]"
+      ]
+    },
+    "agent_stack.subject_reference.SubjectReference": {
+      "bases": [],
+      "fields": [
+        "model: str",
+        "row_id: int"
+      ],
+      "methods": []
+    },
+    "agent_stack.work_reference.WorkReference": {
+      "bases": [],
+      "fields": [
+        "work_type: WorkType",
+        "work_id: int",
+        "text: str"
+      ],
+      "methods": [
+        "is_job(self) -> bool"
+      ]
+    },
+    "agent_step.agent_step_area.AgentStepArea": {
+      "bases": [
+        "EngineArea"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "agent_step.agent_view_reader.AgentViewReader": {
+      "bases": [
+        "ABC"
+      ],
+      "fields": [],
+      "methods": [
+        "read(self, agent_id: int, question: Question) -> AgentView"
+      ]
+    },
+    "agent_step.errors.required_effect_error.RequiredEffectError": {
+      "bases": [
+        "Refusal"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "agent_step.errors.step_conflict_error.StepConflictError": {
+      "bases": [
+        "Exception"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "agent_step.frame_codec.FrameCodec": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "encoded(frames: Sequence[Frame]) -> str",
+        "decoded(text: str) -> list[Frame]",
+        "encoded_key(key: NeedKey) -> str",
+        "decoded_key(text: str) -> NeedKey",
+        "frame(stored: StoredFrame) -> Frame",
+        "plain(value: object) -> Any",
+        "built(cls: type, values: dict[str, Any]) -> Any",
+        "typed(hint: Any, value: Any) -> Any"
+      ]
+    },
+    "agent_step.reply_printer.ReplyPrinter": {
+      "bases": [
+        "Printer"
+      ],
+      "fields": [],
+      "methods": [
+        "encoded(self, record: DecisionRecord) -> HookReply"
+      ]
+    },
+    "agent_step.step_commit.StepCommit": {
+      "bases": [],
+      "fields": [
+        "is_saved: bool",
+        "hook_call_id: int | None",
+        "failures: tuple[str, ...]"
+      ],
+      "methods": [
+        "saved(cls, hook_call_id: int | None, failures: tuple[str, ...]) -> 'StepCommit'",
+        "conflict(cls) -> 'StepCommit'"
+      ]
+    },
+    "agent_step.step_writer.StepWriter": {
+      "bases": [
+        "ABC"
+      ],
+      "fields": [],
+      "methods": [
+        "save(self, view: AgentView, step: StepResult, hook_call_id: int | None, context: Context) -> StepCommit"
+      ]
+    },
+    "agent_step.stored_frame.StoredFrame": {
+      "bases": [],
+      "fields": [
+        "state_name: str",
+        "state: Any",
+        "need_key: Any",
+        "entered_at: str"
+      ],
+      "methods": []
+    },
     "area.area_area.AreaArea": {
       "bases": [
         "EngineArea"
@@ -1935,7 +3062,8 @@
         "access: str",
         "anchor: OpenRow | None",
         "defaults: Sequence[str]",
-        "removed_while: Mapping[str, str]"
+        "removed_while: Mapping[str, str]",
+        "machine_answered_rules: frozenset[str]"
       ],
       "methods": [
         "of_actor(cls, event: HookEvent, actor: LoadedActor, timestamp: Timestamp) -> 'AgentHook'",
@@ -2159,6 +3287,7 @@
         "complete_checks(self, walk: Walk, hook: AgentHook, calls: list[RuleCall], board: StateBoard | None) -> RuleAnswers",
         "critical_checks(self, answers: RuleAnswers, hook: AgentHook, board: StateBoard) -> list[StopCheck]",
         "skippable(self, answer: RuleAnswer, entry: DriverRuleEntry, hook: AgentHook) -> RuleAnswer",
+        "is_active_rule(self, entry: DriverRuleEntry, hook: AgentHook) -> bool",
         "outcome(self, entry: DriverRuleEntry, hook: AgentHook) -> RuleOutcome",
         "rule_outcome(self, entry: DriverRuleEntry, hook: AgentHook) -> RuleOutcome"
       ]
@@ -2299,6 +3428,13 @@
         "has_recent_answer(self, rule_name: str, hook: AgentHook, span: Seconds) -> bool",
         "row(self, key: RuleHistoryKey) -> object | None",
         "clear(self) -> None"
+      ]
+    },
+    "driver.hook_limits.HookLimits": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "seconds(is_main: bool, event: HookEventName | None) -> float"
       ]
     },
     "driver.hook_reply.HookReply": {
@@ -2758,7 +3894,8 @@
         "is_permitted_line(self, action: str) -> bool",
         "journal_argument_lines(self) -> tuple[tuple[str, ...], ...]",
         "runs_journal_command(self) -> bool",
-        "has_part_matching(self, pattern: str) -> bool"
+        "has_part_matching(self, pattern: str) -> bool",
+        "has_only_parts(self, check: Callable[[Part], bool]) -> bool"
       ]
     },
     "driver.span.Span": {
@@ -3001,6 +4138,13 @@
       "fields": [],
       "methods": []
     },
+    "enums.answer_encoding.AnswerEncoding": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
     "enums.area_use.AreaUse": {
       "bases": [
         "Enum"
@@ -3015,7 +4159,35 @@
       "fields": [],
       "methods": []
     },
+    "enums.block_end.BlockEnd": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
     "enums.button_window.ButtonWindow": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "enums.capability_fallback.CapabilityFallback": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "enums.capability_part.CapabilityPart": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "enums.capability_proof.CapabilityProof": {
       "bases": [
         "StrEnum"
       ],
@@ -3030,6 +4202,13 @@
       "methods": [
         "is_separate_copy(self) -> bool"
       ]
+    },
+    "enums.closer_role.CloserRole": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
     },
     "enums.command_category.CommandCategory": {
       "bases": [
@@ -3058,9 +4237,30 @@
       "fields": [],
       "methods": []
     },
+    "enums.condition_outcome.ConditionOutcome": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
     "enums.connection_status.ConnectionStatus": {
       "bases": [
         "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "enums.contribution_type.ContributionType": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "enums.decision_class.DecisionClass": {
+      "bases": [
+        "IntEnum"
       ],
       "fields": [],
       "methods": []
@@ -3074,6 +4274,13 @@
         "seconds(self) -> int"
       ]
     },
+    "enums.effect_timing.EffectTiming": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
     "enums.enums_area.EnumsArea": {
       "bases": [
         "EngineArea"
@@ -3081,7 +4288,21 @@
       "fields": [],
       "methods": []
     },
+    "enums.escalation_type.EscalationType": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
     "enums.event_form.EventForm": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "enums.evidence_source.EvidenceSource": {
       "bases": [
         "StrEnum"
       ],
@@ -3116,6 +4337,27 @@
       "methods": []
     },
     "enums.file_status.FileStatus": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "enums.frame_end.FrameEnd": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "enums.grant_state.GrantState": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "enums.grant_type.GrantType": {
       "bases": [
         "StrEnum"
       ],
@@ -3171,7 +4413,21 @@
       "fields": [],
       "methods": []
     },
+    "enums.intent_type.IntentType": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
     "enums.key_loading.KeyLoading": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "enums.lane.Lane": {
       "bases": [
         "StrEnum"
       ],
@@ -3186,6 +4442,20 @@
       "methods": [
         "height(self) -> int"
       ]
+    },
+    "enums.line_carrier.LineCarrier": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "enums.line_category.LineCategory": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
     },
     "enums.listener_timing.ListenerTiming": {
       "bases": [
@@ -3299,7 +4569,21 @@
         "category(self) -> CommandCategory"
       ]
     },
+    "enums.question_type.QuestionType": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
     "enums.refusal_style.RefusalStyle": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "enums.responder.Responder": {
       "bases": [
         "StrEnum"
       ],
@@ -3374,6 +4658,13 @@
       "fields": [],
       "methods": []
     },
+    "enums.stack_move_type.StackMoveType": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
     "enums.starter_type.StarterType": {
       "bases": [
         "StrEnum"
@@ -3388,6 +4679,20 @@
       "fields": [],
       "methods": []
     },
+    "enums.stop_answer_type.StopAnswerType": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "enums.subject_outcome.SubjectOutcome": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
     "enums.tool_type.ToolType": {
       "bases": [
         "StrEnum"
@@ -3398,7 +4703,28 @@
         "writes_files(self) -> bool"
       ]
     },
+    "enums.transform_slot.TransformSlot": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
     "enums.tunnel_state.TunnelState": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "enums.wait_mode.WaitMode": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "enums.wake_move.WakeMove": {
       "bases": [
         "StrEnum"
       ],
@@ -3436,6 +4762,20 @@
       ]
     },
     "enums.window_shows.WindowShows": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "enums.work_stop.WorkStop": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "enums.work_type.WorkType": {
       "bases": [
         "StrEnum"
       ],
@@ -5496,6 +6836,15 @@
         "files_text(self, files: Sequence[Path]) -> str"
       ]
     },
+    "module.contribution_reader.ContributionReader": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "read(self, module: type[Module]) -> ModuleContributions",
+        "declared(cls: type, contribution_type: ContributionType, key: str) -> ContributionDeclaration",
+        "constructor_types(cls: type) -> tuple[str, ...]"
+      ]
+    },
     "module.default_state.DefaultState": {
       "bases": [],
       "fields": [
@@ -5660,6 +7009,15 @@
         "lines() -> list[str]"
       ]
     },
+    "module.machine_check.MachineCheck": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "problems(self, modules: Sequence[type[Module]]) -> tuple[str, ...]",
+        "contributions(self, modules: Sequence[type[Module]]) -> list[ModuleContributions]",
+        "drivers(modules: Sequence[type[Module]]) -> list[DriverDeclaration]"
+      ]
+    },
     "module.mark_check.MarkCheck": {
       "bases": [],
       "fields": [],
@@ -5708,10 +7066,20 @@
         "window_extensions: ClassVar[list[WindowExtension | type[WindowExtension]]]",
         "marks: ClassVar[list[MarkDeclaration | type[MarkDeclaration]]]",
         "block_conditions: ClassVar[list[type[BlockCondition]]]",
+        "agent_drivers: ClassVar[list[type[AgentDriver]]]",
+        "needs: ClassVar[list[type[NeedSource]]]",
+        "facts: ClassVar[list[type[FactSource]]]",
+        "policies: ClassVar[list[type[Policy]]]",
+        "lines: ClassVar[list[type[LineSource]]]",
+        "transforms: ClassVar[list[type[Transform]]]",
+        "effects: ClassVar[list[type[Effect]]]",
+        "wake_causes: ClassVar[list[type[WakeCause]]]",
+        "subjects: ClassVar[list[type[Model]]]",
+        "agent_listeners: ClassVar[list[type[AgentListener[object]]]]",
         "performance_tools: ClassVar[list[type[PerformanceTool]]]",
         "nudges: ClassVar[list[NudgeDeclaration | type[NudgeDeclaration]]]",
         "tick_handlers: ClassVar[list[TickHandler | type[TickHandler]]]",
-        "ask_topics: ClassVar[list[AskTopic | type[AskTopic]]]",
+        "helper_question_topics: ClassVar[list[AskTopic | type[AskTopic]]]",
         "docks: ClassVar[list[DockDeclaration | type[DockDeclaration]]]",
         "templates: ClassVar[list[TemplateDeclaration | type[TemplateDeclaration]]]",
         "buttons: ClassVar[list[ButtonDeclaration | type[ButtonDeclaration]]]",
@@ -6910,6 +8278,7 @@
         "controls: ClassVar[Sequence[ControlGroup]]",
         "compacts_headless: ClassVar[bool]",
         "has_windowed_compaction: ClassVar[bool]",
+        "new_capabilities: ClassVar[Sequence[Capability]]",
         "needs_launch_variables: ClassVar[bool]",
         "session_variable: ClassVar[str]",
         "markers: ClassVar[Sequence[str]]",
@@ -6918,6 +8287,7 @@
         "profile_model_setting: ClassVar[str]"
       ],
       "methods": [
+        "capabilities(cls) -> Capabilities",
         "readable_folders(self) -> tuple[Path, ...]",
         "server_files(self, folder: Path) -> tuple[ProgramServerFile, ...]",
         "skill_instruction(self, skill: str, path: Path) -> str",
@@ -8482,7 +9852,8 @@
         "required_settings: Sequence[str]",
         "screen: str",
         "section: str",
-        "component: str"
+        "component: str",
+        "is_driving: bool"
       ],
       "methods": [
         "restored(cls, stored: Mapping[str, Any]) -> 'SettingEntry'",
@@ -8776,6 +10147,76 @@
         "stored_agent_id(self) -> int | None"
       ]
     },
+    "rule_backed.rule_backed_area.RuleBackedArea": {
+      "bases": [
+        "EngineArea"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "rule_backed.rule_effect.RuleEffect": {
+      "bases": [
+        "Effect"
+      ],
+      "fields": [
+        "rule: ClassVar[type[DriverRule]]"
+      ],
+      "methods": [
+        "commands(self, view: AgentView, record: DecisionRecord) -> Sequence[Command[object]]"
+      ]
+    },
+    "rule_backed.rule_events.RuleEvents": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "hook_events(rule: type[DriverRule]) -> list[HookEventName]",
+        "agent_types(rule: type[DriverRule]) -> list[str]"
+      ]
+    },
+    "rule_backed.rule_hooks.RuleHooks": {
+      "bases": [
+        "ABC"
+      ],
+      "fields": [],
+      "methods": [
+        "answer(self, rule: type[DriverRule], question: Question, agent_id: int) -> RuleAnswer | None"
+      ]
+    },
+    "rule_backed.rule_line_source.RuleLineSource": {
+      "bases": [
+        "LineSource"
+      ],
+      "fields": [
+        "rule: ClassVar[type[DriverRule]]"
+      ],
+      "methods": [
+        "lines(self, question: Question, view: AgentView) -> Sequence[Line]"
+      ]
+    },
+    "rule_backed.rule_policy.RulePolicy": {
+      "bases": [
+        "Policy"
+      ],
+      "fields": [
+        "rule: ClassVar[type[DriverRule]]"
+      ],
+      "methods": [
+        "refusals(self, question: Question, view: AgentView) -> Sequence[Reason]"
+      ]
+    },
+    "rule_backed.rule_transform.RuleTransform": {
+      "bases": [
+        "Transform"
+      ],
+      "fields": [
+        "rule: ClassVar[type[DriverRule]]",
+        "replaces_action: ClassVar[bool]"
+      ],
+      "methods": [
+        "applied(self, question: Question, view: AgentView) -> Rewrite",
+        "final_question(self, question: Question, command: str) -> Question"
+      ]
+    },
     "sandbox.agent_sandbox_choice.AgentSandboxChoice": {
       "bases": [],
       "fields": [],
@@ -9050,7 +10491,8 @@
         "required_settings: Sequence[str]",
         "screen: str",
         "section: str",
-        "component: str"
+        "component: str",
+        "is_driving: bool"
       ],
       "methods": []
     },
@@ -9145,7 +10587,8 @@
         "required_settings: Sequence[str]",
         "screen: str",
         "section: str",
-        "component: SettingComponent | None"
+        "component: SettingComponent | None",
+        "is_driving: bool"
       ],
       "methods": [
         "accepts(self, value: object) -> bool",
@@ -9354,6 +10797,77 @@
       ],
       "methods": [
         "declared(cls) -> 'TemplateDeclaration'"
+      ]
+    },
+    "testing.agent_machine.fake_fact_source.FakeFactSource": {
+      "bases": [
+        "FactSource"
+      ],
+      "fields": [],
+      "methods": [
+        "facts(self, agents: Sequence[AgentReference]) -> Mapping[int, Sequence[Fact]]"
+      ]
+    },
+    "testing.agent_machine.fake_need_source.FakeNeedSource": {
+      "bases": [
+        "NeedSource"
+      ],
+      "fields": [],
+      "methods": [
+        "needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]"
+      ]
+    },
+    "testing.agent_machine.policy_row.PolicyRow": {
+      "bases": [],
+      "fields": [
+        "name: str",
+        "question: Question",
+        "view: AgentView",
+        "refusal_keys: tuple[str, ...]"
+      ],
+      "methods": []
+    },
+    "testing.agent_machine.policy_table.PolicyTable": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "failures(self, policy: Policy) -> list[str]"
+      ]
+    },
+    "testing.agent_machine.question_samples.QuestionSamples": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "question(sample: HookSample) -> Question"
+      ]
+    },
+    "testing.agent_machine.record_compare.RecordCompare": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "differences(old: DecisionRecord, new: DecisionRecord) -> list[str]"
+      ]
+    },
+    "testing.agent_machine.record_samples.RecordSamples": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "record(question: Question, decision: Decision) -> DecisionRecord"
+      ]
+    },
+    "testing.agent_machine.stack_samples.StackSamples": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "built() -> Stack",
+        "frame(state: State, place: int) -> Frame"
+      ]
+    },
+    "testing.agent_machine.view_samples.ViewSamples": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "view(agent_type: str, work_stop: WorkStop) -> AgentView"
       ]
     },
     "testing.cache.folder_stat.FolderStat": {
@@ -9678,6 +11192,17 @@
         "with_touched_rows(self, output_text: str) -> str"
       ]
     },
+    "testing.stories.old_path_story_files.OldPathStoryFiles": {
+      "bases": [],
+      "fields": [
+        "slices: dict[str, str]",
+        "replacements: dict[str, str]"
+      ],
+      "methods": [
+        "read(cls, root: Path) -> 'OldPathStoryFiles'",
+        "live_slices(self, story_file: str, live: tuple[str, ...]) -> tuple[str, ...]"
+      ]
+    },
     "testing.stories.story.Story": {
       "bases": [
         "KitRows"
@@ -9736,6 +11261,8 @@
         "expect_success(self, line: str) -> None",
         "expect_ordered_lines(self, line: str) -> None",
         "expect_text(self, line: str) -> None",
+        "expect_stack(self, agent: Actor) -> None",
+        "expect_escalation(self) -> None",
         "expect_no_text(self, line: str) -> None",
         "expect_refusal(self, line: str, reason: ExpectedText, actor: Actor | None) -> None",
         "expect_usage_error(self, line: str, actor: Actor | None) -> None",

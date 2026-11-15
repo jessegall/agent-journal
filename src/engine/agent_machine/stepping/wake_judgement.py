@@ -5,7 +5,7 @@ from engine.agent_stack.states.compacting import Compacting
 from engine.agent_stack.states.paused import Paused
 from engine.agent_stack.states.working import Working
 from engine.agent_machine.agent_view import AgentView
-from engine.agent_machine.contracts.wake_cause import WakeCause
+from engine.agent_machine.needs.wake_cause import WakeCause
 from engine.agent_machine.record.wake_change import WakeChange
 from engine.enums.lane import Lane
 from engine.enums.stop_answer_type import StopAnswerType

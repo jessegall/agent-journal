@@ -1,6 +1,6 @@
 from datetime import datetime
 from core.modules.drivers.support.block_judgement import BlockJudgement
-from core.modules.drivers.models.agent_frame_suppression import AgentFrameSuppression
+from core.modules.drivers.models.agent_frame_suppression import OPEN_SUPPRESSIONS_REASON, AgentFrameSuppression
 from engine.enums.responder import Responder
 from engine.agent_stack.answer_basis import AnswerBasis
 from engine.agent_stack.escalation import Escalation
@@ -13,8 +13,8 @@ from engine.agent_stack.states.pause_cause import PauseCause
 from engine.agent_stack.states.stopped import Stopped
 from engine.agent_machine.agent_view import AgentView
 from engine.provider.providers import Providers
-from engine.agent_machine.contracts.grant import Grant
-from engine.agent_machine.contracts.grant_ledger import GrantLedger
+from engine.agent_machine.stepping.grant import Grant
+from engine.agent_machine.stepping.grant_ledger import GrantLedger
 from engine.agent_machine.driver import Driver
 from engine.agent_machine.needs.agent_reference import AgentReference
 from engine.agent_machine.needs.ended_fact import EndedFact
@@ -42,9 +42,8 @@ from core.modules.drivers.models.driver_epoch import DriverEpoch
 from core.modules.drivers.models.enums.escalation_state import EscalationState
 from core.modules.drivers.models.program_epoch import ProgramEpoch
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
+from core.modules.drivers.models.agent_block import OPEN_BLOCKS_REASON
 
-OPEN_SUPPRESSIONS_REASON = "the frames a person removed from one agent, a handful at most"
-OPEN_BLOCKS_REASON = "the open blocks of one agent are few: each is closed or skipped before the agent goes on"
 BOTTOM_KEY = NeedKey("Stopped", None, "bottom")
 CORE_SUITE = "core"
 

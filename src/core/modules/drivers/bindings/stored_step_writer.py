@@ -3,14 +3,14 @@ from collections.abc import Sequence
 
 from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.contracts.effect import Effect
-from engine.agent_machine.contracts.grant_ledger import GrantLedger
+from engine.agent_machine.stepping.grant_ledger import GrantLedger
 from engine.driver.nudger import Nudger
 from engine.agent_machine.decision_record import DecisionRecord
 from engine.agent_machine.needs.block_plan import BlockPlan
 from engine.agent_machine.record.block_closing import BlockClosing
 from engine.agent_machine.record.wake_change import WakeChange
 from engine.agent_machine.step_result import StepResult
-from engine.agent_step.errors.required_effect_failure import RequiredEffectFailure
+from engine.agent_step.errors.required_effect_error import RequiredEffectError
 from engine.agent_step.frame_codec import FrameCodec
 from engine.agent_step.step_commit import StepCommit
 from engine.agent_step.step_writer import StepWriter
@@ -157,7 +157,7 @@ class StoredStepWriter(StepWriter):
                         self.bus.dispatch(command, context.nested(command))
                 except Refusal as refusal:
                     if is_admission and effect.is_required:
-                        raise RequiredEffectFailure(f"{type(effect).__name__} failed: {refusal}") from refusal
+                        raise RequiredEffectError(f"{type(effect).__name__} failed: {refusal}") from refusal
                     failures.append(f"the journal could not run {type(command).__name__}: {refusal}")
         return failures
 

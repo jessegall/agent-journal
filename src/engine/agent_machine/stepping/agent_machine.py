@@ -10,7 +10,7 @@ from engine.agent_machine.contracts.effect import Effect
 from engine.agent_machine.contracts.line_source import LineSource
 from engine.agent_machine.contracts.policy import Policy
 from engine.agent_machine.contracts.transform import Transform
-from engine.agent_machine.contracts.wake_cause import WakeCause
+from engine.agent_machine.needs.wake_cause import WakeCause
 from engine.agent_machine.decision import Decision
 from engine.agent_machine.decision_record import DecisionRecord
 from engine.agent_machine.record.block_closing import BlockClosing

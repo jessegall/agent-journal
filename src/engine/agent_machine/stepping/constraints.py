@@ -6,7 +6,7 @@ from engine.agent_stack.stack import Stack
 from engine.agent_stack.states.compacting import Compacting
 from engine.agent_stack.states.paused import Paused
 from engine.agent_machine.agent_view import AgentView
-from engine.agent_machine.contracts.grant import Grant
+from engine.agent_machine.stepping.grant import Grant
 from engine.agent_machine.contracts.policy import Policy
 from engine.agent_machine.record.question import Question
 from engine.agent_machine.stepping.block_exemptions import MESSAGE_COMMAND, BlockExemptions

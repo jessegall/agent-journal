@@ -29,7 +29,9 @@ class AsksModule(Module):
     models = [AskModelDeclaration, AskStepModelDeclaration, AskStackModelDeclaration]
     migrations = [AsksTablesMigration, AskStacksTableMigration, AskSettingKeysMigration, AsksEnvironmentIndexesMigration]
     settings = QUESTION_SETTINGS
-    ask_topics = [GeneralAskTopic]
+    helper_question_topics = [GeneralAskTopic]
+    move_reason = "version 4 had no questions a helper asks its parent"
+    seed_reason = "a helper's question to its parent lives only while the helper runs, and the demo runs no helper"
     bindings = {AskFacts: HelperAskFacts}
     guards = [AskStackApprovalGuard, QuestionTimesGuard]
     handlers = [ApproveAskStackHandler, EndReplacedAskStacksHandler]
