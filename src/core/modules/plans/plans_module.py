@@ -109,6 +109,7 @@ from core.modules.plans.migrations.m017_plan_context_start_event_unbound import 
 from core.modules.plans.migrations.m018_started_plans_keep_no_wait_reason import StartedPlansKeepNoWaitReasonMigration
 from core.modules.plans.migrations.m019_phase_person_check import PhasePersonCheckMigration
 from core.modules.plans.migrations.m020_phase_person_check_removed import PhasePersonCheckRemovedMigration
+from core.modules.plans.migrations.m021_waiting_checkpoints_passed import WaitingCheckpointsPassedMigration
 from core.modules.plans.commands.check_plan.check_plan_handler import CheckPlanHandler
 from core.modules.plans.commands.check_plan.check_plan_subcommand import CheckPlanSubcommand
 from core.modules.plans.guards.checkpoint_run_guard import CheckpointRunGuard
@@ -135,7 +136,7 @@ class PlansModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.chat", "journal.core.docking", "journal.core.drivers", "journal.core.messages", "journal.core.assignments"]
     skills = PLANS_SKILLS
     models = [PlanModelDeclaration, ModelDeclaration(Phase), PhaseTaskModelDeclaration, PlanContextReadModelDeclaration, PlanWaitModelDeclaration, CheckpointReachModelDeclaration, CheckpointPassModelDeclaration]
-    migrations = [PhasePersonCheckRemovedMigration, PlanAssignmentsMigration, PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration, PlanContextReadsMigration, PlanWaitsMigration, CheckpointsMigration, CheckpointReachSourceMigration, PlanContextReadsEnvironmentIndexMigration, CheckpointReviewsMigration, CheckpointReviewReportMigration, AgentCommitReachesMigration, PlanContextStartEventUnboundMigration, StartedPlansKeepNoWaitReasonMigration, PhasePersonCheckMigration]
+    migrations = [WaitingCheckpointsPassedMigration, PhasePersonCheckRemovedMigration, PlanAssignmentsMigration, PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration, PlanContextReadsMigration, PlanWaitsMigration, CheckpointsMigration, CheckpointReachSourceMigration, PlanContextReadsEnvironmentIndexMigration, CheckpointReviewsMigration, CheckpointReviewReportMigration, AgentCommitReachesMigration, PlanContextStartEventUnboundMigration, StartedPlansKeepNoWaitReasonMigration, PhasePersonCheckMigration]
     tick_handlers = [PlanStateSweepTickHandler]
     handlers = [RepairPlanStatesHandler, CheckPlanHandler, RecordCheckpointsHandler, RerunStaleCheckpointsHandler, StartCheckpointRunHandler, WaitPlanHandler, AssignPlanHandler, RecordPlanAgentHandler, ChoosePlanFocusHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]
     moves = [PlansMove]
