@@ -16,9 +16,9 @@ class Parcel(Model, Assignable):
     takes_actors = ActorCount.SINGLE
 
 
-class Crate(Model, Assignable):
-    model_name = "crate"
-    cli_name = "crate"
+class Tote(Model, Assignable):
+    model_name = "tote"
+    cli_name = "tote"
 
 
 class Label(Model):
@@ -39,7 +39,7 @@ def test_an_assignable_model_that_says_its_actor_count_in_a_module_that_depends_
 
 
 def test_an_assignable_model_with_no_actor_count_is_named():
-    assert "Crate is assignable and does not say how many actors a row takes" in problems(owner(Crate))
+    assert "Tote is assignable and does not say how many actors a row takes" in problems(owner(Tote))
 
 
 def test_a_module_that_owns_an_assignable_model_and_does_not_depend_on_assignments_is_named():
