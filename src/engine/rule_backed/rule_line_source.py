@@ -32,6 +32,8 @@ class RuleLineSource(LineSource):
         cls.agent_types = RuleEvents.agent_types(cls.rule)
         cls.replaced_rules = tuple([cls.rule.name])
         cls.events = RuleEvents.hook_events(cls.rule)
+        # a rule that keeps time speaks at the agent's minute step, which replaces its tick hook
+        cls.includes_steps = HookEventName.TICK in cls.events
         if set(cls.events) <= UNCARRIED_EVENTS:
             cls.carrier = LineCarrier.WAITING
 

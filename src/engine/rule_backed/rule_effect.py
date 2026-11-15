@@ -1,3 +1,4 @@
+from engine.enums.hook_event_name import HookEventName
 from collections.abc import Sequence
 from typing import ClassVar
 
@@ -28,6 +29,8 @@ class RuleEffect(Effect):
         cls.agent_types = RuleEvents.agent_types(cls.rule)
         cls.replaced_rules = tuple([cls.rule.name])
         cls.events = RuleEvents.hook_events(cls.rule)
+        # a rule that keeps time acts at the agent's minute step, which replaces its tick hook
+        cls.includes_steps = HookEventName.TICK in cls.events
 
     def commands(self, view: AgentView, record: DecisionRecord) -> Sequence[Command[object]]:
         answer = self.hooks.answer(self.rule, record.action, view.agent.agent_id)
