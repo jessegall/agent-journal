@@ -28,6 +28,7 @@ class TaskWorkNeeds(NeedSource):
     started, unless the suite lets the agent stop with its tasks in hand; the stop text names every started task,
     as today's tasks.carry-on-at-stop does. A run going is the processes module's Waiting need on top."""
 
+    replaced_rules = tuple([TASK_STOP_RULE])
     state_type = Working
     rank = TASK_RANK
     agent_types = ["main"]

@@ -18,11 +18,11 @@ class HookRuleAnswers:
     def __init__(self, rules: DriverRules, loader: ActorLoader, settings: SettingValues, nudges: NudgeLog, timing: Timing, clock: Clock) -> None:
         self.rules, self.loader, self.settings, self.nudges, self.timing, self.clock = rules, loader, settings, nudges, timing, clock
 
-    def evaluate(self, event: HookEvent, agent: Agent) -> RuleAnswers:
+    def evaluate(self, event: HookEvent, agent: Agent, machine_answered: frozenset[str] = frozenset()) -> RuleAnswers:
         timestamp = self.clock.timestamp()
         actor = self.loader.loaded(agent)
         self.timing.stamp("actor_loaded")
-        hook = AgentHook.of_actor(event, actor, timestamp)
+        hook = replace(AgentHook.of_actor(event, actor, timestamp), machine_answered_rules=machine_answered)
         self.timing.stamp("hook_built")
         with self.settings.keep_rows():
             answers = self.rules.ask(hook)

@@ -17,6 +17,8 @@ class Policy(ABC):
     key: ClassVar[str]
     rank: ClassVar[str]
     agent_types: ClassVar[Sequence[str]] = ()
+    # the old driver rules this contribution answers for, which stand down once its slice is in force for the agent
+    replaced_rules: ClassVar[Sequence[str]] = ()
     is_safety: ClassVar[bool] = False
     grant_types: ClassVar[Sequence[GrantType]] = ()
     entrance_commands: ClassVar[Sequence[type[Command[object]]]] = ()

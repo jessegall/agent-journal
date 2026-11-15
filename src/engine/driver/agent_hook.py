@@ -27,6 +27,8 @@ class AgentHook:
     anchor: OpenRow | None = None
     defaults: Sequence[str] = ()
     removed_while: Mapping[str, str] = field(default_factory=dict[str, str])
+    # the old rules that stand down at this hook, since the new driver answers their slices for the agent
+    machine_answered_rules: frozenset[str] = frozenset()
 
     @classmethod
     def of_actor(cls, event: HookEvent, actor: LoadedActor, timestamp: Timestamp) -> "AgentHook":

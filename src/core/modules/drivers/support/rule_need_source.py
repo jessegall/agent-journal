@@ -28,6 +28,7 @@ class RuleNeedSource(NeedSource):
     def __init_subclass__(cls, **kwargs: object) -> None:
         super().__init_subclass__(**kwargs)
         cls.agent_types = RuleEvents.agent_types(cls.rule)
+        cls.replaced_rules = tuple([cls.rule.name])
 
     def __init__(self, hooks: RuleHooks) -> None:
         self.hooks = hooks

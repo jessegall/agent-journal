@@ -24,6 +24,7 @@ class UnreadMessageNeeds(NeedSource):
     after twenty uses, its stop at once, naming the oldest; the two scopes keep the two rule names and today's
     two texts."""
 
+    replaced_rules = (TOOL_RULE, STOP_RULE)
     state_type = Blocked
     rank = UNREAD_RANK
 

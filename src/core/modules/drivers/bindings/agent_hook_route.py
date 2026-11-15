@@ -33,7 +33,7 @@ from core.modules.agents.support.agent_sessions import AgentSessions
 from core.modules.drivers.nudges.ended_agent_nudge import EndedAgentNudge
 from core.modules.drivers.nudges.replaced_session_nudge import ReplacedSessionNudge
 from core.modules.drivers.nudges.unknown_agent_nudge import UnknownAgentNudge
-from core.modules.drivers.support.hook_rule_answers import HookRuleAnswers
+from core.modules.drivers.support.decision_assembler import DecisionAssembler
 from core.modules.drivers.support.driver_comparison_step import DriverComparisonStep
 from core.modules.drivers.support.driver_settings import COMPARISON_SETTING
 from core.modules.drivers.commands.record_hook_call.record_hook_call import RecordHookCall
@@ -64,12 +64,12 @@ class AgentHookRoute(HookRoute):
     unknown agent when the event does not require an agent check. The row of a recorded hook is kept once
     its call is committed; a tick that brought nothing keeps none."""
 
-    def __init__(self, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, rule_answers: HookRuleAnswers, request_values: RequestValues, clock: Clock, providers: Providers, lockdown: ProgramLockdown, sessions: AgentSessions, request_records: RequestRecords,
+    def __init__(self, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, assembler: DecisionAssembler, request_values: RequestValues, clock: Clock, providers: Providers, lockdown: ProgramLockdown, sessions: AgentSessions, request_records: RequestRecords,
                  comparison: DriverComparisonStep, errors: ErrorLog, timing: Timing) -> None:
         self.comparison, self.errors, self.timing = comparison, errors, timing
         self.lockdown, self.sessions, self.request_records = lockdown, sessions, request_records
         self.clock, self.providers = clock, providers
-        self.rule_answers, self.request_values = rule_answers, request_values
+        self.assembler, self.request_values = assembler, request_values
         self.bus, self.queries, self.system_log, self.durations, self.settings = bus, queries, system_log, durations, settings
         self.agents, self.program = agents, program
 
@@ -89,11 +89,9 @@ class AgentHookRoute(HookRoute):
         if agent is None:
             return self.ended_agent_reply(event)
         actor = Actor(agent.id, ActorType.AGENT)
-        with self.bus.scopes.command_scope((), actor, agent.environment_id):
-            answers = self.rule_answers.evaluate(event, agent)
-        self.timing.stamp("rules_asked")
-        reply = self.bus.run(RecordHookCall(event, agent.id, answers), actor, environment_id=agent.environment_id)
-        self.compare(event, agent, actor, answers, reply)
+        assembled = self.assembler.assembled(event, agent, actor)
+        reply = self.bus.run(RecordHookCall(event, agent.id, assembled.answers, assembled.step), actor, environment_id=agent.environment_id)
+        self.compare(event, agent, actor, assembled.answers, reply)
         if reply.hook_call_id is not None:
             self.request_records.recorded_hook(agent.id, agent.environment_id, hook_row_line(event), REFUSED_HOOK_EXIT_CODE if reply.refusal else 0)
         self.note_timeout(event, agent, actor)

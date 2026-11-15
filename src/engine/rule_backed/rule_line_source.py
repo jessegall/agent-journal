@@ -30,6 +30,7 @@ class RuleLineSource(LineSource):
     def __init_subclass__(cls, **kwargs: object) -> None:
         super().__init_subclass__(**kwargs)
         cls.agent_types = RuleEvents.agent_types(cls.rule)
+        cls.replaced_rules = tuple([cls.rule.name])
         cls.events = RuleEvents.hook_events(cls.rule)
         if set(cls.events) <= UNCARRIED_EVENTS:
             cls.carrier = LineCarrier.WAITING

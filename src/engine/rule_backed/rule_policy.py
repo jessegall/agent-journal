@@ -27,6 +27,7 @@ class RulePolicy(Policy):
     def __init_subclass__(cls, **kwargs: object) -> None:
         super().__init_subclass__(**kwargs)
         cls.agent_types = RuleEvents.agent_types(cls.rule)
+        cls.replaced_rules = tuple([cls.rule.name])
         cls.key = cls.rule.name
 
     def refusals(self, question: Question, view: AgentView) -> Sequence[Reason]:

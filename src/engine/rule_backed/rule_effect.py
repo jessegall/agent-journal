@@ -26,6 +26,7 @@ class RuleEffect(Effect):
     def __init_subclass__(cls, **kwargs: object) -> None:
         super().__init_subclass__(**kwargs)
         cls.agent_types = RuleEvents.agent_types(cls.rule)
+        cls.replaced_rules = tuple([cls.rule.name])
         cls.events = RuleEvents.hook_events(cls.rule)
 
     def commands(self, view: AgentView, record: DecisionRecord) -> Sequence[Command[object]]:

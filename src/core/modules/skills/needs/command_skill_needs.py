@@ -23,6 +23,7 @@ class CommandSkillNeeds(NeedSource):
     """Plans, from the tool call under judgement, the strict block of a journal command whose subject a skill covers and
     the agent has not loaded: three tool uses, then only that skill's read passes (doc 1310 section 4.6)."""
 
+    replaced_rules = tuple([COMMAND_RULE])
     state_type = Blocked
     rank = COMMAND_SKILL_RANK
 

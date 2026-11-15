@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from dataclasses import asdict, replace
 from engine.command.bus import Bus
 from engine.command.command import Command
+from engine.agent_step.step_writer import StepWriter
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.database.database import Database
@@ -58,7 +59,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     runs_once = True
 
     def __init__(self, required_commands: RequiredCommands, bus: Bus, database: Database, queries: Queries, repository: Repository,
-                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome, share: ContextShare, compaction_end: CompactionEndPercent, hook_calls: HookCallQuery, loader: ActorLoader) -> None:
+                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome, share: ContextShare, compaction_end: CompactionEndPercent, hook_calls: HookCallQuery, loader: ActorLoader, steps: StepWriter) -> None:
+        self.steps = steps
         self.home, self.share, self.compaction_end, self.hook_calls, self.loader = home, share, compaction_end, hook_calls, loader
         self.event_rows = event_rows
         self.system_log = system_log
@@ -112,6 +114,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         self.nudges.write(agent.id, answers, context)
         self.required_commands.open(agent.id, answers.delivered_nudges, context)
         self.timing.stamp("call_saved")
+        if command.step is not None:
+            self.steps.save(command.step.view, command.step.step, call.id, context)
         for row in handed_lines.rows:
             self.event_rows.remember(row)
         for row in handed_lines.rows:

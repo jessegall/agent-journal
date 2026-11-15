@@ -20,6 +20,7 @@ class OverviewFirstNeeds(NeedSource):
     """Plans the strict block of a main agent's session start that is no resume, which a compaction's end is too: nothing
     but a skill read and the lifting commands passes until the agent runs journal overview (doc 1310 section 4.6)."""
 
+    replaced_rules = tuple([OVERVIEW_RULE])
     state_type = Blocked
     rank = OVERVIEW_RANK
     agent_types = ["main"]

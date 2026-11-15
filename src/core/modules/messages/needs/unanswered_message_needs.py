@@ -22,6 +22,7 @@ class UnansweredMessageNeeds(NeedSource):
     """Plans the block of messages a main agent or a read-only helper read and has not answered: its tools after
     ten uses; a journal message line and a task it is asked for always pass, since they are the answer."""
 
+    replaced_rules = tuple([UNANSWERED_RULE])
     state_type = Blocked
     rank = UNANSWERED_RANK
     agent_types = ANSWERING_TYPES

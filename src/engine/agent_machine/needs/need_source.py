@@ -17,6 +17,8 @@ class NeedSource(ABC):
     state_type: ClassVar[type[State]]
     rank: ClassVar[str]
     agent_types: ClassVar[Sequence[str]] = ()
+    # the old driver rules this contribution answers for, which stand down once its slice is in force for the agent
+    replaced_rules: ClassVar[Sequence[str]] = ()
     subject_models: ClassVar[Sequence[str]] = ()
 
     @abstractmethod

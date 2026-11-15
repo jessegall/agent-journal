@@ -68,19 +68,19 @@ class DriverRules:
             calls.extend(RuleCall(entry, replace(hook, layer=layer.row)) for layer in active for entry in self.registry.overlay_rules(layer.overlay.name, hook.hook_name))
             calls.extend(RuleCall(entry, hook) for entry in added)
         for entry in [*self.registry.essential_rules(hook.driver, hook.hook_name), *allowed]:
-            if self.switches.enabled(entry.name) and walk.record(entry, "", self.outcome(entry, hook)):
+            if self.is_active_rule(entry, hook) and walk.record(entry, "", self.outcome(entry, hook)):
                 return self.complete_checks(walk, hook, calls)
         # a critical state's rules come right after the essential ones, and no exclusive layer silences them
         for state in critical:
             if not self.switches.enabled(state.name) or not board.is_open(state):
                 continue
             for entry in self.registry.state_rules(state.name, hook.hook_name):
-                if self.switches.enabled(entry.name) and walk.record(entry, state.name, self.outcome(entry, hook)):
+                if self.is_active_rule(entry, hook) and walk.record(entry, state.name, self.outcome(entry, hook)):
                     return self.complete_checks(walk, hook, calls, board)
         for layer in layers:
             layer_hook, ref = replace(hook, layer=layer.row), self.layer_ref(layer)
             for entry in self.layer_rules(layer, hook.hook_name):
-                if not self.switches.enabled(entry.name):
+                if not self.is_active_rule(entry, hook):
                     continue
                 if walk.is_silenced:
                     walk.record_silenced(entry, ref)
@@ -88,7 +88,7 @@ class DriverRules:
                     return self.complete_checks(walk, hook, calls, board)
             walk.leave_layer(layer, self.layer_class(layer))
         for entry in added:
-            if not self.switches.enabled(entry.name):
+            if not self.is_active_rule(entry, hook):
                 continue
             if walk.silences(entry.path.checked_class(DriverRule)):
                 walk.record_silenced(entry, "")
@@ -145,8 +145,8 @@ class DriverRules:
             if record is not None:
                 checks.append(record.stop_check)
                 continue
-            if not self.switches.enabled(entry.name):
-                checks.append(StopCheck(entry.name, "disabled", "the rule is switched off", False,
+            if not self.is_active_rule(entry, call.hook):
+                checks.append(StopCheck(entry.name, "disabled", "the rule is switched off or stands down for the new driver", False,
                                         layer if layer else None))
                 continue
             gate = self.closed_gate(entry, board) if board is not None and not layer else ""
@@ -187,6 +187,10 @@ class DriverRules:
         if hook.hook_name != HookEventName.PRE_TOOL_USE or not self.skips.has_refused(hook.agent_id, entry.name):
             return answer
         return replace(answer, refusal=f"{answer.refusal} ({SKIP_ALLOWED_CASE}: journal refusal skip {entry.name} --reason '<why it is wrong here>')")
+
+    # a rule is asked when it is switched on and the new driver does not answer for it at this agent's hook
+    def is_active_rule(self, entry: DriverRuleEntry, hook: AgentHook) -> bool:
+        return self.switches.enabled(entry.name) and entry.name not in hook.machine_answered_rules
 
     def outcome(self, entry: DriverRuleEntry, hook: AgentHook) -> RuleOutcome:
         started_at = perf_counter()

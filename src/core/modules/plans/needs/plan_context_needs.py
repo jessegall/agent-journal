@@ -21,6 +21,7 @@ class PlanContextNeeds(NeedSource):
     """Plans the block of the oldest started plan whose start context a main agent has not read: its tools at once,
     reads and journal commands passing, until it reads journal plan context (doc 1310 section 4.6)."""
 
+    replaced_rules = tuple([PLAN_CONTEXT_RULE])
     state_type = Blocked
     rank = PLAN_CONTEXT_RANK
     agent_types = ["main"]

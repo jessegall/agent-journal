@@ -30,6 +30,7 @@ class SkillReadFirstNeeds(NeedSource):
     rule names and today's two texts. A read-only helper is held at once, and only for the skills its profile requires,
     as today's skills.profile-read-first does; it has no stop scope."""
 
+    replaced_rules = (TOOL_RULE, STOP_RULE, PROFILE_RULE)
     state_type = Blocked
     rank = SKILL_READ_RANK
 

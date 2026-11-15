@@ -24,6 +24,7 @@ class OpenDocumentNeeds(NeedSource):
     tools at once (reads and journal commands pass), its stop at once, until journal doc close; the scopes keep the two
     rule names and today's two texts."""
 
+    replaced_rules = (TOOL_RULE, STOP_RULE)
     state_type = Blocked
     rank = OPEN_DOCUMENT_RANK
 

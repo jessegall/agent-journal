@@ -47,12 +47,13 @@ class StoredStepWriter(StepWriter):
         self.queries, self.repository, self.bus, self.database = queries, repository, bus, database
 
     def save(self, view: AgentView, step: StepResult, hook_call_id: int | None, context: Context) -> StepCommit:
-        if not self.basis_matches(view):
+        row = self.queries.query(AgentStack).filter(session_agent_id=view.agent.agent_id).first()
+        if not self.basis_matches(row, view):
             return StepCommit.conflict()
         record = step.record
         if hook_call_id is None and not self.has_changes(view, step):
             return StepCommit.saved(None, ())
-        row = self.saved_stack(view, step, context)
+        row = self.saved_stack(row, view, step, context)
         for move in record.moves:
             self.repository.save(AgentStackMove(session_agent_id=view.agent.agent_id, move_type=move.move_type, frame_key=f"{move.frame_key.state_name}:{move.frame_key.generation}" if move.frame_key is not None else "",
                                                 reason_text=move.reason_text, version_before=view.basis.stack_version, version_after=row.version,
@@ -66,8 +67,7 @@ class StoredStepWriter(StepWriter):
         self.save_wake(view, record.wake, context)
         return StepCommit.saved(hook_call_id, tuple(failures))
 
-    def basis_matches(self, view: AgentView) -> bool:
-        row = self.queries.query(AgentStack).filter(session_agent_id=view.agent.agent_id).first()
+    def basis_matches(self, row: AgentStack | None, view: AgentView) -> bool:
         driver_epoch = self.queries.query(DriverEpoch).first()
         program_epoch = self.queries.query(ProgramEpoch).filter(program=view.program_name).first()
         current = (row.version if row is not None else 0, driver_epoch.epoch if driver_epoch is not None else 0,
@@ -82,8 +82,7 @@ class StoredStepWriter(StepWriter):
         return bool(is_first_step or record.moves or record.blocks_opened or record.blocks_closed or changed_counts or record.counts.escalation != view.escalation
                     or record.wake.wake_move is not WakeMove.UNCHANGED or step.stack != view.stack)
 
-    def saved_stack(self, view: AgentView, step: StepResult, context: Context) -> AgentStack:
-        row = self.queries.query(AgentStack).filter(session_agent_id=view.agent.agent_id).first()
+    def saved_stack(self, row: AgentStack | None, view: AgentView, step: StepResult, context: Context) -> AgentStack:
         values = {"driver_name": view.driver_name, "table_digest": view.table_digest, "pinned_slices": view.pinned_slices,
                   "frames": FrameCodec.encoded(step.stack.frames), "stop_refusals": step.record.counts.stop_refusals,
                   "tool_refusals": step.record.counts.tool_refusals}

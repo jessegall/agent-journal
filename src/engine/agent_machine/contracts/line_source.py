@@ -17,6 +17,8 @@ class LineSource(ABC):
     events: ClassVar[Sequence[HookEventName]]
     includes_steps: ClassVar[bool] = False
     agent_types: ClassVar[Sequence[str]] = ()
+    # the old driver rules this contribution answers for, which stand down once its slice is in force for the agent
+    replaced_rules: ClassVar[Sequence[str]] = ()
     carrier: ClassVar[LineCarrier] = LineCarrier.NOW
     category: ClassVar[LineCategory] = LineCategory.INFORMATION
     interval_key: ClassVar[str] = ""

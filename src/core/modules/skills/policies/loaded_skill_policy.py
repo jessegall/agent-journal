@@ -18,6 +18,7 @@ class LoadedSkillPolicy(Policy):
     """Refuses a read of a skill the agent has loaded in this context with the very text the catalogue holds now; a
     refusal skip passes it, as it passes today's skills.already-loaded."""
 
+    replaced_rules = tuple(["skills.already-loaded"])
     key = "skills.already-loaded"
     rank = SKILLS_POLICY_RANK
     grant_types = [GrantType.REFUSAL_SKIP]

@@ -19,6 +19,8 @@ class Effect(ABC):
     events: ClassVar[Sequence[HookEventName]]
     includes_steps: ClassVar[bool] = False
     agent_types: ClassVar[Sequence[str]] = ()
+    # the old driver rules this contribution answers for, which stand down once its slice is in force for the agent
+    replaced_rules: ClassVar[Sequence[str]] = ()
     timing: ClassVar[EffectTiming]
     is_required: ClassVar[bool] = False
     failure: ClassVar[type[NudgeDeclaration] | None] = None
