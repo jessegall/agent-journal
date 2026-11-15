@@ -2,6 +2,7 @@ from dataclasses import dataclass, replace
 
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import Model
+from core.modules.drivers.models.enums.handover_state import HandoverState
 from engine.time.timestamp import Timestamp
 
 NEW_SESSION_LAUNCH = "fresh"
@@ -41,6 +42,10 @@ class HelperJob(EnvironmentScoped, Model):
     cost_baseline: float | None = None
     new_session: bool = False
     halted_seconds: float = 0.0
+    handover_state: HandoverState = HandoverState.PENDING
+    handover_source: str = ""
+    handover_failures: int = 0
+    failed_text: str = ""
 
     @property
     def session(self) -> str:

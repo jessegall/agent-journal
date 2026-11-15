@@ -45,6 +45,36 @@ class AgentBlock(ClosedPrunable, Model):
     strict: bool = False
     is_skippable: bool = False
     countdown_limit: int = COUNTDOWN_TOOL_USES
+    scope_tools: bool | None = None
+    scope_stop: bool | None = None
+    stop_grace_seconds: int = 0
+    tool_selector: str = ""
+    subject_model: str = ""
+    subject_id: int | None = None
+    members: tuple[int, ...] = ()
+    context_generation: int | None = None
+    condition_schema: int = 1
+    lifting_lines: tuple[str, ...] = ()
+    ends: tuple[str, ...] = ()
+    closer_roles: tuple[str, ...] = ()
+    expires_at: Timestamp | None = None
+    judgement: str = ""
+    judgement_reason: str = ""
+    escalation_id: int | None = None
+    opener: str = ""
+    opening_firing: str = ""
+    closed_reason: str = ""
+    closer: str = ""
+    closing_evidence: str = ""
+
+    # A row old code wrote has no scopes yet: blocks_stop says which one it has (doc 1310 section 4.5).
+    @property
+    def has_tool_scope(self) -> bool:
+        return self.scope_tools if self.scope_tools is not None else not self.blocks_stop
+
+    @property
+    def has_stop_scope(self) -> bool:
+        return self.scope_stop if self.scope_stop is not None else self.blocks_stop
 
     # The block's condition holds, or the row it waits on is gone, so it could never hold.
     def is_finished(self, conditions: BlockConditions, hook: AgentHook, container: Container) -> bool:

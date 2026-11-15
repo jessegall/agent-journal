@@ -24,6 +24,16 @@
   "merger": "allowed",
   "worker": "refused"
  },
+ "admission-receipt list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "admission-receipt show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
  "affected-test list": {
   "helper": "allowed",
   "merger": "allowed",
@@ -234,6 +244,16 @@
   "merger": "refused",
   "worker": "refused"
  },
+ "agent-escalation list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-escalation show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
  "agent-fold list": {
   "helper": "allowed",
   "merger": "allowed",
@@ -245,6 +265,26 @@
   "worker": "refused"
  },
  "agent-fold-row show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-frame-suppression list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-frame-suppression show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-launch list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-launch show": {
   "helper": "allowed",
   "merger": "allowed",
   "worker": "refused"
@@ -345,6 +385,56 @@
   "worker": "refused"
  },
  "agent-skill unread": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-stack list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-stack show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-stack-move list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-stack-move show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-step-request list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-step-request show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-subject list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-subject show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-wake list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-wake show": {
   "helper": "allowed",
   "merger": "allowed",
   "worker": "refused"
@@ -1060,6 +1150,56 @@
   "worker": "refused"
  },
  "driver states": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "driver-comparison list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "driver-comparison show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "driver-comparison-stack list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "driver-comparison-stack show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "driver-epoch list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "driver-epoch show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "driver-grant list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "driver-grant show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "driver-table list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "driver-table show": {
   "helper": "allowed",
   "merger": "allowed",
   "worker": "refused"
@@ -2615,6 +2755,16 @@
   "worker": "refused"
  },
  "program trust": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "program-epoch list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "program-epoch show": {
   "helper": "allowed",
   "merger": "allowed",
   "worker": "refused"
