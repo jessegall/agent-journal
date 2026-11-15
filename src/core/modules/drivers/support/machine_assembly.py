@@ -44,9 +44,12 @@ class MachineAssembly:
                             [self.container.get(cls) for cls, module in self.listed(lambda module: module.wake_causes) if kept(cls, module)])
 
     def with_kept_needs(self, view: AgentView, question: Question, kept: Kept) -> AgentView:
-        given = [item for source in self.covering(view.agent.agent_type, lambda module: module.needs, kept)
-                 for item in source.needs([view.agent], question).get(view.agent.agent_id, ())]
-        return replace(view, needs=tuple(item for item in given if isinstance(item, Need)), plans=tuple(item for item in given if isinstance(item, BlockPlan)))
+        sources = self.covering(view.agent.agent_type, lambda module: module.needs, kept)
+        given = [item for source in sources for item in source.needs([view.agent], question).get(view.agent.agent_id, ())]
+        needs = tuple(item for item in given if isinstance(item, Need))
+        ended_subjects = view.stack.subjects_without({need.key for need in needs})
+        ends = {subject: end for source in sources for subject, end in (source.ends(ended_subjects).items() if ended_subjects else ())}
+        return replace(view, needs=needs, plans=tuple(item for item in given if isinstance(item, BlockPlan)), subject_ends=ends)
 
     @staticmethod
     def slice_filter(agent_type: str, agent_slices: frozenset[str]) -> Kept:

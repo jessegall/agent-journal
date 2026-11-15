@@ -1,6 +1,8 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+from engine.agent_stack.subject_reference import SubjectReference
+from engine.agent_stack.need_key import NeedKey
 from engine.agent_stack.escalation import Escalation
 from engine.agent_stack.frame import Frame
 from engine.agent_stack.states.compacting import Compacting
@@ -20,6 +22,10 @@ class Stack:
 
     def has(self, state_type: type[State]) -> bool:
         return any(isinstance(frame.state, state_type) for frame in self.frames)
+
+    # the subjects of the frames whose need is no longer among the given keys, which this step takes off the stack
+    def subjects_without(self, need_keys: set[NeedKey]) -> list[SubjectReference]:
+        return [frame.need_key.subject for frame in self.frames if frame.need_key.subject is not None and frame.need_key not in need_keys]
 
     def lane(self, lane: Lane) -> list[Frame]:
         return [frame for frame in self.frames if frame.state.lane is lane]

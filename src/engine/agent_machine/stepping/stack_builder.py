@@ -83,4 +83,7 @@ class StackBuilder:
         if isinstance(frame.state, Blocked):
             block_id = frame.state.block.block_id
             return BLOCK_ENDS.get(view.block_outcomes.get(block_id, ConditionOutcome.PENDING)) if block_id is not None else None
+        subject = frame.need_key.subject
+        if subject is not None and subject in view.subject_ends:
+            return view.subject_ends[subject]
         return FRAME_ENDS.get(frame.need_key.state_name)

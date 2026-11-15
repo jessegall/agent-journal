@@ -11,13 +11,20 @@ from engine.agent_stack.states.working import Working
 from engine.agent_stack.subject_reference import SubjectReference
 from engine.agent_stack.work_reference import WorkReference
 from engine.enums.decision_class import DecisionClass
+from engine.enums.frame_end import FrameEnd
 from engine.enums.work_type import WorkType
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
+from core.modules.drivers.models.enums.handover_state import HandoverState
+from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 
 # a Working frame is ordered by its push time, never by a rank key
 JOB_RANK = ""
 JOB_STOP_KEY = "helpers.job-open"
 HELPER_TYPE = "helper"
+JOB_SUBJECT = "helper_job"
+ENDED_JOBS_REASON = "the ended jobs whose frames one step takes off one helper's stack, one at most"
 
 
 class JobWorkNeeds(NeedSource):
@@ -28,8 +35,8 @@ class JobWorkNeeds(NeedSource):
     rank = JOB_RANK
     agent_types = [HELPER_TYPE]
 
-    def __init__(self, jobs: HelperJobRows) -> None:
-        self.jobs = jobs
+    def __init__(self, jobs: HelperJobRows, queries: Queries) -> None:
+        self.jobs, self.queries = jobs, queries
 
     def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]:
         agent_jobs: dict[int, Sequence[Need | BlockPlan]] = {}
@@ -38,5 +45,12 @@ class JobWorkNeeds(NeedSource):
             if job is not None:
                 stop_reason = Reason(JOB_STOP_KEY, DecisionClass.HOLD, JOB_RANK, f"job {job.id} is open")
                 agent_jobs[agent.agent_id] = tuple([Need(Working(WorkReference(WorkType.JOB, job.id, f"job {job.id}"), True, stop_reason), JOB_RANK,
-                                                    NeedKey("Working", SubjectReference("helper_job", job.id), f"job:{job.id}"))])
+                                                    NeedKey("Working", SubjectReference(JOB_SUBJECT, job.id), f"job:{job.id}"))])
         return agent_jobs
+
+    # a job's frame leaves handed in when its report was saved, else closed
+    def ends(self, subjects: Sequence[SubjectReference]) -> Mapping[SubjectReference, FrameEnd]:
+        job_ids = [subject.row_id for subject in subjects if subject.model == JOB_SUBJECT]
+        jobs = self.queries.query(HelperJob).matching(Among("id", job_ids)).every_row(ENDED_JOBS_REASON) if job_ids else []
+        return {SubjectReference(JOB_SUBJECT, job.id): FrameEnd.HANDED_IN if job.handover_state is HandoverState.COMPLETED else FrameEnd.CLOSED
+                for job in jobs if job.ended_at is not None}

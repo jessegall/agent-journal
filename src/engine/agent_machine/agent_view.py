@@ -1,7 +1,9 @@
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 
+from engine.enums.frame_end import FrameEnd
+from engine.agent_stack.subject_reference import SubjectReference
 from engine.agent_stack.answer_basis import AnswerBasis
 from engine.agent_stack.escalation import Escalation
 from engine.agent_stack.need_key import NeedKey
@@ -58,3 +60,5 @@ class AgentView:
     newest_hook_at: datetime | None = None
     # when the journal last started, which the journal-started wake compares with the newest hook
     journal_started_at: datetime | None = None
+    # how the subjects of frames that left this step ended, as their need sources tell
+    subject_ends: Mapping[SubjectReference, FrameEnd] = field(default_factory=dict)

@@ -7,6 +7,7 @@ from engine.agent_stack.open_block import OpenBlock
 from engine.agent_stack.reason import Reason
 from engine.agent_stack.states.blocked import Blocked
 from engine.agent_stack.states.paused import Paused
+from engine.agent_stack.subject_reference import SubjectReference
 from engine.agent_machine.stepping.refusal_counting import PROGRESS_ENDS
 from engine.agent_machine.stepping.stack_builder import StackBuilder
 from engine.enums.condition_outcome import ConditionOutcome
@@ -33,3 +34,9 @@ def test_a_satisfied_hold_ends_as_progress_and_a_cancelled_or_waived_one_does_no
 
 def test_a_resume_ends_no_work():
     assert end(Frame(Paused((), "paused"), NeedKey("Paused", None, "pause"), ENTERED)) is None
+
+
+def test_a_frame_whose_source_told_its_end_records_that_end():
+    work = Frame(Paused((), "paused"), NeedKey("Working", SubjectReference("task", 3), "task:3"), ENTERED)
+    view = replace(ViewSamples.view("main", WorkStop.REFUSE_WHILE_WORK_REMAINS), subject_ends={SubjectReference("task", 3): FrameEnd.CANCELLED})
+    assert StackBuilder.frame_end(view, work) is FrameEnd.CANCELLED and FrameEnd.CANCELLED not in PROGRESS_ENDS

@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from collections.abc import Mapping, Sequence
 from typing import ClassVar
 
+from engine.enums.frame_end import FrameEnd
+from engine.agent_stack.subject_reference import SubjectReference
 from engine.agent_stack.states.state import State
 from engine.agent_machine.needs.block_plan import BlockPlan
 from engine.agent_machine.needs.agent_reference import AgentReference
@@ -23,3 +25,8 @@ class NeedSource(ABC):
 
     @abstractmethod
     def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]: ...
+
+    # how each subject this source gave a frame for, which is gone now, ended: a frame left with it records that end
+    # and only a listed end counts as progress (doc 1310 sections 4.3 and 4.6); a source that cannot tell says nothing
+    def ends(self, subjects: Sequence[SubjectReference]) -> Mapping[SubjectReference, FrameEnd]:
+        return {}
