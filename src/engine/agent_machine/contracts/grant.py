@@ -4,6 +4,9 @@ from datetime import datetime
 from engine.enums.grant_state import GrantState
 from engine.enums.grant_type import GrantType
 
+# a grant asked for the next action its policy refuses, as today's refusal skip is, names no fingerprint
+NEXT_ACTION = ""
+
 
 @dataclass(frozen=True)
 class Grant:
@@ -29,4 +32,4 @@ class Grant:
         return self.grant_state in (GrantState.CONFIRMED, GrantState.APPROVED)
 
     def passes(self, policy_key: str, action_fingerprint: str) -> bool:
-        return self.is_usable() and (self.policy_key, self.action_fingerprint) == (policy_key, action_fingerprint)
+        return self.is_usable() and self.policy_key == policy_key and self.action_fingerprint in (NEXT_ACTION, action_fingerprint)

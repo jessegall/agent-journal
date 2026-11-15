@@ -8,6 +8,8 @@ from engine.agent_stack.stack import Stack
 from engine.agent_stack.states.pause_cause import PauseCause
 from engine.agent_stack.states.stopped import Stopped
 from engine.agent_machine.agent_view import AgentView
+from engine.agent_machine.contracts.grant import Grant
+from engine.agent_machine.contracts.grant_ledger import GrantLedger
 from engine.agent_machine.capabilities import Capabilities
 from engine.agent_machine.driver import Driver
 from engine.agent_machine.needs.agent_reference import AgentReference
@@ -49,8 +51,9 @@ class StoredAgentViewReader(AgentViewReader):
     conditions and the program's capabilities are read by the phases that port them; until then the view
     holds none."""
 
-    def __init__(self, agents: AgentRows, queries: Queries, settings: SettingValues, hook_calls: HookCallQuery, finder: ModuleFinder, clock: Clock) -> None:
+    def __init__(self, agents: AgentRows, queries: Queries, settings: SettingValues, hook_calls: HookCallQuery, finder: ModuleFinder, clock: Clock, grant_store: GrantLedger) -> None:
         self.agents, self.queries, self.settings, self.hook_calls, self.finder, self.clock = agents, queries, settings, hook_calls, finder, clock
+        self.grant_store = grant_store
 
     def read(self, agent_id: int, question: Question) -> AgentView:
         agent = self.agents.find(agent_id)
@@ -58,14 +61,18 @@ class StoredAgentViewReader(AgentViewReader):
         driver = self.driver(agent.role)
         escalation = self.escalation(agent_id)
         counts = RefusalCounts(row.stop_refusals, row.tool_refusals, escalation) if row is not None else RefusalCounts(0, 0, escalation)
+        reference = AgentReference(agent.id, agent.parent_id, agent.environment_id, agent.role)
         return AgentView(
-            basis=self.basis(row, agent), agent=AgentReference(agent.id, agent.parent_id, agent.environment_id, agent.role), program_name=agent.program,
+            basis=self.basis(row, agent), agent=reference, program_name=agent.program,
             session=agent.session, profile=agent.profile, driver_name=driver.name, session_generation=1, stepped_at=self.clock.timestamp().value,
-            stack=self.stack(row, agent), facts=self.facts(agent), needs=(), plans=(), blocks=self.blocks(agent_id), grants=(), suppressions=(),
+            stack=self.stack(row, agent), facts=self.facts(agent), needs=(), plans=(), blocks=self.blocks(agent_id), grants=self.grants(reference), suppressions=(),
             escalation=escalation, settings={key: self.settings.number(key) for key in (STOP_LIMIT_SETTING, TOOL_LIMIT_SETTING)},
             is_resting=self.hook_calls.has_ended_turn(agent_id), pinned_slices=row.pinned_slices if row is not None else (),
             table_digest=row.table_digest if row is not None else "", work_stop=driver.work_stop, responder=driver.responder, rank_order=driver.rank_order,
             depth_limit=driver.depth_limit, program=Capabilities(), counts=counts, block_outcomes={})
+
+    def grants(self, agent: AgentReference) -> tuple[Grant, ...]:
+        return tuple(self.grant_store.usable_grants([agent]).get(agent.agent_id, ()))
 
     def basis(self, row: AgentStack | None, agent: Agent) -> AnswerBasis:
         driver_epoch = self.queries.query(DriverEpoch).first()

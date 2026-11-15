@@ -3,6 +3,7 @@ from collections.abc import Sequence
 
 from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.contracts.effect import Effect
+from engine.agent_machine.contracts.grant_ledger import GrantLedger
 from engine.agent_machine.decision_record import DecisionRecord
 from engine.agent_machine.needs.block_plan import BlockPlan
 from engine.agent_machine.record.block_closing import BlockClosing
@@ -43,7 +44,8 @@ class StoredStepWriter(StepWriter):
     effects when the step admits (a required one that fails raises and rolls everything back), and the
     wake. A step outside a hook that changed nothing writes nothing."""
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus, database: Database) -> None:
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus, database: Database, grant_store: GrantLedger) -> None:
+        self.grant_store = grant_store
         self.queries, self.repository, self.bus, self.database = queries, repository, bus, database
 
     def save(self, view: AgentView, step: StepResult, hook_call_id: int | None, context: Context) -> StepCommit:
@@ -63,9 +65,17 @@ class StoredStepWriter(StepWriter):
         self.save_escalation(view, record, context)
         failures = self.run_effects(record.unconditional_effects, view, record, False, context)
         if record.decision.admits():
+            self.spend_grants(record, context)
             failures += self.run_effects(record.admission_effects, view, record, True, context)
         self.save_wake(view, record.wake, context)
         return StepCommit.saved(hook_call_id, tuple(failures))
+
+    # the grants that passed a refusing policy are spent in this write, and a journal command leaves its receipt
+    def spend_grants(self, record: DecisionRecord, context: Context) -> None:
+        event, tool = record.action.event, record.action.tool()
+        fingerprint = record.action.fingerprint() if tool is not None and tool.journal_commands else ""
+        for grant in record.spent_grants:
+            self.grant_store.spend(grant, event.firing if event is not None else "", fingerprint, context)
 
     def basis_matches(self, row: AgentStack | None, view: AgentView) -> bool:
         driver_epoch = self.queries.query(DriverEpoch).first()

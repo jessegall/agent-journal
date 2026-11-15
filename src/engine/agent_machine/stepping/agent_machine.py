@@ -81,6 +81,8 @@ class AgentMachine:
         counts = self.counting.after(decision, question, view, built.moves, reasons)
         decision = self.escalated(decision, counts, view)
         record = self.record(view, question, decision, judgement, rewrite, counts, built.stack, built.moves, reasons)
+        if decision.admits() and question.is_action():
+            record = replace(record, spent_grants=tuple(self.constraints.spent_grants(rewrite.final_question(question), view)))
         return StepResult(view.basis, built.stack, record, record.wake)
 
     def transformed(self, question: Question, view: AgentView) -> Rewrite:

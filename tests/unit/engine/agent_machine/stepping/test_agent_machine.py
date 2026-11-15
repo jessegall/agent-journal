@@ -168,6 +168,12 @@ def test_a_usable_grant_passes_its_policy_but_a_held_one_and_a_safety_policy_are
     assert not AgentMachine([SafeEditPolicy()]).step(view(grants=(grant(GrantState.CONFIRMED, "files.no-edit-safety"),)), EDIT).record.decision.admits()
 
 
+def test_the_grant_that_passed_a_refusing_policy_is_named_for_the_save_to_spend_and_an_unrefused_action_spends_none() -> None:
+    usable = grant(GrantState.CONFIRMED)
+    assert AgentMachine([EditPolicy()]).step(view(grants=(usable,)), EDIT).record.spent_grants == (usable,)
+    assert AgentMachine([]).step(view(grants=(usable,)), EDIT).record.spent_grants == ()
+
+
 def paused(agent_type: str = "main", **changes: object) -> AgentView:
     return view(agent_type, facts=(PauseFact(None, (PauseCause(1, 4, SAMPLE_TIME),), PAUSE_TEXT),), **changes)
 

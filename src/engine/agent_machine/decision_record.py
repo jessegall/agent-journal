@@ -1,6 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+from engine.agent_machine.contracts.grant import Grant
 from engine.agent_stack.answer_basis import AnswerBasis
 from engine.agent_stack.reason import Reason
 from engine.agent_machine.contracts.effect import Effect
@@ -46,6 +47,8 @@ class DecisionRecord:
     basis: AnswerBasis
     printing: Sequence[EncodedPart]
     inputs: DecisionInputs
+    # the grants that passed a refusing policy of an admitted action, which the save spends in its own write
+    spent_grants: Sequence[Grant] = ()
 
     def effects(self) -> list[Effect]:
         if self.decision.admits():

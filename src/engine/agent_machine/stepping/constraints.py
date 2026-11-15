@@ -5,6 +5,7 @@ from engine.agent_stack.stack import Stack
 from engine.agent_stack.states.compacting import Compacting
 from engine.agent_stack.states.paused import Paused
 from engine.agent_machine.agent_view import AgentView
+from engine.agent_machine.contracts.grant import Grant
 from engine.agent_machine.contracts.policy import Policy
 from engine.agent_machine.record.question import Question
 from engine.agent_machine.stepping.block_exemptions import MESSAGE_COMMAND, BlockExemptions
@@ -42,14 +43,30 @@ class Constraints:
         return [Reason(PAUSE_KEY, DecisionClass.REFUSE, PAUSE_RANK, paused.refusal_text)]
 
     def policy_reasons(self, question: Question, view: AgentView) -> list[Reason]:
+        return [reason for _, refusals, grant in self.judged_policies(question, view) if grant is None for reason in refusals]
+
+    # the grants that pass a refusing policy of the action, which an admitted step spends
+    def spent_grants(self, question: Question, view: AgentView) -> list[Grant]:
+        if not view.grants:
+            return []
+        return [grant for _, _, grant in self.judged_policies(question, view) if grant is not None]
+
+    def judged_policies(self, question: Question, view: AgentView) -> list[tuple[Policy, Sequence[Reason], Grant | None]]:
         fingerprint = question.fingerprint()
-        reasons: list[Reason] = []
+        judged = []
         for policy in self.policies:
             if policy.agent_types and view.agent.agent_type not in policy.agent_types:
                 continue
-            passed = not policy.is_safety and any(grant.grant_type in policy.grant_types and grant.passes(policy.key, fingerprint) for grant in view.grants)
-            reasons += [] if passed else policy.refusals(question, view)
-        return reasons
+            refusals = policy.refusals(question, view)
+            if refusals:
+                judged.append((policy, refusals, self.passing_grant(policy, view, fingerprint)))
+        return judged
+
+    @staticmethod
+    def passing_grant(policy: Policy, view: AgentView, fingerprint: str) -> Grant | None:
+        if policy.is_safety:
+            return None
+        return next((grant for grant in view.grants if grant.grant_type in policy.grant_types and grant.passes(policy.key, fingerprint)), None)
 
     @staticmethod
     def block_reasons(question: Question, view: AgentView, stack: Stack) -> list[Reason]:
