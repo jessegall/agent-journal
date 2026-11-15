@@ -30,6 +30,10 @@ and finish it without having to decide anything for itself.
   "phase order is enough" or "a separate file". Tasks that wait on nothing can be worked at the same time. Every task but
   the plan's first says one or the other, or `journal plan ready` refuses the plan. A loop of waits is always refused.
 - Point at code with an excerpt or `file:line`. Never put whole code in a task: the worker writes the code.
+- When a task comes from a document, its brief names the document, its revision and the part it builds, for example
+  "doc 1310 revision 3, section 7 Behaviour matrix, rows 12 to 20". The worker then reads that part with
+  `journal doc show 1310 --section 7`, or that whole revision with `journal doc revision 1310 3` when the document has
+  changed since. Read the revision number with `journal doc revisions <n>`.
 - Order the phases so each one leaves the project working, and put a checkpoint where the user should look.
 - A phase runs without tests until its end, so keep phases small: a mistake early in a phase is found only there.
 
