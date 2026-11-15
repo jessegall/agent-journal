@@ -23,6 +23,8 @@ class Effect(ABC):
     replaced_rules: ClassVar[Sequence[str]] = ()
     timing: ClassVar[EffectTiming]
     is_required: ClassVar[bool] = False
+    # an effect that completes the agent's work, such as a helper's hand-in, belongs to its type's working slice
+    completes_work: ClassVar[bool] = False
     failure: ClassVar[type[NudgeDeclaration] | None] = None
 
     @abstractmethod

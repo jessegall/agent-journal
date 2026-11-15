@@ -1,3 +1,5 @@
+from core.modules.helpers.needs.job_work_needs import JobWorkNeeds
+from core.modules.helpers.effects.job_report_effect import JobReportEffect
 from core.modules.helpers.policies.start_names_model_policy import StartNamesModelPolicy
 from core.modules.helpers.models.helpers_models import HELPERS_MODELS
 from core.modules.helpers.migrations.helpers_migrations import HELPERS_MIGRATIONS
@@ -23,6 +25,8 @@ class HelpersModule(Module):
 
     name = "journal.core.helpers"
     policies = [StartNamesModelPolicy]
+    needs = [JobWorkNeeds]
+    effects = [JobReportEffect]
     seed_reason = "demo programs have no outages"
     move_reason = "version 4 had no helpers"
     requires_engine = ">=5,<6"

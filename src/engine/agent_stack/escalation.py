@@ -21,5 +21,6 @@ class Escalation:
         return block_id is not None and block_id in self.block_ids
 
     # a Working frame whose stop answer it names rests the agent's next stop; a new constraint still refuses
+    # by the frame's generation, unique to its work, since the stored row keeps the generation alone
     def defers_work(self, key: NeedKey) -> bool:
-        return key in self.work_keys
+        return key.generation in {work_key.generation for work_key in self.work_keys}

@@ -37,6 +37,8 @@ class ContributionSlices:
             return ADMISSION_SLICE
         if issubclass(contribution, WakeCause):
             return WAITING_SLICE
+        if issubclass(contribution, Effect) and contribution.completes_work:
+            return f"working.{agent_type}"
         return LINES_SLICE
 
     @staticmethod
