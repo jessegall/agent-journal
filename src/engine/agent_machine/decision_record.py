@@ -1,0 +1,52 @@
+from collections.abc import Sequence
+from dataclasses import dataclass
+
+from engine.agent_stack.answer_basis import AnswerBasis
+from engine.agent_stack.reason import Reason
+from engine.agent_machine.contracts.effect import Effect
+from engine.agent_machine.decision import Decision
+from engine.agent_machine.hold_plan import HoldPlan
+from engine.agent_machine.record.block_closing import BlockClosing
+from engine.agent_machine.record.decision_inputs import DecisionInputs
+from engine.agent_machine.record.event_identity import EventIdentity
+from engine.agent_machine.record.intent import Intent
+from engine.agent_machine.record.line import Line
+from engine.agent_machine.record.printed_part import PrintedPart
+from engine.agent_machine.record.question import Question
+from engine.agent_machine.record.refusal_counts import RefusalCounts
+from engine.agent_machine.record.rewrite import Rewrite
+from engine.agent_machine.record.stack_move import StackMove
+from engine.agent_machine.record.stop_check import StopCheck
+from engine.agent_machine.record.wake_change import WakeChange
+
+
+@dataclass(frozen=True)
+class DecisionRecord:
+    """The one answer to an agent event: what was decided, what runs, what moved and every reason that did not win."""
+
+    identity: EventIdentity
+    action: Question
+    decision: Decision
+    shown_reason: Reason
+    lost_reasons: Sequence[Reason]
+    rewrite: Rewrite
+    lines: Sequence[Line]
+    unconditional_effects: Sequence[Effect]
+    admission_effects: Sequence[Effect]
+    after_commit: Sequence[Intent]
+    terminal: str
+    moves: Sequence[StackMove]
+    blocks_opened: Sequence[HoldPlan]
+    blocks_closed: Sequence[BlockClosing]
+    waiting_lines: Sequence[Line]
+    stop_checks: Sequence[StopCheck]
+    counts: RefusalCounts
+    wake: WakeChange
+    basis: AnswerBasis
+    printing: Sequence[PrintedPart]
+    inputs: DecisionInputs
+
+    def effects(self) -> list[Effect]:
+        if self.decision.admits():
+            return [*self.unconditional_effects, *self.admission_effects]
+        return list(self.unconditional_effects)
