@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from typing import ClassVar
 
 from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.contracts.effect import Effect
@@ -30,6 +31,8 @@ class JobReportEffect(Effect):
 
     events = tuple([HookEventName.STOP])
     agent_types = [HELPER_TYPE]
+    # the work stop under which this type's allowed stop hands its job in
+    report_contract: ClassVar[WorkStop] = WorkStop.HANDOVER
     replaced_rules = tuple([REPORT_RULE])
     timing = EffectTiming.ON_ADMISSION
     is_required = True
@@ -42,7 +45,7 @@ class JobReportEffect(Effect):
     def commands(self, view: AgentView, record: DecisionRecord) -> Sequence[Command[object]]:
         event = record.action.event
         jobs = [need.state.work for need in view.needs if isinstance(need.state, Working) and need.state.work.is_job()]
-        if event is None or not jobs or view.work_stop is not WorkStop.HANDOVER or not self.is_report_stop(view):
+        if event is None or not jobs or view.work_stop is not self.report_contract or not self.is_report_stop(view):
             return []
         helper = self.agents.find(view.agent.agent_id)
         if helper.parent_id is None:

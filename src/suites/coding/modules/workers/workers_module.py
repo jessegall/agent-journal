@@ -1,3 +1,5 @@
+from suites.coding.modules.workers.effects.merge_job_report_effect import MergeJobReportEffect
+from suites.coding.modules.workers.needs.merge_job_needs import MergeJobNeeds
 from suites.coding.modules.workers.listeners.new_unit_pin_listener import NewUnitPinListener
 from suites.coding.modules.workers.listeners.worktree_step_listener import WorktreeStepListener
 from suites.coding.modules.workers.listeners.proof_step_listener import ProofStepListener
@@ -134,8 +136,8 @@ class WorkersModule(Module):
     """
 
     name = "journal.suites.coding.workers"
-    effects = [RequestCompactionEffect, InactiveHelperEffect, PhaseTestEffect, RecordTodoListEffect]
-    needs = [CompactionNeeds, DeliveredWorkStopNeeds, UnmergedWorkerNeeds, WorkerStatusFirstNeeds]
+    effects = [MergeJobReportEffect, RequestCompactionEffect, InactiveHelperEffect, PhaseTestEffect, RecordTodoListEffect]
+    needs = [MergeJobNeeds, CompactionNeeds, DeliveredWorkStopNeeds, UnmergedWorkerNeeds, WorkerStatusFirstNeeds]
     lines = [ContextStopNowLines, InactiveHelperLines, MergeCheckoutLines, SmallBatchLines, StoppedWorkerLines, UnmergedWorkerLines, UnstartedWorkerLines, WorkerLogDueLines, WorkersOutLines]
     policies = [ProvedDeliveryPolicy, ContextHardLimitPolicy, CheckoutWriteCodePolicy, DispatchAllowancePolicy, PhaseTestPolicy, ProtectedFolderPolicy, ReadonlyHelperAllowancePolicy, WorkerFilePolicy, WorkerOutsideLinkPolicy, WorkerReadPolicy, WorkerReusePolicy, WorkerTestCountPolicy, WorkerTestLinePolicy]
     profiles = WORKER_PROFILES

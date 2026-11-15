@@ -85,10 +85,12 @@ src/core/modules/helpers/commands/end_provider_outages/end_provider_outages_hand
 src/core/modules/helpers/commands/start_unstarted_jobs/start_unstarted_jobs_handler.py:every open job that never started is started again
 src/core/modules/helpers/listeners/helper_resume_listener.py:the resume reaches every ended child helper of the agent with an open job
 src/core/modules/helpers/listeners/new_main_helpers_listener.py:a new main agent takes over every helper and report line of an ended one
+src/core/modules/helpers/needs/job_work_needs.py:the ended jobs whose frames one step takes off one helper's stack, one at most
 src/core/modules/helpers/support/agent_job_counts.py:The agents that ran a helper job or were assigned a task in the counted days, each read once to name its type and model.
 src/core/modules/helpers/support/agent_use.py:The helpers of every type that are not retired, which the kept limit of each agent type bounds.
 src/core/modules/helpers/support/kept_helpers.py:every kept helper of a profile is checked for an idle one
 src/core/modules/helpers/support/program_states.py:the state of a program comes from every outage it had, latest end first
+src/core/modules/helpers/ticks/kept_report_retries.py:the jobs whose report could not be saved are a few at a time
 src/core/modules/helpers/ticks/unstarted_job_starts.py:the tick looks for every environment with an open job that never started
 src/core/modules/library/commands/unpair_library/unpair_library_handler.py:unpairing the library deletes every copy taken from it
 src/core/modules/library/support/copy_statuses.py:the status list covers every copy taken from the library
@@ -155,6 +157,7 @@ src/core/modules/processes/listeners/booted_runs_listener.py:at a start every ru
 src/core/modules/processes/listeners/ended_agent_runs_listener.py:an ended agent leaves every run it still has running orphaned
 src/core/modules/processes/listeners/process_removal_listener.py:every reader request that sampled a removed process loses its sample
 src/core/modules/processes/listeners/reader_request_complete_listener.py:a completed request gives its reader to every part that waited for it
+src/core/modules/processes/needs/long_run_dock_needs.py:the outputs of the runs one agent has docked, a few at most
 src/core/modules/processes/needs/watched_run_needs.py:the open watches of the agents one step reads, a few each
 src/core/modules/processes/queries/output_query.py:the output of every process asked about is read
 src/core/modules/processes/queries/process_part_query.py:a run is judged by all of its parts, and one shell line may have more than fifty
@@ -202,6 +205,7 @@ src/core/modules/tasks/commands/unassign_agent_tasks/unassign_agent_tasks_handle
 src/core/modules/tasks/guards/task_tag_word_guard.py:the refusal lists every tag word in use, in the order of the words
 src/core/modules/tasks/listeners/dependency_remover_listener.py:a removed task takes every dependency it is part of with it
 src/core/modules/tasks/listeners/task_tag_remover_listener.py:a deleted task takes every tag it carries with it
+src/core/modules/tasks/needs/task_work_needs.py:the ended tasks whose frames one step takes off one agent's stack, a few at most
 src/core/modules/tasks/queries/task_query.py:an agent's current tasks are every task it holds started, which its open-task setting bounds
 src/core/modules/tasks/queries/task_query.py:the tasks assigned to an agent are its whole unit of work, which can hold more than fifty tasks
 src/core/modules/tasks/rules/unopenable_block_rule.py:every task the agent blocked by hand is checked for a review of its block
@@ -258,6 +262,7 @@ src/suites/coding/modules/workers/listeners/boot_interrupted_cuts_listener.py:ev
 src/suites/coding/modules/workers/listeners/worker_job_source_listener.py:every source not yet started is matched against the delivered line
 src/suites/coding/modules/workers/listeners/worker_move_mark_listener.py:a worker's unit is every task assigned to it, which can hold more than fifty
 src/suites/coding/modules/workers/listeners/worker_process_removal_listener.py:removed processes leave every operation, line and worktree that pointed at them
+src/suites/coding/modules/workers/needs/merge_job_needs.py:the merges the mergers of one step started that have not ended, one or two each
 src/suites/coding/modules/workers/queries/proof_query.py:every proof of the worktree or tasks asked about counts
 src/suites/coding/modules/workers/queries/worktree_query.py:every worktree asked about is read, the open ones and the removed ones a merge or a folder needs
 src/suites/coding/modules/workers/rules/delivered_work_stop_rule.py:the main agent checks every proof a worker delivered
