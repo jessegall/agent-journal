@@ -35,3 +35,11 @@ def test_an_agent_cannot_switch_the_setting_on_and_its_request_waits_for_the_per
     story.expect_rows(story.run(SWITCH_ON, actor=story.agent).code != 0)
     story.expect_refusal(save_preset("Mine"), REQUESTED, actor=story.agent)
     story.expect_rows(requests(story)[-1].state is ApprovalState.OPEN)
+
+
+def test_the_setting_switched_on_for_the_environment_alone_accepts_a_request_at_once(new_story):
+    story = new_story(NOTES, fixture=UserJoined)
+    story.expect_success(f"setting set {AUTOMATIC_APPROVAL} true --environment main", actor=story.user)
+    story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
+    story.expect_text(f"agent resume {agent_number(story, story.agent.id)} --reason needed", "the setting Accept every approval accepted approval", actor=story.agent)
+    story.expect_rows(requests(story)[0].state is ApprovalState.ACCEPTED, story.row(Agent, story.agent.id).paused_at is None)
