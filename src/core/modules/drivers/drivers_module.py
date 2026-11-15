@@ -1,3 +1,4 @@
+from core.modules.drivers.transforms.project_hook_transform import ProjectHookTransform
 from core.modules.drivers.lines.continued_session_lines import ContinuedSessionLines
 from core.modules.drivers.lines.foreign_hooks_lines import ForeignHooksLines
 from core.modules.drivers.lines.long_output_lines import LongOutputLines
@@ -316,6 +317,7 @@ class DriversModule(Module):
     through the suites, drivers and rules of the installed modules."""
 
     name = "journal.core.drivers"
+    transforms = [ProjectHookTransform]
     effects = [ForeignHooksEffect, SafeguardsStopEffect]
     policies = [DatabaseFilePolicy, ForeignHooksPolicy, PanicFilePolicy, PrivateCorpusPolicy, TypeCommandsPolicy]
     lines = [ContinuedSessionLines, ForeignHooksLines, LongOutputLines, OpeningLinesLines, RepeatedFileReadLines, TakeoverLines]

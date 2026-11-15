@@ -1,3 +1,4 @@
+from core.modules.aliases.transforms.alias_transform import AliasTransform
 from core.modules.aliases.policies.alias_expansion_policy import AliasExpansionPolicy
 from core.modules.aliases.policies.saved_command_policy import SavedCommandPolicy
 from core.modules.aliases.policies.unknown_command_policy import UnknownCommandPolicy
@@ -55,6 +56,7 @@ class AliasesModule(Module):
     """Adds aliases: words of the project's own that run a shell line, `journal <name> [args]`."""
 
     name = "journal.core.aliases"
+    transforms = [AliasTransform]
     policies = [AliasExpansionPolicy, SavedCommandPolicy, UnknownCommandPolicy]
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.processes", "journal.core.plugins", "journal.core.drivers"]

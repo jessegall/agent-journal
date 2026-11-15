@@ -1,3 +1,4 @@
+from core.modules.processes.transforms.runner_transform import RunnerTransform
 from core.modules.processes.lines.alias_suggestion_lines import AliasSuggestionLines
 from core.modules.processes.lines.ended_output_line_lines import EndedOutputLineLines
 from core.modules.processes.lines.orphan_process_lines import OrphanProcessLines
@@ -310,6 +311,7 @@ class ProcessesModule(Module):
     output."""
 
     name = "journal.core.processes"
+    transforms = [RunnerTransform]
     needs = [LongRunDockNeeds, ReaderRequestNeeds, SilentRunBlockNeeds]
     effects = [LeftoverRunEffect, LongRunDockEffect, WatchLinesEffect]
     policies = [FolderChangePolicy, HandMadeMonitorPolicy, JournalChainPolicy, JournalPipePolicy, ReadCommandOutputPolicy, ReadingPolicy, RetryLoopPolicy, SleepPollPolicy]

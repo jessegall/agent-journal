@@ -8,9 +8,9 @@ from engine.agent_stack.stack import Stack
 from engine.agent_stack.states.pause_cause import PauseCause
 from engine.agent_stack.states.stopped import Stopped
 from engine.agent_machine.agent_view import AgentView
+from engine.provider.providers import Providers
 from engine.agent_machine.contracts.grant import Grant
 from engine.agent_machine.contracts.grant_ledger import GrantLedger
-from engine.agent_machine.capabilities import Capabilities
 from engine.agent_machine.driver import Driver
 from engine.agent_machine.needs.agent_reference import AgentReference
 from engine.agent_machine.needs.ended_fact import EndedFact
@@ -51,7 +51,8 @@ class StoredAgentViewReader(AgentViewReader):
     conditions and the program's capabilities are read by the phases that port them; until then the view
     holds none."""
 
-    def __init__(self, agents: AgentRows, queries: Queries, settings: SettingValues, hook_calls: HookCallQuery, finder: ModuleFinder, clock: Clock, grant_store: GrantLedger) -> None:
+    def __init__(self, agents: AgentRows, queries: Queries, settings: SettingValues, hook_calls: HookCallQuery, finder: ModuleFinder, clock: Clock, grant_store: GrantLedger, providers: Providers) -> None:
+        self.providers = providers
         self.agents, self.queries, self.settings, self.hook_calls, self.finder, self.clock = agents, queries, settings, hook_calls, finder, clock
         self.grant_store = grant_store
 
@@ -69,7 +70,7 @@ class StoredAgentViewReader(AgentViewReader):
             escalation=escalation, settings={key: self.settings.number(key) for key in (STOP_LIMIT_SETTING, TOOL_LIMIT_SETTING)},
             is_resting=self.hook_calls.has_ended_turn(agent_id), pinned_slices=row.pinned_slices if row is not None else (),
             table_digest=row.table_digest if row is not None else "", work_stop=driver.work_stop, responder=driver.responder, rank_order=driver.rank_order,
-            depth_limit=driver.depth_limit, program=Capabilities(), counts=counts, block_outcomes={})
+            depth_limit=driver.depth_limit, program=self.providers.provider(agent.program).capabilities(), counts=counts, block_outcomes={})
 
     def grants(self, agent: AgentReference) -> tuple[Grant, ...]:
         return tuple(self.grant_store.usable_grants([agent]).get(agent.agent_id, ()))
