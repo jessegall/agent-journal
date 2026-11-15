@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from uuid import uuid4
 
 from engine.actor.actor import Actor
 from engine.enums.sandbox_level import SandboxLevel
@@ -59,6 +60,9 @@ class Process(EnvironmentScoped, Model):
     execution_class: str = ""
     first_priority: ExecutionPriority = ExecutionPriority.AGENT
     raised_at: Timestamp | None = None
+    # the token the runner claims the run with once, and when it did, so the same wrapped line starts one shell
+    claim_token: str = field(default_factory=lambda: uuid4().hex)
+    claimed_at: Timestamp | None = None
 
     def ending_phrase(self) -> str:
         if self.expired_at is not None:

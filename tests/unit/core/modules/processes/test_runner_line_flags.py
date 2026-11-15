@@ -6,8 +6,8 @@ from core.modules.processes.support.foreground_run import ForegroundRun
 from core.modules.processes.support.runner_line import MOST_OUTPUT_VARIABLE, READ_FLAGS_VARIABLE, READ_FOLDERS_VARIABLE, RunnerLine
 
 
-def built(run: ForegroundRun) -> list[str]:
-    return shlex.split(RunnerLine.build(Path("/bin/journal-run"), 7, run, "npm test", "session"))
+def built(run: ForegroundRun, claim_token: str = "") -> list[str]:
+    return shlex.split(RunnerLine.build(Path("/bin/journal-run"), 7, claim_token, run, "npm test", "session"))
 
 
 def variable(tokens: list[str], name: str) -> str | None:
@@ -48,3 +48,6 @@ def test_the_line_stays_as_the_agent_wrote_it():
     assert built(ForegroundRun(15, False))[-1] == "npm test"
 
 
+def test_a_prepared_runs_token_goes_to_the_runner_as_its_claim():
+    tokens = built(ForegroundRun(15, False), "c0ffee")
+    assert tokens[tokens.index("--claim") + 1] == "c0ffee" and tokens.index("--claim") < tokens.index("--")

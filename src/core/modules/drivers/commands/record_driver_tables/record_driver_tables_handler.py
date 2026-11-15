@@ -22,7 +22,8 @@ class RecordDriverTablesHandler(Handler[RecordDriverTables, None]):
 
     def handle(self, command: RecordDriverTables, context: Context) -> None:
         digests = [table.digest() for table in command.tables]
-        recorded = {(row.driver_name, row.digest) for row in self.queries.query(DriverTable).matching(Among("digest", digests)).every_row(RECORDED_REASON)}
+        names = [table.driver for table in command.tables]
+        recorded = {(row.driver_name, row.digest) for row in self.queries.query(DriverTable).matching(Among("driver_name", names)).matching(Among("digest", digests)).every_row(RECORDED_REASON)}
         for table in command.tables:
             if (table.driver, table.digest()) not in recorded:
                 self.repository.save(DriverTable(driver_name=table.driver, digest=table.digest(), compiled_at=context.timestamp,

@@ -1,3 +1,4 @@
+from tests.stories.support.story_checks import without_claim
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_WAIT
 from engine.sandbox.shell_sandbox import ShellSandbox
 from core.modules.processes.support.stock_reader import STOCK_READERS
@@ -81,5 +82,5 @@ def test_a_chain_of_reads_and_writes_goes_through_the_runner_as_written(played):
 
 
 def expect_updated_input_hook_5(story, text, item, expected) -> None:
-    actual = dict(story.hook(text, with_parse_error(item)).updated_input)
+    actual = without_claim(story.hook(text, with_parse_error(item)).updated_input)
     assert actual == expected, actual

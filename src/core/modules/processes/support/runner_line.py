@@ -35,7 +35,7 @@ class RunnerLine:
         return None
 
     @staticmethod
-    def build(runner: Path, process_id: int, run: ForegroundRun, line: str, session: str, checkout: Checkout | None = None) -> str:
+    def build(runner: Path, process_id: int, claim_token: str, run: ForegroundRun, line: str, session: str, checkout: Checkout | None = None) -> str:
         background = " --background" if run.background else ""
         background += f" --aliases {shlex.quote(','.join(run.aliases))}" if run.aliases else ""
         background += " --queue" if run.queued else ""
@@ -52,4 +52,5 @@ class RunnerLine:
         variables += f" {PROGRESS_COUNT_VARIABLE}={shlex.quote(run.progress_count_line)} {PROGRESS_POSITION_VARIABLE}={run.progress_count_position} {PROGRESS_PATTERN_VARIABLE}={shlex.quote(run.progress_count_pattern)}" if run.progress_count_line else ""
         variables += "".join(f" {name}={shlex.quote(value)}" for name, value in checkout.root_variables().items()) if checkout is not None else ""
         session_variable = f"{SESSION_VARIABLE}={shlex.quote(session)} " if session else ""
-        return f"{session_variable}{RUNNER_VARIABLE}={process_id}{variables} {shlex.quote(str(runner))} --process {process_id} --limit {run.seconds}{background} -- {shlex.quote(line)}"
+        claim = f" --claim {shlex.quote(claim_token)}" if claim_token else ""
+        return f"{session_variable}{RUNNER_VARIABLE}={process_id}{variables} {shlex.quote(str(runner))} --process {process_id} --limit {run.seconds}{claim}{background} -- {shlex.quote(line)}"

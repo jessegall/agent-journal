@@ -4,6 +4,7 @@ from core.modules.environments.models.environment import Environment
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
 from core.modules.processes.models.process_part import ProcessPart
 from engine.query.queries import Queries
+from tests.stories.support.story_checks import without_claim
 from datetime import timedelta
 
 import shlex
@@ -71,7 +72,8 @@ def runner_line(story: Story, process_id: int, line: str, limit: int = 15, backg
 
 
 def expect_rewritten(reply: HookReply, line: str) -> None:
-    assert dict(reply.updated_input) == {"command": line}, f"got  {reply.updated_input.get('command')}\nwant {line}"
+    actual = without_claim(reply.updated_input)
+    assert actual == {"command": line}, f"got  {actual.get('command')}\nwant {line}"
 
 
 def monitor(command: str) -> HookSample:

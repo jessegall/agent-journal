@@ -15,6 +15,7 @@ import (
 type Flags struct {
 	Count         string
 	Process       int
+	Claim         string
 	Limit         int
 	Background    bool
 	Queue         bool
@@ -163,6 +164,12 @@ func ParseFlags(arguments []string) (Flags, error) {
 			}
 			index++
 			flags.Count = arguments[index]
+		case "--claim":
+			if index+1 >= len(arguments) {
+				return flags, fmt.Errorf("%s needs a value", argument)
+			}
+			index++
+			flags.Claim = arguments[index]
 		case "--aliases":
 			if index+1 >= len(arguments) {
 				return flags, fmt.Errorf("%s needs a value", argument)

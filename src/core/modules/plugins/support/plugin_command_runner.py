@@ -50,7 +50,7 @@ class PluginCommandRunner:
             raise Refusal(f"the journal has no runner at {self.runner.path}", "install it again")
         start = StartProcess.single_part(agent_id, line, str(checkout.root), self.category(plugin, category), RUN_LIMIT_SECONDS, plugin, category)
         process = self.bus.run(start, actor, environment_id=self.queries.query(Agent).find(agent_id).environment_id)
-        runner_line = RunnerLine.build(self.runner.path, process.id, self.foreground_run(checkout, is_readonly, plugin), line, "", checkout)
+        runner_line = RunnerLine.build(self.runner.path, process.id, process.claim_token, self.foreground_run(checkout, is_readonly, plugin), line, "", checkout)
         running = subprocess.Popen(["sh", "-c", runner_line], cwd=checkout.root, env=self.run_environment(plugin, agent_id), stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                    text=True, start_new_session=True)
         self.scripts.start(running, plugin, RUN_KEY, EventForm.COMMIT, started_at)

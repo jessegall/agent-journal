@@ -21,5 +21,5 @@ class TriggerActionProcess:
     def start(self, action: TriggerExtraAction, event: LoggedEvent) -> None:
         agent = self.queries.query(Agent).find(event.actor_id)
         process = self.bus.run(StartTriggerAction(event.row_id, agent.id, action), self.actors.actor("journal.core.triggers"), cause_id=event.id, environment_id=agent.environment_id)
-        line = RunnerLine.build(self.runner.path, process.id, ForegroundRun(0, True), process.line, agent.session, self.checkouts.checkout(agent.id))
+        line = RunnerLine.build(self.runner.path, process.id, process.claim_token, ForegroundRun(0, True), process.line, agent.session, self.checkouts.checkout(agent.id))
         subprocess.Popen(["sh", "-c", line], cwd=process.folder, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)

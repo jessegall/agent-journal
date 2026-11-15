@@ -1,3 +1,4 @@
+import re
 from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.provider.managed_hooks import ManagedHooks
@@ -130,8 +131,16 @@ def expect_program_hooks_3(path, expected) -> None:
     assert actual == expected, actual
 
 
+# each prepared run's claim token is random, so a line is compared as written with the token left out
+CLAIM_FLAG = re.compile(r" --claim [0-9a-f]+")
+
+
+def without_claim(updated_input) -> dict:
+    return {key: CLAIM_FLAG.sub("", value) if isinstance(value, str) else value for key, value in dict(updated_input).items()}
+
+
 def expect_updated_input_hook(story, text, item, expected) -> None:
-    actual = dict(story.hook(text, item).updated_input)
+    actual = without_claim(story.hook(text, item).updated_input)
     assert actual == expected, actual
 
 
@@ -184,7 +193,7 @@ def expect_refusal_reply(reply, expected) -> None:
 
 
 def expect_updated_input_reply(reply, expected) -> None:
-    actual = dict(reply.updated_input)
+    actual = without_claim(reply.updated_input)
     assert actual == expected, actual
 
 

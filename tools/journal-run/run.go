@@ -23,6 +23,7 @@ type Options struct {
 	ProgressPattern      string
 	Listing              ListingOptions
 	Process              int
+	Claim                string
 	LimitSeconds         int
 	Background           bool
 	Queue                bool
@@ -69,6 +70,13 @@ func Run(options Options, client Client, stdout io.Writer) int {
 	}
 	if !client.Reachable() {
 		return Bypass(options, stdout)
+	}
+	// a prepared run is claimed once before its shell starts, so the same wrapped line run twice starts one shell
+	if options.Claim != "" {
+		if err := client.Run("process", "claim", strconv.Itoa(options.Process), "--token", options.Claim); err != nil {
+			fmt.Fprintf(stdout, "process %d was not started again: %v\n", options.Process, err)
+			return 125
+		}
 	}
 	if options.CapCharacters == 0 {
 		options.CapCharacters = DefaultCapCharacters
