@@ -1,0 +1,34 @@
+from argparse import ArgumentParser, Namespace
+
+from engine.agent_step.frame_codec import FrameCodec
+from engine.caller.caller import Caller
+from engine.query.queries import Queries
+from engine.subcommand.read_subcommand import ReadSubcommand
+from core.modules.drivers.models.agent_stack import AgentStack
+from core.modules.drivers.models.agent_stack_move import AgentStackMove
+
+MOVES_SHOWN = 20
+
+
+class DriverStackSubcommand(ReadSubcommand[tuple[str, ...]]):
+    """`journal driver stack <agent> [--page n]`: an agent's stack from the bottom with when each frame
+    entered, then its moves, newest first, a page at a time."""
+
+    cli_name = "driver"
+    name = "stack"
+
+    def __init__(self, queries: Queries) -> None:
+        self.queries = queries
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument("agent", type=int)
+        parser.add_argument("--page", type=int, default=1)
+
+    def read(self, arguments: Namespace, caller: Caller) -> tuple[str, ...]:
+        row = self.queries.query(AgentStack).filter(session_agent_id=arguments.agent).first()
+        if row is None:
+            return tuple([f"agent {arguments.agent} has no stack yet: its first step writes it"])
+        frames = [f"{type(frame.state).__name__} {frame.need_key.generation} since {frame.entered_at.isoformat()}" for frame in FrameCodec.decoded(row.frames)]
+        moves = self.queries.query(AgentStackMove).filter(session_agent_id=arguments.agent).newest().page(arguments.page, MOVES_SHOWN)
+        return (f"{row.driver_name}, version {row.version}, stops refused {row.stop_refusals}, tool calls refused {row.tool_refusals}", *frames,
+                "moves, newest first:", *(f"{move.move_type} {move.frame_key} {move.reason_text}" for move in moves.rows))

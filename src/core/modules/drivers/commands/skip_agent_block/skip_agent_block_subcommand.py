@@ -9,8 +9,8 @@ from core.modules.drivers.models.agent_block import AgentBlock
 
 
 class SkipAgentBlockSubcommand(Subcommand[CloseAgentBlock, AgentBlock]):
-    """`journal agent-block skip <n> --reason <why>`: leaves what a block waits for undone, saying why; the chat
-    shows it."""
+    """`journal agent-block skip <n> --reason <why>`: leaves what a block waits for undone, saying why; the
+    chat shows it."""
 
     cli_name = "agent-block"
     name = "skip"

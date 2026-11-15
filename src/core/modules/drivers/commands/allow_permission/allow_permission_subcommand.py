@@ -6,7 +6,8 @@ from core.modules.drivers.commands.support.change_permission_request_subcommand 
 
 
 class AllowPermissionSubcommand(ChangePermissionRequestSubcommand[AllowPermission]):
-    """`journal permission allow <request>`: the main agent, or a user, answers an agent's request for leave once."""
+    """`journal permission allow <request>`: the main agent, or a user, answers an agent's request for leave
+    once."""
 
     cli_name = "permission"
     name = "allow"

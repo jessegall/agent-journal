@@ -1,3 +1,4 @@
+from core.modules.usage.support.agent_stack_summaries import AgentStackSummaries
 from engine.query.conditions.is_null import IsNull
 from pathlib import Path
 from argparse import ArgumentParser, Namespace
@@ -40,7 +41,9 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
     name = "cards"
     environment_refusal = "the agents are shown for one environment"
 
-    def __init__(self, queries: Queries, activity: AgentActivity, profiles: ProfileFiles, providers: Providers, folders: AgentFolders, usage: UsageAgentsSubcommand, registry: Registry) -> None:
+    def __init__(self, queries: Queries, activity: AgentActivity, profiles: ProfileFiles, providers: Providers, folders: AgentFolders, usage: UsageAgentsSubcommand, registry: Registry,
+                 stacks: AgentStackSummaries) -> None:
+        self.stacks = stacks
         self.queries, self.activity, self.profiles = queries, activity, profiles
         self.providers, self.folders = providers, folders
         self.usage = usage
@@ -113,9 +116,11 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         account = self.usage.files.plan_windows(statuses)
         sandboxes = self.usage.sandbox.sandboxed_among(tuple(agents.values()))
         merges = self.usage.merged_work(page.rows)
+        stacks = self.stacks.summaries(tuple(row.id for row in page.rows))
         return Page(tuple(AgentListingState(**vars(row), state=states.get(row.id, AgentListState.RETIRED), standing=agents[row.id].standing.value,
                                            resume_reason=self.resume_reason(agents[row.id], *locations[row.id]) if row.id in idle else None,
                                            facts=self.usage.facts(row, titles, pending.get(row.id), statuses[row.session], account, sandboxes[row.id], merges.get(row.id)).json(),
+                                           driver=stacks.get(row.id),
                                            job_command=job_commands.get(row.role, ()),
                                            job_task_flag=task_flags.get(row.role, "")) for row in page.rows),
                     page.number, page.size, page.total)

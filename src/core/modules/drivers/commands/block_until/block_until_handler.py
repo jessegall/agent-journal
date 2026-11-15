@@ -14,8 +14,8 @@ from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
 
 
 class BlockUntilHandler(Handler[BlockUntil, AgentBlock]):
-    """Opens a block, or brings the open one with the same line up to date with its words; a block on a row that does
-    not exist is refused, since it could never close."""
+    """Opens a block, or brings the open one with the same line up to date with its words; a block on a row
+    that does not exist is refused, since it could never close."""
 
     command = BlockUntil
 

@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from engine.enums.agent_role import AgentRole
 from engine.time.timestamp import Timestamp
 from core.modules.usage.models.enums.agent_list_state import AgentListState
+from core.modules.usage.support.stack_summary import StackSummary
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -55,5 +56,6 @@ class AgentListingState:
     standing: str
     resume_reason: str | None
     facts: Mapping[str, object]
+    driver: StackSummary | None
     job_command: tuple[str, ...]
     job_task_flag: str

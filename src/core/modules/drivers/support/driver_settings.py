@@ -10,6 +10,9 @@ DRIVER_SETTINGS = f"{MODULE_KEY}.driver."
 HOOK_WAIT_SECONDS = f"{MODULE_KEY}.hook-wait-seconds"
 BLOCK_CARD_SECONDS = f"{MODULE_KEY}.block-card-seconds"
 ALLOWANCE_SETTINGS = f"{MODULE_KEY}.essential."
+ACTIVE_SLICES_SETTING = f"{MODULE_KEY}.active-slices"
+# The parts of the new driver whose phase has passed its gate and so may become active; each phase adds its own.
+READY_SLICES: tuple[str, ...] = ()
 DRIVERS_SETTINGS = [
     SettingValue("suite", "Suite", "The set of agent roles and workflows available in this environment.", SettingType.TEXT, default="", scope=SettingScope.ENVIRONMENT, person_set=True,
                  is_driving=True),
@@ -23,7 +26,7 @@ DRIVERS_SETTINGS = [
                                       is_driving=True)),
     SettingValue("comparison", "Compare the new driver", "Whether the new driver answers every agent event beside the old one, without acting, so the two can be compared.",
                  SettingType.FLAG, default=False, scope=SettingScope.ENVIRONMENT, person_set=True, is_driving=True),
-    SettingValue("live", "Live parts of the new driver", "The parts of the new driver that answer agents in this environment, each optionally for one program.",
+    SettingValue("active-slices", "Active parts of the new driver", "The parts of the new driver that answer agents in this environment, each optionally for one program.",
                  SettingType.LIST, default=(), scope=SettingScope.ENVIRONMENT, person_set=True, is_driving=True),
     SettingValue("most-stop-refusals", "Refused stops before asking", "How many stops of an agent may be refused one after another before its parent or a user is asked.",
                  SettingType.NUMBER, default=5, scope=SettingScope.PROJECT, is_driving=True),

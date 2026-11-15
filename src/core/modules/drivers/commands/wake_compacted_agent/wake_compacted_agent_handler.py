@@ -8,8 +8,8 @@ from core.modules.drivers.support.waiting_line_typing import COMPACTED_WAKE_SOUR
 
 
 class WakeCompactedAgentHandler(WakeAgentHandler[WakeCompactedAgent]):
-    """Saves the wake line for the agent and types it, with the lines that wait, then records on the compaction
-    that its agent was woken."""
+    """Saves the wake line for the agent and types it, with the lines that wait, then records on the
+    compaction that its agent was woken."""
 
     command = WakeCompactedAgent
     wake_nudge = AgentCompactedNudge.declared()

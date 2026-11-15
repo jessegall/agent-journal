@@ -118,3 +118,9 @@ def test_removing_a_module_that_owns_open_blocks_is_refused_unless_a_migration_s
     check = DeclarationCheck([MAIN], [MESSAGES], [PROGRAM], ["main"])
     assert [refusal.owner for refusal in check.removal_refusals(["documents", "pins"], [], CountedOwners())] == ["documents"]
     assert check.removal_refusals(["documents"], ["documents"], CountedOwners()) == []
+
+
+def test_a_rank_key_a_driver_of_that_type_leaves_out_of_its_order_is_refused() -> None:
+    worker = DriverDeclaration("coding.worker", "worker", "coding", (), RankOrder(("messages.show",), ()), WorkStop.REFUSE_WHILE_WORK_REMAINS, Responder.PARENT)
+    texts = [refusal.text() for refusal in DeclarationCheck([MAIN, worker], [MESSAGES], [PROGRAM], ["main", "worker"]).refusals()]
+    assert texts == ["coding.worker: rank key messages.unread of messages.unread-needs: add the rank key to the driver's rank order"]

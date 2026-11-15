@@ -83,7 +83,10 @@ class DeclarationCheck:
                    for module in self.modules for entry in module.contributions if entry.rank and entry.rank not in listed]
         unused = [DeclarationFinding(driver.name, f"rank key {rank}", "no module declares it: remove it from the rank order")
                   for driver in self.drivers for rank in (*driver.rank_order.policies, *driver.rank_order.blocks) if rank not in declared]
-        return [*unknown, *unused]
+        unreached = [DeclarationFinding(driver.name, f"rank key {entry.rank} of {entry.key}", "add the rank key to the driver's rank order")
+                     for driver in self.drivers for module in self.modules for entry in module.contributions
+                     if entry.rank and entry.covers(driver.agent_type) and driver.rank_order.place(entry.rank) == len(driver.rank_order.policies) + len(driver.rank_order.blocks)]
+        return [*unknown, *unused, *unreached]
 
     def key_refusals(self) -> list[DeclarationFinding]:
         owners: dict[tuple[str, str], list[str]] = {}

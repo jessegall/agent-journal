@@ -8,7 +8,8 @@ from core.modules.drivers.models.refusal_skip import RefusalSkip
 
 
 class ConfirmRefusalSkipSubcommand(Subcommand[AnswerRefusalSkip, RefusalSkip]):
-    """`journal refusal confirm <skip> --tried <what>`: confirms a held skip, which then passes the refusal once."""
+    """`journal refusal confirm <skip> --tried <what>`: confirms a held skip, which then passes the refusal
+    once."""
 
     cli_name = "refusal"
     name = "confirm"

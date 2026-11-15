@@ -10,8 +10,8 @@ WINDOW_IDS = 1000
 
 
 class PruneEventsHandler(Handler[PruneEvents, int]):
-    """Deletes, in the oldest window of event ids, the logged changes older than the newest the setting keeps and
-    already passed by every listener: the event log is a rolling log of the newest changes."""
+    """Deletes, in the oldest window of event ids, the logged changes older than the newest the setting keeps
+    and already passed by every listener: the event log is a rolling log of the newest changes."""
 
     command = PruneEvents
 

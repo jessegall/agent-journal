@@ -1129,9 +1129,24 @@
   "merger": "allowed",
   "worker": "refused"
  },
+ "driver active": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
  "driver allow-essential": {
   "helper": "refused",
   "merger": "refused",
+  "worker": "refused"
+ },
+ "driver approve-difference": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "driver attention": {
+  "helper": "allowed",
+  "merger": "allowed",
   "worker": "refused"
  },
  "driver choose": {
@@ -1139,7 +1154,42 @@
   "merger": "refused",
   "worker": "refused"
  },
+ "driver compare": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "driver differences": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "driver pop": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "driver repin": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "driver restore": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "driver set-active": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
  "driver show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "driver stack": {
   "helper": "allowed",
   "merger": "allowed",
   "worker": "refused"
@@ -1150,6 +1200,11 @@
   "worker": "refused"
  },
  "driver states": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "driver table": {
   "helper": "allowed",
   "merger": "allowed",
   "worker": "refused"
@@ -1295,6 +1350,21 @@
   "worker": "refused"
  },
  "environment show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "escalation answer": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "escalation list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "escalation show": {
   "helper": "allowed",
   "merger": "allowed",
   "worker": "refused"

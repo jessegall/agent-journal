@@ -14,8 +14,8 @@ MENU_REASON = "The menu names every environment of the project, a catalogue a us
 
 
 class EnvironmentMenuSubcommand(ReadSubcommand[EnvironmentMenu]):
-    """`journal environment menu`: every environment with its suite and whether a main agent runs in it, oldest
-    first."""
+    """`journal environment menu`: every environment with its suite and whether a main agent runs in it,
+    oldest first."""
 
     cli_name = "environment"
     name = "menu"

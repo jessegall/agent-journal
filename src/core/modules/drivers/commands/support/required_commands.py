@@ -14,8 +14,8 @@ from core.modules.drivers.nudges.required_command_refusal_nudge import RequiredC
 
 
 class RequiredCommands:
-    """Opens a block for each line said that declares the command paying it, once while it stays open: the agent has
-    five tool uses to run the command, and is held after them until it does or skips it."""
+    """Opens a block for each line said that declares the command paying it, once while it stays open: the
+    agent has five tool uses to run the command, and is held after them until it does or skips it."""
 
     def __init__(self, bus: Bus) -> None:
         self.bus = bus

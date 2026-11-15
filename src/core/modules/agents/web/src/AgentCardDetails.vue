@@ -7,6 +7,7 @@ import AgentTaskGroup from "./AgentTaskGroup.vue";
 import TranscriptRows from "./TranscriptRows.vue";
 
 const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, progress: {type: Object, default: null}, waitReason: {type: String, default: ""}, tasks: {type: Array, required: true}, stoppedWithWork: Boolean, open: Boolean});
+const stackLabel = computed(() => [props.row.driver.top, `stops refused ${props.row.driver.stop_refusals}`, `tool calls refused ${props.row.driver.tool_refusals}`, ...(props.row.driver.escalation_id ? [`escalation ${props.row.driver.escalation_id}`] : [])].join(" · "));
 const TASK_STATES = ["started", "blocked", "open", "completed"];
 const ENDED_WITHOUT_REPORT = "It ended without a report";
 const endedReason = computed(() => (props.row.ended_at && props.facts?.job_returned?.startsWith(ENDED_WITHOUT_REPORT) ? props.facts.job_returned : ""));
@@ -89,6 +90,7 @@ watch(() => props.open, (open) => { if (open) readCommand(); }, {immediate: true
                         </template>
                     </SwitchCase>
                 </TabBody>
+                <template v-if="row.driver"><p class="agent-summary">{{ stackLabel }}</p></template>
                 <template v-if="showsCommand"><AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" /></template>
     </div>
 </template>

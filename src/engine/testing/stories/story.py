@@ -409,6 +409,14 @@ class Story(KitRows):
         missing = [text for text in texts if not contains_text(output_text, text)]
         self.expected(not missing, f"{line} printed none of {missing}:\n{outcome.output_text}")
 
+    # What a person reads of an agent's stack on its card: the text of journal driver stack, never the machine's classes.
+    def expect_stack(self, agent: Actor, *texts: ExpectedText) -> None:
+        self.expect_text(f"driver stack {agent.id}", *texts, actor=self.user)
+
+    # What a person reads of the open escalations: the text of journal escalation list.
+    def expect_escalation(self, *texts: ExpectedText) -> None:
+        self.expect_text("escalation list", *texts, actor=self.user)
+
     def expect_no_text(self, line: str, *texts: ExpectedText, actor: Actor | None = None) -> None:
         self.checked(line)
         outcome = self.run(line, actor)

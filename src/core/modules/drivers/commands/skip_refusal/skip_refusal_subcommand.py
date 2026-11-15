@@ -8,8 +8,8 @@ from core.modules.drivers.models.refusal_skip import RefusalSkip
 
 
 class SkipRefusalSubcommand(Subcommand[SkipRefusal, RefusalSkip]):
-    """`journal refusal skip <rule> --reason <why>`: asks to pass the refusal of a rule that just refused you, once;
-    the skip is held until you confirm it with what you tried instead, or withdraw it."""
+    """`journal refusal skip <rule> --reason <why>`: asks to pass the refusal of a rule that just refused you,
+    once; the skip is held until you confirm it with what you tried instead, or withdraw it."""
 
     cli_name = "refusal"
     name = "skip"

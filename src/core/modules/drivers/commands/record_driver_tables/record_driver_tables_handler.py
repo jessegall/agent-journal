@@ -12,8 +12,8 @@ RECORDED_REASON = "the digests of one sync are a handful, one per driver"
 
 
 class RecordDriverTablesHandler(Handler[RecordDriverTables, None]):
-    """Saves a row for each compiled driver table whose driver and digest have no row yet; a digest seen before
-    is never written twice."""
+    """Saves a row for each compiled driver table whose driver and digest have no row yet; a digest seen
+    before is never written twice."""
 
     command = RecordDriverTables
 
