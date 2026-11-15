@@ -30,3 +30,9 @@ def test_a_stop_that_rests_because_an_escalation_defers_a_hold_on_it_hands_nothi
     view = replace(ViewSamples.view("helper", WorkStop.HANDOVER), needs=tuple([JOB]), blocks=tuple([hold]),
                    escalation=Escalation(1, EscalationType.STOPS, Responder.PARENT, (3,), (), 5))
     assert not JobReportEffect.is_report_stop(view)
+
+
+def test_a_stop_under_an_open_escalation_hands_nothing_in_even_when_it_defers_neither_the_job_nor_a_hold():
+    view = replace(ViewSamples.view("helper", WorkStop.HANDOVER), needs=tuple([JOB]),
+                   escalation=Escalation(1, EscalationType.TOOLS, Responder.PARENT, (8,), (), 5))
+    assert not JobReportEffect.is_report_stop(view)
