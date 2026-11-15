@@ -1,3 +1,6 @@
+from suites.coding.modules.workers.effects.request_compaction_effect import RequestCompactionEffect
+from suites.coding.modules.workers.policies.context_hard_limit_policy import ContextHardLimitPolicy
+from suites.coding.modules.workers.needs.compaction_needs import CompactionNeeds
 from suites.coding.modules.workers.policies.checkout_write_code_policy import CheckoutWriteCodePolicy
 from suites.coding.modules.workers.policies.dispatch_allowance_policy import DispatchAllowancePolicy
 from suites.coding.modules.workers.policies.phase_test_policy import PhaseTestPolicy
@@ -126,10 +129,10 @@ class WorkersModule(Module):
     """
 
     name = "journal.suites.coding.workers"
-    effects = [InactiveHelperEffect, PhaseTestEffect, RecordTodoListEffect]
-    needs = [DeliveredWorkStopNeeds, UnmergedWorkerNeeds, WorkerStatusFirstNeeds]
+    effects = [RequestCompactionEffect, InactiveHelperEffect, PhaseTestEffect, RecordTodoListEffect]
+    needs = [CompactionNeeds, DeliveredWorkStopNeeds, UnmergedWorkerNeeds, WorkerStatusFirstNeeds]
     lines = [ContextStopNowLines, InactiveHelperLines, MergeCheckoutLines, SmallBatchLines, StoppedWorkerLines, UnmergedWorkerLines, UnstartedWorkerLines, WorkerLogDueLines, WorkersOutLines]
-    policies = [CheckoutWriteCodePolicy, DispatchAllowancePolicy, PhaseTestPolicy, ProtectedFolderPolicy, ReadonlyHelperAllowancePolicy, WorkerFilePolicy, WorkerOutsideLinkPolicy, WorkerReadPolicy, WorkerReusePolicy, WorkerTestCountPolicy, WorkerTestLinePolicy]
+    policies = [ContextHardLimitPolicy, CheckoutWriteCodePolicy, DispatchAllowancePolicy, PhaseTestPolicy, ProtectedFolderPolicy, ReadonlyHelperAllowancePolicy, WorkerFilePolicy, WorkerOutsideLinkPolicy, WorkerReadPolicy, WorkerReusePolicy, WorkerTestCountPolicy, WorkerTestLinePolicy]
     profiles = WORKER_PROFILES
     helper_types = [Worker, Merger]
     agent_states = [WorkerLogDue]

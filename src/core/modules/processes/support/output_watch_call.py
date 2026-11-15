@@ -1,4 +1,5 @@
 from engine.driver.agent_hook import AgentHook
+from engine.driver.hook_event import HookEvent
 from engine.enums.tool_type import ToolType
 from engine.provider.providers import Providers
 
@@ -13,10 +14,13 @@ class OutputWatchCall:
         self.providers = providers
 
     def is_watch(self, hook: AgentHook) -> bool:
-        tool = hook.event.tool
-        monitor_tool = self.providers.provider(hook.event.program).monitor_tool
+        return self.is_watch_event(hook.event)
+
+    def is_watch_event(self, event: HookEvent) -> bool:
+        tool = event.tool
+        monitor_tool = self.providers.provider(event.program).monitor_tool
         if tool is None or monitor_tool is None or tool.category != monitor_tool:
             return False
         if monitor_tool is ToolType.MONITOR:
-            return str(hook.event.tool_input().get("command", "")).strip().startswith(MONITOR_LINE)
+            return str(event.tool_input().get("command", "")).strip().startswith(MONITOR_LINE)
         return tool.shell is not None and all(part.text.startswith(MONITOR_LINE) for part in tool.shell.parts)
