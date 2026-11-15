@@ -1,3 +1,4 @@
+from core.modules.drivers.support.effect_commands import EffectCommands
 from core.modules.drivers.support.answer_basis_rows import AnswerBasisRows
 from engine.enums.closer_role import CloserRole
 import json
@@ -46,8 +47,9 @@ class StoredStepWriter(StepWriter):
     effects when the step admits (a required one that fails raises and rolls everything back), and the
     wake. A step outside a hook that changed nothing writes nothing."""
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus, database: Database, grant_store: GrantLedger, nudger: Nudger, stacks: AnswerBasisRows) -> None:
-        self.nudger, self.stacks = nudger, stacks
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus, database: Database, grant_store: GrantLedger, nudger: Nudger, stacks: AnswerBasisRows,
+                 effect_commands: EffectCommands) -> None:
+        self.nudger, self.stacks, self.effect_commands = nudger, stacks, effect_commands
         self.grant_store = grant_store
         self.queries, self.repository, self.bus, self.database = queries, repository, bus, database
 
@@ -158,7 +160,7 @@ class StoredStepWriter(StepWriter):
         updated_input: Mapping[str, object] | None = None
         for effect in effects:
             results: list[object] = []
-            for command in effect.commands(view, record):
+            for command in self.effect_commands.of(effect, view, record):
                 try:
                     with self.database.savepoint(type(command).__name__):
                         results.append(self.bus.dispatch(command, context.nested(command)))

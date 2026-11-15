@@ -65,7 +65,8 @@ class MachineAssembly:
         return [self.container.get(cls) for cls, module in self.listed(lists) if self.covers(cls, agent_type) and kept(cls, module)]
 
     def covers(self, contribution: type[Policy] | type[LineSource] | type[Effect] | type[NeedSource], agent_type: str) -> bool:
-        return (not contribution.agent_types or agent_type in contribution.agent_types) and contribution.role_group.has_role(agent_type, self.types)
+        # a type named covers the types built on it, as a rule naming the helper role covers every kind of helper
+        return (not contribution.agent_types or any(key in contribution.agent_types for key in self.types.type_keys(agent_type))) and contribution.role_group.has_role(agent_type, self.types)
 
     def listed(self, lists: Callable[[type[Module]], Sequence[type[Contribution]]]) -> list[tuple[type[Contribution], type[Module]]]:
         return [(cls, module) for module in self.finder.modules() for cls in lists(module)]

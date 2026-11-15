@@ -12,4 +12,4 @@ STOP_RANKS = ("workers.delivered-proofs", "reminders.due")
 MAIN_RANK_ORDER = RankOrder(POLICY_RANKS, ("overview.first", *INSTRUCTION_RANKS, "plans.context", *TASK_START_RANKS, "messages.unanswered", *FILE_CHANGE_RANKS,
                                            "tasks.blocked-review", *STOP_RANKS))
 HELPER_RANK_ORDER = RankOrder(POLICY_RANKS, (*INSTRUCTION_RANKS, *TASK_START_RANKS, "messages.unanswered", *FILE_CHANGE_RANKS, *STOP_RANKS))
-WORKER_RANK_ORDER = RankOrder(POLICY_RANKS, (*INSTRUCTION_RANKS, *TASK_START_RANKS, *FILE_CHANGE_RANKS, *STOP_RANKS))
+WORKER_RANK_ORDER = RankOrder(POLICY_RANKS, (*INSTRUCTION_RANKS, *TASK_START_RANKS, "messages.unanswered", *FILE_CHANGE_RANKS, *STOP_RANKS))

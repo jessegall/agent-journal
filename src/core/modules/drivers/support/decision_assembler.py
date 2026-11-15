@@ -1,3 +1,4 @@
+from core.modules.drivers.support.effect_commands import EffectCommands
 from core.modules.drivers.support.nudge_log import NudgeLog
 from engine.time.clock import Clock
 from engine.enums.line_carrier import LineCarrier
@@ -37,9 +38,9 @@ class DecisionAssembler:
     With no slice in force it is the walk alone."""
 
     def __init__(self, slices: AgentSlices, contribution_slices: ContributionSlices, rule_answers: HookRuleAnswers, reader: AgentViewReader,
-                 assembly: MachineAssembly, bus: Bus, nudges: NudgeLog, clock: Clock) -> None:
+                 assembly: MachineAssembly, bus: Bus, nudges: NudgeLog, clock: Clock, effect_commands: EffectCommands) -> None:
         self.slices, self.contribution_slices, self.rule_answers, self.reader, self.assembly, self.bus = slices, contribution_slices, rule_answers, reader, assembly, bus
-        self.nudges, self.clock = nudges, clock
+        self.nudges, self.clock, self.effect_commands = nudges, clock, effect_commands
 
     def assembled(self, event: HookEvent, agent: Agent, actor: Actor) -> AssembledAnswer:
         with self.bus.scopes.command_scope((), actor, agent.environment_id):
@@ -55,7 +56,7 @@ class DecisionAssembler:
                 return AssembledAnswer(answers)
             view = self.assembly.with_sliced_needs(replace(view, pinned_slices=tuple(sorted(pinned))), question, agent_slices)
             step = self.assembly.sliced_machine(agent.role, agent_slices, WalkAnswerPolicy(answers, self.contribution_slices.blocking_rules())).step(view, question)
-            new_commands = [command for effect in (*step.record.unconditional_effects, *step.record.admission_effects) for command in effect.commands(view, step.record)]
+            new_commands = [command for effect in (*step.record.unconditional_effects, *step.record.admission_effects) for command in self.effect_commands.of(effect, view, step.record)]
         merged = self.merged(answers, step.record, new_commands)
         # the new driver's lines are held back by their intervals and turns as the walk's are
         merged = replace(merged, skipped_lines=self.nudges.skipped_lines(agent.id, merged, self.clock.timestamp()))

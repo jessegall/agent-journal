@@ -297,6 +297,16 @@ class Story(KitRows):
         with self.repeated_work.request():
             handler.handler(self.container)
 
+    # one round of the server's ticker: the listeners of what was written, then the named tick handlers in order
+    def run_ticker_round(self, *labels: str) -> None:
+        self.steps.append(f"ticker round {', '.join(labels)}")
+        with self.repeated_work.request():
+            self.container.get(CommitListenerRunner).run()
+        for label in labels:
+            handler = next(handler for module in ModuleFinder(self.home).modules() for handler in module.tick_handler_declarations() if handler.label == label)
+            with self.repeated_work.request():
+                handler.handler(self.container)
+
     def tick(self, session: str) -> HookReply:
         return self.hook(session, HookSamples.tick())
 

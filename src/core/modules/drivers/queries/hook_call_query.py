@@ -10,6 +10,7 @@ from engine.enums.hook_event_name import HookEventName
 from engine.model.tables import Tables
 from engine.query.conditions.less import Less
 from engine.query.conditions.among import Among
+from engine.query.conditions.excluding import Excluding
 from engine.query.conditions.greater import Greater
 from engine.query.conditions.maximum import Maximum
 from engine.query.conditions.minimum import Minimum
@@ -83,10 +84,12 @@ class HookCallQuery(Query[HookCall]):
         return self.agent(agent_id).filter(hook=HookEventName.SESSION_END).newest().first()
 
     def latest_compaction(self, agent_id: int) -> HookCall | None:
-        return self.agent(agent_id).filter(hook=HookEventName.COMPACT).newest().first()
+        calls = self.agent(agent_id).filter(hook=HookEventName.COMPACT).newest()
+        return self.kept.read_newest(calls, calls.first, name="drivers.latest_compaction")
 
-    def display_calls_after_turn(self, agent_id: int) -> Sequence[HookCall]:
-        latest = self.latest_turn_call(agent_id)
+    # the texts shown since the turn call before this hook's, whose own call is recorded before its effects run
+    def display_calls_after_turn(self, agent_id: int, firing: str) -> Sequence[HookCall]:
+        latest = self.agent(agent_id).matching(Among("hook", TURN_HOOKS)).matching(Excluding(Equal("firing", firing))).newest().first()
         return tuple(self.agent(agent_id).filter(hook=HookEventName.MESSAGE_DISPLAY).matching(Greater("id", latest.id if latest is not None else 0)).every_row(DISPLAY_CALLS_REASON))
 
     def latest_prompt(self, agent_id: int, cutoff_at: Timestamp) -> HookCall | None:

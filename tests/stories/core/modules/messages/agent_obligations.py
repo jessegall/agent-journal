@@ -32,12 +32,14 @@ class HelperBeside(StoryFixture):
 
 
 class WorkerBeside(StoryFixture):
-    """The coding suite's main agent with a worker of its own, session s-worker."""
+    """The coding suite's main agent with a worker of its own, session s-worker, whose task is started."""
 
     parent = UserBuilder
 
     def steps(self, story):
-        story.expect_success(f"agent start {WORKER_SESSION} claude worker --parent {story.agent.id} --environment main", actor=story.user)
+        worker_id = story.new_row_id(f"agent start {WORKER_SESSION} claude worker --parent {story.agent.id} --environment main", story.user)
+        task_id = story.new_row_id("task make 'Fix the cart' --brief 'the cart sums' --environment main", story.user)
+        story.run(f"task start {task_id} --environment main", actor=Actor(worker_id, ActorType.AGENT))
 
 
 def beside_story(new_story):

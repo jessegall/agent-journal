@@ -145,7 +145,7 @@ class AgentMachine:
 
     def lines(self, question: Question, view: AgentView) -> list[Line]:
         event = question.event
-        sources = [source for source in self.line_sources if self.applies(source.agent_types, view) and ((event is not None and event.event in source.events) or (event is None and source.includes_steps))
+        sources = [source for source in self.line_sources if ((event is not None and event.event in source.events) or (event is None and source.includes_steps))
                    and not (source.start_line and event is not None and event.is_resume)]
         lines = [replace(line, source_key=source.replaced_rules[0] if source.replaced_rules else "") for source in sources for line in source.lines(question, view)]
         # a step answers no hook, so its lines wait for the agent's next event or its wake, as at an event its program cannot carry
@@ -155,12 +155,7 @@ class AgentMachine:
 
     def effects(self, question: Question, view: AgentView) -> list[Effect]:
         event = question.event
-        return [effect for effect in self.effect_sources if self.applies(effect.agent_types, view)
-                and ((event is not None and event.event in effect.events) or (event is None and effect.includes_steps))]
-
-    @staticmethod
-    def applies(agent_types: Sequence[str], view: AgentView) -> bool:
-        return not agent_types or view.agent.agent_type in agent_types
+        return [effect for effect in self.effect_sources if ((event is not None and event.event in effect.events) or (event is None and effect.includes_steps))]
 
     @staticmethod
     def closings(view: AgentView) -> list[BlockClosing]:

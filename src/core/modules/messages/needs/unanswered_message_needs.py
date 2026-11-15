@@ -32,7 +32,7 @@ class UnansweredMessageNeeds(NeedSource):
         self.unanswered = unanswered
 
     def needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]:
-        plans = {agent.agent_id: self.plan(agent.agent_id) for agent in agents if agent.agent_type in ANSWERING_TYPES}
+        plans = {agent.agent_id: self.plan(agent.agent_id) for agent in agents}
         return {agent_id: [plan] for agent_id, plan in plans.items() if plan is not None}
 
     def plan(self, agent_id: int) -> BlockPlan | None:

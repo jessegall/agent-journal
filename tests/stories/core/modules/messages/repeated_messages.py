@@ -74,6 +74,8 @@ def test_closing_words_much_like_an_earlier_turns_message_are_held_and_the_agent
     story.run(f'message reply 1 "{FIRST}"', actor=story.agent)
     story.run('message send "And the cart?"', actor=story.user)
     story.hook("s-1", HookSamples.prompt("go on"))
-    shown = story.hook("s-1", HookSamples.message_display(REWORDED))
+    story.hook("s-1", HookSamples.message_display(REWORDED))
+    # a shown text's hook carries no lines, so the line waits for the agent's next hook
+    shown = story.hook("s-1", HookSamples.edit("src/cart.py"))
     expect_value(expected_nudge(RepeatedClosingNudge.declared(), message=3).matches_lines(shown.lines), True)
     expect_value(REWORDED not in story.run("message list", actor=story.user).output_text, True)

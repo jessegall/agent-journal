@@ -44,9 +44,12 @@ MESSAGE_DISPLAY_HOOK = HookSamples.shell("journal message show 1", ShellPart("jo
 # the message's step and its wake are served by their rounds, as the server runs them every few seconds
 def post_message(story, text: str) -> None:
     story.run(f'message send "{text}" --environment main', actor=story.user)
-    story.run_listeners()
-    story.run_tick_handler("agent step round")
-    story.run_tick_handler("agent wake delivery")
+    deliver(story)
+
+
+# the round of the server's ticker that takes a sent message to its agent: its step, then the wake that types its line
+def deliver(story) -> None:
+    story.run_ticker_round("agent step round", "agent wake delivery")
 
 
 class MessagingSession(StoryFixture):
@@ -128,10 +131,10 @@ def test_a_message_reaches_an_agent_that_waits_on_a_question(new_story):
 
 
 def test_a_fresh_session_that_has_not_been_given_a_prompt_is_idle_too(new_story):
-    story = started_story(new_story)
+    story = new_story(SAMPLES, fixture=SessionWithMessage)
     typing = KeptTyping()
     story.replace(TerminalTyping, typing)
-    post_message(story, "Are you there")
+    deliver(story)
     expect_terminal_lines(typing, [f"[journal] {NewMessageNudge.declared().nudge(message=1).text}"])
 
 
@@ -187,10 +190,10 @@ class PromptDuringTerminalLine(KeptTyping):
 
 
 def test_a_line_the_agents_own_hook_took_while_it_was_typed_is_typed_once_and_not_again_after_the_message_is_read(new_story):
-    story = new_story(SAMPLES, fixture=StoppedMessagingTurn)
+    story = new_story(SAMPLES, fixture=StoppedTurnWithMessage)
     typing = PromptDuringTerminalLine(story)
     story.replace(TerminalTyping, typing)
-    post_message(story, "Are you there")
+    deliver(story)
     story.hook("s-1", READ_MESSAGE_HOOK)
     for _ in range(4):
         story.run_listeners()
@@ -211,11 +214,11 @@ class HookDuringTerminalLine(KeptTyping):
 
 
 def test_a_hook_during_the_typing_does_not_give_the_line_too(new_story):
-    story = new_story(SAMPLES, fixture=StoppedMessagingTurn)
+    story = new_story(SAMPLES, fixture=StoppedTurnWithMessage)
     typing = HookDuringTerminalLine(story)
     story.replace(TerminalTyping, typing)
     agent = story.agent
-    post_message(story, "Are you there")
+    deliver(story)
     story.run_listeners()
     expect_terminal_lines(typing, [f"[journal] {NewMessageNudge.declared().nudge(message=1).text}"])
     expect_hook_lines_typing_without_line(typing, "New message 1")
@@ -238,11 +241,10 @@ class BrokenTyping(TerminalTyping):
 
 
 def test_a_line_whose_typing_breaks_goes_to_the_next_hook(new_story):
-    story = stopped_lead_story(new_story)
+    story = new_story(SAMPLES, fixture=StoppedLeadWithMessage)
     story.replace(TerminalTyping, BrokenTyping())
-    post_message(story, "Are you there")
-    story.run_listeners()
-    story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"), "New message 1")
+    deliver(story)
+    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), "New message 1")
 
 
 def test_a_line_left_in_typing_by_a_stopped_server_waits_again_when_the_journal_starts(untyped_idle_message):
@@ -496,10 +498,10 @@ def test_a_line_the_hook_carries_after_a_failed_typing_is_told_once(untyped_mess
 
 
 def test_a_message_read_before_its_line_was_typed_is_never_typed_nor_told_again(new_story):
-    story = stopped_lead_story(new_story)
+    story = new_story(SAMPLES, fixture=StoppedLeadWithMessage)
     typing = RefusingThenTyping()
     story.replace(TerminalTyping, typing)
-    post_message(story, "Are you there")
+    deliver(story)
     story.hook("s-1", READ_MESSAGE_HOOK)
     typing.working = True
     story.advance(timedelta(seconds=11))
@@ -695,3 +697,30 @@ def test_after_an_automatic_compaction_the_turn_goes_on_and_no_line_is_typed(new
     post_message(story, "Are you back")
     story.run_listeners()
     expect_terminal_lines(typing, [])
+
+
+class SessionWithMessage(StoryFixture):
+    """A fresh session the person has sent a message that is not delivered yet."""
+
+    parent = MessagingSession
+
+    def steps(self, story):
+        story.run('message send "Are you there" --environment main', actor=story.user)
+
+
+class StoppedTurnWithMessage(StoryFixture):
+    """A stopped agent the person has sent a message that is not delivered yet."""
+
+    parent = StoppedMessagingTurn
+
+    def steps(self, story):
+        story.run('message send "Are you there" --environment main', actor=story.user)
+
+
+class StoppedLeadWithMessage(StoryFixture):
+    """A stopped lead the person has sent a message that is not delivered yet."""
+
+    parent = StoppedLead
+
+    def steps(self, story):
+        story.run('message send "Are you there" --environment main', actor=story.user)

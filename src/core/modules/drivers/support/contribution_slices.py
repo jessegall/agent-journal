@@ -10,6 +10,7 @@ from engine.agent_stack.states.waiting import Waiting
 from engine.agent_stack.states.working import Working
 from engine.module.module import Module
 from engine.module.module_finder import ModuleFinder
+from engine.helper_type.helper_type_book import HelperTypeBook
 
 # the old rule that let a stop through after repeated refusals, which the escalation of section 4.6 replaces
 REPEATED_STOP_RELEASE = "drivers.repeated-stop-release"
@@ -26,8 +27,8 @@ class ContributionSlices:
     the old rules that stand down for an agent once every slice of the contributions that replace them is in
     force."""
 
-    def __init__(self, finder: ModuleFinder) -> None:
-        self.finder = finder
+    def __init__(self, finder: ModuleFinder, types: HelperTypeBook) -> None:
+        self.finder, self.types = finder, types
 
     @staticmethod
     def slice_name(contribution: type[Contribution], module: type[Module], agent_type: str) -> str:
@@ -74,4 +75,4 @@ class ContributionSlices:
     # replace the old repeated stop release and the old block rule
     def blocked_slices(self, agent_type: str) -> frozenset[str]:
         return frozenset(self.slice_name(source, module, agent_type) for module in self.finder.modules() for source in module.needs
-                         if issubclass(source.state_type, Blocked) and (not source.agent_types or agent_type in source.agent_types))
+                         if issubclass(source.state_type, Blocked) and (not source.agent_types or any(key in source.agent_types for key in self.types.type_keys(agent_type))))

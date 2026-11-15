@@ -85,16 +85,19 @@ def post_target(server, cookie, target, text):
     return server.viewer_line_value(cookie, {"window": "agents.transcript", "environment": "main", "line": ["message", "send", text, "--target-agent", str(agent_number(server.story, target.id))]})
 
 
+# a resting helper is woken by a resume, not a typed line (doc 1310 sections 3.1 and 6.4): its line waits for the resumed session
 @pytest.mark.parametrize("role", ["worker", "helper"])
-def test_a_message_wakes_its_idle_target(targeted_chat, role):
+def test_a_message_wakes_its_idle_target_by_a_resume_and_its_line_waits_for_the_resumed_session(targeted_chat, role):
     server, cookie, typing = targeted_chat
     story = server.story
     target = getattr(story, role)
     end_turn(story, target)
     story.advance(timedelta(seconds=31))
     message = post_target(server, cookie, target, f"Continue the {role} job")
-    story.run_listeners()
-    expect_row(typing, typed=[(target.id, f"[journal] New message {message['id']}: read it")])
+    story.run_ticker_round("agent step round", "agent wake delivery")
+    expect_row(typing, typed=[])
+    story.expect_text(f"agent-line list --agent {target.id} --state waiting --environment main", f"New message {message['id']}: read it", actor=story.user)
+    story.expect_text("agent-wake list --environment main", "resume", actor=story.user)
 
 
 def test_main_ignores_a_workers_unread_message_and_its_limit(targeted_chat):

@@ -8,4 +8,5 @@ class NewMessageNudge(NudgeDeclaration):
     key = "messages.new_message"
     type = NudgeType.STEERING
     text = "New message {message}: read it"
+    plural_text = "{count} new messages: read them"
     turn_limited = False

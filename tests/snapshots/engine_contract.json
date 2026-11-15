@@ -876,7 +876,6 @@
         "identity(view: AgentView, question: Question) -> EventIdentity",
         "lines(self, question: Question, view: AgentView) -> list[Line]",
         "effects(self, question: Question, view: AgentView) -> list[Effect]",
-        "applies(agent_types: Sequence[str], view: AgentView) -> bool",
         "closings(view: AgentView) -> list[BlockClosing]",
         "stop_checks(question: Question, reasons: list[Reason]) -> list[StopCheck]",
         "printing(question: Question, view: AgentView, decision: Decision, rewrite: Rewrite) -> list[EncodedPart]"
@@ -11320,6 +11319,7 @@
         "run_listeners(self) -> None",
         "step(self, name: str) -> object",
         "run_tick_handler(self, label: str) -> None",
+        "run_ticker_round(self) -> None",
         "tick(self, session: str) -> HookReply",
         "busy_database(self) -> Generator[None]",
         "run_tick(self, name: str) -> None",
