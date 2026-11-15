@@ -8,15 +8,16 @@ description: Build a thorough plan with real steps in each phase, one task per s
 A plan is only as good as its tasks. Write it so a worker on a cheaper model who knows nothing else can take one task
 and finish it without having to decide anything for itself.
 
-- When your job names a functional design document, read it whole. Its goal, user stories and phases are your source:
-  turn them into the plan, and do not design it again. When it holds a testing plan for unit tests, those unit tests
-  go in the plan too.
+- When your job names a functional design document, read it whole. Its goal and phases are your source: turn them
+  into the plan, and do not design it again. Its user stories say how the system must behave; they are not tasks.
+- Plan the steps of the change, never its tests: no story books and no test tasks. Which tests to write is the user's
+  to decide.
 
 - Split each phase into its real steps. File one task per step a user could check.
 - A phase with one task needs a reason. `journal plan ready` refuses it until you pass
   `--skip-guard plans.one-task-phase --skip-reason "<why one task is enough>"`; otherwise split the phase.
 - Write each brief so it can be carried out alone: the files to change, what already does part of the work and is
-  reused, the stories to write, the tests to run by name, and the proof that shows each point.
+  reused, and when the step is done, in what the user can check.
 - Say what waits on what. Every task but the plan's first waits on the work it needs: `journal task depend <task> --on <other>`,
   or says why it waits on nothing: `journal task waits-on-nothing <task> --why "<why>"`. A plan with a task that says neither is
   refused at `journal plan ready`. A loop of waits is always refused.
