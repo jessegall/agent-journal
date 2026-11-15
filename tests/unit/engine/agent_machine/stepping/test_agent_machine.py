@@ -237,6 +237,11 @@ def test_the_fifth_stop_refused_by_a_started_task_names_it_and_the_next_stop_res
     assert AgentMachine().step(view(needs=(working(),), escalation=escalation), STOP).record.decision.admits()
     assert not AgentMachine().step(view(needs=(working(WorkType.JOB),), escalation=escalation), STOP).record.decision.admits()
 
+
+def test_a_hold_no_one_can_judge_never_passes_and_asks_a_person_to_repair_it() -> None:
+    record = AgentMachine().step(view(blocks=(block("documents.open", "documents.open"),), block_outcomes={3: ConditionOutcome.UNAVAILABLE}), EDIT).record
+    assert not record.decision.admits() and record.counts.escalation is not None and record.counts.escalation.escalation_type is EscalationType.REPAIR
+
 def test_an_open_escalation_defers_the_stop_scope_of_its_blocks() -> None:
     deferred = Escalation(5, EscalationType.STOPS, Responder.PERSON, (3,), (), 5)
     assert AgentMachine().step(view(blocks=(block("messages.unread", "messages.unread"),), escalation=deferred), STOP).record.decision.admits()

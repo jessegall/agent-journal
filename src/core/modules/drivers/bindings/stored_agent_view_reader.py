@@ -1,3 +1,4 @@
+from core.modules.drivers.support.block_judgement import BlockJudgement
 from core.modules.drivers.models.agent_frame_suppression import AgentFrameSuppression
 from engine.agent_stack.answer_basis import AnswerBasis
 from engine.agent_stack.escalation import Escalation
@@ -53,10 +54,10 @@ class StoredAgentViewReader(AgentViewReader):
     conditions and the program's capabilities are read by the phases that port them; until then the view
     holds none."""
 
-    def __init__(self, agents: AgentRows, queries: Queries, settings: SettingValues, hook_calls: HookCallQuery, finder: ModuleFinder, clock: Clock, grant_store: GrantLedger, providers: Providers) -> None:
+    def __init__(self, agents: AgentRows, queries: Queries, settings: SettingValues, hook_calls: HookCallQuery, finder: ModuleFinder, clock: Clock, grant_store: GrantLedger, providers: Providers, judgement: BlockJudgement) -> None:
         self.providers = providers
         self.agents, self.queries, self.settings, self.hook_calls, self.finder, self.clock = agents, queries, settings, hook_calls, finder, clock
-        self.grant_store = grant_store
+        self.grant_store, self.judgement = grant_store, judgement
 
     def read(self, agent_id: int, question: Question) -> AgentView:
         agent = self.agents.find(agent_id)
@@ -65,14 +66,15 @@ class StoredAgentViewReader(AgentViewReader):
         escalation = self.escalation(agent_id)
         counts = RefusalCounts(row.stop_refusals, row.tool_refusals, escalation) if row is not None else RefusalCounts(0, 0, escalation)
         reference = AgentReference(agent.id, agent.parent_id, agent.environment_id, agent.role)
+        rows = self.open_rows(agent_id)
         return AgentView(
             basis=self.basis(row, agent), agent=reference, program_name=agent.program,
             session=agent.session, profile=agent.profile, driver_name=driver.name, session_generation=1, stepped_at=self.clock.timestamp().value,
-            stack=self.stack(row, agent), facts=self.facts(agent), needs=(), plans=(), blocks=self.blocks(agent_id), grants=self.grants(reference), suppressions=self.suppressions(agent_id),
+            stack=self.stack(row, agent), facts=self.facts(agent), needs=(), plans=(), blocks=self.blocks(rows, agent_id), grants=self.grants(reference), suppressions=self.suppressions(agent_id),
             escalation=escalation, settings={key: self.settings.number(key) for key in (STOP_LIMIT_SETTING, TOOL_LIMIT_SETTING)},
             is_resting=self.hook_calls.has_ended_turn(agent_id), pinned_slices=row.pinned_slices if row is not None else (),
             table_digest=row.table_digest if row is not None else "", work_stop=driver.work_stop, responder=driver.responder, rank_order=driver.rank_order,
-            depth_limit=driver.depth_limit, program=self.providers.provider(agent.program).capabilities(), counts=counts, block_outcomes={})
+            depth_limit=driver.depth_limit, program=self.providers.provider(agent.program).capabilities(), counts=counts, block_outcomes=self.judgement.outcomes(rows, question, agent_id))
 
     def suppressions(self, agent_id: int) -> tuple[NeedKey, ...]:
         rows = self.queries.query(AgentFrameSuppression).filter(session_agent_id=agent_id, ended_at=None).every_row(OPEN_SUPPRESSIONS_REASON)
@@ -104,8 +106,10 @@ class StoredAgentViewReader(AgentViewReader):
         return [EndedFact(None, "replaced", agent.id)] if replaced is not None else []
 
     # a row's tool grace passes after its committed tool uses or its seconds, whichever comes first, as the old block rule counts them
-    def blocks(self, agent_id: int) -> tuple[OpenBlock, ...]:
-        rows = list(self.queries.query(AgentBlock).filter(session_agent_id=agent_id, closed_at=None).every_row(OPEN_BLOCKS_REASON))
+    def open_rows(self, agent_id: int) -> list[AgentBlock]:
+        return list(self.queries.query(AgentBlock).filter(session_agent_id=agent_id, closed_at=None).every_row(OPEN_BLOCKS_REASON))
+
+    def blocks(self, rows: list[AgentBlock], agent_id: int) -> tuple[OpenBlock, ...]:
         counted = [row for row in rows if row.grace_tool_uses]
         uses = dict(zip([row.id for row in counted], self.hook_calls.tool_use_counts(agent_id, [row.creation_timestamp() for row in counted]))) if counted else {}
         return tuple(self.open_block(row, uses.get(row.id, 0)) for row in rows)

@@ -6,3 +6,5 @@ class EscalationType(StrEnum):
 
     STOPS = "stops"
     TOOLS = "tools"
+    # a hold whose condition cannot be judged, which a person repairs
+    REPAIR = "repair"

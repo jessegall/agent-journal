@@ -10,10 +10,12 @@ from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.decision import Decision
 from engine.agent_machine.record.question import Question
 from engine.agent_machine.record.refusal_counts import RefusalCounts
+from engine.enums.condition_outcome import ConditionOutcome
 from engine.enums.decision_class import DecisionClass
 from engine.enums.escalation_type import EscalationType
 from engine.enums.frame_end import FrameEnd
 from engine.enums.question_type import QuestionType
+from engine.enums.responder import Responder
 from engine.enums.stack_move_type import StackMoveType
 
 STOP_LIMIT_SETTING, TOOL_LIMIT_SETTING = "journal.core.drivers.most-stop-refusals", "journal.core.drivers.most-tool-refusals"
@@ -49,7 +51,7 @@ class RefusalCounting:
                   (EscalationType.TOOLS, counts.tool_refusals, int(view.settings.get(TOOL_LIMIT_SETTING, TOOL_LIMIT))))
         reached = [(escalation_type, count) for escalation_type, count, limit in limits if limit and count >= limit]
         if not reached:
-            return view.escalation
+            return view.escalation or RefusalCounting.repair(view)
         escalation_type, count = reached[0]
         block_ids = tuple(block.block_id for block in view.blocks if block.block_id is not None and block.reason in reasons)
         # the Working frames whose stop answer refused, which the escalation defers with the holds it names
@@ -58,3 +60,10 @@ class RefusalCounting:
             return replace(view.escalation, block_ids=tuple(dict.fromkeys([*view.escalation.block_ids, *block_ids])),
                            work_keys=tuple(dict.fromkeys([*view.escalation.work_keys, *work_keys])), refusal_count=count)
         return Escalation(0, escalation_type, view.responder, block_ids, work_keys, count)
+
+    # a hold no one can judge never passes, so a person is asked to repair it; the escalation defers nothing
+    @staticmethod
+    def repair(view: AgentView) -> Escalation | None:
+        if ConditionOutcome.UNAVAILABLE not in view.block_outcomes.values():
+            return None
+        return Escalation(0, EscalationType.REPAIR, Responder.PERSON, (), (), 0)
