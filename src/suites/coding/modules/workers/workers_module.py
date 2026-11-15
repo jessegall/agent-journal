@@ -1,3 +1,5 @@
+from suites.coding.modules.workers.guards.proved_delivery_guard import ProvedDeliveryGuard
+from suites.coding.modules.workers.policies.proved_delivery_policy import ProvedDeliveryPolicy
 from suites.coding.modules.workers.effects.request_compaction_effect import RequestCompactionEffect
 from suites.coding.modules.workers.policies.context_hard_limit_policy import ContextHardLimitPolicy
 from suites.coding.modules.workers.needs.compaction_needs import CompactionNeeds
@@ -132,7 +134,7 @@ class WorkersModule(Module):
     effects = [RequestCompactionEffect, InactiveHelperEffect, PhaseTestEffect, RecordTodoListEffect]
     needs = [CompactionNeeds, DeliveredWorkStopNeeds, UnmergedWorkerNeeds, WorkerStatusFirstNeeds]
     lines = [ContextStopNowLines, InactiveHelperLines, MergeCheckoutLines, SmallBatchLines, StoppedWorkerLines, UnmergedWorkerLines, UnstartedWorkerLines, WorkerLogDueLines, WorkersOutLines]
-    policies = [ContextHardLimitPolicy, CheckoutWriteCodePolicy, DispatchAllowancePolicy, PhaseTestPolicy, ProtectedFolderPolicy, ReadonlyHelperAllowancePolicy, WorkerFilePolicy, WorkerOutsideLinkPolicy, WorkerReadPolicy, WorkerReusePolicy, WorkerTestCountPolicy, WorkerTestLinePolicy]
+    policies = [ProvedDeliveryPolicy, ContextHardLimitPolicy, CheckoutWriteCodePolicy, DispatchAllowancePolicy, PhaseTestPolicy, ProtectedFolderPolicy, ReadonlyHelperAllowancePolicy, WorkerFilePolicy, WorkerOutsideLinkPolicy, WorkerReadPolicy, WorkerReusePolicy, WorkerTestCountPolicy, WorkerTestLinePolicy]
     profiles = WORKER_PROFILES
     helper_types = [Worker, Merger]
     agent_states = [WorkerLogDue]
@@ -153,7 +155,7 @@ class WorkersModule(Module):
     moves = WORKERS_MOVES
     handlers = WORKERS_HANDLERS
     subcommands = WORKERS_SUBCOMMANDS
-    guards = WORKERS_GUARDS
+    guards = [ProvedDeliveryGuard, *WORKERS_GUARDS]
     driver_rules = WORKERS_DRIVER_RULES
     marks = [WorkerSplitMark, WorkerTestsMark, WorkerMark]
     declared_plugin_events = ["worker_clocking_out", "worker_delivering", "worker_merging"]

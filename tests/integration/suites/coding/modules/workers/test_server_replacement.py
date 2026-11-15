@@ -16,17 +16,20 @@ from tests.integration.support.file_changes import FileChanges
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
-RUNNER_SOURCE = Path(__file__).resolve().parents[6] / "tools" / "journal-run"
+TOOLS = Path(__file__).resolve().parents[6] / "tools"
+# the runner and the journal client it reports and claims its run through, as the installer places them
+INSTALLED_PROGRAMS = ("journal-run", "journal")
 # the bound on waiting for the proof, above the relaunch of a run whose first runner found the old server gone
 WAIT_SECONDS = 90
 POLL_SECONDS = 1
 
 
 def installed_runner(story) -> None:
-    binary = story.home.folder.resolve() / "bin" / "journal-run"
-    binary.parent.mkdir(parents=True, exist_ok=True)
-    built = subprocess.run(["go", "-C", str(RUNNER_SOURCE), "build", "-o", str(binary), "."], capture_output=True, text=True)
-    assert built.returncode == 0, built.stdout + built.stderr
+    for program in INSTALLED_PROGRAMS:
+        binary = story.home.folder.resolve() / "bin" / program
+        binary.parent.mkdir(parents=True, exist_ok=True)
+        built = subprocess.run(["go", "-C", str(TOOLS / program), "build", "-o", str(binary), "."], capture_output=True, text=True)
+        assert built.returncode == 0, built.stdout + built.stderr
 
 
 def proof_state(story) -> str:
