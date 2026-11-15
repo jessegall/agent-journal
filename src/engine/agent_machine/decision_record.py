@@ -5,7 +5,7 @@ from engine.agent_stack.answer_basis import AnswerBasis
 from engine.agent_stack.reason import Reason
 from engine.agent_machine.contracts.effect import Effect
 from engine.agent_machine.decision import Decision
-from engine.agent_machine.hold_plan import HoldPlan
+from engine.agent_machine.needs.hold_plan import HoldPlan
 from engine.agent_machine.record.block_closing import BlockClosing
 from engine.agent_machine.record.decision_inputs import DecisionInputs
 from engine.agent_machine.record.event_identity import EventIdentity

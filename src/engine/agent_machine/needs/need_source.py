@@ -3,7 +3,7 @@ from collections.abc import Mapping, Sequence
 from typing import ClassVar
 
 from engine.agent_stack.states.state import State
-from engine.agent_machine.hold_plan import HoldPlan
+from engine.agent_machine.needs.hold_plan import HoldPlan
 from engine.agent_machine.needs.agent_reference import AgentReference
 from engine.agent_machine.needs.need import Need
 from engine.agent_machine.record.question import Question

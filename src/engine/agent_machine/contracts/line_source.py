@@ -6,6 +6,8 @@ from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.record.line import Line
 from engine.agent_machine.record.question import Question
 from engine.enums.hook_event_name import HookEventName
+from engine.enums.line_carrier import LineCarrier
+from engine.enums.line_category import LineCategory
 
 
 class LineSource(ABC):
@@ -13,6 +15,9 @@ class LineSource(ABC):
 
     events: ClassVar[Sequence[HookEventName]]
     at_step: ClassVar[bool] = False
+    carrier: ClassVar[LineCarrier] = LineCarrier.NOW
+    category: ClassVar[LineCategory] = LineCategory.INFORMATION
+    interval_key: ClassVar[str] = ""
 
     @abstractmethod
     def lines(self, question: Question, view: AgentView) -> Sequence[Line]: ...

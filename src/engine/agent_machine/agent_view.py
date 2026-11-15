@@ -9,7 +9,7 @@ from engine.agent_stack.stack import Stack
 from engine.agent_machine.capabilities import Capabilities
 from engine.agent_machine.contracts.grant import Grant
 from engine.agent_machine.contracts.rank_order import RankOrder
-from engine.agent_machine.hold_plan import HoldPlan
+from engine.agent_machine.needs.hold_plan import HoldPlan
 from engine.agent_machine.needs.agent_reference import AgentReference
 from engine.agent_machine.needs.fact import Fact
 from engine.agent_machine.needs.need import Need
