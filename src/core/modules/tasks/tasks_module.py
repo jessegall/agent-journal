@@ -1,3 +1,5 @@
+from core.modules.tasks.listeners.next_task_listener import NextTaskListener
+from core.modules.tasks.commands.assign_next_task.assign_next_task_handler import AssignNextTaskHandler
 from core.modules.tasks.needs.task_work_needs import TaskWorkNeeds
 from core.modules.tasks.needs.unlogged_write_needs import UnloggedWriteNeeds
 from core.modules.tasks.needs.block_review_needs import BlockReviewNeeds
@@ -160,11 +162,11 @@ class TasksModule(Module):
     subcommands = [ChooseNextTaskSubcommand, ChooseTaskFocusSubcommand, TagTaskSubcommand, RemoveTaskTagSubcommand, TaskTagsSubcommand, TaskListSubcommand, EditTaskSubcommand, AssignTaskSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskCountsSubcommand, TaskInspectSubcommand, TaskInfoSubcommand, MakeTaskLogSubcommand, ReadTaskBriefSubcommand, MakeTaskDependencySubcommand,
                    RemoveTaskDependencySubcommand, RecordTaskIndependenceSubcommand]
     tick_handlers = [TaskStateSweepTickHandler]
-    handlers = [RepairTaskStatesHandler, ChooseNextTaskHandler, ChooseTaskFocusHandler, RecordTaskIndependenceHandler, TagTaskHandler, RemoveTaskTagHandler, RecordTaskReadHandler, AssignTaskHandler, UnassignAgentTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]
+    handlers = [AssignNextTaskHandler, RepairTaskStatesHandler, ChooseNextTaskHandler, ChooseTaskFocusHandler, RecordTaskIndependenceHandler, TagTaskHandler, RemoveTaskTagHandler, RecordTaskReadHandler, AssignTaskHandler, UnassignAgentTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]
     moves = [TasksMove]
     guards = [TaskTagAccessGuard, TaskTagWordGuard, TaskEditAccessGuard, VisibleDependencyGuard, DependenciesClosedGuard, UserWaitGuard, AssignedTaskStartGuard]
     views = [TaskTagWord, OpenDependency, TaskCard, TaskEdge, EnvironmentCard, TaskInspectionRow, TaskBlockReview]
-    listeners = [StartAssignmentListener, TaskTagRemoverListener, TaskDependencyWaitListener, WaitingTaskListener, TaskRowsListener, TaskBlockRenewalListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, AutoNextTaskListener, StoppedAgentTasksListener]
+    listeners = [NextTaskListener, StartAssignmentListener, TaskTagRemoverListener, TaskDependencyWaitListener, WaitingTaskListener, TaskRowsListener, TaskBlockRenewalListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, AutoNextTaskListener, StoppedAgentTasksListener]
     marks = [TaskMark]
     former_event_keys = {"core.tasks.task.drop_hold": "core.tasks.task.release_holder"}
     docks = TASKS_DOCKS

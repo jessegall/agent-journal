@@ -12,6 +12,8 @@ from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
 from core.modules.tasks.support.suite_task_assigners import SuiteTaskAssigners
+from core.modules.drivers.support.answering_slices import AnsweringSlices
+from core.modules.tasks.listeners.next_task_listener import MAIN_WORKING_SLICE
 
 
 
@@ -23,8 +25,8 @@ class AutoNextTaskListener(CommitListener[Moved[Task]]):
     name = "tasks.auto-next-task"
     moves = (TaskLifecycle.close, TaskLifecycle.cancel)
 
-    def __init__(self, bus: Bus, rows: EventRows, current: CurrentTasks, assigners: SuiteTaskAssigners) -> None:
-        self.bus, self.rows, self.current, self.assigners = bus, rows, current, assigners
+    def __init__(self, bus: Bus, rows: EventRows, current: CurrentTasks, assigners: SuiteTaskAssigners, slices: AnsweringSlices) -> None:
+        self.bus, self.rows, self.current, self.assigners, self.slices = bus, rows, current, assigners, slices
 
     def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:
         closed_task = event.row
@@ -36,6 +38,9 @@ class AutoNextTaskListener(CommitListener[Moved[Task]]):
         if holder_id is None:
             return
         holder = self.rows.required(Agent, holder_id)
+        # once the new driver's working slice answers the agent, NextTaskListener starts its next task instead
+        if MAIN_WORKING_SLICE in self.slices.tick_slices(holder):
+            return
         if holder.role != AgentRole.MAIN or holder.ended_at is not None or assigner.exceeds_context_limit(holder_id):
             return
         next_row = assigner.urgent() if self.current.started_tasks(holder_id) else assigner.following(holder_id)

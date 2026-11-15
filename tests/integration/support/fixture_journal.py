@@ -225,7 +225,7 @@ class FixtureJournal(KitRows):
         self.container.rebuild(class_type, implementation or class_type)
 
     def run_tick_handler(self, label: str) -> None:
-        handler = next(handler for module in ModuleFinder(self.home).modules() for handler in module.tick_handlers if handler.label == label)
+        handler = next(handler for module in ModuleFinder(self.home).modules() for handler in (listed.declared() for listed in module.tick_handlers) if handler.label == label)
         with self.journal.database.repeated_work.request():
             handler.handler(self.container)
 
