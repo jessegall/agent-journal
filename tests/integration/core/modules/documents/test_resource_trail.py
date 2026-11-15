@@ -22,13 +22,6 @@ def test_viewer_comment_keeps_its_original_target(scenario):
     scenario.story.expect_rows(comment["text"] == "Implement the cart request")
 
 
-def test_duplicate_transcription_link_is_idempotent(scenario):
-    scenario.command('transcription make "Cart meeting" --text "Discuss totals" --environment main')
-    scenario.requested_command("transcription link 1 task 1")
-    scenario.requested_command("transcription link 1 task 1")
-    feature(len([row for row in scenario.links("transcription:1") if row["target_id"] == 1 and row["target_model"] == "task"]) == 1, "duplicate transcription subject")
-
-
 def test_deleted_sources_are_not_relinked_by_deferred_events(scenario):
     with patch.object(CommitListenerRunner, "run", return_value=None):
         scenario.command('task make "Will be deleted" --brief "doc 1" --environment main')
@@ -67,11 +60,12 @@ def test_long_text_scanning_batches_distinct_references(scenario):
     feature(len(task_lookups) <= 4, f"scanner made {len(task_lookups)} per-task existence queries for one batch")
 
 
-def test_new_link_events_run_once_and_duplicates_run_none(scenario):
-    scenario.command('transcription make "Event count" --text "Cart meeting" --environment main')
+def test_a_duplicate_transcription_link_is_one_link_and_runs_no_second_creation_event(scenario):
+    scenario.command('transcription make "Cart meeting" --text "Discuss totals" --environment main')
     scenario.requested_command("transcription link 1 task 1")
     edge = next(row for row in scenario.links("transcription:1") if row["target_model"] == "task" and row["target_id"] == 1)
     scenario.requested_command("transcription link 1 task 1")
+    feature(len([row for row in scenario.links("transcription:1") if row["target_id"] == 1 and row["target_model"] == "task"]) == 1, "duplicate transcription subject")
     events = scenario.story.container.get(EventLog).newest_row_events(RowHistory("links", edge["id"]))
     feature(len([event for event in events if event.is_creation]) == 1, "duplicate link emitted another creation event")
 

@@ -9,7 +9,7 @@ from tests.unit.source_tree import source_tree
 ROOT = Path(__file__).resolve().parents[2]
 STORIES = ROOT / "tests" / "stories"
 LEDGER = ROOT / "tests" / "unit" / "story_moves"
-STORIES_AT_PLAN_START = 5907
+STORIES_AT_PLAN_START = 5908
 LEDGER_KINDS = ("unit", "integration", "repeat", "folded")
 LEDGER_ARROW = " -> "
 

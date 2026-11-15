@@ -22,6 +22,13 @@ def test_a_reviewer_reads_and_records_a_review_and_is_refused_a_task_edit(new_st
     story.expect_refusal("task edit 1 --complexity 2", f"{HELPER_REFUSAL} task edit", actor=reviewer)
 
 
+def test_a_reviewer_files_a_report_and_is_refused_a_document(new_story):
+    story = new_story(fixture=UserBuilder)
+    reviewer = started_profile(story, "journal-reviewer")
+    story.expect_success('report make "Cart review" --abstract "What the review found" --body "The cart matches." --environment main', actor=reviewer)
+    story.expect_refusal('doc make "Cart review" --abstract "What the review found" --body "The cart matches." --environment main', f"{HELPER_REFUSAL} doc make", actor=reviewer)
+
+
 def test_a_read_only_helper_runs_a_read_line_a_module_adds_later_and_is_refused_its_change_line(new_story):
     story = new_story(fixture=StartedHelper)
     story.expect_sync_success(f"{SAMPLES}:ShelvesModule")

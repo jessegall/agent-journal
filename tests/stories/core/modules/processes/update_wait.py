@@ -37,17 +37,6 @@ def dead_process_id() -> int:
     return ended.pid
 
 
-def test_a_waiting_update_holds_new_runs_in_the_queue_until_it_is_done(new_story):
-    story = update_waiting_story(new_story)
-    first, second = queued(story, "make one"), queued(story, "make two")
-    expect_waits(story, first)
-    expect_waits(story, second)
-    story.home.run_lock.unlink()
-    grant_slots(story)
-    expect_slot(story, first)
-    expect_slot(story, second)
-
-
 def test_a_queued_run_whose_turn_comes_while_an_update_waits_goes_on_waiting(new_story):
     story = install_runner(new_story(fixture=QueueAgents))
     first, second, third = queued(story, "make one"), queued(story, "make two"), queued(story, "make three")
@@ -69,9 +58,11 @@ def test_a_run_that_holds_a_spot_goes_on_while_an_update_waits(new_story):
     expect_slot(story, first)
 
 
-def test_the_queue_resumes_in_order_with_the_runs_that_waited(new_story):
+def test_a_waiting_update_holds_new_runs_in_the_queue_and_the_queue_resumes_in_order_with_the_runs_that_waited(new_story):
     story = update_waiting_story(new_story)
     first, second, third = queued(story, "make one"), queued(story, "make two"), queued(story, "make three")
+    expect_waits(story, first)
+    expect_waits(story, second)
     story.home.run_lock.unlink()
     grant_slots(story)
     expect_slot(story, first)
@@ -102,18 +93,13 @@ def test_the_inspector_says_nothing_waits_for_an_update_once_it_is_done(new_stor
     story.expect_rows(not inspector["halted"], inspector["halt_cause"] == "")
 
 
-def test_the_main_agent_is_told_an_update_waits_and_for_which_runs(new_story):
+def test_the_main_agent_is_told_an_update_waits_and_for_which_runs_and_told_again_after_five_minutes_and_not_when_it_is_done(new_story):
     story = update_waiting_story(new_story)
     running = queued(story, "make one")
     (story.home.folder / "processes" / str(running.id) / "pid").write_text(str(os.getpid()))
     (story.home.folder / "processes" / str(running.id) / "1.started").write_text("")
     lines = [line for line in ended_hook_lines(story, VIEW_LINE) if expected_nudge(UpdateWaitingNudge.declared()).matches_text(line)]
     story.expect_rows(len(lines) == 1, f"{running.id}" in lines[0], detail=str(lines))
-
-
-def test_the_reminder_that_an_update_waits_comes_again_after_five_minutes_and_not_when_it_is_done(new_story):
-    story = update_waiting_story(new_story)
-    ended_hook_lines(story, VIEW_LINE)
     story.advance(timedelta(seconds=REMINDER_SECONDS + 1))
     story.expect_rows(len([line for line in ended_hook_lines(story, VIEW_LINE) if expected_nudge(UpdateWaitingNudge.declared()).matches_text(line)]) == 1)
     story.home.run_lock.unlink()

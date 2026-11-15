@@ -18,3 +18,8 @@ def test_the_reviewer_profile_narrows_the_helper_and_records_its_review():
     reviewer = ReviewerCommands()
     assert Helper.commands.widened_names(reviewer) == ()
     assert reviewer.allows(JournalLine("review record", frozenset([JournalLineClass.CHANGES, JournalLineClass.OUTWARD]))) and not reviewer.allows(TASK_EDIT)
+
+
+def test_the_reviewer_profile_files_a_report_and_no_document():
+    reviewer = ReviewerCommands()
+    assert reviewer.allows(JournalLine("report make", frozenset([JournalLineClass.CHANGES]))) and not reviewer.allows(JournalLine("doc make", frozenset([JournalLineClass.CHANGES])))
