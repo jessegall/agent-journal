@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.contracts.effect import Effect
 from engine.agent_machine.contracts.grant_ledger import GrantLedger
+from engine.driver.nudger import Nudger
 from engine.agent_machine.decision_record import DecisionRecord
 from engine.agent_machine.needs.block_plan import BlockPlan
 from engine.agent_machine.record.block_closing import BlockClosing
@@ -44,7 +45,8 @@ class StoredStepWriter(StepWriter):
     effects when the step admits (a required one that fails raises and rolls everything back), and the
     wake. A step outside a hook that changed nothing writes nothing."""
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus, database: Database, grant_store: GrantLedger) -> None:
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus, database: Database, grant_store: GrantLedger, nudger: Nudger) -> None:
+        self.nudger = nudger
         self.grant_store = grant_store
         self.queries, self.repository, self.bus, self.database = queries, repository, bus, database
 
@@ -67,8 +69,14 @@ class StoredStepWriter(StepWriter):
         if record.decision.admits():
             self.spend_grants(record, context)
             failures += self.run_effects(record.admission_effects, view, record, True, context)
+        self.queue_waiting_lines(view, record, context)
         self.save_wake(view, record.wake, context)
         return StepCommit.saved(hook_call_id, tuple(failures))
+
+    # a line the program cannot carry at this event waits in today's line queue for the agent's next event that can
+    def queue_waiting_lines(self, view: AgentView, record: DecisionRecord, context: Context) -> None:
+        for line in record.waiting_lines:
+            self.nudger.send_text(view.agent.agent_id, line.text, line.key, context)
 
     # the grants that passed a refusing policy are spent in this write, and a journal command leaves its receipt
     def spend_grants(self, record: DecisionRecord, context: Context) -> None:
@@ -89,7 +97,7 @@ class StoredStepWriter(StepWriter):
         record = step.record
         changed_counts = (record.counts.stop_refusals, record.counts.tool_refusals) != (view.counts.stop_refusals, view.counts.tool_refusals)
         is_first_step = row is None or not row.has_frames
-        return bool(is_first_step or record.moves or record.blocks_opened or record.blocks_closed or changed_counts or record.counts.escalation != view.escalation
+        return bool(is_first_step or record.moves or record.blocks_opened or record.blocks_closed or record.waiting_lines or changed_counts or record.counts.escalation != view.escalation
                     or record.wake.wake_move is not WakeMove.UNCHANGED or step.stack != view.stack)
 
     def saved_stack(self, row: AgentStack | None, view: AgentView, step: StepResult, context: Context) -> AgentStack:
