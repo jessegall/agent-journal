@@ -4,6 +4,7 @@ import socket
 import threading
 from pathlib import Path
 
+from engine.journal.journal_home import LAUNCHER_SOCKET, JournalHome
 from engine.types.type_guards import is_mapping
 from core.modules.agents.support.launcher_link import START_FIELD, STOP_FIELD, STOPPED_ANSWER
 
@@ -27,6 +28,11 @@ class FakeLauncher:
         launcher = cls(path, answer, request_count, answers)
         launcher.listen()
         return launcher
+
+    # a launcher on the socket the journal of this home asks, so a story needs no word of the engine
+    @classmethod
+    def accepting_home(cls, home: JournalHome, answer: bytes = b"", request_count: int = 1, answers: tuple[bytes, ...] = ()) -> "FakeLauncher":
+        return cls.accepting(home.socket(LAUNCHER_SOCKET), answer, request_count, answers)
 
     def listen(self) -> None:
         FileAccess.unlink(self.path, missing_ok=True)
