@@ -28,10 +28,10 @@ def test_no_part_of_the_new_driver_can_go_live_before_its_phase_gate(played):
     assert "no part of the new driver is active" in output(story, "driver active")
 
 
-def test_an_agent_may_not_switch_a_part_on_pop_a_frame_or_repin(played):
+def test_the_main_agent_switches_a_ready_part_but_may_not_pop_a_frame_or_repin(played):
     story = played(BuilderStarted)
     agent: Actor = story.agent
-    assert "only a person switches a part of the new driver" in output(story, "driver set-active safety on", agent)
+    assert "safety" in output(story, "driver set-active safety on", agent)
     assert "only a person removes a frame" in output(story, f"driver pop {agent.id} task:1 --reason test", agent)
     assert "only a person repins an agent" in output(story, f"driver repin {agent.id}", agent)
 

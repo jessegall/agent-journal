@@ -29,6 +29,6 @@ class EscalationMarkListener(MarkListener[Changed[AgentEscalation]]):
         elif escalation.responder is Responder.PERSON and event.old_row.responder is not Responder.PERSON:
             self.show(logged, EscalationMarkType.ESCALATION, EscalationMarkVariant.REASSIGNED, PASSED_TEXT.format(count=escalation.refusal_count),
                       agent_id=escalation.session_agent_id, outcome=MarkOutcome.WARNED)
-        elif event.old_row.state is EscalationState.OPEN and escalation.state is not EscalationState.OPEN:
+        elif event.old_row.state is EscalationState.OPEN and escalation.state is EscalationState.CONTINUED:
             text = ANSWERED_TEXT.format(responder=escalation.responder.value, answer=escalation.answer or escalation.state.value)
             self.show(logged, EscalationMarkType.ESCALATION, EscalationMarkVariant.ANSWERED, text, agent_id=escalation.session_agent_id, outcome=MarkOutcome.PASSED)

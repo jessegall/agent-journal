@@ -28,7 +28,8 @@ class WakeJudgement:
         causes = self.attention(view, stack) if view.is_resting else [cause.key for cause in self.causes if cause.wakes_mid_turn and cause.needs_wake(view)]
         if not causes:
             return WakeChange.unchanged()
-        move = WakeMove.INHIBITED if stack.has(Paused) or stack.has(Compacting) else WakeMove.WRITTEN
+        # an open escalation waits for its responder's answer, which wakes the agent itself (doc 1310 sections 3.1 and 6.4)
+        move = WakeMove.INHIBITED if stack.has(Paused) or stack.has(Compacting) or view.escalation is not None else WakeMove.WRITTEN
         return WakeChange(move, self.work_generation(stack), tuple(causes))
 
     def attention(self, view: AgentView, stack: Stack) -> list[str]:

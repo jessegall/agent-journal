@@ -10,6 +10,8 @@ from engine.setting.setting_values import SettingValues
 from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.drivers.models.enums.escalation_state import EscalationState
+from core.modules.drivers.models.agent_escalation import AgentEscalation
 from core.modules.drivers.commands.deliver_agent_wake.deliver_agent_wake import DeliverAgentWake
 from core.modules.drivers.models.agent_wake import AgentWake
 from core.modules.drivers.models.enums.wake_state import WakeState
@@ -63,8 +65,11 @@ class DeliverAgentWakeHandler(Handler[DeliverAgentWake, None]):
     def attempts(self) -> CountDown:
         return CountDown(WAKE_ATTEMPTS_KEY, "wake {subject}", TimesSpan(int(self.settings.number(WAKE_ATTEMPTS_SETTING))), is_silent=True)
 
+    # paused, interrupted, compacting, or under an open escalation, which its responder's answer wakes from
     def is_inhibited(self, agent: Agent, timestamp: Timestamp) -> bool:
-        return agent.paused_at is not None or agent.interrupted_at is not None or self.hook_calls.is_compacting(agent.id, timestamp)
+        if agent.paused_at is not None or agent.interrupted_at is not None or self.hook_calls.is_compacting(agent.id, timestamp):
+            return True
+        return self.queries.query(AgentEscalation).filter(session_agent_id=agent.id, state=EscalationState.OPEN).exists()
 
     @staticmethod
     def transport(agent: Agent) -> str:

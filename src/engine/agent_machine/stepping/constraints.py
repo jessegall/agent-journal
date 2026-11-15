@@ -1,3 +1,4 @@
+from engine.enums.grant_type import GrantType
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.refusal_skip_hint import RefusalSkipHint
 from dataclasses import replace
@@ -74,7 +75,7 @@ class Constraints:
     # a policy that refused the agent's last refused hook too names the command that skips it once, at a tool use
     @staticmethod
     def skip_hinted(refusal: Reason, policy: Policy, question: Question, view: AgentView) -> Reason:
-        if policy.is_safety or question.event is None or question.event.event != HookEventName.PRE_TOOL_USE or policy.key not in view.last_refused_rules:
+        if policy.is_safety or GrantType.REFUSAL_SKIP not in policy.grant_types or question.event is None or question.event.event != HookEventName.PRE_TOOL_USE or policy.key not in view.last_refused_rules:
             return refusal
         return replace(refusal, text=RefusalSkipHint.text(refusal.text, policy.key))
 
