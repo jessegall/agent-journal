@@ -2,7 +2,7 @@ from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.expectations.expected_nudge import expected_nudge
-from core.modules.drivers.support.access_nudges import DATABASE_FILE
+from core.modules.drivers.nudges.database_file_nudge import DatabaseFileNudge
 from tests.integration.core.modules.drivers.test_agent_states_lifecycle import SkillsDueAgent, read_every_due_skill
 from tests.stories.core.modules.skills.due import DUE
 from tests.stories.core.support.agent_labels import agent_number
@@ -27,7 +27,7 @@ def test_no_driver_command_moves_an_agent_into_or_out_of_a_state(new_story):
 
 def test_a_shell_line_that_writes_the_database_leaves_the_due_skill_state_open(new_story):
     story = new_story(DUE, fixture=SkillsDueAgent)
-    story.expect_hook_refusal("s-1", DATABASE_WRITE, expected_nudge(DATABASE_FILE))
+    story.expect_hook_refusal("s-1", DATABASE_WRITE, expected_nudge(DatabaseFileNudge.declared()))
     story.run_listeners()
     story.expect_rows("skills.load-required (agent_skill:" in in_place(story), detail=in_place(story))
 
@@ -44,4 +44,4 @@ def test_a_read_only_look_at_the_database_is_allowed_and_a_redirect_into_it_is_r
     read = HookSamples.shell("sqlite3 -readonly .journal/version-5.db 'SELECT 1'", ShellPart("sqlite3", CommandCategory.READ, ["-readonly", ".journal/version-5.db", "SELECT 1"]))
     story.expect_hook_allowed("s-1", read)
     redirect = HookSamples.shell("echo x > .journal/version-5.db", ShellPart("echo", CommandCategory.READ, ["x"]), redirects=[".journal/version-5.db"])
-    story.expect_hook_refusal("s-1", redirect, expected_nudge(DATABASE_FILE))
+    story.expect_hook_refusal("s-1", redirect, expected_nudge(DatabaseFileNudge.declared()))
