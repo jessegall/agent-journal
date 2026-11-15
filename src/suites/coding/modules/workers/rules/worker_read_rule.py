@@ -14,8 +14,8 @@ SHARED_FOLDERS = ("/tmp", "/private/tmp")
 
 
 class WorkerReadRule(DriverRule):
-    """A worker reads only its own worktree, the temporary folder and its program's home. The OS sandbox holds
-    its shell lines to the same limit."""
+    """A worker reads only its own worktree, the temporary folder and its program's home, never another worker's
+    worktree beside its own. The OS sandbox holds its shell lines to the same limit."""
 
     name = "workers.worker-read"
     hook = HookEventName.PRE_TOOL_USE
@@ -34,7 +34,9 @@ class WorkerReadRule(DriverRule):
         if worktree is None:
             return RuleAnswer.allowed()
         readable = (worktree.folder, *SHARED_FOLDERS, *self.providers.provider(hook.event.program).readable_folders())
-        paths = (Path(normpath(join(worktree.folder, path))) for path in tool.files)
-        if all(any(path.is_relative_to(folder) for folder in readable) for path in paths):
+        # the folder beside the worktree holds the other workers' worktrees, never readable, even inside a shared folder
+        others = Path(worktree.folder).parent
+        paths = [Path(normpath(join(worktree.folder, path))) for path in tool.files]
+        if all(any(path.is_relative_to(folder) for folder in readable) and not (path.is_relative_to(others) and not path.is_relative_to(worktree.folder)) for path in paths):
             return RuleAnswer.allowed()
         return RuleAnswer.refused(WORKER_READ_REFUSAL.nudge())
