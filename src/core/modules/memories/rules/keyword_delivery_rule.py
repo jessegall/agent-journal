@@ -1,43 +1,22 @@
-from core.modules.memories.nudges.memory_line_nudge import MemoryLineNudge
+from engine.agent.enums.role_group import RoleGroup
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_wildcard import HookWildcard
 from engine.driver.rule_answer import RuleAnswer
-from engine.query.conditions.among import Among
-from engine.query.queries import Queries
-from core.modules.memories.models.enums.delivery_cause import DeliveryCause
-from engine.driver.hook_keywords import hook_keywords
-from core.modules.memories.queries.active_memory_query import ActiveMemoryQuery
-from core.modules.memories.models.keyword_memory import KeywordMemory
-from core.modules.memories.commands.give_memories.give_memories import GiveMemories
-from engine.setting.setting_values import SettingValues
-from engine.agent.enums.role_group import RoleGroup
-from core.modules.memories.support.memory_settings import KEYWORD_LIMIT
-
-KEYWORDS_REASON = "every memory whose keyword the hook names may be delivered"
-
+from engine.enums.hook_wildcard import HookWildcard
+from core.modules.memories.effects.give_memories_effect import GiveMemoriesEffect
+from core.modules.memories.lines.keyword_delivery_lines import KEYWORD_DELIVERY_KEY, KeywordDeliveryLines
 
 
 class KeywordDeliveryRule(DriverRule):
-    """When a prompt or a tool use names a keyword of a active memory the agent has not been given since
-    its last compaction, the agent is given that memory, at most memories.keyword-limit of them on one
-    hook."""
+    """The old walk's answer for KeywordDeliveryLines and GiveMemoriesEffect, which own it, until the walk is deleted."""
 
-    name = "memories.keyword-delivery"
+    name = KEYWORD_DELIVERY_KEY
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
     role_group = RoleGroup.PROMPT
 
-    def __init__(self, queries: Queries, settings: SettingValues, memories: ActiveMemoryQuery) -> None:
-        self.queries, self.settings, self.memories = queries, settings, memories
+    def __init__(self, lines: KeywordDeliveryLines, effect: GiveMemoriesEffect) -> None:
+        self.lines, self.effect = lines, effect
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        hook_terms = hook_keywords(hook.event)
-        if not hook_terms:
-            return RuleAnswer.allowed()
-        memory_ids = [keyword.memory_id for keyword in self.queries.query(KeywordMemory).matching(Among("word", hook_terms)).every_row(KEYWORDS_REASON)]
-        limit = self.settings.number(KEYWORD_LIMIT)
-        memories = self.memories.among(memory_ids).absent_memories(hook.agent_id).weight_order().take(limit)
-        if not memories:
-            return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(*(MemoryLineNudge.declared().nudge(memory=memory.memory_id) for memory in memories)).running(GiveMemories(hook.agent_id, tuple(row.memory_id for row in memories), DeliveryCause.KEYWORD))
+        return RuleAnswer.with_nudges(*self.lines.nudges(hook.event, hook.agent_id)).running(*self.effect.commands_of(hook.event, hook.agent_id))
