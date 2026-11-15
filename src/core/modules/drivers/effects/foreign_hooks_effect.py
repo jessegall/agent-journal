@@ -1,8 +1,20 @@
-from engine.rule_backed.rule_effect import RuleEffect
-from core.modules.drivers.rules.foreign_hooks_rule import ForeignHooksRule
+from collections.abc import Sequence
+
+from engine.agent_machine.contracts.event_effect import EventEffect
+from engine.command.command import Command
+from engine.driver.hook_event import HookEvent
+from engine.enums.hook_event_name import HookEventName
+from core.modules.drivers.support.foreign_hook_answers import MANAGED_HOOKS_KEY, ForeignHookAnswers
 
 
-class ForeignHooksEffect(RuleEffect):
-    """The effect of ForeignHooksRule, as today's rule runs it."""
+class ForeignHooksEffect(EventEffect):
+    """Records the project hooks' lines and refusals as notices of the agent."""
 
-    rule = ForeignHooksRule
+    key = MANAGED_HOOKS_KEY
+    events = [event for event in HookEventName if event is not HookEventName.TICK]
+
+    def __init__(self, answers: ForeignHookAnswers) -> None:
+        self.answers = answers
+
+    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+        return self.answers.answer(event, agent_id).commands if event is not None else []

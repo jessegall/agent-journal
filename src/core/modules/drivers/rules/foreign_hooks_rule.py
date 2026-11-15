@@ -1,58 +1,24 @@
-from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AGENT_MODEL_NAME
-from collections.abc import Sequence
-
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.driver.foreign_answer import ForeignAnswer
-from engine.enums.hook_wildcard import HookWildcard
 from engine.driver.rule_answer import RuleAnswer
-from engine.provider.providers import Providers
-from engine.query.conditions.contains_some import ContainsSome
-from engine.query.queries import Queries
-from core.modules.drivers.models.hook_call import HookCall
-from core.modules.drivers.commands.record_agent_notice.record_agent_notice import RecordAgentNotice
-from core.modules.drivers.nudges.managed_hook_line_nudge import ManagedHookLineNudge
-from core.modules.drivers.nudges.managed_hook_refusal_nudge import ManagedHookRefusalNudge
+from engine.enums.hook_wildcard import HookWildcard
+from core.modules.drivers.support.foreign_hook_answers import MANAGED_HOOKS_KEY, ForeignHookAnswers
 
 
 class ForeignHooksRule(DriverRule):
-    """Project hooks contribute refusals, replacement input and lines alongside the journal's rules. The agent gets a
-    hook's own words, and gets them again only once they change from what that hook last said to it."""
+    """The old walk's answer for ForeignHooksPolicy, ForeignHooksLines and ForeignHooksEffect, which own it, and the
+    input it replaces, printed until task 10351 moves the rewrite into the machine."""
 
-    name = "drivers.managed-hooks"
+    name = MANAGED_HOOKS_KEY
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
     essential = True
 
-    def __init__(self, providers: Providers, queries: Queries, numbers: RowNumbers) -> None:
-        self.numbers = numbers
-        self.providers, self.queries = providers, queries
+    def __init__(self, answers: ForeignHookAnswers) -> None:
+        self.answers = answers
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        provider = self.providers.provider(hook.event.program)
-        answers = [ForeignAnswer.read(run) for run in hook.event.foreign]
-        refusal = next((answer.reason() for answer in answers if answer.refusal), "")
-        rewritten = next((answer for answer in answers if answer.updated_input), None)
-        lines = [line for answer in answers for line in self.new_lines(hook, answer.name, answer.lines)]
-        commands = [RecordAgentNotice(hook.agent_id, line, self.name) for line in lines]
-        nudges = [ManagedHookLineNudge.declared().nudge(line=line) for line in lines] if hook.event.event in provider.line_events else []
-        if hook.event.event not in provider.line_events:
-            commands = []
-        if refusal:
-            commands.append(RecordAgentNotice(hook.agent_id, refusal, self.name))
-            nudge = ManagedHookRefusalNudge.declared().nudge(agent=self.numbers.number(AGENT_MODEL_NAME, hook.agent_id))
-            refusal = nudge.text
-            nudges = [*nudges, nudge]
-        return RuleAnswer(refusal=refusal, nudges=nudges, commands=tuple(commands), updated_input=rewritten.updated_input if rewritten is not None else {},
-                          source_name=rewritten.name if rewritten is not None else "", refusal_priority=-1,
-                          dropped_lines=len(lines) if hook.event.event not in provider.line_events else 0,
-                          terminal="\n".join(answer.terminal for answer in answers if answer.terminal))
-
-    def new_lines(self, hook: AgentHook, name: str, reported: Sequence[str]) -> list[str]:
-        if not reported:
-            return []
-        prefix = f"{name}: "
-        last = self.queries.query(HookCall).filter(session_agent_id=hook.agent_id).matching(ContainsSome(["lines"], [prefix])).newest().first()
-        previous_lines = last.lines.splitlines() if last is not None else []
-        return [line for line in (f"{prefix}{text}" for text in reported) if line not in previous_lines]
+        answer = self.answers.answer(hook.event, hook.agent_id)
+        nudges = (*answer.nudges, *([answer.refusal] if answer.refusal is not None else []))
+        return RuleAnswer(refusal=answer.refusal.text if answer.refusal is not None else "", nudges=nudges, commands=answer.commands, updated_input=answer.updated_input,
+                          source_name=answer.source_name, refusal_priority=-1, dropped_lines=answer.dropped_lines, terminal=answer.terminal)

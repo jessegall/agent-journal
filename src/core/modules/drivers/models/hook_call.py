@@ -12,10 +12,9 @@ from engine.driver.hook_transcript import HookTranscript
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.enums.event_form import EventForm
 from engine.row.metadata import Metadata
-from engine.types.type_guards import is_list, is_text_mapping
+from engine.types.type_guards import is_list, is_mapping, is_text_mapping
 from engine.model.model import Model
 from engine.module.driver_entries import DRIVERS_MODULE
-from engine.types.type_guards import is_list, is_mapping
 from engine.enums.hook_answer import HookAnswer
 
 

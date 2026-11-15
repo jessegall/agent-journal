@@ -1,4 +1,3 @@
-from engine.module.contribution_reader import ContributionReader
 from engine.agent_machine.compiling.driver_compiler import DriverCompiler
 from engine.module.machine_check import MachineCheck
 from engine.command.bus import Bus
