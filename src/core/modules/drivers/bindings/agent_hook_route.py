@@ -36,7 +36,7 @@ from core.modules.drivers.nudges.unknown_agent_nudge import UnknownAgentNudge
 from core.modules.drivers.support.decision_assembler import DecisionAssembler
 from engine.agent_step.errors.step_conflict_error import StepConflictError
 from core.modules.drivers.nudges.paused_refusal_nudge import PausedRefusalNudge
-from core.modules.drivers.support.answering_slices import AnsweringSlices
+from core.modules.drivers.support.agent_slices import AgentSlices
 from core.modules.drivers.support.contribution_slices import SAFETY_SLICE
 from core.modules.drivers.support.decision_fallbacks import DecisionFallbacks
 from core.modules.drivers.support.driver_comparison_step import DriverComparisonStep
@@ -71,7 +71,7 @@ class AgentHookRoute(HookRoute):
     unknown agent when the event does not require an agent check. The row of a recorded hook is kept once
     its call is committed; a tick that brought nothing keeps none."""
 
-    def __init__(self, slices: AnsweringSlices, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, assembler: DecisionAssembler, request_values: RequestValues, clock: Clock, providers: Providers, lockdown: ProgramLockdown, sessions: AgentSessions, request_records: RequestRecords,
+    def __init__(self, slices: AgentSlices, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, assembler: DecisionAssembler, request_values: RequestValues, clock: Clock, providers: Providers, lockdown: ProgramLockdown, sessions: AgentSessions, request_records: RequestRecords,
                  comparison: DriverComparisonStep, errors: ErrorLog, timing: Timing) -> None:
         self.comparison, self.errors, self.timing, self.slices = comparison, errors, timing, slices
         self.lockdown, self.sessions, self.request_records = lockdown, sessions, request_records

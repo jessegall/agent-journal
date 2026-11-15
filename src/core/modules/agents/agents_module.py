@@ -1,3 +1,4 @@
+from core.modules.agents.listeners.agent_lifecycle_step_listener import AgentLifecycleStepListener
 from core.modules.agents.policies.program_settings_policy import ProgramSettingsPolicy
 from core.modules.agents.windows.agents_windows import AGENTS_WINDOWS
 from core.modules.agents.models.declarations.agent_model_declaration import AgentModelDeclaration
@@ -149,5 +150,6 @@ class AgentsModule(Module):
     windows = AGENTS_WINDOWS
     inspectors = [AgentInspector]
     listeners = [SessionEndListener, SessionLaunchListener, MenuAnswerMarkListener, EndedAgentProgramListener, BootInstructionImportsListener]
+    agent_listeners = [AgentLifecycleStepListener]
     marks = [SubagentMark, AgentMenuMark, AgentLauncherMark, ProgramSettingsMark]
     seeders = [AgentsSeeder]

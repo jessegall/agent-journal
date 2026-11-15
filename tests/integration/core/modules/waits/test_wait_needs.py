@@ -7,6 +7,9 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.models.agent_step_request import AgentStepRequest
 from core.modules.questions.models.question import Question as QuestionRow
 from core.modules.waits.needs.wait_needs import WaitNeeds
+from engine.testing.examples.hook_samples import HookSamples
+from core.modules.drivers.support.contribution_slices import WAITING_SLICE
+from core.modules.drivers.support.driver_settings import ACTIVE_SLICES_SETTING
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 ASK = 'question ask "Which database?" --context "The store needs one database for its orders." --options "sqlite" "postgres" --recommend "sqlite"'
@@ -26,6 +29,8 @@ def waiting(story) -> list[Waiting]:
 
 def test_a_question_the_agent_asks_is_a_wait_on_that_question_with_its_step_requested_in_the_same_write(played):
     story = played(BuilderStarted)
+    story.expect_success(f"setting set {ACTIVE_SLICES_SETTING} '[\"{WAITING_SLICE}\"]'", actor=story.user)
+    story.hook("s-1", HookSamples.session_start())
     question_id = asked(story)
     assert [state.subjects for state in waiting(story)] == [tuple([SubjectReference("questions", question_id)])]
     requests = story.container.get(Queries).query(AgentStepRequest).filter(session_agent_id=story.agent.id, served_at=None).first()

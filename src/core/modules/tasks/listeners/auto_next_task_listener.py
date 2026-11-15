@@ -12,7 +12,7 @@ from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
 from core.modules.tasks.support.suite_task_assigners import SuiteTaskAssigners
-from core.modules.drivers.support.answering_slices import AnsweringSlices
+from core.modules.drivers.support.agent_slices import AgentSlices
 from core.modules.tasks.listeners.next_task_listener import MAIN_WORKING_SLICE
 
 
@@ -25,7 +25,7 @@ class AutoNextTaskListener(CommitListener[Moved[Task]]):
     name = "tasks.auto-next-task"
     moves = (TaskLifecycle.close, TaskLifecycle.cancel)
 
-    def __init__(self, bus: Bus, rows: EventRows, current: CurrentTasks, assigners: SuiteTaskAssigners, slices: AnsweringSlices) -> None:
+    def __init__(self, bus: Bus, rows: EventRows, current: CurrentTasks, assigners: SuiteTaskAssigners, slices: AgentSlices) -> None:
         self.bus, self.rows, self.current, self.assigners, self.slices = bus, rows, current, assigners, slices
 
     def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:

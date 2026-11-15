@@ -12,7 +12,7 @@ from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.models.admission_receipt import AdmissionReceipt
-from core.modules.drivers.support.answering_slices import AnsweringSlices
+from core.modules.drivers.support.agent_slices import AgentSlices
 from core.modules.drivers.support.contribution_slices import ADMISSION_SLICE
 
 
@@ -22,7 +22,7 @@ class CommandAdmission:
     spent a grant for this command, taken once, or else by a usable grant spent here; otherwise the command
     is refused with the policy's own text, the hook's text."""
 
-    def __init__(self, finder: ModuleFinder, container: Container, slices: AnsweringSlices, agents: AgentRows, grant_store: GrantLedger,
+    def __init__(self, finder: ModuleFinder, container: Container, slices: AgentSlices, agents: AgentRows, grant_store: GrantLedger,
                  queries: Queries, repository: Repository) -> None:
         self.finder, self.container, self.slices, self.agents, self.grant_store = finder, container, slices, agents, grant_store
         self.queries, self.repository = queries, repository

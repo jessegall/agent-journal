@@ -10,13 +10,16 @@ from core.modules.drivers.support.driver_settings import ACTIVE_SLICES_SETTING
 PROGRAM_MARK = "@"
 
 
-class AnsweringSlices:
+class AgentSlices:
     """The slices of the new driver that answer an agent at a hook (doc 1310 section 13.2): the slices it was
     pinned with that are still active in its environment for its program. A session start pins it to every
     active slice; a slice switched off drops out at once, and nothing of it is deleted."""
 
     def __init__(self, settings: SettingValues, queries: Queries) -> None:
         self.settings, self.queries = settings, queries
+
+    def has_active_slice(self) -> bool:
+        return bool(self.settings.texts(ACTIVE_SLICES_SETTING))
 
     def active(self, agent: Agent) -> frozenset[str]:
         entries = (entry.partition(PROGRAM_MARK) for entry in self.settings.texts(ACTIVE_SLICES_SETTING))

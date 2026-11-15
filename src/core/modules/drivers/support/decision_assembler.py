@@ -20,7 +20,7 @@ from core.modules.drivers.support.assembled_step import AssembledStep
 from core.modules.drivers.support.contribution_slices import ContributionSlices
 from core.modules.drivers.support.hook_rule_answers import HookRuleAnswers
 from core.modules.drivers.support.machine_assembly import MachineAssembly
-from core.modules.drivers.support.answering_slices import AnsweringSlices
+from core.modules.drivers.support.agent_slices import AgentSlices
 from core.modules.drivers.support.walk_answer_policy import WALK_RANK, WalkAnswerPolicy
 
 NEW_DRIVER_LAYER = "agent machine"
@@ -35,7 +35,7 @@ class DecisionAssembler:
     effects join the walk's answers. An old command the new effects also give runs once, as the new one.
     With no slice in force it is the walk alone."""
 
-    def __init__(self, slices: AnsweringSlices, contribution_slices: ContributionSlices, rule_answers: HookRuleAnswers, reader: AgentViewReader,
+    def __init__(self, slices: AgentSlices, contribution_slices: ContributionSlices, rule_answers: HookRuleAnswers, reader: AgentViewReader,
                  assembly: MachineAssembly, bus: Bus) -> None:
         self.slices, self.contribution_slices, self.rule_answers, self.reader, self.assembly, self.bus = slices, contribution_slices, rule_answers, reader, assembly, bus
 

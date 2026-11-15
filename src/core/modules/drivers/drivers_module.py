@@ -76,6 +76,7 @@ from core.modules.drivers.bindings.stored_step_writer import StoredStepWriter
 from core.modules.drivers.commands.run_agent_step.run_agent_step_handler import RunAgentStepHandler
 from core.modules.drivers.commands.count_step_failure.count_step_failure_handler import CountStepFailureHandler
 from core.modules.drivers.tick_handlers.agent_step_round_tick_handler import AgentStepRoundTickHandler
+from core.modules.drivers.tick_handlers.agent_minute_steps_tick_handler import AgentMinuteStepsTickHandler
 from core.modules.drivers.bindings.table_grant_ledger import TableGrantLedger
 from core.modules.drivers.bindings.table_step_requests import TableStepRequests
 from core.modules.drivers.bindings.hook_client_shell_parser import HookClientShellParser
@@ -346,7 +347,7 @@ class DriversModule(Module):
     overlays = [PausedOverlay]
     marks = [RequiredCommandSkippedMark, BypassMark, DispatchMark, CompactionMark]
     performance_tools = [HookCostTool]
-    tick_handlers = [AgentStepRoundTickHandler, InterruptedAgentWakeTickHandler, AgentTicksTickHandler, EndSilentHelpersTickHandler, CompactionFaultsTickHandler, PanicWatchTickHandler, ReleasedSessionWakeTickHandler,
+    tick_handlers = [AgentMinuteStepsTickHandler, AgentStepRoundTickHandler, InterruptedAgentWakeTickHandler, AgentTicksTickHandler, EndSilentHelpersTickHandler, CompactionFaultsTickHandler, PanicWatchTickHandler, ReleasedSessionWakeTickHandler,
                      HookPruningTickHandler, RowPruningTickHandler,
                      EventPruningTickHandler]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed]

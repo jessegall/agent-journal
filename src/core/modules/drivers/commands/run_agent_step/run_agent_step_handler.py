@@ -10,7 +10,7 @@ from engine.repository.repository import Repository
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.commands.run_agent_step.run_agent_step import RunAgentStep
 from core.modules.drivers.models.agent_step_request import AgentStepRequest
-from core.modules.drivers.support.answering_slices import AnsweringSlices
+from core.modules.drivers.support.agent_slices import AgentSlices
 from core.modules.drivers.support.machine_assembly import MachineAssembly
 from core.modules.drivers.support.walk_answer_policy import WalkAnswerPolicy
 
@@ -25,7 +25,7 @@ class RunAgentStepHandler(Handler[RunAgentStep, None]):
 
     command = RunAgentStep
 
-    def __init__(self, queries: Queries, repository: Repository, agents: AgentRows, slices: AnsweringSlices, reader: AgentViewReader, assembly: MachineAssembly,
+    def __init__(self, queries: Queries, repository: Repository, agents: AgentRows, slices: AgentSlices, reader: AgentViewReader, assembly: MachineAssembly,
                  steps: StepWriter) -> None:
         self.queries, self.repository, self.agents, self.slices = queries, repository, agents, slices
         self.reader, self.assembly, self.steps = reader, assembly, steps

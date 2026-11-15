@@ -5,7 +5,7 @@ from core.modules.drivers.commands.request_agent_step.request_agent_step import 
 
 
 class RequestAgentStepHandler(Handler[RequestAgentStep, None]):
-    """Joins the cause to the agent's open step request, or opens one."""
+    """Joins the cause to each agent's open step request, or opens one."""
 
     command = RequestAgentStep
 
@@ -13,4 +13,4 @@ class RequestAgentStepHandler(Handler[RequestAgentStep, None]):
         self.requests = requests
 
     def handle(self, command: RequestAgentStep, context: Context) -> None:
-        self.requests.requested(tuple([command.agent_id]), command.cause, context)
+        self.requests.requested(command.agent_ids, command.cause, context)

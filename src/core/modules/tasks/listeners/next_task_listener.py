@@ -6,7 +6,7 @@ from engine.event.moved import Moved
 from engine.listener.commit.commit_listener import CommitListener
 from engine.listener.rows.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.support.answering_slices import AnsweringSlices
+from core.modules.drivers.support.agent_slices import AgentSlices
 from core.modules.tasks.commands.assign_next_task.assign_next_task import AssignNextTask
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
@@ -21,7 +21,7 @@ class NextTaskListener(CommitListener[Moved[Task]]):
     name = "tasks.next-task"
     moves = (TaskLifecycle.close, TaskLifecycle.cancel)
 
-    def __init__(self, bus: Bus, rows: EventRows, slices: AnsweringSlices) -> None:
+    def __init__(self, bus: Bus, rows: EventRows, slices: AgentSlices) -> None:
         self.bus, self.rows, self.slices = bus, rows, slices
 
     def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:

@@ -1,3 +1,4 @@
+from core.modules.processes.listeners.run_end_step_listener import RunEndStepListener
 from core.modules.processes.listeners.watch_step_listener import WatchStepListener
 from core.modules.processes.needs.watched_run_needs import WatchedRunNeeds
 from core.modules.processes.migrations.m085_process_claim import ProcessClaimMigration
@@ -316,7 +317,7 @@ class ProcessesModule(Module):
     output."""
 
     name = "journal.core.processes"
-    agent_listeners = [WatchStepListener]
+    agent_listeners = [RunEndStepListener, WatchStepListener]
     transforms = [RunnerTransform]
     needs = [WatchedRunNeeds, LongRunDockNeeds, ReaderRequestNeeds, SilentRunBlockNeeds]
     effects = [LeftoverRunEffect, LongRunDockEffect, WatchLinesEffect]
