@@ -27,9 +27,9 @@ def test_a_read_only_helpers_run_with_no_reader_is_not_told_but_counted_for_the_
 
 def test_one_command_without_a_reader_is_missing_for_a_worker_and_the_main_agent_alike_while_rejected_crashed_asking_and_lookup_runs_need_none(new_story):
     story = new_story(fixture=ForcedReaders)
+    rejected = rejected_worker_command(story)
     worker = ended_after_a_while(story, worker_run(story, "custom-build run", CommandCategory.TEST_RUN), STEPS)
     main = ended_after_a_while(story, start_process(story, "custom-build run", category=CommandCategory.TEST_RUN), STEPS)
-    rejected = rejected_worker_command(story)
     crashed = start_process(story, "custom-suite run", category=CommandCategory.TEST_RUN)
     story.advance(LONG_RUN)
     end_run(story, crashed, CRASHED_START, exit_code=1)
