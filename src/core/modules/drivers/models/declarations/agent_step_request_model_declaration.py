@@ -7,3 +7,4 @@ class AgentStepRequestModelDeclaration(ModelDeclaration):
 
     model = AgentStepRequest
     excluded_subcommands = ["make", "edit", "delete"]
+    is_bookkeeping = True

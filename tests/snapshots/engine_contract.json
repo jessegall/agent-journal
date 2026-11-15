@@ -1691,6 +1691,7 @@
         "subcommand_help(self, cli_name: str, caller: Caller, stream: TextIO) -> int",
         "help_line_count(self, heading: str, names: list[str], stream: TextIO) -> int",
         "requested_run(self, argv: list[str], request: CallerRequest, stream: TextIO) -> int",
+        "bookkeeping_models(self) -> frozenset[str]",
         "run_parsed(self, argv: list[str], caller: Caller, output: Output) -> int",
         "parsed_run(self, argv: list[str], subcommand: AnySubcommand, arguments: Namespace, caller: Caller, output: Output) -> int",
         "check_overview(self, subcommand: AnySubcommand, arguments: Namespace, caller: Caller) -> None",
@@ -5286,7 +5287,7 @@
         "labels: Mapping[str, str]"
       ],
       "methods": [
-        "built(cls, events: Iterable[LoggedEvent]) -> 'TouchedRows'",
+        "built(cls, events: Iterable[LoggedEvent], bookkeeping: frozenset[str]) -> 'TouchedRows'",
         "lines(self) -> list[str]"
       ]
     },
@@ -7106,7 +7107,8 @@
         "model: type[Model]",
         "query: type[Query[Model]] | None",
         "commands: Sequence[type[MoveCommand[Model]]]",
-        "excluded_subcommands: Sequence[str]"
+        "excluded_subcommands: Sequence[str]",
+        "is_bookkeeping: bool"
       ],
       "methods": [
         "declared(cls) -> 'ModelDeclaration'"

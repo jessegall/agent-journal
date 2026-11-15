@@ -19,6 +19,8 @@ class ModelDeclaration:
     query: type[Query[Model]] | None = None
     commands: Sequence[type[MoveCommand[Model]]] = ()
     excluded_subcommands: Sequence[str] = ()
+    # the journal's own bookkeeping, which a command that writes it does not list among the rows it changed
+    is_bookkeeping: bool = False
 
     # a model declared with keywords is written as a class in its own file that sets the fields as class attributes
     @classmethod

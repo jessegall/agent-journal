@@ -1,3 +1,4 @@
+from engine.module.model_declaration import ModelDeclaration
 import io
 from argparse import Namespace
 from dataclasses import replace
@@ -156,6 +157,10 @@ class Console:
             return USAGE_CODE
         return self.run(argv, caller, stream, request)
 
+    def bookkeeping_models(self) -> frozenset[str]:
+        declared = (entry if isinstance(entry, ModelDeclaration) else entry.declared() for module in self.finder.modules() for entry in module.models)
+        return frozenset(declaration.model.model_name for declaration in declared if declaration.is_bookkeeping)
+
     def run_parsed(self, argv: list[str], caller: Caller, output: Output) -> int:
         subcommand, parser = self.line_parser.parser(argv)
         captured_output = io.StringIO()
@@ -204,7 +209,7 @@ class Console:
         value = self.bus.run(command, caller.actor, skipped, environment_id=environment_id, plugin_script=caller.plugin_script)
         actor_events = [event for event in self.events.events_after(newest_event_id) if event.actor_id == caller.actor.id]
         command_timestamps = {event.timestamp for event in actor_events if event.command == command.label()}
-        output.confirmation = "\n".join(TouchedRows.built(event for event in actor_events if event.timestamp in command_timestamps).lines())
+        output.confirmation = "\n".join(TouchedRows.built((event for event in actor_events if event.timestamp in command_timestamps), self.bookkeeping_models()).lines())
         with self.scopes.read_scope(subcommand.disabled_scopes, caller.read_actor_id, environment_id):
             subcommand.write_output(value, output)
         self.note_overview(subcommand, arguments, caller)

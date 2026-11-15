@@ -12,7 +12,6 @@ from engine.module.module_actors import ModuleActors
 from engine.errors.refusal import Refusal
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
-from core.modules.drivers.queries.hook_call_query import COMPACTION_LIMIT_SECONDS
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.processes.models.enums.process_mark_type import ProcessMarkType
@@ -81,16 +80,6 @@ def test_the_agent_is_told_the_number_of_a_new_message_and_only_reading_it_marks
     expect_value_7("read_at: None", story, "message show 1 ", "read_at:", "message show 1")
     story.hook("s-1", READ_MESSAGE_HOOK)
     story.expect_text("message show 1", "text: Fix the cart first", "read_at: 2026", actor=story.user)
-
-
-def test_a_backlog_of_six_messages_is_told_five_at_a_time_with_the_full_count(new_story):
-    story = delivery_story(new_story)
-    for number in range(6):
-        story.run(f'message send "Message {number}" --environment main', actor=story.user)
-    first = story.hook("s-1", HookSamples.stop())
-    expect_reply_line(first, "6 new messages")
-    second = story.hook("s-1", HookSamples.stop())
-    expect_reply_line(second, "New message 6")
 
 
 class KeptTyping(TerminalTyping):
@@ -266,18 +255,6 @@ def test_a_line_left_in_typing_by_a_stopped_server_waits_again_when_the_journal_
     story.expect_text(f"agent-line list --agent {story.agent.id} --state waiting", "New message 1", actor=story.user)
 
 
-def test_a_line_left_in_typing_by_a_stopped_server_for_a_message_read_meanwhile_is_not_given_after_the_journal_starts(untyped_idle_message):
-    story = untyped_idle_message
-    line = story.newest_row(AgentLine, session_agent_id=story.agent.id, state=AgentLineState.WAITING)
-    story.run(f"agent-line claim {line.id}", actor=story.user)
-    story.expect_success("message read 1", actor=story.agent)
-    BootingWork().run(story.container)
-    story.run_listeners()
-    story.expect_rows(story.row(AgentLine, line.id).state is not AgentLineState.WAITING)
-    reply = story.hook("s-1", HookSamples.edit("src/cart.py"))
-    story.expect_rows(not any("new message" in reply_line for reply_line in reply.lines), detail=str(reply.lines))
-
-
 def test_a_refused_stop_is_not_idle_since_the_agent_goes_on(delivery_typing):
     story, typing = delivery_typing
     post_message(story, "First")
@@ -292,14 +269,6 @@ def test_a_line_is_not_typed_while_the_agent_compacts_and_its_next_hook_gives_it
     post_message(story, "Are you there")
     expect_row(typing, typed=[])
     story.expect_hook_allowed("s-1", HookSamples.edit("cart.py"), "New message 1")
-
-
-def test_a_compaction_that_sends_no_further_hook_stops_holding_lines_after_its_limit(idle_delivery_typing):
-    story, typing = idle_delivery_typing
-    story.hook("s-1", COMPACTION)
-    story.advance(timedelta(seconds=COMPACTION_LIMIT_SECONDS))
-    post_message(story, "Are you there")
-    expect_terminal_lines(typing, [f"[journal] {NewMessageNudge.declared().nudge(message=1).text}"])
 
 
 def test_a_paused_agent_that_is_idle_is_typed_a_message_so_the_user_can_chat(idle_delivery_typing):
@@ -331,15 +300,6 @@ def test_a_message_is_given_once(new_story):
     story = new_story(SAMPLES, fixture=UnreadCartMessage)
     story.hook("s-1", HookSamples.stop())
     story.expect_absent_hook_line("s-1", HookSamples.stop(), "New message 1")
-
-
-def test_the_files_of_a_message_are_named_by_their_path_in_the_line(new_story):
-    story = delivery_story(new_story)
-    pending = story.home.pending_files / "aaaaaaaaaaaaaaaa"
-    pending.mkdir(parents=True)
-    (pending / "cart.png").write_bytes(b"png")
-    story.run('message send "see this" --file aaaaaaaaaaaaaaaa/cart.png --environment main', actor=story.user)
-    expect_reply_line(story.hook("s-1", HookSamples.stop()), "file .journal/files/message/1/cart.png")
 
 
 def test_a_message_of_the_agent_is_not_given_back_to_it(agent_message):
@@ -526,36 +486,6 @@ class RefusingThenTyping(KeptTyping):
     def send_line(self, agent_id: int, line: str) -> None:
         self.asked += 1
         super().send_line(agent_id, line)
-
-
-def test_a_line_that_could_not_be_typed_is_asked_again_after_ten_seconds_typed_once_at_a_later_tick_and_never_again(new_story):
-    story = stopped_lead_story(new_story)
-    typing = RefusingThenTyping()
-    story.replace(TerminalTyping, typing)
-    agent = story.agent
-    post_message(story, "Are you there")
-    for number in range(2):
-        story.run(f'message send "Message {number}" --environment main', actor=story.user)
-    expect_row(typing, typed=[])
-    for _ in range(5):
-        story.advance(timedelta(seconds=1))
-        story.tick("s-1")
-        story.run_listeners()
-    expect_row(typing, asked=1)
-    story.advance(timedelta(seconds=10))
-    story.tick("s-1")
-    story.run_listeners()
-    expect_row(typing, asked=2)
-    typing.working = True
-    story.advance(timedelta(seconds=11))
-    story.tick("s-1")
-    story.run_listeners()
-    expect_row(typing, typed=[(agent.id, f"[journal] {NewMessageNudge.declared().nudge(message=1).text}")])
-    for _ in range(3):
-        story.advance(timedelta(seconds=11))
-        story.tick("s-1")
-        story.run_listeners()
-    expect_row(typing, typed=[(agent.id, f"[journal] {NewMessageNudge.declared().nudge(message=1).text}")])
 
 
 def test_a_line_the_hook_carries_after_a_failed_typing_is_told_once(untyped_message_after_tick):

@@ -13,11 +13,14 @@ class TouchedRows:
 
     labels: Mapping[str, str]
 
+    # the rows of the bookkeeping models are left out: the journal writes them beside the command, not for it
     @classmethod
-    def built(cls, events: Iterable[LoggedEvent]) -> "TouchedRows":
+    def built(cls, events: Iterable[LoggedEvent], bookkeeping: frozenset[str] = frozenset()) -> "TouchedRows":
         labels: dict[str, str] = {}
         for event in events:
             model, action = event.event.rsplit(".", 1)
+            if model in bookkeeping:
+                continue
             name = f"{model}:{event.row_id}"
             labels[name] = ACTION_LABELS.get(action, labels.get(name, UPDATED))
         return cls(labels)
