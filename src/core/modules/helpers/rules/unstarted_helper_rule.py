@@ -1,40 +1,23 @@
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
-from engine.driver.interval import Interval
 from engine.driver.rule_answer import RuleAnswer
-from engine.driver.span_queries import SpanQueries
+from engine.enums.hook_event_name import HookEventName
 from engine.agent.enums.role_group import RoleGroup
 from engine.scope.actor_scope import ActorScope
-from core.modules.agents.commands.record_agent_launch_failure.record_agent_launch_failure import RecordAgentLaunchFailure
-from core.modules.agents.models.agent import Agent
-from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.helpers.support.helper_settings import UNSTARTED_HELPER_SECONDS
-from engine.setting.setting_values import SettingValues
+from core.modules.helpers.effects.unstarted_helper_effect import UnstartedHelperEffect
 
 
 class UnstartedHelperRule(DriverRule):
-    """On its parent's tick, records a failed launch for a helper the launcher took that sent no hook within
-    the unstarted helper seconds of that launch. A helper whose launch still waits is never failed."""
+    """The old walk's answer for UnstartedHelperEffect, which owns it, until the walk is deleted."""
 
-    name = "helpers.unstarted-helper"
+    name = UnstartedHelperEffect.key
     hook = HookEventName.TICK
     drivers = ["*"]
     role_group = RoleGroup.ANY
     disabled_scopes = [ActorScope]
 
-    def __init__(self, agents: AgentRows, hook_calls: HookCallQuery, settings: SettingValues, spans: SpanQueries) -> None:
-        self.agents, self.hook_calls, self.settings, self.spans = agents, hook_calls, settings, spans
+    def __init__(self, effect: UnstartedHelperEffect) -> None:
+        self.effect = effect
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        helpers = self.agents.running_with_read_access(hook.agent_id)
-        limit = Interval(self.settings.seconds(UNSTARTED_HELPER_SECONDS))
-        silent = (helper for helper in helpers if self.is_silent(helper, hook, limit))
-        return RuleAnswer.allowed().running(*(RecordAgentLaunchFailure(helper.id) for helper in silent))
-
-    def is_silent(self, helper: Agent, hook: AgentHook, limit: Interval) -> bool:
-        if helper.launched_at is None:
-            return False
-        started = limit.has_passed(self.spans, hook.agent_id, helper.launched_at, hook.timestamp)
-        return started and self.hook_calls.newest_agent_hook(helper.id) is None
+        return RuleAnswer.allowed().running(*self.effect.commands_of(hook.event, hook.agent_id))
