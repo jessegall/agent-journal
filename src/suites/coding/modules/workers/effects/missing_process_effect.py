@@ -1,9 +1,29 @@
-from engine.rule_backed.rule_effect import RuleEffect
-from suites.coding.modules.workers.rules.missing_process_rule import MissingProcessRule
+from collections.abc import Sequence
+
+from engine.agent_machine.contracts.event_effect import EventEffect
+from engine.command.command import Command
+from engine.driver.hook_event import HookEvent
+from engine.enums.agent_role import AgentRole
+from engine.enums.hook_event_name import HookEventName
+from engine.helper_type.helper_type_book import HelperTypeBook
+from core.modules.agents.support.agent_rows import AgentRows
+from suites.coding.modules.workers.commands.end_gone_worker.end_gone_worker import EndGoneWorker
+from suites.coding.modules.workers.support.gone_agents import GoneAgents
+from suites.coding.modules.workers.types.worker import Worker
 
 
-class MissingProcessEffect(RuleEffect):
-    """The commands for an agent whose program is gone, as today's MissingProcessRule runs them at the minute tick, run at the agent's
-    minute step."""
+class MissingProcessEffect(EventEffect):
+    """At a minute step of the main agent or a worker, ends each open helper of the environment whose recorded process
+    is gone, though its end hook never came; one never seen stays."""
 
-    rule = MissingProcessRule
+    key = "drivers.missing-process"
+    events = [HookEventName.TICK]
+    agent_types = [AgentRole.MAIN.value, Worker.key]
+
+    def __init__(self, agents: AgentRows, missing_agents: GoneAgents, types: HelperTypeBook) -> None:
+        self.agents, self.missing_agents, self.types = agents, missing_agents, types
+
+    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+        roles = self.types.helper_keys()
+        agents = [agent for agent in self.agents.running() if agent.role in roles]
+        return [EndGoneWorker(agent.id) for agent in self.missing_agents.find(agents)]

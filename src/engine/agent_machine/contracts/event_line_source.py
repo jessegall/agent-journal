@@ -9,8 +9,6 @@ from engine.driver.hook_event import HookEvent
 from engine.driver.nudge import Nudge
 from engine.enums.hook_event_name import HookEventName
 from engine.enums.line_carrier import LineCarrier
-from engine.enums.line_category import LineCategory
-from engine.enums.nudge_type import NudgeType
 
 # the events no program carries a line on: a line there waits for the agent's next line event
 UNCARRIED_EVENTS = {HookEventName.TICK, HookEventName.MESSAGE_DISPLAY}
@@ -30,8 +28,7 @@ class EventLineSource(LineSource):
             cls.carrier = LineCarrier.WAITING
 
     def lines(self, question: Question, view: AgentView) -> Sequence[Line]:
-        return [Line(nudge.key, nudge.text, LineCategory.STEERING if nudge.type is NudgeType.STEERING else LineCategory.INFORMATION, nudge.key, self.carrier)
-                for nudge in self.nudges(question.event, view.agent.agent_id)]
+        return [Line.of_nudge(nudge, self.carrier) for nudge in self.nudges(question.event, view.agent.agent_id)]
 
     # the lines this event tells the agent; no event is the agent's minute step
     @abstractmethod

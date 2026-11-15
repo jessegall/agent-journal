@@ -1,6 +1,4 @@
 from engine.command.context import Context
-from engine.enums.agent_role import AgentRole
-from engine.enums.actor_type import ActorType
 from engine.command.handler import Handler
 from engine.query.queries import Queries
 from engine.repository.repository import Repository

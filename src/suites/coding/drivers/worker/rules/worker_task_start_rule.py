@@ -1,22 +1,20 @@
-from suites.coding.nudges.worker_task_unstarted_nudge import WorkerTaskUnstartedNudge
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.tasks.queries.task_query import TaskQuery
+from engine.enums.hook_event_name import HookEventName
 from core.modules.tasks.support.block_conditions.started_task_exists import StartedTaskExists
+from suites.coding.needs.worker_task_start_needs import WORKER_TASK_START_KEY, WorkerTaskStartNeeds
+from suites.coding.nudges.worker_task_unstarted_nudge import WorkerTaskUnstartedNudge
 
 
 class WorkerTaskStartRule(DriverRule):
-    """A worker with no started task is blocked until the journal starts its task."""
+    """The old walk's answer for WorkerTaskStartNeeds, which owns it, until the walk is deleted."""
 
-    name = "workers.journal-only-without-task"
+    name = WORKER_TASK_START_KEY
     hook = HookEventName.PRE_TOOL_USE
 
-    def __init__(self, tasks: TaskQuery) -> None:
-        self.tasks = tasks
+    def __init__(self, needs: WorkerTaskStartNeeds) -> None:
+        self.needs = needs
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if self.tasks.started_tasks(hook.agent_id):
-            return RuleAnswer.allowed()
-        return RuleAnswer.blocked(hook, WorkerTaskUnstartedNudge.declared().nudge(), StartedTaskExists())
+        return RuleAnswer.blocked(hook, WorkerTaskUnstartedNudge.declared().nudge(), StartedTaskExists()) if self.needs.is_waiting(hook.agent_id) else RuleAnswer.allowed()

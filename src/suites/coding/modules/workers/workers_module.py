@@ -1,3 +1,6 @@
+from suites.coding.modules.workers.effects.unmerged_worker_effect import UnmergedWorkerEffect
+from suites.coding.modules.workers.lines.phase_test_lines import PhaseTestLines
+from suites.coding.modules.workers.support.block_conditions.delivered_proofs_checked import DeliveredProofsChecked
 from suites.coding.modules.workers.policies.dispatch_names_model_policy import DispatchNamesModelPolicy
 from suites.coding.modules.workers.effects.orphan_worktree_effect import OrphanWorktreeEffect
 from suites.coding.modules.workers.effects.missing_process_effect import MissingProcessEffect
@@ -36,7 +39,6 @@ from suites.coding.modules.workers.lines.unstarted_worker_lines import Unstarted
 from suites.coding.modules.workers.lines.worker_log_due_lines import WorkerLogDueLines
 from suites.coding.modules.workers.lines.workers_out_lines import WorkersOutLines
 from suites.coding.modules.workers.needs.delivered_work_stop_needs import DeliveredWorkStopNeeds
-from suites.coding.modules.workers.needs.unmerged_worker_needs import UnmergedWorkerNeeds
 from suites.coding.modules.workers.needs.worker_status_first_needs import WorkerStatusFirstNeeds
 from suites.coding.modules.workers.effects.inactive_helper_effect import InactiveHelperEffect
 from suites.coding.modules.workers.effects.phase_test_effect import PhaseTestEffect
@@ -144,9 +146,10 @@ class WorkersModule(Module):
 
     name = "journal.suites.coding.workers"
     line_sources = [InactiveWorkerStopLines, CacheRefreshLines]
-    effects = [OrphanWorktreeEffect, MissingProcessEffect, InactiveWorkerStopEffect, CacheRefreshEffect, MergeJobReportEffect, RequestCompactionEffect, InactiveHelperEffect, PhaseTestEffect, RecordTodoListEffect]
-    needs = [MergeJobNeeds, CompactionNeeds, DeliveredWorkStopNeeds, UnmergedWorkerNeeds, WorkerStatusFirstNeeds]
-    lines = [ContextStopNowLines, InactiveHelperLines, MergeCheckoutLines, SmallBatchLines, StoppedWorkerLines, UnmergedWorkerLines, UnstartedWorkerLines, WorkerLogDueLines, WorkersOutLines]
+    effects = [OrphanWorktreeEffect, MissingProcessEffect, InactiveWorkerStopEffect, CacheRefreshEffect, MergeJobReportEffect, RequestCompactionEffect, InactiveHelperEffect, PhaseTestEffect, RecordTodoListEffect, UnmergedWorkerEffect]
+    block_conditions = [DeliveredProofsChecked]
+    needs = [MergeJobNeeds, CompactionNeeds, DeliveredWorkStopNeeds, WorkerStatusFirstNeeds]
+    lines = [ContextStopNowLines, InactiveHelperLines, MergeCheckoutLines, PhaseTestLines, SmallBatchLines, StoppedWorkerLines, UnmergedWorkerLines, UnstartedWorkerLines, WorkerLogDueLines, WorkersOutLines]
     policies = [DispatchNamesModelPolicy, ProvedDeliveryPolicy, ContextHardLimitPolicy, CheckoutWriteCodePolicy, DispatchAllowancePolicy, PhaseTestPolicy, ProtectedFolderPolicy, ReadonlyHelperAllowancePolicy, WorkerFilePolicy, WorkerOutsideLinkPolicy, WorkerReadPolicy, WorkerReusePolicy, WorkerTestCountPolicy, WorkerTestLinePolicy]
     profiles = WORKER_PROFILES
     helper_types = [Worker, Merger]

@@ -6,7 +6,7 @@ from engine.command.bus import Bus
 from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.commands.forward_worker_questions.forward_worker_questions import ForwardWorkerQuestions
 from suites.coding.modules.workers.support.worker_questions import WorkerQuestions
-from core.modules.asks.support.ask_settings import QUESTION_ANSWER_MINUTES, QUESTION_FORWARD_MINUTES, QUESTION_VISITS_LIMIT
+from core.modules.asks.support.ask_settings import QUESTION_VISITS_LIMIT
 
 
 class ReturnUnhandledMergerLinesHandler(Handler[ReturnUnhandledMergerLines, None]):

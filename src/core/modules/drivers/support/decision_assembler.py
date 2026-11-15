@@ -8,13 +8,10 @@ from engine.agent_step.agent_view_reader import AgentViewReader
 from engine.command.bus import Bus
 from engine.command.command import Command
 from engine.driver.hook_event import HookEvent
-from engine.driver.nudge import Nudge
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.rule_answers import RuleAnswers
 from engine.driver.rule_record import RuleRecord
 from engine.enums.decision_class import DecisionClass
-from engine.enums.line_category import LineCategory
-from engine.enums.nudge_type import NudgeType
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.assembled_answer import AssembledAnswer
 from core.modules.drivers.support.assembled_step import AssembledStep
@@ -84,8 +81,7 @@ class DecisionAssembler:
         sources = list(dict.fromkeys(line.source_key for line in lines))
         records = []
         for source in sources:
-            answer = RuleAnswer(nudges=tuple(Nudge(line.key, NudgeType.STEERING if line.category is LineCategory.STEERING else NudgeType.NOTICE, line.text)
-                                             for line in lines if line.source_key == source))
+            answer = RuleAnswer(nudges=tuple(line.said() for line in lines if line.source_key == source))
             records.append(RuleRecord(source or NEW_DRIVER_LAYER, "" if source else NEW_DRIVER_LAYER, answer.outcome, answer))
         return records
 

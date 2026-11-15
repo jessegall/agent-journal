@@ -5,7 +5,7 @@ from engine.driver.agent_hook import AgentHook
 from engine.driver.hook_event import HookEvent
 from core.modules.drivers.support.agent_activities import AgentActivities
 from engine.testing.examples.hook_samples import HookSamples
-from suites.coding.modules.workers.rules.inactive_helper_rule import InactiveHelperRule
+from suites.coding.modules.workers.lines.inactive_helper_lines import InactiveHelperLines
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 
@@ -18,5 +18,5 @@ def test_the_inactive_helper_rule_run_right_after_a_dispatch_does_not_name_the_n
     hook = AgentHook(event=event, agent_id=story.agent.id, environment_id=1, role=AgentRole.MAIN, driver="coding.main", timestamp=story.clock.timestamp())
     story.container.get(AgentActivities).read(hook.event, hook.agent_id)
     worker = dispatched_worker(story)
-    answer = story.container.get(InactiveHelperRule).warning(hook)
-    story.expect_rows(worker.id > 0, answer.nudges == ())
+    nudges = story.container.get(InactiveHelperLines).nudges(hook.event, hook.agent_id)
+    story.expect_rows(worker.id > 0, list(nudges) == [])

@@ -8,7 +8,7 @@ POLICY_RANKS = ("safety.all", "access.all", "shell.all", "drivers.policies", "me
 INSTRUCTION_RANKS = ("skills.command", "skills.read-first", "triggers.skill", "messages.unread", "documents.open", "memories.mark")
 TASK_START_RANKS = ("workers.status-first", "workers.no-task", "sequences.untaken-step", "processes.reader-request", "processes.silent-run")
 FILE_CHANGE_RANKS = ("tasks.unlogged-writes", "processes.output-title")
-STOP_RANKS = ("workers.delivered-proofs", "workers.unmerged", "reminders.due")
+STOP_RANKS = ("workers.delivered-proofs", "reminders.due")
 MAIN_RANK_ORDER = RankOrder(POLICY_RANKS, ("overview.first", *INSTRUCTION_RANKS, "plans.context", *TASK_START_RANKS, "messages.unanswered", *FILE_CHANGE_RANKS,
                                            "tasks.blocked-review", *STOP_RANKS))
 HELPER_RANK_ORDER = RankOrder(POLICY_RANKS, (*INSTRUCTION_RANKS, *TASK_START_RANKS, "messages.unanswered", *FILE_CHANGE_RANKS, *STOP_RANKS))

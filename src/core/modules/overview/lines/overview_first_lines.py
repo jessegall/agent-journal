@@ -25,4 +25,4 @@ class OverviewFirstLines(LineSource):
         if not self.first.is_required or event is None or event.is_resume or view.agent.agent_type != "main":
             return []
         nudge = OverviewLineNudge.declared().nudge()
-        return [Line(nudge.key, nudge.text, self.category, nudge.key, LineCarrier.NOW)]
+        return [Line.of_nudge(nudge, LineCarrier.NOW, self.category)]

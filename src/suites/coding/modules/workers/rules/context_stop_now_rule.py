@@ -1,37 +1,24 @@
-from suites.coding.modules.workers.types.worker import Worker
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
-from engine.driver.hook_history import HookHistory
 from engine.driver.rule_answer import RuleAnswer
-from engine.driver.seconds import Seconds
-from engine.scope.actor_scope import ActorScope
-from core.modules.tasks.queries.task_query import TaskQuery
-from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
-from suites.coding.modules.workers.nudges.context_stop_after_task_nudge import ContextStopAfterTaskNudge
-from suites.coding.modules.workers.nudges.context_stop_immediate_nudge import ContextStopImmediateNudge
 from engine.enums.agent_role import AgentRole
-from suites.coding.support.context_limit_check import ContextLimitCheck
-
-RETRY_SECONDS = Seconds(600)
+from engine.enums.hook_event_name import HookEventName
+from engine.scope.actor_scope import ActorScope
+from suites.coding.modules.workers.lines.context_stop_now_lines import ContextStopNowLines
+from suites.coding.modules.workers.types.worker import Worker
 
 
 class ContextStopNowRule(DriverRule):
-    """An agent whose context has reached the token limit and that holds no task, or a worker just handed its next
-    task, is told to stop, so that its stop compacts it."""
+    """The old walk's answer for ContextStopNowLines, which owns it, until the walk is deleted."""
 
-    name = "workers.context-limit-stop-now"
+    name = ContextStopNowLines.key
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
     roles = [AgentRole.MAIN, Worker.key]
     disabled_scopes = [ActorScope]
 
-    def __init__(self, hook_history: HookHistory, limit_check: ContextLimitCheck, tasks: TaskQuery, compaction: WorkerCompaction) -> None:
-        self.hook_history, self.limit_check, self.tasks, self.compaction = hook_history, limit_check, tasks, compaction
+    def __init__(self, lines: ContextStopNowLines) -> None:
+        self.lines = lines
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if self.compaction.is_after_task(hook.agent_id):
-            return RuleAnswer.with_nudges(ContextStopAfterTaskNudge.declared().nudge())
-        if self.limit_check.tokens(hook.agent_id) is None or self.tasks.started_tasks(hook.agent_id) or self.hook_history.has_recent_answer(self.name, hook, RETRY_SECONDS):
-            return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(ContextStopImmediateNudge.declared().nudge())
+        return RuleAnswer.with_nudges(*self.lines.nudges(hook.event, hook.agent_id))

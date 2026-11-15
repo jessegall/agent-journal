@@ -756,9 +756,13 @@
         "category: LineCategory",
         "interval_key: str",
         "carrier: LineCarrier",
-        "source_key: str"
+        "source_key: str",
+        "nudge: Nudge | None"
       ],
-      "methods": []
+      "methods": [
+        "of_nudge(cls, nudge: Nudge, carrier: LineCarrier, category: LineCategory | None) -> 'Line'",
+        "said(self) -> Nudge"
+      ]
     },
     "agent_machine.record.question.Question": {
       "bases": [],

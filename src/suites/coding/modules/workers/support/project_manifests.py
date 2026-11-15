@@ -1,6 +1,5 @@
 import json
 from collections import Counter
-import os
 import re
 from pathlib import Path, PurePosixPath
 

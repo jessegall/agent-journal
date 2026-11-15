@@ -1,5 +1,4 @@
 from suites.coding.modules.workers.types.merger import Merger
-from engine.enums.actor_type import ActorType
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.errors.refusal import Refusal

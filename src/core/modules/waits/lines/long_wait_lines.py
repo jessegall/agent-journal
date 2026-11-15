@@ -33,7 +33,7 @@ class LongWaitLines(LineSource):
         self.queries, self.clock = queries, clock
 
     def lines(self, question: Question, view: AgentView) -> Sequence[Line]:
-        return [Line(nudge.key, nudge.text, self.category, nudge.key, self.carrier) for nudge in self.nudges(view.agent.agent_id)]
+        return [Line.of_nudge(nudge, self.carrier, self.category) for nudge in self.nudges(view.agent.agent_id)]
 
     # a check line for each wait of the agent open ten minutes or more
     def nudges(self, agent_id: int) -> list[Nudge]:

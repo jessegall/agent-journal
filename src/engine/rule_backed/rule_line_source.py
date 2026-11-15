@@ -8,8 +8,6 @@ from engine.agent_machine.record.question import Question
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.enums.line_carrier import LineCarrier
-from engine.enums.line_category import LineCategory
-from engine.enums.nudge_type import NudgeType
 from engine.rule_backed.rule_events import RuleEvents
 from engine.rule_backed.rule_hooks import RuleHooks
 
@@ -42,5 +40,4 @@ class RuleLineSource(LineSource):
         answer = self.hooks.answer(self.rule, question, view.agent.agent_id)
         if answer is None:
             return []
-        return [Line(nudge.key, nudge.text, LineCategory.STEERING if nudge.type is NudgeType.STEERING else LineCategory.INFORMATION, nudge.key, self.carrier)
-                for nudge in answer.nudges]
+        return [Line.of_nudge(nudge, self.carrier) for nudge in answer.nudges]

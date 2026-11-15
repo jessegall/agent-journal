@@ -27,4 +27,4 @@ class DueReminderLines(LineSource):
 
     def lines(self, question: Question, view: AgentView) -> Sequence[Line]:
         nudges = [ReminderLineNudge.declared().nudge(reminder=reminder.id) for reminder in self.reminders.due(view.agent.agent_id, self.clock.timestamp())]
-        return [Line(nudge.key, nudge.text, self.category, nudge.key, self.carrier) for nudge in nudges]
+        return [Line.of_nudge(nudge, self.carrier, self.category) for nudge in nudges]

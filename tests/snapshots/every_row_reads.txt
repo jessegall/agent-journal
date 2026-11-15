@@ -61,6 +61,9 @@ src/core/modules/drivers/commands/report_compaction_faults/report_compaction_fau
 src/core/modules/drivers/commands/restore_stack_frame/restore_stack_frame_handler.py:the open suppressions of one agent, a handful at most
 src/core/modules/drivers/listeners/assigned_work_suppression_listener.py:the frames a person removed from one agent, a handful at most
 src/core/modules/drivers/listeners/claimed_line_release_listener.py:at a start every line left typing is released
+src/core/modules/drivers/listeners/retired_responder_listener.py:the agents a retired agent started, a handful
+src/core/modules/drivers/listeners/retired_responder_listener.py:the open escalations of a retired agent's children, one each at most
+src/core/modules/drivers/listeners/retired_responder_listener.py:the open escalations of one retiring agent, one at most
 src/core/modules/drivers/listeners/wake_acknowledgement_listener.py:the active wake obligations of one agent, one for each work generation
 src/core/modules/drivers/queries/hook_call_query.py:every message display call since the agent's last turn is shown
 src/core/modules/drivers/rules/access_rule.py:a tool use is matched against every permission the agent was given, oldest first
@@ -68,9 +71,9 @@ src/core/modules/drivers/rules/agent_block_rule.py:the open blocks of one agent 
 src/core/modules/drivers/rules/block_stop_rule.py:the open blocks of one agent are few: each is closed or skipped before the agent goes on
 src/core/modules/drivers/support/agent_activities.py:The open agents of one family, which the agent limits bound; every rule of the hook reads them from this one load.
 src/core/modules/drivers/support/agent_open_blocks.py:every open block of the agent for the state's nudges
+src/core/modules/drivers/support/answer_basis_writers.py:the environments of one project, a handful
 src/core/modules/drivers/support/answer_basis_writers.py:the running agents one level of a tree started, a handful each, a few levels deep
 src/core/modules/drivers/support/answer_basis_writers.py:the stacks of the agents one write moves: one agent, or a running tree of a few
-src/core/modules/drivers/support/answer_basis_writers.py:the environments of one project, a handful
 src/core/modules/drivers/support/hook_rule_histories.py:An agent has one history row for each driver rule and layer, so the read is bounded by the number of rules, and a hook checks every rule.
 src/core/modules/drivers/support/nudge_records.py:every record of the nudges asked about decides whether each is due again
 src/core/modules/drivers/support/waiting_line_typing.py:a release types every line that waited for the agent, oldest first
@@ -125,9 +128,9 @@ src/core/modules/plans/commands/plan_places/plan_places_subcommand.py:Every phas
 src/core/modules/plans/commands/repair_plan_states/repair_plan_states_handler.py:every blocked plan and its open waits are checked against the plans they wait on
 src/core/modules/plans/commands/repair_plan_states/repair_plan_states_handler.py:every started plan is checked for a failed checkpoint run its finished tasks left behind
 src/core/modules/plans/guards/one_task_phase_guard.py:the check counts the phases of every task of the plan
+src/core/modules/plans/lines/plan_state_lines.py:every plan whose state changed since the last answer is told to the agent
 src/core/modules/plans/listeners/cancel_open_plan_tasks_listener.py:a cancelled plan cancels every open task it holds
 src/core/modules/plans/listeners/checkpoint_reach_listener.py:every changed task may reach a checkpoint of its plan
-src/core/modules/plans/lines/plan_state_lines.py:every plan whose state changed since the last answer is told to the agent
 src/core/modules/plans/support/focus/focused_plan_tasks.py:the free task with the highest priority is chosen among every ready task
 src/core/modules/plans/support/next_plan_tasks.py:the next tasks of the plans are every takeable task of their earliest unfinished phase
 src/core/modules/plans/support/plan_checkpoints.py:The checkpoints of one plan are worked out from every task of that plan.
@@ -154,6 +157,8 @@ src/core/modules/processes/commands/list_run_queue/list_run_queue_subcommand.py:
 src/core/modules/processes/commands/remove_reader/remove_reader_handler.py:a removed reader is taken off every output and request that used it
 src/core/modules/processes/commands/update_stock_readers/update_stock_readers_handler.py:a retired stock reader is taken off every output and request that used it
 src/core/modules/processes/commands/update_stock_readers/update_stock_readers_handler.py:the stock update compares every reader of the catalogue with the shipped ones
+src/core/modules/processes/effects/leftover_run_effect.py:every run the agent left running when it stopped is orphaned
+src/core/modules/processes/lines/ended_output_line_lines.py:the agent is told of every run of its that ended since the last answer
 src/core/modules/processes/listeners/booted_runs_listener.py:at a start every run marked running is checked for a process that is gone
 src/core/modules/processes/listeners/ended_agent_runs_listener.py:an ended agent leaves every run it still has running orphaned
 src/core/modules/processes/listeners/process_removal_listener.py:every reader request that sampled a removed process loses its sample
@@ -163,18 +168,16 @@ src/core/modules/processes/needs/watched_run_needs.py:the open watches of the ag
 src/core/modules/processes/queries/output_query.py:the output of every process asked about is read
 src/core/modules/processes/queries/process_part_query.py:a run is judged by all of its parts, and one shell line may have more than fifty
 src/core/modules/processes/queries/reader_request_query.py:the open reader requests are read once and kept until one completes
-src/core/modules/processes/lines/ended_output_line_lines.py:the agent is told of every run of its that ended since the last answer
-src/core/modules/processes/effects/leftover_run_effect.py:every run the agent left running when it stopped is orphaned
-src/core/modules/processes/support/run_docking.py:every long run the dock considers is read with its parts and output
-src/core/modules/processes/support/orphan_check.py:every run the agent started and still has running is checked for an orphan
 src/core/modules/processes/support/active_output_readers.py:a new reader is offered to every running output that has none
 src/core/modules/processes/support/block_conditions/output_monitored.py:every monitor call since the run began may still be watching it
 src/core/modules/processes/support/blocked_runs.py:every old running run of the agent is checked for the silence that holds it
 src/core/modules/processes/support/cadence/judged_runs.py:the cadence tick judges every running run with its agent and parts
 src/core/modules/processes/support/decisions/command_run_counts.py:one count row for each command a run names
 src/core/modules/processes/support/execution_class_lines.py:The person's classes are few, and a match reads every one of them.
+src/core/modules/processes/support/orphan_check.py:every run the agent started and still has running is checked for an orphan
 src/core/modules/processes/support/reader_rows.py:A command is matched against every reader's patterns, and the readers are a catalogue of shipped and saved readers.
 src/core/modules/processes/support/reading/catalogue_audit.py:every creator of a recent mark is checked for an agent
+src/core/modules/processes/support/run_docking.py:every long run the dock considers is read with its parts and output
 src/core/modules/processes/support/run_slots.py:the run slots are shared out over every running and queued run
 src/core/modules/processes/support/run_visibility.py:every part of the runs asked about decides how each run shows
 src/core/modules/processes/support/stored_execution_classes.py:The person's classes are few, and a match reads every one of them.
@@ -226,6 +229,7 @@ src/core/modules/usage/conditions/agent_activity.py:the agents list keeps every 
 src/core/modules/usage/conditions/agent_activity.py:the agents list keeps every agent waiting on the answer to its question among the working ones
 src/core/modules/usage/support/agent_stack_summaries.py:one page of agent cards reads the stacks of its own agents
 src/core/modules/viewer/commands/prune_window_permissions/prune_window_permissions_handler.py:pruning checks every window permission of the environment for a subject that is gone
+src/core/modules/waits/lines/long_wait_lines.py:the open waits of one agent, a few at most
 src/core/modules/waits/listeners/target_resolution_listener.py:Every save of a row asks whether an open wait waits on it, so the unresolved targets are one kept load that the open waits bound.
 src/core/modules/waits/needs/wait_needs.py:the open waits of the agents one step reads, and their rows, a few each
 src/engine/listener/rows/event_rows.py:every row the logged events name is read once for the listeners
@@ -258,20 +262,19 @@ src/suites/coding/modules/workers/commands/support/merge_followups.py:a merge wa
 src/suites/coding/modules/workers/commands/worker_progress/worker_progress_subcommand.py:One row for each worker that is not retired, which the kept limit of workers bounds.
 src/suites/coding/modules/workers/commands/worker_status/worker_status_subcommand.py:a worker's unit is every task assigned to it, which can hold more than fifty
 src/suites/coding/modules/workers/commands/worker_waits/worker_waits_subcommand.py:the list shows what every worker waits on
+src/suites/coding/modules/workers/lines/inactive_helper_lines.py:every ended helper of the agent is checked for work it never started, with the queue it waits in
 src/suites/coding/modules/workers/listeners/blocking_task_listener.py:every task that waited on the moved one may be taken now
 src/suites/coding/modules/workers/listeners/boot_interrupted_cuts_listener.py:every worktree a restart left new is undone as the journal starts
 src/suites/coding/modules/workers/listeners/worker_job_source_listener.py:every source not yet started is matched against the delivered line
 src/suites/coding/modules/workers/listeners/worker_move_mark_listener.py:a worker's unit is every task assigned to it, which can hold more than fifty
 src/suites/coding/modules/workers/listeners/worker_process_removal_listener.py:removed processes leave every operation, line and worktree that pointed at them
+src/suites/coding/modules/workers/needs/delivered_work_stop_needs.py:the main agent checks every proof a worker delivered
 src/suites/coding/modules/workers/needs/merge_job_needs.py:the merges the mergers of one step started that have not ended, one or two each
+src/suites/coding/modules/workers/policies/worker_reuse_policy.py:every open worktree is checked for a worker that knows the files of the new tasks
 src/suites/coding/modules/workers/queries/proof_query.py:every proof of the worktree or tasks asked about counts
 src/suites/coding/modules/workers/queries/worktree_query.py:every worktree asked about is read, the open ones and the removed ones a merge or a folder needs
 src/suites/coding/modules/workers/rules/delivered_work_stop_rule.py:the main agent checks every proof a worker delivered
-src/suites/coding/modules/workers/rules/inactive_helper_rule.py:every ended helper of the agent is checked for work it never started, with the queue it waits in
 src/suites/coding/modules/workers/rules/support/worker_worktrees.py:every worker that owns a worktree of the main agent is read
-src/suites/coding/modules/workers/rules/unmerged_worker_rule.py:a worker's unit is every task assigned to it, which can hold more than fifty
-src/suites/coding/modules/workers/rules/unmerged_worker_rule.py:the open blocks of one agent are few: each is closed or skipped before the agent goes on
-src/suites/coding/modules/workers/policies/worker_reuse_policy.py:every open worktree is checked for a worker that knows the files of the new tasks
 src/suites/coding/modules/workers/rules/worker_stop_rule.py:a worker's unit is every task assigned to it, which can hold more than fifty
 src/suites/coding/modules/workers/support/affected_test_rows.py:the queue of affected tests runs every queued one in turn
 src/suites/coding/modules/workers/support/behind_check_closing.py:every behind check of the worktree is weighed
@@ -289,6 +292,8 @@ src/suites/coding/modules/workers/support/merger_work.py:the merger reads every 
 src/suites/coding/modules/workers/support/outside_waits.py:every open wait of the tasks of one unit, and of the tasks they wait on in turn
 src/suites/coding/modules/workers/support/phase_test_deferrals.py:the notes name every open deferral of the phases asked about
 src/suites/coding/modules/workers/support/stop_facts_reader.py:every ended-worker line since the progress is checked for this worker
+src/suites/coding/modules/workers/support/unmerged_workers.py:a worker's unit is every task assigned to it, which can hold more than fifty
+src/suites/coding/modules/workers/support/unmerged_workers.py:the open blocks of one agent are few: each is closed or skipped before the agent goes on
 src/suites/coding/modules/workers/support/work_units.py:a worker's unit is every task assigned to it, which can hold more than fifty
 src/suites/coding/modules/workers/support/worker_ask_facts_query.py:the facts name every unfinished task of the phase and what it waits on
 src/suites/coding/modules/workers/support/worker_folder_runs.py:every helper of the worker and every run in its folder is stopped
@@ -315,7 +320,3 @@ src/suites/coding/modules/workers/ticks/worker_tests/stalled_worker_test_runs.py
 src/suites/coding/modules/workers/ticks/worker_tests/unlaunched_worker_test_runs.py:every running run may be a worker test that never launched
 src/suites/coding/modules/workers/ticks/worker_tests/unlaunched_worker_test_runs.py:every test of a checkpoint run still shown as running may be one that never launched
 src/suites/coding/support/next_task.py:the own tasks of an agent are every task it holds or is assigned
-src/core/modules/drivers/listeners/retired_responder_listener.py:the agents a retired agent started, a handful
-src/core/modules/drivers/listeners/retired_responder_listener.py:the open escalations of a retired agent's children, one each at most
-src/core/modules/drivers/listeners/retired_responder_listener.py:the open escalations of one retiring agent, one at most
-src/core/modules/waits/lines/long_wait_lines.py:the open waits of one agent, a few at most

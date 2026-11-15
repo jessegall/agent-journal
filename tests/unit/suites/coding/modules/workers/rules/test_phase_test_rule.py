@@ -3,7 +3,9 @@ from types import SimpleNamespace
 import pytest
 
 from core.modules.tasks.models.enums.task_state import TaskState
+from engine.request.request_values import RequestValues
 from suites.coding.modules.workers.rules.phase_test_rule import PhaseTestRule
+from suites.coding.modules.workers.support.phase_test_runs import PhaseTestRuns
 
 WORKTREE = SimpleNamespace(task_id=1)
 PART = SimpleNamespace(arguments=())
@@ -38,13 +40,13 @@ class Steps:
 
 
 def rule(runs_remaining: int, has_failure: bool) -> PhaseTestRule:
-    reply = PhaseTestRule(Rows(TaskState.STARTED), None, SimpleNamespace(worker_worktree=lambda worker_id: WORKTREE), Window(runs_remaining), Steps(has_failure))
-    reply.is_test_part = lambda part, shell: True
-    return reply
+    runs = PhaseTestRuns(Rows(TaskState.STARTED), None, SimpleNamespace(worker_worktree=lambda worker_id: WORKTREE), Window(runs_remaining), Steps(has_failure), RequestValues())
+    runs.is_test_part = lambda part, shell: True
+    return PhaseTestRule(runs)
 
 
 def hook() -> SimpleNamespace:
-    return SimpleNamespace(agent_id=5, event=SimpleNamespace(tool=SimpleNamespace(shell=SimpleNamespace(parts=[PART]))))
+    return SimpleNamespace(agent_id=5, event=SimpleNamespace(firing="firing-1", tool=SimpleNamespace(shell=SimpleNamespace(parts=[PART]))))
 
 
 def test_a_run_with_no_runs_left_is_refused():

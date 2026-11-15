@@ -8,7 +8,7 @@ from suites.coding.modules.workers.commands.forward_worker_questions.forward_wor
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.ask_deadline import AskDeadline
 from suites.coding.modules.workers.support.worker_questions import WorkerQuestions
-from core.modules.asks.support.ask_settings import QUESTION_ANSWER_MINUTES, QUESTION_FORWARD_MINUTES, QUESTION_VISITS_LIMIT
+from core.modules.asks.support.ask_settings import QUESTION_VISITS_LIMIT
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 
 

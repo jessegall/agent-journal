@@ -23,7 +23,7 @@ from core.modules.waits.models.wait import Wait
 from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
 from suites.coding.modules.workers.models.merger_line import CLOCK_FORMAT, MergerLine
 from suites.coding.modules.workers.support.ask_deadline import AskDeadline
-from core.modules.asks.support.ask_settings import QUESTION_ANSWER_MINUTES, QUESTION_FORWARD_MINUTES, QUESTION_VISITS_LIMIT
+from core.modules.asks.support.ask_settings import QUESTION_ANSWER_MINUTES, QUESTION_FORWARD_MINUTES
 
 OPEN_LINES_REASON = "the merger answers every open question of every worker"
 

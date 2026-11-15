@@ -4,7 +4,6 @@ from suites.coding.support.coding_settings import STARTS_HELPERS_SETTING
 from suites.coding.support.auto_advice import AutoAdvice
 from engine.driver.agent_hook import AgentHook
 from suites.coding.modules.workers.support.journal_command_allowance import JournalCommandAllowance
-from engine.enums.command_category import CommandCategory
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer

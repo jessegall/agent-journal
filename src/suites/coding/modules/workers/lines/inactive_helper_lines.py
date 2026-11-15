@@ -1,8 +1,108 @@
-from engine.rule_backed.rule_line_source import RuleLineSource
-from suites.coding.modules.workers.rules.inactive_helper_rule import InactiveHelperRule
+from suites.coding.modules.workers.types.worker import Worker
+from suites.coding.modules.workers.types.merger import Merger
+from collections.abc import Sequence
+from engine.helper_type.helper_type_book import HelperTypeBook
 
 
-class InactiveHelperLines(RuleLineSource):
-    """The lines of InactiveHelperRule, in today's words."""
+from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
+from suites.coding.modules.workers.nudges.helper_inactive_nudge import HelperInactiveNudge
+from suites.coding.modules.workers.nudges.unstarted_job_nudge import UnstartedJobNudge
+from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPER_GRACE_MINUTES, INACTIVE_HELPER_MINUTES
+from suites.coding.modules.workers.support.worker_stop import WorkerStop
+from engine.enums.agent_role import AgentRole
+from engine.enums.hook_event_name import HookEventName
+from engine.driver.seconds import Seconds
+from engine.row.page import Page
+from engine.query.conditions.is_null import IsNull
+from engine.query.conditions.among import Among
+from engine.query.conditions.greater import Greater
+from engine.query.queries import Queries
+from core.modules.agents.models.agent import Agent
+from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.models.enums.agent_line_state import AgentLineState
+from core.modules.drivers.models.helper_job import HelperJob
+from core.modules.helpers.support.helper_job_source import HELPER_JOB_SOURCE
+from core.modules.drivers.support.agent_activities import AgentActivities
+from engine.setting.setting_values import SettingValues
+from core.modules.processes.queries.process_query import ProcessQuery
+from suites.coding.modules.workers.support.queue_run_workers import QueueRunWorkers
+from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
+from core.modules.agents.support.agent_rows import AgentRows
 
-    rule = InactiveHelperRule
+from engine.agent_machine.contracts.event_line_source import EventLineSource
+from engine.agent_machine.needs.line_history import LineHistory
+from engine.driver.hook_event import HookEvent
+from engine.driver.nudge import Nudge
+from engine.time.clock import Clock
+
+INACTIVE_REASON = "every ended helper of the agent is checked for work it never started, with the queue it waits in"
+
+WAITING_WORK_SOURCES = (*RESUMING_SOURCES, HELPER_JOB_SOURCE)
+INACTIVE_HELPER_KEY = "workers.inactive-helper"
+
+
+class InactiveHelperLines(EventLineSource):
+    """At its minute step, an agent is told of each inactive helper of its once its grace has passed and again after
+    the configured number of minutes, and in the same way of each ended helper whose waiting work has not started. The
+    merger waits between workers by design, so it is not named for being inactive."""
+
+    key = INACTIVE_HELPER_KEY
+    events = [HookEventName.TICK]
+    agent_types = [AgentRole.MAIN.value, Worker.key]
+
+    def __init__(self, agents: AgentRows, queries: Queries, activities: AgentActivities, history: LineHistory, settings: SettingValues, processes: ProcessQuery, workers: QueueRunWorkers,
+                 requests: ReaderRequestQuery, types: HelperTypeBook, stops: WorkerStop, clock: Clock) -> None:
+        self.agents, self.queries, self.activities, self.history, self.settings = agents, queries, activities, history, settings
+        self.processes, self.workers, self.requests, self.types, self.stops, self.clock = processes, workers, requests, types, stops, clock
+
+    def nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]:
+        now = self.clock.timestamp()
+        spoke_at = self.history.last_spoke(self.key, agent_id)
+        if spoke_at is not None and spoke_at.elapsed_seconds(now) < self.settings.minutes(INACTIVE_HELPER_MINUTES).count:
+            return []
+        grace = self.settings.minutes(INACTIVE_HELPER_GRACE_MINUTES)
+        activities = self.activities.read(event, agent_id)
+        requesters = self.requests.active_requester_ids(now)
+        inactive = [helper for helper in self.helpers(agent_id) if helper.id in activities and helper.id not in requesters and activities[helper.id].is_inactive(now, grace.count)]
+        unstarted = self.unstarted(agent_id, grace)
+        if not inactive and not unstarted:
+            return []
+        notes = self.queue_notes(inactive)
+        return [*(HelperInactiveNudge.declared().nudge(name=helper.role, agent=helper.number, minutes=grace.minute_count, queue=notes[helper.id], action=self.action(helper)) for helper in inactive),
+                *(UnstartedJobNudge.declared().nudge(name=helper.role, agent=helper.number, minutes=grace.minute_count, action=self.action(helper)) for helper in unstarted)]
+
+    @staticmethod
+    def action(helper: Agent) -> str:
+        return f"journal worker status {helper.number}" if helper.role == Worker.key else "check on it"
+
+    def unstarted(self, agent_id: int, grace: Seconds) -> list[Agent]:
+        ended = tuple(self.queries.query(Agent).filter(parent_id=agent_id).matching(Among("role", self.types.helper_keys())).matching(Greater("ended_at", "")).matching(IsNull("retired_at")).matching(IsNull("paused_at")).every_row(INACTIVE_REASON))
+        ids = [helper.id for helper in ended]
+        lines = tuple(self.queries.query(AgentLine).filter(state=AgentLineState.WAITING).matching(Among("session_agent_id", ids)).matching(Among("source", WAITING_WORK_SOURCES)).every_row(INACTIVE_REASON))
+        jobs = tuple(self.queries.query(HelperJob).matching(Among("helper_id", ids)).matching(IsNull("ended_at")).every_row(INACTIVE_REASON))
+        return [helper for helper in ended if self.has_unstarted_work(helper, [*(line for line in lines if line.session_agent_id == helper.id), *(job for job in jobs if job.helper_id == helper.id)], grace)]
+
+    def has_unstarted_work(self, helper: Agent, work: list[AgentLine | HelperJob], grace: Seconds) -> bool:
+        if not any(row.creation_timestamp().elapsed_seconds(self.clock.timestamp()) >= grace.count for row in work):
+            return False
+        return self.stops.is_job_due(helper, work)
+
+    def queue_notes(self, helpers: Sequence[Agent]) -> dict[int, str]:
+        notes = {helper.id: "" for helper in helpers}
+        queue = self.processes.running().filter(is_queue_run=True)
+        rows = tuple(queue.every_row(INACTIVE_REASON))
+        page = Page(rows, 1, max(1, len(rows)), len(rows))
+        workers = self.workers.read(page)
+        for position, process in enumerate(page.rows):
+            worker_id = workers.get(process.id)
+            if process.queued_at is None or worker_id is None or worker_id not in notes or notes[worker_id]:
+                continue
+            notes[worker_id] = f"; run {process.id} waits, {position} ahead"
+        return notes
+
+    def helpers(self, main_id: int) -> list[Agent]:
+        roles = self.types.helper_keys()
+        helpers = [agent for agent in self.agents.running(parent_id=main_id) if agent.role in roles and agent.role != Merger.key]
+        return sorted(helpers, key=lambda helper: roles.index(helper.role))
+
+

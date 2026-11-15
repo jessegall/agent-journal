@@ -1,41 +1,23 @@
-from engine.cli.agent_number import AGENT_MODEL_NAME
-from engine.cli.row_numbers import RowNumbers
-from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
-from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
-from suites.coding.modules.workers.nudges.worker_unstarted_nudge import WorkerUnstartedNudge
-from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
-from engine.enums.hook_event_name import HookEventName
-from engine.driver.interval import Interval
 from engine.driver.rule_answer import RuleAnswer
-from engine.driver.span_queries import SpanQueries
+from engine.enums.agent_role import AgentRole
+from engine.enums.hook_event_name import HookEventName
 from engine.scope.actor_scope import ActorScope
-from core.modules.drivers.models.agent_activity import AgentActivity
-from core.modules.drivers.support.agent_activities import AgentActivities
-from engine.setting.setting_values import SettingValues
-from suites.coding.modules.workers.support.worker_settings import UNSTARTED_WORKER_SECONDS
+from suites.coding.modules.workers.lines.unstarted_worker_lines import UnstartedWorkerLines
 
 
 class UnstartedWorkerRule(DriverRule):
-    """A tick tells the main agent of each worker whose program has made no hook call within the unstarted
-    worker seconds of its dispatch, so a program that was refused at its start is seen at once."""
+    """The old walk's answer for UnstartedWorkerLines, which owns it, until the walk is deleted."""
 
-    name = "workers.unstarted-worker"
+    name = UnstartedWorkerLines.key
     hook = HookEventName.TICK
     drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
     disabled_scopes = [ActorScope]
 
-    def __init__(self, worktrees: WorkerWorktrees, activities: AgentActivities, settings: SettingValues, spans: SpanQueries, numbers: RowNumbers) -> None:
-        self.numbers = numbers
-        self.worktrees, self.activities, self.settings, self.spans = worktrees, activities, settings, spans
+    def __init__(self, lines: UnstartedWorkerLines) -> None:
+        self.lines = lines
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        activities = self.activities.read(hook.event, hook.agent_id)
-        workers = [activities[worktree.session_agent_id] for worktree in self.worktrees.main_worktrees() if worktree.state is WorktreeState.CUT and worktree.session_agent_id in activities]
-        limit = Interval(self.settings.seconds(UNSTARTED_WORKER_SECONDS))
-        return RuleAnswer.with_nudges(*(WorkerUnstartedNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worker.id), seconds=limit.seconds) for worker in workers if self.is_unstarted(worker, hook, limit)))
-
-    def is_unstarted(self, worker: AgentActivity, hook: AgentHook, limit: Interval) -> bool:
-        return worker.ended_at is None and limit.has_passed(self.spans, hook.agent_id, worker.created_at, hook.timestamp) and worker.last_hook_at is None
+        return RuleAnswer.with_nudges(*self.lines.nudges(hook.event, hook.agent_id))
