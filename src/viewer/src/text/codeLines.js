@@ -28,7 +28,7 @@ const isPlain = (line) => {
 const isCodey = (line) => {
     const text = line.trim();
     if (INLINE_CODE.test(text)) return false;
-    return [CLOSER, OPERATOR, CALL, ASSIGNMENT, KEYWORD_LINE, DIRECTIVE, PREPROCESSOR, OPENER, KEY_LINE].some((pattern) => pattern.test(text)) || /[;{}]$/.test(text) || (INDENTED.test(line) && !LIST_ITEM.test(line) && !isPlain(line));
+    return [CLOSER, OPERATOR, CALL, ASSIGNMENT, KEYWORD_LINE, DIRECTIVE, PREPROCESSOR, OPENER, KEY_LINE].some((pattern) => pattern.test(text)) || (/[;{}]$/.test(text) && !LIST_ITEM.test(text)) || (INDENTED.test(line) && !LIST_ITEM.test(line) && !isPlain(line));
 };
 
 // what one paragraph is: "code" when most of its lines carry the marks of code and few read as a sentence, "line" when it is one
