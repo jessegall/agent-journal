@@ -15,4 +15,4 @@ def test_a_rule_a_transform_stands_for_keeps_answering_with_every_slice_on(playe
     story = played(StartedHelper)
     slices = story.container.get(ContributionSlices)
     every_slice = slices.blocked_slices("helper") | {"safety", "admission", "lines", "waiting", "working.helper"}
-    assert not {"drivers.managed-hooks", "processes.runner-rewrite", "aliases.expansion"} & slices.machine_answered(every_slice, "helper")
+    assert not {"drivers.managed-hooks", "processes.runner-rewrite"} & slices.machine_answered(every_slice, "helper")

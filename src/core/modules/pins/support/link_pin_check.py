@@ -1,3 +1,4 @@
+from engine.driver.hook_event import HookEvent
 import re
 from dataclasses import replace
 from datetime import timedelta
@@ -49,6 +50,12 @@ class LinkPinCheck:
     @staticmethod
     def is_file_read_tool(tool: Tool) -> bool:
         return tool.category in FILE_TOOLS or (tool.shell is not None and tool.shell.is_readonly)
+
+    # the text of a message the agent finished writing, or nothing while it still writes
+    @staticmethod
+    def finished_text(event: HookEvent | None) -> str | None:
+        text = event.raw.get("delta") if event is not None else None
+        return text if event is not None and event.raw.get("final") is True and isinstance(text, str) else None
 
     def nudges(self, agent_text: str, tool_output: str = "") -> list[Nudge]:
         if self.claims_missing_pin(agent_text):

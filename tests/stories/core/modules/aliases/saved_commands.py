@@ -7,7 +7,7 @@ from engine.enums.agent_role import AgentRole
 from engine.driver.classification import Classification
 from engine.enums.command_category import CommandCategory
 from engine.driver.part import Part
-from core.modules.aliases.rules.saved_command_rule import SavedCommandRule
+from core.modules.aliases.policies.saved_command_policy import SavedCommandPolicy
 from core.modules.processes.support.runner_line import READ_FLAGS_VARIABLE
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
@@ -63,7 +63,7 @@ def expect_saved_names(story: Story, names: list[str]) -> None:
 
 def expect_helper_refusal(story: Story, text: str) -> None:
     part = Part("make all", "make", "", (), Classification(CommandCategory.BUILD, ()), (), (), "", None)
-    refusal = story.container.get(SavedCommandRule).refusal(part, AgentRole.HELPER)
+    refusal = story.container.get(SavedCommandPolicy).part_refusal(part, AgentRole.HELPER)
     assert refusal is not None and text in refusal.text
 
 

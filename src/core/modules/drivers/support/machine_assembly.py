@@ -1,9 +1,13 @@
+from engine.helper_type.helper_type_book import HelperTypeBook
 from collections.abc import Callable, Sequence
 from dataclasses import replace
 from typing import TypeVar
 
 from engine.agent_machine.agent_view import AgentView
+from engine.agent_machine.contracts.effect import Effect
+from engine.agent_machine.contracts.line_source import LineSource
 from engine.agent_machine.contracts.policy import Policy
+from engine.agent_machine.needs.need_source import NeedSource
 from engine.agent_machine.needs.block_plan import BlockPlan
 from engine.agent_machine.needs.need import Need
 from engine.agent_machine.record.question import Question
@@ -23,8 +27,8 @@ class MachineAssembly:
     view filled with the needs and plans its need sources give, whole for the comparison or cut to the
     slices in force."""
 
-    def __init__(self, finder: ModuleFinder, container: Container) -> None:
-        self.finder, self.container = finder, container
+    def __init__(self, finder: ModuleFinder, container: Container, types: HelperTypeBook) -> None:
+        self.finder, self.container, self.types = finder, container, types
 
     def machine(self, agent_type: str) -> AgentMachine:
         return self.built_machine(agent_type, lambda contribution, module: True, ())
@@ -55,9 +59,13 @@ class MachineAssembly:
     def slice_filter(agent_type: str, agent_slices: frozenset[str]) -> Kept:
         return lambda contribution, module: ContributionSlices.slice_name(contribution, module, agent_type) in agent_slices
 
-    # policies, lines, effects and need sources name the agent types they apply to; none named is every type
+    # policies, lines, effects and need sources name the agent types they apply to, none named being every type, and the
+    # group of types they hold for
     def covering(self, agent_type: str, lists: Callable[[type[Module]], Sequence[type[Contribution]]], kept: Kept) -> list[Contribution]:
-        return [self.container.get(cls) for cls, module in self.listed(lists) if (not cls.agent_types or agent_type in cls.agent_types) and kept(cls, module)]
+        return [self.container.get(cls) for cls, module in self.listed(lists) if self.covers(cls, agent_type) and kept(cls, module)]
+
+    def covers(self, contribution: type[Policy] | type[LineSource] | type[Effect] | type[NeedSource], agent_type: str) -> bool:
+        return (not contribution.agent_types or agent_type in contribution.agent_types) and contribution.role_group.has_role(agent_type, self.types)
 
     def listed(self, lists: Callable[[type[Module]], Sequence[type[Contribution]]]) -> list[tuple[type[Contribution], type[Module]]]:
         return [(cls, module) for module in self.finder.modules() for cls in lists(module)]

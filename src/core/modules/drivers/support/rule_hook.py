@@ -1,4 +1,3 @@
-from engine.query.queries import Queries
 from engine.enums.hook_event_name import HookEventName
 from engine.agent_machine.record.question import Question
 from engine.container.container import Container
@@ -11,8 +10,7 @@ from engine.driver.rule_answers import RuleAnswers
 from engine.request.request_values import RequestValues
 from engine.rule_backed.rule_hooks import RuleHooks
 from engine.time.clock import Clock
-from core.modules.environments.models.environment import Environment
-from core.modules.drivers.ticks.agent_ticks import AgentTicks
+from core.modules.drivers.support.minute_tick import MinuteTick
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.support.actor_loader import ActorLoader
 
@@ -35,9 +33,7 @@ class RuleHook(RuleHooks):
     def minute_tick(self, rule: type[DriverRule], agent_id: int) -> HookEvent | None:
         if rule.hook != HookEventName.TICK:
             return None
-        agent = self.agents.find(agent_id)
-        environment = self.container.get(Queries).query(Environment).find(agent.environment_id)
-        return AgentTicks.tick(agent, environment.name, self.clock.timestamp())
+        return self.container.get(MinuteTick).event(agent_id)
 
     # the rule walk's own answers of this hook, so a contribution the rule backs asks no rule the walk asked
     def keep_walk_answers(self, answers: RuleAnswers, question: Question, agent_id: int) -> None:

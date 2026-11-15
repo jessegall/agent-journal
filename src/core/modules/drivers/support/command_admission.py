@@ -1,3 +1,4 @@
+from core.modules.drivers.support.machine_assembly import MachineAssembly
 from engine.agent_machine.stepping.grant import NEXT_ACTION
 from engine.agent_machine.stepping.grant_ledger import GrantLedger
 from engine.agent_machine.contracts.policy import Policy
@@ -23,9 +24,9 @@ class CommandAdmission:
     is refused with the policy's own text, the hook's text."""
 
     def __init__(self, finder: ModuleFinder, container: Container, slices: AgentSlices, agents: AgentRows, grant_store: GrantLedger,
-                 queries: Queries, repository: Repository) -> None:
+                 queries: Queries, repository: Repository, assembly: MachineAssembly) -> None:
         self.finder, self.container, self.slices, self.agents, self.grant_store = finder, container, slices, agents, grant_store
-        self.queries, self.repository = queries, repository
+        self.queries, self.repository, self.assembly = queries, repository, assembly
 
     def answers(self, context: Context) -> bool:
         return context.actor.is_agent() and ADMISSION_SLICE in self.slices.tick_slices(self.agents.find(context.actor.id))
@@ -42,7 +43,7 @@ class CommandAdmission:
 
     def entrance_policies(self, entrance: type[Command[object]], agent: Agent) -> list[Policy]:
         listed = [policy for module in self.finder.modules() for policy in module.policies if entrance in policy.entrance_commands]
-        return [self.container.get(policy) for policy in listed if not policy.agent_types or agent.role in policy.agent_types]
+        return [self.container.get(policy) for policy in listed if self.assembly.covers(policy, agent.role)]
 
     def is_passed(self, policy: Policy, agent: AgentReference, context: Context) -> bool:
         receipt = self.queries.query(AdmissionReceipt).filter(session_agent_id=agent.agent_id, policy_key=policy.key, consumed_at=None).first()

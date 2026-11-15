@@ -4,11 +4,14 @@ from engine.driver.open_row import OpenRow
 from engine.enums.state_tier import StateTier
 from engine.time.timestamp import Timestamp
 from core.modules.plugins.models.plugin import Plugin
+from engine.request.request_values import RequestValues
 from core.modules.plugins.rules.plugin_rule import PluginRule
+from core.modules.plugins.support.plugin_hook_run import PluginHookRun
 from core.modules.plugins.states.plugins_enabled import PluginsEnabled
 
 CREATED = Timestamp.parsed("2026-11-14T07:00:00+00:00")
-HOOK = SimpleNamespace(agent_id=7, event=SimpleNamespace(event="pre_tool_use", tool=None, raw={}, prompt="", accepts_lines=True))
+HOOK = SimpleNamespace(agent_id=7, event=SimpleNamespace(event="pre_tool_use", tool=None, raw={}, prompt="", accepts_lines=True, firing="firing-1"))
+PLUGIN_ROLE = SimpleNamespace(role=lambda agent_id: "main")
 
 
 class Untouched:
@@ -30,7 +33,8 @@ def test_the_state_is_asked_in_place_for_the_plugin_role_and_gates_the_plugin_ru
 def test_with_no_plugin_switched_on_the_state_is_closed_and_the_rule_answers_allowed_with_nothing_to_run():
     assert PluginsEnabled(enabled([])).open_rows(HOOK) == []
     runs = SimpleNamespace(hook_facts=lambda agent_id: None)
-    answer = PluginRule(SimpleNamespace(checks=lambda: []), Untouched(), runs, Untouched(), Untouched(), Untouched()).answer(HOOK)
+    run = PluginHookRun(SimpleNamespace(checks=lambda: []), Untouched(), runs, Untouched(), Untouched(), Untouched(), PLUGIN_ROLE, Untouched(), RequestValues())
+    answer = PluginRule(run).answer(HOOK)
     assert (answer.refusal, tuple(answer.nudges), tuple(answer.commands)) == ("", (), ())
 
 

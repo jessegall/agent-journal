@@ -1,9 +1,21 @@
-from engine.rule_backed.rule_policy import RulePolicy
-from core.modules.plugins.rules.plugin_rule import PluginRule
+from engine.agent.enums.role_group import RoleGroup
+from engine.agent_machine.contracts.event_policy import EventPolicy
+from engine.driver.hook_event import HookEvent
+from engine.driver.nudge import Nudge
+from engine.enums.hook_event_name import HookEventName
+from core.modules.plugins.support.plugin_hook_run import PLUGIN_RULE_NAME, PluginHookRun
 
 
-class PluginPolicy(RulePolicy):
-    """The refusal of PluginRule, with today's text, as a policy of the new driver."""
+class PluginPolicy(EventPolicy):
+    """A hook a plugin's guard refuses is refused with the plugin's line."""
 
-    rule = PluginRule
+    key = PLUGIN_RULE_NAME
     rank = "plugins.policies"
+    events = list(HookEventName)
+    role_group = RoleGroup.PLUGIN
+
+    def __init__(self, run: PluginHookRun) -> None:
+        self.run = run
+
+    def refusal(self, event: HookEvent, agent_id: int) -> Nudge | None:
+        return self.run.answer(event, agent_id).refusal

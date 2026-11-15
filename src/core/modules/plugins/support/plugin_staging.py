@@ -2,7 +2,6 @@ from engine.file.file_access import FileAccess
 import hashlib
 import os
 import shutil
-import subprocess
 from engine.enums.process_type import ProcessType
 from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.process.door.execution_request import ExecutionRequest

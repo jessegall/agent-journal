@@ -14,6 +14,7 @@ from engine.enums.grant_state import GrantState
 from engine.enums.grant_type import GrantType
 from engine.errors.refusal import Refusal
 from core.modules.drivers.support.command_admission import CommandAdmission
+from core.modules.drivers.support.machine_assembly import MachineAssembly
 
 AGENT = SimpleNamespace(id=4, parent_id=None, environment_id=1, role="main")
 
@@ -60,7 +61,9 @@ class Grants:
 
 def admission(rows: Rows, grants: Grants) -> CommandAdmission:
     finder = SimpleNamespace(modules=lambda: [SimpleNamespace(policies=[SendWorkPolicy])])
-    return CommandAdmission(finder, SimpleNamespace(get=lambda cls: cls()), SimpleNamespace(), SimpleNamespace(find=lambda agent_id: AGENT), grants, rows, rows)
+    types = SimpleNamespace(behaviours=lambda role: None, read_access_keys=lambda: ())
+    return CommandAdmission(finder, SimpleNamespace(get=lambda cls: cls()), SimpleNamespace(), SimpleNamespace(find=lambda agent_id: AGENT), grants, rows, rows,
+                            MachineAssembly(finder, SimpleNamespace(), types))
 
 
 CONTEXT = SimpleNamespace(actor=Actor(AGENT.id, ActorType.AGENT), command=SendWork(), timestamp="now")

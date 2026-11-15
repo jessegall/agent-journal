@@ -2,7 +2,6 @@ from core.modules.pins.lines.agent_text_pin_lines import AgentTextPinLines
 from core.modules.pins.lines.link_pin_lines import LinkPinLines
 from core.modules.pins.effects.agent_text_pin_effect import AgentTextPinEffect
 from core.modules.pins.effects.automatic_link_pin_effect import AutomaticLinkPinEffect
-from core.modules.pins.effects.link_pin_effect import LinkPinEffect
 from core.modules.pins.models.declarations.pin_model_declaration import PinModelDeclaration
 from core.modules.pins.rules.agent_text_pin_rule import AgentTextPinRule
 from core.modules.pins.rules.link_pin_rule import LinkPinRule
@@ -23,7 +22,7 @@ class PinsModule(Module):
     """Adds pins: links pinned above an environment's chat for the user to open on their return."""
 
     name = "journal.core.pins"
-    effects = [AgentTextPinEffect, AutomaticLinkPinEffect, LinkPinEffect]
+    effects = [AgentTextPinEffect, AutomaticLinkPinEffect]
     lines = [AgentTextPinLines, LinkPinLines]
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.drivers"]

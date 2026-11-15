@@ -131,7 +131,7 @@ EFFECTS = {
     "workers": [("workers.record-test-run", False), ("workers.report", False), ("workers.inactive-helper", False), ("workers.record-todo-list", False)],
 }
 AFTER_COMMIT_EFFECTS = ["plugins.delivery"]
-TRANSFORMS = {"aliases": [("aliases.expansion", TransformSlot.ALIAS)], "drivers": [("drivers.managed-hooks-rewrite", TransformSlot.PROJECT_HOOK)],
+TRANSFORMS = {"drivers": [("drivers.managed-hooks-rewrite", TransformSlot.PROJECT_HOOK)],
               "processes": [("processes.runner-wrap", TransformSlot.RUNNER)]}
 WAKE_CAUSES = {"drivers": ["drivers.turn-failed"], "coding": ["coding.cache-refresh"], "helpers": ["helpers.launch-failed"]}
 AGENT_LISTENERS = {"messages": ["messages.recipient"], "helpers": ["helpers.launch-failure"], "drivers": ["drivers.missing-process"]}

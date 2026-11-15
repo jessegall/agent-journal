@@ -1,3 +1,4 @@
+from engine.agent.enums.role_group import RoleGroup
 from abc import ABC, abstractmethod
 from collections.abc import Mapping, Sequence
 from typing import ClassVar
@@ -19,6 +20,8 @@ class NeedSource(ABC):
     state_type: ClassVar[type[State]]
     rank: ClassVar[str]
     agent_types: ClassVar[Sequence[str]] = ()
+    # the group of agent types it holds for, read from the helper types as the old walk read a rule's
+    role_group: ClassVar[RoleGroup] = RoleGroup.ANY
     # the old driver rules this contribution answers for, which stand down once its slice is in force for the agent
     replaced_rules: ClassVar[Sequence[str]] = ()
     subject_models: ClassVar[Sequence[str]] = ()

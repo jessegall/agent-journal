@@ -1,3 +1,4 @@
+from engine.agent.enums.role_group import RoleGroup
 from collections.abc import Sequence
 from engine.driver.nudge import Nudge
 from engine.driver.hook_event import HookEvent
@@ -15,6 +16,7 @@ class OneInHandLines(EventLineSource):
 
     key = "tasks.start-with-one-in-hand"
     events = [HookEventName.PRE_TOOL_USE]
+    role_group = RoleGroup.TASK
 
     def __init__(self, current_tasks: CurrentTasks) -> None:
         self.current_tasks = current_tasks

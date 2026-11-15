@@ -1,3 +1,4 @@
+from engine.agent.enums.role_group import RoleGroup
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, ClassVar
@@ -20,6 +21,8 @@ class Effect(ABC):
     events: ClassVar[Sequence[HookEventName]]
     includes_steps: ClassVar[bool] = False
     agent_types: ClassVar[Sequence[str]] = ()
+    # the group of agent types it holds for, read from the helper types as the old walk read a rule's
+    role_group: ClassVar[RoleGroup] = RoleGroup.ANY
     # the old driver rules this contribution answers for, which stand down once its slice is in force for the agent
     replaced_rules: ClassVar[Sequence[str]] = ()
     timing: ClassVar[EffectTiming]

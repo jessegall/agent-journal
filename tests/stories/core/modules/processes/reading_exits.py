@@ -9,7 +9,7 @@ from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story import Story
-from core.modules.aliases.rules.unknown_command_rule import UNCLASSIFIED_HINT
+from core.modules.aliases.policies.unknown_command_policy import UNCLASSIFIED_HINT
 from core.modules.aliases.nudges.command_type_unknown_nudge import CommandTypeUnknownNudge
 from core.modules.aliases.nudges.saved_command_silent_nudge import SavedCommandSilentNudge
 from core.modules.aliases.nudges.saved_command_unknown_nudge import SavedCommandUnknownNudge
