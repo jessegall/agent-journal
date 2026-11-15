@@ -25,4 +25,4 @@ class OpeningLinesLines(EventLineSource):
 
     def driver_lines(self, driver_name: str) -> list[Nudge]:
         driver = self.registry.driver(driver_name)
-        return [OpeningLineNudge.declared().nudge(text=line) for line in driver.opening_lines] if driver is not None else []
+        return [OpeningLineNudge.declared().nudge(text=line) for line in driver.instructions] if driver is not None else []

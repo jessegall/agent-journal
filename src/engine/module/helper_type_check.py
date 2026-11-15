@@ -51,7 +51,7 @@ class HelperTypeCheck:
             if not book.extends(declaration.key, profile.agent_type):
                 problems.append(f"{declaration.key}: default profile {profile.name} has type {profile.agent_type}, which {declaration.key} does not extend")
         names = frozenset(book.entries)
-        uses = [(driver.name, driver.role) for module in modules for driver in module.drivers]
+        uses = [(driver.name, driver.agent_type) for module in modules for driver in module.suite_drivers()]
         problems.extend(f"{owner}: {role} is no registered helper type; register it in a module's or suite's helper_types"
                         for owner, role in dict.fromkeys(uses) if role not in names)
         problems.extend(self.group_problems(modules, names, profiles))

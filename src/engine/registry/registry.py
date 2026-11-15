@@ -146,8 +146,7 @@ class Registry:
                                     suite.get("task_assigner", ""), suite.get("shipped", False),
                                     entrances={key: tuple(windows) for key, windows in suite.get("entrances", {}).items()})
                          for suite in entries.get("suites", [])),
-            drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["opening_lines"]),
-                                      tuple(driver.get("guards", [])))
+            drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["instructions"]))
                           for driver in entries.get("drivers", [])),
             windows=tuple(WindowEntry(window["name"], window["module"], window["title"], window["entry"], window["loading"], LEGACY_PLACES.get(str(window["place"]), str(window["place"])), tuple(window["roles"]),
                                       tuple(window["reads"]), tuple(window["runs"]), tuple(window["events"]), window["shipped"], window["unavailable_reason"],
@@ -203,7 +202,7 @@ class Registry:
                         "presets": {page: [{"key": preset.key, "name": preset.name, "text": preset.text, "shape": stored_layout(preset.shape)} for preset in presets]
                                     for page, presets in suite.presets.items()}} for suite in self.suites],
             "drivers": [{"name": driver.name, "path": driver.path.text, "module": driver.module, "suite": driver.suite, "role": driver.role,
-                         "opening_lines": list(driver.opening_lines), "guards": list(driver.guards)} for driver in self.drivers],
+                         "instructions": list(driver.instructions)} for driver in self.drivers],
             "windows": [{"name": window.name, "module": window.module, "title": window.title, "entry": window.entry, "loading": window.loading,
                          "place": window.place, "shows": window.shows, "roles": list(window.roles), "reads": list(window.reads), "runs": list(window.runs), "events": list(window.events),
                          "shipped": window.shipped, "unavailable_reason": window.unavailable_reason, "icon": window.icon,
@@ -349,8 +348,10 @@ class Registry:
             names.extend(name for name in (self.ancestors(parent) if parent is not None else [required]) if name not in names)
         return tuple(names)
 
+    # the drivers of the suite and of every suite it requires, nearest suite first
     def suite_drivers(self, suite: SuiteEntry) -> list[DriverEntry]:
-        return [driver for driver in self.drivers if driver.suite in self.ancestors(suite)]
+        ancestors = self.ancestors(suite)
+        return sorted((driver for driver in self.drivers if driver.suite in ancestors), key=lambda driver: ancestors.index(driver.suite))
 
     def type_driver(self, suite: SuiteEntry, key: str) -> DriverEntry | None:
         drivers = self.suite_drivers(suite)

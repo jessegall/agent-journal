@@ -1,10 +1,8 @@
 from collections.abc import Sequence
-from dataclasses import replace
 
 from engine.agent_stack.reason import Reason
 from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.contracts.policy import Policy
-from engine.agent_machine.decision import Decision
 from engine.agent_machine.record.question import Question
 from engine.enums.decision_class import DecisionClass
 from engine.enums.question_type import QuestionType
@@ -12,8 +10,6 @@ from engine.enums.work_stop import WorkStop
 from engine.testing.agent_machine.policy_row import PolicyRow
 from engine.testing.agent_machine.policy_table import PolicyTable
 from engine.testing.agent_machine.question_samples import QuestionSamples
-from engine.testing.agent_machine.record_compare import RecordCompare
-from engine.testing.agent_machine.record_samples import RecordSamples
 from engine.testing.agent_machine.view_samples import ViewSamples
 from engine.testing.examples.hook_samples import HookSamples
 
@@ -38,10 +34,3 @@ def test_a_policy_table_names_each_row_the_policy_answers_otherwise() -> None:
     table = PolicyTable([PolicyRow("worker stop", stop, ViewSamples.view("worker", WorkStop.REFUSE_WHILE_WORK_REMAINS), ("samples.no-stop",)),
                          PolicyRow("main stop", stop, ViewSamples.view("main", WorkStop.REFUSE_WHILE_WORK_REMAINS, has_parent=False), ("samples.no-stop",))])
     assert table.failures(WorkerStopPolicy()) == ["main stop: refused nothing, the table says ('samples.no-stop',)"]
-
-
-def test_the_shadow_compare_names_a_different_decision_and_ignores_the_basis() -> None:
-    stop = QuestionSamples.question(HookSamples.stop())
-    allowed = RecordSamples.record(stop, Decision.allowed())
-    refused = replace(RecordSamples.record(stop, Decision(DecisionClass.REFUSE, REFUSAL)), basis=replace(allowed.basis, attempt=2))
-    assert [difference.split(":")[0] for difference in RecordCompare.differences(allowed, refused)] == ["decision", "shown_reason"]

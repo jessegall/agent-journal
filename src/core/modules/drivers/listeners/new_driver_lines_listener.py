@@ -25,5 +25,5 @@ class NewDriverLinesListener(SaveListener[Changed[Setting]]):
             return
         for agent in self.agents.running():
             driver = self.choice.driver(agent.role)
-            for line in driver.opening_lines if driver is not None else ():
+            for line in driver.instructions if driver is not None else ():
                 self.nudger.send_text(agent.id, line, self.name, context)

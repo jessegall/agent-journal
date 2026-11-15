@@ -15,14 +15,13 @@ from engine.chat.mark_declaration import MarkDeclaration
 from engine.command.command import Command
 from engine.command.handler import Handler
 from engine.database.migration import Migration
-from engine.driver.driver import Driver
 from engine.agent_machine.contracts.agent_listener import AgentListener
 from engine.agent_machine.contracts.effect import Effect
 from engine.agent_machine.contracts.line_source import LineSource
 from engine.agent_machine.contracts.policy import Policy
 from engine.agent_machine.contracts.transform import Transform
 from engine.agent_machine.needs.wake_cause import WakeCause
-from engine.agent_machine.driver import Driver as AgentDriver
+from engine.agent_machine.driver import CORE_SUITE, Driver
 from engine.agent_machine.needs.fact_source import FactSource
 from engine.agent_machine.needs.need_source import NeedSource
 from engine.model.model import Model
@@ -82,12 +81,11 @@ class Module:
     declared_plugin_events: ClassVar[list[str]] = []
     removal: ClassVar[type[Migration] | None] = None
     bindings: ClassVar[dict[type, type]] = {}
-    drivers: ClassVar[list[type[Driver]]] = []
     windows: ClassVar[list[WindowDeclaration | type[Window]]] = []
     window_extensions: ClassVar[list[WindowExtension | type[WindowExtension]]] = []
     marks: ClassVar[list[MarkDeclaration | type[MarkDeclaration]]] = []
     block_conditions: ClassVar[list[type[BlockCondition]]] = []
-    agent_drivers: ClassVar[list[type[AgentDriver]]] = []
+    agent_drivers: ClassVar[list[type[Driver]]] = []
     needs: ClassVar[list[type[NeedSource]]] = []
     facts: ClassVar[list[type[FactSource]]] = []
     policies: ClassVar[list[type[Policy]]] = []
@@ -121,6 +119,10 @@ class Module:
     moves: ClassVar[list[type[VersionFourMove]]] = []
     move_reason: ClassVar[str] = ""
     seed_reason: ClassVar[str] = ""
+
+    @classmethod
+    def suite_drivers(cls) -> list[type[Driver]]:
+        return [driver for driver in cls.agent_drivers if driver.suite != CORE_SUITE]
 
     @classmethod
     def plugin_event_names(cls) -> list[str]:

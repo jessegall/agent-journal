@@ -9,7 +9,9 @@ from engine.command.move_command import MoveCommand
 from engine.database.migration import Migration
 from engine.enums.command_category import CommandCategory
 from engine.enums.command_effect import CommandEffect
-from engine.driver.driver import Driver
+from engine.agent_machine.driver import Driver
+from engine.agent_machine.needs.rank_order import RankOrder
+from engine.enums.work_stop import WorkStop
 from engine.module.suite import Suite
 from engine.guard.guard import Guard
 from engine.model.lifecycle import Lifecycle
@@ -108,10 +110,11 @@ class Lead(Driver):
     """Drives the sample suite's main agent."""
 
     name = LEAD
-    suite_name = SampleSuite.name
-    role = AgentRole.MAIN
-    guards = [LeadLockGuard]
-    opening_lines = ["You are the sample lead"]
+    suite = SampleSuite.name
+    agent_type = AgentRole.MAIN
+    rank_order = RankOrder((), ())
+    work_stop = WorkStop.HANDOVER
+    instructions = ["You are the sample lead"]
 
 
 class ControlSuite(Suite):
@@ -124,9 +127,11 @@ class ControlLead(Driver):
     """Drives the control suite's main agent."""
 
     name = "control.lead"
-    suite_name = ControlSuite.name
-    role = AgentRole.MAIN
-    opening_lines = ["You are the control lead"]
+    suite = ControlSuite.name
+    agent_type = AgentRole.MAIN
+    rank_order = RankOrder((), ())
+    work_stop = WorkStop.HANDOVER
+    instructions = ["You are the control lead"]
 
 
 class SamplesModule(Module):
@@ -137,7 +142,7 @@ class SamplesModule(Module):
     migrations = [EditLocksTable]
     guards = [LeadLockGuard]
     handlers = [SampleNumberHandler]
-    drivers = [Lead, ControlLead]
+    agent_drivers = [Lead, ControlLead]
 
 
 class SampleSuiteOfSamplesModule(SampleSuite):

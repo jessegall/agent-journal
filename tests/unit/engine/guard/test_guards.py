@@ -9,7 +9,6 @@ from engine.event.change import Change
 from engine.event.event_pattern import EventPattern
 from engine.command.context import Context
 from engine.container.container import Container
-from engine.listener.change_filter import ChangeFilter
 from engine.guard.guard import Guard
 from engine.guard.guard_switches import GuardSwitches
 from engine.guard.guards import Guards
@@ -69,9 +68,9 @@ def change(skipped: frozenset[str] = frozenset()) -> Change[Model]:
     return Change(None, Item(title="Dune"), context)
 
 
-def guards(switches: GuardSwitches = GuardSwitches(), change_filter: ChangeFilter = ChangeFilter()) -> Guards:
+def guards(switches: GuardSwitches = GuardSwitches()) -> Guards:
     GUARD_CALLS.clear()
-    return Guards(REGISTRY, Container(), switches, change_filter)
+    return Guards(REGISTRY, Container(), switches)
 
 
 def test_guards_are_asked_in_order_and_the_first_refusal_stops_the_rest():
@@ -93,16 +92,6 @@ def test_a_switched_off_guard_is_passed_over():
 
     guards(switches=Off()).ask(change())
     assert GUARD_CALLS == ["core.lifecycle", "items.after"]
-
-
-def test_a_guard_that_does_not_apply_is_passed_over_but_the_lifecycle_never_is():
-    class RejectingChangeFilter(ChangeFilter):
-        def applies(self, entry_name: str, change: Change[Model]) -> bool:
-            return False
-
-    guards(change_filter=RejectingChangeFilter()).ask(change(frozenset({"core.lifecycle"})))
-    assert GUARD_CALLS == ["core.lifecycle"]
-
 
 def test_a_guard_whose_event_does_not_match_is_never_imported():
     sys.modules.pop("tests.unit.engine.samples.unused_guard_sample", None)

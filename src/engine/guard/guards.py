@@ -1,6 +1,5 @@
 from engine.event.change import Change
 from engine.container.container import Container
-from engine.listener.change_filter import ChangeFilter
 from engine.listener.event_listeners import EventListeners
 from engine.guard.guard import Guard
 from engine.guard.guard_switches import GuardSwitches
@@ -18,8 +17,8 @@ class Guards:
     """Asks every guard registered for a change's event, in their fixed order, and stops at the first refusal;
     with --explain it collects every refusal instead."""
 
-    def __init__(self, registry: Registry, container: Container, switches: GuardSwitches, change_filter: ChangeFilter) -> None:
-        self.registry, self.container, self.switches, self.change_filter = registry, container, switches, change_filter
+    def __init__(self, registry: Registry, container: Container, switches: GuardSwitches) -> None:
+        self.registry, self.container, self.switches = registry, container, switches
 
     def ask(self, change: Change[Model]) -> frozenset[str]:
         explanation = change.context.explanation
@@ -38,7 +37,7 @@ class Guards:
     def is_checked(self, entry: GuardEntry, change: Change[Model]) -> bool:
         if entry.name == LIFECYCLE_GUARD or entry.path.checked_class(Guard).is_safety:
             return True
-        return entry.name not in change.context.skipped_guards and self.switches.enabled(entry.name) and self.change_filter.applies(entry.name, change)
+        return entry.name not in change.context.skipped_guards and self.switches.enabled(entry.name)
 
     def check(self, entry: GuardEntry, change: Change[Model]) -> None:
         guard_class = entry.path.checked_class(Guard)

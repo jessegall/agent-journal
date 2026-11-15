@@ -38,7 +38,7 @@ class WorkerInstructionFiles:
 
     def injections(self, profile: AgentProfile) -> tuple[InstructionInjection, ...]:
         driver = self.registry.driver(WORKER_DRIVER)
-        journal_text = "\n".join(driver.opening_lines) if driver is not None else ""
+        journal_text = "\n".join(driver.instructions) if driver is not None else ""
         injections = [InstructionInjection(JOURNAL_KEY, JOURNAL_TITLE, journal_text, profile.injections.get(JOURNAL_KEY, True))]
         for runnable in self.plugins.running():
             folder = self.folders.code(runnable.plugin.name)

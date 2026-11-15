@@ -3,7 +3,9 @@ from engine.enums.access import Access
 from engine.agent.agent_roster import AgentRoster
 from engine.helper_type.helper_type import HelperType
 from core.modules.helpers.types.helper import Helper
-from engine.driver.driver import Driver
+from engine.agent_machine.driver import Driver
+from engine.agent_machine.needs.rank_order import RankOrder
+from engine.enums.work_stop import WorkStop
 from engine.module.suite import Suite
 from engine.module.module import Module
 
@@ -121,12 +123,14 @@ class SampleSuite(Suite):
 
 class UnknownDriver(Driver):
     name = "sample.unknown"
-    suite_name = SampleSuite.name
-    role = "missing-driver-role"
+    suite = SampleSuite.name
+    agent_type = "missing-driver-role"
+    rank_order = RankOrder((), ())
+    work_stop = WorkStop.HANDOVER
 
 
 class DriverRole(Clerk):
-    drivers = [UnknownDriver]
+    agent_drivers = [UnknownDriver]
 
 
 class HelperTypeSuite(Suite):

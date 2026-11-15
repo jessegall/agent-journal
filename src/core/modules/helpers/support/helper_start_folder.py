@@ -29,7 +29,7 @@ class HelperStartFolder:
         if profile is None or isinstance(profile, ProfileProblem):
             return None
         driver = self.suites.driver(ROLE)
-        return "\n\n".join(part for part in (profile.body.strip(), "\n".join(driver.opening_lines) if driver is not None else "") if part) + "\n"
+        return "\n\n".join(part for part in (profile.body.strip(), "\n".join(driver.instructions) if driver is not None else "") if part) + "\n"
 
     def prepare(self, helper: Agent) -> None:
         text = self.text(helper.profile)

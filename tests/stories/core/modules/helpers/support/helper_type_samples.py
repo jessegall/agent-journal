@@ -1,6 +1,8 @@
 from engine.helper_type.command_allow_list import CommandAllowList
 from core.modules.helpers.types.helper import Helper
-from engine.driver.driver import Driver
+from engine.agent_machine.driver import Driver
+from engine.agent_machine.needs.rank_order import RankOrder
+from engine.enums.work_stop import WorkStop
 from engine.helper_type.helper_type import HelperType
 from engine.module.module import Module
 from engine.module.suite import Suite
@@ -17,15 +19,17 @@ class Scribe(Helper):
 
 class ScribeDriver(Driver):
     name = "scribe.scribe"
-    suite_name = SCRIBE_SUITE
-    role = Scribe.key
+    suite = SCRIBE_SUITE
+    agent_type = Scribe.key
+    rank_order = RankOrder((), ())
+    work_stop = WorkStop.HANDOVER
 
 
 class ScribeModule(Module):
     name = "sample.scribe"
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.agents"]
-    drivers = [ScribeDriver]
+    agent_drivers = [ScribeDriver]
 
 
 class ScribeSuite(Suite):

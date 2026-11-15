@@ -12,7 +12,7 @@ SAMPLE_IDENTITY = EventIdentity("claude", "s-1", 1, "story-1", 4, 1, "main", "ma
 
 
 class RecordSamples:
-    """Decision records for tests of printers, saves and the shadow compare: the given decision with nothing
+    """Decision records for tests of printers and saves: the given decision with nothing
     else decided, moved or run; a test changes the rest with replace."""
 
     @staticmethod

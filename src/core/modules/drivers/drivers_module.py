@@ -177,7 +177,6 @@ from core.modules.drivers.migrations.m034_helper_job_reason_name import HelperJo
 from core.modules.drivers.migrations.m035_helper_job_review_plan import HelperJobReviewPlanMigration
 from core.modules.drivers.migrations.m037_agent_line_nudge import AgentLineNudgeMigration
 from core.modules.drivers.migrations.m030_hook_call_partial_indexes import HookCallPartialIndexesMigration
-from engine.listener.change_filter import ChangeFilter
 from engine.driver.hook_route import HookRoute
 from engine.module.module import Module
 from core.modules.drivers.bindings.agent_hook_route import AgentHookRoute
@@ -199,7 +198,6 @@ from core.modules.drivers.commands.record_agent_notice.record_agent_notice_handl
 from core.modules.drivers.commands.record_agent_nudge.record_agent_nudge_handler import RecordAgentNudgeHandler
 from core.modules.drivers.listeners.claimed_line_release_listener import ClaimedLineReleaseListener
 from core.modules.drivers.listeners.stop_line_typing_listener import StopLineTypingListener
-from core.modules.drivers.bindings.driver_change_filter import DriverChangeFilter
 from core.modules.drivers.commands.choose_driver.choose_driver_handler import ChooseDriverHandler
 from core.modules.drivers.commands.choose_driver.choose_driver_subcommand import ChooseDriverSubcommand
 from core.modules.drivers.commands.prune_events.prune_events_handler import PruneEventsHandler
@@ -329,6 +327,6 @@ class DriversModule(Module):
                      HookPruningTickHandler, RowPruningTickHandler,
                      EventPruningTickHandler]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed]
-    bindings = {WakeRoute: AgentWakeRoute, ShellParser: HookClientShellParser, StepRequests: TableStepRequests, GrantLedger: TableGrantLedger, AgentViewReader: StoredAgentViewReader, StepWriter: StoredStepWriter, CallerLineCheck: AgentLineCheck, ContextChangeRequests: RecordedContextChangeRequests, Nudger: AgentLineNudger, OverviewReads: TableOverviewReads, RefusalSkips: TableRefusalSkips, ManagedHookHistoryReader: ManagedHookHistoryQuery, TranscriptAuthors: LineTranscriptAuthors, LineHistory: TableLineHistory, HookRoute: AgentHookRoute, ChangeFilter: DriverChangeFilter}
+    bindings = {WakeRoute: AgentWakeRoute, ShellParser: HookClientShellParser, StepRequests: TableStepRequests, GrantLedger: TableGrantLedger, AgentViewReader: StoredAgentViewReader, StepWriter: StoredStepWriter, CallerLineCheck: AgentLineCheck, ContextChangeRequests: RecordedContextChangeRequests, Nudger: AgentLineNudger, OverviewReads: TableOverviewReads, RefusalSkips: TableRefusalSkips, ManagedHookHistoryReader: ManagedHookHistoryQuery, TranscriptAuthors: LineTranscriptAuthors, LineHistory: TableLineHistory, HookRoute: AgentHookRoute}
     windows = DRIVERS_WINDOWS
     seed_reason = "each suite chooses the drivers used by its demo"

@@ -11,7 +11,6 @@ from engine.event.change import Change
 from engine.event.event_pattern import EventPattern
 from engine.command.context import Context
 from engine.container.container import Container
-from engine.listener.change_filter import ChangeFilter
 from engine.listener.deletion_listener import DeletionListener
 from engine.listener.listeners import Listeners
 from engine.listener.save_listener import SaveListener
@@ -67,7 +66,7 @@ CONTEXT = Context(Actor(7, ActorType.AGENT), Timestamp(datetime(2026, 10, 31, tz
 
 def listeners(home: Path, registry: Registry = REGISTRY) -> Listeners:
     HANDLED.clear()
-    return Listeners(registry, Container(), ChangeFilter(), empty_database_scopes(), SystemLogWriter(JournalHome(home), Clock()))
+    return Listeners(registry, Container(), empty_database_scopes(), SystemLogWriter(JournalHome(home), Clock()))
 
 
 def test_save_listeners_run_in_order_and_an_error_reaches_the_caller(tmp_path):

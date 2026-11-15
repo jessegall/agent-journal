@@ -35,7 +35,7 @@ class SuiteCheck:
         return {suite.name: module.name for module in modules for suite in suites.module_suites(module)}
 
     def duplicates(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
-        groups = (("suites", [suite.name for module in modules for suite in suites.module_suites(module)]), ("drivers", [driver.name for module in modules for driver in module.drivers]))
+        groups = (("suites", [suite.name for module in modules for suite in suites.module_suites(module)]), ("drivers", [driver.name for module in modules for driver in module.suite_drivers()]))
         return NameGroups.duplicates(groups)
 
     def unknown_requirements(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
@@ -61,16 +61,16 @@ class SuiteCheck:
         problems: list[str] = []
         for module in modules:
             reachable = {module.name, *module.dependencies}
-            for driver in module.drivers:
-                if driver.suite_name not in owners:
-                    problems.append(f"driver {driver.name} names suite {driver.suite_name}, which no installed module ships")
-                elif owners[driver.suite_name] not in reachable:
-                    problems.append(f"driver {driver.name} names suite {driver.suite_name} of module {owners[driver.suite_name]}, which module {module.name} does not depend on")
+            for driver in module.suite_drivers():
+                if driver.suite not in owners:
+                    problems.append(f"driver {driver.name} names suite {driver.suite}, which no installed module ships")
+                elif owners[driver.suite] not in reachable:
+                    problems.append(f"driver {driver.name} names suite {driver.suite} of module {owners[driver.suite]}, which module {module.name} does not depend on")
         return tuple(problems)
 
     def wrong_suite_drivers(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
-        return tuple(f"driver {driver.name} belongs to suite {driver.suite_name}, so its name starts {driver.suite_name}."
-                     for module in modules for driver in module.drivers if driver.name.partition(".")[0] != driver.suite_name)
+        return tuple(f"driver {driver.name} belongs to suite {driver.suite}, so its name starts {driver.suite}."
+                     for module in modules for driver in module.suite_drivers() if driver.name.partition(".")[0] != driver.suite)
 
     def preset_problems(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
         loaded_suites = {suite.name: suite for module in modules for suite in suites.module_suites(module)}

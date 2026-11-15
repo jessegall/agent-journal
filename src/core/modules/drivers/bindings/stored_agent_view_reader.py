@@ -20,7 +20,7 @@ from engine.agent_machine.agent_view import AgentView
 from engine.provider.providers import Providers
 from engine.agent_machine.stepping.grant import Grant
 from engine.agent_machine.stepping.grant_ledger import GrantLedger
-from engine.agent_machine.driver import Driver
+from engine.agent_machine.driver import CORE_SUITE, Driver
 from engine.agent_machine.needs.agent_reference import AgentReference
 from engine.agent_machine.needs.ended_fact import EndedFact
 from engine.agent_machine.needs.fact import Fact
@@ -48,7 +48,6 @@ from core.modules.drivers.models.enums.escalation_state import EscalationState
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 
 BOTTOM_KEY = NeedKey("Stopped", None, "bottom")
-CORE_SUITE = "core"
 
 
 class StoredAgentViewReader(AgentViewReader):

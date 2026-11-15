@@ -1,6 +1,8 @@
 from engine.helper_type.command_allow_list import CommandAllowList
 from engine.enums.access import Access
-from engine.driver.driver import Driver
+from engine.agent_machine.driver import Driver
+from engine.agent_machine.needs.rank_order import RankOrder
+from engine.enums.work_stop import WorkStop
 from engine.helper_type.helper_type import HelperType
 from core.modules.helpers.types.helper import Helper
 from engine.module.suite import Suite
@@ -82,8 +84,10 @@ class ClerkDriver(Driver):
     """Drives the sample's clerk."""
 
     name = "coding.clerk"
-    suite_name = CodingSuite.name
-    role = "clerk"
+    suite = CodingSuite.name
+    agent_type = "clerk"
+    rank_order = RankOrder((), ())
+    work_stop = WorkStop.HANDOVER
 
 
 class ClerkModule(Module):
@@ -92,7 +96,7 @@ class ClerkModule(Module):
     dependencies = ["journal.core.agents", "journal.suites.coding"]
     helper_types = [SampleProfileClerk]
     profiles = [AgentProfile("sample-clerk", "Reads contracts", "Read the contracts.", agent_type="clerk", model="sonnet", codex_model="gpt-6.1-terra")]
-    drivers = [ClerkDriver]
+    agent_drivers = [ClerkDriver]
 
 
 class LegacySuiteOfLegacyProfiles(LegacySuite):

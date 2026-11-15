@@ -13,7 +13,7 @@ class CodingSuite(Suite):
     """Building software: the main agent works from its work controls and starts workers and the merger,
     while helpers read for it; the viewer shows its chat,
     tasks, plans, agents, questions and their activity and file edits, a phone layout, and version 4's
-    layout presets; the main agent and every worker carry a default state of their own."""
+    layout presets."""
 
     name = CODING_SUITE_NAME
     modules = [CodingModule, WorkersModule, ChecksModule]

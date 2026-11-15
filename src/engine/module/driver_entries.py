@@ -29,6 +29,5 @@ class DriverEntries:
         return DottedPath.class_path(suite.task_assigner).text
 
     def drivers(self, modules: Sequence[type[Module]]) -> tuple[DriverEntry, ...]:
-        return tuple(DriverEntry(driver.name, DottedPath.class_path(driver), module.name, driver.suite_name, driver.role, tuple(driver.opening_lines),
-                                 tuple(guard.name for guard in driver.guards))
-                     for module in modules for driver in module.drivers)
+        return tuple(DriverEntry(driver.name, DottedPath.class_path(driver), module.name, driver.suite, driver.agent_type, tuple(driver.instructions))
+                     for module in modules for driver in module.suite_drivers())
