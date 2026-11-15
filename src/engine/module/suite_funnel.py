@@ -21,7 +21,7 @@ class SuiteFunnel:
 
     def entries(self, suite: type[Suite]) -> tuple[DefaultStateEntry, ...]:
         joining = [default for second in self.suites.suites if second.joins == suite.name for default in second.default_states]
-        return tuple(self.entry(suite, default) for default in [*suite.default_states, *joining])
+        return tuple(self.entry(suite, default.declared()) for default in [*suite.default_states, *joining])
 
     def entry(self, suite: type[Suite], default: DefaultState) -> DefaultStateEntry:
         if default.state.name not in self.state_names:

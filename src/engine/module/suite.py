@@ -30,7 +30,7 @@ class Suite:
     entrances: ClassVar[Sequence[type[Entrance]]] = []
     task_assigner: ClassVar[type[TaskAssigner] | None] = None
     helper_types: ClassVar[Sequence[type[HelperType]]] = []
-    default_states: ClassVar[Sequence[DefaultState]] = []
+    default_states: ClassVar[Sequence[type[DefaultState]]] = []
 
     @classmethod
     def offered_windows(cls) -> tuple[str, ...]:

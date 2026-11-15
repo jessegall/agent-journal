@@ -5504,7 +5504,9 @@
         "value: str",
         "removed_while: str"
       ],
-      "methods": []
+      "methods": [
+        "declared(cls) -> 'DefaultState'"
+      ]
     },
     "module.dock_check.DockCheck": {
       "bases": [],
@@ -5989,7 +5991,7 @@
         "entrances: ClassVar[Sequence[type[Entrance]]]",
         "task_assigner: ClassVar[type[TaskAssigner] | None]",
         "helper_types: ClassVar[Sequence[type[HelperType]]]",
-        "default_states: ClassVar[Sequence[DefaultState]]"
+        "default_states: ClassVar[Sequence[type[DefaultState]]]"
       ],
       "methods": [
         "offered_windows(cls) -> tuple[str, ...]",

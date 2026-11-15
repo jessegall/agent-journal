@@ -1,10 +1,6 @@
 from engine.module.suite import Suite
-from engine.module.default_state import DefaultState
-from engine.enums.agent_kind import AgentKind
-from engine.enums.agent_role import AgentRole
-from core.modules.tasks.states.where_you_stand import WhereYouStand
-from suites.coding.modules.workers.states.worker_log_due import WorkerLogDue
-from suites.coding.modules.workers.types.worker import Worker
+from suites.coding.default_states.main_where_you_stand import MainWhereYouStand
+from suites.coding.modules.workers.default_states.worker_log_due_default import WorkerLogDueDefault
 from suites.coding.support.next_task import NextTask
 from suites.coding.coding_module import CodingModule
 from suites.coding.modules.checks.checks_module import ChecksModule
@@ -25,4 +21,4 @@ class CodingSuite(Suite):
     modules = [CodingModule, WorkersModule, ChecksModule]
     task_assigner = NextTask
     entrances = [AdminEntrance, WorkersAdminEntrance, ChecksAdminEntrance]
-    default_states = [DefaultState(WhereYouStand, AgentKind.ROLE, AgentRole.MAIN), DefaultState(WorkerLogDue, AgentKind.HELPER_TYPE, Worker.key)]
+    default_states = [MainWhereYouStand, WorkerLogDueDefault]

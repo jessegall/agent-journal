@@ -9,6 +9,12 @@ from engine.module.default_state import DefaultState
 from engine.module.module import Module
 from engine.module.suite import Suite
 
+
+# a default state declared as a class, as a suite writes it in its own file
+def declared_default(state: type[AgentState], kind: AgentKind, value: str, removed_while: str = "") -> type[DefaultState]:
+    return type(f"{state.__name__}{kind.name.title()}Default", (DefaultState,), {"state": state, "kind": kind, "value": value, "removed_while": removed_while})
+
+
 PATH = "tests.stories.core.modules.drivers.support.default_state_modules"
 
 
@@ -39,18 +45,18 @@ class DefaultAdded(Suite):
     name = "acme.default"
     joins = "coding"
     modules = [DefaultModule]
-    default_states = [DefaultState(AcmeDefault, AgentKind.ROLE, "main")]
+    default_states = [declared_default(AcmeDefault, AgentKind.ROLE, "main")]
 
 
 class DefaultNamingUnknownState(Suite):
     name = "acme.ghost-state"
     joins = "coding"
     modules = [DefaultModule]
-    default_states = [DefaultState(GhostDefault, AgentKind.ROLE, "main")]
+    default_states = [declared_default(GhostDefault, AgentKind.ROLE, "main")]
 
 
 class DefaultNamingUnknownKind(Suite):
     name = "acme.ghost-kind"
     joins = "coding"
     modules = [DefaultModule]
-    default_states = [DefaultState(AcmeDefault, AgentKind.DRIVER, "acme.nothing")]
+    default_states = [declared_default(AcmeDefault, AgentKind.DRIVER, "acme.nothing")]

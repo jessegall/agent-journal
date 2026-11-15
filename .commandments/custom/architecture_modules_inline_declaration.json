@@ -28,9 +28,6 @@
                 "testCode": true
             },
             {
-                "fileMatches": "(^|/)src/(core/modules|suites|tunnels)/"
-            },
-            {
                 "all": [
                     {
                         "name": "ModelDeclaration"
@@ -41,13 +38,25 @@
                         }
                     }
                 ]
+            },
+            {
+                "all": [
+                    {
+                        "fileMatches": ".commandments/custom/samples/"
+                    },
+                    {
+                        "not": {
+                            "fileMatches": ".commandments/custom/samples/declarations/"
+                        }
+                    }
+                ]
             }
         ]
     },
     "sin": {
         "name": "inline-declaration",
         "description": "A module or suite lists a declaration built in place, a call in its list, instead of the name of a class in its own file.",
-        "rule": "A module lists class names: make the declaration a class in its own file and list that class. The modules of today are allowed while plan 1113 converts them, and the allowance shrinks with each conversion.",
+        "rule": "A module lists class names: make the declaration a class in its own file and list that class.",
         "skill": "module-registration"
     }
 }

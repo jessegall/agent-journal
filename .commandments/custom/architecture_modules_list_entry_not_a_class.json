@@ -71,20 +71,37 @@
                 "testCode": true
             },
             {
-                "fileMatches": "(^|/)src/(core/modules|suites|tunnels)/"
-            },
-            {
                 "child": {
                     "field": "targets",
-                    "name": "dependencies"
+                    "nameIn": [
+                        "dependencies",
+                        "file_events",
+                        "declared_plugin_events",
+                        "former_event_keys"
+                    ]
                 }
+            },
+            {
+                "fileMatches": "/migrations/"
+            },
+            {
+                "all": [
+                    {
+                        "fileMatches": ".commandments/custom/samples/"
+                    },
+                    {
+                        "not": {
+                            "fileMatches": ".commandments/custom/samples/declarations/"
+                        }
+                    }
+                ]
             }
         ]
     },
     "sin": {
         "name": "list-entry-not-a-class",
         "description": "A module or suite attribute lists a call, a literal or a tuple instead of the names of classes.",
-        "rule": "A module lists class names: make each entry a class in its own file and list that class. A short ModelDeclaration(Model) with no other argument stays, and dependencies name other modules by their keys. The modules of today are allowed while plan 1113 converts them, and the allowance shrinks with each conversion.",
+        "rule": "A module lists class names: make each entry a class in its own file and list that class. A short ModelDeclaration(Model) with no other argument stays; dependencies name other modules by their keys, and file_events, declared_plugin_events and former_event_keys name events by their keys.",
         "skill": "module-registration"
     }
 }
