@@ -23,7 +23,7 @@ class AgentStackSummaries:
         stacks = self.queries.query(AgentStack).matching(Among("session_agent_id", agent_ids)).every_row(PAGE_STACKS_REASON)
         escalations = {row.session_agent_id: row.id for row in self.queries.query(AgentEscalation).filter(state=EscalationState.OPEN)
                        .matching(Among("session_agent_id", agent_ids)).every_row(PAGE_STACKS_REASON)}
-        return {stack.session_agent_id: self.summary(stack, escalations.get(stack.session_agent_id)) for stack in stacks}
+        return {stack.session_agent_id: self.summary(stack, escalations.get(stack.session_agent_id)) for stack in stacks if stack.has_frames}
 
     @staticmethod
     def summary(stack: AgentStack, escalation_id: int | None) -> StackSummary:

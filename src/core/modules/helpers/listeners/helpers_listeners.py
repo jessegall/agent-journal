@@ -1,3 +1,4 @@
+from core.modules.helpers.listeners.helper_grant_basis_listener import HelperGrantBasisListener
 from core.modules.helpers.listeners.compact_window_listener import CompactWindowListener
 from core.modules.helpers.listeners.deleted_helper_source_listener import DeletedHelperSourceListener
 from core.modules.helpers.listeners.helper_ended_listener import HelperEndedListener
@@ -9,4 +10,4 @@ from core.modules.helpers.listeners.messaged_helper_listener import MessagedHelp
 from core.modules.helpers.listeners.new_main_helpers_listener import NewMainHelpersListener
 from core.modules.helpers.listeners.provider_outage_mark_listener import ProviderOutageMarkListener
 
-HELPERS_LISTENERS = [NewMainHelpersListener, HelperResumeListener, HelperProgramListener, MessagedHelperListener, HelperEndedListener, HelperJobMarkListener, HelperJobSourceListener, DeletedHelperSourceListener, ProviderOutageMarkListener, CompactWindowListener]
+HELPERS_LISTENERS = [HelperGrantBasisListener, NewMainHelpersListener, HelperResumeListener, HelperProgramListener, MessagedHelperListener, HelperEndedListener, HelperJobMarkListener, HelperJobSourceListener, DeletedHelperSourceListener, ProviderOutageMarkListener, CompactWindowListener]

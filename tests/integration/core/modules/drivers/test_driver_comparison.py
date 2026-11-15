@@ -18,7 +18,8 @@ def test_a_compared_hook_saves_both_answers_beside_the_live_one_and_writes_no_li
     assert comparison is not None and comparison.hook_call_id == reply.hook_call_id
     assert comparison.old_answer.startswith("refuse") == bool(reply.refusal) and comparison.new_answer
     assert queries.query(DriverComparisonStack).filter(session_agent_id=story.agent.id).first() is not None
-    assert queries.query(AgentStack).filter(session_agent_id=story.agent.id).first() is None
+    live = queries.query(AgentStack).filter(session_agent_id=story.agent.id).first()
+    assert live is None or live.frames == "[]"
 
 
 def test_with_the_comparison_off_a_hook_saves_no_comparison(played):

@@ -30,4 +30,5 @@ def test_with_the_overview_slice_on_the_new_driver_opens_its_block_and_refuses_i
 def test_with_no_slice_on_the_walk_alone_answers_and_no_stack_is_written(played):
     story = played(BuilderStarted)
     assert edit_after_start(story).refusal
-    assert story.container.get(Queries).query(AgentStack).filter(session_agent_id=story.agent.id).first() is None
+    stack = story.container.get(Queries).query(AgentStack).filter(session_agent_id=story.agent.id).first()
+    assert stack is None or stack.frames == "[]"

@@ -40,6 +40,8 @@ class Database:
         self.repeated_work = PointTally()
         self.read_actor_id: int | None = None
         self.write_rollback_count = 0
+        # the writes begun on this connection, so what one write did once is told apart from the next write
+        self.write_number = 0
         self.row_owner: RowOwner | None = None
         self.environment_scope_passed = False
         self.unscoped_reads_raise = False
@@ -117,6 +119,7 @@ class Database:
         with self.turns.write_turn():
             changes = self.connection.total_changes
             self.connection.execute("BEGIN IMMEDIATE")
+            self.write_number += 1
             try:
                 yield
                 self.connection.execute("COMMIT")

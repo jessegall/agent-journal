@@ -51,7 +51,7 @@ class StoredStepWriter(StepWriter):
         if not self.basis_matches(row, view):
             return StepCommit.conflict()
         record = step.record
-        if hook_call_id is None and not self.has_changes(view, step):
+        if hook_call_id is None and not self.has_changes(row, view, step):
             return StepCommit.saved(None, ())
         row = self.saved_stack(row, view, step, context)
         for move in record.moves:
@@ -75,10 +75,10 @@ class StoredStepWriter(StepWriter):
         return current == (view.basis.stack_version, view.basis.driver_epoch, view.basis.program_epoch)
 
     @staticmethod
-    def has_changes(view: AgentView, step: StepResult) -> bool:
+    def has_changes(row: AgentStack | None, view: AgentView, step: StepResult) -> bool:
         record = step.record
         changed_counts = (record.counts.stop_refusals, record.counts.tool_refusals) != (view.counts.stop_refusals, view.counts.tool_refusals)
-        is_first_step = view.basis.stack_version == 0
+        is_first_step = row is None or not row.has_frames
         return bool(is_first_step or record.moves or record.blocks_opened or record.blocks_closed or changed_counts or record.counts.escalation != view.escalation
                     or record.wake.wake_move is not WakeMove.UNCHANGED or step.stack != view.stack)
 

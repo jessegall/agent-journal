@@ -73,9 +73,9 @@ class StoredAgentViewReader(AgentViewReader):
                            program_epoch.epoch if program_epoch is not None else 0)
 
     def stack(self, row: AgentStack | None, agent: Agent) -> Stack:
-        if row is not None:
-            return Stack(FrameCodec.decoded(row.frames))
-        return Stack([Frame(Stopped(agent.creation_timestamp().value, "started", True), BOTTOM_KEY, agent.creation_timestamp().value)])
+        # a row a permission change made before the agent's first step holds no frame yet, and reads as a fresh stack
+        frames = FrameCodec.decoded(row.frames) if row is not None else []
+        return Stack(frames or [Frame(Stopped(agent.creation_timestamp().value, "started", True), BOTTOM_KEY, agent.creation_timestamp().value)])
 
     def facts(self, agent: Agent) -> tuple[Fact, ...]:
         holder = self.agents.pause_holder(agent.id)

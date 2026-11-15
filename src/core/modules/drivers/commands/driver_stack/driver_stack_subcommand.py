@@ -26,7 +26,7 @@ class DriverStackSubcommand(ReadSubcommand[tuple[str, ...]]):
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[str, ...]:
         row = self.queries.query(AgentStack).filter(session_agent_id=arguments.agent).first()
-        if row is None:
+        if row is None or not row.has_frames:
             return tuple([f"agent {arguments.agent} has no stack yet: its first step writes it"])
         frames = [f"{type(frame.state).__name__} {frame.need_key.generation} since {frame.entered_at.isoformat()}" for frame in FrameCodec.decoded(row.frames)]
         moves = self.queries.query(AgentStackMove).filter(session_agent_id=arguments.agent).newest().page(arguments.page, MOVES_SHOWN)

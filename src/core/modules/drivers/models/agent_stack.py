@@ -2,6 +2,8 @@ from dataclasses import dataclass
 
 from engine.model.model import Model
 
+EMPTY_FRAMES = "[]"
+
 
 @dataclass(frozen=True, kw_only=True)
 class AgentStack(Model):
@@ -13,10 +15,18 @@ class AgentStack(Model):
     cli_name = "agent-stack"
 
     session_agent_id: int
-    driver_name: str
-    table_digest: str
+    # a row a permission change made before the agent's first step names no driver or table yet
+    driver_name: str = ""
+    table_digest: str = ""
     pinned_slices: tuple[str, ...] = ()
     frame_schema: int = 1
-    frames: str = "[]"
+    frames: str = EMPTY_FRAMES
     stop_refusals: int = 0
     tool_refusals: int = 0
+    # the writes outside a step that changed what the agent may do, each of which moves the version
+    permission_changes: int = 0
+
+    # a row a permission change made before the agent's first step holds no frame yet
+    @property
+    def has_frames(self) -> bool:
+        return self.frames != EMPTY_FRAMES
