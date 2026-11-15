@@ -9,7 +9,7 @@ from engine.query.queries import Queries
 from core.modules.tasks.models.enums.task_state import UNFINISHED_STATES
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
-from core.modules.tasks.support.task_nudges import TASK_NAME
+from core.modules.tasks.nudges.task_name_nudge import TaskNameNudge
 
 
 TASK_MOVES = ("task start", "task close", "task cancel", "task block", "task release")
@@ -33,4 +33,4 @@ class TaskNameRule(DriverRule):
             return RuleAnswer.allowed()
         numbers = {int(number) for number in TASK_NUMBER.findall(current.task.brief)} - {current.task.id}
         labelled = self.queries.query(Task).matching(Among("id", tuple(numbers))).matching(Among("state", UNFINISHED_STATES)).oldest().get() if numbers else ()
-        return RuleAnswer.with_nudges(*(TASK_NAME.nudge(task=current.task.id, other=task.id) for task in labelled))
+        return RuleAnswer.with_nudges(*(TaskNameNudge.declared().nudge(task=current.task.id, other=task.id) for task in labelled))

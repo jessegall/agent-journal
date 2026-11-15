@@ -9,10 +9,18 @@ from engine.driver.part import Part
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.shell_line import ShellLine
 from core.modules.aliases.queries.alias_query import AliasQuery
-from core.modules.aliases.support.alias_nudges import SAVED_COMMAND_CHOICES, SAVED_COMMAND_DIRECT, SAVED_COMMAND_MIXED, SAVED_COMMAND_PIPED, SAVED_COMMAND_SILENT, SAVED_COMMAND_HELPER, SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_UNREAD, SAVED_COMMAND_TIMEOUT
+from core.modules.aliases.nudges.saved_command_choices_nudge import SavedCommandChoicesNudge
+from core.modules.aliases.nudges.saved_command_direct_nudge import SavedCommandDirectNudge
+from core.modules.aliases.nudges.saved_command_mixed_nudge import SavedCommandMixedNudge
+from core.modules.aliases.nudges.saved_command_piped_nudge import SavedCommandPipedNudge
+from core.modules.aliases.nudges.saved_command_silent_nudge import SavedCommandSilentNudge
+from core.modules.aliases.nudges.saved_command_helper_nudge import SavedCommandHelperNudge
+from core.modules.aliases.nudges.saved_command_unknown_nudge import SavedCommandUnknownNudge
+from core.modules.aliases.nudges.saved_command_unread_nudge import SavedCommandUnreadNudge
+from core.modules.aliases.nudges.saved_command_timeout_nudge import SavedCommandTimeoutNudge
 
 ASKING_FLAGS = ("--help", "-h", "--version", "-V")
-SKIPPED_KEYS = (SAVED_COMMAND_UNKNOWN.key, SAVED_COMMAND_HELPER.key, SAVED_COMMAND_MIXED.key, SAVED_COMMAND_SILENT.key)
+SKIPPED_KEYS = (SavedCommandUnknownNudge.declared().key, SavedCommandHelperNudge.declared().key, SavedCommandMixedNudge.declared().key, SavedCommandSilentNudge.declared().key)
 
 
 class SavedCommandRule(DriverRule):
@@ -36,7 +44,7 @@ class SavedCommandRule(DriverRule):
                     continue
                 Duration.parse(part.timeout_duration)
         except DurationError:
-            return RuleAnswer.refused(SAVED_COMMAND_TIMEOUT.nudge())
+            return RuleAnswer.refused(SavedCommandTimeoutNudge.declared().nudge())
         if not shell.aliases_loaded:
             return RuleAnswer.allowed()
         if not self.types.behaviours(hook.role).runs_saved_commands:
@@ -45,7 +53,7 @@ class SavedCommandRule(DriverRule):
         refusal = next((nudge for nudge in refusals if nudge and not (shell.is_skip_line and nudge.key in SKIPPED_KEYS)), None)
         if refusal:
             return RuleAnswer.refused(refusal)
-        return RuleAnswer.refused(SAVED_COMMAND_MIXED.nudge()) if self.is_mixed(shell) else RuleAnswer.allowed()
+        return RuleAnswer.refused(SavedCommandMixedNudge.declared().nudge()) if self.is_mixed(shell) else RuleAnswer.allowed()
 
     @staticmethod
     def is_mixed(shell: ShellLine) -> bool:
@@ -66,19 +74,19 @@ class SavedCommandRule(DriverRule):
             return None
         exact = self.aliases.first_beginning(part.text, category)
         if exact:
-            return SAVED_COMMAND_DIRECT.nudge(name=exact.name)
+            return SavedCommandDirectNudge.declared().nudge(name=exact.name)
         if self.aliases.with_category(category).exists():
-            return SAVED_COMMAND_CHOICES.nudge(category=category.value)
+            return SavedCommandChoicesNudge.declared().nudge(category=category.value)
         if role in self.types.read_access_keys():
-            return SAVED_COMMAND_HELPER.nudge(category=category.value)
-        return SAVED_COMMAND_UNKNOWN.nudge(command=part.text, category=category.value)
+            return SavedCommandHelperNudge.declared().nudge(category=category.value)
+        return SavedCommandUnknownNudge.declared().nudge(command=part.text, category=category.value)
 
     def saved_refusal(self, part: Part) -> Nudge | None:
         if part.pipe_target is not None:
-            return SAVED_COMMAND_PIPED.nudge(name=part.saved_command)
+            return SavedCommandPipedNudge.declared().nudge(name=part.saved_command)
         if set(ASKING_FLAGS) & set(part.arguments):
             return None
         if not part.read_flag:
-            return SAVED_COMMAND_UNREAD.nudge(name=part.saved_command)
+            return SavedCommandUnreadNudge.declared().nudge(name=part.saved_command)
         alias = self.aliases.saved(part.saved_command)
-        return SAVED_COMMAND_SILENT.nudge(name=alias.name) if alias is not None and alias.is_claimed else None
+        return SavedCommandSilentNudge.declared().nudge(name=alias.name) if alias is not None and alias.is_claimed else None

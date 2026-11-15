@@ -3,7 +3,7 @@ import pytest
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
-from core.modules.tasks.support.task_nudges import CURRENT_TASK
+from core.modules.tasks.nudges.current_task_nudge import CurrentTaskNudge
 
 
 @pytest.fixture
@@ -39,7 +39,7 @@ def test_a_refused_stop_keeps_later_checks_without_applying_their_commands(stop_
     story.expect_success("task start 1", actor=story.agent)
     record = stop_record(stop_server)
     checks = {check["rule"]: check for check in record["stop_checks"]}
-    story.expect_rows(record["answer"] == "refused", CURRENT_TASK.nudge(task=1).text in checks["tasks.carry-on-at-stop"]["reason"],
+    story.expect_rows(record["answer"] == "refused", CurrentTaskNudge.declared().nudge(task=1).text in checks["tasks.carry-on-at-stop"]["reason"],
                       not checks["coding.main-stop"]["applied"],
                       "Tasks 1 are yours and unfinished" in checks["coding.main-stop"]["reason"])
     lines = [line for line in story.system_log_text().splitlines() if "stop " in line and "refused" in line]

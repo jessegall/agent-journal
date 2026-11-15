@@ -1,6 +1,4 @@
-from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.enums.nudge_type import NudgeType
+from core.modules.secrets.nudges.secrets_folder_ban_nudge import SecretsFolderBanNudge
 
-SECRETS_FOLDER_BAN = NudgeDeclaration("secrets.out_of_reach", NudgeType.SAFETY_REFUSAL, "The secrets folder is off limits: run programs that need a secret through the secret command")
 
-SECRET_NUDGES = [SECRETS_FOLDER_BAN]
+SECRET_NUDGES = [SecretsFolderBanNudge]

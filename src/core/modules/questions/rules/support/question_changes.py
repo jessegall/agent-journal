@@ -10,7 +10,7 @@ from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.queries.question_query import QuestionQuery
 from core.modules.waits.models.wait_target import WaitTarget
 from engine.driver.nudge import Nudge
-from core.modules.questions.support.question_nudges import QUESTION_ANSWER_SOURCE
+from core.modules.questions.nudges.question_answer_source_nudge import QuestionAnswerSourceNudge
 
 CHANGED_QUESTIONS_REASON = "every question of the agent that changed since the last answer is told, with what waits on it"
 
@@ -35,7 +35,7 @@ class QuestionChanges:
                 continue
             lines.append(line.nudge(question=question.id))
             if state is QuestionState.ANSWERED and question.message_id is not None:
-                lines.append(QUESTION_ANSWER_SOURCE.nudge(question=question.id, message=question.message_id,
+                lines.append(QuestionAnswerSourceNudge.declared().nudge(question=question.id, message=question.message_id,
                              reference=f"question:{question.id} message:{question.message_id}"))
         return RuleAnswer.with_nudges(*lines)
 

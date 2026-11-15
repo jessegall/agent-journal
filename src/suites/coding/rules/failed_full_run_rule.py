@@ -6,7 +6,7 @@ from engine.driver.rule_answer import RuleAnswer
 from engine.query.conditions.greater import Greater
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.queries.process_query import ProcessQuery
-from suites.coding.support.coding_nudges import FAILED_FULL_RUN
+from suites.coding.nudges.failed_full_run_nudge import FailedFullRunNudge
 
 
 class FailedFullRunRule(DriverRule):
@@ -28,4 +28,4 @@ class FailedFullRunRule(DriverRule):
         if last is None or last.state is not ProcessState.FAILED:
             return RuleAnswer.allowed()
         passed = self.processes.agent(hook.agent_id).filter(state=ProcessState.FINISHED, category=CommandCategory.TEST_RUN).matching(Greater("id", last.id)).exists()
-        return RuleAnswer.allowed() if passed else RuleAnswer.refused(FAILED_FULL_RUN.nudge())
+        return RuleAnswer.allowed() if passed else RuleAnswer.refused(FailedFullRunNudge.declared().nudge())

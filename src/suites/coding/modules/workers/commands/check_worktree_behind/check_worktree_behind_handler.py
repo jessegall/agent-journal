@@ -15,7 +15,10 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.queries.worker_operation_query import WorkerOperationQuery
 from suites.coding.modules.workers.support.behind_checks import BehindChecks
-from suites.coding.modules.workers.support.behind_nudges import MAIN_AGENT_STALE_WORKTREE, FAST_FORWARDED, STALE_SOURCE, UPDATE_ORDERED
+from suites.coding.modules.workers.support.behind_nudges import STALE_SOURCE
+from suites.coding.modules.workers.nudges.main_agent_stale_worktree_nudge import MainAgentStaleWorktreeNudge
+from suites.coding.modules.workers.nudges.fast_forwarded_nudge import FastForwardedNudge
+from suites.coding.modules.workers.nudges.update_ordered_nudge import UpdateOrderedNudge
 from suites.coding.modules.workers.support.worker_settings import FORCED_UPDATE_COMMITS, MAIN_UPDATE_COMMITS
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
@@ -57,16 +60,16 @@ class CheckWorktreeBehindHandler(Handler[CheckWorktreeBehind, BehindRoute]):
         if self.moved:
             self.repository.save_change(check, check.updated(), context)
             self.repository.save_change(worktree, worktree.updated(self.tip), context)
-            self.nudger.send(worktree.session_agent_id, FAST_FORWARDED, STALE_SOURCE, context)
+            self.nudger.send(worktree.session_agent_id, FastForwardedNudge.declared(), STALE_SOURCE, context)
             return BehindRoute.FAST_FORWARDED
         forced = self.settings.number(FORCED_UPDATE_COMMITS)
         if forced > 0 and self.behind >= forced:
             self.repository.save_change(check, check.ordered(context.actor.id, f"{self.behind} commits behind, at least {forced}"), context)
-            self.nudger.send(worktree.session_agent_id, UPDATE_ORDERED, STALE_SOURCE, context, count=self.behind)
+            self.nudger.send(worktree.session_agent_id, UpdateOrderedNudge.declared(), STALE_SOURCE, context, count=self.behind)
             return BehindRoute.UPDATE_ORDERED
         target_main = self.settings.number(MAIN_UPDATE_COMMITS)
         if target_main > 0 and self.behind >= target_main:
             self.repository.save_change(check, check.escalated(f"{self.behind} commits behind, at least {target_main}"), context)
-            self.main_line.send_nudge(MAIN_AGENT_STALE_WORKTREE.nudge(worker=worker, count=self.behind), STALE_SOURCE, context)
+            self.main_line.send_nudge(MainAgentStaleWorktreeNudge.declared().nudge(worker=worker, count=self.behind), STALE_SOURCE, context)
             return BehindRoute.MAIN_AGENT
         return BehindRoute.MERGER

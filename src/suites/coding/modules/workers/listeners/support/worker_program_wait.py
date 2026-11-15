@@ -4,7 +4,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from engine.driver.nudger import Nudger
 from suites.coding.modules.workers.commands.report_worker_program_recovery.report_worker_program_recovery import ReportWorkerProgramRecovery
-from suites.coding.modules.workers.support.worker_nudges import WORKER_PROGRAM_UNAVAILABLE
+from suites.coding.modules.workers.nudges.worker_program_unavailable_nudge import WorkerProgramUnavailableNudge
 
 
 class WorkerProgramWait:
@@ -22,6 +22,6 @@ class WorkerProgramWait:
         source = self.source(worker)
         if worker.parent_id is None or self.queries.query(AgentLine).filter(session_agent_id=worker.parent_id, source=source).exists():
             return
-        self.nudger.send(worker.parent_id, WORKER_PROGRAM_UNAVAILABLE, source, context,
+        self.nudger.send(worker.parent_id, WorkerProgramUnavailableNudge.declared(), source, context,
                          worker=worker.id)
 

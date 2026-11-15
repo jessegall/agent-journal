@@ -23,7 +23,7 @@ from core.modules.drivers.commands.skip_refusal.skip_refusal import SkipRefusal
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.models.refusal_skip import RefusalSkip
-from core.modules.drivers.support.access_nudges import SKIPS_SPENT
+from core.modules.drivers.nudges.skips_spent_nudge import SkipsSpentNudge
 from engine.driver.nudger import Nudger
 
 MOST_SKIP_COUNT = 5
@@ -105,7 +105,7 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
             approval = self.restoration_approval(agent)
             self.bus.dispatch(RequestUserApproval(approval, approval.arguments, agent_id), context)
             return
-        self.nudger.send(agent.parent_id, SKIPS_SPENT, SKIP_SOURCE, context, agent=self.numbers.number(AGENT_MODEL_NAME, agent_id), count=MOST_SKIP_COUNT)
+        self.nudger.send(agent.parent_id, SkipsSpentNudge.declared(), SKIP_SOURCE, context, agent=self.numbers.number(AGENT_MODEL_NAME, agent_id), count=MOST_SKIP_COUNT)
 
     @staticmethod
     def restoration_approval(agent: Agent) -> UserApprovalRefusal:

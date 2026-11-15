@@ -6,7 +6,8 @@ from engine.helper_type.helper_type_book import HelperTypeBook
 from suites.coding.modules.workers.commands.send_silent_agent_lines.send_silent_agent_lines import SendSilentAgentLines
 
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
-from suites.coding.modules.workers.support.worker_nudges import HELPER_INACTIVE, UNSTARTED_JOB
+from suites.coding.modules.workers.nudges.helper_inactive_nudge import HelperInactiveNudge
+from suites.coding.modules.workers.nudges.unstarted_job_nudge import UnstartedJobNudge
 from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPER_GRACE_MINUTES, INACTIVE_HELPER_MINUTES
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from engine.enums.agent_role import AgentRole
@@ -70,8 +71,8 @@ class InactiveHelperRule(DriverRule):
         if not inactive and not unstarted:
             return RuleAnswer.allowed()
         notes = self.queue_notes(inactive)
-        return RuleAnswer.with_nudges(*(HELPER_INACTIVE.nudge(name=helper.role, agent=helper.number, minutes=grace.minute_count, queue=notes[helper.id], action=self.action(helper)) for helper in inactive),
-                                      *(UNSTARTED_JOB.nudge(name=helper.role, agent=helper.number, minutes=grace.minute_count, action=self.action(helper)) for helper in unstarted))
+        return RuleAnswer.with_nudges(*(HelperInactiveNudge.declared().nudge(name=helper.role, agent=helper.number, minutes=grace.minute_count, queue=notes[helper.id], action=self.action(helper)) for helper in inactive),
+                                      *(UnstartedJobNudge.declared().nudge(name=helper.role, agent=helper.number, minutes=grace.minute_count, action=self.action(helper)) for helper in unstarted))
 
     @staticmethod
     def action(helper: Agent) -> str:

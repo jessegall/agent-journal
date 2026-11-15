@@ -9,21 +9,15 @@ from core.modules.plans.models.declarations.checkpoint_pass_model_declaration im
 from core.modules.plans.docks.plans_docks import PLANS_DOCKS
 from core.modules.plans.skills.declarations.plans_skills import PLANS_SKILLS
 from core.modules.plans.commands.repair_plan_states.repair_plan_states_handler import RepairPlanStatesHandler
-from core.modules.plans.ticks.plan_state_sweep import PlanStateSweep
-from core.modules.tasks.ticks.task_state_sweep import SCAN_SECONDS as PLAN_SWEEP_SECONDS
-from engine.ticker.tick_handler import TickHandler
-from engine.ticker.tick_interval import TickInterval
 from core.modules.plans.migrations.m012_environment_index import PlanContextReadsEnvironmentIndexMigration
 from core.modules.plans.support.plan_settings import PLAN_SETTINGS
 from core.modules.plans.migrations.m008_plan_context_reads import PlanContextReadsMigration
 from core.modules.plans.migrations.m009_plan_waits import PlanWaitsMigration
-from core.modules.plans.support.plan_button_slots import WAITING_PLAN_SLOTS
 from core.modules.plans.commands.wait_plan.wait_plan_handler import WaitPlanHandler
 from core.modules.plans.commands.wait_plan.wait_plan_subcommand import WaitPlanSubcommand
 from core.modules.plans.listeners.plan_wait_listener import PlanWaitListener
 from core.modules.plans.support.block_conditions.plan_context_read import PlanContextRead as PlanContextReadCondition
 from core.modules.plans.rules.plan_context_rule import PlanContextRule
-from engine.viewer.button_declaration import ButtonCondition, ButtonDeclaration, ButtonMenuItem, TextField
 from core.modules.plans.listeners.next_plan_task_starter_listener import NextPlanTaskStarterListener
 from core.modules.plans.listeners.started_task_plan_listener import StartedTaskPlanListener
 from core.modules.plans.guards.one_task_phase_guard import OneTaskPhaseGuard
@@ -83,7 +77,7 @@ from core.modules.plans.rules.plan_order_rule import PlanOrderRule
 from core.modules.plans.states.plan_focus_due import PlanFocusDue
 from core.modules.plans.rules.plan_state_rule import PlanStateRule
 from core.modules.plans.rules.plan_task_line_rule import PlanTaskLineRule
-from core.modules.plans.support.plan_marks import PLAN_MARKS
+from core.modules.plans.marks.plan_mark import PlanMark
 from core.modules.plans.support.plan_nudges import PLAN_NUDGES
 from core.modules.plans.seeders.plans_seeder import PlansSeeder
 from core.modules.plans.support.block_conditions.plan_approved import PlanApproved
@@ -96,7 +90,7 @@ from core.modules.plans.commands.choose_plan_focus.choose_plan_focus_handler imp
 from core.modules.plans.commands.choose_plan_focus.choose_plan_focus_subcommand import ChoosePlanFocusSubcommand
 
 
-from core.modules.plans.support.plan_inspector import PLAN_INSPECTOR
+from core.modules.plans.inspectors.plan_inspector import PlanInspector
 from core.modules.plans.commands.assign_plan.assign_plan_handler import AssignPlanHandler
 from core.modules.plans.commands.record_plan_agent.record_plan_agent_handler import RecordPlanAgentHandler
 from core.modules.plans.commands.assign_plan.assign_plan_subcommand import AssignPlanSubcommand
@@ -122,6 +116,8 @@ from core.modules.plans.listeners.checkpoint_reach_listener import CheckpointRea
 from core.modules.plans.listeners.started_plan_checkpoints_listener import StartedPlanCheckpointsListener
 from core.modules.plans.migrations.m010_checkpoints import CheckpointsMigration
 from core.modules.plans.migrations.m011_checkpoint_reach_source import CheckpointReachSourceMigration
+from core.modules.plans.tick_handlers.plan_state_sweep_tick_handler import PlanStateSweepTickHandler
+from core.modules.plans.buttons.plans_approve_button import PlansApproveButton
 
 
 class PlansModule(Module):
@@ -136,7 +132,7 @@ class PlansModule(Module):
     skills = PLANS_SKILLS
     models = [PlanModelDeclaration, ModelDeclaration(Phase), PhaseTaskModelDeclaration, PlanContextReadModelDeclaration, PlanWaitModelDeclaration, CheckpointReachModelDeclaration, CheckpointPassModelDeclaration]
     migrations = [PlanAssignmentsMigration, PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration, PlanContextReadsMigration, PlanWaitsMigration, CheckpointsMigration, CheckpointReachSourceMigration, PlanContextReadsEnvironmentIndexMigration, CheckpointReviewsMigration, CheckpointReviewReportMigration, AgentCommitReachesMigration, PlanContextStartEventUnboundMigration, StartedPlansKeepNoWaitReasonMigration, PhasePersonCheckMigration]
-    tick_handlers = [TickHandler(TickInterval(seconds=PLAN_SWEEP_SECONDS), PlanStateSweep(), "plan state sweep")]
+    tick_handlers = [PlanStateSweepTickHandler]
     handlers = [RepairPlanStatesHandler, ApproveCheckpointHandler, CheckPlanHandler, RecordCheckpointsHandler, RerunStaleCheckpointsHandler, StartCheckpointRunHandler, WaitPlanHandler, AssignPlanHandler, RecordPlanAgentHandler, ChoosePlanFocusHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]
     moves = [PlansMove]
     subcommands = [ApproveCheckpointSubcommand, CheckPlanSubcommand, WaitPlanSubcommand, AssignPlanSubcommand, ChoosePlanFocusSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanPlacesSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
@@ -146,20 +142,15 @@ class PlansModule(Module):
     step_conditions = [PlanBriefSet, PlanHasPhases, PlanPhasesHaveTasks, PlanTasksOrdered]
     listeners = [CheckpointReachListener, StartedPlanCheckpointsListener, CheckpointPassListener, PlanWaitListener, TaskPlanRowsListener, ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
                  FinishedPlanListener, PassedPlanListener, CheckpointRunListener, FinishedPlanLineListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener, NextPlanTaskStarterListener, ReadyPlanSyncListener]
-    marks = PLAN_MARKS
+    marks = [PlanMark]
     nudges = PLAN_NUDGES
     driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule, PlanContextRule]
     agent_states = [PlanFocusDue]
     docks = PLANS_DOCKS
     window_extensions = [ChatRunningAgentsExtension]
-    buttons = [ButtonDeclaration("plans.approve", WAITING_PLAN_SLOTS, "Approve", "plan approve {row_id}",
-                                 icon="check", primary=True, condition=ButtonCondition("state", tuple(["ready"])),
-                                 tip="Approve the plan; the agent starts it", menu_label="Other ways to approve",
-                                 menu=tuple([ButtonMenuItem("Approve with a message", "plan approve {row_id} --message={message}",
-                                                           tuple([TextField("message", "Message to the agent")]),
-                                                           "Your message reaches the agent before the plan starts")]))]
+    buttons = [PlansApproveButton]
     windows = PLANS_WINDOWS
-    inspectors = [PLAN_INSPECTOR]
+    inspectors = [PlanInspector]
 
     shared_rows = [PlanSharedRows]
     seeders = [PlansSeeder]

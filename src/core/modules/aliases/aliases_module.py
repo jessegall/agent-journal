@@ -16,9 +16,6 @@ from core.modules.aliases.listeners.alias_file_listener import AliasFileListener
 from core.modules.aliases.listeners.ended_run_silence_listener import EndedRunSilenceListener
 from core.modules.aliases.listeners.plugin_aliases_listener import PluginAliasesListener
 from core.modules.aliases.commands.set_alias_silence.set_alias_silence_handler import SetAliasSilenceHandler
-from core.modules.aliases.ticks.silent_alias_marking import SilentAliasMarking
-from engine.ticker.tick_handler import TickHandler
-from engine.ticker.tick_interval import TickInterval
 from core.modules.aliases.migrations.m001_aliases import AliasesTableMigration
 from core.modules.aliases.migrations.m002_alias_category import AliasCategoryMigration
 from core.modules.aliases.models.command_type import CommandType
@@ -34,8 +31,21 @@ from core.modules.aliases.commands.skip_saved_command.skip_saved_command_subcomm
 from core.modules.aliases.rules.alias_expansion_rule import AliasExpansionRule
 from core.modules.aliases.rules.saved_command_rule import SavedCommandRule
 from core.modules.aliases.rules.unknown_command_rule import UnknownCommandRule
-from core.modules.aliases.support.alias_nudges import (COMMAND_TYPE_UNKNOWN, ALIAS_ACCESS_REFUSED, ALIAS_MISSING, ALIAS_PLUGIN_OFF, ALIAS_UNEXPANDED, SAVED_COMMAND_CHOICES, SAVED_COMMAND_DIRECT, SAVED_COMMAND_MIXED, SAVED_COMMAND_PIPED, SAVED_COMMAND_SILENT, SAVED_COMMAND_HELPER,
-                                                       SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_UNREAD, SAVED_COMMAND_TIMEOUT)
+from core.modules.aliases.nudges.command_type_unknown_nudge import CommandTypeUnknownNudge
+from core.modules.aliases.nudges.alias_access_refused_nudge import AliasAccessRefusedNudge
+from core.modules.aliases.nudges.alias_missing_nudge import AliasMissingNudge
+from core.modules.aliases.nudges.alias_plugin_off_nudge import AliasPluginOffNudge
+from core.modules.aliases.nudges.alias_unexpanded_nudge import AliasUnexpandedNudge
+from core.modules.aliases.nudges.saved_command_choices_nudge import SavedCommandChoicesNudge
+from core.modules.aliases.nudges.saved_command_direct_nudge import SavedCommandDirectNudge
+from core.modules.aliases.nudges.saved_command_mixed_nudge import SavedCommandMixedNudge
+from core.modules.aliases.nudges.saved_command_piped_nudge import SavedCommandPipedNudge
+from core.modules.aliases.nudges.saved_command_silent_nudge import SavedCommandSilentNudge
+from core.modules.aliases.nudges.saved_command_helper_nudge import SavedCommandHelperNudge
+from core.modules.aliases.nudges.saved_command_unknown_nudge import SavedCommandUnknownNudge
+from core.modules.aliases.nudges.saved_command_unread_nudge import SavedCommandUnreadNudge
+from core.modules.aliases.nudges.saved_command_timeout_nudge import SavedCommandTimeoutNudge
+from core.modules.aliases.tick_handlers.silent_alias_marking_tick_handler import SilentAliasMarkingTickHandler
 
 
 class AliasesModule(Module):
@@ -53,7 +63,7 @@ class AliasesModule(Module):
     bindings = {ShellAliases: AliasShellAliases}
     seeders = [AliasesSeeder]
     listeners = [AliasFileListener, PluginAliasesListener, EndedRunSilenceListener]
-    tick_handlers = [TickHandler(TickInterval(seconds=1), SilentAliasMarking(), "silent aliases")]
+    tick_handlers = [SilentAliasMarkingTickHandler]
     guards = [ReaderAliasGuard, SavedCommandGuard]
     driver_rules = [AliasExpansionRule, UnknownCommandRule, SavedCommandRule]
-    nudges = [COMMAND_TYPE_UNKNOWN, ALIAS_UNEXPANDED, ALIAS_MISSING, ALIAS_PLUGIN_OFF, ALIAS_ACCESS_REFUSED, SAVED_COMMAND_MIXED, SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_CHOICES, SAVED_COMMAND_HELPER, SAVED_COMMAND_DIRECT, SAVED_COMMAND_PIPED, SAVED_COMMAND_UNREAD, SAVED_COMMAND_SILENT, SAVED_COMMAND_TIMEOUT]
+    nudges = [CommandTypeUnknownNudge, AliasUnexpandedNudge, AliasMissingNudge, AliasPluginOffNudge, AliasAccessRefusedNudge, SavedCommandMixedNudge, SavedCommandUnknownNudge, SavedCommandChoicesNudge, SavedCommandHelperNudge, SavedCommandDirectNudge, SavedCommandPipedNudge, SavedCommandUnreadNudge, SavedCommandSilentNudge, SavedCommandTimeoutNudge]

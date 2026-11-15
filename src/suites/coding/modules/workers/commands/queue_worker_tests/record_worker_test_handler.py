@@ -25,7 +25,10 @@ from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOUR
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.modules.workers.support.worker_test_failures import WorkerTestFailures
 from engine.setting.setting_values import SettingValues
-from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK, WORKER_COMMIT_PASSED, WORKER_TESTS_FAILED, WORKER_TESTS_PASSED
+from suites.coding.modules.workers.nudges.proof_check_nudge import ProofCheckNudge
+from suites.coding.modules.workers.nudges.worker_commit_passed_nudge import WorkerCommitPassedNudge
+from suites.coding.modules.workers.nudges.worker_tests_failed_nudge import WorkerTestsFailedNudge
+from suites.coding.modules.workers.nudges.worker_tests_passed_nudge import WorkerTestsPassedNudge
 from core.modules.plans.support.task_plans import TaskPlans
 from suites.coding.modules.workers.models.affected_test import AffectedTest
 from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
@@ -69,7 +72,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         waiting = self.finish_tasks(worktree, context)
         for task_id in sorted({row.task_id for row in waiting}):
             proof_ids = ', '.join(str(row.id) for row in waiting if row.task_id == task_id)
-            self.main_agent_line.send_nudge(PROOF_CHECK.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), task=task_id, proofs=proof_ids), LINE_SOURCE, context)
+            self.main_agent_line.send_nudge(ProofCheckNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), task=task_id, proofs=proof_ids), LINE_SOURCE, context)
 
     def finish_checked(self, worktree: Worktree, context: Context) -> None:
         self.finish_tasks(worktree, context)
@@ -88,7 +91,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         waiting = [row for row in proofs if row.state is ProofState.SHOWN and tasks[row.task_id].state is TaskState.TESTING]
         if current.state is WorktreeState.CUT:
             if completed and not failed:
-                self.nudger.send(current.session_agent_id, WORKER_COMMIT_PASSED, LINE_SOURCE, context, line=self.guidance.line(current.session_agent_id))
+                self.nudger.send(current.session_agent_id, WorkerCommitPassedNudge.declared(), LINE_SOURCE, context, line=self.guidance.line(current.session_agent_id))
                 self.blocked_unit.send(current.session_agent_id, completed, context)
             return waiting
         if not waiting:
@@ -99,7 +102,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.mark_tests_passed, tests_passed_at=context.timestamp, merge_ready_at=context.timestamp), context)
         if self.settings.flag(MERGER_ENABLED):
             return
-        self.main_agent_line.send_nudge(WORKER_TESTS_PASSED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)), LINE_SOURCE, context)
+        self.main_agent_line.send_nudge(WorkerTestsPassedNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)), LINE_SOURCE, context)
 
     def complete_tested(self, tasks: dict[int, Task], proofs: tuple[Proof, ...], context: Context) -> list[Task]:
         self.plans.prepare(sorted(tasks))
@@ -126,5 +129,5 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         current = self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context) if worktree.state is WorktreeState.DELIVERED else worktree
         if current.task_id != task_ids[0]:
             current = self.repository.save_change(current, current.moved(WorktreeLifecycle.advance, task_id=task_ids[0]), context)
-        self.nudger.send(current.session_agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, outputs=outputs, line=self.guidance.line(current.session_agent_id))
+        self.nudger.send(current.session_agent_id, WorkerTestsFailedNudge.declared(), MERGE_CONFLICT_SOURCE, context, outputs=outputs, line=self.guidance.line(current.session_agent_id))
         return current

@@ -8,7 +8,7 @@ from engine.event.moved import Moved
 from engine.listener.rows.event_rows import EventRows
 from engine.listener.save_listener import SaveListener
 from engine.scope.actor_scope import ActorScope
-from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_COUNT
+from suites.coding.modules.workers.nudges.worker_task_count_nudge import WorkerTaskCountNudge
 from suites.coding.modules.workers.support.worker_task_limit import WorkerTaskLimit
 
 
@@ -29,4 +29,4 @@ class WorkerTaskCountListener(SaveListener[Moved[Task]]):
             return
         started_count = self.limit.started_count(agent.id, event.row)
         if started_count:
-            self.nudger.send(agent.id, WORKER_TASK_COUNT, self.name, context, count=started_count + 1, limit=self.limit.maximum())
+            self.nudger.send(agent.id, WorkerTaskCountNudge.declared(), self.name, context, count=started_count + 1, limit=self.limit.maximum())

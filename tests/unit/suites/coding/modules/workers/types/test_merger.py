@@ -10,7 +10,7 @@ from engine.enums.actor_type import ActorType
 from engine.query.queries import Queries
 from engine.sandbox.shell_sandbox import ShellSandbox
 from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
-from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED
+from suites.coding.modules.workers.nudges.merger_passed_nudge import MergerPassedNudge
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 from tests.integration.suites.coding.modules.workers.test_test_queue import ended, queued_story
@@ -54,5 +54,5 @@ def ended_merger_lines(new_story, monkeypatch, end) -> tuple[object, str]:
 
 
 def test_merger_notices_combine_worker_numbers_without_reasons():
-    notices = Nudge.collapsed([MERGER_PASSED.nudge(worker=6), MERGER_PASSED.nudge(worker=7), MERGER_PASSED.nudge(worker=8)])
+    notices = Nudge.collapsed([MergerPassedNudge.declared().nudge(worker=6), MergerPassedNudge.declared().nudge(worker=7), MergerPassedNudge.declared().nudge(worker=8)])
     expect_merger_lines(notices, ["the merger leaves workers 6, 7, 8 to you: their merges wait on you"])

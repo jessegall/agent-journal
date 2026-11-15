@@ -8,7 +8,7 @@ from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.queries.plan_query import PlanQuery
 from core.modules.plans.support.block_conditions.plan_context_read import PlanContextRead
 from core.modules.plans.support.plan_context_delivery import PlanContextDelivery
-from core.modules.plans.support.plan_nudges import PLAN_CONTEXT
+from core.modules.plans.nudges.plan_context_nudge import PlanContextNudge
 
 
 class PlanContextRule(DriverRule):
@@ -26,7 +26,7 @@ class PlanContextRule(DriverRule):
         for plan in self.plans.filter(state=PlanState.STARTED).oldest().get():
             event_id = self.delivery.start_event(plan)
             if event_id is not None and not self.delivery.has_read(plan.id, event_id, hook.agent_id):
-                nudge = PLAN_CONTEXT.nudge(plan=plan.id)
+                nudge = PlanContextNudge.declared().nudge(plan=plan.id)
                 condition = PlanContextRead(plan.id)
                 tool = hook.event.tool
                 if tool is not None and not tool.block_exempt:

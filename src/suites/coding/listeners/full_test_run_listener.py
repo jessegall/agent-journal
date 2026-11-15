@@ -13,7 +13,8 @@ from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
-from suites.coding.support.full_run_nudges import TESTING_TASKS_FAILED_RUN, TESTING_TASKS_FULL_RUN
+from suites.coding.nudges.testing_tasks_failed_run_nudge import TestingTasksFailedRunNudge
+from suites.coding.nudges.testing_tasks_full_run_nudge import TestingTasksFullRunNudge
 from engine.event.created import Created
 from core.modules.processes.events.process_ended import ProcessEnded
 
@@ -38,14 +39,14 @@ class FullTestRunListener(SaveListener[Created[Process] | ProcessEnded]):
         if not run.is_full_test_run:
             return
         if isinstance(event, Created):
-            self.line_sender(run, self.testing_tasks(run), TESTING_TASKS_FULL_RUN, context)
+            self.line_sender(run, self.testing_tasks(run), TestingTasksFullRunNudge.declared(), context)
             return
         self.ended(run, context)
 
     def ended(self, run: Process, context: Context) -> None:
         tasks = self.testing_tasks(run)
         if run.state is not ProcessState.FINISHED:
-            self.line_sender(run, tasks, TESTING_TASKS_FAILED_RUN, context)
+            self.line_sender(run, tasks, TestingTasksFailedRunNudge.declared(), context)
             return
         for task in tasks:
             self.repository.save(task.close(context.timestamp, context.actor, f"the full test run, process {run.id}, passed"), context)

@@ -12,7 +12,9 @@ from engine.setting.setting_values import SettingValues
 from engine.driver.nudge_declaration import NudgeDeclaration
 from suites.coding.modules.workers.support.escalations import Escalations
 from suites.coding.modules.workers.support.worker_handoff import WorkerHandoff
-from suites.coding.modules.workers.support.worker_nudges import WORKER_ASKING_STOPPED, WORKER_LIMIT_STOPPED, WORKER_PROCESS_ENDED
+from suites.coding.modules.workers.nudges.worker_asking_stopped_nudge import WorkerAskingStoppedNudge
+from suites.coding.modules.workers.nudges.worker_limit_stopped_nudge import WorkerLimitStoppedNudge
+from suites.coding.modules.workers.nudges.worker_process_ended_nudge import WorkerProcessEndedNudge
 from suites.coding.modules.workers.support.worker_round import WorkerRound
 from suites.coding.modules.workers.support.worker_settings import MERGER_WAIT_MINUTES, WORKER_RUN_LIMIT
 from suites.coding.modules.workers.support.worker_started_work import WorkerStartedWork
@@ -52,7 +54,7 @@ class StoppedWorkerRule(DriverRule):
     # a worker whose question the main agent has, named with every task it holds that is not done, committed ones too
     def asking_nudge(self, worker: Agent) -> Nudge:
         tasks = {task.id: task for task in (*self.unfinished.rows(worker.id), *self.unfinished.committed(worker.id))}
-        return replace(WORKER_ASKING_STOPPED.nudge(worker=worker.number, tasks=self.unfinished.names(tuple(tasks.values()))), key=f"{WORKER_ASKING_STOPPED.key}.{worker.id}")
+        return replace(WorkerAskingStoppedNudge.declared().nudge(worker=worker.number, tasks=self.unfinished.names(tuple(tasks.values()))), key=f"{WorkerAskingStoppedNudge.declared().key}.{worker.id}")
 
     def nudge(self, worker: Agent) -> Nudge | None:
         worker_round = self.unfinished.steps.round(worker.id)
@@ -66,5 +68,5 @@ class StoppedWorkerRule(DriverRule):
 
     def declaration(self, worker: Agent, worker_round: WorkerRound) -> NudgeDeclaration:
         if worker_round.is_asking:
-            return WORKER_ASKING_STOPPED
-        return WORKER_LIMIT_STOPPED if self.started_work.reached_restart_limit(worker) else WORKER_PROCESS_ENDED
+            return WorkerAskingStoppedNudge.declared()
+        return WorkerLimitStoppedNudge.declared() if self.started_work.reached_restart_limit(worker) else WorkerProcessEndedNudge.declared()

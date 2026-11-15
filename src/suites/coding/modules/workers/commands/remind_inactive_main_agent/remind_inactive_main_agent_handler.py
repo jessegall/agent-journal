@@ -10,7 +10,7 @@ from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from suites.coding.modules.workers.commands.remind_inactive_main_agent.remind_inactive_main_agent import RemindInactiveMainAgent
 from suites.coding.modules.workers.support.available_work import AvailableWork
 from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions
-from suites.coding.support.coding_nudges import TASK_ASSIGNMENT
+from suites.coding.nudges.task_assignment_nudge import TaskAssignmentNudge
 
 WAKE_SOURCE = "coding.keep-going"
 
@@ -40,7 +40,7 @@ class RemindInactiveMainAgentHandler(Handler[RemindInactiveMainAgent, None]):
     def waking_nudge(self, agent_id: int) -> Nudge | None:
         available = self.work.answer(agent_id)
         if available.assigned_task is not None:
-            return TASK_ASSIGNMENT.nudge(task=available.assigned_task.id)
+            return TaskAssignmentNudge.declared().nudge(task=available.assigned_task.id)
         return None
 
     def was_informed(self, agent_id: int, nudge: Nudge) -> bool:

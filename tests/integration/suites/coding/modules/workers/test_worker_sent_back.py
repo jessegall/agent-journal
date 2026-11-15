@@ -1,6 +1,6 @@
 from engine.testing.examples.hook_samples import HookSamples
 from core.modules.agents.models.agent import Agent
-from suites.coding.modules.workers.support.worker_nudges import WORKER_UNFINISHED_TASKS
+from suites.coding.modules.workers.nudges.worker_unfinished_tasks_nudge import WorkerUnfinishedTasksNudge
 from tests.stories.core.support.agent_labels import agent_number
 from tests.integration.suites.coding.modules.workers.test_ask_ledger import ANSWER, HELP_REQUEST_LINE, questions
 from tests.stories.suites.coding.modules.workers.merger_cases import MergerCase, case  # noqa: F401
@@ -9,7 +9,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import w
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
 from tests.stories.suites.coding.modules.workers.worker_ask import asking, asking_with_merger_running, merger_disabled_worker  # noqa: F401
 
-CONTINUE_TEXT = WORKER_UNFINISHED_TASKS.text.split(",")[0]
+CONTINUE_TEXT = WorkerUnfinishedTasksNudge.declared().text.split(",")[0]
 
 
 def worker_lines(story, worker_id: int) -> str:

@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 from engine.driver.nudge import Nudge
-from core.modules.processes.support.process_nudges import RUN_NAME
+from core.modules.processes.nudges.run_name_nudge import RunNameNudge
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_wildcard import HookWildcard
@@ -61,7 +61,7 @@ class LongRunDockRule(DriverRule):
         return RuleAnswer.with_nudges(*titles).running(*(AddDockItem(ProcessDockType.OUTPUT.value, process.model_name, process.id) for process in placed))
 
     def title_nudges(self, due: list[Process], outputs: dict[int, Output]) -> list[Nudge]:
-        return [RUN_NAME.nudge(process=process.id) for process in due if process.id in outputs and not RunTitle.is_descriptive(outputs[process.id].title, process.line)]
+        return [RunNameNudge.declared().nudge(process=process.id) for process in due if process.id in outputs and not RunTitle.is_descriptive(outputs[process.id].title, process.line)]
 
     def needs_dock(self, process: Process, hook: AgentHook, dock: Interval, parts: tuple[ProcessPart, ...]) -> bool:
         if process.started_at is None or not dock.has_passed(self.spans, hook.agent_id, process.started_at, hook.timestamp) or self.visibility.select_visible_part(process, parts) is None or self.folder.end(process.id) is not None:

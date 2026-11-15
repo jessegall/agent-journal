@@ -12,7 +12,7 @@ from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.models.question import Question
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
-from suites.coding.support.coding_nudges import WAITING_ITEMS
+from suites.coding.nudges.waiting_items_nudge import WaitingItemsNudge
 
 
 class WaitingItemsRule(DriverRule):
@@ -32,4 +32,4 @@ class WaitingItemsRule(DriverRule):
                   ("unread messages", self.queries.query(Message).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).count()),
                   ("open questions", self.queries.query(Question).filter(state=QuestionState.OPEN).count()))
         items = ", ".join(f"{count} {name}" for name, count in counts if count)
-        return RuleAnswer.with_nudges(WAITING_ITEMS.nudge(items=items)) if items else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(WaitingItemsNudge.declared().nudge(items=items)) if items else RuleAnswer.allowed()

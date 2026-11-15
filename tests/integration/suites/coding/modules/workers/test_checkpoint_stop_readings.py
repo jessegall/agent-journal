@@ -17,8 +17,8 @@ from suites.coding.modules.workers.ticks.stopped_worker_runs import StoppedWorke
 from tests.stories.core.support.agent_labels import agent_number
 from tests.integration.suites.coding.modules.workers.test_stopped_with_tasks import MERGER_ON, ended, main_agent_lines, missing_program, running_worker, two_task_worker, worker_story  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import SHOWN_SETTINGS, apply_work_setting, set_resume_limit
-from suites.coding.modules.workers.support.worker_nudges import WORKER_RESTARTED
-from suites.coding.modules.workers.support.worker_nudges import WORKER_RUN_RUNS_AFTER_STOP
+from suites.coding.modules.workers.nudges.worker_restarted_nudge import WorkerRestartedNudge
+from suites.coding.modules.workers.nudges.worker_run_runs_after_stop_nudge import WorkerRunRunsAfterStopNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
@@ -53,7 +53,7 @@ def test_a_stopped_worker_shows_a_card_and_is_restarted_with_one_line_to_the_mer
     merger_lines = tuple(story.story_rows(MergerLine))
     lines = main_agent_lines(story)
     story.expect_rows("tasks left" in story.run(MARKS).output_text, len(merger_lines) == restart_line_count, lines.count(f"{worker_label(story)} ended with") == main_agent_line_count,
-                      not expected_nudge(WORKER_RESTARTED).matches_text(lines), all(line.environment_id == 1 for line in merger_lines), detail=f"{merger_texts(story)} | {lines}")
+                      not expected_nudge(WorkerRestartedNudge.declared()).matches_text(lines), all(line.environment_id == 1 for line in merger_lines), detail=f"{merger_texts(story)} | {lines}")
 
 
 def test_a_stop_by_another_agent_shows_a_card_and_sends_no_line(two_task_worker):
@@ -102,7 +102,7 @@ def test_a_stopped_worker_whose_run_goes_on_past_the_minutes_set_on_the_workers_
     StoppedWorkerRuns()(story.container)
     StoppedWorkerRuns()(story.container)
     lines = stopped_run_lines(story)
-    story.expect_rows(len(lines) == 1, expected_nudge(WORKER_RUN_RUNS_AFTER_STOP).matches_text(lines[0].text), lines[0].outcome is None,
+    story.expect_rows(len(lines) == 1, expected_nudge(WorkerRunRunsAfterStopNudge.declared()).matches_text(lines[0].text), lines[0].outcome is None,
                       lines[0].worker_id == story.worker.id, "waits on output" not in main_agent_lines(story), detail=f"{lines} | {main_agent_lines(story)}")
     story.run_command(EndProcess(run.id, 0, 10, 1), story.worker, 1)
     StoppedWorkerRuns()(story.container)

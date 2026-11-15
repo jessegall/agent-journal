@@ -7,6 +7,7 @@ from engine.chat.mark_button import MarkButton
 from engine.enums.mark_click import MarkClick
 from engine.chat.mark_family import MarkFamily
 from engine.enums.mark_grouping import MarkGrouping
+from engine.types.class_fields import class_fields
 
 GROUP_LABEL_FIELDS = ("family", "type", "count")
 
@@ -35,6 +36,11 @@ class MarkDeclaration:
     full_width: bool = False
     card: bool = False
     kit: str = ">=1,<2"
+
+    # a mark written as a class in its own file sets the fields as class attributes
+    @classmethod
+    def declared(cls) -> "MarkDeclaration":
+        return MarkDeclaration(**class_fields(cls, MarkDeclaration))
 
     def problems(self) -> list[str]:
         fields = [field for _, field, _, _ in Formatter().parse(self.group_label) if field is not None]

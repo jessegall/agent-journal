@@ -1,5 +1,3 @@
-from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.enums.nudge_type import NudgeType
+from core.modules.project_rules.nudges.start_rules_nudge import StartRulesNudge
 
-START_RULES = NudgeDeclaration("project_rules.start_rules", NudgeType.STEERING, "{count} project rules apply: read them", turn_limited=False)
-RULE_NUDGES = [START_RULES]
+RULE_NUDGES = [StartRulesNudge]

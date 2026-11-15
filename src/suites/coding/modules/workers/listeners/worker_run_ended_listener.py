@@ -6,14 +6,21 @@ from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.enums.task_state import TaskState
-from suites.coding.modules.workers.models.enums.worker_operation_name import (WorkerOperationName, WORKER_OPERATION_NEXT, WORKER_OPERATION_TESTS, WORKER_OPERATION_CONFLICT, WORKER_OPERATION_PAUSED,
-                                                                             WORKER_OPERATION_UPDATED, WORKER_OPERATION_UPDATE_CONFLICT, WORKER_OPERATION_UPDATE_FAILED)
+from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName
+from suites.coding.modules.workers.nudges.worker_operation_next_nudge import WorkerOperationNextNudge
+from suites.coding.modules.workers.nudges.worker_operation_tests_nudge import WorkerOperationTestsNudge
+from suites.coding.modules.workers.nudges.worker_operation_conflict_nudge import WorkerOperationConflictNudge
+from suites.coding.modules.workers.nudges.worker_operation_paused_nudge import WorkerOperationPausedNudge
+from suites.coding.modules.workers.nudges.worker_operation_updated_nudge import WorkerOperationUpdatedNudge
+from suites.coding.modules.workers.nudges.worker_operation_update_conflict_nudge import WorkerOperationUpdateConflictNudge
+from suites.coding.modules.workers.nudges.worker_operation_update_failed_nudge import WorkerOperationUpdateFailedNudge
 from suites.coding.modules.workers.models.enums.update_result import UpdateResult
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
-from suites.coding.modules.workers.support.worker_nudges import WORKER_OPERATION_UNSTARTED, WORKER_OPERATION_FAILED
+from suites.coding.modules.workers.nudges.worker_operation_unstarted_nudge import WorkerOperationUnstartedNudge
+from suites.coding.modules.workers.nudges.worker_operation_failed_nudge import WorkerOperationFailedNudge
 from core.modules.processes.events.process_ended import ProcessEnded
 from engine.listener.save_listener import SaveListener
 from engine.scope.actor_scope import ActorScope
@@ -23,7 +30,7 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
-from suites.coding.modules.workers.support.worker_nudges import WORKER_RUN_ENDED
+from suites.coding.modules.workers.nudges.worker_run_ended_nudge import WorkerRunEndedNudge
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from engine.command.context import Context
 
@@ -57,35 +64,35 @@ class WorkerRunEndedListener(SaveListener[ProcessEnded]):
             return
         if self.stop.was_stopped(agent) or self.stop.has_help_request_opened_after(agent.id, process.started_at or process.creation_timestamp()):
             return
-        self.nudger.send(agent.id, WORKER_RUN_ENDED, WORKER_JOB_SOURCE, context, output=process.id)
+        self.nudger.send(agent.id, WorkerRunEndedNudge.declared(), WORKER_JOB_SOURCE, context, output=process.id)
 
     def operation_nudge(self, operation: WorkerOperation, process: Process) -> Nudge:
         if operation.started_at is None and process.state is ProcessState.ORPHANED:
-            return WORKER_OPERATION_UNSTARTED.nudge(output=process.id)
+            return WorkerOperationUnstartedNudge.declared().nudge(output=process.id)
         if operation.name is WorkerOperationName.UPDATE:
             return self.update_nudge(operation, process)
         if process.exit_code != 0:
-            return WORKER_OPERATION_FAILED.nudge(output=process.id)
+            return WorkerOperationFailedNudge.declared().nudge(output=process.id)
         worktree = self.worktrees.worker_worktree(operation.worker_id)
         if operation.name.is_handoff and worktree is not None:
             task = self.queries.query(Task).find(worktree.task_id)
             if task.state is TaskState.STARTED:
-                return WORKER_OPERATION_NEXT.nudge(task=task.id, output=process.id)
+                return WorkerOperationNextNudge.declared().nudge(task=task.id, output=process.id)
             if self.proof_queue.tests_pending(worktree):
-                return WORKER_OPERATION_TESTS.nudge(task=task.id, output=process.id)
+                return WorkerOperationTestsNudge.declared().nudge(task=task.id, output=process.id)
         if operation.name is WorkerOperationName.MERGE and self.is_unmerged(worktree, process):
-            return WORKER_OPERATION_CONFLICT.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, operation.worker_id), output=process.id)
+            return WorkerOperationConflictNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, operation.worker_id), output=process.id)
         if operation.name is WorkerOperationName.JOB and self.agents.find(operation.worker_id).paused_at is not None:
-            return WORKER_OPERATION_PAUSED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, operation.worker_id))
+            return WorkerOperationPausedNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, operation.worker_id))
         return operation.name.finished_nudge(self.numbers.number(AGENT_MODEL_NAME, operation.worker_id), process.id)
 
     def update_nudge(self, operation: WorkerOperation, process: Process) -> Nudge:
         worker = self.numbers.number(AGENT_MODEL_NAME, operation.worker_id)
         if operation.update_outcome is UpdateResult.CONFLICTS:
-            return WORKER_OPERATION_UPDATE_CONFLICT.nudge(worker=worker, output=process.id)
+            return WorkerOperationUpdateConflictNudge.declared().nudge(worker=worker, output=process.id)
         if operation.update_outcome is None or process.exit_code != 0:
-            return WORKER_OPERATION_UPDATE_FAILED.nudge(worker=worker, output=process.id)
-        return WORKER_OPERATION_UPDATED.nudge(worker=worker, output=process.id)
+            return WorkerOperationUpdateFailedNudge.declared().nudge(worker=worker, output=process.id)
+        return WorkerOperationUpdatedNudge.declared().nudge(worker=worker, output=process.id)
 
     def is_unmerged(self, worktree: Worktree | None, process: Process) -> bool:
         return worktree is not None and not self.worktrees.has_merge(worktree.session_agent_id, process.creation_timestamp())

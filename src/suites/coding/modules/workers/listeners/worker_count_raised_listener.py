@@ -14,7 +14,7 @@ from core.modules.settings.models.setting import Setting
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.worker_nudges import WORKER_LIMIT_RAISED
+from suites.coding.modules.workers.nudges.worker_limit_raised_nudge import WorkerLimitRaisedNudge
 from suites.coding.modules.workers.support.worker_settings import DEFAULT_WORKER_COUNT, WORKER_RUN_LIMIT
 from engine.event.changed import Changed
 from engine.event.deleted import Deleted
@@ -42,7 +42,7 @@ class WorkerCountRaisedListener(SaveListener[Changed[Setting]]):
             return
         for agent in self.main_agents(setting):
             with self.scopes.opened(None, agent.environment_id):
-                self.nudger.send(agent.id, WORKER_LIMIT_RAISED, self.name, context, limit=limit, workers=len(self.worktrees.open_worktrees()), count=self.undelegated())
+                self.nudger.send(agent.id, WorkerLimitRaisedNudge.declared(), self.name, context, limit=limit, workers=len(self.worktrees.open_worktrees()), count=self.undelegated())
 
     # The limit the row replaces: its own old value, else what an environment's row falls back to, the project's.
     def previous_limit(self, old: Setting | None, setting: Setting) -> int:

@@ -4,7 +4,7 @@ from engine.model.model import Model
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from engine.driver.nudger import Nudger
 from core.modules.messages.commands.record_waiting_message_line.record_waiting_message_line import RecordWaitingMessageLine
-from core.modules.messages.support.message_nudges import NEW_MESSAGE
+from core.modules.messages.nudges.new_message_nudge import NewMessageNudge
 from core.modules.messages.support.waiting_message_lines import WAITING_MESSAGE_SOURCE, WaitingMessageLines
 from core.modules.agents.support.agent_rows import AgentRows
 
@@ -36,4 +36,4 @@ class RecordWaitingMessageLineHandler(Handler[RecordWaitingMessageLine, Model | 
         waiting = self.lines.waiting(agent.id).take(MOST_WAITING_LINES)
         if len(waiting) == MOST_WAITING_LINES or (waiting and waiting[0].creation_timestamp().elapsed_seconds(context.timestamp) < RETRY_SECONDS):
             return None
-        return self.nudger.send(agent.id, NEW_MESSAGE, WAITING_MESSAGE_SOURCE, context, message=message.id)
+        return self.nudger.send(agent.id, NewMessageNudge.declared(), WAITING_MESSAGE_SOURCE, context, message=message.id)

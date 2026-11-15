@@ -5,7 +5,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.processes.queries.output_query import OutputQuery
-from core.modules.processes.support.process_nudges import SHARED_TITLE
+from core.modules.processes.nudges.shared_title_nudge import SharedTitleNudge
 
 
 class RunTitleRule(DriverRule):
@@ -23,5 +23,5 @@ class RunTitleRule(DriverRule):
         identical: defaultdict[str, list[str]] = defaultdict(list)
         for output in titled:
             identical[output.title].append(str(output.process_id))
-        shared = [SHARED_TITLE.nudge(outputs=", ".join(numbers)) for numbers in identical.values() if len(numbers) > 1]
+        shared = [SharedTitleNudge.declared().nudge(outputs=", ".join(numbers)) for numbers in identical.values() if len(numbers) > 1]
         return RuleAnswer.with_nudges(*shared)

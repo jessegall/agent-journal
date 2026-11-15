@@ -25,7 +25,10 @@ from suites.coding.modules.workers.support.main_agent_work import MainAgentWork
 from suites.coding.modules.workers.support.worker_job import SILENT_AGENT_SOURCE, RESUMING_SOURCES
 from suites.coding.modules.workers.support.worker_places import WorkerPlaces
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
-from suites.coding.modules.workers.support.worker_nudges import IDLE_WORKER, IDLE_WORKER_TASKS, SILENT_AGENT_CONTINUE, SILENT_WORKER_CONTINUE
+from suites.coding.modules.workers.nudges.silent_worker_continue_nudge import SilentWorkerContinueNudge
+from suites.coding.modules.workers.nudges.idle_worker_nudge import IdleWorkerNudge
+from suites.coding.modules.workers.nudges.idle_worker_tasks_nudge import IdleWorkerTasksNudge
+from suites.coding.modules.workers.nudges.silent_agent_continue_nudge import SilentAgentContinueNudge
 from suites.coding.modules.workers.support.worker_settings import SILENT_AGENT_MINUTES, IDLE_WORKER_MINUTES, IDLE_WORKER_REPEAT_MINUTES, RESUME_SILENT_AGENTS, SILENT_RECOVERY_ATTEMPTS
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from core.modules.agents.support.agent_rows import AgentRows
@@ -93,7 +96,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
             if len(attempts) >= attempt_limit:
                 self.bus.dispatch(ReportSilentAgent(agent.id, f"{attempt_limit} waking lines got no hook", activity_at), context)
                 continue
-            declaration = SILENT_WORKER_CONTINUE if agent.id in workers else SILENT_AGENT_CONTINUE
+            declaration = SilentWorkerContinueNudge.declared() if agent.id in workers else SilentAgentContinueNudge.declared()
             self.nudger.send(agent.id, declaration, SILENT_AGENT_SOURCE, context)
 
     def report_idle_workers(self, context: Context, agents: tuple[Agent, ...], activities: dict[int, AgentActivity], working: set[int],
@@ -122,13 +125,13 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
             if source_key in idle_lines and idle_lines[source_key].is_recent_repeat(activity_at, context.timestamp, repeat):
                 continue
             with self.bus.scopes.row_scope(worker):
-                self.inbox.deliver(MergerLine(text=line.text, fallback_source=IDLE_WORKER.key, nudge_json=line.stored.json, worker_id=worker.id, source_key=source_key), context)
+                self.inbox.deliver(MergerLine(text=line.text, fallback_source=IdleWorkerNudge.declared().key, nudge_json=line.stored.json, worker_id=worker.id, source_key=source_key), context)
 
     def idle_line(self, worker: Agent) -> Nudge:
         started = self.task_query.started_tasks(worker.id)
         if not started:
-            return IDLE_WORKER.nudge(worker=worker.number)
-        return IDLE_WORKER_TASKS.nudge(worker=worker.number, tasks=", ".join(f"task:{task.id}" for task in started))
+            return IdleWorkerNudge.declared().nudge(worker=worker.number)
+        return IdleWorkerTasksNudge.declared().nudge(worker=worker.number, tasks=", ".join(f"task:{task.id}" for task in started))
 
     @staticmethod
     def has_stale_idle_line(worker: Agent, idle_lines: dict[str | None, MergerLine]) -> bool:

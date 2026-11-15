@@ -16,13 +16,17 @@ from suites.coding.modules.workers.commands.remind_behind_updates.remind_behind_
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
-from suites.coding.modules.workers.support.behind_nudges import STALE_SOURCE, CONFLICT_OPEN, CONFLICT_REPEATED, UPDATE_SKIPPED, UPDATE_REMINDER
+from suites.coding.modules.workers.support.behind_nudges import STALE_SOURCE
+from suites.coding.modules.workers.nudges.conflict_open_nudge import ConflictOpenNudge
+from suites.coding.modules.workers.nudges.conflict_repeated_nudge import ConflictRepeatedNudge
+from suites.coding.modules.workers.nudges.update_skipped_nudge import UpdateSkippedNudge
+from suites.coding.modules.workers.nudges.update_reminder_nudge import UpdateReminderNudge
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_settings import UPDATE_REMINDERS, UPDATE_WAIT_MINUTES
 
 CHECKS_REASON = "every behind check in that state is reminded of"
-CONFLICT_LINES = (CONFLICT_OPEN, CONFLICT_REPEATED)
+CONFLICT_LINES = (ConflictOpenNudge.declared(), ConflictRepeatedNudge.declared())
 
 
 class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
@@ -71,7 +75,7 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
 
     def remind(self, check: WorktreeBehindCheck, worktree: Worktree, limit: int, context: Context) -> None:
         if check.reminders < limit:
-            self.nudger.send(worktree.session_agent_id, UPDATE_REMINDER, STALE_SOURCE, context, count=check.commits_lagging)
+            self.nudger.send(worktree.session_agent_id, UpdateReminderNudge.declared(), STALE_SOURCE, context, count=check.commits_lagging)
         else:
-            self.inbox.send_nudge(UPDATE_SKIPPED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)), STALE_SOURCE, context)
+            self.inbox.send_nudge(UpdateSkippedNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)), STALE_SOURCE, context)
         self.repository.save_change(check, check.reminded(), context)

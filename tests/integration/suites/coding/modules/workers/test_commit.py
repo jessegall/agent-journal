@@ -12,7 +12,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import C
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, StoryWorker, dispatched_story_worker
-from suites.coding.modules.workers.support.worker_nudges import WORKER_REFUSED
+from suites.coding.modules.workers.nudges.worker_refused_nudge import WorkerRefusedNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND
 from suites.coding.modules.workers.support.worker_settings import PROJECT_TEST_COMMAND
@@ -99,7 +99,7 @@ def test_30_a_commit_a_rule_of_a_plugin_refuses_says_how_to_go_on_and_the_fifth_
     monkeypatch.setattr(PluginStepCheck, "refusal", lambda *_args, **_kwargs: REASON)
     for _ in range(5):
         expect_refused_with(story, COMMIT, REASON, "then run journal worker commit again", actor=worker)
-    story.expect_text(f"agent-line list --agent {story.agent.id} --json", expected_nudge(WORKER_REFUSED))
+    story.expect_text(f"agent-line list --agent {story.agent.id} --json", expected_nudge(WorkerRefusedNudge.declared()))
 
 
 @pytest.mark.parametrize("event", ("worker_clocking_out", "worker_delivering"))

@@ -1,5 +1,5 @@
 from engine.scope.actor_scope import ActorScope
-from core.modules.waits.support.wait_nudges import WAIT_ENDED
+from core.modules.waits.nudges.wait_ended_nudge import WaitEndedNudge
 from engine.event.moved import Moved
 from engine.command.context import Context
 from engine.listener.save_listener import SaveListener
@@ -28,4 +28,4 @@ class WaitEndListener(SaveListener[Moved[Wait]]):
         wait = event.row
         if wait.state is not WaitState.ENDED or wait.outcome == WORK_CONTINUED:
             return
-        self.nudger.send(wait.session_agent_id, WAIT_ENDED, LINE_SOURCE, context, wait=wait.id)
+        self.nudger.send(wait.session_agent_id, WaitEndedNudge.declared(), LINE_SOURCE, context, wait=wait.id)

@@ -11,7 +11,7 @@ from core.modules.processes.models.enums.watch_state import WatchState
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.watch import Watch
 from core.modules.processes.support.output_check_schedule import MINUTE_SECONDS, OutputCheckSchedule
-from core.modules.processes.support.process_nudges import OUTPUT_CHECK
+from core.modules.processes.nudges.output_check_nudge import OutputCheckNudge
 
 
 
@@ -32,5 +32,5 @@ class CheckOutputHandler(Handler[CheckOutput, Watch]):
         if not waiting or self.types.behaviours(agent.role).watches_runs_automatically or not self.schedule.wait_elapsed(watch, context.timestamp):
             return watch
         minutes = round(watch.creation_timestamp().elapsed_seconds(context.timestamp) / MINUTE_SECONDS)
-        self.nudger.send(agent.id, OUTPUT_CHECK, "processes.output_check", context, output=process.id, minutes=minutes)
+        self.nudger.send(agent.id, OutputCheckNudge.declared(), "processes.output_check", context, output=process.id, minutes=minutes)
         return self.repository.update(watch, context, notified_at=context.timestamp, awaits_confirm=True)

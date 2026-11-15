@@ -7,7 +7,10 @@ from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.support.alias_access import AliasAccess
-from core.modules.aliases.support.alias_nudges import ALIAS_MISSING, ALIAS_ACCESS_REFUSED, ALIAS_PLUGIN_OFF, ALIAS_UNEXPANDED
+from core.modules.aliases.nudges.alias_missing_nudge import AliasMissingNudge
+from core.modules.aliases.nudges.alias_access_refused_nudge import AliasAccessRefusedNudge
+from core.modules.aliases.nudges.alias_plugin_off_nudge import AliasPluginOffNudge
+from core.modules.aliases.nudges.alias_unexpanded_nudge import AliasUnexpandedNudge
 
 
 class AliasExpansionRule(DriverRule):
@@ -29,13 +32,13 @@ class AliasExpansionRule(DriverRule):
         if shell is None or not shell.alias_names:
             return RuleAnswer.allowed()
         if shell.parse_error:
-            return RuleAnswer.refused(ALIAS_UNEXPANDED.nudge())
+            return RuleAnswer.refused(AliasUnexpandedNudge.declared().nudge())
         for name in shell.alias_names:
             alias = self.aliases.saved(name)
             if alias is None:
-                return RuleAnswer.refused(ALIAS_MISSING.nudge())
+                return RuleAnswer.refused(AliasMissingNudge.declared().nudge())
             if self.access.is_plugin_disabled(alias):
-                return RuleAnswer.refused(ALIAS_PLUGIN_OFF.nudge(plugin=alias.plugin_id))
+                return RuleAnswer.refused(AliasPluginOffNudge.declared().nudge(plugin=alias.plugin_id))
             if self.access.refusal(alias, Caller(Actor(hook.agent_id, ActorType.AGENT))):
-                return RuleAnswer.refused(ALIAS_ACCESS_REFUSED.nudge())
+                return RuleAnswer.refused(AliasAccessRefusedNudge.declared().nudge())
         return RuleAnswer.allowed()

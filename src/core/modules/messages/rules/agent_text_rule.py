@@ -6,7 +6,9 @@ from engine.driver.rule_answer import RuleAnswer
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.messages.support.agent_text_filter import AgentTextFilter
-from core.modules.messages.support.message_nudges import CLOSING_CHOICE, CLOSING_LINE_HIDDEN, REPEATED_CLOSING
+from core.modules.messages.nudges.closing_choice_nudge import ClosingChoiceNudge
+from core.modules.messages.nudges.closing_line_hidden_nudge import ClosingLineHiddenNudge
+from core.modules.messages.nudges.repeated_closing_nudge import RepeatedClosingNudge
 from core.modules.messages.support.question_message import QuestionMessage
 from core.modules.messages.support.repeated_messages import RepeatedMessages
 from core.modules.messages.support.turn_reply_targets import TurnReplyTargets
@@ -32,9 +34,9 @@ class AgentTextRule(DriverRule):
         if (after_reply and self.texts.repeats_reply(hook.agent_id, text, hook.timestamp)) or self.texts.is_acknowledgement(hook.agent_id, text, hook.timestamp):
             return RuleAnswer.allowed()
         if after_reply and self.texts.is_single_line(text):
-            return RuleAnswer.with_nudges(CLOSING_LINE_HIDDEN.nudge())
+            return RuleAnswer.with_nudges(ClosingLineHiddenNudge.declared().nudge())
         repeated = self.repeats.repeated(hook.agent_id, None, text)
         if repeated is not None:
-            return RuleAnswer.with_nudges(REPEATED_CLOSING.nudge(message=repeated.id))
-        shown = RuleAnswer.with_nudges(CLOSING_CHOICE.nudge()) if QuestionMessage.is_choice(text) else RuleAnswer.allowed()
+            return RuleAnswer.with_nudges(RepeatedClosingNudge.declared().nudge(message=repeated.id))
+        shown = RuleAnswer.with_nudges(ClosingChoiceNudge.declared().nudge()) if QuestionMessage.is_choice(text) else RuleAnswer.allowed()
         return shown.running(SendMessage(text, self.targets.current_parent_id(hook.agent_id, text), is_agent_text=True))

@@ -5,7 +5,7 @@ from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.query.conditions.prefix import Prefix
 from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.processes.support.process_nudges import ALIAS_SUGGESTION
+from core.modules.processes.nudges.alias_suggestion_nudge import AliasSuggestionNudge
 
 OFTEN_RUN_COUNT = 8
 SHAPE_TERMS = 3
@@ -33,4 +33,4 @@ class AliasSuggestionRule(DriverRule):
             return RuleAnswer.allowed()
         shape = " ".join(commands[0])
         count = self.processes.agent(hook.agent_id).with_part(Prefix("text", shape)).count()
-        return RuleAnswer.with_nudges(ALIAS_SUGGESTION.nudge(shape=shape, count=count)) if count >= OFTEN_RUN_COUNT else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(AliasSuggestionNudge.declared().nudge(shape=shape, count=count)) if count >= OFTEN_RUN_COUNT else RuleAnswer.allowed()

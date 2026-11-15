@@ -21,7 +21,10 @@ from core.modules.drivers.commands.use_permission.use_permission import UsePermi
 from core.modules.drivers.models.enums.permission_state import PermissionState
 from core.modules.drivers.models.permission_request import PermissionRequest
 from core.modules.drivers.rules.readonly_rule import ReadonlyRule
-from core.modules.drivers.support.access_nudges import LIMITED_TOOL, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, UNJUDGED_LINE
+from core.modules.drivers.nudges.limited_tool_nudge import LimitedToolNudge
+from core.modules.drivers.nudges.old_hook_line_nudge import OldHookLineNudge
+from core.modules.drivers.nudges.outward_journal_line_nudge import OutwardJournalLineNudge
+from core.modules.drivers.nudges.unjudged_line_nudge import UnjudgedLineNudge
 from core.modules.profiles.support.profile_files import ProfileFiles
 
 ALLOWED_REQUESTS_REASON = "a tool use is matched against every permission the agent was given, oldest first"
@@ -63,14 +66,14 @@ class AccessRule(ReadonlyRule):
         if permitted is not None:
             return RuleAnswer.allowed().running(UsePermission(permitted.id))
         if tool.category in LIMITED_TOOL_TYPES:
-            return RuleAnswer.refused(LIMITED_TOOL.nudge(tool=tool.name))
+            return RuleAnswer.refused(LimitedToolNudge.declared().nudge(tool=tool.name))
         shell = tool.shell
         if shell is not None and shell.has_old_hook_part:
-            return RuleAnswer.refused(OLD_HOOK_LINE.nudge())
+            return RuleAnswer.refused(OldHookLineNudge.declared().nudge())
         if shell is not None and shell.has_uncertain_part:
-            return RuleAnswer.refused(UNJUDGED_LINE.nudge())
+            return RuleAnswer.refused(UnjudgedLineNudge.declared().nudge())
         if shell is not None and self.reaches_outward(shell, hook.agent_id):
-            return RuleAnswer.refused(OUTWARD_JOURNAL_LINE.nudge())
+            return RuleAnswer.refused(OutwardJournalLineNudge.declared().nudge())
         return super().answer(hook)
 
     def reaches_outward(self, shell: ShellLine, agent_id: int) -> bool:

@@ -7,15 +7,13 @@ from core.modules.helpers.rules.helpers_driver_rules import HELPERS_DRIVER_RULES
 from core.modules.helpers.listeners.helpers_listeners import HELPERS_LISTENERS
 from core.modules.helpers.skills.declarations.helpers_skills import HELPERS_SKILLS
 from engine.module.module import Module
-from core.modules.helpers.support.program_marks import PROGRAM_MARKS
-from engine.ticker.tick_handler import TickHandler
-from core.modules.helpers.ticks.unstarted_job_starts import UnstartedJobStarts
-from engine.ticker.tick_interval import TickInterval
+from core.modules.helpers.marks.program_outage_mark import ProgramOutageMark
 from core.modules.helpers.support.helper_nudges import HELPER_NUDGES
-from core.modules.helpers.ticks.helper_limits_tick import HelperLimitsTick
-from core.modules.helpers.ticks.usage_limit_marker import UsageLimitMarker
 from core.modules.helpers.support.helper_settings import HELPER_SETTINGS
 from core.modules.helpers.types.helper import Helper
+from core.modules.helpers.tick_handlers.helper_limits_tick_handler import HelperLimitsTickHandler
+from core.modules.helpers.tick_handlers.usage_limit_marker_tick_handler import UsageLimitMarkerTickHandler
+from core.modules.helpers.tick_handlers.unstarted_job_starts_tick_handler import UnstartedJobStartsTickHandler
 
 
 class HelpersModule(Module):
@@ -29,12 +27,12 @@ class HelpersModule(Module):
     migrations = HELPERS_MIGRATIONS
     models = HELPERS_MODELS
     dependencies = ["journal.core.agents", "journal.core.profiles", "journal.core.messages", "journal.core.drivers", "journal.core.usage", "journal.core.chat", "journal.core.skills", "journal.core.settings", "journal.core.processes", "journal.core.environments", "journal.core.tasks", "journal.core.assignments"]
-    marks = PROGRAM_MARKS
+    marks = [ProgramOutageMark]
     helper_types = [Helper]
     settings = HELPER_SETTINGS
     guards = HELPERS_GUARDS
     handlers = HELPERS_HANDLERS
-    tick_handlers = [TickHandler(TickInterval(seconds=60), HelperLimitsTick(), "helper limits"), TickHandler(TickInterval(seconds=3), UsageLimitMarker(), "usage limit marks"), TickHandler(TickInterval(seconds=60), UnstartedJobStarts(), "helper jobs that never started")]
+    tick_handlers = [HelperLimitsTickHandler, UsageLimitMarkerTickHandler, UnstartedJobStartsTickHandler]
     nudges = HELPER_NUDGES
     skills = HELPERS_SKILLS
     subcommands = HELPERS_SUBCOMMANDS

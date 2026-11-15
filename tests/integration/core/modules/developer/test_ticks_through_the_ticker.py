@@ -5,7 +5,7 @@ from server.tick.ticker import Ticker
 from tests.stories.engine.driver.support.fixtures import LeadLocked
 from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.support.coding_fixtures import UserBuilder
-from core.modules.developer.support.developer_nudges import EXCEPTION_LINE
+from core.modules.developer.nudges.exception_line_nudge import ExceptionLineNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
 from core.modules.developer.support.developer_settings import EXCEPTION_LINES_SETTING
 from core.modules.developer.support.developer_settings import SLOW_TICKS_SETTING
@@ -36,7 +36,7 @@ def test_a_slow_tick_shows_a_warning_mark_and_tells_the_main_agent_when_the_deve
     story.run_listeners()
     story.expect_text("chat-mark main --environment main --json", "A tick of the journal's clock cost 51 points", "tick costly")
     story.expect_no_text("message list --environment main", "over its limit")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(EXCEPTION_LINE))
+    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(ExceptionLineNudge.declared()))
     story.expect_text("journal-exception show 1", "source: clock tick", "cost 51 points", actor=story.agent)
 
 

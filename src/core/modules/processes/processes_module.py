@@ -97,14 +97,7 @@ from core.modules.processes.listeners.reader_block_listener import ReaderBlockLi
 from core.modules.processes.listeners.reader_run_count_reset_listener import ReaderRunCountResetListener
 from core.modules.processes.listeners.unreadable_mark_run_count_reset_listener import UnreadableMarkRunCountResetListener
 from core.modules.processes.listeners.reader_request_complete_listener import ReaderRequestCompleteListener
-from engine.ticker.tick_handler import TickHandler
-from engine.ticker.tick_interval import TickInterval
-from core.modules.processes.ticks.output_reading import OutputReading
-from core.modules.processes.ticks.run_slot_grant import RUN_SLOT_GRANT_SECONDS, RunSlotGrant
-from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
 from core.modules.processes.listeners.booted_runs_listener import BootedRunsListener
-from core.modules.processes.ticks.process_pruning import ProcessPruning
-from core.modules.processes.ticks.request_log_import import RequestLogImport
 from core.modules.processes.commands.grant_run_slots.grant_run_slots_handler import GrantRunSlotsHandler
 from core.modules.processes.commands.halt_run_queue.halt_run_queue_handler import HaltRunQueueHandler
 from core.modules.processes.commands.halt_run_queue.halt_run_queue_subcommand import HaltRunQueueSubcommand
@@ -157,7 +150,7 @@ from core.modules.processes.listeners.process_part_start_mark_listener import Pr
 from core.modules.processes.listeners.process_move_mark_listener import ProcessMoveMarkListener
 from core.modules.processes.commands.process_list.process_list_subcommand import ProcessListSubcommand
 from core.modules.processes.listeners.process_output_mark_listener import ProcessOutputMarkListener
-from core.modules.processes.support.process_marks import PROCESS_MARKS
+from core.modules.processes.marks.process_command_mark import ProcessCommandMark
 from core.modules.processes.commands.read_new_output.read_new_output_handler import ReadNewOutputHandler
 from core.modules.processes.listeners.ended_agent_runs_listener import EndedAgentRunsListener
 from core.modules.processes.migrations.m010_runs_of_ended_agents import EndedAgentRunsMigration
@@ -237,13 +230,9 @@ from core.modules.processes.migrations.m036_process_timeouts import ProcessTimeo
 from core.modules.processes.commands.set_output_timeout.set_output_timeout_handler import SetOutputTimeoutHandler
 from core.modules.processes.commands.set_output_timeout.set_output_timeout_subcommand import SetOutputTimeoutSubcommand
 from core.modules.processes.commands.stop_timed_process.stop_timed_process_handler import StopTimedProcessHandler
-from core.modules.processes.ticks.run_timeouts import RunTimeouts
-from core.modules.processes.ticks.hang_watch import HangWatch
-from core.modules.processes.ticks.cadence_watch import CadenceWatch
 from core.modules.processes.commands.warn_cadence.warn_cadence_handler import WarnCadenceHandler
 from core.modules.processes.commands.request_output_check.request_output_check_handler import RequestOutputCheckHandler
 from core.modules.processes.commands.stop_hung_process.stop_hung_process_handler import StopHungProcessHandler
-from core.modules.processes.ticks.output_checks import OutputChecks
 from core.modules.processes.commands.check_output.check_output_handler import CheckOutputHandler
 from core.modules.processes.commands.confirm_output.confirm_output_handler import ConfirmOutputHandler
 from core.modules.processes.commands.confirm_output.confirm_output_subcommand import ConfirmOutputSubcommand
@@ -282,7 +271,16 @@ from core.modules.processes.support.block_conditions.output_read_since_block imp
 
 
 
-from core.modules.processes.support.queue_inspector import QUEUE_INSPECTOR
+from core.modules.processes.inspectors.queue_inspector import QueueInspector
+from core.modules.processes.tick_handlers.output_reading_tick_handler import OutputReadingTickHandler
+from core.modules.processes.tick_handlers.run_slot_grant_tick_handler import RunSlotGrantTickHandler
+from core.modules.processes.tick_handlers.run_timeouts_tick_handler import RunTimeoutsTickHandler
+from core.modules.processes.tick_handlers.hang_watch_tick_handler import HangWatchTickHandler
+from core.modules.processes.tick_handlers.cadence_watch_tick_handler import CadenceWatchTickHandler
+from core.modules.processes.tick_handlers.output_checks_tick_handler import OutputChecksTickHandler
+from core.modules.processes.tick_handlers.run_end_recovery_tick_handler import RunEndRecoveryTickHandler
+from core.modules.processes.tick_handlers.process_pruning_tick_handler import ProcessPruningTickHandler
+from core.modules.processes.tick_handlers.request_log_import_tick_handler import RequestLogImportTickHandler
 
 
 class ProcessesModule(Module):
@@ -291,10 +289,10 @@ class ProcessesModule(Module):
 
     name = "journal.core.processes"
     nudges = PROCESS_NUDGES
-    tick_handlers = [TickHandler(TickInterval(seconds=1), OutputReading(), "read running outputs"), TickHandler(TickInterval(seconds=RUN_SLOT_GRANT_SECONDS), RunSlotGrant(), "run slots"),
-                     TickHandler(TickInterval(seconds=1), RunTimeouts(), "run timeouts"), TickHandler(TickInterval(seconds=15), HangWatch(), "hang watch"), TickHandler(TickInterval(seconds=10), CadenceWatch(), "cadence watch"), TickHandler(TickInterval(seconds=15), OutputChecks(), "output checks"),
-                     TickHandler(TickInterval(seconds=15), RunEndRecovery(), "run end recovery", starts_immediately=True),
-                     TickHandler(TickInterval(seconds=15 * 60), ProcessPruning(), "process pruning"), TickHandler(TickInterval(seconds=5), RequestLogImport(), "request log import")]
+    tick_handlers = [OutputReadingTickHandler, RunSlotGrantTickHandler,
+                     RunTimeoutsTickHandler, HangWatchTickHandler, CadenceWatchTickHandler, OutputChecksTickHandler,
+                     RunEndRecoveryTickHandler,
+                     ProcessPruningTickHandler, RequestLogImportTickHandler]
     skills = PROCESSES_SKILLS
     requires_engine = ">=5,<6"
     block_conditions = [ReaderRequestCompleted, OutputEnded, OutputRead, OutputTitled, OutputReadSinceBlock, OutputMonitored]
@@ -310,11 +308,11 @@ class ProcessesModule(Module):
     driver_rules = [ReadingRule, RetryLoopRule, ReaderRequestRule, LeftoverRunRule, HandMadeMonitorRule, AliasSuggestionRule, ReadAdviceRule, RunTitleRule, SleepPollRule, JournalChainRule, ReadCommandOutputRule, JournalPipeRule, SilentRunBlockRule, OutputStatusMonitorRule, LongRunDockRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, WatchLinesRule, OrphanProcessRule]
     agent_states = [RunQueueHalted]
     listeners = [BootedRunsListener, ReaderRunCountResetListener, UnreadableMarkRunCountResetListener, EndDecisionListener, EndedRunLineListener, FullOutputReadListener, StockReadersPublishListener, StartReadersListener, ReaderFailureListener, ReaderBlockListener, ReaderRequestCompleteListener, ProcessFolderRemovalListener, RunSlotListener, ActiveTestsMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, ReaderProofListener, ProcessPruneListener, ProcessRemovalListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, ProcessPartStartMarkListener, ProcessMoveMarkListener, ProcessOutputMarkListener, ProcessOutputListener]
-    marks = PROCESS_MARKS
+    marks = [ProcessCommandMark]
     bindings = {WatchedRuns: MonitoredRuns, WaitTargets: ProcessWaitTargets, RunOwners: ProcessRunOwners, RunPlacement: ProcessRunPlacement, RunPauses: AgentRunPauses, RequestRecords: ProcessRowWrapper, PersonClasses: StoredExecutionClasses}
     docks = PROCESSES_DOCKS
     window_extensions = [AgentsProcessesExtension, HelpersProcessesExtension, AgentsLiftHoldExtension]
     windows = PROCESSES_WINDOWS
-    inspectors = [QUEUE_INSPECTOR]
+    inspectors = [QueueInspector]
     seeders = [ProcessesSeeder]
     story_steps = PROCESSES_STORY_STEPS

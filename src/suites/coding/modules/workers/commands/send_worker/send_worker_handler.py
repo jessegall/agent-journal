@@ -17,7 +17,7 @@ from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from engine.model.model import Model
 from engine.driver.nudger import Nudger
-from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_JOINS
+from suites.coding.modules.workers.nudges.worker_task_joins_nudge import WorkerTaskJoinsNudge
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 from core.modules.tasks.models.task import Task
@@ -167,7 +167,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
 
     def inform_joined(self, worker_id: int, context: Context) -> None:
         for task_id in self.task_ids:
-            self.nudger.send(worker_id, WORKER_TASK_JOINS, WORKER_TASK_JOINS.key, context, task=task_id)
+            self.nudger.send(worker_id, WorkerTaskJoinsNudge.declared(), WorkerTaskJoinsNudge.declared().key, context, task=task_id)
 
     def handle(self, command: SendWorker, context: Context) -> Model:
         if command.test_commands:

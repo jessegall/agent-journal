@@ -21,14 +21,12 @@ from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_handl
 from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_subcommand import ResetHookNumbersSubcommand
 from engine.database.request_watch import RequestWatch
 from engine.module.module import Module
-from engine.ticker.tick_handler import TickHandler
-from engine.ticker.tick_interval import TickInterval
-from core.modules.developer.ticks.private_data_tick import PrivateDataTick
-from core.modules.developer.ticks.request_trace_import import RequestTraceImport
 from core.modules.developer.support.reporting_request_watch import ReportingRequestWatch
-from core.modules.developer.support.developer_settings import DEVELOPER_SETTINGS, TOOLS_SETTING, HOOK_DURATIONS_SETTING, HOOK_REQUEST_LOG_SETTING
+from core.modules.developer.support.developer_settings import DEVELOPER_SETTINGS
 from core.modules.developer.models.hook_request import HookRequest
 from core.modules.developer.migrations.m001_hook_requests import HookRequestsMigration
+from core.modules.developer.tick_handlers.private_data_tick_handler import PrivateDataTickHandler
+from core.modules.developer.tick_handlers.request_trace_import_tick_handler import RequestTraceImportTickHandler
 
 
 class DeveloperModule(Module):
@@ -43,7 +41,7 @@ class DeveloperModule(Module):
     models = [PrivateDataMarkModelDeclaration]
     migrations = [PrivateDataMarkEnvironmentIndexMigration, HookRequestsMigration, PrivateDataFlagsMigration]
     views = [HookRequest]
-    tick_handlers = [TickHandler(TickInterval(seconds=60), PrivateDataTick(), "private data scan"), TickHandler(TickInterval(seconds=5), RequestTraceImport(), "request trace import")]
+    tick_handlers = [PrivateDataTickHandler, RequestTraceImportTickHandler]
     handlers = [RecordPrivateDataFindingHandler, ResetHookNumbersHandler, RecordMarkMotionHandler]
     listeners = [ExceptionLineListener, PrivateDataMarkListener]
     nudges = DEVELOPER_NUDGES

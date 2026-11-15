@@ -7,7 +7,7 @@ from engine.enums.hook_event_name import HookEventName
 from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.driver.rule_answer import RuleAnswer
 from engine.enums.tool_type import ToolType
-from core.modules.drivers.support.access_nudges import TOOL_RESTRICTION
+from core.modules.drivers.nudges.tool_restriction_nudge import ToolRestrictionNudge
 
 
 class DeniedToolsRule(DriverRule):
@@ -17,7 +17,7 @@ class DeniedToolsRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     exempt = True
     denied_tools: ClassVar[Sequence[ToolType]] = ()
-    refusal: ClassVar[NudgeDeclaration] = TOOL_RESTRICTION
+    refusal: ClassVar[NudgeDeclaration] = ToolRestrictionNudge.declared()
     single_action_refusal = "Refuses tool types a driver excludes, leaving other tools to their own rules"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:

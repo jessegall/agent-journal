@@ -5,7 +5,8 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
-from core.modules.tasks.support.task_nudges import TASK_FILED, TASK_FILED_KEEP_CURRENT
+from core.modules.tasks.nudges.task_filed_nudge import TaskFiledNudge
+from core.modules.tasks.nudges.task_filed_keep_current_nudge import TaskFiledKeepCurrentNudge
 
 TASK_COMMAND_START = ["task", "make"]
 
@@ -28,4 +29,4 @@ class TaskFiledRule(DriverRule):
         if not any(part.classification.category is CommandCategory.JOURNAL and list(part.arguments[:2]) == TASK_COMMAND_START for part in parts):
             return RuleAnswer.allowed()
         current = self.current_tasks.current(hook.agent_id)
-        return RuleAnswer.with_nudges(TASK_FILED_KEEP_CURRENT.nudge(task=current.task.id) if current is not None else TASK_FILED.nudge())
+        return RuleAnswer.with_nudges(TaskFiledKeepCurrentNudge.declared().nudge(task=current.task.id) if current is not None else TaskFiledNudge.declared().nudge())

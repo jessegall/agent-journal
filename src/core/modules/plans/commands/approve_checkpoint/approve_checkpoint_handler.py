@@ -9,7 +9,7 @@ from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.support.plan_checkpoints import PlanCheckpoints
 from core.modules.plans.support.plan_main_agents import PlanMainAgents
-from core.modules.plans.support.plan_nudges import CHECKPOINT_FINISHED
+from core.modules.plans.nudges.checkpoint_finished_nudge import CheckpointFinishedNudge
 
 
 class ApproveCheckpointHandler(Handler[ApproveCheckpoint, int]):
@@ -26,6 +26,6 @@ class ApproveCheckpointHandler(Handler[ApproveCheckpoint, int]):
             raise Refusal("only a user approves a checkpoint, on the plan card", "ask the user to approve it")
         if not self.checkpoints.approve(command.plan_id, command.phase_id, context):
             raise Refusal(f"checkpoint phase {command.phase_id} of plan {command.plan_id} waits for no approval", f"journal plan progress {command.plan_id} shows its checkpoints")
-        self.main_agents.send(self.queries.query(Plan).find(command.plan_id), CHECKPOINT_FINISHED, PASS_SOURCE, context, phase=self.queries.query(Phase).find(command.phase_id).title)
+        self.main_agents.send(self.queries.query(Plan).find(command.plan_id), CheckpointFinishedNudge.declared(), PASS_SOURCE, context, phase=self.queries.query(Phase).find(command.phase_id).title)
         self.checkpoints.record(command.plan_id, context)
         return command.phase_id

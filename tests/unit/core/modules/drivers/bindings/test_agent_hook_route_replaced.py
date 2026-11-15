@@ -1,11 +1,12 @@
 from types import SimpleNamespace
 
 from core.modules.drivers.bindings.agent_hook_route import AgentHookRoute
-from core.modules.drivers.support.access_nudges import REPLACED_SESSION, UNKNOWN_AGENT
+from core.modules.drivers.nudges.replaced_session_nudge import ReplacedSessionNudge
+from core.modules.drivers.nudges.unknown_agent_nudge import UnknownAgentNudge
 from engine.driver.hook_event import HOOK_EVENT_VERSION, HookEvent
 from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
-from core.modules.drivers.support.access_nudges import REPLACED_SESSION
+from core.modules.drivers.nudges.replaced_session_nudge import ReplacedSessionNudge
 
 MAIN_ROW_ID = 7
 REPLACED_SESSIONS = {"s-1": MAIN_ROW_ID}
@@ -43,7 +44,7 @@ def hook(session: str, event: HookEventName, role: str = "", source: str = "star
 
 def test_a_tool_of_a_session_in_the_history_that_is_not_current_is_answered_replaced():
     reply = route().agentless_reply(hook("s-1", HookEventName.PRE_TOOL_USE))
-    assert reply.refusal == REPLACED_SESSION.nudge(agent=1).text
+    assert reply.refusal == ReplacedSessionNudge.declared().nudge(agent=1).text
 
 
 def test_another_event_of_a_replaced_session_passes_with_no_refusal():
@@ -68,4 +69,4 @@ def test_an_unknown_session_of_a_main_starts_as_the_main_agent():
 
 def test_a_tool_of_an_unknown_helper_session_is_refused_as_unknown():
     reply = route().agentless_reply(hook("w-9", HookEventName.PRE_TOOL_USE, role="worker"))
-    assert reply.refusal == UNKNOWN_AGENT.nudge().text
+    assert reply.refusal == UnknownAgentNudge.declared().nudge().text

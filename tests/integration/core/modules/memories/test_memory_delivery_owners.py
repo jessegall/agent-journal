@@ -8,7 +8,7 @@ from core.modules.memories.migrations.m006_memory_owner import MemoryOwnerMigrat
 from core.modules.memories.models.memory import Memory
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.memories.support.memory_owners import MAIN_FACT, MAIN_MEMORY, MainAndWorkerMemories, WORKER_FACT, WORKER_MEMORY, read_agent, stored_memory
-from core.modules.memories.support.memory_nudges import START_MEMORIES
+from core.modules.memories.nudges.start_memories_nudge import StartMemoriesNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
 
 TEST_ROWS_REASON = "the test reads every row it checks"

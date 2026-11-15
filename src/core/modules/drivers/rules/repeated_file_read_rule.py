@@ -9,7 +9,7 @@ from engine.journal.journal_home import JournalHome
 from engine.query.queries import Queries
 from engine.instruction.instruction_imports import InstructionImports
 from core.modules.drivers.models.hook_call import HookCall
-from core.modules.drivers.support.driver_nudges import FILE_LOADED
+from core.modules.drivers.nudges.file_loaded_nudge import FileLoadedNudge
 
 READ_TOOL = "Read"
 PART_FIELDS = ("offset", "limit", "pages")
@@ -34,7 +34,7 @@ class RepeatedFileReadRule(DriverRule):
         path = tool.files[0]
         if not self.is_started_with(path) and not self.is_read_unchanged(hook.agent_id, path):
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(FILE_LOADED.nudge(path=path))
+        return RuleAnswer.with_nudges(FileLoadedNudge.declared().nudge(path=path))
 
     def is_started_with(self, path: str) -> bool:
         project = self.home.project_folder

@@ -46,7 +46,7 @@ from suites.coding.modules.checks.seeders.checks_seeder import ChecksSeeder
 from suites.coding.modules.checks.rules.failed_check_rule import FailedCheckRule
 from suites.coding.modules.checks.support.block_conditions.check_passed import CheckPassed
 from suites.coding.modules.checks.support.check_library_share import CheckLibraryShare
-from suites.coding.modules.checks.support.check_inspector import CHECK_INSPECTOR
+from suites.coding.modules.checks.inspectors.check_inspector import CheckInspector
 
 
 
@@ -63,7 +63,7 @@ class ChecksModule(Module):
     skills = CHECKS_SKILLS
     library_shares = [CheckLibraryShare]
     models = [CheckModelDeclaration]
-    inspectors = [CHECK_INSPECTOR]
+    inspectors = [CheckInspector]
     listeners = [TaskWaitCheckListener, TaskWaitPassListener, EndedCheckRunsListener]
     migrations = [ActiveCheckIndexMigration, OpenCheckHiddenIndexMigration, CheckTaskWaitIndexMigration, OpenCheckResultIndexMigration, ChecksTableMigration, CheckTaskWaitMigration, CheckHiddenMigration, CheckRunPercentMigration, OpenTaskWaitIndexMigration]
     handlers = [MakeCheckHandler, EditCheckHandler, RecordCheckRunHandler, RecordCheckProgressHandler, StartCheckHandler, StopCheckHandler, RemoveCheckHandler, ReportCheckHandler]

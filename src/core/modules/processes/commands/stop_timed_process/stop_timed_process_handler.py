@@ -10,7 +10,7 @@ from core.modules.processes.commands.stop_process.stop_process import StopProces
 from core.modules.processes.commands.stop_timed_process.stop_timed_process import StopTimedProcess
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.process import Process
-from core.modules.processes.support.process_nudges import OUTPUT_TIMEOUT
+from core.modules.processes.nudges.output_timeout_nudge import OutputTimeoutNudge
 
 
 class StopTimedProcessHandler(Handler[StopTimedProcess, Process]):
@@ -27,5 +27,5 @@ class StopTimedProcessHandler(Handler[StopTimedProcess, Process]):
             return process
         self.repository.save(replace(process, expired_at=context.timestamp), context)
         process = self.bus.dispatch(StopProcess(process.id), context)
-        self.nudger.send(process.session_agent_id, OUTPUT_TIMEOUT, "processes.timeout", context, output=process.id, seconds=process.timeout_seconds)
+        self.nudger.send(process.session_agent_id, OutputTimeoutNudge.declared(), "processes.timeout", context, output=process.id, seconds=process.timeout_seconds)
         return process

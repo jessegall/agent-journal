@@ -6,7 +6,7 @@ from engine.driver.rule_answer import RuleAnswer
 from core.modules.tasks.models.task_wait import TaskWait
 from engine.query.queries import Queries
 from suites.coding.modules.checks.queries.check_query import CheckQuery
-from suites.coding.modules.checks.support.check_nudges import BROKEN_TASK_WAIT
+from suites.coding.modules.checks.nudges.broken_task_wait_nudge import BrokenTaskWaitNudge
 
 class BrokenTaskWaitRule(DriverRule):
     """A command a blocked task waits on that cannot run at all is named to the main agent, since it would
@@ -24,4 +24,4 @@ class BrokenTaskWaitRule(DriverRule):
         broken = self.checks.broken_task_waits()
         waits = self.queries.query(TaskWait).find_many([check.task_wait_id for check in broken if check.task_wait_id is not None])
         tasks = {wait.id: wait.task_id for wait in waits}
-        return RuleAnswer.with_nudges(*(BROKEN_TASK_WAIT.nudge(task=tasks[check.task_wait_id], output=check.last_output.strip()) for check in broken if check.task_wait_id is not None))
+        return RuleAnswer.with_nudges(*(BrokenTaskWaitNudge.declared().nudge(task=tasks[check.task_wait_id], output=check.last_output.strip()) for check in broken if check.task_wait_id is not None))

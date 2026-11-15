@@ -9,10 +9,10 @@ from tests.stories.suites.coding.modules.workers.support.commit_command import C
 from tests.stories.suites.coding.modules.workers.support.held_tasks import worker_with_tasks, prove_task, unplanned_worker_with_tasks
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, PHASE_DISPATCH, PLAN_DISPATCH, TEST_LINE, start_planned_worker
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
-from suites.coding.modules.workers.support.worker_nudges import WORKER_COMMITTED_UNMERGED
+from suites.coding.modules.workers.nudges.worker_committed_unmerged_nudge import WorkerCommittedUnmergedNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
-from suites.coding.modules.workers.support.worker_nudges import WORKER_UNFINISHED_TASKS
-from suites.coding.modules.workers.support.worker_nudges import WORKER_RESTARTED
+from suites.coding.modules.workers.nudges.worker_unfinished_tasks_nudge import WorkerUnfinishedTasksNudge
+from suites.coding.modules.workers.nudges.worker_restarted_nudge import WorkerRestartedNudge
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 MAIN_SESSION = "s-1"
@@ -80,7 +80,7 @@ def ended_during_tests(played):
 def test_a_worker_waiting_on_the_tests_of_its_commit_is_not_told_to_go_on(ended_during_tests):
     ended_during_tests.story.tick(MAIN_SESSION)
     ended_during_tests.story.expect_text("proof show 1", "state: running", actor=ended_during_tests.story.agent)
-    ended_during_tests.story.expect_rows(not any(expected_nudge(WORKER_RESTARTED).matches_text(line) for line in ended_during_tests.main_agent_lines()))
+    ended_during_tests.story.expect_rows(not any(expected_nudge(WorkerRestartedNudge.declared()).matches_text(line) for line in ended_during_tests.main_agent_lines()))
     ended_during_tests.story.expect_rows(not any("tasks left" in line for line in ended_during_tests.worker_lines()))
 
 
@@ -102,14 +102,14 @@ def test_a_worker_that_ended_while_its_tests_run_and_holds_a_started_task_is_tol
     worker.story.tick(MAIN_SESSION)
     WorkerResumeRetry()(worker.story.container)
     worker.story.expect_text(f"worker status {agent_number(worker.story, worker.worker.id)}", "Point: build", actor=worker.story.agent)
-    worker.story.expect_rows(any(expected_nudge(WORKER_UNFINISHED_TASKS).matches_text(line) for line in worker.worker_lines()), detail=str(worker.worker_lines()))
+    worker.story.expect_rows(any(expected_nudge(WorkerUnfinishedTasksNudge.declared()).matches_text(line) for line in worker.worker_lines()), detail=str(worker.worker_lines()))
 
 
 def test_a_worker_that_ended_while_its_commit_runs_leaves_no_stopped_line(handoff_worker):
     worker = handoff_worker
     worker.story.expect_text(f"worker status {agent_number(worker.story, worker.worker.id)}", "Point: commit", actor=worker.story.agent)
     worker.story.tick(MAIN_SESSION)
-    worker.story.expect_rows(not any(expected_nudge(WORKER_RESTARTED).matches_text(line) or "ended with" in line for line in worker.main_agent_lines()), detail=str(worker.main_agent_lines()))
+    worker.story.expect_rows(not any(expected_nudge(WorkerRestartedNudge.declared()).matches_text(line) or "ended with" in line for line in worker.main_agent_lines()), detail=str(worker.main_agent_lines()))
 
 
 def test_after_its_limit_a_worker_that_ended_names_its_tasks_left_and_the_committed_one_that_is_not_merged(program_ended):
@@ -117,7 +117,7 @@ def test_after_its_limit_a_worker_that_ended_names_its_tasks_left_and_the_commit
     program_ended.story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=program_ended.story.user)
     program_ended.story.tick(MAIN_SESSION)
     number = agent_number(program_ended.story, program_ended.worker.id)
-    program_ended.story.expect_text(f"agent-line list --agent {program_ended.story.agent.id}", f"worker:{number} ended with task:2, task:3 left", expected_nudge(WORKER_COMMITTED_UNMERGED, tasks='task:1'))
+    program_ended.story.expect_text(f"agent-line list --agent {program_ended.story.agent.id}", f"worker:{number} ended with task:2, task:3 left", expected_nudge(WorkerCommittedUnmergedNudge.declared(), tasks='task:1'))
 
 
 @pytest.mark.parametrize("fixture, reason", [("advanced_worker", "the plan changed"), ("phase_delivered", "the tests take too long")], ids=["in the middle of a phase", "after the hand-in"])

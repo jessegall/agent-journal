@@ -1,4 +1,4 @@
-from suites.coding.support.coding_nudges import WORKER_TASK_UNSTARTED
+from suites.coding.nudges.worker_task_unstarted_nudge import WorkerTaskUnstartedNudge
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -19,4 +19,4 @@ class WorkerTaskStartRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if self.tasks.started_tasks(hook.agent_id):
             return RuleAnswer.allowed()
-        return RuleAnswer.blocked(hook, WORKER_TASK_UNSTARTED.nudge(), StartedTaskExists())
+        return RuleAnswer.blocked(hook, WorkerTaskUnstartedNudge.declared().nudge(), StartedTaskExists())

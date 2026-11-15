@@ -6,7 +6,7 @@ from engine.driver.rule_answer import RuleAnswer
 from engine.enums.tool_type import ToolType
 from engine.provider.providers import Providers
 from core.modules.drivers.rules.allowed_command_types_rule import AllowedCommandTypesRule
-from core.modules.drivers.support.access_nudges import TOOL_RESTRICTION
+from core.modules.drivers.nudges.tool_restriction_nudge import ToolRestrictionNudge
 
 
 class AllowedToolsRule(AllowedCommandTypesRule):
@@ -14,7 +14,7 @@ class AllowedToolsRule(AllowedCommandTypesRule):
 
     name = "drivers.allowed-tools"
     allowed_tools: ClassVar[Sequence[ToolType]] = tuple(ToolType)
-    refusal = TOOL_RESTRICTION
+    refusal = ToolRestrictionNudge.declared()
     single_action_refusal = "Allows the tool types and shell command categories declared by a driver"
 
     def __init__(self, providers: Providers) -> None:

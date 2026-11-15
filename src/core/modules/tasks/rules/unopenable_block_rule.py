@@ -18,7 +18,10 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task_block_review import TaskBlockReview
 from core.modules.tasks.support.block_conditions.task_blocks_reviewed import TaskBlocksReviewed
 from core.modules.tasks.support.block_review_scope import BlockReviewScope
-from core.modules.tasks.support.task_nudges import BLOCK_REVIEW, BLOCK_REVIEW_REQUIRED, BLOCK_REVIEW_REMINDER, USER_BLOCK_REVIEW
+from core.modules.tasks.nudges.block_review_nudge import BLOCK_REVIEW_REMINDER
+from core.modules.tasks.nudges.block_review_nudge import BlockReviewNudge
+from core.modules.tasks.nudges.block_review_required_nudge import BlockReviewRequiredNudge
+from core.modules.tasks.nudges.user_block_review_nudge import UserBlockReviewNudge
 
 BLOCKED_TASKS_REASON = "every task the agent blocked by hand is checked for a review of its block"
 
@@ -45,7 +48,7 @@ class UnopenableBlockRule(DriverRule):
         tasks = self.unskipped(hook.agent_id, self.scope.covered(hook.agent_id, blocked)) if blocked else ()
         if not tasks:
             return RuleAnswer.allowed()
-        block = self.queries.query(AgentBlock).filter(session_agent_id=hook.agent_id, nudge_key=BLOCK_REVIEW_REQUIRED.key).matching(IsNull("closed_at")).first()
+        block = self.queries.query(AgentBlock).filter(session_agent_id=hook.agent_id, nudge_key=BlockReviewRequiredNudge.declared().key).matching(IsNull("closed_at")).first()
         if block is not None and TaskBlocksReviewed.stored(block.condition_text).pending(tasks):
             return RuleAnswer.allowed()
         passed = BLOCK_REVIEW_REMINDER.interval.has_passed_many(self.spans, hook.agent_id, [task.reviewed_at for task in tasks], hook.timestamp)
@@ -53,17 +56,17 @@ class UnopenableBlockRule(DriverRule):
         if not due:
             return RuleAnswer.allowed()
         reminder = self.passes.round(hook.agent_id, BLOCK_REVIEW_REMINDER, [ReminderSubject(str(task.task_id), task.moved_at) for task in due])
-        notices = [replace((USER_BLOCK_REVIEW if task.user_wait else BLOCK_REVIEW).nudge(task=task.task_id),
-                           interval=None, record_keys=tuple([f"{BLOCK_REVIEW.key}.{task.task_id}"])) for task in due]
+        notices = [replace((UserBlockReviewNudge.declared() if task.user_wait else BlockReviewNudge.declared()).nudge(task=task.task_id),
+                           interval=None, record_keys=tuple([f"{BlockReviewNudge.declared().key}.{task.task_id}"])) for task in due]
         answer = RuleAnswer.with_nudges(*notices).running(reminder.record)
         blocking = [task for task in due if str(task.task_id) in reminder.blocking]
         if not blocking:
             return answer
-        refusal = BLOCK_REVIEW_REQUIRED.nudge(tasks=", ".join(str(task.task_id) for task in blocking), block="{block}")
+        refusal = BlockReviewRequiredNudge.declared().nudge(tasks=", ".join(str(task.task_id) for task in blocking), block="{block}")
         return answer.running(BlockUntil(hook.agent_id, refusal, TaskBlocksReviewed.build(blocking), is_skippable=True))
 
     def unskipped(self, agent_id: int, tasks: tuple[TaskBlockReview, ...]) -> tuple[TaskBlockReview, ...]:
-        skipped = self.queries.query(AgentBlock).filter(session_agent_id=agent_id, nudge_key=BLOCK_REVIEW_REQUIRED.key).matching(Greater("skip_reason", "")).newest().take(SKIPPED_REVIEWS_READ)
+        skipped = self.queries.query(AgentBlock).filter(session_agent_id=agent_id, nudge_key=BlockReviewRequiredNudge.declared().key).matching(Greater("skip_reason", "")).newest().take(SKIPPED_REVIEWS_READ)
         skipped_at: dict[int, Timestamp] = {}
         for block in reversed(skipped):
             for task_id in TaskBlocksReviewed.stored(block.condition_text).task_ids():

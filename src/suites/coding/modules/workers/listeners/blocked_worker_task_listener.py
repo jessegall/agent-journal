@@ -7,7 +7,8 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from engine.driver.nudger import Nudger
 from core.modules.tasks.models.task import Task
-from suites.coding.modules.workers.support.worker_nudges import BLOCKED_WORKER_TASK, WORKER_TASK_BLOCKED
+from suites.coding.modules.workers.nudges.blocked_worker_task_nudge import BlockedWorkerTaskNudge
+from suites.coding.modules.workers.nudges.worker_task_blocked_nudge import WorkerTaskBlockedNudge
 from engine.event.moved import Moved
 from engine.command.context import Context
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
@@ -31,7 +32,7 @@ class BlockedWorkerTaskListener(SaveListener[Moved[Task]]):
         if worker is None or worker.role == AgentRole.MAIN:
             return
         if worker.id != context.actor.id:
-            self.nudger.send(worker.id, BLOCKED_WORKER_TASK, self.name, context, task=task.id)
+            self.nudger.send(worker.id, BlockedWorkerTaskNudge.declared(), self.name, context, task=task.id)
             return
-        notice = WORKER_TASK_BLOCKED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worker.id), task=task.id)
+        notice = WorkerTaskBlockedNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worker.id), task=task.id)
         self.main_agent_line.send_nudge(notice, self.name, context)

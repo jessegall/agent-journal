@@ -6,6 +6,8 @@ from engine.driver.interval import Interval
 from engine.driver.nudge import Nudge
 from engine.enums.nudge_type import NudgeType
 from engine.driver.stored_nudge import StoredNudge
+from engine.types.class_fields import class_fields
+from functools import cache
 
 LONGEST_LINE_CHARACTERS = 120
 LONGEST_NOTICE_CHARACTERS = 800
@@ -36,6 +38,12 @@ class NudgeDeclaration:
     id_field: str | None = None
     full_text: bool = False
     role_texts: Mapping[str, str] = field(default_factory=dict[str, str])
+
+    # a nudge written as a class in its own file sets the fields as class attributes
+    @classmethod
+    @cache
+    def declared(cls) -> "NudgeDeclaration":
+        return NudgeDeclaration(**class_fields(cls, NudgeDeclaration))
 
     @property
     def limit(self) -> int:

@@ -11,7 +11,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, started_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_value
-from core.modules.processes.support.process_nudges import SILENT_START_FIXED
+from core.modules.processes.nudges.silent_start_fixed_nudge import SilentStartFixedNudge
 
 ALIAS = "./build.sh"
 ALIAS_START = HookSamples.shell(ALIAS, ShellPart("./build.sh", CommandCategory.BUILD, []))

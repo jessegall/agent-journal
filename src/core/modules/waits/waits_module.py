@@ -13,7 +13,7 @@ from core.modules.waits.listeners.target_resolution_listener import TargetResolu
 from core.modules.waits.listeners.reported_wait_mark_listener import ReportedWaitMarkListener
 from core.modules.waits.listeners.wait_end_listener import WaitEndListener
 from core.modules.waits.support.wait_nudges import WAIT_NUDGES
-from core.modules.waits.support.wait_marks import WAIT_MARKS
+from core.modules.waits.marks.reported_wait_mark import ReportedWaitMark
 from core.modules.waits.commands.open_wait.open_wait_subcommand import OpenWaitSubcommand
 from core.modules.waits.commands.open_wait.open_wait_handler import OpenWaitHandler
 from core.modules.waits.commands.request_help.request_help_subcommand import RequestHelpSubcommand
@@ -36,6 +36,6 @@ class WaitsModule(Module):
     subcommands = [OpenWaitSubcommand, RequestHelpSubcommand, WaitingWaitSubcommand]
     listeners = [TargetResolutionListener, ReportedWaitMarkListener, WaitEndListener]
     nudges = WAIT_NUDGES
-    marks = WAIT_MARKS
+    marks = [ReportedWaitMark]
     overlays = [WaitOverlay, HelpRequestOverlay]
     seeders = [WaitsSeeder]

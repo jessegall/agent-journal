@@ -4,7 +4,7 @@ from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.query.conditions.among import Among
 from core.modules.messages.queries.message_query import MessageQuery
-from core.modules.messages.support.message_nudges import UNREAD_DISPLAY_REFUSAL
+from core.modules.messages.nudges.unread_display_refusal_nudge import UnreadDisplayRefusalNudge
 
 
 class UnreadMessageShowRule(DriverRule):
@@ -25,4 +25,4 @@ class UnreadMessageShowRule(DriverRule):
         if not numbers:
             return RuleAnswer.allowed()
         unread = self.messages.unread(hook.agent_id).matching(Among("id", numbers)).oldest().first()
-        return RuleAnswer.refused(UNREAD_DISPLAY_REFUSAL.nudge(message=unread.id)) if unread is not None else RuleAnswer.allowed()
+        return RuleAnswer.refused(UnreadDisplayRefusalNudge.declared().nudge(message=unread.id)) if unread is not None else RuleAnswer.allowed()

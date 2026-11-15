@@ -20,8 +20,6 @@ from core.modules.library.commands.remove_library_item.remove_library_item_handl
 from core.modules.library.commands.remove_library_item.remove_library_item_subcommand import RemoveLibraryItemSubcommand
 from core.modules.library.commands.restore_library_item.restore_library_item_handler import RestoreLibraryItemHandler
 from core.modules.library.commands.restore_library_item.restore_library_item_subcommand import RestoreLibraryItemSubcommand
-from engine.ticker.tick_handler import TickHandler
-from engine.ticker.tick_interval import TickInterval
 from core.modules.library.commands.delete_library_copy.delete_library_copy_handler import DeleteLibraryCopyHandler
 from core.modules.library.commands.update_library_connection.update_library_connection_handler import UpdateLibraryConnectionHandler
 from core.modules.library.commands.update_library_copy.update_library_copy_handler import UpdateLibraryCopyHandler
@@ -30,7 +28,6 @@ from core.modules.library.commands.choose_library_version.choose_library_version
 from core.modules.library.commands.run_library_sync.run_library_sync_handler import RunLibrarySyncHandler
 from core.modules.library.commands.run_library_sync.run_library_sync_subcommand import RunLibrarySyncSubcommand
 from core.modules.library.commands.merge_library_item.merge_library_item_handler import MergeLibraryItemHandler
-from core.modules.library.ticks.library_sync_tick import LibrarySyncTick
 from core.modules.library.commands.add_library_user.add_library_user_handler import AddLibraryUserHandler
 from core.modules.library.commands.add_library_user.add_library_user_subcommand import AddLibraryUserSubcommand
 from core.modules.library.commands.set_library_role.set_library_role_handler import SetLibraryRoleHandler
@@ -54,6 +51,7 @@ from core.modules.library.guards.library_address_guard import LibraryAddressGuar
 from core.modules.library.migrations.m001_library import LibraryTablesMigration
 from core.modules.library.migrations.m002_connection_signature_index import ConnectionSignatureIndexMigration
 from core.modules.library.listeners.connection_rows_listener import ConnectionRowsListener
+from core.modules.library.tick_handlers.library_sync_tick_handler import LibrarySyncTickHandler
 
 
 class LibraryModule(Module):
@@ -76,6 +74,6 @@ class LibraryModule(Module):
     subcommands = [PairLibrarySubcommand, UnpairLibrarySubcommand, LibraryStatusSubcommand, LibraryListSubcommand, LibraryBrowseSubcommand, LibraryInspectSubcommand, LibraryShowSubcommand, LibraryVersionsSubcommand, LibraryUserListSubcommand, LibraryUserTokensSubcommand, AddLibraryUserSubcommand, SetLibraryRoleSubcommand, RemoveLibraryUserSubcommand,
                    RevokeLibraryTokenSubcommand,
                    MakeLibraryCopySubcommand, SendLibraryItemSubcommand, LeaveLibraryCopySubcommand, LibraryCopiesSubcommand, RunLibrarySyncSubcommand, ChooseLibraryVersionSubcommand, RemoveLibraryItemSubcommand, RestoreLibraryItemSubcommand]
-    tick_handlers = [TickHandler(TickInterval(seconds=10), LibrarySyncTick(), "library sync")]
+    tick_handlers = [LibrarySyncTickHandler]
     skills = LIBRARY_SKILLS
     windows = LIBRARY_WINDOWS

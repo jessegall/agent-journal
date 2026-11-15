@@ -12,7 +12,8 @@ from engine.query.conditions.contains_some import ContainsSome
 from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.commands.record_agent_notice.record_agent_notice import RecordAgentNotice
-from core.modules.drivers.support.driver_nudges import MANAGED_HOOK_LINE, MANAGED_HOOK_REFUSAL
+from core.modules.drivers.nudges.managed_hook_line_nudge import ManagedHookLineNudge
+from core.modules.drivers.nudges.managed_hook_refusal_nudge import ManagedHookRefusalNudge
 
 
 class ForeignHooksRule(DriverRule):
@@ -35,12 +36,12 @@ class ForeignHooksRule(DriverRule):
         rewritten = next((answer for answer in answers if answer.updated_input), None)
         lines = [line for answer in answers for line in self.new_lines(hook, answer.name, answer.lines)]
         commands = [RecordAgentNotice(hook.agent_id, line, self.name) for line in lines]
-        nudges = [MANAGED_HOOK_LINE.nudge(line=line) for line in lines] if hook.event.event in provider.line_events else []
+        nudges = [ManagedHookLineNudge.declared().nudge(line=line) for line in lines] if hook.event.event in provider.line_events else []
         if hook.event.event not in provider.line_events:
             commands = []
         if refusal:
             commands.append(RecordAgentNotice(hook.agent_id, refusal, self.name))
-            nudge = MANAGED_HOOK_REFUSAL.nudge(agent=self.numbers.number(AGENT_MODEL_NAME, hook.agent_id))
+            nudge = ManagedHookRefusalNudge.declared().nudge(agent=self.numbers.number(AGENT_MODEL_NAME, hook.agent_id))
             refusal = nudge.text
             nudges = [*nudges, nudge]
         return RuleAnswer(refusal=refusal, nudges=nudges, commands=tuple(commands), updated_input=rewritten.updated_input if rewritten is not None else {},

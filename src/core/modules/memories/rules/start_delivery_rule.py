@@ -1,6 +1,6 @@
 from engine.cli.row_numbers import RowNumbers
 from engine.cli.agent_number import AGENT_MODEL_NAME
-from core.modules.memories.support.memory_nudges import START_MEMORIES
+from core.modules.memories.nudges.start_memories_nudge import StartMemoriesNudge
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -25,4 +25,4 @@ class StartDeliveryRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         count = self.memories.count()
-        return RuleAnswer.with_nudges(START_MEMORIES.nudge(count=count, agent=self.numbers.number(AGENT_MODEL_NAME, hook.agent_id))) if count else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(StartMemoriesNudge.declared().nudge(count=count, agent=self.numbers.number(AGENT_MODEL_NAME, hook.agent_id))) if count else RuleAnswer.allowed()

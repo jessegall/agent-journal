@@ -1,4 +1,4 @@
-from core.modules.sequences.support.sequence_nudges import STEP_WAITS
+from core.modules.sequences.nudges.step_waits_nudge import StepWaitsNudge
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -22,4 +22,4 @@ class UnstartedStepRule(DriverRule):
         run = self.runs.current(hook.agent_id)
         if run is None or run.step_started:
             return RuleAnswer.allowed()
-        return RuleAnswer.blocked(hook, STEP_WAITS.nudge(sequence=run.sequence_id, step=run.step_number), SequenceStepStarted([run.id, run.step_number]))
+        return RuleAnswer.blocked(hook, StepWaitsNudge.declared().nudge(sequence=run.sequence_id, step=run.step_number), SequenceStepStarted([run.id, run.step_number]))

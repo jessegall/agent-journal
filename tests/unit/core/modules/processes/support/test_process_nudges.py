@@ -2,7 +2,12 @@ import string
 
 import pytest
 
-from core.modules.processes.support.process_nudges import PROCESS_NUDGES, RUN_FROZEN, RUN_SPARSE, SILENT_RUN, SILENT_RUN_BLOCKED, STALLED_RUN
+from core.modules.processes.support.process_nudges import PROCESS_NUDGES
+from core.modules.processes.nudges.run_frozen_nudge import RunFrozenNudge
+from core.modules.processes.nudges.run_sparse_nudge import RunSparseNudge
+from core.modules.processes.nudges.silent_run_nudge import SilentRunNudge
+from core.modules.processes.nudges.silent_run_blocked_nudge import SilentRunBlockedNudge
+from core.modules.processes.nudges.stalled_run_nudge import StalledRunNudge
 
 ALLOWED = {"output", "seconds", "limit", "hint", "name", "reader", "request", "count", "kept", "shape"}
 LINE_COUNTS = {"processes.reader_missed", "processes.reader_too_wide"}
@@ -37,9 +42,9 @@ def test_every_process_nudge_names_only_numbers_and_generic_words(declaration):
 
 
 def test_the_silent_run_hold_names_no_lines():
-    assert "lines" not in placeholders(SILENT_RUN_BLOCKED)
+    assert "lines" not in placeholders(SilentRunBlockedNudge.declared())
 
 
-@pytest.mark.parametrize("declaration", [RUN_SPARSE, RUN_FROZEN, SILENT_RUN, STALLED_RUN], ids=["sparse", "frozen", "silent", "stalled"])
+@pytest.mark.parametrize("declaration", [RunSparseNudge.declared(), RunFrozenNudge.declared(), SilentRunNudge.declared(), StalledRunNudge.declared()], ids=["sparse", "frozen", "silent", "stalled"])
 def test_the_cadence_notices_use_only_the_output_the_seconds_the_limit_the_hint_and_a_name(declaration):
     assert placeholders(declaration) <= CADENCE_FIELDS

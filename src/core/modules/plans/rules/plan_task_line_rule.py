@@ -12,7 +12,9 @@ from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.plan_progress import PlanProgress
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.support.focus.plan_focus import PlanFocus
-from core.modules.plans.support.plan_nudges import CHECKPOINT_REACHED, PHASE_FINISHED, PLAN_STALLED
+from core.modules.plans.nudges.checkpoint_reached_nudge import CheckpointReachedNudge
+from core.modules.plans.nudges.phase_finished_nudge import PhaseFinishedNudge
+from core.modules.plans.nudges.plan_stalled_nudge import PlanStalledNudge
 from core.modules.tasks.models.enums.task_state import UNFINISHED_STATES, TaskState
 from core.modules.tasks.models.task import Task
 
@@ -55,14 +57,14 @@ class PlanTaskLineRule(DriverRule):
         overview = self.focus.overview(self.queries.query(Agent).find(agent_id))
         if not overview.has_ready_task(place.plan_id):
             waits = overview.waits_text(place.plan_id)
-            nudges.append(PLAN_STALLED.nudge(plan=place.plan_id, count=blocked_count, waits=f": {waits}" if waits else ""))
+            nudges.append(PlanStalledNudge.declared().nudge(plan=place.plan_id, count=blocked_count, waits=f": {waits}" if waits else ""))
         return nudges
 
     def phase_nudges(self, place: PlanTask) -> list[Nudge]:
         if self.unfinished("phase_id", place.phase_id).exists():
             return []
         phase = self.queries.query(Phase).find(place.phase_id)
-        declaration = CHECKPOINT_REACHED if phase.checkpoint else PHASE_FINISHED
+        declaration = CheckpointReachedNudge.declared() if phase.checkpoint else PhaseFinishedNudge.declared()
         return [declaration.nudge(plan=place.plan_id, phase=phase.title)]
 
     def unfinished(self, column: str, value: int) -> Query[PlanTask]:

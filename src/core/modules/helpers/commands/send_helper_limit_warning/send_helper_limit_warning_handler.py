@@ -5,7 +5,7 @@ from engine.command.handler import Handler
 from core.modules.agents.support.receivers import Receivers
 from engine.driver.nudger import Nudger
 from core.modules.helpers.commands.send_helper_limit_warning.send_helper_limit_warning import SendHelperLimitWarning
-from core.modules.helpers.support.helper_nudges import HELPER_LIMIT_WARNING
+from core.modules.helpers.nudges.helper_limit_warning_nudge import HelperLimitWarningNudge
 
 
 class SendHelperLimitWarningHandler(Handler[SendHelperLimitWarning, None]):
@@ -19,4 +19,4 @@ class SendHelperLimitWarningHandler(Handler[SendHelperLimitWarning, None]):
 
     def handle(self, command: SendHelperLimitWarning, context: Context) -> None:
         receiver = self.receivers.receiver(command.parent_id)
-        self.nudger.send(receiver.id, HELPER_LIMIT_WARNING, SendHelperLimitWarning.source(command.job_id), context, agent=self.numbers.number(AGENT_MODEL_NAME, command.helper_id), limit=command.limit_name)
+        self.nudger.send(receiver.id, HelperLimitWarningNudge.declared(), SendHelperLimitWarning.source(command.job_id), context, agent=self.numbers.number(AGENT_MODEL_NAME, command.helper_id), limit=command.limit_name)

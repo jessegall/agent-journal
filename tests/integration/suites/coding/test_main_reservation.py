@@ -9,7 +9,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 from tests.stories.suites.coding.modules.workers.support.phase_steps import planned_story
 from tests.stories.suites.coding.support.main_controls_fixture import scope_line
 from tests.stories.support.story_checks import expect_value
-from suites.coding.support.coding_nudges import TASK_ASSIGNMENT
+from suites.coding.nudges.task_assignment_nudge import TaskAssignmentNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.support.coding_settings import WRITES_CODE_SETTING
 

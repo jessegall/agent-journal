@@ -4,7 +4,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.types.type_guards import is_mapping
-from core.modules.drivers.support.driver_nudges import LONG_OUTPUT
+from core.modules.drivers.nudges.long_output_nudge import LongOutputNudge
 
 LONG_OUTPUT_LINE_COUNT = 400
 TEXT_FIELDS = ("stdout", "content", "output")
@@ -22,7 +22,7 @@ class LongOutputRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         lines = self.text(hook.event.raw.get("tool_response")).count("\n")
-        return RuleAnswer.with_nudges(LONG_OUTPUT.nudge(lines=lines)) if lines >= LONG_OUTPUT_LINE_COUNT else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(LongOutputNudge.declared().nudge(lines=lines)) if lines >= LONG_OUTPUT_LINE_COUNT else RuleAnswer.allowed()
 
     @classmethod
     def text(cls, response: object) -> str:

@@ -4,7 +4,7 @@ from engine.listener.save_listener import SaveListener
 from engine.driver.nudger import Nudger
 from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
 from core.modules.processes.models.process import Process
-from core.modules.processes.support.process_nudges import OUTPUT_ENDED
+from core.modules.processes.nudges.output_ended_nudge import OutputEndedNudge
 
 LINE_SOURCE = "processes.output-ended"
 
@@ -22,4 +22,4 @@ class EndedRunLineListener(SaveListener[Moved[Process]]):
     def handle(self, event: Moved[Process], context: Context) -> None:
         process = event.row
         if process.moved_at is not None:
-            self.nudger.send(process.session_agent_id, OUTPUT_ENDED, LINE_SOURCE, context, output=process.id)
+            self.nudger.send(process.session_agent_id, OutputEndedNudge.declared(), LINE_SOURCE, context, output=process.id)

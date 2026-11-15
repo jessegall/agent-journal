@@ -6,7 +6,7 @@ from engine.query.queries import Queries
 from core.modules.chat.models.journal_exception import JournalException
 from core.modules.processes.ticks.output_reading import OutputReading
 from tests.stories.core.modules.developer.support.performance_fixture import DevelopmentToolsEnabled
-from core.modules.developer.support.developer_nudges import EXCEPTION_LINE
+from core.modules.developer.nudges.exception_line_nudge import ExceptionLineNudge
 from core.modules.developer.support.developer_settings import EXCEPTION_LINES_SETTING
 from engine.testing.expectations.expected_nudge import expected_nudge
 
@@ -35,4 +35,4 @@ def test_tick_warnings_repeat_after_five_rise_at_once_and_reset_below_the_limit(
     marks = story.run("chat-mark main --environment main --json", actor=story.user).output_text
     lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.user).output_text
     warnings = tick_warnings(story)
-    story.expect_rows(marks.count("cost 51 points") == 4, all(expected_nudge(EXCEPTION_LINE, exception=warning.id).matches_text(lines) for warning in warnings))
+    story.expect_rows(marks.count("cost 51 points") == 4, all(expected_nudge(ExceptionLineNudge.declared(), exception=warning.id).matches_text(lines) for warning in warnings))

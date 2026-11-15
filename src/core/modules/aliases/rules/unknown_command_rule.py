@@ -4,7 +4,7 @@ from engine.enums.command_category import CommandCategory
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.aliases.support.alias_nudges import COMMAND_TYPE_UNKNOWN
+from core.modules.aliases.nudges.command_type_unknown_nudge import CommandTypeUnknownNudge
 from core.modules.processes.models.enums.reading_exit import ReadingExit
 from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
 
@@ -28,4 +28,4 @@ class UnknownCommandRule(DriverRule):
         if shell is None or shell.parse_error or not shell.aliases_loaded or not self.types.behaviours(hook.role).runs_saved_commands:
             return RuleAnswer.allowed()
         unknown = next((part for part in shell.parts if part.program and part.classification.category is CommandCategory.UNKNOWN), None)
-        return RuleAnswer.refused(COMMAND_TYPE_UNKNOWN.nudge(program=unknown.program, hint=UNCLASSIFIED_HINT)) if unknown else RuleAnswer.allowed()
+        return RuleAnswer.refused(CommandTypeUnknownNudge.declared().nudge(program=unknown.program, hint=UNCLASSIFIED_HINT)) if unknown else RuleAnswer.allowed()

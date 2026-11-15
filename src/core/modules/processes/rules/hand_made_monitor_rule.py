@@ -5,7 +5,8 @@ from engine.driver.rule_answer import RuleAnswer
 from engine.enums.tool_type import ToolType
 from engine.provider.providers import Providers
 from core.modules.processes.support.output_watch_call import MONITOR_LINE
-from core.modules.processes.support.process_nudges import HAND_MADE_MONITOR, MONITOR_TOOL_REQUIRED
+from core.modules.processes.nudges.hand_made_monitor_nudge import HandMadeMonitorNudge
+from core.modules.processes.nudges.monitor_tool_required_nudge import MonitorToolRequiredNudge
 
 OUTPUT_LINE = "journal output "
 
@@ -28,10 +29,10 @@ class HandMadeMonitorRule(DriverRule):
         if self.providers.provider(hook.event.program).monitor_tool is not ToolType.MONITOR:
             return RuleAnswer.allowed()
         if tool is not None and tool.shell is not None and any(part.text.startswith(MONITOR_LINE) for part in tool.shell.parts):
-            return RuleAnswer.refused(MONITOR_TOOL_REQUIRED.nudge())
+            return RuleAnswer.refused(MonitorToolRequiredNudge.declared().nudge())
         if tool is None or tool.category != ToolType.MONITOR:
             return RuleAnswer.allowed()
         command = str(hook.event.tool_input().get("command", ""))
         if OUTPUT_LINE in command and MONITOR_LINE not in command:
-            return RuleAnswer.refused(HAND_MADE_MONITOR.nudge())
+            return RuleAnswer.refused(HandMadeMonitorNudge.declared().nudge())
         return RuleAnswer.allowed()

@@ -6,7 +6,7 @@ from engine.driver.rule_answer import RuleAnswer
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.new_session_line import NewSessionLine
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from core.modules.drivers.support.driver_nudges import TAKEOVER
+from core.modules.drivers.nudges.takeover_nudge import TakeoverNudge
 
 
 class TakeoverRule(DriverRule):
@@ -31,4 +31,4 @@ class TakeoverRule(DriverRule):
         new_session = self.session_lines.new_session(agent)
         if new_session is None:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(TAKEOVER.nudge(agent=new_session.agent, tasks=new_session.tasks, report=new_session.report))
+        return RuleAnswer.with_nudges(TakeoverNudge.declared().nudge(agent=new_session.agent, tasks=new_session.tasks, report=new_session.report))

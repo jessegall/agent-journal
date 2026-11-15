@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 from engine.time.timestamp import Timestamp
 from suites.coding.modules.workers.rules.stopped_worker_rule import StoppedWorkerRule
-from suites.coding.modules.workers.support.worker_nudges import WORKER_ASKING_STOPPED
+from suites.coding.modules.workers.nudges.worker_asking_stopped_nudge import WorkerAskingStoppedNudge
 
 ENDED = Timestamp.parsed("2026-11-14T10:00:00+00:00")
 LATER = Timestamp.parsed("2026-11-14T12:00:00+00:00")
@@ -59,7 +59,7 @@ def answer(question_open: bool):
 
 def test_a_stopped_worker_whose_question_went_to_the_main_agent_is_named_with_its_committed_task():
     nudges = answer(question_open=True).nudges
-    assert [nudge.key for nudge in nudges] == [f"{WORKER_ASKING_STOPPED.key}.{WORKER.id}"] and "task:9364" in nudges[0].text, nudges
+    assert [nudge.key for nudge in nudges] == [f"{WorkerAskingStoppedNudge.declared().key}.{WORKER.id}"] and "task:9364" in nudges[0].text, nudges
 
 
 def test_a_stopped_worker_with_no_open_question_and_no_open_task_is_not_named():

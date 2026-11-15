@@ -1,4 +1,4 @@
-from suites.coding.modules.workers.support.worker_nudges import SMALL_BATCH
+from suites.coding.modules.workers.nudges.small_batch_nudge import SmallBatchNudge
 from suites.coding.modules.workers.support.worker_settings import WORKER_BATCH_SIZE
 from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
@@ -27,7 +27,7 @@ class SmallBatchRule(DriverRule):
         dispatches = [part for part in shell.parts if part.classification.category is CommandCategory.JOURNAL and tuple(part.arguments[:2]) == DISPATCH_ARGUMENTS] if shell is not None else []
         counts = [self.task_count(list(part.arguments[2:])) for part in dispatches]
         batch_size = self.settings.number(WORKER_BATCH_SIZE)
-        return RuleAnswer.with_nudges(*(SMALL_BATCH.nudge(count=count) for count in counts if count < batch_size))
+        return RuleAnswer.with_nudges(*(SmallBatchNudge.declared().nudge(count=count) for count in counts if count < batch_size))
 
     @staticmethod
     def task_count(arguments: list[str]) -> int:

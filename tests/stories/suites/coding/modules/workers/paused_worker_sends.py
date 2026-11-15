@@ -7,7 +7,7 @@ from core.modules.processes.support.queued_process_launch import QueuedProcessLa
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
-from suites.coding.modules.workers.models.enums.worker_operation_name import WORKER_OPERATION_PAUSED
+from suites.coding.modules.workers.nudges.worker_operation_paused_nudge import WorkerOperationPausedNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
 
 TEST_ROWS_REASON = "the test reads every row it checks"
@@ -36,5 +36,5 @@ def test_an_unblocked_task_of_a_paused_worker_tells_its_main_agent_the_worker_is
     story.expect_success(f"worker send --wait {agent_number(story, story.worker.id)} --task {task}", actor=story.agent)
     story.expect_success(f"task unblock {task}", actor=story.agent)
     lines = main_agent_lines(story)
-    story.expect_rows(expected_nudge(WORKER_OPERATION_PAUSED).matches_text(lines), "has the job" not in lines, detail=lines)
+    story.expect_rows(expected_nudge(WorkerOperationPausedNudge.declared()).matches_text(lines), "has the job" not in lines, detail=lines)
     story.expect_rows(len(story.story_rows(WorkerOperation)) == 0)

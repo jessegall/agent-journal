@@ -20,7 +20,7 @@ class InspectorCheck:
         owners: dict[str, str] = {}
         problems: list[str] = []
         for module in modules:
-            for declaration in module.inspectors:
+            for declaration in module.inspector_declarations():
                 model_name = declaration.model.cli_name
                 if model_name in owners:
                     problems.append(f"the model {model_name} has two inspectors, one in {owners[model_name]} and one in {module.name}")

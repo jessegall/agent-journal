@@ -9,7 +9,7 @@ from tests.stories.core.modules.processes.support.reading_scenarios import (FAIL
                                                                              ended_after_a_while, received)
 from tests.stories.core.modules.processes.support.reading_decision_samples import ReadingPhase, stored_missing_reader, stored_suitable_reader
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from core.modules.processes.support.process_nudges import READER_FAILED
+from core.modules.processes.nudges.reader_failed_nudge import ReaderFailedNudge
 
 
 class BuildWithStartDecision(StoryFixture):
@@ -108,5 +108,5 @@ def test_a_reader_whose_script_fails_is_poor_once_and_the_output_stays_readable(
     story.run('reader add broken --commands "./broken*" --script /missing/reader.sh', actor=story.agent)
     process = ended_after_a_while(story, moved_run(story, "./broken.sh", CommandCategory.BUILD), STEPS)
     lines = received(story)
-    story.expect_rows(end_reason(story, process) == "reader failed", lines.count(READER_FAILED.nudge(reader='broken', output=process.id).text) == 1, detail=lines)
+    story.expect_rows(end_reason(story, process) == "reader failed", lines.count(ReaderFailedNudge.declared().nudge(reader='broken', output=process.id).text) == 1, detail=lines)
     story.expect_text(f"output read {process.id} --all", "step 10", actor=story.agent)

@@ -10,16 +10,19 @@ from engine.query.queries import Queries
 from engine.registry.registry import Registry
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
-from core.modules.messages.support.message_nudges import PARAGRAPH_NUDGE, EM_DASH_NUDGE, SHOP_TALK_NUDGE, THIRD_PERSON_NUDGE
+from core.modules.messages.nudges.paragraph_nudge import ParagraphNudge
+from core.modules.messages.nudges.em_dash_nudge import EmDashNudge
+from core.modules.messages.nudges.shop_talk_nudge import ShopTalkNudge
+from core.modules.messages.nudges.third_person_nudge import ThirdPersonNudge
 
 LONG_TEXT_CHARACTERS = 400
 SENTENCE_COUNT = 3
 SENTENCE_END = ". "
 PARAGRAPH_BREAK = "\n\n"
 NUDGE_PATTERNS: tuple[tuple[re.Pattern[str], NudgeDeclaration], ...] = (
-    (re.compile(r"\[journal\]", re.I), SHOP_TALK_NUDGE),
-    (re.compile(r"\bthe user\b", re.I), THIRD_PERSON_NUDGE),
-    (re.compile(r"—.*—", re.S), EM_DASH_NUDGE),
+    (re.compile(r"\[journal\]", re.I), ShopTalkNudge.declared()),
+    (re.compile(r"\bthe user\b", re.I), ThirdPersonNudge.declared()),
+    (re.compile(r"—.*—", re.S), EmDashNudge.declared()),
 )
 
 
@@ -42,10 +45,10 @@ class ChatMannersRule(DriverRule):
             return RuleAnswer.allowed()
         text = newest.text.strip()
         declarations = [declaration for pattern, declaration in NUDGE_PATTERNS if pattern.search(text)]
-        if self.has_journal_command(text) and SHOP_TALK_NUDGE not in declarations:
-            declarations.append(SHOP_TALK_NUDGE)
+        if self.has_journal_command(text) and ShopTalkNudge.declared() not in declarations:
+            declarations.append(ShopTalkNudge.declared())
         if len(text) >= LONG_TEXT_CHARACTERS and PARAGRAPH_BREAK not in text and text.count(SENTENCE_END) >= SENTENCE_COUNT:
-            declarations.append(PARAGRAPH_NUDGE)
+            declarations.append(ParagraphNudge.declared())
         return RuleAnswer.with_nudges(*(declaration.nudge() for declaration in declarations))
 
     def has_journal_command(self, text: str) -> bool:

@@ -7,7 +7,7 @@ from engine.driver.nudger import Nudger
 from core.modules.processes.commands.stop_process.stop_process import StopProcess
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
-from core.modules.processes.support.process_nudges import OUTPUT_STOPPED
+from core.modules.processes.nudges.output_stopped_nudge import OutputStoppedNudge
 from core.modules.processes.support.process_group import ProcessGroup
 
 
@@ -25,5 +25,5 @@ class StopProcessHandler(Handler[StopProcess, Process]):
         process = self.repository.save_change(current, current.stop(context.timestamp, context.actor), context)
         self.group.stop(process.pid or self.folder.pid(process.id), process.id)
         if context.actor != Actor.core():
-            self.nudger.send(process.session_agent_id, OUTPUT_STOPPED, "processes.stopped", context, output=process.id)
+            self.nudger.send(process.session_agent_id, OutputStoppedNudge.declared(), "processes.stopped", context, output=process.id)
         return process

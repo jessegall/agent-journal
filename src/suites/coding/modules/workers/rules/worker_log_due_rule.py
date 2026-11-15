@@ -6,7 +6,7 @@ from engine.driver.rule_answer import RuleAnswer
 from engine.query.queries import Queries
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.worker_nudges import WORKER_LOG_DUE
+from suites.coding.modules.workers.nudges.worker_log_due_nudge import WorkerLogDueNudge
 
 LOG_DUE_MINUTES = 30
 
@@ -30,4 +30,4 @@ class WorkerLogDueRule(DriverRule):
         latest_proof = self.queries.query(Proof).filter(worktree_id=worktree.id).newest().first()
         latest = latest_proof.creation_timestamp() if latest_proof is not None else worktree.creation_timestamp()
         minutes = latest.elapsed_minutes(hook.timestamp)
-        return RuleAnswer.with_nudges(WORKER_LOG_DUE.nudge(minutes=minutes)) if minutes >= LOG_DUE_MINUTES else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(WorkerLogDueNudge.declared().nudge(minutes=minutes)) if minutes >= LOG_DUE_MINUTES else RuleAnswer.allowed()

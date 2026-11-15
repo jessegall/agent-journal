@@ -13,7 +13,7 @@ from core.modules.reviews.listeners.review_reported_step_listener import ReviewR
 from core.modules.reviews.listeners.review_started_step_listener import ReviewStartedStepListener
 from core.modules.reviews.listeners.review_reported_mark_listener import ReviewReportedMarkListener
 from core.modules.reviews.listeners.review_started_mark_listener import ReviewStartedMarkListener
-from core.modules.reviews.support.review_marks import REVIEW_MARKS
+from core.modules.reviews.marks.review_mark import ReviewMark
 from core.modules.reviews.listeners.reviewer_ended_listener import ReviewerEndedListener
 from core.modules.reviews.commands.reviewer_list.reviewer_list_subcommand import ReviewerListSubcommand
 from core.modules.reviews.commands.add_reviewer.add_reviewer_handler import AddReviewerHandler
@@ -56,6 +56,6 @@ class ReviewsModule(Module):
     guards = [OneOpenReviewPerSubjectGuard, ReporterIsReviewerGuard, ReviewersEnabledGuard, ReviewersMostGuard]
     handlers = [AssignReviewHandler, RecordReviewHandler, AddReviewerHandler, RetireReviewerHandler, AssignNextReviewHandler]
     listeners = [ReviewQueuedListener, ReviewerAvailableListener, ReviewerEndedListener, ReviewStartedStepListener, ReviewReportedStepListener, ReviewStartedMarkListener, ReviewReportedMarkListener, ReviewAbandonedListener]
-    marks = REVIEW_MARKS
+    marks = [ReviewMark]
     windows = REVIEWS_WINDOWS
     seeders = [ReviewsSeeder]

@@ -13,7 +13,7 @@ from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.support.worker_nudges import WORKER_REUSE
+from suites.coding.modules.workers.nudges.worker_reuse_nudge import WorkerReuseNudge
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.dispatch_arguments import DISPATCH_ARGUMENTS
 
@@ -45,7 +45,7 @@ class WorkerReuseRule(DriverRule):
                 continue
             worker_id = self.worker_with_files(part)
             if worker_id is not None:
-                return RuleAnswer.refused(WORKER_REUSE.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worker_id)))
+                return RuleAnswer.refused(WorkerReuseNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worker_id)))
         return RuleAnswer.allowed()
 
     def worker_with_files(self, part: Part) -> int | None:

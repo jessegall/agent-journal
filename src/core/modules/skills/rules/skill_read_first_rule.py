@@ -1,4 +1,4 @@
-from core.modules.skills.support.skill_nudges import READ_SKILL_FIRST
+from core.modules.skills.nudges.read_skill_first_nudge import ReadSkillFirstNudge
 
 from engine.agent.enums.role_group import RoleGroup
 from engine.driver.agent_hook import AgentHook
@@ -31,7 +31,7 @@ class SkillReadFirstRule(DriverRule):
         missing = names if self.kept.is_recorded(hook.agent_id) else self.not_kept(hook, names)
         if not missing or not self.requirement.is_required:
             return RuleAnswer.allowed()
-        return SkillBlock.answer(hook, READ_SKILL_FIRST.nudge(instruction=self.files.instruction(missing[0], hook)), missing[0])
+        return SkillBlock.answer(hook, ReadSkillFirstNudge.declared().nudge(instruction=self.files.instruction(missing[0], hook)), missing[0])
 
     # before the deferred record exists the transcript still says which due skills the program put back
     def not_kept(self, hook: AgentHook, names: list[str]) -> list[str]:

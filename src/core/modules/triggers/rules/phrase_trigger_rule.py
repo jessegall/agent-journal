@@ -3,8 +3,9 @@ from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.loaded_skills import LoadedSkills
 from core.modules.skills.support.skill_files import SkillFiles
 from core.modules.skills.support.skill_block import SkillBlock
-from core.modules.skills.support.skill_nudges import READ_SKILL_FIRST
-from core.modules.triggers.support.trigger_nudges import TRIGGER_DENIES, TRIGGER_LINE
+from core.modules.skills.nudges.read_skill_first_nudge import ReadSkillFirstNudge
+from core.modules.triggers.nudges.trigger_denies_nudge import TriggerDeniesNudge
+from core.modules.triggers.nudges.trigger_line_nudge import TriggerLineNudge
 from engine.agent.enums.role_group import RoleGroup
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
@@ -43,17 +44,17 @@ class PhraseTriggerRule(DriverRule):
         matching = [trigger for trigger in matching if trigger.action is not TriggerAction.SKILL or trigger.skill in skills]
         deny = next((trigger for trigger in matching if trigger.action is TriggerAction.DENY), None)
         if deny is not None:
-            return RuleAnswer.refused(TRIGGER_DENIES.nudge(trigger=deny.id)).running(FireTrigger(deny.id))
+            return RuleAnswer.refused(TriggerDeniesNudge.declared().nudge(trigger=deny.id)).running(FireTrigger(deny.id))
         if not matching:
             return RuleAnswer.allowed()
         loaded = self.loaded.names(hook.agent_id) if skills else ()
         missing = [trigger for trigger in matching if trigger.action is TriggerAction.SKILL and trigger.skill is not None and trigger.skill not in loaded]
         commands = [RequestSkill(hook.agent_id, folder) for folder in dict.fromkeys(trigger.skill for trigger in missing) if folder is not None]
-        nudges = [TRIGGER_LINE.nudge(trigger=trigger.id) for trigger in matching if trigger.action is not TriggerAction.SKILL]
+        nudges = [TriggerLineNudge.declared().nudge(trigger=trigger.id) for trigger in matching if trigger.action is not TriggerAction.SKILL]
         if missing:
             folder = missing[0].skill
             if folder is not None:
-                nudge = READ_SKILL_FIRST.nudge(instruction=self.files.instruction(folder, hook))
+                nudge = ReadSkillFirstNudge.declared().nudge(instruction=self.files.instruction(folder, hook))
                 if hook.event.event is HookEventName.PRE_TOOL_USE:
                     return SkillBlock.answer(hook, nudge, folder).running(*commands, *(FireTrigger(trigger.id) for trigger in matching))
                 nudges.append(nudge)

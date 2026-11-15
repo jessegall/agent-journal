@@ -7,7 +7,7 @@ from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.scope.actor_scope import ActorScope
 from suites.coding.modules.workers.commands.compact_agent_context.compact_agent_context import CompactAgentContext
-from suites.coding.modules.workers.support.worker_nudges import CONTEXT_HARD_STOP
+from suites.coding.modules.workers.nudges.context_hard_stop_nudge import ContextHardStopNudge
 from engine.enums.agent_role import AgentRole
 from suites.coding.support.context_limit_check import ContextLimitCheck
 
@@ -39,5 +39,5 @@ class ContextHardStopRule(DriverRule):
         is_stop_requirement = tool is not None and tool.shell is not None and tool.shell.is_journal_command_line(*STOP_REQUIREMENT_COMMANDS)
         if is_stop_requirement or self.watch_call.is_watch(hook) or not self.limit_check.exceeds_hard_limit(hook.agent_id):
             return RuleAnswer.allowed()
-        refusal = RuleAnswer.refused(CONTEXT_HARD_STOP.nudge())
+        refusal = RuleAnswer.refused(ContextHardStopNudge.declared().nudge())
         return refusal if self.limit_check.has_windowed_compaction(hook.agent_id) or self.limit_check.is_compaction_unfinished(hook.agent_id, hook.timestamp) else refusal.running(CompactAgentContext(hook.agent_id, CompactionReason.HARD_STOP))

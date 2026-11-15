@@ -1,4 +1,4 @@
-from core.modules.questions.support.question_nudges import QUESTION_TOOL
+from core.modules.questions.nudges.question_tool_nudge import QuestionToolNudge
 from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
@@ -21,4 +21,4 @@ class OwnQuestionToolRule(DriverRule):
         tool = hook.event.tool
         if tool is None or tool.category is not ToolType.QUESTION:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(QUESTION_TOOL.nudge())
+        return RuleAnswer.refused(QuestionToolNudge.declared().nudge())

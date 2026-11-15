@@ -57,6 +57,6 @@ def expect_docked_state(story: Story, item: DockItem, expected) -> None:
 
 
 def leave_tick(story: Story) -> None:
-    handlers = [handler for module in ModuleFinder(story.home).modules() for handler in module.tick_handlers if handler.label == "dock item leaves"]
+    handlers = [handler for module in ModuleFinder(story.home).modules() for handler in module.tick_handler_declarations() if handler.label == "dock item leaves"]
     story.expect_rows(len(handlers) == 1)
     handlers[0].handler(story.container)

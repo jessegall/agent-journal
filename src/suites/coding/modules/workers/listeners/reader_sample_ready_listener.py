@@ -8,7 +8,7 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.reader_request import ReaderRequest
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
-from suites.coding.modules.workers.support.worker_nudges import READER_SAMPLE_READY
+from suites.coding.modules.workers.nudges.reader_sample_ready_nudge import ReaderSampleReadyNudge
 from engine.event.updated import Updated
 from engine.command.context import Context
 
@@ -33,4 +33,4 @@ class ReaderSampleReadyListener(SaveListener[Updated[ReaderRequest]]):
             return
         reader = self.queries.query(Reader).find(request.reader_id)
         if self.queries.query(Agent).find(sample.session_agent_id).role == Worker.key:
-            self.nudger.send(sample.session_agent_id, READER_SAMPLE_READY, WORKER_JOB_SOURCE, context, output=sample.id, reader=reader.name)
+            self.nudger.send(sample.session_agent_id, ReaderSampleReadyNudge.declared(), WORKER_JOB_SOURCE, context, output=sample.id, reader=reader.name)

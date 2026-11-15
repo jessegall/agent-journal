@@ -1,4 +1,4 @@
-from core.modules.tasks.support.task_nudges import UNLOGGED_WRITES
+from core.modules.tasks.nudges.unlogged_writes_nudge import UnloggedWritesNudge
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -31,4 +31,4 @@ class UnloggedWriteRule(DriverRule):
         current, writes = counted
         if writes < UNLOGGED_WRITES_CEILING:
             return RuleAnswer.allowed()
-        return RuleAnswer.blocked(hook, UNLOGGED_WRITES.nudge(task=current.task.id), AnyCondition(TaskLogged(current.task.id), TaskStopped(current.task.id)))
+        return RuleAnswer.blocked(hook, UnloggedWritesNudge.declared().nudge(task=current.task.id), AnyCondition(TaskLogged(current.task.id), TaskStopped(current.task.id)))

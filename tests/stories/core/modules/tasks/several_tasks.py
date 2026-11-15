@@ -10,9 +10,9 @@ from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.helper_started import HelperStarted
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 from engine.testing.expectations.expect_reply import expect_reply_line
-from core.modules.tasks.support.task_nudges import TASK_RETURN
+from core.modules.tasks.nudges.task_return_nudge import TaskReturnNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
-from core.modules.tasks.support.task_nudges import CURRENT_TASK
+from core.modules.tasks.nudges.current_task_nudge import CurrentTaskNudge
 def posted(line):
     sample = HookSamples.shell(line, ShellPart("journal", CommandCategory.JOURNAL, line.split()[1:], subcommand=line.split()[1]))
     return sample.with_fields(event="post_tool_use", raw={"tool_input": {"command": line}})
@@ -32,7 +32,7 @@ def three_started_tasks(new_story):
 
 def test_the_newest_started_task_is_the_current_one_whatever_its_number(started_tasks):
     story = started_tasks
-    story.expect_hook_allowed("s-1", HookSamples.session_start(), CURRENT_TASK.nudge(task=2).text)
+    story.expect_hook_allowed("s-1", HookSamples.session_start(), CurrentTaskNudge.declared().nudge(task=2).text)
 
 
 def test_after_a_close_the_newest_started_still_held_is_named_and_nothing_new_starts(started_tasks):
@@ -40,7 +40,7 @@ def test_after_a_close_the_newest_started_still_held_is_named_and_nothing_new_st
     story.expect_success("task close 2 --outcome done", actor=story.agent)
     story.run_listeners()
     lines = story.hook("s-1", posted("journal task close 2 --outcome done"))
-    expect_reply_line(lines, expected_nudge(TASK_RETURN, task=3))
+    expect_reply_line(lines, expected_nudge(TaskReturnNudge.declared(), task=3))
     story.expect_success("task show 4", "state: open", actor=story.agent)
 
 
@@ -48,7 +48,7 @@ def test_focusing_an_earlier_started_task_makes_it_the_task_in_hand_until_anothe
     story = started_tasks
     story.advance(timedelta(seconds=1))
     story.expect_success("task focus 3", "you work on task 3 now: Third", "also started: task 2, Second", actor=story.agent)
-    story.expect_hook_allowed("s-1", HookSamples.session_start(), CURRENT_TASK.nudge(task=3).text)
+    story.expect_hook_allowed("s-1", HookSamples.session_start(), CurrentTaskNudge.declared().nudge(task=3).text)
     story.advance(timedelta(seconds=1))
     story.expect_success("task start 4", actor=story.agent)
     story.advance(timedelta(seconds=1))
@@ -62,7 +62,7 @@ def test_closing_the_focused_task_goes_back_to_the_task_started_last(started_tas
     story.run("task focus 1", actor=story.agent)
     story.expect_success("task close 1 --outcome done", actor=story.agent)
     story.run_listeners()
-    expect_reply_line(story.hook("s-1", posted("journal task close 1 --outcome done")), expected_nudge(TASK_RETURN, task=2))
+    expect_reply_line(story.hook("s-1", posted("journal task close 1 --outcome done")), expected_nudge(TaskReturnNudge.declared(), task=2))
 
 
 def test_a_task_that_is_open_or_is_no_task_cannot_be_focused(started_tasks):

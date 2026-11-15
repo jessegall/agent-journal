@@ -19,9 +19,6 @@ from core.modules.tasks.support.task_context_reader import TaskContextReader
 from core.modules.tasks.support.task_comment_reads import TaskCommentReads
 from core.modules.documents.support.row_task_comment_reads import RowTaskCommentReads
 from core.modules.documents.support.work_context_reader import WorkContextReader
-from engine.ticker.tick_handler import TickHandler
-from engine.ticker.tick_interval import TickInterval
-from core.modules.documents.ticks.close_ended_documents_tick import CloseEndedDocumentsTick
 from core.modules.documents.commands.open_doc.open_doc_handler import OpenDocHandler
 from core.modules.documents.commands.open_doc.open_doc_subcommand import OpenDocSubcommand
 from core.modules.documents.migrations.m006_revision_authors import RevisionAuthorsMigration
@@ -34,7 +31,8 @@ from core.modules.documents.listeners.plan_document_link_listener import PlanDoc
 from core.modules.documents.listeners.reply_link_listener import ReplyLinkListener
 from engine.module.module import Module
 from core.modules.documents.support.doc_library_share import DocLibraryShare
-from core.modules.documents.support.document_nudges import DOCUMENT_OPEN, DOCUMENT_STOP_REFUSAL
+from core.modules.documents.nudges.document_open_nudge import DocumentOpenNudge
+from core.modules.documents.nudges.document_stop_refusal_nudge import DocumentStopRefusalNudge
 from core.modules.documents.commands.comment_text.comment_text_handler import CommentTextHandler
 from core.modules.documents.commands.comment_doc.comment_doc_subcommand import CommentDocSubcommand
 from core.modules.documents.commands.report_comment.report_comment_subcommand import ReportCommentSubcommand
@@ -78,12 +76,13 @@ from engine.cli.row_links import RowLinks
 from core.modules.documents.listeners.new_doc_dock_listener import NewDocDockListener
 from core.modules.documents.listeners.new_report_dock_listener import NewReportDockListener
 from core.modules.documents.support.stored_row_links import StoredRowLinks
-from core.modules.documents.support.text_marks import TEXT_MARKS
+from core.modules.documents.marks.text_read_mark import TextReadMark
 from core.modules.documents.listeners.text_read_mark_listener import TextReadMarkListener
 from core.modules.documents.seeders.documents_seeder import DocumentsSeeder
 from core.modules.documents.upgrade.documents_move import DocumentsMove
 from core.modules.documents.upgrade.message_links_move import MessageLinksMove
-from core.modules.documents.support.text_inspectors import DOC_INSPECTOR, REPORT_INSPECTOR
+from core.modules.documents.inspectors.doc_inspector import DocInspector
+from core.modules.documents.inspectors.report_inspector import ReportInspector
 from core.modules.documents.listeners.phase_mention_listener import PhaseMentionListener
 from core.modules.documents.listeners.task_log_mention_listener import TaskLogMentionListener
 from core.modules.documents.listeners.deleted_row_link_listener import DeletedRowLinkListener
@@ -98,6 +97,7 @@ from core.modules.documents.commands.comment_plan.comment_plan_subcommand import
 from core.modules.documents.commands.plan_comments.plan_comments_subcommand import PlanCommentsSubcommand
 from core.modules.documents.commands.comment_task.comment_task_subcommand import CommentTaskSubcommand
 from core.modules.documents.commands.task_comments.task_comments_subcommand import TaskCommentsSubcommand
+from core.modules.documents.tick_handlers.close_ended_documents_tick_handler import CloseEndedDocumentsTickHandler
 
 
 class DocumentsModule(Module):
@@ -108,22 +108,22 @@ class DocumentsModule(Module):
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.messages", "journal.core.tasks", "journal.core.plans", "journal.core.docking", "journal.core.agents", "journal.core.drivers", "journal.core.processes", "journal.core.chat"]
     skills = DOCUMENTS_SKILLS
-    nudges = [DOCUMENT_OPEN, DOCUMENT_STOP_REFUSAL]
+    nudges = [DocumentOpenNudge, DocumentStopRefusalNudge]
     models = [OpenDocumentModelDeclaration, DocModelDeclaration, ReportModelDeclaration, DocRevisionModelDeclaration, LinkModelDeclaration, CommentSelectionModelDeclaration, LinkCorrectionModelDeclaration]
     migrations = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration, CommentSelectionsMigration, ProjectDocumentsMigration, RevisionAuthorsMigration, LinkCorrectionsMigration, MessageLinkPathsMigration]
     driver_rules = [OpenDocumentRule, OpenDocumentStopRule]
     block_conditions = [DocumentClosed]
-    tick_handlers = [TickHandler(TickInterval(seconds=5), CloseEndedDocumentsTick(), "close ended documents", starts_immediately=True)]
+    tick_handlers = [CloseEndedDocumentsTickHandler]
     library_shares = [DocLibraryShare]
     moves = [DocumentsMove, MessageLinksMove]
     seeders = [DocumentsSeeder]
     windows = DOCUMENTS_WINDOWS
-    inspectors = [DOC_INSPECTOR, REPORT_INSPECTOR]
+    inspectors = [DocInspector, ReportInspector]
     views = [DocumentRow]
     step_conditions = [ReportCommented]
     handlers = [ApprovePlanHandler, OpenDocHandler, RecordSubjectLinkHandler, CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler, RemoveLinkHandler, ReadPlanContextHandler]
     listeners = [CloseEndedDocumentListener, PlanDocumentLinkListener, ReplyLinkListener, WorkSourceLinkListener, DocMentionListener, ReportMentionListener, PlanMentionListener, TaskMentionListener, MessageMentionListener, PhaseMentionListener, TaskLogMentionListener, DeletedRowLinkListener, NewDocDockListener, NewReportDockListener, TextReadMarkListener, LinkCorrectionResetListener]
-    marks = TEXT_MARKS
+    marks = [TextReadMark]
     docks = DOCUMENTS_DOCKS
     bindings = {AgentReportReads: RowAgentReportReads, RowLinks: StoredRowLinks, TaskContextReader: WorkContextReader, TaskCommentReads: RowTaskCommentReads}
     subcommands = [OpenDocSubcommand, CommentMessageSubcommand, CommentDocSubcommand, ReportCommentSubcommand, MakeDocSubcommand, EditDocSubcommand, DocShowSubcommand, DocListSubcommand, CloseDocSubcommand, KeepRevisionSubcommand,

@@ -1,7 +1,7 @@
-from core.modules.pins.support.pin_nudges import BANG_BUTTON_REQUEST
+from core.modules.pins.nudges.bang_button_request_nudge import BangButtonRequestNudge
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
-BUTTON_REQUEST = BANG_BUTTON_REQUEST.nudge().text
+BUTTON_REQUEST = BangButtonRequestNudge.declared().nudge().text
 
 
 def button_lines(hook_answer) -> list[str]:

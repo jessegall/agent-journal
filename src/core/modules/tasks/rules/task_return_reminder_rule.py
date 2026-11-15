@@ -4,7 +4,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
-from core.modules.tasks.support.task_nudges import TASK_RETURN_REMINDER
+from core.modules.tasks.nudges.task_return_reminder_nudge import TaskReturnReminderNudge
 
 LEAVING_COMMANDS = ("task close", "task cancel", "task block", "task release")
 
@@ -25,4 +25,4 @@ class TaskReturnReminderRule(DriverRule):
         if shell is None or not shell.parts_running_journal_command(*LEAVING_COMMANDS):
             return RuleAnswer.allowed()
         current = self.current_tasks.current(hook.agent_id)
-        return RuleAnswer.with_nudges(TASK_RETURN_REMINDER.nudge(task=current.task.id)) if current is not None else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(TaskReturnReminderNudge.declared().nudge(task=current.task.id)) if current is not None else RuleAnswer.allowed()

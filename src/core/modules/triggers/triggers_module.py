@@ -10,7 +10,7 @@ from core.modules.triggers.guards.agent_trigger_guard import AgentTriggerGuard
 from core.modules.triggers.listeners.trigger_waiting_mark_listener import TriggerWaitingMarkListener
 from core.modules.triggers.listeners.trigger_approval_listener import TriggerApprovalListener
 from core.modules.triggers.migrations.m003_trigger_enabling import TriggerEnablingMigration
-from core.modules.triggers.support.trigger_marks import TRIGGER_MARKS
+from core.modules.triggers.marks.trigger_waiting_mark import TriggerWaitingMark
 from core.modules.triggers.support.trigger_settings import TRIGGER_SETTINGS
 from core.modules.triggers.support.trigger_nudges import TRIGGER_NUDGES
 from engine.module.module import Module
@@ -46,7 +46,7 @@ class TriggersModule(Module):
     name = "journal.core.triggers"
     nudges = TRIGGER_NUDGES
     settings = TRIGGER_SETTINGS
-    marks = TRIGGER_MARKS
+    marks = [TriggerWaitingMark]
     guards = [AgentTriggerGuard]
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.chat", "journal.core.drivers", "journal.core.settings", "journal.core.processes", "journal.core.skills"]

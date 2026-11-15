@@ -8,7 +8,8 @@ from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from engine.driver.search_category import CODE, GRAPHIFY as GRAPHIFY_SEARCH, SearchCategory
 from engine.setting.setting_values import SettingValues
 from suites.coding.support.graphify_tool import GRAPHIFY
-from suites.coding.support.graphify_nudges import GRAPHIFY_FIRST, USE_GRAPHIFY
+from suites.coding.nudges.graphify_first_nudge import GraphifyFirstNudge
+from suites.coding.nudges.use_graphify_nudge import UseGraphifyNudge
 from suites.coding.support.graphify_settings import GRAPHIFY_BLOCK_AFTER, GRAPHIFY_NUDGE_AFTER
 
 SCANNED_BLOCK_TOOL_USES = 3
@@ -38,9 +39,9 @@ class GraphifySearchRule(DriverRule):
         block_after = self.settings.number(GRAPHIFY_BLOCK_AFTER)
         searches = self.code_searches_after_graphify(hook.agent_id, block_after * SCANNED_BLOCK_TOOL_USES)
         if searches >= block_after:
-            return RuleAnswer.refused(GRAPHIFY_FIRST.nudge(count=searches))
+            return RuleAnswer.refused(GraphifyFirstNudge.declared().nudge(count=searches))
         if searches + 1 >= self.settings.number(GRAPHIFY_NUDGE_AFTER):
-            return RuleAnswer.with_nudges(USE_GRAPHIFY.nudge(count=searches + 1))
+            return RuleAnswer.with_nudges(UseGraphifyNudge.declared().nudge(count=searches + 1))
         return RuleAnswer.allowed()
 
     # The searches of the code among the agent's newest tool uses since its last use of Graphify.

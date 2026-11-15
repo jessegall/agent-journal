@@ -6,7 +6,7 @@ from engine.query.queries import Queries
 from engine.agent.enums.role_group import RoleGroup
 from core.modules.project_rules.models.enums.rule_state import RuleState
 from core.modules.project_rules.models.project_rule import ProjectRule
-from core.modules.project_rules.support.rule_nudges import START_RULES
+from core.modules.project_rules.nudges.start_rules_nudge import StartRulesNudge
 
 
 class StartRulesRule(DriverRule):
@@ -23,4 +23,4 @@ class StartRulesRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         count = self.queries.query(ProjectRule).filter(state=RuleState.ACTIVE).count()
-        return RuleAnswer.with_nudges(START_RULES.nudge(count=count)) if count else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(StartRulesNudge.declared().nudge(count=count)) if count else RuleAnswer.allowed()

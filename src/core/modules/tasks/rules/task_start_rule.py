@@ -5,7 +5,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
-from core.modules.tasks.support.task_nudges import TASK_TESTING_QUESTION
+from core.modules.tasks.nudges.task_testing_question_nudge import TaskTestingQuestionNudge
 
 TASK_START_COMMAND = ["task", "start"]
 
@@ -28,4 +28,4 @@ class TaskStartRule(DriverRule):
         if not starts:
             return RuleAnswer.allowed()
         active_task_ids = [task.id for task in self.current_tasks.started_tasks(hook.agent_id) if str(task.id) not in starts[0]]
-        return RuleAnswer.with_nudges(TASK_TESTING_QUESTION.nudge(task=active_task_ids[0])) if active_task_ids else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(TaskTestingQuestionNudge.declared().nudge(task=active_task_ids[0])) if active_task_ids else RuleAnswer.allowed()

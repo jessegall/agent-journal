@@ -7,7 +7,7 @@ from engine.driver.rule_answer import RuleAnswer
 from engine.query.queries import Queries
 from core.modules.waits.models.enums.wait_state import WaitState
 from core.modules.waits.models.wait import Wait
-from core.modules.waits.support.wait_nudges import WAIT_CHECK
+from core.modules.waits.nudges.wait_check_nudge import WaitCheckNudge
 
 LONG_WAIT_MINUTES = 10
 
@@ -28,5 +28,5 @@ class LongWaitRule(DriverRule):
         for wait in self.queries.query(Wait).filter(session_agent_id=hook.agent_id, state=WaitState.OPEN).get():
             minutes = wait.opened_at.elapsed_minutes(current_time)
             if minutes >= LONG_WAIT_MINUTES:
-                nudges.append(WAIT_CHECK.nudge(minutes=minutes, wait=wait.id))
+                nudges.append(WaitCheckNudge.declared().nudge(minutes=minutes, wait=wait.id))
         return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

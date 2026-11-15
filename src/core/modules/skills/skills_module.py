@@ -41,11 +41,11 @@ from core.modules.skills.states.skill_load_required import SkillLoadRequired
 from core.modules.skills.states.skill_command_run import SkillCommandRun
 from core.modules.skills.rules.unread_skill_stop_rule import UnreadSkillStopRule
 from core.modules.skills.seeders.skills_seeder import SkillsSeeder
-from core.modules.skills.support.skill_marks import SKILL_MARKS
+from core.modules.skills.marks.skill_mark import SkillMark
 from core.modules.skills.support.start_skills import SKILL_SETTINGS
 from core.modules.skills.support.block_conditions.skill_loaded import SkillLoaded
 from core.modules.skills.support.block_conditions.skills_read import SkillsRead
-from core.modules.skills.support.skill_inspector import SKILL_INSPECTOR
+from core.modules.skills.inspectors.skill_inspector import SkillInspector
 
 
 
@@ -69,9 +69,9 @@ class SkillsModule(Module):
     subcommands = [SaveProfileSubcommand, ProfileSkillsSubcommand, SetRequiredSkillSubcommand, SkillRequirementsSubcommand, SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand, SkillShowSubcommand, AgentSkillUnreadSubcommand, SkillRequiredSubcommand]
     handlers = [SaveProfileHandler, SetRequiredSkillHandler, RequireSkillHandler, LoadSkillHandler, RecordKeptSkillsHandler, ResetSkillsHandler, RequestSkillHandler]
     listeners = [SkillPublishListener, SkillReadListener, SkillPartReadListener, CommandSkillListener, KeptSkillsListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener, SkillRequestSaveListener]
-    marks = SKILL_MARKS
+    marks = [SkillMark]
     driver_rules = [LoadedSkillRule, ProfileSkillFirstRule, UnreadSkillStopRule]
     agent_states = [SkillLoadRequired, SkillCommandRun, SkillBlockCountdown, KeptSkillsRecord]
     windows = SKILLS_WINDOWS
-    inspectors = [SKILL_INSPECTOR]
+    inspectors = [SkillInspector]
     seeders = [SkillsSeeder]

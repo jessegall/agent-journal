@@ -211,10 +211,10 @@ class ModuleSync:
                                tuple(variant.value for variant in mark.variants), mark.label, mark.mark_icon, mark.click.value, mark.grouping.value, mark.group_label,
                                tuple(button.listed() for button in mark.group_buttons), tuple(button.listed() for button in mark.buttons), mark.body, mark.shown, mark.main,
                                mark.process, mark.full_width, mark.card, module in shipped, unavailable_reason(mark.kit))
-                     for module in modules for mark in module.marks)
+                     for module in modules for mark in module.mark_declarations())
 
     def nudges(self, modules: tuple[type[Module], ...]) -> tuple[NudgeEntry, ...]:
-        return tuple(NudgeEntry(nudge.key, module.name, nudge.type.value, nudge.text, nudge.interval.seconds if nudge.interval else 0, nudge.limit) for module in modules for nudge in module.nudges)
+        return tuple(NudgeEntry(nudge.key, module.name, nudge.type.value, nudge.text, nudge.interval.seconds if nudge.interval else 0, nudge.limit) for module in modules for nudge in module.nudge_declarations())
 
     def docks(self, modules: tuple[type[Module], ...]) -> tuple[DockEntry, ...]:
         shipped = set(self.finder.default_modules())
@@ -239,7 +239,7 @@ class ModuleSync:
 
     def inspectors(self, modules: tuple[type[Module], ...]) -> tuple[InspectorEntry, ...]:
         shipped = set(self.finder.default_modules())
-        return tuple(InspectorEntry(module.name, inspector, module in shipped) for module in modules for inspector in module.inspectors)
+        return tuple(InspectorEntry(module.name, inspector, module in shipped) for module in modules for inspector in module.inspector_declarations())
 
     def button_slots(self, modules: tuple[type[Module], ...]) -> tuple[str, ...]:
         return tuple(sorted(ButtonSlots(modules).owners))

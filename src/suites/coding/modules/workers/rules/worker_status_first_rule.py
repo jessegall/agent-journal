@@ -5,7 +5,7 @@ from engine.driver.conditions.ran_command import RanCommand
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from suites.coding.modules.workers.support.worker_nudges import WORKER_STATUS_FIRST
+from suites.coding.modules.workers.nudges.worker_status_first_nudge import WorkerStatusFirstNudge
 
 STATUS_COMMAND = "journal worker status"
 
@@ -23,4 +23,4 @@ class WorkerStatusFirstRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if not hook.event.is_compaction_start:
             return RuleAnswer.allowed()
-        return RuleAnswer.allowed().running(BlockUntil(hook.agent_id, WORKER_STATUS_FIRST.nudge(), RanCommand(STATUS_COMMAND)))
+        return RuleAnswer.allowed().running(BlockUntil(hook.agent_id, WorkerStatusFirstNudge.declared().nudge(), RanCommand(STATUS_COMMAND)))

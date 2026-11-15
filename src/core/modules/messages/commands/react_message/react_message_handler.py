@@ -1,5 +1,5 @@
 from engine.scope.actor_scope import ActorScope
-from core.modules.messages.support.message_nudges import MESSAGE_REACTION
+from core.modules.messages.nudges.message_reaction_nudge import MessageReactionNudge
 from engine.enums.actor_type import ActorType
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -40,4 +40,4 @@ class ReactMessageHandler(Handler[ReactMessage, Message]):
 
     def notify_agents(self, message: Message, context: Context) -> None:
         for agent in self.agents.main_agents():
-            self.nudger.send(agent.id, MESSAGE_REACTION, REACTION_SOURCE, context, message=message.id)
+            self.nudger.send(agent.id, MessageReactionNudge.declared(), REACTION_SOURCE, context, message=message.id)

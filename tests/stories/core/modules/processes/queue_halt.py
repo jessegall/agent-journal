@@ -88,7 +88,7 @@ def test_a_restart_does_not_release_a_queue_a_command_halted(new_story):
 
 def test_the_ticker_declares_the_handler_that_grants_spots(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    labels = [handler.label for module in ModuleFinder(story.home).modules() for handler in module.tick_handlers]
+    labels = [handler.label for module in ModuleFinder(story.home).modules() for handler in module.tick_handler_declarations()]
     expect_value_with(labels, "run slots")
 
 

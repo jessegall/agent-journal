@@ -15,7 +15,8 @@ from engine.driver.nudger import Nudger
 from core.modules.messages.models.message import Message
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
-from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_COMMENT, WORKER_COMMENT_COPY
+from suites.coding.modules.workers.nudges.worker_task_comment_nudge import WorkerTaskCommentNudge
+from suites.coding.modules.workers.nudges.worker_comment_copy_nudge import WorkerCommentCopyNudge
 from engine.event.created import Created
 from engine.command.context import Context
 
@@ -42,7 +43,7 @@ class DelegatedTaskCommentListener(SaveListener[Created[Link]]):
         if worker is None or worker.role == AgentRole.MAIN or self.queries.query(ActorRecord).find(context.actor.id).type is not ActorType.USER:
             return
         message = self.queries.query(Message).find(link.source_id)
-        self.nudger.send(worker.id, WORKER_TASK_COMMENT, WORKER_JOB_SOURCE, context, task=link.target_id)
+        self.nudger.send(worker.id, WorkerTaskCommentNudge.declared(), WORKER_JOB_SOURCE, context, task=link.target_id)
         self.links.save(Link(creator_id=context.actor.id, source_model=Message.model_name, source_id=message.id, target_model=Agent.model_name, target_id=worker.id, link_type=LinkType.RECIPIENT), context)
         if worker.parent_id is not None:
-            self.nudger.send(worker.parent_id, WORKER_COMMENT_COPY, SOURCE, context, worker=self.numbers.number(AGENT_MODEL_NAME, worker.id), message=message.id)
+            self.nudger.send(worker.parent_id, WorkerCommentCopyNudge.declared(), SOURCE, context, worker=self.numbers.number(AGENT_MODEL_NAME, worker.id), message=message.id)

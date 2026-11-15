@@ -17,7 +17,7 @@ from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 
 def timeout_tick(story):
-    handlers = [handler for module in ModuleFinder(story.home).modules() for handler in module.tick_handlers if handler.label == "run timeouts"]
+    handlers = [handler for module in ModuleFinder(story.home).modules() for handler in module.tick_handler_declarations() if handler.label == "run timeouts"]
     story.expect_rows(len(handlers) == 1)
     handlers[0].handler(story.container)
 

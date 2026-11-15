@@ -9,7 +9,8 @@ from core.modules.plans.models.lifecycles.checkpoint_lifecycle import Checkpoint
 from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.support.plan_main_agents import PlanMainAgents
-from core.modules.plans.support.plan_nudges import CHECKPOINT_AWAITS_APPROVAL, CHECKPOINT_FINISHED
+from core.modules.plans.nudges.checkpoint_awaits_approval_nudge import CheckpointAwaitsApprovalNudge
+from core.modules.plans.nudges.checkpoint_finished_nudge import CheckpointFinishedNudge
 from core.modules.plans.support.plan_checkpoints import PlanCheckpoints
 from core.modules.tasks.commands.make_task_log.make_task_log import MakeTaskLog
 
@@ -38,7 +39,7 @@ class CheckpointPassListener(SaveListener[Moved[CheckpointReach]]):
             waits = reach.phase_id in self.checkpoints.waiting_phase_ids(reach.plan_id)
             phase = self.rows.required(Phase, reach.phase_id)
             if opened or waits:
-                self.main_agents.send(self.rows.required(Plan, reach.plan_id), CHECKPOINT_FINISHED if opened else CHECKPOINT_AWAITS_APPROVAL, PASS_SOURCE, context, phase=phase.title)
+                self.main_agents.send(self.rows.required(Plan, reach.plan_id), CheckpointFinishedNudge.declared() if opened else CheckpointAwaitsApprovalNudge.declared(), PASS_SOURCE, context, phase=phase.title)
         for task_id in reach.tasks():
             self.bus.dispatch(MakeTaskLog(task_id, PASS_LINE.format(phase=reach.phase_id)), context)
         self.checkpoints.record(reach.plan_id, context)

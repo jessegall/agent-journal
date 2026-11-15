@@ -9,9 +9,6 @@ from core.modules.tasks.skills.declarations.tasks_skills import TASKS_SKILLS
 from core.modules.tasks.states.where_you_stand import WhereYouStand
 from core.modules.tasks.states.started_task import StartedTask
 from core.modules.tasks.commands.repair_task_states.repair_task_states_handler import RepairTaskStatesHandler
-from core.modules.tasks.ticks.task_state_sweep import SCAN_SECONDS as TASK_SWEEP_SECONDS, TaskStateSweep
-from engine.ticker.tick_handler import TickHandler
-from engine.ticker.tick_interval import TickInterval
 from core.modules.agents.support.agent_task_reads import AgentTaskReads
 from core.modules.tasks.support.row_agent_task_reads import RowAgentTaskReads
 from core.modules.tasks.migrations.m022_assign_held_tasks import TaskHolderDelegationMigration
@@ -111,14 +108,14 @@ from core.modules.tasks.migrations.m024_task_focus_time import TaskFocusTimeMigr
 from core.modules.tasks.migrations.m026_drop_task_delegation import DropTaskDelegationMigration
 from core.modules.tasks.migrations.m027_task_holder_any_actor import TaskHolderAnyActorMigration
 from engine.module.module import Module
-from core.modules.tasks.support.task_inspector import TASK_INSPECTOR
+from core.modules.tasks.inspectors.task_inspector import TaskInspector
 from engine.module.model_declaration import ModelDeclaration
 from core.modules.tasks.models.open_dependency import OpenDependency
 from core.modules.tasks.models.task_dependency import TaskDependency
 from core.modules.tasks.models.task_log import TaskLog
 from core.modules.tasks.listeners.task_edited_mark_listener import TaskEditedMarkListener
 from core.modules.tasks.listeners.task_move_mark_listener import TaskMoveMarkListener
-from core.modules.tasks.support.task_marks import TASK_MARKS
+from core.modules.tasks.marks.task_mark import TaskMark
 from core.modules.tasks.seeders.tasks_seeder import TasksSeeder
 from core.modules.tasks.support.block_conditions.task_started import TaskStarted
 from core.modules.tasks.support.block_conditions.task_closed import TaskClosed
@@ -126,6 +123,7 @@ from core.modules.tasks.support.block_conditions.started_task_exists import Star
 from core.modules.tasks.support.block_conditions.task_logged import TaskLogged
 from core.modules.tasks.support.block_conditions.task_stopped import TaskStopped
 from core.modules.tasks.support.task_settings import TASK_SETTINGS
+from core.modules.tasks.tick_handlers.task_state_sweep_tick_handler import TaskStateSweepTickHandler
 
 
 
@@ -146,16 +144,16 @@ class TasksModule(Module):
     migrations = [TaskHolderAnyActorMigration, DropTaskDelegationMigration, TaskAssignmentsMigration, TaskFocusTimeMigration, TaskHolderDelegationMigration, BlockWaitingTasksMigration, TaskLogImportantMigration, TaskReadSessionMigration, PendingWaitsIndexMigration, OpenTaskEdgeIndexMigration, ClosedTaskIndexMigration, TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartTimeMigration, TaskDelegationMigration, DelegatedTaskIndexMigration, TaskReadsTableMigration, TaskBlockRenewalsMigration, TaskClosedCursorIndexMigration, AllEnvironmentsTaskStateIndexMigration, TaskComplexityMigration, TaskTagsMigration, TaskEnvironmentIdIndexMigration, TaskIndependenceReasonMigration]
     subcommands = [ChooseNextTaskSubcommand, ChooseTaskFocusSubcommand, TagTaskSubcommand, RemoveTaskTagSubcommand, TaskTagsSubcommand, TaskListSubcommand, EditTaskSubcommand, AssignTaskSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskCountsSubcommand, TaskInspectSubcommand, TaskInfoSubcommand, MakeTaskLogSubcommand, ReadTaskBriefSubcommand, MakeTaskDependencySubcommand,
                    RemoveTaskDependencySubcommand, RecordTaskIndependenceSubcommand]
-    tick_handlers = [TickHandler(TickInterval(seconds=TASK_SWEEP_SECONDS), TaskStateSweep(), "task state sweep")]
+    tick_handlers = [TaskStateSweepTickHandler]
     handlers = [RepairTaskStatesHandler, ChooseNextTaskHandler, ChooseTaskFocusHandler, RecordTaskIndependenceHandler, TagTaskHandler, RemoveTaskTagHandler, RecordTaskReadHandler, AssignTaskHandler, UnassignAgentTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]
     moves = [TasksMove]
     guards = [TaskTagAccessGuard, TaskTagWordGuard, TaskEditAccessGuard, VisibleDependencyGuard, DependenciesClosedGuard, UserWaitGuard, AssignedTaskStartGuard]
     views = [TaskTagWord, OpenDependency, TaskCard, TaskEdge, EnvironmentCard, TaskInspectionRow, TaskBlockReview]
     listeners = [StartAssignmentListener, TaskTagRemoverListener, TaskDependencyWaitListener, WaitingTaskListener, TaskRowsListener, TaskBlockRenewalListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, AutoNextTaskListener, StoppedAgentTasksListener]
-    marks = TASK_MARKS
+    marks = [TaskMark]
     former_event_keys = {"core.tasks.task.drop_hold": "core.tasks.task.release_holder"}
     docks = TASKS_DOCKS
     driver_rules = [TaskFiledRule, TaskStartRule, TaskReturnReminderRule, WaitDescriptionRule, UnopenableBlockRule, TaskStopRule, AutoModeTaskStopRule, BlockedWorkRule]
     windows = TASKS_WINDOWS
-    inspectors = [TASK_INSPECTOR]
+    inspectors = [TaskInspector]
     seeders = [TasksSeeder]

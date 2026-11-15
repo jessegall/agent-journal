@@ -8,7 +8,7 @@ from engine.driver.program_lockdown import ProgramLockdown
 from engine.driver.rule_answer import RuleAnswer
 from engine.file.file_access import FileAccess
 from engine.journal.journal_home import JournalHome
-from core.modules.drivers.support.access_nudges import PANIC_FILE
+from core.modules.drivers.nudges.panic_file_nudge import PanicFileNudge
 
 PANIC_PATH = re.compile(r"\.journal/panic(?![\w.-])")
 
@@ -30,7 +30,7 @@ class PanicFileRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if not self.is_panic_file_line(hook.event) or self.server_unreachable() or self.lockdown.lockdown(hook.event.program).is_active:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(PANIC_FILE.nudge())
+        return RuleAnswer.refused(PanicFileNudge.declared().nudge())
 
     @staticmethod
     def is_panic_file_line(event: HookEvent) -> bool:

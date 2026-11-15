@@ -292,7 +292,7 @@ class Story(KitRows):
             return ModuleFinder(self.home).story_step(name).run(self.container, *arguments)
 
     def run_tick_handler(self, label: str) -> None:
-        handler = next(handler for module in ModuleFinder(self.home).modules() for handler in module.tick_handlers if handler.label == label)
+        handler = next(handler for module in ModuleFinder(self.home).modules() for handler in module.tick_handler_declarations() if handler.label == label)
         self.steps.append(f"tick handler {label}")
         with self.repeated_work.request():
             handler.handler(self.container)
@@ -314,7 +314,7 @@ class Story(KitRows):
 
     # Runs a module's tick handler by its name, as the server's ticker would, on the story's journal.
     def run_tick(self, name: str) -> None:
-        handler = next(handler for module in DEFAULT_MODULES for handler in module.tick_handlers if handler.label == name)
+        handler = next(handler for module in DEFAULT_MODULES for handler in module.tick_handler_declarations() if handler.label == name)
         handler.handler(self.container)
 
     def tick_handler_points(self, tick_handler: Callable[[Container], object]) -> Points | None:

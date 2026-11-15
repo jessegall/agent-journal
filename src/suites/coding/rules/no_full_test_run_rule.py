@@ -5,7 +5,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.driver.rule_answer import RuleAnswer
-from suites.coding.support.coding_nudges import FULL_TEST_RESTRICTION
+from suites.coding.nudges.full_test_restriction_nudge import FullTestRestrictionNudge
 
 
 class NoFullTestRunRule(DriverRule):
@@ -14,7 +14,7 @@ class NoFullTestRunRule(DriverRule):
     name = "drivers.no-full-test-run"
     hook = HookEventName.PRE_TOOL_USE
     exempt = True
-    refusal: ClassVar[NudgeDeclaration] = FULL_TEST_RESTRICTION
+    refusal: ClassVar[NudgeDeclaration] = FullTestRestrictionNudge.declared()
     single_action_refusal = "Refuses a shell line containing a full test run, while allowing named tests"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:

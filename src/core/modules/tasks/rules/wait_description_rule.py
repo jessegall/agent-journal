@@ -4,7 +4,8 @@ from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.tasks.support.task_nudges import PLAIN_BLOCK, WAIT_DESCRIPTION
+from core.modules.tasks.nudges.plain_block_nudge import PlainBlockNudge
+from core.modules.tasks.nudges.wait_description_nudge import WaitDescriptionNudge
 from core.modules.tasks.support.task_wait_targets import TaskWaitTargets
 
 
@@ -29,7 +30,7 @@ class WaitDescriptionRule(DriverRule):
         described = shell.parts_running_journal_command(*DESCRIBING_COMMANDS) if shell is not None else ()
         if any(part.arguments[:2] == ("task", "block") and any(arg == "--reason" or arg.startswith("--reason=") for arg in part.arguments)
                and not any(arg.split("=", 1)[0] in (*BLOCK_FLAGS, "--until-user") for arg in part.arguments) for part in described):
-            return RuleAnswer.with_nudges(PLAIN_BLOCK.nudge(targets=", ".join(self.targets.target_types)))
+            return RuleAnswer.with_nudges(PlainBlockNudge.declared().nudge(targets=", ".join(self.targets.target_types)))
         if not any(WAIT_TERMS.search(part.text) and not set(BLOCK_FLAGS) & set(part.arguments) for part in described):
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(WAIT_DESCRIPTION.nudge())
+        return RuleAnswer.with_nudges(WaitDescriptionNudge.declared().nudge())

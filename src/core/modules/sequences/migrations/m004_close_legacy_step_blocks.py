@@ -1,6 +1,6 @@
 from engine.database.migration import Migration
 from engine.database.timestamp_sql import TIMESTAMP_SQL
-from core.modules.sequences.support.sequence_nudges import STEP_WAITS
+from core.modules.sequences.nudges.step_waits_nudge import StepWaitsNudge
 
 
 class CloseLegacyStepBlocksMigration(Migration):
@@ -9,5 +9,5 @@ class CloseLegacyStepBlocksMigration(Migration):
     number = 4
     statements = [
         f"UPDATE agent_blocks SET closed_at = {TIMESTAMP_SQL}, updated_at = {TIMESTAMP_SQL}, version = version + 1"
-        f" WHERE closed_at IS NULL AND nudge_key = '{STEP_WAITS.key}' AND condition_name = 'any-of'"
+        f" WHERE closed_at IS NULL AND nudge_key = '{StepWaitsNudge.declared().key}' AND condition_name = 'any-of'"
     ]

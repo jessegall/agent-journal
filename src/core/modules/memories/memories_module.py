@@ -57,11 +57,13 @@ from core.modules.memories.migrations.m002_memory_types_drop_agent_writable impo
 from core.modules.memories.migrations.m003_remove_faded_memories import RemoveFadedMemoriesMigration
 from core.modules.memories.migrations.m004_memory_types_drop_fades import MemoryTypesDropFadesMigration
 from core.modules.memories.models.active_memory import ActiveMemory
-from core.modules.memories.support.memory_marks import MEMORY_MARKS
+from core.modules.memories.marks.memory_mark import MemoryMark
+from core.modules.memories.marks.memory_reminder_mark import MemoryReminderMark
+from core.modules.memories.marks.memory_compaction_mark import MemoryCompactionMark
 from core.modules.memories.support.memory_settings import MEMORY_SETTINGS
 from core.modules.memories.seeders.memories_seeder import MemoriesSeeder
 from core.modules.memories.support.block_conditions.memories_weighed import MemoriesWeighed
-from core.modules.memories.support.memory_inspector import MEMORY_INSPECTOR
+from core.modules.memories.inspectors.memory_inspector import MemoryInspector
 
 
 class MemoriesModule(Module):
@@ -87,9 +89,9 @@ class MemoriesModule(Module):
     listeners = [StartMemoriesListener, CompactionFaderListener, TaskMemoryRemoverListener, MemoryMadeMarkListener, MemoryWeighedMarkListener,
                  MemoryRemovedMarkListener, MemoryFadedMarkListener, MemoryGivenMarkListener, CompactionMarkListener]
     subcommands = [MemoryListSubcommand, MemoryAgentsSubcommand, MemoryCountsSubcommand, MemoryPageSubcommand, MakeMemorySubcommand, WeighMemoriesSubcommand, ReadMemorySubcommand, MemoryContextSubcommand, MemoryFadedSubcommand, SkipMemoryMarkSubcommand]
-    marks = MEMORY_MARKS
+    marks = [MemoryMark, MemoryReminderMark, MemoryCompactionMark]
     docks = MEMORIES_DOCKS
     windows = MEMORIES_WINDOWS
     window_extensions = [AgentsMemoriesExtension, HelpersMemoriesExtension]
-    inspectors = [MEMORY_INSPECTOR]
+    inspectors = [MemoryInspector]
     seeders = [MemoriesSeeder]

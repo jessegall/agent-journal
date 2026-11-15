@@ -10,7 +10,8 @@ from engine.driver.nudge import Nudge
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.processes.support.background_commands import BackgroundCommands
 from core.modules.processes.support.reader_demands import ASKING_FLAGS
-from suites.coding.modules.workers.support.worker_nudges import WORKER_TEST_COMMANDS_MISSING, WORKER_TEST_LINE_REFUSED
+from suites.coding.modules.workers.nudges.worker_test_commands_missing_nudge import WorkerTestCommandsMissingNudge
+from suites.coding.modules.workers.nudges.worker_test_line_refused_nudge import WorkerTestLineRefusedNudge
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
 
@@ -40,4 +41,4 @@ class WorkerTestLineRule(DriverRule):
 
     def refusal(self, worker_id: int) -> Nudge:
         names = self.names.names_text(worker_id)
-        return WORKER_TEST_LINE_REFUSED.nudge(names=names) if names else WORKER_TEST_COMMANDS_MISSING.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worker_id))
+        return WorkerTestLineRefusedNudge.declared().nudge(names=names) if names else WorkerTestCommandsMissingNudge.declared().nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worker_id))

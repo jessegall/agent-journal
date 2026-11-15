@@ -9,7 +9,7 @@ from engine.repository.repository import Repository
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.drivers.models.hook_timeout_notice import HookTimeoutNotice
 from core.modules.drivers.commands.record_hook_timeout.record_hook_timeout import RecordHookTimeout
-from core.modules.drivers.support.driver_nudges import HOOK_TIMEOUTS
+from core.modules.drivers.nudges.hook_timeouts_nudge import HookTimeoutsNudge
 from engine.driver.nudger import Nudger
 
 LINE_SOURCE = "drivers.hook-timeouts"
@@ -34,5 +34,5 @@ class RecordHookTimeoutHandler(Handler[RecordHookTimeout, None]):
         main = MainAgentFinder.newest(self.queries)
         receiver = main.id if main is not None else command.agent_id
         rule = self.timings.slowest(command.agent_id) or UNTIMED_RULE
-        self.nudger.send(receiver, HOOK_TIMEOUTS, LINE_SOURCE, context, agent=self.numbers.number(AGENT_MODEL_NAME, command.agent_id), count=count)
+        self.nudger.send(receiver, HookTimeoutsNudge.declared(), LINE_SOURCE, context, agent=self.numbers.number(AGENT_MODEL_NAME, command.agent_id), count=count)
         self.repository.save(HookTimeoutNotice(session_agent_id=command.agent_id, receiver_id=receiver, timeout_count=count, slowest_rule=rule), context)

@@ -18,7 +18,9 @@ from engine.types.type_guards import is_list, is_mapping
 from core.modules.pins.commands.make_pin.make_pin import MakePin
 from core.modules.pins.models.pin import Pin
 from core.modules.pins.support.project_repositories import ProjectRepositories
-from core.modules.pins.support.pin_nudges import BANG_BUTTON_REQUEST, LINK_PIN_REQUEST, UNPINNED_CLAIM
+from core.modules.pins.nudges.bang_button_request_nudge import BangButtonRequestNudge
+from core.modules.pins.nudges.link_pin_request_nudge import LinkPinRequestNudge
+from core.modules.pins.nudges.unpinned_claim_nudge import UnpinnedClaimNudge
 
 FILE_TOOLS = (ToolType.READ, ToolType.SEARCH, ToolType.EDIT, ToolType.NEW_FILE)
 LINK = re.compile(r"https?://[^\s<>()\[\]\"'`]+")
@@ -50,11 +52,11 @@ class LinkPinCheck:
 
     def nudges(self, agent_text: str, tool_output: str = "") -> list[Nudge]:
         if self.claims_missing_pin(agent_text):
-            return [UNPINNED_CLAIM.nudge()]
+            return [UnpinnedClaimNudge.declared().nudge()]
         unpinned = self.first_unpinned(f"{agent_text}\n{tool_output}")
-        nudges = [self.keyed(LINK_PIN_REQUEST.nudge(url=unpinned), unpinned)] if unpinned is not None else []
+        nudges = [self.keyed(LinkPinRequestNudge.declared().nudge(url=unpinned), unpinned)] if unpinned is not None else []
         command = self.first_unpinned_command(agent_text)
-        return [*nudges, self.keyed(BANG_BUTTON_REQUEST.nudge(), command)] if command is not None else nudges
+        return [*nudges, self.keyed(BangButtonRequestNudge.declared().nudge(), command)] if command is not None else nudges
 
     @staticmethod
     def keyed(nudge: Nudge, name: str) -> Nudge:

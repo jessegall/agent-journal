@@ -4,16 +4,11 @@ from core.modules.approvals.docks.approvals_docks import APPROVALS_DOCKS
 from core.modules.approvals.commands.answer_agent_approval.answer_agent_approval_handler import AnswerAgentApprovalHandler
 from core.modules.approvals.commands.answer_agent_approval.answer_agent_approval_subcommand import AnswerAgentApprovalSubcommand
 from engine.module.module import Module
-from engine.ticker.tick_handler import TickHandler
-from engine.ticker.tick_interval import TickInterval
-from engine.viewer.button_condition import ButtonCondition
-from engine.viewer.button_declaration import ButtonDeclaration
 from core.modules.approvals.commands.accept_approval.accept_approval_subcommand import AcceptApprovalSubcommand
 from core.modules.approvals.commands.close_user_approval.close_user_approval_handler import CloseUserApprovalHandler
 from core.modules.approvals.commands.answer_approval.answer_approval_handler import AnswerApprovalHandler
 from core.modules.approvals.commands.move_approval.move_approval_handler import MoveApprovalHandler
 from core.modules.approvals.commands.recover_approvals.recover_approvals_handler import RecoverApprovalsHandler
-from core.modules.approvals.ticks.recover_approvals_tick import RecoverApprovalsTick
 from core.modules.approvals.commands.pending_approvals.pending_approvals_subcommand import PendingApprovalsSubcommand
 from core.modules.approvals.commands.deny_approval.deny_approval_subcommand import DenyApprovalSubcommand
 from core.modules.approvals.commands.request_user_approval.request_user_approval_handler import RequestUserApprovalHandler
@@ -21,7 +16,10 @@ from core.modules.approvals.listeners.approval_dock_listener import ApprovalDock
 from core.modules.approvals.listeners.approval_notice_listener import ApprovalNoticeListener
 from core.modules.approvals.listeners.pending_approval_dock_listener import PendingApprovalDockListener
 from core.modules.approvals.guards.approval_decision_guard import ApprovalDecisionGuard
-from core.modules.approvals.support.approval_nudges import APPROVAL_PENDING, APPROVAL_DECIDED, APPROVAL_FAILED, APPROVAL_REVIEW
+from core.modules.approvals.nudges.approval_pending_nudge import ApprovalPendingNudge
+from core.modules.approvals.nudges.approval_decided_nudge import ApprovalDecidedNudge
+from core.modules.approvals.nudges.approval_failed_nudge import ApprovalFailedNudge
+from core.modules.approvals.nudges.approval_review_nudge import ApprovalReviewNudge
 from core.modules.approvals.migrations.m001_approval_requests import ApprovalRequestsMigration
 from core.modules.approvals.migrations.m007_approval_failure import ApprovalFailureMigration
 from core.modules.approvals.migrations.m002_approval_recipients import ApprovalRecipientsMigration
@@ -32,18 +30,18 @@ from core.modules.approvals.migrations.m006_plain_column_names import PlainColum
 from core.modules.approvals.commands.check_approval_works.check_approval_works_handler import CheckApprovalWorksHandler
 from core.modules.approvals.guards.standing_approval_guard import StandingApprovalGuard
 from core.modules.approvals.commands.make_standing_approval.make_standing_approval_handler import MakeStandingApprovalHandler
-from engine.viewer.button_menu_item import ButtonMenuItem
 from core.modules.approvals.commands.accept_covered_approval.accept_covered_approval_handler import AcceptCoveredApprovalHandler
 from core.modules.approvals.listeners.standing_approval_accept_listener import StandingApprovalAcceptListener
 from core.modules.approvals.listeners.standing_approval_dock_listener import StandingApprovalDockListener
 from core.modules.approvals.listeners.standing_approval_mark_listener import StandingApprovalMarkListener
-from core.modules.approvals.support.approval_marks import APPROVAL_MARKS
+from core.modules.approvals.marks.approval_standing_mark import ApprovalStandingMark
 from core.modules.approvals.commands.relay_approval.relay_approval_handler import RelayApprovalHandler
 from core.modules.approvals.commands.relay_approval.relay_approval_subcommand import RelayApprovalSubcommand
-from core.modules.approvals.models.enums.approval_dock_type import ApprovalDockType
+from core.modules.approvals.support.approval_buttons import APPROVAL_SLOT
+from core.modules.approvals.tick_handlers.recover_approvals_tick_handler import RecoverApprovalsTickHandler
+from core.modules.approvals.buttons.approvals_accept_button import ApprovalsAcceptButton
+from core.modules.approvals.buttons.approvals_refuse_button import ApprovalsRefuseButton
 
-APPROVAL_SLOT = (f"dock.{ApprovalDockType.REQUEST.value}", "row.approval")
-OPEN_REQUEST = ButtonCondition("state", tuple(["open"]))
 
 
 class ApprovalsModule(Module):
@@ -57,15 +55,13 @@ class ApprovalsModule(Module):
     models = [ApprovalRequestModelDeclaration, StandingApprovalModelDeclaration]
     migrations = [ApprovalFailureMigration, PlainColumnNamesMigration, ApprovalRequestsMigration, ApprovalRecipientsMigration, ApprovalCommandsMigration, StandingApprovalsMigration, ApprovalWhyMigration]
     handlers = [AcceptCoveredApprovalHandler, MakeStandingApprovalHandler, CheckApprovalWorksHandler, RequestUserApprovalHandler, MoveApprovalHandler, AnswerApprovalHandler, CloseUserApprovalHandler, RelayApprovalHandler, AnswerAgentApprovalHandler, RecoverApprovalsHandler]
-    tick_handlers = [TickHandler(TickInterval(seconds=30), RecoverApprovalsTick(), "recover approvals", starts_immediately=True)]
+    tick_handlers = [RecoverApprovalsTickHandler]
     subcommands = [AcceptApprovalSubcommand, DenyApprovalSubcommand, PendingApprovalsSubcommand, RelayApprovalSubcommand, AnswerAgentApprovalSubcommand]
     listeners = [StandingApprovalDockListener, StandingApprovalAcceptListener, StandingApprovalMarkListener, ApprovalDockListener, ApprovalNoticeListener, PendingApprovalDockListener]
     guards = [ApprovalDecisionGuard, StandingApprovalGuard]
-    marks = APPROVAL_MARKS
-    nudges = [APPROVAL_PENDING, APPROVAL_DECIDED, APPROVAL_FAILED, APPROVAL_REVIEW]
+    marks = [ApprovalStandingMark]
+    nudges = [ApprovalPendingNudge, ApprovalDecidedNudge, ApprovalFailedNudge, ApprovalReviewNudge]
     docks = APPROVALS_DOCKS
     button_slots = list(APPROVAL_SLOT)
-    buttons = [ButtonDeclaration("approvals.accept", APPROVAL_SLOT, "Accept", "approval accept {row_id}", icon="check", primary=True, condition=OPEN_REQUEST,
-                              menu=(ButtonMenuItem("Accept and always for the same request", "approval accept {row_id} --always same", description="Keeps a standing yes: the same kind of approval with the same command line, in this environment, is accepted with no card."),
-                                    ButtonMenuItem("Accept and always for any request like it", "approval accept {row_id} --always like", description="Keeps a standing yes: the same kind of approval for the same program or target, whatever follows it, is accepted with no card."))),
-               ButtonDeclaration("approvals.refuse", APPROVAL_SLOT, "Refuse", "approval refuse {row_id}", icon="cross", condition=OPEN_REQUEST)]
+    buttons = [ApprovalsAcceptButton,
+               ApprovalsRefuseButton]

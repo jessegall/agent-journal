@@ -17,7 +17,9 @@ from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import W
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
-from suites.coding.modules.workers.support.worker_nudges import WORKER_NEXT_TASK, WORKER_TASK_AFTER_REASSIGNED, WORKER_TASK_REASSIGNED
+from suites.coding.modules.workers.nudges.worker_next_task_nudge import WorkerNextTaskNudge
+from suites.coding.modules.workers.nudges.worker_task_after_reassigned_nudge import WorkerTaskAfterReassignedNudge
+from suites.coding.modules.workers.nudges.worker_task_reassigned_nudge import WorkerTaskReassignedNudge
 
 
 class WorkerTaskAdvance:
@@ -30,12 +32,12 @@ class WorkerTaskAdvance:
 
     def next_task(self, worktree: Worktree, following: Task, context: Context) -> None:
         self.start(worktree, following, context)
-        self.nudger.send(worktree.session_agent_id, WORKER_NEXT_TASK, WORKER_JOB_SOURCE, context, task=following.id, line=self.guidance.line(worktree.session_agent_id))
+        self.nudger.send(worktree.session_agent_id, WorkerNextTaskNudge.declared(), WORKER_JOB_SOURCE, context, task=following.id, line=self.guidance.line(worktree.session_agent_id))
 
     def after_reassigned_task(self, worktree: Worktree, reassigned: Task, following: Task, context: Context) -> None:
         self.start(worktree, following, context)
-        self.nudger.send(worktree.session_agent_id, WORKER_TASK_REASSIGNED, WORKER_JOB_SOURCE, context, task=reassigned.id)
-        self.nudger.send(worktree.session_agent_id, WORKER_TASK_AFTER_REASSIGNED, WORKER_JOB_SOURCE, context, task=following.id)
+        self.nudger.send(worktree.session_agent_id, WorkerTaskReassignedNudge.declared(), WORKER_JOB_SOURCE, context, task=reassigned.id)
+        self.nudger.send(worktree.session_agent_id, WorkerTaskAfterReassignedNudge.declared(), WORKER_JOB_SOURCE, context, task=following.id)
 
     def start(self, worktree: Worktree, following: Task, context: Context) -> None:
         self.bus.dispatch(StartTask(following.id), replace(context, actor=Actor(worktree.session_agent_id, ActorType.AGENT)))

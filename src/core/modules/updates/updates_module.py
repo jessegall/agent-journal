@@ -8,7 +8,7 @@ from engine.module.module import Module
 from core.modules.updates.commands.install_release.install_release_handler import InstallReleaseHandler
 from core.modules.updates.commands.show_update_step.show_update_step_handler import ShowUpdateStepHandler
 from core.modules.updates.commands.show_update_step.show_update_step_subcommand import ShowUpdateStepSubcommand
-from core.modules.updates.support.update_marks import UPDATE_MARKS
+from core.modules.updates.marks.server_update_mark import ServerUpdateMark
 from core.modules.updates.commands.update_check.update_check_subcommand import UpdateCheckSubcommand
 from core.modules.updates.commands.install_release.install_release_subcommand import InstallReleaseSubcommand
 from core.modules.updates.commands.update_notes.update_notes_subcommand import UpdateNotesSubcommand
@@ -32,5 +32,5 @@ class UpdatesModule(Module):
     listeners = [ReleaseInstallListener]
     handlers = [RecordReleaseInstallHandler, InstallReleaseHandler, ShowUpdateStepHandler]
     subcommands = [UpdateCheckSubcommand, InstallReleaseSubcommand, UpdateNotesSubcommand, ShowUpdateStepSubcommand]
-    marks = UPDATE_MARKS
+    marks = [ServerUpdateMark]
     windows = UPDATES_WINDOWS

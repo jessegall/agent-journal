@@ -2,7 +2,7 @@ from core.modules.asks.models.declarations.ask_model_declaration import AskModel
 from core.modules.asks.models.declarations.ask_step_model_declaration import AskStepModelDeclaration
 from core.modules.asks.models.declarations.ask_stack_model_declaration import AskStackModelDeclaration
 from engine.module.ask_facts import AskFacts
-from engine.module.ask_topic import AskTopic
+from core.modules.asks.ask_topics.general_ask_topic import GeneralAskTopic
 from engine.module.module import Module
 from core.modules.asks.migrations.m001_asks import AsksTablesMigration
 from core.modules.asks.migrations.m002_ask_stacks import AskStacksTableMigration
@@ -29,7 +29,7 @@ class AsksModule(Module):
     models = [AskModelDeclaration, AskStepModelDeclaration, AskStackModelDeclaration]
     migrations = [AsksTablesMigration, AskStacksTableMigration, AskSettingKeysMigration, AsksEnvironmentIndexesMigration]
     settings = QUESTION_SETTINGS
-    ask_topics = [AskTopic("general", "go on with anything the task still holds, or stop")]
+    ask_topics = [GeneralAskTopic]
     bindings = {AskFacts: HelperAskFacts}
     guards = [AgentStackGuard, QuestionTimesGuard]
     handlers = [ApproveAskStackHandler, EndReplacedAskStacksHandler]

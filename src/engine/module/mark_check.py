@@ -22,7 +22,7 @@ class MarkCheck:
 
     def problems(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
         runs = frozenset(WindowCheck.lines(modules)[1])
-        problems = list(NameGroups.duplicates([("mark types", [mark.type.value for module in modules for mark in module.marks])]))
+        problems = list(NameGroups.duplicates([("mark types", [mark.type.value for module in modules for mark in module.mark_declarations()])]))
         problems += self.family_problems(modules)
         for module in modules:
             problems += self.module_problems(module, runs)
@@ -30,7 +30,7 @@ class MarkCheck:
 
     def module_problems(self, module: type[Module], runs: frozenset[str]) -> list[str]:
         problems: list[str] = []
-        for mark in module.marks:
+        for mark in module.mark_declarations():
             name = mark.type.value
             problems += DeclarationNames.prefix_problems(f"the mark {name}", name, module.name)
             if not tuple(mark.variants):
@@ -48,7 +48,7 @@ class MarkCheck:
         declared: dict[str, tuple[str, MarkFamily]] = {}
         problems: list[str] = []
         for module in modules:
-            for mark in module.marks:
+            for mark in module.mark_declarations():
                 owner, family = declared.setdefault(mark.family.name, (module.name, mark.family))
                 if owner != module.name:
                     problems.append(f"the mark family {family.name} is declared by {owner} and by {module.name}")

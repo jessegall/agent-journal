@@ -5,7 +5,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.context_compaction import ContextCompaction
 from core.modules.drivers.models.context_compaction_notice import ContextCompactionNotice
 from core.modules.drivers.models.enums.compaction_notice_type import CompactionNoticeType
-from core.modules.drivers.support.driver_nudges import COMPACTION_NOTICE
+from core.modules.drivers.nudges.compaction_notice_nudge import CompactionNoticeNudge
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 
 SOURCE = "drivers.compaction-notice"
@@ -22,4 +22,4 @@ class CompactionNotices:
         if self.queries.query(ContextCompactionNotice).filter(compaction_id=compaction.id, notice=notice).exists():
             return
         reported = self.repository.save(ContextCompactionNotice(compaction_id=compaction.id, session_agent_id=agent.id, agent_number=agent.number, notice=notice, cause=compaction.failure), context)
-        self.main_line.send_nudge(COMPACTION_NOTICE.nudge(notice=reported.id, agent=agent.number), SOURCE, context)
+        self.main_line.send_nudge(CompactionNoticeNudge.declared().nudge(notice=reported.id, agent=agent.number), SOURCE, context)

@@ -1,4 +1,4 @@
-from core.modules.messages.support.message_nudges import UNREAD_MESSAGE_STOP
+from core.modules.messages.nudges.unread_message_stop_nudge import UnreadMessageStopNudge
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -21,4 +21,4 @@ class UnreadMessageStopRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         unread = self.messages.unread(hook.agent_id).oldest().first()
-        return RuleAnswer.refused(UNREAD_MESSAGE_STOP.nudge(message=unread.id)) if unread is not None else RuleAnswer.allowed("the agent has no unread user message")
+        return RuleAnswer.refused(UnreadMessageStopNudge.declared().nudge(message=unread.id)) if unread is not None else RuleAnswer.allowed("the agent has no unread user message")

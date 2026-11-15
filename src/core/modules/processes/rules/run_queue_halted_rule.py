@@ -3,7 +3,8 @@ from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_wildcard import HookWildcard
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.processes.support.process_nudges import RUN_QUEUE_HALTED, UPDATE_WAITING
+from core.modules.processes.nudges.run_queue_halted_nudge import RunQueueHaltedNudge
+from core.modules.processes.nudges.update_waiting_nudge import UpdateWaitingNudge
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
 
 
@@ -23,7 +24,7 @@ class RunQueueHaltedRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if self.halt.command_halted:
-            return RuleAnswer.with_nudges(RUN_QUEUE_HALTED.nudge())
+            return RuleAnswer.with_nudges(RunQueueHaltedNudge.declared().nudge())
         if self.halt.is_update_waiting:
-            return RuleAnswer.with_nudges(UPDATE_WAITING.nudge(outputs=", ".join(f"output:{run}" for run in self.halt.running_run_ids()) or "none"))
+            return RuleAnswer.with_nudges(UpdateWaitingNudge.declared().nudge(outputs=", ".join(f"output:{run}" for run in self.halt.running_run_ids()) or "none"))
         return RuleAnswer.allowed()

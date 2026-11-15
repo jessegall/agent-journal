@@ -5,7 +5,8 @@ from engine.enums.tool_type import ToolType
 from engine.provider.providers import Providers
 from core.modules.agents.support.agent_standing import AgentStanding
 from core.modules.drivers.rules.denied_tools_rule import DeniedToolsRule
-from core.modules.drivers.support.access_nudges import NATIVE_SUBAGENT, NATIVE_SUBAGENT_WITHOUT_LAUNCH
+from core.modules.drivers.nudges.native_subagent_nudge import NativeSubagentNudge
+from core.modules.drivers.nudges.native_subagent_without_launch_nudge import NativeSubagentWithoutLaunchNudge
 
 SPAWN_SUFFIX = "spawn_agent"
 COLLABORATION_PREFIX = "collaboration"
@@ -29,7 +30,7 @@ class NativeSubagentRule(DeniedToolsRule):
         tool = hook.event.tool
         if tool is None or not (hook.event.child_agent or self.is_spawn_tool(tool)) or self.providers.provider(hook.event.program).uses_web_reader(hook.event):
             return RuleAnswer.allowed()
-        return RuleAnswer.refused((NATIVE_SUBAGENT if self.standings.is_launcher_running else NATIVE_SUBAGENT_WITHOUT_LAUNCH).nudge())
+        return RuleAnswer.refused((NativeSubagentNudge.declared() if self.standings.is_launcher_running else NativeSubagentWithoutLaunchNudge.declared()).nudge())
 
     def is_spawn_tool(self, tool: Tool) -> bool:
         return tool.category in self.denied_tools or tool.name.endswith(SPAWN_SUFFIX) or tool.name.startswith(COLLABORATION_PREFIX)

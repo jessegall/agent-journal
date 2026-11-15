@@ -2,7 +2,7 @@ from datetime import timedelta
 
 import pytest
 
-from suites.coding.modules.workers.support.worker_nudges import WORKER_ASKING_STOPPED
+from suites.coding.modules.workers.nudges.worker_asking_stopped_nudge import WorkerAskingStoppedNudge
 from suites.coding.modules.workers.support.worker_settings import MERGER_WAIT_MINUTES
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.worker_ask import asking_worker
@@ -10,7 +10,7 @@ from tests.stories.suites.coding.modules.workers.support.work_setting_stories im
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 
 MAIN_SESSION = "s-1"
-INTERVAL = timedelta(seconds=WORKER_ASKING_STOPPED.interval.seconds)
+INTERVAL = timedelta(seconds=WorkerAskingStoppedNudge.declared().interval.seconds)
 
 
 def wait_passed(story) -> timedelta:

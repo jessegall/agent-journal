@@ -1,4 +1,4 @@
-from suites.coding.modules.workers.support.worker_nudges import MAIN_WORKERS_REFUSED
+from suites.coding.modules.workers.nudges.main_workers_refused_nudge import MainWorkersRefusedNudge
 from suites.coding.support.auto_advice import AutoAdvice
 from engine.driver.agent_hook import AgentHook
 from engine.enums.command_category import CommandCategory
@@ -29,4 +29,4 @@ class DispatchAllowanceRule(DriverRule):
                                                for part in shell.parts)
         if not dispatches or self.settings.value(DISPATCHES_WORKERS_SETTING) is not False:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(MAIN_WORKERS_REFUSED.nudge(then=self.guidance.without_workers()))
+        return RuleAnswer.refused(MainWorkersRefusedNudge.declared().nudge(then=self.guidance.without_workers()))

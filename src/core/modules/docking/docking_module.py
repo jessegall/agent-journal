@@ -2,8 +2,6 @@ from core.modules.docking.models.declarations.dock_item_model_declaration import
 from core.modules.docking.migrations.m008_dock_item_session import DockItemSessionMigration
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
-from engine.ticker.tick_handler import TickHandler
-from engine.ticker.tick_interval import TickInterval
 from core.modules.docking.commands.add_dock_item.add_dock_item_handler import AddDockItemHandler
 from core.modules.docking.commands.keep_dock_item.keep_dock_item_handler import KeepDockItemHandler
 from core.modules.docking.commands.remove_dock_item.remove_dock_item_handler import RemoveDockItemHandler
@@ -37,7 +35,7 @@ from core.modules.docking.migrations.m009_dock_item_state_index import DockItemS
 from core.modules.docking.models.dock import Dock
 from core.modules.docking.support.dock_limits import DOCKING_SETTINGS
 from core.modules.docking.seeders.docking_seeder import DockingSeeder
-from core.modules.docking.ticks.dock_item_leaves import DockItemLeaves
+from core.modules.docking.tick_handlers.dock_item_leaves_tick_handler import DockItemLeavesTickHandler
 
 
 class DockingModule(Module):
@@ -55,4 +53,4 @@ class DockingModule(Module):
     listeners = [EnvironmentDockListener, DockItemLeaveListener, PendingDockItemsListener]
     guards = [DockTypeGuard, DockTitleGuard, OneItemPerRowGuard, TypeCapacityGuard, DockCapacityGuard, OwnEnvironmentGuard, UserDockGuard]
     seeders = [DockingSeeder]
-    tick_handlers = [TickHandler(TickInterval(seconds=2), DockItemLeaves(), "dock item leaves")]
+    tick_handlers = [DockItemLeavesTickHandler]

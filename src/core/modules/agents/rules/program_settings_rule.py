@@ -6,7 +6,7 @@ from engine.driver.rule_answer import RuleAnswer
 from engine.driver.tool import Tool
 from engine.enums.hook_event_name import HookEventName
 from engine.journal.journal_home import JournalHome
-from core.modules.agents.support.program_settings_nudges import PROGRAM_SETTINGS_BAN
+from core.modules.agents.nudges.program_settings_ban_nudge import ProgramSettingsBanNudge
 from engine.journal.journal_home import JOURNAL_FOLDER
 
 
@@ -29,7 +29,7 @@ class ProgramSettingsRule(DriverRule):
         tool = hook.event.tool
         if tool is None or not any(spelling in text for text in self.tool_write_texts(tool) for spelling in self.spellings()):
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(PROGRAM_SETTINGS_BAN.nudge())
+        return RuleAnswer.refused(ProgramSettingsBanNudge.declared().nudge())
 
     @staticmethod
     def tool_write_texts(tool: Tool) -> tuple[str, ...]:

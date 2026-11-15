@@ -16,7 +16,8 @@ from engine.driver.rule_answer import RuleAnswer
 from engine.driver.shell_line import ShellLine
 from core.modules.processes.support.background_commands import BackgroundCommands
 from core.modules.processes.support.reader_demands import ASKING_FLAGS
-from suites.coding.modules.workers.support.worker_nudges import PHASE_TEST_REFUSED, PHASE_TEST_RUN_ALLOWED
+from suites.coding.modules.workers.nudges.phase_test_refused_nudge import PhaseTestRefusedNudge
+from suites.coding.modules.workers.nudges.phase_test_run_allowed_nudge import PhaseTestRunAllowedNudge
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from engine.query.queries import Queries
@@ -57,8 +58,8 @@ class PhaseTestRule(DriverRule):
     @staticmethod
     def part_answer(worker_id: int, window_key: str, remaining: int) -> RuleAnswer:
         if remaining <= 0:
-            return RuleAnswer.refused(PHASE_TEST_REFUSED.nudge())
-        return RuleAnswer.with_nudges(PHASE_TEST_RUN_ALLOWED.nudge(remaining=remaining - 1)).running_unrefused(RecordWorkerTestRun(worker_id, window_key))
+            return RuleAnswer.refused(PhaseTestRefusedNudge.declared().nudge())
+        return RuleAnswer.with_nudges(PhaseTestRunAllowedNudge.declared().nudge(remaining=remaining - 1)).running_unrefused(RecordWorkerTestRun(worker_id, window_key))
 
     @staticmethod
     def line_answer(answers: list[RuleAnswer]) -> RuleAnswer:

@@ -3,7 +3,7 @@ from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from suites.coding.support.coding_nudges import INTRODUCTION_NUDGE
+from suites.coding.nudges.introduction_nudge import IntroductionNudge
 
 
 class IntroductionRule(DriverRule):
@@ -18,4 +18,4 @@ class IntroductionRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if not hook.event.launch:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(INTRODUCTION_NUDGE.nudge())
+        return RuleAnswer.with_nudges(IntroductionNudge.declared().nudge())

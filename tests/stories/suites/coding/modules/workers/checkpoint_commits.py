@@ -10,7 +10,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import C
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.held_tasks import worker_with_tasks, prove_task
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, start_planned_worker, unplanned_worker
-from suites.coding.modules.workers.support.worker_nudges import WORKER_COMMITTED_UNMERGED
+from suites.coding.modules.workers.nudges.worker_committed_unmerged_nudge import WorkerCommittedUnmergedNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
 
 COMMITTED = "committed"
@@ -111,7 +111,7 @@ def test_165_a_task_that_waits_on_a_committed_task_can_start_once_that_task_is_m
 def test_239_a_worker_that_stops_with_committed_tasks_that_are_not_merged_has_them_named(group_worker):
     group_worker.story.end_session(group_worker.worker)
     lines = " | ".join(group_worker.main_agent_lines())
-    group_worker.story.expect_rows(expected_nudge(WORKER_COMMITTED_UNMERGED, tasks='task:1, task:2', worker=2).matches_text(lines), detail=lines)
+    group_worker.story.expect_rows(expected_nudge(WorkerCommittedUnmergedNudge.declared(), tasks='task:1, task:2', worker=2).matches_text(lines), detail=lines)
 
 
 def test_a_committed_proof_is_shown_again_when_its_worker_proves_the_same_point_again(committed_worker):

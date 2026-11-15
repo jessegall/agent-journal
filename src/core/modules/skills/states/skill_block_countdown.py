@@ -1,7 +1,9 @@
 from collections.abc import Sequence
 
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
-from core.modules.skills.support.skill_nudges import READ_COMMAND_SKILL_FIRST, READ_SKILL_FIRST, SKILL_COUNTDOWN, SKILL_TOOL_USES
+from core.modules.skills.support.skill_nudges import SKILL_COUNTDOWN, SKILL_TOOL_USES
+from core.modules.skills.nudges.read_command_skill_first_nudge import ReadCommandSkillFirstNudge
+from core.modules.skills.nudges.read_skill_first_nudge import ReadSkillFirstNudge
 from engine.driver.states.countdown_state import CountdownState
 
 
@@ -12,8 +14,8 @@ class SkillBlockCountdown(CountdownState):
 
     name = "skills.skill-block"
     span = ToolUseSpan(SKILL_TOOL_USES)
-    refusal = READ_SKILL_FIRST
+    refusal = ReadSkillFirstNudge.declared()
     countdown = SKILL_COUNTDOWN
 
     def keys(self) -> Sequence[str]:
-        return [READ_SKILL_FIRST.key, READ_COMMAND_SKILL_FIRST.key]
+        return [ReadSkillFirstNudge.declared().key, ReadCommandSkillFirstNudge.declared().key]

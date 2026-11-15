@@ -18,14 +18,14 @@ from core.modules.tasks.support.task_brief_requirement import TaskBriefRequireme
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted, ReadTaskBuilder, UnreadTaskBuilder, BriefedTaskBuilder
-from core.modules.processes.support.process_nudges import READ_COMMAND_OUTPUT
+from core.modules.processes.nudges.read_command_output_nudge import ReadCommandOutputNudge
 from engine.testing.expectations.expected_nudge import expected_nudge
-from core.modules.tasks.support.task_nudges import TASK_BRIEF_FIRST
+from core.modules.tasks.nudges.task_brief_first_nudge import TaskBriefFirstNudge
 
 EDIT = HookSamples.edit("src/cart.py")
 BRIEF_LINE = HookSamples.shell("journal task overview 1", ShellPart("journal", CommandCategory.JOURNAL, ["task", "overview", "1"], subcommand="task"))
 COMPACTION = HookSamples.sample("compact")
-BRIEF_REFUSAL = TASK_BRIEF_FIRST.nudge(task=1).text
+BRIEF_REFUSAL = TaskBriefFirstNudge.declared().nudge(task=1).text
 
 
 def briefs_required(story) -> None:
@@ -93,7 +93,7 @@ def test_a_compaction_asks_only_for_the_last_started_task_and_the_earlier_one_wh
     story.expect_success("task start 2", actor=story.agent)
     story.expect_success("task overview 2", actor=story.agent)
     story.hook("s-1", COMPACTION)
-    story.expect_hook_refusal("s-1", EDIT, TASK_BRIEF_FIRST.nudge(task=2).text)
+    story.expect_hook_refusal("s-1", EDIT, TaskBriefFirstNudge.declared().nudge(task=2).text)
     story.run("task overview 2", actor=story.agent)
     story.expect_hook_allowed("s-1", EDIT)
     story.run('task close 2 --outcome "done"', actor=story.agent)
@@ -168,7 +168,7 @@ def test_redirecting_or_piping_a_task_overview_does_not_mark_the_brief_read(new_
     story.expect_hook_refusal("s-1", HookSamples.shell("journal task overview 1 > /tmp/task", part, redirects=["> /tmp/task"]), BRIEF_REFUSAL)
     piped = ShellPart("journal", CommandCategory.JOURNAL, ["task", "overview", "1"], subcommand="task", pipe_target=1)
     sink = ShellPart("cat", CommandCategory.READ, [])
-    story.expect_hook_refusal("s-1", HookSamples.shell("journal task overview 1 && cat", piped, sink), expected_nudge(READ_COMMAND_OUTPUT))
+    story.expect_hook_refusal("s-1", HookSamples.shell("journal task overview 1 && cat", piped, sink), expected_nudge(ReadCommandOutputNudge.declared()))
     story.expect_rows(not story.row_exists(TaskRead, task_id=1, session_agent_id=story.agent.id))
     story.expect_success("task overview 1", actor=story.agent)
     story.expect_rows(story.row_exists(TaskRead, task_id=1, session_agent_id=story.agent.id))

@@ -10,7 +10,7 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.plan_steps import ready_plan
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from engine.testing.expectations.expected_nudge import expected_nudge
-from suites.coding.support.coding_nudges import TASK_ASSIGNMENT
+from suites.coding.nudges.task_assignment_nudge import TaskAssignmentNudge
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 from suites.coding.support.coding_settings import WRITES_CODE_SETTING
 
@@ -39,7 +39,7 @@ def test_a_main_agent_with_auto_off_with_nothing_open_stops(new_story):
 def test_a_main_agent_that_keeps_going_at_the_worker_limit_takes_the_open_task_itself(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     story.run(f"setting make {WORKER_RUN_LIMIT} 0")
-    story.expect_hook_refusal("s-1", HookSamples.stop(), expected_nudge(TASK_ASSIGNMENT))
+    story.expect_hook_refusal("s-1", HookSamples.stop(), expected_nudge(TaskAssignmentNudge.declared()))
 
 
 def test_tasks_a_running_worker_has_queued_let_the_main_agent_stop(new_story):

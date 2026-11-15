@@ -9,7 +9,7 @@ from core.modules.skills.models.enums.agent_skill_state import AgentSkillState
 from core.modules.skills.support.skill_files import SkillFiles
 from core.modules.skills.support.skill_nudges import SKILL_TOOL_USES
 from core.modules.skills.support.skill_requirement import SkillRequirement
-from core.modules.processes.support.process_nudges import SILENT_RUN
+from core.modules.processes.nudges.silent_run_nudge import SilentRunNudge
 from core.modules.processes.support.streaming_hints import StreamingHints
 from core.modules.drivers.models.hook_call import HookCall
 from engine.testing.examples.hook_samples import HookSamples
@@ -78,7 +78,7 @@ def expect_worker_commands(story) -> None:
     session = worker_session(story, worker)
     opening = story.hook(session, HookSamples.session_start())
     assert "python3" not in "\n".join(opening.lines), opening.lines
-    line = SILENT_RUN.nudge(output=1, seconds=15, hint=StreamingHints.hint("python3 tools/deploy.py")).text
+    line = SilentRunNudge.declared().nudge(output=1, seconds=15, hint=StreamingHints.hint("python3 tools/deploy.py")).text
     assert "python3 -u" in line and "python -u" not in line, line
     story.expect_success("task overview 1", actor=worker)
     story.expect_success(f"skill require {worker.id} journal-memory", actor=worker)

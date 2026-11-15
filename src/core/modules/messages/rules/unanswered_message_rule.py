@@ -14,7 +14,9 @@ from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_replies import MessageReplies
 from core.modules.messages.support.session_read_messages import READ_TYPES, SessionReadMessages
-from core.modules.messages.support.message_nudges import UNANSWERED, UNANSWERED_COUNTDOWN, UNANSWERED_REFUSAL, UNANSWERED_TOOL_USES
+from core.modules.messages.support.message_nudges import UNANSWERED_COUNTDOWN, UNANSWERED_TOOL_USES
+from core.modules.messages.nudges.unanswered_nudge import UnansweredNudge
+from core.modules.messages.nudges.unanswered_refusal_nudge import UnansweredRefusalNudge
 from core.modules.messages.support.block_conditions.messages_answered import MessagesAnswered
 
 # a read ordered by the time a message was read searches the read index, where a walk by id would read the whole chat
@@ -48,7 +50,7 @@ class UnansweredMessageRule(DriverRule):
         if not unanswered or (tool is not None and tool.shell is not None and tool.shell.parts_running_journal_command("message", "task make")):
             return RuleAnswer.allowed()
         message_numbers = ", ".join(str(message.id) for message in unanswered)
-        return RuleAnswer.with_nudges(UNANSWERED.nudge(messages=message_numbers)).blocking_after(hook, UNANSWERED_REFUSAL.nudge(messages=message_numbers, message=unanswered[0].id),
+        return RuleAnswer.with_nudges(UnansweredNudge.declared().nudge(messages=message_numbers)).blocking_after(hook, UnansweredRefusalNudge.declared().nudge(messages=message_numbers, message=unanswered[0].id),
                                                                                                   MessagesAnswered([message.id for message in unanswered]), Interval(ToolUseSpan(UNANSWERED_TOOL_USES)),
                                                                                                   UNANSWERED_COUNTDOWN.nudge("{left}", messages=message_numbers))
 

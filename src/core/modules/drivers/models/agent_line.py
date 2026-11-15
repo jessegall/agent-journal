@@ -6,7 +6,7 @@ from engine.model.model import Model
 from engine.model.session_private import SessionPrivate
 from engine.time.timestamp import Timestamp
 from engine.driver.nudge import Nudge
-from core.modules.drivers.models.support.agent_line_nudge import AGENT_LINE_AVAILABLE
+from core.modules.drivers.nudges.agent_line_available_nudge import AgentLineAvailableNudge
 from engine.driver.nudge_declaration import NudgeDeclaration
 from core.modules.drivers.models.lifecycles.agent_line_lifecycle import AgentLineLifecycle
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
@@ -41,7 +41,7 @@ class AgentLine(Prunable, SessionPrivate, Model):
     @property
     def nudge(self) -> Nudge:
         if self.nudge_json is None:
-            return AGENT_LINE_AVAILABLE.nudge(line=self.id)
+            return AgentLineAvailableNudge.declared().nudge(line=self.id)
         return NudgeDeclaration.restore(self.nudge_json)
 
     @classmethod

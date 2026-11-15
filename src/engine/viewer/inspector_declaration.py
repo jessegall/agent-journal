@@ -9,6 +9,7 @@ from engine.viewer.button_declaration import ButtonDeclaration
 from engine.viewer.inspector_component import InspectorComponent
 from engine.viewer.inspector_links import InspectorLinks
 from engine.enums.inspector_width import InspectorWidth
+from engine.types.class_fields import class_fields
 
 
 @dataclass(frozen=True)
@@ -34,6 +35,11 @@ class InspectorDeclaration:
     labelled: str = ""
     lists_fields: bool = False
     draws_text: bool = False
+
+    # a inspector written as a class in its own file sets the fields as class attributes
+    @classmethod
+    def declared(cls) -> "InspectorDeclaration":
+        return InspectorDeclaration(**class_fields(cls, InspectorDeclaration))
 
     @classmethod
     def default_declaration(cls, model: type[Model] | type[ViewModel]) -> "InspectorDeclaration":

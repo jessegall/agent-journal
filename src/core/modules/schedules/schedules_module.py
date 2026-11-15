@@ -3,7 +3,7 @@ from core.modules.schedules.models.declarations.scheduled_job_model_declaration 
 from core.modules.schedules.migrations.m004_schedule_session import ScheduleSessionMigration
 from core.modules.schedules.migrations.m005_environment_index import ScheduledJobsEnvironmentIndexMigration
 from core.modules.schedules.migrations.m002_stop_requested import StopRequestedMigration
-from core.modules.schedules.support.schedule_marks import SCHEDULE_MARKS
+from core.modules.schedules.marks.schedule_run_mark import ScheduleRunMark
 from core.modules.schedules.support.schedule_nudges import SCHEDULE_NUDGES
 from engine.module.module import Module
 from core.modules.schedules.commands.end_scheduled_job.end_scheduled_job_handler import EndScheduledJobHandler
@@ -37,5 +37,5 @@ class SchedulesModule(Module):
     subcommands = [ScheduledJobStateSubcommand, StopScheduledJobSubcommand]
     driver_rules = [ScheduledJobRule, ScheduledJobRunRule]
     listeners = [JobRunMarkListener]
-    marks = SCHEDULE_MARKS
+    marks = [ScheduleRunMark]
     windows = SCHEDULES_WINDOWS

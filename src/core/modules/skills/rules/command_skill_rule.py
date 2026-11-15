@@ -6,7 +6,7 @@ from engine.driver.rule_answer import RuleAnswer
 from core.modules.skills.support.missing_command_skill import MissingCommandSkill
 from core.modules.skills.support.skill_block import SkillBlock
 from core.modules.skills.support.skill_files import SkillFiles
-from core.modules.skills.support.skill_nudges import READ_COMMAND_SKILL_FIRST
+from core.modules.skills.nudges.read_command_skill_first_nudge import ReadCommandSkillFirstNudge
 
 
 class CommandSkillRule(DriverRule):
@@ -27,4 +27,4 @@ class CommandSkillRule(DriverRule):
         folder = self.missing.first(hook.agent_id, tool.journal_commands if tool is not None else ())
         if folder is None:
             return RuleAnswer.allowed()
-        return SkillBlock.answer(hook, READ_COMMAND_SKILL_FIRST.nudge(instruction=self.files.instruction(folder, hook)), folder, strict=True)
+        return SkillBlock.answer(hook, ReadCommandSkillFirstNudge.declared().nudge(instruction=self.files.instruction(folder, hook)), folder, strict=True)

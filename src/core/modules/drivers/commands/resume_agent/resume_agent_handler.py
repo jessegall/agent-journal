@@ -1,5 +1,5 @@
 from engine.scope.actor_scope import ActorScope
-from core.modules.drivers.support.driver_nudges import AGENT_RESUMED
+from core.modules.drivers.nudges.agent_resumed_nudge import AgentResumedNudge
 from dataclasses import replace
 
 from engine.command.context import Context
@@ -33,5 +33,5 @@ class ResumeAgentHandler(Handler[ResumeAgent, Agent]):
         if context.approval_id is None and (context.actor.id == agent.id or self.queries.query(Agent).filter(id=context.actor.id, parent_id=agent.id).exists()):
             raise UserApprovalRefusal(f"Resume the paused {AgentLabel.labelled(agent).text}?", command=command)
         resumed = self.repository.save(replace(agent, paused_at=None), context)
-        self.nudger.send(agent.id, AGENT_RESUMED, RESUME_SOURCE, context)
+        self.nudger.send(agent.id, AgentResumedNudge.declared(), RESUME_SOURCE, context)
         return resumed

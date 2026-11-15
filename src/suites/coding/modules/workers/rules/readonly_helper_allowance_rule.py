@@ -1,5 +1,5 @@
 from engine.enums.agent_role import AgentRole
-from suites.coding.support.coding_nudges import MAIN_HELPER_BAN
+from suites.coding.nudges.main_helper_ban_nudge import MainHelperBanNudge
 from suites.coding.support.coding_settings import STARTS_HELPERS_SETTING
 from suites.coding.support.auto_advice import AutoAdvice
 from engine.driver.agent_hook import AgentHook
@@ -29,4 +29,4 @@ class ReadonlyHelperAllowanceRule(DriverRule):
         starts = shell is not None and any(part.classification.category is CommandCategory.JOURNAL and tuple(part.arguments[:2]) == HELPER_START_ARGUMENTS for part in shell.parts)
         if not starts or self.settings.value(STARTS_HELPERS_SETTING) is not False:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(MAIN_HELPER_BAN.nudge(then=self.guidance.without_helpers()))
+        return RuleAnswer.refused(MainHelperBanNudge.declared().nudge(then=self.guidance.without_helpers()))

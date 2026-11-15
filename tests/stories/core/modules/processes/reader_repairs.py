@@ -4,9 +4,9 @@ from tests.stories.core.modules.processes.support.cadence_probe import kept_line
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.modules.processes.support.reading_scenarios import STEPS, ended_after_a_while, received
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from core.modules.processes.support.process_nudges import READERS_NEED_REPAIR
+from core.modules.processes.nudges.readers_need_repair_nudge import ReadersNeedRepairNudge
 
-REPAIR_LINE = READERS_NEED_REPAIR.nudge(reader='deploys', count=3).text
+REPAIR_LINE = ReadersNeedRepairNudge.declared().nudge(reader='deploys', count=3).text
 
 
 def test_a_reader_that_picks_no_line_is_reported_each_run_and_after_three_runs_is_listed_for_repair_while_an_empty_output_says_nothing(new_story):

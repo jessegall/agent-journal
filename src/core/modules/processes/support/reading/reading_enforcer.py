@@ -10,7 +10,12 @@ from core.modules.processes.queries.reading_decision_query import ReadingDecisio
 from core.modules.processes.support.decisions.command_run_counts import CommandRunCounts
 from core.modules.processes.support.decisions.reading_decider import PREVENT_AFTER_RUNS
 from core.modules.processes.support.output_folder import OutputFolder
-from core.modules.processes.support.process_nudges import REDIRECTED_RUN, READ_REFUSAL, SILENT_START_FIXED, SILENT_START_READY, SILENT_START_REFUSED, SILENT_START_TAUGHT
+from core.modules.processes.nudges.redirected_run_nudge import RedirectedRunNudge
+from core.modules.processes.nudges.read_refusal_nudge import ReadRefusalNudge
+from core.modules.processes.nudges.silent_start_fixed_nudge import SilentStartFixedNudge
+from core.modules.processes.nudges.silent_start_ready_nudge import SilentStartReadyNudge
+from core.modules.processes.nudges.silent_start_refused_nudge import SilentStartRefusedNudge
+from core.modules.processes.nudges.silent_start_taught_nudge import SilentStartTaughtNudge
 from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.unreadable.unreadable_mark_registry import UnreadableMarkRegistry
@@ -44,7 +49,7 @@ class ReadingEnforcer:
             return RuleAnswer.allowed()
         redirected = list(dict.fromkeys(part.program for part in shell.parts if self.is_redirected(part, shell)))
         if redirected:
-            return RuleAnswer.refused(REDIRECTED_RUN.nudge(programs=', '.join(redirected)))
+            return RuleAnswer.refused(RedirectedRunNudge.declared().nudge(programs=', '.join(redirected)))
         names = tuple(dict.fromkeys(SilentStartRuns.name(part.text, part.program, part.classification.category) for part in shell.parts if self.is_watched(part)))
         answers = [self.answer_name(name) for name in names if not self.marks.excuses(name)]
         refused = next((answer for answer in answers if answer.refusal), None)
@@ -68,7 +73,7 @@ class ReadingEnforcer:
         if count:
             return RuleAnswer.with_nudges(self.taught(name, runs[0]))
         if len(runs) > 1 and runs[0].shows_percent and runs[1].is_silent:
-            return RuleAnswer.with_nudges(SILENT_START_FIXED.nudge(name=name))
+            return RuleAnswer.with_nudges(SilentStartFixedNudge.declared().nudge(name=name))
         if self.run_counts.runs_without_reader([name])[name] >= PREVENT_AFTER_RUNS:
             return self.prevented(name)
         return RuleAnswer.allowed()
@@ -78,22 +83,22 @@ class ReadingEnforcer:
 
     def taught(self, name: str, run: SilentRun) -> Nudge:
         shape = self.shape(run)
-        return SILENT_START_TAUGHT.nudge(name=name, seconds=run.seconds, shape=shape.label if shape else UNKNOWN_SHAPE, hint=shape.total_note if shape else MISSING_TOTAL_TEXT)
+        return SilentStartTaughtNudge.declared().nudge(name=name, seconds=run.seconds, shape=shape.label if shape else UNKNOWN_SHAPE, hint=shape.total_note if shape else MISSING_TOTAL_TEXT)
 
     def silent_refusal(self, name: str, run: SilentRun) -> RuleAnswer:
         if self.reader_changed_after(run):
             return RuleAnswer.allowed()
-        refused = SILENT_START_REFUSED.nudge(name=name)
+        refused = SilentStartRefusedNudge.declared().nudge(name=name)
         shape = self.shape(run)
         if shape is None:
             return RuleAnswer.refused(refused)
-        ready = SILENT_START_READY.nudge(name=name, shape=shape.label, reader=f'journal reader add {name.split()[-1]} --commands "{run.part.command or run.part.text}" --title "{name}" {shape.reader_options()}')
+        ready = SilentStartReadyNudge.declared().nudge(name=name, shape=shape.label, reader=f'journal reader add {name.split()[-1]} --commands "{run.part.command or run.part.text}" --title "{name}" {shape.reader_options()}')
         return RuleAnswer(refusal=refused.text, nudges=(refused, ready), last=True)
 
     def prevented(self, name: str) -> RuleAnswer:
         last = self.decisions.command_key_decisions(name).filter(phase=ReadingPhase.END).descending("decided_at", "id").first()
         output = last.process_id if last is not None else 0
-        return RuleAnswer.refused(READ_REFUSAL.nudge(output=output, name=name))
+        return RuleAnswer.refused(ReadRefusalNudge.declared().nudge(output=output, name=name))
 
     def reader_changed_after(self, run: SilentRun) -> bool:
         selected = ReaderSelection.choose(self.readers.all(), [run.part], self.readers.layers())

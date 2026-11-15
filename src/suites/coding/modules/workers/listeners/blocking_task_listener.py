@@ -11,7 +11,7 @@ from engine.listener.save_listener import SaveListener
 from engine.listener.rows.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
-from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_EXPECTED
+from suites.coding.modules.workers.nudges.worker_task_expected_nudge import WorkerTaskExpectedNudge
 
 EXPECTED_REASON = "every task that waited on the moved one may be taken now"
 
@@ -40,4 +40,4 @@ class BlockingTaskListener(SaveListener[Moved[Task]]):
         waiting_tasks = self.rows.required_index(Task, waiting_ids).values()
         waiting_actors = {actor for actor in (self.assignments.actor(task) for task in waiting_tasks) if actor is not None and actor != holder_id}
         for waiting_id in sorted(waiting_actors):
-            self.nudger.send(holder_id, WORKER_TASK_EXPECTED, EXPECTED_SOURCE, context, worker=self.numbers.number(AGENT_MODEL_NAME, waiting_id), task=event.row.id)
+            self.nudger.send(holder_id, WorkerTaskExpectedNudge.declared(), EXPECTED_SOURCE, context, worker=self.numbers.number(AGENT_MODEL_NAME, waiting_id), task=event.row.id)

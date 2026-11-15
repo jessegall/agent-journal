@@ -8,7 +8,8 @@ from engine.driver.seconds import Seconds
 from engine.scope.actor_scope import ActorScope
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
-from suites.coding.modules.workers.support.worker_nudges import CONTEXT_STOP_AFTER_TASK, CONTEXT_STOP_IMMEDIATE
+from suites.coding.modules.workers.nudges.context_stop_after_task_nudge import ContextStopAfterTaskNudge
+from suites.coding.modules.workers.nudges.context_stop_immediate_nudge import ContextStopImmediateNudge
 from engine.enums.agent_role import AgentRole
 from suites.coding.support.context_limit_check import ContextLimitCheck
 
@@ -30,7 +31,7 @@ class ContextStopNowRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if self.compaction.is_after_task(hook.agent_id):
-            return RuleAnswer.with_nudges(CONTEXT_STOP_AFTER_TASK.nudge())
+            return RuleAnswer.with_nudges(ContextStopAfterTaskNudge.declared().nudge())
         if self.limit_check.tokens(hook.agent_id) is None or self.tasks.started_tasks(hook.agent_id) or self.hook_history.has_recent_answer(self.name, hook, RETRY_SECONDS):
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(CONTEXT_STOP_IMMEDIATE.nudge())
+        return RuleAnswer.with_nudges(ContextStopImmediateNudge.declared().nudge())
