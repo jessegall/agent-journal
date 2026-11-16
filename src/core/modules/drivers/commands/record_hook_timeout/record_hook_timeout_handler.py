@@ -1,5 +1,4 @@
 from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.driver.hook_timeouts import HookTimeouts
@@ -31,5 +30,5 @@ class RecordHookTimeoutHandler(Handler[RecordHookTimeout, None]):
         self.timeouts.notify(command.agent_id, context.timestamp)
         main = MainAgentFinder.newest(self.queries)
         receiver = main.id if main is not None else command.agent_id
-        self.message_sender.send(receiver, HookTimeoutsMessage.declared(), LINE_SOURCE, context, agent=self.numbers.number(AGENT_MODEL_NAME, command.agent_id), count=count)
+        self.message_sender.send(receiver, HookTimeoutsMessage.declared(), LINE_SOURCE, context, agent=self.numbers.agent_number(command.agent_id), count=count)
         self.repository.save(HookTimeoutNotice(session_agent_id=command.agent_id, receiver_id=receiver, timeout_count=count), context)

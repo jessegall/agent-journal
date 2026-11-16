@@ -5,6 +5,7 @@ import {menuEntries} from "../src/composables/contextMenu.js";
 import {context, mounted, page, settle, typeInto, unmountAll} from "./support/windowContext.js";
 import RulesPage from "../../core/modules/project_rules/web/src/RulesPage.vue";
 import {ruleFilters, ruleMenu} from "../../core/modules/project_rules/web/src/ruleWords.js";
+import {choose, rowOf} from "./support/pageSteps.js";
 
 const rule = (id, text, state) => ({id, text, state, created_at: "2026-11-01T10:00:00Z"});
 const RULES = [rule(2, "Use small tests", "active"), rule(1, "Read the brief", "proposed"), rule(3, "Old rule", "removed"), rule(4, "Denied rule", "denied")];
@@ -30,11 +31,6 @@ async function drawn(rows = RULES) {
     await settle();
     return {element, ran, window};
 }
-const rowOf = (element, id) => element.querySelector(`[data-row="${id}"]`);
-const choose = async (element, id) => {
-    rowOf(element, id).click();
-    await settle();
-};
 const itemButton = (label) => [...document.body.querySelectorAll("[data-menu-item]")].find((item) => item.textContent.trim() === label);
 const labels = (element, id) => menuEntries(placeUnder(rowOf(element, id)).items).filter((entry) => !entry.separator).map((entry) => entry.label);
 

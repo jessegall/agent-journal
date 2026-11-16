@@ -13579,13 +13579,13 @@ const CS = ["data-class-row"], ES = { scope: "row" }, AS = { key: 0 }, OS = ["va
           ]),
           update: L(() => [
             h("span", null, [
-              y[11] || (y[11] = h("b", null, "Waiting for an update.", -1)),
+              y[11] || (y[11] = h("b", null, "Update: waiting.", -1)),
               z(" The update waits for the running commands to end. Nothing new starts here until it is done; " + v(e.lane.waiting.length ? `the ${e.lane.waiting.length} waiting keep their place` : "nothing waits") + ".", 1)
             ])
           ]),
           restart: L(() => [
             h("span", null, [
-              y[12] || (y[12] = h("b", null, "Waiting for a restart.", -1)),
+              y[12] || (y[12] = h("b", null, "Restart: waiting.", -1)),
               z(" The server is restarting. " + v(e.lane.waiting.length ? `The ${e.lane.waiting.length} waiting keep their place and start once it is back` : "Nothing waits") + ".", 1)
             ])
           ]),
@@ -13642,7 +13642,7 @@ const CS = ["data-class-row"], ES = { scope: "row" }, AS = { key: 0 }, OS = ["va
       ], 64))
     ], 10, q6));
   }
-}, eM = /* @__PURE__ */ V(Z6, [["__scopeId", "data-v-9de121e0"]]), tM = {
+}, eM = /* @__PURE__ */ V(Z6, [["__scopeId", "data-v-63a7296c"]]), tM = {
   class: "lanes",
   "data-execution-lanes": ""
 }, nM = { class: "tools" }, aM = {
@@ -16990,7 +16990,7 @@ const xC = /* @__PURE__ */ kC($C), SC = ["width", "height", "viewBox"], MC = ["w
       ])
     ]));
   }
-}, iB = /* @__PURE__ */ V(nA, [["__scopeId", "data-v-b494c444"]]), rB = Xu(() => import("./VoiceFigure-DLjYssft.js").then((e) => e.V)), uB = "1.2.0", cB = "3.5";
+}, iB = /* @__PURE__ */ V(nA, [["__scopeId", "data-v-b494c444"]]), rB = Xu(() => import("./VoiceFigure-DG7Ex0Df.js").then((e) => e.V)), uB = "1.2.0", cB = "3.5";
 export {
   Um as $,
   Oe as A,

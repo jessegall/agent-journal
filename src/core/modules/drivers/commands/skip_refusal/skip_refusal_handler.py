@@ -1,5 +1,4 @@
 from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.command.context import Context
@@ -103,7 +102,7 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
             approval = self.restoration_approval(agent)
             self.bus.dispatch(RequestUserApproval(approval, approval.arguments, agent_id), context)
             return
-        self.message_sender.send(agent.parent_id, SkipsSpentMessage.declared(), SKIP_SOURCE, context, agent=self.numbers.number(AGENT_MODEL_NAME, agent_id), count=MOST_SKIP_COUNT)
+        self.message_sender.send(agent.parent_id, SkipsSpentMessage.declared(), SKIP_SOURCE, context, agent=self.numbers.agent_number(agent_id), count=MOST_SKIP_COUNT)
 
     @staticmethod
     def restoration_approval(agent: Agent) -> UserApprovalRefusal:

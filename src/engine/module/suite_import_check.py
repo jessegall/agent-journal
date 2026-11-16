@@ -6,6 +6,7 @@ from pathlib import Path
 from engine.file.file_access import FileAccess
 
 from engine.module.suite_contract_breach import SuiteContractBreach
+from engine.module.module_imports import ModuleImports
 ENGINE_FOLDER = Path(__file__).resolve().parents[1]
 INTERNAL_USE = re.compile(r"use = AreaUse\.INTERNAL\b")
 
@@ -31,7 +32,7 @@ class SuiteImportCheck:
 
     @staticmethod
     def imported_names(node: ast.AST) -> tuple[str, ...]:
-        if isinstance(node, ast.ImportFrom) and node.module:
+        if ModuleImports.is_module_import(node):
             return (node.module,)
         if isinstance(node, ast.Import):
             return tuple(alias.name for alias in node.names)

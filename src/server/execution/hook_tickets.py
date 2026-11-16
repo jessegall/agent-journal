@@ -1,4 +1,5 @@
 from collections.abc import Generator
+from server.execution.hook_turn import HookTurn
 from contextlib import contextmanager
 
 from engine.enums.execution_length import ExecutionLength
@@ -20,8 +21,8 @@ class HookTickets:
         self.queue, self.clock = queue, clock
 
     @contextmanager
-    def admitted(self, priority: ExecutionPriority, wait_seconds: float, owner: str, event_name: str) -> Generator[None]:
-        with self.queue.admitted(self.ticket(priority, event_name), owner, wait_seconds) as queued, \
+    def admitted(self, turn: HookTurn) -> Generator[None]:
+        with self.queue.admitted(self.ticket(turn.priority, turn.event_name), turn.owner, turn.wait_seconds) as queued, \
                 CurrentExecution(queued.ticket.priority, HOOK_CLASS, queued.ticket.line, queued.ticket).applied():
             yield
 

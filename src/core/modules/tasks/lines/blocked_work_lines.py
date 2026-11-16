@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 
+from core.modules.tasks.support.task_number_list import TaskNumberList
 from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.driver.hook_event import HookEvent
 from engine.driver.agent_message import AgentMessage
@@ -33,4 +34,4 @@ class BlockedWorkLines(EventLineSource):
         blocked = assigner.blocked_tasks() if assigner is not None else ()
         if not blocked:
             return []
-        return [BlockedTasksMessage.declared().agent_message(tasks=', '.join(str(task_id) for task_id in blocked))]
+        return [BlockedTasksMessage.declared().agent_message(tasks=TaskNumberList.text(blocked))]

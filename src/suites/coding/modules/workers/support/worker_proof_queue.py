@@ -2,7 +2,6 @@ from collections.abc import Sequence
 
 from engine.cli.row_numbers import RowNumbers
 from engine.model.move import Move
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.command.context import Context
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
@@ -81,4 +80,4 @@ class WorkerProofQueue:
 
     def send_waiting_line(self, worktree: Worktree, proofs: Sequence[Proof], context: Context) -> None:
         if proofs:
-            self.main_agent_line.send_agent_message(ProofWaitsMessage.declared().agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), proofs=" ".join(str(proof.id) for proof in proofs)), PROOF_WAITS_SOURCE, context)
+            self.main_agent_line.send_agent_message(ProofWaitsMessage.declared().agent_message(worker=self.numbers.agent_number(worktree.session_agent_id), proofs=" ".join(str(proof.id) for proof in proofs)), PROOF_WAITS_SOURCE, context)

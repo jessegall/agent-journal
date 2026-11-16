@@ -8,54 +8,7 @@ import ProfilePanel from "../../core/modules/profiles/web/src/ProfilePanel.vue";
 import ProfileRows from "../../core/modules/profiles/web/src/ProfileRows.vue";
 import {profileWindowContext, PROGRAMS} from "./support/profileWindowContext.js";
 
-vi.stubGlobal("ResizeObserver", class {
-    observe() {}
-    disconnect() {}
-    unobserve() {}
-});
-
-const RESEARCHER = {name: "journal-researcher", description: "Researches a question and reports what it found", agent_type: "helper", access: "read-only", program: "", occupant: "when-cold", mcp_tools: [], fallback_programs: [], changed: [], module: "journal.suites.coding", notes: [], problem: "", module_text_changed: false, model: "sonnet", codex_model: "gpt-6.1-sol", program_models: {claude: "sonnet", codex: "gpt-6.1-sol"}, body: "You research.", shipped: true, uses: 3, last_used: Date.now() / 1000 - 600};
-const BUILDER = {name: "builder", description: "Writes a bounded change", agent_type: "worker", access: "writing", program: "", occupant: "when-cold", mcp_tools: [], fallback_programs: [], changed: [], module: "", notes: [], problem: "", module_text_changed: false, model: "", codex_model: "gpt-6-luna", program_models: {claude: "", codex: "gpt-6-luna"}, body: "You build.", shipped: false, uses: 0, last_used: 0};
-const ROUTED = {...BUILDER, name: "routed", description: "Reads on one program, then another", program: "claude", preferred_program: true, fallback_programs: ["codex"]};
-const TYPES = [{key: "helper", label: "Helper", access: "read-only", extends: "", declares_occupant: true}, {key: "worker", label: "Worker", access: "writing", extends: "helper", declares_occupant: false}];
-const SKILLS = {ok: true, value: {profile: "journal-researcher", rows: [
-    {key: "journal", description: "Find your way in the journal", state: "on", own: false, required: false, locked: true},
-    {key: "journal-helpers", description: "Start a helper for a bounded read", state: "on", own: true, required: true, locked: false},
-    {key: "journal-tasks", description: "Declare, log and finish the work", state: "on", own: false, required: false, locked: false},
-    {key: "journal-dumps", description: "File what the user dropped", state: "off", own: false, required: false, locked: false},
-]}};
-let app;
-let host;
-
-afterEach(() => {
-    app?.unmount();
-    host?.remove();
-    document.body.innerHTML = "";
-});
-
-// the page drawn in the document, over a journal that lists these profiles and answers each line it runs as the given function says
-async function drawn(profiles = [RESEARCHER, BUILDER], run = async () => ({ok: true, value: null}), programs = PROGRAMS) {
-    const lines = [];
-    const window_ = {...profileWindowContext({"agent programs": page(programs), "profile skills": SKILLS, "profile list": {...page(profiles), value: {...page(profiles).value, types: TYPES}}}), run: async (line) => (lines.push(line), run(line))};
-    host = document.createElement("div");
-    document.body.append(host);
-    app = createApp({render: () => h(ProfileRows)});
-    app.provide(WINDOW_CONTEXT, window_);
-    app.mount(host);
-    await settle();
-    return lines;
-}
-
-const open = async (name) => {
-    host.querySelector(`[data-row="${name}"]`).click();
-    await settle();
-};
-const panel = () => document.querySelector("[data-profile-panel]");
-const type = async (element, text) => {
-    element.value = text;
-    element.dispatchEvent(new Event("input", {bubbles: true}));
-    await settle();
-};
+import {RESEARCHER, BUILDER, ROUTED, TYPES, SKILLS, host, drawn, open, panel, type} from "./support/profilesPage.js";
 
 test("the find box keeps the profiles holding the words, and says when none matches", async () => {
     await drawn();

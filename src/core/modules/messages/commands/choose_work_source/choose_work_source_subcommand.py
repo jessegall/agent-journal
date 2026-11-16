@@ -1,5 +1,4 @@
 from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -27,5 +26,5 @@ class ChooseWorkSourceSubcommand(Subcommand[ChooseWorkSource, MessageWorkSource]
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, MessageWorkSource):
-            output.write(f"request selection: message:{value.message_id}\nselecting actor: agent:{self.numbers.number(AGENT_MODEL_NAME, value.agent_id)}\n"
+            output.write(f"request selection: message:{value.message_id}\nselecting actor: agent:{self.numbers.agent_number(value.agent_id)}\n"
                          f"environment: {value.environment_id}\norigin: {value.origin}", output.values(value))

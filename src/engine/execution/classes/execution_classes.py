@@ -4,7 +4,7 @@ from dataclasses import replace
 
 from engine.enums.execution_length import ExecutionLength
 from engine.execution.classes.builtin_classes import BUILTIN_CLASSES
-from engine.execution.classes.errors.execution_class_cost_error import ExecutionClassCostError
+from engine.execution.errors.execution_class_cost_error import ExecutionClassCostError
 from engine.execution.classes.execution_class import ExecutionClass
 from engine.execution.execution_subject import ExecutionSubject
 from engine.execution.classes.person_classes import PersonClasses
@@ -39,7 +39,7 @@ class ExecutionClasses:
     @staticmethod
     def validate(execution_class: ExecutionClass, pool_capacity: int) -> None:
         if execution_class.slot_cost > pool_capacity:
-            raise ExecutionClassCostError(execution_class, pool_capacity)
+            raise ExecutionClassCostError(execution_class.cost_overrun(pool_capacity))
 
     # a person's class names a plugin, a line pattern or both; a plugin's run never takes a class written for the journal
     @staticmethod

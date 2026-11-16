@@ -1,4 +1,3 @@
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.event.moved import Moved
 from engine.command.bus import Bus
@@ -32,4 +31,4 @@ class WorkerMergeBlockListener(SaveListener[Moved[Worktree]]):
             self.bus.dispatch(CloseAgentBlock(block.id), context)
 
     def merge_command(self, worktree: Worktree) -> str:
-        return f"journal worker merge {self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)}"
+        return f"journal worker merge {self.numbers.agent_number(worktree.session_agent_id)}"

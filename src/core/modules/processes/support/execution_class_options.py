@@ -18,6 +18,11 @@ class ExecutionClassOptions:
         parser.add_argument("--priority", default=None, help=f"one of {', '.join(priority.label for priority in ExecutionPriority)}")
         parser.add_argument("--limit", type=int, default=None, help="how many of the class run at once; 0 for no limit")
 
+    # a class of a person's own names the lines that belong to it: a pattern, a plugin or both
+    @staticmethod
+    def names_no_lines(arguments: Namespace) -> bool:
+        return not arguments.pattern and not arguments.plugin
+
     @staticmethod
     def changed(execution_class: ExecutionClass, arguments: Namespace) -> ExecutionClass:
         return replace(execution_class,

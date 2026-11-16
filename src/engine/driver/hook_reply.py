@@ -19,6 +19,11 @@ class HookReply:
     labelled_lines: Sequence[str] = field(default=(), compare=False)
     halt: str = ""
 
+    # a reply that refuses nothing and says nothing
+    @property
+    def is_silent(self) -> bool:
+        return self.refusal == "" and not self.lines
+
     @classmethod
     def allowed(cls, *lines: str) -> "HookReply":
         return cls(lines=lines)

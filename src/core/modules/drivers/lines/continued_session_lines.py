@@ -2,7 +2,6 @@ from collections.abc import Sequence
 from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_line_source import EventLineSource
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
@@ -23,4 +22,4 @@ class ContinuedSessionLines(EventLineSource):
         self.numbers = numbers
 
     def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        return [ContinuedSessionMessage.declared().agent_message(agent=self.numbers.number(AGENT_MODEL_NAME, agent_id))] if event.is_resume else []
+        return [ContinuedSessionMessage.declared().agent_message(agent=self.numbers.agent_number(agent_id))] if event.is_resume else []

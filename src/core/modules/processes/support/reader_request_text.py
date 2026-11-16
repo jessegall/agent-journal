@@ -1,4 +1,3 @@
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from dataclasses import replace
 
@@ -14,5 +13,5 @@ class ReaderRequestText:
         self.numbers = numbers
 
     def line(self, request: ReaderRequest) -> AgentMessage:
-        agent_message = ReaderRequestMessage.declared().agent_message(request=request.id, agent=self.numbers.number(AGENT_MODEL_NAME, request.creator_id), command=request.command, output=request.sample_process_id)
+        agent_message = ReaderRequestMessage.declared().agent_message(request=request.id, agent=self.numbers.agent_number(request.creator_id), command=request.command, output=request.sample_process_id)
         return replace(agent_message, key=f"{agent_message.key}.{request.id}")

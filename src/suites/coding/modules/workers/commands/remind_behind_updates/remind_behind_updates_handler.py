@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 from engine.actor.actor import Actor
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -69,7 +68,7 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
         if check.worktree_id not in self.clashing:
             return
         worktree = self.rows.required(Worktree, check.worktree_id)
-        worker = self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)
+        worker = self.numbers.agent_number(worktree.session_agent_id)
         self.inbox.send_agent_message(CONFLICT_LINES[check.reminders].agent_message(worker=worker), STALE_SOURCE, context)
         self.repository.save_change(check, check.reminded(), context)
 
@@ -77,5 +76,5 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
         if check.reminders < limit:
             self.message_sender.send(worktree.session_agent_id, UpdateReminderMessage.declared(), STALE_SOURCE, context, count=check.commits_lagging)
         else:
-            self.inbox.send_agent_message(UpdateSkippedMessage.declared().agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)), STALE_SOURCE, context)
+            self.inbox.send_agent_message(UpdateSkippedMessage.declared().agent_message(worker=self.numbers.agent_number(worktree.session_agent_id)), STALE_SOURCE, context)
         self.repository.save_change(check, check.reminded(), context)

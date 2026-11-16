@@ -3,7 +3,6 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.setting.setting_values import SettingValues
 from core.modules.drivers.support.main_agent_line import MainAgentLine
@@ -45,6 +44,6 @@ class AskMergeHandler(Handler[AskMerge, MergeAskOutcome]):
             self.free_task.give_next(command.worker_id, part.task_ids, context)
             worktree = self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.deliver, delivered_at=context.timestamp, merge_ready_at=context.timestamp), context)
         if not self.settings.flag(MERGER_ENABLED):
-            worker = self.numbers.number(AGENT_MODEL_NAME, command.worker_id)
+            worker = self.numbers.agent_number(command.worker_id)
             self.main_line.send_agent_message(UnitMergeWaitsMessage.declared().agent_message(worker=worker, merge_ask=merge_request.id), UnitMergeWaitsMessage.declared().key, context)
         return MergeAskOutcome(merge_request, worktree, part.unit)

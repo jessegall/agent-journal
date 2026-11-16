@@ -50,7 +50,7 @@ class ContextCompactions:
     def request(self, agent_id: int, change: ContextChange, reason: CompactionReason, request_tokens: int | None, line: str, context: Context) -> ContextCompaction:
         newest = self.newest(agent_id)
         is_person = reason is CompactionReason.PERSON
-        if newest is not None and (newest.blocks_person_request_at(context.timestamp) if is_person else newest.blocks_request_at(context.timestamp)):
+        if newest is not None and (newest.is_open_at(context.timestamp) if is_person else newest.blocks_request_at(context.timestamp)):
             raise Refusal(newest.refusal_text(), "wait for it to end before asking again")
         is_retry = newest is not None and newest.state is CompactionState.REQUESTED and not is_person
         self.abandon_open(agent_id, context)

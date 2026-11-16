@@ -7,7 +7,6 @@ from engine.agent_machine.states.required_state import RequiredState
 from engine.agent_machine.states.state_source import StateSource
 from engine.agent_machine.record.question import Question
 from engine.agent_stack.states.blocked import Blocked
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.driver.agent_message import AgentMessage
 from engine.enums.agent_role import AgentRole
@@ -46,6 +45,6 @@ class DeliveredWorkStopStates(StateSource):
                 for task_id, agent_message in self.task_agent_messages(worktree, proofs)]
 
     def task_agent_messages(self, worktree: Worktree, proofs: list[Proof]) -> list[tuple[int, AgentMessage]]:
-        worker = self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)
+        worker = self.numbers.agent_number(worktree.session_agent_id)
         return [(task_id, ProofCheckMessage.declared().agent_message(worker=worker, task=task_id, proofs=", ".join(str(proof.id) for proof in proofs if proof.task_id == task_id)))
                 for task_id in dict.fromkeys(proof.task_id for proof in proofs)]

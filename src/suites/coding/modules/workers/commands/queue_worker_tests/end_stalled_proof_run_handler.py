@@ -1,4 +1,3 @@
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.command.bus import Bus
 from engine.command.context import Context
@@ -34,5 +33,5 @@ class EndStalledProofRunHandler(Handler[EndStalledProofRun, None]):
             self.bus.dispatch(StopProcess(process.id), context)
         self.bus.dispatch(RecordWorkerTest(proof.id, False, HUNG_RUN_NOTE.format(minutes=command.minutes, process=proof.process_id)), context)
         worktree = self.rows.required(Worktree, proof.worktree_id)
-        worker = self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)
+        worker = self.numbers.agent_number(worktree.session_agent_id)
         self.inbox.send_agent_message(ProofRunHungMessage.declared().agent_message(worker=worker, proof=proof.id, minutes=command.minutes, output=proof.process_id), LINE_SOURCE, context)

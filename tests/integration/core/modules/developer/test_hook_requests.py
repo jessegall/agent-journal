@@ -1,3 +1,4 @@
+from server.execution.hook_turn import HookTurn
 from datetime import timedelta
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
 from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SIZE_SETTING
@@ -201,7 +202,7 @@ def test_a_hook_shows_the_time_it_waited_for_another(recording_server):
     started_worker(server.journal, "s-queued-worker")
     sample = HookSamples.sample("post_tool_use").with_fields(session="s-queued-worker", event_id="queued")
     with ThreadPoolExecutor(1) as pool:
-        with server.context.hook_database.used(AGENT_HOOK_PRIORITY, 1):
+        with server.context.hook_database.used(HookTurn(AGENT_HOOK_PRIORITY, 1)):
             answer = pool.submit(post_hook, server, sample)
             assert waiting_entries(server, 1)
         answer.result()
@@ -233,7 +234,7 @@ def test_the_executions_show_a_worker_hook_waiting_behind_a_held_lane(recording_
     started_worker(server.journal, "s-queue-worker")
     worker = HookSamples.sample("post_tool_use").with_fields(session="s-queue-worker", event_id="queue-worker")
     with ThreadPoolExecutor(1) as pool:
-        with server.context.hook_database.used(AGENT_HOOK_PRIORITY, 1):
+        with server.context.hook_database.used(HookTurn(AGENT_HOOK_PRIORITY, 1)):
             first = pool.submit(post_hook, server, worker)
             assert waiting_entries(server, 1)
             pool = instant_pool(server, cookie)
@@ -245,7 +246,7 @@ def test_the_executions_show_a_waiting_viewer_request_while_a_hook_holds_the_lan
     server = recording_server
     cookie = login(server)
     with ThreadPoolExecutor(1) as pool:
-        with server.context.hook_database.used(AGENT_HOOK_PRIORITY, 1):
+        with server.context.hook_database.used(HookTurn(AGENT_HOOK_PRIORITY, 1)):
             answer = pool.submit(server.viewer_line_value, cookie, TASK_LIST)
             assert waiting_entries(server, 1)
             pool = instant_pool(server, cookie)
@@ -270,7 +271,7 @@ def test_inspection_reads_alone_and_in_a_batch_skip_hooks_and_the_request_log(re
     request = {"line": line, "environment": "main", "window": window}
     server.context.hook_database.viewer_tickets.wait_limit_seconds = 5
     with ThreadPoolExecutor(1) as pool:
-        with server.context.hook_database.used(MAIN_AGENT_HOOK_PRIORITY, 1):
+        with server.context.hook_database.used(HookTurn(MAIN_AGENT_HOOK_PRIORITY, 1)):
             pool.submit(server.viewer_line_value, cookie, request).result(timeout=3)
             status, _, body = pool.submit(viewer_answer, server.viewer_port(), "/api/lines", cookie, "", {"lines": [request, request]}).result(timeout=3)
             assert status == 200 and all(answer["code"] == 0 for answer in json.loads(body)["answers"]), body
@@ -323,7 +324,7 @@ def test_a_running_viewer_get_is_listed_in_the_queue_inspector(recording_server,
 
 def test_a_main_agent_hook_is_answered_while_an_agent_hook_holds_the_whole_instant_lane(recording_server):
     body = dict(HookSamples.sample("post_tool_use").with_fields(session=SESSION, environment="main", role="main", event_id="ahead-of-the-lane").body)
-    with recording_server.context.hook_database.used(AGENT_HOOK_PRIORITY, 1):
+    with recording_server.context.hook_database.used(HookTurn(AGENT_HOOK_PRIORITY, 1)):
         recording_server.expect_hook_answer("/hook", body, 200, '"refusal":')
 
 
@@ -344,7 +345,7 @@ def test_a_cli_line_is_not_queued_behind_a_slow_round(recording_server):
 def test_a_tick_round_does_not_wait_behind_a_running_hook(recording_server):
     work = BlockedRound()
     work.release.set()
-    with recording_server.context.hook_database.used(MAIN_AGENT_HOOK_PRIORITY, 1):
+    with recording_server.context.hook_database.used(HookTurn(MAIN_AGENT_HOOK_PRIORITY, 1)):
         JournalRound(recording_server.journal.home, "output reading", work, PerRoundContainer(recording_server.journal.home)).run()
         assert work.entered.is_set()
 

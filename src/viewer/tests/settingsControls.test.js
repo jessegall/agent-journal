@@ -1,6 +1,7 @@
 import {afterEach, expect, test} from "vitest";
 import {context, mounted, page, settle} from "./support/settingsContext.js";
 import SettingsTree from "../../core/modules/settings/web/src/SettingsTree.vue";
+import {applySettings} from "./support/pageSteps.js";
 
 afterEach(() => (document.body.innerHTML = ""));
 
@@ -10,10 +11,6 @@ const ROWS = [row("shop.limit", {value: 9, shown: "9", source: "environment"}), 
 // a module with no section of its own is drawn in Advanced, and the other sections are chosen in the nav
 const open = async (element, section) => {
     element.querySelector(`[data-section="${section}"]`).click();
-    await settle();
-};
-const save = async (element) => {
-    element.querySelector("[data-settings-apply]").click();
     await settle();
 };
 
@@ -34,7 +31,7 @@ test("a changed setting has a dot and a reset that waits in the draft until Save
     limit.querySelector("[data-setting-reset]").click();
     await settle();
     expect(ran).toEqual([]);
-    await save(element);
+    await applySettings(element);
     expect(ran).toContainEqual(["setting", "set", "shop.limit", "5"]);
     expect(element.querySelector("[data-setting='shop.size'] [data-setting-reset]")).toBeNull();
 });
@@ -90,7 +87,7 @@ test("a list is edited one on each line and saved as a list", async () => {
     box.value = "a\nb\n\nc";
     box.dispatchEvent(new Event("change"));
     await settle();
-    await save(element);
+    await applySettings(element);
     expect(ran[0]).toEqual(expect.arrayContaining(["setting", "set", "shop.names", JSON.stringify(["a", "b", "c"])]));
 });
 

@@ -11,9 +11,9 @@ MANIFEST_SUFFIX = "_module.py"
 
 class SchemaInputs:
     """The files a journal's tables and rows come from: the migrations, models (database views are declared
-    there), seeders and module manifests under the source folders, and the engine version. A run of the unit tests
-    takes its code text from them, so editing any other code keeps the story templates built for it, and a
-    template whose build ran that code checks it itself."""
+    there), seeders and module manifests under the source folders, and the engine version. A run of the unit
+    tests takes its code text from them, so editing any other code keeps the story templates built for it, and
+    a template whose build ran that code checks it itself."""
 
     @staticmethod
     def hash(source_folders: tuple[Path, ...]) -> str:

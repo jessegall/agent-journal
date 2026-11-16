@@ -1,6 +1,5 @@
 from collections.abc import Sequence
 
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.command.command import Command
 from engine.driver.project_hook_answer import ProjectHookAnswer
@@ -45,7 +44,7 @@ class ProjectHookAnswers:
         refusal = None
         if refusal_text:
             commands.append(RecordAgentNotice(agent_id, refusal_text, MANAGED_HOOKS_KEY))
-            refusal = ManagedHookRefusalMessage.declared().agent_message(agent=self.numbers.number(AGENT_MODEL_NAME, agent_id))
+            refusal = ManagedHookRefusalMessage.declared().agent_message(agent=self.numbers.agent_number(agent_id))
         return ProjectHooksAnswer(refusal, tuple(agent_messages), tuple(commands), dict(rewritten.updated_input) if rewritten is not None else {}, rewritten.name if rewritten is not None else "",
                                  0 if reads_text else len(lines), "\n".join(answer.terminal for answer in answers if answer.terminal))
 

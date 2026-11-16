@@ -1,7 +1,6 @@
 from core.modules.drivers.support.open_block_rows import OpenBlockRows
 from dataclasses import replace
 
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 
 from engine.driver.agent_message import AgentMessage
@@ -45,7 +44,7 @@ class UnmergedWorkers:
         self.delivered, self.tasks, self.proofs, self.records = delivered, tasks, proofs, records
 
     def merge_command(self, worktree: Worktree) -> str:
-        return f"journal worker merge {self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)}"
+        return f"journal worker merge {self.numbers.agent_number(worktree.session_agent_id)}"
 
     def answer(self, event: HookEvent | None, agent_id: int) -> UnmergedAnswer:
         event_id = event.event_id if event is not None else "step"
@@ -59,12 +58,12 @@ class UnmergedWorkers:
             if self.is_with_merger(worktree, agent_id):
                 continue
             proofs = tuple(self.proofs.waiting_proofs(worktree.id).every_row(UNIT_TASKS_REASON))
-            action = f"{self.merge_command(worktree)}, or journal worker release {self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)}"
+            action = f"{self.merge_command(worktree)}, or journal worker release {self.numbers.agent_number(worktree.session_agent_id)}"
             if proofs:
                 action = f"journal proof check {', '.join(str(proof.id) for proof in proofs)}"
             key = f"{WorkerUnmergedMessage.declared().key}.{worktree.session_agent_id}"
             declaration = WorkerUnmergedDueMessage.declared() if self.delivered_reminder_count(agent_id, key) >= BLOCKING_REMINDER_COUNT - 1 else WorkerUnmergedMessage.declared()
-            agent_messages.append(replace(declaration.agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), tasks=self.task_names(worktree), action=action), key=key))
+            agent_messages.append(replace(declaration.agent_message(worker=self.numbers.agent_number(worktree.session_agent_id), tasks=self.task_names(worktree), action=action), key=key))
         commands = {self.merge_command(worktree) for worktree in delivered}
         prefix = f"{RequiredCommandRefusalMessage.declared().key}:journal worker merge "
         blocks = self.open_blocks.rows(agent_id)

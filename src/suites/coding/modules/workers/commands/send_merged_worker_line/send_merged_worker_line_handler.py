@@ -1,5 +1,4 @@
 from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.command.context import Context
 from engine.command.handler import Handler
 from core.modules.drivers.support.main_agent_line import MainAgentLine
@@ -21,7 +20,7 @@ class SendMergedWorkerLineHandler(Handler[SendMergedWorkerLine, None]):
         self.main_line = main_line
 
     def handle(self, command: SendMergedWorkerLine, context: Context) -> None:
-        worker = self.numbers.number(AGENT_MODEL_NAME, command.worker_id)
+        worker = self.numbers.agent_number(command.worker_id)
         if not self.tasks.assigned_ready(command.worker_id) and not self.tasks.started_tasks(command.worker_id):
             self.main_line.send_agent_message(TasklessWorkerMessage.declared().agent_message(worker=worker), TasklessWorkerMessage.declared().key, context)
         merged_request = self.queries.query(MergeAsk).filter(worktree_id=command.worktree_id, state=MergeAskState.MERGED).newest().first()

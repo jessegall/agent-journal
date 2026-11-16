@@ -1,7 +1,6 @@
 from collections.abc import Sequence
 
 from engine.agent_machine.contracts.event_line_source import EventLineSource
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.driver.hook_event import HookEvent
 from engine.driver.interval import Interval
@@ -34,7 +33,7 @@ class UnstartedWorkerLines(EventLineSource):
         activities = self.activities.read(event, agent_id)
         workers = [activities[worktree.session_agent_id] for worktree in self.worktrees.main_worktrees() if worktree.state is WorktreeState.CUT and worktree.session_agent_id in activities]
         limit = Interval(self.settings.seconds(UNSTARTED_WORKER_SECONDS))
-        return [WorkerUnstartedMessage.declared().agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, worker.id), seconds=limit.seconds) for worker in workers if self.is_unstarted(worker, agent_id, limit)]
+        return [WorkerUnstartedMessage.declared().agent_message(worker=self.numbers.agent_number(worker.id), seconds=limit.seconds) for worker in workers if self.is_unstarted(worker, agent_id, limit)]
 
     def is_unstarted(self, worker: AgentActivity, agent_id: int, limit: Interval) -> bool:
         return worker.ended_at is None and limit.has_passed(self.spans, agent_id, worker.created_at, self.clock.timestamp()) and worker.last_hook_at is None

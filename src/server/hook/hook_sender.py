@@ -6,6 +6,7 @@ from engine.driver.hook_event import HookEvent
 from engine.enums.hook_event_name import HookEventName
 from engine.types.type_guards import is_mapping
 from engine.enums.execution_priority import ExecutionPriority
+from server.execution.hook_turn import HookTurn
 from engine.driver.hook_limits import AGENT_HOOK_LIMIT_SECONDS, HOOK_LIMIT_SECONDS, STOP_LIMIT_SECONDS
 
 # the main agent's hooks go first and never wait out a limit; the hooks of other agents come next
@@ -46,6 +47,9 @@ class HookSender:
     @property
     def owner(self) -> str:
         return self.session
+
+    def turn(self) -> HookTurn:
+        return HookTurn(self.priority, self.limit_seconds, self.owner, self.event_name)
 
     @property
     def name(self) -> str:

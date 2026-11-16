@@ -1,7 +1,6 @@
 from engine.query.conditions.among import Among
 from engine.helper_type.helper_type_book import HELPER_KEY, HelperTypeBook
 from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.enums.actor_type import ActorType
 from engine.command.context import Context
 from engine.caller.caller import Caller
@@ -61,7 +60,7 @@ class HelperLimits:
         running_ids = set(self.helpers(profile).matching(IsNull("ended_at")).pluck("id", int)) | self.kept.with_open_jobs(profile)
         limit = self.helper_limits(profile).run
         if len(running_ids) >= limit:
-            names = ", ".join(f"agent:{self.numbers.number(AGENT_MODEL_NAME, helper_id)}" for helper_id in sorted(running_ids))[:RUNNING_NAMES_CHARACTERS]
+            names = ", ".join(f"agent:{self.numbers.agent_number(helper_id)}" for helper_id in sorted(running_ids))[:RUNNING_NAMES_CHARACTERS]
             raise Refusal(f"{limit} of {profile} run: {names}", self.next_step_text())
 
     def checked_new_place(self, profile: str) -> None:

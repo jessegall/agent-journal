@@ -22,7 +22,7 @@ from core.modules.processes.models.enums.process_setting import ProcessSetting
 from engine.setting.setting_values import SettingValues
 from engine.container.container import Container
 
-TIMED_JOB_COUNT = ProcessSetting.TIMED_JOBS_AT_ONCE.value.default
+TIMED_JOB_COUNT = ProcessSetting.PARALLEL_TIMED_JOB_COUNT.value.default
 LATE_LINE_SECONDS = 300.0
 
 
@@ -50,7 +50,7 @@ class Ticker:
 
     @staticmethod
     def worker_count(container: Container) -> int:
-        return container.get(SettingValues).project.number(ProcessSetting.TIMED_JOBS_AT_ONCE.key)
+        return container.get(SettingValues).project.number(ProcessSetting.PARALLEL_TIMED_JOB_COUNT.key)
 
     def register(self, handler: TickHandler) -> None:
         self.due.register(handler)

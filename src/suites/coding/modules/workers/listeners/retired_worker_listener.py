@@ -31,4 +31,4 @@ class RetiredWorkerListener(SaveListener[Updated[Agent]]):
         tasks = self.unfinished.rows(worker.id)
         if tasks:
             with self.scopes.row_scope(worker):
-                self.inbox.send_agent_message(RetiredWorkerTasksMessage.declared().agent_message(worker=worker.number, tasks=self.unfinished.names(tasks)), SOURCE, context)
+                self.inbox.send_agent_message(self.unfinished.message(RetiredWorkerTasksMessage, worker, tasks), SOURCE, context)

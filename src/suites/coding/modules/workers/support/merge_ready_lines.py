@@ -1,4 +1,3 @@
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.driver.agent_message import AgentMessage
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -15,4 +14,4 @@ class MergeReadyLines:
 
     def agent_message(self, worktree: Worktree) -> AgentMessage:
         declaration = WorkerCommittedMessage.declared() if worktree.tests_passed_at is None else WorkerTestsPassedMessage.declared()
-        return declaration.agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id))
+        return declaration.agent_message(worker=self.numbers.agent_number(worktree.session_agent_id))

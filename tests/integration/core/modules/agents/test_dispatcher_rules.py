@@ -22,6 +22,7 @@ from tests.stories.core.modules.agents.support import sample_suite_start
 from tests.stories.core.modules.agents.support.sample_suite_start import SampleSuiteStart
 from tests.stories.core.modules.agents.support.strict_policy import STRICT_POLICY, StrictPolicy
 from tests.stories.core.support.agent_labels import agent_number
+from engine.module.module_imports import ModuleImports
 
 PROGRAM_RUNS = b"running\n"
 STARTED = b"started 701\n"
@@ -117,7 +118,7 @@ def test_551_a_suite_starts_an_agent_by_the_public_command_reads_its_standing_by
     suite = SampleSuiteStart(story.container.get(Bus), story.container.get(AgentStanding))
     helper = helper_agent(story)
     started = suite.start(helper.id, str(story.container.get(AgentFolders).folder(helper)))
-    imported = [node.module for node in ast.walk(source_tree(Path(sample_suite_start.__file__))) if isinstance(node, ast.ImportFrom) and node.module]
+    imported = [node.module for node in ast.walk(source_tree(Path(sample_suite_start.__file__))) if ModuleImports.is_module_import(node)]
     private = [name for name in imported if any(word in name for word in PRIVATE_PARTS)]
     story.expect_rows(started is Dispatch.STARTED, helper_agent(story).pid == 701, suite.is_running(helper.id), private == [], detail=f"{started} {imported}")
 

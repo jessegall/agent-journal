@@ -1,4 +1,3 @@
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -27,5 +26,5 @@ class RecordFailedUpdateHandler(Handler[RecordFailedUpdate, None]):
         failed = self.closing.failed(worktree, command.reason, context)
         if not failed:
             return
-        worker = self.numbers.number(AGENT_MODEL_NAME, command.worker_id)
+        worker = self.numbers.agent_number(command.worker_id)
         self.inbox.send_agent_message(MergerUpdateFailedMessage.declared().agent_message(worker=worker, check=max(check.id for check in failed)), STALE_SOURCE, context)

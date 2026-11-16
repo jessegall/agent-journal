@@ -1,6 +1,7 @@
 import ast
 from pathlib import Path
 from tests.unit.source_tree import source_tree
+from engine.module.module_imports import ModuleImports
 
 """Story 14 of doc 1255: every walk over all the rows of a read is listed with its reason, so a reviewer reads each
 one and a new walk shows in the change that adds it."""
@@ -30,7 +31,7 @@ def imported_strings(tree: ast.Module) -> dict[str, str]:
     """The string constants a file imports by name from another file of src."""
     strings: dict[str, str] = {}
     for node in tree.body:
-        source = SOURCE / f"{node.module.replace('.', '/')}.py" if isinstance(node, ast.ImportFrom) and node.module else None
+        source = SOURCE / f"{node.module.replace('.', '/')}.py" if ModuleImports.is_module_import(node) else None
         if source is not None and source.is_file():
             constants = module_strings(source_tree(source))
             strings.update({alias.asname or alias.name: constants[alias.name] for alias in node.names if alias.name in constants})

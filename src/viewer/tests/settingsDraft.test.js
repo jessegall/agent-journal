@@ -1,6 +1,7 @@
 import {afterEach, beforeEach, expect, test} from "vitest";
 import {context, mounted, page, settle} from "./support/settingsContext.js";
 import SettingsTree from "../../core/modules/settings/web/src/SettingsTree.vue";
+import {applySettings} from "./support/pageSteps.js";
 
 beforeEach(() => (location.hash = ""));
 afterEach(() => (document.body.innerHTML = ""));
@@ -27,10 +28,6 @@ const flip = async (element, key) => {
     await settle();
 };
 const note = (element) => element.querySelector("[data-settings-note]").textContent;
-const save = async (element) => {
-    element.querySelector("[data-settings-apply]").click();
-    await settle();
-};
 
 test("test_changes_are_draft: changes wait in a draft with their count by Save, and Save sends them all", async () => {
     const {element, ran} = await drawn();
@@ -39,7 +36,7 @@ test("test_changes_are_draft: changes wait in a draft with their count by Save, 
     await flip(element, "shop.loud");
     expect(ran).toEqual([]);
     expect(note(element)).toContain("2 changes");
-    await save(element);
+    await applySettings(element);
     expect(ran).toEqual([["setting", "set", "shop.fast", "on"], ["setting", "set", "shop.loud", "on"]]);
     expect(note(element)).toContain("No changes");
 });
@@ -75,7 +72,7 @@ test("test_partial_save_marks_refused_row: a refused row keeps its change and sh
     ran.refuse = (line) => (line[2] === "shop.loud" ? {ok: false, error: "the model is not allowed"} : null);
     await flip(element, "shop.fast");
     await flip(element, "shop.loud");
-    await save(element);
+    await applySettings(element);
     expect(element.querySelector("[data-setting='shop.loud'] [data-setting-refused]").textContent).toBe("the model is not allowed");
     expect(element.querySelector("[data-setting='shop.fast'] [data-setting-refused]")).toBeNull();
     expect(note(element)).toContain("1 change");
@@ -90,6 +87,6 @@ test("test_developer_switch_shows_group: the Developer section has the Developer
     element.querySelector("[data-developer-switch]").click();
     await settle();
     expect(element.querySelector("[data-developer-switch]").getAttribute("aria-checked")).toBe("true");
-    await save(element);
+    await applySettings(element);
     expect(ran).toEqual([["setting", "switch", "journal.core.developer.tools", "on", "--project"]]);
 });

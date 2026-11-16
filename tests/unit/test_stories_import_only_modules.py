@@ -1,6 +1,7 @@
 from tests.unit.source_tree import source_tree
 import ast
 from pathlib import Path
+from engine.text.listed_lines import ListedLines
 
 ROOT = Path(__file__).resolve().parents[2]
 STORIES = ROOT / "tests" / "stories"
@@ -28,7 +29,7 @@ def story_files() -> list[Path]:
 
 
 def listed() -> list[str]:
-    return [line.strip() for line in LIST_FILE.read_text().splitlines() if line.strip() and not line.lstrip().startswith("#")]
+    return list(ListedLines.of(LIST_FILE.read_text().splitlines()))
 
 
 def test_no_unlisted_story_file_imports_the_engine_the_server_install_or_a_tunnel():

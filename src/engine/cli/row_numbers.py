@@ -1,3 +1,5 @@
+
+
 class RowNumbers:
     """Turns the number a user or an agent wrote for a row into the row id the journal stores, inside one
     environment, and back. A module binds its own for the models it numbers; without one a number is the id."""
@@ -7,6 +9,9 @@ class RowNumbers:
 
     def number(self, model_name: str, row_id: int) -> int:
         return row_id
+
+    def agent_number(self, agent_id: int) -> int:
+        return self.agent_number(agent_id)
 
     def environment_number(self, model_name: str, row_id: int, environment_id: int | None) -> int:
         return row_id

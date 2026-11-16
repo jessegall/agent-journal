@@ -1,6 +1,7 @@
 from tests.unit.source_tree import source_tree
 import ast
 from pathlib import Path
+from engine.module.module_imports import ModuleImports
 
 ROOT = Path(__file__).resolve().parents[2]
 RUN_START_FILES = (ROOT / "tests" / "conftest.py", ROOT / "src" / "engine" / "testing" / "pytest_wiring" / "pytest_plugin.py")
@@ -11,7 +12,7 @@ STORY_FOLDER = "tests.stories."
 def module_level_imports(path: Path) -> list[str]:
     names = []
     for node in source_tree(path).body:
-        if isinstance(node, ast.ImportFrom) and node.module:
+        if ModuleImports.is_module_import(node):
             names.append(node.module)
         if isinstance(node, ast.Import):
             names.extend(alias.name for alias in node.names)

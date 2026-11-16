@@ -2,7 +2,6 @@ from engine.driver.agent_message import AgentMessage
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_policy import EventPolicy
 from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from pathlib import Path
 
 from engine.enums.agent_role import AgentRole
@@ -27,5 +26,5 @@ class WorkerFilePolicy(EventPolicy):
             return None
         for worktree in self.worktrees.main_worktrees():
             if any(Path(path).is_relative_to(worktree.folder) for path in tool.files):
-                return WorkerFileMessage.declared().agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id))
+                return WorkerFileMessage.declared().agent_message(worker=self.numbers.agent_number(worktree.session_agent_id))
         return None

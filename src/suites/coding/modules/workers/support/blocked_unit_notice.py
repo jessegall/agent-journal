@@ -1,7 +1,6 @@
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.command.context import Context
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
@@ -24,4 +23,4 @@ class BlockedUnitNotice:
             return
         waits = "; ".join(f"task:{task.id} waits on {task.reason}" for task in remaining)
         committed_ids = ", ".join(f"task:{task.id}" for task in committed)
-        self.main_agent_line.send_agent_message(UnitBlockedMessage.declared().agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, worker_id), committed=committed_ids, waits=waits), UnitBlockedMessage.declared().key, context)
+        self.main_agent_line.send_agent_message(UnitBlockedMessage.declared().agent_message(worker=self.numbers.agent_number(worker_id), committed=committed_ids, waits=waits), UnitBlockedMessage.declared().key, context)

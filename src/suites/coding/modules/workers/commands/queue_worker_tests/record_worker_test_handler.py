@@ -1,5 +1,4 @@
 from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.listener.rows.event_rows import EventRows
@@ -72,7 +71,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         waiting = self.finish_tasks(worktree, context)
         for task_id in sorted({row.task_id for row in waiting}):
             proof_ids = ', '.join(str(row.id) for row in waiting if row.task_id == task_id)
-            self.main_agent_line.send_agent_message(ProofCheckMessage.declared().agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), task=task_id, proofs=proof_ids), LINE_SOURCE, context)
+            self.main_agent_line.send_agent_message(ProofCheckMessage.declared().agent_message(worker=self.numbers.agent_number(worktree.session_agent_id), task=task_id, proofs=proof_ids), LINE_SOURCE, context)
 
     def finish_checked(self, worktree: Worktree, context: Context) -> None:
         self.finish_tasks(worktree, context)
@@ -102,7 +101,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.mark_tests_passed, tests_passed_at=context.timestamp, merge_ready_at=context.timestamp), context)
         if self.settings.flag(MERGER_ENABLED):
             return
-        self.main_agent_line.send_agent_message(WorkerTestsPassedMessage.declared().agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)), LINE_SOURCE, context)
+        self.main_agent_line.send_agent_message(WorkerTestsPassedMessage.declared().agent_message(worker=self.numbers.agent_number(worktree.session_agent_id)), LINE_SOURCE, context)
 
     def complete_tested(self, tasks: dict[int, Task], proofs: tuple[Proof, ...], context: Context) -> list[Task]:
         self.plans.prepare(sorted(tasks))

@@ -226,7 +226,7 @@ class Story(KitRows):
         self.fixture_environment = name
 
     def caller_environment_id(self, actor: Actor | None) -> int | None:
-        if self.fixture_environment is None or (actor is not None and actor.type is ActorType.AGENT):
+        if self.fixture_environment is None or Actor.given_agent(actor):
             return None
         if self.fixture_environment not in self.environment_ids:
             self.environment_ids[self.fixture_environment] = self.container.get(EnvironmentNames).environment_id(self.fixture_environment)
@@ -375,7 +375,7 @@ class Story(KitRows):
     def expect_hook_silent(self, session: str, sample: HookSample) -> None:
         self.checked(f"hook {sample.action}")
         reply = self.hook(session, sample)
-        self.expected(reply.refusal == "" and not reply.lines, f"the hook was answered: {reply}")
+        self.expected(reply.is_silent, f"the hook was answered: {reply}")
 
     def expect_absent_hook_line(self, session: str, sample: HookSample, line: ExpectedText) -> None:
         self.checked(f"hook {sample.action}")

@@ -84,7 +84,7 @@ class FixtureJournal(KitRows):
         return self.journal.container
 
     def run(self, line: str, actor: Actor | None = None, environment_id: int | None = None) -> FixtureLine:
-        caller_environment = environment_id or (None if actor is not None and actor.type is ActorType.AGENT else MAIN_ENVIRONMENT)
+        caller_environment = environment_id or (None if Actor.given_agent(actor) else MAIN_ENVIRONMENT)
         if self.environment is not None and "--environment" not in shlex.split(line):
             line = f"{line} --environment {shlex.quote(self.environment)}"
         if "environment make" in line:
@@ -201,7 +201,7 @@ class FixtureJournal(KitRows):
 
     def expect_hook_silent(self, session: str, sample: HookSample) -> None:
         reply = self.hook(session, sample)
-        assert reply.refusal == "" and not reply.lines, (sample.action, reply)
+        assert reply.is_silent, (sample.action, reply)
 
     def expect_absent_hook_line(self, session: str, sample: HookSample, line: ExpectedText) -> None:
         reply = self.hook(session, sample)

@@ -2,7 +2,6 @@ from core.modules.assignments.support.assignments import Assignments
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.open_dependency import OpenDependency
 from core.modules.tasks.models.task import Task
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.command.context import Context
 from engine.driver.message_sender import MessageSender
@@ -40,4 +39,4 @@ class BlockingTaskListener(SaveListener[Moved[Task]]):
         waiting_tasks = self.rows.required_index(Task, waiting_ids).values()
         waiting_actors = {actor for actor in (self.assignments.actor(task) for task in waiting_tasks) if actor is not None and actor != holder_id}
         for waiting_id in sorted(waiting_actors):
-            self.message_sender.send(holder_id, WorkerTaskExpectedMessage.declared(), EXPECTED_SOURCE, context, worker=self.numbers.number(AGENT_MODEL_NAME, waiting_id), task=event.row.id)
+            self.message_sender.send(holder_id, WorkerTaskExpectedMessage.declared(), EXPECTED_SOURCE, context, worker=self.numbers.agent_number(waiting_id), task=event.row.id)

@@ -1,5 +1,4 @@
 from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.command.context import Context
 from engine.command.handler import Handler
 from core.modules.drivers.support.main_agent_line import MainAgentLine
@@ -17,5 +16,5 @@ class SendProgramFaultHandler(Handler[SendProgramFault, None]):
         self.main_line = main_line
 
     def handle(self, command: SendProgramFault, context: Context) -> None:
-        line = HelperProgramFaultMessage.declared().agent_message(agent=self.numbers.number(AGENT_MODEL_NAME, command.agent_id), code=command.exit_code)
+        line = HelperProgramFaultMessage.declared().agent_message(agent=self.numbers.agent_number(command.agent_id), code=command.exit_code)
         self.main_line.send(line.text, HelperProgramFaultMessage.declared().key, context)

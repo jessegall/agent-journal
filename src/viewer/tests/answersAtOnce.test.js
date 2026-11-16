@@ -2,6 +2,7 @@ import {afterEach, expect, test} from "vitest";
 import {added, patched, patchedWhere, removed} from "@journal/window-kit";
 import {context, mounted, page, settle} from "./support/settingsContext.js";
 import SettingsTree from "../../core/modules/settings/web/src/SettingsTree.vue";
+import {applySettings} from "./support/pageSteps.js";
 
 afterEach(() => (document.body.innerHTML = ""));
 
@@ -25,10 +26,6 @@ async function mountedTree(window, section = "advanced") {
     return element;
 }
 
-const save = async (element) => {
-    element.querySelector("[data-settings-apply]").click();
-    await settle();
-};
 
 const switchOf = (element, key) => element.querySelector(`[data-setting='${key}'] [data-flag-switch]`);
 
@@ -51,7 +48,7 @@ test("a setting shows its new value as a draft, and runs only when Save is press
     await settle();
     expect(runs).toEqual([]);
     expect(isOn(element, "shop.fast")).toBe("true");
-    await save(element);
+    await applySettings(element);
     expect(runs.map((run) => run.line)).toEqual([["setting", "set", "shop.fast", "on"]]);
     expect(isOn(element, "shop.fast")).toBe("true");
 });
@@ -61,7 +58,7 @@ test("a refused setting stays in the draft and says why", async () => {
     const element = await mountedTree(window);
     switchOf(element, "shop.fast").click();
     await settle();
-    await save(element);
+    await applySettings(element);
     runs[0].answer({ok: false, error: "the model is not allowed"});
     await settle();
     expect(isOn(element, "shop.fast")).toBe("true");
@@ -73,7 +70,7 @@ test("an accepted setting stays as the server lists it and shows no refusal", as
     const element = await mountedTree(window);
     switchOf(element, "shop.fast").click();
     await settle();
-    await save(element);
+    await applySettings(element);
     held.rows = ROWS.map((listedRow) => (listedRow.key === "shop.fast" ? {...listedRow, value: true, shown: "on"} : listedRow));
     runs[0].answer({ok: true, value: {}});
     await settle();
@@ -120,7 +117,7 @@ test("a list shows its new items at once, kept as a list", async () => {
     await settle();
     expect(runs).toEqual([]);
     expect(element.querySelector("[data-setting-list]").value).toBe("a\nb\nc");
-    await save(element);
+    await applySettings(element);
     expect(runs[0].line).toEqual(["setting", "set", "shop.names", '["a","b","c"]']);
     expect(element.querySelector("[data-setting-list]").value).toBe("a\nb\nc");
 });

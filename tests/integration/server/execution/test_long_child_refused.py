@@ -1,3 +1,4 @@
+from server.execution.hook_turn import HookTurn
 from pathlib import Path
 
 import pytest
@@ -25,14 +26,14 @@ def hooks(tmp_path: Path):
 
 
 def test_hook_waiting_on_a_long_run_is_refused_with_the_text(hooks, tmp_path: Path):
-    with hooks.used(ExecutionPriority.AGENT, 1, "s-1", "PostToolUse"):
+    with hooks.used(HookTurn(ExecutionPriority.AGENT, 1, "s-1", "PostToolUse")):
         with pytest.raises(LongChildError) as refused:
             door(True).execute(ExecutionRequest(["echo", "merged"], tmp_path, ProcessType.MERGE, 5))
     assert refused.value.text.startswith("a hook cannot wait on long work: queue it as a follow-up")
 
 
 def test_short_child_is_allowed(hooks, tmp_path: Path):
-    with hooks.used(ExecutionPriority.AGENT, 1, "s-1", "PostToolUse"):
+    with hooks.used(HookTurn(ExecutionPriority.AGENT, 1, "s-1", "PostToolUse")):
         assert door(False).execute(ExecutionRequest(["echo", "read"], tmp_path, ProcessType.QUICK, 5)).exit_code == 0
 
 

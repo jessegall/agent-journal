@@ -1,5 +1,4 @@
 from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.command.context import Context
 from engine.command.handler import Handler
 from core.modules.agents.support.receivers import Receivers
@@ -19,4 +18,4 @@ class SendHelperLimitWarningHandler(Handler[SendHelperLimitWarning, None]):
 
     def handle(self, command: SendHelperLimitWarning, context: Context) -> None:
         receiver = self.receivers.receiver(command.parent_id)
-        self.message_sender.send(receiver.id, HelperLimitWarningMessage.declared(), SendHelperLimitWarning.source(command.job_id), context, agent=self.numbers.number(AGENT_MODEL_NAME, command.helper_id), limit=command.limit_name)
+        self.message_sender.send(receiver.id, HelperLimitWarningMessage.declared(), SendHelperLimitWarning.source(command.job_id), context, agent=self.numbers.agent_number(command.helper_id), limit=command.limit_name)

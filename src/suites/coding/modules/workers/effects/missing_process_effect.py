@@ -27,4 +27,5 @@ class MissingProcessEffect(EventEffect):
         roles = self.types.helper_keys()
         running = self.agents.running()
         agents = [agent for agent in running if agent.role in roles]
-        return [EndGoneWorker(agent.id) for agent in self.missing_agents.find(agents)]
+        gone = self.missing_agents.find(agents)
+        return [EndGoneWorker(agent.id) for agent in gone]

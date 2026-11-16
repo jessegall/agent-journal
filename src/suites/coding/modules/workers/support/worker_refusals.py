@@ -1,5 +1,4 @@
 from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.command.context import Context
 from engine.driver.count_down import CountDown
 from engine.driver.time_window import TimeWindow
@@ -32,7 +31,7 @@ class WorkerRefusals:
         if refusal.notice_at is not None and refusal.notice_at.elapsed_seconds(context.timestamp) < WORKER_REFUSAL_INTERVAL.seconds:
             return
         count = self.countdowns.used_count(REFUSAL_COUNTDOWN, worktree.session_agent_id)
-        notice = WorkerRefusalMessage.declared().agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), count=count, task=worktree.task_id)
+        notice = WorkerRefusalMessage.declared().agent_message(worker=self.numbers.agent_number(worktree.session_agent_id), count=count, task=worktree.task_id)
         self.main_agent_line.send_agent_message(notice, "workers.repeated-refusal", context)
         self.repository.save(refusal.changed(notice_at=context.timestamp), context)
 

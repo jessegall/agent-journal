@@ -1,6 +1,5 @@
 from core.modules.assignments.support.assignments import Assignments
 from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.enums.agent_role import AgentRole
 from engine.listener.save_listener import SaveListener
 from engine.scope.actor_scope import ActorScope
@@ -34,5 +33,5 @@ class BlockedWorkerTaskListener(SaveListener[Moved[Task]]):
         if worker.id != context.actor.id:
             self.message_sender.send(worker.id, BlockedWorkerTaskMessage.declared(), self.name, context, task=task.id)
             return
-        notice = WorkerTaskBlockedMessage.declared().agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, worker.id), task=task.id)
+        notice = WorkerTaskBlockedMessage.declared().agent_message(worker=self.numbers.agent_number(worker.id), task=task.id)
         self.main_agent_line.send_agent_message(notice, self.name, context)

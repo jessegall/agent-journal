@@ -1,3 +1,6 @@
+from core.modules.agents.models.agent import Agent
+from engine.driver.agent_message import AgentMessage
+from engine.driver.message_template import MessageTemplate
 from core.modules.tasks.models.enums.task_state import TaskState
 from engine.enums.hook_event_name import HookEventName
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
@@ -54,6 +57,11 @@ class WorkerUnfinishedTasks:
 
     def has_worker_running_process(self, worker_id: int) -> bool:
         return self.processes.agent_started(worker_id).running().exists()
+
+    # a template's message about a worker and the tasks it left unfinished
+    @staticmethod
+    def message(template: type[MessageTemplate], worker: Agent, tasks: tuple[Task, ...]) -> AgentMessage:
+        return template.declared().agent_message(worker=worker.number, tasks=WorkerUnfinishedTasks.names(tasks))
 
     @staticmethod
     def names(tasks: tuple[Task, ...]) -> str:

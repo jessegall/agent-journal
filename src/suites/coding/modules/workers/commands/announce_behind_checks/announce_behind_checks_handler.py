@@ -1,4 +1,3 @@
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -39,4 +38,4 @@ class AnnounceBehindChecksHandler(Handler[AnnounceBehindChecks, tuple[AgentMessa
 
     def agent_message(self, worktree: Worktree, declaration: MessageTemplate) -> AgentMessage:
         check = self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).newest().first()
-        return declaration.agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), count=check.commits_lagging if check else 0)
+        return declaration.agent_message(worker=self.numbers.agent_number(worktree.session_agent_id), count=check.commits_lagging if check else 0)

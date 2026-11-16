@@ -58,8 +58,8 @@ function pause() {
             <div class="note" role="status" data-lane-note><Icon name="pause" :size="13" />
                 <SwitchCase :value="lane.halt_type">
                     <template #command><span><b>Paused</b><template v-if="lane.halt_reason"> · {{ lane.halt_reason }}</template>. No waiting run starts here until it is resumed; what runs goes on.</span></template>
-                    <template #update><span><b>Waiting for an update.</b> The update waits for the running commands to end. Nothing new starts here until it is done; {{ lane.waiting.length ? `the ${lane.waiting.length} waiting keep their place` : "nothing waits" }}.</span></template>
-                    <template #restart><span><b>Waiting for a restart.</b> The server is restarting. {{ lane.waiting.length ? `The ${lane.waiting.length} waiting keep their place and start once it is back` : "Nothing waits" }}.</span></template>
+                    <template #update><span><b>Update: waiting.</b> The update waits for the running commands to end. Nothing new starts here until it is done; {{ lane.waiting.length ? `the ${lane.waiting.length} waiting keep their place` : "nothing waits" }}.</span></template>
+                    <template #restart><span><b>Restart: waiting.</b> The server is restarting. {{ lane.waiting.length ? `The ${lane.waiting.length} waiting keep their place and start once it is back` : "Nothing waits" }}.</span></template>
                 </SwitchCase>
             </div>
         </template>

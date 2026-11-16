@@ -99,7 +99,7 @@ test("a lane held for an update says so and offers no Resume", () => {
     const held = {...EXECUTION, lanes: [{...EXECUTION.lanes[2], halt_type: "update", halt_reason: "An update waits for the running commands to end"}]};
     const long = lane(mounted(held), "long");
     expect(long.querySelector("[data-lane-state]").textContent).toBe("Held");
-    expect(long.querySelector("[data-lane-note]").textContent).toContain("Waiting for an update. The update waits for the running commands to end. Nothing new starts here until it is done; the 2 waiting keep their place.");
+    expect(long.querySelector("[data-lane-note]").textContent).toContain("Update: waiting. The update waits for the running commands to end. Nothing new starts here until it is done; the 2 waiting keep their place.");
     expect(long.querySelector("[data-lane-resume]")).toBeNull();
 });
 

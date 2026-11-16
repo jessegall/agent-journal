@@ -2,6 +2,7 @@ import ast
 import importlib
 from functools import cache
 from pathlib import Path
+from engine.module.module_imports import ModuleImports
 
 
 @cache
@@ -19,7 +20,7 @@ def source_tree(path: Path) -> ast.Module:
 def imported_names(tree: ast.Module) -> dict[str, tuple[str, str | None]]:
     names: dict[str, tuple[str, str | None]] = {}
     for node in ast.walk(tree):
-        if isinstance(node, ast.ImportFrom) and node.module and not node.level:
+        if ModuleImports.is_module_import(node) and not node.level:
             names.update({alias.asname or alias.name: (node.module, alias.name) for alias in node.names})
         if isinstance(node, ast.Import):
             names.update({alias.asname: (alias.name, None) for alias in node.names if alias.asname})

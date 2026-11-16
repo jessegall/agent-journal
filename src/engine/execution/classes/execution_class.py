@@ -20,3 +20,7 @@ class ExecutionClass:
     class_limit: int = UNLIMITED
     line_pattern: str = ""
     plugin: str = ""
+
+    # the refusal of a class that costs more slot units than its pool holds
+    def cost_overrun(self, pool_capacity: int) -> str:
+        return f"{self.name} costs {self.slot_cost} but the {self.pool} pool holds {pool_capacity}"

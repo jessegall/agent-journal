@@ -1,3 +1,4 @@
+from collections.abc import Collection
 from collections.abc import Sequence
 from typing import Self
 
@@ -78,6 +79,10 @@ class ProofQuery(Query[Proof]):
     def test_rows(self) -> tuple[Proof, ...]:
         proofs = self.test_waiting()
         return self.kept.read(proofs, lambda: tuple(proofs.every_row(PROOFS_REASON)), name="workers.test_proofs")
+
+    # the queued tests of these worktrees
+    def queued_tests(self, worktree_ids: Collection[int]) -> list[Proof]:
+        return [proof for proof in self.test_rows() if proof.state is ProofState.QUEUED and proof.worktree_id in worktree_ids]
 
     def test_waiting(self) -> Self:
         return self.matching(Among("state", TEST_WAITING_STATES)).oldest()

@@ -3,6 +3,7 @@ import {placeUnder} from "../kit/vContext.js";
 import {menuEntries} from "../src/composables/contextMenu.js";
 import {context, mounted, settle, typeInto, unmountAll} from "./support/windowContext.js";
 import SequenceCards from "../../core/modules/sequences/web/src/SequenceCards.vue";
+import {choose, typeField, send, rowOf} from "./support/pageSteps.js";
 
 const RELEASE = {id: 1, title: "Release", steps: ["Run the suite", "Tag it", "Publish"], triggers: JSON.stringify([{trigger_type: "phrase", text: "ship it"}]), step_guards: "[]", created_at: "2026-11-01T10:00:00Z"};
 const REVIEW = {id: 2, title: "Review a plan", steps: ["Read it"], triggers: "[]", step_guards: "[]", created_at: "2026-11-02T10:00:00Z"};
@@ -24,24 +25,9 @@ async function drawn(runs = [RUN]) {
     await settle();
     return {element, ran};
 }
-const rowOf = (element, id) => element.querySelector(`[data-row="${id}"]`);
 const texts = (element, selector) => [...element.querySelectorAll(selector)].map((found) => found.textContent.trim());
-const choose = async (element, id) => {
-    rowOf(element, id).click();
-    await settle();
-};
 const tab = async (element, key) => {
     element.querySelector(`[data-tab="${key}"]`).click();
-    await settle();
-};
-const type = async (name, text) => {
-    const field = document.body.querySelector(`[data-field="${name}"]`);
-    field.value = text;
-    field.dispatchEvent(new Event(field.tagName === "SELECT" ? "change" : "input", {bubbles: true}));
-    await settle();
-};
-const send = async () => {
-    document.body.querySelector("[data-create-send]").click();
     await settle();
 };
 // the Actions button of the reader opens the menu under it, and an item is chosen by its words
@@ -68,7 +54,7 @@ test("test_reader_tabs: a row has the quiet Running badge, and the reader has th
     expect(element.querySelectorAll("[data-run]")).toHaveLength(1);
     element.querySelector("[data-run-abandon]").click();
     await settle();
-    await type("why", "The plan changed");
+    await typeField("why", "The plan changed");
     await send();
     expect(ran).toContainEqual(["sequence", "abandon", "--why", "The plan changed", "--sure"]);
     await tab(element, "triggers");
@@ -93,7 +79,7 @@ test("test_new_and_edit_dialogs: New makes a sequence from its title and steps, 
     element.querySelector("[data-sequence-new]").click();
     await settle();
     expect(document.body.querySelector("[data-create-send]").disabled).toBe(true);
-    await type("title", "Shipping");
+    await typeField("title", "Shipping");
     typeInto(document.body.querySelector("[data-step-text]"), "Tag it");
     await settle();
     document.body.querySelector("[data-step-add]").click();
@@ -111,8 +97,8 @@ test("test_new_and_edit_dialogs: New makes a sequence from its title and steps, 
     await send();
     expect(ran).toContainEqual(["sequence", "edit", "1", "--steps", "Tag it", "Publish", "--step-guards", JSON.stringify([{file_edits_allowed: true, allowed_commands: []}, {file_edits_allowed: true, allowed_commands: []}])]);
     await chooseAction(element, "Add trigger");
-    await type("kind", "command");
-    await type("command:pattern", "^git push");
+    await typeField("kind", "command");
+    await typeField("command:pattern", "^git push");
     await send();
     expect(ran).toContainEqual(["sequence", "edit", "1", "--triggers", JSON.stringify([{trigger_type: "phrase", text: "ship it"}, {trigger_type: "command", pattern: "^git push"}])]);
 });

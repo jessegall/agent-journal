@@ -1,6 +1,5 @@
 from core.modules.assignments.support.assignments import Assignments
 from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
 from engine.listener.save_listener import SaveListener
@@ -46,4 +45,4 @@ class DelegatedTaskCommentListener(SaveListener[Created[Link]]):
         self.message_sender.send(worker.id, WorkerTaskCommentMessage.declared(), WORKER_JOB_SOURCE, context, task=link.target_id)
         self.links.save(Link(creator_id=context.actor.id, source_model=Message.model_name, source_id=message.id, target_model=Agent.model_name, target_id=worker.id, link_type=LinkType.RECIPIENT), context)
         if worker.parent_id is not None:
-            self.message_sender.send(worker.parent_id, WorkerCommentCopyMessage.declared(), SOURCE, context, worker=self.numbers.number(AGENT_MODEL_NAME, worker.id), message=message.id)
+            self.message_sender.send(worker.parent_id, WorkerCommentCopyMessage.declared(), SOURCE, context, worker=self.numbers.agent_number(worker.id), message=message.id)

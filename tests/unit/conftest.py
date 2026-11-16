@@ -2,6 +2,7 @@ import sqlite3
 from pathlib import Path
 
 import pytest
+from engine.text.listed_lines import ListedLines
 
 UNIT_FOLDER = Path(__file__).resolve().parent
 ROOT = UNIT_FOLDER.parents[1]
@@ -15,7 +16,7 @@ class UnitDatabaseGuard:
 
     def __init__(self, list_file: Path = DATABASE_UNIT_TESTS) -> None:
         lines = list_file.read_text().splitlines() if list_file.exists() else []
-        self.allowed = frozenset(line.strip() for line in lines if line.strip() and not line.lstrip().startswith("#"))
+        self.allowed = frozenset(ListedLines.of(lines))
 
     def allows(self, test_file: Path) -> bool:
         return test_file.relative_to(ROOT).as_posix() in self.allowed

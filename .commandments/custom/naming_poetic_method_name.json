@@ -63,6 +63,16 @@
                     "tmp_path",
                     "cache_info"
                 ]
+            },
+            {
+                "all": [
+                    {
+                        "name": "glob"
+                    },
+                    {
+                        "file": "src/engine/file/file_access.py"
+                    }
+                ]
             }
         ],
         "select": "function",
@@ -75,7 +85,7 @@
     "sin": {
         "description": "A method is named by a word that does not say what it does: about, worded, meaning, whisper, tell.",
         "name": "poetic-method-name",
-        "rule": "Name a method for what it does, in an ordinary word: create, rendered, with_values, on_tool_starting.",
+        "rule": "Name a method for what it does, in an ordinary word: create, rendered, with_values, on_tool_starting. FileAccess names its file operations after pathlib's own (glob, rglob, walk), which it stands in front of.",
         "skill": "plain-code-words"
     }
 }

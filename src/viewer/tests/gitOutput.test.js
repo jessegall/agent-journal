@@ -5,6 +5,7 @@ import {commandsWindowContext} from "./support/commandsWindowContext.js";
 import {itemsOf, labelsOf} from "./support/cardMenu.js";
 import GitOverview from "../../suites/coding/web/src/GitOverview.vue";
 import Outputs from "../../core/modules/processes/web/src/Outputs.vue";
+import {gitTab} from "./support/pageSteps.js";
 
 beforeEach(() => vi.stubGlobal("ResizeObserver", class {observe() {} disconnect() {}}));
 afterEach(() => {
@@ -27,10 +28,6 @@ const git = async () => {
     await settle();
     return element;
 };
-const tab = async (element, word) => {
-    [...element.querySelectorAll("[data-git-tabs] button")].find((button) => button.textContent.includes(word)).click();
-    await settle();
-};
 
 test("test_git_list_reader: a chosen commit, branch or pull request is read beside its list with its facts and Show changes", async () => {
     const element = await git();
@@ -41,9 +38,9 @@ test("test_git_list_reader: a chosen commit, branch or pull request is read besi
     expect(reader.textContent).toContain("Add the cart");
     expect(reader.textContent).toContain("abcdef1");
     expect(reader.querySelector("[data-git-changes]").textContent).toBe("Show changes");
-    await tab(element, "Branches");
+    await gitTab(element, "Branches");
     expect([...element.querySelectorAll(".list-reader-group")].map((group) => group.textContent)).toEqual(["Current", "Other branches"]);
-    await tab(element, "Pull requests");
+    await gitTab(element, "Pull requests");
     element.querySelector('[data-row="4"]').click();
     await settle();
     expect(element.querySelector("[data-git-reader]").textContent).toContain("approved");
@@ -52,9 +49,9 @@ test("test_git_list_reader: a chosen commit, branch or pull request is read besi
 test("test_git_menu_no_delete: a right click has Open, Show changes and a copy, a pull request also GitHub, and never Duplicate or Delete", async () => {
     const element = await git();
     expect(labelsOf(element.querySelector('[data-row="abcdef123456"]'))).toEqual(["Open", "Show changes", "Copy hash"]);
-    await tab(element, "Branches");
+    await gitTab(element, "Branches");
     expect(labelsOf(element.querySelector('[data-row="shop"]'))).toEqual(["Open", "Show changes", "Copy name"]);
-    await tab(element, "Pull requests");
+    await gitTab(element, "Pull requests");
     const labels = labelsOf(element.querySelector('[data-row="4"]'));
     expect(labels).toEqual(["Open", "Show changes", "Open on GitHub", "Copy link"]);
     expect(labels.join()).not.toMatch(/duplicate|delete|remove/i);

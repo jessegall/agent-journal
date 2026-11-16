@@ -4,7 +4,6 @@ from engine.agent_machine.contracts.event_policy import EventPolicy
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from engine.query.conditions.among import Among
 from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.enums.agent_role import AgentRole
 from engine.driver.path_mentions import PathMentions
 from engine.driver.part import Part
@@ -43,7 +42,7 @@ class WorkerReusePolicy(EventPolicy):
                 continue
             worker_id = self.worker_with_files(part)
             if worker_id is not None:
-                return WorkerReuseMessage.declared().agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, worker_id))
+                return WorkerReuseMessage.declared().agent_message(worker=self.numbers.agent_number(worker_id))
         return None
 
     def worker_with_files(self, part: Part) -> int | None:

@@ -1,4 +1,3 @@
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -14,5 +13,5 @@ class ReportMergeHookHandler(Handler[ReportMergeHook, None]):
         self.main_line, self.numbers = main_line, numbers
 
     def handle(self, command: ReportMergeHook, context: Context) -> None:
-        worker = self.numbers.number(AGENT_MODEL_NAME, command.worker_id)
+        worker = self.numbers.agent_number(command.worker_id)
         self.main_line.send_agent_message(MergeHookFailedMessage.declared().agent_message(command=command.command, worker=worker), MergeHookFailedMessage.declared().key, context)

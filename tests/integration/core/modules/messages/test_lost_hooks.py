@@ -1,3 +1,4 @@
+from server.execution.hook_turn import HookTurn
 import json
 import sqlite3
 from datetime import timedelta
@@ -214,7 +215,7 @@ def test_a_retry_that_finds_the_database_busy_fails_nothing_and_keeps_its_file(b
 
 def test_a_hook_returns_its_connection_with_the_default_busy_timeout(server):
     server.expect_hook_answer("/hook", hook_body("timeout-restored"), 200, "New message 1")
-    with server.context.hook_database.used(MAIN_AGENT_HOOK_PRIORITY, 1) as database:
+    with server.context.hook_database.used(HookTurn(MAIN_AGENT_HOOK_PRIORITY, 1)) as database:
         server.story.expect_rows(database.busy_timeout_seconds() == BUSY_TIMEOUT_SECONDS)
 
 

@@ -108,7 +108,7 @@ class TemplateDatabases:
             if folder is None:
                 folder = self.build_variant(name, modules, fixture)
             FileAccess.update_timestamp(folder)
-            usable = self.usable_folder(folder, folder.name)
+            usable = self.usable_folder(folder)
             return Template(JournalHome(usable), pickle.loads(FileAccess.binary(usable / STATE_FILE)))
 
     def variants(self, name: str) -> list[Path]:
@@ -145,10 +145,10 @@ class TemplateDatabases:
     def is_unused(variant: Path) -> bool:
         return FolderStat.modified_time(variant) < time.time() - UNUSED_VARIANT_SECONDS or not FileAccess.is_file(variant / STATE_FILE)
 
-    def usable_folder(self, folder: Path, name: str) -> Path:
+    def usable_folder(self, folder: Path) -> Path:
         if self.adaptation.builder_name(folder) == self.adaptation.checkout:
             return folder
-        adapted = self.folder / f"{name}-{hashlib.sha1(self.adaptation.checkout.encode()).hexdigest()[:16]}"
+        adapted = self.folder / f"{folder.name}-{hashlib.sha1(self.adaptation.checkout.encode()).hexdigest()[:16]}"
         if not FileAccess.is_file(adapted / STATE_FILE) or self.adaptation.builder_name(adapted) != self.adaptation.checkout:
             self.adaptation.adapted(folder, adapted)
         return adapted

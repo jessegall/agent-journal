@@ -1,5 +1,6 @@
 from collections.abc import Mapping, Sequence
 
+from core.modules.tasks.support.task_number_list import TaskNumberList
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
@@ -68,7 +69,7 @@ class MainStopStates(StateSource):
         task_ids = self.assigner.agent_tasks([agent_id]).get(agent_id, ())
         if not task_ids:
             return []
-        text = UnfinishedTasksMessage.declared().agent_message(tasks=", ".join(str(task_id) for task_id in task_ids)).text
+        text = UnfinishedTasksMessage.declared().agent_message(tasks=TaskNumberList.text(task_ids)).text
         remains = not self.notices.has_notice(agent_id, text, UNFINISHED_TASKS_TEXT)
         tasks = ",".join(str(task_id) for task_id in task_ids)
         return [RequiredState(Working(WorkReference(WorkType.MAIN_AGENT_TASKS, agent_id, f"tasks {tasks}"), remains, Reason(MAIN_STOP_KEY, DecisionClass.BLOCK, MAIN_STOP_RANK, text)),

@@ -1,5 +1,4 @@
 from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -44,5 +43,5 @@ class AskPermissionHandler(Handler[AskPermission, PermissionRequest]):
             return request
         main = MainAgentFinder.newest(self.queries)
         if main is not None:
-            self.bus.dispatch(RecordAgentMessage(main.id, PermissionRequestedMessage.declared().agent_message(agent=self.numbers.number(AGENT_MODEL_NAME, context.actor.id), request=request.id), SOURCE), context)
+            self.bus.dispatch(RecordAgentMessage(main.id, PermissionRequestedMessage.declared().agent_message(agent=self.numbers.agent_number(context.actor.id), request=request.id), SOURCE), context)
         return request

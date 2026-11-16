@@ -2,6 +2,7 @@ import ast
 import re
 from pathlib import Path
 from tests.unit.source_tree import source_tree
+from engine.module.module_imports import ModuleImports
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "src"
@@ -79,4 +80,4 @@ def test_script_test_folder():
 def imported_modules(node: ast.AST) -> list[str]:
     if isinstance(node, ast.Import):
         return [alias.name for alias in node.names]
-    return [node.module] if isinstance(node, ast.ImportFrom) and node.module and node.level == 0 else []
+    return [node.module] if ModuleImports.is_module_import(node) and node.level == 0 else []

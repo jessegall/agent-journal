@@ -1,5 +1,4 @@
 from engine.actor.actor import Actor
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -56,7 +55,7 @@ class CheckWorktreeBehindHandler(Handler[CheckWorktreeBehind, BehindRoute]):
         if not self.checks.opens(worktree, self.behind):
             return BehindRoute.NONE
         check = self.repository.save(WorktreeBehindCheck.opened(worktree.id, self.tip, self.behind), context)
-        worker = self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)
+        worker = self.numbers.agent_number(worktree.session_agent_id)
         if self.moved:
             self.repository.save_change(check, check.updated(), context)
             self.repository.save_change(worktree, worktree.updated(self.tip), context)

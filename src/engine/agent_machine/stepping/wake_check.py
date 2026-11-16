@@ -29,8 +29,8 @@ class WakeCheck:
         if not causes:
             return WakeChange.unchanged()
         # an open escalation waits for its responder's answer, which wakes the agent itself (doc 1310 sections 3.1 and 6.4)
-        is_waiting_on_another = stack.has(Paused) or stack.has(Compacting) or view.escalation is not None
-        move = WakeMove.INHIBITED if is_waiting_on_another else WakeMove.RECORDED
+        is_inhibited = stack.has(Paused) or stack.has(Compacting) or view.escalation is not None
+        move = WakeMove.INHIBITED if is_inhibited else WakeMove.RECORDED
         return WakeChange(move, self.work_number(stack), tuple(causes))
 
     def attention(self, view: AgentView, stack: Stack) -> list[str]:

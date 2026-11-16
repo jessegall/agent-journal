@@ -2,7 +2,6 @@ from collections.abc import Sequence
 
 from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.agent_machine.states.line_history import LineHistory
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.driver.hook_event import HookEvent
 from engine.driver.agent_message import AgentMessage
@@ -37,6 +36,6 @@ class MergeCheckoutLines(EventLineSource):
             return []
         delivered = list(self.delivered.delivered())
         environments = self.rows.required_index(Environment, [worktree.environment_id for worktree in delivered])
-        return [MergeWaitsMessage.declared().agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), environment=environments[worktree.environment_id].name,
+        return [MergeWaitsMessage.declared().agent_message(worker=self.numbers.agent_number(worktree.session_agent_id), environment=environments[worktree.environment_id].name,
                                                  branch=worktree.base_branch)
                 for worktree in delivered if not self.proofs.waiting_proofs(worktree.id).exists() and self.git.head(environments[worktree.environment_id].folder) != worktree.base_branch]

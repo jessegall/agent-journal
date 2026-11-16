@@ -54,7 +54,7 @@ class StoppedWorkerLines(EventLineSource):
 
     def asking_agent_message(self, worker: Agent) -> AgentMessage:
         tasks = {task.id: task for task in (*self.unfinished.rows(worker.id), *self.unfinished.committed(worker.id))}
-        return replace(WorkerAskingStoppedMessage.declared().agent_message(worker=worker.number, tasks=self.unfinished.names(tuple(tasks.values()))), key=f"{WorkerAskingStoppedMessage.declared().key}.{worker.id}")
+        return replace(self.unfinished.message(WorkerAskingStoppedMessage, worker, tuple(tasks.values())), key=f"{WorkerAskingStoppedMessage.declared().key}.{worker.id}")
 
     def agent_message(self, worker: Agent) -> AgentMessage | None:
         worker_round = self.unfinished.steps.round(worker.id)

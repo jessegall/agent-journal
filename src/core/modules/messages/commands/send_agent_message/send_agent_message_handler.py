@@ -1,5 +1,4 @@
 from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
@@ -43,4 +42,4 @@ class SendAgentMessageHandler(Handler[SendAgentMessage, Message]):
     def sender_number(self, message: Message) -> int:
         if message.session_agent_id is None:
             return message.creator_id
-        return self.numbers.number(AGENT_MODEL_NAME, message.session_agent_id)
+        return self.numbers.agent_number(message.session_agent_id)

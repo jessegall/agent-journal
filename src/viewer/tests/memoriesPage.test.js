@@ -9,6 +9,7 @@ import MemoriesPage from "../../core/modules/memories/web/src/MemoriesPage.vue";
 import AgentMemories from "../../core/modules/memories/web/src/AgentMemories.vue";
 import {memoryItems} from "../../core/modules/memories/web/src/MemoryRow.js";
 import {memoryFilters} from "../../core/modules/memories/web/src/memoryWords.js";
+import {choose, rowOf} from "./support/pageSteps.js";
 
 const memory = (id, extra = {}) => ({id, text: `Memory words ${id}`, weight: 5, state: "active", agent_id: null, task_id: null, reason: "", created_at: "2026-11-01T10:00:00Z", ...extra});
 const ROWS = [memory(1, {text: "Totals are in cents", task_id: 6700}), memory(2, {text: "My worktree is clean", weight: 7, agent_id: 646}), memory(3, {text: "An old fact", weight: 1, state: "removed", reason: "faded to weight 0"})];
@@ -39,12 +40,7 @@ async function drawn() {
     await settle();
     return {element, ran};
 }
-const rowOf = (element, id) => element.querySelector(`[data-row="${id}"]`);
 const texts = (element, selector) => [...element.querySelectorAll(selector)].map((found) => found.textContent.trim());
-const choose = async (element, id) => {
-    rowOf(element, id).click();
-    await settle();
-};
 const itemButton = (label) => [...document.body.querySelectorAll("[data-menu-item]")].find((item) => item.textContent.trim().replace(/›$/, "") === label);
 
 test("test_default_filter_active: the list starts on the active memories, with the task as a bare number at the right edge and the agent and weight under the words", async () => {

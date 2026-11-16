@@ -1,11 +1,11 @@
 from collections.abc import Generator
+from server.execution.hook_turn import HookTurn
 from contextlib import contextmanager
 from dataclasses import replace
 
 from engine.database.database import Database
 from engine.database.write_turns import WriteTurns
 from engine.enums.execution_length import ExecutionLength
-from engine.enums.execution_priority import ExecutionPriority
 from engine.enums.log_level import LogLevel
 from engine.enums.log_source import LogSource
 from engine.execution.execution_order import ExecutionOrder
@@ -48,8 +48,8 @@ class HookDatabase:
         self.hook_tickets, self.command_tickets = HookTickets(self.executions, Clock()), CommandTickets(self.executions, priorities, Clock())
 
     @contextmanager
-    def used(self, priority: ExecutionPriority, wait_seconds: float, owner: str = "", event_name: str = "hook") -> Generator[Database]:
-        with self.hook_tickets.admitted(priority, wait_seconds, owner, event_name):
+    def used(self, turn: HookTurn) -> Generator[Database]:
+        with self.hook_tickets.admitted(turn):
             database = self.free_database()
             busy_timeout_seconds = database.busy_timeout_seconds()
             try:

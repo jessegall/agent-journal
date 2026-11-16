@@ -1,6 +1,5 @@
 from suites.coding.modules.workers.types.worker import Worker
 from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.driver.agent_message import AgentMessage
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
@@ -81,13 +80,13 @@ class WorkerRunEndedListener(SaveListener[ProcessEnded]):
             if self.proof_queue.tests_pending(worktree):
                 return WorkerOperationTestsMessage.declared().agent_message(task=task.id, output=process.id)
         if operation.name is WorkerOperationName.MERGE and self.is_unmerged(worktree, process):
-            return WorkerOperationConflictMessage.declared().agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, operation.worker_id), output=process.id)
+            return WorkerOperationConflictMessage.declared().agent_message(worker=self.numbers.agent_number(operation.worker_id), output=process.id)
         if operation.name is WorkerOperationName.JOB and self.agents.find(operation.worker_id).paused_at is not None:
-            return WorkerOperationPausedMessage.declared().agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, operation.worker_id))
-        return operation.name.finished_agent_message(self.numbers.number(AGENT_MODEL_NAME, operation.worker_id), process.id)
+            return WorkerOperationPausedMessage.declared().agent_message(worker=self.numbers.agent_number(operation.worker_id))
+        return operation.name.finished_agent_message(self.numbers.agent_number(operation.worker_id), process.id)
 
     def update_agent_message(self, operation: WorkerOperation, process: Process) -> AgentMessage:
-        worker = self.numbers.number(AGENT_MODEL_NAME, operation.worker_id)
+        worker = self.numbers.agent_number(operation.worker_id)
         if operation.update_outcome is UpdateResult.CONFLICTS:
             return WorkerOperationUpdateConflictMessage.declared().agent_message(worker=worker, output=process.id)
         if operation.update_outcome is None or process.exit_code != 0:

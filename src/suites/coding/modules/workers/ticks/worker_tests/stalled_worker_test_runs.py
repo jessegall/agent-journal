@@ -45,7 +45,7 @@ class StalledWorkerTestRuns:
         self.record_ended(container, [proof for proof in container.get(ProofQuery).test_rows() if proof.state is ProofState.RUNNING and proof.worktree_id in environments], environments)
         bus.run(QueueStalledTests(), Actor.core())
         worktree_environments = {worktree.id: worktree.environment_id for worktree in worktrees.all_worktrees()}
-        queued = {worktree_environments[proof.worktree_id] for proof in container.get(ProofQuery).test_rows() if proof.state is ProofState.QUEUED and proof.worktree_id in worktree_environments}
+        queued = {worktree_environments[proof.worktree_id] for proof in container.get(ProofQuery).queued_tests(worktree_environments)}
         for environment_id in queued:
             bus.run(StartWorkerTests(), Actor.core(), environment_id=environment_id)
         self.start_reaches_with_no_tests(container)

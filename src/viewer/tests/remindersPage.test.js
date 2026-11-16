@@ -5,6 +5,7 @@ import {menuEntries} from "../src/composables/contextMenu.js";
 import {context, mounted, settle, unmountAll} from "./support/windowContext.js";
 import ReminderRows from "../../core/modules/reminders/web/src/ReminderRows.vue";
 import {reminderFilters} from "../../core/modules/reminders/web/src/reminderWords.js";
+import {typeField} from "./support/pageSteps.js";
 
 const at = (hours, minutes) => {
     const day = new Date();
@@ -88,25 +89,19 @@ test("test_filters: the page filters by agent, by how it repeats and by whether 
     expect(picked("agent", ["main agent"])).toEqual([1, 2, 3, 4]);
 });
 
-const type = async (name, text) => {
-    const field = document.body.querySelector(`[data-field="${name}"]`);
-    field.value = text;
-    field.dispatchEvent(new Event(field.tagName === "SELECT" ? "change" : "input", {bubbles: true}));
-    await settle();
-};
 
 test("test_new_runs_reminder_make: the New dialog shows the line it will run, checks the number and runs reminder make", async () => {
     const {element, ran} = await drawn();
     element.querySelector("[data-reminder-new]").click();
     await settle();
-    await type("text", "Read the review");
-    await type("repeat", "minutes");
-    await type("every", "0");
+    await typeField("text", "Read the review");
+    await typeField("repeat", "minutes");
+    await typeField("every", "0");
     document.body.querySelector("[data-create-send]").click();
     await settle();
     expect(document.body.querySelector('[data-refused="every"]').textContent).toBe("Use a whole number of 1 or more");
     expect(ran).toEqual([]);
-    await type("every", "5");
+    await typeField("every", "5");
     expect(document.body.querySelector("[data-command-preview]").textContent).toBe('journal reminder make "Read the review" --every-minutes 5');
     document.body.querySelector("[data-create-send]").click();
     await settle();

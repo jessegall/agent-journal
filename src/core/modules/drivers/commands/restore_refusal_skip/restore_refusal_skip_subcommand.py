@@ -1,5 +1,4 @@
 from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 
@@ -28,4 +27,4 @@ class RestoreRefusalSkipSubcommand(Subcommand[RestoreRefusalSkip, RefusalSkip]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, RefusalSkip):
-            output.line(f"agent:{self.numbers.number(AGENT_MODEL_NAME, value.session_agent_id)} has its skip back")
+            output.line(f"agent:{self.numbers.agent_number(value.session_agent_id)} has its skip back")

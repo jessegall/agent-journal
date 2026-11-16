@@ -1,7 +1,6 @@
 from collections.abc import Sequence
 
 from engine.agent_machine.contracts.event_line_source import EventLineSource
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.driver.hook_event import HookEvent
 from engine.driver.agent_message import AgentMessage
@@ -24,5 +23,5 @@ class InactiveWorkerStopLines(EventLineSource):
         self.inactive_workers, self.numbers = idle, numbers
 
     def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        return [InactiveWorkerStopMessage.declared().agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), task=worktree.task_id)
+        return [InactiveWorkerStopMessage.declared().agent_message(worker=self.numbers.agent_number(worktree.session_agent_id), task=worktree.task_id)
                 for worktree in self.inactive_workers.idle(event, agent_id)]

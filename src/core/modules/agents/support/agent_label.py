@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import Self
 
 from engine.agent.agent_name import AgentName
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from core.modules.agents.models.agent import Agent
 
@@ -23,7 +22,7 @@ class AgentLabel:
 
     @classmethod
     def labelled_row(cls, agent_id: int, numbers: RowNumbers, word: str = AGENT_WORD) -> Self:
-        return cls(word, numbers.number(AGENT_MODEL_NAME, agent_id))
+        return cls(word, numbers.agent_number(agent_id))
 
     @property
     def text(self) -> str:

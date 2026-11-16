@@ -2,7 +2,6 @@ from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_policy import EventPolicy
 from suites.coding.modules.workers.types.worker import Worker
 from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.enums.command_category import CommandCategory
 from engine.driver.agent_message import AgentMessage
 from core.modules.processes.support.background_commands import BackgroundCommands
@@ -36,4 +35,4 @@ class WorkerTestLinePolicy(EventPolicy):
 
     def refused_line(self, worker_id: int) -> AgentMessage:
         names = self.names.names_text(worker_id)
-        return WorkerTestLineRefusalMessage.declared().agent_message(names=names) if names else WorkerTestCommandsMissingMessage.declared().agent_message(worker=self.numbers.number(AGENT_MODEL_NAME, worker_id))
+        return WorkerTestLineRefusalMessage.declared().agent_message(names=names) if names else WorkerTestCommandsMissingMessage.declared().agent_message(worker=self.numbers.agent_number(worker_id))

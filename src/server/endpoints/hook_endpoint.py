@@ -1,6 +1,7 @@
 from engine.database.database_busy import DatabaseBusy
 import sqlite3
 import traceback
+from server.execution.hook_turn import HookTurn
 from engine.serving.server_files import ServerFiles
 from time import perf_counter
 from collections.abc import Mapping
@@ -79,7 +80,7 @@ class HookEndpoint:
             self.kept_row(sender, program)
             return self.locked(sender)
         try:
-            with self.context.hook_database.used(sender.priority, sender.limit_seconds, sender.owner, sender.event_name) as database:
+            with self.context.hook_database.used(sender.turn()) as database:
                 self.timing.stamp("hook_locked")
                 queued_ms = (perf_counter() - started_at) * 1000
                 return self.routed_answer(data, program, headers, database, started_at, sender, queued_ms)
@@ -95,7 +96,7 @@ class HookEndpoint:
         retries = HookDeliveryRetries(self.context.home)
         retries.keep(reply.hook_call_id)
         try:
-            with self.context.hook_database.used(ExecutionPriority.IMMEDIATE, self.context.hook_limit_seconds) as database:
+            with self.context.hook_database.used(HookTurn(ExecutionPriority.IMMEDIATE, self.context.hook_limit_seconds)) as database:
                 database.set_busy_timeout(self.context.hook_limit_seconds)
                 retries.retry(synced_database_container(self.context.home, database))
         except PoolBusyError as error:

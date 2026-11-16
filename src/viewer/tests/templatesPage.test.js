@@ -4,6 +4,7 @@ import {menuEntries} from "../src/composables/contextMenu.js";
 import {mounted, settle, typeInto, unmountAll} from "./support/windowContext.js";
 import {templateWindowContext as context} from "./support/templateWindowContext.js";
 import TemplateCards from "../../core/modules/templates/web/src/TemplateCards.vue";
+import {choose, typeField, send, rowOf} from "./support/pageSteps.js";
 
 const OWN = {id: 7, title: "Task: bug", brief: "What happens", targets: ["task"], purpose: "Report a bug", parts: ["What happens: {what}", "How to see it: {steps}"], commands: [], module: "", created_at: "2026-11-01T10:00:00Z"};
 const PUBLISHED = {id: 1, title: "General critique", brief: "Read it as a whole", targets: ["plan"], purpose: "critique", parts: [], commands: ["pytest tests -q"], module: "journal.core.templates", created_at: "2026-10-01T10:00:00Z"};
@@ -28,21 +29,6 @@ async function drawn() {
     await settle();
     return {element, ran};
 }
-const rowOf = (element, id) => element.querySelector(`[data-row="${id}"]`);
-const choose = async (element, id) => {
-    rowOf(element, id).click();
-    await settle();
-};
-const type = async (name, text) => {
-    const field = document.body.querySelector(`[data-field="${name}"]`);
-    field.value = text;
-    field.dispatchEvent(new Event(field.tagName === "SELECT" ? "change" : "input", {bubbles: true}));
-    await settle();
-};
-const send = async () => {
-    document.body.querySelector("[data-create-send]").click();
-    await settle();
-};
 const labels = (element, id) => menuEntries(placeUnder(rowOf(element, id)).items).filter((entry) => !entry.separator).map((entry) => entry.label);
 
 test("test_send_on_row_dialog: Use it for an item asks for the kind of row, its number and a value for each slot, and runs template send", async () => {
@@ -54,12 +40,12 @@ test("test_send_on_row_dialog: Use it for an item asks for the kind of row, its 
     element.querySelector("[data-template-send]").click();
     await settle();
     expect([...document.body.querySelectorAll("[data-field]")].map((field) => field.dataset.field)).toEqual(["kind", "row", "slot-what", "slot-steps"]);
-    await type("row", "twelve");
-    await type("slot-what", "it breaks");
-    await type("slot-steps", "press save");
+    await typeField("row", "twelve");
+    await typeField("slot-what", "it breaks");
+    await typeField("slot-steps", "press save");
     await send();
     expect(document.body.querySelector('[data-refused="row"]').textContent).toBe("Write the number of the row.");
-    await type("row", "12");
+    await typeField("row", "12");
     expect(document.body.querySelector("[data-command-preview]").textContent).toBe("journal template send 7 --on=task:12 --set=what=… --set=steps=…");
     await send();
     expect(ran).toContainEqual(["template", "send", "7", "--on=task:12", "--set=what=it breaks", "--set=steps=press save"]);
@@ -71,7 +57,7 @@ test("test_edit_only_for_own_template: a template a user made has Edit in its re
     element.querySelector("[data-template-edit]").click();
     await settle();
     expect(document.body.querySelector('[data-field="title"]').value).toBe("Task: bug");
-    await type("brief", "What goes wrong");
+    await typeField("brief", "What goes wrong");
     document.body.querySelectorAll("[data-part-remove]")[0].click();
     await settle();
     await send();
@@ -104,8 +90,8 @@ test("test_new_template: New makes a template from its title, description and pa
     const {element, ran} = await drawn();
     element.querySelector("[data-template-new]").click();
     await settle();
-    await type("title", "Review: design");
-    await type("brief", "Screens and states");
+    await typeField("title", "Review: design");
+    await typeField("brief", "Screens and states");
     typeInto(document.body.querySelector("[data-part-text]"), "What a person sees");
     await settle();
     document.body.querySelector("[data-part-add]").click();

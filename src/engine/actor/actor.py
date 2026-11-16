@@ -13,6 +13,11 @@ class Actor:
     def is_agent(self) -> bool:
         return self.type is ActorType.AGENT
 
+    # whether an actor is given and is an agent
+    @staticmethod
+    def given_agent(actor: "Actor | None") -> bool:
+        return actor is not None and actor.is_agent()
+
     def is_person(self) -> bool:
         return self.type is ActorType.USER
 
