@@ -7,6 +7,10 @@ from core.modules.drivers.support.read_versions_writers import ReadVersionsWrite
 from engine.enums.closer_role import CloserRole
 import json
 from collections.abc import Mapping, Sequence
+from dataclasses import replace
+
+from engine.actor.actor import Actor
+from engine.enums.actor_type import ActorType
 
 from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.contracts.effect import Effect
@@ -174,18 +178,23 @@ class StoredStepWriter(StepWriter):
     def run_effects(self, effects: Sequence[Effect], view: AgentView, record: DecisionRecord, is_allowed_effect: bool, context: Context) -> tuple[list[str], Mapping[str, object] | None]:
         failures: list[str] = []
         updated_input: Mapping[str, object] | None = None
+        agent_context = replace(context, actor=self.agent_actor(view))
         for effect in effects:
             results: list[object] = []
             for command in self.effect_commands.commands(effect, view, record):
                 try:
                     with self.database.savepoint(type(command).__name__):
-                        results.append(self.bus.dispatch(command, context.nested(command)))
+                        results.append(self.bus.dispatch(command, agent_context.nested(command)))
                 except Refusal as refusal:
                     if is_allowed_effect and effect.is_required:
                         raise RequiredEffectError(f"{type(effect).__name__} failed: {refusal}") from refusal
                     failures.append(f"the journal could not run {type(command).__name__}: {refusal}")
             updated_input = updated_input or effect.input_after(view, record, results)
         return failures, updated_input
+
+    @staticmethod
+    def agent_actor(view: AgentView) -> Actor:
+        return Actor(view.agent.agent_id, ActorType.AGENT)
 
     def save_wake(self, view: AgentView, wake: WakeChange, context: Context) -> None:
         if wake.wake_move is WakeMove.UNCHANGED:
