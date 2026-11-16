@@ -97,7 +97,7 @@ def test_agent_one_keeps_its_started_task_when_a_codex_session_takes_it_over(new
     task_id = story.new_row_id('task make "Count the till" --brief "count it"', actor=story.agent)
     story.expect_success(f"task start {task_id}", actor=story.agent)
     story.hook("s-2", HookSamples.session_start().with_fields(program="codex"))
-    story.expect_text(f"task show {task_id}", "holder_id: main agent 1", actor=story.user)
+    story.expect_text(f"task show {task_id}", "holder_id: 1 (main agent)", actor=story.user)
     expect_single_main_row(story)
 
 

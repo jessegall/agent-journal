@@ -16,7 +16,7 @@ class NoWorktrees:
 def test_a_worker_with_no_worktree_here_is_refused_by_its_number():
     subcommand = ReadBehindFactsSubcommand(None, NoWorktrees(), None)
     refused = subcommand.read(Namespace(worker_id=41), None)
-    assert isinstance(refused, Refusal) and refused.reason == "no worker 999 with a worktree in this environment"
+    assert isinstance(refused, Refusal) and refused.reason == "no worker 41 with a worktree in this environment"
 
 
 def test_the_facts_print_as_plain_lines():

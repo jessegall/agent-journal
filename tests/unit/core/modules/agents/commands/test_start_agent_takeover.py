@@ -46,7 +46,7 @@ class FakeWrites:
 def handler_with_writes() -> tuple[StartAgentHandler, FakeWrites]:
     writes = FakeWrites()
     chain = SimpleNamespace(start_timestamp=lambda pid: STARTED_AT)
-    return StartAgentHandler(SimpleNamespace(), writes, chain, SimpleNamespace(), SimpleNamespace(), writes, SimpleNamespace(), writes, writes), writes
+    return StartAgentHandler(SimpleNamespace(), writes, chain, SimpleNamespace(), SimpleNamespace(), writes, writes, writes, SimpleNamespace(), SimpleNamespace(), SimpleNamespace()), writes
 
 
 def codex_start() -> SimpleNamespace:

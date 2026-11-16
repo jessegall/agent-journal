@@ -22,7 +22,7 @@ class Output:
     """Prints what a command gives back: plain lines for a user, or one JSON value with --json. A row a
     write gave back prints as the confirmation of what that write touched; a terminal reader may be shown
     colour codes. A printed row names the actor in an actor or agent column as the console's actor text says:
-    an agent by its role and id, the core as the journal; JSON keeps the id."""
+    its id with the agent's role, a removed agent or the journal beside it; JSON keeps the id."""
 
     def __init__(self, tables: Tables, json_output: bool, stream: TextIO, is_terminal: bool = False, actor_text: Callable[[int], str] = str) -> None:
         self.tables, self.json_output, self.stream, self.is_terminal = tables, json_output, stream, is_terminal

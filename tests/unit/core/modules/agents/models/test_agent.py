@@ -4,10 +4,10 @@ from engine.time.timestamp import Timestamp
 
 
 def agent(role: str, number: int, ended_at: Timestamp | None = None) -> Agent:
-    return Agent(id=40, actor_id=40, creator_id=1, session="s-1", program="claude", role=role, ended_at=ended_at)
+    return Agent(id=number, actor_id=number, creator_id=0, session="s-1", program="claude", role=role, ended_at=ended_at)
 
 
-def test_a_worker_shows_its_role_and_its_number_and_not_its_row_id():
+def test_a_worker_shows_its_role_and_its_id():
     assert agent("worker", 5).display_name == "Worker 5"
 
 

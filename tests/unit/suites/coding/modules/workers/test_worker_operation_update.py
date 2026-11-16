@@ -40,10 +40,10 @@ def listener() -> WorkerRunEndedListener:
 
 
 def test_the_finished_line_of_an_update_follows_its_result_and_a_clash_ending_with_exit_code_0_is_a_clash():
-    assert listener().update_agent_message(operation(outcome=UpdateResult.UPDATED), ended(0)).text == WorkerOperationUpdatedMessage.declared().agent_message(worker=3, output=40).text
-    assert listener().update_agent_message(operation(outcome=UpdateResult.CURRENT), ended(0)).text == WorkerOperationUpdatedMessage.declared().agent_message(worker=3, output=40).text
-    assert listener().update_agent_message(operation(outcome=UpdateResult.CONFLICTS), ended(0)).text == WorkerOperationUpdateConflictMessage.declared().agent_message(worker=3, output=40).text
-    assert listener().update_agent_message(operation(outcome=None), ended(1)).text == WorkerOperationUpdateFailedMessage.declared().agent_message(worker=3, output=40).text
+    assert listener().update_agent_message(operation(outcome=UpdateResult.UPDATED), ended(0)).text == WorkerOperationUpdatedMessage.declared().agent_message(worker=7, output=40).text
+    assert listener().update_agent_message(operation(outcome=UpdateResult.CURRENT), ended(0)).text == WorkerOperationUpdatedMessage.declared().agent_message(worker=7, output=40).text
+    assert listener().update_agent_message(operation(outcome=UpdateResult.CONFLICTS), ended(0)).text == WorkerOperationUpdateConflictMessage.declared().agent_message(worker=7, output=40).text
+    assert listener().update_agent_message(operation(outcome=None), ended(1)).text == WorkerOperationUpdateFailedMessage.declared().agent_message(worker=7, output=40).text
 
 
 def test_an_update_already_on_its_base_is_current_a_moved_one_updated_and_markers_a_clash():

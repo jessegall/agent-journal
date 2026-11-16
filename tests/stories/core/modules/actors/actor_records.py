@@ -6,7 +6,7 @@ def test_the_core_actor_exists_after_the_first_sync(new_story):
 def test_a_user_actor_is_made_and_listed_beside_the_core(new_story):
     story = new_story()
     actor_id = story.new_row_id('actor make user "Ada"')
-    story.expect_success(f"actor show {actor_id}", "type: user", "name: Ada", "creator_id: the journal")
+    story.expect_success(f"actor show {actor_id}", "type: user", "name: Ada", "creator_id: 0 (the journal)")
     story.expect_success("actor list --type user", f"{actor_id}  user  Ada")
 
 

@@ -22,7 +22,7 @@ class DriverChange:
     def __init__(self, allowed_models: tuple[str, ...] = ("gpt-6.1-sol", "gpt-6.1-terra"), **agent_changes: object) -> None:
         self.commands: list[object] = []
         self.allowed_models = allowed_models
-        fields = {"id": 7, "number": 4, "role": "helper", "profile": "journal-researcher", "program": "claude", "program_model": "sonnet", "ended_at": ENDED_AT, "retired_at": None}
+        fields = {"id": 4, "role": "helper", "profile": "journal-researcher", "program": "claude", "program_model": "sonnet", "ended_at": ENDED_AT, "retired_at": None}
         self.agent = SimpleNamespace(**{**fields, **agent_changes})
         self.handler = ChangeAgentDriverHandler(SimpleNamespace(required=lambda model, row_id: self.agent), SimpleNamespace(run_with_context=self.run),
                                                 SimpleNamespace(checked_model=self.checked_model), SimpleNamespace(check_driver_change=lambda actor, agent: None),
