@@ -30,7 +30,7 @@ def version_row(story) -> int:
 def test_a_pause_written_after_the_view_was_read_keeps_that_step_from_saving(played):
     story = played(BuilderStarted)
     view, step = read_step(story)
-    story.expect_success(f"agent pause {story.container.get(AgentRows).find(story.agent.id).number}", actor=story.user)
+    story.expect_success(f"agent pause {story.container.get(AgentRows).find(story.agent.id).id}", actor=story.user)
     assert saved(story, view, step).is_saved is False
     assert saved(story, *read_step(story)).is_saved is True
 

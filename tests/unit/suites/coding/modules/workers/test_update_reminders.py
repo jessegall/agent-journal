@@ -1,4 +1,3 @@
-from engine.cli.agent_ids import AgentIds
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
@@ -72,14 +71,11 @@ class NoMarkers:
         return ()
 
 
-class Numbers(AgentIds):
-    def number(self, model: str, row_id: int) -> int:
-        return 4
 
 
 def run_at(minutes: list[int], store: Store | None = None, paused: bool = False, reminders: int = 2) -> tuple[list[object], list[object], Store]:
     store, message_sender, inbox = store or Store(), Lines(), Lines()
-    handler = RemindBehindUpdatesHandler(store, Rows(paused), store, Settings(reminders), message_sender, inbox, Numbers(), NoMarkers())
+    handler = RemindBehindUpdatesHandler(store, Rows(paused), store, Settings(reminders), message_sender, inbox, NoMarkers())
     for minute in minutes:
         handler.handle(RemindBehindUpdates(), SimpleNamespace(timestamp=Timestamp(ORDERED_AT + timedelta(minutes=minute))))
     return message_sender.sent, inbox.sent, store

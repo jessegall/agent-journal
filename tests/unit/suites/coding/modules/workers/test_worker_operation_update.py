@@ -1,4 +1,3 @@
-from engine.cli.agent_ids import AgentIds
 from engine.enums.actor_type import ActorType
 from engine.enums.command_category import CommandCategory
 from engine.errors.refusal import Refusal
@@ -34,13 +33,10 @@ def ended(exit_code: int) -> Process:
                    category=CommandCategory.BACKGROUND_JOB, limit_seconds=3600, state=ProcessState.FINISHED, exit_code=exit_code)
 
 
-class Numbers(AgentIds):
-    def number(self, model: str, row_id: int) -> int:
-        return 3
 
 
 def listener() -> WorkerRunEndedListener:
-    return WorkerRunEndedListener(None, None, None, None, None, None, None, Numbers())
+    return WorkerRunEndedListener(None, None, None, None, None, None, None)
 
 
 def test_the_finished_line_of_an_update_follows_its_result_and_a_clash_ending_with_exit_code_0_is_a_clash():
@@ -57,7 +53,7 @@ def test_an_update_already_on_its_base_is_current_a_moved_one_updated_and_marker
 
 
 def test_the_accepted_line_of_an_update_tells_the_worker_not_to_edit_files_meanwhile():
-    assert WorkerRunAnswer(None, None, Numbers()).operation_instruction(operation()) == "do not edit files until it ends, you hear when it ends"
+    assert WorkerRunAnswer(None, None).operation_instruction(operation()) == "do not edit files until it ends, you hear when it ends"
 
 
 class Operations:

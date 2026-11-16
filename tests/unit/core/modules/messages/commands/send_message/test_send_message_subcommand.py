@@ -11,24 +11,24 @@ from engine.errors.refusal import Refusal
 SHOP = SimpleNamespace(environment_id=2)
 
 
-class ShopNumbers(AgentIds):
-    """In the shop environment agent 2 is row 40."""
+class ShopAgents(AgentIds):
+    """The shop environment has agent 2."""
 
-    def row_id(self, model_name: str, number: int, environment_id: int | None) -> int:
-        assert (model_name, environment_id) == ("agent", SHOP.environment_id)
-        return {2: 40}[number]
+    def checked(self, agent_id: int, environment_id: int | None) -> int:
+        assert (agent_id, environment_id) == (2, SHOP.environment_id)
+        return agent_id
 
 
 def line(target: str) -> Namespace:
     return Namespace(text="Count the till", files=[], target_agent=None, to=target)
 
 
-def test_a_message_to_agent_two_goes_to_the_row_of_agent_two_in_the_environment_of_the_line():
-    command = SendMessageSubcommand(ShopNumbers()).command(line("agent:2"), SHOP)
-    assert isinstance(command, SendAgentMessage) and command == SendAgentMessage(40, "Count the till")
+def test_a_message_to_agent_two_goes_to_agent_two_once_the_environment_of_the_line_has_it():
+    command = SendMessageSubcommand(ShopAgents()).command(line("agent:2"), SHOP)
+    assert isinstance(command, SendAgentMessage) and command == SendAgentMessage(2, "Count the till")
 
 
 @pytest.mark.parametrize("target", ["agent:0", "agent:x", "agent:", "worker:2", "agent:1e3"])
-def test_a_target_that_is_no_agent_number_is_refused(target):
+def test_a_target_that_is_no_agent_id_is_refused(target):
     with pytest.raises(Refusal, match="is not an agent"):
-        SendMessageSubcommand(ShopNumbers()).command(line(target), SHOP)
+        SendMessageSubcommand(ShopAgents()).command(line(target), SHOP)

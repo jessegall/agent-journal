@@ -1,4 +1,3 @@
-from engine.cli.agent_ids import AgentIds
 from argparse import Namespace
 
 from engine.errors.refusal import Refusal
@@ -12,13 +11,10 @@ class NoWorktrees:
         return None
 
 
-class Numbers(AgentIds):
-    def number(self, model: str, row_id: int) -> int:
-        return 999
 
 
 def test_a_worker_with_no_worktree_here_is_refused_by_its_number():
-    subcommand = ReadBehindFactsSubcommand(None, NoWorktrees(), None, Numbers())
+    subcommand = ReadBehindFactsSubcommand(None, NoWorktrees(), None)
     refused = subcommand.read(Namespace(worker_id=41), None)
     assert isinstance(refused, Refusal) and refused.reason == "no worker 999 with a worktree in this environment"
 

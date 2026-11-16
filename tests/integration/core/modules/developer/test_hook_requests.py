@@ -164,7 +164,7 @@ def test_a_hook_request_counts_the_parts_of_its_command_chain(recording_server):
 def test_requests_show_the_sender_and_queue_time(recording_server):
     server = recording_server
     worker = started_worker(server.journal, "s-worker")
-    number = server.journal.container.get(Queries).query(Agent).find(worker).number
+    number = server.journal.container.get(Queries).query(Agent).find(worker).id
     assert server.journal.run(f'agent edit {number} --given-name "Ada"').code == 0
     for session, role in ((SESSION, "main"), ("s-worker", "worker")):
         post_hook(server, HookSamples.sample("post_tool_use").with_fields(session=session, role=role, event_id=f"sender-{role}"))

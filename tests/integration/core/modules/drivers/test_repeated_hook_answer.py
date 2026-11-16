@@ -12,7 +12,7 @@ EDIT = HookSamples.edit("src/cart.py").with_fields(event_id="replayed-edit")
 
 def paused_after(story, sample):
     first = story.hook("s-1", sample)
-    story.expect_success(f"agent pause {story.container.get(AgentRows).find(story.agent.id).number}", actor=story.user)
+    story.expect_success(f"agent pause {story.container.get(AgentRows).find(story.agent.id).id}", actor=story.user)
     return first, story.hook("s-1", sample)
 
 

@@ -40,7 +40,7 @@ def test_a_person_retires_an_ended_helper_in_the_viewer_and_its_number_and_memor
         person.value("agents.agents", ["agent", "retire", str(helper.id), "--reason", "Its reading is done", "--environment", "main"])
     launches(ended, TAX_START)
     kept = helper_rows(ended)
-    ended.expect_rows(len(kept) == 2, kept[0].retired_at is not None, kept[1].retired_at is None, kept[1].number > helper.id, detail=str(kept))
+    ended.expect_rows(len(kept) == 2, kept[0].retired_at is not None, kept[1].retired_at is None, kept[1].id > helper.id, detail=str(kept))
     ended.expect_text("memory list", MEMORY_TEXT, actor=Actor(helper.id, ActorType.AGENT))
 
 

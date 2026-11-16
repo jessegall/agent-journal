@@ -1,4 +1,3 @@
-from engine.cli.agent_ids import AgentIds
 from contextlib import nullcontext
 from dataclasses import replace
 
@@ -107,9 +106,6 @@ class Lines:
         self.sent.append((agent_id, declaration, fields))
 
 
-class Numbers(AgentIds):
-    def number(self, model: str, row_id: int) -> int:
-        return 4
 
 
 class Context:
@@ -118,7 +114,7 @@ class Context:
 
 def routed(git: Git, settings: Settings | None = None, operations: Operations | None = None) -> tuple[BehindRoute, Repository, Lines, Lines]:
     repository, main_line, message_sender = Repository(), Lines(), Lines()
-    handler = CheckWorktreeBehindHandler(Rows(), git, Checks(), repository, settings or Settings(), operations or Operations(), main_line, message_sender, Numbers())
+    handler = CheckWorktreeBehindHandler(Rows(), git, Checks(), repository, settings or Settings(), operations or Operations(), main_line, message_sender)
     handler.prepare(CheckWorktreeBehind(1), Actor.core())
     return handler.handle(CheckWorktreeBehind(1), Context()), repository, main_line, message_sender
 
@@ -167,7 +163,7 @@ class Queries:
 
 def announced(merger_on: bool) -> tuple[Lines, tuple[object, ...]]:
     inbox = Lines()
-    lines = AnnounceBehindChecksHandler(Rows(), Queries(), inbox, Settings(merger=merger_on), Numbers()).handle(AnnounceBehindChecks((1, 2, 3, 4, 5)), Context())
+    lines = AnnounceBehindChecksHandler(Rows(), Queries(), inbox, Settings(merger=merger_on)).handle(AnnounceBehindChecks((1, 2, 3, 4, 5)), Context())
     return inbox, lines
 
 

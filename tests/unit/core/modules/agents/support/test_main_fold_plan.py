@@ -1,14 +1,11 @@
-from datetime import datetime, timezone
-
-from engine.time.timestamp import Timestamp
-from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_fold_plan import MainFoldPlan
+from core.modules.agents.support.main_row import MainRow
 
-ENDED = Timestamp(datetime(2026, 11, 1, tzinfo=timezone.utc))
+ENDED = "2026-11-01T00:00:00+00:00"
 
 
-def main(row_id: int, environment_id: int = 5, number: int = 0, ended: bool = True, role: str = "main") -> Agent:
-    return Agent(id=row_id, actor_id=row_id, environment_id=environment_id, creator_id=1, session=f"s-{row_id}", program="claude", role=role, ended_at=ENDED if ended else None)
+def main(row_id: int, environment_id: int = 5, number: int = 0, ended: bool = True, role: str = "main") -> MainRow:
+    return MainRow(row_id, environment_id, number, role, ENDED if ended else None)
 
 
 def test_the_running_main_row_survives_over_the_one_numbered_1():

@@ -1,4 +1,3 @@
-from engine.cli.agent_ids import AgentIds
 from types import SimpleNamespace
 
 import pytest
@@ -60,9 +59,6 @@ class Checks:
         return SimpleNamespace(program="claude", program_model="sonnet")
 
 
-class Numbers(AgentIds):
-    def number(self, model: str, row_id: int) -> int:
-        return 999
 
 
 class Repository:
@@ -101,7 +97,7 @@ class Reader:
 
 def handler(checks: Checks, worktrees: Worktrees | None = None) -> tuple[OrderWorkerUpdateHandler, Repository, Visits, MessageSender]:
     repository, visits, message_sender = Repository(), Visits(), MessageSender()
-    decisions = BehindDecisions(worktrees or Worktrees(), checks, Numbers())
+    decisions = BehindDecisions(worktrees or Worktrees(), checks)
     return OrderWorkerUpdateHandler(Agents(), decisions, Reader(), checks, repository, visits, message_sender), repository, visits, message_sender
 
 

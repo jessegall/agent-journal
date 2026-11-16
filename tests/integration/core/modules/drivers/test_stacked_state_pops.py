@@ -50,7 +50,7 @@ def test_a_popped_working_stacked_state_is_suppressed_until_its_work_is_assigned
     stacked(story, StackedState(Working(WorkReference(WorkType.TASK, 2, "task 2"), True, Reason("tasks.finish", DecisionClass.REFUSE, "tasks.work", "finish task 2")), WORK_KEY, ENTERED))
     popped(story, WORK_KEY.generation)
     assert suppressed(story) == (WORK_KEY,)
-    story.expect_success(f"task assign 2 --to {story.container.get(AgentRows).find(story.agent.id).number}", actor=story.user)
+    story.expect_success(f"task assign 2 --to {story.container.get(AgentRows).find(story.agent.id).id}", actor=story.user)
     assert suppressed(story) == ()
 
 

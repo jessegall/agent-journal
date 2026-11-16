@@ -144,7 +144,7 @@ class ControlLead(Driver):
 
 class SamplesModule(Module):
     name = "samples"
-    requires_engine = ">=5.0,<6"
+    requires_engine = ">=6.0,<7"
     dependencies = ["journal.core.agents", "journal.core.drivers"]
     models = [ModelDeclaration(EditLock, commands=[EditLockEnd, EditLockReopen])]
     migrations = [EditLocksTable]

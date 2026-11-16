@@ -10,7 +10,7 @@ from engine.module.module_order import ModuleOrder
 from engine.module.version_requirement import VersionRequirement
 
 
-def module(name: str, dependencies: tuple[str, ...] = (), requires_engine: str = ">=5.0,<6") -> type[Module]:
+def module(name: str, dependencies: tuple[str, ...] = (), requires_engine: str = ">=6.0,<7") -> type[Module]:
     return type(name.title() + "Module", (Module,), {"name": name, "dependencies": dependencies, "requires_engine": requires_engine})
 
 

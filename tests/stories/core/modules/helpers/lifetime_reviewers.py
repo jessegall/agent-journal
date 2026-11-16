@@ -96,7 +96,7 @@ def test_a_person_retires_an_ended_reviewer_and_the_next_start_makes_a_new_agent
     story.expect_success(f'agent retire {retired.id} --reason "Its reviews are done" --environment main', actor=story.user)
     launches(story, START_REVIEW.format(plan=6))
     current = reviewers(story)
-    story.expect_rows(len(current) == 2, current[0].retired_at is not None, current[1].retired_at is None, current[1].number > retired.id, detail=str(current))
+    story.expect_rows(len(current) == 2, current[0].retired_at is not None, current[1].retired_at is None, current[1].id > retired.id, detail=str(current))
     story.expect_absent("memory list", REVIEW_MEMORY, actor=Actor(current[1].id, ActorType.AGENT))
 
 
@@ -104,7 +104,7 @@ def test_a_reviewer_start_with_no_idle_reviewer_makes_an_agent_with_the_next_num
     story = new_story(fixture=UserBuilder)
     command = launches(story, START_REVIEW.format(plan=5))[0]["command"]
     current = reviewers(story)
-    story.expect_rows(len(current) == 1, current[0].number == 2, current[0].session in command, "--resume" not in command, detail=str(command[:4]))
+    story.expect_rows(len(current) == 1, current[0].id == 2, current[0].session in command, "--resume" not in command, detail=str(command[:4]))
     story.expect_text("agent show 2 --environment main", f"profile: {REVIEWER}", f"session: {current[0].session}", actor=story.user)
 
 
@@ -165,7 +165,7 @@ def test_many_reviews_one_after_another_leave_one_reviewer_agent_with_its_number
         story.expect_success(f"agent end {reviewer.id}", actor=story.user)
         story.run_listeners()
     current = reviewers(story)
-    story.expect_rows(len(current) == 1, current[0].number == reviewer.id, len(read_jobs(story, reviewer)) == 7, detail=str(current))
+    story.expect_rows(len(current) == 1, current[0].id == reviewer.id, len(read_jobs(story, reviewer)) == 7, detail=str(current))
 
 
 def test_a_reviewer_with_no_program_follows_the_program_split_at_each_launch_under_one_number(helper_split_story, helper_viewer):
@@ -178,7 +178,7 @@ def test_a_reviewer_with_no_program_follows_the_program_split_at_each_launch_und
     set_split(story, "claude 0,codex 100", viewer=helper_viewer)
     second = launches(story, review_job(story, reviewer, 6))[0]["command"][0]
     current = reviewers(story)
-    story.expect_rows((first, second) == ("claude", "codex"), len(current) == 1, current[0].number == reviewer.id, current[0].program == "codex", detail=f"{first} / {second}")
+    story.expect_rows((first, second) == ("claude", "codex"), len(current) == 1, current[0].id == reviewer.id, current[0].program == "codex", detail=f"{first} / {second}")
 
 
 def test_fresh_with_a_reason_while_a_reviewer_is_idle_makes_a_second_agent_and_keeps_the_reason(idle_reviewer):
@@ -186,4 +186,4 @@ def test_fresh_with_a_reason_while_a_reviewer_is_idle_makes_a_second_agent_and_k
     launches(story, f"{START_REVIEW.format(plan=6)} --fresh '{NEW_AGENT_REASON}'")
     current = reviewers(story)
     job = story.first_row(HelperJob, helper_id=current[1].id)
-    story.expect_rows(len(current) == 2, current[1].number > current[0].number, job.new_agent_reason == NEW_AGENT_REASON, detail=str(current))
+    story.expect_rows(len(current) == 2, current[1].id > current[0].id, job.new_agent_reason == NEW_AGENT_REASON, detail=str(current))

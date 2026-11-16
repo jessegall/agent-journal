@@ -45,11 +45,11 @@ def test_a_helper_has_saved_commands_from_its_first_start(new_story):
 
 def test_helper_stop_tells_a_worker_where_its_work_goes(new_story):
     story = new_story(fixture=WorkerStarted)
-    worker = json.loads(story.run(f"agent show {story.story_rows(Agent, role='worker')[0].number} --environment main --json").output_text)
+    worker = json.loads(story.run(f"agent show {story.story_rows(Agent, role='worker')[0].id} --environment main --json").output_text)
     story.expect_refusal(f"helper stop {worker['id']}", "takes its work with journal worker send")
 
 
 def test_a_wait_on_a_helper_that_is_a_worker_follows_the_worker(new_story):
     story = new_story(fixture=WorkerStarted)
-    worker = json.loads(story.run(f"agent show {story.story_rows(Agent, role='worker')[0].number} --environment main --json").output_text)
+    worker = json.loads(story.run(f"agent show {story.story_rows(Agent, role='worker')[0].id} --environment main --json").output_text)
     story.expect_refusal(f"task block 1 --on helper:{worker['id']}", f"worker {worker['id']} has already finished")
