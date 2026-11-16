@@ -81,7 +81,7 @@ def test_cost_above_capacity_is_refused_with_the_text():
     costly_class = ExecutionClass("huge build", ExecutionLength.LONG, 10, ExecutionPriority.AGENT)
     with pytest.raises(Refusal) as refused:
         ExecutionClasses.validate(costly_class, 8)
-    assert "costs 10 but the long lane holds 8: lower the cost or raise the capacity" in refused.value.text
+    assert "costs 10 but the long pool holds 8: lower the cost or raise the capacity" in refused.value.text
 
 
 @pytest.mark.parametrize("row", BUILTIN_CLASSES, ids=lambda row: row.execution_class.name)

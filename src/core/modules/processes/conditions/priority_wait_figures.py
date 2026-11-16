@@ -1,9 +1,9 @@
+from engine.enums.duration_unit import DurationUnit
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
 from engine.query.select import Select
 
-DAY_SECONDS = 86400
 
 
 @dataclass(frozen=True)
@@ -15,6 +15,6 @@ class PriorityWaitFigures:
 
     def statement(self) -> Statement:
         source = self.select.statement()
-        waited = f"max(0, (julianday(started_at) - julianday(created_at)) * {DAY_SECONDS})"
+        waited = f"max(0, (julianday(started_at) - julianday(created_at)) * {DurationUnit.DAY.seconds})"
         return Statement(f"SELECT first_priority, count(*) AS runs, max({waited}) AS longest, avg({waited}) AS average FROM ({source.sql}) GROUP BY first_priority",
                          tuple(source.parameters))

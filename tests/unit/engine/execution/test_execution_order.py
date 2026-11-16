@@ -103,7 +103,7 @@ def test_wait_past_step_raises_one_step():
 
 
 def test_raised_wait_starts_again():
-    raised = ORDER.raised([ticket(NORMAL)], seconds_after_start(12), False)[0]
+    raised = ORDER.raised([ticket(NORMAL)], seconds_after_start(12))[0]
     assert raised.raised_at == seconds_after_start(10)
 
 
@@ -120,7 +120,7 @@ def test_raise_stops_at_reserved():
 
 
 def test_raised_ticket_still_counts_as_first_priority():
-    raised = ORDER.raised([ticket(NORMAL)], seconds_after_start(10), False)[0]
+    raised = ORDER.raised([ticket(NORMAL)], seconds_after_start(10))[0]
     assert (raised.first_priority, raised.priority) == (NORMAL, AGENT)
 
 

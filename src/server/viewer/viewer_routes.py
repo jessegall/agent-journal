@@ -5,7 +5,7 @@ from engine.journal.journal_home import JournalHome
 from server.work.listeners.listener_wake_router import ListenerWakeRouter
 from server.viewer.buttons_route import ButtonsRoute
 from server.viewer.chat_declarations_route import ChatDeclarationsRoute
-from server.execution.viewer_tickets import ViewerTickets
+from server.execution.tickets.viewer_tickets import ViewerTickets
 from server.viewer.event_stream import EventStream
 from server.viewer.file_route import FileRoute
 from server.viewer.line_route import LineRoute

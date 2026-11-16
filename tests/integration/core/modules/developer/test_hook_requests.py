@@ -1,4 +1,4 @@
-from server.execution.hook_turn import HookTurn
+from server.execution.tickets.hook_turn import HookTurn
 from datetime import timedelta
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
 from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SIZE_SETTING

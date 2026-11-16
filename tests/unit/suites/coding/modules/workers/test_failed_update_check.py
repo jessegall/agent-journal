@@ -1,3 +1,4 @@
+from engine.cli.row_numbers import RowNumbers
 from suites.coding.modules.workers.commands.record_failed_update.record_failed_update import RecordFailedUpdate
 from suites.coding.modules.workers.commands.record_failed_update.record_failed_update_handler import RecordFailedUpdateHandler
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState as State
@@ -21,7 +22,7 @@ class Inbox:
         self.sent.append(agent_message)
 
 
-class Numbers:
+class Numbers(RowNumbers):
     def number(self, model: str, row_id: int) -> int:
         return 4
 

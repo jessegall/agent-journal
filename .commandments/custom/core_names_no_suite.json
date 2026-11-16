@@ -61,13 +61,16 @@
         "reject": [
             {
                 "fileMatches": "(^|/)src/core/modules/[^/]+/migrations/"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/drivers/drivers/rank_orders\\.py$"
             }
         ]
     },
     "sin": {
         "description": "Core names a suite or a concept owned by a suite.",
         "name": "core-names-no-suite",
-        "rule": "Core supplies building blocks and generic contracts; suites declare their own concepts and behavior.",
+        "rule": "Core supplies building blocks and generic contracts; suites declare their own concepts and behavior. The drivers' rank table is the one exception: doc 1310 section 5.1 ranks the keys of every module in one table, suites' included, since every driver's table gathers the contributions of every module of its agent type.",
         "skill": "core-names-no-suite"
     }
 }

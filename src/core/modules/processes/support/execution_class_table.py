@@ -3,7 +3,6 @@ from dataclasses import dataclass
 
 
 from core.modules.processes.support.class_table_entry import ClassTableEntry
-ROW_LINE = "{name}: {lane} lane, cost {cost}, {priority}, {limit}{holds} ({origin})"
 
 
 @dataclass(frozen=True)

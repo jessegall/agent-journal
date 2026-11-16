@@ -1,4 +1,4 @@
-from server.execution.hook_turn import HookTurn
+from server.execution.tickets.hook_turn import HookTurn
 import json
 import sqlite3
 from datetime import timedelta

@@ -1,3 +1,4 @@
+from engine.model.table import Table
 import pytest
 
 from engine.errors.refusal import Refusal
@@ -31,4 +32,4 @@ def test_fading_lowers_the_weight_by_one_and_never_below_0():
 
 
 def test_memories_live_in_the_memories_table():
-    assert Memory.table == "memories"
+    assert Table.build(Memory).name == "memories"

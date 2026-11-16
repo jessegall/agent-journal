@@ -1,7 +1,7 @@
 from contextlib import AbstractContextManager
 
 from engine.listener.round_yield import RoundYield
-from server.execution.round_tickets import RoundTickets
+from server.execution.tickets.round_tickets import RoundTickets
 
 
 class ExecutionRoundYield(RoundYield):

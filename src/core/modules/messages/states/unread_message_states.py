@@ -8,7 +8,7 @@ from core.modules.messages.agent_messages.unread_refusal_message import UnreadRe
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.support.block_conditions.messages_read import MessagesRead
 from core.modules.messages.support.message_agent_messages import UNREAD_TOOL_USES
-from engine.agent_machine.states.agent_plan_states import AgentPlanStates
+from engine.agent_machine.contracts.agent_plan_states import AgentPlanStates
 
 UNREAD_RANK = "messages.unread"
 TOOL_KEY, STOP_KEY = "messages.unread-write", "messages.unread-at-stop"

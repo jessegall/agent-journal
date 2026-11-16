@@ -56,8 +56,7 @@ src/core/modules/documents/support/work_context_reader.py:the work context names
 src/core/modules/documents/support/work_context_reader.py:the work context names every actor, link and title its messages refer to
 src/core/modules/documents/support/work_context_reader.py:the work context names every actor, link and title its messages refer to
 src/core/modules/documents/support/work_context_reader.py:the work context names every actor, link and title its messages refer to
-src/core/modules/drivers/bindings/agent_wake_route.py:a wake ask offers every line that waits to wake its agent, oldest first
-src/core/modules/drivers/bindings/stored_agent_view_reader.py:the frames a person removed from one agent, a handful at most
+src/core/modules/drivers/bindings/stored_agent_view_reader.py:the stacked states a person removed from one agent, a handful at most
 src/core/modules/drivers/bindings/stored_step_writer.py:a step closes the few blocks it judged ended
 src/core/modules/drivers/bindings/table_grant_ledger.py:the open grants of the agents one step reads, a few each
 src/core/modules/drivers/bindings/table_grant_ledger.py:the open grants of the agents one step reads, a few each
@@ -74,7 +73,7 @@ src/core/modules/drivers/commands/record_driver_tables/record_driver_tables_hand
 src/core/modules/drivers/commands/record_hook_call/record_hook_call_handler.py:every line waiting for the agent may be handed to it at this hook
 src/core/modules/drivers/commands/report_compaction_faults/report_compaction_faults_handler.py:The compactions still requested, started or unmeasured ten minutes after they were made: one for each agent at most, read together on a tick.
 src/core/modules/drivers/commands/restore_stacked_state/restore_stacked_state_handler.py:the open suppressions of one agent, a handful at most
-src/core/modules/drivers/listeners/assigned_work_suppression_listener.py:the frames a person removed from one agent, a handful at most
+src/core/modules/drivers/listeners/assigned_work_hidden_state_listener.py:the stacked states a person removed from one agent, a handful at most
 src/core/modules/drivers/listeners/claimed_line_release_listener.py:at a start every line left typing is released
 src/core/modules/drivers/listeners/retired_responder_listener.py:the agents a retired agent started, a handful
 src/core/modules/drivers/listeners/retired_responder_listener.py:the open escalations of a retired agent's children, one each at most
@@ -89,7 +88,7 @@ src/core/modules/drivers/support/read_versions_writers.py:the running agents one
 src/core/modules/drivers/support/read_versions_writers.py:the stacks of the agents one write moves: one agent, or a running tree of a few
 src/core/modules/drivers/support/message_records.py:every record of the agent messages asked about decides whether each is due again
 src/core/modules/drivers/support/open_block_rows.py:the open blocks of one agent are few: each is closed or skipped before the agent goes on
-src/core/modules/drivers/support/read_only_access.py:a tool use is matched against every permission the agent was given, oldest first
+src/core/modules/drivers/support/restricted_read_access.py:a tool use is matched against every permission the agent was given, oldest first
 src/core/modules/drivers/support/waiting_line_typing.py:a release types every line that waited for the agent, oldest first
 src/core/modules/drivers/support/waiting_line_typing.py:a release types every line that waited for the agent, oldest first
 src/core/modules/drivers/ticks/agent_minute_steps.py:the minute step reaches every agent with a stack, one row each

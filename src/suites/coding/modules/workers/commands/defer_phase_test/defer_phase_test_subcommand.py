@@ -26,4 +26,4 @@ class DeferPhaseTestSubcommand(Subcommand[DeferPhaseTest, str]):
         paths = tuple(arguments.paths.split())
         if not paths or not arguments.why.strip():
             raise Refusal("a deferral needs its test paths and why they wait", USAGE)
-        return DeferPhaseTest(arguments.worker_id, paths, arguments.why, arguments.helper_question)
+        return DeferPhaseTest(arguments.worker_id, paths, arguments.why, arguments.ask)

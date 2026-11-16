@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field, replace, fields
 from typing import ClassVar, Self
 from engine.enums.event_form import EventForm
 from engine.row.metadata import Metadata
@@ -60,7 +60,7 @@ class Model:
         return tuple("" if value is None else str(value) for value in (getattr(self, name) for name in self.search_fields))
 
     def state_text(self) -> str:
-        return str(getattr(self, STATE)) if self.lifecycle is not None else ""
+        return str(getattr(self, STATE)) if STATE in {field.name for field in fields(self)} else ""
 
     def matching_terms(self, terms: Sequence[str]) -> list[str]:
         text = self.search_text().lower()

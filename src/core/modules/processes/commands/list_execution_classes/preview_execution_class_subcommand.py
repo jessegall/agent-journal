@@ -7,7 +7,6 @@ from core.modules.processes.support.execution_class_preview import ExecutionClas
 from core.modules.processes.support.execution_class_options import ExecutionClassOptions
 
 from core.modules.processes.commands.support.class_preview import ClassPreview
-UNMATCHED = "no recent line would have matched"
 
 
 class PreviewExecutionClassSubcommand(ReadSubcommand[ClassPreview]):

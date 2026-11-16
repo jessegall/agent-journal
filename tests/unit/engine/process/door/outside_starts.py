@@ -6,7 +6,7 @@ OUTSIDE_STARTS = (
     OutsideStart("src/install/update/install_journal.py", "the installer runs while the server is stopped for the update, inside the pause; there is no door to go through"),
     OutsideStart("src/install/update/chat_update_steps.py", "an installer step reports its progress while the server is stopped, inside the pause"),
     OutsideStart("src/install/hook/hook_switch.py", "the installer checks the hook program it is about to switch to, inside the pause"),
-    OutsideStart("src/server/handover/successor_start.py", "starts the next server during a handover, inside the pause the door is held by"),
+    OutsideStart("src/server/takeover/successor_start.py", "starts the next server during a takeover, inside the pause the door is held by"),
     OutsideStart("src/engine/serving/launcher_replacement.py", "replaces the launcher during an update, inside the pause"),
     OutsideStart("src/engine/cli/shell_handoff.py", "hands the user's terminal to a shell line of their own, outside any server request"),
     OutsideStart("src/engine/caller/process_table.py", "reads ps to find which agent a request comes from, before the request has a scope or an owner to give a row to"),

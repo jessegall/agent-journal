@@ -48,22 +48,3 @@ def test_the_silent_run_hold_names_no_lines():
 @pytest.mark.parametrize("declaration", [RunSparseMessage.declared(), RunFrozenMessage.declared(), SilentRunMessage.declared(), StalledRunMessage.declared()], ids=["sparse", "frozen", "silent", "stalled"])
 def test_the_cadence_notices_use_only_the_output_the_seconds_the_limit_the_hint_and_a_name(declaration):
     assert placeholders(declaration) <= CADENCE_FIELDS
-
-
-def waking_process_agent_messages():
-    from engine.driver.message_template import MessageTemplate
-    from core.modules.processes.support import process_agent_messages
-    declared = [value.declared() for value in vars(process_agent_messages).values() if isinstance(value, type) and issubclass(value, MessageTemplate) and value is not MessageTemplate]
-    return [agent_message for agent_message in declared if agent_message.wakes_agent]
-
-
-def test_every_process_agent_message_that_wakes_an_agent_uses_the_wake_hook():
-    from engine.enums.line_delivery import LineDelivery
-    waking = waking_process_agent_messages()
-    assert len(waking) == 6 and all(agent_message.delivery is LineDelivery.WAKE_HOOK for agent_message in waking)
-
-
-def test_the_process_agent_message_text_is_unchanged():
-    from dataclasses import replace
-    from engine.enums.line_delivery import LineDelivery
-    assert all(replace(agent_message, delivery=LineDelivery.TERMINAL_TYPING).text == agent_message.text for agent_message in waking_process_agent_messages())

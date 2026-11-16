@@ -1,3 +1,4 @@
+from engine.cli.row_numbers import RowNumbers
 from argparse import Namespace
 
 from engine.errors.refusal import Refusal
@@ -11,7 +12,7 @@ class NoWorktrees:
         return None
 
 
-class Numbers:
+class Numbers(RowNumbers):
     def number(self, model: str, row_id: int) -> int:
         return 999
 

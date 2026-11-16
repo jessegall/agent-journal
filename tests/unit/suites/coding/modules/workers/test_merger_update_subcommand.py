@@ -1,3 +1,4 @@
+from engine.cli.row_numbers import RowNumbers
 from types import SimpleNamespace
 
 import pytest
@@ -59,7 +60,7 @@ class Checks:
         return SimpleNamespace(program="claude", program_model="sonnet")
 
 
-class Numbers:
+class Numbers(RowNumbers):
     def number(self, model: str, row_id: int) -> int:
         return 999
 

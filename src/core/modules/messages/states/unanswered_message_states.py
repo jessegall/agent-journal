@@ -7,7 +7,7 @@ from core.modules.messages.agent_messages.unanswered_refusal_message import Unan
 from core.modules.messages.support.block_conditions.messages_answered import MessagesAnswered
 from core.modules.messages.support.message_agent_messages import UNANSWERED_TOOL_USES
 from core.modules.messages.support.unanswered_messages import UnansweredMessages
-from engine.agent_machine.states.agent_plan_states import AgentPlanStates
+from engine.agent_machine.contracts.agent_plan_states import AgentPlanStates
 
 UNANSWERED_RANK = "messages.unanswered"
 UNANSWERED_KEY = "messages.unanswered"

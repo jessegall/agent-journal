@@ -10,7 +10,7 @@ from engine.time.clock import Clock
 from engine.time.timestamp import Timestamp
 from server.execution.execution_priorities import ExecutionPriorities
 from server.execution.execution_queue import ExecutionQueue
-from server.execution.round_tickets import RoundTickets
+from server.execution.tickets.round_tickets import RoundTickets
 from server.execution.session_starters import SessionStarters
 
 RAISE_SECONDS = 10

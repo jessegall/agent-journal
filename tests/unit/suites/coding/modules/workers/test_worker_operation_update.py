@@ -1,3 +1,4 @@
+from engine.cli.row_numbers import RowNumbers
 from engine.enums.actor_type import ActorType
 from engine.enums.command_category import CommandCategory
 from engine.errors.refusal import Refusal
@@ -33,7 +34,7 @@ def ended(exit_code: int) -> Process:
                    category=CommandCategory.BACKGROUND_JOB, limit_seconds=3600, state=ProcessState.FINISHED, exit_code=exit_code)
 
 
-class Numbers:
+class Numbers(RowNumbers):
     def number(self, model: str, row_id: int) -> int:
         return 3
 

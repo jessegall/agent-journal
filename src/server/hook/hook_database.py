@@ -1,5 +1,5 @@
 from collections.abc import Generator
-from server.execution.hook_turn import HookTurn
+from server.execution.tickets.hook_turn import HookTurn
 from contextlib import contextmanager
 from dataclasses import replace
 
@@ -14,12 +14,12 @@ from engine.execution.limits.pool_limits import PoolLimits
 from engine.journal.journal_home import JournalHome
 from engine.log.system_log_writer import SystemLogWriter
 from engine.time.clock import Clock
-from server.execution.command_tickets import CommandTickets
+from server.execution.tickets.command_tickets import CommandTickets
 from server.execution.execution_priorities import ExecutionPriorities
 from server.execution.execution_queue import ExecutionQueue
-from server.execution.hook_tickets import HookTickets
+from server.execution.tickets.hook_tickets import HookTickets
 from server.execution.session_starters import SessionStarters
-from server.execution.viewer_tickets import ViewerTickets
+from server.execution.tickets.viewer_tickets import ViewerTickets
 
 CLOSE_WAIT_SECONDS = 60.0
 VIEWER_WAIT_LIMIT_SECONDS = 1.0

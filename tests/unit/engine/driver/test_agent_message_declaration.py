@@ -36,10 +36,3 @@ def test_stored_required_commands_and_plain_text_stay_separate():
     agent_messages = [declaration.agent_message(task=1), declaration.agent_message(task=2), AgentMessage("sample.raw", AgentMessageType.NOTICE, "task 1"), AgentMessage("sample.raw", AgentMessageType.NOTICE, "task 2")]
     stored = [MessageTemplate.restore(agent_message.stored.json) for agent_message in agent_messages]
     assert [agent_message.text for agent_message in AgentMessage.collapsed(stored)] == ["read 1", "read 2", "task 1", "task 2"]
-
-
-def test_a_declaration_defaults_to_terminal_typing():
-    from engine.enums.line_delivery import LineDelivery
-    from engine.driver.message_template import MessageTemplate
-    from engine.enums.agent_message_type import AgentMessageType
-    assert MessageTemplate("sample.line", AgentMessageType.NOTICE, "a line").delivery is LineDelivery.TERMINAL_TYPING

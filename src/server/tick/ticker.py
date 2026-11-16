@@ -1,4 +1,4 @@
-from server.execution.round_tickets import RoundTickets
+from server.execution.tickets.round_tickets import RoundTickets
 from contextlib import nullcontext
 import queue as queue_module
 import threading

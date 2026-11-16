@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from engine.execution.classes.execution_class import UNLIMITED, ExecutionClass
 from core.modules.processes.support.class_table_json import ClassTableJson
 
-ROW_LINE = "{name}: {lane} lane, cost {cost}, {priority}, {limit}{holds} ({origin})"
+ROW_LINE = "{name}: {pool} pool, cost {cost}, {priority}, {limit}{covers} ({origin})"
 
 
 @dataclass(frozen=True)

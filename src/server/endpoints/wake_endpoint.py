@@ -1,5 +1,5 @@
 from engine.driver.wake_request import WakeRequest
-from server.execution.hook_turn import HookTurn
+from server.execution.tickets.hook_turn import HookTurn
 from engine.driver.wake_route import WakeRoute
 from engine.enums.execution_priority import ExecutionPriority
 from engine.module.journal_container import synced_database_container

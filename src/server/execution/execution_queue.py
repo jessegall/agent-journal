@@ -12,7 +12,7 @@ from server.errors.client_gone_error import ClientGoneError
 from server.errors.pool_busy_error import PoolBusyError
 from server.execution.instant_entry import InstantEntry
 
-from server.execution.queued_ticket import QueuedTicket
+from server.execution.tickets.queued_ticket import QueuedTicket
 RECHECK_SECONDS = 0.5
 
 

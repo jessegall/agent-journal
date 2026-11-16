@@ -1,3 +1,4 @@
+from engine.cli.row_numbers import RowNumbers
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
@@ -71,7 +72,7 @@ class NoMarkers:
         return ()
 
 
-class Numbers:
+class Numbers(RowNumbers):
     def number(self, model: str, row_id: int) -> int:
         return 4
 

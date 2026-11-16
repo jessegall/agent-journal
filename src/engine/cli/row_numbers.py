@@ -1,3 +1,6 @@
+from engine.cli.agent_number import AGENT_MODEL_NAME
+
+
 
 
 class RowNumbers:
@@ -11,7 +14,7 @@ class RowNumbers:
         return row_id
 
     def agent_number(self, agent_id: int) -> int:
-        return self.agent_number(agent_id)
+        return self.number(AGENT_MODEL_NAME, agent_id)
 
     def environment_number(self, model_name: str, row_id: int, environment_id: int | None) -> int:
         return row_id

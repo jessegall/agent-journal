@@ -39,8 +39,8 @@ def test_records_a_function_that_ran_and_not_one_that_did_not():
     finally:
         recorder.stop()
     recorded = recorder.tests["case"]
-    assert any(name.endswith("::ran_here") for name in recorded)
-    assert not any(name.endswith("::not_run_here") for name in recorded)
+    assert any(name.endswith("::executed_test_count") for name in recorded)
+    assert not any(name.endswith("::unrun_test_count") for name in recorded)
 
 
 def test_body_hash_changes_with_the_body_only():

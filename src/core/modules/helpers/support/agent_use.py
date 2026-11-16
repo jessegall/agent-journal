@@ -13,7 +13,6 @@ from core.modules.helpers.support.helper_settings import AGENT_USE_DAYS
 from core.modules.helpers.support.model_use import ModelUse
 from engine.setting.setting_values import SettingValues
 
-DAY_SECONDS = 86400
 MAX_IDLE_AGENTS = 4
 KEPT_AGENTS_REASON = "The helpers of every type that are not retired, which the kept limit of each agent type bounds."
 
@@ -36,7 +35,7 @@ class AgentUse:
 
     def age(self, agent: Agent) -> str:
         seconds = int(agent.ended_timestamp().elapsed_seconds(self.clock.timestamp()))
-        return f"{seconds // DAY_SECONDS}d" if seconds >= DAY_SECONDS else f"{seconds // DurationUnit.HOUR.seconds}h"
+        return f"{seconds // DurationUnit.DAY.seconds}d" if seconds >= DurationUnit.DAY.seconds else f"{seconds // DurationUnit.HOUR.seconds}h"
 
     def report(self) -> str:
         models = self.models()

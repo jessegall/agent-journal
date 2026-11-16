@@ -1,5 +1,5 @@
 from collections.abc import Generator
-from server.execution.hook_turn import HookTurn
+from server.execution.tickets.hook_turn import HookTurn
 from contextlib import contextmanager
 
 from engine.enums.execution_length import ExecutionLength

@@ -4,7 +4,7 @@ from tests.stories.core.modules.plugins.support.plugin_samples import event_plug
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
 PLUGIN = "kinds"
-CLASS_LINE = "kinds judge: long lane, cost 4"
+CLASS_LINE = "kinds judge: long pool, cost 4"
 
 
 class PluginClassMade(StoryFixture):
@@ -37,4 +37,4 @@ def test_an_upgrade_keeps_the_persons_classes_beside_the_built_in_ones(new_story
     story = new_story(fixture=PluginClassMade)
     code, report = story.synced()
     story.expect_rows(code == 0, detail=report)
-    story.expect_text("queue-class list", f"holds plugin {PLUGIN}", "graphify: long lane, cost 8", actor=story.user)
+    story.expect_text("queue-class list", f"holds plugin {PLUGIN}", "graphify: long pool, cost 8", actor=story.user)

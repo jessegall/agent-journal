@@ -1,7 +1,12 @@
+from typing import TypedDict
 from dataclasses import dataclass
 
 from engine.execution.execution_ticket import ExecutionTicket
-from server.execution.instant_reading import InstantReading
+
+
+# one run in the instant pool as the pool's reading shows it
+InstantReading = TypedDict("InstantReading", {"line": str, "class": str, "priority": str, "starter": str, "slot_cost": int, "seconds": float,
+                                              "is_running": bool, "parent_line": str})
 
 
 @dataclass(frozen=True)

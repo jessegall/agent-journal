@@ -1,3 +1,4 @@
+from engine.cli.row_numbers import RowNumbers
 from contextlib import nullcontext
 from dataclasses import replace
 
@@ -106,7 +107,7 @@ class Lines:
         self.sent.append((agent_id, declaration, fields))
 
 
-class Numbers:
+class Numbers(RowNumbers):
     def number(self, model: str, row_id: int) -> int:
         return 4
 

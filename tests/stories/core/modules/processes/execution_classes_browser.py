@@ -14,4 +14,4 @@ def test_a_person_sees_the_lines_a_new_class_would_match_before_adding_it_in_the
     story.expect_text('queue-class preview --pattern "^npm run e2e"', "npm run e2e -- --headed")
     with server_story(story) as server:
         expect_browser(server, "executionClasses.browser.mjs", [])
-    story.expect_text("queue-class list", "browser tests: long lane", "(your own)")
+    story.expect_text("queue-class list", "browser tests: long pool", "(your own)")
