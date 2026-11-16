@@ -313,7 +313,7 @@ class Story(KitRows):
                 handler.handler(self.container)
 
     # a line a background part of the journal gives the agent comes a moment later: its text shows among the agent's lines in time
-    def expect_agent_line_in_time(self, agent_id: int, text: str, limit_seconds: float) -> None:
+    def expect_agent_line_shown(self, agent_id: int, text: str, limit_seconds: float) -> None:
         self.checked("agent line in time")
         match = PolledWait(limit_seconds, AGENT_LINE_PAUSE_SECONDS).poll(lambda: text in self.run(f"agent-line list --agent {agent_id}").output_text)
         self.expected(match, f"no line of agent {agent_id} said {text!r} within {limit_seconds} seconds")

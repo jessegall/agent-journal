@@ -58,8 +58,8 @@ class CodexServerFile(ProgramServerFile):
         lines = [f"[mcp_servers.{json.dumps(server.name)}]"]
         if server.is_started:
             lines += [f"command = {json.dumps(server.command)}", f"args = {json.dumps(list(server.args))}"]
-            lines += [f"env_vars = {json.dumps([server.key_variable])}"] if server.needs_key else []
+            lines += [f"env_vars = {json.dumps([server.key_variable])}"] if server.requires_key else []
         else:
             lines += [f"url = {json.dumps(server.url)}"]
-            lines += [f"bearer_token_env_var = {json.dumps(server.key_variable)}"] if server.needs_key else []
+            lines += [f"bearer_token_env_var = {json.dumps(server.key_variable)}"] if server.requires_key else []
         return "\n".join(lines)

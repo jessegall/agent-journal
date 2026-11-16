@@ -5,7 +5,7 @@ from engine.agent.agent_role_reader import AgentRoleReader
 from engine.driver.hook_event import HookEvent
 from engine.request.request_values import RequestValues
 from core.modules.drivers.support.minute_tick import MinuteTick
-from core.modules.processes.support.reading.reader_help_hold import ReaderHelpHold
+from core.modules.processes.support.reading.reader_help_block import ReaderHelpBlock
 from core.modules.processes.support.reading.reader_request_answer import ReaderRequestAnswer
 from engine.driver.block_agent import BlockAgent
 from engine.driver.conditions.time_reached import TimeReached
@@ -69,10 +69,10 @@ class ReaderRequestBlocks:
 
     # the hold that asks the main agent to help with a request whose saves failed or that expired
     @staticmethod
-    def reader_help_block(request: ReaderRequest) -> ReaderHelpHold:
+    def reader_help_block(request: ReaderRequest) -> ReaderHelpBlock:
         refusal = ReaderRequestRefusalMessage.declared().agent_message(request=request.id, command=request.command, block="{block}")
-        return ReaderHelpHold(ReaderBlockKeys.keyed(refusal, request.id), ReaderRequestCompleted(request.id), request.command)
+        return ReaderHelpBlock(ReaderBlockKeys.keyed(refusal, request.id), ReaderRequestCompleted(request.id), request.command)
 
     @staticmethod
-    def help_block(agent_id: int, block_plan: ReaderHelpHold) -> BlockAgent:
+    def help_block(agent_id: int, block_plan: ReaderHelpBlock) -> BlockAgent:
         return BlockAgent(agent_id, block_plan.agent_message, block_plan.condition, after=Interval(READER_REQUEST_SPAN), countdown=READER_REQUEST_COUNTDOWN.agent_message("{left}", command=block_plan.command))

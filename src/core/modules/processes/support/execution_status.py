@@ -1,5 +1,5 @@
 from core.modules.processes.support.pool_entry import PoolEntry
-from core.modules.processes.support.execution_snapshot import ExecutionSnapshot
+from core.modules.processes.support.execution_overview import ExecutionOverview
 from core.modules.processes.support.pool_load import PoolLoad
 from engine.journal.journal_home import JournalHome
 from engine.execution.instant_pool_reading import InstantPoolReading
@@ -25,8 +25,8 @@ class ExecutionStatus:
     def lines(self) -> list[str]:
         return self.snapshot().lines()
 
-    def snapshot(self) -> ExecutionSnapshot:
-        return ExecutionSnapshot(tuple(self.pools()), tuple(self.waits.last_hour(self.clock.timestamp())))
+    def snapshot(self) -> ExecutionOverview:
+        return ExecutionOverview(tuple(self.pools()), tuple(self.waits.last_hour(self.clock.timestamp())))
 
     # the instant lane as the server holds it, then the short and long lanes from the process rows
     def pools(self) -> list[PoolLoad]:

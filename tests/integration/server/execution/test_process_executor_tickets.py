@@ -11,7 +11,7 @@ from engine.enums.starter_type import StarterType
 from engine.execution.execution_order import ExecutionOrder
 from engine.execution.limits.default_lane_limits import DEFAULT_POOL_LIMITS
 from engine.journal.journal_home import JournalHome
-from engine.process.door.execution_admission import ExecutionAdmission
+from engine.process.door.execution_start_check import ExecutionStartCheck
 from engine.process.door.execution_request import ExecutionRequest
 from engine.process.door.placed_run import PlacedRun
 from engine.time.clock import Clock
@@ -61,7 +61,7 @@ def test_a_run_inside_a_write_turn_starts_at_once(tmp_path):
 
 
 def test_stopped_server_admission_never_waits(tmp_path):
-    with ExecutionAdmission(JournalHome(tmp_path)).admitted(PlacedRun(GIT_STATUS, None, False)) as admitted:
+    with ExecutionStartCheck(JournalHome(tmp_path)).admitted(PlacedRun(GIT_STATUS, None, False)) as admitted:
         assert admitted is None
 
 

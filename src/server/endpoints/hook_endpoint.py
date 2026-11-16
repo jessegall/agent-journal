@@ -175,7 +175,7 @@ class HookEndpoint:
         self.kept_row(sender, "")
         if sender.is_stop:
             return HookReply(refusal=f"the journal failed on this stop and holds it: {type(error).__name__}: {error}")
-        if sender.needs_check:
+        if sender.requires_check:
             return HookReply(refusal=UNCHECKED_TOOL.format(reason=f"{type(error).__name__}: {error}"))
         return HookReply.allowed(f"the journal failed on this hook and let it through: {type(error).__name__}: {error}")
 
@@ -185,7 +185,7 @@ class HookEndpoint:
 
     @staticmethod
     def locked(sender: HookSender) -> HookReply:
-        if sender.needs_check:
+        if sender.requires_check:
             return HookReply(refusal=SERVER_UPDATING)
         return HookReply.allowed(SERVER_UPDATING)
 
@@ -193,7 +193,7 @@ class HookEndpoint:
         self.kept_row(sender, "")
         if sender.is_stop:
             return HookReply(refusal=f"the journal could not check this stop and holds it: {reason}")
-        if sender.needs_check:
+        if sender.requires_check:
             return HookReply(refusal=UNCHECKED_TOOL.format(reason=reason))
         return HookReply.allowed(f"the journal let this through unchecked: {reason}")
 

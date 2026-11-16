@@ -54,7 +54,7 @@ class SequenceTrigger:
 
     # the sequence starts for the environment's main agent when another agent, such as a helper, wrote the row
     @property
-    def is_for_main_agent(self) -> bool:
+    def concerns_main_agent(self) -> bool:
         return bool(self.main_agent)
 
     @property

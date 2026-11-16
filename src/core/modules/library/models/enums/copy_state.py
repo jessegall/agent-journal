@@ -13,5 +13,5 @@ class CopyState(StrEnum):
     AGENT = "agent"
 
     @property
-    def needs_choice(self) -> bool:
+    def requires_choice(self) -> bool:
         return self in (CopyState.DENIED, CopyState.REJECTED, CopyState.CONFLICT, CopyState.REVIEW, CopyState.AGENT)

@@ -20,7 +20,7 @@ class ReadingDecision:
     exits: tuple[ReadingExit, ...]
 
     def __post_init__(self) -> None:
-        if self.level > PressureLevel.SUGGEST and all(option.needs_other_party for option in self.exits):
+        if self.level > PressureLevel.SUGGEST and all(option.requires_second_party for option in self.exits):
             raise ExitlessDecisionError.level_error(self.level)
 
     @classmethod

@@ -5,14 +5,14 @@ from engine.enums.execution_priority import ExecutionPriority
 from engine.execution.classes.execution_class import UNLIMITED, ExecutionClass
 from core.modules.plugins.models.enums.run_scope import RunScope
 from core.modules.processes.models.process import Process
-from core.modules.processes.support.process_type_admission import ProcessTypeAdmission
+from core.modules.processes.support.process_type_start_check import ProcessTypeStartCheck
 from core.modules.plugins.support.plugin_run_rule import PluginRunRule
 
 
 PLUGIN_CLASS_COST = 4
 
 
-class PluginRunStartCheck(ProcessTypeAdmission):
+class PluginRunStartCheck(ProcessTypeStartCheck):
     """The plugins' kinds of run for one pass of the queue: the rule of each kind waiting, the free memory and
     the runs of each machine-wide kind on the machine, read once; a run given its place in the pass counts at
     once, with the memory it asks for. Memory that is not known holds nothing back."""

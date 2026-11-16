@@ -5,7 +5,7 @@ from engine.process.door.pool_door import PoolDoor
 from engine.process.door.placed_run import PlacedRun
 
 
-class ExecutionAdmission:
+class ExecutionStartCheck:
     """Gives a run of the journal's own its ticket for as long as it runs, through the lanes the server installed;
     an install or the CLI with no server running has none, so its runs never wait."""
 

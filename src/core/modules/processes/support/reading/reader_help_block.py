@@ -4,7 +4,7 @@ from core.modules.processes.support.block_conditions.reader_request_completed im
 
 
 @dataclass(frozen=True)
-class ReaderHelpHold:
+class ReaderHelpBlock:
     """The hold that asks the main agent to help with one reader request: its line, the request's completion that
     lifts it, and the command the request is for."""
 

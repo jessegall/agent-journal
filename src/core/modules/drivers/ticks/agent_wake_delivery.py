@@ -20,9 +20,9 @@ class AgentWakeDelivery:
 
     def __call__(self, container: Container) -> None:
         timestamp = container.get(Clock).timestamp()
-        wakes = container.get(Queries).query(AgentWake).every_environment(DUE_WAKES_REASON).matching(Among("state", [state.value for state in MOVING_STATES])).every_row(DUE_WAKES_REASON)
+        wakes = container.get(Queries).query(AgentWake).all_environments(DUE_WAKES_REASON).matching(Among("state", [state.value for state in MOVING_STATES])).every_row(DUE_WAKES_REASON)
         for wake in wakes:
-            if not self.needs_move(wake, timestamp):
+            if not self.requires_move(wake, timestamp):
                 continue
             try:
                 container.get(Bus).run(DeliverAgentWake(wake.id), Actor.core(), environment_id=wake.environment_id)
@@ -31,7 +31,7 @@ class AgentWakeDelivery:
                 container.get(ErrorLog).reported(["agent wake delivery", str(wake.id)], error, wake.environment_id)
 
     @staticmethod
-    def needs_move(wake: AgentWake, timestamp) -> bool:
+    def requires_move(wake: AgentWake, timestamp) -> bool:
         if wake.state is WakeState.OPEN:
             return True
         if wake.state is WakeState.CLAIMED:

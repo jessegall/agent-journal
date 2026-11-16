@@ -23,7 +23,7 @@ class CacheKeepalive:
         self.history, self.hook_calls, self.queries, self.settings, self.clock, self.request_values = history, hook_calls, queries, settings, clock, request_values
 
     # read once a step, so the line and the wake agree
-    def is_due(self, agent_id: int) -> bool:
+    def is_pending(self, agent_id: int) -> bool:
         return self.request_values.read(f"workers.cache-keepalive:{agent_id}", lambda: 0, lambda: self.found(agent_id))
 
     def found(self, agent_id: int) -> bool:

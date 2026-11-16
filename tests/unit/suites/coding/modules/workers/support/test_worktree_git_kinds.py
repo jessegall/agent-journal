@@ -47,4 +47,4 @@ FOLDER = "/project/.journal/worktrees/development/worker-935"
                          ids=["not registered", "its own branch", "a folder left on a commit", "another branch"])
 def test_a_folder_checked_out_on_no_branch_is_still_its_workers_and_only_another_branch_is_refused(registered, occupies_second):
     worktree = SimpleNamespace(branch="journal/development/worker-935")
-    assert WorktreeGit.holds_another_branch(registered, worktree) is occupies_second
+    assert WorktreeGit.has_second_branch(registered, worktree) is occupies_second

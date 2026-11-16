@@ -75,7 +75,7 @@ class Query(Generic[M]):
         return query
 
     # a read of environment-scoped rows outside any environment, on purpose and with its reason (task 8897)
-    def every_environment(self, reason: str) -> Self:
+    def all_environments(self, reason: str) -> Self:
         if not reason.strip():
             raise QueryLimitError("say why the read crosses every environment")
         query = copy(self)

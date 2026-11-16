@@ -153,7 +153,7 @@ class RepeatedWork(PointTally):
         if not statement.is_walk_page:
             self.read_texts[statement.sql] += 1
         if self.reads[statement] == 1:
-            self.read_origins[statement] = self.raw_caller_frames()
+            self.read_origins[statement] = self.raw_caller_stack_entries()
         if self.reads[statement] == READ_LIMIT_REPEATS + 1:
             first_read = self.shown_calls(self.summaries(self.read_origins[statement]))
             self.reject(self.build_finding("read", self.sql_without_parameters(statement), f"one request read this more than {READ_LIMIT_REPEATS} times: {statement.sql} {statement.parameters}\nfirst read: {first_read}\nrepeated read:"))
@@ -254,7 +254,7 @@ class RepeatedWork(PointTally):
 
     # the calling code and line of each frame, kept raw: the text of a frame is built only for a finding
     @staticmethod
-    def raw_caller_frames() -> list[tuple[CodeType, int]]:
+    def raw_caller_stack_entries() -> list[tuple[CodeType, int]]:
         stack_entries: list[tuple[CodeType, int]] = []
         stack_entry = RepeatedWork.caller_stack_entry(1)
         while stack_entry is not None and len(stack_entries) < CALLER_STACK_DEPTH:

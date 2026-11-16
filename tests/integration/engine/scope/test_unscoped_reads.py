@@ -27,7 +27,7 @@ def test_a_read_inside_an_environment_reads_its_rows(shelves):
 
 
 def test_a_read_that_names_why_it_crosses_every_environment_reads_them_all(shelves):
-    assert {shelf.environment_id for shelf in shelves.every_environment(ALL_ENVIRONMENTS_REASON).take(20)} == {1, 2}
+    assert {shelf.environment_id for shelf in shelves.all_environments(ALL_ENVIRONMENTS_REASON).take(20)} == {1, 2}
 
 
 def test_a_skip_of_the_environment_scope_lets_the_read_pass(shelves):
@@ -37,4 +37,4 @@ def test_a_skip_of_the_environment_scope_lets_the_read_pass(shelves):
 
 def test_a_crossing_read_without_a_reason_is_refused(shelves):
     with pytest.raises(QueryLimitError, match="say why the read crosses every environment"):
-        shelves.every_environment(" ")
+        shelves.all_environments(" ")

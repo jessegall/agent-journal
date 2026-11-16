@@ -73,7 +73,7 @@ def test_each_level_has_its_exits(level, exits):
 
 @pytest.mark.parametrize("level", [level for level in PressureLevel if level > PressureLevel.SUGGEST])
 def test_every_level_above_a_suggestion_has_an_exit_the_agent_takes_on_its_own(level):
-    assert any(not option.needs_other_party for option in RUNNING_TESTS.available_exits(level))
+    assert any(not option.requires_second_party for option in RUNNING_TESTS.available_exits(level))
 
 
 def test_a_command_of_unknown_type_can_also_be_classified():

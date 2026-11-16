@@ -39,7 +39,7 @@ def test_a_suggestion_needs_no_exit():
 
 @pytest.mark.parametrize("exit_option", list(ReadingExit))
 def test_only_a_person_the_main_agent_and_the_expiry_are_other_parties(exit_option):
-    assert exit_option.needs_other_party is (exit_option in DIFFERENT_PARTY_EXITS)
+    assert exit_option.requires_second_party is (exit_option in DIFFERENT_PARTY_EXITS)
 
 
 def test_nothing_builds_a_decision_that_asks_nothing():

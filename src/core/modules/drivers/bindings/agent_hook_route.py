@@ -86,7 +86,7 @@ class AgentHookRoute(HookRoute):
         lockdown = self.lockdown.lockdown(event.program)
         if lockdown.stops(event.event) and not self.passes_lockdown(event):
             return self.halted(event, lockdown)
-        stored_call = self.queries.query(HookCall).every_environment(STORED_ANSWER_REASON).filter(event_id=event.event_id).first()
+        stored_call = self.queries.query(HookCall).all_environments(STORED_ANSWER_REASON).filter(event_id=event.event_id).first()
         if stored_call is not None:
             return self.replayed(event, stored_call)
         agent = self.agent(event)

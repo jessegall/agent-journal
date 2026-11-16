@@ -39,7 +39,7 @@ class ProjectHookAnswers:
         # an event that takes lines gets them again only once they change from what that hook last said
         reads_text = provider.reads_hook_text(event.event)
         takes_instructions = reads_text and event.event not in provider.line_events
-        lines = [line for answer in answers for line in (self.named_lines(answer.name, answer.lines) if takes_instructions else self.new_lines(agent_id, answer.name, answer.lines))]
+        lines = [line for answer in answers for line in (self.listed_lines(answer.name, answer.lines) if takes_instructions else self.new_lines(agent_id, answer.name, answer.lines))]
         commands: list[Command[object]] = [RecordAgentNotice(agent_id, line, MANAGED_HOOKS_KEY) for line in lines] if reads_text else []
         agent_messages = [ManagedHookLineMessage.declared().agent_message(line=line) for line in lines] if reads_text else []
         refusal = None
@@ -50,7 +50,7 @@ class ProjectHookAnswers:
                                  0 if reads_text else len(lines), "\n".join(answer.terminal for answer in answers if answer.terminal))
 
     @staticmethod
-    def named_lines(name: str, reported: Sequence[str]) -> list[str]:
+    def listed_lines(name: str, reported: Sequence[str]) -> list[str]:
         return [f"{name}: {text}" for text in reported]
 
     def new_lines(self, agent_id: int, name: str, reported: Sequence[str]) -> list[str]:

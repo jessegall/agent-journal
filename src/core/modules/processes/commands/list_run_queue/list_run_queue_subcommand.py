@@ -17,7 +17,7 @@ from core.modules.processes.models.process_queue_row import ProcessQueueRow
 from core.modules.processes.models.enums.queue_section import QueueSection
 from core.modules.processes.support.active_queue_runs import ActiveQueueRuns
 from core.modules.processes.support.process_queue_page import ProcessQueuePage
-from core.modules.processes.support.execution_snapshot import ExecutionSnapshot
+from core.modules.processes.support.execution_overview import ExecutionOverview
 from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_source import ExecutionSource
 from engine.enums.starter_type import StarterType
@@ -85,7 +85,7 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
 
     # the lanes read once, as lines and as JSON; a filter keeps the lane headings and the lines of runs and waits whose
     # class or starter it names
-    def pools(self, copy: ExecutionSnapshot, class_name: str, starter: str) -> tuple[tuple[str, ...], dict[str, object]]:
+    def pools(self, copy: ExecutionOverview, class_name: str, starter: str) -> tuple[tuple[str, ...], dict[str, object]]:
         wanted = [text for text in (f"({class_name}, " if class_name else "", f", {starter}" if starter else "") if text]
         return tuple(line for line in copy.lines() if not line.startswith("  ") or all(text in line for text in wanted)), copy.json()
 

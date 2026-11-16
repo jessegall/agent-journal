@@ -4,7 +4,7 @@ from core.modules.processes.support.pool_load import PoolLoad
 
 
 @dataclass(frozen=True)
-class ExecutionSnapshot:
+class ExecutionOverview:
     """Every lane and the waits of the last hour, read once, as lines and as JSON."""
 
     pools: tuple[PoolLoad, ...]

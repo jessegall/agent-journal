@@ -27,7 +27,7 @@ class MakeTemplateSubcommand(Subcommand[MakeTemplate, Template]):
         def split(text: str, separator: str) -> tuple[str, ...]:
             return tuple(item.strip() for item in text.split(separator) if item.strip())
 
-        return MakeTemplate(arguments.title, arguments.brief, split(arguments.applies_to, ","), arguments.purpose, split(arguments.parts, "|"), split(arguments.commands, "|"))
+        return MakeTemplate(arguments.title, arguments.brief, split(arguments.covers, ","), arguments.purpose, split(arguments.parts, "|"), split(arguments.commands, "|"))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Template):

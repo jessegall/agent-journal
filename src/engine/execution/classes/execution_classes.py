@@ -23,7 +23,7 @@ class ExecutionClasses:
         personal = next((execution_class for execution_class in self.person.classes() if self.is_person_match(execution_class, subject)), None)
         if personal is not None:
             return personal
-        return next(row.execution_class for row in BUILTIN_CLASSES if row.applies_to(subject))
+        return next(row.execution_class for row in BUILTIN_CLASSES if row.covers(subject))
 
     # the class a stored run names, the person's before the built-in one; none for a name nobody declares any more
     def named(self, name: str) -> ExecutionClass | None:

@@ -37,7 +37,7 @@ class Ask(EnvironmentScoped, Model):
         return self.closed_at is None
 
     @property
-    def is_at_parent(self) -> bool:
+    def is_parent_level(self) -> bool:
         return self.level_index >= len(self.levels())
 
     def levels(self) -> tuple[AskLevel, ...]:

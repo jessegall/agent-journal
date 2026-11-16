@@ -20,7 +20,7 @@ class BuiltinClass:
     process_types: frozenset[ProcessType] = frozenset()
     is_first_window: bool | None = None
 
-    def applies_to(self, subject: ExecutionSubject) -> bool:
+    def covers(self, subject: ExecutionSubject) -> bool:
         return (subject.source is self.source
                 and (not self.starters or subject.starter.starter_type in self.starters)
                 and (not self.categories or subject.category in self.categories)

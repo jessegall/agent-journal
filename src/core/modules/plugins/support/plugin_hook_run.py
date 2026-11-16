@@ -1,4 +1,4 @@
-from core.modules.plugins.support.heard_event import HeardEvent
+from core.modules.plugins.support.subscribed_event import SubscribedEvent
 from core.modules.plugins.models.plugin_delivery import PluginDelivery
 from core.modules.plugins.agent_messages.plugin_refusal_message import PluginRefusalMessage
 from core.modules.drivers.commands.record_agent_notice.record_agent_notice import RecordAgentNotice
@@ -106,7 +106,7 @@ class PluginHookRun:
         commands.extend(RecordPluginFault(plugin.id, f"its queue file {name} is not JSON") for name in read.unreadable)
 
     # an event for a tool its hears entry leaves out, or within its interval since the last delivery, starts nothing
-    def is_wanted(self, plugin: Plugin, received: HeardEvent, event: PluginEvent) -> bool:
+    def is_wanted(self, plugin: Plugin, received: SubscribedEvent, event: PluginEvent) -> bool:
         if received.tools and not received.accepts_tool(event.data["tool"] if "tool" in event.data else None):
             return False
         if not received.repeat_minutes:

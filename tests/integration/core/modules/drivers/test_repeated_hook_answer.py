@@ -26,5 +26,5 @@ def test_a_replayed_edit_is_refused_by_a_pause_since_and_the_call_records_it(pla
     story = played(ReadTaskBuilder)
     first, repeat = paused_after(story, EDIT)
     paused_text = PausedRefusalMessage.declared().agent_message().text
-    call = story.container.get(Queries).query(HookCall).every_environment("one test's hook").filter(event_id="replayed-edit").first()
+    call = story.container.get(Queries).query(HookCall).all_environments("one test's hook").filter(event_id="replayed-edit").first()
     assert not first.refusal and repeat.refusal == paused_text and call is not None and call.repeated_answer == paused_text

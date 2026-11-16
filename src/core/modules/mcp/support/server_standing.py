@@ -14,6 +14,6 @@ class ServerStanding:
         self.keys = keys
 
     def standing(self, server: McpServer) -> str:
-        if server.needs_key and not self.keys.has(server.key_variable):
+        if server.requires_key and not self.keys.has(server.key_variable):
             return REQUIRES_KEY
         return OAUTH_SIGNING if server.auth is ServerAuth.OAUTH else READY

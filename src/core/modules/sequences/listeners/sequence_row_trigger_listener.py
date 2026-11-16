@@ -27,8 +27,8 @@ class SequenceRowTriggerListener(CommitListener[Touched[Model]]):
         for row in self.events.matching(logged.event):
             if not self.is_linked(row.trigger, logged):
                 continue
-            agent_id = self.main_agent_id(logged) if row.trigger.is_for_main_agent else self.acting_agent_id(logged)
-            if agent_id is None or self.runs.is_running(agent_id, row.sequence.id) or (row.trigger.is_for_main_agent and agent_id == logged.actor_id):
+            agent_id = self.main_agent_id(logged) if row.trigger.concerns_main_agent else self.acting_agent_id(logged)
+            if agent_id is None or self.runs.is_running(agent_id, row.sequence.id) or (row.trigger.concerns_main_agent and agent_id == logged.actor_id):
                 continue
             self.bus.run(MoveSequenceRun(START, row.sequence.id, subject_id=logged.row_id), Actor(agent_id, ActorType.AGENT), cause_id=logged.id)
             return

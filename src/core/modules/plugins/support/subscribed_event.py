@@ -5,7 +5,7 @@ from engine.types.type_guards import is_list, is_text_mapping
 
 
 @dataclass(frozen=True)
-class HeardEvent:
+class SubscribedEvent:
     """One entry of a plugin's hears list: the event, the tools it is limited to when it names any, and the fewest
     minutes between two deliveries when it asks for an interval."""
 
@@ -14,7 +14,7 @@ class HeardEvent:
     repeat_minutes: int = 0
 
     @classmethod
-    def read(cls, entry: object) -> "HeardEvent":
+    def read(cls, entry: object) -> "SubscribedEvent":
         if not is_text_mapping(entry):
             return cls(str(entry))
         if "event" not in entry:

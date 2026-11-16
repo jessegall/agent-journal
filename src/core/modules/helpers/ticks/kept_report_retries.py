@@ -23,7 +23,7 @@ class KeptReportRetries:
 
     def __call__(self, container: Container) -> None:
         tries = container.get(SettingValues).number(REPORT_RETRIES_SETTING)
-        jobs = container.get(Queries).query(HelperJob).every_environment(KEPT_REPORTS_REASON).filter(report_state=JobReportState.CAPTURE_FAILED, ended_at=None).every_row(KEPT_REPORTS_REASON)
+        jobs = container.get(Queries).query(HelperJob).all_environments(KEPT_REPORTS_REASON).filter(report_state=JobReportState.CAPTURE_FAILED, ended_at=None).every_row(KEPT_REPORTS_REASON)
         for job in jobs:
             if job.helper_id is None or job.report_failures >= STOP_SAVE_FAILURES + tries:
                 continue

@@ -20,4 +20,4 @@ class CacheRefreshLines(EventLineSource):
         self.keepalive = keepalive
 
     def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        return [CacheKeepaliveMessage.declared().agent_message()] if self.keepalive.is_due(agent_id) else []
+        return [CacheKeepaliveMessage.declared().agent_message()] if self.keepalive.is_pending(agent_id) else []

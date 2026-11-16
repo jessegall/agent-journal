@@ -11,7 +11,7 @@ def test_every_exit_has_its_sentence():
 
 @pytest.mark.parametrize("level", [level for level in PressureLevel if level > PressureLevel.SUGGEST])
 def test_every_level_above_a_suggestion_states_an_exit_the_agent_takes_alone(level):
-    single = [route for route in level.exits if not route.needs_other_party]
+    single = [route for route in level.exits if not route.requires_second_party]
     listed = ExitTexts.listed(level.exits, "make build", 7)
     assert single and all(EXIT_TEXTS[route].sentence in listed for route in single)
 

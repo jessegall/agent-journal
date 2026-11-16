@@ -4,7 +4,7 @@ from engine.execution.classes.execution_class import ExecutionClass
 from core.modules.processes.models.process import Process
 
 
-class ProcessTypeAdmission:
+class ProcessTypeStartCheck:
     """What the kinds of run say during one pass of the queue over its waiting runs: whether a run must
     wait for its kind, given the runs that hold a place now, that a run was just given its place, and the
     class of each kind. A kind nobody declares never holds a run."""

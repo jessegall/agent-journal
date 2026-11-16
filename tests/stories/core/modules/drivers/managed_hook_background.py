@@ -32,7 +32,7 @@ def test_an_asyncrewake_hook_that_exits_two_leaves_its_agent_a_line_and_one_that
                                                                  entry("sleep 1; printf 'all fine' >&2; exit 0", asyncRewake=True)]}]})
     runs.tool("Bash", {"command": "make"}, event="PostToolUse")
     runs.story.hook(SESSION, HookSamples.stop())
-    runs.story.expect_agent_line_in_time(runs.story.agent.id, "the build broke", LINE_LIMIT_SECONDS)
+    runs.story.expect_agent_line_shown(runs.story.agent.id, "the build broke", LINE_LIMIT_SECONDS)
     runs.story.expect_absent(f"agent-line list --agent {runs.story.agent.id}", "all fine")
 
 

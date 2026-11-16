@@ -55,7 +55,7 @@ class ConditionLine:
         if field.is_text:
             RuleLimits.check_phrase(value)
             return
-        if not operator.needs_value:
+        if not operator.requires_value:
             if value:
                 raise Refusal(f"the condition {field} {operator} takes no value", "leave the value out")
             return

@@ -78,9 +78,9 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
         if not command.exit_code:
             return
         profile = self.profiles.registered(agent.profile)
-        if self.needs_fault_notice(profile, command):
+        if self.requires_fault_notice(profile, command):
             self.bus.run(SendProgramFault(agent.id, command.exit_code), actor, environment_id=agent.environment_id)
 
     @staticmethod
-    def needs_fault_notice(profile: AgentProfile | None, command: RecordProgramExit) -> bool:
+    def requires_fault_notice(profile: AgentProfile | None, command: RecordProgramExit) -> bool:
         return bool(command.exit_code) and profile is not None and not profile.has_parent_report

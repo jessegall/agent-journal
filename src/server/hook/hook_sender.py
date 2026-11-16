@@ -56,5 +56,5 @@ class HookSender:
         return self.event is HookEventName.STOP
 
     @property
-    def needs_check(self) -> bool:
+    def requires_check(self) -> bool:
         return HookEvent.is_checked_role(self.role)

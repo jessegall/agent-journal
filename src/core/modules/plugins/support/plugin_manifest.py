@@ -9,7 +9,7 @@ from functools import lru_cache
 
 from engine.version.journal_version import JOURNAL_VERSION
 from engine.errors.refusal import Refusal
-from core.modules.plugins.support.heard_event import HeardEvent
+from core.modules.plugins.support.subscribed_event import SubscribedEvent
 from core.modules.plugins.support.plugin_manifest_files import PluginManifestFiles
 from engine.types.type_guards import is_list, is_mapping, is_string_mapping
 from core.modules.plugins.support.manifest_listener import SERVICE_PREFIX, ManifestListener
@@ -77,7 +77,7 @@ class PluginManifest:
     instruction_blocks: tuple[ManifestInstructionBlock, ...] = ()
     injected_instructions: tuple[str, ...] = ()
     process_categories: tuple[ManifestRunType, ...] = ()
-    subscribed_events: tuple[HeardEvent, ...] = ()
+    subscribed_events: tuple[SubscribedEvent, ...] = ()
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -92,7 +92,7 @@ class PluginManifest:
         listed: object = fields["files"] if "files" in fields else None
         injected: object = fields["injected_instructions"] if "injected_instructions" in fields else None
         listeners = cls.read_listeners(fields["listen"], folder) if "listen" in fields else ()
-        received_events = tuple(HeardEvent.read(entry) for entry in names) if is_list(names) else ()
+        received_events = tuple(SubscribedEvent.read(entry) for entry in names) if is_list(names) else ()
         return replace(cls(str(fields["name"]), str(fields["title"]), str(fields["version"]), program,
                    tuple(received.event for received in received_events), tuple(cls.event_window(entry) for entry in windows) if is_list(windows) else (),
                    cls.read_settings(folder, settings_file), tuple(dict.fromkeys(file for file in (*manifests.names, program, settings_file, *(listener.allowed_script(form) for listener in listeners for form in EventForm), *cls.extra_files(listed, folder), *cls.extra_files(injected, folder)) if file and not file.startswith(SERVICE_PREFIX))),
@@ -224,7 +224,7 @@ class PluginManifest:
         return protocol if isinstance(protocol, int) and not isinstance(protocol, bool) else LINE_VERSION
 
     @property
-    def needs_newer_journal(self) -> bool:
+    def requires_newer_journal(self) -> bool:
         return self.protocol > LINE_VERSION
 
     @staticmethod
@@ -269,8 +269,8 @@ class PluginManifest:
         return event in self.reaches and any(name in self.reaches[event] for name in (role, f"{role}s"))
 
     # the hears entry of an event; an event added by a declared listener is heard with no limits
-    def received(self, event: str) -> HeardEvent:
-        return next((received for received in self.subscribed_events if received.event == event), HeardEvent(event))
+    def received(self, event: str) -> SubscribedEvent:
+        return next((received for received in self.subscribed_events if received.event == event), SubscribedEvent(event))
 
     def window_names(self) -> tuple[str, ...]:
         return tuple(window.event for window in self.event_windows)

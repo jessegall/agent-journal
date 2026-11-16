@@ -1,4 +1,4 @@
-from engine.process.door.execution_admission import ExecutionAdmission
+from engine.process.door.execution_start_check import ExecutionStartCheck
 from contextlib import nullcontext
 from engine.log.error_log import ErrorLog
 from engine.process.door.execution import Execution
@@ -10,7 +10,7 @@ from engine.process.door.run_placement import RunPlacement
 from engine.process.door.runner_program import RunnerProgram
 
 
-class UnlimitedStartCheck(ExecutionAdmission):
+class UnlimitedStartCheck(ExecutionStartCheck):
     """An admission with no server lanes: every run starts at once."""
 
     def __init__(self) -> None:

@@ -1,4 +1,4 @@
-from engine.process.door.execution_admission import ExecutionAdmission
+from engine.process.door.execution_start_check import ExecutionStartCheck
 from dataclasses import replace
 
 from engine.errors.refusal import Refusal
@@ -19,7 +19,7 @@ class ProcessExecutor:
     holds it while the server starts or updates and refuses it for a paused agent, the run takes its
     ticket, the runner runs it, and its end is recorded, also when it fails or passes its time limit."""
 
-    def __init__(self, placement: RunPlacement, runner: RunnerProgram, gate: ExecutionGate, errors: ErrorLog, start_check: ExecutionAdmission) -> None:
+    def __init__(self, placement: RunPlacement, runner: RunnerProgram, gate: ExecutionGate, errors: ErrorLog, start_check: ExecutionStartCheck) -> None:
         self.placement, self.runner, self.gate, self.errors, self.start_check = placement, runner, gate, errors, start_check
 
     def execute(self, request: ExecutionRequest) -> Execution:

@@ -16,5 +16,5 @@ class ReadingExit(StrEnum):
     MAIN_AGENT_HELPS = "the main agent helps"
 
     @property
-    def needs_other_party(self) -> bool:
+    def requires_second_party(self) -> bool:
         return self in (ReadingExit.PERSON_RELEASES, ReadingExit.MAIN_AGENT_HELPS, ReadingExit.EXPIRES)

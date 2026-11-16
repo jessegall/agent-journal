@@ -17,14 +17,14 @@ from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 
-def written_wake(story, agent_id: int, **fields: object) -> AgentWake:
+def stored_wake(story, agent_id: int, **fields: object) -> AgentWake:
     wake = AgentWake(session_agent_id=agent_id, environment_id=1, work_number="task:1", session_number=1, causes='["tasks.work-remains"]', **fields)
     with story.container.get(Database).transaction():
         return story.container.get(Repository).save(wake, Context(Actor.core(), story.clock.timestamp(), DeliverAgentWake(0)))
 
 
 def wake_row(story, wake_id: int) -> AgentWake:
-    return story.container.get(Queries).query(AgentWake).every_environment("one test's wake").find(wake_id)
+    return story.container.get(Queries).query(AgentWake).all_environments("one test's wake").find(wake_id)
 
 
 def wake_lines(story, agent_id: int) -> list[AgentLine]:
@@ -33,7 +33,7 @@ def wake_lines(story, agent_id: int) -> list[AgentLine]:
 
 def test_an_open_wake_left_by_a_server_that_stopped_is_delivered_by_the_next_round_and_a_hook_acknowledges_it(played):
     story = played(BuilderStarted)
-    wake = written_wake(story, story.agent.id)
+    wake = stored_wake(story, story.agent.id)
     AgentWakeDelivery()(story.container)
     delivered = wake_row(story, wake.id)
     assert (delivered.state, delivered.attempts, delivered.transport) == (WakeState.DELIVERED, 1, "typing") and wake_lines(story, story.agent.id)
@@ -45,7 +45,7 @@ def test_an_open_wake_left_by_a_server_that_stopped_is_delivered_by_the_next_rou
 def test_a_wake_tried_as_often_as_allowed_expires_and_its_parent_is_told_once(played):
     story = played(StartedHelper)
     helper = helper_agent(story)
-    wake = written_wake(story, helper.id, attempts=3)
+    wake = stored_wake(story, helper.id, attempts=3)
     AgentWakeDelivery()(story.container)
     AgentWakeDelivery()(story.container)
     given = [line for line in wake_lines(story, helper.parent_id) if "took no turn" in line.text]
@@ -55,7 +55,7 @@ def test_a_wake_tried_as_often_as_allowed_expires_and_its_parent_is_told_once(pl
 def test_a_retired_agents_wake_is_cancelled(played):
     story = played(StartedHelper)
     helper = helper_agent(story)
-    wake = written_wake(story, helper.id)
+    wake = stored_wake(story, helper.id)
     story.expect_success(f"helper stop {helper.number}", actor=story.agent)
     story.expect_success(f'agent retire {helper.number} --reason "done"', actor=story.user)
     assert story.container.get(AgentRows).find(helper.id).retired_at is not None

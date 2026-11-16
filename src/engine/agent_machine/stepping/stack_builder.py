@@ -30,20 +30,20 @@ class StackBuilder:
 
     def built(self, view: AgentView) -> BuiltStack:
         old = {stacked_state.state_key: stacked_state for stacked_state in view.stack.stacked_states}
-        work = self.work_lane(view)
-        stacked_states = [view.stack.stacked_states[0], *work, *self.capped(view, len(work), self.block_lane(view, old)), *self.safety(view, old)]
+        work = self.work_level(view)
+        stacked_states = [view.stack.stacked_states[0], *work, *self.capped(view, len(work), self.block_level(view, old)), *self.safety(view, old)]
         stack = Stack(stacked_states)
         return BuiltStack(stack, tuple(self.moves(view, stack)))
 
     @staticmethod
-    def work_lane(view: AgentView) -> list[StackedState]:
+    def work_level(view: AgentView) -> list[StackedState]:
         states = {required_state.key: required_state for required_state in view.states if required_state.state.level is StackLevel.WORK and required_state.key not in view.suppressions}
         kept = [StackedState(states[stacked_state.state_key].state, stacked_state.state_key, stacked_state.entered_at) for stacked_state in view.stack.level(StackLevel.WORK) if stacked_state.state_key in states]
         kept_keys = {stacked_state.state_key for stacked_state in kept}
         return [*kept, *(StackedState(required_state.state, key, view.stepped_at) for key, required_state in states.items() if key not in kept_keys)]
 
     @staticmethod
-    def block_lane(view: AgentView, old: dict[StateKey, StackedState]) -> list[StackedState]:
+    def block_level(view: AgentView, old: dict[StateKey, StackedState]) -> list[StackedState]:
         stacked_states = [StackedState(Blocked(block), key, old[key].entered_at if key in old else view.stepped_at)
                   for block in JudgedBlocks.constraining(view) for key in [StackBuilder.block_key(block)]]
         return sorted(stacked_states, key=lambda stacked_state: (-view.rank_order.place(stacked_state.state.block.reason.rank), -stacked_state.entered_at.timestamp()))

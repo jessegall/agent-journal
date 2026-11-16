@@ -632,7 +632,7 @@ class WorktreeGit:
     def remove(self, folder: str, worktree: Worktree) -> bool:
         self.runs.check_owner(worktree)
         registered = [(path, branch) for path, branch in self.folders(folder) if Path(path).resolve() == Path(worktree.folder).resolve()]
-        if self.holds_another_branch(registered, worktree):
+        if self.has_second_branch(registered, worktree):
             raise Refusal(f"another git worktree owns {worktree.folder}", "keep its folder and remove the stale worker row")
         self.runs.stop(worktree)
         tests_folder = self.test_folder(worktree)
@@ -652,7 +652,7 @@ class WorktreeGit:
     # The folder is checked out on a branch that is not the worktree's; a folder with no branch, left on a commit by an
     # interrupted rebase, is still its worker's.
     @staticmethod
-    def holds_another_branch(registered: list[tuple[str, str | None]], worktree: Worktree) -> bool:
+    def has_second_branch(registered: list[tuple[str, str | None]], worktree: Worktree) -> bool:
         return bool(registered) and registered[0][1] not in (None, worktree.branch)
 
     def keep_tip(self, folder: str, path: str, name: str) -> None:

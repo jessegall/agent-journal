@@ -15,5 +15,5 @@ class RecordRepeatedHookAnswerHandler(Handler[RecordRepeatedHookAnswer, None]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: RecordRepeatedHookAnswer, context: Context) -> None:
-        call = self.queries.query(HookCall).every_environment("a stored hook call is found by its number").find(command.hook_call_id)
+        call = self.queries.query(HookCall).all_environments("a stored hook call is found by its number").find(command.hook_call_id)
         self.repository.save(call.changed(repeated_answer=command.refusal), context)

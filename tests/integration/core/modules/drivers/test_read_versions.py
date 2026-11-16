@@ -23,7 +23,7 @@ def saved(story, view, step):
 
 
 def epoch(story) -> int:
-    row = story.container.get(Queries).query(DriverVersion).every_environment("one test's environments").first()
+    row = story.container.get(Queries).query(DriverVersion).all_environments("one test's environments").first()
     return row.change_count if row is not None else 0
 
 

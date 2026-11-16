@@ -21,4 +21,4 @@ class CacheRefreshEffect(EventEffect):
         self.keepalive = keepalive
 
     def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
-        return [WakeInactiveAgent(agent_id)] if self.keepalive.is_due(agent_id) else []
+        return [WakeInactiveAgent(agent_id)] if self.keepalive.is_pending(agent_id) else []

@@ -62,7 +62,7 @@ class ReaderDrafting:
 
     def result(self, reader: Reader, request: ReaderRequest, text: str) -> ReaderDraft:
         missing = list(self.judge.fields_missing(reader, request.category))
-        if self.needs_build_progress(reader, request, text):
+        if self.requires_build_progress(reader, request, text):
             missing.append("--progress")
         missing.extend(self.judge.misses(reader, request.category, text))
         lines = self.run.lines(reader, text, "finished")
@@ -78,6 +78,6 @@ class ReaderDrafting:
                            reader.script, reader.step_pattern, reader.finished_pattern, reader.failed_pattern, reader.topic_pattern, reader.subject)
 
     @staticmethod
-    def needs_build_progress(reader: Reader, request: ReaderRequest, text: str) -> bool:
+    def requires_build_progress(reader: Reader, request: ReaderRequest, text: str) -> bool:
         has_progress = bool(reader.progress_pattern or reader.has_counted_steps())
         return request.category is CommandCategory.BUILD and bool(COUNTED.search(text)) and not has_progress

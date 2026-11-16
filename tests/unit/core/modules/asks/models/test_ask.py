@@ -16,8 +16,8 @@ def test_levels_parsed():
 
 
 def test_at_parent_when_index_past_levels():
-    assert not sample_ask(level_index=1).is_at_parent
-    assert sample_ask(level_index=2).is_at_parent
+    assert not sample_ask(level_index=1).is_parent_level
+    assert sample_ask(level_index=2).is_parent_level
 
 
 def test_open_until_closed():

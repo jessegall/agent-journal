@@ -7,7 +7,7 @@ from core.modules.assign_rules.support.board.board_target import BoardTarget
 
 
 def field_choices() -> list[Mapping[str, object]]:
-    return [{"field": field.value, "operators": [{"operator": operator.value, "label": operator.label, "needs_value": operator.needs_value} for operator in field.operators()]}
+    return [{"field": field.value, "operators": [{"operator": operator.value, "label": operator.label, "needs_value": operator.requires_value} for operator in field.operators()]}
             for field in ConditionField]
 
 

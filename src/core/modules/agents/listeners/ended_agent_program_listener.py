@@ -35,14 +35,14 @@ class EndedAgentProgramListener(CommitListener[AgentEnded]):
         self.program, self.log, self.policy = program, log, policy
 
     def handle(self, event: AgentEnded, logged: LoggedEvent) -> None:
-        if not self.needs_stop(event.row, logged):
+        if not self.requires_stop(event.row, logged):
             return
         with self.policy.lock(event.row.session) as available:
             if available:
                 self.stop_program(event.row, self.log.row_events_past(RowHistory(AGENTS_TABLE, event.row.id), logged.id))
 
     @staticmethod
-    def needs_stop(agent: Agent, logged: LoggedEvent) -> bool:
+    def requires_stop(agent: Agent, logged: LoggedEvent) -> bool:
         return logged.actor_id != agent.id and logged.command not in STOP_COMMANDS
 
     def stop_program(self, agent: Agent, later_events: list[LoggedEvent]) -> None:

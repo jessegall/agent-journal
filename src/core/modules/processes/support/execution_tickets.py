@@ -16,7 +16,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.pool_tickets import PoolTickets
-from core.modules.processes.support.process_type_admission import ProcessTypeAdmission
+from core.modules.processes.support.process_type_start_check import ProcessTypeStartCheck
 from core.modules.processes.support.process_type_limits import ProcessTypeLimits
 from core.modules.processes.support.run_start_check import RunStartCheck
 
@@ -36,7 +36,7 @@ class ExecutionTickets:
         return self.pools(processes, self.kind_limits.admissions([process for process in processes if process.queued_at is not None]))
 
     # every row is read once for all lanes: its agent, its kind's class and its parts
-    def pools(self, processes: Sequence[Process], categories: ProcessTypeAdmission) -> dict[ExecutionLength, PoolTickets]:
+    def pools(self, processes: Sequence[Process], categories: ProcessTypeStartCheck) -> dict[ExecutionLength, PoolTickets]:
         agents = self.rows.required_index(Agent, [process.session_agent_id for process in processes])
         category_classes = categories.category_class_map()
         parts = self.start_check.waiting_parts([process for process in processes if process.queued_at is not None])

@@ -24,7 +24,7 @@ class RunnablePlugins:
             runnable = self.runnable(plugin)
         except Refusal as refusal:
             return PluginRunCheck(plugin, reason=refusal.reason, is_unreadable=True)
-        if runnable.manifest.needs_newer_journal:
+        if runnable.manifest.requires_newer_journal:
             return PluginRunCheck(plugin, reason="it needs a newer journal")
         if runnable.is_changed:
             return PluginRunCheck(plugin, reason="its files changed since it was installed", is_changed=True)

@@ -4,7 +4,7 @@ from engine.command.command import Command
 from engine.driver.agent_message import AgentMessage
 
 
-from core.modules.processes.support.reading.reader_help_hold import ReaderHelpHold
+from core.modules.processes.support.reading.reader_help_block import ReaderHelpBlock
 
 
 @dataclass(frozen=True)
@@ -13,5 +13,5 @@ class ReaderRequestAnswer:
     the main agent to help with failed or expired requests, and at the tick the notices that tell it of them."""
 
     agent_messages: tuple[AgentMessage, ...] = ()
-    block_plans: tuple[ReaderHelpHold, ...] = ()
+    block_plans: tuple[ReaderHelpBlock, ...] = ()
     commands: tuple[Command[object], ...] = ()
