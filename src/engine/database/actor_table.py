@@ -55,8 +55,9 @@ class ActorTable(RoundState):
         return self.module_actors((module,), timestamp)[module]
 
     def module_actors(self, modules: Sequence[str], timestamp: str) -> dict[str, int]:
-        for module in modules:
-            self.database.update(Statement(MODULE_ACTOR.sql, (self.next_other_actor_id(), CORE_ACTOR_ID, ActorType.MODULE.value, module, timestamp, timestamp)))
+        first_id = self.next_other_actor_id()
+        for index, module in enumerate(modules):
+            self.database.update(Statement(MODULE_ACTOR.sql, (first_id + index, CORE_ACTOR_ID, ActorType.MODULE.value, module, timestamp, timestamp)))
         actors = self.kept.read_signed(MODULE_ACTORS_SIGNATURE, self.module_actor_ids, name="base.module_actors")
         return {module: actors[module] for module in modules}
 

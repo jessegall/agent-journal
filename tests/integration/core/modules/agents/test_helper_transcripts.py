@@ -45,7 +45,7 @@ def test_a_row_the_journal_sent_a_worker_is_tagged_journal_and_one_the_main_agen
     read_transcript(tmp_path, monkeypatch, "s-2", row("user", "Your tests failed: two"), row("user", "Fix the footer too"))
     story = played(TranscriptWorker)
     worker = story.helper.id
-    deliver_line(story, worker, 1, "Your tests failed: two")
+    deliver_line(story, worker, Actor.core().id, "Your tests failed: two")
     deliver_line(story, worker, story.agent.id, "Fix the footer too")
     story.expect_text(f"agent transcript {worker}", "1  journal  user  Your tests failed: two", "2  main agent  user  Fix the footer too")
 
