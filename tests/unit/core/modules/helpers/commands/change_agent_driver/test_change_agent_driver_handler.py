@@ -13,7 +13,7 @@ from engine.errors.refusal import Refusal
 
 ENDED_AT = datetime(2026, 11, 1, 9, 0, tzinfo=timezone.utc)
 PERSON = Actor(3, ActorType.USER)
-CODEX_CHANGE = ChangeAgentDriver(7, "codex", "gpt-6.1-sol")
+CODEX_CHANGE = ChangeAgentDriver(4, "codex", "gpt-6.1-sol")
 
 
 class DriverChange:
@@ -41,7 +41,7 @@ def test_a_stopped_agent_gets_a_new_session_on_the_named_program_and_model_close
     change = DriverChange()
     change.handler.prepare(CODEX_CHANGE, PERSON)
     change.handler.handle(CODEX_CHANGE, SimpleNamespace(actor=PERSON))
-    assert change.commands == [ReplaceAgentSession(7, EndReason.DRIVER_CHANGED, "codex", "gpt-6.1-sol")]
+    assert change.commands == [ReplaceAgentSession(4, EndReason.DRIVER_CHANGED, "codex", "gpt-6.1-sol")]
 
 
 def test_a_running_agent_is_refused_naming_the_stop_that_comes_first():

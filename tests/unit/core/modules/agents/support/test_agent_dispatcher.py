@@ -190,7 +190,7 @@ def test_reconcile_leaves_ended_a_row_the_policy_calls_gone_for_good_though_its_
 
 
 def test_reconcile_ends_an_open_row_whose_started_program_is_gone_and_leaves_one_never_started():
-    started, unstarted = replace(HELPER, launched_at=NOW), replace(HELPER, id=42, number=3)
+    started, unstarted = replace(HELPER, launched_at=NOW), replace(HELPER, id=42)
     parts = Parts(open_agents=(started, unstarted))
     parts.launcher(NOTHING)
     parts.dispatcher.reconcile(CONTEXT)

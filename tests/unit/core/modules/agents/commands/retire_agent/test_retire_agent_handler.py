@@ -45,7 +45,7 @@ class StoredAgents:
 
 
 def stored_agent(**changes) -> StoredAgent:
-    fields = {"id": HELPER_ID, "number": 4, "role": "helper", "parent_id": MAIN_AGENT_ID, "environment_id": 1, "ended_at": ENDED_AT, "retired_at": None, "given_name": "", "profile": "journal-researcher"}
+    fields = {"id": HELPER_ID, "role": "helper", "parent_id": MAIN_AGENT_ID, "environment_id": 1, "ended_at": ENDED_AT, "retired_at": None, "given_name": "", "profile": "journal-researcher"}
     return StoredAgent(**{**fields, **changes})
 
 
@@ -77,7 +77,7 @@ def test_a_person_retires_an_ended_agent_directly_and_its_record_stays():
     retiring.prepare(command, person)
     retired = retiring.handle(command, SimpleNamespace(timestamp=RETIRED_AT, actor=person))
     assert (retired.retired_at, retired.retirement_reason, retired.retiring_actor_id) == (RETIRED_AT, REASON, PERSON_ID)
-    assert (stored.find(HELPER_ID).id, stored.find(HELPER_ID).id) == (HELPER_ID, 4)
+    assert stored.find(HELPER_ID).id == HELPER_ID
 
 
 @pytest.mark.parametrize("changes, refusal_text", [({"ended_at": None}, "is still running"), ({"role": "main"}, "a main agent is not retired"), ({"retired_at": RETIRED_AT}, "is retired already")],

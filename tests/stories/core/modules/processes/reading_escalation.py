@@ -14,7 +14,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.integration.core.modules.processes.test_hang_watch import HANG_SECONDS
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run, started_run
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
-from tests.stories.core.modules.processes.support.reading_scenarios import agent_number, end_decision, ended_after_a_while
+from tests.stories.core.modules.processes.support.reading_scenarios import end_decision, ended_after_a_while
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from core.modules.processes.agent_messages.block_lifted_message import BlockLiftedMessage
 from core.modules.processes.agent_messages.freeze_lifted_message import FreezeLiftedMessage

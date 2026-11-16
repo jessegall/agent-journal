@@ -39,7 +39,7 @@ def test_core_versions_are_checked_against_the_bounds_a_module_gives():
 
 class FutureCoreModule(Module):
     name = "items"
-    requires_engine = ">=6"
+    requires_engine = ">=7"
 
 
 def test_the_finder_loads_the_listed_plugins_and_refuses_one_for_another_core(tmp_path):
@@ -47,7 +47,7 @@ def test_the_finder_loads_the_listed_plugins_and_refuses_one_for_another_core(tm
     home.module_list.write_text(json.dumps(["tests.unit.engine.samples.module_sample:ItemsModule"]))
     assert [module.name for module in ModuleFinder(home).modules()][-1] == "items"
     home.module_list.write_text(json.dumps(["tests.integration.engine.module.test_module_order:FutureCoreModule"]))
-    with pytest.raises(ModuleError, match="needs engine >=6"):
+    with pytest.raises(ModuleError, match="needs engine >=7"):
         ModuleFinder(home).modules()
     home.module_list.write_text(json.dumps([3]))
     with pytest.raises(ModuleError, match="no module path"):

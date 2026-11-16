@@ -147,7 +147,7 @@ def test_a_worker_whose_worktree_was_merged_stays_kept_and_idle_with_its_memorie
     worker = story.row(Agent, story.worker.id)
     story.expect_text("memory list", MEMORY_TEXT, actor=story.worker)
     story.expect_text(f"worker status {worker.id}", f"worker {worker.id} is idle", "no worktree", actor=story.agent)
-    story.expect_text(f"agent show {worker.id} --environment main", f"number: {worker.id}", "role: worker", actor=story.agent)
+    story.expect_text(f"agent show {worker.id} --environment main", f"id: {worker.id}", "role: worker", actor=story.agent)
     story.expect_rows(worker.retired_at is None, worker.ended_at is not None, story.first_row(Worktree, session_agent_id=worker.id) is None, len(worker_rows(story)) == 1)
 
 

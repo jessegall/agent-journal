@@ -46,7 +46,7 @@ class HookCallRefusalSeed(Seed):
 
 
 class EndedChildHelperSeed(Seed):
-    """An ended and retired helper of an agent; the story names its id, its number and its parent."""
+    """An ended and retired helper of an agent; the story names its id and its parent."""
 
     table = "agents"
 

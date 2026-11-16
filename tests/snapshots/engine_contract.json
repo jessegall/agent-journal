@@ -10326,7 +10326,7 @@
         "has_reader_disconnected(self) -> bool",
         "line(self, text: str) -> None",
         "row(self, record: object) -> None",
-        "printed(self, column: str, value: object) -> object",
+        "actor_line(self, values: dict[str, object]) -> list[str]",
         "page(self, page: Page[object], columns: Sequence[str]) -> None",
         "refusal(self, refusal: Refusal) -> None",
         "explanation(self, explanation: Explanation) -> None",

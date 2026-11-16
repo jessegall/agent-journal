@@ -49,7 +49,7 @@ class WorkerLaunch:
 def test_a_new_session_of_a_cold_worker_is_launched_in_the_folder_and_branch_of_its_open_worktree():
     launch = WorkerLaunch()
     assert launch.answer_name() == LAUNCHER_ANSWER
-    assert [(worker_id, command.arguments, command.folder) for worker_id, command in launch.handed] == [(7, ("s-8", WORKTREE.branch, JOB.text), WORKTREE.folder)]
+    assert [(worker_id, command.arguments, command.folder) for worker_id, command in launch.handed] == [(3, ("s-8", WORKTREE.branch, JOB.text), WORKTREE.folder)]
 
 
 def test_a_worker_of_a_program_at_its_usage_limit_is_not_launched_and_keeps_its_session():

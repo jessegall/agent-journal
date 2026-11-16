@@ -63,7 +63,7 @@ def test_the_lowest_idle_number_comes_first_for_every_occupant():
 
 
 def test_a_running_helper_and_one_with_an_open_job_are_never_idle():
-    kept = kept_helpers([helper(3, ended_at=None), helper(4), helper(5)], frozenset({104}))
+    kept = kept_helpers([helper(3, ended_at=None), helper(4), helper(5)], frozenset({4}))
     assert [numbers(kept, occupant) for occupant in Occupant] == [[5]] * 3
 
 

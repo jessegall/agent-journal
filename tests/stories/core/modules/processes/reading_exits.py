@@ -27,7 +27,6 @@ from tests.integration.core.modules.processes.test_hang_watch import HANG_SECOND
 from suites.coding.modules.workers.agent_messages.worker_test_count_unknown_message import WorkerTestCountUnknownMessage
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
-from tests.stories.core.modules.processes.support.reading_scenarios import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from core.modules.processes.agent_messages.reader_block_message import ReaderBlockMessage
 from engine.testing.expectations.expected_message import expected_agent_message
