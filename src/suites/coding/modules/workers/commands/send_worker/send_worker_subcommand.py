@@ -77,7 +77,7 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
                                         WorkerRouteRequest(worker.program, caller.actor.type, self.flags.skipped_guards(arguments)))
         job = arguments.job or arguments.job_flag
         command = SendWorker(arguments.worker_id, job, task_ids, tuple(arguments.library_link), tuple(arguments.library_copy), not arguments.no_sandbox, commands, arguments.plan, arguments.phase, arguments.take)
-        argv = ["worker", "send", str(arguments.worker_id.number), job]
+        argv = ["worker", "send", str(arguments.worker_id), job]
         if arguments.plan is not None:
             argv.extend(("--plan", str(arguments.plan)))
             if arguments.phase is not None:

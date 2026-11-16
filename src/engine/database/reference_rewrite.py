@@ -16,8 +16,9 @@ PARTIAL_INDEX_SPLIT = " WHERE "
 
 
 class ReferenceRewrite:
-    """Reads, rewrites and removes the rows that hold an agent id in named columns, for the fold of main agents;
-    the table and column names come from the live schema, never from a user."""
+    """Reads, rewrites and removes the rows that hold an agent id in named columns, for the fold and the renumber
+    of agents, and answers what the live schema holds; the table and column names come from the live schema,
+    never from a user."""
 
     def __init__(self, database: Database) -> None:
         self.database = database
@@ -50,6 +51,31 @@ class ReferenceRewrite:
     def rows(self, table: str, column: str, ids: list[int]) -> list[dict[str, object]]:
         matched = self.database.rows(Statement(f'SELECT * FROM "{table}" WHERE "{column}" IN ({self.marks(ids)})', list(ids), scan_reason=SCHEMA_REASON))
         return [dict(row) for row in matched]
+
+    def has_table(self, table: str) -> bool:
+        return bool(self.database.rows(Statement("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?", [table], scan_reason=SCHEMA_REASON)))
+
+    def has_column(self, table: str, column: str) -> bool:
+        return bool(self.database.rows(Statement("SELECT 1 FROM pragma_table_info(?) WHERE name = ?", [table, column], scan_reason=SCHEMA_REASON)))
+
+    def is_required(self, table: str, column: str) -> bool:
+        return bool(self.database.rows(Statement('SELECT 1 FROM pragma_table_info(?) WHERE name = ? AND "notnull" = 1', [table, column], scan_reason=SCHEMA_REASON)))
+
+    def has_value_outside(self, table: str, column: str, ids: list[int]) -> bool:
+        statement = Statement(f'SELECT 1 FROM "{table}" WHERE "{column}" IS NOT NULL AND "{column}" NOT IN ({self.marks(ids) or "NULL"}) LIMIT 1', list(ids), scan_reason=SCHEMA_REASON)
+        return bool(self.database.rows(statement))
+
+    def has_pair_outside(self, table: str, model_column: str, id_column: str, models: tuple[str, ...], ids: list[int]) -> bool:
+        statement = Statement(f'SELECT 1 FROM "{table}" WHERE "{model_column}" IN ({self.marks(list(models))}) AND "{id_column}" NOT IN ({self.marks(ids) or "NULL"}) LIMIT 1',
+                              [*models, *ids], scan_reason=SCHEMA_REASON)
+        return bool(self.database.rows(statement))
+
+    def newest_row(self, table: str) -> dict[str, object] | None:
+        rows = self.database.rows(Statement(f'SELECT * FROM "{table}" ORDER BY id DESC LIMIT 1', scan_reason=SCHEMA_REASON))
+        return dict(rows[0]) if rows else None
+
+    def set_null(self, table: str, column: str, ids: list[int]) -> int:
+        return self.database.update(Statement(f'UPDATE "{table}" SET "{column}" = NULL WHERE "{column}" IN ({self.marks(ids)})', list(ids)))
 
     def rewrite(self, table: str, column: str, ids: list[int], target_id: int) -> int:
         return self.database.update(Statement(f'UPDATE "{table}" SET "{column}" = ? WHERE "{column}" IN ({self.marks(ids)})', [target_id, *ids]))

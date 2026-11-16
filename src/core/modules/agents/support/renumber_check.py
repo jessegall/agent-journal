@@ -10,11 +10,9 @@ AGENT_IDS = Statement("SELECT id FROM agents ORDER BY id", scan_reason=SCHEMA_RE
 UNMATCHED_ACTORS = Statement("SELECT agents.id AS id FROM agents LEFT JOIN actors ON actors.id = agents.id"
                              " WHERE agents.actor_id != agents.id OR actors.id IS NULL OR actors.type != 'agent'", scan_reason=SCHEMA_REASON)
 LOW_ACTORS = Statement("SELECT id FROM actors WHERE id BETWEEN 1 AND ? AND id NOT IN (SELECT id FROM agents)", [FIRST_OTHER_ACTOR_ID - 1], scan_reason=SCHEMA_REASON)
+AGENT_MODELS = ("agent", "agents")
 SAMPLE_TABLES = ("tasks", "messages", "documents", "reports")
-SAMPLE_ROW = "SELECT {table}.id AS id, actors.name AS name, actors.type AS type FROM {table} JOIN actors ON actors.id = {table}.creator_id ORDER BY {table}.id DESC LIMIT 1"
-SAMPLE_AGAIN = "SELECT actors.name AS name, actors.type AS type FROM {table} JOIN actors ON actors.id = {table}.creator_id WHERE {table}.id = ?"
 RENUMBER_TABLES = ("agent_renumbers", "agent_renumber_summary")
-TABLE_EXISTS = "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?"
 
 
 class RenumberCheck:
@@ -38,13 +36,15 @@ class RenumberCheck:
 
     def samples(self) -> dict[str, tuple[int, str, str]]:
         found = {}
-        for table in SAMPLE_TABLES:
-            if not self.database.rows(Statement(TABLE_EXISTS, [table], scan_reason=SCHEMA_REASON)):
-                continue
-            rows = self.database.rows(Statement(SAMPLE_ROW.format(table=table), scan_reason=SCHEMA_REASON))
-            if rows:
-                found[table] = (int(rows[0]["id"]), str(rows[0]["name"]), str(rows[0]["type"]))
+        for table in (table for table in SAMPLE_TABLES if self.rewrite.has_table(table)):
+            row = self.rewrite.newest_row(table)
+            if row is not None:
+                found[table] = (int(row["id"]), *self.writer(row))
         return found
+
+    def writer(self, row: dict[str, object]) -> tuple[str, str]:
+        actors = self.rewrite.rows("actors", "id", [int(row["creator_id"])])
+        return (str(actors[0]["name"]), str(actors[0]["type"])) if actors else ("", "")
 
     def checked(self, counts_before: dict[str, int], deleted: dict[str, int], samples: dict[str, tuple[int, str, str]]) -> None:
         problems = [f"{table} has {count} rows, not {counts_before.get(table, 0) - deleted.get(table, 0)}"
@@ -64,17 +64,16 @@ class RenumberCheck:
 
     def unknown_agents(self, agent_ids: list[int]) -> list[str]:
         sets = ColumnRule.sets(SchemaColumns(self.database).columns())
-        known = ",".join(str(agent_id) for agent_id in agent_ids) or "NULL"
         problems = [f"{table}.{column} names an agent that does not exist" for table, column in sets.agent
-                    if self.database.rows(Statement(f'SELECT 1 FROM "{table}" WHERE "{column}" IS NOT NULL AND "{column}" NOT IN ({known}) LIMIT 1', scan_reason=SCHEMA_REASON))]
+                    if self.rewrite.has_value_outside(table, column, agent_ids)]
         problems += [f"{table}.{row_id} names an agent that does not exist" for table, model, row_id in sets.pairs
-                     if self.database.rows(Statement(f'SELECT 1 FROM "{table}" WHERE "{model}" IN (\'agent\', \'agents\') AND "{row_id}" NOT IN ({known}) LIMIT 1', scan_reason=SCHEMA_REASON))]
+                     if self.rewrite.has_pair_outside(table, model, row_id, AGENT_MODELS, agent_ids)]
         return problems
 
     def changed_samples(self, samples: dict[str, tuple[int, str, str]]) -> list[str]:
         problems = []
         for table, (row_id, name, actor_type) in samples.items():
-            rows = self.database.rows(Statement(SAMPLE_AGAIN.format(table=table), [row_id], scan_reason=SCHEMA_REASON))
-            if rows and (str(rows[0]["name"]), str(rows[0]["type"])) != (name, actor_type):
-                problems.append(f"{table} {row_id} was written by {name}, now by {rows[0]['name']}")
+            rows = self.rewrite.rows(table, "id", [row_id])
+            if rows and self.writer(rows[0]) != (name, actor_type):
+                problems.append(f"{table} {row_id} was written by {name}, now by {self.writer(rows[0])[0]}")
         return problems

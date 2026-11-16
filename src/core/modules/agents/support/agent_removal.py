@@ -1,14 +1,12 @@
 from collections.abc import Collection
 
 from engine.database.database import Database
-from engine.database.reference_rewrite import SCHEMA_REASON, ReferenceRewrite
+from engine.database.reference_rewrite import ReferenceRewrite
 from engine.database.removal_counts import RemovalCounts
 from engine.database.row_removal import RowRemoval
 from engine.database.schema_columns import SchemaColumns
-from engine.database.statement import Statement
 from core.modules.agents.support.column_rule import ColumnRule
 
-REQUIRED_COLUMN = "SELECT 1 FROM pragma_table_info(?) WHERE name = ? AND \"notnull\" = 1"
 AGENT_MODELS = ("agent", "agents")
 KEPT_TABLES = ("tasks", "documents", "doc_revisions", "reports", "plans", "phases", "rules", "task_logs", "comments")
 
@@ -31,14 +29,14 @@ class AgentRemoval:
         counts = removal.removed("agents", agent_ids)
         keyed = {(column.table, column.column) for column in schema if column.target == "agents"}
         ids = sorted(agent_ids)
+        rewrite = ReferenceRewrite(self.database)
         for table, column in sets.agent:
             if (table, column) in keyed:
                 continue
-            if not self.database.rows(Statement(REQUIRED_COLUMN, [table, column], scan_reason=SCHEMA_REASON)):
-                counts.add_nulled(table, self.database.update(Statement(
-                    f'UPDATE "{table}" SET "{column}" = NULL WHERE "{column}" IN ({ReferenceRewrite.marks(ids)})', ids)))
+            if not rewrite.is_required(table, column):
+                counts.add_nulled(table, rewrite.set_null(table, column, ids))
                 continue
-            rows = ReferenceRewrite(self.database).rows(table, column, ids)
+            rows = rewrite.rows(table, column, ids)
             if rows:
                 removal.refuse_kept(table, column, rows[0])
                 counts.add(removal.removed(table, [int(row["id"]) for row in rows]))

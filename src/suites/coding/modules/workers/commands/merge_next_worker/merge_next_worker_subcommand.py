@@ -30,7 +30,7 @@ class MergeNextWorkerSubcommand(Subcommand[Command[object], MergeOutcome]):
 
     def command(self, arguments: Namespace, caller: Caller) -> Command[object]:
         return self.requests.command(MergeNextWorker(arguments.worker_id, arguments.read_important), arguments.worker_id,
-                                     ["merger", "merge", str(arguments.worker_id.number), "--read-important", arguments.read_important], arguments, caller)
+                                     ["merger", "merge", str(arguments.worker_id), "--read-important", arguments.read_important], arguments, caller)
 
     def write_output(self, value: object, output: Output) -> None:
         if self.requests.write_output(value, output):

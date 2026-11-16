@@ -16,8 +16,8 @@ def worker(story: Story) -> Actor:
 
 
 def second_person(story: Story) -> Actor:
-    """Grace, the user CratesAndActors made after Ada."""
-    return Actor(story.user.id + 2, ActorType.USER)
+    """Grace, the user CratesAndActors made after Ada: users count apart from agents, so she is next after Ada."""
+    return Actor(story.user.id + 1, ActorType.USER)
 
 
 class CratesAndActors(StoryFixture):
