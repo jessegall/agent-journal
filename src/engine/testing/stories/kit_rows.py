@@ -25,10 +25,10 @@ TOUCHED_LINE = re.compile(r"^(?:created|updated): (.+)$", re.MULTILINE)
 
 M = TypeVar("M", bound=Model)
 R = TypeVar("R")
-A = TypeVar("A")
+SyncAnswer = TypeVar("SyncAnswer")
 
 
-class KitRows(ABC, Generic[A]):
+class KitRows(ABC, Generic[SyncAnswer]):
     """The rows a test reads for an assertion, through the journal's own queries: every row, the first, the
     newest, whether one exists and how many, each of a model filtered by its values, the registry, and a
     line's output with the rows it created or updated written out. A story and an integration journal read
@@ -52,13 +52,13 @@ class KitRows(ABC, Generic[A]):
         return FileAccess.read(self.home.system_log) if FileAccess.exists(self.home.system_log) else ""
 
     # the module list gains the module and the journal syncs, as an install does
-    def synced_with(self, module: str) -> A:
+    def synced_with(self, module: str) -> SyncAnswer:
         modules = json.loads(FileAccess.read(self.home.module_list))
         FileAccess.write(self.home.module_list, json.dumps([*modules, module]))
         return self.synced()
 
     @abstractmethod
-    def synced(self) -> A: ...
+    def synced(self) -> SyncAnswer: ...
 
     def story_rows(self, model: type[M], **values: object) -> tuple[M, ...]:
         return tuple(self.container.get(Queries).query(model).filter(**values).matching(Minimum(ID_COLUMN, 1)).every_row(STORY_ROWS_REASON))

@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 
 from engine.enums.access import Access
@@ -34,6 +34,12 @@ class HelperTypeEntry:
     commands: CommandAllowList = CommandAllowList()
     command_types_setting: str = ""
     refusal_hint: str = ""
+
+    # a type that is a read-only helper, or extends one, also runs the journal lines other modules add for helpers
+    def with_helper_lines(self, helper_key: str, lines: tuple[str, ...]) -> "HelperTypeEntry":
+        if helper_key not in (self.key, *self.bases) or not lines:
+            return self
+        return replace(self, commands=self.commands.joined(CommandAllowList(lines=lines)))
 
     @classmethod
     def declared(cls, module: str, declaration: type[HelperType]) -> "HelperTypeEntry":

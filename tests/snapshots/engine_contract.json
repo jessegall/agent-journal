@@ -8,6 +8,7 @@
       ],
       "methods": [
         "is_agent(self) -> bool",
+        "given_agent(actor: 'Actor | None') -> bool",
         "is_person(self) -> bool",
         "core(cls) -> 'Actor'"
       ]
@@ -675,6 +676,16 @@
         "unchanged(cls) -> 'WakeChange'"
       ]
     },
+    "agent_machine.states.agent_plan_states.AgentPlanStates": {
+      "bases": [
+        "StateSource"
+      ],
+      "fields": [],
+      "methods": [
+        "states(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[RequiredState | BlockPlan]]",
+        "plan(self, agent_id: int) -> BlockPlan | None"
+      ]
+    },
     "agent_machine.states.agent_reference.AgentReference": {
       "bases": [],
       "fields": [
@@ -1323,19 +1334,19 @@
       "fields": [],
       "methods": []
     },
-    "area.area_use.AreaUse": {
-      "bases": [
-        "Enum"
-      ],
-      "fields": [],
-      "methods": []
-    },
     "area.engine_area.EngineArea": {
       "bases": [],
       "fields": [
         "summary: ClassVar[str]",
         "use: ClassVar[AreaUse]"
       ],
+      "methods": []
+    },
+    "area.enums.area_use.AreaUse": {
+      "bases": [
+        "Enum"
+      ],
+      "fields": [],
       "methods": []
     },
     "caller.caller.Caller": {
@@ -1853,6 +1864,7 @@
       "methods": [
         "row_id(self, model_name: str, number: int, environment_id: int | None) -> int",
         "number(self, model_name: str, row_id: int) -> int",
+        "agent_number(self, agent_id: int) -> int",
         "environment_number(self, model_name: str, row_id: int, environment_id: int | None) -> int",
         "numbers(self, model_name: str, row_ids: set[int]) -> dict[int, int]"
       ]
@@ -2417,6 +2429,7 @@
         "newest_page(self, number: int, size: int, parsed: Callable[[sqlite3.Row], T]) -> Page[T]",
         "rows_past(self, row_id: int, limit: int) -> list[sqlite3.Row]",
         "latest_event(self, event: str) -> sqlite3.Row | None",
+        "first_row(self, statement: Statement) -> sqlite3.Row | None",
         "newest_row_rows(self, history: RowHistory) -> list[sqlite3.Row]",
         "row_rows_past(self, history: RowHistory, event_id: int) -> list[sqlite3.Row]",
         "latest_row(self, row_table: str, row_id: int, names: Sequence[str]) -> sqlite3.Row | None",
@@ -3336,6 +3349,7 @@
         "role: str"
       ],
       "methods": [
+        "step_key(event: 'HookEvent | None') -> str",
         "tick(cls, program: str, session: str, event_id: str, hook_timestamp_ms: int, actor: str, environment: str) -> 'HookEvent'",
         "parsed(cls, data: object) -> 'HookEvent'",
         "transcript(self) -> HookTranscript",
@@ -3378,6 +3392,7 @@
         "halt: str"
       ],
       "methods": [
+        "is_silent(self) -> bool",
         "allowed(cls) -> 'HookReply'",
         "stored(cls, call: HookCallLike) -> 'HookReply'",
         "halted(cls, stop_line: str) -> 'HookReply'",
@@ -5027,13 +5042,6 @@
         "covers(self, subject: ExecutionSubject) -> bool"
       ]
     },
-    "execution.classes.errors.execution_class_cost_error.ExecutionClassCostError": {
-      "bases": [
-        "Refusal"
-      ],
-      "fields": [],
-      "methods": []
-    },
     "execution.classes.execution_class.ExecutionClass": {
       "bases": [],
       "fields": [
@@ -5045,7 +5053,9 @@
         "line_pattern: str",
         "plugin: str"
       ],
-      "methods": []
+      "methods": [
+        "cost_overrun(self, pool_capacity: int) -> str"
+      ]
     },
     "execution.classes.execution_classes.ExecutionClasses": {
       "bases": [],
@@ -5081,6 +5091,13 @@
         "applied(self) -> Generator['CurrentExecution']",
         "thread(target: Callable[..., object], args: tuple[object, ...], name: str | None) -> threading.Thread"
       ]
+    },
+    "execution.errors.execution_class_cost_error.ExecutionClassCostError": {
+      "bases": [
+        "Refusal"
+      ],
+      "fields": [],
+      "methods": []
     },
     "execution.execution_area.ExecutionArea": {
       "bases": [
@@ -5605,6 +5622,7 @@
         "refusal_hint: str"
       ],
       "methods": [
+        "with_helper_lines(self, helper_key: str, lines: tuple[str, ...]) -> 'HelperTypeEntry'",
         "declared(cls, module: str, declaration: type[HelperType]) -> 'HelperTypeEntry'",
         "restored(cls, stored: Mapping[str, Any]) -> 'HelperTypeEntry'",
         "matches(self, helper_type: type[HelperType]) -> bool",
@@ -6062,6 +6080,7 @@
         "find(self, model: type[M], row_id: int) -> M | None",
         "required(self, model: type[M], row_id: int) -> M",
         "required_index(self, model: type[M], row_ids: Sequence[int]) -> dict[int, M]",
+        "found_index(self, model: type[M], row_ids: Sequence[int]) -> dict[int, M]",
         "prepare(self, model: type[M], row_ids: Sequence[int]) -> None",
         "remember(self, row: Model) -> None",
         "remove(self, row: Model) -> None",
@@ -6588,17 +6607,6 @@
         "import_failed(cls, source: str, error: Exception) -> 'ModuleError'"
       ]
     },
-    "module.errors.suite_refusal.SuiteRefusal": {
-      "bases": [],
-      "fields": [
-        "file: str",
-        "line: int",
-        "reason: str"
-      ],
-      "methods": [
-        "text(self) -> str"
-      ]
-    },
     "module.folder_listing.FolderListing": {
       "bases": [],
       "fields": [
@@ -6791,6 +6799,7 @@
         "inspectors: ClassVar[list[InspectorDeclaration | type[InspectorDeclaration]]]",
         "added_states: ClassVar[Sequence[StateAddition]]",
         "helper_types: ClassVar[list[type[HelperType]]]",
+        "helper_lines: ClassVar[list[str]]",
         "agent_groups: ClassVar[list[AgentGroup | type[AgentGroup]]]",
         "profiles: ClassVar[list[AgentProfile]]",
         "providers: ClassVar[list[type[Provider]]]",
@@ -6886,6 +6895,13 @@
         "module(self, value: object, source: str) -> type[Module]"
       ]
     },
+    "module.module_imports.ModuleImports": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "is_module_import(node: ast.AST) -> TypeGuard[ast.ImportFrom]"
+      ]
+    },
     "module.module_order.ModuleOrder": {
       "bases": [],
       "fields": [],
@@ -6923,6 +6939,7 @@
         "agent_messages(self, modules: tuple[type[Module], ...]) -> tuple[MessageEntry, ...]",
         "docks(self, modules: tuple[type[Module], ...]) -> tuple[DockEntry, ...]",
         "skills(self, modules: tuple[type[Module], ...]) -> tuple[SkillEntry, ...]",
+        "helper_type_entries(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[HelperTypeEntry, ...]",
         "buttons(self, modules: tuple[type[Module], ...]) -> tuple[ButtonEntry, ...]",
         "inspectors(self, modules: tuple[type[Module], ...]) -> tuple[InspectorEntry, ...]",
         "button_slots(self, modules: tuple[type[Module], ...]) -> tuple[str, ...]",
@@ -7086,12 +7103,23 @@
         "preset_problems(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]"
       ]
     },
+    "module.suite_contract_breach.SuiteContractBreach": {
+      "bases": [],
+      "fields": [
+        "file: str",
+        "line: int",
+        "reason: str"
+      ],
+      "methods": [
+        "text(self) -> str"
+      ]
+    },
     "module.suite_import_check.SuiteImportCheck": {
       "bases": [],
       "fields": [],
       "methods": [
         "internal_areas(self) -> frozenset[str]",
-        "refusals(self, folder: Path) -> tuple[SuiteRefusal, ...]",
+        "refusals(self, folder: Path) -> tuple[SuiteContractBreach, ...]",
         "is_internal(name: str, internal: Collection[str]) -> bool",
         "imported_names(node: ast.AST) -> tuple[str, ...]"
       ]
@@ -9690,6 +9718,7 @@
       "methods": [
         "opened(self) -> Generator[None]",
         "keep(self, key: str, version_reader: Callable[[], object], value: object) -> None",
+        "step_value(self, name: str, step_key: str, loader: Callable[[], T]) -> T",
         "read(self, key: str, version_reader: Callable[[], object], loader: Callable[[], T]) -> T"
       ]
     },
@@ -10683,11 +10712,21 @@
       ]
     },
     "testing.stories.kit_rows.KitRows": {
-      "bases": [],
+      "bases": [
+        "ABC",
+        "Generic[SyncAnswer]"
+      ],
       "fields": [
-        "container: Container"
+        "container: Container",
+        "home: JournalHome"
       ],
       "methods": [
+        "run_command(self, command: Command[R], actor: Actor, environment_id: int | None) -> R",
+        "row(self, model: type[M], row_id: int) -> M",
+        "run_tick(self, name: str) -> None",
+        "system_log_text(self) -> str",
+        "synced_with(self, module: str) -> SyncAnswer",
+        "synced(self) -> SyncAnswer",
         "story_rows(self, model: type[M]) -> tuple[M, ...]",
         "first_row(self, model: type[M]) -> M | None",
         "newest_row(self, model: type[M]) -> M | None",
@@ -10699,7 +10738,7 @@
     },
     "testing.stories.story.Story": {
       "bases": [
-        "KitRows"
+        "KitRows[tuple[int, str]]"
       ],
       "fields": [],
       "methods": [
@@ -10720,7 +10759,6 @@
         "release_listeners(self) -> None",
         "run(self, line: str, actor: Actor | None, environment_id: int | None, process_id: int | None) -> LineOutcome",
         "seed(self, seed: type[Seed], count: int) -> tuple[int, ...]",
-        "run_command(self, command: Command[R], actor: Actor, environment_id: int | None) -> R",
         "end_session(self, agent: Actor) -> None",
         "expect_agent_group(self, helper_type: str, profile: str, group: str) -> None",
         "use_fixture_environment(self, name: str | None) -> None",
@@ -10728,7 +10766,6 @@
         "scope_line(self, line: str) -> str",
         "run_requested(self, line: str, request: CallerRequest) -> LineOutcome",
         "use_processes(self) -> None",
-        "row(self, model: type[M], row_id: int) -> M",
         "setting_default(self, key: str) -> SettingDefault",
         "number_default(self, key: str) -> int",
         "refusals(self) -> tuple[RecordedRefusal, ...]",
@@ -10742,7 +10779,6 @@
         "expect_agent_line_shown(self, agent_id: int, text: str, limit_seconds: float) -> None",
         "tick(self, session: str) -> HookReply",
         "busy_database(self) -> Generator[None]",
-        "run_tick(self, name: str) -> None",
         "tick_handler_points(self, tick_handler: Callable[[Container], object]) -> Points | None",
         "expect_hook_allowed(self, session: str, sample: HookSample) -> None",
         "expect_hook_agent_messages(self, session: str, sample: HookSample) -> HookReply",
@@ -10767,7 +10803,6 @@
         "expect_requested_exit(self, line: str, request: CallerRequest, code: int, text: str) -> None",
         "new_row_id(self, line: str, actor: Actor | None) -> int",
         "report_context_percent(self, session: str, percent: int) -> None",
-        "system_log_text(self) -> str",
         "expect_sync_refusal(self, module: str, text: str) -> None",
         "expect_sync_success(self, module: str) -> None",
         "expect_default_module_sync_refusal(self, module: type[Module], text: str) -> None",
@@ -10784,7 +10819,6 @@
         "expect_logged_event(self, name: str) -> None",
         "rerun_migration(self, module: str, number: int) -> None",
         "expect_sync_without(self, module: str) -> None",
-        "synced_with(self, module: str) -> tuple[int, str]",
         "synced(self) -> tuple[int, str]",
         "expect_rows(self) -> None"
       ]
@@ -10964,7 +10998,7 @@
         "build_variant(self, name: str, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Path",
         "drop_unused_variants(self, variants: list[Path]) -> None",
         "is_unused(variant: Path) -> bool",
-        "usable_folder(self, folder: Path, name: str) -> Path",
+        "usable_folder(self, folder: Path) -> Path",
         "template_key(modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> list[object]",
         "locked(path: Path) -> Generator[None]",
         "synced_template(self, folder: Path, modules: tuple[str, ...]) -> Template",
@@ -11001,6 +11035,13 @@
       "methods": [
         "lines(self) -> list[str]",
         "data(self) -> dict[str, object]"
+      ]
+    },
+    "text.list_file_entries.ListFileEntries": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "parsed(lines: Iterable[str]) -> tuple[str, ...]"
       ]
     },
     "text.pytest_line.PytestLine": {

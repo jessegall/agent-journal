@@ -6,8 +6,8 @@ from core.modules.processes.support.part_spec import PartSpec
 
 
 class RunStart(Protocol):
-    """What the start of a run tells of it for its class to be chosen: its line, category and parts, its plugin's kind
-    and the sort of run it is."""
+    """What the start of a run tells of it for its class to be chosen: its line, category and parts, its plugin's
+    kind and the sort of run it is."""
 
     @property
     def line(self) -> str: ...

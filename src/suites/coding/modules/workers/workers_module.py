@@ -156,6 +156,7 @@ class WorkersModule(Module):
     policies = [WorkerGitPolicy, WorkerJudgeScopePolicy, DispatchNamesModelPolicy, ProvedDeliveryPolicy, ContextHardLimitPolicy, CheckoutWriteCodePolicy, DispatchAllowancePolicy, PhaseTestPolicy, ProtectedFolderPolicy, ReadonlyHelperAllowancePolicy, WorkerFilePolicy, WorkerOutsideLinkPolicy, WorkerReadPolicy, WorkerReusePolicy, WorkerTestLinePolicy, WorkerTestCountPolicy]
     profiles = WORKER_PROFILES
     helper_types = [Worker, Merger]
+    helper_lines = ["worker logs", "merger next"]
     templates = WORKER_TEMPLATES
     window_extensions = WORKERS_WINDOW_EXTENSIONS
     agent_messages = WORKERS_MODULE_AGENT_MESSAGES

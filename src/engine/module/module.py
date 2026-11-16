@@ -106,6 +106,8 @@ class Module:
     inspectors: ClassVar[list[InspectorDeclaration | type[InspectorDeclaration]]] = []
     added_states: ClassVar[Sequence[StateAddition]] = ()
     helper_types: ClassVar[list[type[HelperType]]] = []
+    # journal lines of this module that every read-only helper may run beside core's own
+    helper_lines: ClassVar[list[str]] = []
     agent_groups: ClassVar[list[AgentGroup | type[AgentGroup]]] = []
     profiles: ClassVar[list[AgentProfile]] = []
     providers: ClassVar[list[type[Provider]]] = []
