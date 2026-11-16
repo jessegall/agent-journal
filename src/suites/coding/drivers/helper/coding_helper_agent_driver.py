@@ -3,6 +3,7 @@ from engine.agent_machine.driver import Driver
 from engine.enums.responder import Responder
 from engine.enums.work_stop import WorkStop
 from suites.coding.support.context_line import CONTEXT_LINE
+from suites.coding.drivers.coding_rank_orders import CODING_HELPER_RANK_ORDER
 
 
 class CodingHelperAgentDriver(Driver):
@@ -13,7 +14,7 @@ class CodingHelperAgentDriver(Driver):
     agent_type = "helper"
     suite = "coding"
     gathers = [HelperAgentDriver]
-    rank_order = HelperAgentDriver.rank_order
+    rank_order = CODING_HELPER_RANK_ORDER
     work_stop = WorkStop.JOB_REPORT
     responder = Responder.PARENT
     instructions = [CONTEXT_LINE]

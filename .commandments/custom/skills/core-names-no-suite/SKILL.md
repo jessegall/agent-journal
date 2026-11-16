@@ -40,7 +40,8 @@ These files may name the words, each for its reason:
   `drivers/queries/hook_call_query.py`, `src/engine/driver/tool.py`, `src/engine/driver/search_category.py`.
 - The runner's command types and the stock readers of test tools: `src/core/modules/processes/`,
   `src/engine/enums/command_category.py`, `src/engine/driver/part.py`, `src/engine/driver/shell_line.py`,
-  `src/engine/text/run_target.py`, `aliases/seeders/aliases_seeder.py`. Test run is a command type the shell
+  `src/engine/text/run_target.py`, `src/engine/text/pytest_line.py`, `src/engine/enums/process_type.py`,
+  `src/engine/enums/execution_source.py`, `src/engine/execution/classes/builtin_classes.py`, `aliases/seeders/aliases_seeder.py`. Test run is a command type the shell
   classifier gives any line, and a stock reader names its tool.
 - Git as the program and the version control the engine reads: `src/engine/git/`, `src/engine/provider/hook_manager.py`,
   `src/engine/provider/provider.py`, `codex/providers/codex_provider.py`, `src/engine/file/copies/conflict_files.py`,

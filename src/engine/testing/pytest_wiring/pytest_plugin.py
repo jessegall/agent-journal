@@ -127,9 +127,9 @@ def pytest_configure(config: pytest.Config) -> None:
 # the run's first process decides once whether the run records a test map and tells its runners, so a test run
 # started inside a test never writes one
 def records_test_map(config: pytest.Config) -> bool:
-    worker_input: dict[str, object] | None = getattr(config, "workerinput", None)
-    if worker_input is not None:
-        return bool(worker_input.get(RECORDS_MAP_KEY, False))
+    xdist_input: dict[str, object] | None = getattr(config, "workerinput", None)
+    if xdist_input is not None:
+        return bool(xdist_input.get(RECORDS_MAP_KEY, False))
     option = config.option
     is_full_run = RunSize(config.args, 1).is_full_run(option.keyword, option.markexpr, option.deselect or (), bool(getattr(option, "lf", False)))
     return TestMap.is_recorded(is_full_run) and not option.collectonly
@@ -137,8 +137,8 @@ def records_test_map(config: pytest.Config) -> bool:
 
 @pytest.hookimpl(optionalhook=True)
 def pytest_configure_node(node: object) -> None:
-    worker_input: dict[str, object] = getattr(node, "workerinput")
-    worker_input[RECORDS_MAP_KEY] = RECORDER in getattr(node, "config").stash
+    xdist_input: dict[str, object] = getattr(node, "workerinput")
+    xdist_input[RECORDS_MAP_KEY] = RECORDER in getattr(node, "config").stash
 
 
 # the modules and tests collected at start live as long as the run, so later collections need not scan them

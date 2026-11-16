@@ -1,4 +1,4 @@
-from core.modules.drivers.drivers.rank_orders import WORKER_RANK_ORDER
+from suites.coding.drivers.coding_rank_orders import CODING_HELPER_RANK_ORDER
 from engine.agent_machine.driver import Driver
 from engine.enums.responder import Responder
 from engine.enums.work_stop import WorkStop
@@ -13,7 +13,7 @@ class WorkerAgentDriver(Driver):
     name = "coding.worker"
     agent_type = "worker"
     suite = "coding"
-    rank_order = WORKER_RANK_ORDER
+    rank_order = CODING_HELPER_RANK_ORDER
     work_stop = WorkStop.REFUSE_DURING_WORK
     responder = Responder.PARENT
     instructions = ["You are a worker: you do your tasks in your worktree, prove each point with journal proof make, start another task with journal task start and commit your work with journal worker commit; journal handles git.",

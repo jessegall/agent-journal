@@ -9,13 +9,13 @@ from engine.module.journal_container import synced_container
 from engine.module.module_finder import ModuleFinder
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
-from server.tick.ticker import TICK_WORKER_COUNT, Ticker
+from server.tick.ticker import TIMED_JOB_COUNT, Ticker
 
 JOIN_SECONDS = 5.0
 WAIT_SECONDS = 30.0
 PRUNING_SECONDS = 600
 OUTPUT_READER_SECONDS = 1
-TICK_WORKERS_KEY = ProcessSetting.TICK_WORKERS.key
+TIMED_JOBS_KEY = ProcessSetting.TIMED_JOBS_AT_ONCE.key
 
 
 class TickClock:
@@ -229,11 +229,11 @@ def test_the_tick_worker_count_is_three_by_default(synced_home):
     container = synced_container(synced_home)
     worker_count = Ticker.worker_count(container)
     container.get(Database).close()
-    assert worker_count == TICK_WORKER_COUNT == 3
+    assert worker_count == TIMED_JOB_COUNT == 3
 
 
 def test_the_tick_worker_count_follows_its_setting(journal):
-    assert journal.run(f"setting set {TICK_WORKERS_KEY} 5 --project").code == 0
+    assert journal.run(f"setting set {TIMED_JOBS_KEY} 5 --project").code == 0
     worker_count = Ticker.worker_count(journal.container)
     ticker, _ = started_ticker(journal.home, worker_count=worker_count)
     started_count = len(ticker.workers)

@@ -65,7 +65,7 @@ class SkillFiles:
     def write(self, project: Path, skill: SkillEntry) -> bool:
         return self.publish(project, skill, SkillContents.read(Path(skill.path)).text, self.projects.permitted(project)(skill.folder))
 
-    # a target reached again through a linked folder, as a worktree's links to the project's folders are, is the same
+    # a target reached again through a linked folder, as a separate copy's links to the project's folders are, is the same
     # file and is handled once
     def publish(self, project: Path, skill: SkillEntry, text: str, is_permitted: bool, handled: set[Path] | None = None) -> bool:
         if not is_permitted:

@@ -197,8 +197,8 @@ class PluginProgram:
                 "JOURNAL_PLUGIN_DIR": str(code), "JOURNAL_PLUGIN_DATA": str(data), "JOURNAL_PLUGIN_CACHE": str(self.cache_folder(plugin_name)), "JOURNAL_PYTHON": sys.executable,
                 PLUGIN_TOKEN_VARIABLE: self.scripts.token(plugin_name), "JOURNAL_SETTINGS": str(self.settings_path(plugin_name, environment))}
 
-    # a folder of the user's own cache, which a worker's sandbox lets it write, for what a plugin can build again (a
-    # type checker's cache); its data folder lies in the main checkout, which the sandbox never lets a worker write
+    # a folder of the user's own cache, which a helper's sandbox lets it write, for what a plugin can build again (a
+    # type checker's cache); its data folder lies in the main checkout, which the sandbox never lets a helper write
     def cache_folder(self, plugin_name: str) -> Path:
         project = hashlib.sha256(str(self.home.folder.resolve()).encode()).hexdigest()[:PROJECT_MARK_CHARACTERS]
         return Path.home() / ".cache" / "agent-journal" / "plugins" / project / plugin_name

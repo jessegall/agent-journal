@@ -2,6 +2,7 @@ from core.modules.settings.windows.settings_windows import SETTINGS_WINDOWS
 from core.modules.settings.models.declarations.setting_model_declaration import SettingModelDeclaration
 from core.modules.settings.models.declarations.secret_setting_model_declaration import SecretSettingModelDeclaration
 from core.modules.settings.migrations.m004_agent_message_keys import AgentMessageKeysMigration
+from core.modules.settings.migrations.m005_timed_job_setting_key import TimedJobSettingKeyMigration
 from core.modules.settings.migrations.m003_helper_driver_key import HelperDriverKeyMigration
 from engine.guard.guard_switches import GuardSwitches
 from core.modules.settings.migrations.m001_settings import SettingsTableMigration
@@ -48,7 +49,7 @@ class SettingsModule(Module):
     settings = SETTINGS_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments"]
     models = [SettingModelDeclaration, SecretSettingModelDeclaration]
-    migrations = [AgentMessageKeysMigration, HelperDriverKeyMigration, SettingsTableMigration, SecretSettingsTableMigration]
+    migrations = [TimedJobSettingKeyMigration, AgentMessageKeysMigration, HelperDriverKeyMigration, SettingsTableMigration, SecretSettingsTableMigration]
     handlers = [SetSettingHandler, ApplySettingScreenHandler, SwitchSettingGroupHandler, SetManagedHookHandler, RemoveManagedHooksHandler, ScanManagedHooksHandler, RestoreManagedHooksHandler]
     windows = SETTINGS_WINDOWS
     subcommands = [SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingScreenShowSubcommand, SettingScreenIndexSubcommand, ApplySettingScreenSubcommand, SettingTreeSubcommand, ListManagedHooksSubcommand, SetManagedHookSubcommand, RemoveManagedHooksSubcommand, ScanManagedHooksSubcommand, RestoreManagedHooksSubcommand]

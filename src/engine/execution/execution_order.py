@@ -65,7 +65,7 @@ class ExecutionOrder:
         if is_halted or ticket.has_open_reader_request or self.is_class_full(ticket, running):
             return False
         pool, cost = ticket.execution_class.pool, ticket.execution_class.slot_cost
-        # a run that costs more than its lane holds, such as a full test run in a lane a person narrowed, starts alone
+        # a run that costs more than its pool holds, such as a run of the whole suite in a pool a person narrowed, starts alone
         has_room = self.fits(occupied_slots.slot_units, cost, self.limits.capacity(pool))
         running_limit = self.limits.priority_limit(pool, ticket.first_priority).running_limit
         fits_priority_limit = self.fits(occupied_slots.first_priority_units(ticket.first_priority), cost, running_limit)

@@ -117,6 +117,18 @@
             },
             {
                 "fileMatches": "(^|/)src/core/modules/pins/support/project_repositories\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/enums/process_type\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/enums/execution_source\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/execution/classes/builtin_classes\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/text/pytest_line\\.py$"
             }
         ]
     },
