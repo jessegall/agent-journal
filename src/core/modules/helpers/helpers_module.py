@@ -1,5 +1,5 @@
+from core.modules.helpers.effects.hand_in_retry_effect import HandInRetryEffect
 from core.modules.helpers.effects.unstarted_helper_effect import UnstartedHelperEffect
-from core.modules.helpers.tick_handlers.kept_report_retries_tick_handler import KeptReportRetriesTickHandler
 from core.modules.helpers.states.job_work_states import JobWorkStates
 from core.modules.helpers.effects.job_report_effect import JobReportEffect
 from core.modules.helpers.policies.start_names_model_policy import StartNamesModelPolicy
@@ -28,7 +28,7 @@ class HelpersModule(Module):
     name = "journal.core.helpers"
     policies = [StartNamesModelPolicy]
     states = [JobWorkStates]
-    effects = [UnstartedHelperEffect, JobReportEffect]
+    effects = [HandInRetryEffect, UnstartedHelperEffect, JobReportEffect]
     seed_reason = "demo programs have no outages"
     move_reason = "version 4 had no helpers"
     requires_engine = ">=5,<6"
@@ -40,7 +40,7 @@ class HelpersModule(Module):
     settings = HELPER_SETTINGS
     guards = HELPERS_GUARDS
     handlers = HELPERS_HANDLERS
-    tick_handlers = [KeptReportRetriesTickHandler, HelperLimitsTickHandler, UnusedHelperRetirementsTickHandler, UsageLimitMarkerTickHandler, UnstartedJobStartsTickHandler]
+    tick_handlers = [HelperLimitsTickHandler, UnusedHelperRetirementsTickHandler, UsageLimitMarkerTickHandler, UnstartedJobStartsTickHandler]
     agent_messages = HELPER_AGENT_MESSAGES
     skills = HELPERS_SKILLS
     subcommands = HELPERS_SUBCOMMANDS

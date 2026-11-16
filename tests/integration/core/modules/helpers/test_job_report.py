@@ -62,7 +62,7 @@ def test_a_kept_report_is_saved_again_by_its_retry_once_the_save_works(played):
     helper = helper_agent(story)
     stop_twice_with_a_failing_save(story, helper)
     story.container.rebuild(RecordParentReportHandler, RecordParentReportHandler)
-    story.expect_success(f"helper report-retry {helper.number}", actor=story.user)
+    story.expect_success(f"hand-in retry {helper.number}", actor=story.user)
     job = story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).newest().first()
     assert (job.report_state, job.returned, job.ended_at is not None) == (JobReportState.COMPLETED, REPORT, True)
 
@@ -71,6 +71,6 @@ def test_a_dropped_kept_report_ends_its_job_with_no_report(played):
     story = played(StartedHelper)
     helper = helper_agent(story)
     stop_twice_with_a_failing_save(story, helper)
-    story.expect_success(f"helper report-drop {helper.number}", actor=story.user)
+    story.expect_success(f"hand-in drop {helper.number}", actor=story.user)
     job = story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).newest().first()
     assert (job.report_state, job.ended_at is not None) == (JobReportState.REPORT_MISSING, True)

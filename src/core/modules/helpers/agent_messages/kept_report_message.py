@@ -7,4 +7,4 @@ class KeptReportMessage(MessageTemplate):
 
     key = "helpers.kept-report"
     type = AgentMessageType.NOTICE
-    text = "helper {agent}'s report on job {job} could not be saved; its text is kept on the job: journal helper-job show {job}, then journal helper report-retry {agent} or report-drop {agent}"
+    text = "helper {agent}'s report on job {job} could not be saved; its text is kept on the job: journal helper-job show {job}, then journal hand-in retry {agent} or journal hand-in drop {agent}"

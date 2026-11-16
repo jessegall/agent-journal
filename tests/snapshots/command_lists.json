@@ -1379,6 +1379,16 @@
   "merger": "allowed",
   "worker": "refused"
  },
+ "hand-in drop": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "hand-in retry": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
  "helper availability": {
   "helper": "allowed",
   "merger": "allowed",
@@ -1397,16 +1407,6 @@
  "helper lifetimes": {
   "helper": "allowed",
   "merger": "allowed",
-  "worker": "refused"
- },
- "helper report-drop": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
- },
- "helper report-retry": {
-  "helper": "refused",
-  "merger": "refused",
   "worker": "refused"
  },
  "helper run": {
@@ -2118,6 +2118,16 @@
   "helper": "refused",
   "merger": "refused",
   "worker": "allowed"
+ },
+ "output-title-request list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "output-title-request show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
  },
  "overview overview": {
   "helper": "allowed",

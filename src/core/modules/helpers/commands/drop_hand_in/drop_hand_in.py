@@ -4,7 +4,7 @@ from engine.command.command import Command
 
 
 @dataclass(frozen=True)
-class EndKeptReport(Command[str]):
+class DropHandIn(Command[str]):
     """Ends a helper's job whose report could not be saved, with no report, so the helper may take its next job."""
 
     helper_id: int
