@@ -7,7 +7,7 @@ from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.types.type_guards import is_tuple
 from core.modules.mcp.queries.mcp_server_query import McpServerQuery
-from core.modules.mcp.support.server_standing import REQUIRES_KEY, ServerStanding
+from core.modules.mcp.support.server_readiness import REQUIRES_KEY, ServerReadiness
 
 
 class McpCheckSubcommand(ReadSubcommand[Sequence[str]]):
@@ -17,8 +17,8 @@ class McpCheckSubcommand(ReadSubcommand[Sequence[str]]):
     cli_name = "mcp"
     name = "check"
 
-    def __init__(self, servers: McpServerQuery, standing: ServerStanding, configs: ServerConfigs) -> None:
-        self.servers, self.standing, self.configs = servers, standing, configs
+    def __init__(self, servers: McpServerQuery, readiness: ServerReadiness, configs: ServerConfigs) -> None:
+        self.servers, self.readiness, self.configs = servers, readiness, configs
 
     def arguments(self, parser: ArgumentParser) -> None:
         return None
@@ -28,7 +28,7 @@ class McpCheckSubcommand(ReadSubcommand[Sequence[str]]):
         lines: list[str] = []
         for server in self.servers.oldest().get():
             missing = [file for file, names in config_names.items() if server.name not in names]
-            if self.standing.standing(server) == REQUIRES_KEY:
+            if self.readiness.state(server) == REQUIRES_KEY:
                 lines.append(f"{server.name}  needs its key: journal mcp key {server.name} <value>")
             elif missing:
                 lines.append(f"{server.name}  missing from {' and '.join(missing)}: journal mcp remove {server.name}, then journal mcp install {server.name}")

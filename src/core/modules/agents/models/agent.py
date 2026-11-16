@@ -9,7 +9,7 @@ from engine.time.timestamp import Timestamp
 from engine.agent.agent_name import AgentName
 from engine.helper_type.helper_behaviours import HelperBehaviours
 from core.modules.agents.models.enums.agent_activity import AgentActivity
-from core.modules.agents.models.enums.standing_state import StandingState
+from core.modules.agents.models.enums.agent_state import AgentState
 from engine.agent.agent_name import MAIN_ROLE
 
 AGENTS_TABLE = "agents"
@@ -33,8 +33,8 @@ class Agent(EnvironmentScoped, Model):
     cli_name = "agent"
     search_fields = ["given_name", "program", "program_model", "profile", "session"]
     filter_fields = ["role"]
-    shown_properties = ("activity", "display_name", "working_role", "standing")
-    listed_properties = ("standing",)
+    shown_properties = ("activity", "display_name", "working_role", "agent_state")
+    listed_properties = ("agent_state",)
 
     environment_id: int = 0
     number: int = 0
@@ -126,14 +126,14 @@ class Agent(EnvironmentScoped, Model):
         return AgentActivity.USAGE_LIMITED if self.usage_limit_ends_at is not None else AgentActivity.WORKING
 
     @property
-    def standing(self) -> StandingState:
+    def agent_state(self) -> AgentState:
         if self.launch_failed_at is not None:
-            return StandingState.FAILED
+            return AgentState.FAILED
         if self.ended_at is not None:
-            return StandingState.ENDED
+            return AgentState.ENDED
         if self.is_main or self.pid is not None or self.launched_at is not None or self.announced_at is not None:
-            return StandingState.RUNNING
-        return StandingState.UNSTARTED
+            return AgentState.RUNNING
+        return AgentState.UNSTARTED
 
     # The type and model of the agent, which the counts of agent use are kept by.
     @property

@@ -40,7 +40,7 @@ def test_a_stock_reader_reads_a_test_behind_a_variable_and_no_reader_is_asked_fo
     story.expect_success("reader-request list", "nothing found", actor=story.agent)
 
 
-def test_a_crashed_sample_does_not_make_a_working_reader_lose_its_standing(played):
+def test_a_crashed_sample_does_not_make_a_working_reader_lose_its_place(played):
     story = played(ForcedReaders)
     process = start_process(story, "pytest tests", category=CommandCategory.TEST_RUN)
     end_run(story, process, "collected 3 items\n... [100%]\n3 passed in 1.00s\n")

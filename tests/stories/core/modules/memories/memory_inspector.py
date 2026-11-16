@@ -10,7 +10,7 @@ def memory_entry(story):
     return registry, next(entry for entry in registry.inspectors if entry.declaration.model is Memory)
 
 
-def test_a_standing_memory_offers_remove_and_a_removed_one_restore(new_story):
+def test_an_active_memory_offers_remove_and_a_removed_one_restore(new_story):
     story = new_story(fixture=MainEnvironment)
     registry, entry = memory_entry(story)
     actions = {action.name: action for action in entry.declaration.actions}

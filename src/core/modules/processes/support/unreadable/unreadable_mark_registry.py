@@ -23,11 +23,11 @@ class UnreadableMarkRegistry:
         self.marks, self.repository = marks, repository
 
     def flagged(self, command: str) -> UnreadableMark | None:
-        return self.marks.standing().matching_terms(UnreadableMarkRegistry.covering_words(command)).newest().first()
+        return self.marks.unlifted().matching_terms(UnreadableMarkRegistry.covering_words(command)).newest().first()
 
     def flagged_among(self, commands: Sequence[str]) -> frozenset[str]:
         covering, terms = UnreadableMarkRegistry.covering_mark(commands)
-        flagged = set(self.marks.standing().matching_terms(terms).pluck("terms", str))
+        flagged = set(self.marks.unlifted().matching_terms(terms).pluck("terms", str))
         return frozenset(command for command, leading in covering.items() if flagged.intersection(leading))
 
     def excuses(self, command: str) -> bool:
@@ -49,7 +49,7 @@ class UnreadableMarkRegistry:
         return self.repository.save(UnreadableMark(creator_id=creator_id, terms=UnreadableMarkRegistry.leading_words(terms), reason=reason, note=note), context)
 
     def lift(self, terms: str, lifter_id: int, context: Context) -> UnreadableMark:
-        mark = self.marks.standing().matching_terms([UnreadableMarkRegistry.leading_words(terms)]).newest().first()
+        mark = self.marks.unlifted().matching_terms([UnreadableMarkRegistry.leading_words(terms)]).newest().first()
         if mark is None:
             raise Refusal(f"no command {terms} is marked unreadable", "journal unreadable-mark list shows the marked commands")
         return self.repository.update(mark, context, lifter_id=lifter_id, lifted_at=context.timestamp)

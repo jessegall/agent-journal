@@ -6,7 +6,7 @@ from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.agent_standing import AgentStanding
+from core.modules.agents.support.agent_statuses import AgentStatuses
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.helpers.commands.start_unstarted_jobs.start_unstarted_jobs import StartUnstartedJobs
 from core.modules.helpers.support.helper_resume import HelperResume
@@ -24,8 +24,8 @@ class StartUnstartedJobsHandler(Handler[StartUnstartedJobs, None]):
     command = StartUnstartedJobs
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, standings: AgentStanding, resume: HelperResume) -> None:
-        self.queries, self.standings, self.resume = queries, standings, resume
+    def __init__(self, queries: Queries, statuses: AgentStatuses, resume: HelperResume) -> None:
+        self.queries, self.statuses, self.resume = queries, statuses, resume
 
     def handle(self, command: StartUnstartedJobs, context: Context) -> None:
         latest_start = context.timestamp.value - timedelta(seconds=JOB_START_SECONDS)
@@ -36,4 +36,4 @@ class StartUnstartedJobsHandler(Handler[StartUnstartedJobs, None]):
                 self.resume.resume(helper, briefs[helper.id])
 
     def has_lost_start(self, helper: Agent) -> bool:
-        return helper.ended_at is not None and helper.is_kept_helper and not self.standings.read(helper).is_running
+        return helper.ended_at is not None and helper.is_kept_helper and not self.statuses.read(helper).is_running

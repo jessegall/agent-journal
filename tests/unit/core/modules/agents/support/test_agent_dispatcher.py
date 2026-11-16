@@ -9,7 +9,7 @@ from core.modules.agents.commands.record_agent_launch_failure.record_agent_launc
 from core.modules.agents.commands.record_agent_process.record_agent_process import RecordAgentProcess
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.models.enums.dispatch import Dispatch
-from core.modules.agents.models.enums.standing_state import StandingState
+from core.modules.agents.models.enums.agent_state import AgentState
 from core.modules.agents.models.enums.stop_reason import StopReason
 from core.modules.agents.models.enums.stopped import Stopped
 from core.modules.agents.support.agent_dispatcher import ENDED_ROW_TEXT, OPENED_ROW_TEXT, AgentDispatcher
@@ -161,17 +161,17 @@ def test_the_exit_of_the_current_process_ends_the_row_and_the_exit_of_an_earlier
 
 
 @pytest.mark.parametrize("agent, answer, stage, reason", [
-    (ENDED_HELPER, RUNNING, StandingState.RUNNING, None),
-    (replace(ENDED_HELPER, launch_failed_at=NOW), NOTHING, StandingState.FAILED, None),
-    (ENDED_HELPER, NOTHING, StandingState.ENDED, "stopped by a user"),
-    (replace(HELPER, launched_at=NOW), NOTHING, StandingState.STARTING, None),
-    (HELPER, NOTHING, StandingState.UNSTARTED, None),
+    (ENDED_HELPER, RUNNING, AgentState.RUNNING, None),
+    (replace(ENDED_HELPER, launch_failed_at=NOW), NOTHING, AgentState.FAILED, None),
+    (ENDED_HELPER, NOTHING, AgentState.ENDED, "stopped by a user"),
+    (replace(HELPER, launched_at=NOW), NOTHING, AgentState.STARTING, None),
+    (HELPER, NOTHING, AgentState.UNSTARTED, None),
 ])
-def test_the_standing_is_one_answer_from_the_launcher_and_the_row(agent, answer, stage, reason):
+def test_the_status_is_one_answer_from_the_launcher_and_the_row(agent, answer, stage, reason):
     parts = Parts(end_reason="stopped by a user")
     blocked = parts.launcher(answer)
-    standing = parts.dispatcher.standing(agent)
-    assert (standing.stage, standing.reason, len(blocked.requests)) == (stage, reason, 1)
+    status = parts.dispatcher.status(agent)
+    assert (status.program_state, status.reason, len(blocked.requests)) == (stage, reason, 1)
 
 
 def test_reconcile_opens_a_row_that_ended_while_its_program_runs_and_records_it():

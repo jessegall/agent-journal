@@ -376,6 +376,8 @@
         "misnamed",
         "reopening",
         "staged",
+        "standing",
+        "Standing",
         "remark",
         "manners",
         "discretion",
@@ -482,6 +484,7 @@
         "Nudges"
     ],
     "poetic_values": [
+        "Standing",
         "Above",
         "Across",
         "Add",

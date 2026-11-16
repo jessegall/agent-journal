@@ -4,7 +4,7 @@ from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.drivers.support.driver_settings import AUTOMATIC_APPROVAL
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
-from tests.stories.core.modules.approvals.standing_approvals import REQUESTED, requests, save_preset, standing_yeses
+from tests.stories.core.modules.approvals.saved_approvals import REQUESTED, requests, save_preset, saved_yeses
 from tests.stories.core.modules.viewer.support.window_samples import NOTES
 from tests.stories.core.support.fixtures import UserJoined
 
@@ -25,7 +25,7 @@ def test_with_the_setting_on_a_request_is_accepted_at_once_as_the_person_who_swi
     story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
     story.expect_text(f"agent resume {agent_number(story, story.agent.id)} --reason needed", "the setting Accept every approval accepted approval", actor=story.agent)
     accepted = requests(story)[0]
-    story.expect_rows(accepted.state is ApprovalState.ACCEPTED, accepted.standing_id is None, standing_yeses(story) == [], story.row(Agent, story.agent.id).paused_at is None, detail=str(accepted))
+    story.expect_rows(accepted.state is ApprovalState.ACCEPTED, accepted.saved_approval_id is None, saved_yeses(story) == [], story.row(Agent, story.agent.id).paused_at is None, detail=str(accepted))
     story.expect_text(save_preset("Mine"), "accepted approval", actor=story.agent)
     story.expect_rows([request.state for request in requests(story)] == [ApprovalState.ACCEPTED, ApprovalState.ACCEPTED])
 

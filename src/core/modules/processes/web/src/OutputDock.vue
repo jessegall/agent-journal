@@ -27,7 +27,7 @@ const ICONS = {
   bad: "cross",
   stopped: "stop",
 };
-const STANDINGS = {
+const RUN_OUTCOMES = {
   running: "running",
   background: "running",
   finished: "good",
@@ -55,9 +55,9 @@ const outputReady = ref(false);
 const FOLLOW_PIXELS = 24;
 const now = useNow();
 
-const standing = computed(() => STANDINGS[run.value?.state] ?? "running");
-const isRunning = () => standing.value === "running";
-const ended = computed(() => standing.value !== "running");
+const outcome = computed(() => RUN_OUTCOMES[run.value?.state] ?? "running");
+const isRunning = () => outcome.value === "running";
+const ended = computed(() => outcome.value !== "running");
 const fraction = computed(() => Number(run.value?.progress ?? 0) / 100);
 const width = computed(() =>
   ended.value ? "100%" : `${Math.round(fraction.value * 100)}%`,
@@ -69,7 +69,7 @@ const began = computed(() =>
 // a card folded to its title line shows only the percent of the run, left of its duration; none while the run has made no progress
 const percent = computed(() => {
   if (!unref(collapsed)) return "";
-  if (ended.value) return standing.value === "good" ? "100%" : "";
+  if (ended.value) return outcome.value === "good" ? "100%" : "";
   const done = Math.round(Number(run.value?.progress ?? 0));
   return done > 0 ? `${done}%` : "";
 });
@@ -154,14 +154,14 @@ usePoll(load, isRunning, () =>
       <Teleport :to="head?.value ?? head">
         <span
           class="output-dock-state"
-          :data-state="standing"
-          :style="{ '--tone': TONES[standing] }"
+          :data-state="outcome"
+          :style="{ '--tone': TONES[outcome] }"
         >
           <template v-if="isRunning()"
             ><span class="output-dock-ring"
           /></template>
           <template v-else
-            ><Icon :name="ICONS[standing]" :size="14"
+            ><Icon :name="ICONS[outcome]" :size="14"
           /></template>
         </span>
         <span class="output-dock-title" :title="run?.title || run?.line">{{
@@ -170,12 +170,12 @@ usePoll(load, isRunning, () =>
         <template v-if="fraction > 0 || ended">
           <div
             class="output-dock-bar"
-            :data-figure-bar="ended ? standing : ''"
+            :data-figure-bar="ended ? outcome : ''"
             :data-figure-began="began"
           >
             <div
               class="output-dock-fill"
-              :style="{ width, background: TONES[standing] }"
+              :style="{ width, background: TONES[outcome] }"
               :data-figure-progress="ended ? null : ''"
             />
           </div>

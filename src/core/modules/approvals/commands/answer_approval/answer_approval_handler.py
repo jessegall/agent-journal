@@ -12,7 +12,7 @@ from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
 from engine.scope.scopes import Scopes
 from core.modules.approvals.commands.answer_approval.answer_approval import AnswerApproval
-from core.modules.approvals.commands.make_standing_approval.make_standing_approval import MakeStandingApproval
+from core.modules.approvals.commands.make_saved_approval.make_saved_approval import MakeSavedApproval
 from core.modules.approvals.commands.move_approval.move_approval import MoveApproval
 from core.modules.approvals.models.lifecycles.approval_lifecycle import ApprovalLifecycle
 from core.modules.approvals.support.approval_result import ApprovalResult
@@ -49,7 +49,7 @@ class AnswerApprovalHandler(Handler[AnswerApproval, ApprovalResult]):
                 raise Refusal("the requested action failed", output.getvalue().strip())
             move = command.decision.choose(ApprovalLifecycle.accept, ApprovalLifecycle.refuse)
             ended = self.bus.run(MoveApproval(request.id, move), context.actor, environment_id=context.environment_id)
-            self.keep_standing_yes(request.id, command, context)
+            self.keep_saved_yes(request.id, command, context)
         except Refusal as failure:
             self.failed(request.id, failure.text, command, context)
             raise
@@ -60,11 +60,11 @@ class AnswerApprovalHandler(Handler[AnswerApproval, ApprovalResult]):
 
     def failed(self, request_id: int, failure: str, command: AnswerApproval, context: Context) -> None:
         self.bus.run(MoveApproval(request_id, ApprovalLifecycle.fail, failure), context.actor, environment_id=context.environment_id)
-        self.keep_standing_yes(request_id, command, context)
+        self.keep_saved_yes(request_id, command, context)
 
-    def keep_standing_yes(self, request_id: int, command: AnswerApproval, context: Context) -> None:
-        if command.standing is not None and command.decision.choose(True, False):
-            self.bus.run(MakeStandingApproval(request_id, command.standing), context.actor, environment_id=context.environment_id)
+    def keep_saved_yes(self, request_id: int, command: AnswerApproval, context: Context) -> None:
+        if command.saved is not None and command.decision.choose(True, False):
+            self.bus.run(MakeSavedApproval(request_id, command.saved), context.actor, environment_id=context.environment_id)
 
     def run_action(self, arguments: tuple[str, ...], caller: Caller, output: io.StringIO) -> int:
         if not arguments:

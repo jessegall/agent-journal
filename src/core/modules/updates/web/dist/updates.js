@@ -1,10 +1,10 @@
-if (!document.getElementById("window-styles-322851d646ba")) { const style = document.createElement("style"); style.id = "window-styles-322851d646ba"; style.textContent = ".failure[data-v-8c317487]{margin:0;padding:4px var(--inset);color:var(--bad, var(--text-2));font-size:12px}.cover[data-v-8c317487],.arrived[data-v-8c317487],.standing[data-v-8c317487]{display:flex;align-items:center;gap:10px;padding:6px var(--inset);font-size:13px}.line[data-v-8c317487]{flex:1}.detail[data-v-8c317487]{margin:0;padding:4px var(--inset);color:var(--text-3);font-size:12px}button[data-v-8c317487]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
-import { computed as h, ref as d, watch as N, openBlock as n, createBlock as f, unref as o, withCtx as c, createVNode as x, createElementBlock as i, Fragment as j, createTextVNode as R, createCommentVNode as p, createElementVNode as g, toDisplayString as k } from "vue";
+if (!document.getElementById("window-styles-c85e721dfb42")) { const style = document.createElement("style"); style.id = "window-styles-c85e721dfb42"; style.textContent = ".failure[data-v-7777bdfa]{margin:0;padding:4px var(--inset);color:var(--bad, var(--text-2));font-size:12px}.cover[data-v-7777bdfa],.arrived[data-v-7777bdfa],.update-status[data-v-7777bdfa]{display:flex;align-items:center;gap:10px;padding:6px var(--inset);font-size:13px}.line[data-v-7777bdfa]{flex:1}.detail[data-v-7777bdfa]{margin:0;padding:4px var(--inset);color:var(--text-3);font-size:12px}button[data-v-7777bdfa]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
+import { computed as h, ref as d, watch as N, openBlock as n, createBlock as k, unref as o, withCtx as c, createVNode as x, createElementBlock as u, Fragment as j, createTextVNode as R, createCommentVNode as p, createElementVNode as f, toDisplayString as y } from "vue";
 import { useWindow as E, ListReaderLayout as O, Reader as q, TextDisplay as A, Skeleton as H, PageHeader as W, Btn as U, copying as z } from "@journal/window-kit";
-const G = (y, a) => {
-  const v = y.__vccOpts || y;
-  for (const [r, s] of a)
-    v[r] = s;
+const G = (g, a) => {
+  const v = g.__vccOpts || g;
+  for (const [i, s] of a)
+    v[i] = s;
   return v;
 }, J = {
   key: 0,
@@ -19,20 +19,20 @@ const G = (y, a) => {
 }, M = {
   key: 2,
   class: "failure"
-}, Q = { class: "standing" }, X = { class: "line" }, Y = {
+}, Q = { class: "update-status" }, X = { class: "line" }, Y = {
   key: 3,
   class: "detail",
   "data-update-notes-failure": ""
 }, Z = {
   key: 4,
-  class: "standing"
+  class: "update-status"
 }, ee = {
   key: 1,
   class: "detail"
 }, te = {
   __name: "UpdatesPanel",
-  setup(y) {
-    const a = E(), v = a.props.releases, { failure: r } = a.props.standing, s = h(() => r.value ? null : a.props.standing.data.value), m = d(!1), b = d(""), D = d(!1), I = h(() => {
+  setup(g) {
+    const a = E(), v = a.props.releases, { failure: i } = a.props.status, s = h(() => i.value ? null : a.props.status.data.value), b = d(!1), m = d(""), D = d(!1), I = h(() => {
       var e, l, t;
       return D.value && ((e = s.value) == null ? void 0 : e.is_current) && ((t = (l = s.value) == null ? void 0 : l.installation) == null ? void 0 : t.step) === "finished";
     }), w = d([]), C = d(1), P = h(() => {
@@ -42,35 +42,35 @@ const G = (y, a) => {
     N(() => a.props.notes.data.value, (e) => {
       e && (w.value = C.value === 1 ? e.notes : [...w.value, ...e.notes]);
     });
-    const T = h(() => s.value ? s.value.line : r.value ? "Release unavailable" : "Checking for a newer release");
+    const T = h(() => s.value ? s.value.line : i.value ? "Release unavailable" : "Checking for a newer release");
     async function B() {
-      await a.reload("standing");
+      await a.reload("status");
     }
     async function L() {
-      m.value = !0;
+      b.value = !0;
       const e = await a.run(["update", "install"]);
-      b.value = e.ok ? "" : e.error, m.value = !1, await a.reload({ only: e.ok ? ["releases", "standing"] : ["releases"] }), e.ok && (D.value = !0);
+      m.value = e.ok ? "" : e.error, b.value = !1, await a.reload({ only: e.ok ? ["releases", "status"] : ["releases"] }), e.ok && (D.value = !0);
     }
     async function F(e) {
       C.value = e, a.state["notes.page"] = String(e), await a.reload("notes");
     }
-    const V = () => globalThis.location.reload(), u = d(null), _ = h(() => [
+    const V = () => globalThis.location.reload(), r = d(null), _ = h(() => [
       ...w.value.map((e) => ({ id: e.tag, title: e.tag, desc: new Date(e.published_at).toLocaleDateString(), group: "Release notes", note: e })),
       ...v.rows.value.map((e) => ({ id: `installed-${e.id}`, title: e.tag || e.checksum.slice(0, 12), desc: new Date(e.created_at).toLocaleString(), group: "Installed here", installed: e }))
     ]);
     N(() => _.value.length, () => {
-      u.value === null && _.value.length && (u.value = _.value[0].id);
+      r.value === null && _.value.length && (r.value = _.value[0].id);
     }, { flush: "post" });
     const $ = (e) => ({
       head: e.title,
       items: [
-        { label: "Open", group: "open", disabled: e.id === u.value, reason: "Already open", run: () => u.value = e.id },
+        { label: "Open", group: "open", disabled: e.id === r.value, reason: "Already open", run: () => r.value = e.id },
         { label: "Copy name", group: "copy", run: ({ say: l }) => z(e.title, e.title, l) }
       ]
     });
-    return (e, l) => (n(), f(o(O), {
-      chosen: u.value,
-      "onUpdate:chosen": l[1] || (l[1] = (t) => u.value = t),
+    return (e, l) => (n(), k(o(O), {
+      chosen: r.value,
+      "onUpdate:chosen": l[1] || (l[1] = (t) => r.value = t),
       items: _.value,
       "list-width": 320,
       place: $,
@@ -80,9 +80,9 @@ const G = (y, a) => {
     }, {
       top: c(() => [
         x(o(W), { title: "Updates" }),
-        m.value ? (n(), i("div", J, "Updating the journal. This takes a short while.")) : p("", !0),
-        I.value ? (n(), i("div", K, [
-          l[3] || (l[3] = g("span", { class: "line" }, "The update is installed. Reload the page to see it.", -1)),
+        b.value ? (n(), u("div", J, "Updating the journal. This takes a short while.")) : p("", !0),
+        I.value ? (n(), u("div", K, [
+          l[3] || (l[3] = f("span", { class: "line" }, "The update is installed. Reload the page to see it.", -1)),
           x(o(U), {
             small: "",
             variant: "primary",
@@ -95,14 +95,14 @@ const G = (y, a) => {
             _: 1
           })
         ])) : p("", !0),
-        o(r) || b.value ? (n(), i("p", M, k(o(r) || b.value), 1)) : p("", !0),
-        g("div", Q, [
-          g("span", X, k(T.value), 1),
-          g("button", {
+        o(i) || m.value ? (n(), u("p", M, y(o(i) || m.value), 1)) : p("", !0),
+        f("div", Q, [
+          f("span", X, y(T.value), 1),
+          f("button", {
             type: "button",
             onClick: B
           }, "Check again"),
-          s.value && !s.value.is_current ? (n(), f(o(U), {
+          s.value && !s.value.is_current ? (n(), k(o(U), {
             key: 0,
             small: "",
             variant: "primary",
@@ -112,20 +112,20 @@ const G = (y, a) => {
             default: c(() => {
               var t;
               return [
-                R(k(((t = s.value.installation) == null ? void 0 : t.step) === "failed" ? "Retry update" : s.value.tag ? `Update to ${s.value.tag}` : "Update to the latest"), 1)
+                R(y(((t = s.value.installation) == null ? void 0 : t.step) === "failed" ? "Retry update" : s.value.tag ? `Update to ${s.value.tag}` : "Update to the latest"), 1)
               ];
             }),
             _: 1
-          })) : s.value ? (n(), i("button", {
+          })) : s.value ? (n(), u("button", {
             key: 1,
             type: "button",
             "data-update-force": "",
             onClick: L
           }, "Install it again")) : p("", !0)
         ]),
-        o(S) ? (n(), i("p", Y, k(o(S)), 1)) : p("", !0),
-        P.value ? p("", !0) : (n(), i("div", Z, [
-          g("button", {
+        o(S) ? (n(), u("p", Y, y(o(S)), 1)) : p("", !0),
+        P.value ? p("", !0) : (n(), u("div", Z, [
+          f("button", {
             type: "button",
             "data-update-older": "",
             onClick: l[0] || (l[0] = (t) => F(C.value + 1))
@@ -133,9 +133,9 @@ const G = (y, a) => {
         ]))
       ]),
       empty: c(() => [
-        o(v).loaded.value ? (n(), i(j, { key: 0 }, [
+        o(v).loaded.value ? (n(), u(j, { key: 0 }, [
           R("Installed releases appear here with their installation dates.")
-        ], 64)) : (n(), f(o(H), {
+        ], 64)) : (n(), k(o(H), {
           key: 1,
           shape: "rows"
         }))
@@ -148,10 +148,10 @@ const G = (y, a) => {
           "data-update-note": ""
         }, {
           default: c(() => [
-            t.note ? (n(), f(o(A), {
+            t.note ? (n(), k(o(A), {
               key: 0,
               text: t.note.text
-            }, null, 8, ["text"])) : (n(), i("p", ee, "This release was installed on this journal."))
+            }, null, 8, ["text"])) : (n(), u("p", ee, "This release was installed on this journal."))
           ]),
           _: 2
         }, 1032, ["title", "number", "facts"])
@@ -159,7 +159,7 @@ const G = (y, a) => {
       _: 1
     }, 8, ["chosen", "items"]));
   }
-}, se = /* @__PURE__ */ G(te, [["__scopeId", "data-v-8c317487"]]);
+}, se = /* @__PURE__ */ G(te, [["__scopeId", "data-v-7777bdfa"]]);
 export {
   se as default
 };

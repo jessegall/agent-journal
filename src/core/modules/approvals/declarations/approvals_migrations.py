@@ -5,5 +5,6 @@ from core.modules.approvals.migrations.m004_standing_approvals import StandingAp
 from core.modules.approvals.migrations.m005_approval_why import ApprovalWhyMigration
 from core.modules.approvals.migrations.m006_plain_column_names import PlainColumnNamesMigration
 from core.modules.approvals.migrations.m007_approval_failure import ApprovalFailureMigration
+from core.modules.approvals.migrations.m008_saved_approvals import SavedApprovalsMigration
 
-APPROVALS_MIGRATIONS = [ApprovalFailureMigration, PlainColumnNamesMigration, ApprovalRequestsMigration, ApprovalRecipientsMigration, ApprovalCommandsMigration, StandingApprovalsMigration, ApprovalWhyMigration]
+APPROVALS_MIGRATIONS = [SavedApprovalsMigration, ApprovalFailureMigration, PlainColumnNamesMigration, ApprovalRequestsMigration, ApprovalRecipientsMigration, ApprovalCommandsMigration, StandingApprovalsMigration, ApprovalWhyMigration]

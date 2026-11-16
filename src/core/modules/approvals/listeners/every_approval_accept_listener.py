@@ -25,6 +25,6 @@ class EveryApprovalAcceptListener(CommitListener[Created[ApprovalRequest]]):
 
     def handle(self, event: Created[ApprovalRequest], logged: LoggedEvent) -> None:
         request = self.rows.required(ApprovalRequest, event.row.id)
-        if request.state is not ApprovalState.OPEN or request.standing_id is not None:
+        if request.state is not ApprovalState.OPEN or request.saved_approval_id is not None:
             return
         self.bus.run(AcceptCoveredApproval(), Actor(request.requester_id, ActorType.AGENT), cause_id=logged.id, environment_id=request.environment_id)

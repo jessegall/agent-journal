@@ -6,7 +6,7 @@ from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
 from core.modules.approvals.commands.answer_approval.answer_approval import AnswerApproval
 from core.modules.approvals.models.enums.approval_decision import ApprovalDecision
-from core.modules.approvals.models.enums.standing_scope import StandingScope
+from core.modules.approvals.models.enums.saved_scope import SavedScope
 from core.modules.approvals.support.approval_result import ApprovalResult
 
 
@@ -18,7 +18,7 @@ class AnswerApprovalSubcommand(Subcommand[AnswerApproval, ApprovalResult]):
         parser.add_argument("row_id", type=int)
 
     def command(self, arguments: Namespace, caller: Caller) -> AnswerApproval:
-        return AnswerApproval(arguments.row_id, self.decision, StandingScope(arguments.always) if getattr(arguments, "always", None) else None)
+        return AnswerApproval(arguments.row_id, self.decision, SavedScope(arguments.always) if getattr(arguments, "always", None) else None)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ApprovalResult):

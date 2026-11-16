@@ -50,7 +50,7 @@ const press = async (key) => {
 
 test("the tasks window opens the dialog, with what is not done counted and each group listed", async () => {
     const {shown} = await dialog();
-    expect(shown.querySelector("[data-tasks-standing]").textContent).toBe("2 not done");
+    expect(shown.querySelector("[data-tasks-open-count]").textContent).toBe("2 not done");
     expect(shown.textContent).toContain("Fix the cart");
     expect(shown.textContent).toContain("Fix the totals");
 });
@@ -132,12 +132,12 @@ test("the keys menu lists the keys", async () => {
     expect(document.body.textContent).toContain("List or graph");
 });
 
-test("the standing counts every task not done, whatever the filter shows", async () => {
+test("the open count counts every task not done, whatever the filter shows", async () => {
     const {shown} = await dialog();
-    const before = shown.querySelector("[data-tasks-standing]").textContent;
+    const before = shown.querySelector("[data-tasks-open-count]").textContent;
     (await menuItem('[data-filter-state="blocked"]', "[data-menu-filter]")).click();
     await settle();
-    expect(shown.querySelector("[data-tasks-standing]").textContent).toBe(before);
+    expect(shown.querySelector("[data-tasks-open-count]").textContent).toBe(before);
 });
 
 test("grouping by nothing keeps show more and the finished groups", async () => {

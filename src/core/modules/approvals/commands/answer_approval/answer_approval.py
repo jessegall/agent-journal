@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from engine.command.command import Command
 from core.modules.approvals.models.enums.approval_decision import ApprovalDecision
-from core.modules.approvals.models.enums.standing_scope import StandingScope
+from core.modules.approvals.models.enums.saved_scope import SavedScope
 from core.modules.approvals.support.approval_result import ApprovalResult
 
 
@@ -12,4 +12,4 @@ class AnswerApproval(Command[ApprovalResult]):
 
     row_id: int
     decision: ApprovalDecision
-    standing: StandingScope | None = None
+    saved: SavedScope | None = None

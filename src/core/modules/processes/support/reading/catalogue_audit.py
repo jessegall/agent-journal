@@ -64,7 +64,7 @@ class CatalogueAudit:
     # How many commands agents marked unreadable since the main agent last heard the audit; marks of the engine and of a
     # user are not counted.
     def agent_marks_count(self, last_audit_at: Timestamp) -> int:
-        creators = [mark.creator_id for mark in self.marks.made_after(last_audit_at).standing().descending("created_at", "id").take(RECENT_OUTPUTS)]
+        creators = [mark.creator_id for mark in self.marks.made_after(last_audit_at).unlifted().descending("created_at", "id").take(RECENT_OUTPUTS)]
         if not creators:
             return 0
         agents = {actor.id for actor in self.queries.query(ActorRecord).matching(Among("id", sorted(set(creators)))).filter(type=ActorType.AGENT).every_row(MARK_CREATORS_REASON)}

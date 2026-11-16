@@ -10,7 +10,7 @@ from engine.command.bus import Bus
 from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.models.enums.dispatch import Dispatch
-from core.modules.agents.support.agent_standing import AgentStanding
+from core.modules.agents.support.agent_statuses import AgentStatuses
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.agents.support.dispatch_policy import DispatchPolicy
 from core.modules.agents.support.receivers import Receivers
@@ -33,8 +33,8 @@ PRIVATE_PARTS = ("launcher", "support.agent_program", "agent_dispatcher", "progr
 RECORDED_PROCESS = "--pid 700 --process-started-at 2026-10-31T09:00:00+00:00"
 
 
-def standing(story) -> str:
-    return story.run(f"agent standing {agent_number(story, helper_agent(story).id)} --environment main", actor=story.user).output_text
+def agent_status(story) -> str:
+    return story.run(f"agent status {agent_number(story, helper_agent(story).id)} --environment main", actor=story.user).output_text
 
 
 def main_lines(story) -> str:
@@ -58,8 +58,8 @@ def test_546_a_job_for_an_agent_whose_program_the_launcher_still_holds_starts_no
     story.expect_success(f'helper send {agent_number(story, helper_agent(story).id)} "{JOB}"', actor=story.agent)
     story.run_listeners()
     blocked.drain_requests()
-    shown, lines = standing(story), main_lines(story)
-    story.expect_rows(helper_agent(story).pid is None, START_FAILED not in lines, "standing: running" in shown, detail=shown + lines)
+    shown, lines = agent_status(story), main_lines(story)
+    story.expect_rows(helper_agent(story).pid is None, START_FAILED not in lines, "state: running" in shown, detail=shown + lines)
 
 
 def test_547_two_starts_of_one_agent_at_once_start_one_program_and_the_other_is_told_it_runs(ended_helper):
@@ -68,8 +68,8 @@ def test_547_two_starts_of_one_agent_at_once_start_one_program_and_the_other_is_
     resume = story.container.get(HelperResume)
     answers = [resume.resume(helper_agent(story), JOB), resume.resume(helper_agent(story), JOB)]
     blocked.drain_requests()
-    shown = standing(story)
-    story.expect_rows(sorted(answer.value for answer in answers) == ["running", "started"], helper_agent(story).pid == 701, "standing: running" in shown, detail=f"{answers} {shown}")
+    shown = agent_status(story)
+    story.expect_rows(sorted(answer.value for answer in answers) == ["running", "started"], helper_agent(story).pid == 701, "state: running" in shown, detail=f"{answers} {shown}")
 
 
 def test_549_after_a_restart_an_agent_whose_recorded_process_is_not_listed_is_found_again_from_the_launcher_and_not_started_twice(played, monkeypatch):
@@ -79,8 +79,8 @@ def test_549_after_a_restart_an_agent_whose_recorded_process_is_not_listed_is_fo
     monkeypatch.setattr(ProcessTable, "rows", lambda table: [])
     story.tick(story.row(Agent, story.agent.id).session)
     story.run_listeners()
-    shown = standing(story)
-    story.expect_rows(helper_agent(story).ended_at is None, [request for request in blocked.starts if "command" in request] == [], "standing: running" in shown,
+    shown = agent_status(story)
+    story.expect_rows(helper_agent(story).ended_at is None, [request for request in blocked.starts if "command" in request] == [], "state: running" in shown,
                       detail=f"{blocked.requests} {shown}")
 
 
@@ -90,32 +90,32 @@ def test_550_a_start_that_cannot_reach_the_launcher_reads_as_failed_and_leaves_o
     for _ in range(3):
         story.run_listeners()
         story.tick(story.row(Agent, story.agent.id).session)
-    shown, lines = standing(story), main_lines(story)
-    story.expect_rows(lines.count(START_FAILED) == 1, "standing: failed" in shown, detail=lines + shown)
+    shown, lines = agent_status(story), main_lines(story)
+    story.expect_rows(lines.count(START_FAILED) == 1, "state: failed" in shown, detail=lines + shown)
 
 
-def test_557_the_standing_command_reads_running_and_after_a_stop_through_the_dispatcher_ended_with_who_stopped_it(played):
+def test_557_the_status_command_reads_running_and_after_a_stop_through_the_dispatcher_ended_with_who_stopped_it(played):
     story = played(StartedHelper)
     number = agent_number(story, helper_agent(story).id)
     launcher(story, request_count=0, answers=(PROGRAM_RUNS, STOPPED, WITHOUT_PROGRAM))
-    story.expect_text(f"agent standing {number} --environment main", "standing: running", actor=story.user)
+    story.expect_text(f"agent status {number} --environment main", "state: running", actor=story.user)
     story.expect_success(f"agent stop-program {number} --environment main", "stop: program_ended", actor=story.user)
-    story.expect_text(f"agent standing {number} --environment main", "standing: ended", "reason: stopped by a user", actor=story.user)
+    story.expect_text(f"agent status {number} --environment main", "state: ended", "reason: stopped by a user", actor=story.user)
 
 
-def test_557_the_list_of_agents_and_the_row_of_an_agent_carry_the_standing_its_own_command_prints(played):
+def test_557_the_list_of_agents_and_the_row_of_an_agent_carry_the_agent_state_its_own_command_prints(played):
     story = played(StartedHelper)
     number = agent_number(story, helper_agent(story).id)
     launcher(story, answer=PROGRAM_RUNS, request_count=0)
     listed = {row["number"]: row for row in json.loads(story.run("agent list --json --environment main", actor=story.user).output_text)["rows"]}
-    story.expect_rows(listed[number].get("standing") == "running", detail=str(listed[number]))
-    story.expect_text(f"agent show {number} --environment main", "standing: running", actor=story.user)
+    story.expect_rows(listed[number].get("agent_state") == "running", detail=str(listed[number]))
+    story.expect_text(f"agent show {number} --environment main", "state: running", actor=story.user)
 
 
-def test_551_a_suite_starts_an_agent_by_the_public_command_reads_its_standing_by_the_public_query_and_imports_no_launcher(ended_helper):
+def test_551_a_suite_starts_an_agent_by_the_public_command_reads_its_status_by_the_public_query_and_imports_no_launcher(ended_helper):
     story = ended_helper
     launcher(story, request_count=0, answers=(STARTED, PROGRAM_RUNS))
-    suite = SampleSuiteStart(story.container.get(Bus), story.container.get(AgentStanding))
+    suite = SampleSuiteStart(story.container.get(Bus), story.container.get(AgentStatuses))
     helper = helper_agent(story)
     started = suite.start(helper.id, str(story.container.get(AgentFolders).folder(helper)))
     imported = [node.module for node in ast.walk(source_tree(Path(sample_suite_start.__file__))) if ModuleImports.is_module_import(node)]

@@ -50,7 +50,7 @@
     "sin": {
         "name": "launcher-reached-outside-the-dispatcher",
         "description": "A file outside the dispatcher's folder imports the launcher link, the launcher service or the class that stops a program, or a command that records a launch, a launch failure or a program exit, so one more place starts, stops or records an agent's program and the row and the program can disagree again.",
-        "rule": "Ask AgentDispatcher to start, stop or end an agent, and AgentStanding to read whether its program or a launcher runs. Only src/core/modules/agents/support/ reaches the launcher; the files this rule still allows are named in it and the list only shrinks.",
+        "rule": "Ask AgentDispatcher to start, stop or end an agent, and AgentStatuses to read whether its program or a launcher runs. Only src/core/modules/agents/support/ reaches the launcher; the files this rule still allows are named in it and the list only shrinks.",
         "skill": "drivers-architecture"
     }
 }

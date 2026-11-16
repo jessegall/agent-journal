@@ -1,7 +1,7 @@
 from enum import StrEnum
 
 
-class StandingState(StrEnum):
+class AgentState(StrEnum):
     """Where an agent's program is in its life, as the dispatcher works it out."""
 
     UNSTARTED = "never_started"

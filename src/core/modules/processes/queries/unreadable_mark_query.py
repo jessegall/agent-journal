@@ -19,7 +19,7 @@ class UnreadableMarkQuery(Query[UnreadableMark]):
     def matching_terms(self, leading_terms: Sequence[str]) -> Self:
         return self.matching(Among("terms", leading_terms))
 
-    def standing(self) -> Self:
+    def unlifted(self) -> Self:
         return self.filter(lifted_at=None)
 
     def made_after(self, timestamp: Timestamp) -> Self:

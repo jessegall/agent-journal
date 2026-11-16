@@ -17,7 +17,7 @@ from engine.time.clock import Clock
 from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.models.enums.dispatch import Dispatch
-from core.modules.agents.models.enums.standing_state import StandingState
+from core.modules.agents.models.enums.agent_state import AgentState
 from core.modules.agents.models.enums.stop_reason import StopReason
 from core.modules.agents.models.enums.stopped import Stopped
 from core.modules.agents.support.agent_label import AgentLabel
@@ -30,7 +30,7 @@ from core.modules.agents.support.dispatch_policy import DispatchPolicy
 from core.modules.agents.support.program_transport import ProgramTransport
 from core.modules.agents.support.program_exit import ProgramExit
 from core.modules.agents.support.program_process import ProgramProcess
-from core.modules.agents.support.standing import Standing
+from core.modules.agents.support.agent_status import AgentStatus
 from core.modules.environments.support.environment_rows import EnvironmentRows
 
 RECENTLY_ENDED_REASON = "every agent that ended lately and is kept may be started again"
@@ -45,7 +45,7 @@ DEFERRED_END_TEXT = "said its session ended while the launcher still has its pro
 
 class AgentDispatcher:
     """Owns the life of an agent's program: it starts it, says whether it runs, and ends it, and it is the
-    one place that writes the end of an agent's row. The standing is worked out from the launcher, the
+    one place that writes the end of an agent's row. The status is worked out from the launcher, the
     recorded process of an open row and the row, each read once. A stop leaves a program alone while a start
     of its session has the lock of its type's behaviours, and ends the row only after the program is gone. One
     round of reconcile opens a row that ended while its program runs and ends an open row whose started
@@ -80,17 +80,17 @@ class AgentDispatcher:
         if agent.ended_at is None:
             self.end_row(agent, context)
 
-    def standing(self, agent: Agent) -> Standing:
-        stage = self.stage(agent)
-        return Standing(stage, self.end_reason(agent) if stage is StandingState.ENDED else None)
+    def status(self, agent: Agent) -> AgentStatus:
+        state = self.agent_state(agent)
+        return AgentStatus(state, self.end_reason(agent) if state is AgentState.ENDED else None)
 
-    def stage(self, agent: Agent) -> StandingState:
+    def agent_state(self, agent: Agent) -> AgentState:
         if self.has_program(agent):
-            return StandingState.RUNNING
-        recorded = agent.standing
-        if recorded is not StandingState.RUNNING or agent.is_main or agent.announced_at is not None:
+            return AgentState.RUNNING
+        recorded = agent.agent_state
+        if recorded is not AgentState.RUNNING or agent.is_main or agent.announced_at is not None:
             return recorded
-        return StandingState.STARTING if agent.launched_at is not None else StandingState.UNSTARTED
+        return AgentState.STARTING if agent.launched_at is not None else AgentState.UNSTARTED
 
     def reconcile(self, context: Context) -> None:
         for agent in self.wrongly_ended_agents():

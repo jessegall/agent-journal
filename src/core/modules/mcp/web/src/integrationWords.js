@@ -11,7 +11,7 @@ export const integrationFields = [{key: "status", label: "State", options: [[CON
 const address = (row) => row.url || [row.command, ...row.args].join(" ");
 // what the check says is wrong with a server, without its name and without the command that mends it
 const reasonOf = (line) => (line ?? "").replace(/:\s*journal .*$/, "");
-const isFailed = (row, line) => row.standing === "needs its key" || /^(needs|missing)/.test(line ?? "");
+const isFailed = (row, line) => row.readiness === "needs its key" || /^(needs|missing)/.test(line ?? "");
 
 export function installedCard(row, line) {
     const failed = isFailed(row, line);
@@ -22,7 +22,7 @@ export function installedCard(row, line) {
         state: "Tools: —",
         status: failed ? FAILED : CONNECTED,
         line: address(row),
-        fault: failed ? `Failed to connect · ${reasonOf(line) || row.standing}` : "",
+        fault: failed ? `Failed to connect · ${reasonOf(line) || row.readiness}` : "",
         group: INSTALLED,
         row,
     };

@@ -11,7 +11,7 @@ from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from core.modules.approvals.models.approval_request import ApprovalRequest
-from core.modules.approvals.support.standing_approvals import StandingApprovals
+from core.modules.approvals.support.saved_approvals import SavedApprovals
 from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.agents.models.agent import Agent
@@ -22,9 +22,9 @@ class RequestUserApprovalHandler(Handler[RequestUserApproval, object]):
 
     command = RequestUserApproval
 
-    def __init__(self, queries: Queries, repository: Repository, actors: ActorTable, rows: EventRows, standing: StandingApprovals) -> None:
+    def __init__(self, queries: Queries, repository: Repository, actors: ActorTable, rows: EventRows, saved: SavedApprovals) -> None:
         self.queries, self.repository = queries, repository
-        self.standing = standing
+        self.saved = saved
         self.actors, self.rows = actors, rows
 
     def handle(self, command: RequestUserApproval, context: Context) -> ApprovalRequest:
@@ -79,5 +79,5 @@ class RequestUserApprovalHandler(Handler[RequestUserApproval, object]):
                                   source_version=command.approval.source_version,
                                   returns_output=command.approval.returns_output,
                                   continued_arguments=command.approval.continued_arguments, command_json=command_json)
-        covering = self.standing.covering(request.changed(environment_id=context.environment_id))
-        return self.repository.save(request.changed(standing_id=covering.id) if covering is not None else request, context)
+        covering = self.saved.covering(request.changed(environment_id=context.environment_id))
+        return self.repository.save(request.changed(saved_approval_id=covering.id) if covering is not None else request, context)

@@ -1,24 +1,24 @@
-if (!document.getElementById("window-styles-b1473e6a0221")) { const style = document.createElement("style"); style.id = "window-styles-b1473e6a0221"; style.textContent = ".output-dock-inner[data-v-2d71606f]{min-height:0;overflow:hidden}.output-dock-state[data-v-2d71606f]{display:flex;flex:none;justify-content:center;width:14px;color:var(--tone)}.output-dock-ring[data-v-2d71606f]{width:10px;height:10px;border:1.5px solid color-mix(in srgb,var(--tone) 30%,transparent);border-top-color:var(--tone);border-radius:50%;animation:output-spin-2d71606f .9s linear infinite}@keyframes output-spin-2d71606f{to{transform:rotate(360deg)}}.output-dock-pending[data-v-2d71606f]{display:inline-flex;align-items:center;flex:none;gap:3px}.output-dock-pending i[data-v-2d71606f]{width:4px;height:4px;border-radius:50%;background:var(--text-3);animation:output-pending-2d71606f 1.2s ease-in-out infinite}.output-dock-pending i[data-v-2d71606f]:nth-child(2){animation-delay:.2s}.output-dock-pending i[data-v-2d71606f]:nth-child(3){animation-delay:.4s}@keyframes output-pending-2d71606f{0%,60%,to{opacity:.3}30%{opacity:1}}@media(prefers-reduced-motion:reduce){.output-dock-pending i[data-v-2d71606f]{animation:none}}.output-dock-title[data-v-2d71606f]{flex:1;font-size:13px;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.output-dock-figure[data-v-2d71606f]{flex:none;color:var(--text-3);font-size:11.5px;font-variant-numeric:tabular-nums}.output-dock-percent[data-v-2d71606f]{--dock-bar-width: 64px;--dock-bar-height: 8px;flex:none;align-self:center;width:var(--dock-bar-width);height:var(--dock-bar-height);margin-right:6px;overflow:hidden;border-radius:4px;background:var(--bar-track)}.output-dock-percent i[data-v-2d71606f]{display:block;height:100%}.output-dock-terminal[data-v-2d71606f]{overflow:auto;max-height:min(280px,calc(40cqh - 72px));margin:0;padding:8px 14px 8px 36px;background:var(--term);color:var(--text-2);font-family:var(--mono, monospace);font-size:11px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.output-dock-bar[data-v-2d71606f]{position:absolute;right:0;bottom:0;left:0;height:2px;border-radius:1px;background:var(--border);overflow:hidden}.output-dock-fill[data-v-2d71606f]{height:100%;transition:width .4s ease}.output-dock-box[data-v-2d71606f]{position:relative}.output-dock-report[data-v-2d71606f]{position:absolute;top:6px;right:14px;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;padding:0;border:0;border-radius:6px;background:none;color:var(--text-3);cursor:pointer}.output-dock-report[data-v-2d71606f]:hover{background:var(--hover);color:var(--text)}.output-dock-report[data-v-2d71606f]{opacity:0;transition:opacity .12s ease}.output-dock-box:hover .output-dock-report[data-v-2d71606f],.output-dock-report[data-v-2d71606f]:focus-visible,.output-dock-report[aria-expanded=true][data-v-2d71606f]{opacity:1}.output-dock-loading[data-v-2d71606f]{padding:8px 14px 8px 36px;height:60px;background:var(--term)}.output-dock-terminal[data-v-2d71606f]{animation:output-fade-2d71606f .22s var(--ease) .32s backwards}@keyframes output-fade-2d71606f{0%{opacity:0}}@media(prefers-reduced-motion:reduce){.output-dock-terminal[data-v-2d71606f]{animation-duration:.1s;animation-delay:0ms}}.output[data-v-8c713a5e]{display:flex;flex-direction:column;height:100%;min-height:0}.bar[data-v-8c713a5e]{display:flex;align-items:baseline;gap:8px;padding:8px 12px;font-size:12px}.line[data-v-8c713a5e]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}button[data-v-8c713a5e]{border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}.text[data-v-8c713a5e]{margin:0;padding:0 12px 12px;font-size:12px;line-height:1.5;white-space:pre-wrap}.outputs[data-v-cd07bb4a]{display:flex;flex:1;flex-direction:column;min-height:0}.note[data-v-cd07bb4a]{margin:0;padding:0 var(--inset);color:var(--text-3);font-size:12px}.failure[data-v-cd07bb4a]{color:var(--danger)}.running[data-v-cd07bb4a]{display:flex;align-items:baseline;gap:8px;margin:0;padding:4px var(--inset);font-size:12px}.line[data-v-cd07bb4a]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.marks[data-v-cd07bb4a]{padding:8px var(--inset);font-size:12px}.marks h3[data-v-cd07bb4a]{margin:0 0 4px;font-size:12px;color:var(--text-2)}.mark[data-v-cd07bb4a]{display:flex;gap:8px;margin:2px 0}.why[data-v-cd07bb4a],.who[data-v-cd07bb4a]{flex:none;color:var(--text-3)}button[data-v-cd07bb4a]{flex:none;border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
-import { computed as s, unref as a, ref as w, watch as Z, openBlock as n, createElementBlock as p, createBlock as r, Teleport as S, createElementVNode as u, normalizeStyle as A, toDisplayString as m, createCommentVNode as l, createTextVNode as N, Fragment as ee, createVNode as pe, withCtx as D, nextTick as ce } from "vue";
+if (!document.getElementById("window-styles-d19a5cb7e3db")) { const style = document.createElement("style"); style.id = "window-styles-d19a5cb7e3db"; style.textContent = ".output-dock-inner[data-v-0abe50e2]{min-height:0;overflow:hidden}.output-dock-state[data-v-0abe50e2]{display:flex;flex:none;justify-content:center;width:14px;color:var(--tone)}.output-dock-ring[data-v-0abe50e2]{width:10px;height:10px;border:1.5px solid color-mix(in srgb,var(--tone) 30%,transparent);border-top-color:var(--tone);border-radius:50%;animation:output-spin-0abe50e2 .9s linear infinite}@keyframes output-spin-0abe50e2{to{transform:rotate(360deg)}}.output-dock-pending[data-v-0abe50e2]{display:inline-flex;align-items:center;flex:none;gap:3px}.output-dock-pending i[data-v-0abe50e2]{width:4px;height:4px;border-radius:50%;background:var(--text-3);animation:output-pending-0abe50e2 1.2s ease-in-out infinite}.output-dock-pending i[data-v-0abe50e2]:nth-child(2){animation-delay:.2s}.output-dock-pending i[data-v-0abe50e2]:nth-child(3){animation-delay:.4s}@keyframes output-pending-0abe50e2{0%,60%,to{opacity:.3}30%{opacity:1}}@media(prefers-reduced-motion:reduce){.output-dock-pending i[data-v-0abe50e2]{animation:none}}.output-dock-title[data-v-0abe50e2]{flex:1;font-size:13px;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.output-dock-figure[data-v-0abe50e2]{flex:none;color:var(--text-3);font-size:11.5px;font-variant-numeric:tabular-nums}.output-dock-percent[data-v-0abe50e2]{--dock-bar-width: 64px;--dock-bar-height: 8px;flex:none;align-self:center;width:var(--dock-bar-width);height:var(--dock-bar-height);margin-right:6px;overflow:hidden;border-radius:4px;background:var(--bar-track)}.output-dock-percent i[data-v-0abe50e2]{display:block;height:100%}.output-dock-terminal[data-v-0abe50e2]{overflow:auto;max-height:min(280px,calc(40cqh - 72px));margin:0;padding:8px 14px 8px 36px;background:var(--term);color:var(--text-2);font-family:var(--mono, monospace);font-size:11px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.output-dock-bar[data-v-0abe50e2]{position:absolute;right:0;bottom:0;left:0;height:2px;border-radius:1px;background:var(--border);overflow:hidden}.output-dock-fill[data-v-0abe50e2]{height:100%;transition:width .4s ease}.output-dock-box[data-v-0abe50e2]{position:relative}.output-dock-report[data-v-0abe50e2]{position:absolute;top:6px;right:14px;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;padding:0;border:0;border-radius:6px;background:none;color:var(--text-3);cursor:pointer}.output-dock-report[data-v-0abe50e2]:hover{background:var(--hover);color:var(--text)}.output-dock-report[data-v-0abe50e2]{opacity:0;transition:opacity .12s ease}.output-dock-box:hover .output-dock-report[data-v-0abe50e2],.output-dock-report[data-v-0abe50e2]:focus-visible,.output-dock-report[aria-expanded=true][data-v-0abe50e2]{opacity:1}.output-dock-loading[data-v-0abe50e2]{padding:8px 14px 8px 36px;height:60px;background:var(--term)}.output-dock-terminal[data-v-0abe50e2]{animation:output-fade-0abe50e2 .22s var(--ease) .32s backwards}@keyframes output-fade-0abe50e2{0%{opacity:0}}@media(prefers-reduced-motion:reduce){.output-dock-terminal[data-v-0abe50e2]{animation-duration:.1s;animation-delay:0ms}}.output[data-v-8c713a5e]{display:flex;flex-direction:column;height:100%;min-height:0}.bar[data-v-8c713a5e]{display:flex;align-items:baseline;gap:8px;padding:8px 12px;font-size:12px}.line[data-v-8c713a5e]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}button[data-v-8c713a5e]{border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}.text[data-v-8c713a5e]{margin:0;padding:0 12px 12px;font-size:12px;line-height:1.5;white-space:pre-wrap}.outputs[data-v-cd07bb4a]{display:flex;flex:1;flex-direction:column;min-height:0}.note[data-v-cd07bb4a]{margin:0;padding:0 var(--inset);color:var(--text-3);font-size:12px}.failure[data-v-cd07bb4a]{color:var(--danger)}.running[data-v-cd07bb4a]{display:flex;align-items:baseline;gap:8px;margin:0;padding:4px var(--inset);font-size:12px}.line[data-v-cd07bb4a]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.marks[data-v-cd07bb4a]{padding:8px var(--inset);font-size:12px}.marks h3[data-v-cd07bb4a]{margin:0 0 4px;font-size:12px;color:var(--text-2)}.mark[data-v-cd07bb4a]{display:flex;gap:8px;margin:2px 0}.why[data-v-cd07bb4a],.who[data-v-cd07bb4a]{flex:none;color:var(--text-3)}button[data-v-cd07bb4a]{flex:none;border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
+import { computed as s, unref as a, ref as w, watch as Z, openBlock as n, createElementBlock as p, createBlock as r, Teleport as S, createElementVNode as u, normalizeStyle as A, toDisplayString as m, createCommentVNode as l, createTextVNode as x, Fragment as ee, createVNode as pe, withCtx as D, nextTick as ce } from "vue";
 import { useWindow as ve, useDockCard as ke, useOutputPages as ge, useNow as fe, usePoll as _e, Icon as te, SkeletonLine as me, MenuPanel as be, MenuItem as F, afterSkeletonMinimum as ye } from "@journal/window-kit";
 import { _ as he } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const we = {
   class: "output-dock",
   "data-output-dock": ""
-}, Se = ["data-state"], Ne = {
+}, Se = ["data-state"], xe = {
   key: 0,
   class: "output-dock-ring"
-}, xe = ["title"], $e = ["data-figure-bar", "data-figure-began"], Me = ["data-figure-progress"], Oe = { "data-output-steps": "" }, Ce = { "data-output-progress": "" }, De = ["title", "aria-label"], Ee = {
+}, Ne = ["title"], Oe = ["data-figure-bar", "data-figure-began"], Me = ["data-figure-progress"], $e = { "data-output-steps": "" }, Ce = { "data-output-progress": "" }, De = ["title", "aria-label"], Ee = {
   key: 1,
   class: "output-dock-figure"
-}, Ie = { class: "output-dock-more" }, Le = { class: "output-dock-inner" }, Te = {
+}, Ie = { class: "output-dock-more" }, Le = { class: "output-dock-inner" }, Re = {
   key: 1,
   class: "output-dock-box"
-}, Pe = {
+}, Te = {
   key: 0,
   class: "output-dock-reading",
   "data-output-reading": ""
-}, Re = ["aria-expanded"], Ae = 2e3, Fe = 5e3, Ve = 24, ze = {
+}, Pe = ["aria-expanded"], Ae = 2e3, Fe = 5e3, Ve = 24, ze = {
   __name: "OutputDock",
   setup(Be) {
     const E = {
@@ -38,20 +38,20 @@ const we = {
       failed: "bad",
       stopped: "stopped",
       orphaned: "stopped"
-    }, i = ve(), I = ke(), b = i.option("row"), x = i.option("head"), g = i.option("foot"), V = i.option("time"), ne = i.option("folded"), ue = i.option("collapsed"), o = I.data, $ = ge(
+    }, i = ve(), I = ke(), b = i.option("row"), N = i.option("head"), g = i.option("foot"), V = i.option("time"), ne = i.option("folded"), ue = i.option("collapsed"), o = I.data, O = ge(
       I.readOutput,
       () => {
         var t;
         return (t = b.value) == null ? void 0 : t.target_id;
       }
-    ), z = $.lines, L = s(() => !a(ne)), k = w(null), B = w(!1), se = fe(), c = s(() => {
+    ), z = O.lines, L = s(() => !a(ne)), k = w(null), B = w(!1), se = fe(), c = s(() => {
       var t;
       return oe[(t = o.value) == null ? void 0 : t.state] ?? "running";
-    }), T = () => c.value === "running", v = s(() => c.value !== "running"), P = s(() => {
+    }), R = () => c.value === "running", v = s(() => c.value !== "running"), T = s(() => {
       var t;
       return Number(((t = o.value) == null ? void 0 : t.progress) ?? 0) / 100;
     }), re = s(
-      () => v.value ? "100%" : `${Math.round(P.value * 100)}%`
+      () => v.value ? "100%" : `${Math.round(T.value * 100)}%`
     ), le = s(
       () => {
         var t;
@@ -63,12 +63,12 @@ const we = {
       if (v.value) return c.value === "good" ? "100%" : "";
       const t = Math.round(Number(((e = o.value) == null ? void 0 : e.progress) ?? 0));
       return t > 0 ? `${t}%` : "";
-    }), O = s(() => {
+    }), $ = s(() => {
       var t, e;
       return !((t = o.value) != null && t.steps_passed) && !((e = o.value) != null && e.steps_failed) ? "" : o.value.steps_failed ? `${o.value.steps_passed} passed, ${o.value.steps_failed} failed` : `${o.value.steps_passed} passed`;
     }), H = s(() => {
       var e;
-      if (O.value || v.value) return "";
+      if ($.value || v.value) return "";
       const t = Math.round(Number(((e = o.value) == null ? void 0 : e.progress) ?? 0));
       return t > 0 ? `${t}%` : "";
     }), de = s(() => {
@@ -84,8 +84,8 @@ const we = {
       var h;
       if (!((h = b.value) == null ? void 0 : h.target_id) || (await I.reload(), !L.value)) return;
       const e = k.value, d = !e || e.scrollHeight - e.scrollTop - e.clientHeight < Ve, C = performance.now();
-      await $.follow(), ye(C, async () => {
-        B.value = !0, await ce(), d && k.value && (k.value.scrollTop = k.value.scrollHeight), k.value && $.feed.drawn(k.value);
+      await O.follow(), ye(C, async () => {
+        B.value = !0, await ce(), d && k.value && (k.value.scrollTop = k.value.scrollHeight), k.value && O.feed.drawn(k.value);
       });
     }
     Z(L, (t) => t && y());
@@ -95,14 +95,14 @@ const we = {
       const t = await i.run(["output", "ask-reader", String((e = b.value) == null ? void 0 : e.target_id)]);
       (t == null ? void 0 : t.ok) !== !1 && (W.value = !0);
     }
-    const j = s(() => {
+    const U = s(() => {
       var t, e;
       return !W.value && !((t = o.value) != null && t.reader_requested) && !((e = o.value) != null && e.reads_progress) && !v.value;
-    }), q = w(null), f = w(!1);
-    async function R(t) {
+    }), j = w(null), f = w(!1);
+    async function P(t) {
       f.value = !1, await t();
     }
-    async function G(t) {
+    async function q(t) {
       var d;
       const e = await i.run(["output", t, String((d = b.value) == null ? void 0 : d.target_id)]);
       (e == null ? void 0 : e.ok) !== !1 && y();
@@ -115,21 +115,21 @@ const we = {
       }
     ), _e(
       y,
-      T,
+      R,
       () => L.value ? Ae : Fe
     ), (t, e) => {
-      var d, C, h, X, J, K, Q, U;
+      var d, C, h, X, G, J, K, Q;
       return n(), p("div", we, [
-        ((d = a(x)) == null ? void 0 : d.value) ?? a(x) ? (n(), r(S, {
+        ((d = a(N)) == null ? void 0 : d.value) ?? a(N) ? (n(), r(S, {
           key: 0,
-          to: ((C = a(x)) == null ? void 0 : C.value) ?? a(x)
+          to: ((C = a(N)) == null ? void 0 : C.value) ?? a(N)
         }, [
           u("span", {
             class: "output-dock-state",
             "data-state": c.value,
             style: A({ "--tone": E[c.value] })
           }, [
-            T() ? (n(), p("span", Ne)) : (n(), r(a(te), {
+            R() ? (n(), p("span", xe)) : (n(), r(a(te), {
               key: 1,
               name: ae[c.value],
               size: 14
@@ -138,8 +138,8 @@ const we = {
           u("span", {
             class: "output-dock-title",
             title: ((h = a(o)) == null ? void 0 : h.title) || ((X = a(o)) == null ? void 0 : X.line)
-          }, m(((J = a(o)) == null ? void 0 : J.title) || ((K = a(o)) == null ? void 0 : K.line)), 9, xe),
-          P.value > 0 || v.value ? (n(), p("div", {
+          }, m(((G = a(o)) == null ? void 0 : G.title) || ((J = a(o)) == null ? void 0 : J.line)), 9, Ne),
+          T.value > 0 || v.value ? (n(), p("div", {
             key: 0,
             class: "output-dock-bar",
             "data-figure-bar": v.value ? c.value : "",
@@ -150,9 +150,9 @@ const we = {
               style: A({ width: re.value, background: E[c.value] }),
               "data-figure-progress": v.value ? null : ""
             }, null, 12, Me)
-          ], 8, $e)) : l("", !0)
+          ], 8, Oe)) : l("", !0)
         ], 8, ["to"])) : l("", !0),
-        a(a(g)) && T() && !P.value && !O.value ? (n(), r(S, {
+        a(a(g)) && R() && !T.value && !$.value ? (n(), r(S, {
           key: 1,
           to: a(a(g))
         }, [
@@ -166,13 +166,13 @@ const we = {
             u("i")
           ], -1))
         ], 8, ["to"])) : l("", !0),
-        a(a(g)) && O.value ? (n(), r(S, {
+        a(a(g)) && $.value ? (n(), r(S, {
           key: 2,
           to: a(a(g))
         }, [
-          u("span", Oe, [
-            e[7] || (e[7] = N("Steps: ", -1)),
-            u("b", null, m(O.value), 1)
+          u("span", $e, [
+            e[7] || (e[7] = x("Steps: ", -1)),
+            u("b", null, m($.value), 1)
           ])
         ], 8, ["to"])) : l("", !0),
         a(a(g)) && H.value ? (n(), r(S, {
@@ -180,7 +180,7 @@ const we = {
           to: a(a(g))
         }, [
           u("span", Ce, [
-            e[8] || (e[8] = N("Progress: ", -1)),
+            e[8] || (e[8] = x("Progress: ", -1)),
             u("b", null, m(H.value), 1)
           ])
         ], 8, ["to"])) : l("", !0),
@@ -203,20 +203,20 @@ const we = {
         ], 8, ["to"])) : l("", !0),
         u("div", Ie, [
           u("div", Le, [
-            B.value ? (n(), p("div", Te, [
+            B.value ? (n(), p("div", Re, [
               u("pre", {
                 ref_key: "terminal",
                 ref: k,
                 class: "output-dock-terminal",
                 "data-output-terminal": "",
-                onScroll: e[0] || (e[0] = (_) => a($).loadEarlier(_.target))
+                onScroll: e[0] || (e[0] = (_) => a(O).loadEarlier(_.target))
               }, m(a(z).length ? a(z).join(`
 `) : "No output yet"), 545),
-              (Q = a(o)) != null && Q.read_text ? (n(), p("p", Pe, m(a(o).read_text), 1)) : l("", !0),
-              j.value || (U = a(o)) != null && U.markable ? (n(), p(ee, { key: 1 }, [
+              (K = a(o)) != null && K.read_text ? (n(), p("p", Te, m(a(o).read_text), 1)) : l("", !0),
+              U.value || (Q = a(o)) != null && Q.markable ? (n(), p(ee, { key: 1 }, [
                 u("button", {
                   ref_key: "reportAnchor",
-                  ref: q,
+                  ref: j,
                   type: "button",
                   class: "output-dock-report",
                   "data-output-report": "",
@@ -229,10 +229,10 @@ const we = {
                     name: "dots",
                     size: 14
                   })
-                ], 8, Re),
+                ], 8, Pe),
                 f.value ? (n(), r(a(be), {
                   key: 0,
-                  anchor: q.value,
+                  anchor: j.value,
                   "min-width": 190,
                   "data-output-report-menu": "",
                   onClose: e[5] || (e[5] = (_) => f.value = !1)
@@ -240,13 +240,13 @@ const we = {
                   default: D(() => {
                     var _;
                     return [
-                      j.value ? (n(), r(a(F), {
+                      U.value ? (n(), r(a(F), {
                         key: 0,
                         "data-output-reader-ask": "",
-                        onClick: e[2] || (e[2] = (Y) => R(ie))
+                        onClick: e[2] || (e[2] = (Y) => P(ie))
                       }, {
                         default: D(() => [...e[9] || (e[9] = [
-                          N("Ask for a better reader", -1)
+                          x("Ask for a better reader", -1)
                         ])]),
                         _: 1
                       })) : l("", !0),
@@ -254,19 +254,19 @@ const we = {
                         a(o).flagged_terms ? (n(), r(a(F), {
                           key: 0,
                           "data-output-mark-readable": "",
-                          onClick: e[3] || (e[3] = (Y) => R(() => G("readable")))
+                          onClick: e[3] || (e[3] = (Y) => P(() => q("readable")))
                         }, {
                           default: D(() => [...e[10] || (e[10] = [
-                            N("Mark as readable", -1)
+                            x("Mark as readable", -1)
                           ])]),
                           _: 1
                         })) : (n(), r(a(F), {
                           key: 1,
                           "data-output-mark-unreadable": "",
-                          onClick: e[4] || (e[4] = (Y) => R(() => G("unreadable")))
+                          onClick: e[4] || (e[4] = (Y) => P(() => q("unreadable")))
                         }, {
                           default: D(() => [...e[11] || (e[11] = [
-                            N("Mark as unreadable", -1)
+                            x("Mark as unreadable", -1)
                           ])]),
                           _: 1
                         }))
@@ -289,7 +289,7 @@ const we = {
       ]);
     };
   }
-}, qe = /* @__PURE__ */ he(ze, [["__scopeId", "data-v-2d71606f"]]);
+}, je = /* @__PURE__ */ he(ze, [["__scopeId", "data-v-0abe50e2"]]);
 export {
-  qe as default
+  je as default
 };

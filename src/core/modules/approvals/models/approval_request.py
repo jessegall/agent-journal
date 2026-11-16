@@ -34,7 +34,7 @@ class ApprovalRequest(EnvironmentScoped, Model):
     refused_arguments: tuple[str, ...] = ()
     continued_arguments: tuple[str, ...] = ()
     command_json: str = ""
-    standing_id: int | None = None
+    saved_approval_id: int | None = None
     state: ApprovalState = ApprovalState.OPEN
 
     def move_result(self, move: Move, failure: str | None) -> "ApprovalRequest":

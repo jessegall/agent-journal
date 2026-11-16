@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.row.page import Page
-from core.modules.agents.models.enums.standing_state import StandingState
+from core.modules.agents.models.enums.agent_state import AgentState
 from core.modules.tasks.models.task import Task
 from core.modules.helpers.support.program_state import ProgramState
 from suites.coding.modules.workers.models.proof import Proof
@@ -30,7 +30,7 @@ class WorkerStatus:
     point: WorkerPoint
     is_paused: bool
     question_lines: tuple[str, ...]
-    standing: StandingState
+    agent_state: AgentState
     unit_line: str
     stale_line: str
     foreign_holder_tasks: tuple[Task, ...]

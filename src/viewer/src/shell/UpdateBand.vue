@@ -10,8 +10,8 @@ const available = ref(false);
 const installing = ref(false);
 const failure = ref("");
 
-watch(view.props.update.data, (standing) => {
-    available.value = standing?.is_current === false;
+watch(view.props.update.data, (status) => {
+    available.value = status?.is_current === false;
 }, {immediate: true});
 
 async function install() {

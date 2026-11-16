@@ -45,7 +45,7 @@ const stopFollowing = view.follow(["task.*", "task_log.*", "task_tag.*"], () => 
 onUnmounted(() => stopFollowing?.());
 
 const order = computed(() => (list.value?.groups ?? []).flatMap(({tasks}) => tasks.map((task) => task.id)));
-const standing = computed(() => {
+const openCount = computed(() => {
     const going = (list.value?.board ?? []).filter((group) => group.state !== "completed" && group.state !== "cancelled");
     const blocked = going.find((group) => group.state === "blocked")?.total;
     return `${going.reduce((total, group) => total + group.total, 0)} not done${blocked ? `, ${blocked} blocked` : ""}`;
@@ -108,7 +108,7 @@ onUnmounted(() => {
         <div class="tasks-dialog" data-tasks-dialog>
             <header class="tasks-head">
                 <h2>Tasks</h2>
-                <span class="standing" data-tasks-standing>{{ standing }}</span>
+                <span class="open-count" data-tasks-open-count>{{ openCount }}</span>
                 <span class="grow" />
                 <Segmented :options="VIEWS" :value="tab" @pick="tab = $event" />
                 <TasksMenus :states="states" :display="display" :selected="selected" @states="states = $event" @display="display = $event" @deleted="deleted" />
@@ -211,7 +211,7 @@ h2 {
     font-weight: 600;
 }
 
-.standing {
+.open-count {
     color: var(--text-3);
     font-size: 12px;
 }

@@ -80,8 +80,8 @@ def test_a_plugin_with_a_manifest_for_this_journal_version_installs_from_that_ma
     story.expect_rows((installed / "journal-plugin.json").is_file(), (installed / "journal-plugin.5.json").is_file(), (installed / "journal-plugin.9.json").is_file())
 
 
-def test_a_standing_yes_installs_a_plugin_again_though_the_install_has_a_prepare_step(new_story):
-    # the code-commandments project on 8 November: a plugin upgrade a standing yes covered failed every time, since the yes ran it
+def test_a_saved_yes_installs_a_plugin_again_though_the_install_has_a_prepare_step(new_story):
+    # the code-commandments project on 8 November: a plugin upgrade a saved yes covered failed every time, since the yes ran it
     # inside the transaction that asked for it
     story = plugin_story(new_story)
     story.expect_refusal(f"plugin install {story.plugin_folder} --yes --reason 'to judge the code'", "A user was asked in the dock", actor=story.agent)

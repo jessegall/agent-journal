@@ -7,7 +7,7 @@ from engine.listener.commit.commit_listener_runner import PROGRAM_STOP_RUN_ORDER
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.enums.dispatch import Dispatch
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.agents.support.agent_standing import AgentStanding
+from core.modules.agents.support.agent_statuses import AgentStatuses
 from core.modules.agents.support.report_agent_messages import PARENT_REPORT_SOURCE
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.models.agent_line import AgentLine
@@ -24,15 +24,15 @@ class MessagedHelperListener(CommitListener[Created[AgentLine]]):
     run_order = PROGRAM_STOP_RUN_ORDER
     disabled_scopes = [ActorScope]
 
-    def __init__(self, agents: AgentRows, resume: HelperResume, bus: Bus, standings: AgentStanding) -> None:
-        self.agents, self.helper_resume, self.bus, self.standings = agents, resume, bus, standings
+    def __init__(self, agents: AgentRows, resume: HelperResume, bus: Bus, statuses: AgentStatuses) -> None:
+        self.agents, self.helper_resume, self.bus, self.statuses = agents, resume, bus, statuses
 
     def handle(self, event: Created[AgentLine], logged: LoggedEvent) -> None:
         line = event.row
         if line.source != PARENT_REPORT_SOURCE:
             return
         helper = self.agents.find(line.session_agent_id)
-        if helper.ended_at is None or not helper.is_kept_helper or not self.standings.is_launcher_running:
+        if helper.ended_at is None or not helper.is_kept_helper or not self.statuses.is_launcher_running:
             return
         if self.helper_resume.resume(helper, line.text) is Dispatch.STARTED:
             self.bus.run(EnterAgentLine(line.id), Actor.core(), environment_id=helper.environment_id)

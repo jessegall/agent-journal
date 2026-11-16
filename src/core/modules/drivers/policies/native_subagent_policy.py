@@ -4,7 +4,7 @@ from engine.driver.agent_message import AgentMessage
 from engine.driver.tool import Tool
 from engine.enums.tool_type import ToolType
 from engine.provider.providers import Providers
-from core.modules.agents.support.agent_standing import AgentStanding
+from core.modules.agents.support.agent_statuses import AgentStatuses
 from core.modules.drivers.agent_messages.native_subagent_message import NativeSubagentMessage
 from core.modules.drivers.agent_messages.unlaunched_native_subagent_message import UnlaunchedNativeSubagentMessage
 
@@ -20,14 +20,14 @@ class NativeSubagentPolicy(EventPolicy):
     key = "drivers.native-subagent"
     rank = "access.all"
 
-    def __init__(self, standings: AgentStanding, providers: Providers) -> None:
-        self.standings, self.providers = standings, providers
+    def __init__(self, statuses: AgentStatuses, providers: Providers) -> None:
+        self.statuses, self.providers = statuses, providers
 
     def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         tool = event.tool
         if tool is None or not (event.child_agent or self.is_spawn_tool(tool)) or self.providers.provider(event.program).uses_web_reader(event):
             return None
-        return (NativeSubagentMessage.declared() if self.standings.is_launcher_running else UnlaunchedNativeSubagentMessage.declared()).agent_message()
+        return (NativeSubagentMessage.declared() if self.statuses.is_launcher_running else UnlaunchedNativeSubagentMessage.declared()).agent_message()
 
     @staticmethod
     def is_spawn_tool(tool: Tool) -> bool:

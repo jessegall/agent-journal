@@ -76,8 +76,8 @@ class UpgradeJournal:
         return self.kept(UpgradeOutcome(0, "\n".join(lines)), dry_run)
 
     def failure(self, error: UpgradeFailedError) -> list[str]:
-        standing = ", ".join(error.finished) or "nothing"
-        return [f"failed: {error.module} ({error.reason})", f"rolled back: {error.module}", f"stayed moved: {standing}", FINISH_LINE]
+        moved = ", ".join(error.finished) or "nothing"
+        return [f"failed: {error.module} ({error.reason})", f"rolled back: {error.module}", f"stayed moved: {moved}", FINISH_LINE]
 
     def kept(self, outcome: UpgradeOutcome, dry_run: bool = False) -> UpgradeOutcome:
         if self.should_save(outcome, dry_run):

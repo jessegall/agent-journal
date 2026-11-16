@@ -15,7 +15,7 @@ from core.modules.approvals.models.lifecycles.approval_lifecycle import Approval
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState
 from server.work.booting_work import BootingWork
-from tests.stories.core.modules.approvals.standing_approvals import ResumeFixedSession, resume_approved
+from tests.stories.core.modules.approvals.saved_approvals import ResumeFixedSession, resume_approved
 from tests.stories.core.modules.viewer.support.window_samples import NOTES
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
@@ -46,7 +46,7 @@ class ApprovalInProgress(StoryFixture):
 
 
 class CoveredRequestInProgress(StoryFixture):
-    """A standing yes covered a request, and the server stopped while its action ran, so it stays running."""
+    """A saved yes covered a request, and the server stopped while its action ran, so it stays running."""
 
     parent = ResumeFixedSession
 

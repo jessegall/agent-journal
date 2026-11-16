@@ -15,8 +15,8 @@ afterEach(() => {
 });
 
 const KEYS = {installed: {line: "mcp list", events: ["mcp_server.*"]}, suggested: {line: "mcp suggested"}, check: {line: "mcp check"}};
-const LINEAR = {id: 1, name: "linear", title: "Linear", url: "https://mcp.linear.app/mcp", command: "", args: [], auth: "oauth", standing: "signs in on its own", key_variable: ""};
-const SHOP = {id: 2, name: "shop", title: "shop", url: "", command: "npx", args: ["-y", "shop"], auth: "none", standing: "needs its key", key_variable: "SHOP_KEY"};
+const LINEAR = {id: 1, name: "linear", title: "Linear", url: "https://mcp.linear.app/mcp", command: "", args: [], auth: "oauth", readiness: "signs in on its own", key_variable: ""};
+const SHOP = {id: 2, name: "shop", title: "shop", url: "", command: "npx", args: ["-y", "shop"], auth: "none", readiness: "needs its key", key_variable: "SHOP_KEY"};
 const SUGGESTED = {id: 9, name: "docs", title: "Docs", subject: "Reads the project's documents", admission: ""};
 
 async function integrations(answers = {}) {

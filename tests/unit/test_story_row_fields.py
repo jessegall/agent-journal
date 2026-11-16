@@ -15,7 +15,7 @@ MODEL_FOLDERS = ("src/core", "src/suites")
 EXPECTATIONS = ("expect_text", "expect_success")
 ROW_DISPLAY_COMMAND = re.compile(r"^([a-z][a-z-]*) show\b")
 FIELD_LINE = re.compile(r"^([a-z][a-z_]*): ")
-SHOWN_BESIDE_COLUMNS = {"agent": {"display_name", "standing"}, "approval": {"outdated"}, "check": {"state"}, "doc": {"links"},
+SHOWN_BESIDE_COLUMNS = {"agent": {"display_name", "agent_state"}, "approval": {"outdated"}, "check": {"state"}, "doc": {"links"},
                         "hook-call": {"layers"}, "memory": {"type"}, "proof": {"stuck", "lost"}, "question": {"choices"},
                         "report": {"links"}, "setting": {"from"}, "task": {"links"}}
 

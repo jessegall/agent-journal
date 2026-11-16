@@ -53,7 +53,7 @@ class AgentListingState:
     updated_at: Timestamp
     process_started_at: Timestamp | None
     state: AgentListState
-    standing: str
+    agent_state: str
     resume_reason: str | None
     facts: Mapping[str, object]
     driver: StackSummary | None

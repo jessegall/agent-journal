@@ -1,7 +1,7 @@
 if (!document.getElementById("window-styles-c4a725096007")) { const style = document.createElement("style"); style.id = "window-styles-c4a725096007"; style.textContent = ".note[data-v-f65ffe9a]{margin:0;color:var(--text-3);font-size:12.5px}.checked[data-v-f65ffe9a]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
 import { openBlock as i, createBlock as p, unref as s, ref as w, computed as C, watch as V, createElementBlock as v, Fragment as L, createVNode as b, withCtx as m, createCommentVNode as g, createTextVNode as f, toDisplayString as E } from "vue";
 import { copying as G, useWindow as F, CreateDialog as O, added as K, CardPage as W, ActionsMenu as U, Btn as y, Skeleton as z, TimeAgo as H, removed as j } from "@journal/window-kit";
-const S = "Connected", I = "Failed", N = "Suggested", h = "Installed", J = [{ key: "status", label: "State", options: [[S, S], [I, I]], get: (e) => e.status }], Q = (e) => e.url || [e.command, ...e.args].join(" "), X = (e) => (e ?? "").replace(/:\s*journal .*$/, ""), Y = (e, a) => e.standing === "needs its key" || /^(needs|missing)/.test(a ?? "");
+const S = "Connected", I = "Failed", N = "Suggested", h = "Installed", J = [{ key: "status", label: "State", options: [[S, S], [I, I]], get: (e) => e.status }], Q = (e) => e.url || [e.command, ...e.args].join(" "), X = (e) => (e ?? "").replace(/:\s*journal .*$/, ""), Y = (e, a) => e.readiness === "needs its key" || /^(needs|missing)/.test(a ?? "");
 function Z(e, a) {
   const o = Y(e, a);
   return {
@@ -11,7 +11,7 @@ function Z(e, a) {
     state: "Tools: —",
     status: o ? I : S,
     line: Q(e),
-    fault: o ? `Failed to connect · ${X(a) || e.standing}` : "",
+    fault: o ? `Failed to connect · ${X(a) || e.readiness}` : "",
     group: h,
     row: e
   };
@@ -32,7 +32,7 @@ const ie = {
   emits: ["close"],
   setup(e, { emit: a }) {
     const o = a, c = F(), u = (r) => {
-      const d = { id: `adding-${Date.now()}`, name: r.name.trim(), title: r.name.trim(), standing: "adding", auth: "", url: r.target.trim(), command: "", args: [], key_variable: "" };
+      const d = { id: `adding-${Date.now()}`, name: r.name.trim(), title: r.name.trim(), readiness: "adding", auth: "", url: r.target.trim(), command: "", args: [], key_variable: "" };
       return c.props.installed.act(oe(r), K(d));
     };
     return (r, d) => (i(), p(s(O), {

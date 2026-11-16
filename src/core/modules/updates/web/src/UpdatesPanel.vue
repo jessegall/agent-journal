@@ -4,12 +4,12 @@ import {Btn, ListReaderLayout, PageHeader, Reader, Skeleton, TextDisplay, copyin
 
 const view = useWindow();
 const releases = view.props.releases;
-const {failure: checkFailure} = view.props.standing;
-const standing = computed(() => checkFailure.value ? null : view.props.standing.data.value);
+const {failure: checkFailure} = view.props.status;
+const status = computed(() => checkFailure.value ? null : view.props.status.data.value);
 const installing = ref(false);
 const installFailure = ref("");
 const installationRequested = ref(false);
-const installed = computed(() => installationRequested.value && standing.value?.is_current && standing.value?.installation?.step === "finished");
+const installed = computed(() => installationRequested.value && status.value?.is_current && status.value?.installation?.step === "finished");
 const notes = ref([]);
 const notesPage = ref(1);
 const lastPage = computed(() => view.props.notes.data.value?.is_last_page ?? true);
@@ -18,13 +18,13 @@ watch(() => view.props.notes.data.value, (answer) => {
     if (answer) notes.value = notesPage.value === 1 ? answer.notes : [...notes.value, ...answer.notes];
 });
 const checkLine = computed(() => {
-    if (standing.value) return standing.value.line;
+    if (status.value) return status.value.line;
     if (checkFailure.value) return "Release unavailable";
     return "Checking for a newer release";
 });
 
 async function check() {
-    await view.reload("standing");
+    await view.reload("status");
 }
 
 async function install() {
@@ -32,7 +32,7 @@ async function install() {
     const result = await view.run(["update", "install"]);
     installFailure.value = result.ok ? "" : result.error;
     installing.value = false;
-    await view.reload({only: result.ok ? ["releases", "standing"] : ["releases"]});
+    await view.reload({only: result.ok ? ["releases", "status"] : ["releases"]});
     if (!result.ok) return;
     installationRequested.value = true;
 }
@@ -81,13 +81,13 @@ const place = (item) => ({
             <template v-if="checkFailure || installFailure">
                 <p class="failure">{{ checkFailure || installFailure }}</p>
             </template>
-            <div class="standing">
+            <div class="update-status">
                 <span class="line">{{ checkLine }}</span>
                 <button type="button" @click="check">Check again</button>
-                <template v-if="standing && !standing.is_current">
-                    <Btn small variant="primary" data-update-install @click="install">{{ standing.installation?.step === "failed" ? "Retry update" : standing.tag ? `Update to ${standing.tag}` : "Update to the latest" }}</Btn>
+                <template v-if="status && !status.is_current">
+                    <Btn small variant="primary" data-update-install @click="install">{{ status.installation?.step === "failed" ? "Retry update" : status.tag ? `Update to ${status.tag}` : "Update to the latest" }}</Btn>
                 </template>
-                <template v-else-if="standing">
+                <template v-else-if="status">
                     <button type="button" data-update-force @click="install">Install it again</button>
                 </template>
             </div>
@@ -95,7 +95,7 @@ const place = (item) => ({
                 <p class="detail" data-update-notes-failure>{{ notesFailure }}</p>
             </template>
             <template v-if="!lastPage">
-                <div class="standing"><button type="button" data-update-older @click="readNotes(notesPage + 1)">Show older releases</button></div>
+                <div class="update-status"><button type="button" data-update-older @click="readNotes(notesPage + 1)">Show older releases</button></div>
             </template>
         </template>
         <template #empty><template v-if="releases.loaded.value">Installed releases appear here with their installation dates.</template><template v-else><Skeleton shape="rows" /></template></template>
@@ -122,7 +122,7 @@ const place = (item) => ({
 
 .cover,
 .arrived,
-.standing {
+.update-status {
     display: flex;
     align-items: center;
     gap: 10px;

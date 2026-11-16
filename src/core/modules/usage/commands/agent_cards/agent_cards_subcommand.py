@@ -35,7 +35,7 @@ CARD_STATES_REASON = "every agent card on the page is marked running or idle"
 
 class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterOptions]):
     """Reads the agents list in creation order, with its filters applied in SQLite and, for each agent on the
-    page, the standing its row records."""
+    page, the agent state its row records."""
 
     cli_name = "agent"
     name = "cards"
@@ -117,7 +117,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         sandboxes = self.usage.sandbox.sandboxed_among(tuple(agents.values()))
         merges = self.usage.merged_work(page.rows)
         stacks = self.stacks.summaries(tuple(row.id for row in page.rows))
-        return Page(tuple(AgentListingState(**vars(row), state=states.get(row.id, AgentListState.RETIRED), standing=agents[row.id].standing.value,
+        return Page(tuple(AgentListingState(**vars(row), state=states.get(row.id, AgentListState.RETIRED), agent_state=agents[row.id].agent_state.value,
                                            resume_reason=self.resume_reason(agents[row.id], *locations[row.id]) if row.id in idle else None,
                                            facts=self.usage.facts(row, titles, pending.get(row.id), statuses[row.session], account, sandboxes[row.id], merges.get(row.id)).json(),
                                            driver=stacks.get(row.id),

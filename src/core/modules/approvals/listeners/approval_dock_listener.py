@@ -15,7 +15,7 @@ from core.modules.docking.queries.dock_item_query import DockItemQuery
 
 
 class ApprovalDockListener(CommitListener[Changed[ApprovalRequest]]):
-    """Keeps open approval requests in the dock until a user decides them; one a standing yes covers is
+    """Keeps open approval requests in the dock until a user decides them; one a saved yes covers is
     never docked, and one that fails ends failed and leaves the dock; one a restart cut off is accepted
     again with no card."""
 
@@ -39,4 +39,4 @@ class ApprovalDockListener(CommitListener[Changed[ApprovalRequest]]):
 
     @staticmethod
     def shows_card(request: ApprovalRequest) -> bool:
-        return request.recipient_agent_id is None and request.standing_id is None and request.state in (ApprovalState.OPEN, ApprovalState.RUNNING)
+        return request.recipient_agent_id is None and request.saved_approval_id is None and request.state in (ApprovalState.OPEN, ApprovalState.RUNNING)

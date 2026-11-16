@@ -6,7 +6,7 @@ import {newCommand, newFields, newLine} from "./integrationWords.js";
 const emit = defineEmits(["close"]);
 const view = useWindow();
 const run = (values) => {
-    const pending = {id: `adding-${Date.now()}`, name: values.name.trim(), title: values.name.trim(), standing: "adding", auth: "", url: values.target.trim(), command: "", args: [], key_variable: ""};
+    const pending = {id: `adding-${Date.now()}`, name: values.name.trim(), title: values.name.trim(), readiness: "adding", auth: "", url: values.target.trim(), command: "", args: [], key_variable: ""};
     return view.props.installed.act(newLine(values), added(pending));
 };
 </script>

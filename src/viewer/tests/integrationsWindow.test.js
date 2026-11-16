@@ -10,8 +10,8 @@ const KEYS = {
     check: {line: "mcp check"},
 };
 
-const LINEAR = {id: 1, name: "linear", title: "Linear", url: "https://mcp.linear.app/mcp", command: "", args: [], auth: "oauth", standing: "signs in on its own"};
-const SHOP = {id: 2, name: "shop", title: "shop", url: "", command: "npx", args: ["-y", "shop"], auth: "none", standing: "ready"};
+const LINEAR = {id: 1, name: "linear", title: "Linear", url: "https://mcp.linear.app/mcp", command: "", args: [], auth: "oauth", readiness: "signs in on its own"};
+const SHOP = {id: 2, name: "shop", title: "shop", url: "", command: "npx", args: ["-y", "shop"], auth: "none", readiness: "ready"};
 
 function integrations(lines = ["linear  written in .mcp.json and .codex/config.toml"]) {
     const window = context({"mcp list": page([LINEAR, SHOP]), "mcp suggested": page([]), "mcp check": {ok: true, value: {lines}}}, null, KEYS);

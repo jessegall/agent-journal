@@ -184,11 +184,6 @@
   "merger": "allowed",
   "worker": "refused"
  },
- "agent standing": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
  "agent start": {
   "helper": "refused",
   "merger": "refused",
@@ -197,6 +192,11 @@
  "agent start-program": {
   "helper": "refused",
   "merger": "refused",
+  "worker": "refused"
+ },
+ "agent status": {
+  "helper": "allowed",
+  "merger": "allowed",
   "worker": "refused"
  },
  "agent stop": {
@@ -3374,6 +3374,21 @@
   "merger": "allowed",
   "worker": "refused"
  },
+ "saved-approval delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "saved-approval list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "saved-approval show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
  "scheduled-job list": {
   "helper": "allowed",
   "merger": "allowed",
@@ -3698,21 +3713,6 @@
   "helper": "allowed",
   "merger": "allowed",
   "worker": "allowed"
- },
- "standing-approval delete": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
- },
- "standing-approval list": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
- "standing-approval show": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
  },
  "statistic list": {
   "helper": "allowed",

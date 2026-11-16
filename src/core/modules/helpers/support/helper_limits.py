@@ -18,7 +18,7 @@ from core.modules.helpers.support.agent_start_check import AgentStartCheck
 from core.modules.helpers.support.allowed_models import AllowedModels
 from core.modules.helpers.support.kept_helpers import KeptHelpers
 from core.modules.helpers.support.profile_model import ProfileModel
-from core.modules.agents.support.agent_standing import AgentStanding
+from core.modules.agents.support.agent_statuses import AgentStatuses
 from engine.setting.setting_values import SettingValues
 
 RUNNING_NAMES_CHARACTERS = 60
@@ -30,11 +30,11 @@ class HelperLimits:
     """Who may start a helper, on which model, and how many of a profile run or are kept. A helper with an open job
     holds a run place while its resume is on its way, before its session binds."""
 
-    def __init__(self, queries: Queries, settings: SettingValues, models: AllowedModels, providers: Providers, agents: AgentRows, standings: AgentStanding, limits: AgentTypeLimits, kept: KeptHelpers, start_check: AgentStartCheck, numbers: RowNumbers, types: HelperTypeBook) -> None:
+    def __init__(self, queries: Queries, settings: SettingValues, models: AllowedModels, providers: Providers, agents: AgentRows, statuses: AgentStatuses, limits: AgentTypeLimits, kept: KeptHelpers, start_check: AgentStartCheck, numbers: RowNumbers, types: HelperTypeBook) -> None:
         self.numbers, self.types = numbers, types
         self.start_check = start_check
         self.limits, self.kept = limits, kept
-        self.standings = standings
+        self.statuses = statuses
         self.queries, self.settings, self.models, self.providers, self.agents = queries, settings, models, providers, agents
 
     def checked_parent(self, context: Context | Caller) -> Agent:
@@ -53,7 +53,7 @@ class HelperLimits:
         return agent
 
     def checked_launcher(self) -> None:
-        if not self.standings.is_launcher_running:
+        if not self.statuses.is_launcher_running:
             raise Refusal("a helper needs the launcher, which is not running", "keep your work and start the journal with journal launch")
 
     def checked_running(self, profile: str) -> None:
@@ -108,4 +108,4 @@ class HelperLimits:
             raise Refusal(f"this profile has no model for {program}", "add --model <model>")
 
     def next_step_text(self) -> str:
-        return TERMINAL_LIMIT_TEXT if self.standings.is_launcher_running else NEXT_HOOK_LIMIT_TEXT
+        return TERMINAL_LIMIT_TEXT if self.statuses.is_launcher_running else NEXT_HOOK_LIMIT_TEXT

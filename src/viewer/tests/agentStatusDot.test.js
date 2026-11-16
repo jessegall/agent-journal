@@ -7,7 +7,7 @@ import {context, mounted} from "./support/agentWindowContext.js";
 
 const CREATED = new Date(Date.now() - 6 * 3600000).toISOString();
 const STARTED = new Date(Date.now() - 7 * 60000).toISOString();
-const worker = (overrides) => ({id: 6, role: "worker", access: "writing", session: "s-6", program: "claude", state: "running", standing: "running", created_at: CREATED, process_started_at: STARTED, ended_at: null, ...overrides});
+const worker = (overrides) => ({id: 6, role: "worker", access: "writing", session: "s-6", program: "claude", state: "running", agent_state: "running", created_at: CREATED, process_started_at: STARTED, ended_at: null, ...overrides});
 const card = async (row, facts = {tasks: []}, open = false) => (await mounted({render: () => h(AgentCard, {row, facts, open})}, context({"usage tool --agent 6": {ok: true, value: {tool: "", note: ""}}}))).querySelector("[data-agent-open]");
 const dotOf = (element) => element.querySelector("[data-agent-status]");
 const words = (element) => element.querySelector("[data-agent-status] [role='tooltip'] b").textContent;
@@ -38,7 +38,7 @@ test("a blocked agent has a still dot that says why", async () => {
 });
 
 test("an idle agent has a still grey dot and a retired agent a ring", async () => {
-    const idle = await card(worker({state: "idle", standing: "ended", ended_at: new Date(Date.now() - 3600000).toISOString()}));
+    const idle = await card(worker({state: "idle", agent_state: "ended", ended_at: new Date(Date.now() - 3600000).toISOString()}));
     expect(dotOf(idle).dataset.state).toBe("idle");
     expect(dotOf(idle).classList.contains("pulse")).toBe(false);
     expect(words(idle)).toBe("Idle: its process has stopped");
@@ -49,8 +49,8 @@ test("an idle agent has a still grey dot and a retired agent a ring", async () =
     expect(since(retired)).toMatch(/, 2d ago$/);
 });
 
-test("the dot says the standing the server sends for the program of an agent", async () => {
-    const wordsOf = async (standing) => words(await card(worker({standing})));
+test("the dot says the agent state the server sends for the program of an agent", async () => {
+    const wordsOf = async (agent_state) => words(await card(worker({agent_state})));
     expect(await wordsOf("starting")).toBe("Starting");
     expect(await wordsOf("stopping")).toBe("Stopping");
     expect(await wordsOf("failed")).toBe("Could not start");
