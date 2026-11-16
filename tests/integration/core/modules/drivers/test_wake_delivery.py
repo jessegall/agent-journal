@@ -10,6 +10,8 @@ from engine.agent_machine.states.step_requests import StepRequests
 from engine.testing.examples.hook_samples import HookSamples
 from core.modules.agents.commands.record_agent_interrupt.record_agent_interrupt import RecordAgentInterrupt
 from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.agents.support.terminal_typing import TerminalTyping
+from tests.integration.core.modules.messages.test_message_wake import KeptTyping
 from core.modules.drivers.commands.claim_agent_wake.claim_agent_wake import ClaimAgentWake
 from core.modules.drivers.commands.claim_agent_wake.claim_agent_wake_handler import WAKE_SOURCE
 from core.modules.drivers.bindings.stored_step_writer import StoredStepWriter
@@ -18,7 +20,7 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.agent_step_request import AgentStepRequest
 from core.modules.drivers.models.agent_wake import AgentWake
 from core.modules.drivers.models.enums.wake_state import WakeState
-from core.modules.drivers.ticks.agent_wake_delivery import AgentWakeDelivery
+from core.modules.drivers.ticks.agent_wake_delivery import UNTYPED_WAKE_FAILURE, AgentWakeDelivery
 from core.modules.drivers.support.waiting_line_typing import WaitingLineTyping
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from tests.stories.core.support.coding_fixtures import BuilderStarted
@@ -40,6 +42,9 @@ def wake_lines(story, agent_id: int) -> list[AgentLine]:
 
 def test_an_open_wake_left_by_a_server_that_stopped_is_delivered_by_the_next_round_and_a_hook_acknowledges_it(played):
     story = played(BuilderStarted)
+    story.replace(TerminalTyping, KeptTyping())
+    story.hook("s-1", HookSamples.stop())
+    story.advance(timedelta(seconds=1))
     wake = stored_wake(story, story.agent.id)
     AgentWakeDelivery()(story.container)
     delivered = wake_row(story, wake.id)
@@ -81,7 +86,7 @@ def test_a_claimed_wake_whose_typing_fails_is_put_back_to_open_with_why(played, 
     story = played(BuilderStarted)
     wake = stored_wake(story, story.agent.id)
 
-    def failed(self, agent_id: int, actor_id: int) -> None:
+    def failed(self, agent_id: int, actor_id: int) -> bool:
         raise OSError("the terminal took no input")
 
     monkeypatch.setattr(WaitingLineTyping, "release_waiting_lines", failed)
@@ -116,3 +121,12 @@ def test_a_step_that_asks_for_its_own_agents_step_is_saved_and_leaves_a_request_
     story.container.get(Bus).run(RunAgentStep(request.id), Actor.core(), environment_id=1)
     requests = story.container.get(Queries).query(AgentStepRequest).filter(session_agent_id=story.agent.id).every_row("one agent of one test")
     assert [(row.causes, row.served_at is not None) for row in requests] == [(("tests.first-cause",), True), (("tests.cause-during-step",), False)]
+
+
+def test_a_wake_whose_agent_had_no_open_prompt_is_put_back_to_open_with_why(played):
+    story = played(BuilderStarted)
+    story.hook("s-1", HookSamples.prompt("go on"))
+    wake = stored_wake(story, story.agent.id)
+    AgentWakeDelivery()(story.container)
+    row = wake_row(story, wake.id)
+    assert (row.state, row.failure, row.attempts) == (WakeState.OPEN, UNTYPED_WAKE_FAILURE, 1)

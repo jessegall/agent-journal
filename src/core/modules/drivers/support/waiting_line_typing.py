@@ -38,19 +38,18 @@ class WaitingLineTyping:
             return
         self.entered(line, actor_id)
 
-    # a delivered wake gives the lines its agent's steps left waiting (doc 1310 section 6.4), whether or not each wakes
-    def release_waiting_lines(self, agent_id: int, actor_id: int) -> None:
-        for line in self.queries.query(AgentLine).filter(session_agent_id=agent_id, state=AgentLineState.WAITING).every_row(WAITING_LINES_REASON):
-            self.entered(line, actor_id)
+    def release_waiting_lines(self, agent_id: int, actor_id: int) -> bool:
+        lines = self.queries.query(AgentLine).filter(session_agent_id=agent_id, state=AgentLineState.WAITING).every_row(WAITING_LINES_REASON)
+        return any([self.entered(line, actor_id) for line in lines])
 
-    def entered(self, line: AgentLine, actor_id: int) -> None:
+    def entered(self, line: AgentLine, actor_id: int) -> bool:
         if line.source not in (PAUSE_SOURCE, RESUME_SOURCE, COMPACTED_WAKE_SOURCE) and not self.hook_calls.is_prompt_open(line.session_agent_id):
-            return
+            return False
         actor = Actor(actor_id, ActorType.USER)
         if self.has_entered_repeat(line):
             self.bus.run(EnterAgentLine(line.id), actor)
-        else:
-            self.typing.enter_line(line, actor)
+            return True
+        return self.typing.enter_line(line, actor)
 
     def release(self, agent_id: int, actor_id: int, timestamp: Timestamp) -> None:
         waiting = self.queries.query(AgentLine).filter(session_agent_id=agent_id, state=AgentLineState.WAITING).every_row(WAITING_LINES_REASON)

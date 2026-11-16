@@ -15,6 +15,7 @@ from core.modules.drivers.models.enums.wake_state import WakeState
 
 DUE_WAKES_REASON = "the wake obligations that may be due, one active row for each agent and work generation"
 MOVING_STATES = (WakeState.OPEN, WakeState.CLAIMED, WakeState.DELIVERED)
+UNTYPED_WAKE_FAILURE = "no line reached the terminal: its prompt was not open, or the launcher refused it"
 
 
 class AgentWakeDelivery:
@@ -44,11 +45,13 @@ class AgentWakeDelivery:
         if claimed is None:
             return
         try:
-            if claimed.transport == TYPING_TRANSPORT:
-                container.get(WaitingLineTyping).release_waiting_lines(claimed.session_agent_id, Actor.core().id)
+            is_line_entered = claimed.transport != TYPING_TRANSPORT or container.get(WaitingLineTyping).release_waiting_lines(claimed.session_agent_id, Actor.core().id)
         except Exception as error:
             bus.run(ReopenAgentWake(claimed.id, str(error)), Actor.core(), environment_id=claimed.environment_id)
             raise
+        if not is_line_entered:
+            bus.run(ReopenAgentWake(claimed.id, UNTYPED_WAKE_FAILURE), Actor.core(), environment_id=claimed.environment_id)
+            return
         bus.run(RecordWakeDelivery(claimed.id), Actor.core(), environment_id=claimed.environment_id)
 
     @staticmethod
