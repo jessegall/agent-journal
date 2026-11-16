@@ -46,14 +46,8 @@ class ProgramHooks:
 
     def journal_blocks(self, runner: str, root: Path, managed: Sequence[ManagedHook] = ()) -> dict[str, list[object]]:
         return {event: [{"matcher": "", "hooks": [{"type": "command", "command": f'{runner} {self.program} "{root}"', "timeout": self.entry_timeout(event, managed),
-                                                   **self.entry_fields, **self.event_fields.get(event, {})}, *self.wake_entries(event, runner, root)]}]
+                                                   **self.entry_fields, **self.event_fields.get(event, {})}]}]
                 for event in self.events}
-
-    def wake_entries(self, event: str, runner: str, root: Path) -> list[dict[str, object]]:
-        wake = self.provider.wake_hook if self.provider else None
-        if wake is None or wake.event != event:
-            return []
-        return [{"type": "command", "command": f'{runner} {self.program} "{root}" --wake', "timeout": wake.limit_seconds, **wake.fields}]
 
     def write(self, runner: str, root: Path, managed: Sequence[ManagedHook] = ()) -> None:
         settings = self.settings()

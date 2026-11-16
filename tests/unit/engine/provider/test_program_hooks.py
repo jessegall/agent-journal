@@ -2,8 +2,6 @@ import json
 from pathlib import Path
 
 from engine.enums.hook_event_name import HookEventName
-from engine.provider.enums.wake_answer import WakeAnswer
-from engine.provider.wake_hook import WakeHook
 from engine.provider.program_hooks import ProgramHooks
 from engine.provider.managed_hook import ManagedHook
 from tests.unit.engine.samples.program_sample import HOOK_FILE, SampleProgram
@@ -177,43 +175,24 @@ def test_the_session_end_entry_is_never_longer_than_the_programs_limit(tmp_path,
         assert hooks.entry_timeout("BeforeTool", []) == 90
 
 
-WAKE = WakeHook("End", WakeAnswer.EXIT_WITH_STDERR, {"async": True, "asyncRewake": True}, 86_400)
-
-
-def woken_hooks(tmp_path, monkeypatch) -> ProgramHooks:
-    monkeypatch.setattr(SampleProgram, "wake_hook", WAKE)
+def journal_hooks(tmp_path) -> ProgramHooks:
     return ProgramHooks.journal(SampleProgram, tmp_path / "hooks.json")
 
 
-def test_a_provider_with_a_wake_hook_writes_two_entries_in_one_block(tmp_path, monkeypatch):
-    blocks = woken_hooks(tmp_path, monkeypatch).journal_blocks("journal-hook", Path("/p"))
-    assert len(blocks["End"]) == 1
-    assert blocks["End"][0]["hooks"][1] == {"type": "command", "command": 'journal-hook sample "/p" --wake', "timeout": 86_400, "async": True, "asyncRewake": True}
-    assert [len(blocks[event][0]["hooks"]) for event in ("Start", "BeforeTool", "End")] == [1, 1, 2]
-
-
-def test_a_provider_without_one_writes_one_entry(tmp_path):
+def test_every_event_has_one_journal_entry(tmp_path):
     blocks = ProgramHooks.journal(SampleProgram, tmp_path / "hooks.json").journal_blocks("journal-hook", Path("/p"))
     assert all(len(event_blocks) == 1 and len(event_blocks[0]["hooks"]) == 1 for event_blocks in blocks.values())
 
 
-def test_a_rewrite_does_not_double_the_wake_entry(tmp_path, monkeypatch):
-    hooks = woken_hooks(tmp_path, monkeypatch)
-    hooks.write("journal-hook", Path("/p"))
-    hooks.write("journal-hook", Path("/p"))
-    entries = [entry for block in hooks.settings()["hooks"]["End"] for entry in block["hooks"]]
-    assert [entry["command"].endswith("--wake") for entry in entries] == [False, True]
-
-
-def test_removing_the_journals_hooks_removes_both_entries(tmp_path, monkeypatch):
-    hooks = woken_hooks(tmp_path, monkeypatch)
+def test_the_journals_hooks_are_told_apart_from_the_native_ones(tmp_path):
+    hooks = journal_hooks(tmp_path)
     hooks.write("journal-hook", Path("/p"))
     parts = ProgramHooks.partitioned(hooks.settings()["hooks"])
-    assert parts.native == {} and len(parts.journal["End"][0]["hooks"]) == 2
+    assert parts.native == {} and len(parts.journal["End"][0]["hooks"]) == 1
 
 
-def test_is_complete_needs_the_first_entry(tmp_path, monkeypatch):
-    hooks = woken_hooks(tmp_path, monkeypatch)
+def test_is_complete_needs_the_first_entry(tmp_path):
+    hooks = journal_hooks(tmp_path)
     hooks.write("journal-hook", Path("/p"))
     assert hooks.is_complete()
     settings = hooks.settings()
@@ -222,8 +201,8 @@ def test_is_complete_needs_the_first_entry(tmp_path, monkeypatch):
     assert not hooks.is_complete()
 
 
-def test_names_root_holds_for_the_wake_entry(tmp_path, monkeypatch):
-    hooks = woken_hooks(tmp_path, monkeypatch)
+def test_names_root_holds_for_the_journal_entry(tmp_path):
+    hooks = journal_hooks(tmp_path)
     hooks.write("journal-hook", Path("/p"))
     assert hooks.names_root(Path("/p")) and not hooks.names_root(Path("/q"))
 

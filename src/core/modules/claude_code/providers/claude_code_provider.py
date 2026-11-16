@@ -1,7 +1,3 @@
-from engine.agent_machine.contracts.capability import Capability
-from engine.enums.capability_fallback import CapabilityFallback
-from engine.enums.capability_part import CapabilityPart
-from engine.enums.capability_proof import CapabilityProof
 from engine.file.kept_bytes import KeptBytes
 from engine.provider.model_efforts import ModelEfforts
 from core.modules.claude_code.support.claude_code_settings import MODEL_EFFORTS
@@ -20,8 +16,6 @@ from pathlib import Path
 from engine.enums.hook_event_name import HookEventName
 from engine.enums.tool_type import ToolType
 from engine.provider.enums.matcher_style import MatcherStyle
-from engine.provider.enums.wake_answer import WakeAnswer
-from engine.provider.wake_hook import WakeHook
 from engine.journal.journal_home import JournalHome
 from engine.provider.helper_launch import HelperLaunch
 from engine.provider.helper_outcome import HelperOutcome
@@ -85,8 +79,6 @@ BYPASS_PERMISSIONS = {"defaultMode": "bypassPermissions"}
 COMPACT_LINE = "/compact"
 # the status line also runs every 30 seconds, so the status file of an idle session stays fresh (statusline page: seconds)
 STATUS_REFRESH_SECONDS = 30
-# the largest timeout Claude Code was seen to accept on an asyncRewake hook, which it enforces (report 1427, P3)
-WAKE_TIMEOUT_SECONDS = 86_400
 COMPACTION_INSTRUCTIONS = "Focus on continuing the work at once: what you were doing last, what comes next, and the facts those depend on. Keep every instruction, request, direction and correction the user gave you. Leave out the rest of the earlier history and old messages: the journal gives back recent messages, tasks, memories and rules."
 
 class ClaudeCodeProvider(Provider):
@@ -103,7 +95,6 @@ class ClaudeCodeProvider(Provider):
                    "Stop": HookEventName.STOP, "StopFailure": HookEventName.STOP_FAILURE,
                    
                    "SessionEnd": HookEventName.SESSION_END, "MessageDisplay": HookEventName.MESSAGE_DISPLAY}
-    new_capabilities = [Capability(CapabilityPart.WAKE_HOOK, HookEventName.STOP, CapabilityProof.DOCUMENTED_UPSTREAM, CapabilityFallback.TYPING_OR_RESUME)]
     line_events = [HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE]
     plain_output_events = [HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.COMPACT]
     matcher_style = MatcherStyle.NAMES_OR_REGEX
@@ -114,7 +105,6 @@ class ClaudeCodeProvider(Provider):
     # sessionTitle are read only on their own events (PostToolUse, UserPromptSubmit, SessionStart)
     hook_entry_fields = frozenset({"if", "args", "shell", "async", "asyncRewake", "onFailure", "statusMessage"})
     hook_output_fields = frozenset({"continue", "stopReason", "updatedToolOutput", "suppressOriginalPrompt", "sessionTitle", "terminalSequence"})
-    wake_hook = WakeHook("Stop", WakeAnswer.EXIT_WITH_STDERR, {"async": True, "asyncRewake": True}, WAKE_TIMEOUT_SECONDS)
     refusals = {HookEventName.PRE_TOOL_USE: RefusalStyle.DENY, HookEventName.PROMPT: RefusalStyle.BLOCK, HookEventName.STOP: RefusalStyle.BLOCK}
     skills_folder = ".claude/skills"
     profile_model_setting = "journal.core.profiles.model-claude"

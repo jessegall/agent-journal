@@ -39,7 +39,6 @@ from contextlib import nullcontext
 EXIT_CODE_TRAILER = "Journal-Exit-Code"
 CODE_VERSION_HEADER = "Journal-Code-Version"
 HANDOVER_FAILED_STATUS = 422
-NO_CONTENT_STATUS = 204
 
 
 class RequestHandler(BaseHTTPRequestHandler):
@@ -146,12 +145,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         if route == "/hook":
             self.answer_hook(body, parse_qs(query).get("program", [""])[0])
             return
-        if route == "/wake":
-            self.answer_wake(body)
-            return
-        if route == "/wake/received":
-            self.answer_wake_received(body)
-            return
         if route == "/wake/line":
             self.answer_wake_line(body)
             return
@@ -170,17 +163,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.line = " ".join(request.argv[:2])
         self.answer_cli(request)
 
-    def answer_wake(self, body: bytes) -> None:
-        try:
-            reply = WakeEndpoint(self.journal_server().context).answer(json.loads(body or b"{}"))
-        except (HookEventError, json.JSONDecodeError) as error:
-            self.answer_json(400, {"error": str(error)})
-            return
-        if reply.status == NO_CONTENT_STATUS:
-            self.answer_status(NO_CONTENT_STATUS)
-            return
-        self.answer_json(reply.status, reply.json())
-
     def answer_wake_line(self, body: bytes) -> None:
         try:
             left = WakeEndpoint(self.journal_server().context).line(json.loads(body or b"{}"))
@@ -188,16 +170,6 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.answer_json(400, {"error": str(error)})
             return
         self.answer_json(200 if left else 410, {})
-
-    def answer_wake_received(self, body: bytes) -> None:
-        try:
-            fields = json.loads(body or b"{}")
-            line_id, token = int(fields["line_id"]), str(fields["token"])
-        except (json.JSONDecodeError, KeyError, TypeError, ValueError) as error:
-            self.answer_json(400, {"error": f"a wake confirm needs line_id and token: {error}"})
-            return
-        confirmed = WakeEndpoint(self.journal_server().context).received(line_id, token)
-        self.answer_json(200 if confirmed else 410, {})
 
     def answer_handover(self, tag: str) -> None:
         server = self.journal_server()

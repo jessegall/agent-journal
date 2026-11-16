@@ -72,7 +72,7 @@ def test_a_longer_managed_hook_rewrites_the_claude_file_whole(played):
                        {"hooks": {"PreToolUse": [{"matcher": "Bash", "hooks": [{"type": "command", "command": "project-check", "timeout": 300}]}]}})
     manage(story, "claude")
     hooks = json.loads(claude_file(story).read_text())["hooks"]
-    story.expect_rows(all(len(blocks) == 1 and len(blocks[0]["hooks"]) == (2 if event == "Stop" else 1) for event, blocks in hooks.items()),
+    story.expect_rows(all(len(blocks) == 1 and len(blocks[0]["hooks"]) == 1 for event, blocks in hooks.items()),
                       hooks["PreToolUse"][0]["hooks"][0]["timeout"] == 390, hooks["Stop"][0]["hooks"][0]["timeout"] == 90)
 
 

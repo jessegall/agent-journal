@@ -35,7 +35,6 @@ from engine.enums.answer_encoding import AnswerEncoding
 from engine.enums.capability_part import CapabilityPart
 from engine.enums.capability_proof import CapabilityProof
 from engine.provider.enums.matcher_style import MatcherStyle
-from engine.provider.wake_hook import WakeHook
 from engine.enums.refusal_style import RefusalStyle
 from engine.provider.transcript_author import AGENT_AUTHOR, USER_AUTHOR
 from engine.provider.transcript_row import TranscriptRow
@@ -70,7 +69,6 @@ class Provider(ABC):
     default_hook_seconds: ClassVar[int] = 600
     session_end_limit_seconds: ClassVar[int] = 3
     # the hook entry the program is woken through; None when it is woken by typing only
-    wake_hook: ClassVar[WakeHook | None] = None
     refusals: ClassVar[Mapping[HookEventName, RefusalStyle]] = {}
     tool_categories: ClassVar[Mapping[str, ToolType]]
     safe_tools: ClassVar[tuple[str, ...]] = ()

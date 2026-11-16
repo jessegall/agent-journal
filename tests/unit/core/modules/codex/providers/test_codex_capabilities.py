@@ -15,8 +15,6 @@ def test_codex_refuses_a_tool_on_stderr_and_falls_back_to_the_runner_only_when_i
 
 
 def test_no_new_capability_is_used_before_its_proof() -> None:
-    for provider in (ClaudeCodeProvider, CodexProvider):
-        assert not provider.capabilities().supports(CapabilityPart.WAKE_HOOK, HookEventName.STOP)
     assert not CodexProvider.capabilities().supports(CapabilityPart.COMPACTION_END, HookEventName.COMPACT)
 
 

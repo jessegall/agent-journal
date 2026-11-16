@@ -2388,7 +2388,6 @@
     "fields": [
       "creator_id",
       "delivered_at",
-      "delivery",
       "hook_call_id",
       "repeats_without_hook",
       "session_agent_id",
@@ -2407,7 +2406,6 @@
     "fields": [
       "creator_id",
       "delivered_at",
-      "delivery",
       "hook_call_id",
       "repeats_without_hook",
       "session_agent_id",
@@ -2426,7 +2424,6 @@
     "fields": [
       "creator_id",
       "delivered_at",
-      "delivery",
       "hook_call_id",
       "repeats_without_hook",
       "session_agent_id",
@@ -2445,7 +2442,6 @@
     "fields": [
       "creator_id",
       "delivered_at",
-      "delivery",
       "hook_call_id",
       "repeats_without_hook",
       "session_agent_id",
@@ -2464,7 +2460,6 @@
     "fields": [
       "creator_id",
       "delivered_at",
-      "delivery",
       "hook_call_id",
       "repeats_without_hook",
       "session_agent_id",
@@ -2483,7 +2478,6 @@
     "fields": [
       "creator_id",
       "delivered_at",
-      "delivery",
       "hook_call_id",
       "repeats_without_hook",
       "session_agent_id",
@@ -2502,7 +2496,6 @@
     "fields": [
       "creator_id",
       "delivered_at",
-      "delivery",
       "hook_call_id",
       "repeats_without_hook",
       "session_agent_id",
@@ -2521,7 +2514,6 @@
     "fields": [
       "creator_id",
       "delivered_at",
-      "delivery",
       "hook_call_id",
       "repeats_without_hook",
       "session_agent_id",

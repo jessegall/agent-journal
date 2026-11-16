@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"os"
@@ -48,9 +50,25 @@ func postWakeLine(root, program string, hook ManagedHook, body []byte, run Forei
 		Session string `json:"session_id"`
 	}
 	json.Unmarshal(body, &fields)
-	waiter := wakeWait{transport: wakeLineTransport(root)}
-	waiter.asked("http://journal/wake/line", map[string]string{"program": program, "session": fields.Session, "launch": os.Getenv("JOURNAL_LAUNCH"),
+	postLine(wakeLineTransport(root), "http://journal/wake/line", map[string]string{"program": program, "session": fields.Session, "launch": os.Getenv("JOURNAL_LAUNCH"),
 		"token": "", "hook": hook.ID, "text": text}, 10*time.Second)
+}
+
+// postLine sends fields as JSON to the server at address and drops the answer: a server that is not there drops the line.
+func postLine(transport http.RoundTripper, address string, fields any, limit time.Duration) {
+	text, _ := json.Marshal(fields)
+	deadline, cancel := context.WithTimeout(context.Background(), limit)
+	defer cancel()
+	request, err := http.NewRequestWithContext(deadline, http.MethodPost, address, bytes.NewReader(text))
+	if err != nil {
+		return
+	}
+	request.Header.Set("Content-Type", "application/json")
+	response, err := (&http.Client{Transport: transport}).Do(request)
+	if err != nil {
+		return
+	}
+	response.Body.Close()
 }
 
 // startDetached starts an async project hook in a process of its own that outlives this hook program, with the hook

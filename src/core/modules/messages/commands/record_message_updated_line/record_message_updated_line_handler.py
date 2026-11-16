@@ -1,6 +1,4 @@
-from dataclasses import replace
 
-from engine.enums.line_delivery import LineDelivery
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.query.queries import Queries
@@ -34,8 +32,8 @@ class RecordMessageUpdatedLineHandler(Handler[RecordMessageUpdatedLine, None]):
         agent = self.targets.recipient(message)
         if agent is None:
             return
-        # an idle agent hears it through its program's wake hook, a working one at its next hook
+        # an idle agent has it typed into its terminal, a working one hears it at its next hook
         if self.hook_calls.has_ended_turn(agent.id):
-            self.message_sender.send(agent.id, replace(MessageUpdatedNotice.declared(), delivery=LineDelivery.WAKE_HOOK), IDLE_MESSAGE_SOURCE, context, message=command.message_id)
+            self.message_sender.send(agent.id, MessageUpdatedNotice.declared(), IDLE_MESSAGE_SOURCE, context, message=command.message_id)
             return
         self.message_sender.send(agent.id, MessageUpdatedNotice.declared(), UPDATED_SOURCE, context, message=command.message_id)

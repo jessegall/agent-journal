@@ -75,7 +75,6 @@ class CodexProvider(Provider):
     executable = "codex"
     hook_events = {event.value: event.event for event in CodexHookEvent}
     new_capabilities = [Capability(CapabilityPart.REWRITE, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_HERE, CapabilityFallback.PROCESS_RUN_REFUSAL),
-                        Capability(CapabilityPart.WAKE_HOOK, HookEventName.STOP, CapabilityProof.DOCUMENTED_UPSTREAM, CapabilityFallback.TYPING_OR_RESUME),
                         Capability(CapabilityPart.COMPACTION_END, HookEventName.COMPACT, CapabilityProof.DOCUMENTED_UPSTREAM)]
     line_events = [HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE]
     plain_output_events = [HookEventName.SESSION_START, HookEventName.PROMPT]

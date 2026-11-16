@@ -197,10 +197,10 @@ class DesignDeclarations:
                               Capability(CapabilityPart.REWRITE, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_HERE),
                               Capability(CapabilityPart.LINES, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_HERE),
                               Capability(CapabilityPart.LINES, HookEventName.TICK, CapabilityProof.IMPLEMENTED_HERE),
-                              Capability(CapabilityPart.WAKE_HOOK, HookEventName.STOP, CapabilityProof.DOCUMENTED_UPSTREAM, CapabilityFallback.TYPING_OR_RESUME))
+                              Capability(CapabilityPart.COMPACTION_END, HookEventName.COMPACT, CapabilityProof.DOCUMENTED_UPSTREAM, CapabilityFallback.WAITING_LINE))
         codex = Capabilities(Capability(CapabilityPart.TOOL_DENIAL, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_HERE),
                              Capability(CapabilityPart.STOP_REFUSAL, HookEventName.STOP, CapabilityProof.IMPLEMENTED_HERE),
                              Capability(CapabilityPart.REWRITE, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_HERE, CapabilityFallback.PROCESS_RUN_REFUSAL),
                              Capability(CapabilityPart.LINES, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_HERE),
-                             Capability(CapabilityPart.WAKE_HOOK, HookEventName.STOP, CapabilityProof.DOCUMENTED_UPSTREAM, CapabilityFallback.TYPING_OR_RESUME))
+                             Capability(CapabilityPart.COMPACTION_END, HookEventName.COMPACT, CapabilityProof.DOCUMENTED_UPSTREAM, CapabilityFallback.WAITING_LINE))
         return [ProgramDeclaration("claude", claude), ProgramDeclaration("codex", codex)]

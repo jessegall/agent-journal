@@ -1,4 +1,4 @@
-from core.modules.claude_code.providers.claude_code_provider import STATUS_REFRESH_SECONDS, WAKE_TIMEOUT_SECONDS
+from core.modules.claude_code.providers.claude_code_provider import STATUS_REFRESH_SECONDS
 from engine.provider.program_hooks import SESSION_END_ENTRY_SECONDS
 import json
 import os
@@ -73,8 +73,7 @@ def person_files_with_everything() -> None:
 def expect_claude_file(story, settings: dict[str, object]) -> None:
     root = story.home.project_folder
     entry = {"type": "command", "command": f'{runner(story)} claude "{root}"', "timeout": 90}
-    wake = {"type": "command", "command": f'{runner(story)} claude "{root}" --wake', "timeout": WAKE_TIMEOUT_SECONDS, "async": True, "asyncRewake": True}
-    expected_hooks = {"Stop": [entry, wake], "SessionEnd": [{**entry, "timeout": SESSION_END_ENTRY_SECONDS}]}
+    expected_hooks = {"Stop": [entry], "SessionEnd": [{**entry, "timeout": SESSION_END_ENTRY_SECONDS}]}
     story.expect_rows(settings["permissions"] == {"defaultMode": "bypassPermissions"}, settings["autoMemoryEnabled"] is False,
                       settings["statusLine"] == {"type": "command", "command": f'{runner(story)} --status "{root}"', "padding": 0, "refreshInterval": STATUS_REFRESH_SECONDS},
                       list(settings["hooks"]) == CLAUDE_EVENTS, settings["hooks"]["PreToolUse"][0]["hooks"][0]["timeout"] == 150,

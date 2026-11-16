@@ -1,4 +1,3 @@
-from engine.enums.line_delivery import LineDelivery
 from abc import ABC, abstractmethod
 
 from engine.command.context import Context
@@ -19,5 +18,4 @@ class MessageSender(ABC):
     def send_agent_message(self, agent_id: int, agent_message: AgentMessage, source: str, context: Context, wakes_agent: bool = False) -> Model: ...
 
     @abstractmethod
-    def send_text(self, agent_id: int, text: str, source: str, context: Context, wakes_agent: bool = False, repeats_without_hook: bool = False,
-                  delivery: LineDelivery = LineDelivery.TERMINAL_TYPING) -> Model: ...
+    def send_text(self, agent_id: int, text: str, source: str, context: Context, wakes_agent: bool = False, repeats_without_hook: bool = False) -> Model: ...

@@ -29,11 +29,6 @@ type Program struct {
 	MatcherStyle           string `json:"matcher_style"`
 	DefaultHookSeconds     int    `json:"default_hook_seconds"`
 	SessionEndLimitSeconds int    `json:"session_end_limit_seconds"`
-	// WakeAnswer is how the program is woken by its wake hook: "exit_with_stderr", "block_with_reason", or empty when
-	// it has none.
-	WakeAnswer string `json:"wake_answer"`
-	// WakeSeconds is the timeout of the program's wake hook entry, 0 when it has none.
-	WakeSeconds int `json:"wake_seconds"`
 	// EntryFields are the fields of a hook entry the program honours, OutputFields the fields of an answer it reads.
 	EntryFields  []string `json:"entry_fields"`
 	OutputFields []string `json:"output_fields"`

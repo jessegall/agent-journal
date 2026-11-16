@@ -7,7 +7,7 @@ from engine.enums.hook_event_name import HookEventName
 
 TABLE = Capabilities(
     Capability(CapabilityPart.REWRITE, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_HERE, CapabilityFallback.PROCESS_RUN_REFUSAL),
-    Capability(CapabilityPart.WAKE_HOOK, HookEventName.STOP, CapabilityProof.DOCUMENTED_UPSTREAM, CapabilityFallback.TYPING_OR_RESUME),
+    Capability(CapabilityPart.COMPACTION_END, HookEventName.COMPACT, CapabilityProof.DOCUMENTED_UPSTREAM, CapabilityFallback.WAITING_LINE),
 )
 
 
@@ -16,7 +16,7 @@ def test_a_part_written_here_is_carried() -> None:
 
 
 def test_a_part_documented_upstream_waits_for_its_proof() -> None:
-    assert not TABLE.supports(CapabilityPart.WAKE_HOOK, HookEventName.STOP)
+    assert not TABLE.supports(CapabilityPart.COMPACTION_END, HookEventName.COMPACT)
 
 
 def test_an_undeclared_part_is_not_carried() -> None:

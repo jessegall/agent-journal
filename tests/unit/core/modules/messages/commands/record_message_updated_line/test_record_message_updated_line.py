@@ -1,9 +1,9 @@
+from core.modules.messages.commands.record_message_updated_line.record_message_updated_line_handler import IDLE_MESSAGE_SOURCE, UPDATED_SOURCE
 from types import SimpleNamespace
 
 from core.modules.messages.commands.record_message_updated_line.record_message_updated_line import RecordMessageUpdatedLine
 from core.modules.messages.commands.record_message_updated_line.record_message_updated_line_handler import RecordMessageUpdatedLineHandler
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
-from engine.enums.line_delivery import LineDelivery
 
 MESSAGE = SimpleNamespace(id=12, type=next(iter(PERSON_MESSAGE_TYPES)), read_at="2026-11-15T09:00:00+00:00")
 
@@ -40,16 +40,11 @@ class Recipient:
         return SimpleNamespace(id=3)
 
 
-def sent(between_turns: bool) -> tuple[LineDelivery, str]:
+def sent_source(between_turns: bool) -> str:
     message_sender = RecordedMessageSender()
     RecordMessageUpdatedLineHandler(OneMessage(), message_sender, AgentTurn(between_turns), Recipient()).handle(RecordMessageUpdatedLine(12), None)  # type: ignore[arg-type]
-    declaration, source = message_sender.sent[0]
-    return declaration.delivery, source  # type: ignore[attr-defined]
+    return message_sender.sent[0][1]
 
 
-def test_an_idle_message_line_uses_the_wake_hook():
-    assert sent(between_turns=True) == (LineDelivery.WAKE_HOOK, "messages.idle")
-
-
-def test_a_message_line_in_a_turn_keeps_terminal_typing():
-    assert sent(between_turns=False) == (LineDelivery.TERMINAL_TYPING, "messages.updated")
+def test_an_updated_message_for_an_idle_agent_is_a_line_typed_into_its_terminal_and_one_in_a_turn_waits_for_its_hook():
+    assert (sent_source(True), sent_source(False)) == (IDLE_MESSAGE_SOURCE, UPDATED_SOURCE)

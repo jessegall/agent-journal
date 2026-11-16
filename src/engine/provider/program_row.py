@@ -24,8 +24,6 @@ class ProgramRow:
     matcher_style: str
     default_hook_seconds: int
     session_end_limit_seconds: int
-    wake_answer: str
-    wake_seconds: int
     entry_fields: Sequence[str]
     output_fields: Sequence[str]
 
@@ -38,5 +36,4 @@ class ProgramRow:
                    {name.value: dict(fields) for name, fields in provider.rewrites.items()}, dict(provider.matchers),
                    {name.value: style.value for name, style in provider.halts.items()}, provider.matcher_style.value,
                    provider.default_hook_seconds, provider.session_end_limit_seconds,
-                   provider.wake_hook.answer.value if provider.wake_hook else "", provider.wake_hook.limit_seconds if provider.wake_hook else 0,
                    sorted(provider.hook_entry_fields), sorted(provider.hook_output_fields))

@@ -10,5 +10,4 @@ class CapabilityPart(StrEnum):
     PROMPT_REFUSAL = "prompt-refusal"
     HALT = "halt"
     LINES = "lines"
-    WAKE_HOOK = "wake-hook"
     COMPACTION_END = "compaction-end"

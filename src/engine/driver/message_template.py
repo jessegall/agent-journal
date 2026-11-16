@@ -3,7 +3,6 @@ from dataclasses import dataclass, field, replace
 
 from engine.driver.block_condition import BlockCondition
 from engine.driver.interval import Interval
-from engine.enums.line_delivery import LineDelivery
 from engine.driver.agent_message import AgentMessage
 from engine.enums.agent_message_type import AgentMessageType
 from engine.driver.stored_message import StoredMessage
@@ -34,7 +33,6 @@ class MessageTemplate:
     closed_by: type[BlockCondition] | None = None
     plural_text: str = ""
     wakes_agent: bool = False
-    delivery: LineDelivery = LineDelivery.TERMINAL_TYPING
     path_fields: Sequence[str] = ()
     repeats_without_hook: bool = False
     id_field: str | None = None
