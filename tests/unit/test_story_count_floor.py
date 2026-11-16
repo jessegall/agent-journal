@@ -26,7 +26,7 @@ class LedgerLine:
     file: Path
     number: int
     story: str
-    kind: str
+    move_category: str
     target: str
     difference_key: str = ""
 
@@ -53,11 +53,11 @@ def move_lines(folder: Path = STORY_MOVES_FOLDER) -> list[LedgerLine]:
             if not text.strip() or text.lstrip().startswith("#"):
                 continue
             story, arrow, remainder = text.partition(MOVE_ARROW)
-            kind, _, target = remainder.strip().partition(" ")
-            key, _, difference_target = target.strip().partition(" ") if kind == DIFFERENCE_CATEGORY else ("", "", target)
-            assert arrow and kind in MOVE_CATEGORIES and difference_target.strip(), (
+            move_category, _, target = remainder.strip().partition(" ")
+            key, _, difference_target = target.strip().partition(" ") if move_category == DIFFERENCE_CATEGORY else ("", "", target)
+            assert arrow and move_category in MOVE_CATEGORIES and difference_target.strip(), (
                 f"{file.name}:{number} is no ledger line: write '<story> -> unit|integration|repeat|folded <test>' or '<story> -> difference <key> <test>'")
-            lines.append(LedgerLine(file, number, story.strip(), kind, difference_target.strip(), key))
+            lines.append(LedgerLine(file, number, story.strip(), move_category, difference_target.strip(), key))
     return lines
 
 
@@ -93,7 +93,7 @@ def test_a_malformed_ledger_line_is_named(tmp_path):
 def test_a_difference_line_names_its_key_and_the_test_of_the_new_behaviour(tmp_path):
     (tmp_path / "core.modules.sample.txt").write_text("tests/stories/a.py::test_one -> difference 3 tests/unit/b.py::test_two\n")
     line = move_lines(tmp_path)[0]
-    assert (line.kind, line.difference_key, line.target) == ("difference", "3", "tests/unit/b.py::test_two")
+    assert (line.move_category, line.difference_key, line.target) == ("difference", "3", "tests/unit/b.py::test_two")
 
 
 def test_a_difference_line_without_its_test_is_named(tmp_path):

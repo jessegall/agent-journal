@@ -86,5 +86,5 @@ class ExecutionOrder:
     # a limit caps what a starter or a priority piles up: with nothing running one run may always start, even one
     # costing more than its share, and a run that costs nothing piles nothing up
     @staticmethod
-    def fits(held: int, cost: int, limit: int) -> bool:
-        return held == 0 or cost == 0 or held + cost <= limit
+    def fits(used: int, cost: int, limit: int) -> bool:
+        return used == 0 or cost == 0 or used + cost <= limit

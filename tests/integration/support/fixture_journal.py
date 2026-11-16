@@ -108,22 +108,22 @@ class FixtureJournal(KitRows):
 
     # puts the instance in place of the type, and forgets what was already built on the old one, as a story does; a
     # stand-in put in place with bind outlives the replacement of a class it is built on, as in every later container
-    def replace(self, kind: type, instance: object) -> None:
-        self.container.replace(kind, instance)
+    def replace(self, bound_type: type, instance: object) -> None:
+        self.container.replace(bound_type, instance)
         for bound_category, bound in self.replacements.items():
-            if bound_category is not kind and bound_category not in self.container.instances:
+            if bound_category is not bound_type and bound_category not in self.container.instances:
                 self.container.replace(bound_category, bound)
 
     # what an agent does after its session starts: it reads the overview and reads the file of each skill it must load,
     # through its program's Read tool, so the journal's own blocks and refusals lift as they do for a real agent
     # a stand-in for a part of the outside world, in this container and in every container later built from the home
-    def bind(self, kind: type, instance: object) -> None:
-        self.replacements[kind] = instance
-        self.replace(kind, instance)
+    def bind(self, bound_type: type, instance: object) -> None:
+        self.replacements[bound_type] = instance
+        self.replace(bound_type, instance)
 
-    def unbind(self, kind: type) -> None:
-        self.replacements.pop(kind, None)
-        self.container.replace(kind, self.container.constructed(kind))
+    def unbind(self, bound_type: type) -> None:
+        self.replacements.pop(bound_type, None)
+        self.container.replace(bound_type, self.container.constructed(bound_type))
 
     def expect_sync_success(self, module: str) -> None:
         self.journal.expect_sync_success(module)

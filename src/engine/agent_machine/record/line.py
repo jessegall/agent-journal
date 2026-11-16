@@ -28,7 +28,7 @@ class Line:
         return cls(agent_message.key, agent_message.text, kind, agent_message.key, channel, agent_message=agent_message)
 
     # the agent message that says this line: the one it was made from, or one of its words alone
-    def said(self) -> AgentMessage:
+    def given_message(self) -> AgentMessage:
         if self.agent_message is not None:
             return self.agent_message
         return AgentMessage(self.key, AgentMessageType.STEERING if self.category is LineCategory.STEERING else AgentMessageType.NOTICE, self.text)

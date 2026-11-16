@@ -30,12 +30,12 @@ class SilentRunBlockStates(StateSource):
         self.blocked_runs, self.clock = blocked_runs, clock
 
     def states(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[RequiredState | BlockPlan]]:
-        held = {agent.agent_id: self.held(agent.agent_id) for agent in agents}
+        agent_blocked_run = {agent.agent_id: self.agent_blocked_run(agent.agent_id) for agent in agents}
         return {agent_id: [BlockPlan(SilentRunBlockStates.agent_message(run), RunReportedProgress(run.process.id), SILENT_RUN_KEY, SILENT_RUN_RANK,
                                      scope_tools=True, scope_stop=False)]
-                for agent_id, run in held.items() if run is not None}
+                for agent_id, run in agent_blocked_run.items() if run is not None}
 
-    def held(self, agent_id: int) -> BlockedRun | None:
+    def agent_blocked_run(self, agent_id: int) -> BlockedRun | None:
         return self.blocked_runs.found(agent_id, self.clock.timestamp())
 
     @staticmethod

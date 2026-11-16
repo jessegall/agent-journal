@@ -87,7 +87,7 @@ class StoredStepWriter(StepWriter):
     # a line the program cannot carry at this event waits in today's line queue for the agent's next event that can
     def queue_waiting_lines(self, view: AgentView, record: DecisionRecord, context: Context) -> None:
         agent_id = view.agent.agent_id
-        said = [(line, line.said()) for line in record.waiting_lines]
+        said = [(line, line.given_message()) for line in record.waiting_lines]
         held = self.agent_message_log.delayed(agent_id, [agent_message for _, agent_message in said], context.timestamp)
         queued = [(line, agent_message) for line, agent_message in said if (agent_message.key, agent_message.text) not in held]
         for line, agent_message in queued:

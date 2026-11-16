@@ -52,8 +52,8 @@ class MessageLog:
     def write(self, agent_id: int, answers: RuleAnswers, context: Context) -> None:
         self.store_given(agent_id, (*answers.delivered_agent_messages, *answers.refusal_agent_messages), context)
 
-    def store_given(self, agent_id: int, said: Sequence[AgentMessage], context: Context) -> None:
-        agent_messages = tuple(record for agent_message in said for record in agent_message.records)
+    def store_given(self, agent_id: int, given: Sequence[AgentMessage], context: Context) -> None:
+        agent_messages = tuple(record for agent_message in given for record in agent_message.records)
         if not agent_messages:
             return
         records = self.records.agent_message_rows(agent_id, agent_messages)
