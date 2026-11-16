@@ -89,7 +89,7 @@ class RetiredWorkerRule(StoryFixture):
 
     def steps(self, story: Story) -> None:
         worker_id = story.new_row_id(f"agent start w-9 claude worker --parent {story.agent.id} --environment main")
-        story.run(f"assign-rule make --target agent --agent row:{worker_id} --condition any --environment main", actor=story.user)
+        story.run(f"assign-rule make --target agent --agent {worker_id} --condition any --environment main", actor=story.user)
         story.run(f"agent end {worker_id}")
         story.run(f'agent retire {worker_id} --reason "not needed"', actor=story.user)
 

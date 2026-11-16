@@ -1,6 +1,6 @@
 def test_the_core_actor_exists_after_the_first_sync(new_story):
     story = new_story()
-    story.expect_success("actor list --type core", "core  core")
+    story.expect_success("actor list --type core", "0  core  core")
 
 
 def test_a_user_actor_is_made_and_listed_beside_the_core(new_story):

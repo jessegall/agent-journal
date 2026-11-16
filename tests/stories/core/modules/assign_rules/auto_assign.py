@@ -17,7 +17,7 @@ class WorkerAndMainRules(StoryFixture):
     parent = SonnetWorkerAndFreeTask
 
     def steps(self, story: Story) -> None:
-        story.run(f'assign-rule make --target agent --agent row:{story.helper.id} --condition "title has_word checkout" {ENVIRONMENT}', actor=story.user)
+        story.run(f'assign-rule make --target agent --agent {story.helper.id} --condition "title has_word checkout" {ENVIRONMENT}', actor=story.user)
         story.run(rule_line("title has_word checkout"), actor=story.user)
 
     def expect(self, story: Story) -> None:
@@ -32,7 +32,7 @@ class RetiredWorkerAndMainRule(StoryFixture):
 
     def steps(self, story: Story) -> None:
         story.helper = Actor(story.new_row_id(f"agent start w-9 claude worker --parent {story.agent.id} {ENVIRONMENT}"), ActorType.AGENT)
-        story.run(f"assign-rule make --target agent --agent row:{story.helper.id} --condition any {ENVIRONMENT}", actor=story.user)
+        story.run(f"assign-rule make --target agent --agent {story.helper.id} --condition any {ENVIRONMENT}", actor=story.user)
         story.run(f"agent end {story.helper.id}")
         story.run(f'agent retire {story.helper.id} --reason "not needed"', actor=story.user)
         story.run(rule_line("any"), actor=story.user)

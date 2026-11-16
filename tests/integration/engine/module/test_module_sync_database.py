@@ -44,7 +44,7 @@ def test_the_registry_after_a_sync_names_every_noun_handler_guard_and_listener(t
     module_actor = database.rows(Statement("SELECT id FROM actors WHERE type = 'module' AND name = 'item-count'"))[0]["id"]
     assert [(listener.name, listener.timing.value, listener.actor_id) for listener in registry.listeners if listener.name == "items.paused-count"] == [("items.paused-count", "commit", module_actor)]
     actors = [tuple(row) for row in database.rows(Statement("SELECT id, type, name FROM actors ORDER BY id"))]
-    assert actors[0] == (1, "core", "core") and {(actor_type, name) for _, actor_type, name in actors[1:]} >= {("module", "items"), ("module", "item-count")}
+    assert actors[0] == (0, "core", "core") and {(actor_type, name) for _, actor_type, name in actors[1:]} >= {("module", "items"), ("module", "item-count")}
 
 
 def test_a_second_sync_changes_nothing(tmp_path):

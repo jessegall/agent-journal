@@ -64,7 +64,7 @@ def test_a_worker_s_rule_task_comes_after_its_focus_work(new_story):
     story = new_story(fixture=ThreeStartedPlans)
     repository_environment(story)
     worker = dispatched_worker(story)
-    story.run(f'assign-rule make --target agent --agent row:{worker.id} --condition "tag has {RULE_TAG}" --environment main', actor=story.user)
+    story.run(f'assign-rule make --target agent --agent {worker.id} --condition "tag has {RULE_TAG}" --environment main', actor=story.user)
     chore = rule_task(story, "Oil the crane")
     story.expect_success(f"task assign 5 --to {worker.id}", actor=story.user)
     story.run("plan focus 3", actor=worker)

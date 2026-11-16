@@ -57,4 +57,5 @@ def test_a_plugins_command_shows_a_card_in_the_chat_of_the_agent_that_ran_it(pla
 
 def test_an_agent_shows_a_card_in_no_other_agents_chat(played):
     story = installed_story(played)
-    story.expect_refusal('plugin card sample --label "Lanes" --agent 1', "an agent may name only itself", actor=story.agent)
+    other_id = story.new_row_id("agent start s-9 claude helper --environment main")
+    story.expect_refusal(f'plugin card sample --label "Lanes" --agent {other_id}', "an agent may name only itself", actor=story.agent)

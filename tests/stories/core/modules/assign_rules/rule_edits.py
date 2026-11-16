@@ -69,7 +69,7 @@ class RuleTasksStartedAndHandGiven(StoryFixture):
         story.expect_success(f"task start {started} {ENVIRONMENT}", actor=story.agent)
         hand_given = new_task(story, '"Fix the door"')
         story.expect_success(f"task assign {hand_given} --to {story.agent.id} {ENVIRONMENT}", actor=story.user)
-        story.run(f"assign-rule edit {COMPLEXITY_RULE} --target agent --agent row:{story.helper.id} {ENVIRONMENT}", actor=story.user)
+        story.run(f"assign-rule edit {COMPLEXITY_RULE} --target agent --agent {story.helper.id} {ENVIRONMENT}", actor=story.user)
 
     def expect(self, story: Story) -> None:
         story.expect_rows([assignees(story, task_id) for task_id in (LAMP_TASK, CLOCK_TASK, DOOR_TASK)] == [[story.agent.id]] * 3, detail=[assignees(story, task_id) for task_id in (LAMP_TASK, CLOCK_TASK, DOOR_TASK)])
@@ -130,12 +130,12 @@ def test_a_deleted_rule_leaves_its_tasks_and_gives_back_the_waiting_ones_each_on
 def test_a_rule_on_a_retired_worker_keeps_its_warning_until_one_edit_moves_it(new_story):
     story = new_story(fixture=OrchestratorWithPerson)
     retired = story.new_row_id(f"agent start w-9 claude worker --parent {story.agent.id} {ENVIRONMENT}")
-    story.run(f"assign-rule make --target agent --agent row:{retired} --condition any {ENVIRONMENT}", actor=story.user)
+    story.run(f"assign-rule make --target agent --agent {retired} --condition any {ENVIRONMENT}", actor=story.user)
     story.run(f"agent end {retired}")
     story.run(f'agent retire {retired} --reason "not needed"', actor=story.user)
     warned = story.run(f"assign-rule board {ENVIRONMENT}", actor=story.user).output_text
     worker = Actor(story.new_row_id(f"agent start w-10 claude worker --parent {story.agent.id} {ENVIRONMENT}"), ActorType.AGENT)
-    story.expect_success(f"assign-rule edit 1 --target agent --agent row:{worker.id} {ENVIRONMENT}", actor=story.user)
+    story.expect_success(f"assign-rule edit 1 --target agent --agent {worker.id} {ENVIRONMENT}", actor=story.user)
     story.expect_text(f"assign-rule show 1 {ENVIRONMENT}", f"target_agent_id: {worker.id}", actor=story.user)
     story.expect_rows("its agent is retired" in warned, "its agent is retired" not in story.run(f"assign-rule board {ENVIRONMENT}", actor=story.user).output_text, detail=warned)
 

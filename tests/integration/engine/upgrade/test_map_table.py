@@ -15,7 +15,7 @@ def test_the_synced_database_holds_the_two_upgrade_tables_and_a_row_moved_twice_
 
     def insert() -> int:
         inserts.append(1)
-        return database.insert(Statement("INSERT INTO settings (key, value, creator_id, created_at, updated_at) VALUES ('upgrade.sample', '1', 1, 'now', 'now')"))
+        return database.insert(Statement("INSERT INTO settings (key, value, creator_id, created_at, updated_at) VALUES ('upgrade.sample', '1', 0, 'now', 'now')"))
 
     expect_transfer_moved(moved, "settings", 5, "settings", insert, True)
     expect_transfer_moved(moved, "settings", 5, "settings", insert, False)

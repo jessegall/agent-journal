@@ -23,8 +23,8 @@ class SecondEnvironment(StoryFixture):
 def test_a_rule_for_an_agent_of_another_environment_is_refused_at_make_and_edit(new_story):
     story = new_story(fixture=SecondEnvironment)
     second_agent = story.new_row_id("agent start s-22 claude worker --environment second")
-    story.expect_refusal(f"assign-rule make --target agent --agent row:{second_agent} --condition any {ENVIRONMENT}", f"no agent with row {second_agent} in environment main", actor=story.user)
-    story.expect_refusal(f"assign-rule edit {COMPLEXITY_RULE} --target agent --agent row:{second_agent} {ENVIRONMENT}", f"no agent with row {second_agent} in environment main", actor=story.user)
+    story.expect_refusal(f"assign-rule make --target agent --agent {second_agent} --condition any {ENVIRONMENT}", f"no agent with row {second_agent} in environment main", actor=story.user)
+    story.expect_refusal(f"assign-rule edit {COMPLEXITY_RULE} --target agent --agent {second_agent} {ENVIRONMENT}", f"no agent with row {second_agent} in environment main", actor=story.user)
 
 
 def test_a_kind_rule_never_picks_a_worker_of_another_environment(new_story):
