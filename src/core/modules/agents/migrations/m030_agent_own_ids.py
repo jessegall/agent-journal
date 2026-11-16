@@ -9,7 +9,7 @@ class AgentOwnIdsMigration(RebuildMigration):
     """Rebuilds the agents table so an agent has an id of its own and names its actor in actor_id, required and
     unique; every agent so far keeps its id, which is also its actor's."""
 
-    number = 29
+    number = 30
     statements = (
         "CREATE TABLE agents_rebuilt (id INTEGER PRIMARY KEY, actor_id INTEGER NOT NULL UNIQUE REFERENCES actors(id) ON DELETE RESTRICT,"
         " environment_id INTEGER NOT NULL REFERENCES environments(id) ON DELETE RESTRICT, parent_id INTEGER REFERENCES agents(id) ON DELETE RESTRICT,"

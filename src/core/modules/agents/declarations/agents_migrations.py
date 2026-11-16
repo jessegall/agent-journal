@@ -26,6 +26,6 @@ from core.modules.agents.migrations.m025_agent_launch_failed_at import AgentLaun
 from core.modules.agents.migrations.m026_agent_announced_at import AgentAnnouncedColumnMigration
 from core.modules.agents.migrations.m027_agent_folds import AgentFoldsMigration
 from core.modules.agents.migrations.m028_fold_main_agents import FoldMainAgentsMigration
-from core.modules.agents.migrations.m029_agent_own_ids import AgentOwnIdsMigration
+from core.modules.agents.migrations.m030_agent_own_ids import AgentOwnIdsMigration
 
 AGENTS_MIGRATIONS = [AgentOwnIdsMigration, FoldMainAgentsMigration, AgentFoldsMigration, AgentAnnouncedColumnMigration, AgentLaunchFailureColumnMigration, MainAgentParentMigration, AgentSessionsMigration, AgentNumberMigration, MenuAnswerAgentIndexMigration, AgentHaltColumnMigration, AgentLaunchColumnMigration, PlainColumnNamesMigration, AgentInterruptMigration, AgentUsageCapMigration, KeptAgentsIndexMigration, AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
