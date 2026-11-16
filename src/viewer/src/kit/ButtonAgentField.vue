@@ -5,14 +5,14 @@ import {lineResult} from "../windows/windowContext.js";
 import {CHAT_WINDOW} from "../windows/chatOptions.js";
 import {agentTitle} from "../domain/agentTitle.js";
 
-// a select of the running agents with the agents of the field's first role on top, each with its number; it picks the number
+// a select of the running agents with the agents of the field's first role on top, each with its id; it picks the id
 const props = defineProps({field: {type: Object, required: true}, value: {type: String, required: true}, environment: {type: String, required: true}});
 const emit = defineEmits(["pick"]);
 const agents = ref([]);
 const failure = ref("");
 const options = computed(() => [...agents.value]
     .sort((first, second) => Number(second.role === props.field.first_role) - Number(first.role === props.field.first_role) || first.id - second.id)
-    .map((agent) => ({key: String(agent.number), label: agentTitle(agent).title, note: agentTitle(agent).subtext})));
+    .map((agent) => ({key: String(agent.id), label: agentTitle(agent).title, note: agentTitle(agent).subtext})));
 const picked = computed(() => options.value.find((option) => option.key === props.value));
 
 async function load() {

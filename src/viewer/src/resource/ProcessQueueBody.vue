@@ -13,7 +13,7 @@ const RECENT_PAGE = 20;
 const TABS = [{key: "queue", label: "Queue"}, {key: "settings", label: "Settings"}];
 
 const props = defineProps({read: {type: Function, required: true}, agent: {type: Number, default: 0}});
-const agentArguments = computed(() => (props.agent ? ["--agent", `row:${props.agent}`] : []));
+const agentArguments = computed(() => (props.agent ? ["--agent", String(props.agent)] : []));
 const queue = ref(null);
 const failure = ref("");
 const open = ref([]);

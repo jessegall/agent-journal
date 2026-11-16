@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {agentNumber, agentTitle, copying, peekRef, perHour, seenWords, sinceWords, AgentTip, Btn, Icon, useNow, useWindow, vContext} from "@journal/window-kit";
+import {agentRoleLabel, agentTitle, copying, peekRef, perHour, seenWords, sinceWords, AgentTip, Btn, Icon, useNow, useWindow, vContext} from "@journal/window-kit";
 import AgentActions from "./AgentActions.vue";
 import AgentCardDetails from "./AgentCardDetails.vue";
 import AgentStatusDot from "./AgentStatusDot.vue";
@@ -22,7 +22,7 @@ const queuedTasks = computed(() => tasks.value.filter((task) => task.state === "
 const currentTask = computed(() => tasks.value.find((task) => task.id === props.progress?.task_id && task.state === "started"));
 const jobTask = computed(() => currentTask.value || tasks.value.find((task) => task.id === props.facts?.task_id) || tasks.value.find((task) => IN_HAND_STATES.has(task.state)) || queuedTasks.value[0] || tasks.value.at(-1));
 const job = computed(() => props.row.role === "helper" ? props.facts?.helper_job || "" : (props.facts?.job_enabled ? currentTask.value?.title || props.facts?.task_title || queuedTasks.value[0]?.title || tasks.value.at(-1)?.title || "" : ""));
-const roleLabel = computed(() => agentNumber(props.row));
+const roleLabel = computed(() => agentRoleLabel(props.row));
 const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, roleLabel.value].filter(Boolean).join(" · "));
 const context = useWindow();
 const UNFINISHED_STATES = new Set(["open", "started", "testing"]);

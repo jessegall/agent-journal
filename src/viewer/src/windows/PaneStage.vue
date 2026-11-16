@@ -152,7 +152,7 @@ const branchData = propData("branch", {branch: ""});
 const branch = computed(() => branchData.value.branch);
 watch(() => context?.props.usage.data.value, (measured) => {
     if (!measured || !agentRow.value) return;
-    context.state["fitness.agent"] = String(agentRow.value.number);
+    context.state["fitness.agent"] = String(agentRow.value.id);
     context.reload("fitness");
 });
 const controlData = propData("controls", {groups: []});
@@ -161,7 +161,7 @@ const skillData = propData("skills", {rows: []});
 watch(() => [agentKnown.value, agentRow.value?.id, agentRow.value?.ended_at], ([known, id, ended]) => {
     if (!known) return;
     if (id && !ended) {
-        context.state["controls.agent"] = String(agentRow.value.number);
+        context.state["controls.agent"] = String(agentRow.value.id);
         context.state["skills.agent"] = String(id);
         context.reload(["controls", "skills"]);
     } else context.reload("programs");

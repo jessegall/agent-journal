@@ -1,4 +1,3 @@
-import {agentRowArgument} from "./agentRowArgument.js";
 
 const FRESH_MILLISECONDS = 5000;
 const CANCELLED = "cancelled";
@@ -14,7 +13,7 @@ export async function agentTipRead(context, agentId) {
         if (answer.failure !== CANCELLED) return answer;
         held.delete(key);
     }
-    const answer = context.read(`agent tip ${agentRowArgument(agentId)}`);
+    const answer = context.read(`agent tip ${String(agentId)}`);
     held.set(key, {answer, at: performance.now()});
     return answer;
 }

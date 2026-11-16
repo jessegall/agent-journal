@@ -35,7 +35,7 @@ export {default as WindowSkeleton} from "../src/kit/WindowSkeleton.vue";
 export {default as Icon} from "../src/kit/Icon.vue";
 export {default as AgentBadge} from "../src/kit/AgentBadge.vue";
 export {agentLabel} from "../src/domain/agentLabel.js";
-export {agentNumber, agentTitle} from "../src/domain/agentTitle.js";
+export {agentRoleLabel, agentTitle} from "../src/domain/agentTitle.js";
 export {default as PriorityIcon} from "../src/kit/PriorityIcon.vue";
 export {PRIORITY_LEVELS, namedPriority, priorityLabel} from "../src/domain/taskPriority.js";
 export {scoreMeaning} from "../src/domain/taskComplexity.js";
@@ -97,7 +97,6 @@ export {default as SearchBar} from "./SearchBar.vue";
 export {useOpenRow} from "./useOpenRow.js";
 export {INSPECTOR_ACTIONS, OPEN_VIEW, WINDOW_CONTEXT, provideDockCard, useDockCard, useWindow} from "./windowContextKey.js";
 export {eventAboutRows, eventChildOf, eventMayBeChildOf} from "./eventRows.js";
-export {agentRowArgument} from "./agentRowArgument.js";
 export {loadWindowComponent} from "./loadWindowComponent.js";
 
 // the kit's own version: a breaking change to the window context, or a new Vue minor version, is a new major version

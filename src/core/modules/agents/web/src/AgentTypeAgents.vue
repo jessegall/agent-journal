@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
-import {age, agentNumber, agentTitle, Btn, useNow, useWindow} from "@journal/window-kit";
+import {age, agentRoleLabel, agentTitle, Btn, useNow, useWindow} from "@journal/window-kit";
 import {SettingEmptyState} from "@journal/setting-components";
 import AgentRetireForm from "./AgentRetireForm.vue";
 
@@ -72,7 +72,7 @@ onMounted(() => read());
                 <span :class="['dot', {running: agent.state === 'running'}]" />
                 <div class="person-text">
                     <strong>{{ agentTitle(agent).text }}</strong> {{ agent.state === 'running' ? 'Running' : 'Idle' }}, {{ age(agent.state === 'running' ? agent.process_started_at || agent.created_at : agent.ended_at, now) }}
-                    <small>{{ [agent.program, agent.facts?.model, agent.facts?.effort, agentNumber(agent)].filter(Boolean).join(', ') }}</small>
+                    <small>{{ [agent.program, agent.facts?.model, agent.facts?.effort, agentRoleLabel(agent)].filter(Boolean).join(', ') }}</small>
                     <small>{{ agent.facts?.task_title || agent.facts?.helper_job }}</small>
                 </div>
                 <Btn small @click="emit('open-agent', agent)">Open</Btn>
