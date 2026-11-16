@@ -8,7 +8,7 @@ from suites.coding.modules.workers.models.enums.behind_check_state import Behind
 from suites.coding.modules.workers.support.behind_checks import BehindChecks
 from suites.coding.modules.workers.support.worker_settings import STALE_CHECK_COMMITS, UPDATE_REMINDERS, UPDATE_WAIT_MINUTES
 from tests.unit.suites.coding.modules.workers.support.test_behind_checks import Queries, Settings as LookSettings, check, worktree
-from tests.unit.suites.coding.modules.workers.test_update_reminders import ORDERED_AT, Lines, NoMarkers, Numbers, Rows, Settings, Store
+from tests.unit.suites.coding.modules.workers.test_update_reminders import ORDERED_AT, Lines, NoMarkers, Rows, Settings, Store
 
 
 class LoadingKeptRows:
@@ -29,14 +29,14 @@ def test_raising_the_threshold_above_an_open_check_opens_no_new_one_and_leaves_t
 def test_turning_the_look_off_still_reminds_an_ordered_update():
     settings, store, message_sender = Settings(2), Store(), Lines()
     settings.values[STALE_CHECK_COMMITS] = 0
-    RemindBehindUpdatesHandler(store, Rows(False), store, settings, message_sender, Lines(), Numbers(), NoMarkers()).handle(
+    RemindBehindUpdatesHandler(store, Rows(False), store, settings, message_sender, Lines(), NoMarkers()).handle(
         RemindBehindUpdates(), SimpleNamespace(timestamp=Timestamp(ORDERED_AT + timedelta(minutes=30))))
     assert len(message_sender.sent) == 1
 
 
 def test_a_changed_wait_and_number_of_reminders_apply_at_the_next_reminder():
     settings, store, message_sender, inbox = Settings(2), Store(), Lines(), Lines()
-    handler = RemindBehindUpdatesHandler(store, Rows(False), store, settings, message_sender, inbox, Numbers(), NoMarkers())
+    handler = RemindBehindUpdatesHandler(store, Rows(False), store, settings, message_sender, inbox, NoMarkers())
     handler.handle(RemindBehindUpdates(), SimpleNamespace(timestamp=Timestamp(ORDERED_AT + timedelta(minutes=30))))
     settings.values[UPDATE_WAIT_MINUTES] = 10
     settings.values[UPDATE_REMINDERS] = 1

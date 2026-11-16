@@ -17,7 +17,7 @@ from suites.coding.modules.workers.agent_messages.stale_passed_message import St
 from tests.unit.suites.coding.modules.workers.support.test_behind_check_closing import WORKTREE
 from tests.unit.suites.coding.modules.workers.commands.check_worktree_behind.test_check_worktree_behind import Lines, Rows, Settings
 from tests.unit.suites.coding.modules.workers.commands.check_worktree_behind.test_check_worktree_behind import Queries as NoChecks
-from tests.unit.suites.coding.modules.workers.test_merger_update_subcommand import MERGER, WORKER, Agents, Checks, Numbers, Repository, Visits, Worktrees
+from tests.unit.suites.coding.modules.workers.test_merger_update_subcommand import MERGER, WORKER, Agents, Checks, Repository, Visits, Worktrees
 from suites.coding.modules.workers.agent_messages.stale_passed_message import StalePassedMessage
 
 
@@ -47,7 +47,7 @@ def test_pass_on_a_cut_worktree_with_a_check_takes_the_behind_path_and_a_deliver
 
 def test_a_passed_check_goes_to_the_main_agent_by_its_number_and_no_worktree_state_moves():
     repository, visits, main_line = Repository(), Visits(), Lines()
-    handler = PassBehindCheckHandler(Agents(), BehindDecisions(Worktrees(), Checks(State.OPEN), Numbers()), repository, visits, main_line, Numbers())
+    handler = PassBehindCheckHandler(Agents(), BehindDecisions(Worktrees(), Checks(State.OPEN)), repository, visits, main_line)
     command = PassBehindCheck(WORKER, "it is too large")
     handler.handle(command, SimpleNamespace(actor=Actor(MERGER, ActorType.AGENT)))
     assert [(row.state, row.decider_id) for row in repository.saved] == [(State.PASSED, MERGER)] and visits.closed == 1
@@ -56,7 +56,7 @@ def test_a_passed_check_goes_to_the_main_agent_by_its_number_and_no_worktree_sta
 
 def test_with_the_merger_off_the_line_reaches_the_main_agent_and_names_the_facts_and_the_three_choices():
     inbox = Lines()
-    AnnounceBehindChecksHandler(Rows(), NoChecks(), inbox, Settings(merger=False), Numbers()).handle(AnnounceBehindChecks((1,)), SimpleNamespace(timestamp=None))
+    AnnounceBehindChecksHandler(Rows(), NoChecks(), inbox, Settings(merger=False)).handle(AnnounceBehindChecks((1,)), SimpleNamespace(timestamp=None))
     text = inbox.sent[0].text
     assert inbox.sent[0].key == StaleChoicesMessage.declared().key
     assert text.startswith("worker:999 is ")

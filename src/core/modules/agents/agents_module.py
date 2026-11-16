@@ -24,6 +24,7 @@ from core.modules.agents.inspectors.agent_inspector import AgentInspector
 from engine.module.module import Module
 from core.modules.agents.agent_messages.agent_start_failed_message import AgentStartFailedMessage
 from core.modules.agents.agent_messages.agent_renumbered_message import AgentRenumberedMessage
+from core.modules.agents.agent_messages.agents_renumbered_message import AgentsRenumberedMessage
 from core.modules.agents.support.report_agent_messages import REPORT_AGENT_MESSAGES
 from core.modules.agents.seeders.agents_seeder import AgentsSeeder
 
@@ -41,7 +42,7 @@ class AgentsModule(Module):
     models = AGENTS_MODELS
     moves = [AgentsMove]
     migrations = AGENTS_MIGRATIONS
-    agent_messages = [AgentStartFailedMessage, *REPORT_AGENT_MESSAGES, ProgramSettingsBanMessage, AgentRenumberedMessage]
+    agent_messages = [AgentStartFailedMessage, *REPORT_AGENT_MESSAGES, ProgramSettingsBanMessage, AgentRenumberedMessage, AgentsRenumberedMessage]
     guards = [AgentNameGuard, RetiredRowGuard, RetiredDeleteGuard, AgentChatGuard]
     tick_handlers = AGENTS_TICK_HANDLERS
     handlers = AGENTS_HANDLERS

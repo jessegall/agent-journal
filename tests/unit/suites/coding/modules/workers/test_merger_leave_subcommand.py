@@ -9,7 +9,7 @@ from suites.coding.modules.workers.commands.decide_behind_check.leave_worker_beh
 from suites.coding.modules.workers.commands.decide_behind_check.leave_worker_behind_handler import LeaveWorkerBehindHandler
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState as State
 from suites.coding.modules.workers.support.behind_decisions import BehindDecisions
-from tests.unit.suites.coding.modules.workers.test_merger_update_subcommand import MAIN, MERGER, OUTSIDER_ID, WORKER, Agents, Checks, Numbers, Repository, Visits, Worktrees
+from tests.unit.suites.coding.modules.workers.test_merger_update_subcommand import MAIN, MERGER, OUTSIDER_ID, WORKER, Agents, Checks, Repository, Visits, Worktrees
 
 
 class ForcedUpdateSettings:
@@ -24,7 +24,7 @@ class ForcedUpdateSettings:
 
 def ignoring_actor(actor_id: int, checks: Checks, worktrees: Worktrees | None = None) -> tuple[Repository, Visits]:
     repository, visits = Repository(), Visits()
-    LeaveWorkerBehindHandler(Agents(), BehindDecisions(worktrees or Worktrees(), checks, Numbers()), repository, visits, ForcedUpdateSettings()).handle(
+    LeaveWorkerBehindHandler(Agents(), BehindDecisions(worktrees or Worktrees(), checks), repository, visits, ForcedUpdateSettings()).handle(
         LeaveWorkerBehind(WORKER, "only the docs moved"), SimpleNamespace(actor=Actor(actor_id, ActorType.AGENT)))
     return repository, visits
 

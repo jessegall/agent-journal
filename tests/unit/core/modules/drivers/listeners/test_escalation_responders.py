@@ -23,7 +23,7 @@ def escalation(responder: Responder, refusal_count: int, block_ids: tuple[int, .
 def awakened_parents(row, old_row) -> list[int]:
     resumed_worker: list[int] = []
     message_sender = SimpleNamespace(send=lambda agent_id, declaration, source, context, **values: resumed_worker.append(agent_id))
-    agents = SimpleNamespace(find=lambda agent_id: SimpleNamespace(number=2, parent_id=1))
+    agents = SimpleNamespace(find=lambda agent_id: SimpleNamespace(id=2, parent_id=1))
     EscalationResponderListener(agents, message_sender).handle(SimpleNamespace(row=row, old_row=old_row), SimpleNamespace())
     return resumed_worker
 

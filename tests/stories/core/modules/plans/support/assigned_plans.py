@@ -12,8 +12,8 @@ PHASE_COUNT = 2
 
 
 def plan_worker(story: Story, position: int) -> Actor:
-    """One of the three workers PlanWithTwoPhases started after Ada: position 1 (W), 2 (V) or 3 (X)."""
-    return Actor(story.user.id + position, ActorType.AGENT)
+    """One of the three workers PlanWithTwoPhases started after the main agent: position 1 (W), 2 (V) or 3 (X)."""
+    return Actor(story.agent.id + position, ActorType.AGENT)
 
 
 def phase_task_ids(phase_id: int) -> list[int]:

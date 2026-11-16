@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 from core.modules.helpers.commands.change_agent_driver.change_agent_driver_subcommand import ChangeAgentDriverSubcommand
 
-AGENT = SimpleNamespace(id=7, number=4, role="helper", program="codex", program_model="gpt-6.1-sol")
+AGENT = SimpleNamespace(id=4, role="helper", program="codex", program_model="gpt-6.1-sol")
 OUT = SimpleNamespace(is_ready=False, wait_line="out until 10:30, it hit a rate limit")
 READY = SimpleNamespace(is_ready=True, wait_line="")
 

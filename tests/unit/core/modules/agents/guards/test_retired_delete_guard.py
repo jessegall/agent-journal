@@ -14,7 +14,7 @@ MAIN_AGENT = Actor(5, ActorType.AGENT)
 
 
 def deleted(retired_at: datetime | None) -> SimpleNamespace:
-    return SimpleNamespace(row=SimpleNamespace(role="helper", number=4, retired_at=retired_at))
+    return SimpleNamespace(row=SimpleNamespace(role="helper", id=4, retired_at=retired_at))
 
 
 @pytest.mark.parametrize("actor", [PERSON, MAIN_AGENT, Actor.core()], ids=["a user", "an agent", "the journal"])

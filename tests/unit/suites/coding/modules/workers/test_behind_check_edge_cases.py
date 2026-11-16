@@ -11,7 +11,7 @@ from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import W
 from suites.coding.modules.workers.support.behind_check_closing import BehindCheckClosing
 from tests.unit.suites.coding.modules.workers.support.test_behind_check_closing import WORKTREE
 from tests.unit.suites.coding.modules.workers.support.test_behind_check_closing import Store as Checks
-from tests.unit.suites.coding.modules.workers.test_update_reminders import ORDERED_AT, NoMarkers, Numbers, Settings, Store
+from tests.unit.suites.coding.modules.workers.test_update_reminders import ORDERED_AT, NoMarkers, Settings, Store
 
 NEW_OWNER = 9
 
@@ -45,7 +45,7 @@ class AgentMessageRecorder:
 
 def reminded_at(minutes: list[int], rows: AbsentWorker) -> list[tuple[int, int]]:
     store, message_sender = Store(), AgentMessageRecorder()
-    handler = RemindBehindUpdatesHandler(store, rows, store, Settings(2), message_sender, AgentMessageRecorder(), Numbers(), NoMarkers())
+    handler = RemindBehindUpdatesHandler(store, rows, store, Settings(2), message_sender, AgentMessageRecorder(), NoMarkers())
     delivered = []
     for minute in minutes:
         rows.now = minute

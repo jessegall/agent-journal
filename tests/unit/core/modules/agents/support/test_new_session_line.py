@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 from core.modules.agents.support.new_session_line import NewSessionLine
 
-AGENT = SimpleNamespace(id=7, number=4, environment_id=1)
+AGENT = SimpleNamespace(id=4, environment_id=1)
 CURRENT_SESSION = SimpleNamespace(end_reason="")
 REPLACED_SESSION = SimpleNamespace(end_reason="cache_passed")
 MISSING_CONVERSATION_SESSION = SimpleNamespace(end_reason="conversation_missing")

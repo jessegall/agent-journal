@@ -8,7 +8,7 @@ from suites.coding.modules.workers.commands.remind_behind_updates.remind_behind_
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState as State
 from suites.coding.modules.workers.agent_messages.conflict_open_message import ConflictOpenMessage
 from suites.coding.modules.workers.agent_messages.conflict_repeated_message import ConflictRepeatedMessage
-from tests.unit.suites.coding.modules.workers.test_update_reminders import ORDERED_AT, Lines, Numbers, Rows, Settings, Store
+from tests.unit.suites.coding.modules.workers.test_update_reminders import ORDERED_AT, Lines, Rows, Settings, Store
 
 
 class Markers:
@@ -21,7 +21,7 @@ class Markers:
 
 def merger_lines(minutes: list[int], files: tuple[str, ...]) -> tuple[list[object], Lines]:
     store, message_sender, inbox = Store(State.CONFLICTED), Lines(), Lines()
-    handler = RemindBehindUpdatesHandler(store, Rows(False), store, Settings(2), message_sender, inbox, Numbers(), Markers(files))
+    handler = RemindBehindUpdatesHandler(store, Rows(False), store, Settings(2), message_sender, inbox, Markers(files))
     for minute in minutes:
         handler.prepare(RemindBehindUpdates(), Actor.core())
         handler.handle(RemindBehindUpdates(), SimpleNamespace(timestamp=Timestamp(ORDERED_AT + timedelta(minutes=minute))))

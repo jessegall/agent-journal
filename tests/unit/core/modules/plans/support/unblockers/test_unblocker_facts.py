@@ -9,9 +9,9 @@ from core.modules.plans.models.enums.waiting_reason import WaitingReason
 from core.modules.plans.support.unblockers.unblocker_facts import UnblockerFacts
 from core.modules.tasks.models.enums.task_state import TaskState
 
-MAIN = SimpleNamespace(id=1, role="main", number=1)
-LATER_MAIN = SimpleNamespace(id=9, role="main", number=1)
-WORKER = SimpleNamespace(id=2, role="worker", number=2)
+MAIN = SimpleNamespace(id=1, role="main")
+LATER_MAIN = SimpleNamespace(id=9, role="main")
+WORKER = SimpleNamespace(id=2, role="worker")
 AGENTS = {agent.id: agent for agent in (MAIN, LATER_MAIN, WORKER)}
 
 

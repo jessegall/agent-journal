@@ -19,7 +19,7 @@ class FakeRows:
         return None
 
     def find_unscoped(self, agent_id: int) -> SimpleNamespace:
-        return SimpleNamespace(id=agent_id, number=1)
+        return SimpleNamespace(id=1)
 
 
 class StartRecorder:

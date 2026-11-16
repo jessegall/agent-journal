@@ -43,8 +43,8 @@ PARCELS_IN_A_BAY = 3
 
 
 def chain_worker(story: Story, position: int) -> Actor:
-    """One of the three workers YardWithBays started after Ada: position 1, 2 or 3."""
-    return Actor(story.user.id + position, ActorType.AGENT)
+    """One of the three workers YardWithBays started after the main agent: position 1, 2 or 3."""
+    return Actor(story.agent.id + position, ActorType.AGENT)
 
 
 def parcel_ids(bay_id: int) -> list[int]:

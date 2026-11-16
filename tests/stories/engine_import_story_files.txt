@@ -6,8 +6,6 @@ tests/stories/core/modules/agents/agent_driver_access.py
 tests/stories/core/modules/agents/agent_filters_browser.py
 tests/stories/core/modules/agents/agent_groups.py
 tests/stories/core/modules/agents/agent_inspector.py
-tests/stories/core/modules/agents/agent_numbers_read.py
-tests/stories/core/modules/agents/agent_numbers_shown.py
 tests/stories/core/modules/agents/agent_session_history.py
 tests/stories/core/modules/agents/agent_terminal_browser.py
 tests/stories/core/modules/agents/agent_terminals.py

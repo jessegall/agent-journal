@@ -1,4 +1,3 @@
-from engine.actor.actor import MAIN_AGENT_ID
 import json
 
 from engine.database.database import Database
@@ -24,26 +23,27 @@ class RenumberNotices:
     def __init__(self, database: Database) -> None:
         self.database = database
 
-    def lines(self) -> list[tuple[int, str]]:
+    def agent_lines(self) -> list[tuple[int, dict[str, object]]]:
         if int(self.database.rows(TABLES_EXIST)[0]["n"]) < 2:
             return []
-        lines = [(int(row["new_id"]), f"You are now {self.label(str(row['role']), int(row['new_id']))} (was agent {row['old_id']}).")
-                 for row in self.database.rows(UNANNOUNCED)]
-        for row in self.database.rows(SUMMARY):
-            counts = json.loads(str(row["counts"]))
-            lines.append((MAIN_AGENT_ID, f"Agents renumbered: {counts['stayed']} stay (main agent 1, the others from 2 in the order of their old ids), "
-                                         f"{counts['removed']} removed; copy at {row['copy']}."))
-        return lines
+        return [(int(row["new_id"]), {"agent": self.label(str(row["role"]), int(row["new_id"])), "old_id": int(row["old_id"])})
+                for row in self.database.rows(UNANNOUNCED)]
 
-    def person_text(self) -> str | None:
+    def summary(self) -> dict[str, object] | None:
         if int(self.database.rows(TABLES_EXIST)[0]["n"]) < 2:
             return None
         for row in self.database.rows(SUMMARY):
             counts = json.loads(str(row["counts"]))
-            return (f"Agents were renumbered: the main agent is 1 and the agents that stay follow from 2; {counts['removed']} agents were removed, "
-                    f"and the messages helpers and workers sent were deleted. Older texts still name the old numbers. "
-                    f"A copy of the journal from before is at {row['copy']}.")
+            return {"stayed": counts["stayed"], "removed": counts["removed"], "copy": str(row["copy"])}
         return None
+
+    def person_text(self) -> str | None:
+        summary = self.summary()
+        if summary is None:
+            return None
+        return (f"Agents were renumbered: the main agent is 1 and the agents that stay follow from 2; {summary['removed']} agents were removed, "
+                f"and the messages helpers and workers sent were deleted. Older texts still name the old numbers. "
+                f"A copy of the journal from before is at {summary['copy']}.")
 
     @staticmethod
     def label(role: str, agent_id: int) -> str:

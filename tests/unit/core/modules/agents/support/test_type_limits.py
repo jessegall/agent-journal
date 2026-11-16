@@ -7,7 +7,7 @@ ENDED_AT = datetime(2026, 11, 1, 9, 0, tzinfo=timezone.utc)
 
 
 def kept_agent(number: int, role: str, ended_at: datetime | None) -> SimpleNamespace:
-    return SimpleNamespace(number=number, role=role, ended_at=ended_at)
+    return SimpleNamespace(id=number, role=role, ended_at=ended_at)
 
 
 def test_at_the_kept_limit_the_idle_agent_with_the_lowest_number_is_named_and_the_person_retires():

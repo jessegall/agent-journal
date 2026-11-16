@@ -9,7 +9,7 @@ OPEN_JOBS_READ = "helpers.with_open_jobs"
 
 
 def helper(number: int, program: str = "claude", ended_at: str | None = "2026-10-31", session: str = "kept") -> SimpleNamespace:
-    return SimpleNamespace(id=number + 100, number=number, program=program, program_model="sonnet" if program == "claude" else "gpt-6.1-terra", ended_at=ended_at, session=session)
+    return SimpleNamespace(id=number, program=program, program_model="sonnet" if program == "claude" else "gpt-6.1-terra", ended_at=ended_at, session=session)
 
 
 class StoredRows:
