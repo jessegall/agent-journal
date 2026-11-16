@@ -5,7 +5,6 @@ from engine.driver.hook_event import HookEvent
 from engine.driver.agent_message import AgentMessage
 from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
-from engine.journal.journal_home import JournalHome
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.plans.models.enums.focus_source import FocusSource
@@ -13,7 +12,7 @@ from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.agent_messages.focus_suggested_message import FocusSuggestedMessage
 from core.modules.plans.agent_messages.unfocused_task_message import UnfocusedTaskMessage
-from core.modules.plans.support.focus.judged_focus_tasks import JudgedFocusTasks
+from core.modules.plans.support.focus.focus_judgements import FocusJudgements
 from core.modules.plans.support.focus.new_focus_places import FOCUS_RULE_NAME, NewFocusPlaces
 from core.modules.plans.support.focus.plan_focus import PlanFocus
 
@@ -31,9 +30,8 @@ class PlanFocusLines(EventLineSource):
     events = [HookEventName.POST_TOOL_USE]
     agent_types = [AgentRole.MAIN.value, AgentRole.HELPER.value]
 
-    def __init__(self, queries: Queries, focus: PlanFocus, new_places: NewFocusPlaces, home: JournalHome) -> None:
-        self.queries, self.focus, self.new_places = queries, focus, new_places
-        self.judged = JudgedFocusTasks.shared(home)
+    def __init__(self, queries: Queries, focus: PlanFocus, new_places: NewFocusPlaces, judged: FocusJudgements) -> None:
+        self.queries, self.focus, self.new_places, self.judged = queries, focus, new_places, judged
 
     def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         if event is None:

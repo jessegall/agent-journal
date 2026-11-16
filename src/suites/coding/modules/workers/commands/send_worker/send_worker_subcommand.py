@@ -54,7 +54,7 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
         parser.add_argument("--task", type=int, nargs="+", default=[], help="tasks the worker takes next")
         parser.add_argument("--plan", type=int, default=None, help="hand the worker a plan in phase order")
         parser.add_argument("--phase", type=int, default=None, help="with --plan, only this phase")
-        parser.add_argument("--take", action="store_true", help="the main agent takes a started task from the worker that holds it and gives it to this worker")
+        parser.add_argument("--take", action="store_true", help="the main agent moves a started task from the worker it is assigned to over to this worker")
         parser.add_argument("--no-sandbox", action="store_true", help="the worker runs its shell lines outside the sandbox")
         parser.add_argument("--library-link", action="append", default=[], help="a folder of the environment to link into a new worktree")
         parser.add_argument("--library-copy", action="append", default=[], help="a folder of the environment to copy into a new worktree")

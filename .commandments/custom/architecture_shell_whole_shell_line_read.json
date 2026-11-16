@@ -20,7 +20,7 @@
                 "testCode": true
             },
             {
-                "fileMatches": "(record_hook_call_handler|start_process|runner_rewrite_rule)\\.py$"
+                "fileMatches": "(record_hook_call_handler|start_process|runner_start_effect|runner_plan|foreground_limit)\\.py$"
             },
             {
                 "of": "receiver",
@@ -31,7 +31,7 @@
     "sin": {
         "name": "whole-shell-line-read",
         "description": "Code reads the whole shell line to decide something, so a command is judged by where it stands in a chain rather than by what each part does.",
-        "rule": "Read the parts of the line, or ask an aggregate on ShellLine: has_test_run_part, has_part_writing_files, is_read_only, has_part_running, has_part_matching, parts_running_journal_command, part_texts. Add a new aggregate to ShellLine if none fits. The source line is private to ShellLine: display_text shows it and runner_text hands it to the runner.",
+        "rule": "Read the parts of the line, or ask an aggregate on ShellLine: has_test_run_part, has_part_writing_files, is_read_only, has_part_running, has_part_matching, parts_running_journal_command, part_texts. Add a new aggregate to ShellLine if none fits. The source line is private to ShellLine: display_text shows it and runner_text hands it to the runner. The runner's start, a request's key for one line's decision and an execution class's line pattern read the whole line, since running it, keying it and matching a person's pattern are about the line as written.",
         "skill": "plain-code-words"
     }
 }

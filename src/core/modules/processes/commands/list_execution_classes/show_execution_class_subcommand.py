@@ -21,5 +21,5 @@ class ShowExecutionClassSubcommand(ReadSubcommand[str]):
     def read(self, arguments: Namespace, caller: Caller) -> str:
         line = next((line for line in self.class_lines.lines() if line.startswith(f"{arguments.class_name}:")), None)
         if line is None:
-            raise Refusal(f"there is no class {arguments.class_name}", "journal queue-class list names them")
+            raise Refusal(f"there is no class {arguments.class_name}", "journal queue-class list shows them")
         return line

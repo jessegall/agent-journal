@@ -1,13 +1,11 @@
 from collections.abc import Sequence
 
 from engine.agent_machine.contracts.event_line_source import EventLineSource
-from engine.agent_machine.states.line_history import LineHistory
 from engine.driver.hook_event import HookEvent
 from engine.driver.agent_message import AgentMessage
 from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
 from engine.enums.line_channel import LineChannel
-from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.tasks.agent_messages.blocked_tasks_message import BlockedTasksMessage
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.support.current_tasks import CurrentTasks
@@ -24,8 +22,8 @@ class BlockedWorkLines(EventLineSource):
     agent_types = [AgentRole.MAIN.value]
     channel = LineChannel.WAITING
 
-    def __init__(self, tasks: TaskQuery, calls: HookCallQuery, current: CurrentTasks, assigners: SuiteTaskAssigners, history: LineHistory) -> None:
-        self.tasks, self.calls, self.current, self.assigners, self.history = tasks, calls, current, assigners, history
+    def __init__(self, tasks: TaskQuery, current: CurrentTasks, assigners: SuiteTaskAssigners) -> None:
+        self.tasks, self.current, self.assigners = tasks, current, assigners
 
     def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         # started tasks are checked by the task stop rule, and open ones by the main agent's stop rule
@@ -33,10 +31,6 @@ class BlockedWorkLines(EventLineSource):
             return []
         assigner = self.assigners.assigner()
         blocked = assigner.blocked_tasks() if assigner is not None else ()
-        if not blocked or self.given_during_turn(agent_id):
+        if not blocked:
             return []
         return [BlockedTasksMessage.declared().agent_message(tasks=', '.join(str(task_id) for task_id in blocked))]
-
-    def given_during_turn(self, agent_id: int) -> bool:
-        last_given_at = self.history.last_given(self.key, agent_id)
-        return last_given_at is not None and self.calls.tool_use_counts(agent_id, [last_given_at])[0] == 0

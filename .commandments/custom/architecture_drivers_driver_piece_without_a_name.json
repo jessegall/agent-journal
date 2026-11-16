@@ -36,9 +36,6 @@
         "reject": [
             {
                 "testCode": true
-            },
-            {
-                "fileMatches": "(^|/)engine/driver/(states/[a-z_]+|agent_state|deferred_rule|overlay)\\.py$"
             }
         ]
     },

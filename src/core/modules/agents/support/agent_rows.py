@@ -73,8 +73,7 @@ class AgentRows:
 
     # the agents of these ids that exist, read once a request through the rows the hook already holds
     def find_many(self, agent_ids: list[int]) -> list[Agent]:
-        self.rows.prepare(Agent, agent_ids)
-        return [agent for agent in (self.rows.find(Agent, agent_id) for agent_id in dict.fromkeys(agent_ids)) if agent is not None]
+        return list(self.rows.found_index(Agent, agent_ids).values())
 
     def has_role(self, agent_id: int, role: str) -> bool:
         return self.find(agent_id).role == role

@@ -22,9 +22,6 @@
                 "fileMatches": "(^|/)tests/unit/source_tree\\.py$"
             },
             {
-                "fileMatches": "(^|/)tests/stories/core/modules/agents/dispatcher_rules\\.py$"
-            },
-            {
                 "fileMatches": "(^|/)tests/unit/test_raw_declared_values\\.py$"
             }
         ]

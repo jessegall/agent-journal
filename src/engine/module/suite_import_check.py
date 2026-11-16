@@ -5,7 +5,7 @@ from pathlib import Path
 
 from engine.file.file_access import FileAccess
 
-from engine.module.errors.suite_refusal import SuiteRefusal
+from engine.module.suite_contract_breach import SuiteContractBreach
 ENGINE_FOLDER = Path(__file__).resolve().parents[1]
 INTERNAL_USE = re.compile(r"use = AreaUse\.INTERNAL\b")
 
@@ -18,10 +18,10 @@ class SuiteImportCheck:
         return frozenset(folder.name for folder in FileAccess.iterdir(ENGINE_FOLDER) if FileAccess.is_dir(folder)
                          and any(INTERNAL_USE.search(FileAccess.read(marker)) for marker in FileAccess.glob(folder, "*_area.py")))
 
-    def refusals(self, folder: Path) -> tuple[SuiteRefusal, ...]:
+    def refusals(self, folder: Path) -> tuple[SuiteContractBreach, ...]:
         internal = self.internal_areas()
         imports = [(file, node, name) for file in sorted(FileAccess.rglob(folder, "*.py")) for node in ast.walk(ast.parse(FileAccess.read(file))) for name in self.imported_names(node)]
-        return tuple(SuiteRefusal(str(file.relative_to(folder)), node.lineno, f"imports {name}, an internal area of the engine: use its contract areas")
+        return tuple(SuiteContractBreach(str(file.relative_to(folder)), node.lineno, f"imports {name}, an internal area of the engine: use its contract areas")
                      for file, node, name in imports if self.is_internal(name, internal))
 
     @staticmethod

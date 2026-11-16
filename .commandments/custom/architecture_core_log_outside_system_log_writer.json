@@ -46,7 +46,7 @@
                 "testCode": true
             },
             {
-                "file": "src/server/handover/successor_start.py"
+                "file": "src/server/takeover/successor_start.py"
             }
         ]
     },

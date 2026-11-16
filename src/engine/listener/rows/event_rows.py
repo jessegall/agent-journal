@@ -38,13 +38,18 @@ class EventRows:
         return row
 
     def required_index(self, model: type[M], row_ids: Sequence[int]) -> dict[int, M]:
+        rows = self.found_index(model, row_ids)
+        missing = [row_id for row_id in dict.fromkeys(row_ids) if row_id not in rows]
+        if missing:
+            raise MissingRowsError(model.cli_name, missing)
+        return rows
+
+    # the rows of these ids that exist, in the order of the ids, read together
+    def found_index(self, model: type[M], row_ids: Sequence[int]) -> dict[int, M]:
         self.prepare(model, row_ids)
         name = self.cache_name(model)
         rows = {row_id: self.known[(model, row_id)][name].row for row_id in dict.fromkeys(row_ids)}
-        missing = [row_id for row_id, row in rows.items() if row is None]
-        if missing:
-            raise MissingRowsError(model.cli_name, missing)
-        return cast(dict[int, M], rows)
+        return cast(dict[int, M], {row_id: row for row_id, row in rows.items() if row is not None})
 
     def prepare(self, model: type[M], row_ids: Sequence[int]) -> None:
         if len(self.known) >= KEPT_ROW_COUNT:

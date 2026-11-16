@@ -12,7 +12,8 @@ class Window(WindowDeclaration):
         keys = tuple(cls.declared_key(key) for key in cls.keys)
         values = class_fields(cls, WindowDeclaration)
         reads = cls.reads or tuple(dict.fromkeys(key.read for key in keys))
-        return WindowDeclaration(**{**values, "keys": keys, "reads": reads})
+        fields = {name: value for name, value in values.items() if name not in ("keys", "reads", "icon")}
+        return WindowDeclaration(**fields, keys=keys, reads=reads, icon=cls.icon)
 
     @classmethod
     def declared_key(cls, key: object) -> WindowKey:

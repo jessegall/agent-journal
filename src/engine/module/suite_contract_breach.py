@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
-class SuiteRefusal:
+class SuiteContractBreach:
     """One line of a suite's folder that breaks the engine's contract: the file, the line and why."""
 
     file: str

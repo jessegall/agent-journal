@@ -18,6 +18,6 @@ class SameLinkPinGuard(Guard[Created[Pin]]):
 
     def check(self, event: Created[Pin], context: Context) -> None:
         pin = event.row
-        shown = self.queries.query(Pin).filter(environment_id=pin.environment_id, link=pin.link).matching(IsNull("closed_at")).first()
+        shown = self.queries.query(Pin).filter(link=pin.link).matching(IsNull("closed_at")).first()
         if shown is not None and shown.id != pin.id:
             raise Refusal(f"pin {shown.id} already shows {pin.link}", "use that pin, or close it first")

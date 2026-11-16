@@ -27,13 +27,16 @@
             },
             {
                 "fileMatches": "(^|/)tests/(unit/core/modules/agents/support/test_launcher_link|unit/engine/serving/test_server_files|unit/engine/testing/cache/test_template_cache|stories/core/modules/plugins/support/judge_scope_plugin)\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)tests/stories/core/modules/plugins/checkout_variables\\.py$"
             }
         ]
     },
     "sin": {
         "name": "interpreter-in-a-test",
         "description": "A story or a unit test starts a fresh Python interpreter, which costs far more than the test around it.",
-        "rule": "Run the code in the test's own process. A test whose subject is a real process belongs in tests/install, or is named in this rule with that reason.",
+        "rule": "Run the code in the test's own process. A test whose subject is a real process belongs in tests/install, or is named in this rule with that reason. The plugin story that checks a plugin's script runs through the journal's own Python is such a test: its subject is the interpreter the plugin program starts.",
         "skill": "plain-code-words"
     }
 }

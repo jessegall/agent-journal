@@ -39,7 +39,7 @@ class ProcessSetting(Enum):
     SPARSE_SECONDS = SettingValue("sparse-seconds", "Seconds between lines of a sparse run",
                                   "Average seconds between prints, over the last five, from which a run counts as printing too little.", SettingType.NUMBER, default=30,
                                   rule=NumberRule(1))
-    POOL_CAPACITY_INSTANT = SettingValue("lane-capacity-instant", "Instant lane capacity", "Slots of hooks, journal commands and viewer requests that run at once.",
+    POOL_CAPACITY_INSTANT = SettingValue("lane-capacity-instant", "Instant pool capacity", "Slots of hooks, journal commands and viewer requests that run at once.",
                                          SettingType.NUMBER, default=24, rule=NumberRule(1))
     POOL_CAPACITY_SHORT = SettingValue("lane-capacity-short", "Short lane capacity", "Slots of short shell lines, such as reads, searches and edits, that run at once.",
                                        SettingType.NUMBER, default=12, rule=NumberRule(1))

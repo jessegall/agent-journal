@@ -27,5 +27,5 @@ class SetExecutionClassSubcommand(Subcommand[SaveExecutionClass, str]):
     def command(self, arguments: Namespace, caller: Caller) -> SaveExecutionClass:
         current = self.classes.declared(arguments.class_name)
         if current is None:
-            raise Refusal(f"there is no class {arguments.class_name}", "journal queue-class list names them, and journal queue-class add makes one")
+            raise Refusal(f"there is no class {arguments.class_name}", "journal queue-class list shows them, and journal queue-class add makes one")
         return SaveExecutionClass(ExecutionClassOptions.changed(current, arguments), is_override=True)

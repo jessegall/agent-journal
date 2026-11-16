@@ -17,7 +17,7 @@ class EndReplacedAskStacksHandler(Handler[EndReplacedAskStacks, None]):
 
     def handle(self, command: EndReplacedAskStacks, context: Context) -> None:
         stack = self.queries.query(AskStack).find(command.stack_id)
-        replaced = self.queries.query(AskStack).filter(environment_id=stack.environment_id, topic=stack.topic, requires_approval=stack.requires_approval).matching(IsNull("ended_at")).get()
+        replaced = self.queries.query(AskStack).filter(topic=stack.topic, requires_approval=stack.requires_approval).matching(IsNull("ended_at")).get()
         for second in replaced:
             if second.id != stack.id:
                 self.repository.update(second, context, ended_at=context.timestamp)

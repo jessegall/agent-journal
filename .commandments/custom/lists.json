@@ -1533,7 +1533,7 @@
         "install/update/install_journal.py",
         "install/update/chat_update_steps.py",
         "install/hook/hook_switch.py",
-        "server/handover/successor_start.py",
+        "server/takeover/successor_start.py",
         "engine/serving/launcher_replacement.py",
         "engine/cli/shell_handoff.py",
         "engine/caller/process_table.py",

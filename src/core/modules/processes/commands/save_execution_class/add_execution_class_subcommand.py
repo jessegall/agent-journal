@@ -21,11 +21,11 @@ class AddExecutionClassSubcommand(Subcommand[SaveExecutionClass, str]):
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("class_name")
         parser.add_argument("--pattern", default="", help="a regular expression a line matches")
-        parser.add_argument("--plugin", default="", help="the plugin whose runs it holds")
+        parser.add_argument("--plugin", default="", help="the plugin whose runs belong to the class")
         ExecutionClassOptions.add_arguments(parser)
 
     def command(self, arguments: Namespace, caller: Caller) -> SaveExecutionClass:
         if not arguments.pattern and not arguments.plugin:
-            raise Refusal("a class of your own names the lines it holds", "add --pattern \"<regular expression>\" or --plugin <name>")
+            raise Refusal("a class of your own needs the lines that belong to it", "add --pattern \"<regular expression>\" or --plugin <name>")
         start = ExecutionClass(arguments.class_name, ExecutionLength.LONG, 1, ExecutionPriority.AGENT, line_pattern=arguments.pattern, plugin=arguments.plugin)
         return SaveExecutionClass(ExecutionClassOptions.changed(start, arguments), is_override=False)

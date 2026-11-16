@@ -25,5 +25,6 @@ class MissingProcessEffect(EventEffect):
 
     def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         roles = self.types.helper_keys()
-        agents = [agent for agent in self.agents.running() if agent.role in roles]
+        running = self.agents.running()
+        agents = [agent for agent in running if agent.role in roles]
         return [EndGoneWorker(agent.id) for agent in self.missing_agents.find(agents)]

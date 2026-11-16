@@ -86,9 +86,6 @@
                 "fileMatches": "(^|/)src/engine/process/child_process\\.py$"
             },
             {
-                "fileMatches": "(^|/)src/server/hook/server_queue\\.py$"
-            },
-            {
                 "fileMatches": "(^|/)src/server/execution/write_turn_queue\\.py$"
             },
             {

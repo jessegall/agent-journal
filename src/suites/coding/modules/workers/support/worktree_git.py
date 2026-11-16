@@ -275,7 +275,9 @@ class WorktreeGit:
         if not self.is_ancestor(folder, worktree.branch, "HEAD"):
             raise Refusal(f"your worktree's head left the branch {worktree.branch}, and both hold commits of their own",
                           AskTopic.CONFLICT.hint("the main agent joins them; commit nothing until then"))
-        self.checked(folder, GIT_LIMIT_SECONDS, "checkout", "--quiet", "-B", worktree.branch, "HEAD")
+        # the branch moves up to the head and the head names the branch again; the files stay as they are
+        self.checked(folder, GIT_LIMIT_SECONDS, "update-ref", f"refs/heads/{worktree.branch}", "HEAD")
+        self.checked(folder, GIT_LIMIT_SECONDS, "symbolic-ref", "HEAD", f"refs/heads/{worktree.branch}")
 
     def is_merging(self, folder: str) -> bool:
         return self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", "MERGE_HEAD").returncode == 0
