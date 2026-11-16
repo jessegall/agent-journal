@@ -33,7 +33,7 @@ class LongWaitLines(LineSource):
         self.queries, self.clock = queries, clock
 
     def lines(self, question: Question, view: AgentView) -> Sequence[Line]:
-        return [Line.of_agent_message(agent_message, self.channel, self.category) for agent_message in self.agent_messages(view.agent.agent_id)]
+        return [Line.agent_message_line(agent_message, self.channel, self.category) for agent_message in self.agent_messages(view.agent.agent_id)]
 
     # a check line for each wait of the agent open ten minutes or more
     def agent_messages(self, agent_id: int) -> list[AgentMessage]:

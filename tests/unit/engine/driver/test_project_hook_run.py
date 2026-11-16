@@ -4,5 +4,5 @@ RUN = {"id": "guard", "exit_code": 1, "stdout": "", "stderr": "boom", "milliseco
 
 
 def test_on_failure_is_read_and_optional():
-    assert ProjectHookRun.parsed({**RUN, "on_failure": "block"}).on_failure == "block"
-    assert ProjectHookRun.parsed(RUN).on_failure == ""
+    assert ProjectHookRun.parsed({**RUN, "on_failure": "block"}).failure_mode == "block"
+    assert ProjectHookRun.parsed(RUN).failure_mode == ""

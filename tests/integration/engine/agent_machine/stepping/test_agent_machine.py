@@ -59,7 +59,7 @@ STOP = QuestionSamples.question(HookSamples.stop())
 EDIT = QuestionSamples.question(HookSamples.edit("a.py"))
 READ = QuestionSamples.question(HookSamples.tool_use("Read", ToolType.READ, ["a.py"], None))
 SKILL_READ = QuestionSamples.question(HookSamples.tool_use("Read", ToolType.READ, [".claude/skills/journal/SKILL.md"], None))
-FULL_CAPABILITIES = Capabilities(*(Capability(part, event, CapabilityProof.IMPLEMENTED_HERE) for part in CapabilityPart for event in HookEventName))
+FULL_CAPABILITIES = Capabilities(*(Capability(part, event, CapabilityProof.IMPLEMENTED_LOCALLY) for part in CapabilityPart for event in HookEventName))
 PAUSE_TEXT = "a sample pause line the pause fact carries"
 
 
@@ -172,7 +172,7 @@ def grant(state: GrantState, policy_key: str = "files.no-edit") -> Grant:
 
 def test_a_usable_grant_passes_its_policy_but_a_held_one_and_a_safety_policy_are_never_passed() -> None:
     assert AgentStateMachine([EditPolicy()]).step(view(grants=(grant(GrantState.CONFIRMED),)), EDIT).record.decision.admits()
-    assert not AgentStateMachine([EditPolicy()]).step(view(grants=(grant(GrantState.HELD),)), EDIT).record.decision.admits()
+    assert not AgentStateMachine([EditPolicy()]).step(view(grants=(grant(GrantState.OPEN),)), EDIT).record.decision.admits()
     assert not AgentStateMachine([SafeEditPolicy()]).step(view(grants=(grant(GrantState.CONFIRMED, "files.no-edit-safety"),)), EDIT).record.decision.admits()
 
 
@@ -190,8 +190,8 @@ def test_a_paused_agent_may_answer_with_a_message_and_rest_but_not_edit_or_hand_
     machine = AgentStateMachine()
     assert machine.step(paused(), EDIT).record.shown_reason.key == PAUSE_KEY
     assert machine.step(paused(blocks=(block("documents.open", "documents.open", is_strict=True),)), journal_line("journal message send hi", ("message", "send", "hi"))).record.decision.admits()
-    rest = machine.step(paused("helper", states=(working(WorkType.JOB),)), STOP).record
-    assert (rest.decision.admits(), rest.shown_reason.job_report) == (True, None)
+    paused_record = machine.step(paused("helper", states=(working(WorkType.JOB),)), STOP).record
+    assert (paused_record.decision.admits(), paused_record.shown_reason.job_report) == (True, None)
 
 
 
@@ -259,15 +259,15 @@ def test_a_block_judged_satisfied_closes_and_constrains_nothing() -> None:
 
 
 def test_an_ended_agent_gets_ended_on_top_of_its_stack() -> None:
-    result = AgentStateMachine().step(view(facts=(EndedFact(None, "retired", 1),)), Question.none())
-    assert isinstance(result.stack.stacked_states[-1].state, Ended)
+    machine_step = AgentStateMachine().step(view(facts=(EndedFact(None, "retired", 1),)), Question.none())
+    assert isinstance(machine_step.stack.stacked_states[-1].state, Ended)
 
 
 def test_past_the_depth_limit_a_block_has_no_stacked_state_and_still_refuses() -> None:
     blocks = (block("messages.unread", "messages.unread", block_id=1), block("overview.first", "overview.first", block_id=2))
-    result = AgentStateMachine().step(view(blocks=blocks, depth_limit=1), EDIT)
-    assert [stacked_state.state_key.generation for stacked_state in result.stack.stacked_states[1:]] == ["overview.first"]
-    assert [reason.rank for reason in (result.record.shown_reason, *result.record.outranked_reasons)] == ["overview.first", "messages.unread"]
+    machine_step = AgentStateMachine().step(view(blocks=blocks, depth_limit=1), EDIT)
+    assert [stacked_state.state_key.generation for stacked_state in machine_step.stack.stacked_states[1:]] == ["overview.first"]
+    assert [reason.rank for reason in (machine_step.record.shown_reason, *machine_step.record.outranked_reasons)] == ["overview.first", "messages.unread"]
 
 
 def test_a_new_need_enters_its_stacked_state_and_an_ended_one_exits_wherever_it_sits() -> None:

@@ -84,7 +84,7 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
 
     # the lane a run ran in: its stored class's, or for a class nobody declares any more, the lane its line matches now
     def pool(self, row: ProcessQueueRow) -> ExecutionLength:
-        declared_class = self.classes.by_name(row.execution_class)
+        declared_class = self.classes.declared(row.execution_class)
         if declared_class is not None:
             return declared_class.pool
         source = ExecutionSource.PLUGIN_PROGRAM if row.plugin else ExecutionSource.SHELL_LINE

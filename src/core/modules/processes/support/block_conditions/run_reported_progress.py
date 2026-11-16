@@ -10,5 +10,5 @@ class RunReportedProgress(ProcessCondition):
     name = "run-heard-from"
 
     def is_true(self, check: BlockCheck) -> bool:
-        held = check.container.get(BlockedRuns).found(check.hook.agent_id, check.hook.timestamp)
-        return held is None or held.process.id != int(self.text)
+        blocked_run = check.container.get(BlockedRuns).found(check.hook.agent_id, check.hook.timestamp)
+        return blocked_run is None or blocked_run.process.id != int(self.text)

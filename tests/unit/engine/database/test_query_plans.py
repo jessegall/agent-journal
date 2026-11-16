@@ -49,7 +49,7 @@ def test_a_query_shape_is_planned_once_across_two_repeated_works():
 def test_a_sync_plans_again():
     database = PlannedDatabase()
     first_read(database, 1)
-    QueryPlans.forget()
+    QueryPlans.clear()
     first_read(database, 1)
     assert database.plans_asked == 2
 

@@ -14,5 +14,5 @@ class ManagedHookItem:
     facts: Sequence[str] = ()
 
     @classmethod
-    def of(cls, hook: ManagedHook, history: ManagedHookHistory) -> "ManagedHookItem":
+    def described(cls, hook: ManagedHook, history: ManagedHookHistory) -> "ManagedHookItem":
         return cls(hook, history, tuple(hook.facts()))

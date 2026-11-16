@@ -24,7 +24,7 @@ class DriverGrant(EnvironmentScoped, Model):
     action_fingerprint: str
     asker_id: int
     reason: str
-    grant_state: GrantState = GrantState.HELD
+    grant_state: GrantState = GrantState.OPEN
     responder_id: int | None = None
     tried: str = ""
     expires_at: Timestamp | None = None

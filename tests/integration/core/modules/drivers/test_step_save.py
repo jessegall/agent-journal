@@ -20,9 +20,9 @@ def step(story, question=Question.none()):
     return view, AgentStateMachine().step(view, question)
 
 
-def saved(story, view, result, hook_call_id=None):
+def saved(story, view, step_record, hook_call_id=None):
     with story.container.get(Database).transaction():
-        return story.container.get(StepWriter).save(view, result, hook_call_id, Context(Actor.core(), story.clock.timestamp(), ReadMessage(1)))
+        return story.container.get(StepWriter).save(view, step_record, hook_call_id, Context(Actor.core(), story.clock.timestamp(), ReadMessage(1)))
 
 
 def test_a_first_step_seeds_the_stack_row_and_its_move(played):

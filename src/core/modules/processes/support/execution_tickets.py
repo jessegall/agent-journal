@@ -59,7 +59,7 @@ class ExecutionTickets:
     def execution_class(self, process: Process, starter: ExecutionStarter, category_classes: dict[tuple[str, str], ExecutionClass]) -> ExecutionClass:
         if process.plugin and (process.plugin, process.run_name) in category_classes:
             return category_classes[(process.plugin, process.run_name)]
-        labelled = self.classes.by_name(process.execution_class) if process.execution_class else None
+        labelled = self.classes.declared(process.execution_class) if process.execution_class else None
         if labelled is not None:
             return labelled
         source = ExecutionSource.PLUGIN_PROGRAM if process.plugin else ExecutionSource.SHELL_LINE

@@ -16,4 +16,4 @@ class RecordReminderFiredHandler(Handler[RecordReminderFired, Reminder]):
 
     def handle(self, command: RecordReminderFired, context: Context) -> Reminder:
         reminder = self.queries.query(Reminder).find(command.reminder_id)
-        return self.repository.update(reminder, context, last_fired_at=context.timestamp, ended_at=context.timestamp if reminder.has_one_firing else None)
+        return self.repository.update(reminder, context, last_fired_at=context.timestamp, ended_at=context.timestamp if reminder.is_single_alert else None)

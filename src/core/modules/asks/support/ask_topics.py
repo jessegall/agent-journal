@@ -12,7 +12,7 @@ class AskTopics:
     def all(self) -> tuple[AskTopic, ...]:
         return tuple(topic for module in self.finder.modules() for topic in module.ask_topic_declarations())
 
-    def by_key(self, key: str) -> AskTopic:
+    def topic(self, key: str) -> AskTopic:
         topics = self.all()
         matched = next((topic for topic in topics if topic.key == key), None)
         if matched is None:

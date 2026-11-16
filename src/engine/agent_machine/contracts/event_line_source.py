@@ -26,7 +26,7 @@ class EventLineSource(LineSource):
             cls.channel = LineChannel.WAITING
 
     def lines(self, question: Question, view: AgentView) -> Sequence[Line]:
-        return [Line.of_agent_message(agent_message, self.channel) for agent_message in self.agent_messages(question.event, view.agent.agent_id)]
+        return [Line.agent_message_line(agent_message, self.channel) for agent_message in self.agent_messages(question.event, view.agent.agent_id)]
 
     # the lines this event tells the agent; no event is the agent's minute step
     @abstractmethod

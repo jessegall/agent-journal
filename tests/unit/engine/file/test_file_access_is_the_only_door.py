@@ -36,7 +36,7 @@ cache_dir = {CACHE}
 """
 
 
-def typed_bypasses(config: Path) -> list[str]:
+def annotated_bypasses(config: Path) -> list[str]:
     output, errors, _ = api.run(["--config-file", str(config), str(SOURCE)])
     return [line for line in (output + errors).splitlines() if BYPASS in line]
 
@@ -66,5 +66,5 @@ def untyped_bypasses() -> list[str]:
 def test_no_code_outside_file_access_reaches_the_file_system(tmp_path: Path):
     config = tmp_path / "mypy.ini"
     config.write_text(CONFIG)
-    bypasses = typed_bypasses(config) + untyped_bypasses()
+    bypasses = annotated_bypasses(config) + untyped_bypasses()
     assert not bypasses, f"{len(bypasses)} file system calls bypass FileAccess:\n" + "\n".join(bypasses)

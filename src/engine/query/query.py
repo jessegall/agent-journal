@@ -17,7 +17,7 @@ from engine.query.conditions.among import Among
 from engine.query.conditions.column_equal import ColumnEqual
 from engine.query.conditions.equal import Equal
 from engine.query.conditions.exists import Exists
-from engine.query.conditions.after_row import AfterRow
+from engine.query.conditions.cursor_condition import CursorCondition
 from engine.query.conditions.greater import Greater
 from engine.query.conditions.is_null import IsNull
 from engine.query.conditions.less import Less
@@ -346,7 +346,7 @@ class Query(Generic[M]):
         key_column, key_value = self.qualified(key), getattr(row, key)
         if order is None:
             return Less(key_column, key_value) if key_descending else Greater(key_column, key_value)
-        return AfterRow(order.column, order.descending, getattr(row, order.column.rpartition(".")[2]), key_column, key_value, key_descending)
+        return CursorCondition(order.column, order.descending, getattr(row, order.column.rpartition(".")[2]), key_column, key_value, key_descending)
 
     # The select with the scope of the read applied, as a kept read compares it.
     def kept_select(self) -> Select:

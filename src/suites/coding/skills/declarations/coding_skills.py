@@ -1,4 +1,4 @@
-from suites.coding.skills.declarations.journal_plain_code_words import JournalPlainCodeWords
+from suites.coding.skills.declarations.journal_plain_code_naming import JournalPlainCodeNaming
 from suites.coding.skills.declarations.journal_graphify import JournalGraphify
 from suites.coding.skills.declarations.journal_plan_dispatch import JournalPlanDispatch
 from suites.coding.skills.declarations.journal_functional_design import JournalFunctionalDesign
@@ -6,4 +6,4 @@ from suites.coding.skills.declarations.journal_user_stories import JournalUserSt
 from suites.coding.skills.declarations.journal_work_modes import JournalWorkModes
 from suites.coding.skills.declarations.journal_test_draining import JournalTestDraining
 
-CODING_SKILLS = [JournalPlainCodeWords, JournalGraphify, JournalPlanDispatch, JournalFunctionalDesign, JournalUserStories, JournalWorkModes, JournalTestDraining]
+CODING_SKILLS = [JournalPlainCodeNaming, JournalGraphify, JournalPlanDispatch, JournalFunctionalDesign, JournalUserStories, JournalWorkModes, JournalTestDraining]

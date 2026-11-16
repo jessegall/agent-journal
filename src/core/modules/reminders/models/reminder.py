@@ -37,7 +37,7 @@ class Reminder(EnvironmentScoped, Model):
         return Interval(*(span for span in spans if span is not None))
 
     @property
-    def has_one_firing(self) -> bool:
+    def is_single_alert(self) -> bool:
         return self.single_use or self.due_at is not None
 
     def interval_timestamp(self) -> Timestamp:

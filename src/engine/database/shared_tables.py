@@ -13,7 +13,7 @@ from engine.journal.journal_home import JournalHome
 T = TypeVar("T")
 
 UNSET_CHANGE_MARK = (-1, -1)
-SHARED_HOME_LIMIT = 512
+SHARED_HOME_CACHE_SIZE = 512
 WAL_SUFFIX = "-wal"
 
 
@@ -30,15 +30,15 @@ class SharedTables:
         self.template, self.wal_file = template, wal_file
 
     @classmethod
-    @lru_cache(maxsize=SHARED_HOME_LIMIT)
+    @lru_cache(maxsize=SHARED_HOME_CACHE_SIZE)
     def shared(cls, home: JournalHome) -> "SharedTables":
         if home.template_database is None:
             return cls()
-        return cls(cls.of_template(home.template_database), Path(f"{FileAccess.readlink(home.database)}{WAL_SUFFIX}"))
+        return cls(cls.template_tables(home.template_database), Path(f"{FileAccess.readlink(home.database)}{WAL_SUFFIX}"))
 
     @classmethod
-    @lru_cache(maxsize=SHARED_HOME_LIMIT)
-    def of_template(cls, template_database: Path) -> "SharedTables":
+    @lru_cache(maxsize=SHARED_HOME_CACHE_SIZE)
+    def template_tables(cls, template_database: Path) -> "SharedTables":
         return cls()
 
     def read(self, database: Database, table: str, signature: Signature, loader: Callable[[], T]) -> T:

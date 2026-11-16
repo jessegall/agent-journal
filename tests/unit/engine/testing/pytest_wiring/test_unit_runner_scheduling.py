@@ -25,7 +25,7 @@ def scheduled(collection: list[str], runner_count: int) -> list[FakeRunner]:
     scheduling = UnitRunnerScheduling.__new__(UnitRunnerScheduling)
     scheduling.numnodes, scheduling.node2collection, scheduling.node2pending = runner_count, {}, {}
     scheduling.pending, scheduling.collection, scheduling.steal_requested_from_node = [], None, None
-    scheduling.log, scheduling.config = lambda *words: None, None
+    scheduling.log, scheduling.config = lambda *parts: None, None
     runners = [FakeRunner() for _ in range(runner_count)]
     for runner in runners:
         scheduling.add_node(runner)

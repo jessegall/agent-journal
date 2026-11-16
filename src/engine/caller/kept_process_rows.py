@@ -30,18 +30,18 @@ class KeptProcessRows:
         with self.lock:
             if not self.is_current(table, pid):
                 self.kept = {row.pid: row for row in table.rows()}
-                self.read_at, self.reader = self.clock.unix_seconds(), self.reader_of(table)
+                self.read_at, self.reader = self.clock.unix_seconds(), self.table_reader(table)
             return dict(self.kept)
 
     def is_current(self, table: ProcessTable, pid: int) -> bool:
-        if self.reader is not self.reader_of(table) or self.clock.unix_seconds() - self.read_at >= KEPT_SECONDS:
+        if self.reader is not self.table_reader(table) or self.clock.unix_seconds() - self.read_at >= KEPT_SECONDS:
             return False
         return self.reaches_root_process(pid)
 
     # the machine's table holds nothing of its own, so every instance reads alike unless its rows were replaced; any
     # other table is its own source
     @staticmethod
-    def reader_of(table: ProcessTable) -> object:
+    def table_reader(table: ProcessTable) -> object:
         return type(table).rows if type(table) is ProcessTable else table
 
     # a chain that stops at a pid the kept table lacks would end early, so such a chain reads the table again

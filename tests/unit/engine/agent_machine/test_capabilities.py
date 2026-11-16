@@ -6,7 +6,7 @@ from engine.enums.capability_proof import CapabilityProof
 from engine.enums.hook_event_name import HookEventName
 
 TABLE = Capabilities(
-    Capability(CapabilityPart.REWRITE, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_HERE, CapabilityFallback.PROCESS_RUN_REFUSAL),
+    Capability(CapabilityPart.REWRITE, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_LOCALLY, CapabilityFallback.PROCESS_RUN_REFUSAL),
     Capability(CapabilityPart.COMPACTION_END, HookEventName.COMPACT, CapabilityProof.DOCUMENTED_UPSTREAM, CapabilityFallback.WAITING_LINE),
 )
 

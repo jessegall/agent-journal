@@ -82,7 +82,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
 
     def handle(self, command: RecordHookCall, context: Context) -> HookReply:
         agent = self.agents.find(command.agent_id)
-        hook = AgentHook.of_actor(command.event, self.loader.loaded(agent), context.timestamp)
+        hook = AgentHook.actor_hook(command.event, self.loader.loaded(agent), context.timestamp)
         answers = command.answers
         self.history.record(agent.id, answers, context)
         self.timing.stamp("history_recorded")

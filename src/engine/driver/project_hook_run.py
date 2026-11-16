@@ -19,7 +19,7 @@ class ProjectHookRun:
     milliseconds: int
     timed_out: bool
     answer: Mapping[str, object] = field(default_factory=dict[str, object])
-    on_failure: str = ""
+    failure_mode: str = ""
 
     @classmethod
     def parsed(cls, data: object) -> "ProjectHookRun":

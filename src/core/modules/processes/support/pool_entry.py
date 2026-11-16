@@ -14,7 +14,7 @@ class PoolEntry:
     starter: str
     seconds: float
     slot_cost: int
-    kind: str
+    category: str
     run_id: int = 0
     reason: str = ""
     previous_priority: str = ""
@@ -22,7 +22,7 @@ class PoolEntry:
 
     def json(self) -> dict[str, object]:
         return {"line": self.line, "class": self.class_name, "priority": self.priority, "starter": self.starter, "seconds": round(self.seconds),
-                "slot_cost": self.slot_cost, "kind": self.kind, "run_id": self.run_id,
+                "slot_cost": self.slot_cost, "kind": self.category, "run_id": self.run_id,
                 "reason": self.reason, "raised_from": self.previous_priority, "parent_line": self.parent_line}
 
     @property

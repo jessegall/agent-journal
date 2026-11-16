@@ -26,4 +26,4 @@ class CompactionRequestLines(LineSource):
         self.effect = effect
 
     def lines(self, question: Question, view: AgentView) -> Sequence[Line]:
-        return [Line.of_agent_message(ContextCompactedMessage.declared().agent_message(), self.channel)] if self.effect.asks(view) else []
+        return [Line.agent_message_line(ContextCompactedMessage.declared().agent_message(), self.channel)] if self.effect.asks(view) else []

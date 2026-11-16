@@ -143,8 +143,8 @@ def test_one_read_of_a_stopped_silent_run_that_printed_nothing_clears_the_read_i
     story.advance(timedelta(seconds=HANG_SECONDS + 1))
     story.expect_success("output stop 1", actor=story.agent)
     # the hold's line opens its read block when a hook answer delivers it, as it did for the stopped runs of report 125728
-    held = RequiredCommands.block(story.agent.id, SilentRunBlockedMessage.declared().agent_message(output=1, seconds=HANG_SECONDS + 1, processor="not known", hint="read"))
-    story.container.get(Bus).run(held, story.agent, environment_id=1)
+    silent_block = RequiredCommands.block(story.agent.id, SilentRunBlockedMessage.declared().agent_message(output=1, seconds=HANG_SECONDS + 1, processor="not known", hint="read"))
+    story.container.get(Bus).run(silent_block, story.agent, environment_id=1)
     for _ in range(REQUIRED_COMMAND_TOOL_USES):
         story.advance(timedelta(seconds=1))
         story.hook("s-1", EDIT)

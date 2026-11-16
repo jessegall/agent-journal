@@ -32,7 +32,7 @@ class ProjectHooks:
         root = self.home.project_folder
         providers = self.providers.all()
         manager = HookManager(root, self.managed)
-        return ProjectHookList(tuple(ManagedHookItem.of(hook, self.history.read(hook)) for hook in self.managed.all()),
+        return ProjectHookList(tuple(ManagedHookItem.described(hook, self.history.read(hook)) for hook in self.managed.all()),
                                tuple(entry for provider in providers for entry in self.journal_entries(provider)),
                                tuple(hook for provider in providers for hook in manager.unmanaged(type(provider), root)),
                                tuple(entry for provider in providers for entry in (*self.excluded(provider), *self.tracked(provider, manager), *self.journal_files(provider))),

@@ -21,7 +21,7 @@ class AgentHook:
     access: str = ""
 
     @classmethod
-    def of_actor(cls, event: HookEvent, actor: LoadedActor, timestamp: Timestamp) -> "AgentHook":
+    def actor_hook(cls, event: HookEvent, actor: LoadedActor, timestamp: Timestamp) -> "AgentHook":
         return cls(event, actor.agent_id, actor.environment_id, actor.role, actor.driver, timestamp, suite=actor.suite, access=actor.access)
 
     @property

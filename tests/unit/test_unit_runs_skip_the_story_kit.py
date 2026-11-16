@@ -3,7 +3,7 @@ import ast
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-LOADED_BY_EVERY_RUN = (ROOT / "tests" / "conftest.py", ROOT / "src" / "engine" / "testing" / "pytest_wiring" / "pytest_plugin.py")
+RUN_START_FILES = (ROOT / "tests" / "conftest.py", ROOT / "src" / "engine" / "testing" / "pytest_wiring" / "pytest_plugin.py")
 STORY_KIT = ("engine.testing.stories.story", "engine.testing.templates.template_databases")
 STORY_FOLDER = "tests.stories."
 
@@ -19,5 +19,5 @@ def module_level_imports(path: Path) -> list[str]:
 
 
 def test_the_files_every_run_loads_import_no_story_kit_at_module_level():
-    match = [f"{path.relative_to(ROOT)}: {name}" for path in LOADED_BY_EVERY_RUN for name in module_level_imports(path) if name in STORY_KIT or name.startswith(STORY_FOLDER)]
+    match = [f"{path.relative_to(ROOT)}: {name}" for path in RUN_START_FILES for name in module_level_imports(path) if name in STORY_KIT or name.startswith(STORY_FOLDER)]
     assert match == [], "import the story kit inside the hook or fixture that uses it, so a unit run never loads it"

@@ -18,5 +18,5 @@ class QueryPlans:
         return cls.plans[statement.sql]
 
     @classmethod
-    def forget(cls) -> None:
+    def clear(cls) -> None:
         cls.plans.clear()

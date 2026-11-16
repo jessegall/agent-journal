@@ -2,7 +2,7 @@ from engine.skill.skill_declaration import SkillDeclaration
 from suites.coding.support.coding_settings import PLAIN_NAMES_SETTING
 
 
-class JournalPlainCodeWords(SkillDeclaration):
+class JournalPlainCodeNaming(SkillDeclaration):
     """The skill journal-plain-code-words: use plain words for every variable, method, class and file, by a ladder."""
 
     folder = "journal-plain-code-words"

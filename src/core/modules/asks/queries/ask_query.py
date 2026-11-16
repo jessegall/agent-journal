@@ -28,9 +28,6 @@ class AskQuery(Query[Ask]):
     def level_open_steps(self, profile: str) -> list[AskStep]:
         return self.open_steps().filter(profile=profile).oldest().get()
 
-    def waiting_for(self, profile: str) -> list[AskStep]:
-        return self.step_rows().filter(profile=profile, state=AskStepState.WAITING).oldest().get()
-
     def open_steps_due(self, timestamp: Timestamp) -> list[AskStep]:
         return self.open_steps().matching(Less("due_at", timestamp.text)).oldest().get()
 

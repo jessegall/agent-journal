@@ -26,4 +26,4 @@ class DueReminderLines(LineSource):
 
     def lines(self, question: Question, view: AgentView) -> Sequence[Line]:
         agent_messages = [ReminderLineMessage.declared().agent_message(reminder=reminder.id) for reminder in self.reminders.due(view.agent.agent_id, self.clock.timestamp())]
-        return [Line.of_agent_message(agent_message, self.channel, self.category) for agent_message in agent_messages]
+        return [Line.agent_message_line(agent_message, self.channel, self.category) for agent_message in agent_messages]

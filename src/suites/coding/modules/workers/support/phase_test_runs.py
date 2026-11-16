@@ -48,8 +48,8 @@ class PhaseTestRuns:
         if remaining - test_part_count < 0:
             return PhaseTestAnswer(PhaseTestRefusalMessage.declared().agent_message())
         key = self.window.key(worktree)
-        lefts = [remaining - position for position in range(test_part_count)]
-        return PhaseTestAnswer(None, tuple(PhaseTestRunAllowedMessage.declared().agent_message(remaining=left - 1) for left in lefts), tuple(RecordWorkerTestRun(agent_id, key) for _ in lefts))
+        remaining_counts = [remaining - position for position in range(test_part_count)]
+        return PhaseTestAnswer(None, tuple(PhaseTestRunAllowedMessage.declared().agent_message(remaining=remaining_count - 1) for remaining_count in remaining_counts), tuple(RecordWorkerTestRun(agent_id, key) for _ in remaining_counts))
 
     def is_test_part(self, part: Part, shell: ShellLine) -> bool:
         return (WorkerTestNames.is_worker_test(part) or self.commands.part_command(part, shell).category is CommandCategory.TEST_RUN) and not ASKING_FLAGS.intersection(part.arguments)

@@ -24,9 +24,9 @@ from engine.enums.work_stop import WorkStop
 
 MAIN = DriverDeclaration("core.main", "main", "core", (), RankOrder(("messages.show",), ("messages.unread",)), WorkStop.REFUSE_DURING_WORK, Responder.PERSON)
 PROGRAM = ProgramDeclaration("claude", Capabilities(
-    Capability(CapabilityPart.TOOL_DENIAL, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_HERE),
-    Capability(CapabilityPart.STOP_REFUSAL, HookEventName.STOP, CapabilityProof.IMPLEMENTED_HERE),
-    Capability(CapabilityPart.LINES, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_HERE)))
+    Capability(CapabilityPart.TOOL_DENIAL, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_LOCALLY),
+    Capability(CapabilityPart.STOP_REFUSAL, HookEventName.STOP, CapabilityProof.IMPLEMENTED_LOCALLY),
+    Capability(CapabilityPart.LINES, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_LOCALLY)))
 UNREAD = ContributionDeclaration("messages.unread-needs", ContributionType.REQUIRED_STATE, "messages.unread", state_name="Blocked")
 DISPLAY_POLICY = ContributionDeclaration("messages.show-policy", ContributionType.POLICY, "messages.show")
 MESSAGES = ModuleContributions("messages", True, (), (UNREAD, DISPLAY_POLICY))

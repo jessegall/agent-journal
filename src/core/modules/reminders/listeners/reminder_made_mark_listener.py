@@ -17,10 +17,10 @@ class ReminderMadeMarkListener(MarkListener[Created[Reminder]]):
 
     def handle(self, event: Created[Reminder], logged: LoggedEvent) -> None:
         reminder = event.row
-        self.show(logged, MemoryMarkType.REMINDER, MemoryMarkVariant.MADE, f"Reminder set: {reminder.text}", None, "reminder", reminder.id, self.firing(reminder))
+        self.show(logged, MemoryMarkType.REMINDER, MemoryMarkVariant.MADE, f"Reminder set: {reminder.text}", None, "reminder", reminder.id, self.schedule_text(reminder))
 
     @staticmethod
-    def firing(reminder: Reminder) -> str:
+    def schedule_text(reminder: Reminder) -> str:
         if reminder.due_at is not None:
             return f"Fires at {reminder.due_at.text}"
         if reminder.interval_seconds:

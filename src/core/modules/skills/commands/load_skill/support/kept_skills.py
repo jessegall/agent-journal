@@ -41,7 +41,7 @@ class KeptSkills:
     def kept_digests(self, agent_id: int, transcript: HookTranscript) -> Mapping[str, str]:
         if self.last is not None and self.last[0] == transcript.event_id:
             return self.last[1]
-        session_mark = KeptSkillMark.of(self.agents.find(agent_id))
+        session_mark = KeptSkillMark.text(self.agents.find(agent_id))
         digests = KeptSkillRecords.shared(self.home).digests(str(transcript.path), session_mark, lambda: self.read_digests(transcript))
         self.last = (transcript.event_id, digests)
         return digests

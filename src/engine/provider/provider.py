@@ -102,13 +102,13 @@ class Provider(ABC):
     @classmethod
     def capabilities(cls) -> Capabilities:
         denial = AnswerEncoding.JSON_DECISION if HookEventName.PRE_TOOL_USE in cls.refusals else AnswerEncoding.STDERR_EXIT_TWO
-        derived = [*(Capability(CapabilityPart.LINES, event, CapabilityProof.IMPLEMENTED_HERE) for event in dict.fromkeys((*cls.line_events, *cls.plain_output_events))),
-                   *(Capability(CapabilityPart.HALT, event, CapabilityProof.IMPLEMENTED_HERE) for event in cls.halts),
-                   *(Capability(CapabilityPart.STOP_REFUSAL, event, CapabilityProof.IMPLEMENTED_HERE, encoding=AnswerEncoding.BLOCK)
+        derived = [*(Capability(CapabilityPart.LINES, event, CapabilityProof.IMPLEMENTED_LOCALLY) for event in dict.fromkeys((*cls.line_events, *cls.plain_output_events))),
+                   *(Capability(CapabilityPart.HALT, event, CapabilityProof.IMPLEMENTED_LOCALLY) for event in cls.halts),
+                   *(Capability(CapabilityPart.STOP_REFUSAL, event, CapabilityProof.IMPLEMENTED_LOCALLY, encoding=AnswerEncoding.BLOCK)
                      for event in cls.refusals if event is HookEventName.STOP),
-                   *(Capability(CapabilityPart.PROMPT_REFUSAL, event, CapabilityProof.IMPLEMENTED_HERE) for event in cls.refusals if event is HookEventName.PROMPT),
-                   Capability(CapabilityPart.TOOL_DENIAL, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_HERE, encoding=denial),
-                   Capability(CapabilityPart.REWRITE, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_HERE)]
+                   *(Capability(CapabilityPart.PROMPT_REFUSAL, event, CapabilityProof.IMPLEMENTED_LOCALLY) for event in cls.refusals if event is HookEventName.PROMPT),
+                   Capability(CapabilityPart.TOOL_DENIAL, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_LOCALLY, encoding=denial),
+                   Capability(CapabilityPart.REWRITE, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_LOCALLY)]
         declared = {(capability.part, capability.event) for capability in cls.new_capabilities}
         return Capabilities(*(capability for capability in derived if (capability.part, capability.event) not in declared), *cls.new_capabilities)
 

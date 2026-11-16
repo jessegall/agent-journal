@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from engine.database.database import Database
-from engine.database.shared_tables import SHARED_HOME_LIMIT, SharedTables
+from engine.database.shared_tables import SHARED_HOME_CACHE_SIZE, SharedTables
 from engine.file.file_access import FileAccess
 from engine.database.statement import Statement
 from engine.journal.journal_home import JournalHome
@@ -107,4 +107,4 @@ def test_the_real_journal_still_keys_on_its_home(tmp_path):
 
 
 def test_the_cache_is_bounded():
-    assert SharedTables.shared.cache_info().maxsize == SHARED_HOME_LIMIT
+    assert SharedTables.shared.cache_info().maxsize == SHARED_HOME_CACHE_SIZE

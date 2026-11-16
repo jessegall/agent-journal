@@ -93,11 +93,11 @@ def test_the_status_never_shows_a_request_that_is_attempted_and_not_yet_recorded
     log = logging_server.context.request_trace
     append = log.trace_file.append
     writing, release = Event(), Event()
-    held: list[bool] = []
+    wait_results: list[bool] = []
 
     def paused_append(entries):
         writing.set()
-        held.append(release.wait(WAIT_SECONDS))
+        wait_results.append(release.wait(WAIT_SECONDS))
         append(entries)
 
     monkeypatch.setattr(log.trace_file, "append", paused_append)
@@ -111,6 +111,6 @@ def test_the_status_never_shows_a_request_that_is_attempted_and_not_yet_recorded
     release.set()
     writer.join()
     reader.join()
-    assert held == [True], "the status read was not held until the write ended"
+    assert wait_results == [True], "the status read was not held until the write ended"
     status = statuses[0]
     assert status["attempted"] == status["recorded"] + status["dropped"] + status["disabled"], status

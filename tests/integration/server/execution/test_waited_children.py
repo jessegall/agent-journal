@@ -34,7 +34,7 @@ def full_pools(start_check: TicketStartCheck, priorities: ExecutionPriorities, r
         running.enter_context(start_check.queue.admitted(priorities.release_ticket(f"release {number}", current_time)))
 
 
-def under(ticket):
+def current_execution(ticket):
     return CurrentExecution(ticket.priority, "hook", ticket.line, ticket).applied()
 
 
@@ -43,7 +43,7 @@ def test_child_starts_with_both_lanes_full(tmp_path):
     parent = priorities.release_ticket("answer lost", Clock().timestamp())
     with ExitStack() as running:
         full_pools(start_check, priorities, running)
-        with under(parent), start_check.admitted(GIT_STATUS):
+        with current_execution(parent), start_check.admitted(GIT_STATUS):
             children = [entry for entry in start_check.queue.read() if entry.ticket.parent is not None]
     assert [entry.is_running for entry in children] == [True]
 
@@ -51,7 +51,7 @@ def test_child_starts_with_both_lanes_full(tmp_path):
 def test_child_listed_under_its_parent(tmp_path):
     start_check, priorities = door(tmp_path)
     parent = priorities.hook_ticket("", "PreToolUse", Clock().timestamp())
-    with under(parent), start_check.admitted(GIT_STATUS):
+    with current_execution(parent), start_check.admitted(GIT_STATUS):
         child = start_check.queue.read()[0].ticket
     assert child.parent == parent and child.line == "git status"
 
@@ -59,9 +59,9 @@ def test_child_listed_under_its_parent(tmp_path):
 def test_child_of_child_works(tmp_path):
     start_check, priorities = door(tmp_path)
     parent = priorities.hook_ticket("", "Stop", Clock().timestamp())
-    with under(parent), start_check.admitted(GIT_STATUS):
+    with current_execution(parent), start_check.admitted(GIT_STATUS):
         child = start_check.queue.read()[0].ticket
-        with under(child), start_check.admitted(GIT_STATUS):
+        with current_execution(child), start_check.admitted(GIT_STATUS):
             grandchild = [entry.ticket for entry in start_check.queue.read() if entry.ticket.parent == child]
     assert len(grandchild) == 1 and start_check.queue.read() == ()
 
@@ -69,6 +69,6 @@ def test_child_of_child_works(tmp_path):
 def test_child_writes_at_least_at_its_parents_priority(tmp_path):
     start_check, priorities = door(tmp_path)
     parent = priorities.hook_ticket("", "PreToolUse", Clock().timestamp())
-    with under(parent), start_check.admitted(GIT_STATUS):
+    with current_execution(parent), start_check.admitted(GIT_STATUS):
         child = start_check.queue.read()[0].ticket
     assert child.priority >= parent.priority

@@ -23,7 +23,7 @@ class Line:
 
     # a line of an agent message, of the category its type gives unless one is named
     @classmethod
-    def of_agent_message(cls, agent_message: AgentMessage, channel: LineChannel, category: LineCategory | None = None) -> "Line":
+    def agent_message_line(cls, agent_message: AgentMessage, channel: LineChannel, category: LineCategory | None = None) -> "Line":
         message_category = LineCategory.STEERING if agent_message.type is AgentMessageType.STEERING else LineCategory.INFORMATION
         line_category = message_category if category is None else category
         return cls(agent_message.key, agent_message.text, line_category, agent_message.key, channel, agent_message=agent_message)

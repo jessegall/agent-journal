@@ -36,7 +36,7 @@ def test_a_declared_small_table_may_be_scanned(played, statement):
 
 def test_a_statement_is_explained_once_however_many_requests_read_it(played, monkeypatch):
     monkeypatch.setattr("engine.database.repeated_work.READ_LIMIT_REPEATS", 3)
-    QueryPlans.forget()
+    QueryPlans.clear()
     story = played()
     database = story.container.get(Database)
     statement = Statement("SELECT * FROM tasks WHERE id = ?", [0])

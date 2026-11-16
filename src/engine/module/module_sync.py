@@ -90,7 +90,7 @@ class ModuleSync:
 
     def run(self) -> SyncReport:
         # a sync can change the tables and indexes, so no query plan read before it holds after it
-        QueryPlans.forget()
+        QueryPlans.clear()
         with PerformanceState(self.home).reload():
             return self.synchronize()
 
