@@ -14,7 +14,7 @@ POLYMORPHIC_PAIRS = (("row_model", "row_id"), ("subject_model", "subject_id"), (
                      ("row_table", "row_id"))
 AGENT_MODEL_NAMES = ("agent", "agents", "actor", "actors")
 FOLD_TABLES = ("agent_folds", "agent_fold_rows")
-NON_AGENT_COLUMNS = (("agent_lines", "wakes_agent"), ("aliases", "agent_access"), ("context_compaction_notices", "agent_number"),
+NON_AGENT_COLUMNS = (("agent_lines", "wakes_agent"), ("agents", "launch_agent_id"), ("aliases", "agent_access"), ("context_compaction_notices", "agent_number"),
                      ("trigger_action_runs", "notify_agent"))
 
 
@@ -22,7 +22,8 @@ class IdColumns:
     """Finds every column of the live schema that holds an actor's or an agent's id, which are one id space:
     foreign keys to agents or actors, the id columns that hold one with no key, and the model and id pairs; a
     table holding an agent-like column it cannot place is refused, so a rewrite never misses one. The fold
-    record's own tables are left out."""
+    record's own tables are left out, and so is agents.launch_agent_id: the launcher's key for the program's
+    terminal, fixed when the program started, which a new id must not change."""
 
     @staticmethod
     def found(schema: Sequence[SchemaColumn]) -> IdColumnSet:

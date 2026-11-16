@@ -11,7 +11,8 @@ from engine.row.row_owner import MAIN_AGENT, RowOwner
 CORE_ACTOR = Statement("INSERT OR IGNORE INTO actors (id, type, name, created_at, updated_at) VALUES (?, ?, 'core', ?, ?)")
 MODULE_ACTOR = Statement("INSERT OR IGNORE INTO actors (id, creator_id, type, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
 NEXT_OTHER_ACTOR_ID = Statement("SELECT max(?, coalesce(max(id), 0) + 1) AS id FROM actors")
-NEXT_AGENT_ACTOR_ID = Statement("SELECT coalesce(max(id), 0) + 1 AS id FROM actors WHERE id BETWEEN 1 AND ?")
+NEXT_AGENT_ACTOR_ID = Statement("SELECT max(coalesce((SELECT max(id) FROM actors WHERE id BETWEEN 1 AND ?1), 0),"
+                                " coalesce((SELECT max(launch_agent_id) FROM agents WHERE ended_at IS NULL AND launch_agent_id BETWEEN 1 AND ?1), 0)) + 1 AS id")
 MODULE_ACTOR_ID = Statement("SELECT id FROM actors WHERE type = ? AND name = ?")
 SESSION_AGENT_ID = Statement("SELECT id FROM agents WHERE session = ? UNION ALL SELECT session_agent_id AS id FROM agent_sessions WHERE session = ?")
 MODULE_ACTOR_IDS = Statement("SELECT id, name FROM actors WHERE type = 'module'", full_table_reason="One row for each installed module, never for stored journal rows.")
@@ -28,7 +29,8 @@ class ActorTable(RoundState):
     """The actors the core itself makes: its own, on the first sync, and one for each module. Ids keep two
     ranges: an agent's actor takes the next id below FIRST_OTHER_ACTOR_ID, which is its agent id, and every
     other actor one from FIRST_OTHER_ACTOR_ID up; the modules' actors are made first, so an actor made with no
-    id after them lands in the upper range."""
+    id after them lands in the upper range. A new agent id also passes the launcher keys of running programs, so
+    a line typed to a new agent never reaches an older program that kept its key through a renumber."""
 
     def __init__(self, database: Database) -> None:
         self.database = database

@@ -9,7 +9,7 @@ AGENT_COLUMN_SUFFIX = "agent_id"
 AGENT_COLUMN_NAMES = ("helper_id", "asker_id", "receiver_id")
 ACTOR_COLUMN_NAMES = ("actor_id", "creator_id", "holder_id", "person_id", "author_id", "requester_id", "retiring_actor_id", "lifter_id")
 AGENT_KEY_COLUMNS = (("agents", "parent_id"), ("asks", "parent_id"), ("reviewers", "id"))
-AGENT_WORD_COLUMNS = (("agent_lines", "wakes_agent"), ("aliases", "agent_access"), ("context_compaction_notices", "agent_number"),
+AGENT_WORD_COLUMNS = (("agent_lines", "wakes_agent"), ("agents", "launch_agent_id"), ("aliases", "agent_access"), ("context_compaction_notices", "agent_number"),
                  ("trigger_action_runs", "notify_agent"))
 TEXT_ENDINGS = ("_at", "_count", "_name", "_text", "_reason", "_key", "_json", "_access")
 

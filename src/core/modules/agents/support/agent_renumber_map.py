@@ -15,7 +15,8 @@ class AgentRenumberMap:
     """Gives the agents that stay the ids 1, 2, 3 and up, the project's main agent 1 and every other one in the
     order of its old id, with its actor's id the same, through one map the id rewrite tool applies to every row,
     pair and stored stack that names an agent or its actor; the map is kept in agent_renumbers for the folder
-    renames and the notices that follow. launch_agent_id is an agent column the tool reaches by its name."""
+    renames and the notices that follow. agents.launch_agent_id keeps its value: it is the launcher's key for
+    the running program's terminal, so lines and stops still reach the right program."""
 
     def __init__(self, database: Database) -> None:
         self.database = database
