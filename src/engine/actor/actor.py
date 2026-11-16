@@ -4,7 +4,7 @@ from engine.actor.errors.not_an_agent_refusal import NotAnAgentRefusal
 from engine.enums.actor_type import ActorType
 
 
-CORE_ACTOR_ID = 1
+CORE_ACTOR_ID = 0
 @dataclass(frozen=True)
 class Actor:
     """Someone or something that makes a change: a user, an agent, a module or the core. An agent's actor

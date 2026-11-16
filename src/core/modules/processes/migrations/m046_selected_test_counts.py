@@ -1,3 +1,4 @@
+from engine.actor.actor import CORE_ACTOR_ID
 from engine.database.migration import Migration
 from core.modules.processes.migrations.m003_stock_readers import quoted
 from core.modules.processes.support.stock_reader import STOCK_READERS
@@ -8,6 +9,6 @@ class SelectedTestCountsMigration(Migration):
 
     number = 46
     statements = tuple(
-        f"UPDATE readers SET count_pattern = {quoted(reader.count)} WHERE name = {quoted(reader.name)} AND creator_id = 1"
+        f"UPDATE readers SET count_pattern = {quoted(reader.count)} WHERE name = {quoted(reader.name)} AND creator_id = {CORE_ACTOR_ID}"
         for reader in STOCK_READERS if reader.name == "pytest"
     )

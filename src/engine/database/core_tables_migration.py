@@ -3,6 +3,7 @@ from engine.database.module_migrations import ModuleMigrations
 from engine.database.core_actor_row_migration import CoreActorRowMigration
 from engine.database.version_four_map_migration import VersionFourMapMigration
 from engine.database.failure_reason_index_migration import FailureReasonIndexMigration
+from engine.database.core_actor_zero_migration import CoreActorZeroMigration
 
 CORE_MODULE = "core"
 
@@ -32,4 +33,4 @@ class CoreTablesMigration(Migration):
     )
 
 
-CORE_MIGRATIONS = ModuleMigrations(CORE_MODULE, [CoreTablesMigration(), CoreActorRowMigration(), VersionFourMapMigration(), FailureReasonIndexMigration()])
+CORE_MIGRATIONS = ModuleMigrations(CORE_MODULE, [CoreTablesMigration(), CoreActorRowMigration(), VersionFourMapMigration(), FailureReasonIndexMigration(), CoreActorZeroMigration()])

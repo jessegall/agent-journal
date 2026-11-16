@@ -46,6 +46,6 @@ class IdColumns:
     def check_placed(schema: Sequence[SchemaColumn], tables: set[str], plain: tuple[tuple[str, str], ...]) -> None:
         unplaced = [f"{column.table}.{column.column}" for column in schema
                     if column.table in tables and "agent" in column.column and (column.table, column.column) not in plain and (column.table, column.column) not in NON_AGENT_COLUMNS
-                    and column.target is None and not column.column.endswith(("_at", "_count", "_name", "_text", "_reason"))]
+                    and column.target is None and not column.column.endswith(("_at", "_count", "_name", "_text", "_reason", "_key", "_json"))]
         if unplaced:
-            raise Refusal(f"the fold cannot place these agent-like columns: {', '.join(unplaced)}", "name each one in IdColumns as an id column or as not one")
+            raise Refusal(f"the id rewrite cannot place these agent-like columns: {', '.join(unplaced)}", "name each one in IdColumns as an id column or as not one")

@@ -1,3 +1,4 @@
+from engine.actor.actor import CORE_ACTOR_ID
 from engine.database.migration import Migration
 from core.modules.processes.migrations.m003_stock_readers import quoted
 from core.modules.processes.support.stock_reader import STOCK_READERS
@@ -9,6 +10,6 @@ class StockReaderSummariesMigration(Migration):
     number = 25
     statements = tuple(
         f"UPDATE readers SET summary_pattern = {quoted(reader.summary)} "
-        f"WHERE name = {quoted(reader.name)} AND creator_id = 1 AND summary_pattern = ''"
+        f"WHERE name = {quoted(reader.name)} AND creator_id = {CORE_ACTOR_ID} AND summary_pattern = ''"
         for reader in STOCK_READERS if reader.summary
     )

@@ -1,3 +1,4 @@
+from engine.actor.actor import CORE_ACTOR_ID
 from core.modules.tasks.models.task import Task
 import json
 
@@ -10,7 +11,7 @@ from engine.testing.expectations.expect_row import expect_row
 def test_a_task_is_shown_whole(new_story):
     story = started_story(new_story)
     story.run('task make "Fix the cart" --brief "the total is wrong" --priority high --environment main')
-    story.expect_success(lines.TASK_DETAILS, "title: Fix the cart", "brief: the total is wrong", "priority: high", "creator_id: 1")
+    story.expect_success(lines.TASK_DETAILS, "title: Fix the cart", "brief: the total is wrong", "priority: high", f"creator_id: {CORE_ACTOR_ID}")
 
 
 def test_tasks_are_listed_newest_first_a_page_at_a_time_and_by_state(new_story):

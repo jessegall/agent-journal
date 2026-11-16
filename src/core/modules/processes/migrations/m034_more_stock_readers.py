@@ -1,3 +1,4 @@
+from engine.actor.actor import CORE_ACTOR_ID
 from engine.database.migration import Migration
 from core.modules.processes.migrations.m003_stock_readers import insert, quoted
 from core.modules.processes.support.stock_reader import STOCK_READERS
@@ -13,6 +14,6 @@ class MoreStockReadersMigration(Migration):
     number = 34
     statements = tuple(insert(reader).replace("INSERT INTO", "INSERT OR IGNORE INTO") for reader in STOCK_READERS if reader.name in NEW_READERS) + tuple(
         f"UPDATE readers SET lines_pattern = {quoted(reader.lines)}, progress_pattern = {quoted(reader.progress)}, finished_pattern = {quoted(reader.finished)}, failed_pattern = {quoted(reader.failed)}, "
-        f"summary_pattern = {quoted(reader.summary)}, count_pattern = {quoted(reader.count)}, step_pattern = {quoted(reader.step)} WHERE name = {quoted(reader.name)} AND creator_id = 1"
+        f"summary_pattern = {quoted(reader.summary)}, count_pattern = {quoted(reader.count)}, step_pattern = {quoted(reader.step)} WHERE name = {quoted(reader.name)} AND creator_id = {CORE_ACTOR_ID}"
         for reader in STOCK_READERS if reader.name in FIXED_READERS
     )

@@ -118,7 +118,7 @@ class StoredAgentViewReader(AgentViewReader):
 
     def ended(self, agent: Agent) -> list[Fact]:
         if agent.retired_at is not None:
-            return [EndedFact(None, "retired", agent.retiring_actor_id or agent.id)]
+            return [EndedFact(None, "retired", agent.id if agent.retiring_actor_id is None else agent.retiring_actor_id)]
         replaced = self.queries.query(AgentSession).filter(session_agent_id=agent.id, end_reason=EndReason.PERSON_REPLACEMENT.value).first()
         return [EndedFact(None, "replaced", agent.id)] if replaced is not None else []
 
