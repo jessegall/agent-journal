@@ -56,6 +56,15 @@ def test_the_end_of_a_background_run_tells_the_agent_once_to_read_its_summary(en
     expect_absent_lines(story, READ_NOTES, ENDED)
 
 
+def test_a_prompt_after_the_ended_output_was_told_and_read_carries_no_line_of_it(ended_test_output):
+    story, process = ended_test_output
+    expect_lines(story, HookSamples.prompt("go on"), ENDED)
+    story.expect_text("output read 1 --summary", "2 failed, 1 passed", actor=story.agent)
+    story.advance(timedelta(seconds=5))
+    expect_absent_lines(story, HookSamples.prompt("go on"), ENDED)
+    expect_absent_lines(story, HookSamples.prompt("and again"), ENDED)
+
+
 def test_one_hook_reuses_the_ended_runs_output(ended_test_output):
     story, process = ended_test_output
     outputs = story.container.get(OutputQuery)
