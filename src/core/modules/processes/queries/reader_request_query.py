@@ -10,6 +10,7 @@ from core.modules.processes.models.reader_request import ReaderRequest
 
 
 OPEN_REQUESTS_REASON = "the open reader requests are read once and kept until one completes"
+READER_REQUESTS_REASON = "readers are shared by the whole project, so a request is completed in whichever environment it was made, and an agent's requests are read by the agent"
 
 class ReaderRequestQuery(Query[ReaderRequest]):
     """Reads requests for proper readers."""
@@ -19,7 +20,7 @@ class ReaderRequestQuery(Query[ReaderRequest]):
         self.kept = kept
 
     def open(self) -> Self:
-        return self.filter(completed_at=None)
+        return self.all_environments(READER_REQUESTS_REASON).filter(completed_at=None)
 
     def open_rows(self) -> tuple[ReaderRequest, ...]:
         requests = self.open()
@@ -36,7 +37,7 @@ class ReaderRequestQuery(Query[ReaderRequest]):
         self.kept.update(self.open(), remaining, name="processes.open_reader_requests")
 
     def agent(self, agent_id: int) -> Self:
-        return self.filter(creator_id=agent_id)
+        return self.all_environments(READER_REQUESTS_REASON).filter(creator_id=agent_id)
 
     def active_requester_ids(self, current_time: Timestamp) -> set[int]:
         return {request.creator_id for request in self.open_rows() if request.expires_at > current_time}
