@@ -1,5 +1,5 @@
 import {expect, test} from "vitest";
-import {AGENTS, PROFILE_LIMITS, READ_ONLY_KEPT, READ_ONLY_RUN, WORKER_KEPT, WORKER_RUN, mountAgentSettings as mount} from "./support/agentSettingsWindow.js";
+import {AGENTS, PROFILE_LIMITS, READ_ONLY_IDLE, READ_ONLY_RUN, WORKER_KEPT, WORKER_RUN, mountAgentSettings as mount} from "./support/agentSettingsWindow.js";
 import {settle as settled} from "./support/windowContext.js";
 
 const open = async (key, options) => {
@@ -60,7 +60,7 @@ test("Back returns to the table and the draft is kept", async () => {
 test("the line of the read-only helpers shows the limits every profile shares", async () => {
     const {element} = await open("helper");
     expect(setting(element, READ_ONLY_RUN).querySelector("input").value).toBe("4");
-    expect(setting(element, READ_ONLY_KEPT).querySelector("input").value).toBe("8");
+    expect(setting(element, READ_ONLY_IDLE).querySelector("input").value).toBe("24");
 });
 
 test("a profile shows the limit of every profile, and an edit makes it the profile's own and leaves the limit of every profile", async () => {
@@ -70,11 +70,10 @@ test("a profile shows the limit of every profile, and an edit makes it the profi
     expect(running().querySelector("[data-setting-source]").textContent).toBe("Every profile");
     await type(running().querySelector("input"), "2");
     expect(running().querySelector("[data-setting-source]").textContent).toBe("Own value");
-    expect(element.querySelector("[data-override-kept] [data-setting-source]").textContent).toBe("Own value");
     element.querySelector("[data-settings-apply]").click();
     await settled();
     expect(runs).toHaveLength(1);
-    expect(runs[0]).toContain(`${PROFILE_LIMITS}=["journal-researcher:2:5","journal-designer:2:8"]`);
+    expect(runs[0]).toContain(`${PROFILE_LIMITS}=["journal-researcher:2","journal-designer:2"]`);
     expect(runs[0].join(" ")).not.toContain(READ_ONLY_RUN);
 });
 

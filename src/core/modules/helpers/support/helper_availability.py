@@ -32,10 +32,6 @@ class HelperAvailability:
             model = self.limits.checked_model(selected_program, self.providers.provider(selected_program).profile_model(selected_profile))
             self.limits.checked_running(profile)
             idle = self.kept.idle(ProfileModel(selected_program, model, profile), selected_profile.occupant)
-            try:
-                self.limits.checked_kept(profile)
-            except Refusal as refusal:
-                return HelperStartState(refusal.text, programs, idle, False, refusal.text)
             reason = self.kept.idle_refusal(idle).text if idle else None
             return HelperStartState(reason, programs, idle, True)
         except Refusal as refusal:

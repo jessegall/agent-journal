@@ -11,7 +11,7 @@ from engine.query.query import Query
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.usage.support.agent_type_limits import UNLIMITED_AGENT_COUNT, AgentTypeLimits
+from core.modules.usage.support.agent_type_limits import AgentTypeLimits
 from core.modules.agents.support.type_limits import TypeLimits
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.helpers.support.agent_start_check import AgentStartCheck
@@ -65,12 +65,6 @@ class HelperLimits:
 
     def checked_new_place(self, profile: str) -> None:
         self.checked_running(profile)
-        self.checked_kept(profile)
-
-    def checked_kept(self, profile: str) -> None:
-        limit = self.helper_limits(profile).kept
-        if limit != UNLIMITED_AGENT_COUNT and self.helpers(profile).matching(IsNull("retired_at")).count() >= limit:
-            raise Refusal(f"{limit} of {profile} exist, which is the limit", TypeLimits.kept_limit_suggestion(self.kept.kept(profile)))
 
     def helper_limits(self, profile: str) -> TypeLimits:
         limits = self.limits.lookup(HELPER_KEY, profile)

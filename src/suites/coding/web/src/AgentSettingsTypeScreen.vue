@@ -3,7 +3,7 @@ import {computed, onMounted, watch} from "vue";
 import {useWindow} from "@journal/window-kit";
 import {SettingBackPath, SettingEntryList, SettingPerTypeOverrideRow, SettingRow, SettingThreeWayCap, SettingsScreen} from "@journal/setting-components";
 import AgentTypeAgents from "../../../../core/modules/agents/web/src/AgentTypeAgents.vue";
-import {CAP_SIZES, CONTEXT_KINDS, CONTEXT_PROFILES, CONTEXT_TOKENS, MERGE_HOOKS, PROFILE_LIMITS, READ_ONLY_KEPT, READ_ONLY_RUN, changedHooks, profileHooks, valueOf} from "./helperRows.js";
+import {CAP_SIZES, CONTEXT_KINDS, CONTEXT_PROFILES, CONTEXT_TOKENS, MERGE_HOOKS, PROFILE_LIMITS, READ_ONLY_RUN, changedHooks, profileHooks, valueOf} from "./helperRows.js";
 
 // the screen of one helper type over the table: its settings on the left, drawn from what they declare and kept in
 // the one draft of the modal, and its agents on the right. A profile has no settings of its own to draw: it shows
@@ -24,19 +24,17 @@ async function read() {
 watch(screen, (value) => { if (value) props.draft.load([value]); });
 onMounted(read);
 
-// the entry of this profile in the list of profile limits, as its running and kept numbers
+// the entry of this profile in the list of profile limits, as its running number
 const entries = computed(() => props.draft.list(PROFILE_LIMITS).map((text) => text.split(":")));
 const entry = computed(() => entries.value.find((parts) => parts[0] === props.row.profile));
-const every = computed(() => ({running: Number(props.draft.value(READ_ONLY_RUN)), kept: Number(props.draft.value(READ_ONLY_KEPT))}));
-const own = (field) => (entry.value ? Number(entry.value[field === "running" ? 1 : 2]) : null);
+const every = computed(() => ({running: Number(props.draft.value(READ_ONLY_RUN))}));
+const own = () => (entry.value ? Number(entry.value[1]) : null);
 
-function change(field, value) {
+function change(value) {
     const others = entries.value.filter((parts) => parts[0] !== props.row.profile).map((parts) => parts.join(":"));
     if (value === null) return props.draft.set(PROFILE_LIMITS, others);
     if (value === "") return;
-    const running = field === "running" ? value : own("running") ?? every.value.running;
-    const kept = field === "kept" ? value : own("kept") ?? every.value.kept;
-    props.draft.set(PROFILE_LIMITS, [...others, `${props.row.profile}:${running}:${kept}`]);
+    props.draft.set(PROFILE_LIMITS, [...others, `${props.row.profile}:${value}`]);
 }
 
 // the context cap of the type: its own entry in the list of caps of profiles, else the size of its kind of agent
@@ -70,8 +68,7 @@ const openAgent = (agent) => view.open("agents.agents", agent.id);
         <div class="typebody">
             <div class="typemain" data-type-settings>
                 <template v-if="isProfile && row.screen === 'read-only'">
-                    <SettingPerTypeOverrideRow label="Running" help="Agents of this profile that run at once." :every-value="every.running" :own-value="own('running')" :disabled="readOnly" data-override-running @update:own-value="(value) => change('running', value)" />
-                    <SettingPerTypeOverrideRow label="Kept" help="Agents of this profile kept until retired, running or idle. At 0 there is no limit." :every-value="every.kept" :own-value="own('kept')" :disabled="readOnly" data-override-kept @update:own-value="(value) => change('kept', value)" />
+                    <SettingPerTypeOverrideRow label="Running" help="Agents of this profile that run at once." :every-value="every.running" :own-value="own()" :disabled="readOnly" data-override-running @update:own-value="change" />
                 </template>
                 <template v-else>
                     <SettingsScreen :nodes="nodes" :draft="draft" :read-only="readOnly" />

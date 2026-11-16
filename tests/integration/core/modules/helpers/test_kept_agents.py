@@ -1,3 +1,5 @@
+from core.modules.helpers.ticks.unused_helper_retirements import UnusedHelperRetirements
+from datetime import timedelta
 from engine.enums.occupant import Occupant
 from tests.stories.core.support.agent_labels import agent_number
 from engine.query.conditions.is_null import IsNull
@@ -21,13 +23,11 @@ from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent, resumable_session
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper as ReportedHelper
 from tests.stories.server.support.server_client import server_story
-from tests.integration.support.server_harness import viewer_answer
 from tests.stories.server.support.browser_story import expect_browser
 from engine.provider.context_window import ContextWindow
 from core.modules.helpers.support.profile_model import ProfileModel
-import json
 from tests.stories.core.support.agent_labels import agent_label
-from core.modules.helpers.support.helper_settings import HELPER_PROFILE_LIMITS
+from core.modules.helpers.support.helper_settings import HELPER_IDLE_HOURS, HELPER_PROFILE_LIMITS
 from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 from suites.coding.support.shipped_profiles import DEBUGGER_PROFILE
 from suites.coding.support.shipped_profiles import PLANNER_PROFILE
@@ -92,18 +92,12 @@ def test_helper_form_offers_send_and_records_the_reason_for_another_helper(helpe
     server.story.expect_rows(job.new_agent_reason == "An independent comparison")
 
 
-def test_helper_form_offers_send_at_the_kept_limit_and_preserves_the_command_refusal(helper_form_server):
+def test_helper_form_offers_send_for_the_idle_helper_and_a_fresh_start_beside_it_whatever_the_profile_keeps(helper_form_server):
     server, helper = helper_form_server
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
-    server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", f"{HELPER_PROFILE_LIMITS}", f'["{RESEARCHER_PROFILE.name}:4:1"]', "--project"]})
+    server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", f"{HELPER_PROFILE_LIMITS}", f'["{RESEARCHER_PROFILE.name}:4"]', "--project"]})
     availability = profile_line(server, cookie, ["helper", "availability", "--profile", f"{RESEARCHER_PROFILE.name}"])
-    server.story.expect_rows([row["id"] for row in availability["idle_helpers"]] == [helper.id])
-    server.story.expect_rows(not availability["can_start_fresh"])
-    status, _, text = viewer_answer(server.viewer_port(), "/api/line", cookie, "", {"window": "profiles.profiles", "environment": "main", "line": ["helper", "start", f"{RESEARCHER_PROFILE.name}", "--brief", "Read the tax", "--fresh", "Another reader"]})
-    answer = json.loads(text)
-    server.story.expect_rows(status == 200 and answer["code"] != 0)
-    server.story.expect_rows(json.loads(answer["error"])["refused"] in availability["fresh_reason"])
-    profile_line(server, cookie, ["helper", "send", str(agent_number(server.story, helper.id)), "Read the tax"])
+    server.story.expect_rows([row["id"] for row in availability["idle_helpers"]] == [helper.id], availability["can_start_fresh"])
 
 
 def test_helper_form_offers_send_in_light_and_dark(helper_form_server):
@@ -186,31 +180,51 @@ def test_old_callback_leaves_the_new_run(played):
 def test_a_person_sets_the_limits_of_a_profile_and_a_number_in_a_profile_file_is_not_read(played):
     story = played(StartedHelper)
     limits = story.container.get(AgentTypeLimits)
-    story.expect_rows(limits.lookup("helper", f"{RESEARCHER_PROFILE.name}") == TypeLimits(4, 8), limits.lookup("main") is None)
-    story.expect_success(f'setting set {HELPER_PROFILE_LIMITS} \'["{RESEARCHER_PROFILE.name}:1:2"]\' --project', actor=story.user)
-    story.expect_rows(story.container.get(AgentTypeLimits).lookup("helper", f"{RESEARCHER_PROFILE.name}") == TypeLimits(1, 2))
-    story.expect_rows(story.container.get(AgentTypeLimits).lookup("helper", f"{PLANNER_PROFILE.name}") == TypeLimits(4, 8))
+    story.expect_rows(limits.lookup("helper", f"{RESEARCHER_PROFILE.name}") == TypeLimits(4, 0), limits.lookup("main") is None)
+    story.expect_success(f'setting set {HELPER_PROFILE_LIMITS} \'["{RESEARCHER_PROFILE.name}:1"]\' --project', actor=story.user)
+    story.expect_rows(story.container.get(AgentTypeLimits).lookup("helper", f"{RESEARCHER_PROFILE.name}") == TypeLimits(1, 0))
+    story.expect_rows(story.container.get(AgentTypeLimits).lookup("helper", f"{PLANNER_PROFILE.name}") == TypeLimits(4, 0))
 
 
 def test_at_the_run_limit_a_start_of_that_profile_is_refused_and_another_profile_starts(played):
     story = played(StartedHelper)
-    story.expect_success(f'setting set {HELPER_PROFILE_LIMITS} \'["{RESEARCHER_PROFILE.name}:1:8"]\' --project', actor=story.user)
+    story.expect_success(f'setting set {HELPER_PROFILE_LIMITS} \'["{RESEARCHER_PROFILE.name}:1"]\' --project', actor=story.user)
     expect_start_refused(story, f"1 of {RESEARCHER_PROFILE.name} run")
-    story.expect_rows(story.container.get(AgentTypeLimits).lookup("helper", f"{DEBUGGER_PROFILE.name}") == TypeLimits(4, 8))
+    story.expect_rows(story.container.get(AgentTypeLimits).lookup("helper", f"{DEBUGGER_PROFILE.name}") == TypeLimits(4, 0))
 
 
-def test_at_the_kept_maximum_a_new_start_is_refused_naming_the_idle_helper_and_the_person_who_retires(played):
-    story = played(EndedHelper)
+def test_a_helper_idle_past_its_hours_is_retired_for_going_unused_and_a_recently_used_one_is_kept(played):
+    story = played(ReportedHelper)
     helper = helper_agent(story)
-    story.expect_success(f'setting set {HELPER_PROFILE_LIMITS} \'["{RESEARCHER_PROFILE.name}:4:1"]\' --project', actor=story.user)
-    expect_start_refused(story, f"send the job to idle helper {agent_number(story, helper.id)}, or ask the user to retire one")
+    story.advance(timedelta(hours=23))
+    UnusedHelperRetirements()(story.container)
+    story.expect_rows(helper_agent(story).retired_at is None)
+    story.advance(timedelta(hours=2))
+    UnusedHelperRetirements()(story.container)
+    retired = story.row(Agent, helper.id)
+    story.expect_rows(retired.retired_at is not None, retired.retirement_reason == "it took no job for 24 hours")
+
+
+def test_a_running_helper_on_its_job_is_never_retired_for_going_unused(played):
+    story = played(StartedHelper)
+    story.advance(timedelta(days=3))
+    UnusedHelperRetirements()(story.container)
+    story.expect_rows(helper_agent(story).retired_at is None)
+
+
+def test_at_0_idle_hours_no_helper_is_retired(played):
+    story = played(ReportedHelper)
+    story.expect_success(f"setting set {HELPER_IDLE_HOURS} 0 --project", actor=story.user)
+    story.advance(timedelta(days=30))
+    UnusedHelperRetirements()(story.container)
+    story.expect_rows(helper_agent(story).retired_at is None)
 
 
 def test_launches_in_flight_count(played):
     story = played(EndedHelper)
     helper = helper_agent(story)
     resumable_session(story, helper)
-    story.expect_success(f'setting set {HELPER_PROFILE_LIMITS} \'["{RESEARCHER_PROFILE.name}:1:8"]\' --project', actor=story.user)
+    story.expect_success(f'setting set {HELPER_PROFILE_LIMITS} \'["{RESEARCHER_PROFILE.name}:1"]\' --project', actor=story.user)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_success(f'helper send {agent_number(story, helper.id)} "One more job"', actor=story.agent)
     story.expect_refusal(f"helper start {RESEARCHER_PROFILE.name} --fresh 'A second reader' --brief 'Read src/other.py' --environment main", f"1 of {RESEARCHER_PROFILE.name} run", actor=story.agent)
@@ -310,14 +324,14 @@ def test_same_reviewer_same_plan_is_refused(played):
     story.home.socket("launcher").unlink()
 
 
-def test_refusals_fit_and_a_kept_limit_with_all_running_says_to_ask_the_person(played):
-    story = played(StartedHelper)
-    story.expect_success(f'setting set {HELPER_PROFILE_LIMITS} \'["{RESEARCHER_PROFILE.name}:4:1"]\' --project', actor=story.user)
+def test_a_fresh_start_beside_a_kept_idle_helper_is_never_held_back_by_how_many_are_kept(played):
+    story = played(EndedHelper)
+    story.expect_success(f'setting set {HELPER_PROFILE_LIMITS} \'["{RESEARCHER_PROFILE.name}:4"]\' --project', actor=story.user)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
-    outcome = story.run(f"helper start {RESEARCHER_PROFILE.name} --brief 'Read src/other.py' --environment main", actor=story.agent)
+    outcome = story.run(f'helper start {RESEARCHER_PROFILE.name} --fresh "A second reader" --brief "Read src/other.py" --environment main', actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()
-    story.expect_rows("ask the user to retire one" in outcome.output_text, "send the job" not in outcome.output_text, max(len(line) for line in outcome.output_text.splitlines()) <= 120)
+    story.expect_rows("which is the limit" not in outcome.output_text and "retire one" not in outcome.output_text, detail=outcome.output_text)
 
 
 def test_the_agent_mix_counts_the_jobs_and_the_idle_agents_of_each_model(played):

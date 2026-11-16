@@ -1,6 +1,6 @@
 from suites.coding.support.shipped_profiles import MERGER_PROFILE, WORKER_MEDIOR_PROFILE
 from suites.coding.support.coding_settings import WORKER_KEPT_LIMIT, WORKER_RUN_LIMIT
-from core.modules.helpers.support.helper_settings import HELPER_RUN_LIMIT, HELPER_KEPT_LIMIT, HELPER_PROFILE_LIMITS
+from core.modules.helpers.support.helper_settings import HELPER_RUN_LIMIT, HELPER_PROFILE_LIMITS
 import json
 
 from engine.registry.registry import Registry
@@ -29,7 +29,7 @@ def test_a_worker_and_a_merger_are_helpers_and_the_main_agent_and_the_worker_are
 
 def test_a_merger_takes_the_fields_of_the_helper_it_does_not_set(journal):
     expect_fields(journal, "merger", label="Merger", default_profile=MERGER_PROFILE.name, access="read-only", separate_folder=False, run_limit_key=HELPER_RUN_LIMIT,
-                  kept_limit_key=HELPER_KEPT_LIMIT, profile_limits_key=HELPER_PROFILE_LIMITS, job_command=["helper", "send"], line=HELPER_LINE)
+                  kept_limit_key="", profile_limits_key=HELPER_PROFILE_LIMITS, job_command=["helper", "send"], line=HELPER_LINE)
 
 
 def test_a_helper_type_keeps_no_extends_text(journal):
@@ -44,7 +44,7 @@ def test_a_class_that_names_a_base_extends_it(journal):
 
 def test_the_helper_and_the_worker_are_registered_as_before_the_classes(journal):
     expect_fields(journal, "helper", label="Read-only helper", access="read-only", separate_folder=False, default_profile="", start_line="", roster=None,
-                  run_limit_key=HELPER_RUN_LIMIT, kept_limit_key=HELPER_KEPT_LIMIT, profile_limits_key=HELPER_PROFILE_LIMITS, job_command=["helper", "send"],
+                  run_limit_key=HELPER_RUN_LIMIT, kept_limit_key="", profile_limits_key=HELPER_PROFILE_LIMITS, job_command=["helper", "send"],
                   job_task_flag="", line=HELPER_LINE)
     expect_fields(journal, "worker", module="journal.suites.coding.workers", label="Worker", access="writing", separate_folder=True,
                   default_profile=WORKER_MEDIOR_PROFILE.name, start_line="journal worker dispatch",
@@ -80,5 +80,5 @@ def test_the_suites_list_no_roles_per_behaviour_and_a_worker_still_takes_its_wor
 
 def test_the_cores_own_helper_type_is_written_the_same_way_as_the_worker(journal):
     expect_suite_lines(journal, "coding", "helper: coding.helper", "merger: coding.merger")
-    expect_fields(journal, "helper", access="read-only", run_limit_key=HELPER_RUN_LIMIT, kept_limit_key=HELPER_KEPT_LIMIT)
+    expect_fields(journal, "helper", access="read-only", run_limit_key=HELPER_RUN_LIMIT, kept_limit_key="")
     expect_behaviours(journal, "helper", takes_marks=True, runs_saved_commands=True)

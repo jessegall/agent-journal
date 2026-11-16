@@ -28,13 +28,13 @@ class AgentTypeLimits:
 
     def read(self, entry: HelperTypeEntry, profile: str = "") -> TypeLimits:
         profile_limits = entry.profile_limits_key and self.profile_limits(entry.profile_limits_key, profile)
-        return profile_limits or TypeLimits(self.settings.number(entry.run_limit_key), self.settings.number(entry.kept_limit_key))
+        return profile_limits or TypeLimits(self.settings.number(entry.run_limit_key), self.settings.number(entry.kept_limit_key) if entry.kept_limit_key else UNLIMITED_AGENT_COUNT)
 
     def profile_limits(self, key: str, profile: str) -> TypeLimits | None:
         stored = self.settings.value(key)
         for item in stored if is_list(stored) or is_tuple(stored) else ():
             name, _, numbers = str(item).partition(":")
             run, _, kept = numbers.partition(":")
-            if name == profile and run.isdigit() and kept.isdigit():
-                return TypeLimits(int(run), int(kept))
+            if name == profile and run.isdigit() and (kept.isdigit() or not kept):
+                return TypeLimits(int(run), int(kept) if kept else UNLIMITED_AGENT_COUNT)
         return None

@@ -48,7 +48,7 @@ test("the line of the read-only helpers carries the limits every profile shares 
     const {element} = await helpers();
     const group = element.querySelector("[data-type-group=helper]");
     expect(group.textContent).toContain("Read-only helpers");
-    expect(group.textContent).toContain("Every profile runs up to 4 and keeps up to 8");
+    expect(group.textContent).toContain("Every profile runs up to 4 unless the profile sets its own limit");
     expect(group.querySelector("[data-type-open]").textContent).toBe("Change for every profile");
 });
 

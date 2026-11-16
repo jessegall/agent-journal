@@ -14,7 +14,7 @@ try {
     const limits = page.locator('[data-agent-settings-agents]');
     await limits.locator('[data-type-row="worker"]').waitFor({timeout: 10000});
     assert.match(await limits.locator('[data-type-row="worker"]').textContent(), /0 of 1.*1/);
-    assert.match(await limits.locator('[data-type-row="helper:journal-researcher"]').textContent(), /0 of 2.*1 of 3/);
+    assert.match(await limits.locator('[data-type-row="helper:journal-researcher"]').textContent(), /0 of 2.*1/);
     for (const colorScheme of ["light", "dark"]) {
         await page.emulateMedia({colorScheme});
         await limits.screenshot({path: `${capture}-${colorScheme}.png`, animations: "disabled"});

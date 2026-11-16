@@ -9,7 +9,7 @@ from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_E
 
 MODULE_KEY = "journal.core.helpers"
 HELPER_RUN_LIMIT = f"{MODULE_KEY}.read-only-helper-run-limit"
-HELPER_KEPT_LIMIT = f"{MODULE_KEY}.read-only-helper-kept-limit"
+HELPER_IDLE_HOURS = f"{MODULE_KEY}.read-only-helper-idle-hours"
 HELPER_PROFILE_LIMITS = f"{MODULE_KEY}.read-only-helper-profile-limits"
 ALLOWED_MODELS = f"{MODULE_KEY}.allowed-models"
 HELPER_MAX_MINUTES = f"{MODULE_KEY}.read-only-helper-max-minutes"
@@ -31,8 +31,8 @@ HELPER_TYPES_SCREEN = "helper-type"
 HELPER_SETTING_VALUES = [SettingValue("unstarted-helper-seconds", "Seconds before a helper counts as failed", "Seconds after a helper starts with no sign of its program before its launch counts as failed.", SettingType.NUMBER, default=60),
                    SettingValue("agent-use-days", "Days of agent use counted", "Days of jobs counted when suggesting which kept agent to retire.", SettingType.NUMBER, default=14),
                    SettingValue("read-only-helper-run-limit", "Read-only helpers running, per profile", "Read-only helpers of each profile that run at once; six profiles at 4 make 24. At 0 none run.", SettingType.NUMBER, default=4, person_set=True, screen="helper-type.read-only", section="Every profile"),
-                   SettingValue("read-only-helper-kept-limit", "Read-only helpers kept, per profile", "Read-only helpers kept of each profile, running or idle, until retired. At 0 there is no limit.", SettingType.NUMBER, default=8, person_set=True, screen="helper-type.read-only", section="Every profile"),
-                   SettingValue("read-only-helper-profile-limits", "Read-only helper limits for one profile", "Entries of profile:run:kept, each winning for its profile. An environment list replaces the project list.", SettingType.LIST, default=(), person_set=True, screen="helper-type.read-only", section="Every profile"),
+                   SettingValue("read-only-helper-idle-hours", "Hours before an idle helper retires", "A read-only helper that has taken no job for this many hours is retired. At 0 none is retired.", SettingType.NUMBER, default=24, person_set=True, screen="helper-type.read-only", section="Every profile"),
+                   SettingValue("read-only-helper-profile-limits", "Read-only helper limits for one profile", "Entries of profile:run, each winning for its profile. An environment list replaces the project list.", SettingType.LIST, default=(), person_set=True, screen="helper-type.read-only", section="Every profile"),
                    SettingValue("allowed-models", "Allowed models", "Models that agents may run, as program and model; empty allows all.", SettingType.LIST, default=(), person_set=True, is_driving=True),
                    SettingValue("read-only-helper-max-minutes", "Longest read-only helper job", "Minutes a read-only helper may work on one job before it is stopped.", SettingType.NUMBER, default=60, person_set=True, screen="helper-type.read-only", section="Every profile"),
                    SettingValue("read-only-helper-max-cost", "Largest read-only helper cost", "Dollars a read-only helper may cost before it is stopped; 0 sets no limit.", SettingType.NUMBER, default=0, person_set=True, screen="helper-type.read-only", section="Every profile"),
@@ -58,8 +58,8 @@ HELPER_SETTING_RULES = {COLD_SESSION_MINUTES: NumberRule(0),
                         CONTEXT_LIMIT_GROWTH_PERCENT: NumberRule(0),
                         COLD_SESSION_CONTEXT_PERCENT: NumberRule(0),
                         HELPER_RUN_LIMIT: NumberRule(0),
-                        HELPER_KEPT_LIMIT: NumberRule(0),
-                        HELPER_PROFILE_LIMITS: ListRule(pattern=r"[\w.-]+:\d+:\d+"),
+                        HELPER_IDLE_HOURS: NumberRule(0),
+                        HELPER_PROFILE_LIMITS: ListRule(pattern=r"[\w.-]+:\d+"),
                         ALLOWED_MODELS: ListRule(pattern=r"\S+ \S+"),
                         HELPER_MAX_MINUTES: NumberRule(0),
                         HELPER_MAX_COST: NumberRule(0, integer=False),

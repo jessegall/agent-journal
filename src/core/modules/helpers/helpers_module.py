@@ -16,6 +16,7 @@ from core.modules.helpers.support.helper_agent_messages import HELPER_AGENT_MESS
 from core.modules.helpers.support.helper_settings import HELPER_SETTINGS
 from core.modules.helpers.types.helper import Helper
 from core.modules.helpers.tick_handlers.helper_limits_tick_handler import HelperLimitsTickHandler
+from core.modules.helpers.tick_handlers.unused_helper_retirements_tick_handler import UnusedHelperRetirementsTickHandler
 from core.modules.helpers.tick_handlers.usage_limit_marker_tick_handler import UsageLimitMarkerTickHandler
 from core.modules.helpers.tick_handlers.unstarted_job_starts_tick_handler import UnstartedJobStartsTickHandler
 
@@ -39,7 +40,7 @@ class HelpersModule(Module):
     settings = HELPER_SETTINGS
     guards = HELPERS_GUARDS
     handlers = HELPERS_HANDLERS
-    tick_handlers = [KeptReportRetriesTickHandler, HelperLimitsTickHandler, UsageLimitMarkerTickHandler, UnstartedJobStartsTickHandler]
+    tick_handlers = [KeptReportRetriesTickHandler, HelperLimitsTickHandler, UnusedHelperRetirementsTickHandler, UsageLimitMarkerTickHandler, UnstartedJobStartsTickHandler]
     agent_messages = HELPER_AGENT_MESSAGES
     skills = HELPERS_SKILLS
     subcommands = HELPERS_SUBCOMMANDS

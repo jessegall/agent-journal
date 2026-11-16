@@ -8,7 +8,6 @@ export const CONTEXT_KINDS = `${CORE}.context-limit-kinds`;
 export const CONTEXT_PROFILES = `${CORE}.context-limit-profiles`;
 export const PROFILE_LIMITS = `${CORE}.read-only-helper-profile-limits`;
 export const READ_ONLY_RUN = `${CORE}.read-only-helper-run-limit`;
-export const READ_ONLY_KEPT = `${CORE}.read-only-helper-kept-limit`;
 export const MERGE_HOOKS = "journal.suites.coding.workers.merge-hooks";
 
 const NO_CAP = "none";
@@ -62,7 +61,7 @@ function helperRows(limits, draft) {
     const named = (profile) => rowOf(`${helper.key}:${profile.profile}`, profile.title, profile.line, profile, capOf(draft, helper.key, profile.profile), {screen: profile.group === MERGER_GROUP ? MERGER_GROUP : "read-only", role: helper.key, profile: profile.profile});
     const special = helper.profiles.filter((profile) => profile.group === MERGER_GROUP || profile.group === DESIGNER_GROUP).map(named);
     const rest = helper.profiles.filter((profile) => profile.group !== MERGER_GROUP && profile.group !== DESIGNER_GROUP).map((profile) => ({...named(profile), indent: true}));
-    const line = {key: helper.key, name: "Read-only helpers", group: true, screen: "read-only", role: helper.key, profile: "", line: `${helper.running} running, ${helper.kept} kept. Every profile runs up to ${helper.run_limit} and keeps ${helper.kept_limit ? `up to ${helper.kept_limit}` : "any number"} unless the profile sets other limits.`};
+    const line = {key: helper.key, name: "Read-only helpers", group: true, screen: "read-only", role: helper.key, profile: "", line: `${helper.running} running, ${helper.kept} kept. Every profile runs up to ${helper.run_limit} unless the profile sets its own limit, and an unused helper is retired after its idle hours.`};
     return [...types, ...special, line, ...rest];
 }
 

@@ -1,5 +1,4 @@
-from core.modules.helpers.support.helper_settings import (CONTEXT_LIMIT_PROFILES, CONTEXT_LIMIT_TOKENS, HELPER_KEPT_LIMIT, HELPER_MAX_COST, HELPER_MAX_MINUTES, HELPER_PROFILE_LIMITS,
-                                                          HELPER_RUN_LIMIT)
+from core.modules.helpers.support.helper_settings import (CONTEXT_LIMIT_PROFILES, CONTEXT_LIMIT_TOKENS, HELPER_MAX_COST, HELPER_MAX_MINUTES, HELPER_PROFILE_LIMITS, HELPER_RUN_LIMIT)
 from core.modules.settings.support.setting_reader import SettingReader
 from core.modules.settings.support.screen_reading import ScreenReading
 from core.modules.settings.support.screen_node import ScreenNode
@@ -21,11 +20,10 @@ class HelperProfileScreen:
 
     def read(self, profile: str) -> ScreenReading:
         profile_limits = self.entries(HELPER_PROFILE_LIMITS, profile)
-        profile_run, profile_kept = (int(number) for number in profile_limits[:2]) if len(profile_limits) == 2 and all(number.isdigit() for number in profile_limits) else (None, None)
+        profile_run = int(profile_limits[0]) if len(profile_limits) == 1 and profile_limits[0].isdigit() else None
         profile_cap = self.entries(CONTEXT_LIMIT_PROFILES, profile)
         nodes = (
             self.node(HELPER_RUN_LIMIT, "running", profile_run, SettingComponent.TYPE_OVERRIDE),
-            self.node(HELPER_KEPT_LIMIT, "kept", profile_kept, SettingComponent.TYPE_OVERRIDE),
             self.node(CONTEXT_LIMIT_TOKENS, "cap", int(profile_cap[0]) if profile_cap and profile_cap[0].isdigit() else None, SettingComponent.TRIPLE_CAP),
             self.node(HELPER_MAX_MINUTES, "minutes", None, SettingComponent.TYPE_OVERRIDE),
             self.node(HELPER_MAX_COST, "cost", None, SettingComponent.TYPE_OVERRIDE))

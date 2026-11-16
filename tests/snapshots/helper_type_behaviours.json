@@ -49,7 +49,7 @@
     "start_line": "",
     "roster": "",
     "run_limit": "journal.core.helpers.read-only-helper-run-limit",
-    "kept_limit": "journal.core.helpers.read-only-helper-kept-limit",
+    "kept_limit": "",
     "profile_limits": "journal.core.helpers.read-only-helper-profile-limits",
     "job_command": [
       "helper",
@@ -87,7 +87,7 @@
     "start_line": "",
     "roster": "",
     "run_limit": "journal.core.helpers.read-only-helper-run-limit",
-    "kept_limit": "journal.core.helpers.read-only-helper-kept-limit",
+    "kept_limit": "",
     "profile_limits": "journal.core.helpers.read-only-helper-profile-limits",
     "job_command": [
       "helper",
