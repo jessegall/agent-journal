@@ -13,10 +13,10 @@ MOST_WAITING_LINES = 3
 
 
 class RecordWaitingMessageLineHandler(Handler[RecordWaitingMessageLine, Model | None]):
-    """An idle main agent, paused or not, sends no hook that could carry a message, so a line for the first of
-    the queue is typed to it; the rest reach it by the hooks that follow, once it wakes. The message counts as
-    delivered only once its line was typed or a hook took it, so a line that could not be typed is made anew
-    every ten seconds, at most three waiting at once."""
+    """An idle main agent, paused or not, or one idle a minute after a refused stop, sends no hook that could
+    carry a message, so a line for the first of the queue is typed to it; the rest reach it by the hooks
+    that follow, once it wakes. The message counts as delivered only once its line was typed or a hook took
+    it, so a line that could not be typed is made anew every ten seconds, at most three waiting at once."""
 
     command = RecordWaitingMessageLine
 
@@ -28,9 +28,9 @@ class RecordWaitingMessageLineHandler(Handler[RecordWaitingMessageLine, Model | 
         agent = self.agents.find(command.agent_id) if command.agent_id is not None else self.agents.main_agent()
         if agent is not None and agent.ended_at is not None:
             return None
-        if agent is None or not self.hook_calls.is_prompt_open(agent.id):
+        if agent is None or not (self.hook_calls.is_prompt_open(agent.id) or self.hook_calls.is_idle_after_refused_stop(agent.id, context.timestamp)):
             return None
-        message = self.lines.waking_message(agent.id)
+        message = self.lines.waking_message(agent.id, context.timestamp)
         if message is None:
             return None
         waiting = self.lines.waiting(agent.id).take(MOST_WAITING_LINES)

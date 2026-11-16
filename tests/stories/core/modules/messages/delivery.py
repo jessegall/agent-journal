@@ -724,3 +724,14 @@ class StoppedLeadWithMessage(StoryFixture):
 
     def steps(self, story):
         story.run('message send "Are you there" --environment main', actor=story.user)
+
+
+def test_a_message_is_typed_to_an_agent_that_rests_a_minute_after_a_refused_stop(new_story):
+    story = new_story(SAMPLES, fixture=UnreadCartMessage)
+    typing = KeptTyping()
+    story.replace(TerminalTyping, typing)
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "Message 1 is unread")
+    story.advance(timedelta(minutes=1))
+    post_message(story, "Are you there")
+    story.run_listeners()
+    expect_terminal_lines(typing, [f"[journal] {NewMessageNotice.declared().agent_message(message=2).text}"])

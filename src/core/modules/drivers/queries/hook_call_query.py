@@ -28,6 +28,7 @@ CALL_BATCH_ROWS = 50
 TURN_HOOKS = (HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE, HookEventName.STOP)
 TOOL_HOOKS = (HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE)
 IDLE_LIMIT_SECONDS = 30
+REFUSED_STOP_IDLE_SECONDS = 60
 IDLE_HOOKS = (HookEventName.SESSION_START, HookEventName.STOP)
 COMPACTION_LIMIT_SECONDS = 600
 
@@ -130,6 +131,11 @@ class HookCallQuery(Query[HookCall]):
         if call.is_compaction_start:
             return call.answer == HookAnswer.ALLOWED and self.is_after_manual_compaction(agent_id)
         return (call.hook in IDLE_HOOKS and call.answer == HookAnswer.ALLOWED) or call.is_interrupted
+
+    def is_idle_after_refused_stop(self, agent_id: int, timestamp: Timestamp) -> bool:
+        call = self.latest_turn_call(agent_id)
+        return (call is not None and call.hook == HookEventName.STOP and call.answer == HookAnswer.REFUSED
+                and call.creation_timestamp().elapsed_seconds(timestamp) >= REFUSED_STOP_IDLE_SECONDS)
 
     def has_background_work(self, agent_id: int) -> bool:
         call = self.latest_turn_call(agent_id)

@@ -20,6 +20,6 @@ class ReleasedMessageLineListener(CommitListener[Moved[AgentLine]]):
         line = event.row
         if line.source != WAITING_MESSAGE_SOURCE:
             return
-        message = self.lines.waking_message(line.session_agent_id)
+        message = self.lines.waking_message(line.session_agent_id, logged.timestamp)
         if message is None or not self.lines.names(line, message):
             self.lines.drop(line, logged)

@@ -3,6 +3,7 @@ from engine.command.bus import Bus
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.query.queries import Queries
+from engine.time.timestamp import Timestamp
 from core.modules.drivers.commands.deliver_agent_line.deliver_agent_line import DeliverAgentLine
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
@@ -26,12 +27,13 @@ class WaitingMessageLines:
     def oldest_unread(self, agent_id: int) -> Message | None:
         return next(iter(self.messages.addressed(agent_id)), None)
 
-    def waking_message(self, agent_id: int) -> Message | None:
+    def waking_message(self, agent_id: int, timestamp: Timestamp) -> Message | None:
         message = self.oldest_unread(agent_id)
         if message is None or message.delivered_at is None:
             return message
         call = self.hook_calls.newest_agent_hook(agent_id)
-        if call is None or call.creation_timestamp() <= message.delivered_at:
+        is_turn_delivery = call is not None and call.creation_timestamp() <= message.delivered_at
+        if call is None or (is_turn_delivery and not self.hook_calls.is_idle_after_refused_stop(agent_id, timestamp)):
             return None
         return next((message for message in self.messages.addressed(agent_id) if message.delivered_at is None), None)
 
