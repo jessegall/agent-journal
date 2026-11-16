@@ -6,7 +6,7 @@ from core.modules.agents.support.column_sets import ColumnSets
 from core.modules.agents.support.reference_columns import FOLD_TABLES, POLYMORPHIC_PAIRS
 
 AGENT_COLUMN_SUFFIX = "agent_id"
-AGENT_COLUMN_NAMES = ("helper_id", "asker_id", "receiver_id")
+AGENT_COLUMN_NAMES = ("helper_id", "asker_id", "receiver_id", "worker_id", "reviewer_id")
 ACTOR_COLUMN_NAMES = ("actor_id", "creator_id", "holder_id", "person_id", "author_id", "requester_id", "retiring_actor_id", "lifter_id")
 AGENT_KEY_COLUMNS = (("agents", "parent_id"), ("asks", "parent_id"), ("reviewers", "id"))
 AGENT_WORD_COLUMNS = (("agent_lines", "wakes_agent"), ("agents", "launch_agent_id"), ("aliases", "agent_access"), ("context_compaction_notices", "agent_number"),
@@ -16,9 +16,10 @@ TEXT_ENDINGS = ("_at", "_count", "_name", "_text", "_reason", "_key", "_json", "
 
 class ColumnRule:
     """Says of every column of the live schema whether it holds an agent's id or an actor's: a column that
-    references agents, or whose name says agent, holds an agent id and may not reference actors; every other
-    column that references actors holds an actor id; a column that breaks the rule, or one that looks like an
-    agent's but is in neither set, is refused."""
+    references agents, or whose name says agent, holds an agent id, even while a later migration of its module
+    has still to point it at agents, since an agent's actor has its id; every other column that references
+    actors holds an actor id; an actor column that references agents, or one that looks like an agent's but is
+    in neither set, is refused."""
 
     @staticmethod
     def sets(schema: Sequence[SchemaColumn]) -> ColumnSets:
@@ -41,8 +42,7 @@ class ColumnRule:
 
     @staticmethod
     def check(columns: Sequence[SchemaColumn]) -> None:
-        broken = [f"{column.table}.{column.column}" for column in columns if ColumnRule.is_agent_column(column) and column.target == "actors"]
-        broken += [f"{column.table}.{column.column}" for column in columns if column.column in ACTOR_COLUMN_NAMES and column.target == "agents"]
+        broken = [f"{column.table}.{column.column}" for column in columns if column.column in ACTOR_COLUMN_NAMES and column.target == "agents"]
         unplaced = [f"{column.table}.{column.column}" for column in columns
                     if "agent" in column.column and not ColumnRule.is_agent_column(column) and (column.table, column.column) not in AGENT_WORD_COLUMNS
                     and column.target is None and not column.column.endswith(TEXT_ENDINGS)]

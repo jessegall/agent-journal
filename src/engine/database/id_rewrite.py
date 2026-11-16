@@ -17,7 +17,7 @@ TAKEN_IDS = (f"SELECT id FROM \"{{table}}\" WHERE id IN (SELECT new_id FROM {MAP
 
 class IdRewrite:
     """Gives actors and agents, which share one id space, new ids from one map of old id to new id: the two
-    primary keys, agents.actor_id and every column and model and id pair that holds such an id are rewritten
+    primary keys and every column and model and id pair of the live schema that holds such an id are rewritten
     in two passes through negative passing ids, so an old id that is another's new id never mixes rows. It
     refuses before any change when a new id belongs to a row outside the map, runs in the caller's write
     with the foreign keys off, and gives the rows it rewrote per table."""
@@ -34,7 +34,7 @@ class IdRewrite:
             for index, (old_id, new_id) in enumerate(sorted(mapping.items())):
                 self.database.update(Statement(FILL_MAP, [old_id, new_id, -(index + 1)]))
             self.refuse_taken()
-            plain = (*((table, "id") for table in ID_TABLES), ("agents", "actor_id"), *columns.plain)
+            plain = (*((table, "id") for table in ID_TABLES), *columns.plain)
             self.moved(plain, columns.pairs, "old_id", "passing_id")
             counts = self.moved(plain, columns.pairs, "passing_id", "new_id")
             if self.json_rewrite is not None:

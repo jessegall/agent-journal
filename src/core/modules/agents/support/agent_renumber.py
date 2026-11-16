@@ -2,6 +2,7 @@ import json
 import sqlite3
 from pathlib import Path
 
+from engine.actor.actor import FIRST_OTHER_ACTOR_ID
 from engine.database.database import Database
 from engine.database.reference_rewrite import SCHEMA_REASON, ReferenceRewrite
 from engine.database.removal_counts import RemovalCounts
@@ -25,6 +26,8 @@ from core.modules.agents.support.renumber_check import RenumberCheck
 AGENT_COUNT = Statement("SELECT count(*) AS n FROM agents", scan_reason=SCHEMA_REASON)
 RENUMBERED = Statement("SELECT 1 FROM agent_renumber_summary WHERE id = 1", scan_reason=SCHEMA_REASON)
 ENVIRONMENTS = Statement("SELECT id, folder FROM environments ORDER BY id", scan_reason=SCHEMA_REASON)
+AGENTLESS_AGENT_ACTORS = Statement("SELECT id FROM actors WHERE type = 'agent' AND id BETWEEN 1 AND ? AND id NOT IN (SELECT id FROM agents)",
+                                   [FIRST_OTHER_ACTOR_ID - 1], scan_reason=SCHEMA_REASON)
 MAIN_AGENTS = Statement("SELECT id, environment_id, number, role, ended_at FROM agents WHERE role = 'main' ORDER BY id", scan_reason=SCHEMA_REASON)
 SUMMARY_INSERT = "INSERT INTO agent_renumber_summary (id, copy, counts, renumbered_at) VALUES (1, ?, ?, ?)"
 
@@ -32,7 +35,7 @@ SUMMARY_INSERT = "INSERT INTO agent_renumber_summary (id, copy, counts, renumber
 class AgentRenumber:
     """Renumbers the agents in one write with the foreign keys off, after a whole copy of the database: folds
     every main agent into the project environment's, deletes the messages other agents sent, removes the agents
-    that go with what is only theirs, moves their actors out of the agents' ids, gives the agents that stay the
+    that go with what is only theirs, and the agent rows of agents removed before it whose actors stayed, moves their actors out of the agents' ids, gives the agents that stay the
     ids 1 to n with their actors, checks it all and stores the summary; any refusal rolls it all back. A journal
     with no agents, or one renumbered before, is left as it is."""
 
@@ -74,7 +77,8 @@ class AgentRenumber:
         counts_before, samples = check.tables_counted(), check.samples()
         removal = RemovalCounts()
         removal.add(AgentMessagePrune(self.database).removed(main_id))
-        removal.add(AgentRemoval(self.database).removed(plan.goes))
+        gone_before = {int(row["id"]) for row in self.database.rows(AGENTLESS_AGENT_ACTORS)}
+        removal.add(AgentRemoval(self.database).removed(plan.goes | gone_before))
         RemovedAgentActors(self.database).moved()
         AgentRenumberMap(self.database).renumbered(main_id)
         check.checked(counts_before, removal.deleted, samples)

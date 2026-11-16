@@ -15,7 +15,7 @@ KEPT_TABLES = ("tasks", "documents", "doc_revisions", "reports", "plans", "phase
 
 class AgentRemoval:
     """Removes the agents that go with what is only theirs, through the agent columns: a row an agent column
-    requires goes, a nullable agent column is set to NULL, a required one with no key takes its row, a pair whose model is an agent goes; the actor
+    requires goes, a nullable agent column is set to NULL, a required one with no key to agents takes its row, a pair whose model is an agent goes; the actor
     columns, which say who wrote a row, are never touched, so an agent's actor row and what it wrote stay. A
     kept table a removal would reach is refused by name."""
 
@@ -29,7 +29,7 @@ class AgentRemoval:
         sets = ColumnRule.sets(schema)
         removal = RowRemoval(self.database, KEPT_TABLES, sets.pairs, {"agents": AGENT_MODELS})
         counts = removal.removed("agents", agent_ids)
-        keyed = {(column.table, column.column) for column in schema if column.target is not None}
+        keyed = {(column.table, column.column) for column in schema if column.target == "agents"}
         ids = sorted(agent_ids)
         for table, column in sets.agent:
             if (table, column) in keyed:
