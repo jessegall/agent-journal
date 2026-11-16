@@ -7,9 +7,12 @@ REWRITE_STEP_NS = 1_000_000_000
 
 
 def save_status_file(story, session: str, report: dict[str, object]) -> None:
-    """The status file Claude Code's status line leaves for a session, as the hook program keeps it."""
+    """The status file Claude Code's status line leaves for a session, as the hook program keeps it: a new file
+    put in the old one's place, so each reading is a version of its own."""
     story.home.status_folder.mkdir(parents=True, exist_ok=True)
-    (story.home.status_folder / f"{session}.json").write_text(json.dumps({"session_id": session, **report}))
+    written = story.home.status_folder / f"{session}.json.new"
+    written.write_text(json.dumps({"session_id": session, **report}))
+    written.replace(story.home.status_folder / f"{session}.json")
 
 
 def keep_status_file(story, session: str) -> None:

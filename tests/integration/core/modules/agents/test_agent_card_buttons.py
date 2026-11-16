@@ -1,10 +1,12 @@
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
+from engine.time.polled_wait import PolledWait
 from tests.stories.core.modules.agents.agent_cards_numbers import WINDOW
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
 RETIREMENT_REASON = "Its reading is done"
+LISTENER_WAIT_SECONDS, LISTENER_PAUSE_SECONDS = 10, 0.05
 
 
 def card_facts(person, helper) -> dict:
@@ -20,7 +22,8 @@ def test_a_person_pauses_stops_ends_the_open_job_and_retires_an_agent_from_its_c
         paused = helper_agent(story)
         person.value(WINDOW, ["helper", "stop", str(helper.number)])
         story.run_listeners()
-        job_open = card_facts(person, helper)["helper_job_open"] == (story.container.get(HelperJobRows).open_job(helper.id) is not None)
+        job_ended_in_rows = PolledWait(LISTENER_WAIT_SECONDS, LISTENER_PAUSE_SECONDS).poll(lambda: story.container.get(HelperJobRows).open_job(helper.id) is None)
+        job_open = job_ended_in_rows and card_facts(person, helper)["helper_job_open"] is False
         person.value(WINDOW, ["helper", "stop", str(helper.number)])
         stopped = helper_agent(story)
         job_ended = card_facts(person, helper)["helper_job_open"] is False

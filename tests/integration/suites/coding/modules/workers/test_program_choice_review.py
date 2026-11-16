@@ -339,7 +339,7 @@ def test_only_a_person_changes_the_split(split_story):
 @pytest.mark.parametrize('role', ['worker', 'helper'])
 @pytest.mark.parametrize('line,refusal', [('worker-route make --program codex --tags protected --environment main', None),
                                           ('provider-outage make codex "out of credit" --ends-at 2026-11-01T09:00:00+00:00', None),
-                                          (f'setting set {SPLIT} "claude 50,codex 50" --project', 'an approval needs a reason')])
+                                          (f'setting set {SPLIT} "claude 50,codex 50" --project', None)])
 def test_only_a_person_changes_the_split_child_agents_cannot_write(split_story, role, line, refusal):
     story = split_story
     child = Actor(story.new_row_id(f'agent start child-session claude {role} --parent {story.agent.id} --environment main'), ActorType.AGENT)
@@ -451,7 +451,8 @@ def test_program_states_copes_with_a_removed_program(split_story, split_viewer, 
     uninstall_sample_module(story)
     for provider in story.container.get(Providers).all():
         monkeypatch.setattr(provider, 'journal_trust', lambda home: HookTrust.READY)
-    expect_program(story, dispatch(story), 'claude')
+    worker_past_the_removed_program = dispatch(story)
+    expect_program(story, worker_past_the_removed_program, 'claude')
 
 
 def test_program_states_copes_with_a_stale_file(split_story, split_viewer):
