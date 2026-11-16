@@ -4,7 +4,7 @@
     "find": {
         "select": "literal",
         "where": [
-            {"fileMatches": "(^|/)src/(suites|core)/.+_nudges\\.py$"},
+            {"fileMatches": "(^|/)src/(suites|core)/.+(_agent_messages\\.py|/agent_messages/[^/]+\\.py)$"},
             {"textMatches": "(?i)(waits? after|more tool uses|\\{[a-z_]+\\} more\\b|writes since|due: \\{)"}
         ]
     },

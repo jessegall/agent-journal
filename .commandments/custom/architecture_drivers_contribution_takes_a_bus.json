@@ -1,0 +1,61 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "parameter",
+        "where": [
+            {
+                "descendant": {
+                    "resolvesLike": "*.Bus"
+                }
+            },
+            {
+                "any": [
+                    {
+                        "extendsAny": "Policy",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "EventPolicy",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "StateSource",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "FactSource",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "LineSource",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "EventLineSource",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "Transform",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "WakeCause",
+                        "of": "enclosingType"
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "contribution-takes-a-bus",
+        "description": "A policy, state source, fact source, line source, transform or wake cause is handed the command bus, so it can write while it only answers (doc 1310 section 5.1).",
+        "rule": "Take the queries and readers the answer needs; a write is an effect's command, which the step's save runs.",
+        "skill": "drivers-architecture"
+    }
+}

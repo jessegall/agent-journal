@@ -1,4 +1,4 @@
-from engine.agent_state_machine.contracts.policy import Policy
+from engine.agent_machine.contracts.policy import Policy
 
 
 class ReaderJudge:
@@ -12,6 +12,6 @@ class MissedLinesPolicy(Policy):
     def __init__(self, judge: ReaderJudge) -> None:
         self.judge = judge
 
-    def answer(self, hook):
+    def refusals(self, question, view):
         # @sin architecture_processes_reading_judged_outside_the_decider
-        return self.judge.misses(hook.reader, hook.category, hook.text)
+        return self.judge.misses(question.reader, question.category, question.text)

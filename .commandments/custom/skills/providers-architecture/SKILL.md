@@ -14,8 +14,8 @@ may do, and the launcher runs the program. That only holds while each piece keep
 
 ## When it fires
 
-- **`provider-decides-what-an-agent-may-do`** - a provider imports a guard, a driver rule, `RuleAnswer` or
-  `HookReply`. What the agent may do is decided by the drivers and guards; the provider only reads and writes
+- **`provider-decides-what-an-agent-may-do`** - a provider imports a guard, a policy, `RuleAnswer` or
+  `HookReply`. What the agent may do is decided by the agent machine's policies and the guards; the provider only reads and writes
   its program's files and lines.
 - **`provider-runs-a-program`** - a provider imports `subprocess`, `multiprocessing` or `pty`. A provider builds
   the command line as a `LaunchCommand`; the launcher runs it.

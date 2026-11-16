@@ -10,7 +10,7 @@
             {
                 "any": [
                     {
-                        "nameMatches": "(\\.guards?(\\.|$)|driver_rule|rule_answer|hook_reply|\\.rules\\.)"
+                        "nameMatches": "(\\.guards?(\\.|$)|\\.policies(\\.|$)|agent_machine\\.contracts\\.(policy|event_policy)|rule_answer|hook_reply)"
                     },
                     {
                         "descendant": {
@@ -19,7 +19,7 @@
                     },
                     {
                         "descendant": {
-                            "resolvesLike": "*.rules.*"
+                            "resolvesLike": "*.policies.*"
                         }
                     }
                 ]
@@ -33,8 +33,8 @@
     },
     "sin": {
         "name": "provider-decides-what-an-agent-may-do",
-        "description": "A provider imports a guard, a driver rule or the hook's answer, so what an agent may do is decided in the code that only speaks the program's language.",
-        "rule": "A provider reads and writes its program's files and lines; what the agent may do is the drivers' and guards' to decide.",
+        "description": "A provider imports a guard, a policy or the hook's answer, so what an agent may do is decided in the code that only speaks the program's language.",
+        "rule": "A provider reads and writes its program's files and lines; what the agent may do is the agent machine's policies' and the guards' to decide.",
         "skill": "providers-architecture"
     }
 }

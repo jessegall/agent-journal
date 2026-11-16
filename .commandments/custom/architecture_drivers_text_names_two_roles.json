@@ -195,7 +195,7 @@
     },
     "sin": {
         "name": "text-names-two-roles",
-        "description": "A refusal or a nudge names two roles as its readers, such as a main agent and a helper, so each reader gets words meant for the other.",
+        "description": "A refusal or an agent message names two roles as its readers, such as a main agent and a helper, so each reader gets words meant for the other.",
         "rule": "Declare one text for each role, or choose the text by the role of the asking agent; a text for one role never holds a clause for another.",
         "skill": "drivers-architecture"
     }

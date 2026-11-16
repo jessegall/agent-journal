@@ -80,13 +80,13 @@ A suite is a set of drivers for one sort of work, with the modules it lists. An 
 | Thing | The one way | Enforced by |
 |---|---|---|
 | Change a row | A command with its handler; a person or an agent reaches it through its subcommand | `architecture_core_handler_runs_twice` |
-| Answer a hook | A driver rule that only answers; it runs no command | `architecture_drivers_rule_runs_a_command` |
+| Answer a hook | A contribution of the agent machine that only answers; it runs no command | `architecture_drivers_contribution_runs_a_command` |
 | Read or write a file | `FileAccess.shared()` in `src/engine/file/file_access.py` | `FileReadsDetector`, `FileWritesDetector` |
 | SQL | Built with the query builder; SQL text only in `src/engine/database`, `src/engine/query` and migrations | `architecture_queries_sql_text_in_a_builder`, `architecture_queries_statement_outside_the_builder` |
 | Read rows | `queries.query(Model)` with where, order_by and take or limit; get() returns at most 50 rows, a named limit at most 1000, and every row only through every_row(reason), listed in `tests/snapshots/every_row_reads.txt` | `tests/unit/test_every_row_reads.py`, `tests/unit/test_no_unbounded_reads.py` |
 | The time | The clock of `src/engine/time` | `architecture_core_wall_clock_outside_clock` |
 | A line in the system log | `SystemLogWriter` | `architecture_core_log_outside_system_log_writer` |
-| A line to an agent | The nudger; a nudge names a row and carries no data of it | `architecture_nudges_agent_line_outside_nudger`, `architecture_nudges_command_in_a_nudge` |
+| A line to an agent | The message sender; an agent message names a row and carries no data of it | `architecture_messages_agent_line_outside_message_sender`, `architecture_messages_command_in_an_agent_message` |
 | A model from stored values | Through its table | `architecture_model_loaded_outside_table` |
 | A setting | One declaration in its module, read through the settings | the skill `commandments-settings-architecture` |
 | A request from the viewer | The one transport file | the skill `commandments-viewer-request-funnel` |

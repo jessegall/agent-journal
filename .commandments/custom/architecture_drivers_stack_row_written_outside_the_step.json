@@ -1,0 +1,29 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameMatches": "^AgentStack(Move)?$"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)migrations/"
+            },
+            {
+                "fileMatches": "(^|/)core/modules/drivers/(bindings/stored_step_writer|support/read_versions_writers)\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "stack-row-written-outside-the-step",
+        "description": "Code other than the step's save builds an agent_stack or agent_stack_move row, so a stack changes without the step that decided it (doc 1310 sections 6.1 and 6.5).",
+        "rule": "Only StoredStepWriter saves the stack and its moves; ReadVersionsWriters bumps an agent's read version. Anything else asks for a step.",
+        "skill": "drivers-architecture"
+    }
+}

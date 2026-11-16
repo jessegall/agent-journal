@@ -15,7 +15,7 @@ A shell line of a main agent or a worker runs through `journal-run`, which keeps
 - **`slot-written-outside-the-queue`** - a call to `OutputFolder.write_slot` outside `RunSlots` bypasses
   admission. Only `RunSlots` grants a slot after the parts and their reader requests are saved.
 
-- **`shell-input-rewritten-outside-the-runner-rule`** - code other than the runner start effect gives a shell line a new
+- **`shell-input-rewritten-outside-the-runner-effect`** - code other than the runner start effect gives a shell line a new
   input. Only `RunnerStartEffect.input_after` wraps a line in the runner, with the process its command made (doc 1310
   section 4.1); other contributions answer with lines or a refusal. The rewrite-conflict check refuses a managed
   rewrite competing with the runner.
@@ -35,7 +35,7 @@ A shell line of a main agent or a worker runs through `journal-run`, which keeps
 - **`program-started-outside-the-door`** - a file under src starts a program itself (subprocess, os.system,
   os.exec or spawn, pty.spawn, asyncio.create_subprocess) instead of `ProcessExecutor.execute(ExecutionRequest(...))`.
   A file that must is named in `OUTSIDE_STARTS` with its reason and in the `outside_starts` list.
-- **`reading-nudge-outside-the-notices`** - a contribution, a listener or a tick says a reading or cadence notice itself (a
+- **`reading-message-outside-the-notices`** - a contribution, a listener or a tick says a reading or cadence notice itself (a
   declaration of the `reading_declarations` list). `ReadingNotices` and `WarnCadenceHandler` are the only senders.
 - **`reader-chosen-outside-reader-layers`** - readers are put in order by id or by default flag outside `ReaderLayers`.
   Order them with `ReaderLayers.ordered`: project, plugin, stock; default first, then the newest.
@@ -43,7 +43,7 @@ A shell line of a main agent or a worker runs through `journal-run`, which keeps
   mark and lift commands. Make and lift marks through `UnreadableMarkRegistry`, so the reason and the actor are recorded.
 - **`run-shown-by-category-outside-run-visibility`** - code outside `RunVisibility` and `PartVisibility` decides by
   `is_watched` or `is_visible` which runs show a card, a mark or a dock item. Ask `visible_part`.
-- **`nudge-carries-row-data`** - a message template of the processes or aliases module puts a command, a title, a line
+- **`agent-message-carries-row-data`** - a message template of the processes or aliases module puts a command, a title, a line
   or a text of a stored row into the line an agent receives. An agent message names the row and its number; the agent reads the
   rest by command (rule 8). A count of lines (`{lines} lines`) is a number, not data.
 - **`stock-reader-outside-the-stock-file`** - a `StockReader` is built away from `support/stock_reader.py`. Add a

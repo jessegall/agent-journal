@@ -24,7 +24,7 @@
     "sin": {
         "name": "actor-checked-by-hand",
         "description": "A handler compares an actor's type with ActorType.USER or ActorType.AGENT, or an agent's role with AgentRole.MAIN, so who may run a command is decided in each handler.",
-        "rule": "Ask the actor what it is with Actor.is_agent, or let a guard or a driver rule decide who may run the command; a handler only does the work.",
+        "rule": "Ask the actor what it is with Actor.is_agent, or let a guard or a policy decide who may run the command; a handler only does the work.",
         "skill": "plain-code-words"
     }
 }

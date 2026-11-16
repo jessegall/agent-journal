@@ -1,0 +1,33 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "function",
+        "where": [
+            {
+                "fileMatches": "(^|/)(src/|samples/processes/)"
+            },
+            {
+                "name": "input_after"
+            },
+            {
+                "extendsAny": "Effect",
+                "of": "enclosingType"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "processes/effects/runner_start_effect\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "shell-input-rewritten-outside-the-runner-effect",
+        "description": "An effect other than the processes module's RunnerStartEffect gives the tool a new input, so two effects compete for a shell line and the line may skip the runner.",
+        "rule": "RunnerStartEffect alone answers input_after for a shell line; a managed hook's own replacement input comes in through ProjectHookTransform, and every other contribution answers with lines, a refusal or commands.",
+        "skill": "processes-architecture"
+    }
+}

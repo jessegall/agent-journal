@@ -1,0 +1,29 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "AgentBlock"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)migrations/"
+            },
+            {
+                "fileMatches": "(^|/)core/modules/drivers/(bindings/stored_step_writer|commands/block_agent/block_agent_handler)\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "hold-opened-outside-the-step",
+        "description": "Code builds an agent_blocks row itself, so a hold opens without a hold plan of a step or the BlockAgent command that OpenHold sends.",
+        "rule": "Open a hold from a step's BlockPlan, saved by StoredStepWriter, or with OpenHold, which sends BlockAgent; close one with CloseAgentBlock.",
+        "skill": "drivers-architecture"
+    }
+}

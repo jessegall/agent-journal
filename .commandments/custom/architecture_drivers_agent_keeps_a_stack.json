@@ -11,8 +11,7 @@
                 "nameIn": [
                     "stack",
                     "states",
-                    "state",
-                    "layers"
+                    "state"
                 ]
             },
             {
@@ -23,8 +22,8 @@
     },
     "sin": {
         "name": "agent-keeps-a-stack",
-        "description": "The agents module stores a stack, states or layers on a row, while where an agent stands is the agent machine's stack, saved by the step in the drivers module's agent_stack row.",
-        "rule": "Keep no stack on the agent: what holds it is an open row of an overlay's module, read on each hook.",
+        "description": "The agents module stores a stack or states on a row, while where an agent stands is the agent machine's stack, saved by the step in the drivers module's agent_stack row.",
+        "rule": "Keep no stack on the agent: the agent machine's step saves the stack in the drivers module's agent_stack row and reads it on each hook.",
         "skill": "drivers-architecture"
     }
 }

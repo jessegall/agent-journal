@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "import",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/engine/agent_stack/"
+            },
+            {
+                "nameMatches": "^engine\\.agent_machine(\\.|$)"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "stack-imports-the-machine",
+        "description": "The engine's agent_stack area imports the agent machine, so the stack's states and reasons depend on the machine that reads them (doc 1310 section 4.6).",
+        "rule": "Keep the stack below the machine: agent_stack declares states, stacked states and reasons and imports nothing of engine.agent_machine; move what both need into agent_stack.",
+        "skill": "drivers-architecture"
+    }
+}

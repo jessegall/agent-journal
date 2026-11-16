@@ -1,4 +1,4 @@
-from engine.agent_state_machine.contracts.policy import Policy
+from engine.agent_machine.contracts.policy import Policy
 from core.modules.processes.queries.reading_decision_query import ReadingDecisionQuery
 
 
@@ -8,6 +8,6 @@ class StoredDecisionPolicy(Policy):
     def __init__(self, decisions: ReadingDecisionQuery) -> None:
         self.decisions = decisions
 
-    def answer(self, hook):
+    def refusals(self, question, view):
         # @righteous architecture_processes_reading_judged_outside_the_decider
-        return self.decisions.command_key_decisions(hook.name).first()
+        return self.decisions.command_key_decisions(question.name).first()

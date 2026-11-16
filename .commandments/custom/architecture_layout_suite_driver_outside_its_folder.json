@@ -27,7 +27,7 @@
     "sin": {
         "name": "suite-driver-outside-its-folder",
         "description": "A suite's or module's driver sits outside a folder of its own under drivers.",
-        "rule": "Each driver lives in src/suites/<suite>/drivers/<driver>/<driver>.py, with the rules and guards only it uses beneath it.",
+        "rule": "Each driver lives in src/suites/<suite>/drivers/<driver>/<driver>.py, with the guards only it uses beneath it.",
         "skill": "plain-code-words"
     }
 }

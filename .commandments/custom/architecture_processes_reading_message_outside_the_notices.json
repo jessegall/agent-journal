@@ -1,0 +1,60 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "any": [
+                    {
+                        "all": [
+                            {
+                                "name": "agent_message"
+                            },
+                            {
+                                "of": "receiver",
+                                "nameMatches": "^(${reading_declarations})$"
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "name": "send"
+                            },
+                            {
+                                "descendant": {
+                                    "all": [
+                                        {
+                                            "is": "identifier"
+                                        },
+                                        {
+                                            "nameMatches": "^(${reading_declarations})$"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "fileMatches": "(^|/)core/"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)core/modules/processes/support/(process_agent_messages|reading_notices/reading_notices|cadence/cadence_messages)\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "reading-message-outside-the-notices",
+        "description": "A rule, a listener or a tick says a reading or cadence notice itself, so the same case can be told twice or in two ways.",
+        "rule": "Send a reading notice through ReadingNotices and a cadence notice through CadenceMessages and WarnCadenceHandler.",
+        "skill": "processes-architecture"
+    }
+}

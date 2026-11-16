@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "extendsAny": "State"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/engine/agent_stack/states/"
+            }
+        ]
+    },
+    "sin": {
+        "name": "state-defined-outside-the-stack",
+        "description": "A class outside the engine's agent_stack states extends State, so a module adds an eighth state the machine's step does not know (doc 1310 section 5.1).",
+        "rule": "Only src/engine/agent_stack/states defines the seven states; a module gives a state through a state source that returns a RequiredState of one of them.",
+        "skill": "drivers-architecture"
+    }
+}

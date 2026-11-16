@@ -1,0 +1,70 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": [
+                    "run",
+                    "dispatch",
+                    "save",
+                    "delete",
+                    "execute",
+                    "update",
+                    "insert"
+                ]
+            },
+            {
+                "any": [
+                    {
+                        "extendsAny": "Policy",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "EventPolicy",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "StateSource",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "LineSource",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "EventLineSource",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "Effect",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "Transform",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "WakeCause",
+                        "of": "enclosingType"
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)core/modules/plugins/effects/plugin_effect\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "contribution-runs-a-command",
+        "description": "A contribution of the agent machine runs a command or writes a row itself, so the write escapes the step's save and its decision record (doc 1310 sections 4.1 and 5.1).",
+        "rule": "A policy, need source, line source, transform or wake cause only answers; an effect names its commands in commands() and the step's save runs them.",
+        "skill": "drivers-architecture"
+    }
+}

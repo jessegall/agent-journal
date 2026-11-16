@@ -1,0 +1,107 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "any": [
+                    {
+                        "resolvesLike": "*.Database",
+                        "of": "child:func"
+                    },
+                    {
+                        "resolvesLike": "*.Container",
+                        "of": "child:func"
+                    },
+                    {
+                        "resolvesLike": "*.Queries",
+                        "of": "child:func"
+                    },
+                    {
+                        "resolvesLike": "*Query",
+                        "of": "child:func"
+                    },
+                    {
+                        "nameIn": [
+                            "synced_container",
+                            "opened_container",
+                            "synced_database_container",
+                            "database_container",
+                            "opened",
+                            "shared"
+                        ]
+                    }
+                ]
+            },
+            {
+                "any": [
+                    {
+                        "extendsAny": "Policy",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "EventPolicy",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "StateSource",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "LineSource",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "EventLineSource",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "Effect",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "Transform",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "WakeCause",
+                        "of": "enclosingType"
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "child": {
+                    "all": [
+                        {
+                            "field": "func"
+                        },
+                        {
+                            "descendant": {
+                                "all": [
+                                    {
+                                        "is": "identifier"
+                                    },
+                                    {
+                                        "name": "FileAccess"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "sin": {
+        "name": "contribution-builds-its-reader",
+        "description": "A contribution of the agent machine (a policy, need source, line source, effect, transform or wake cause) builds its own database, container or query instead of being handed one, so it reads outside the step's answer basis (doc 1310 section 5.1).",
+        "rule": "Take every reader through the constructor, as an injected query, so the step reads what the machine pinned.",
+        "skill": "drivers-architecture"
+    }
+}

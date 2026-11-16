@@ -1,13 +1,17 @@
-from engine.driver.rule_answer import RuleAnswer
+from engine.agent_stack.reason import Reason
 from engine.driver.open_hold import OpenHold
-from core.modules.processes.support.process_nudges import READER_BLOCK
+from core.modules.processes.support.process_agent_messages import READER_BLOCK
 
 
 class ReadingEnforcer:
-    def refusal(self, output: int, request: int) -> RuleAnswer:
+    def refusal(self, output: int, request: int) -> list[Reason]:
         # @righteous architecture_processes_pressure_outside_the_enforcer
-        return RuleAnswer.refused(READER_BLOCK.agent_message(output=output, request=request))
+        return refused(READER_BLOCK.agent_message(output=output, request=request))
 
-    def block(self, agent_id: int, nudge, ends) -> OpenHold:
+    def block(self, agent_id: int, agent_message, ends) -> OpenHold:
         # @righteous architecture_processes_pressure_outside_the_enforcer
-        return OpenHold(agent_id, nudge, ends)
+        return OpenHold(agent_id, agent_message, ends)
+
+
+def refused(agent_message) -> list[Reason]:
+    return [agent_message]

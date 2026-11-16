@@ -14,11 +14,22 @@ write; the hook is answered from that record. That only holds while each contrib
 
 ## When it fires
 
-- **`rule-runs-a-command`** - a policy, need source, line source, transform or wake cause calls `run`, `dispatch`,
+- **`contribution-runs-a-command`** - a policy, need source, line source, transform or wake cause calls `run`, `dispatch`,
   `save`, `delete` or a database write itself. A contribution only answers: an effect names the commands it wants in
   `commands()`, and the step's save runs them.
-- **`rule-builds-its-reader`** - a contribution constructs a `Database`, a `Container`, `Queries` or a query class.
+- **`contribution-builds-its-reader`** - a contribution constructs a `Database`, a `Container`, `Queries` or a query class.
   Name the query it needs in its constructor, `def __init__(self, tasks: TaskQuery)`, and the container hands it in.
+- **`contribution-takes-a-bus`** - a policy, state source, fact source, line source, transform or wake cause takes the
+  command bus in its constructor. It only answers: take the queries the answer needs, and let an effect name the commands.
+- **`stack-imports-the-machine`** - a file of `engine/agent_stack/` imports `engine.agent_machine`. The stack sits below
+  the machine; move what both need into `agent_stack`.
+- **`state-defined-outside-the-stack`** - a class outside `engine/agent_stack/states/` extends `State`. The seven states
+  are the engine's; a module gives one through a state source that returns a `RequiredState`.
+- **`stack-row-written-outside-the-step`** - code other than `StoredStepWriter` builds an `AgentStack` or `AgentStackMove`
+  row (`ReadVersionsWriters` bumps a read version). Anything else asks for a step.
+- **`hold-opened-outside-the-step`** - code builds an `AgentBlock` row itself. A hold opens from a step's `BlockPlan` or
+  through `OpenHold`, which sends `BlockAgent`; `CloseAgentBlock` closes it.
+- **`rank-key-is-a-number`** - a `Reason` ranks by a number. Give it a rank key the driver's rank order names.
 - **`hook-named-by-a-string`** - a contribution names an event it hears by a string. Name it by its member:
   `events = [HookEventName.STOP]`.
 - **`driver-base-imports-a-module`** - a file of `engine/driver/` imports from `core/modules/` or

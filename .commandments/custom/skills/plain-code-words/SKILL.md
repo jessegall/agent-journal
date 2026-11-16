@@ -63,8 +63,8 @@ uses its `LastInsertId` or `RowsAffected` methods. A string named `result` has n
 ## Agent messages name rows
 
 An agent message names a row, its number and what happened, and never a command: the agent knows the commands
-from its skills (`command-in-a-nudge`). Keep stored text, reasons, commands,
+from its skills (`command-in-an-agent-message`). Keep stored text, reasons, commands,
 reports and titles in their rows. Counts, row types and paths are allowed; `path_fields` preserves a path,
-never a command or a reason. `stored-text-in-a-nudge` checks templates, including plural templates and
+never a command or a reason. `stored-text-in-an-agent-message` checks templates, including plural templates and
 aliased imports. Driver opening lines are static code instructions, and rule failures are code diagnostics;
 those two declarations are exempt because neither copies a stored resource's words.

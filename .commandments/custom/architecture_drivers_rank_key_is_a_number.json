@@ -1,0 +1,36 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "Reason"
+            },
+            {
+                "argument": {
+                    "at": 2,
+                    "all": [
+                        {
+                            "is": "literal"
+                        },
+                        {
+                            "textMatches": "^-?[0-9]+$"
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "rank-key-is-a-number",
+        "description": "A reason ranks by a number, so its place among the driver's rank order cannot be read or named (doc 1310 section 11.1).",
+        "rule": "Give a reason a rank key that is a name the driver's rank order lists, such as TASK_RANK = \"tasks.work\".",
+        "skill": "drivers-architecture"
+    }
+}
