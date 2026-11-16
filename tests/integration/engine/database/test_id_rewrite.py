@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from engine.database.database import Database
@@ -6,6 +8,7 @@ from engine.database.id_rewrite import IdRewrite
 from engine.database.reference_rewrite import ReferenceRewrite
 from engine.database.schema_columns import SchemaColumns
 from engine.database.statement import Statement
+from engine.database.stored_json_ids import StoredJsonIds
 from engine.errors.refusal import Refusal
 from engine.journal.journal_home import JournalHome
 
@@ -66,3 +69,20 @@ def test_an_empty_map_changes_nothing(tmp_path):
     opened = database(tmp_path)
     assert rewritten(opened, {}) == {}
     assert rows(opened, "SELECT id, holder_id FROM tasks ORDER BY id") == [(1, 2), (2, 3), (3, 9)]
+
+
+def test_a_stack_keeps_its_row_references_and_agent_work_with_the_ids_and_an_event_keeps_what_it_said(tmp_path):
+    opened = database(tmp_path)
+    stack = [{"state_name": "Working", "state": {"work": {"work_type": "unit", "work_id": 3, "text": "unit"}},
+              "state_key": {"subject": {"model": "agent", "row_id": 3}, "generation": "bottom"}},
+             {"state_name": "Blocked", "state_key": {"subject": {"model": "task", "row_id": 3}}}]
+    opened.update(Statement("DROP TABLE agent_stacks"))
+    opened.update(Statement("CREATE TABLE agent_stacks (id INTEGER PRIMARY KEY, stacked_states TEXT NOT NULL)"))
+    opened.update(Statement("INSERT INTO agent_stacks VALUES (1, ?)", [json.dumps(stack)]))
+    opened.update(Statement("CREATE TABLE event_log (id INTEGER PRIMARY KEY, data TEXT NOT NULL)"))
+    opened.update(Statement("INSERT INTO event_log VALUES (1, ?)", [json.dumps({"agent_id": 3})]))
+    with ReferenceRewrite(opened).without_foreign_keys():
+        counts = IdRewrite(opened, StoredJsonIds(opened).rewritten).rewritten({3: 4}, IdColumns.found(SchemaColumns(opened).columns()))
+    moved = json.loads(rows(opened, "SELECT stacked_states FROM agent_stacks")[0][0])
+    assert (moved[0]["state"]["work"]["work_id"], moved[0]["state_key"]["subject"]["row_id"], moved[1]["state_key"]["subject"]["row_id"]) == (4, 4, 3)
+    assert rows(opened, "SELECT data FROM event_log") == [(json.dumps({"agent_id": 3}),)] and counts["json"] == 1
