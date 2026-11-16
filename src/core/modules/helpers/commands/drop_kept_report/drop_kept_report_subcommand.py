@@ -7,9 +7,9 @@ from core.modules.helpers.commands.drop_kept_report.drop_kept_report import Drop
 
 
 class DropKeptReportSubcommand(Subcommand[DropKeptReport, str]):
-    """`journal unsaved-report drop <n>`: ends a helper's job whose report could not be saved."""
+    """`journal hand-in drop <n>`: ends a helper's job whose report could not be saved."""
 
-    cli_name = "unsaved-report"
+    cli_name = "hand-in"
     name = "drop"
 
     def arguments(self, parser: ArgumentParser) -> None:

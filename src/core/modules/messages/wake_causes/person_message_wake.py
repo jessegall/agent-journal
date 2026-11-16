@@ -15,7 +15,7 @@ class PersonMessageWake(WakeCause):
         self.messages = messages
 
     def requires_wake(self, view: AgentView) -> bool:
-        return view.is_prompt_open and not view.is_resting and self.messages.agent_undelivered(view.agent).exists()
+        return view.is_prompt_open and not view.is_resting and self.messages.step_undelivered(view).exists()
 
     def text(self, view: AgentView) -> str:
         return "A person's message waits: read it"

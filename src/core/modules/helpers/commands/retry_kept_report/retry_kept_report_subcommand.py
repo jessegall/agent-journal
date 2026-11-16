@@ -7,9 +7,9 @@ from core.modules.helpers.commands.retry_kept_report.retry_kept_report import Re
 
 
 class RetryKeptReportSubcommand(Subcommand[RetryKeptReport, str]):
-    """`journal unsaved-report retry <n>`: saves a helper's kept report again."""
+    """`journal hand-in retry <n>`: saves a helper's kept report again."""
 
-    cli_name = "unsaved-report"
+    cli_name = "hand-in"
     name = "retry"
 
     def arguments(self, parser: ArgumentParser) -> None:

@@ -21,4 +21,4 @@ class KeptReportJobGuard(Guard[Changed[HelperJob]]):
             return
         kept = self.reports.kept_job(helper_id)
         if kept is not None and kept.id != event.row.id:
-            raise Refusal(f"agent {helper_id}'s report on job {kept.id} was not saved", f"journal unsaved-report retry {helper_id} or journal unsaved-report drop {helper_id}")
+            raise Refusal(f"agent {helper_id}'s report on job {kept.id} was not saved", f"journal hand-in retry {helper_id} or journal hand-in drop {helper_id}")

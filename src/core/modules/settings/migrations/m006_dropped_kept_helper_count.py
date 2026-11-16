@@ -4,7 +4,7 @@ PROFILE_LIMITS = "journal.core.helpers.read-only-helper-profile-limits"
 RUN_PART = "substr(each.value, instr(each.value, ':') + 1)"
 
 
-class DroppedKeptLimitMigration(Migration):
+class DroppedKeptHelperCountMigration(Migration):
     """Drops the stored kept limit of read-only helpers and keeps each entry of a profile's helper limits to its
     profile and run limit."""
 
