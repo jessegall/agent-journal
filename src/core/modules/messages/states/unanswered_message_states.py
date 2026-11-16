@@ -41,4 +41,4 @@ class UnansweredMessageStates(StateSource):
         refusal = UnansweredRefusalMessage.declared().agent_message(messages=numbers, message=unanswered[0].id)
         return BlockPlan(refusal, MessagesAnswered([message.id for message in unanswered]), UNANSWERED_KEY, UNANSWERED_RANK,
                          members=tuple(message.id for message in unanswered), tool_grace_uses=UNANSWERED_TOOL_USES,
-                         closer_roles=tuple([CloserRole.AGENT]), lifting_lines=ANSWER_COMMANDS, countdown=UNANSWERED_COUNTDOWN.agent_message("{left}", messages=numbers))
+                         closer_roles=(CloserRole.AGENT,), lifting_lines=ANSWER_COMMANDS, countdown=UNANSWERED_COUNTDOWN.agent_message("{left}", messages=numbers))

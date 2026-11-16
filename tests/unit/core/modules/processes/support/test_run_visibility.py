@@ -21,22 +21,22 @@ class NoReads:
 
 
 def test_a_service_of_a_plugin_has_no_visible_part_and_an_agents_own_run_has_one():
-    assert RunVisibility.select_visible_part(run(creator_id=1, plugin="code-commandments"), tuple([PART])) is None
-    assert RunVisibility.select_visible_part(run(), tuple([PART])) is PART
+    assert RunVisibility.select_visible_part(run(creator_id=1, plugin="code-commandments"), (PART,)) is None
+    assert RunVisibility.select_visible_part(run(), (PART,)) is PART
 
 
 def test_an_agents_own_script_shows_once_it_moved_to_the_background_and_not_before():
-    assert RunVisibility.select_visible_part(run(moved_at=MOVED_AT), tuple([SCRIPT])) is SCRIPT
-    assert RunVisibility.select_visible_part(run(), tuple([SCRIPT])) is None
+    assert RunVisibility.select_visible_part(run(moved_at=MOVED_AT), (SCRIPT,)) is SCRIPT
+    assert RunVisibility.select_visible_part(run(), (SCRIPT,)) is None
 
 
 def test_a_moved_plugin_run_and_a_moved_listing_do_not_show():
-    assert RunVisibility.select_visible_part(run(moved_at=MOVED_AT, plugin="code-commandments"), tuple([SCRIPT])) is None
-    assert RunVisibility.select_visible_part(run(moved_at=MOVED_AT), tuple([LISTING])) is None
+    assert RunVisibility.select_visible_part(run(moved_at=MOVED_AT, plugin="code-commandments"), (SCRIPT,)) is None
+    assert RunVisibility.select_visible_part(run(moved_at=MOVED_AT), (LISTING,)) is None
 
 
 def test_a_run_another_agent_created_shows_its_first_part_without_moving():
-    assert RunVisibility.select_visible_part(run(creator_id=1), tuple([SCRIPT])) is SCRIPT
+    assert RunVisibility.select_visible_part(run(creator_id=1), (SCRIPT,)) is SCRIPT
 
 
 def test_a_merge_the_journal_ran_itself_shows_no_part_and_reads_no_row():
@@ -44,4 +44,4 @@ def test_a_merge_the_journal_ran_itself_shows_no_part_and_reads_no_row():
 
 
 def test_a_merge_hook_the_journal_started_has_no_visible_part():
-    assert RunVisibility.select_visible_part(run(creator_id=1, is_merge_hook=True), tuple([PART])) is None
+    assert RunVisibility.select_visible_part(run(creator_id=1, is_merge_hook=True), (PART,)) is None

@@ -26,7 +26,7 @@ class UnreadMessages(KeptRowChanges[Message]):
                      or (message.target_agent_id is None and agent.role == AgentRole.MAIN))
 
     def kept_rows(self, message: Message) -> tuple[Message, ...]:
-        return tuple([message]) if message.read_at is None and message.type in PERSON_MESSAGE_TYPES else ()
+        return (message,) if message.read_at is None and message.type in PERSON_MESSAGE_TYPES else ()
 
     def update_kept(self, message: Message, pending: tuple[Message, ...]) -> None:
         def replaced(messages: tuple[Message, ...]) -> tuple[Message, ...]:

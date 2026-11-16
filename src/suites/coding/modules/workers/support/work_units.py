@@ -45,7 +45,7 @@ class WorkUnits:
         phase = None if plan is not None else self.shared_phase(task_ids)
         if plan is None:
             return WorkUnit(plan, phase, task_ids, uncommitted_count, len(task_ids), uncommitted_count)
-        plan_tasks = self.queries.query(Task).matching(PlanTasksCondition(tuple([plan.id])))
+        plan_tasks = self.queries.query(Task).matching(PlanTasksCondition((plan.id,)))
         progress = self.kept.read(plan_tasks, lambda: self.queries.query(PlanProgress).find(plan.id), name="workers.unit_plan_progress")
         return WorkUnit(plan, phase, task_ids, uncommitted_count, progress.task_count, progress.task_count - progress.completed_count - progress.testing_count)
 

@@ -35,8 +35,8 @@ def test_second_update_waits_on_the_class_limit():
 
 def test_a_build_behind_a_waiting_update_is_not_blocked_by_the_class_limit_alone():
     build = ExecutionTicket(BUILD, BUILD.priority, BUILD.priority, WORKER, "make build", seconds_after_start(2), seconds_after_start(2), run_id=3)
-    assert ROOMY.starting([update(1, 2), build], [update(0, 1)], seconds_after_start(3), False) == tuple([build])
+    assert ROOMY.starting([update(1, 2), build], [update(0, 1)], seconds_after_start(3), False) == (build,)
 
 
 def test_an_update_starts_in_the_default_long_lane_though_it_costs_more_than_the_background_share():
-    assert ExecutionOrder(replace(DEFAULT_LANE_LIMITS, starter_caps=dict(DEFAULT_LANE_LIMITS.capacities))).starting([update(0, 1)], [], seconds_after_start(1), False) == tuple([update(0, 1)])
+    assert ExecutionOrder(replace(DEFAULT_LANE_LIMITS, starter_caps=dict(DEFAULT_LANE_LIMITS.capacities))).starting([update(0, 1)], [], seconds_after_start(1), False) == (update(0, 1),)

@@ -29,7 +29,7 @@ class JobReportEffect(Effect):
     open job, with nothing waiting above it and neither Paused nor Compacting, saves its report with the stop,
     in the stop's own write."""
 
-    events = tuple([HookEventName.STOP])
+    events = (HookEventName.STOP,)
     agent_types = [HELPER_TYPE]
     # the work stop under which this type's allowed stop hands its job in
     report_contract: ClassVar[WorkStop] = WorkStop.HANDOVER
@@ -65,5 +65,5 @@ class JobReportEffect(Effect):
             return RuleAnswer(refusal=UnsavedReportMessage.declared().agent_message().text)
         keep = RecordUnsavedReport(job.id, self.report_text.text(event, helper))
         if job.handover_failures == 0:
-            return RuleAnswer(refusal=UnsavedReportMessage.declared().agent_message().text, commands=tuple([keep]))
-        return RuleAnswer(commands=tuple([keep]))
+            return RuleAnswer(refusal=UnsavedReportMessage.declared().agent_message().text, commands=(keep,))
+        return RuleAnswer(commands=(keep,))

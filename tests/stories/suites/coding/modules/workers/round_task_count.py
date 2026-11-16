@@ -20,7 +20,7 @@ def card_task_ids(worker: StoryWorker) -> list[int]:
 
 def test_a_worker_never_merged_counts_all_its_tasks(new_story):
     worker = unplanned_group_worker(new_story)
-    commit_tasks_singly(worker, tuple([1]))
+    commit_tasks_singly(worker, (1,))
     expect_value(card_task_ids(worker), [1, 2, 3])
 
 

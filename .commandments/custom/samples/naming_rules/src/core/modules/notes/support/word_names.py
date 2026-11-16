@@ -5,10 +5,6 @@ PAGE_SIZE = 5
 WAIT = 5
 # @righteous naming_unitless_quantity_name
 WAIT_SECONDS = 5
-# @sin syntax_syntax_one_element_tuple
-SOLE = ("only",)
-# @righteous syntax_syntax_one_element_tuple
-PAIR = ("first", "second")
 
 
 # @sin naming_poetic_type_name

@@ -21,7 +21,7 @@ class AgentOptions:
         current = self.reader.current(AGENT_OPTIONS)
         stored = list(current.value) if is_tuple(current.value) else current.value
         if not is_text_list(stored):
-            return AgentOptionsReading(DENY_ALL, current.source, tuple([f"{AGENT_OPTIONS} holds {current.value!r}, not a list of text lines"]))
+            return AgentOptionsReading(DENY_ALL, current.source, (f"{AGENT_OPTIONS} holds {current.value!r}, not a list of text lines",))
         problems = AgentOptionsValue.problems(stored, self.registry.role_names)
         if problems:
             return AgentOptionsReading(DENY_ALL, current.source, tuple(problems))

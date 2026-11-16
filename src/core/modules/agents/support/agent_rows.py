@@ -124,4 +124,4 @@ class AgentRows:
 
     def main_agents(self) -> tuple[Agent, ...]:
         main = self.main_agent()
-        return tuple([main]) if main is not None else ()
+        return (main,) if main is not None else ()

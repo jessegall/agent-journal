@@ -9,5 +9,5 @@ class AgentNoticeMessage(MessageTemplate):
     type = AgentMessageType.STEERING
     text = "{text}"
     turn_limited = False
-    path_fields = tuple(["text"])
+    path_fields = ("text",)
     full_text = True

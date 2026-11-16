@@ -33,6 +33,6 @@ class WatchedRunStates(StateSource):
         states: dict[int, list[RequiredState | BlockPlan]] = {}
         for watch in watches:
             subject = RowReference("processes", watch.process_id)
-            states.setdefault(watch.session_agent_id, []).append(RequiredState(Waiting(tuple([subject]), WaitMode.ANY, True, WATCH_TEXT), self.rank,
+            states.setdefault(watch.session_agent_id, []).append(RequiredState(Waiting((subject,), WaitMode.ANY, True, WATCH_TEXT), self.rank,
                                                                      StateKey("Waiting", subject, f"watch:{watch.id}")))
         return states

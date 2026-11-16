@@ -111,7 +111,7 @@ class ConflictingNote(Model):
 
     model_name = "clash_note"
     cli_name = "clash-note"
-    change_names = tuple(["created"])
+    change_names = ("created",)
 
     title: str
 

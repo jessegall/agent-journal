@@ -4,7 +4,7 @@ from engine.event.written_events import MOST_THREAD_KEYS, WrittenEvents
 
 
 def written_in_another_thread(saved: WrittenEvents, name: str) -> None:
-    thread = threading.Thread(target=saved.add, args=tuple([name]))
+    thread = threading.Thread(target=saved.add, args=(name,))
     thread.start()
     thread.join()
 

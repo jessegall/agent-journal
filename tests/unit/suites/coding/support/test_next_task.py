@@ -23,14 +23,14 @@ def assigner(selected_task=None, open_task=None, focused=None, planned=None, res
 
 
 @pytest.mark.parametrize("steps, first_id", [
-    (dict(selected_task=task(1), open_task=task(2, CRITICAL), focused=task(3), planned=task(4), reserved=tuple([task(5)])), 1),
-    (dict(open_task=task(2, CRITICAL), focused=task(3), planned=task(4), reserved=tuple([task(5)])), 2),
-    (dict(open_task=task(2), focused=task(3), planned=task(4), reserved=tuple([task(5)])), 3),
-    (dict(open_task=task(2), focused=task(3), planned=task(4), reserved=tuple([task(6)]), rule_ids=tuple([6])), 3),
-    (dict(open_task=task(2), planned=task(4), reserved=(task(5), task(6)), rule_ids=tuple([6])), 6),
-    (dict(open_task=task(2), planned=task(4), reserved=tuple([task(5)])), 4),
-    (dict(open_task=task(2), reserved=tuple([task(5)])), 2),
-    (dict(reserved=tuple([task(5)])), 5),
+    (dict(selected_task=task(1), open_task=task(2, CRITICAL), focused=task(3), planned=task(4), reserved=(task(5),)), 1),
+    (dict(open_task=task(2, CRITICAL), focused=task(3), planned=task(4), reserved=(task(5),)), 2),
+    (dict(open_task=task(2), focused=task(3), planned=task(4), reserved=(task(5),)), 3),
+    (dict(open_task=task(2), focused=task(3), planned=task(4), reserved=(task(6),), rule_ids=(6,)), 3),
+    (dict(open_task=task(2), planned=task(4), reserved=(task(5), task(6)), rule_ids=(6,)), 6),
+    (dict(open_task=task(2), planned=task(4), reserved=(task(5),)), 4),
+    (dict(open_task=task(2), reserved=(task(5),)), 2),
+    (dict(reserved=(task(5),)), 5),
 ], ids=["the selected_task task", "a critical task outside any plan", "the focus", "the focus before a rule's task", "a rule's task before the other plans", "the oldest started plan", "an open task outside any plan", "a reserved task last"])
 def test_each_step_of_the_order_is_taken_when_the_steps_before_it_give_nothing(steps, first_id):
     assert assigner(**steps).following(7).id == first_id

@@ -30,5 +30,5 @@ class PersonSetSettingGuard(Guard[Changed[Setting]]):
             raise UserApprovalRefusal(f"Change {entry.title}?", self.arguments(event.row))
 
     def arguments(self, row: Setting) -> tuple[str, ...]:
-        project = tuple(["--project"]) if row.environment_id is None else ()
+        project = ("--project",) if row.environment_id is None else ()
         return ("setting", "set", row.key, row.value_text(), *project, "--expected-revision", self.revision.current(row.key))

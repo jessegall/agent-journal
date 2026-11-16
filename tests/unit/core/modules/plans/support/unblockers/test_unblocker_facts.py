@@ -26,7 +26,7 @@ def place(task_id, plan_id, phase_id, phase_position, state=TaskState.OPEN, chec
                     closed_at=closed_at, checkpoint_passed=checkpoint_passed)
 
 
-def facts(asker=MAIN, takeable_ids=tuple([7]), places=(), plan_state=PlanState.STARTED, waits=(), assignees=None):
+def facts(asker=MAIN, takeable_ids=(7,), places=(), plan_state=PlanState.STARTED, waits=(), assignees=None):
     rows = list(places)
     return UnblockerFacts(asker, frozenset(takeable_ids), {row.task_id: row for row in rows if row.task_id == 7},
                           {4: SimpleNamespace(id=4, state=plan_state)}, {4: rows}, {7: list(waits)}, AGENTS, assignees or {})

@@ -45,8 +45,8 @@ class JobWorkStates(StateSource):
             # a job whose report save failed twice waits for its retry or drop, so the helper rests
             if job is not None and job.handover_state is not HandoverState.CAPTURE_FAILED:
                 stop_reason = Reason(JOB_STOP_KEY, DecisionClass.HOLD, JOB_RANK, f"job {job.id} is open")
-                agent_jobs[agent.agent_id] = tuple([RequiredState(Working(WorkReference(WorkType.JOB, job.id, f"job {job.id}"), True, stop_reason), JOB_RANK,
-                                                    StateKey("Working", RowReference(JOB_SUBJECT, job.id), f"job:{job.id}"))])
+                agent_jobs[agent.agent_id] = (RequiredState(Working(WorkReference(WorkType.JOB, job.id, f"job {job.id}"), True, stop_reason), JOB_RANK,
+                                                    StateKey("Working", RowReference(JOB_SUBJECT, job.id), f"job:{job.id}")),)
         return agent_jobs
 
     # a job's stacked state leaves handed in when its report was saved, else closed

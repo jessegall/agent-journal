@@ -16,7 +16,7 @@ def open_worktree_owner(worker: StoryWorker) -> int:
 
 def test_a_new_worker_takes_over_the_open_worktree_the_tasks_and_the_plan_of_a_stopped_worker(new_story):
     worker = start_planned_worker(new_story)
-    commit_tasks_singly(worker, tuple([1]))
+    commit_tasks_singly(worker, (1,))
     worker.story.run("task start 2", actor=worker.worker)
     worker.story.end_session(worker.worker)
     worker.story.expect_success(TAKEOVER.format(number=agent_number(worker.story, worker.worker.id)), actor=worker.story.agent)

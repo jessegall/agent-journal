@@ -23,7 +23,7 @@ class BackgroundRunWatchListener(SaveListener[Moved[Process]]):
     """Watches background runs and requires a monitor according to the suite's declared policy."""
 
     name = "processes.background-run-watch"
-    moves = tuple([ProcessLifecycle.background])
+    moves = (ProcessLifecycle.background,)
 
     def __init__(self, repository: Repository, bus: Bus, queries: Queries, providers: Providers, types: HelperTypeBook) -> None:
         self.repository, self.bus, self.queries, self.providers = repository, bus, queries, providers

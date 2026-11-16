@@ -14,8 +14,8 @@ def text_inspector(model: type[Doc] | type[Report], model_name: str, label: str)
         title="{title}",
         description="{abstract}",
         width=InspectorWidth.WIDE,
-        events=tuple([f"{model_name}.*"]),
-        components=tuple([InspectorComponent("documents.document-body")]),
+        events=(f"{model_name}.*",),
+        components=(InspectorComponent("documents.document-body"),),
         links=None,
         draws_text=True,
     )

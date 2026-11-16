@@ -15,9 +15,9 @@ class SubjectReviewsWindow(Window):
     entry = "subject-reviews.js"
     loading = WindowLoading.COMPONENT
     place = WindowPlace.SECTION
-    slots = tuple(["inspector.plan"])
+    slots = ("inspector.plan",)
     icon = WindowIcon.REVIEW
     reads = ["review list", "assignment list"]
     events = ["review.*", "assignment.*"]
-    skeleton = tuple([SkeletonPart.line()])
+    skeleton = (SkeletonPart.line(),)
     keys = [ReviewsKey, ReviewersKey]

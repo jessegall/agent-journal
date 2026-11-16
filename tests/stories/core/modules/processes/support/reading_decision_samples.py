@@ -23,7 +23,7 @@ def stored_decision(story: Story, process: Process, point: ReadingPhase, decisio
 
 
 def stored_missing_reader(story: Story, process: Process, point: ReadingPhase) -> None:
-    stored_decision(story, process, point, ReadingDecision.pressing(ReaderState.MISSING, ReaderAction.REQUIRE, PressureLevel.PREVENT, ReasonCode.READER_MISSING, tuple([ReadingExit.COMPLY])))
+    stored_decision(story, process, point, ReadingDecision.pressing(ReaderState.MISSING, ReaderAction.REQUIRE, PressureLevel.PREVENT, ReasonCode.READER_MISSING, (ReadingExit.COMPLY,)))
 
 
 def stored_suitable_reader(story: Story, process: Process, point: ReadingPhase) -> None:

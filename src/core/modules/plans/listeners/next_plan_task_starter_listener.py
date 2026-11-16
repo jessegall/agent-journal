@@ -27,7 +27,7 @@ class NextPlanTaskStarterListener(TaskPlanPreparation, CommitListener[Moved[Task
     nothing."""
 
     name = "plans.next-plan-task-starter"
-    moves = tuple([TaskLifecycle.close])
+    moves = (TaskLifecycle.close,)
 
     def __init__(self, bus: Bus, next_tasks: NextPlanTasks, tasks: TaskQuery, assigners: SuiteTaskAssigners, plans: TaskPlans, focused: FocusedPlanTasks, rows: EventRows) -> None:
         self.bus, self.next_tasks, self.tasks, self.assigners, self.plans = bus, next_tasks, tasks, assigners, plans

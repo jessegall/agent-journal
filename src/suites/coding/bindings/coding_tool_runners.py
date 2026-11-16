@@ -10,4 +10,4 @@ class CodingToolRunners(ToolRunners):
         self.graphify = graphify
 
     def all(self) -> tuple[ToolRunner, ...]:
-        return tuple([self.graphify])
+        return (self.graphify,)

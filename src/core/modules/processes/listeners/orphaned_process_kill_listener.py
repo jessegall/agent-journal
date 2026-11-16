@@ -12,7 +12,7 @@ class OrphanedProcessKillListener(CommitListener[Moved[Process]]):
     """Stops the process group of an orphaned run."""
 
     name = "processes.orphaned-process-kill"
-    moves = tuple([ProcessLifecycle.orphan])
+    moves = (ProcessLifecycle.orphan,)
 
     def __init__(self, group: ProcessGroup, folder: OutputFolder) -> None:
         self.group, self.folder = group, folder

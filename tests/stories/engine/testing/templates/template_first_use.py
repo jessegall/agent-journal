@@ -4,7 +4,7 @@ from tests.stories.engine.setting.support.setting_samples import PATH
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value
 
-SAMPLE_MODULES = tuple([f"{PATH}:GoodModule"])
+SAMPLE_MODULES = (f"{PATH}:GoodModule",)
 
 
 class CountingTemplateDatabases(TemplateDatabases):

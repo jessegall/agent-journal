@@ -84,4 +84,4 @@ def test_a_task_anyone_has_is_not_in_available_work(played):
     worker = unplanned_worker(played)
     story = worker.story
     story.expect_success('task make "Free job" --brief "Do it" --environment main', actor=story.agent)
-    story.expect_rows(delegatable(story) == tuple([3]), detail=str(delegatable(story)))
+    story.expect_rows(delegatable(story) == (3,), detail=str(delegatable(story)))

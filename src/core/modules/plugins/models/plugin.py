@@ -13,10 +13,10 @@ class Plugin(Model):
     row, and the last good copy of its config with its version and the places the last change touched."""
 
     model_name = "plugin"
-    event_forms = tuple([EventForm.COMMIT])
+    event_forms = (EventForm.COMMIT,)
     cli_name = "plugin"
     search_fields = ["name", "title"]
-    change_names = tuple([CONFIG_CHANGED])
+    change_names = (CONFIG_CHANGED,)
 
     creator_id: int
     name: str

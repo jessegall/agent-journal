@@ -14,7 +14,7 @@ class PlanReviewsCritiqueButton(ButtonDeclaration):
     label = "Request critique"
     runs = "template send {template} --on=plan:{row_id} --set=agents={agents} --set=size={size}"
     icon = "review"
-    condition = ButtonCondition("state", tuple(["ready"]))
+    condition = ButtonCondition("state", ("ready",))
     tip = "Reviewers read it before you approve"
     fields = (ChoiceField("agents", "How many agents", tuple(Choice("one agent" if count == 1 else f"{count} agents", str(count)) for count in range(1, 6)), "2 agents"),
                                          ChoiceField("size", "How thorough", tuple(Choice(size, size) for size in ("a quick look", "a normal read", "a thorough review")), "a normal read"),

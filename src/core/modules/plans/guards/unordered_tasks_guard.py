@@ -12,7 +12,7 @@ class UnorderedTasksGuard(Guard[Moved[Plan]]):
     """Refuses an agent that marks a plan ready while a task does not state what it waits on."""
 
     name = "plans.unordered-tasks"
-    moves = tuple([PlanLifecycle.ready])
+    moves = (PlanLifecycle.ready,)
     is_safety = True
 
     def __init__(self, order: PlanOrder) -> None:

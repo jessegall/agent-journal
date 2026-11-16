@@ -111,7 +111,7 @@ def test_the_guide_example_is_a_manifest_the_journal_reads(new_story):
     (folder / "journal-plugin.json").write_text(example.group(1))
     (folder / "settings.json").write_text("[]")
     manifest = PluginManifest.read(folder)
-    story.expect_rows(manifest.name == "standup", manifest.event_names == tuple(["file_edited"]), manifest.services[0].name == "web", manifest.dashboard.name == "standup")
+    story.expect_rows(manifest.name == "standup", manifest.event_names == ("file_edited",), manifest.services[0].name == "web", manifest.dashboard.name == "standup")
     guide = GUIDE.read_text()
     story.expect_rows("relative:" in guide, "checkout:" in guide, "project_reads" in guide, '"tell":' in guide, "task.close" not in guide,
                       "listen: guard" in guide, "listen: listen" in guide, "listen: commit" in guide, "journal event keys" in SKILL.read_text())

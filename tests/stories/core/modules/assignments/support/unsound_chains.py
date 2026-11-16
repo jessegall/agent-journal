@@ -34,7 +34,7 @@ class Dock(Model, Assignable):
     model_name = "dock"
     cli_name = "dock"
     takes_actors = ActorCount.SEVERAL
-    assigns = tuple([Children(Bolt, "dock_id")])
+    assigns = (Children(Bolt, "dock_id"),)
 
     title: str
 
@@ -62,12 +62,12 @@ class Gear(Model, Assignable):
     model_name = "gear"
     cli_name = "gear"
     takes_actors = ActorCount.SINGLE
-    assigns = tuple([Children(Cog, "gear_id")])
+    assigns = (Children(Cog, "gear_id"),)
 
     cog_id: int
 
 
-Cog.assigns = tuple([Children(Gear, "cog_id")])
+Cog.assigns = (Children(Gear, "cog_id"),)
 
 
 class GearModule(Module):

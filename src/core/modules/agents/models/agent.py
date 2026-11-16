@@ -34,7 +34,7 @@ class Agent(EnvironmentScoped, Model):
     search_fields = ["given_name", "program", "program_model", "profile", "session"]
     filter_fields = ["role"]
     shown_properties = ("activity", "display_name", "working_role", "standing")
-    listed_properties = tuple(["standing"])
+    listed_properties = ("standing",)
 
     environment_id: int = 0
     number: int = 0

@@ -12,6 +12,6 @@ class ReviewerCommands(CommandAllowList):
     review it records with its points, and the report it files."""
 
     categories: Sequence[CommandCategory] = tuple(CommandCategory)
-    groups: Sequence[str] = tuple(["review-point"])
+    groups: Sequence[str] = ("review-point",)
     lines: Sequence[str] = ("review record", "report make", "task overview", "output read")
-    classes: Sequence[JournalLineClass] = tuple([JournalLineClass.READS])
+    classes: Sequence[JournalLineClass] = (JournalLineClass.READS,)

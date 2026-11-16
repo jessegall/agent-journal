@@ -14,7 +14,7 @@ class StartedPlanCheckpointsListener(CommitListener[Moved[Plan]]):
     for and passes at the start."""
 
     name = "plans.started-plan-checkpoints"
-    moves = tuple([PlanLifecycle.start])
+    moves = (PlanLifecycle.start,)
     disabled_scopes = [ActorScope]
 
     def __init__(self, bus: Bus) -> None:

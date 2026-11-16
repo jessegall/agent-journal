@@ -47,5 +47,5 @@ def test_a_run_filtered_by_name_mark_deselection_or_last_failures_is_not_a_full_
     assert size.is_full_run("", "", (), False)
     assert not size.is_full_run("cart", "", (), False)
     assert not size.is_full_run("", "slow", (), False)
-    assert not size.is_full_run("", "", tuple(["tests/unit/a.py::test_a"]), False)
+    assert not size.is_full_run("", "", ("tests/unit/a.py::test_a",), False)
     assert not size.is_full_run("", "", (), True)

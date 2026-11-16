@@ -31,6 +31,6 @@ def test_a_hook_sample_becomes_the_question_a_story_would_ask() -> None:
 
 def test_a_policy_table_names_each_row_the_policy_answers_otherwise() -> None:
     stop = QuestionSamples.question(HookSamples.stop())
-    table = PolicyTable([PolicyRow("worker stop", stop, ViewSamples.view("worker", WorkStop.REFUSE_WHILE_WORK_REMAINS), tuple(["samples.no-stop"])),
-                         PolicyRow("main stop", stop, ViewSamples.view("main", WorkStop.REFUSE_WHILE_WORK_REMAINS, has_parent=False), tuple(["samples.no-stop"]))])
+    table = PolicyTable([PolicyRow("worker stop", stop, ViewSamples.view("worker", WorkStop.REFUSE_WHILE_WORK_REMAINS), ("samples.no-stop",)),
+                         PolicyRow("main stop", stop, ViewSamples.view("main", WorkStop.REFUSE_WHILE_WORK_REMAINS, has_parent=False), ("samples.no-stop",))])
     assert table.failures(WorkerStopPolicy()) == ["main stop: refused nothing, the table says ('samples.no-stop',)"]

@@ -85,7 +85,7 @@ class Barrel(Model, Assignable):
 
 class BarrelsTable(Migration):
     number = 1
-    statements = tuple([f"CREATE TABLE barrels ({COLUMNS}) STRICT"])
+    statements = (f"CREATE TABLE barrels ({COLUMNS}) STRICT",)
 
 
 class UncountedModule(Module):
@@ -111,7 +111,7 @@ class Sack(Model, Assignable):
 
 class SacksTable(Migration):
     number = 1
-    statements = tuple([f"CREATE TABLE sacks ({COLUMNS}) STRICT"])
+    statements = (f"CREATE TABLE sacks ({COLUMNS}) STRICT",)
 
 
 class UnboundModule(Module):

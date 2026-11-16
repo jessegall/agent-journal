@@ -15,7 +15,7 @@ class OneTaskPhaseGuard(Guard[Moved[Plan]]):
     """Refuses a plan's move to ready while a phase has one task, unless the guard is passed with a reason."""
 
     name = "plans.one-task-phase"
-    moves = tuple([PlanLifecycle.ready])
+    moves = (PlanLifecycle.ready,)
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

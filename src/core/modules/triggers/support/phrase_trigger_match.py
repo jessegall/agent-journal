@@ -44,7 +44,7 @@ class PhraseTriggerMatch:
         matching = [trigger for trigger in matching if trigger.action is not TriggerAction.SKILL or trigger.skill in skills]
         deny = next((trigger for trigger in matching if trigger.action is TriggerAction.DENY), None)
         if deny is not None:
-            return PhraseTriggerAnswer(TriggerDeniesMessage.declared().agent_message(trigger=deny.id), (), None, tuple([FireTrigger(deny.id)]))
+            return PhraseTriggerAnswer(TriggerDeniesMessage.declared().agent_message(trigger=deny.id), (), None, (FireTrigger(deny.id),))
         if not matching:
             return PhraseTriggerAnswer(None, (), None, ())
         loaded = self.loaded.names(agent_id) if skills else ()

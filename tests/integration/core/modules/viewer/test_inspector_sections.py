@@ -49,4 +49,4 @@ def test_a_button_on_an_inspector_slot_refuses_the_sync(journal):
 def test_a_correct_section_syncs_into_the_registry(journal):
     journal.expect_sync_success(section_modules.GOOD_SECTION)
     entry = Registry.read(journal.database).window("good_section.notes")
-    expect_row(entry, place="section", slots=tuple(["inspector.plan"]), module="good_section")
+    expect_row(entry, place="section", slots=("inspector.plan",), module="good_section")

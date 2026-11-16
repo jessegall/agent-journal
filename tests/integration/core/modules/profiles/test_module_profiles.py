@@ -67,7 +67,7 @@ def test_a_change_to_the_base_reaches_a_profile_built_on_it_with_its_own_lines_a
     based = Registry.read(journal.database).profile("sample-based").profile
     assert based.body == 'Read the files.\n\nAnswer in one line.'
     assert based.model == 'opus'
-    assert based.skills == tuple(['journal'])
+    assert based.skills == ('journal',)
     assert based.base == 'sample-base'
     journal.expect_sync_success(f"{MODULES}:ChangedBase")
     based = Registry.read(journal.database).profile("sample-based").profile

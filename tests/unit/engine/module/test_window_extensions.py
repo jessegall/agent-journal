@@ -22,11 +22,11 @@ def test_an_installed_module_supplies_window_behavior_without_changing_the_owner
     extended = WindowExtensions([NotesModule]).extend(original)
     assert original.reads == ["agent list"]
     assert extended.reads == ("agent list", "note list")
-    assert extended.events == tuple(["note.*"])
+    assert extended.events == ("note.*",)
     assert extended.sources[0].listed() == {"key": "progress", "read": "note list", "events": ["note.*"]}
     assert extended.tabs[0].component == "/modules/notes/agent-notes.js"
     assert extended.links == {"notes": "notes.board"}
-    assert extended.keys == tuple([WindowKey("notes", "note list", events=["note.*"])])
+    assert extended.keys == (WindowKey("notes", "note list", events=["note.*"]),)
     assert original.keys == ()
 
 

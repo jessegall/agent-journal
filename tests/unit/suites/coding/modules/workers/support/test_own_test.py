@@ -13,4 +13,4 @@ def test_the_paths_an_earlier_checkpoint_deferred_are_added_to_the_command():
 
 def test_a_phase_with_no_test_command_has_no_own_test_whatever_was_deferred():
     assert OwnTest("").command == ""
-    assert OwnTest("", tuple(["tests/slow.py"])).command == ""
+    assert OwnTest("", ("tests/slow.py",)).command == ""

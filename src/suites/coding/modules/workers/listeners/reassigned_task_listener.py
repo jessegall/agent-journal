@@ -20,7 +20,7 @@ class ReassignedTaskListener(SaveListener[Moved[Task]]):
     worker released itself, which also leaves its queue; what the worker committed stays on its branch."""
 
     name = "workers.taken-task"
-    moves = tuple([TaskLifecycle.release])
+    moves = (TaskLifecycle.release,)
     disabled_scopes = [ActorScope]
 
     def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, advance: WorkerTaskAdvance, repository: Repository, next_task: WorkerNextTask, assignments: Assignments) -> None:

@@ -9,7 +9,7 @@ class CashiersGroup(AgentGroup):
     key = "cashiers"
     label = "Cashiers"
     agent_type = "helper"
-    profiles = tuple(["shop-cashier"])
+    profiles = ("shop-cashier",)
 
 
 class ShopModule(Module):
@@ -18,7 +18,7 @@ class ShopModule(Module):
 
 
 def test_a_group_class_gives_the_group_the_inline_call_gave():
-    assert CashiersGroup.declared() == AgentGroup("cashiers", "Cashiers", "helper", tuple(["shop-cashier"]))
+    assert CashiersGroup.declared() == AgentGroup("cashiers", "Cashiers", "helper", ("shop-cashier",))
 
 
 def test_a_module_gives_the_declarations_of_its_group_classes_beside_its_inline_ones():
@@ -27,4 +27,4 @@ def test_a_module_gives_the_declarations_of_its_group_classes_beside_its_inline_
 
 def test_the_coding_module_lists_its_four_groups_as_classes_with_the_designer_on_its_profile():
     assert [group.key for group in CodingModule.group_declarations()] == ["workers", "merger", "designer", "helpers"]
-    assert DesignerGroup.declared().profiles == tuple([DESIGNER_PROFILE.name])
+    assert DesignerGroup.declared().profiles == (DESIGNER_PROFILE.name,)

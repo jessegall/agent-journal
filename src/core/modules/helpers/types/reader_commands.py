@@ -12,7 +12,7 @@ class ReaderCommands(CommandAllowList):
     line that only reads and stays in the journal, its reports and its memories."""
 
     categories: Sequence[CommandCategory] = tuple(CommandCategory)
-    groups: Sequence[str] = tuple(["memory"])
+    groups: Sequence[str] = ("memory",)
     lines: Sequence[str] = ("report make", "report edit", "report close", "task overview", "task log", "plan context", "output read", "output title", "output stop",
                             "refusal skip", "refusal confirm", "refusal withdraw")
-    classes: Sequence[JournalLineClass] = tuple([JournalLineClass.READS])
+    classes: Sequence[JournalLineClass] = (JournalLineClass.READS,)

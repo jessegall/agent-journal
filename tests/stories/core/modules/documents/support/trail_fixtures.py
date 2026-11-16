@@ -146,7 +146,7 @@ class Scenario:
 
     def expect_source(self, number: int) -> None:
         actual = self.source_ids(self.story.agent.id)
-        feature(actual == tuple([number]), f"expected selected message {number}, got {actual}")
+        feature(actual == (number,), f"expected selected message {number}, got {actual}")
 
     def links(self, source: str):
         value = json.loads(self.command(f"link list --source {source} --page-size 50 --json").output_text)

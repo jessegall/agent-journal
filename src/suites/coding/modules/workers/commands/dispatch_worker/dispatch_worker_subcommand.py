@@ -59,7 +59,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         if arguments.session and not arguments.no_program:
             raise Refusal("--session is the session of a program that is not started", "add --no-program")
         source_worker = self.stopped_worker(arguments, caller)
-        task_ids = tuple([self.worktrees.required_worker_worktree(source_worker.id).task_id]) if source_worker is not None else self.picked(arguments)
+        task_ids = (self.worktrees.required_worker_worktree(source_worker.id).task_id,) if source_worker is not None else self.picked(arguments)
         commands = WorkerTestCommandEntry.parsed(arguments.test_command)
         return DispatchWorker(task_ids[0], tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program, task_ids[1:], ModelChoice.chosen(arguments.model), arguments.profile, arguments.name, arguments.fresh, arguments.tier, arguments.plan, arguments.phase, session=arguments.session, starts_program=not arguments.no_program, sandboxed=not arguments.no_sandbox, test_commands=commands, source_worker_id=source_worker.id if source_worker is not None else None)
 

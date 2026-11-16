@@ -6,4 +6,4 @@ class HookCallHookIndexMigration(Migration):
     often."""
 
     number = 3
-    statements = tuple(["CREATE INDEX hook_calls_agent_hook ON hook_calls (agent_id, hook, id)"])
+    statements = ("CREATE INDEX hook_calls_agent_hook ON hook_calls (agent_id, hook, id)",)

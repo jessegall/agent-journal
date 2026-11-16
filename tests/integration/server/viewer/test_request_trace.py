@@ -56,7 +56,7 @@ def test_a_locked_database_drops_no_request_row_and_writes_no_warning(logging_se
     try:
         connection.execute("BEGIN IMMEDIATE")
         log.record(["task", "list"], "cli", 1.0, 0.0, 0)
-        log.complete_reads(1, tuple([ReadAttribution("client", "command")]))
+        log.complete_reads(1, (ReadAttribution("client", "command"),))
     finally:
         connection.execute("ROLLBACK")
         connection.close()

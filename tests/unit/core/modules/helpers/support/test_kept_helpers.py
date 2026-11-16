@@ -50,7 +50,7 @@ class OpenJobs:
 def kept_helpers(helpers: list[SimpleNamespace], open_job_ids: frozenset[int] = frozenset(), full_percent: int = 0) -> KeptHelpers:
     provider = SimpleNamespace(session_matches_folder=lambda folder, session: session == "kept")
     return KeptHelpers(OpenJobs(set(open_job_ids)), SimpleNamespace(provider=lambda program: provider), SimpleNamespace(folder=lambda agent: "folder"), StoredRows(helpers, set(open_job_ids)), None,
-                       SimpleNamespace(agent_percent=lambda helper: full_percent), None, SimpleNamespace(read_access_keys=lambda: tuple(["helper"])))
+                       SimpleNamespace(agent_percent=lambda helper: full_percent), None, SimpleNamespace(read_access_keys=lambda: ("helper",)))
 
 
 def numbers(kept: KeptHelpers, occupant: Occupant) -> list[int]:

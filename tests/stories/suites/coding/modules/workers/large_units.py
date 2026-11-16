@@ -15,6 +15,6 @@ def test_a_unit_of_sixty_tasks_is_worked_under_the_read_limit(new_story):
     approve_plan(story)
     worker = dispatched_story_worker(story, PLAN_DISPATCH)
     worker.story.expect_text("worker status", "Unit: plan 1", actor=worker.worker)
-    commit_tasks_singly(worker, tuple([1]))
+    commit_tasks_singly(worker, (1,))
     worker.story.expect_success(REQUEST_MERGE, actor=worker.worker)
     worker.story.expect_text("merge-ask show 1 --environment main", "unit_name: plan 1", actor=worker.story.agent)

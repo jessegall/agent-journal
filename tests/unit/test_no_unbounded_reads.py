@@ -53,7 +53,7 @@ def unbounded_get_lines(path: Path) -> list[int]:
 
 
 def test_no_all_rows_call_is_left():
-    matched = [place for path in python_files() for place in matching_calls(path, tuple(["all_rows"]))]
+    matched = [place for path in python_files() for place in matching_calls(path, ("all_rows",))]
     assert matched == [], "read with get, take, a page or every_row(reason):\n" + "\n".join(matched)
 
 

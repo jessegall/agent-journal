@@ -19,7 +19,7 @@ class Review(EnvironmentScoped, Model, StateHolder, Assignable):
     model_name = "review"
     cli_name = "review"
     lifecycle = ReviewLifecycle
-    added_state_moves = tuple([ReviewLifecycle.abandon])
+    added_state_moves = (ReviewLifecycle.abandon,)
     takes_actors = ActorCount.SINGLE
 
     environment_id: int = 0

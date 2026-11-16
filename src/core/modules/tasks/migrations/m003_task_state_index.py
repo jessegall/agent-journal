@@ -6,4 +6,4 @@ class TaskStateIndexMigration(Migration):
     leaves out."""
 
     number = 3
-    statements = tuple(["CREATE INDEX tasks_environment_state ON tasks (environment_id, state, id)"])
+    statements = ("CREATE INDEX tasks_environment_state ON tasks (environment_id, state, id)",)

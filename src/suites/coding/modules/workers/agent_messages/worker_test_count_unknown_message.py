@@ -11,6 +11,6 @@ class WorkerTestCountUnknownMessage(MessageTemplate):
     key = "processes.test_count_unknown"
     type = AgentMessageType.STEERING
     text = ("Output {output} stopped: could not count the tests, read that output for why. Exits: "
-                                        + ExitTexts.template(tuple([ReadingExit.COUNT_TESTS])) + ". " + AskTopic.TESTS.question_line())
+                                        + ExitTexts.template((ReadingExit.COUNT_TESTS,)) + ". " + AskTopic.TESTS.question_line())
     wakes_agent = True
     full_text = True

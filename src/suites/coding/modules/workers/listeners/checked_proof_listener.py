@@ -17,7 +17,7 @@ class CheckedProofListener(SaveListener[Moved[Proof]]):
     task of a started plan are settled where their result is recorded."""
 
     name = "workers.checked-proof"
-    moves = tuple([ProofLifecycle.check])
+    moves = (ProofLifecycle.check,)
     disabled_scopes = [ActorScope]
 
     def __init__(self, rows: EventRows, plans: TaskPlans, results: RecordWorkerTestHandler) -> None:

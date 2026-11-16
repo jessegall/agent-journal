@@ -30,4 +30,4 @@ class ReviewQuery(Query[Review]):
         return self.filter(state=ReviewState.REVIEWING)
 
     def reviewer(self, reviewer_id: int) -> Self:
-        return self.matching(AssigneeAmong(Review, tuple([reviewer_id])))
+        return self.matching(AssigneeAmong(Review, (reviewer_id,)))

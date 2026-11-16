@@ -11,10 +11,10 @@ class CheckInspector(InspectorDeclaration):
     reads = "check show {row_id}"
     label = "Check {id} · {state}"
     title = "{title}"
-    events = tuple(["check.*"])
+    events = ("check.*",)
     actions = (
-        ButtonDeclaration("checks.run", (), "Run the check now", "check run {row_id}", icon="start", primary=True, condition=ButtonCondition("state", tuple(["running"]))),
-        ButtonDeclaration("checks.start", (), "Start the check again", "check start {row_id}", icon="resume", primary=True, condition=ButtonCondition("state", tuple(["stopped"]))),
-        ButtonDeclaration("checks.stop", (), "Stop the check", "check stop {row_id}", icon="stop", condition=ButtonCondition("state", tuple(["running"]))),
+        ButtonDeclaration("checks.run", (), "Run the check now", "check run {row_id}", icon="start", primary=True, condition=ButtonCondition("state", ("running",))),
+        ButtonDeclaration("checks.start", (), "Start the check again", "check start {row_id}", icon="resume", primary=True, condition=ButtonCondition("state", ("stopped",))),
+        ButtonDeclaration("checks.stop", (), "Stop the check", "check stop {row_id}", icon="stop", condition=ButtonCondition("state", ("running",))),
     )
     lists_fields = True

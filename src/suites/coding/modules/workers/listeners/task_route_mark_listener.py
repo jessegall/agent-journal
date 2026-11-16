@@ -11,7 +11,7 @@ class TaskRouteMarkListener(TaskRouteChangeListener[Updated[Task] | Moved[Task]]
     """Shows an agent changing a routed task's complexity or skipping its route."""
 
     name = "workers.task-route-mark"
-    moves = tuple([TaskLifecycle.release])
+    moves = (TaskLifecycle.release,)
 
     def handle(self, event: Updated[Task] | Moved[Task], logged: LoggedEvent) -> None:
         if "complexity" not in logged.data and ROUTE_GUARD not in logged.skipped_guards:

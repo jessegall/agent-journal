@@ -17,7 +17,7 @@ PERSON_WAIT = WaitingLine(40, WaitingReason.NON_TASK_WAIT, "which waits on a use
 
 def report(focus_plan_id, source=FocusSource.DEFAULT, workable=(), unblockers=None, plans=PLANS):
     plan_unblockers = unblockers or {}
-    started = tuple(PlanWork(plan, tuple(["a place"]) if plan.id in workable else (), plan_unblockers.get(plan.id, Unblockers())) for plan in plans)
+    started = tuple(PlanWork(plan, ("a place",) if plan.id in workable else (), plan_unblockers.get(plan.id, Unblockers())) for plan in plans)
     current = None if focus_plan_id is None else FocusedPlan(next(plan for plan in plans if plan.id == focus_plan_id), source)
     return PlanFocusReport(SimpleNamespace(overview=lambda agent: FocusOverview(current, started))).lines(AGENT)
 
@@ -28,13 +28,13 @@ def test_the_default_focus_and_a_focus_the_agent_set_read_differently():
 
 
 def test_the_focus_names_the_tasks_it_waits_on_the_ones_to_take_first_by_how_many_wait_on_them():
-    unblockers = {3: Unblockers((Unblocker(41, 1, 100), Unblocker(42, 2, 100)), tuple([PERSON_WAIT]))}
+    unblockers = {3: Unblockers((Unblocker(41, 1, 100), Unblocker(42, 2, 100)), (PERSON_WAIT,))}
     assert report(3, unblockers=unblockers, plans=PLANS[:1])[1:] == [
         "task 42 holds back 2 tasks of plan 3: you can take it", "task 41 holds back 1 task of plan 3: you can take it", "it waits on task 40, which waits on a user"]
 
 
 def test_each_other_started_plan_says_whether_it_has_work_what_it_waits_on_or_that_it_has_nothing_to_take():
-    lines = report(3, workable={5}, unblockers={8: Unblockers((), tuple([PERSON_WAIT]))})
+    lines = report(3, workable={5}, unblockers={8: Unblockers((), (PERSON_WAIT,))})
     assert lines[1:] == ["other started plans:", "plan 5: has work you can take", "plan 8: waits on task 40, which waits on a user"]
     assert report(3, plans=PLANS[:2])[-1] == "plan 5: has no task you can take"
 

@@ -18,6 +18,6 @@ def test_five_waiting_tasks_are_all_named_and_of_eight_the_first_five_with_the_n
 
 
 def test_nothing_waiting_gives_no_text_and_the_task_numbers_are_those_of_both_lists():
-    unblockers = Unblockers(tuple([Unblocker(7, 2, 100)]), waiting(2))
+    unblockers = Unblockers((Unblocker(7, 2, 100),), waiting(2))
     assert Unblockers().waits_text() == ""
     assert unblockers.task_ids() == frozenset({1, 2, 7})

@@ -12,7 +12,7 @@ class ProcessMoveMarkListener(ProcessMarkListener[Moved[Process]]):
     mark then, and one that was gets its mark updated in place."""
 
     name = "processes.move-mark"
-    moves = tuple([ProcessLifecycle.background])
+    moves = (ProcessLifecycle.background,)
 
     def prepare(self, events: Sequence[LoggedEvent]) -> None:
         self.keep_parts_of(events)

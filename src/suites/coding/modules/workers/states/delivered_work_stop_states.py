@@ -42,7 +42,7 @@ class DeliveredWorkStopStates(StateSource):
     def plans(self, worktree: Worktree) -> list[BlockPlan]:
         proofs = [proof for proof in self.proofs.delivered_proofs(worktree.id).every_row(DELIVERED_PROOFS_REASON)
                   if worktree.state is WorktreeState.DELIVERED or not proof.test_command]
-        return [BlockPlan(agent_message, DeliveredProofsChecked(worktree.id), DELIVERED_WORK_STOP_KEY, self.rank, members=tuple([task_id]), scope_tools=False, scope_stop=True)
+        return [BlockPlan(agent_message, DeliveredProofsChecked(worktree.id), DELIVERED_WORK_STOP_KEY, self.rank, members=(task_id,), scope_tools=False, scope_stop=True)
                 for task_id, agent_message in self.task_agent_messages(worktree, proofs)]
 
     def task_agent_messages(self, worktree: Worktree, proofs: list[Proof]) -> list[tuple[int, AgentMessage]]:

@@ -13,12 +13,12 @@ from engine.enums.wait_mode import WaitMode
 from engine.enums.work_type import WorkType
 from engine.testing.agent_machine.stack_samples import StackSamples
 
-REASON = Reason("documents.open", DecisionClass.HOLD, "documents.open", "close document 41", tuple(["journal doc close 41"]), RowReference("document", 41))
+REASON = Reason("documents.open", DecisionClass.HOLD, "documents.open", "close document 41", ("journal doc close 41",), RowReference("document", 41))
 
 
 def test_every_state_and_its_nested_values_come_back_as_they_were_stored() -> None:
     stack = StackSamples.built(Working(WorkReference(WorkType.TASK, 6, "task 6"), True, REASON),
-                               Waiting(tuple([RowReference("question", 2)]), WaitMode.ALL, False, "question 2"),
+                               Waiting((RowReference("question", 2),), WaitMode.ALL, False, "question 2"),
                                Blocked(OpenBlock("documents.open", 3, REASON, True, True, False, True, False, RowReference("document", 41))))
     assert StackCodec.decoded(StackCodec.encoded(stack.stacked_states)) == list(stack.stacked_states)
 

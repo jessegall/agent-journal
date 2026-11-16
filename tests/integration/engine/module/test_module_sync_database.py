@@ -56,11 +56,11 @@ def test_a_second_sync_changes_nothing(tmp_path):
 
 
 def test_a_sync_keeps_module_template_entries(tmp_path, monkeypatch):
-    declaration = TemplateDeclaration(title="Review items", targets=tuple(["item"]), parts=tuple(["Problems"]))
+    declaration = TemplateDeclaration(title="Review items", targets=("item",), parts=("Problems",))
     monkeypatch.setattr(ItemsModule, "templates", [declaration])
     container = synced(JournalHome(tmp_path), ITEMS)
     entries = Registry.read(container.get(Database)).templates
-    assert tuple(entry for entry in entries if entry.module == "items") == tuple([TemplateEntry("items", declaration)])
+    assert tuple(entry for entry in entries if entry.module == "items") == (TemplateEntry("items", declaration),)
 
 
 def test_a_changed_module_changes_the_fingerprint_and_the_old_registry_is_refused(tmp_path, monkeypatch):

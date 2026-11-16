@@ -23,7 +23,7 @@ class NotesModule(Module):
     seed_reason = "the module declares profiles and templates without seeding its own rows"
     move_reason = "the suite has no earlier rows"
     agent_drivers = [NotesDriver]
-    templates = [TemplateDeclaration(title="Summarize notes", brief="Summarize the notes.", targets=tuple(["doc"]))]
+    templates = [TemplateDeclaration(title="Summarize notes", brief="Summarize the notes.", targets=("doc",))]
 
 
 class NotesSuiteOfNotesModule(NotesSuite):

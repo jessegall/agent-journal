@@ -11,7 +11,7 @@ def commit(subject: str) -> TaskBranchCommit:
 
 
 def test_the_subject_of_one_task_reads_task_its_id_and_its_title():
-    assert CommitSubject(tuple([CART])).text() == "task 12: Fix the cart"
+    assert CommitSubject((CART,)).text() == "task 12: Fix the cart"
 
 
 def test_the_subject_of_several_tasks_lists_their_ids_and_carries_the_title_of_the_first():

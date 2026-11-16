@@ -5,6 +5,6 @@ class GeneralCritiqueTemplate(TemplateDeclaration):
     """The General critique template."""
 
     title = "General critique"
-    targets = tuple(["plan"])
+    targets = ("plan",)
     purpose = "critique"
     brief = "Read it as a whole and say what you would change, and why."

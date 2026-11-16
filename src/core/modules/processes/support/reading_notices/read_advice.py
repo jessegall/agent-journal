@@ -16,7 +16,7 @@ class ReadAdvice:
 
     def hint(self, output: Output) -> tuple[AgentMessage, ...]:
         if output.reader_id is not None and output.reader_lines:
-            return tuple([ReaderHintMessage.declared().agent_message(reader=output.reader_id, output=output.process_id)])
+            return (ReaderHintMessage.declared().agent_message(reader=output.reader_id, output=output.process_id),)
         if output.line_count > self.settings.integer(ProcessSetting.LARGE_OUTPUT_LINES):
-            return tuple([LargeOutputReadMessage.declared().agent_message(output=output.process_id, lines=output.line_count)])
+            return (LargeOutputReadMessage.declared().agent_message(output=output.process_id, lines=output.line_count),)
         return ()

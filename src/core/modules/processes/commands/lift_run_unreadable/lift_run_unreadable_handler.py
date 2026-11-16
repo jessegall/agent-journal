@@ -24,6 +24,6 @@ class LiftRunUnreadableHandler(Handler[LiftRunUnreadable, UnreadableMark]):
     def handle(self, command: LiftRunUnreadable, context: Context) -> UnreadableMark:
         process = self.rows.required(Process, command.process_id)
         mark = self.marks.lift(self.words.words(process), context.actor.id, context)
-        for agent_message in ReadingNotices.mark_agent_messages(process, tuple([mark])):
+        for agent_message in ReadingNotices.mark_agent_messages(process, (mark,)):
             self.message_sender.send_agent_message(process.session_agent_id, agent_message, SOURCE, context)
         return mark

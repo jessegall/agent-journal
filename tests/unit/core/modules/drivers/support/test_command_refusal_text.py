@@ -13,4 +13,4 @@ def test_the_refusal_names_the_line_and_the_groups_and_lines_the_type_runs_and_n
 
 
 def test_a_type_that_lists_no_group_says_so():
-    assert "the groups none" in CommandRefusalText("Reader", CommandAllowList(lines=tuple(["task show"]))).agent_message(SETTING_SET).text
+    assert "the groups none" in CommandRefusalText("Reader", CommandAllowList(lines=("task show",))).agent_message(SETTING_SET).text

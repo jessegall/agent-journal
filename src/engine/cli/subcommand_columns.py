@@ -21,7 +21,7 @@ EDITED_ROW_COLUMN = "row_id"
 
 
 def generic_base(base: object) -> type:
-    return new_class(f"{base}Base", tuple([base]))
+    return new_class(f"{base}Base", (base,))
 
 
 def editable_columns(table: Table[Model]) -> tuple[str, ...]:

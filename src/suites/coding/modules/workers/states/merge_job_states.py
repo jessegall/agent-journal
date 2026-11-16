@@ -50,6 +50,6 @@ class MergeJobStates(StateSource):
             running = running_merges.get(merger_id)
             text = UnfinishedMergeMessage.declared().agent_message(worker=running.worker_id).text if running is not None else f"job {job.id} is open"
             stop_reason = Reason(UNFINISHED_MERGE_KEY, DecisionClass.HOLD, MERGE_JOB_RANK, text)
-            merger_jobs[merger_id] = tuple([RequiredState(Working(WorkReference(WorkType.MERGE_JOB, job.id, f"merge job {job.id}"), running is not None, stop_reason),
-                                                      MERGE_JOB_RANK, StateKey("Working", RowReference("helper_job", job.id), f"job:{job.id}"))])
+            merger_jobs[merger_id] = (RequiredState(Working(WorkReference(WorkType.MERGE_JOB, job.id, f"merge job {job.id}"), running is not None, stop_reason),
+                                                      MERGE_JOB_RANK, StateKey("Working", RowReference("helper_job", job.id), f"job:{job.id}")),)
         return merger_jobs

@@ -17,7 +17,7 @@ def test_a_coding_page_window_is_a_component_of_one_agent_or_of_the_environment(
 
 
 @pytest.mark.parametrize("window, reads", [(FileFeedWindow, ("file-edit list", "file-edit show")), (FileEditsWindow, ("file-edit list", "file-edit show", "agent list")),
-                                           (TerminalWindow, tuple(["agent terminal"]))])
+                                           (TerminalWindow, ("agent terminal",))])
 def test_a_coding_page_window_declares_the_reads_it_states(window, reads):
     assert set(reads) <= set(window.reads)
 

@@ -102,7 +102,7 @@ class KeptWorkerTasks:
 
     def delegate(self, worker: Agent, tasks: list[Task], context: Context) -> None:
         actor_ids = self.task_assignments.row_actor_ids(Task, [task.id for task in tasks])
-        changed = [task for task in tasks if actor_ids[task.id] != tuple([worker.id])]
+        changed = [task for task in tasks if actor_ids[task.id] != (worker.id,)]
         for task in changed:
             self.task_assignments.assign_kept(task, worker.id, context, cascade=False)
         self.dependency_waits.update_tasks([task.id for task in tasks], context)

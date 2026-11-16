@@ -29,7 +29,7 @@ def merger_lines(minutes: list[int], files: tuple[str, ...]) -> tuple[list[objec
 
 
 def test_markers_still_open_after_the_wait_reach_the_merger_once_to_advise_then_once_to_pass():
-    delivered, message_sender = merger_lines([10, 30, 45, 60, 90, 120], tuple(["cart.py"]))
+    delivered, message_sender = merger_lines([10, 30, 45, 60, 90, 120], ("cart.py",))
     assert (delivered, message_sender.sent) == ([ConflictOpenMessage.declared().key, ConflictRepeatedMessage.declared().key], [])
 
 

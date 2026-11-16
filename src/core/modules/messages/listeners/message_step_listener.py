@@ -20,4 +20,4 @@ class MessageStepListener(AgentListener[Created[Message]]):
 
     def agents(self, event: Created[Message]) -> Sequence[int]:
         recipient = self.targets.recipient(event.row)
-        return tuple([recipient.id]) if recipient is not None else ()
+        return (recipient.id,) if recipient is not None else ()

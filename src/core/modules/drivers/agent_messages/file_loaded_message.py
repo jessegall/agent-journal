@@ -8,4 +8,4 @@ class FileLoadedMessage(MessageTemplate):
     key = "drivers.file-in-context"
     type = AgentMessageType.NOTICE
     text = "{path} is unchanged since you read it: use what is in your context"
-    path_fields = tuple(["path"])
+    path_fields = ("path",)

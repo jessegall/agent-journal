@@ -15,7 +15,7 @@ class FinishedPlanLineListener(SaveListener[Moved[Plan]]):
     passed, not when its last task ended."""
 
     name = "plans.finished-plan-line"
-    moves = tuple([PlanLifecycle.close])
+    moves = (PlanLifecycle.close,)
     disabled_scopes = [ActorScope]
 
     def __init__(self, main_agents: PlanMainAgents) -> None:

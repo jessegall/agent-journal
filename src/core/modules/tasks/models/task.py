@@ -26,7 +26,7 @@ class Task(EnvironmentScoped, Model, StateHolder, Assignable):
     cli_name = "task"
     search_fields = ["title", "brief", "outcome"]
     lifecycle = TaskLifecycle
-    added_state_moves = tuple([TaskLifecycle.cancel])
+    added_state_moves = (TaskLifecycle.cancel,)
     takes_actors = ActorCount.SINGLE
 
     environment_id: int = 0

@@ -7,12 +7,12 @@ TASK_READ = JournalLine("task show", frozenset([JournalLineClass.READS]))
 TASK_EDIT = JournalLine("task edit", frozenset([JournalLineClass.CHANGES]))
 PROOF_LINE = JournalLine("proof make", frozenset([JournalLineClass.CHANGES, JournalLineClass.EXTERNAL]))
 SETTING_SET = JournalLine("setting set", frozenset([JournalLineClass.CHANGES, JournalLineClass.EXTERNAL]))
-WORKER_LIST = CommandAllowList(categories=tuple([CommandCategory.READ]), groups=tuple(["proof"]), lines=tuple(["task show"]))
+WORKER_LIST = CommandAllowList(categories=(CommandCategory.READ,), groups=("proof",), lines=("task show",))
 
 
 def test_a_list_allows_a_line_by_its_group_by_the_line_itself_or_by_its_class():
     assert WORKER_LIST.allows(PROOF_LINE) and WORKER_LIST.allows(TASK_READ)
-    assert CommandAllowList(classes=tuple([JournalLineClass.READS])).allows(TASK_READ)
+    assert CommandAllowList(classes=(JournalLineClass.READS,)).allows(TASK_READ)
 
 
 def test_a_list_allows_a_shell_category_it_names_and_no_other():
@@ -21,7 +21,7 @@ def test_a_list_allows_a_shell_category_it_names_and_no_other():
 
 def test_a_line_passes_by_class_only_when_the_list_names_every_class_it_has():
     external_read = JournalLine("message feed", frozenset([JournalLineClass.READS, JournalLineClass.EXTERNAL]))
-    assert not CommandAllowList(classes=tuple([JournalLineClass.READS])).allows(external_read)
+    assert not CommandAllowList(classes=(JournalLineClass.READS,)).allows(external_read)
     assert CommandAllowList(classes=(JournalLineClass.READS, JournalLineClass.EXTERNAL)).allows(external_read)
 
 
@@ -31,7 +31,7 @@ def test_a_line_the_list_does_not_name_is_refused():
 
 
 def test_the_base_list_joins_the_list_of_a_type():
-    base = CommandAllowList(lines=tuple(["message send"]))
+    base = CommandAllowList(lines=("message send",))
     joined = base.joined(WORKER_LIST)
     assert joined.allows(JournalLine("message send", frozenset([JournalLineClass.CHANGES]))) and joined.allows(PROOF_LINE)
     assert joined.lines == ("message send", "task show")
@@ -40,7 +40,7 @@ def test_the_base_list_joins_the_list_of_a_type():
 def test_a_profile_narrows_its_type_and_never_widens_it():
     profile = CommandAllowList(groups=tuple(["proof", "setting"]), lines=tuple(["task show", "proof make", "plan make"]))
     kept = WORKER_LIST.intersection(profile)
-    assert kept == CommandAllowList(groups=tuple(["proof"]), lines=("task show", "proof make"))
+    assert kept == CommandAllowList(groups=("proof",), lines=("task show", "proof make"))
     assert WORKER_LIST.widened_names(profile) == ("setting", "plan make")
 
 
@@ -51,4 +51,4 @@ def test_a_compound_line_is_refused_whole_naming_its_refused_part():
 
 def test_a_stored_list_reads_back_as_it_was_declared():
     stored = {"categories": ["read"], "groups": ["proof"], "lines": ["task show"], "classes": ["reads"]}
-    assert CommandAllowList.restored(stored) == CommandAllowList(tuple([CommandCategory.READ]), tuple(["proof"]), tuple(["task show"]), tuple([JournalLineClass.READS]))
+    assert CommandAllowList.restored(stored) == CommandAllowList((CommandCategory.READ,), ("proof",), ("task show",), (JournalLineClass.READS,))

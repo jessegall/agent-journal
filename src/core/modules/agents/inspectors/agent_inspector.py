@@ -15,12 +15,12 @@ class AgentInspector(InspectorDeclaration):
     label = "Agent · {activity}"
     title = "{display_name}"
     width = InspectorWidth.MEDIUM
-    events = tuple(["agent.*"])
+    events = ("agent.*",)
     actions = (
-        ButtonDeclaration("agents.pause", (), "Pause the agent", "agent pause row:{row_id}", icon="pause", condition=ButtonCondition("activity", tuple([AgentActivity.WORKING.value]))),
-        ButtonDeclaration("agents.resume", (), "Resume the agent", "agent resume row:{row_id}", icon="resume", primary=True, condition=ButtonCondition("activity", tuple([AgentActivity.PAUSED.value]))),
+        ButtonDeclaration("agents.pause", (), "Pause the agent", "agent pause row:{row_id}", icon="pause", condition=ButtonCondition("activity", (AgentActivity.WORKING.value,))),
+        ButtonDeclaration("agents.resume", (), "Resume the agent", "agent resume row:{row_id}", icon="resume", primary=True, condition=ButtonCondition("activity", (AgentActivity.PAUSED.value,))),
         ButtonDeclaration("agents.stop", (), "Stop the agent", "agent stop row:{row_id}", icon="stop", danger=True, confirm="Stop the agent? It stops what it is doing.",
                           condition=ButtonCondition("activity", (AgentActivity.WORKING.value, AgentActivity.PAUSED.value, AgentActivity.USAGE_LIMITED.value))),
     )
-    components = tuple([InspectorComponent("agents.agent-detail")])
+    components = (InspectorComponent("agents.agent-detail"),)
     links = None

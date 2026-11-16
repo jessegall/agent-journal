@@ -69,5 +69,5 @@ def test_the_first_entry_point_gives_a_page_its_default_layout_and_a_later_one_a
 
 
 def test_the_presets_and_windows_of_each_entry_point_are_kept_by_its_key():
-    assert TwoEntryPointsSuite.offered_presets() == {"home": tuple([TasksPreset.layout_preset()])}
+    assert TwoEntryPointsSuite.offered_presets() == {"home": (TasksPreset.layout_preset(),)}
     assert TwoEntryPointsSuite.entry_point_windows() == {"first": ("messages.chat", "tasks.tasks"), "second": ("tasks.tasks", "plans.plans")}

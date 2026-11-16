@@ -19,7 +19,7 @@ class PluginChangesSubcommand(ReadSubcommand[tuple[CheckoutFile, ...]]):
 
     cli_name = "plugin"
     name = "changes"
-    disabled_scopes = tuple([EnvironmentScope])
+    disabled_scopes = (EnvironmentScope,)
 
     def __init__(self, checkouts: AgentCheckouts, access: PluginCallAccess) -> None:
         self.checkouts, self.access = checkouts, access

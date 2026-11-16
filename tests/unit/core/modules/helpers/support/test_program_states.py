@@ -99,7 +99,7 @@ def test_zero_threshold_disables_window_reading(readiness):
 
 
 def test_ready_programs_only_lists_ready_programs(readiness):
-    assert readiness.states.ready_programs(Path('/project')) == tuple(['sample'])
+    assert readiness.states.ready_programs(Path('/project')) == ('sample',)
     readiness.programs.installed.side_effect = Refusal('not installed')
     assert readiness.states.ready_programs(Path('/project')) == ()
 

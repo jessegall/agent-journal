@@ -54,7 +54,7 @@ class TaskQuery(Query[Task], KeptRowChanges[Task]):
 
     @staticmethod
     def assignee(actor_id: int) -> AssigneeAmong:
-        return AssigneeAmong(Task, tuple([actor_id]))
+        return AssigneeAmong(Task, (actor_id,))
 
     def assignee_tasks(self, actor_id: int) -> Self:
         return self.matching(self.assignee(actor_id))

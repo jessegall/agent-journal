@@ -19,5 +19,5 @@ def test_the_tasks_module_declares_its_inspector_components_as_sections(new_stor
 
 def test_the_components_read_and_run_only_what_they_declare(new_story):
     windows = component_windows(new_story(fixture=MainEnvironment))
-    expect_value((tuple(windows["tasks.task-chain"].reads), tuple(windows["tasks.task-log"].reads), tuple(windows["tasks.task-log"].runs)), (tuple(["task graph"]), tuple(["task-log list"]), ()))
-    expect_value((tuple(windows["tasks.task-details"].reads), tuple(windows["tasks.task-details"].runs)), (tuple(["plan place"]), tuple(["task edit"])))
+    expect_value((tuple(windows["tasks.task-chain"].reads), tuple(windows["tasks.task-log"].reads), tuple(windows["tasks.task-log"].runs)), (("task graph",), ("task-log list",), ()))
+    expect_value((tuple(windows["tasks.task-details"].reads), tuple(windows["tasks.task-details"].runs)), (("plan place",), ("task edit",)))

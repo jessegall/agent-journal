@@ -19,7 +19,7 @@ class UnstartedWorkerListener(CommitListener[Moved[Task]]):
     """Starts a worker that was made without starting, once one of its tasks opens."""
 
     name = "workers.unstarted-worker-start"
-    moves = tuple([TaskLifecycle.unblock])
+    moves = (TaskLifecycle.unblock,)
     disabled_scopes = [ActorScope]
 
     def __init__(self, bus: Bus, rows: EventRows, worker_command: WorkerCommand, environments: EnvironmentRows, worktrees: WorktreeQuery, assignments: Assignments) -> None:

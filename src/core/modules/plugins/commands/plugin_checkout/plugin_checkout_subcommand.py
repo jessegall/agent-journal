@@ -14,7 +14,7 @@ class PluginCheckoutSubcommand(ReadSubcommand[Checkout]):
 
     cli_name = "plugin"
     name = "checkout"
-    disabled_scopes = tuple([EnvironmentScope])
+    disabled_scopes = (EnvironmentScope,)
 
     def __init__(self, checkouts: AgentCheckouts, access: PluginCallAccess) -> None:
         self.checkouts, self.access = checkouts, access

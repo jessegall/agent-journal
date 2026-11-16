@@ -14,9 +14,9 @@ class PlansApproveButton(ButtonDeclaration):
     runs = "plan approve {row_id}"
     icon = "check"
     primary = True
-    condition = ButtonCondition("state", tuple(["ready"]))
+    condition = ButtonCondition("state", ("ready",))
     tip = "Approve the plan; the agent starts it"
     menu_label = "Other ways to approve"
-    menu = (tuple([ButtonMenuItem("Approve with a message", "plan approve {row_id} --message={message}",
-                                                           tuple([TextField("message", "Message to the agent")]),
-                                                           "Your message reaches the agent before the plan starts")]))
+    menu = ((ButtonMenuItem("Approve with a message", "plan approve {row_id} --message={message}",
+                                                           (TextField("message", "Message to the agent"),),
+                                                           "Your message reaches the agent before the plan starts"),))

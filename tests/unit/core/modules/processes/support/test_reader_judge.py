@@ -88,7 +88,7 @@ def test_a_test_reader_can_use_steps_and_count_for_progress():
 
 
 def test_a_judgement_reports_its_missing_fields_and_misses():
-    judgement = ReaderCheck(tuple(["--title"]), tuple(["--summary found nothing"]))
+    judgement = ReaderCheck(("--title",), ("--summary found nothing",))
     assert not judgement.is_valid
     assert judgement.text == "--title, --summary found nothing"
     assert ReaderCheck().is_valid

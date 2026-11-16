@@ -18,7 +18,7 @@ SAMPLE_ENTRY = ProviderEntry("sample", DottedPath.class_path(SampleProgram), "sa
 
 @pytest.fixture
 def providers(tmp_path):
-    registry = replace(empty_registry(), providers=tuple([SAMPLE_ENTRY]))
+    registry = replace(empty_registry(), providers=(SAMPLE_ENTRY,))
     return Providers(registry, sample_container(tmp_path, registry))
 
 

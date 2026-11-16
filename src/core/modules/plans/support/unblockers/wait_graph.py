@@ -16,7 +16,7 @@ class WaitGraph:
         return self.waits.get(task_id, ())
 
     def ends(self, task_id: int) -> WaitEnds:
-        return self.chain_ends(task_id, tuple([task_id]))
+        return self.chain_ends(task_id, (task_id,))
 
     def chain_ends(self, task_id: int, path: tuple[int, ...]) -> WaitEnds:
         if len(path) > LONGEST_CHAIN:

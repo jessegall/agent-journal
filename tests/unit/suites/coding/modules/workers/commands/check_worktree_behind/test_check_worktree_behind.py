@@ -181,7 +181,7 @@ class CheckBus:
 
     def run(self, command, actor, environment_id=None):
         self.ran.append(command)
-        return tuple(["the first line"]) if isinstance(command, AnnounceBehindChecks) else None
+        return ("the first line",) if isinstance(command, AnnounceBehindChecks) else None
 
 
 class OpenScopes:

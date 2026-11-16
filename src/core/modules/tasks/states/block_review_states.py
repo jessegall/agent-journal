@@ -29,5 +29,5 @@ class BlockReviewStates(StateSource):
         if event is None or event.event is not HookEventName.POST_TOOL_USE:
             return {}
         holds = {agent.agent_id: self.review.answer(event, agent.agent_id).hold for agent in agents}
-        return {agent_id: [BlockPlan(hold[0], hold[1], BLOCK_REVIEW_KEY, BLOCK_REVIEW_RANK, scope_tools=True, scope_stop=False, closer_roles=tuple([CloserRole.AGENT]))]
+        return {agent_id: [BlockPlan(hold[0], hold[1], BLOCK_REVIEW_KEY, BLOCK_REVIEW_RANK, scope_tools=True, scope_stop=False, closer_roles=(CloserRole.AGENT,))]
                 for agent_id, hold in holds.items() if hold is not None}

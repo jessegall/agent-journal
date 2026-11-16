@@ -30,4 +30,4 @@ class DeleteSubcommand(Subcommand[DeleteCommand, None]):
 
 
 def deletion_command(table: Table[Model]) -> type[DeleteCommand]:
-    return dataclasses.make_dataclass(f"Delete{table.model.__name__}", [], bases=tuple([DeleteCommand]), namespace={"deleted_model": table.model}, frozen=True)
+    return dataclasses.make_dataclass(f"Delete{table.model.__name__}", [], bases=(DeleteCommand,), namespace={"deleted_model": table.model}, frozen=True)

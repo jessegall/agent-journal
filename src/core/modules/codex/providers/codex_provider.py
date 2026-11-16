@@ -88,9 +88,9 @@ class CodexProvider(Provider):
     safe_tools = ("webrun", "list_mcp_resources", "create_goal", "update_goal", "clocksleep", "clockcurr_time")
     monitor_tool = ToolType.SHELL
     decoder = HookDecoder.CODEX
-    controls = tuple([ControlGroup("context", "Context window", (ControlChoice("compact", "Compact context", "/compact"), ControlChoice("clear", "Clear context", "/clear")))])
+    controls = (ControlGroup("context", "Context window", (ControlChoice("compact", "Compact context", "/compact"), ControlChoice("clear", "Clear context", "/clear"))),)
     matchers = {"PreToolUse": "tool_name", "PostToolUse": "tool_name", "SessionStart": "source", "SessionEnd": "reason",}
-    hook_files = tuple([Path(".codex/hooks.json")])
+    hook_files = (Path(".codex/hooks.json"),)
     worktree_hook_files = hook_files
     hook_file = HookFile(Path(".codex/hooks.json"), {}, {
         "SessionStart": {"additionalContextLimit": 0},
@@ -113,10 +113,10 @@ class CodexProvider(Provider):
         self.rollouts: dict[str, Path] = {}
 
     def readable_folders(self) -> tuple[Path, ...]:
-        return tuple([self.folders.folder(HOME_VARIABLE, ".codex")])
+        return (self.folders.folder(HOME_VARIABLE, ".codex"),)
 
     def server_files(self, folder: Path) -> tuple[ProgramServerFile, ...]:
-        return tuple([CodexServerFile(folder)])
+        return (CodexServerFile(folder),)
 
     def profile_model(self, profile: AgentProfile) -> str:
         return profile.program_models.get(self.name, profile.codex_model)

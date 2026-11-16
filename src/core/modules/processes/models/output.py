@@ -10,7 +10,7 @@ from core.modules.processes.models.lifecycles.output_lifecycle import OutputLife
 class Output(Model):
     """A process's stored output, reader results and reading progress."""
 
-    change_names = tuple([END_CHANGE])
+    change_names = (END_CHANGE,)
 
     model_name = "output"
     cli_name = "output"

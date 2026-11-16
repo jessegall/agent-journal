@@ -53,7 +53,7 @@ class DecisionAssembler:
     def answers(record: DecisionRecord) -> RuleAnswers:
         is_refusal = record.decision.decision_class is not DecisionClass.ALLOW
         shown = record.shown_reason
-        safety = tuple([AgentMessage(shown.key, AgentMessageType.SAFETY_REFUSAL, shown.text)]) if is_refusal and shown.is_safety else ()
+        safety = (AgentMessage(shown.key, AgentMessageType.SAFETY_REFUSAL, shown.text),) if is_refusal and shown.is_safety else ()
         refusal = RuleAnswer(refusal=shown.text, agent_messages=safety)
         refusals = [RuleRecord(shown.key or MACHINE_SOURCE, refusal.outcome, refusal)] if is_refusal else []
         return RuleAnswers([*refusals, *DecisionAssembler.line_records(record.lines)], stop_checks=tuple(record.stop_checks))

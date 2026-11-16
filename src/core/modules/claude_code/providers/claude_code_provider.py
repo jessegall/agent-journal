@@ -128,7 +128,7 @@ class ClaudeCodeProvider(Provider):
                        "Glob": ToolType.SEARCH, "ToolSearch": ToolType.SEARCH, "Agent": ToolType.AGENT, "Task": ToolType.AGENT,
                        "AskUserQuestion": ToolType.QUESTION}
     safe_tools = ("WebFetch", "WebSearch", "TodoWrite")
-    web_reader_agents = tuple(["web-fetch"])
+    web_reader_agents = ("web-fetch",)
     matchers = {"PreToolUse": "tool_name", "PostToolUse": "tool_name", "PostToolUseFailure": "tool_name",
                 "SessionStart": "source", "SessionEnd": "reason", "PreCompact": "trigger", "PostCompact": "trigger"}
     hook_file = HookFile(Path(".claude/settings.local.json"), {})
@@ -156,10 +156,10 @@ class ClaudeCodeProvider(Provider):
         return f"load this first with the Skill tool: {skill}"
 
     def readable_folders(self) -> tuple[Path, ...]:
-        return tuple([self.folders.folder(CONFIG_VARIABLE, ".claude")])
+        return (self.folders.folder(CONFIG_VARIABLE, ".claude"),)
 
     def server_files(self, folder: Path) -> tuple[ProgramServerFile, ...]:
-        return tuple([ClaudeServerFile(folder)])
+        return (ClaudeServerFile(folder),)
 
     def profile_model(self, profile: AgentProfile) -> str:
         return profile.program_models.get(self.name, profile.model)
@@ -275,7 +275,7 @@ class ClaudeCodeProvider(Provider):
         ClaudeCurrentSettings(folder).write(RUNTIME_SETTING_KEYS[setting], min(max(value, lowest), highest))
 
     def user_hook_files(self) -> tuple[Path, ...]:
-        return tuple([self.folders.folder(CONFIG_VARIABLE, ".claude") / "settings.json"])
+        return (self.folders.folder(CONFIG_VARIABLE, ".claude") / "settings.json",)
 
     def journal_settings(self, home: JournalHome, runner: str, managed: Sequence[ManagedHook], folders: Sequence[Path]) -> ProgramSettings:
         path = home.program_settings_file(self.name)

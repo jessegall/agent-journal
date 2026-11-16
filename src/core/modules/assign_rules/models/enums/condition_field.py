@@ -31,7 +31,7 @@ class ConditionField(StrEnum):
             case ConditionField.PLACE:
                 return ConditionOperator.UNPLANNED, ConditionOperator.PLANNED
             case _:
-                return tuple([ConditionOperator.ANY])
+                return (ConditionOperator.ANY,)
 
     @property
     def is_text(self) -> bool:

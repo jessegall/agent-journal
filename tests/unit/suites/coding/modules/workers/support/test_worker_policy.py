@@ -37,11 +37,11 @@ def policy(stopped: bool, jobs: tuple = ()) -> WorkerPolicy:
 
 
 @pytest.mark.parametrize("agent, stopped, jobs, wanted, final, messages", [
-    (ENDED_WORKER, False, tuple([JOB]), True, False, True),
+    (ENDED_WORKER, False, (JOB,), True, False, True),
     (ENDED_WORKER, False, (), False, False, True),
-    (ENDED_WORKER, True, tuple([JOB]), False, True, True),
-    (WORKER, False, tuple([JOB]), False, False, True),
-    (ENDED_HELPER, False, tuple([JOB]), False, True, False),
+    (ENDED_WORKER, True, (JOB,), False, True, True),
+    (WORKER, False, (JOB,), False, False, True),
+    (ENDED_HELPER, False, (JOB,), False, True, False),
 ])
 def test_the_workers_policy_wants_an_ended_worker_with_a_job_it_may_take_and_calls_final_only_a_worker_stopped_on_purpose(agent, stopped, jobs, wanted, final, messages):
     decided = policy(stopped, jobs)

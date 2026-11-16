@@ -44,7 +44,7 @@ class PhaseTestDeferrals:
         omitted_paths = tuple(path for deferral in self.omitted(phase.id) for path in deferral.path_words())
         due_paths = tuple(path for deferral in due for path in deferral.path_words())
         command = OwnTestCommand.parse(phase.test_command).without(omitted_paths).text() if omitted_paths else phase.test_command
-        return tuple([OwnTest(command, due_paths).command])
+        return (OwnTest(command, due_paths).command,)
 
     def close_due(self, phase_id: int, context: Context) -> None:
         for deferral in self.due(phase_id):

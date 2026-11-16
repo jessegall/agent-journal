@@ -33,7 +33,7 @@ class Stocker(HelperType):
     key = "stocker"
     label = "Stocker"
     behaviours = HelperBehaviours.retired()
-    commands = CommandAllowList(groups=tuple(["shelf"]))
+    commands = CommandAllowList(groups=("shelf",))
 
 
 class ListlessStocker(HelperType):
@@ -43,33 +43,33 @@ class ListlessStocker(HelperType):
 
 
 def problems(declaration: type[HelperType]) -> tuple[str, ...]:
-    suite = type("ShelvesSuite", tuple([Suite]), {"name": "shelves", "modules": [ShelvesModule], "helper_types": [declaration]})
-    listed = SuiteList(tuple([suite]))
+    suite = type("ShelvesSuite", (Suite,), {"name": "shelves", "modules": [ShelvesModule], "helper_types": [declaration]})
+    listed = SuiteList((suite,))
     return HelperTypeCheck().problems(listed.modules(), listed)
 
 
 def listing(commands: CommandAllowList) -> tuple[str, ...]:
-    return problems(type("ListedStocker", tuple([Stocker]), {"commands": commands}))
+    return problems(type("ListedStocker", (Stocker,), {"commands": commands}))
 
 
 def test_a_list_that_names_served_groups_lines_and_classes_passes_the_boot():
-    assert listing(CommandAllowList(groups=tuple(["shelf"]), classes=tuple([JournalLineClass.READS]))) == ()
+    assert listing(CommandAllowList(groups=("shelf",), classes=(JournalLineClass.READS,))) == ()
     assert listing(CommandAllowList(lines=("shelf show", "shelf stock"))) == ()
 
 
 def test_a_typo_in_a_list_stops_the_boot_naming_the_type_and_the_line():
-    assert listing(CommandAllowList(lines=tuple(["shelf stok"]))) == tuple([f"{NAME} lists the line shelf stok, which no module serves"])
-    assert listing(CommandAllowList(groups=tuple(["shelfs"]))) == tuple([f"{NAME} lists the group shelfs, which no module serves"])
+    assert listing(CommandAllowList(lines=("shelf stok",))) == (f"{NAME} lists the line shelf stok, which no module serves",)
+    assert listing(CommandAllowList(groups=("shelfs",))) == (f"{NAME} lists the group shelfs, which no module serves",)
 
 
 def test_a_line_named_twice_stops_the_boot():
-    assert listing(CommandAllowList(lines=("shelf show", "shelf show"))) == tuple([f"{NAME} names shelf show twice"])
-    assert listing(CommandAllowList(groups=tuple(["shelf"]), lines=tuple(["shelf show"]))) == tuple([f"{NAME} lists the line shelf show and its whole group"])
+    assert listing(CommandAllowList(lines=("shelf show", "shelf show"))) == (f"{NAME} names shelf show twice",)
+    assert listing(CommandAllowList(groups=("shelf",), lines=("shelf show",))) == (f"{NAME} lists the line shelf show and its whole group",)
 
 
 def test_a_class_that_names_no_line_stops_the_boot():
-    assert listing(CommandAllowList(classes=tuple([JournalLineClass.BACKGROUND]))) == tuple([f"{NAME} lists the class background, which no line has"])
+    assert listing(CommandAllowList(classes=(JournalLineClass.BACKGROUND,))) == (f"{NAME} lists the class background, which no line has",)
 
 
 def test_a_type_registered_with_no_list_stops_the_boot_saying_so():
-    assert problems(ListlessStocker) == tuple([f"{NAME} has no commands"])
+    assert problems(ListlessStocker) == (f"{NAME} has no commands",)

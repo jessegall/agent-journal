@@ -18,7 +18,7 @@ class ReviewStartedMarkListener(MarkListener[Moved[Review]]):
     the subject."""
 
     name = "reviews.review-started-mark"
-    moves = tuple([ReviewLifecycle.assign])
+    moves = (ReviewLifecycle.assign,)
     disabled_scopes = [ActorScope]
     module_name = "journal.core.reviews"
 

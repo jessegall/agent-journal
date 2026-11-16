@@ -23,9 +23,9 @@ class Plan(EnvironmentScoped, Model, StateHolder, Assignable):
     cli_name = "plan"
     search_fields = ["title", "brief"]
     lifecycle = PlanLifecycle
-    added_state_moves = tuple([PlanLifecycle.cancel])
+    added_state_moves = (PlanLifecycle.cancel,)
     takes_actors = ActorCount.SINGLE
-    assigns = tuple([Children(Phase, "plan_id")])
+    assigns = (Children(Phase, "plan_id"),)
 
     environment_id: int = 0
     creator_id: int

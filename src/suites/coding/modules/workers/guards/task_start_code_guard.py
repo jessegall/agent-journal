@@ -12,7 +12,7 @@ class TaskStartCodeGuard(Guard[Moved[Task]]):
     """A main agent that writes no code starts no task itself; the task goes to a worker."""
 
     name = "coding.main-starts-no-task-without-code"
-    moves = tuple([TaskLifecycle.start])
+    moves = (TaskLifecycle.start,)
 
     def __init__(self, caller: MainCaller, options: CodingMainOptions) -> None:
         self.caller, self.options = caller, options

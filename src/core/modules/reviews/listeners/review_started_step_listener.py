@@ -14,7 +14,7 @@ class ReviewStartedStepListener(CommitListener[Moved[Review]]):
     """When a reviewer starts a review, its steps start with a line saying so."""
 
     name = "reviews.review-started-step"
-    moves = tuple([ReviewLifecycle.assign])
+    moves = (ReviewLifecycle.assign,)
 
     def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries) -> None:
         self.bus, self.actors, self.queries = bus, actors, queries

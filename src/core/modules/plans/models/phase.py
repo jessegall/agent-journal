@@ -18,7 +18,7 @@ class Phase(Positioned, Assignable):
     cli_name = "phase"
     search_fields = ["title", "goal"]
     takes_actors = ActorCount.SINGLE
-    assigns = tuple([Children(Task, "phase_id", link_model=PhaseTask, link_column="task_id")])
+    assigns = (Children(Task, "phase_id", link_model=PhaseTask, link_column="task_id"),)
 
     plan_id: int
     creator_id: int

@@ -68,7 +68,7 @@ def test_the_subscriptions_hold_each_form_of_a_real_key_and_leave_out_what_is_wr
     install_event_plugin(story, {"event": TASK_CREATED, "guard": "see.sh"}, {"event": BOOTING, "guard": "refuse.sh"}, name="second")
     subscriptions = story.container.get(PluginSubscriptions)
     story.expect_rows(subscriptions.scripts("task.create", EventForm.GUARD) == (PluginSubscription("events", "refuse.sh"), PluginSubscription("second", "see.sh")))
-    story.expect_rows(subscriptions.scripts("task.create", EventForm.LISTEN) == tuple([PluginSubscription("events", "pin.sh")]))
+    story.expect_rows(subscriptions.scripts("task.create", EventForm.LISTEN) == (PluginSubscription("events", "pin.sh"),))
     story.expect_rows(subscriptions.scripts("task.create", EventForm.COMMIT) == (), subscriptions.scripts("journal.booting", EventForm.GUARD) == ())
     story.expect_rows("pin.sh" in plugin_manifest(story).files, "refuse.sh" in plugin_manifest(story).files, "../other/run.sh" not in plugin_manifest(story).files)
 

@@ -75,5 +75,5 @@ class SkillReadFirstStates(StateSource):
     # the block an agent lifts by reading the skill itself
     @staticmethod
     def read_plan(agent_message: AgentMessage, skill: str, rule: str, **block_fields: Any) -> BlockPlan:
-        return BlockPlan(agent_message, SkillLoaded(skill), rule, SKILL_READ_RANK, closer_roles=tuple([CloserRole.AGENT]), lifting_lines=tuple([f"{SKILL_COMMAND} {skill}"]),
+        return BlockPlan(agent_message, SkillLoaded(skill), rule, SKILL_READ_RANK, closer_roles=(CloserRole.AGENT,), lifting_lines=(f"{SKILL_COMMAND} {skill}",),
                          **block_fields)

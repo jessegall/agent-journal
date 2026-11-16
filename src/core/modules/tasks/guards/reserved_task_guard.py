@@ -14,7 +14,7 @@ class ReservedTaskGuard(Guard[Moved[Task]]):
     """A task reserved for a running main agent is started only by that agent or a user."""
 
     name = "tasks.reserved-task"
-    moves = tuple([TaskLifecycle.start])
+    moves = (TaskLifecycle.start,)
 
     def __init__(self, assignments: Assignments) -> None:
         self.assignments = assignments

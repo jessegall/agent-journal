@@ -86,7 +86,7 @@ def expect_uncertainty(line: ShellLine, uncertain: bool, old_hook: bool) -> None
 def test_a_line_that_skips_the_saved_commands_is_no_full_test_run():
     skip = Part('journal alias skip --reason "one run"', "journal", "", ("alias", "skip"), Classification(CommandCategory.JOURNAL, ()), (), (), "&&", None)
     suite = Part("pytest", "pytest", "", (), Classification(CommandCategory.TEST_RUN, ()), (), (), "", None, is_full_test_run=True)
-    expect_full_test_run(tuple([suite]), True)
+    expect_full_test_run((suite,), True)
     expect_full_test_run((skip, suite), False)
 
 

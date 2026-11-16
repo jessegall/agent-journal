@@ -32,7 +32,7 @@ class RuleDockListener(CommitListener[Changed[ProjectRule] | RegistrySynced]):
         self.bus, self.actors, self.queries, self.items = bus, actors, queries, items
 
     def handle(self, event: Changed[ProjectRule] | RegistrySynced, logged: LoggedEvent) -> None:
-        rules = tuple(self.queries.query(ProjectRule).filter(state=RuleState.PROPOSED).get()) if isinstance(event, RegistrySynced) else tuple([event.row])
+        rules = tuple(self.queries.query(ProjectRule).filter(state=RuleState.PROPOSED).get()) if isinstance(event, RegistrySynced) else (event.row,)
         for rule in rules:
             self.update_request(rule, logged)
 

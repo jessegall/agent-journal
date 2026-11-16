@@ -47,4 +47,4 @@ class MemoryMarkStates(StateSource):
         uses = dict(zip(self.settings.numbers(MARKS_SETTING), tool_uses)).get(marks[0].percent, tool_uses[-1]) if marks else reaching.tool_uses
         agent_message = WeighFirstMessage.declared().agent_message()
         return BlockPlan(agent_message, MemoriesWeighed(), TOOL_KEY, MARK_RANK, stop_check_key=STOP_KEY, tool_grace_uses=uses, scope_stop=True,
-                         closer_roles=tuple([CloserRole.AGENT]), lifting_lines=WEIGH_COMMANDS, stop_agent_message=agent_message, countdown=WEIGH_COUNTDOWN.agent_message("{left}"))
+                         closer_roles=(CloserRole.AGENT,), lifting_lines=WEIGH_COMMANDS, stop_agent_message=agent_message, countdown=WEIGH_COUNTDOWN.agent_message("{left}"))

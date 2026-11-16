@@ -17,7 +17,7 @@ class KeptRowChanges(Generic[M]):
         self.update_kept(row, ())
 
     def kept_rows(self, row: M, /) -> tuple[M, ...]:
-        return tuple([row])
+        return (row,)
 
     def update_kept(self, row: M, kept: tuple[M, ...], /) -> None:
         raise NotImplementedError(f"{type(self).__name__} keeps no read to update")

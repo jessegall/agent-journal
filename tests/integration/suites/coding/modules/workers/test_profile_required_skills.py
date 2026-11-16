@@ -71,13 +71,13 @@ def row(story, profile: str, folder: str):
 
 
 def test_the_mark_is_kept_in_the_profile_file_over_a_restart(saved):
-    expect_value(saved.container.get(ProfileFiles).row(PROFILE).required_skills, tuple([REQUIRED]))
+    expect_value(saved.container.get(ProfileFiles).row(PROFILE).required_skills, (REQUIRED,))
 
 
 def test_a_shipped_profile_keeps_a_required_mark_a_person_set_and_shows_it_changed(person):
     person.expect_success(f"profile save {RESEARCHER_PROFILE.name} --description 'Researches a question' --skills {LISTED} --required-skills {REQUIRED}", actor=person.user)
     profile = person.container.get(ProfileFiles).effective(f"{RESEARCHER_PROFILE.name}")
-    person.expect_rows(profile.required_skills == tuple([REQUIRED]), "required_skills" in profile.changed)
+    person.expect_rows(profile.required_skills == (REQUIRED,), "required_skills" in profile.changed)
 
 
 

@@ -89,8 +89,8 @@ def test_two_homes_from_one_template_share_a_table(tmp_path):
     first, _ = copied_home(tmp_path, "first", tmp_path / "template.db")
     second, _ = copied_home(tmp_path, "second", tmp_path / "template.db")
     loader = CountingLoader()
-    SharedTables.shared(first).read(StandInDatabase(), "notes", tuple([tuple([1])]), loader)
-    assert (SharedTables.shared(second).read(StandInDatabase(), "notes", tuple([tuple([1])]), loader), loader.loads) == ("load 1", 1)
+    SharedTables.shared(first).read(StandInDatabase(), "notes", ((1,),), loader)
+    assert (SharedTables.shared(second).read(StandInDatabase(), "notes", ((1,),), loader), loader.loads) == ("load 1", 1)
 
 
 def test_a_write_in_one_story_is_not_seen_by_the_next(tmp_path):
@@ -98,8 +98,8 @@ def test_a_write_in_one_story_is_not_seen_by_the_next(tmp_path):
     untouched, _ = copied_home(tmp_path, "untouched", tmp_path / "template-w.db")
     Path(f"{copy}-wal").write_text("a write")
     loader = CountingLoader()
-    SharedTables.shared(written).read(StandInDatabase(), "notes", tuple([tuple([2])]), loader)
-    assert (SharedTables.shared(untouched).read(StandInDatabase(), "notes", tuple([tuple([2])]), loader), loader.loads) == ("load 2", 2)
+    SharedTables.shared(written).read(StandInDatabase(), "notes", ((2,),), loader)
+    assert (SharedTables.shared(untouched).read(StandInDatabase(), "notes", ((2,),), loader), loader.loads) == ("load 2", 2)
 
 
 def test_the_real_journal_still_keys_on_its_home(tmp_path):

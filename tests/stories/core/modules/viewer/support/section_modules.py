@@ -18,7 +18,7 @@ GOOD_SECTION = f"{MODULE_FILE}:GoodSectionModule"
 
 
 def section(name: str, *slots: str, place: WindowPlace = WindowPlace.SECTION) -> WindowDeclaration:
-    return WindowDeclaration(name, "Sample section", "board.html", WindowLoading.STACKED_STATE, place=place, slots=slots, skeleton=tuple([SkeletonPart.line()]))
+    return WindowDeclaration(name, "Sample section", "board.html", WindowLoading.STACKED_STATE, place=place, slots=slots, skeleton=(SkeletonPart.line(),))
 
 
 class UnknownSlotModule(Module):
@@ -68,7 +68,7 @@ class InspectorSlotModuleButton(Module):
     name = "inspector_button"
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.plans"]
-    buttons = [ButtonDeclaration("inspector_button.press", tuple(["inspector.plan"]), "Press", "plan show {row_id}")]
+    buttons = [ButtonDeclaration("inspector_button.press", ("inspector.plan",), "Press", "plan show {row_id}")]
 
 
 class GoodSectionModule(Module):

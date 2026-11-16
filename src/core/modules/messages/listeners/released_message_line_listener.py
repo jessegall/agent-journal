@@ -11,7 +11,7 @@ class ReleasedMessageLineListener(CommitListener[Moved[AgentLine]]):
     during it, is dropped when the message was read meanwhile, so no hook tells of a read message."""
 
     name = "messages.released-message-line"
-    moves = tuple([AgentLineLifecycle.release])
+    moves = (AgentLineLifecycle.release,)
 
     def __init__(self, lines: WaitingMessageLines) -> None:
         self.lines = lines

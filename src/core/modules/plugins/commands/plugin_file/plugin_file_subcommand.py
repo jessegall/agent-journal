@@ -15,7 +15,7 @@ class PluginFileSubcommand(ReadSubcommand[str]):
 
     cli_name = "plugin"
     name = "file"
-    disabled_scopes = tuple([EnvironmentScope])
+    disabled_scopes = (EnvironmentScope,)
 
     def __init__(self, checkouts: AgentCheckouts, access: PluginCallAccess, files: PluginFileText) -> None:
         self.checkouts, self.access, self.files = checkouts, access, files

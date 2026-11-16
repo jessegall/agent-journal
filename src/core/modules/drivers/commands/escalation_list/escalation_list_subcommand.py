@@ -21,5 +21,4 @@ class EscalationListSubcommand(ReadSubcommand[tuple[str, ...]]):
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[str, ...]:
         rows = self.queries.query(AgentEscalation).filter(state=EscalationState.OPEN).every_row(OPEN_ESCALATIONS_REASON)
-        return tuple(f"{row.id} agent {row.session_agent_id}: {row.refusal_count} {row.escalation_type} refused, {row.responder} asked" for row in rows) or tuple(
-            ["no escalation is open"])
+        return tuple(f"{row.id} agent {row.session_agent_id}: {row.refusal_count} {row.escalation_type} refused, {row.responder} asked" for row in rows) or ("no escalation is open",)

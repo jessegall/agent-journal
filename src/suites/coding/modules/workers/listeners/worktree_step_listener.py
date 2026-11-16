@@ -12,4 +12,4 @@ class WorktreeStepListener(AgentListener[Changed[Worktree]]):
 
     def agents(self, event: Changed[Worktree]) -> Sequence[int]:
         moved = event.old_row is not None and (event.row.base_commit != event.old_row.base_commit or event.row.state is not event.old_row.state)
-        return tuple([event.row.session_agent_id]) if moved else ()
+        return (event.row.session_agent_id,) if moved else ()

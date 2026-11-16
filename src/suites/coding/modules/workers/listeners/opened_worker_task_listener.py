@@ -11,7 +11,7 @@ class OpenedWorkerTaskListener(SaveListener[Moved[Task]]):
     """A blocked task given to a worker goes to that worker once it opens."""
 
     name = "workers.opened-task"
-    moves = tuple([TaskLifecycle.unblock])
+    moves = (TaskLifecycle.unblock,)
     disabled_scopes = [ActorScope]
 
     def __init__(self, inactive_sender: InactiveWorkerSend) -> None:

@@ -16,7 +16,7 @@ def test_a_task_cancelled_out_of_a_unit_lets_the_rest_finish(new_story):
 
 def test_a_plan_given_to_another_agent_mid_unit_leaves_the_worker_its_committed_tasks(new_story):
     worker = start_planned_worker(new_story)
-    commit_tasks_singly(worker, tuple([1]))
+    commit_tasks_singly(worker, (1,))
     worker.story.expect_success("plan assign 1 --environment main", actor=worker.story.user)
     card = plan_card(worker)
     worker.story.expect_rows(card["assignee"] is None or card["assignee"]["id"] != worker.worker.id, 1 in worker_unit(worker).task_ids, detail=f"{card} / {worker_unit(worker)}")

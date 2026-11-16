@@ -16,7 +16,7 @@ class CheckpointReviewStartListener(SaveListener[Moved[CheckpointReach]]):
     checkpoint, on the model the review-model setting names, reporting to the newest main agent."""
 
     name = "plan_reviews.checkpoint-review-start"
-    moves = tuple([CheckpointLifecycle.passed])
+    moves = (CheckpointLifecycle.passed,)
     disabled_scopes = [ActorScope]
 
     def __init__(self, bus: Bus, main_agents: PlanMainAgents, settings: SettingValues) -> None:

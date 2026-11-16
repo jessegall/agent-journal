@@ -6,4 +6,4 @@ class HookCallUpdatedInputMigration(Migration):
     the same."""
 
     number = 2
-    statements = tuple(["ALTER TABLE hook_calls ADD COLUMN updated_input TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(updated_input))"])
+    statements = ("ALTER TABLE hook_calls ADD COLUMN updated_input TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(updated_input))",)

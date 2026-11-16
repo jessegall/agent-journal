@@ -11,7 +11,7 @@ from suites.coding.modules.workers.commands.compact_agent_context.compact_agent_
 from suites.coding.support.context_limit_check import ContextLimitCheck
 
 FULL_CONTEXT_TEXTS = ("prompt is too long", "context window", "context length")
-CONTEXT_FULL_ERROR_VALUES = tuple(["invalid_request"])
+CONTEXT_FULL_ERROR_VALUES = ("invalid_request",)
 
 
 class FullContextCompactionEffect(EventEffect):

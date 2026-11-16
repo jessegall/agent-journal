@@ -19,19 +19,19 @@ class SettingComponent(StrEnum):
     def categories(self) -> tuple[SettingType, ...]:
         match self:
             case SettingComponent.TOGGLE:
-                return tuple([SettingType.FLAG])
+                return (SettingType.FLAG,)
             case SettingComponent.NUMBER | SettingComponent.TYPE_OVERRIDE:
-                return tuple([SettingType.NUMBER])
+                return (SettingType.NUMBER,)
             case SettingComponent.CHOICE:
-                return tuple([SettingType.CHOICE])
+                return (SettingType.CHOICE,)
             case SettingComponent.ENTRY_LIST:
-                return tuple([SettingType.LIST])
+                return (SettingType.LIST,)
             case SettingComponent.NUMBER_LIST:
-                return tuple([SettingType.NUMBER_LIST])
+                return (SettingType.NUMBER_LIST,)
             case SettingComponent.TEXT:
                 return (SettingType.TEXT, SettingType.ANY)
             case SettingComponent.KEYED_CAP_TABLE | SettingComponent.TRIPLE_CAP:
-                return tuple([SettingType.LIST])
+                return (SettingType.LIST,)
 
     @classmethod
     def default_component(cls, category: SettingType) -> "SettingComponent":

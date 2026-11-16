@@ -17,7 +17,7 @@ class PlanBeingBuiltGuard(Guard[Moved[Plan]]):
     """Refuses an agent that marks a plan ready while the sequence building that plan has steps left."""
 
     name = "sequences.plan-being-built"
-    moves = tuple([PlanLifecycle.ready])
+    moves = (PlanLifecycle.ready,)
     is_safety = True
 
     def __init__(self, runs: SequenceRunQuery, rows: EventRows) -> None:

@@ -39,7 +39,7 @@ class RuleAnswer:
 
     @classmethod
     def refused(cls, agent_message: AgentMessage) -> "RuleAnswer":
-        return cls(refusal=agent_message.text, agent_messages=tuple([agent_message]), last=True)
+        return cls(refusal=agent_message.text, agent_messages=(agent_message,), last=True)
 
     def role_variant(self, role: str) -> "RuleAnswer":
         agent_messages = tuple(agent_message.role_variant(role) for agent_message in self.agent_messages)

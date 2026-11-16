@@ -345,7 +345,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(400, {"error": str(error)})
             return
         if shared is not None:
-            request = replace(request, environments=tuple([shares.environment_name(shared.environment_id)]))
+            request = replace(request, environments=(shares.environment_name(shared.environment_id),))
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
         self.send_header("Cache-Control", "no-store")

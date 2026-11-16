@@ -49,7 +49,7 @@ class QueuePluginRunSubcommand(Subcommand[QueuePluginRun, QueuedRunStart]):
         terms = arguments.line
         if not terms:
             raise UsageError("name the command to run after --")
-        timeouts = tuple([f"{arguments.timeout}s"]) if arguments.timeout > 0 else ()
+        timeouts = (f"{arguments.timeout}s",) if arguments.timeout > 0 else ()
         return QueuePluginRun(arguments.plugin, arguments.kind, self.agent_id(arguments, caller), arguments.checkout, shlex.join(terms), timeouts,
                               ExecutionPriority.labelled(arguments.priority), arguments.detach)
 

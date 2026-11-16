@@ -19,4 +19,4 @@ class HelperCommands(CommandAllowList):
                             "task waits-on-nothing", "task log", "task comment", "plan comment", "output stop", "output read", "output title", "refusal skip", "refusal confirm", "refusal withdraw", "link remove",
                             "dock add", "reminder make", "phone pair", "agent resume", "trigger enable",
                             "worker logs", "merger next")
-    classes: Sequence[JournalLineClass] = tuple([JournalLineClass.READS])
+    classes: Sequence[JournalLineClass] = (JournalLineClass.READS,)

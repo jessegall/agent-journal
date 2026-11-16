@@ -15,7 +15,7 @@ class MergeAskReturnListener(SaveListener[Moved[Worktree]]):
     """Any return of a worktree from its merge sends its waiting ask back, so the worker asks again."""
 
     name = "workers.merge-ask-return"
-    moves = tuple([WorktreeLifecycle.rework])
+    moves = (WorktreeLifecycle.rework,)
     disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, repository: Repository) -> None:

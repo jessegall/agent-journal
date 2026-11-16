@@ -16,7 +16,7 @@ class UserWaitGuard(Guard[Moved[Task]]):
     """A user or the main agent reviews a task's wait before reopening it."""
 
     name = "tasks.user-wait"
-    moves = tuple([TaskLifecycle.unblock])
+    moves = (TaskLifecycle.unblock,)
 
     def __init__(self, waits: TaskWaits, queries: Queries) -> None:
         self.waits, self.queries = waits, queries

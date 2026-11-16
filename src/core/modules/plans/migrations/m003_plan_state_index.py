@@ -6,4 +6,4 @@ class PlanStateIndexMigration(Migration):
     leaves out."""
 
     number = 3
-    statements = tuple(["CREATE INDEX plans_environment_state ON plans (environment_id, state, id)"])
+    statements = ("CREATE INDEX plans_environment_state ON plans (environment_id, state, id)",)

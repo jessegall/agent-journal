@@ -13,7 +13,7 @@ class StartNamesModelPolicy(EventPolicy):
     key = "helpers.start-names-model"
     rank = "helpers.policies"
 
-    starts: tuple[str, ...] = tuple(["helper start"])
+    starts: tuple[str, ...] = ("helper start",)
 
     def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         shell = event.tool.shell if event.tool is not None else None

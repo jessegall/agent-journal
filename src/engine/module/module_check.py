@@ -35,7 +35,7 @@ STANDARD_CHANGES = ("create", "update", "delete", METADATA)
 LIFECYCLE_ATTRIBUTES = ("states", "initial", "editable", "deletable")
 SYSTEM_EVENTS = (JOURNAL_BOOTING_EVENT, REGISTRY_SYNC_EVENT, UPGRADE_MOVED_EVENT, UPGRADE_FINISHED_EVENT)
 SYSTEM_EVENTS_MODULE = "journal.core"
-COMMIT_FORM = tuple([EventForm.COMMIT])
+COMMIT_FORM = (EventForm.COMMIT,)
 
 
 class ModuleCheck:

@@ -14,9 +14,9 @@ class RoundsWindow(Window):
     entry = "rounds.js"
     loading = WindowLoading.COMPONENT
     place = WindowPlace.SECTION
-    slots = tuple(["inspector.plan"])
+    slots = ("inspector.plan",)
     icon = WindowIcon.REVIEW
     reads = ["plan rounds"]
     events = ["plan.*"]
-    skeleton = tuple([SkeletonPart.line()])
+    skeleton = (SkeletonPart.line(),)
     keys = [RoundsKey]

@@ -14,7 +14,7 @@ class WorkerStartedTasksGuard(Guard[Moved[Task]]):
     """Refuses a worker one more started task once it has started as many as the setting allows at once."""
 
     name = "workers.most-open-tasks"
-    moves = tuple([TaskLifecycle.start])
+    moves = (TaskLifecycle.start,)
 
     def __init__(self, rows: EventRows, limit: WorkerTaskLimit) -> None:
         self.rows, self.limit = rows, limit

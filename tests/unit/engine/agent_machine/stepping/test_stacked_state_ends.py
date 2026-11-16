@@ -44,5 +44,5 @@ def test_a_stacked_state_whose_source_told_its_end_records_that_end():
 
 def test_a_stacked_state_a_person_removed_ends_waived_which_is_no_progress():
     work = StackedState(Paused((), "paused"), StateKey("Working", None, "task:4"), ENTERED)
-    view = replace(ViewSamples.view("main", WorkStop.REFUSE_WHILE_WORK_REMAINS), suppressions=tuple([work.state_key]))
+    view = replace(ViewSamples.view("main", WorkStop.REFUSE_WHILE_WORK_REMAINS), suppressions=(work.state_key,))
     assert StackBuilder.stacked_state_end(view, work) is StateEnd.WAIVED and StateEnd.WAIVED not in PROGRESS_ENDS

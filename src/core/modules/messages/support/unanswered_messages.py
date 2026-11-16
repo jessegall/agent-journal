@@ -33,7 +33,7 @@ class UnansweredMessages:
         newest_agent_message = self.messages.addressed(agent_id).filter(type=MessageType.AGENT, creator_id=agent_id).newest().first()
         wait_start = max(agent_start, newest_agent_message.creation_timestamp().text) if newest_agent_message is not None else agent_start
         read_people = self.reads.read_after(agent_id, PERSON_MESSAGE_TYPES, wait_start).order_by("read_at").take(OLDEST_PERSON_MESSAGES)
-        read_agents = self.reads.read_after(agent_id, tuple([MessageType.AGENT]), agent_start).matching(ActiveAgentRows("creator_id")).matching(Excluding(Equal("creator_id", agent_id))).newest().take(NEWEST_AGENT_MESSAGES)
+        read_agents = self.reads.read_after(agent_id, (MessageType.AGENT,), agent_start).matching(ActiveAgentRows("creator_id")).matching(Excluding(Equal("creator_id", agent_id))).newest().take(NEWEST_AGENT_MESSAGES)
         candidates = tuple(sorted((*read_people, *read_agents), key=lambda message: message.id))
         answered = self.replies.answered_ids(agent_id, candidates)
         return tuple(message for message in candidates if message.id not in answered)

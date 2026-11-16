@@ -36,5 +36,5 @@ class OpenDocumentStates(StateSource):
     @staticmethod
     def plan(row: OpenDocument) -> BlockPlan:
         return BlockPlan(DocumentOpenMessage.declared().agent_message(doc=row.doc_id), DocumentClosed(row.doc_id), TOOL_KEY, OPEN_DOCUMENT_RANK, stop_check_key=STOP_KEY,
-                         scope_stop=True, subject=RowReference("document", row.doc_id), lifting_lines=tuple([f"journal doc close {row.doc_id}"]),
+                         scope_stop=True, subject=RowReference("document", row.doc_id), lifting_lines=(f"journal doc close {row.doc_id}",),
                          stop_agent_message=DocumentStopRefusalMessage.declared().agent_message(doc=row.doc_id))

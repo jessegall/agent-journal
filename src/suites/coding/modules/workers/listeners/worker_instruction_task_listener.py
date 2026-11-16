@@ -12,7 +12,7 @@ class WorkerInstructionTaskListener(CommitListener[Moved[Task]]):
     as it is now, where the text differs."""
 
     name = "workers.instruction-task-start"
-    moves = tuple([TaskLifecycle.start])
+    moves = (TaskLifecycle.start,)
 
     def __init__(self, worktrees: WorktreeQuery, files: WorkerInstructionFiles) -> None:
         self.worktrees, self.files = worktrees, files

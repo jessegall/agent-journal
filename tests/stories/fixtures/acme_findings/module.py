@@ -18,11 +18,11 @@ class AcmeFindingsModule(Module):
     handlers = [NotePlanHandler]
     subcommands = [NotePlanSubcommand]
     button_slots = ["findings.row"]
-    buttons = [ButtonDeclaration("findings.note", tuple(["findings.row"]), "Note the plan", "findings note {row_id}",
-                                 condition=ButtonCondition("state", tuple(["ready"])))]
+    buttons = [ButtonDeclaration("findings.note", ("findings.row",), "Note the plan", "findings note {row_id}",
+                                 condition=ButtonCondition("state", ("ready",)))]
     windows = [WindowDeclaration("findings.findings", "Findings", "findings.js", WindowLoading.COMPONENT,
                                  place=WindowPlace.PAGE, icon=WindowIcon.PLAN, reads=["plan list", "plan show"], events=["plan.*"],
-                                 skeleton=tuple([SkeletonPart.line()]))]
+                                 skeleton=(SkeletonPart.line(),))]
 
 
 class AcmeFindingsModuleJoining(Suite):

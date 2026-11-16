@@ -12,7 +12,7 @@ class ReviewerAvailableListener(SaveListener[Created[Reviewer] | Moved[Reviewer]
     """A reviewer that is made or finishes its review starts the oldest queued review at once."""
 
     name = "reviews.reviewer-available"
-    moves = tuple([ReviewerLifecycle.finish])
+    moves = (ReviewerLifecycle.finish,)
 
     def __init__(self, bus: Bus) -> None:
         self.bus = bus

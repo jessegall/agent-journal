@@ -21,4 +21,4 @@ class ProofStepListener(AgentListener[Changed[Proof]]):
     def agents(self, event: Changed[Proof]) -> Sequence[int]:
         if event.old_row is None or event.row.state is event.old_row.state:
             return ()
-        return tuple([self.queries.query(Worktree).find(event.row.worktree_id).session_agent_id])
+        return (self.queries.query(Worktree).find(event.row.worktree_id).session_agent_id,)

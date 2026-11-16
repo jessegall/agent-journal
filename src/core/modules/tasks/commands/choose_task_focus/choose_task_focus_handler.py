@@ -57,6 +57,6 @@ class ChooseTaskFocusHandler(Handler[ChooseTaskFocus, tuple[str, ...]]):
     def lines(self, agent_id: int) -> tuple[str, ...]:
         started = self.tasks.started_tasks(agent_id)
         if not started:
-            return tuple([WITHOUT_STARTED_TASK_LINE])
+            return (WITHOUT_STARTED_TASK_LINE,)
         return (f"you work on task {started[0].id} now: {started[0].title}",
                 *(f"also started: task {task.id}, {task.title}" for task in started[1:]))

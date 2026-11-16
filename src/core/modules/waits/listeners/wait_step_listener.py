@@ -12,4 +12,4 @@ class WaitStepListener(AgentListener[Changed[Wait]]):
     name = "waits.wait-step"
 
     def agents(self, event: Changed[Wait]) -> Sequence[int]:
-        return tuple([event.row.session_agent_id])
+        return (event.row.session_agent_id,)

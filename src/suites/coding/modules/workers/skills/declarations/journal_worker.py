@@ -8,4 +8,4 @@ class JournalWorker(SkillDeclaration):
     description = "Work your assigned tasks in your worktree, prove them, commit and ask for the merge; read it when a worker session starts"
     keywords = ("worker", "worktree", "proof")
     commands = ("worker", "proof")
-    types = tuple(["worker"])
+    types = ("worker",)

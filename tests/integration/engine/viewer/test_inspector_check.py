@@ -13,4 +13,4 @@ def expect_refusal_with_synced_module(new_story, synced_module, refused_module, 
 def test_inspector_actions_become_buttons_on_the_row_slot(journal):
     journal.expect_sync_success(f"{PATH}:ValidModule")
     buttons = {entry.declaration.name: entry.declaration for entry in Registry.read(journal.database).buttons}
-    expect_value(tuple(buttons["shown.start"].slots), tuple(["row.reminder"]))
+    expect_value(tuple(buttons["shown.start"].slots), ("row.reminder",))

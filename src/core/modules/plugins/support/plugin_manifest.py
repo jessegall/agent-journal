@@ -213,7 +213,7 @@ class PluginManifest:
     def walked_files(folder: Path, entry: str) -> tuple[str, ...]:
         path = folder / entry
         if not FileAccess.is_dir(path):
-            return tuple([entry])
+            return (entry,)
         return tuple(sorted(str(file.relative_to(folder)) for file in FileAccess.rglob(path, "*") if FileAccess.is_file(file)))
 
     def wrong_files(self, folder: Path) -> tuple[str, ...]:
@@ -229,7 +229,7 @@ class PluginManifest:
 
     @staticmethod
     def read_listeners(listen: object, folder: Path) -> tuple[ManifestListener, ...]:
-        return tuple(ManifestListener.parsed(entry, folder) for entry in listen) if is_list(listen) else tuple([ManifestListener(str(listen), is_wrong=True)])
+        return tuple(ManifestListener.parsed(entry, folder) for entry in listen) if is_list(listen) else (ManifestListener(str(listen), is_wrong=True),)
 
     @staticmethod
     def event_window(entry: object) -> EventWindow:

@@ -36,7 +36,7 @@ class WideProfileModule(Module):
     name = "sample.wide-profile"
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.agents"]
-    profiles = [AgentProfile("sample-wide", "Widens its type", agent_type="helper", commands=CommandAllowList(lines=tuple(["setting set"])))]
+    profiles = [AgentProfile("sample-wide", "Widens its type", agent_type="helper", commands=CommandAllowList(lines=("setting set",)))]
 
 
 class TypoClerk(HelperType):
@@ -44,7 +44,7 @@ class TypoClerk(HelperType):
     label = "Clerk"
     access = Access.READ
     behaviours = HelperBehaviours.retired()
-    commands = CommandAllowList(lines=tuple(["task shwo"]))
+    commands = CommandAllowList(lines=("task shwo",))
 
 
 class ListlessClerk(HelperType):
@@ -77,11 +77,11 @@ class ShowingClerk(Helper):
     label = "Clerk"
     access = Access.READ
     behaviours = HelperBehaviours.retired()
-    commands = CommandAllowList(lines=tuple(["task show"]))
+    commands = CommandAllowList(lines=("task show",))
 
 
 class ListingClerk(ShowingClerk):
-    commands = CommandAllowList(lines=tuple(["task list"]))
+    commands = CommandAllowList(lines=("task list",))
 
 
 class ListingClerkModule(Module):

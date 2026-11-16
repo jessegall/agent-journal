@@ -19,7 +19,7 @@ class PluginRunCheck:
 
     def records(self, location: str) -> tuple[Command[object], ...]:
         if self.is_unreadable:
-            return tuple([RecordPluginFault(self.plugin.id, f"its manifest cannot be read: {self.reason} {location}".strip())])
+            return (RecordPluginFault(self.plugin.id, f"its manifest cannot be read: {self.reason} {location}".strip()),)
         if self.is_changed:
-            return tuple([SwitchOffChangedPlugin(self.plugin.id)])
+            return (SwitchOffChangedPlugin(self.plugin.id),)
         return ()

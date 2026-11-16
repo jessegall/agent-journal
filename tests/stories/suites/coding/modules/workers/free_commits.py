@@ -54,7 +54,7 @@ def test_20_commits_are_not_counted(new_story):
 
 def test_21_a_commit_of_a_unit_of_more_never_delivers(new_story):
     worker = start_planned_worker(new_story)
-    commit_tasks_singly(worker, tuple([1]))
+    commit_tasks_singly(worker, (1,))
     worker.story.expect_rows(worktree_state(worker) == "cut", detail=worker.status())
 
 

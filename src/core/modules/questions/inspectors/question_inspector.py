@@ -5,7 +5,7 @@ from engine.viewer.text_field import TextField
 from core.modules.questions.models.question import Question
 from engine.viewer.button_condition import ButtonCondition
 
-OPEN = ButtonCondition("state", tuple(["open"]))
+OPEN = ButtonCondition("state", ("open",))
 
 
 class QuestionInspector(InspectorDeclaration):
@@ -15,12 +15,12 @@ class QuestionInspector(InspectorDeclaration):
     reads = "question show {row_id}"
     label = "Question {id} · {state}"
     title = "{title}"
-    events = tuple(["question.*"])
+    events = ("question.*",)
     actions = (
         ButtonDeclaration("questions.write-answer", (), "Write the answer", "question answer {row_id} --answer={answer}", icon="tick", primary=True, condition=OPEN,
-                          fields=tuple([TextField("answer", "Your answer")])),
+                          fields=(TextField("answer", "Your answer"),)),
         ButtonDeclaration("questions.leave", (), "Leave the question without an answer", "question close {row_id}", icon="stop", condition=OPEN,
                           confirm="Leave this question without an answer? The agent is told it was closed."),
     )
-    components = tuple([InspectorComponent("questions.question-options")])
+    components = (InspectorComponent("questions.question-options"),)
     lists_fields = True

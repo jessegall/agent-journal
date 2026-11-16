@@ -98,7 +98,7 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
     def commit_tasks(self, worktree: Worktree, staging: Staging) -> tuple[Task, ...]:
         if staging.entries:
             return staging.ready
-        return tuple([self.rows.required(Task, worktree.task_id)])
+        return (self.rows.required(Task, worktree.task_id),)
 
     def handle(self, command: CommitWorkerWork, context: Context) -> CommitOutcome:
         committed = self.worktrees.required_worker_worktree(context.actor.id)

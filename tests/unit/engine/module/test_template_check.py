@@ -21,7 +21,7 @@ class TemplateModule(Module):
 
 class UnknownTargetModule(Module):
     name = "acme.unknown"
-    templates = [TemplateDeclaration(title="Unknown target", targets=tuple(["nothing"]))]
+    templates = [TemplateDeclaration(title="Unknown target", targets=("nothing",))]
 
 
 class SameTitleModule(Module):

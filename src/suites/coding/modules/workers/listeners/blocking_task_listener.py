@@ -23,7 +23,7 @@ class BlockingTaskListener(SaveListener[Moved[Task]]):
     other waits until the task is merged, and how to share it sooner."""
 
     name = "workers.committed-task-awaited"
-    moves = tuple([TaskLifecycle.test])
+    moves = (TaskLifecycle.test,)
     disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, assignments: Assignments, message_sender: MessageSender, numbers: RowNumbers, rows: EventRows) -> None:

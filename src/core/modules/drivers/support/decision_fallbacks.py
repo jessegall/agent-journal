@@ -26,7 +26,7 @@ class DecisionFallbacks:
             triggers = [rule for rule in answers.answered if rule.name.startswith(TRIGGER_RULES) and rule.answer is not None and rule.answer.refusal]
             return DecisionFallbacks.with_answer(answers, RuleAnswer(refusal=triggers[0].answer.refusal) if triggers and triggers[0].answer is not None else RuleAnswer())
         if event.event in REQUESTING_EVENTS:
-            return DecisionFallbacks.with_answer(answers, RuleAnswer(commands=tuple([RequestAgentStep(tuple([agent_id]), MISSED_CHECK)])))
+            return DecisionFallbacks.with_answer(answers, RuleAnswer(commands=(RequestAgentStep((agent_id,), MISSED_CHECK),)))
         return DecisionFallbacks.with_answer(answers, RuleAnswer())
 
     @staticmethod

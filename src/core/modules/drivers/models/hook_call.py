@@ -42,7 +42,7 @@ class HookCall(Prunable, EnvironmentScoped, Model):
 
     change_names = (COMPACTION, SESSION_START, PROMPT, STOP_ALLOWED, STOP_REFUSED)
     model_name = "hook_call"
-    event_forms = tuple([EventForm.COMMIT])
+    event_forms = (EventForm.COMMIT,)
     cli_name = "hook-call"
 
     session_agent_id: int

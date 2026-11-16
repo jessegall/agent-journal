@@ -106,9 +106,9 @@ def running(story) -> bool:
 
 def test_a_text_an_edit_adds_starts_a_sequence(new_story):
     story = triggered_story(new_story, {"trigger_type": "file-text", "pattern": "*.py", "text": "TODO"})
-    story.hook("s-1", post_tool("Edit", "edit", tuple(["a.py"]), tuple([{"line_type": "del", "line": 1, "text": "TODO old"}])))
+    story.hook("s-1", post_tool("Edit", "edit", ("a.py",), ({"line_type": "del", "line": 1, "text": "TODO old"},)))
     expect_absent_running(story)
-    story.hook("s-1", post_tool("Edit", "edit", tuple(["a.py"]), tuple([{"line_type": "add", "line": 1, "text": "# TODO new"}])))
+    story.hook("s-1", post_tool("Edit", "edit", ("a.py",), ({"line_type": "add", "line": 1, "text": "# TODO new"},)))
     expect_running(story)
 
 
@@ -226,9 +226,9 @@ def test_a_phrase_a_helper_or_worker_receives_starts_the_sequence_on_that_agent_
 @pytest.mark.parametrize("role,session", [("helper", "s-2"), ("worker", "s-3")])
 def test_a_tool_a_helper_or_worker_used_starts_the_sequence_on_that_agent_and_not_the_main_agent(new_story, role, session):
     story, agent_id = second_agent_story(new_story, role, session, {"trigger_type": "tool", "tool": "Edit", "pattern": "migrations/"})
-    story.hook(session, post_tool("Edit", "edit", tuple(["migrations/a.py"])))
+    story.hook(session, post_tool("Edit", "edit", ("migrations/a.py",)))
     expect_exclusive_run(story, agent_id)
-    story.hook(session, post_tool("Edit", "edit", tuple(["migrations/b.py"])))
+    story.hook(session, post_tool("Edit", "edit", ("migrations/b.py",)))
     expect_exclusive_run(story, agent_id)
 
 

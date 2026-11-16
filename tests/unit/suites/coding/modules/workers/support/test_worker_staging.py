@@ -43,8 +43,8 @@ class StartedTasks:
 
 
 def test_a_task_with_a_shown_proof_of_every_point_is_ready_and_the_commit_is_final():
-    staging = Staging.grouped(tuple([CART]), (proof(CART, 1), proof(CART, 2)))
-    assert (staging.ready, staging.incomplete, staging.unproved) == (tuple([CART]), (), ())
+    staging = Staging.grouped((CART,), (proof(CART, 1), proof(CART, 2)))
+    assert (staging.ready, staging.incomplete, staging.unproved) == ((CART,), (), ())
     assert staging.is_final()
 
 
@@ -53,48 +53,48 @@ def test_the_tasks_of_a_commit_come_in_the_order_of_their_numbers():
 
 
 def test_a_checked_proof_stands_for_its_point_beside_a_shown_one_and_a_queued_proof_does_not():
-    assert Staging.grouped(tuple([CART]), (proof(CART, 1, ProofState.CHECKED), proof(CART, 2))).ready == tuple([CART])
-    assert Staging.grouped(tuple([CART]), (proof(CART, 1, ProofState.QUEUED), proof(CART, 2))).incomplete == tuple([MissingPoints(CART, tuple([1]))])
+    assert Staging.grouped((CART,), (proof(CART, 1, ProofState.CHECKED), proof(CART, 2))).ready == (CART,)
+    assert Staging.grouped((CART,), (proof(CART, 1, ProofState.QUEUED), proof(CART, 2))).incomplete == (MissingPoints(CART, (1,)),)
 
 
 def test_a_task_with_a_shown_proof_that_misses_points_is_incomplete_and_its_text_lists_every_missing_point():
     staging = Staging.grouped((CART, TAX), (proof(CART, 1), proof(TAX, 1), proof(TAX, 3)))
-    assert staging.incomplete == (MissingPoints(CART, tuple([2])), MissingPoints(TAX, (2, 4)))
+    assert staging.incomplete == (MissingPoints(CART, (2,)), MissingPoints(TAX, (2, 4)))
     assert staging.missing_text() == "task 12: point 2 has no proof; task 15: points 2, 4 have no proof"
     assert not staging.is_final()
 
 
 def test_a_started_task_with_no_shown_proof_is_unproved_named_in_the_notes_and_the_commit_is_not_final():
     staging = Staging.grouped((CART, TOTALS), (proof(CART, 1), proof(CART, 2), proof(TOTALS, 1, ProofState.QUEUED)))
-    assert (staging.ready, staging.incomplete, staging.unproved) == (tuple([CART]), (), tuple([TOTALS]))
-    assert staging.notes() == tuple(["task 16 is not part of this commit: it has no proof"])
+    assert (staging.ready, staging.incomplete, staging.unproved) == ((CART,), (), (TOTALS,))
+    assert staging.notes() == ("task 16 is not part of this commit: it has no proof",)
     assert not staging.is_final()
 
 
 def test_a_task_whose_every_point_has_a_checked_proof_is_ready_with_no_shown_proof():
-    assert Staging.grouped(tuple([TOTALS]), tuple([proof(TOTALS, 1, ProofState.CHECKED)])).ready == tuple([TOTALS])
+    assert Staging.grouped((TOTALS,), (proof(TOTALS, 1, ProofState.CHECKED),)).ready == (TOTALS,)
 
 
 def test_a_short_proof_of_a_task_with_a_shown_proof_refuses_the_commit_beside_a_ready_task():
     short = proof(CART, 1, ProofState.SHORT)
     staging = Staging.grouped((CART, TOTALS), (short, proof(CART, 2), proof(TOTALS, 1)))
-    assert (staging.ready, staging.incomplete, staging.refused_short()) == (tuple([TOTALS]), (), tuple([short]))
+    assert (staging.ready, staging.incomplete, staging.refused_short()) == ((TOTALS,), (), (short,))
 
 
 def test_a_short_proof_of_a_task_with_no_shown_proof_leaves_that_task_out_and_refuses_only_when_nothing_is_ready():
     short = proof(CART, 1, ProofState.SHORT)
     beside_a_ready_task = Staging.grouped((CART, TOTALS), (short, proof(CART, 2, ProofState.CHECKED), proof(TOTALS, 1)))
-    single = Staging.grouped(tuple([CART]), (short, proof(CART, 2, ProofState.CHECKED)))
-    assert (beside_a_ready_task.ready, beside_a_ready_task.unproved, beside_a_ready_task.refused_short()) == (tuple([TOTALS]), tuple([CART]), ())
-    assert (single.ready, single.refused_short()) == ((), tuple([short]))
+    single = Staging.grouped((CART,), (short, proof(CART, 2, ProofState.CHECKED)))
+    assert (beside_a_ready_task.ready, beside_a_ready_task.unproved, beside_a_ready_task.refused_short()) == ((TOTALS,), (CART,), ())
+    assert (single.ready, single.refused_short()) == ((), (short,))
 
 
 def test_a_cancelled_task_is_named_in_the_notes_as_left_out():
-    assert Staging.grouped(tuple([CART]), (proof(CART, 1), proof(CART, 2)), tuple([TOTALS])).notes() == tuple(["task 16 is cancelled and left out"])
+    assert Staging.grouped((CART,), (proof(CART, 1), proof(CART, 2)), (TOTALS,)).notes() == ("task 16 is cancelled and left out",)
 
 
 def test_the_staging_of_a_worktree_reads_the_started_tasks_of_its_worker_and_the_proofs_of_the_worktree():
     proofs, tasks = WorktreeProofs((proof(CART, 1), proof(CART, 2))), StartedTasks((CART, TOTALS))
     staging = WorkerStaging(proofs, tasks, NoTasks(), NoTasks()).read(WORKTREE)
-    assert (staging.ready, staging.unproved, staging.cancelled) == (tuple([CART]), tuple([TOTALS]), ())
+    assert (staging.ready, staging.unproved, staging.cancelled) == ((CART,), (TOTALS,), ())
     assert (proofs.worktree_ids, tasks.agent_ids) == ([WORKTREE.id], [WORKER_ID])

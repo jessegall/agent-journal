@@ -13,7 +13,7 @@ from engine.viewer.window_declaration import WindowDeclaration
 from engine.enums.window_loading import WindowLoading
 from tests.unit.engine.model.test_model import Item
 
-BUTTON = ButtonDeclaration("review.run", tuple(["row.item"]), "Review", "note review {row_id}")
+BUTTON = ButtonDeclaration("review.run", ("row.item",), "Review", "note review {row_id}")
 SHIPPED = frozenset({"journal.core.notes"})
 
 
@@ -41,7 +41,7 @@ class ReviewModule(Module):
 
 
 def problems(button=BUTTON, **fields):
-    module = type("ReviewDeclarationModule", tuple([ReviewModule]), {"buttons": [button], **fields})
+    module = type("ReviewDeclarationModule", (ReviewModule,), {"buttons": [button], **fields})
     return ButtonCheck().declared_problems([NotesModule, module], SHIPPED)
 
 
@@ -57,7 +57,7 @@ def test_a_valid_button_and_an_empty_icon_are_allowed():
     ({"runs": "note review {row_id",}, "invalid blanks"),
     ({"runs": "note review {row id}"}, "invalid blanks"),
     ({"runs": 'note review "unclosed'}, "quoting"),
-    ({"slots": tuple(["row.missing"])}, "unknown slot row.missing"),
+    ({"slots": ("row.missing",)}, "unknown slot row.missing"),
     ({"name": "other.run"}, "does not start"),
     ({"primary": True}, "primary"),
     ({"icon": "unknown-icon"}, "icon unknown-icon"),
@@ -67,7 +67,7 @@ def test_each_invalid_button_declaration_is_refused(change, text):
 
 
 def test_a_menu_item_must_name_a_command():
-    button = replace(BUTTON, menu=tuple([ButtonMenuItem("Missing", "note missing {row_id}")]))
+    button = replace(BUTTON, menu=(ButtonMenuItem("Missing", "note missing {row_id}"),))
     assert any("names no command" in problem for problem in problems(button))
 
 
@@ -76,7 +76,7 @@ def test_a_slot_requires_a_dependency_on_its_owner():
 
 
 def test_a_module_can_use_its_own_slot_without_a_dependency():
-    button = replace(BUTTON, slots=tuple(["review.toolbar"]))
+    button = replace(BUTTON, slots=("review.toolbar",))
     assert problems(button, dependencies=[], button_slots=["review.toolbar"]) == ()
 
 
@@ -86,54 +86,54 @@ def test_a_module_cannot_claim_another_modules_slot_to_avoid_its_dependency():
 
 @pytest.mark.parametrize("runs", ["note review {message}", "note review --message-{message}", "note review --message=prefix{message}"])
 def test_a_text_field_must_fill_a_whole_flag_value(runs):
-    button = replace(BUTTON, runs=runs, fields=tuple([TextField("message", "Message")]))
+    button = replace(BUTTON, runs=runs, fields=(TextField("message", "Message"),))
     assert any("--flag=" in problem for problem in problems(button))
 
 
 @pytest.mark.parametrize("field,text", [
     (ChoiceField("size", "Size", ()), "no choices"),
     (ChoiceField("size", "Size", (Choice("small", "Small"), Choice("small", "Again"))), "duplicate choice small"),
-    (ChoiceField("size", "Size", tuple([Choice("small", "Small")]), "large"), "default large"),
+    (ChoiceField("size", "Size", (Choice("small", "Small"),), "large"), "default large"),
     (TemplateField("size", "Template", "nothing", "critique"), "neither a model nor the first word"),
 ])
 def test_each_invalid_field_is_refused(field, text):
-    button = replace(BUTTON, runs="note review {row_id} --size={size}", fields=tuple([field]))
+    button = replace(BUTTON, runs="note review {row_id} --size={size}", fields=(field,))
     assert any(text in problem for problem in problems(button))
 
 
 def test_a_field_without_a_blank_is_refused():
-    assert any("unused field size" in problem for problem in problems(replace(BUTTON, fields=tuple([TextField("size", "Size")]))))
+    assert any("unused field size" in problem for problem in problems(replace(BUTTON, fields=(TextField("size", "Size"),))))
 
 
 @pytest.mark.parametrize("target", ["worker", "item"])
 def test_a_model_or_command_word_is_a_valid_template_target(target):
-    button = replace(BUTTON, runs="note review {row_id} --template={template}", fields=tuple([TemplateField("template", "Template", target, "critique")]))
+    button = replace(BUTTON, runs="note review {row_id} --template={template}", fields=(TemplateField("template", "Template", target, "critique"),))
     assert problems(button) == ()
 
 
 def test_menu_fields_are_checked_as_well():
-    menu = ButtonMenuItem("Message", "note review {message}", fields=tuple([TextField("message", "Message")]))
-    assert any("--flag=" in problem for problem in problems(replace(BUTTON, menu=tuple([menu]))))
+    menu = ButtonMenuItem("Message", "note review {message}", fields=(TextField("message", "Message"),))
+    assert any("--flag=" in problem for problem in problems(replace(BUTTON, menu=(menu,))))
 
 
 def test_a_shipped_button_can_be_primary():
-    module = type("PrimaryNotesModule", tuple([NotesModule]), {"buttons": [replace(BUTTON, name="notes.run", primary=True)]})
+    module = type("PrimaryNotesModule", (NotesModule,), {"buttons": [replace(BUTTON, name="notes.run", primary=True)]})
     assert ButtonCheck().declared_problems([module], SHIPPED) == ()
 
 
 def test_a_third_party_cannot_reuse_a_shipped_button_command():
-    module = type("ButtonNotesModule", tuple([NotesModule]), {"buttons": [replace(BUTTON, name="notes.run")]})
+    module = type("ButtonNotesModule", (NotesModule,), {"buttons": [replace(BUTTON, name="notes.run")]})
     assert any("also runs" in problem for problem in ButtonCheck().declared_problems([module, ReviewModule], SHIPPED))
 
 
 def test_a_third_party_cannot_reuse_a_shipped_window_command():
     window = WindowDeclaration(ButtonWindow.MARKS, "Chat", "", WindowLoading.COMPONENT, runs=["note review"])
-    module = type("WindowNotesModule", tuple([NotesModule]), {"windows": [window]})
+    module = type("WindowNotesModule", (NotesModule,), {"windows": [window]})
     assert any("windows run" in problem for problem in ButtonCheck().declared_problems([module, ReviewModule], SHIPPED))
 
 
 def test_two_modules_cannot_share_a_button_command():
-    peer_module = type("OtherReviewModule", tuple([ReviewModule]), {"name": "acme.other", "buttons": [replace(BUTTON, name="other.run")]})
+    peer_module = type("OtherReviewModule", (ReviewModule,), {"name": "acme.other", "buttons": [replace(BUTTON, name="other.run")]})
     assert any("also runs" in problem for problem in ButtonCheck().declared_problems([NotesModule, ReviewModule, peer_module], SHIPPED))
 
 

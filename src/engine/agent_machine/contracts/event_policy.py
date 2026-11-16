@@ -18,7 +18,7 @@ class EventPolicy(Policy):
     """A policy that judges the event alone, refusing with one line under its key; a refusal skip of that key
     passes it once, unless it is a safety policy."""
 
-    events: ClassVar[Sequence[HookEventName]] = tuple([HookEventName.PRE_TOOL_USE])
+    events: ClassVar[Sequence[HookEventName]] = (HookEventName.PRE_TOOL_USE,)
     grant_types = [GrantType.REFUSAL_SKIP]
 
     def __init_subclass__(cls, **kwargs: object) -> None:

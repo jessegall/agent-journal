@@ -97,11 +97,11 @@ def test_a_send_onto_a_waiting_ask_keeps_the_ask_and_queues_the_task(new_story):
 @pytest.mark.real_git
 def test_a_part_asked_before_a_rebase_is_merged_by_its_tasks(new_story):
     worker = unplanned_group_worker(new_story)
-    commit_tasks_singly(worker, tuple([1]))
+    commit_tasks_singly(worker, (1,))
     worker.end_all_tests()
     worker.story.expect_success('worker ask-merge "the first task" --up-to 1', actor=worker.worker)
     worker.repository.committed("readme.md", "moved\n", "The branch moves")
-    commit_tasks_singly(worker, tuple([2]))
+    commit_tasks_singly(worker, (2,))
     merge_request = worker.story.run(MERGE_REQUEST, actor=worker.story.agent).output_text
     worker.story.expect_rows("task_ids: 1" in merge_request, "is_full: false" in merge_request.lower(), detail=merge_request)
 

@@ -24,7 +24,7 @@ class TableStepRequests(StepRequests):
         for agent_id in agent_ids:
             request = open_requests.get(agent_id)
             if request is None:
-                open_requests[agent_id] = self.repository.save(AgentStepRequest(session_agent_id=agent_id, causes=tuple([cause])), context)
+                open_requests[agent_id] = self.repository.save(AgentStepRequest(session_agent_id=agent_id, causes=(cause,)), context)
             elif cause not in request.causes:
                 open_requests[agent_id] = self.repository.save_change(request, request.changed(causes=(*request.causes, cause)), context)
 

@@ -19,7 +19,7 @@ LINE = Line("messages.delivery", "message 7 waits", LineCategory.INFORMATION, ""
 
 def test_an_allowed_call_prints_its_lines_and_the_rewrite_the_step_kept() -> None:
     record = replace(RecordSamples.record(EDIT, Decision.allowed()), lines=[LINE],
-                     rewrite=Rewrite.replaced({"command": "journal-run 7"}, tuple([TransformSlot.RUNNER]), "wraps the line", EDIT))
+                     rewrite=Rewrite.replaced({"command": "journal-run 7"}, (TransformSlot.RUNNER,), "wraps the line", EDIT))
     reply = ReplyPrinter().encoded(record)
     assert (reply.refusal, list(reply.lines), dict(reply.updated_input)) == ("", ["message 7 waits"], {"command": "journal-run 7"})
 

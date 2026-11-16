@@ -209,11 +209,11 @@ def test_windows_saved_with_the_old_places_read_as_a_pane_and_whose_work_they_sh
 
 def test_registered_profiles_restore(database):
     profile = AgentProfile("notes-reader", "Reads notes", "Read the notes.", agent_type="reader", model="small", codex_model="small",
-                           access=Access.READ, program="codex", occupant=Occupant.LAUNCH_ROTATION, mcp_tools=tuple(["mcp__notes__read"]),
-                           changed=tuple(["model"]), module_text_changed=True)
+                           access=Access.READ, program="codex", occupant=Occupant.LAUNCH_ROTATION, mcp_tools=("mcp__notes__read",),
+                           changed=("model",), module_text_changed=True)
     suite = SuiteEntry("notes", "notes", (), (), {}, {}, shipped=True)
     entry = ProfileEntry.declared("notes", profile)
-    registry = replace(Registry.read(database), suites=tuple([suite]), profiles=tuple([entry]))
+    registry = replace(Registry.read(database), suites=(suite,), profiles=(entry,))
     restored = Registry.parsed("profiles", registry.entries_text())
     assert restored.profile("notes-reader") == entry
     assert restored.profile("notes-reader").profile.access is Access.READ
@@ -225,7 +225,7 @@ def test_window_sources_links_and_components_survive_registry_storage(database):
     window = WindowEntry("notes.board", "notes", "Notes", "board.js", "component", "pane", (), (), (), (), False, "", "window", 400, 340, (), "",
                          sources=[{"key": "progress", "read": "note list", "events": ["note.*"]}], links={"notes": "notes.board"},
                          tabs=[{"key": "notes", "label": "Notes", "read": "note list", "count_field": "", "component": "/modules/notes/agent-notes.js"}])
-    registry = replace(Registry.read(database), windows=tuple([window]))
+    registry = replace(Registry.read(database), windows=(window,))
     restored = Registry.parsed("windows", registry.entries_text()).windows[0]
     assert restored.sources == tuple(window.sources)
     assert restored.links == window.links
@@ -236,11 +236,11 @@ def test_window_sources_links_and_components_survive_registry_storage(database):
 
 def test_module_templates_survive_registry_storage(database):
     declaration = TemplateDeclaration(title="Review notes", brief="Read the notes.", targets=("item", "worker"),
-                                      purpose="critique", parts=("Problems", "Changes"), commands=tuple(["journal item list"]))
+                                      purpose="critique", parts=("Problems", "Changes"), commands=("journal item list",))
     entry = TemplateEntry("acme.review", declaration)
-    registry = replace(Registry.read(database), templates=tuple([entry]))
+    registry = replace(Registry.read(database), templates=(entry,))
     restored = Registry.parsed("module-templates", registry.entries_text())
-    assert restored.templates == tuple([entry])
+    assert restored.templates == (entry,)
     assert isinstance(restored.templates[0].declaration.targets, tuple)
     assert isinstance(restored.templates[0].declaration.parts, tuple)
     assert isinstance(restored.templates[0].declaration.commands, tuple)
@@ -251,7 +251,7 @@ def test_a_registry_saved_before_module_templates_has_no_entries(database):
 
 
 def test_module_suites_survive_registry_storage(database):
-    memberships = {"acme.suite": ("acme", "coding"), "acme.review": tuple(["coding"]), "core": ()}
+    memberships = {"acme.suite": ("acme", "coding"), "acme.review": ("coding",), "core": ()}
     registry = replace(Registry.read(database), module_suites=memberships)
     assert Registry.parsed("module-suites", registry.entries_text()).module_suites == memberships
 
@@ -266,15 +266,15 @@ def test_a_button_with_fields_menu_and_labels_survives_registry_storage(database
     message = TextField("message", "Message")
     agent = AgentField("agent", "Agent")
     menu = ButtonMenuItem("Review with a message", "item pause {row_id} --message={message}",
-                          fields=tuple([message]), description="Send a message with the review")
+                          fields=(message,), description="Send a message with the review")
     declaration = ButtonDeclaration("notes.review", ("row.item", "notes.toolbar"), "Review", "item pause {row_id}",
                                     icon="check", primary=True, fields=(size, template, message, agent),
-                                    condition=ButtonCondition("state", tuple(["open"])), menu=tuple([menu]),
+                                    condition=ButtonCondition("state", ("open",)), menu=(menu,),
                                     menu_label="More review actions", tip="Review this item")
     entry = ButtonEntry("notes", declaration, True)
-    registry = replace(Registry.read(database), buttons=tuple([entry]), button_slots=("row.item", "notes.toolbar"))
+    registry = replace(Registry.read(database), buttons=(entry,), button_slots=("row.item", "notes.toolbar"))
     restored = Registry.parsed("buttons", registry.entries_text())
-    assert restored.buttons == tuple([entry])
+    assert restored.buttons == (entry,)
     assert restored.button_slots == registry.button_slots
 
 

@@ -175,7 +175,7 @@ def test_the_standing_is_one_answer_from_the_launcher_and_the_row(agent, answer,
 
 
 def test_reconcile_opens_a_row_that_ended_while_its_program_runs_and_records_it():
-    parts = Parts(recently_ended=tuple([ENDED_HELPER]))
+    parts = Parts(recently_ended=(ENDED_HELPER,))
     parts.launcher(RUNNING)
     parts.dispatcher.reconcile(CONTEXT)
     assert [(row.id, row.ended_at) for row in parts.repository.saved_rows] == [(41, None)]
@@ -183,7 +183,7 @@ def test_reconcile_opens_a_row_that_ended_while_its_program_runs_and_records_it(
 
 
 def test_reconcile_leaves_ended_a_row_the_policy_calls_gone_for_good_though_its_program_runs():
-    parts = Parts(recently_ended=tuple([ENDED_HELPER]), final=True)
+    parts = Parts(recently_ended=(ENDED_HELPER,), final=True)
     parts.launcher(RUNNING)
     parts.dispatcher.reconcile(CONTEXT)
     assert (parts.repository.saved_rows, parts.log_lines) == ([], [])

@@ -170,7 +170,7 @@ class DesignDeclarations:
         work = [ContributionDeclaration(key, ContributionType.NEED, "", tuple(agent_types), "Working") for key, agent_types in WORK.get(module, [])]
         waits = [ContributionDeclaration(key, ContributionType.NEED, "", tuple(agent_types), "Waiting") for key, agent_types in WAITS.get(module, [])]
         policies = [ContributionDeclaration(key, ContributionType.POLICY, rank, tuple(agent_types), is_safety=rank == SAFETY) for key, rank, agent_types in POLICIES.get(module, [])]
-        lines = [ContributionDeclaration(key, ContributionType.LINE, events=tuple([HookEventName.TICK if key in STEP_LINES else HookEventName.PRE_TOOL_USE]),
+        lines = [ContributionDeclaration(key, ContributionType.LINE, events=(HookEventName.TICK if key in STEP_LINES else HookEventName.PRE_TOOL_USE,),
                                          channel=LineChannel.WAITING if key in WAITING_LINES else LineChannel.NOW)
                  for key in (f"{module}.{name}" for name in LINES.get(module, []))]
         effects = [ContributionDeclaration(key, ContributionType.EFFECT, is_required=required, has_failure=required) for key, required in EFFECTS.get(module, [])]

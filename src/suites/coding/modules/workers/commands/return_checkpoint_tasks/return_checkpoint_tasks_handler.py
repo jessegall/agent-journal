@@ -67,7 +67,7 @@ class ReturnCheckpointTasksHandler(Handler[ReturnCheckpointTasks, tuple[Returned
             if worker is not None:
                 worker_tasks[worker.id].append(task.id)
         if failed.fallback_task_id is not None:
-            outputs = ", ".join(str(output_id) for output_id in failed.output_ids(tuple([failed.fallback_task_id])))
+            outputs = ", ".join(str(output_id) for output_id in failed.output_ids((failed.fallback_task_id,)))
             self.inbox.send_agent_message(CheckpointFailureFallbackMessage.declared().agent_message(phase=reach.phase_id, outputs=outputs, task=failed.fallback_task_id), FAILURE_SOURCE, context)
         return tuple(ReturnedTasks(worker_id, tuple(task_ids), failed.output_ids(task_ids)) for worker_id, task_ids in worker_tasks.items())
 

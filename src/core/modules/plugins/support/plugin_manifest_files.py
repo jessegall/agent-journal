@@ -27,7 +27,7 @@ class PluginManifestFiles:
 
     @property
     def names(self) -> tuple[str, ...]:
-        plain = tuple([MANIFEST_FILE]) if self.plain else ()
+        plain = (MANIFEST_FILE,) if self.plain else ()
         return (*plain, *(f"journal-plugin.{version}.json" for version in self.versions))
 
     def chosen(self, journal_version: str) -> Path:

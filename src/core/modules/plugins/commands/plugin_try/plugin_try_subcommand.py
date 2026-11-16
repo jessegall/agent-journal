@@ -18,7 +18,7 @@ class PluginTrySubcommand(ReadSubcommand[PluginTryRun]):
     cli_name = "plugin"
     name = "try"
     external = True
-    disabled_scopes = tuple([EnvironmentScope])
+    disabled_scopes = (EnvironmentScope,)
 
     def __init__(self, tries: PluginTry, access: PluginCallAccess, queries: Queries) -> None:
         self.tries, self.access, self.queries = tries, access, queries

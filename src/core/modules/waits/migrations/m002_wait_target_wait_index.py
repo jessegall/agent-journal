@@ -6,4 +6,4 @@ class WaitTargetWaitIndexMigration(Migration):
     wait."""
 
     number = 2
-    statements = tuple(["CREATE INDEX wait_targets_wait ON wait_targets (wait_id, row_table)"])
+    statements = ("CREATE INDEX wait_targets_wait ON wait_targets (wait_id, row_table)",)

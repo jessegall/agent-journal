@@ -20,7 +20,7 @@ class StartedWorkerTaskListener(SaveListener[Moved[Task]]):
     becomes its current task, so the worker can make proofs for and hand in the task it works on."""
 
     name = "workers.started-task"
-    moves = tuple([TaskLifecycle.start])
+    moves = (TaskLifecycle.start,)
     disabled_scopes = [ActorScope]
 
     def __init__(self, worktrees: WorktreeQuery, queries: Queries, repository: Repository, assignments: Assignments) -> None:

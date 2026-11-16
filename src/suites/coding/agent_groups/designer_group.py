@@ -7,4 +7,4 @@ class DesignerGroup(AgentGroup):
     key = "designer"
     label = "Designer"
     agent_type = "helper"
-    profiles = tuple(["journal-designer"])
+    profiles = ("journal-designer",)

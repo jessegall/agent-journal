@@ -11,7 +11,7 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import star
 
 def test_79_a_crashed_worker_resumes_with_its_unit(new_story):
     worker = start_planned_worker(new_story)
-    commit_tasks_singly(worker, tuple([1]))
+    commit_tasks_singly(worker, (1,))
     worker.program_ended()
     worker.story.expect_rows(worker.status().splitlines()[1].startswith("Unit: plan 1"), detail=worker.status())
 
@@ -24,7 +24,7 @@ def test_80_the_journal_restarts_during_a_worker_run(new_story):
 
 def test_81_a_release_with_committed_work_is_refused(new_story):
     worker = unplanned_group_worker(new_story)
-    commit_tasks_singly(worker, tuple([1]))
+    commit_tasks_singly(worker, (1,))
     number = agent_number(worker.story, worker.worker.id)
     worker.story.expect_refusal(f'worker release {number} "not needed"', f"worker {number} has committed work", actor=worker.story.agent)
     worker.story.expect_success(f'worker release {number} --abandon "the cart is dropped"', actor=worker.story.agent)

@@ -12,4 +12,4 @@ class WatchStepListener(AgentListener[Changed[Watch]]):
     name = "processes.watch-step"
 
     def agents(self, event: Changed[Watch]) -> Sequence[int]:
-        return tuple([event.row.session_agent_id])
+        return (event.row.session_agent_id,)

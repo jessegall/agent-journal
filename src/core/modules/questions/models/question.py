@@ -23,7 +23,7 @@ class Question(EnvironmentScoped, Model, StateHolder):
     cli_name = "question"
     search_fields = ["text", "context", "answer"]
     lifecycle = QuestionLifecycle
-    added_state_moves = tuple([QuestionLifecycle.close])
+    added_state_moves = (QuestionLifecycle.close,)
 
     environment_id: int = 0
     session_agent_id: int

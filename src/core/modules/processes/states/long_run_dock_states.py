@@ -40,4 +40,4 @@ class LongRunDockStates(StateSource):
     def plan(process_id: int) -> BlockPlan:
         block = RequiredCommands.block(0, RunNameMessage.declared().agent_message(process=process_id))
         return BlockPlan(block.agent_message, OutputTitled(process_id), LONG_RUN_DOCK_KEY, OUTPUT_TITLE_RANK, tool_grace_uses=TITLE_GRACE_USES,
-                         subject=RowReference("process", process_id), lifting_lines=tuple([f"journal output title {process_id}"]), countdown=block.countdown)
+                         subject=RowReference("process", process_id), lifting_lines=(f"journal output title {process_id}",), countdown=block.countdown)

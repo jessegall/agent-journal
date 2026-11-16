@@ -10,7 +10,7 @@ class MergeProofGuard(Guard[Moved[Worktree]]):
     """Refuses to merge a worktree while a proof of it is not checked."""
 
     name = "workers.merge-needs-checks"
-    moves = tuple([WorktreeLifecycle.merge])
+    moves = (WorktreeLifecycle.merge,)
 
     def __init__(self, checks: MergeChecks) -> None:
         self.checks = checks

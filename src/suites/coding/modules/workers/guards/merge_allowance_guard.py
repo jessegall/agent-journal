@@ -12,7 +12,7 @@ class MergeAllowanceGuard(Guard[Moved[Worktree]]):
     """A main agent merges no worker itself while it may not merge; the merger or a user takes the work in."""
 
     name = "workers.main-merges-no-worker"
-    moves = tuple([WorktreeLifecycle.merge])
+    moves = (WorktreeLifecycle.merge,)
 
     def __init__(self, caller: MainCaller, options: CodingMainOptions) -> None:
         self.caller, self.options = caller, options

@@ -18,7 +18,7 @@ class WorkerProgramListener(CommitListener[Moved[Worktree]]):
     """Starts fresh workers after their worktrees are cut; ended sessions resume through waiting jobs."""
 
     name = "workers.worker-program-request"
-    moves = tuple([WorktreeLifecycle.cut])
+    moves = (WorktreeLifecycle.cut,)
 
     def __init__(self, bus: Bus, rows: EventRows, worker_command: WorkerCommand, environments: EnvironmentRows, worktrees: WorktreeQuery) -> None:
         self.bus, self.rows, self.worker_command, self.environments, self.worktrees = bus, rows, worker_command, environments, worktrees

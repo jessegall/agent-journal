@@ -50,7 +50,7 @@ def test_an_empty_work_lane_lets_the_stop_through() -> None:
 
 def test_a_started_task_refuses_the_stop_of_a_main_agent() -> None:
     answer = stack(working(WorkType.TASK, True)).stop_answer(WorkStop.REFUSE_WHILE_WORK_REMAINS, None)
-    assert (answer.answer_type, answer.refusal_reasons()) == (StopAnswerType.REFUSED, tuple([TASK_REFUSAL]))
+    assert (answer.answer_type, answer.refusal_reasons()) == (StopAnswerType.REFUSED, (TASK_REFUSAL,))
 
 
 def test_a_helper_stop_on_its_open_job_is_the_handover() -> None:
@@ -69,16 +69,16 @@ def test_a_wait_on_top_of_the_work_lets_the_stop_through_and_hands_in_nothing() 
 
 def test_every_hold_with_a_stop_scope_refuses_before_the_work_answer() -> None:
     answer = stack(working(WorkType.TASK, False), message_hold()).stop_answer(WorkStop.REFUSE_WHILE_WORK_REMAINS, None)
-    assert answer.refusal_reasons() == tuple([MESSAGES_REFUSAL])
+    assert answer.refusal_reasons() == (MESSAGES_REFUSAL,)
 
 
 def test_an_open_escalation_defers_the_stop_scope_of_its_holds() -> None:
-    escalation = Escalation(9, EscalationType.STOPS, Responder.PARENT, tuple([3]), (), 5)
+    escalation = Escalation(9, EscalationType.STOPS, Responder.PARENT, (3,), (), 5)
     assert stack(message_hold()).stop_answer(WorkStop.REFUSE_WHILE_WORK_REMAINS, escalation).answer_type is StopAnswerType.ALLOWED
 
 
 def test_paused_rests_whatever_else_refuses() -> None:
-    paused = Paused(tuple([PauseCause(1, 4, STARTED_AT)]), "The user paused you")
+    paused = Paused((PauseCause(1, 4, STARTED_AT),), "The user paused you")
     answer = stack(working(WorkType.TASK, True), message_hold(), paused).stop_answer(WorkStop.REFUSE_WHILE_WORK_REMAINS, None)
     assert answer.answer_type is StopAnswerType.SAFETY_REST
 

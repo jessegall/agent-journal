@@ -32,10 +32,10 @@ class PluginRun:
             answer = self.program.run(self.call(request), request.limit_ms, request.wait_callback)
         except PluginServiceClosedError as closed:
             record = closed.fault_record(plugin.id, request.location)
-            return PluginRunOutcome(None, str(closed), records=() if plugin.last_fault == record.fault else tuple([record]))
+            return PluginRunOutcome(None, str(closed), records=() if plugin.last_fault == record.fault else (record,))
         except PluginFaultError as fault:
-            return PluginRunOutcome(None, str(fault), fault.is_late, fault.is_server_stop, tuple([fault.fault_record(plugin.id, request.location)]))
-        return PluginRunOutcome(answer, records=tuple([ClearPluginFaults(plugin.id)]) if plugin.last_fault else ())
+            return PluginRunOutcome(None, str(fault), fault.is_late, fault.is_server_stop, (fault.fault_record(plugin.id, request.location),))
+        return PluginRunOutcome(answer, records=(ClearPluginFaults(plugin.id),) if plugin.last_fault else ())
 
     def recorded_run(self, request: PluginRunRequest) -> PluginRunOutcome:
         outcome = self.run(request)

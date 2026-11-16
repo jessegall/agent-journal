@@ -11,17 +11,17 @@ def problems(commands: CommandAllowList, journal_runs: tuple[str, ...]) -> list[
 
 
 def test_a_list_that_misses_a_line_the_journal_runs_under_the_type_is_refused_naming_the_type_and_the_line():
-    assert problems(CommandAllowList(lines=tuple(["task show"])), tuple(["clerk run"])) == [f"{NAME} does not list the line clerk run, which the journal runs under it"]
+    assert problems(CommandAllowList(lines=("task show",)), ("clerk run",)) == [f"{NAME} does not list the line clerk run, which the journal runs under it"]
 
 
 def test_a_list_naming_the_line_or_its_group_or_its_class_passes():
-    assert problems(CommandAllowList(lines=tuple(["clerk run"])), tuple(["clerk run"])) == []
-    assert problems(CommandAllowList(groups=tuple(["clerk"])), tuple(["clerk run"])) == []
-    assert problems(CommandAllowList(classes=tuple([JournalLineClass.BACKGROUND])), tuple(["clerk run"])) == []
+    assert problems(CommandAllowList(lines=("clerk run",)), ("clerk run",)) == []
+    assert problems(CommandAllowList(groups=("clerk",)), ("clerk run",)) == []
+    assert problems(CommandAllowList(classes=(JournalLineClass.BACKGROUND,)), ("clerk run",)) == []
 
 
 def test_a_line_no_module_serves_is_refused_as_a_typo():
-    assert problems(CommandAllowList(lines=tuple(["clerk rnu"])), tuple(["clerk rnu"])) == [f"{NAME} names the line clerk rnu the journal runs under it, which no module serves"]
+    assert problems(CommandAllowList(lines=("clerk rnu",)), ("clerk rnu",)) == [f"{NAME} names the line clerk rnu the journal runs under it, which no module serves"]
 
 
 def test_a_type_with_no_line_the_journal_runs_has_no_problem():

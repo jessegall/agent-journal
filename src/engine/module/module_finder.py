@@ -51,7 +51,7 @@ class ModuleFinder:
     def entry_modules(self, entry: object, source: str) -> tuple[type[Module], ...]:
         if isinstance(entry, type) and issubclass(entry, Suite):
             return tuple(self.module(module, f"suite {entry.name}") for module in entry.modules)
-        return tuple([self.module(entry, source)])
+        return (self.module(entry, source),)
 
     def suite_list(self) -> SuiteList:
         default_entries = [entry for path in DEFAULT_MODULE_LISTS for entry in self.listed_entries(path)]

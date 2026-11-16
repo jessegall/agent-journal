@@ -14,7 +14,7 @@ class MainAgentFinder:
     @staticmethod
     def rows(queries: Queries) -> tuple[Agent, ...]:
         row = MainAgentFinder.running(queries).newest().first()
-        return () if row is None else tuple([row])
+        return () if row is None else (row,)
 
     @staticmethod
     def running(queries: Queries) -> AgentQuery:

@@ -20,7 +20,7 @@ class StopAnswer:
 
     @classmethod
     def refusal(cls, reason: Reason) -> "StopAnswer":
-        return cls(StopAnswerType.REFUSED, tuple([reason]))
+        return cls(StopAnswerType.REFUSED, (reason,))
 
     @classmethod
     def refusals(cls, reasons: "list[Reason]") -> "StopAnswer":

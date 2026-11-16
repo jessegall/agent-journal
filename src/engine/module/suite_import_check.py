@@ -44,7 +44,7 @@ class SuiteImportCheck:
     @staticmethod
     def imported_names(node: ast.AST) -> tuple[str, ...]:
         if isinstance(node, ast.ImportFrom) and node.module:
-            return tuple([node.module])
+            return (node.module,)
         if isinstance(node, ast.Import):
             return tuple(alias.name for alias in node.names)
         return ()

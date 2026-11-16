@@ -48,14 +48,14 @@ class AgentMessage:
     @property
     def merge_context(self) -> tuple[tuple[str, str], ...]:
         if self.declaration is None or not self.declaration.is_mergeable:
-            return tuple([("text", self.text)])
+            return (("text", self.text),)
         id_field = self.declaration.id_field or next(iter(dict(self.fields)), None)
         return tuple(sorted((name, str(value)) for name, value in self.fields if name != id_field))
 
     @property
     def records(self) -> "tuple[AgentMessage, ...]":
         if not self.record_keys:
-            return tuple([self])
+            return (self,)
         return tuple(replace(self, key=key, record_keys=()) for key in self.record_keys)
 
     @property

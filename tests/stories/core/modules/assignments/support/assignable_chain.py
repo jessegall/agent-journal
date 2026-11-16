@@ -55,7 +55,7 @@ class Bay(Model, Assignable):
     model_name = "bay"
     cli_name = "bay"
     takes_actors = ActorCount.SINGLE
-    assigns = tuple([Children(Parcel, "bay_id", link_model=BayParcel, link_column="parcel_id")])
+    assigns = (Children(Parcel, "bay_id", link_model=BayParcel, link_column="parcel_id"),)
 
     yard_id: int
     title: str
@@ -68,7 +68,7 @@ class Yard(Model, Assignable):
     model_name = "yard"
     cli_name = "yard"
     takes_actors = ActorCount.SINGLE
-    assigns = tuple([Children(Bay, "yard_id")])
+    assigns = (Children(Bay, "yard_id"),)
 
     title: str
 

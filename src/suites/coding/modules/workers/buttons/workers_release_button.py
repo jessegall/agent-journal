@@ -7,9 +7,9 @@ class WorkersReleaseButton(ButtonDeclaration):
     """The button workers.release."""
 
     name = "workers.release"
-    slots = tuple(["row.agent"])
+    slots = ("row.agent",)
     label = "Release the worker from its task"
     runs = "worker release row:{row_id} --reason={reason}"
     icon = "restore"
-    condition = ButtonCondition("working_role", tuple(["worker"]))
-    fields = tuple([TextField("reason", "Why is it taken off its task?")])
+    condition = ButtonCondition("working_role", ("worker",))
+    fields = (TextField("reason", "Why is it taken off its task?"),)

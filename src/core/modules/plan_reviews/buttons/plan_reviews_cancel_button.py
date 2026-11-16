@@ -7,10 +7,10 @@ class PlanReviewsCancelButton(ButtonDeclaration):
     """The button plan_reviews.cancel."""
 
     name = "plan_reviews.cancel"
-    slots = tuple(["row.plan"])
+    slots = ("row.plan",)
     label = "Cancel the plan"
     runs = "plan cancel {row_id} --reason={reason}"
     icon = "stop"
     danger = True
-    condition = ButtonCondition("state", tuple(["reviewing"]))
-    fields = tuple([TextField("reason", "Why is it cancelled?")])
+    condition = ButtonCondition("state", ("reviewing",))
+    fields = (TextField("reason", "Why is it cancelled?"),)

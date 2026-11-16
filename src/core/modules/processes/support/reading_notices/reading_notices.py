@@ -90,7 +90,7 @@ class ReadingNotices:
         if process.state is not ProcessState.FAILED or output is None or output.byte_count:
             return ()
         saved = next((part.saved_command for part in parts if part.saved_command), "")
-        return tuple([SilentSavedFailureMessage.declared().agent_message(name=saved)]) if saved else ()
+        return (SilentSavedFailureMessage.declared().agent_message(name=saved),) if saved else ()
 
     def draft_agent_messages(self, process: Process, output: Output | None, parts: tuple[ProcessPart, ...], decisions: dict[int, ReadingDecisionRow]) -> tuple[AgentMessage, ...]:
         read = next((part for part in parts if part.category.has_result_output), None)
@@ -100,21 +100,21 @@ class ReadingNotices:
         if self.readers.with_name(name).exists():
             return ()
         if read.position in decisions and decisions[read.position].action is ReaderAction.DRAFT_READY:
-            return tuple([DraftReadyMessage.declared().agent_message(name=name, output=process.id)])
-        return tuple([ReaderDraftMessage.declared().agent_message(name=name)])
+            return (DraftReadyMessage.declared().agent_message(name=name, output=process.id),)
+        return (ReaderDraftMessage.declared().agent_message(name=name),)
 
     def reader_agent_messages(self, process: Process, output: Output | None, process_parts: tuple[ProcessPart, ...], decision: ReadingDecisionRow | None) -> tuple[AgentMessage, ...]:
         if output is None or output.reader_id is None or not output.line_count:
             return ()
         reader = self.rows.required(Reader, output.reader_id)
         if decision is not None and decision.reason is ReasonCode.READER_FAILED:
-            return tuple([ReaderFailedMessage.declared().agent_message(reader=reader.name, output=process.id)])
+            return (ReaderFailedMessage.declared().agent_message(reader=reader.name, output=process.id),)
         if reader.type is not ReaderType.PATTERN:
             return ()
         parts = [part for part in process_parts if not output.reader_position or part.position == output.reader_position]
         missed = tuple(dict.fromkeys(miss for part in parts for miss in self.judge.misses_read_output(reader, part.category, output)))
         if SELECTED_NONE in missed:
-            return tuple([ReaderMissedMessage.declared().agent_message(reader=reader.name, lines=output.line_count, output=process.id)])
+            return (ReaderMissedMessage.declared().agent_message(reader=reader.name, lines=output.line_count, output=process.id),)
         values = {"reader": reader.name, "kept": output.reader_lines, "lines": output.line_count, "output": process.id}
         hint = [agent_message for miss, agent_message in MISS_AGENT_MESSAGES.items() if miss in missed and (agent_message[0] is not ReaderSummaryMissingMessage.declared() or reader.summary_pattern)]
         agent_messages = (declaration.agent_message(**{field: values[field] for field in fields}) for declaration, fields in hint)

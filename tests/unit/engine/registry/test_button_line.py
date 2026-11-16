@@ -33,7 +33,7 @@ def test_text_blanks_match_one_whole_word(value):
 
 
 def test_choices_and_template_numbers_refuse_other_values():
-    fields = {"size": ChoiceField("size", "Size", tuple([Choice("small", "Small")])),
+    fields = {"size": ChoiceField("size", "Size", (Choice("small", "Small"),)),
               "template": TemplateField("template", "Template", "worker", "critique")}
     line = ButtonLine("notes", "note review {row_id} {size} --template={template}", False, fields)
     assert line.allows(["note", "review", "1", "small", "--template=2"])

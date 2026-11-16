@@ -6,10 +6,10 @@ class WorkersMergeButton(ButtonDeclaration):
     """The button workers.merge."""
 
     name = "workers.merge"
-    slots = tuple(["row.agent"])
+    slots = ("row.agent",)
     label = "Merge the work of the worker"
     runs = "worker merge row:{row_id}"
     icon = "branch"
     primary = True
-    condition = ButtonCondition("working_role", tuple(["worker"]))
+    condition = ButtonCondition("working_role", ("worker",))
     confirm = "Merge its work? Each point needs a checked proof."

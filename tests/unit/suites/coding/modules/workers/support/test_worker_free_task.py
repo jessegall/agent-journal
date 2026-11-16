@@ -80,4 +80,4 @@ def test_a_worker_that_still_has_a_task_is_given_none(tasks):
 
 def test_the_task_the_commit_just_sent_to_its_tests_does_not_hold_the_free_task_back():
     committed = SimpleNamespace(id=3, state=TaskState.TESTING)
-    assert given(Tasks(testing=[committed]), tuple([committed.id])) == [FREE_TASK.id]
+    assert given(Tasks(testing=[committed]), (committed.id,)) == [FREE_TASK.id]

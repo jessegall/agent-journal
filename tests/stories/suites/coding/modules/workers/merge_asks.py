@@ -52,7 +52,7 @@ def test_48_the_whole_ask(new_story):
 
 def test_49_refused_a_started_task(new_story):
     worker = unplanned_group_worker(new_story)
-    commit_tasks_singly(worker, tuple([1]))
+    commit_tasks_singly(worker, (1,))
     worker.story.run("task start 2", actor=worker.worker)
     worker.story.expect_refusal(REQUEST_MERGE, "task 2 is started", actor=worker.worker)
 
@@ -77,7 +77,7 @@ def test_53_refused_nothing_committed_since_the_last_merge(new_story):
 @pytest.mark.real_git
 def test_54_refused_an_ask_already_waits(new_story):
     worker = unplanned_group_worker(new_story)
-    commit_tasks_singly(worker, tuple([1]))
+    commit_tasks_singly(worker, (1,))
     worker.end_all_tests()
     worker.story.expect_success('worker ask-merge "the first task" --up-to 1', actor=worker.worker)
     worker.story.expect_refusal('worker ask-merge "again" --up-to 1', "your ask 1 waits for the merge", actor=worker.worker)
@@ -119,7 +119,7 @@ def test_59_an_early_ask_over_a_part_whose_run_has_not_passed_is_refused(new_sto
 @pytest.mark.real_git
 def test_60_refused_up_to_a_task_not_committed_or_a_commit_not_on_the_branch(new_story):
     worker = unplanned_group_worker(new_story)
-    commit_tasks_singly(worker, tuple([1]))
+    commit_tasks_singly(worker, (1,))
     worker.end_all_tests()
     worker.story.expect_refusal('worker ask-merge "the rest" --up-to 3', "task 3 is not committed in your worktree", actor=worker.worker)
     worker.story.expect_refusal('worker ask-merge "the rest" --up-to abcdef1', "commit abcdef1 is not on your branch", actor=worker.worker)
@@ -128,7 +128,7 @@ def test_60_refused_up_to_a_task_not_committed_or_a_commit_not_on_the_branch(new
 @pytest.mark.real_git
 def test_61_the_judgment_of_the_worker_is_not_second_guessed(new_story):
     worker = unplanned_group_worker(new_story)
-    commit_tasks_singly(worker, tuple([1]))
+    commit_tasks_singly(worker, (1,))
     worker.end_all_tests()
     worker.story.expect_success('worker ask-merge "the first task is needed now" --up-to 1', actor=worker.worker)
 

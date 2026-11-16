@@ -49,13 +49,13 @@ def test_a_popped_working_stacked_state_is_suppressed_until_its_work_is_assigned
     story.expect_success('task make "Second task" --brief "the work a person moves"', actor=story.user)
     stacked(story, StackedState(Working(WorkReference(WorkType.TASK, 2, "task 2"), True, Reason("tasks.finish", DecisionClass.REFUSE, "tasks.work", "finish task 2")), WORK_KEY, ENTERED))
     popped(story, WORK_KEY.generation)
-    assert suppressed(story) == tuple([WORK_KEY])
+    assert suppressed(story) == (WORK_KEY,)
     story.expect_success(f"task assign 2 --to {story.container.get(AgentRows).find(story.agent.id).number}", actor=story.user)
     assert suppressed(story) == ()
 
 
 def test_a_popped_waiting_stacked_state_is_cancelled_for_that_wait_alone(played):
     story = played(ReadTaskBuilder)
-    stacked(story, StackedState(Waiting(tuple([RowReference("questions", 4)]), WaitMode.ALL, False, "waiting on question 4"), WAIT_KEY, ENTERED))
+    stacked(story, StackedState(Waiting((RowReference("questions", 4),), WaitMode.ALL, False, "waiting on question 4"), WAIT_KEY, ENTERED))
     popped(story, WAIT_KEY.generation)
-    assert suppressed(story) == tuple([WAIT_KEY])
+    assert suppressed(story) == (WAIT_KEY,)

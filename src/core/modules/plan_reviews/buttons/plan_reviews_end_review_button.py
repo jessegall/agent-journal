@@ -6,9 +6,9 @@ class PlanReviewsEndReviewButton(ButtonDeclaration):
     """The button plan_reviews.end-review."""
 
     name = "plan_reviews.end-review"
-    slots = tuple(["row.plan"])
+    slots = ("row.plan",)
     label = "End review"
     runs = "plan reviewed {row_id}"
     icon = "tick"
-    condition = ButtonCondition("state", tuple(["reviewing"]))
+    condition = ButtonCondition("state", ("reviewing",))
     tip = "The plan is ready again"

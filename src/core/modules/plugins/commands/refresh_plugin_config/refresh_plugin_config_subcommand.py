@@ -22,7 +22,7 @@ class RefreshPluginConfigSubcommand(Subcommand[RefreshPluginConfig, Plugin]):
 
     cli_name = "plugin"
     name = "config"
-    disabled_scopes = tuple([EnvironmentScope])
+    disabled_scopes = (EnvironmentScope,)
 
     def __init__(self, plugins: PluginQuery) -> None:
         self.plugins = plugins

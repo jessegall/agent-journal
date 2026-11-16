@@ -48,7 +48,7 @@ def picker(focus_work, scopes=None, remaining=()):
 
 def work():
     places = tuple(SimpleNamespace(task_id=task_id, position=position, priority=100) for task_id, position in ((1, 1), (2, 2)))
-    return PlanWork(SimpleNamespace(id=1), places, Unblockers(tuple([Unblocker(9, 2, 100)])))
+    return PlanWork(SimpleNamespace(id=1), places, Unblockers((Unblocker(9, 2, 100),)))
 
 
 def plan_with_ready(*task_ids):
@@ -60,7 +60,7 @@ def test_with_nothing_in_the_focus_the_oldest_plan_with_a_task_reserved_for_nobo
     assert picker(None, remaining=remaining).first_started(AGENT).id == 22
     assert picker(None, remaining=remaining).first_started(AGENT, excluded_id=22).id == 21
     assert picker(work(), remaining=remaining).first_started(AGENT).id == 9
-    assert picker(None, remaining=tuple([plan_with_ready(20)])).first_started(AGENT) is None
+    assert picker(None, remaining=(plan_with_ready(20),)).first_started(AGENT) is None
 
 
 def test_an_agent_with_no_focus_is_given_nothing():
@@ -79,4 +79,4 @@ def test_a_focus_with_nothing_to_take_gives_nothing():
 def test_the_rows_are_read_in_the_environment_of_the_agent_with_the_actor_scope_off():
     scopes = OpenedScopes()
     picker(work(), scopes).first(AGENT)
-    assert scopes.openings == [(4, 2, tuple([ActorScope]))]
+    assert scopes.openings == [(4, 2, (ActorScope,))]

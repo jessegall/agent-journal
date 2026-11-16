@@ -33,7 +33,7 @@ class EventType:
 
     @staticmethod
     def alternatives(hint: object) -> tuple[object, ...]:
-        return get_args(hint) if get_origin(hint) in (Union, UnionType) else tuple([hint])
+        return get_args(hint) if get_origin(hint) in (Union, UnionType) else (hint,)
 
     @classmethod
     def parsed(cls, hint: object) -> "EventType":

@@ -85,7 +85,7 @@ def working(work_type: WorkType = WorkType.TASK, work_remains: bool = True) -> R
 
 
 def test_a_stop_with_a_started_task_is_refused_counted_and_checked() -> None:
-    record = AgentStateMachine().step(view(states=tuple([working()])), STOP).record
+    record = AgentStateMachine().step(view(states=(working(),)), STOP).record
     assert (record.decision.decision_class, record.shown_reason, record.counts.stop_refusals) == (DecisionClass.HOLD, TASK_REFUSAL, 1)
     assert [check.rule for check in record.stop_checks] == ["tasks.stop"]
 
@@ -97,18 +97,18 @@ def test_a_wait_on_top_of_the_work_lets_the_stop_through_and_resets_the_counts()
 
 
 def test_a_helper_stop_on_its_open_job_hands_the_job_in() -> None:
-    record = AgentStateMachine().step(view("helper", states=tuple([working(WorkType.JOB)])), STOP).record
+    record = AgentStateMachine().step(view("helper", states=(working(WorkType.JOB),)), STOP).record
     assert (record.decision.admits(), record.shown_reason.key, record.shown_reason.handover) == (True, HANDOVER_KEY, WorkReference(WorkType.JOB, 6, "task 6"))
 
 
 def test_a_block_refuses_an_edit_past_its_grace_and_lets_a_read_through() -> None:
-    machine, blocked = AgentStateMachine(), view(blocks=tuple([block("documents.open", "documents.open")]))
+    machine, blocked = AgentStateMachine(), view(blocks=(block("documents.open", "documents.open"),))
     assert machine.step(blocked, EDIT).record.decision.decision_class is DecisionClass.HOLD
     assert machine.step(blocked, READ).record.decision.admits()
 
 
 def test_a_strict_block_refuses_a_read_but_never_a_skill_read() -> None:
-    machine, blocked = AgentStateMachine(), view(blocks=tuple([block("overview.first", "overview.first", "journal overview", is_strict=True)]))
+    machine, blocked = AgentStateMachine(), view(blocks=(block("overview.first", "overview.first", "journal overview", is_strict=True),))
     assert (machine.step(blocked, READ).record.decision.admits(), machine.step(blocked, SKILL_READ).record.decision.admits()) == (False, True)
 
 
@@ -123,7 +123,7 @@ def test_the_lifting_command_of_one_block_passes_every_other_block_with_its_argu
 def test_a_lifting_command_chained_with_a_write_is_not_exempt() -> None:
     chained = QuestionSamples.question(HookSamples.shell("journal overview && rm a.py", ShellPart("journal", CommandCategory.JOURNAL, ["overview"]),
                                                    ShellPart("rm", CommandCategory.EDIT, ["a.py"])))
-    blocked = view(blocks=tuple([block("overview.first", "overview.first", "journal overview", is_strict=True)]))
+    blocked = view(blocks=(block("overview.first", "overview.first", "journal overview", is_strict=True),))
     assert not AgentStateMachine().step(blocked, chained).record.decision.admits()
 
 
@@ -142,11 +142,11 @@ def plan(tool_grace_uses: int) -> BlockPlan:
 def test_an_open_row_its_need_still_plans_decides_under_the_plans_rank_keys_and_stop_text() -> None:
     stop_plan = replace(plan(0), scope_stop=True, stop_check_key="tasks.log-before-stop", stop_agent_message=AgentMessage("tasks.unlogged-stop", AgentMessageType.STEERING, "log your task before you stop"))
     row = block("tasks.unlogged-writes", "row-rank")
-    shown = AgentStateMachine().step(view(blocks=tuple([row]), plans=tuple([stop_plan])), STOP).record.shown_reason
+    shown = AgentStateMachine().step(view(blocks=(row,), plans=(stop_plan,)), STOP).record.shown_reason
     assert (shown.key, shown.rank, shown.text) == ("tasks.log-before-stop", "tasks.unlogged", "log your task before you stop")
 
 def test_a_plan_without_a_grace_refuses_the_action_that_found_it_and_a_grace_lets_it_through_both_opening_their_row() -> None:
-    without_grace, with_grace = AgentStateMachine().step(view(plans=tuple([plan(0)])), EDIT).record, AgentStateMachine().step(view(plans=tuple([plan(5)])), EDIT).record
+    without_grace, with_grace = AgentStateMachine().step(view(plans=(plan(0),)), EDIT).record, AgentStateMachine().step(view(plans=(plan(5),)), EDIT).record
     assert (without_grace.decision.admits(), with_grace.decision.admits()) == (False, True)
     assert len(without_grace.blocks_opened) == len(with_grace.blocks_opened) == 1
 
@@ -171,26 +171,26 @@ def grant(state: GrantState, policy_key: str = "files.no-edit") -> Grant:
 
 
 def test_a_usable_grant_passes_its_policy_but_a_held_one_and_a_safety_policy_are_never_passed() -> None:
-    assert AgentStateMachine([EditPolicy()]).step(view(grants=tuple([grant(GrantState.CONFIRMED)])), EDIT).record.decision.admits()
-    assert not AgentStateMachine([EditPolicy()]).step(view(grants=tuple([grant(GrantState.HELD)])), EDIT).record.decision.admits()
-    assert not AgentStateMachine([SafeEditPolicy()]).step(view(grants=tuple([grant(GrantState.CONFIRMED, "files.no-edit-safety")])), EDIT).record.decision.admits()
+    assert AgentStateMachine([EditPolicy()]).step(view(grants=(grant(GrantState.CONFIRMED),)), EDIT).record.decision.admits()
+    assert not AgentStateMachine([EditPolicy()]).step(view(grants=(grant(GrantState.HELD),)), EDIT).record.decision.admits()
+    assert not AgentStateMachine([SafeEditPolicy()]).step(view(grants=(grant(GrantState.CONFIRMED, "files.no-edit-safety"),)), EDIT).record.decision.admits()
 
 
 def test_the_grant_that_passed_a_refusing_policy_is_named_for_the_save_to_spend_and_an_unrefused_action_spends_none() -> None:
     usable = grant(GrantState.CONFIRMED)
-    assert AgentStateMachine([EditPolicy()]).step(view(grants=tuple([usable])), EDIT).record.spent_grants == tuple([usable])
-    assert AgentStateMachine([]).step(view(grants=tuple([usable])), EDIT).record.spent_grants == ()
+    assert AgentStateMachine([EditPolicy()]).step(view(grants=(usable,)), EDIT).record.spent_grants == (usable,)
+    assert AgentStateMachine([]).step(view(grants=(usable,)), EDIT).record.spent_grants == ()
 
 
 def paused(agent_type: str = "main", **changes: object) -> AgentView:
-    return view(agent_type, facts=tuple([PauseFact(None, tuple([PauseCause(1, 4, SAMPLE_TIME)]), PAUSE_TEXT)]), **changes)
+    return view(agent_type, facts=(PauseFact(None, (PauseCause(1, 4, SAMPLE_TIME),), PAUSE_TEXT),), **changes)
 
 
 def test_a_paused_agent_may_answer_with_a_message_and_rest_but_not_edit_or_hand_over() -> None:
     machine = AgentStateMachine()
     assert machine.step(paused(), EDIT).record.shown_reason.key == PAUSE_KEY
-    assert machine.step(paused(blocks=tuple([block("documents.open", "documents.open", is_strict=True)])), journal_line("journal message send hi", ("message", "send", "hi"))).record.decision.admits()
-    rest = machine.step(paused("helper", states=tuple([working(WorkType.JOB)])), STOP).record
+    assert machine.step(paused(blocks=(block("documents.open", "documents.open", is_strict=True),)), journal_line("journal message send hi", ("message", "send", "hi"))).record.decision.admits()
+    rest = machine.step(paused("helper", states=(working(WorkType.JOB),)), STOP).record
     assert (rest.decision.admits(), rest.shown_reason.handover) == (True, None)
 
 
@@ -208,7 +208,7 @@ class RunnerWrap(Transform):
     slot = TransformSlot.RUNNER
 
     def applied(self, question: Question, view: AgentView) -> Rewrite:
-        return Rewrite.replaced({"command": "journal-run 7"}, tuple([TransformSlot.RUNNER]), "wraps the admitted line", question)
+        return Rewrite.replaced({"command": "journal-run 7"}, (TransformSlot.RUNNER,), "wraps the admitted line", question)
 
 
 def test_a_rewrite_the_program_cannot_carry_becomes_its_fallback_refusal() -> None:
@@ -219,47 +219,47 @@ def test_a_rewrite_the_program_cannot_carry_becomes_its_fallback_refusal() -> No
 
 
 def test_the_same_view_gives_the_same_record() -> None:
-    same = view(states=tuple([working()]), blocks=tuple([block("documents.open", "documents.open")]))
+    same = view(states=(working(),), blocks=(block("documents.open", "documents.open"),))
     assert AgentStateMachine().step(same, STOP).record == AgentStateMachine().step(same, STOP).record
 
 
 def test_the_fifth_refused_stop_opens_an_escalation_and_says_who_was_asked() -> None:
-    record = AgentStateMachine().step(view(states=tuple([working()]), counts=RefusalCounts(4, 0)), STOP).record
+    record = AgentStateMachine().step(view(states=(working(),), counts=RefusalCounts(4, 0)), STOP).record
     assert record.counts.escalation is not None
     assert record.shown_reason.text.endswith("A person was asked: you may stop and wait for the answer.")
 
 
 
 def test_the_fifth_stop_refused_by_a_started_task_names_it_and_the_next_stop_rests_while_new_work_still_refuses() -> None:
-    fifth = AgentStateMachine().step(view(states=tuple([working()]), counts=RefusalCounts(4, 0)), STOP).record
+    fifth = AgentStateMachine().step(view(states=(working(),), counts=RefusalCounts(4, 0)), STOP).record
     escalation = fifth.counts.escalation
-    assert not fifth.decision.admits() and escalation is not None and escalation.work_keys == tuple([working().key])
-    assert AgentStateMachine().step(view(states=tuple([working()]), escalation=escalation), STOP).record.decision.admits()
-    assert not AgentStateMachine().step(view(states=tuple([working(WorkType.JOB)]), escalation=escalation), STOP).record.decision.admits()
+    assert not fifth.decision.admits() and escalation is not None and escalation.work_keys == (working().key,)
+    assert AgentStateMachine().step(view(states=(working(),), escalation=escalation), STOP).record.decision.admits()
+    assert not AgentStateMachine().step(view(states=(working(WorkType.JOB),), escalation=escalation), STOP).record.decision.admits()
 
 
 def test_a_hold_no_one_can_judge_never_passes_and_asks_a_person_to_repair_it() -> None:
-    record = AgentStateMachine().step(view(blocks=tuple([block("documents.open", "documents.open")]), block_outcomes={3: ConditionOutcome.UNAVAILABLE}), EDIT).record
+    record = AgentStateMachine().step(view(blocks=(block("documents.open", "documents.open"),), block_outcomes={3: ConditionOutcome.UNAVAILABLE}), EDIT).record
     assert not record.decision.admits() and record.counts.escalation is not None and record.counts.escalation.escalation_type is EscalationType.REPAIR
 
 
 def test_the_fifth_stop_refused_by_an_open_row_its_need_still_plans_names_that_row_in_the_escalation() -> None:
     stop_plan = replace(plan(0), scope_stop=True, stop_check_key="tasks.log-before-stop", stop_agent_message=AgentMessage("tasks.unlogged-stop", AgentMessageType.STEERING, "log your task before you stop"))
-    record = AgentStateMachine().step(view(blocks=tuple([block("tasks.unlogged-writes", "row-rank")]), plans=tuple([stop_plan]), counts=RefusalCounts(4, 0)), STOP).record
-    assert record.counts.escalation is not None and record.counts.escalation.block_ids == tuple([3])
+    record = AgentStateMachine().step(view(blocks=(block("tasks.unlogged-writes", "row-rank"),), plans=(stop_plan,), counts=RefusalCounts(4, 0)), STOP).record
+    assert record.counts.escalation is not None and record.counts.escalation.block_ids == (3,)
 
 def test_an_open_escalation_defers_the_stop_scope_of_its_blocks() -> None:
-    deferred = Escalation(5, EscalationType.STOPS, Responder.PERSON, tuple([3]), (), 5)
-    assert AgentStateMachine().step(view(blocks=tuple([block("messages.unread", "messages.unread")]), escalation=deferred), STOP).record.decision.admits()
+    deferred = Escalation(5, EscalationType.STOPS, Responder.PERSON, (3,), (), 5)
+    assert AgentStateMachine().step(view(blocks=(block("messages.unread", "messages.unread"),), escalation=deferred), STOP).record.decision.admits()
 
 
 def test_a_block_judged_satisfied_closes_and_constrains_nothing() -> None:
-    record = AgentStateMachine().step(view(blocks=tuple([block("documents.open", "documents.open")]), block_outcomes={3: ConditionOutcome.SATISFIED}), EDIT).record
+    record = AgentStateMachine().step(view(blocks=(block("documents.open", "documents.open"),), block_outcomes={3: ConditionOutcome.SATISFIED}), EDIT).record
     assert (record.decision.admits(), [closing.block_id for closing in record.blocks_closed]) == (True, [3])
 
 
 def test_an_ended_agent_gets_ended_on_top_of_its_stack() -> None:
-    result = AgentStateMachine().step(view(facts=tuple([EndedFact(None, "retired", 1)])), Question.none())
+    result = AgentStateMachine().step(view(facts=(EndedFact(None, "retired", 1),)), Question.none())
     assert isinstance(result.stack.stacked_states[-1].state, Ended)
 
 
@@ -272,12 +272,12 @@ def test_past_the_depth_limit_a_block_has_no_stacked_state_and_still_refuses() -
 
 def test_a_new_need_enters_its_stacked_state_and_an_ended_one_exits_wherever_it_sits() -> None:
     machine = AgentStateMachine()
-    first = machine.step(view(states=tuple([working()])), Question.none())
+    first = machine.step(view(states=(working(),)), Question.none())
     second = machine.step(view(stack=first.stack), Question.none())
     assert [move.move_type for move in first.record.moves] == [StackMoveType.SEEDED]
     assert [move.move_type for move in second.record.moves] == [StackMoveType.EXITED]
 
 
 def test_a_resting_agent_whose_stop_would_be_refused_gets_a_wake_unless_it_is_paused() -> None:
-    assert AgentStateMachine().step(view(states=tuple([working()]), is_resting=True), Question.none()).wake.wake_move is WakeMove.WRITTEN
-    assert AgentStateMachine().step(paused(states=tuple([working()]), is_resting=True), Question.none()).wake.wake_move is WakeMove.INHIBITED
+    assert AgentStateMachine().step(view(states=(working(),), is_resting=True), Question.none()).wake.wake_move is WakeMove.WRITTEN
+    assert AgentStateMachine().step(paused(states=(working(),), is_resting=True), Question.none()).wake.wake_move is WakeMove.INHIBITED

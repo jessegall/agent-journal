@@ -64,7 +64,7 @@ def type_behaviours(entry: HelperTypeEntry) -> dict[str, object]:
 def current_table(tmp_path: Path) -> dict[str, dict[str, object]]:
     finder = ModuleFinder(JournalHome(tmp_path))
     suite, types = coding_suite(finder), helper_types(finder)
-    registry = Registry("", {}, {}, {}, (), (), suites=tuple([suite]), drivers=DriverEntries().drivers(finder.default_modules()), helper_types=tuple(types.values()))
+    registry = Registry("", {}, {}, {}, (), (), suites=(suite,), drivers=DriverEntries().drivers(finder.default_modules()), helper_types=tuple(types.values()))
     table = {MAIN_KEY: {**behaviour_answers(MainAgent.behaviours, ""), **asdict(suite_behaviours(registry, suite, MAIN_KEY))}}
     for key, entry in sorted(types.items()):
         table[key] = {**behaviour_answers(entry.behaviours, entry.queue_limit_key), **asdict(suite_behaviours(registry, suite, key)), **type_behaviours(entry)}

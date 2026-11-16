@@ -120,7 +120,7 @@ class PluginServices:
             passed = subprocess.run(["sh", "-c", service.condition], cwd=folder, env=environment, capture_output=True, timeout=limit_seconds).returncode == 0
         except subprocess.TimeoutExpired:
             processes.skipped[key] = self.clock.timestamp()
-            return ConditionCheck(False, tuple([f"the condition of its service {service.name} ran past {limit_seconds} s"]))
+            return ConditionCheck(False, (f"the condition of its service {service.name} ran past {limit_seconds} s",))
         if not passed:
             processes.skipped[key] = self.clock.timestamp()
             return ConditionCheck(False)

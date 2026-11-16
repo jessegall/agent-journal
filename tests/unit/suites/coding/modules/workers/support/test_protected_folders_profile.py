@@ -11,11 +11,11 @@ def folders(project: list[str], profile_groups: dict[str, tuple[str, ...]]) -> P
 
 
 def test_a_profile_adds_its_own_protected_folders_to_the_projects(tmp_path):
-    protected = folders(["cart.py"], {WORKER_MEDIOR_PROFILE.name: tuple(["src/engine"])})
+    protected = folders(["cart.py"], {WORKER_MEDIOR_PROFILE.name: ("src/engine",)})
     assert protected.match(str(tmp_path), "src/engine/driver/walk.py", WORKER_MEDIOR_PROFILE.name) == "src/engine"
     assert protected.match(str(tmp_path), "cart.py", WORKER_MEDIOR_PROFILE.name) == "cart.py"
 
 
 def test_another_profile_does_not_get_them(tmp_path):
-    protected = folders([], {WORKER_MEDIOR_PROFILE.name: tuple(["src/engine"])})
+    protected = folders([], {WORKER_MEDIOR_PROFILE.name: ("src/engine",)})
     assert protected.match(str(tmp_path), "src/engine/driver/walk.py", WORKER_SENIOR_PROFILE.name) == ""

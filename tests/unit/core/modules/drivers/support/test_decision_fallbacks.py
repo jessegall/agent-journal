@@ -6,7 +6,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from core.modules.drivers.commands.request_agent_step.request_agent_step import RequestAgentStep
 from core.modules.drivers.support.decision_fallbacks import BUSY_TEXT, MISSED_CHECK, DecisionFallbacks
 
-WALK = RuleAnswers([RuleRecord("messages.unread-write", "refused", RuleAnswer(refusal="read your messages", commands=tuple([RequestAgentStep(tuple([4]), "walk")])))])
+WALK = RuleAnswers([RuleRecord("messages.unread-write", "refused", RuleAnswer(refusal="read your messages", commands=(RequestAgentStep((4,), "walk"),)))])
 TRIGGERED = RuleAnswers([RuleRecord("triggers.phrase", "refused", RuleAnswer(refusal="that phrase is denied"))])
 
 
@@ -21,7 +21,7 @@ def test_a_tool_call_whose_check_was_lost_is_refused_as_busy_with_nothing_of_the
 
 def test_a_stop_whose_check_was_lost_passes_and_asks_for_a_step():
     answers = lost(HookSamples.stop())
-    assert (answers.refusal, answers.commands) == ("", [(MISSED_CHECK, RequestAgentStep(tuple([4]), MISSED_CHECK))])
+    assert (answers.refusal, answers.commands) == ("", [(MISSED_CHECK, RequestAgentStep((4,), MISSED_CHECK))])
 
 
 def test_a_prompt_whose_check_was_lost_keeps_only_a_trigger_refusal():

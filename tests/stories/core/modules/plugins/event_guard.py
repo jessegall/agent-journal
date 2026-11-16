@@ -130,7 +130,7 @@ def test_s25_switching_a_plugin_off_goes_through_and_the_round_stops_its_running
 
 def test_s25_a_plugin_row_offers_only_commit_so_no_script_can_hold_the_switch(new_story):
     story = new_story(fixture=EventPluginStarted)
-    story.expect_rows(tuple(story.container.get(Registry).event_keys["plugin.update"].forms) == tuple([EventForm.COMMIT]))
+    story.expect_rows(tuple(story.container.get(Registry).event_keys["plugin.update"].forms) == (EventForm.COMMIT,))
 
 
 def test_s26_explain_shows_what_would_happen_and_runs_no_script(new_story):

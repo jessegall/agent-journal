@@ -19,7 +19,7 @@ class PlannedDatabase:
 
     def query_plan(self, statement: Statement) -> tuple[str, ...]:
         self.plans_asked += 1
-        return tuple(["SEARCH tasks USING INTEGER PRIMARY KEY (rowid=?)"])
+        return ("SEARCH tasks USING INTEGER PRIMARY KEY (rowid=?)",)
 
     def is_partial_index(self, name: str) -> bool:
         return False

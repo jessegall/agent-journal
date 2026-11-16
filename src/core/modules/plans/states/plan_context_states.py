@@ -34,4 +34,4 @@ class PlanContextStates(StateSource):
         if plan_id is None:
             return None
         return BlockPlan(PlanContextMessage.declared().agent_message(plan=plan_id), PlanContextRead(plan_id), PLAN_CONTEXT_KEY, PLAN_CONTEXT_RANK,
-                         subject=RowReference("plan", plan_id), lifting_lines=tuple([f"journal plan context {plan_id}"]))
+                         subject=RowReference("plan", plan_id), lifting_lines=(f"journal plan context {plan_id}",))

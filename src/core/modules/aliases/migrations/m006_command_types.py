@@ -6,4 +6,4 @@ class CommandTypesMigration(Migration):
     """
 
     number = 6
-    statements = tuple(["ALTER TABLE command_kinds RENAME TO command_types"])
+    statements = ("ALTER TABLE command_kinds RENAME TO command_types",)

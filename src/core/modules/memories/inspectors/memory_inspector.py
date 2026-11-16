@@ -14,13 +14,13 @@ class MemoryInspector(InspectorDeclaration):
     reads = "memory show {row_id}"
     label = "Memory {id} · {state}"
     title = "{title}"
-    events = tuple(["memory.*"])
+    events = ("memory.*",)
     actions = (
         ButtonDeclaration("memories.remove", (), "Remove the memory", "memory remove {row_id} --reason={reason}", icon="stop",
-                          condition=ButtonCondition("state", tuple([MemoryState.ACTIVE.value])),
-                          fields=tuple([TextField("reason", "Why is it removed?")])),
+                          condition=ButtonCondition("state", (MemoryState.ACTIVE.value,)),
+                          fields=(TextField("reason", "Why is it removed?"),)),
         ButtonDeclaration("memories.restore", (), "Restore the memory", "memory restore {row_id}", icon="restore", primary=True,
-                          condition=ButtonCondition("state", tuple([MemoryState.REMOVED.value]))),
+                          condition=ButtonCondition("state", (MemoryState.REMOVED.value,))),
     )
-    components = tuple([InspectorComponent("memories.memory-facts")])
+    components = (InspectorComponent("memories.memory-facts"),)
     lists_fields = True

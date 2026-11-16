@@ -25,4 +25,4 @@ class ProjectHookTransform(Transform):
         command = updated.get("command")
         tool = question.tool()
         final = question.with_shell(self.parser.line(command)) if isinstance(command, str) and tool is not None and tool.shell is not None else question
-        return Rewrite.replaced(updated, tuple([self.slot]), "", final)
+        return Rewrite.replaced(updated, (self.slot,), "", final)

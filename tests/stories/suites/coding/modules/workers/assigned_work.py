@@ -36,6 +36,6 @@ def test_available_work_lists_only_unassigned_tasks(new_story):
     repository_environment(story)
     story.expect_success(RECEIPT, actor=story.agent)
     story.expect_success(f"task assign 2 --to {agent_number(story, story.agent.id)}", actor=story.agent)
-    story.expect_rows(delegatable(story) == tuple([1]), detail=str(delegatable(story)))
+    story.expect_rows(delegatable(story) == (1,), detail=str(delegatable(story)))
 
 

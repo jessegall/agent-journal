@@ -41,4 +41,4 @@ class CritiqueReportListener(CommitListener[Created[Link]]):
 
     def applying_agent_ids(self, plan: Plan) -> tuple[int, ...]:
         maker = self.queries.query(Agent).filter(id=plan.creator_id).first()
-        return tuple([maker.id]) if maker is not None else tuple(agent.id for agent in MainAgentFinder.rows(self.queries))
+        return (maker.id,) if maker is not None else tuple(agent.id for agent in MainAgentFinder.rows(self.queries))

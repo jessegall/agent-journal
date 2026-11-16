@@ -28,5 +28,5 @@ class AgentStateListing:
         if row is None or not row.has_stacked_states:
             return []
         return [OpenState(type(stacked_state.state).__name__, stacked_state.state_key.state_name,
-                          tuple([f"{stacked_state.state_key.subject.model} {stacked_state.state_key.subject.row_id}"]) if stacked_state.state_key.subject is not None else (),
+                          (f"{stacked_state.state_key.subject.model} {stacked_state.state_key.subject.row_id}",) if stacked_state.state_key.subject is not None else (),
                           stacked_state.entered_at.isoformat()) for stacked_state in StackCodec.decoded(row.stacked_states)]

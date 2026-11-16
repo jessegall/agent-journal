@@ -11,7 +11,7 @@ class TaskBlockRenewalListener(SaveListener[Moved[Task]]):
     """Records every written block reason in the transaction that blocks the task."""
 
     name = "tasks.block-renewal"
-    moves = tuple([TaskLifecycle.block])
+    moves = (TaskLifecycle.block,)
 
     def __init__(self, repository: Repository) -> None:
         self.repository = repository

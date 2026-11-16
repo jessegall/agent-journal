@@ -240,7 +240,7 @@ def test_a_unit_committed_whole_gets_the_free_task_only_on_its_ask_and_reaches_t
     number = agent_number(story, worker.worker.id)
     free_task = story.new_row_id('task make "Check rounding" --brief "Check the rounding" --complexity 1 --environment main', actor=story.agent)
     for task_id in (1, 2, 3):
-        commit_tasks_singly(worker, tuple([task_id]))
+        commit_tasks_singly(worker, (task_id,))
         worker.end_test(worker.started[-1])
     given = f'"helper_name": "Worker {number}"'
     story.expect_rows(given not in story.run(f"task inspect {free_task} --json", actor=story.agent).output_text)

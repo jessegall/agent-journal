@@ -19,7 +19,7 @@ class BlockedWorkerTaskListener(SaveListener[Moved[Task]]):
     agent blocked a task of its own."""
 
     name = "workers.blocked-task"
-    moves = tuple([TaskLifecycle.block])
+    moves = (TaskLifecycle.block,)
     disabled_scopes = [ActorScope]
 
     def __init__(self, main_agent_line: MainAgentLine, message_sender: MessageSender, numbers: RowNumbers, assignments: Assignments) -> None:

@@ -12,7 +12,7 @@ class ReviewTip:
 
     def lines(self) -> tuple[str, ...]:
         if self.review_round is None or not self.review_round.reviewers:
-            return tuple(["No reviewer has started reading yet"])
+            return ("No reviewer has started reading yet",)
         filed = {report.author_id: report.id for report in self.review_round.reports}
         reviewers = self.review_round.reviewers
         reported = sum(1 for reviewer in reviewers if reviewer.agent_id in filed)

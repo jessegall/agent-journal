@@ -35,7 +35,7 @@ def test_a_profile_with_neither_field_is_when_cold():
 
 
 def test_a_stored_command_list_restores_as_its_class():
-    commands = CommandAllowList(groups=tuple(["task"]), lines=tuple(["plan make"]), classes=tuple([JournalLineClass.READS]))
+    commands = CommandAllowList(groups=("task",), lines=("plan make",), classes=(JournalLineClass.READS,))
     stored = json.loads(json.dumps(asdict(AgentProfile("notes-reader", commands=commands))))
     del stored["occupant"]
     assert AgentProfile.parsed(stored).commands == commands

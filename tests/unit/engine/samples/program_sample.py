@@ -69,4 +69,4 @@ class SampleProgram(Provider):
     def journal_settings(self, home: JournalHome, runner: str, managed: Sequence[ManagedHook], folders: Sequence[Path]) -> ProgramSettings:
         path = home.program_settings_file(self.name)
         hooks = ProgramHooks.journal(type(self), path).journal_blocks(runner, home.project_folder, managed)
-        return ProgramSettings(self.name, tuple([SettingsFile(path, json.dumps({"hooks": hooks}) + "\n")]))
+        return ProgramSettings(self.name, (SettingsFile(path, json.dumps({"hooks": hooks}) + "\n"),))

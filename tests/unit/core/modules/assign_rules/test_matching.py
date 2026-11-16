@@ -50,7 +50,7 @@ def decide(story):
     (ConditionField.TEXT, ConditionOperator.HAS_WORD, "migration", {"brief": "the migration"}, True),
     (ConditionField.TEXT, ConditionOperator.HAS_WORD, "migration", {"title": "A migration"}, True),
     (ConditionField.TEXT, ConditionOperator.LACKS_WORD, "migration", {"title": "A migration"}, False),
-    (ConditionField.TAG, ConditionOperator.HAS, "backend", {"tags": tuple(["backend"])}, True),
+    (ConditionField.TAG, ConditionOperator.HAS, "backend", {"tags": ("backend",)}, True),
     (ConditionField.TAG, ConditionOperator.HAS, "backend", {}, False),
     (ConditionField.TAG, ConditionOperator.LACKS, "backend", {}, True),
     (ConditionField.PRIORITY, ConditionOperator.MINIMUM, "high", {"priority": TaskPriority("critical")}, True),

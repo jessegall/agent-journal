@@ -65,7 +65,7 @@ def test_only_changed_fields_are_saved_and_the_rest_follows_the_module(tmp_path)
     files(tmp_path, MODULE_READER).save_changes(MODULE_READER, replace(MODULE_READER, model="opus"))
     upgraded = replace(MODULE_READER, description="Reads a changed question", body="Read the new files.")
     row = files(tmp_path, upgraded).row("module-reader")
-    assert (row.description, row.body, row.model, row.changed) == ("Reads a changed question", "Read the new files.", "opus", tuple(["model"]))
+    assert (row.description, row.body, row.model, row.changed) == ("Reads a changed question", "Read the new files.", "opus", ("model",))
 
 
 def test_a_persons_text_survives_changed_module_text_and_reset_brings_the_module_text_back(tmp_path):
@@ -136,4 +136,4 @@ def test_an_own_profile_of_a_name_a_module_takes_is_a_problem(tmp_path):
 
 def test_a_profile_file_names_the_default_states_it_removes(tmp_path):
     own(tmp_path, "module-reader", "---\nname: module-reader\nremoved-states: [\"workers.worker-log-due\"]\n---\n")
-    assert files(tmp_path, MODULE_READER).row("module-reader").removed_states == tuple(["workers.worker-log-due"])
+    assert files(tmp_path, MODULE_READER).row("module-reader").removed_states == ("workers.worker-log-due",)

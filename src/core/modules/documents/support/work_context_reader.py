@@ -82,7 +82,7 @@ class WorkContextReader:
         request = replace(request, page_size=min(request.page_size, 50))
         rows = self.related_rows(row)
         source = self.sources.work_source(caller)
-        excluded = tuple([source.message_id]) if source is not None and source.unavailable and source.message_id is not None else ()
+        excluded = (source.message_id,) if source is not None and source.unavailable and source.message_id is not None else ()
         visible = self.visible(excluded)
         assigned = self.assignments.task_source(row.id, caller) if isinstance(row, Task) and caller.actor.type is ActorType.AGENT else None
         assignment_queries: list[MessageQuery] = []
@@ -141,9 +141,9 @@ class WorkContextReader:
 
     def related_rows(self, row: Task | Plan) -> tuple[Task | Plan, ...]:
         if not isinstance(row, Task):
-            return tuple([row])
+            return (row,)
         plan = self.plans.find(row.id)
-        return tuple([row]) if plan is None else (row, plan)
+        return (row,) if plan is None else (row, plan)
 
     @staticmethod
     def usable_message_id(assigned: WorkSourceCopy | None, row: Task | Plan) -> int | None:
@@ -192,7 +192,7 @@ class WorkContextReader:
         offset = (request.page - 1) * request.page_size
         size = request.page_size
         if primary is not None:
-            anchors: tuple[Message, ...] = tuple([primary])
+            anchors: tuple[Message, ...] = (primary,)
             if request.order is WorkContextOrder.NEWEST:
                 original = conversation.with_text_segment(0, CONTEXT_CHARACTERS).ordered("created_at", "id").first()
                 if self.preserves_original(original, primary, size):
@@ -239,7 +239,7 @@ class WorkContextReader:
                 next_command = f"journal message show {message.id}"
             if message.parent_id is not None:
                 relations[message.id].add(f"reply message:{message.parent_id}")
-            labels = tuple(sorted(relations[message.id])) or tuple(["thread"])
+            labels = tuple(sorted(relations[message.id])) or ("thread",)
             actor_id = message.session_agent_id if message.type is MessageType.AGENT else message.creator_id
             author = self.author(message, actors.get(actor_id) if actor_id is not None else None)
             rendered[message.id] = WorkContextMessage(message.id, text, author, None if is_journal_record else actor_id,

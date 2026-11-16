@@ -38,7 +38,7 @@ def test_the_guidance_and_the_next_task_name_the_same_task(selected, focused, fi
 
 
 def test_a_worker_with_one_ready_task_takes_it_without_a_read_of_its_focus():
-    assert next_task(focused=task(9), ready=tuple([task(1)])).following(WORKER_ID).id == 1
+    assert next_task(focused=task(9), ready=(task(1),)).following(WORKER_ID).id == 1
 
 
 def test_a_task_the_worker_may_not_start_now_is_passed_over_also_when_the_focus_names_it():
@@ -50,5 +50,5 @@ def test_a_worker_with_nothing_ready_takes_nothing():
 
 
 def test_a_task_a_rule_gave_the_worker_comes_after_its_focus_and_before_its_other_tasks():
-    assert next_task(focused=task(2), rule_ids=tuple([3])).following(WORKER_ID).id == 2
-    assert next_task(rule_ids=tuple([3])).following(WORKER_ID).id == 3
+    assert next_task(focused=task(2), rule_ids=(3,)).following(WORKER_ID).id == 2
+    assert next_task(rule_ids=(3,)).following(WORKER_ID).id == 3

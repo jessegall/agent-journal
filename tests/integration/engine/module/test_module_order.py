@@ -11,7 +11,7 @@ from engine.module.version_requirement import VersionRequirement
 
 
 def module(name: str, dependencies: tuple[str, ...] = (), requires_engine: str = ">=5.0,<6") -> type[Module]:
-    return type(name.title() + "Module", tuple([Module]), {"name": name, "dependencies": dependencies, "requires_engine": requires_engine})
+    return type(name.title() + "Module", (Module,), {"name": name, "dependencies": dependencies, "requires_engine": requires_engine})
 
 
 def test_every_module_comes_after_the_modules_it_depends_on():

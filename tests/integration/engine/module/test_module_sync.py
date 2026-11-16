@@ -18,7 +18,7 @@ def test_527_a_suite_that_lists_its_modules_loads_them_with_it(journal):
     registry = Registry.read(journal.database)
     shop = registry.suite("shop")
     assert shop is not None and shop.module == "folder.shop"
-    assert registry.module_suites["folder.shop"] == tuple(["shop"]) and registry.module_suites["folder.carts"] == tuple(["shop"]), registry.module_suites.get("folder.carts")
+    assert registry.module_suites["folder.shop"] == ("shop",) and registry.module_suites["folder.carts"] == ("shop",), registry.module_suites.get("folder.carts")
 
 
 def test_528_a_module_listed_by_two_suites_is_refused_naming_both(journal):
@@ -29,7 +29,7 @@ def test_528_a_module_listed_by_two_suites_is_refused_naming_both(journal):
 def test_530_a_module_belongs_to_the_one_suite_that_lists_it_so_an_environment_of_the_coding_suite_runs_no_module_of_another(journal):
     journal.expect_sync_success(f"{SAMPLES}:ShopSuite")
     module_suites = Registry.read(journal.database).module_suites
-    coding = sorted(name for name, suites in module_suites.items() if suites == tuple(["coding"]))
+    coding = sorted(name for name, suites in module_suites.items() if suites == ("coding",))
     assert coding == ["journal.suites.coding", "journal.suites.coding.checks", "journal.suites.coding.workers"], coding
     assert "shop" not in [suite for name in coding for suite in module_suites[name]] and module_suites["journal.core.tasks"] == (), "a core module is part of a suite"
 

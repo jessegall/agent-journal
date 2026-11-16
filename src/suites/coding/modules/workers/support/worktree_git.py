@@ -672,7 +672,7 @@ class WorktreeGit:
     def remove_orphan(self, folder: str, path: str, base_branch: str, branch: str | None) -> bool:
         if not self.is_merged(folder, base_branch, branch):
             return False
-        force = tuple(["--force"]) if self.is_published_folder(path) else ()
+        force = ("--force",) if self.is_published_folder(path) else ()
         self.git(folder, GIT_LIMIT_SECONDS, "worktree", "remove", *force, path)
         self.git(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
         return not FileAccess.exists(Path(path))

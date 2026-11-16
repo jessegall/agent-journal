@@ -3,7 +3,7 @@ from engine.template.template_declaration import TemplateDeclaration
 
 PATH = "tests.stories.core.modules.templates.support.template_modules"
 REVIEW = TemplateDeclaration(title="Security review", brief="Review the plan for security problems.",
-                             targets=tuple(["plan"]), purpose="critique", parts=tuple(["Problems"]), commands=tuple(["journal plan list"]))
+                             targets=("plan",), purpose="critique", parts=("Problems",), commands=("journal plan list",))
 
 
 class ReviewModule(Module):

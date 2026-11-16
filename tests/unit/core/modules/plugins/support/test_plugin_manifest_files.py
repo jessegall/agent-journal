@@ -27,7 +27,7 @@ def test_the_manifest_for_the_highest_version_at_or_below_the_journal_is_chosen(
 def test_a_plugin_with_only_the_plain_manifest_reads_it_on_every_journal(tmp_path):
     folder = plugin_folder(tmp_path)
     assert PluginManifestFiles.listed(folder).chosen("5.0.0").name == "journal-plugin.json"
-    assert PluginManifestFiles.listed(folder).names == tuple(["journal-plugin.json"])
+    assert PluginManifestFiles.listed(folder).names == ("journal-plugin.json",)
 
 
 def test_every_manifest_for_a_newer_journal_is_reported_plainly(tmp_path):

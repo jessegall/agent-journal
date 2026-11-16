@@ -13,8 +13,8 @@ def plans(untitled: tuple[int, ...]):
 
 
 def test_a_docked_run_titled_by_its_raw_command_is_held_after_five_uses_until_it_is_titled():
-    [plan] = plans(tuple([7]))
-    assert (plan.tool_grace_uses, plan.lifting_lines) == (TITLE_GRACE_USES, tuple(["journal output title 7"]))
+    [plan] = plans((7,))
+    assert (plan.tool_grace_uses, plan.lifting_lines) == (TITLE_GRACE_USES, ("journal output title 7",))
 
 
 def test_a_docked_run_with_a_descriptive_title_holds_nothing():

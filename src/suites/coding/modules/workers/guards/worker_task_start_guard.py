@@ -16,7 +16,7 @@ class WorkerTaskStartGuard(Guard[Moved[Task]]):
     worker's to make."""
 
     name = "workers.task-held-by-another"
-    moves = tuple([TaskLifecycle.start])
+    moves = (TaskLifecycle.start,)
     runs_first = True
 
     def __init__(self, rows: EventRows, access: WorkerTaskAccess) -> None:

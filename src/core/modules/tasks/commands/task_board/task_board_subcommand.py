@@ -61,8 +61,8 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
     def groups(self, arguments: Namespace) -> tuple[TaskGroup, ...]:
         if arguments.state is not None:
             if arguments.state in FINISHED_STATES:
-                return tuple([self.finished_group(arguments.state, arguments)])
-            return tuple([self.group(arguments.state, arguments)])
+                return (self.finished_group(arguments.state, arguments),)
+            return (self.group(arguments.state, arguments),)
         active_groups = tuple(self.group(state, arguments) for state in (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED, TaskState.OPEN, *self.added_states()))
         finished = tuple(self.finished_group(state, arguments) for state in FINISHED_STATES)
         return (*active_groups, *finished)

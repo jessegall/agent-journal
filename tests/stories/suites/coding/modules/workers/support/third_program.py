@@ -25,13 +25,13 @@ class ThirdProgram(SampleProgram):
     """A sample provider with its own models, home and configuration files."""
 
     models = [ProgramModel("sample-fast", ModelTier.FAST), ProgramModel("sample-general", ModelTier.GENERAL)]
-    worktree_hook_files = tuple([Path(".sample/hooks.json")])
+    worktree_hook_files = (Path(".sample/hooks.json"),)
 
     def readable_folders(self) -> tuple[Path, ...]:
-        return tuple([self.folders.folder("SAMPLE_HOME", ".sample")])
+        return (self.folders.folder("SAMPLE_HOME", ".sample"),)
 
     def server_files(self, folder: Path) -> tuple[ProgramServerFile, ...]:
-        return tuple([SampleServerFile(folder / ".sample/servers")])
+        return (SampleServerFile(folder / ".sample/servers"),)
 
 
 class ThirdProgramModule(Module):

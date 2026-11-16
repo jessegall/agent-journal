@@ -26,8 +26,8 @@ class Label(Model):
     cli_name = "label"
 
 
-def owner(*models: type[Model], dependencies: Sequence[str] = tuple([ASSIGNMENTS_MODULE])) -> type[Module]:
-    return type("Depot", tuple([Module]), {"name": "depot", "dependencies": list(dependencies), "models": [ModelDeclaration(model) for model in models]})
+def owner(*models: type[Model], dependencies: Sequence[str] = (ASSIGNMENTS_MODULE,)) -> type[Module]:
+    return type("Depot", (Module,), {"name": "depot", "dependencies": list(dependencies), "models": [ModelDeclaration(model) for model in models]})
 
 
 def problems(module: type[Module]) -> str:
@@ -64,21 +64,21 @@ class Rack(Model, Assignable):
     model_name = "rack"
     cli_name = "rack"
     takes_actors = ActorCount.SINGLE
-    assigns = tuple([Children(Bin, "rack_id")])
+    assigns = (Children(Bin, "rack_id"),)
 
 
 class Aisle(Model, Assignable):
     model_name = "aisle"
     cli_name = "aisle"
     takes_actors = ActorCount.SEVERAL
-    assigns = tuple([Children(Bin, "aisle_id")])
+    assigns = (Children(Bin, "aisle_id"),)
 
 
 class Tray(Model, Assignable):
     model_name = "tray"
     cli_name = "tray"
     takes_actors = ActorCount.SINGLE
-    assigns = tuple([Children(Label, "tray_id")])
+    assigns = (Children(Label, "tray_id"),)
 
 
 class Hook(Model, Assignable):
@@ -91,10 +91,10 @@ class Chain(Model, Assignable):
     model_name = "chain"
     cli_name = "chain"
     takes_actors = ActorCount.SINGLE
-    assigns = tuple([Children(Hook, "chain_id")])
+    assigns = (Children(Hook, "chain_id"),)
 
 
-Hook.assigns = tuple([Children(Chain, "hook_id")])
+Hook.assigns = (Children(Chain, "hook_id"),)
 
 
 def test_a_child_that_is_not_assignable_is_a_problem():

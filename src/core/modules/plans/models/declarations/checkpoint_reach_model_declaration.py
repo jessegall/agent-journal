@@ -7,5 +7,5 @@ class CheckpointReachModelDeclaration(ModelDeclaration):
     """How the module declares CheckpointReach."""
 
     model = CheckpointReach
-    commands = tuple([FailCheckpoint])
+    commands = (FailCheckpoint,)
     excluded_subcommands = ["make", "edit", "delete"]

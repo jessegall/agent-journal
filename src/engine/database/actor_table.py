@@ -38,7 +38,7 @@ class ActorTable(RoundState):
         self.database.update(Statement(CORE_ACTOR.sql, (CORE_ACTOR_ID, ActorType.CORE.value, timestamp, timestamp)))
 
     def module_actor(self, module: str, timestamp: str) -> int:
-        return self.module_actors(tuple([module]), timestamp)[module]
+        return self.module_actors((module,), timestamp)[module]
 
     def module_actors(self, modules: Sequence[str], timestamp: str) -> dict[str, int]:
         for module in modules:
@@ -53,7 +53,7 @@ class ActorTable(RoundState):
         return {row["name"]: row["id"] for row in self.database.rows(MODULE_ACTOR_IDS)}
 
     def agent_actor_id(self, session: str) -> int | None:
-        rows = self.database.rows(Statement(MODULE_ACTOR_ID.sql, (ActorType.AGENT.value, session))) or self.database.rows(Statement(SESSION_HOLDER_ID.sql, tuple([session])))
+        rows = self.database.rows(Statement(MODULE_ACTOR_ID.sql, (ActorType.AGENT.value, session))) or self.database.rows(Statement(SESSION_HOLDER_ID.sql, (session,)))
         return int(rows[0]["id"]) if rows else None
 
     # the role of the agent a session belongs to, none for a session no agent row has yet

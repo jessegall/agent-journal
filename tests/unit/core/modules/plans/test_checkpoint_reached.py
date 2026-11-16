@@ -12,7 +12,7 @@ CHECKPOINT = Phase(id=1, plan_id=1, creator_id=1, position=1, title="Build", che
 def plan(*states: TaskState) -> CheckpointWindows:
     places = tuple(PlanTask(task_id=number, plan_id=1, phase_id=1, phase_position=1, checkpoint=True, position=number, state=state, priority=0)
                    for number, state in enumerate(states, 1))
-    return CheckpointWindows(tuple([CHECKPOINT]), places)
+    return CheckpointWindows((CHECKPOINT,), places)
 
 
 @pytest.mark.parametrize("states, reached", [
@@ -30,7 +30,7 @@ def test_a_window_is_reached_when_every_task_is_completed_or_cancelled(states, r
 
 def test_the_run_of_a_reach_has_the_completed_tasks_and_not_the_cancelled_or_the_unfinished_ones():
     window = plan(TaskState.COMPLETED, TaskState.CANCELLED, TaskState.STARTED, TaskState.COMPLETED)
-    assert (window.completed_ids(CHECKPOINT), window.unfinished_ids(CHECKPOINT)) == ((1, 4), tuple([3]))
+    assert (window.completed_ids(CHECKPOINT), window.unfinished_ids(CHECKPOINT)) == ((1, 4), (3,))
 
 
 def test_a_reach_keeps_the_tasks_it_started_with_when_a_task_is_added_to_the_window_later():

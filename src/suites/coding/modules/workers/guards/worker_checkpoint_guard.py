@@ -18,7 +18,7 @@ class WorkerCheckpointGuard(Guard[Moved[Task]]):
     checkpoint are free: their order is a suggestion."""
 
     name = "workers.task-after-checkpoint"
-    moves = tuple([TaskLifecycle.start])
+    moves = (TaskLifecycle.start,)
 
     def __init__(self, rows: EventRows, checkpoints: UnpassedCheckpoints) -> None:
         self.rows, self.checkpoints = rows, checkpoints

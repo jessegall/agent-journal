@@ -24,7 +24,7 @@ class CheckpointPassListener(SaveListener[Moved[CheckpointReach]]):
     phase and tells nobody."""
 
     name = "plans.checkpoint-pass"
-    moves = tuple([CheckpointLifecycle.passed])
+    moves = (CheckpointLifecycle.passed,)
     disabled_scopes = [ActorScope]
 
     def __init__(self, bus: Bus, checkpoints: PlanCheckpoints, main_agents: PlanMainAgents, rows: EventRows) -> None:

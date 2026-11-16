@@ -33,7 +33,7 @@ class LinkReceiptsSubcommand(ReadSubcommand[tuple[MessageReceipt, ...]]):
         if not numbers or len(numbers) > MOST_MESSAGES:
             raise Refusal(f"name between 1 and {MOST_MESSAGES} messages")
         pages = iter(self.pages.read_many([arguments for number in numbers for arguments in (self.link_arguments(number, (LinkType.SUBJECT, LinkType.EDITED), SUBJECT_PAGE_SIZE, True),
-                                                                                       self.link_arguments(number, tuple([LinkType.RECIPIENT]), RECIPIENT_PAGE_SIZE, False))]))
+                                                                                       self.link_arguments(number, (LinkType.RECIPIENT,), RECIPIENT_PAGE_SIZE, False))]))
         return tuple(MessageReceipt(number, next(pages), next(pages)) for number in numbers)
 
     @staticmethod

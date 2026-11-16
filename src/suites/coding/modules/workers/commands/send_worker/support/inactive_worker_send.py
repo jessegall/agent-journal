@@ -42,7 +42,7 @@ class InactiveWorkerSend:
         if not self.is_idle(worker):
             return
         operation_line = shlex.join(["worker", "send", str(worker.number), "--task", str(task.id), "--wait"])
-        worker_job_command = SendWorker(worker.id, task_ids=tuple([task.id]))
+        worker_job_command = SendWorker(worker.id, task_ids=(task.id,))
         self.bus.dispatch(QueueWorkerOperation(worker.id, operation_line, worker_job_command, WorkerOperationName.JOB), replace(context, actor=Actor(worker.parent_id, ActorType.AGENT)))
 
     def is_idle(self, worker: Agent) -> bool:

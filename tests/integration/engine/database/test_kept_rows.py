@@ -54,14 +54,14 @@ def texts(database):
 def test_rolled_back_values_are_not_kept(database, warm):
     kept = KeptRows(database)
     if warm:
-        assert kept.read(notes(database), lambda: texts(database), name="notes.text") == tuple(["Saved"])
+        assert kept.read(notes(database), lambda: texts(database), name="notes.text") == ("Saved",)
     with pytest.raises(RollbackRequested):
         with database.transaction():
             database.update(Statement("UPDATE notes SET text = 'Temporary', version = version + 1"))
-            assert kept.read(notes(database), lambda: texts(database), name="notes.text") == tuple(["Temporary"])
+            assert kept.read(notes(database), lambda: texts(database), name="notes.text") == ("Temporary",)
             raise RollbackRequested
 
-    assert kept.read(notes(database), lambda: texts(database), name="notes.text") == tuple(["Saved"])
+    assert kept.read(notes(database), lambda: texts(database), name="notes.text") == ("Saved",)
 
 
 def test_a_savepoint_rollback_does_not_keep_its_value(database):
@@ -71,10 +71,10 @@ def test_a_savepoint_rollback_does_not_keep_its_value(database):
         with pytest.raises(RollbackRequested):
             with database.savepoint("Inner write"):
                 database.update(Statement("UPDATE notes SET text = 'Inner', version = version + 1"))
-                assert kept.read(notes(database), lambda: texts(database), name="notes.text") == tuple(["Inner"])
+                assert kept.read(notes(database), lambda: texts(database), name="notes.text") == ("Inner",)
                 raise RollbackRequested
-        assert kept.read(notes(database), lambda: texts(database), name="notes.text") == tuple(["Outer"])
-    assert kept.read(notes(database), lambda: texts(database), name="notes.text") == tuple(["Outer"])
+        assert kept.read(notes(database), lambda: texts(database), name="notes.text") == ("Outer",)
+    assert kept.read(notes(database), lambda: texts(database), name="notes.text") == ("Outer",)
 
 
 def test_unchanged_reads_run_the_loader_once_and_read_no_more_table_rows(database):
@@ -85,9 +85,9 @@ def test_unchanged_reads_run_the_loader_once_and_read_no_more_table_rows(databas
         calls.append(True)
         return texts(database)
 
-    assert kept.read(notes(database), collect_texts, name="notes.text") == tuple(["Saved"])
+    assert kept.read(notes(database), collect_texts, name="notes.text") == ("Saved",)
     table_reads = dict(database.repeated_work.points().tables)
-    assert kept.read(notes(database), collect_texts, name="notes.text") == tuple(["Saved"])
+    assert kept.read(notes(database), collect_texts, name="notes.text") == ("Saved",)
     assert len(calls) == 1 and database.repeated_work.points().tables == table_reads
 
 
@@ -99,10 +99,10 @@ def test_a_known_write_refreshes_the_kept_value_without_reloading_rows(database)
         calls.append(True)
         return texts(database)
 
-    assert kept.read(notes(database), collect_texts, name="notes.text") == tuple(["Saved"])
+    assert kept.read(notes(database), collect_texts, name="notes.text") == ("Saved",)
     database.update(Statement("UPDATE notes SET text = 'Updated', version = version + 1"))
-    kept.update(notes(database), lambda values: tuple(["Updated"]), name="notes.text")
-    assert kept.read(notes(database), collect_texts, name="notes.text") == tuple(["Updated"])
+    kept.update(notes(database), lambda values: ("Updated",), name="notes.text")
+    assert kept.read(notes(database), collect_texts, name="notes.text") == ("Updated",)
     assert len(calls) == 1
 
 
@@ -114,19 +114,19 @@ def test_a_rollback_without_writes_keeps_the_loaded_rows(database):
         calls.append(True)
         return texts(database)
 
-    assert kept.read(notes(database), collect_texts, name="notes.text") == tuple(["Saved"])
+    assert kept.read(notes(database), collect_texts, name="notes.text") == ("Saved",)
     with pytest.raises(RollbackRequested), database.transaction():
         raise RollbackRequested
-    assert kept.read(notes(database), collect_texts, name="notes.text") == tuple(["Saved"])
+    assert kept.read(notes(database), collect_texts, name="notes.text") == ("Saved",)
     assert len(calls) == 1
 
 
 def test_a_read_only_transaction_reuses_the_kept_value(database):
     kept = KeptRows(database)
-    assert kept.read(notes(database), lambda: texts(database), name="notes.text") == tuple(["Saved"])
+    assert kept.read(notes(database), lambda: texts(database), name="notes.text") == ("Saved",)
     table_reads = dict(database.repeated_work.points().tables)
     with database.transaction():
-        assert kept.read(notes(database), lambda: texts(database), name="notes.text") == tuple(["Saved"])
+        assert kept.read(notes(database), lambda: texts(database), name="notes.text") == ("Saved",)
     assert database.repeated_work.points().tables == table_reads
 
 
@@ -138,17 +138,17 @@ def test_a_rollback_reuses_rows_that_were_never_loaded_from_the_failed_write(dat
         calls.append(True)
         return texts(database)
 
-    assert kept.read(notes(database), collect_texts, name="notes.text") == tuple(["Saved"])
+    assert kept.read(notes(database), collect_texts, name="notes.text") == ("Saved",)
     with pytest.raises(RollbackRequested), database.transaction():
         database.update(Statement("UPDATE notes SET text = 'Temporary', version = version + 1"))
         raise RollbackRequested
-    assert kept.read(notes(database), collect_texts, name="notes.text") == tuple(["Saved"])
+    assert kept.read(notes(database), collect_texts, name="notes.text") == ("Saved",)
     assert len(calls) == 1
 
 
 def test_distinct_named_loaders_of_one_table_keep_their_own_values(database):
     kept = KeptRows(database)
-    assert kept.read(notes(database), lambda: texts(database), name="notes.text") == tuple(["Saved"])
+    assert kept.read(notes(database), lambda: texts(database), name="notes.text") == ("Saved",)
     assert kept.read(notes(database), lambda: len(texts(database)), name="notes.count") == 1
 
 
@@ -162,22 +162,22 @@ def test_a_write_transaction_reuses_reads_until_another_write(database):
 
     with database.transaction():
         database.update(Statement("UPDATE notes SET text = 'Temporary', version = version + 1"))
-        assert kept.read(notes(database), collect_texts, name="notes.text") == tuple(["Temporary"])
+        assert kept.read(notes(database), collect_texts, name="notes.text") == ("Temporary",)
         table_reads = dict(database.repeated_work.points().tables)
-        assert kept.read(notes(database), collect_texts, name="notes.text") == tuple(["Temporary"])
+        assert kept.read(notes(database), collect_texts, name="notes.text") == ("Temporary",)
         assert len(calls) == 1 and database.repeated_work.points().tables == table_reads
 
 
 def test_a_write_by_another_connection_is_read_after_a_rollback_that_wrote_nothing(database, tmp_path):
     kept = KeptRows(database)
-    assert kept.read(notes(database), lambda: texts(database), name="notes.texts") == tuple(["Saved"])
+    assert kept.read(notes(database), lambda: texts(database), name="notes.texts") == ("Saved",)
     with pytest.raises(RollbackRequested):
         with database.transaction():
             raise RollbackRequested()
     script = Database.opened(JournalHome(tmp_path))
     script.update(Statement("UPDATE notes SET version = 2, text = 'Written by the script' WHERE id = 1"))
     script.close()
-    assert kept.read(notes(database), lambda: texts(database), name="notes.texts") == tuple(["Written by the script"])
+    assert kept.read(notes(database), lambda: texts(database), name="notes.texts") == ("Written by the script",)
 
 
 def test_current_results_reuse_reads_and_refresh_after_a_write(database):
@@ -188,11 +188,11 @@ def test_current_results_reuse_reads_and_refresh_after_a_write(database):
         calls.append(True)
         return texts(database)
 
-    assert kept.scoped_current(read_notes, name="notes.current") == tuple(["Saved"])
-    assert kept.scoped_current(read_notes, name="notes.current") == tuple(["Saved"])
+    assert kept.scoped_current(read_notes, name="notes.current") == ("Saved",)
+    assert kept.scoped_current(read_notes, name="notes.current") == ("Saved",)
     assert len(calls) == 1
     database.update(Statement("UPDATE notes SET text = 'Changed', version = version + 1"))
-    assert kept.scoped_current(read_notes, name="notes.current") == tuple(["Changed"])
+    assert kept.scoped_current(read_notes, name="notes.current") == ("Changed",)
     assert len(calls) == 2
 
 
@@ -200,9 +200,9 @@ def test_current_results_refresh_after_rollback(database):
     kept = KeptRows(database)
     with pytest.raises(RollbackRequested), database.transaction():
         database.update(Statement("UPDATE notes SET text = 'Temporary', version = version + 1"))
-        assert kept.scoped_current(lambda: texts(database), name="notes.current") == tuple(["Temporary"])
+        assert kept.scoped_current(lambda: texts(database), name="notes.current") == ("Temporary",)
         raise RollbackRequested
-    assert kept.scoped_current(lambda: texts(database), name="notes.current") == tuple(["Saved"])
+    assert kept.scoped_current(lambda: texts(database), name="notes.current") == ("Saved",)
 
 
 def test_current_results_keep_environments_separate(database):
@@ -217,11 +217,11 @@ def test_current_results_keep_environments_separate(database):
 
 def test_current_results_refresh_after_an_external_write(database, tmp_path):
     kept = KeptRows(database)
-    assert kept.scoped_current(lambda: texts(database), name="notes.current") == tuple(["Saved"])
+    assert kept.scoped_current(lambda: texts(database), name="notes.current") == ("Saved",)
     second_database = Database.opened(JournalHome(tmp_path))
     second_database.update(Statement("UPDATE notes SET text = 'External', version = version + 1"))
     second_database.close()
-    assert kept.scoped_current(lambda: texts(database), name="notes.current") == tuple(["External"])
+    assert kept.scoped_current(lambda: texts(database), name="notes.current") == ("External",)
 
 
 def test_a_read_kept_for_its_owner_gives_each_scope_its_own_rows_and_loads_each_once_until_the_table_changes(database):
@@ -257,7 +257,7 @@ def test_a_read_across_tables_is_read_again_after_a_write_to_any_of_them_in_the_
     with database.transaction():
         database.update(Statement("UPDATE places SET note_id = 2, version = 2 WHERE id = 1"))
         moved = kept.read_spanning(tables, loaded, name="note-places")
-    assert (first, moved) == (tuple([1]), tuple([2]))
+    assert (first, moved) == ((1,), (2,))
 
 
 def test_a_kept_read_is_keyed_by_the_query_itself(database):
@@ -269,7 +269,7 @@ def test_a_kept_read_is_keyed_by_the_query_itself(database):
         return kept.read(query, lambda: loads.append(text) or tuple(row[0] for row in database.rows(Statement("SELECT text FROM notes WHERE text = ?", [text]))),
                          name="notes.by_text")
 
-    assert (read_text("Saved"), read_text("Draft"), read_text("Saved")) == (tuple(["Saved"]), tuple(["Draft"]), tuple(["Saved"]))
+    assert (read_text("Saved"), read_text("Draft"), read_text("Saved")) == (("Saved",), ("Draft",), ("Saved",))
     assert loads == ["Saved", "Draft"]
 
 
@@ -299,7 +299,7 @@ def test_the_cache_text_cannot_differ_from_the_loader(database):
     def read_drafts() -> tuple[int, ...]:
         return kept.read(drafts, lambda: tuple(row[0] for row in database.rows(Statement("SELECT id FROM notes WHERE text = 'Draft' ORDER BY id"))), name="notes.drafts")
 
-    assert read_drafts() == tuple([2])
+    assert read_drafts() == (2,)
     database.update(Statement("UPDATE notes SET text = 'Draft', version = 2 WHERE id = 1"))
     assert read_drafts() == (1, 2)
 
@@ -317,7 +317,7 @@ def test_a_joined_read_refreshes_when_a_joined_row_changes(database):
 
 def test_a_known_write_does_not_change_a_kept_value_that_another_connection_changed_since(database, tmp_path):
     kept = KeptRows(database)
-    assert kept.read(notes(database), lambda: texts(database), name="notes.texts") == tuple(["Saved"])
+    assert kept.read(notes(database), lambda: texts(database), name="notes.texts") == ("Saved",)
     script = Database.opened(JournalHome(tmp_path))
     script.update(Statement("UPDATE notes SET version = 2, text = 'Foreign' WHERE id = 1"))
     script.close()

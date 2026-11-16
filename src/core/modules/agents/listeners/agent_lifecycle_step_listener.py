@@ -23,4 +23,4 @@ class AgentLifecycleStepListener(AgentListener[Changed[Agent]]):
         if not changed:
             return ()
         parent = event.row.parent_id if event.row.parent_id is not None and set(changed) & set(PARENT_FIELDS) else None
-        return tuple([event.row.id, parent]) if parent is not None else tuple([event.row.id])
+        return tuple([event.row.id, parent]) if parent is not None else (event.row.id,)

@@ -17,7 +17,7 @@ class WorkerTaskCountListener(SaveListener[Moved[Task]]):
     the most it may have started at once."""
 
     name = "workers.started-task-count"
-    moves = tuple([TaskLifecycle.start])
+    moves = (TaskLifecycle.start,)
     disabled_scopes = [ActorScope]
 
     def __init__(self, rows: EventRows, limit: WorkerTaskLimit, message_sender: MessageSender) -> None:

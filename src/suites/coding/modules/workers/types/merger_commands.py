@@ -9,5 +9,5 @@ class MergerCommands(CommandAllowList):
     """What the merger may run beside a read-only helper's lines: its merger lines and the worker lines it
     settles a worker's work with."""
 
-    groups: Sequence[str] = tuple(["merger"])
+    groups: Sequence[str] = ("merger",)
     lines: Sequence[str] = ("worker logs", "worker merge", "worker update", "worker ask", "helper grant", "helper run", "proof check", "proof short")

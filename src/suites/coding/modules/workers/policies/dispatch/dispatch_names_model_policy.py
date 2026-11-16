@@ -6,4 +6,4 @@ class DispatchNamesModelPolicy(StartNamesModelPolicy):
 
     key = "workers.dispatch-names-model"
     rank = "workers.policies"
-    starts = tuple(["worker dispatch"])
+    starts = ("worker dispatch",)

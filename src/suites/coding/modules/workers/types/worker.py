@@ -30,6 +30,6 @@ class Worker(Helper):
                                   queues_runs=True, watches_runs_automatically=True, continues_runs=True, reads_project_skills=True,
                                   retains_pause=True, has_restricted_aliases=True, runs_saved_commands=False)
     commands = WorkerCommands()
-    journal_runs = tuple([WORKER_OPERATION_RUN])
+    journal_runs = (WORKER_OPERATION_RUN,)
     command_types_setting = COMMAND_TYPES
     refusal_hint = AskTopic.TOOL.question_line()

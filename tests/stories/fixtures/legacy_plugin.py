@@ -23,7 +23,7 @@ def prepare_plugin_files(folder: Path, version: str) -> None:
 def disabled_plugin_folder(journal_folder: Path) -> None:
     plugin_folder(journal_folder)
     with sqlite3.connect(journal_folder / "journal.db") as connection:
-        connection.execute("UPDATE plugins SET is_user_disabled = 1 WHERE name = ?", tuple([PLUGIN_NAME]))
+        connection.execute("UPDATE plugins SET is_user_disabled = 1 WHERE name = ?", (PLUGIN_NAME,))
 
 
 def upgradable_plugin_folder(journal_folder: Path) -> None:

@@ -15,7 +15,7 @@ def plugin_program_line(plugin, *text_parts):
 
 
 def test_s79_the_runner_line_gives_read_folders_in_a_variable_and_no_flag():
-    run = ForegroundRun(30, False, read_folders=tuple([Path("/project/.rules")]))
+    run = ForegroundRun(30, False, read_folders=(Path("/project/.rules"),))
     line = RunnerLine.build(Path("/bin/journal-run"), 1, "", run, "true", "s-1")
     assert f'{READ_FOLDERS_VARIABLE}=/project/.rules' in line
     assert '--read-folder' not in line

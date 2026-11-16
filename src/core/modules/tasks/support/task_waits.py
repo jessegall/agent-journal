@@ -73,7 +73,7 @@ class TaskWaits(KeptRowChanges[TaskWait]):
         return self.queries.query(TaskWait).matching(IsNull("ended_at")).oldest()
 
     def kept_rows(self, wait: TaskWait) -> tuple[TaskWait, ...]:
-        return tuple([wait]) if wait.ended_at is None else ()
+        return (wait,) if wait.ended_at is None else ()
 
     def update_kept(self, wait: TaskWait, pending: tuple[TaskWait, ...]) -> None:
         def with_pending(waits: tuple[TaskWait, ...]) -> tuple[TaskWait, ...]:

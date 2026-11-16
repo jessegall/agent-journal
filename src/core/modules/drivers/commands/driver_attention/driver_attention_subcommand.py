@@ -37,4 +37,4 @@ class DriverAttentionSubcommand(ReadSubcommand[tuple[str, ...]]):
         lines = (*(f"agent {row.session_agent_id}: escalation {row.id} to its {row.responder} is not answered" for row in escalations),
                  *(f"agent {row.session_agent_id}: its wake for {row.work_number} expired: {row.failure}" for row in wakes),
                  *(f"agent {row.session_agent_id}: its step failed {row.attempts} times" for row in requests if row.attempts >= FAILED_STEP_ATTEMPTS))
-        return lines or tuple([self.empty_line])
+        return lines or (self.empty_line,)

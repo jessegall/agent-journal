@@ -18,7 +18,7 @@ def suite(name: str, windows: tuple[str, ...], requires: tuple[str, ...] = (), l
 
 REGISTRY = Registry("", {}, {}, {}, (), (),
                     suites=(suite("notes", ("notes.board", "notes.list"), layouts={"home": HOME, "home@notes.orchestrator": ORCHESTRATOR_HOME}),
-                            suite("agency", tuple(["notes.archive"]), requires=tuple(["notes"]))),
+                            suite("agency", ("notes.archive",), requires=("notes",))),
                     windows=(window("notes.board"), window("notes.list"), window("notes.archive", "built for window kit >=2,<3; this viewer has kit 1")))
 
 

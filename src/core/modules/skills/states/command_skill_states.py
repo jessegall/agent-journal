@@ -42,4 +42,4 @@ class CommandSkillStates(StateSource):
             return None
         agent_message = ReadCommandSkillFirstMessage.declared().agent_message(instruction=self.files.agent_instruction(folder, self.agents.find(agent_id)))
         return BlockPlan(agent_message, SkillLoaded(folder), COMMAND_KEY, COMMAND_SKILL_RANK, tool_grace_uses=SKILL_TOOL_USES, is_strict=True,
-                         closer_roles=tuple([CloserRole.AGENT]), lifting_lines=tuple([f"{SKILL_COMMAND} {folder}"]), countdown=SKILL_COUNTDOWN.agent_message("{left}", skill=folder))
+                         closer_roles=(CloserRole.AGENT,), lifting_lines=(f"{SKILL_COMMAND} {folder}",), countdown=SKILL_COUNTDOWN.agent_message("{left}", skill=folder))

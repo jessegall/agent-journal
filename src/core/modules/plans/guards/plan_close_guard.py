@@ -13,7 +13,7 @@ class PlanCloseGuard(Guard[Moved[Plan]]):
     """Refuses to close a plan while a task in it is neither completed nor cancelled."""
 
     name = TASKS_FINISHED_GUARD
-    moves = tuple([PlanLifecycle.close])
+    moves = (PlanLifecycle.close,)
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

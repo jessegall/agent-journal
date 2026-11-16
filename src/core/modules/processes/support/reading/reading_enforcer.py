@@ -78,9 +78,9 @@ class ReadingEnforcer:
         if count >= SILENT_RUN_LIMIT_COUNT:
             return self.silent_refusal(name, runs[0])
         if count:
-            return ReadingAnswer(None, tuple([self.taught(name, runs[0])]))
+            return ReadingAnswer(None, (self.taught(name, runs[0]),))
         if len(runs) > 1 and runs[0].shows_percent and runs[1].is_silent:
-            return ReadingAnswer(None, tuple([SilentStartFixedMessage.declared().agent_message(name=name)]))
+            return ReadingAnswer(None, (SilentStartFixedMessage.declared().agent_message(name=name),))
         if self.run_counts.runs_without_reader([name])[name] >= PREVENT_AFTER_RUNS:
             return self.prevented(name)
         return ReadingAnswer()
@@ -100,7 +100,7 @@ class ReadingEnforcer:
         if shape is None:
             return ReadingAnswer(refused)
         ready = SilentStartReadyMessage.declared().agent_message(name=name, shape=shape.label, reader=f'journal reader add {name.split()[-1]} --commands "{run.part.command or run.part.text}" --title "{name}" {shape.reader_options()}')
-        return ReadingAnswer(refused, tuple([ready]))
+        return ReadingAnswer(refused, (ready,))
 
     def prevented(self, name: str) -> ReadingAnswer:
         last = self.decisions.command_key_decisions(name).filter(phase=ReadingPhase.END).descending("decided_at", "id").first()

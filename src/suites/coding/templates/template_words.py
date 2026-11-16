@@ -1,4 +1,4 @@
 CRITIQUE = "critique"
 TESTING = "testing"
-DOC_TARGETS = tuple(["doc"])
-PLAN_TARGETS = tuple(["plan"])
+DOC_TARGETS = ("doc",)
+PLAN_TARGETS = ("plan",)

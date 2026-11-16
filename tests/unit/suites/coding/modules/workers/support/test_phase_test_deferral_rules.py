@@ -6,7 +6,7 @@ from suites.coding.modules.workers.support.phase_test_deferral_rules import Phas
 
 LATER_STORIES = "tests/stories/compaction_never_twice.py"
 COMMAND = f"pytest tests/cart.py {LATER_STORIES}"
-FAILED = tuple([LATER_STORIES])
+FAILED = (LATER_STORIES,)
 RULES = PhaseTestDeferralRules(limit=2)
 
 
@@ -24,7 +24,7 @@ def test_failed_paths_of_a_checkpoints_own_test_are_left_out_while_a_later_task_
     (phase(), FAILED, FAILED, 0, 0, "nothing after phase 7 is left to wait for: the failure is real, fix it"),
     (phase(), FAILED, FAILED, 1, 2, "2 of 2 deferrals are used for phase 7"),
     (phase(), None, FAILED, 1, 0, "the own test of phase 7 did not fail: nothing to correct"),
-    (phase(), FAILED, tuple(["tests/cart.py"]), 1, 0, "tests/cart.py did not fail in the own test of phase 7"),
+    (phase(), FAILED, ("tests/cart.py",), 1, 0, "tests/cart.py did not fail in the own test of phase 7"),
     (phase(), ("tests/cart.py", LATER_STORIES), ("tests/cart.py", LATER_STORIES), 1, 0, "the test command would be left with no path"),
     (phase(test_command="pytest tests/cart.py tests/stories"), FAILED, FAILED, 1, 0, "is not a path of the test command"),
 ], ids=["a phase with no flag", "a checkpoint with no test", "no later task waits, the own task of the worker does not count", "the deferrals are used",

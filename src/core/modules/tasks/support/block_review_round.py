@@ -69,7 +69,7 @@ class BlockReviewRound:
             return nothing
         reminder = self.passes.round(agent_id, BLOCK_REVIEW_REMINDER, [ReminderSubject(str(task.task_id), task.moved_at) for task in due])
         notices = tuple(replace((UserBlockReviewMessage.declared() if task.user_wait else BlockReviewMessage.declared()).agent_message(task=task.task_id),
-                                interval=None, record_keys=tuple([f"{BlockReviewMessage.declared().key}.{task.task_id}"])) for task in due)
+                                interval=None, record_keys=(f"{BlockReviewMessage.declared().key}.{task.task_id}",)) for task in due)
         blocking = [task for task in due if str(task.task_id) in reminder.blocking]
         if not blocking:
             return BlockReviewAnswer(notices, reminder.record, None)

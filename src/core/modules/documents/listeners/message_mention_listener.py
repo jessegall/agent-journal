@@ -7,5 +7,5 @@ from engine.event.updated import Updated
 class MessageMentionListener(TextMentionListener[Created[Message] | Updated[Message]]):
     """Links a saved message to the rows it names."""
 
-    text_fields = tuple(["text"])
+    text_fields = ("text",)
     name = "documents.message-mentions"

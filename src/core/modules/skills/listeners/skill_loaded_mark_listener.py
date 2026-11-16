@@ -11,7 +11,7 @@ class SkillLoadedMarkListener(MarkListener[Moved[AgentSkill]]):
     """When an agent loads a skill, its chat shows a mark naming the skill."""
 
     name = "skills.loaded-mark"
-    moves = tuple([AgentSkillLifecycle.load])
+    moves = (AgentSkillLifecycle.load,)
     module_name = "journal.core.skills"
 
     def handle(self, event: Moved[AgentSkill], logged: LoggedEvent) -> None:

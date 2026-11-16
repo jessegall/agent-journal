@@ -10,7 +10,7 @@ class BaseBranchGuard(Guard[Moved[Worktree]]):
     """Refuses to merge a worktree cut from a branch its environment no longer builds on."""
 
     name = "workers.base-branch-holds"
-    moves = tuple([WorktreeLifecycle.merge])
+    moves = (WorktreeLifecycle.merge,)
 
     def __init__(self, checks: MergeChecks) -> None:
         self.checks = checks

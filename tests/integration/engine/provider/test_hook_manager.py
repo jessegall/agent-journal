@@ -29,7 +29,7 @@ SETTINGS = {
 
 @pytest.fixture
 def manager(tmp_path: Path, monkeypatch) -> HookManager:
-    monkeypatch.setattr(SampleProgram, "hook_files", tuple([HOOK_FILE]))
+    monkeypatch.setattr(SampleProgram, "hook_files", (HOOK_FILE,))
     subprocess.run(["git", "init", str(tmp_path)], capture_output=True, check=True, timeout=10)
     ProgramHooks.store(tmp_path / HOOK_FILE, SETTINGS)
     subprocess.run(["git", "-C", str(tmp_path), "add", "--", str(HOOK_FILE)], capture_output=True, check=True, timeout=10)

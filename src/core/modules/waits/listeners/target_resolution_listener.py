@@ -31,7 +31,7 @@ class TargetResolutionListener(SaveListener[Changed[Model]]):
     def handle(self, event: Changed[Model], context: Context) -> None:
         row = event.row
         if isinstance(row, WaitTarget):
-            pending = tuple([row]) if row.resolved_at is None and not isinstance(event, Deleted) else ()
+            pending = (row,) if row.resolved_at is None and not isinstance(event, Deleted) else ()
             def with_pending(targets: tuple[WaitTarget, ...]) -> tuple[WaitTarget, ...]:
                 return tuple(sorted([target for target in targets if target.id != row.id] + list(pending), key=lambda target: target.id))
 

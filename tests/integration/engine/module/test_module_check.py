@@ -44,7 +44,7 @@ from tests.unit.engine.model.test_lifecycle import ItemLifecycle
 
 class PausedItemGuard(Guard[Moved[Item]]):
     name = "items.paused-only"
-    moves = tuple([ItemLifecycle.pause])
+    moves = (ItemLifecycle.pause,)
 
     def check(self, event: Moved[Item], context: Context) -> None:
         return None
@@ -52,7 +52,7 @@ class PausedItemGuard(Guard[Moved[Item]]):
 
 class ArchivedItemGuard(Guard[Moved[Item]]):
     name = "items.archived-only"
-    moves = tuple([Move("archive", [ItemState.OPEN], ItemState.OPEN)])
+    moves = (Move("archive", [ItemState.OPEN], ItemState.OPEN),)
 
     def check(self, event: Moved[Item], context: Context) -> None:
         return None
@@ -95,12 +95,12 @@ class NoFirstStateLifecycle(Lifecycle):
 
 
 def model(lifecycle: type[Lifecycle], name: str = "book") -> type[Model]:
-    return dataclass(frozen=True, kw_only=True)(type("Book", tuple([Model]), {"model_name": name, "cli_name": name, "lifecycle": lifecycle,
+    return dataclass(frozen=True, kw_only=True)(type("Book", (Model,), {"model_name": name, "cli_name": name, "lifecycle": lifecycle,
                                                                         "__annotations__": {"state": ItemState}, "state": ItemState.OPEN}))
 
 
 def module(name: str, models: tuple[ModelDeclaration, ...] = (), guards: tuple[type, ...] = (), handlers: tuple[type, ...] = ()) -> type[Module]:
-    return type(name.title() + "Module", tuple([Module]), {"name": name, "requires_engine": ">=5", "models": models, "guards": guards, "handlers": handlers})
+    return type(name.title() + "Module", (Module,), {"name": name, "requires_engine": ">=5", "models": models, "guards": guards, "handlers": handlers})
 
 
 def problems(*modules: type[Module]) -> str:
@@ -122,13 +122,13 @@ def test_each_event_of_a_model_has_a_key_and_metadata_has_none():
 
 
 def test_a_file_event_keeps_its_name_whole_and_is_commit_only():
-    declaring = type("FilesModule", tuple([Module]), {"name": "journal.core.settings", "requires_engine": ">=5", "file_events": ["managed-hook.changed"]})
+    declaring = type("FilesModule", (Module,), {"name": "journal.core.settings", "requires_engine": ">=5", "file_events": ["managed-hook.changed"]})
     entry = next(entry for entry in module_check().event_keys([declaring]) if entry.event == "managed-hook.changed")
-    assert entry == EventKeyEntry("core.settings.managed-hook.changed", "managed-hook.changed", "journal.core.settings", tuple([EventForm.COMMIT]), "a managed hook was changed")
+    assert entry == EventKeyEntry("core.settings.managed-hook.changed", "managed-hook.changed", "journal.core.settings", (EventForm.COMMIT,), "a managed hook was changed")
 
 
 def test_a_model_with_no_forms_has_no_key_and_its_events_stay_known():
-    silent = dataclass(frozen=True, kw_only=True)(type("Silent", tuple([Model]), {"model_name": "silent", "cli_name": "silent", "event_forms": ()}))
+    silent = dataclass(frozen=True, kw_only=True)(type("Silent", (Model,), {"model_name": "silent", "cli_name": "silent", "event_forms": ()}))
     modules = [module("items", [ModelDeclaration(silent)])]
     assert "silent.create" in module_check().known_events(modules)
     assert not [entry for entry in module_check().event_keys(modules) if entry.event.startswith("silent.")]

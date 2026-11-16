@@ -14,4 +14,4 @@ class RunEndStepListener(AgentListener[Changed[Process]]):
 
     def agents(self, event: Changed[Process]) -> Sequence[int]:
         ended = event.old_row is not None and event.old_row.state in RUNNING_STATES and event.row.state not in RUNNING_STATES
-        return tuple([event.row.session_agent_id]) if ended else ()
+        return (event.row.session_agent_id,) if ended else ()

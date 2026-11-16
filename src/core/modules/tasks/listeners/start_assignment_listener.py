@@ -11,7 +11,7 @@ class StartAssignmentListener(SaveListener[Moved[Task]]):
     keeps its assignee, also when a user starts it for someone else."""
 
     name = "tasks.assign-on-start"
-    moves = tuple([TaskLifecycle.start])
+    moves = (TaskLifecycle.start,)
 
     def __init__(self, assignments: Assignments) -> None:
         self.assignments = assignments

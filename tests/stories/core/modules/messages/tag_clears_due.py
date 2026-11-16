@@ -28,7 +28,7 @@ class ImageTagPending(StoryFixture):
         pending.mkdir(parents=True)
         (pending / "cart.png").write_bytes(b"image")
         environment = story.row(Agent, story.agent.id).environment_id
-        message = bus.run(SendMessage("Look at the cart", files=tuple(["0123456789abcdef/cart.png"])), story.user, environment_id=environment)
+        message = bus.run(SendMessage("Look at the cart", files=("0123456789abcdef/cart.png",)), story.user, environment_id=environment)
         read = f"journal message read {message.id}"
         story.expect_hook_allowed("s-1", HookSamples.shell(read, ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", str(message.id)])).with_fields(event="post_tool_use"), "has an image")
         bus.run(OpenMemoryMark(story.agent.id, 50), Actor.core())

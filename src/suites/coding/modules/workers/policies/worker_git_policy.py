@@ -4,7 +4,7 @@ from engine.driver.agent_message import AgentMessage
 from suites.coding.modules.workers.types.worker import Worker
 from suites.coding.agent_messages.worker_git_ban_message import WorkerGitBanMessage
 
-GIT_PROGRAMS = tuple(["git"])
+GIT_PROGRAMS = ("git",)
 
 
 class WorkerGitPolicy(EventPolicy):

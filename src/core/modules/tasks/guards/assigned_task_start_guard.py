@@ -13,7 +13,7 @@ class AssignedTaskStartGuard(Guard[Moved[Task]]):
     """An agent starts only a task assigned to nobody or to itself; a user starts any task."""
 
     name = "tasks.assigned-task-start"
-    moves = tuple([TaskLifecycle.start])
+    moves = (TaskLifecycle.start,)
 
     def __init__(self, assignments: Assignments, labels: AssigneeLabel) -> None:
         self.assignments, self.labels = assignments, labels

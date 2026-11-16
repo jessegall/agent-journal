@@ -15,7 +15,7 @@ BOOT = Timestamp(datetime(2026, 11, 15, 4, 0, tzinfo=timezone.utc))
 LATER = Timestamp(datetime(2026, 11, 15, 9, 0, tzinfo=timezone.utc))
 
 
-def escalation(responder: Responder, refusal_count: int, block_ids: tuple[int, ...] = tuple([4])) -> SimpleNamespace:
+def escalation(responder: Responder, refusal_count: int, block_ids: tuple[int, ...] = (4,)) -> SimpleNamespace:
     return SimpleNamespace(id=3, session_agent_id=7, responder=responder, refusal_count=refusal_count, escalation_type=EscalationType.STOPS,
                            block_ids=block_ids, work_keys=())
 

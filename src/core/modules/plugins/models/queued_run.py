@@ -16,8 +16,8 @@ class QueuedRun(EnvironmentScoped, Model):
 
     model_name = "queued_run"
     cli_name = "queued-run"
-    event_forms = tuple([EventForm.COMMIT])
-    change_names = tuple([ENDED])
+    event_forms = (EventForm.COMMIT,)
+    change_names = (ENDED,)
 
     environment_id: int = 0
     creator_id: int

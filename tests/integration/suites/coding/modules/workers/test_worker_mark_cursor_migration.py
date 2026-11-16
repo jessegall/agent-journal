@@ -10,5 +10,5 @@ def test_split_listeners_keep_their_previous_pending_positions():
         database.execute("INSERT INTO listener_cursors VALUES ('workers.task-route-mark', 7)")
         for statement in WorkerMarkCursorMigration.statements:
             database.execute(statement)
-        assert database.execute("SELECT event_id FROM listener_cursors WHERE listener = 'workers.split-mark'").fetchone() == tuple([12])
-        assert database.execute("SELECT event_id FROM listener_cursors WHERE listener = 'workers.task-tag-route-mark'").fetchone() == tuple([7])
+        assert database.execute("SELECT event_id FROM listener_cursors WHERE listener = 'workers.split-mark'").fetchone() == (12,)
+        assert database.execute("SELECT event_id FROM listener_cursors WHERE listener = 'workers.task-tag-route-mark'").fetchone() == (7,)

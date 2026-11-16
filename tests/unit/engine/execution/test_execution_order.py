@@ -128,7 +128,7 @@ def test_reserved_past_wait_takes_next_room():
     overdue = replace(ticket(RESERVED, starter=starter(2), entered_second=5), raised_at=seconds_after_start(0))
     new = ticket(RESERVED, starter=starter(3), entered_second=3)
     full = [ticket(AGENT, starter=starter(10 + number)) for number in range(11)]
-    assert ORDER.starting([new, overdue], full, seconds_after_start(4), False) == tuple([overdue])
+    assert ORDER.starting([new, overdue], full, seconds_after_start(4), False) == (overdue,)
 
 
 def test_starter_cap_holds_while_other_starter_starts():
@@ -182,7 +182,7 @@ def test_nothing_waits_forever_under_a_steady_stream():
 def test_a_starter_with_nothing_running_starts_a_run_costing_more_than_its_cap():
     small_lane = replace(DEFAULT_LANE_LIMITS, capacities={**DEFAULT_LANE_LIMITS.capacities, ExecutionLength.LONG: 4}, starter_caps={**DEFAULT_LANE_LIMITS.starter_caps, ExecutionLength.LONG: 2})
     test_run = ticket(ExecutionPriority.AGENT, ExecutionLength.LONG, slot_cost=4)
-    assert ExecutionOrder(small_lane).starting([test_run], [], seconds_after_start(0), False) == tuple([test_run])
+    assert ExecutionOrder(small_lane).starting([test_run], [], seconds_after_start(0), False) == (test_run,)
 
 
 def test_a_run_that_costs_more_than_its_narrowed_lane_starts_alone_and_waits_beside_another():

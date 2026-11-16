@@ -13,14 +13,14 @@ ATTRIBUTION = FailureAttribution((proof(1, "pytest tests/cart.py"), proof(2, "py
 
 
 def test_a_failing_path_one_task_names_in_its_proof_goes_to_that_task():
-    assert ATTRIBUTION.attributed(tuple(["tests/tax.py"])) == Attribution(2, True)
+    assert ATTRIBUTION.attributed(("tests/tax.py",)) == Attribution(2, True)
     assert ATTRIBUTION.attributed(("tests/tax.py", "tests/receipts.py")) == Attribution(2, True)
 
 
 def test_a_failure_that_names_no_path_of_a_proof_goes_to_the_task_completed_last_and_names_no_task():
-    assert ATTRIBUTION.attributed(tuple(["tests/receipts.py"])) == Attribution(LAST_TASK_ID, False)
+    assert ATTRIBUTION.attributed(("tests/receipts.py",)) == Attribution(LAST_TASK_ID, False)
     assert ATTRIBUTION.attributed(()) == Attribution(LAST_TASK_ID, False)
 
 
 def test_a_failing_path_the_proofs_of_several_tasks_name_goes_to_the_task_completed_last_and_names_no_task():
-    assert ATTRIBUTION.attributed(tuple(["tests/cart.py"])) == Attribution(LAST_TASK_ID, False)
+    assert ATTRIBUTION.attributed(("tests/cart.py",)) == Attribution(LAST_TASK_ID, False)

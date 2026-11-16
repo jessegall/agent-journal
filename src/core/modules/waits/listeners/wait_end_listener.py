@@ -18,7 +18,7 @@ class WaitEndListener(SaveListener[Moved[Wait]]):
     hook."""
 
     name = "waits.wait-over"
-    moves = tuple([WaitLifecycle.end])
+    moves = (WaitLifecycle.end,)
     disabled_scopes = [ActorScope]
 
     def __init__(self, message_sender: MessageSender) -> None:

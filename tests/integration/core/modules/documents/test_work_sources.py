@@ -147,7 +147,7 @@ def test_single_read_and_make_on_one_shell_line_uses_source(source_server):
     with patch.object(Repository, "save", record_task_source):
         completed = subprocess.run(["bash", "-c", command], env=environment, cwd=scenario.story.home.folder.parent, capture_output=True, text=True, timeout=30)
     scenario.story.expect_rows(completed.returncode == 0, detail=(completed.stdout, completed.stderr))
-    feature(creation_sources == [tuple([2])], f"source at same-line task creation was {creation_sources}")
+    feature(creation_sources == [(2,)], f"source at same-line task creation was {creation_sources}")
     scenario.story.expect_hook_allowed("s-1", sample.with_fields(event="post_tool_use"))
     scenario.expect_source(2)
 

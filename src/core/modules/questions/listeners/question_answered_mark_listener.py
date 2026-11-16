@@ -18,7 +18,7 @@ class QuestionAnsweredMarkListener(QuestionMarkListener[Moved[Question]]):
     trace of a user answer in the chat."""
 
     name = "questions.answered-mark"
-    moves = tuple([QuestionLifecycle.answer])
+    moves = (QuestionLifecycle.answer,)
 
     def handle(self, event: Moved[Question], logged: LoggedEvent) -> None:
         question = event.row

@@ -8,4 +8,4 @@ class SilentStartReadyMessage(MessageTemplate):
     key = "processes.silent_start_ready"
     type = AgentMessageType.NOTICE
     text = "A reader for {name} fits shape {shape}: {reader}"
-    path_fields = tuple(["reader"])
+    path_fields = ("reader",)

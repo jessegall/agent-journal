@@ -43,7 +43,7 @@ class UnpassedCheckpoints:
         return bool(open_ids) and set(open_ids).issubset(self.units.unit(actor_id).task_ids)
 
     def first_unpassed(self, plan_id: int) -> PlanTask | None:
-        tasks = self.queries.query(Task).matching(PlanTasksCondition(tuple([plan_id])))
+        tasks = self.queries.query(Task).matching(PlanTasksCondition((plan_id,)))
         passes = self.queries.query(CheckpointPass).filter(plan_id=plan_id)
         return self.kept.read_spanning([tasks, passes], lambda: self.loaded_first_unpassed(plan_id), name="workers.first_unpassed_checkpoint")
 

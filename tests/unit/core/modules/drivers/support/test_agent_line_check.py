@@ -15,7 +15,7 @@ from engine.helper_type.helper_type_entry import HelperTypeEntry
 from engine.helper_type.journal_line import JournalLine
 from engine.row.row_owner import MAIN_AGENT, RowOwner
 
-TYPES = HelperTypeBook(tuple([HelperTypeEntry.declared("journal.core.helpers", Helper)]))
+TYPES = HelperTypeBook((HelperTypeEntry.declared("journal.core.helpers", Helper),))
 TASK_EDIT = JournalLine("task edit", frozenset([JournalLineClass.CHANGES]))
 SETTING_SET = JournalLine("setting set", frozenset([JournalLineClass.CHANGES, JournalLineClass.EXTERNAL]))
 TASK_READ = JournalLine("task show", frozenset([JournalLineClass.READS]))

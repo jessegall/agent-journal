@@ -29,7 +29,7 @@ class Item(Model, StateHolder):
     model_name = "item"
     cli_name = "item"
     lifecycle = ItemLifecycle
-    added_state_moves = tuple([ItemLifecycle.finish])
+    added_state_moves = (ItemLifecycle.finish,)
 
 
 class Plain(Model):
@@ -47,8 +47,8 @@ ADDED_STATE = AddedState("hold")
 MOVES = (Move("hold", [ItemState.OPEN], ADDED_STATE), Move("unhold", [ADDED_STATE], ItemState.OPEN))
 
 
-def module(*additions: StateAddition, dependencies: Sequence[str] = tuple(["owner"])) -> type[Module]:
-    return type("Adder", tuple([Module]), {"name": "adder", "dependencies": list(dependencies), "added_states": additions})
+def module(*additions: StateAddition, dependencies: Sequence[str] = ("owner",)) -> type[Module]:
+    return type("Adder", (Module,), {"name": "adder", "dependencies": list(dependencies), "added_states": additions})
 
 
 def addition(**changes) -> StateAddition:

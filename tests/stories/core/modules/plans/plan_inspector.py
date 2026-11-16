@@ -54,5 +54,5 @@ def test_the_reviewing_state_keeps_its_buttons(new_story):
     registry, declaration = inspector_declaration(new_story(fixture=MainEnvironment))
     expect_value(offered(declaration, "reviewing"), [])
     buttons = {entry.declaration.name: entry.declaration for entry in registry.buttons}
-    expect_value([tuple(buttons[name].condition.values) for name in ("plan_reviews.end-review", "plan_reviews.cancel")], [tuple(["reviewing"]), tuple(["reviewing"])])
+    expect_value([tuple(buttons[name].condition.values) for name in ("plan_reviews.end-review", "plan_reviews.cancel")], [("reviewing",), ("reviewing",)])
     expect_value(buttons["plan_reviews.cancel"].runs, "plan cancel {row_id} --reason={reason}")

@@ -33,7 +33,7 @@ def test_a_line_that_gives_capacity_back_is_immediate(tmp_path, line):
 def test_process_end_is_immediate_with_every_lane_full(tmp_path):
     full = [priorities(tmp_path).event_ticket(f"event {number}", Clock().timestamp()) for number in range(CAPACITY)]
     end = release(tmp_path, "process end 7 --exit-code 0")
-    assert ExecutionOrder(DEFAULT_LANE_LIMITS).starting([end], full, Clock().timestamp(), False) == tuple([end])
+    assert ExecutionOrder(DEFAULT_LANE_LIMITS).starting([end], full, Clock().timestamp(), False) == (end,)
 
 
 def test_answer_lost_is_immediate(tmp_path):

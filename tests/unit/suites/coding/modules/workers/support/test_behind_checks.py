@@ -93,11 +93,11 @@ def test_a_look_comes_once_per_ten_minutes_and_the_last_look_survives_a_restart(
     check = WorktreeStaleCheckTime(id=1, environment_id=1, checked_at=Timestamp(CURRENT_TIME.value - timedelta(minutes=5)))
     assert checks(Worktree=[worktree()], WorktreeStaleCheckTime=[check]).due_worktrees(CURRENT_TIME) == ()
     later = Timestamp(CURRENT_TIME.value + timedelta(minutes=5))
-    assert checks(Worktree=[worktree()], WorktreeStaleCheckTime=[check]).due_worktrees(later) == tuple([worktree()])
+    assert checks(Worktree=[worktree()], WorktreeStaleCheckTime=[check]).due_worktrees(later) == (worktree(),)
 
 
 def test_a_delivered_worktree_is_not_looked_at():
-    assert checks(Worktree=[worktree(1), worktree(2, WorktreeState.DELIVERED)]).due_worktrees(CURRENT_TIME) == tuple([worktree(1)])
+    assert checks(Worktree=[worktree(1), worktree(2, WorktreeState.DELIVERED)]).due_worktrees(CURRENT_TIME) == (worktree(1),)
 
 
 def test_no_second_check_opens_while_one_is_open_ordered_or_clashing():

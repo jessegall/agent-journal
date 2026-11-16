@@ -29,7 +29,7 @@ def test_a_question_the_agent_asks_is_a_wait_on_that_question_with_its_step_requ
     story = played(BuilderStarted)
     story.hook("s-1", HookSamples.session_start())
     question_id = asked(story)
-    assert [state.subjects for state in waiting(story)] == [tuple([RowReference("questions", question_id)])]
+    assert [state.subjects for state in waiting(story)] == [(RowReference("questions", question_id),)]
     requests = story.container.get(Queries).query(AgentStepRequest).filter(session_agent_id=story.agent.id, served_at=None).first()
     assert requests is not None and "waits.wait-step" in requests.causes
 

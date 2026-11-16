@@ -11,7 +11,7 @@ class ReviewAbandonedListener(SaveListener[Moved[Review]]):
     assignment."""
 
     name = "reviews.review-abandoned"
-    moves = tuple([ReviewLifecycle.abandon])
+    moves = (ReviewLifecycle.abandon,)
 
     def __init__(self, assignments: Assignments) -> None:
         self.assignments = assignments

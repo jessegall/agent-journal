@@ -27,7 +27,7 @@ class EffortSettings:
 
 
 def test_project_hook_files_include_codex_hooks():
-    assert CodexProvider.hook_files == tuple([Path(".codex/hooks.json")])
+    assert CodexProvider.hook_files == (Path(".codex/hooks.json"),)
 
 HOOK_FOLDER = Path(__file__).resolve().parents[6] / "tools" / "journal-hook"
 RECORDED = HOOK_FOLDER / "testdata" / "recorded" / "codex"
