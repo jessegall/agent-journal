@@ -35,7 +35,7 @@ def confirmed(story, worker, skip):
 def test_a_workers_confirmed_skip_waits_and_its_main_agent_is_told(refused_worker):
     story, worker, skip = refused_worker
     story.expect_text(f'refusal confirm {skip} --tried "{TRIED}" --environment main', "waits for your main agent", actor=worker)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"refusal-skip:{skip}")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"driver-grant:{skip}")
     story.expect_hook_refusal(WORKER_SESSION, REMOVAL, REFUSED_LINE)
 
 

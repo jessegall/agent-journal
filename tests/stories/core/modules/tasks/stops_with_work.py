@@ -2,22 +2,20 @@ from datetime import timedelta
 
 import pytest
 
-from engine.enums.tool_type import ToolType
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import BuilderStarted, StartedTaskBuilder
 
-READ = HookSamples.sample("pre_tool_use", {"name": "Read", "category": ToolType.READ, "files": ["a.py"], "shell": None, "diff": None})
-
 
 @pytest.fixture
 def skipped_stop(new_story):
-    """The agent with a task in hand was refused its stop and skipped that refusal with a reason."""
+    """The agent with a task in hand was refused its stop, skipped that refusal with a reason and confirmed the skip."""
     story = new_story(fixture=StartedTaskBuilder)
     story.expect_hook_refusal("s-1", HookSamples.stop(), "is in hand: continue")
     story.advance(timedelta(seconds=1))
-    story.expect_success("refusal skip tasks.carry-on-at-stop --reason 'waiting for the price list'", actor=story.agent)
+    skip_id = story.new_row_id("refusal skip tasks.carry-on-at-stop --reason 'waiting for the price list'", actor=story.agent)
+    story.expect_success(f"refusal confirm {skip_id} --tried 'asked the user for the price list'", actor=story.agent)
     return story
 
 
@@ -41,19 +39,9 @@ def test_the_task_in_hand_stop_refusal_is_silent_while_a_run_of_the_agent_goes_a
     story.expect_hook_refusal("s-1", HookSamples.stop(), "is in hand: continue")
 
 
-def test_a_skip_silences_the_task_in_hand_stop_refusal_for_25_minutes_and_it_returns_after_them(skipped_stop):
+def test_a_confirmed_skip_passes_the_task_in_hand_stop_refusal_once_and_the_next_stop_is_refused_again(skipped_stop):
     story = skipped_stop
-    story.hook("s-1", HookSamples.stop())
     story.expect_hook_allowed("s-1", HookSamples.stop())
-    story.advance(timedelta(minutes=24))
-    story.expect_hook_allowed("s-1", HookSamples.stop())
-    story.advance(timedelta(minutes=2))
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "is in hand: continue")
-
-
-def test_a_skip_of_the_task_in_hand_stop_refusal_ends_after_25_tool_uses(skipped_stop):
-    story = skipped_stop
-    for _ in range(25):
-        story.advance(timedelta(seconds=1))
-        story.hook("s-1", READ)
+    story.advance(timedelta(seconds=1))
+    story.expect_text("driver-grant show 1", "grant_state: spent", actor=story.user)
     story.expect_hook_refusal("s-1", HookSamples.stop(), "is in hand: continue")

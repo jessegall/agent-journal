@@ -10,7 +10,7 @@ from engine.agent_stack.stack import Stack
 from engine.agent_stack.states.compacting import Compacting
 from engine.agent_stack.states.paused import Paused
 from engine.agent_machine.agent_view import AgentView
-from engine.agent_machine.stepping.grant import Grant
+from engine.agent_machine.stepping.grant import NEXT_ACTION, Grant
 from engine.agent_machine.contracts.policy import Policy
 from engine.agent_machine.record.question import Question
 from engine.agent_machine.stepping.block_exemptions import MESSAGE_COMMAND, BlockExemptions
@@ -115,7 +115,21 @@ class Constraints:
         if stack.has(Paused) or stack.has(Compacting):
             return []
         refusals = [block.stop_refusal() for block in JudgedBlocks.constraining(view) if block.refuses_stop(view.escalation)]
+        return [*refusals, *(reason for reason, grant in Constraints.state_stop_refusals(view, stack) if grant is None)]
+
+    # the work level's stop refusals, each with the confirmed refusal skip that passes it once; an escalation that
+    # defers the work level's state leaves it none
+    @staticmethod
+    def state_stop_refusals(view: AgentView, stack: Stack) -> list[tuple[Reason, Grant | None]]:
         top = stack.work_level_top()
         if view.escalation is not None and view.escalation.defers_work(top.state_key):
-            return refusals
-        return [*refusals, *top.state.stop_answer(view.work_stop).refusal_reasons()]
+            return []
+        return [(reason, None if reason.is_safety else next((grant for grant in view.grants if grant.grant_type is GrantType.REFUSAL_SKIP and grant.passes(reason.key, NEXT_ACTION)), None))
+                for reason in top.state.stop_answer(view.work_stop).refusal_reasons()]
+
+    # the grants an admitted stop spends: a skip of a stop refusal of the work level
+    @staticmethod
+    def spent_stop_grants(view: AgentView, stack: Stack) -> list[Grant]:
+        if stack.has(Paused) or stack.has(Compacting):
+            return []
+        return [grant for _, grant in Constraints.state_stop_refusals(view, stack) if grant is not None]

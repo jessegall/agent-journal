@@ -9,9 +9,9 @@ def block(**fields: object) -> AgentBlock:
 
 def test_a_block_refuses_tools_unless_it_holds_the_stop_only() -> None:
     stop_hold = block(scope_tools=False, scope_stop=True)
-    assert (block().scope_tools, block().is_stop_only, stop_hold.is_stop_only, stop_hold.is_active(0, Timestamp.parsed("2026-11-16T06:00:00+00:00"))) == (True, False, True, False)
+    assert (block().scope_tools, block().blocks_stop, stop_hold.blocks_stop, stop_hold.is_active(0, Timestamp.parsed("2026-11-16T06:00:00+00:00"))) == (True, False, True, False)
 
 
 def test_a_row_with_both_scopes_refuses_tools_and_the_stop() -> None:
     pair = block(scope_tools=True, scope_stop=True)
-    assert (pair.scope_tools, pair.scope_stop, pair.is_stop_only) == (True, True, False)
+    assert (pair.scope_tools, pair.scope_stop, pair.blocks_stop) == (True, True, False)

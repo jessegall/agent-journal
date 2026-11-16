@@ -887,7 +887,9 @@
         "skip_hinted(refusal: Reason, policy: Policy, question: Question, view: AgentView) -> Reason",
         "passing_grant(policy: Policy, view: AgentView, fingerprint: str) -> Grant | None",
         "block_reasons(question: Question, view: AgentView, stack: Stack) -> list[Reason]",
-        "stop_reasons(view: AgentView, stack: Stack) -> list[Reason]"
+        "stop_reasons(view: AgentView, stack: Stack) -> list[Reason]",
+        "state_stop_refusals(view: AgentView, stack: Stack) -> list[tuple[Reason, Grant | None]]",
+        "spent_stop_grants(view: AgentView, stack: Stack) -> list[Grant]"
       ]
     },
     "agent_machine.stepping.grant.Grant": {
