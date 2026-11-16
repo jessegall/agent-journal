@@ -25,15 +25,15 @@ class MemoryJournal:
         container = opened_container(JournalHome(folder))
         container.get(ModuleSync).run()
         database = container.get(Database)
-        database.insert(Statement("INSERT INTO environments (creator_id, name, folder, created_at, updated_at) VALUES (1, 'main', '/work', ?, ?)", (FIXED_TIME, FIXED_TIME)))
-        return cls(container, cls.agent(database, "s-1", "main"), cls.agent(database, "s-2", "worker"))
+        database.insert(Statement("INSERT INTO environments (creator_id, name, folder, created_at, updated_at) VALUES (0, 'main', '/work', ?, ?)", (FIXED_TIME, FIXED_TIME)))
+        return cls(container, cls.agent(database, 1, "s-1", "main"), cls.agent(database, 2, "s-2", "worker"))
 
     @staticmethod
-    def agent(database: Database, session: str, role: str) -> int:
-        actor_id = database.insert(Statement("INSERT INTO actors (creator_id, type, name, created_at, updated_at) VALUES (1, 'agent', ?, ?, ?)", (session, FIXED_TIME, FIXED_TIME)))
+    def agent(database: Database, agent_id: int, session: str, role: str) -> int:
+        database.insert(Statement("INSERT INTO actors (id, creator_id, type, name, created_at, updated_at) VALUES (?, 0, 'agent', ?, ?, ?)", (agent_id, session, FIXED_TIME, FIXED_TIME)))
         database.insert(Statement("INSERT INTO agents (id, actor_id, environment_id, creator_id, session, program, role, created_at, updated_at)"
-                                  " VALUES (?, ?, 1, 1, ?, 'claude', ?, ?, ?)", (actor_id, actor_id, session, role, FIXED_TIME, FIXED_TIME)))
-        return actor_id
+                                  " VALUES (?, ?, 1, 0, ?, 'claude', ?, ?, ?)", (agent_id, agent_id, session, role, FIXED_TIME, FIXED_TIME)))
+        return agent_id
 
     @property
     def database(self) -> Database:

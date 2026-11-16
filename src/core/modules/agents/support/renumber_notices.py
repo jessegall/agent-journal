@@ -12,7 +12,6 @@ TABLES_EXIST = Statement("SELECT count(*) AS n FROM sqlite_master WHERE type = '
                          scan_reason=SCHEMA_REASON)
 ANNOUNCED = "UPDATE agent_renumbers SET announced_at = ? WHERE old_id = ?"
 SUMMARY_ANNOUNCED = "UPDATE agent_renumber_summary SET announced_at = ? WHERE id = 1"
-MAIN_ROLE = "main"
 
 
 class RenumberNotices:
@@ -26,28 +25,23 @@ class RenumberNotices:
     def agent_lines(self) -> list[tuple[int, dict[str, object]]]:
         if int(self.database.rows(TABLES_EXIST)[0]["n"]) < 2:
             return []
-        return [(int(row["new_id"]), {"agent": self.label(str(row["role"]), int(row["new_id"])), "old_id": int(row["old_id"])})
-                for row in self.database.rows(UNANNOUNCED)]
+        return [(int(row["new_id"]), {"agent": int(row["new_id"]), "other": int(row["old_id"])}) for row in self.database.rows(UNANNOUNCED)]
 
     def summary(self) -> dict[str, object] | None:
         if int(self.database.rows(TABLES_EXIST)[0]["n"]) < 2:
             return None
         for row in self.database.rows(SUMMARY):
             counts = json.loads(str(row["counts"]))
-            return {"stayed": counts["stayed"], "removed": counts["removed"], "copy": str(row["copy"])}
+            return {"kept": counts["stayed"], "count": counts["removed"], "path": str(row["copy"])}
         return None
 
     def person_text(self) -> str | None:
         summary = self.summary()
         if summary is None:
             return None
-        return (f"Agents were renumbered: the main agent is 1 and the agents that stay follow from 2; {summary['removed']} agents were removed, "
+        return (f"Agents were renumbered: the main agent is 1 and the agents that stay follow from 2; {summary['count']} agents were removed, "
                 f"and the messages helpers and workers sent were deleted. Older texts still name the old numbers. "
-                f"A copy of the journal from before is at {summary['copy']}.")
-
-    @staticmethod
-    def label(role: str, agent_id: int) -> str:
-        return f"main agent {agent_id}" if role == MAIN_ROLE else f"{role} {agent_id}"
+                f"A copy of the journal from before is at {summary['path']}.")
 
     def mark(self, announced_at: str) -> None:
         for row in self.database.rows(UNANNOUNCED):

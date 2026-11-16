@@ -30,7 +30,7 @@ def test_the_main_agent_changes_the_driver_of_its_helper(ended):
     helper = helper_agent(ended)
     ended.expect_success(codex_driver_line(ended, helper.id), actor=ended.agent)
     moved = helper_agent(ended)
-    ended.expect_rows((moved.program, moved.program_model) == ("codex", CODEX_MODEL), moved.session != helper.session, moved.number == helper.id)
+    ended.expect_rows((moved.program, moved.program_model) == ("codex", CODEX_MODEL), moved.session != helper.session, moved.id == helper.id)
 
 
 def test_a_helper_that_changes_the_driver_of_another_agent_is_refused_naming_who_may(ended):

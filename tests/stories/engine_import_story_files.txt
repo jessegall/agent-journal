@@ -6,7 +6,6 @@ tests/stories/core/modules/agents/agent_driver_access.py
 tests/stories/core/modules/agents/agent_filters_browser.py
 tests/stories/core/modules/agents/agent_groups.py
 tests/stories/core/modules/agents/agent_inspector.py
-tests/stories/core/modules/agents/agent_session_history.py
 tests/stories/core/modules/agents/agent_terminal_browser.py
 tests/stories/core/modules/agents/agent_terminals.py
 tests/stories/core/modules/agents/codex_hooks.py
@@ -420,7 +419,6 @@ tests/stories/engine/support/view_samples.py
 tests/stories/engine/testing/templates/shared_templates.py
 tests/stories/engine/tunnel/support/tunnel_samples.py
 tests/stories/engine/tunnel/tunnel_choice.py
-tests/stories/engine/upgrade/agent_number_migration.py
 tests/stories/engine/upgrade/moved_rows.py
 tests/stories/engine/upgrade/reports.py
 tests/stories/engine/upgrade/support/fixture_upgrade.py

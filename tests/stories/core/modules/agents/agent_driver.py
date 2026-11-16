@@ -22,7 +22,7 @@ def test_a_person_moves_a_stopped_helper_to_codex_and_its_next_job_runs_on_codex
     ended.expect_success(DRIVER.format(number=helper.id, program="codex", model=CODEX_MODEL), actor=ended.user)
     command = launches(ended, f'helper send {helper.id} "{JOB}"')[0]["command"]
     moved = helper_agent(ended)
-    ended.expect_rows(moved.id == helper.id, moved.number == helper.id, (moved.program, moved.program_model) == ("codex", CODEX_MODEL), moved.profile == helper.profile,
+    ended.expect_rows(moved.id == helper.id, (moved.program, moved.program_model) == ("codex", CODEX_MODEL), moved.profile == helper.profile,
                       moved.retired_at is None, command[0] == "codex", detail=str(command[:4]))
     ended.expect_text("memory list", MEMORY_TEXT, actor=Actor(helper.id, ActorType.AGENT))
 

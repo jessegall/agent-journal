@@ -8,6 +8,6 @@ class AgentsRenumberedMessage(MessageTemplate):
 
     key = "agents.renumber-summary"
     type = AgentMessageType.STEERING
-    text = "Agents renumbered: {stayed} stay (main agent 1, the others from 2 in the order of their old ids), {removed} removed; copy at {copy}."
+    text = "Agents renumbered: {kept} stay (main agent 1, the others from 2 in the order of their old ids), {count} removed; copy at {path}."
     turn_limited = False
-    path_fields = ("copy",)
+    path_fields = ("path",)

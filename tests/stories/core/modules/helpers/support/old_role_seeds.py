@@ -1,9 +1,8 @@
-from engine.actor.actor import CORE_ACTOR_ID
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 from engine.testing.seeds.seed import Seed
 from engine.testing.seeds.seed_facts import SeedFacts
 
-JOURNAL_ACTOR = CORE_ACTOR_ID
+JOURNAL_ACTOR = 0
 OLD_ROWS = (("verifier", "", "writing", True), ("reviewer", "", "read-only", True), ("helper", MERGER_PROFILE.name, "read-only", False))
 
 

@@ -23,7 +23,7 @@ def test_a_cold_replacement_and_a_profile_moved_to_another_program_retire_no_age
     replaced, _ = with_job(cooling, SILENT_MINUTES, 40)
     cooling.expect_success(CODEX_SAVE, actor=cooling.user)
     launcher = FakeLauncher.accepting(cooling.home.socket("launcher"), answer=b"started 702\n")
-    cooling.run(f'helper send {replaced.number} "Read src/tax.py"', actor=cooling.agent)
+    cooling.run(f'helper send {replaced.id} "Read src/tax.py"', actor=cooling.agent)
     cooling.run_listeners()
     launcher.server.close()
     cooling.home.socket("launcher").unlink()

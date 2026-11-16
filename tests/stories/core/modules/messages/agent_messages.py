@@ -35,7 +35,7 @@ def test_a_helper_messages_its_main_agent_by_the_number_agent_main_gives(new_sto
     helper = helper_actor(story)
     main = json.loads(story.run("agent main --environment main --json", actor=helper).output_text)
     story.expect_rows(main["id"] == story.agent.id, main["id"] == story.agent.id, detail=str(main))
-    story.expect_text("agent main --environment main", f"agent:{main['number']}, session", f"row id {story.agent.id}", actor=helper)
+    story.expect_text("agent main --environment main", f"agent:{main['id']}, session", actor=helper)
     story.expect_success(f'message send "The total is wrong" --to agent:{main["id"]} --environment main', actor=helper)
     message = sender_name(story, helper.id)
     story.expect_text(LINES.format(agent=story.agent.id), expected_agent_message(ParentReportMessage.declared()))

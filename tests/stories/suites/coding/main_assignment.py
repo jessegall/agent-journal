@@ -1,16 +1,7 @@
-from core.modules.tasks.agent_messages.stop_task_message import StopTaskMessage
 from datetime import timedelta
 
-from engine.actor.actor import Actor
-from engine.command.bus import Bus
-from engine.command.context import Context
-from engine.repository.repository import Repository
-from core.modules.drivers.commands.run_agent_step.run_agent_step import RunAgentStep
-from core.modules.drivers.models.agent_step_request import AgentStepRequest
-from core.modules.tasks.models.task import Task
 
-from engine.database.database import READ_LIMIT_ROWS, Database
-from core.modules.chat.models.journal_exception import JournalException
+from engine.database.database import READ_LIMIT_ROWS
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from core.modules.drivers.models.agent_line import AgentLine
@@ -129,16 +120,3 @@ def test_a_main_agent_that_waits_on_something_may_stop_with_an_unfinished_task(n
     story.expect_success('wait stuck "the user decides the order"', actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.stop())
 
-
-
-
-
-def test_a_task_the_timed_step_round_hands_over_is_held_by_the_main_agent_whose_stop_is_then_refused(new_story):
-    story = main_story(new_story)
-    story.expect_success(f"setting set {CONTINUE_SETTING} on --environment main")
-    with story.container.get(Database).transaction():
-        request = story.container.get(Repository).save(AgentStepRequest(session_agent_id=story.agent.id, causes=("tests.round",)),
-                                                       Context(Actor.core(), story.clock.timestamp(), RunAgentStep(0)))
-    story.container.get(Bus).run(RunAgentStep(request.id), Actor.core(), environment_id=1)
-    expect_value(story.row(Task, 1).holder_id, story.agent.id)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), expected_agent_message(StopTaskMessage.declared(), task=1))

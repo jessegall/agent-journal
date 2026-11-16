@@ -7,5 +7,5 @@ class AgentRenumberedMessage(MessageTemplate):
 
     key = "agents.renumbered"
     type = AgentMessageType.STEERING
-    text = "You are now {agent} (was agent:{old_id})."
+    text = "Agents were renumbered: you are now agent:{agent}, which was agent:{other}."
     turn_limited = False
