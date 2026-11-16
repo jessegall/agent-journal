@@ -22,7 +22,7 @@ class DemoFolders:
     def prune(self) -> int:
         removed = 0
         for folder in (folder for root in self.roots for folder in FileAccess.glob(root, "journal-demo-*")):
-            age_seconds = self.clock.epoch_seconds() - FileAccess.stat(folder).st_mtime
+            age_seconds = self.clock.unix_seconds() - FileAccess.stat(folder).st_mtime
             pid = self.running_pid(folder)
             if pid is not None and age_seconds > DEMO_LIFE_SECONDS:
                 os.kill(pid, signal.SIGTERM)

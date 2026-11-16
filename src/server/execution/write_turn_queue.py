@@ -28,7 +28,7 @@ class WriteTurnQueue(WriteTurns):
 
     def acquire(self) -> None:
         execution = CurrentExecution.read()
-        current_time = self.clock.epoch_seconds()
+        current_time = self.clock.unix_seconds()
         new_question = WaitingAsk(execution, execution.priority, next(self.numbers), threading.current_thread(), current_time, current_time)
         with self.changed:
             self.waiting.append(new_question)
@@ -37,11 +37,11 @@ class WriteTurnQueue(WriteTurns):
             finally:
                 self.waiting.remove(new_question)
                 self.changed.notify_all()
-            self.holder, self.turn_started_at = new_question, self.clock.epoch_seconds()
+            self.holder, self.turn_started_at = new_question, self.clock.unix_seconds()
 
     def wait_turn(self, new_question: WaitingAsk) -> None:
         while True:
-            current_time = self.clock.epoch_seconds()
+            current_time = self.clock.unix_seconds()
             if self.holder is not None and not self.holder.thread.is_alive():
                 self.holder = None
             for waiting in self.waiting:
@@ -62,7 +62,7 @@ class WriteTurnQueue(WriteTurns):
 
     def release(self) -> None:
         with self.changed:
-            holder, turn_seconds = self.holder, self.clock.epoch_seconds() - self.turn_started_at
+            holder, turn_seconds = self.holder, self.clock.unix_seconds() - self.turn_started_at
             self.holder = None
             self.changed.notify_all()
         if holder is not None and turn_seconds > SLOW_TURN_SECONDS:

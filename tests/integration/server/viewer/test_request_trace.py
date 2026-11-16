@@ -26,7 +26,7 @@ def logging_server(journal):
 def test_cli_requests_keep_the_same_logger_counts_and_epoch(logging_server, monkeypatch):
     server = logging_server
     log = server.context.request_trace
-    epoch = log.epoch
+    trace_id = log.trace_id
     recorded = Event()
     record = log.record
 
@@ -43,7 +43,7 @@ def test_cli_requests_keep_the_same_logger_counts_and_epoch(logging_server, monk
     server.expect_cli_exit("agent list", "/", 0, "")
     assert recorded.wait(WAIT_SECONDS)
     assert server.context.request_trace is server.context.viewer.routes.request_trace
-    assert log.epoch == epoch and log.counts["recorded"] == 2
+    assert log.trace_id == trace_id and log.counts["recorded"] == 2
 
 
 def test_a_locked_database_drops_no_request_row_and_writes_no_warning(logging_server):

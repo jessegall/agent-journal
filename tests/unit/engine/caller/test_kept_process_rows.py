@@ -9,7 +9,7 @@ class SetClock:
     def __init__(self) -> None:
         self.now = 100.0
 
-    def epoch_seconds(self) -> float:
+    def unix_seconds(self) -> float:
         return self.now
 
 

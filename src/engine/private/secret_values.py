@@ -37,19 +37,19 @@ class SecretValues:
         shown = self.shown()
         return {value: self.field_variable(name) for name, value in self.values().items() if value and name not in shown}
 
-    def put(self, variable: str, value: str, hidden: bool, epoch_seconds: int) -> None:
+    def put(self, variable: str, value: str, hidden: bool, unix_seconds: int) -> None:
         current = self.values()
         previous = current.get(variable)
-        retired = {f"{RETIRED_PREFIX}{variable}{RETIRED_TIME_MARK}{epoch_seconds}": previous} if hidden and previous and previous != value else {}
+        retired = {f"{RETIRED_PREFIX}{variable}{RETIRED_TIME_MARK}{unix_seconds}": previous} if hidden and previous and previous != value else {}
         self.write({**current, **retired, variable: value})
         self.write_shown(self.shown() - {variable} if hidden else self.shown() | {variable})
 
-    def retire(self, variable: str, epoch_seconds: int) -> None:
+    def retire(self, variable: str, unix_seconds: int) -> None:
         current = self.values()
         if variable not in current:
             return
         value = current.pop(variable)
-        retired = {f"{RETIRED_PREFIX}{variable}{RETIRED_TIME_MARK}{epoch_seconds}": value} if value and variable not in self.shown() else {}
+        retired = {f"{RETIRED_PREFIX}{variable}{RETIRED_TIME_MARK}{unix_seconds}": value} if value and variable not in self.shown() else {}
         self.write({**current, **retired})
         self.write_shown(self.shown() - {variable})
 

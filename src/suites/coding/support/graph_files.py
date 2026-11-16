@@ -40,11 +40,11 @@ class GraphFiles:
         return GraphStamp.read(FileAccess.read(self.stamp_path))
 
     def refresh_age_seconds(self, clock: Clock) -> float | None:
-        return clock.epoch_seconds() - FileAccess.stat(self.stamp_path).st_mtime if FileAccess.is_file(self.stamp_path) else None
+        return clock.unix_seconds() - FileAccess.stat(self.stamp_path).st_mtime if FileAccess.is_file(self.stamp_path) else None
 
     def clustering_age_seconds(self, clock: Clock) -> float | None:
         path = self.output / CLUSTERED_FILE
-        return clock.epoch_seconds() - FileAccess.stat(path).st_mtime if FileAccess.is_file(path) else None
+        return clock.unix_seconds() - FileAccess.stat(path).st_mtime if FileAccess.is_file(path) else None
 
     def failed_commit(self) -> str:
         path = self.output / FAILED_FILE
@@ -54,7 +54,7 @@ class GraphFiles:
         if not FileAccess.is_file(self.running_path):
             return False
         text = FileAccess.read(self.running_path).strip()
-        is_claimed = clock.epoch_seconds() - FileAccess.stat(self.running_path).st_mtime < CLAIM_GRACE_SECONDS if not text else ProcessIds.text_exists(text)
+        is_claimed = clock.unix_seconds() - FileAccess.stat(self.running_path).st_mtime < CLAIM_GRACE_SECONDS if not text else ProcessIds.text_exists(text)
         if not is_claimed:
             FileAccess.unlink(self.running_path, missing_ok=True)
         return is_claimed

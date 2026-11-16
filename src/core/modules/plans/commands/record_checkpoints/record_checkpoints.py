@@ -9,4 +9,4 @@ class RecordCheckpoints(Command[None]):
     it has nothing to run; with passes_only it records only the passes and starts no run."""
 
     plan_id: int
-    passes_only: bool = False
+    record_passes: bool = False

@@ -73,7 +73,7 @@ class StatusFiles:
         FileAccess.replace(path, self.ended_folder / path.name)
 
     def prune_ended(self) -> None:
-        oldest = self.clock.epoch_seconds() - ENDED_KEPT_SECONDS
+        oldest = self.clock.unix_seconds() - ENDED_KEPT_SECONDS
         for path in FileAccess.glob(self.ended_folder, "*.json"):
             if FileAccess.stat(path).st_mtime < oldest:
                 FileAccess.unlink(path, missing_ok=True)

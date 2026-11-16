@@ -38,7 +38,7 @@ def test_an_ended_sessions_folder_goes(played, monkeypatch, tmp_path):
 def test_an_unknown_sessions_folder_stays_a_week(played, monkeypatch, tmp_path):
     story = played(BuilderStarted)
     folders = session_folders(story, monkeypatch, tmp_path, "recent", "old")
-    month_old = story.clock.epoch_seconds() - 30 * 24 * 3600
+    month_old = story.clock.unix_seconds() - 30 * 24 * 3600
     os.utime(folders["old"], (month_old, month_old))
     prune(story)
     expect_exists_recent_folders(folders)

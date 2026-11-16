@@ -22,7 +22,7 @@ def saved(story, view, step):
         return story.container.get(StepWriter).save(view, step, None, Context(Actor.core(), story.clock.timestamp(), ReadMessage(1)))
 
 
-def epoch(story) -> int:
+def version_row(story) -> int:
     row = story.container.get(Queries).query(DriverVersion).all_environments("one test's environments").first()
     return row.change_count if row is not None else 0
 

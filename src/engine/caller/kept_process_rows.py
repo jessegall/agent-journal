@@ -30,11 +30,11 @@ class KeptProcessRows:
         with self.lock:
             if not self.is_current(table, pid):
                 self.kept = {row.pid: row for row in table.rows()}
-                self.read_at, self.reader = self.clock.epoch_seconds(), self.reader_of(table)
+                self.read_at, self.reader = self.clock.unix_seconds(), self.reader_of(table)
             return dict(self.kept)
 
     def is_current(self, table: ProcessTable, pid: int) -> bool:
-        if self.reader is not self.reader_of(table) or self.clock.epoch_seconds() - self.read_at >= KEPT_SECONDS:
+        if self.reader is not self.reader_of(table) or self.clock.unix_seconds() - self.read_at >= KEPT_SECONDS:
             return False
         return self.reaches_root_process(pid)
 

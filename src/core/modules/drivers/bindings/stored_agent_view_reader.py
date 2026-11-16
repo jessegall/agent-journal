@@ -58,11 +58,11 @@ class StoredAgentViewReader(AgentViewReader):
     conditions and the program's capabilities are read by the phases that port them; until then the view
     holds none."""
 
-    def __init__(self, agents: AgentRows, queries: Queries, settings: SettingValues, hook_calls: HookCallQuery, finder: ModuleFinder, clock: Clock, grant_store: GrantLedger, providers: Providers, judgement: BlockConditionCheck,
+    def __init__(self, agents: AgentRows, queries: Queries, settings: SettingValues, hook_calls: HookCallQuery, finder: ModuleFinder, clock: Clock, grant_store: GrantLedger, providers: Providers, condition_check: BlockConditionCheck,
                  skips: RefusalSkips, open_blocks: OpenBlockRows, stacks: ReadVersionsRows, types: HelperTypeBook, choice: SuiteChoice) -> None:
         self.providers, self.skips, self.open_blocks, self.stacks, self.types = providers, skips, open_blocks, stacks, types
         self.agents, self.queries, self.settings, self.hook_calls, self.finder, self.clock = agents, queries, settings, hook_calls, finder, clock
-        self.grant_store, self.judgement, self.choice = grant_store, judgement, choice
+        self.grant_store, self.condition_check, self.choice = grant_store, condition_check, choice
 
     def read(self, agent_id: int, question: Question) -> AgentView:
         agent = self.agents.find(agent_id)
@@ -80,7 +80,7 @@ class StoredAgentViewReader(AgentViewReader):
             escalation=escalation, settings={key: self.settings.number(key) for key in (STOP_LIMIT_SETTING, TOOL_LIMIT_SETTING)},
             is_resting=self.hook_calls.has_ended_turn(agent_id),
             table_digest=row.table_digest if row is not None else "", work_stop=driver.work_stop, responder=self.responder(driver.responder, agent), rank_order=driver.rank_order,
-            depth_limit=driver.depth_limit, program=self.providers.provider(agent.program).capabilities().proved(agent.program, self.settings.texts(CAPABILITY_PROOFS_SETTING)), counts=counts, block_outcomes=self.judgement.outcomes(rows, question, agent_id), newest_hook_at=self.newest_hook_at(agent_id), last_refused_rules=self.skips.last_refused_rules(agent_id),
+            depth_limit=driver.depth_limit, program=self.providers.provider(agent.program).capabilities().proved(agent.program, self.settings.texts(CAPABILITY_PROOFS_SETTING)), counts=counts, block_outcomes=self.condition_check.outcomes(rows, question, agent_id), newest_hook_at=self.newest_hook_at(agent_id), last_refused_rules=self.skips.last_refused_rules(agent_id),
             journal_started_at=driver_version.started_at.value if driver_version is not None and driver_version.started_at is not None else None)
 
     def suppressions(self, agent_id: int) -> tuple[StateKey, ...]:

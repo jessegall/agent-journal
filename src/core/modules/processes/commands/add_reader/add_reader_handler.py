@@ -55,10 +55,10 @@ class AddReaderHandler(Handler[AddReader, Reader]):
                 raise
             raise ReaderSaveRefusal.failed_save(request.id, refusal) from refusal
 
-    def save(self, reader: Reader, judgement: ReaderCheck, context: Context) -> Reader:
-        if judgement.missed:
-            raise Refusal(f"reader {reader.name} missed {'; '.join(judgement.missed)}", "try the patterns on the named output")
-        return self.repository.save(replace(reader, proved_on=judgement.output_id), context)
+    def save(self, reader: Reader, reader_check: ReaderCheck, context: Context) -> Reader:
+        if reader_check.missed:
+            raise Refusal(f"reader {reader.name} missed {'; '.join(reader_check.missed)}", "try the patterns on the named output")
+        return self.repository.save(replace(reader, proved_on=reader_check.output_id), context)
 
     # A journal command has no reader: it stays in the foreground and the agent reads its answer whole.
     @staticmethod

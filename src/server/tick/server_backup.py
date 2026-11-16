@@ -42,7 +42,7 @@ class ServerBackup:
 
     def has_recent_copy(self, minutes: int) -> bool:
         copies = self.copies()
-        return bool(copies) and self.clock.epoch_seconds() - FileAccess.stat(copies[0]).st_mtime < minutes * MINUTE_SECONDS
+        return bool(copies) and self.clock.unix_seconds() - FileAccess.stat(copies[0]).st_mtime < minutes * MINUTE_SECONDS
 
     def copies(self) -> list[Path]:
         return sorted(FileAccess.glob(self.folder(), f"{COPY_PREFIX}*.db"), reverse=True)

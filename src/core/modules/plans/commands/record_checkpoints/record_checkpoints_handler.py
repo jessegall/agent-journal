@@ -15,4 +15,4 @@ class RecordCheckpointsHandler(Handler[RecordCheckpoints, None]):
         self.checkpoints = checkpoints
 
     def handle(self, command: RecordCheckpoints, context: Context) -> None:
-        self.checkpoints.record(command.plan_id, context, command.passes_only)
+        self.checkpoints.record(command.plan_id, context, command.record_passes)

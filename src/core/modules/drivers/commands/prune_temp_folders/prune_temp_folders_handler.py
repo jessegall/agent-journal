@@ -36,4 +36,4 @@ class PruneTempFoldersHandler(Handler[PruneTempFolders, int]):
         agents = tuple(self.queries.query(Agent).filter(session=session).get())
         if agents:
             return all(agent.ended_at is not None for agent in agents)
-        return self.clock.epoch_seconds() - FileAccess.stat(folder).st_mtime > UNKNOWN_SESSION_KEPT_SECONDS
+        return self.clock.unix_seconds() - FileAccess.stat(folder).st_mtime > UNKNOWN_SESSION_KEPT_SECONDS

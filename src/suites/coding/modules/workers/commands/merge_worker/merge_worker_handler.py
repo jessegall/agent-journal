@@ -121,7 +121,7 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     def record_checkpoints(self, merged: Worktree, environment: Environment, context: Context) -> None:
         phase = self.plans.find_phase(merged.task_id)
         if phase is not None:
-            self.bus.run(RecordCheckpoints(phase.plan_id, passes_only=True), Actor.core(), environment_id=environment.id)
+            self.bus.run(RecordCheckpoints(phase.plan_id, record_passes=True), Actor.core(), environment_id=environment.id)
 
     def refused_merge(self, worktree: Worktree, environment: Environment, target_commit: str, context: Context) -> str:
         branch_commit = self.git.tip(environment.folder, worktree.branch)

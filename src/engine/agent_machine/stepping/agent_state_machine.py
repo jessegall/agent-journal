@@ -115,14 +115,14 @@ class AgentStateMachine:
         text = f"{decision.reason.text} {RESPONDER_NAMES[view.responder]} was asked: you may stop and wait for the answer."
         return Decision(decision.decision_class, replace(decision.reason, text=text.strip()))
 
-    def record(self, view: AgentView, question: Question, decision: Decision, judgement: ReasonTotal, rewrite: Rewrite, counts: RefusalCounts,
+    def record(self, view: AgentView, question: Question, decision: Decision, reason_total: ReasonTotal, rewrite: Rewrite, counts: RefusalCounts,
                stack: Stack, moves: tuple, reasons: list[Reason]) -> DecisionRecord:
         lines = self.lines(question, view)
         unconditional = [effect for effect in self.effects(question, view) if effect.timing is EffectTiming.UNCONDITIONAL]
         start_check = [effect for effect in self.effects(question, view) if effect.timing is EffectTiming.PERMITTED] if question.is_action() else []
         return DecisionRecord(
             identity=self.identity(view, question), action=question, decision=decision, shown_reason=decision.reason,
-            outranked_reasons=judgement.outranked_reasons, rewrite=rewrite if decision.admits() else Rewrite.unchanged(),
+            outranked_reasons=reason_total.outranked_reasons, rewrite=rewrite if decision.admits() else Rewrite.unchanged(),
             lines=[line for line in lines if line.channel is not LineChannel.WAITING], unconditional_effects=unconditional,
             allowed_effects=start_check, after_commit=(), terminal=self.terminal(lines), moves=moves, blocks_opened=JudgedBlocks.new_plans(view),
             # a refused action did not run, so what it would have done lifts no hold; the next admitted step closes them

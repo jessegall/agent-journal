@@ -70,7 +70,7 @@ class PluginQueue:
             with self.lock_file(path) as source:
                 if source is None or path.name in committed_names:
                     continue
-                if clock.epoch_seconds() - os.fstat(source.fileno()).st_mtime <= RESERVATION_LIMIT_SECONDS:
+                if clock.unix_seconds() - os.fstat(source.fileno()).st_mtime <= RESERVATION_LIMIT_SECONDS:
                     continue
                 try:
                     FileAccess.rename(path, self.folder / path.name.rsplit(".", 2)[0])

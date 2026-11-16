@@ -63,7 +63,7 @@ class ReadingFacts:
                            has_asking_flag=ReaderDemands.is_help_request(command), output_hidden=part.piped, is_saved_command=bool(part.saved_command),
                            is_plugin_run=bool(process.plugin), phase=point, age_seconds=self.age_seconds(process), run_state=process.state,
                            cadence_state=self.cadences.process_cadence(process, self.clock.timestamp()).state(),
-                           exit_code=part.exit_code, reader_layer=self.layer(reader), reader_check=self.judgement(process, part, reader),
+                           exit_code=part.exit_code, reader_layer=self.layer(reader), reader_check=self.reader_check(process, part, reader),
                            default_reader=reader is not None and reader.is_default, reader_failed=self.reader_failed(process, reader, point),
                            count_missing=self.counts.count_missing(process, part),
                            draft_fits=self.draft_fits(process, part, reader, point), output=self.output(process, part, point),
@@ -97,7 +97,7 @@ class ReadingFacts:
     def layer(self, reader: Reader | None) -> ReaderLayer | None:
         return None if reader is None else self.readers.layers().layer(reader)
 
-    def judgement(self, process: Process, part: ProcessPart, reader: Reader | None) -> ReaderCheck | None:
+    def reader_check(self, process: Process, part: ProcessPart, reader: Reader | None) -> ReaderCheck | None:
         scope = ReaderSampleScope(process.session_agent_id, part.command or part.text)
         return None if reader is None else self.judge.judged_command(reader, part.category, scope)
 

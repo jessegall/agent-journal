@@ -6,7 +6,7 @@ from core.modules.plugins.support.machine_runs import MACHINE_FOLDER_VARIABLE, M
 
 def claimer(tmp_path, project: str) -> MachineRuns:
     outputs = SimpleNamespace(pid_path=lambda process_id: tmp_path / f"{project}-pid-{process_id}")
-    return MachineRuns(SimpleNamespace(folder=tmp_path / project), outputs, SimpleNamespace(epoch_seconds=time.time))
+    return MachineRuns(SimpleNamespace(folder=tmp_path / project), outputs, SimpleNamespace(unix_seconds=time.time))
 
 
 def run(process_id: int) -> SimpleNamespace:

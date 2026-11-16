@@ -19,7 +19,7 @@ def backup(journal) -> ServerBackup:
 
 def age(backup: ServerBackup) -> None:
     for copy in backup.copies():
-        older = backup.clock.epoch_seconds() - HOUR_SECONDS
+        older = backup.clock.unix_seconds() - HOUR_SECONDS
         os.utime(copy, (older, older))
 
 

@@ -124,7 +124,7 @@ class ServerFiles:
 
     def is_recent(self, mark: Path) -> bool:
         try:
-            return self.clock.epoch_seconds() - FileAccess.stat(mark).st_mtime < MARK_RECENT_SECONDS
+            return self.clock.unix_seconds() - FileAccess.stat(mark).st_mtime < MARK_RECENT_SECONDS
         except FileNotFoundError:
             return False
 

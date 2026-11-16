@@ -33,7 +33,7 @@ class ExecutionQueue:
     def admitted(self, ticket: ExecutionTicket, owner: str = "", wait_limit_seconds: float | None = None,
                  is_client_waiting: Callable[[], bool] = lambda: True) -> Generator[QueuedTicket]:
         number = next(self.numbers)
-        queued = QueuedTicket(number, replace(ticket, run_id=number), owner, self.clock.epoch_seconds(), is_client_waiting)
+        queued = QueuedTicket(number, replace(ticket, run_id=number), owner, self.clock.unix_seconds(), is_client_waiting)
         with self.changed:
             self.waiting.append(queued)
             try:
@@ -57,7 +57,7 @@ class ExecutionQueue:
             if not queued.is_client_waiting():
                 raise ClientGoneError(queued.ticket.line)
             THREAD_TURN_COUNT.refuse_wait(f"the wait for an instant lane place for {queued.ticket.line}")
-            waited = self.clock.epoch_seconds() - queued.entered_at
+            waited = self.clock.unix_seconds() - queued.entered_at
             if wait_limit_seconds is not None and waited >= wait_limit_seconds and not queued.ticket.priority.is_unlimited:
                 raise PoolBusyError.waited(waited, self.holders())
             self.changed.wait(RECHECK_SECONDS if wait_limit_seconds is None else max(0.0, min(RECHECK_SECONDS, wait_limit_seconds - waited)))
@@ -85,7 +85,7 @@ class ExecutionQueue:
             return (*(self.entry(running, True) for running in self.running), *(self.entry(waiting, False) for waiting in self.waiting))
 
     def entry(self, queued: QueuedTicket, is_running: bool) -> InstantEntry:
-        return InstantEntry(queued.number, is_running, queued.ticket, queued.owner, self.clock.epoch_seconds() - queued.entered_at)
+        return InstantEntry(queued.number, is_running, queued.ticket, queued.owner, self.clock.unix_seconds() - queued.entered_at)
 
     # a stop waits this long for the running tickets to end
     def wait_idle(self, limit_seconds: float) -> bool:

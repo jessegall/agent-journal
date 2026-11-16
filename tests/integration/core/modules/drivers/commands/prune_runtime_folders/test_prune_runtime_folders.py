@@ -25,7 +25,7 @@ class AgentRows:
 
 
 def aged(path, clock: Clock, seconds: float) -> None:
-    point = clock.epoch_seconds() - seconds
+    point = clock.unix_seconds() - seconds
     os.utime(path, (point, point))
 
 

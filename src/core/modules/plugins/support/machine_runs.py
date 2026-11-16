@@ -72,4 +72,4 @@ class MachineRuns:
         pid_file = Path(FileAccess.read(run_file).strip())
         if FileAccess.is_file(pid_file):
             return ProcessIds.text_exists(FileAccess.read(pid_file).strip())
-        return self.clock.epoch_seconds() - FileAccess.stat(run_file).st_mtime < START_GRACE_SECONDS
+        return self.clock.unix_seconds() - FileAccess.stat(run_file).st_mtime < START_GRACE_SECONDS

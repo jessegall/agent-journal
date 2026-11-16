@@ -61,7 +61,7 @@ class CodeVersions:
 
     def remove_stale_partials(self, clock: Clock) -> None:
         for partial in FileAccess.glob(self.folder, f"*{PARTIAL_VERSION}"):
-            if clock.epoch_seconds() - FileAccess.stat(partial).st_mtime > STALE_PARTIAL_SECONDS:
+            if clock.unix_seconds() - FileAccess.stat(partial).st_mtime > STALE_PARTIAL_SECONDS:
                 FileAccess.rmtree(partial, ignore_errors=True)
 
     def switch(self, tag: str) -> None:

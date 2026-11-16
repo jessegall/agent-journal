@@ -60,7 +60,7 @@ class PruneRuntimeFoldersHandler(Handler[PruneRuntimeFolders, int]):
 
     def is_dead_socket(self, path: Path) -> bool:
         status = FileAccess.stat(path)
-        if not stat.S_ISSOCK(status.st_mode) or self.clock.epoch_seconds() - status.st_mtime <= DEAD_SOCKET_SECONDS:
+        if not stat.S_ISSOCK(status.st_mode) or self.clock.unix_seconds() - status.st_mtime <= DEAD_SOCKET_SECONDS:
             return False
         with socket.socket(socket.AF_UNIX) as probe:
             probe.settimeout(1)
@@ -73,4 +73,4 @@ class PruneRuntimeFoldersHandler(Handler[PruneRuntimeFolders, int]):
         return False
 
     def is_old(self, modified_at: float) -> bool:
-        return self.clock.epoch_seconds() - modified_at > KEPT_SECONDS
+        return self.clock.unix_seconds() - modified_at > KEPT_SECONDS

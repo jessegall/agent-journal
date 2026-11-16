@@ -36,8 +36,8 @@ def ended(case: ReadingCase, sample: bytes = TEST_OUTPUT, exit_code: int = 0, ag
                    output=OutputFacts.measured(sample, len(sample), exit_code, case.category))
 
 
-def with_reader(case: ReadingCase, judgement: ReaderCheck) -> ReadingCase:
-    return replace(case, reader_layer=ReaderLayer.PROJECT, reader_check=judgement)
+def with_reader(case: ReadingCase, reader_check: ReaderCheck) -> ReadingCase:
+    return replace(case, reader_layer=ReaderLayer.PROJECT, reader_check=reader_check)
 
 
 NOTHING_NEEDED = (ReaderState.UNNEEDED, ReaderAction.IGNORE, PressureLevel.SUGGEST, ())

@@ -48,7 +48,7 @@ class RequestTrace:
         self.trace_file = RequestTraceFile(home, FileAccess())
         self.system_log = SystemLogWriter(home, clock)
         self.priorities = WindowPriorities(home)
-        self.epoch = str(uuid4())
+        self.trace_id = str(uuid4())
         self.lock = RLock()
         self.container: Container | None = None
         self.configuration = RequestTraceSettings()
@@ -103,7 +103,7 @@ class RequestTrace:
             if self.configuration.enabled:
                 with self.connected() as container:
                     self.stored_rows = container.get(HookRequestsTable).kept_row_count()
-            return {**self.counts, "epoch": self.epoch, "enabled": self.configuration.enabled, "retained": self.stored_rows, "retention_limit": self.configuration.limit,
+            return {**self.counts, "epoch": self.trace_id, "enabled": self.configuration.enabled, "retained": self.stored_rows, "retention_limit": self.configuration.limit,
                     "recording_ms": self.recording_ms}
 
     def record_viewer(self, record: ViewerRequestRecord) -> None:
