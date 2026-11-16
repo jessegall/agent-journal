@@ -48,7 +48,7 @@ def refusal_text(story, line: str) -> str:
 
 
 def reviewers(story) -> list[Agent]:
-    return sorted(story.story_rows(Agent, profile=REVIEWER), key=lambda reviewer: reviewer.number)
+    return sorted(story.story_rows(Agent, profile=REVIEWER), key=lambda reviewer: reviewer.id)
 
 
 def review_job(story, reviewer: Agent, plan: int) -> str:
@@ -96,7 +96,7 @@ def test_a_person_retires_an_ended_reviewer_and_the_next_start_makes_a_new_agent
     story.expect_success(f'agent retire {retired.id} --reason "Its reviews are done" --environment main', actor=story.user)
     launches(story, START_REVIEW.format(plan=6))
     current = reviewers(story)
-    story.expect_rows(len(current) == 2, current[0].retired_at is not None, current[1].retired_at is None, current[1].number > retired.number, detail=str(current))
+    story.expect_rows(len(current) == 2, current[0].retired_at is not None, current[1].retired_at is None, current[1].number > retired.id, detail=str(current))
     story.expect_absent("memory list", REVIEW_MEMORY, actor=Actor(current[1].id, ActorType.AGENT))
 
 
@@ -112,7 +112,7 @@ def test_a_reviewer_start_while_one_is_idle_names_its_send_line_and_the_send_run
     story = idle_reviewer
     reviewer = reviewers(story)[0]
     refusal = refusal_text(story, START_REVIEW.format(plan=6))
-    story.expect_rows(f'journal helper send {reviewer.number} "<job>"' in refusal, detail=refusal)
+    story.expect_rows(f'journal helper send {reviewer.id} "<job>"' in refusal, detail=refusal)
     command = launches(story, review_job(story, reviewer, 6))[0]["command"]
     current = reviewers(story)
     story.expect_rows(len(current) == 1, current[0].id == reviewer.id, current[0].session != reviewer.session, current[0].session in command, detail=str(command[:4]))
@@ -130,7 +130,7 @@ def test_a_second_job_sent_to_an_ended_reviewer_is_accepted_and_ends_its_session
     story = idle_reviewer
     reviewer = reviewers(story)[0]
     launches(story, review_job(story, reviewer, 6))
-    history = json.loads(story.run(f"agent sessions {reviewer.number} --environment main --json", actor=story.user).output_text)["rows"]
+    history = json.loads(story.run(f"agent sessions {reviewer.id} --environment main --json", actor=story.user).output_text)["rows"]
     story.expect_rows([(row["session"], row["end_reason"]) for row in history] == [(reviewers(story)[0].session, None), (reviewer.session, "each_launch")],
                       len(read_jobs(story, reviewer)) == 2, detail=str(history))
 
@@ -144,7 +144,7 @@ def test_a_second_review_of_the_same_plan_by_one_reviewer_is_refused_and_names_a
     story.run_listeners()
     resumable_session(story, second)
     refusal = refusal_text(story, review_job(story, first, 5))
-    story.expect_rows("reviewed plan 5" in refusal, f"journal helper send {second.number}" in refusal, "--fresh" in refusal, detail=refusal)
+    story.expect_rows("reviewed plan 5" in refusal, f"journal helper send {second.id}" in refusal, "--fresh" in refusal, detail=refusal)
 
 
 def test_three_reviews_at_once_run_on_three_reviewers_and_a_fourth_is_refused_at_the_run_limit(new_story):
@@ -165,7 +165,7 @@ def test_many_reviews_one_after_another_leave_one_reviewer_agent_with_its_number
         story.expect_success(f"agent end {reviewer.id}", actor=story.user)
         story.run_listeners()
     current = reviewers(story)
-    story.expect_rows(len(current) == 1, current[0].number == reviewer.number, len(read_jobs(story, reviewer)) == 7, detail=str(current))
+    story.expect_rows(len(current) == 1, current[0].number == reviewer.id, len(read_jobs(story, reviewer)) == 7, detail=str(current))
 
 
 def test_a_reviewer_with_no_program_follows_the_program_split_at_each_launch_under_one_number(helper_split_story, helper_viewer):
@@ -178,7 +178,7 @@ def test_a_reviewer_with_no_program_follows_the_program_split_at_each_launch_und
     set_split(story, "claude 0,codex 100", viewer=helper_viewer)
     second = launches(story, review_job(story, reviewer, 6))[0]["command"][0]
     current = reviewers(story)
-    story.expect_rows((first, second) == ("claude", "codex"), len(current) == 1, current[0].number == reviewer.number, current[0].program == "codex", detail=f"{first} / {second}")
+    story.expect_rows((first, second) == ("claude", "codex"), len(current) == 1, current[0].number == reviewer.id, current[0].program == "codex", detail=f"{first} / {second}")
 
 
 def test_fresh_with_a_reason_while_a_reviewer_is_idle_makes_a_second_agent_and_keeps_the_reason(idle_reviewer):

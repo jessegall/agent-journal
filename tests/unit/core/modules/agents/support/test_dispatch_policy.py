@@ -10,9 +10,9 @@ from engine.time.timestamp import Timestamp
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 ENDED_AT = Timestamp.parsed("2026-10-31T09:00:00+00:00")
-MAIN = Agent(id=40, actor_id=40, creator_id=1, session="s-1", program="claude", role="main", number=1)
-HELPER = Agent(id=41, actor_id=41, creator_id=1, session="s-2", program="claude", role="helper", number=2, profile=f"{RESEARCHER_PROFILE.name}")
-SUBAGENT = Agent(id=42, actor_id=42, creator_id=1, session="s-3", program="claude", role="helper", number=3)
+MAIN = Agent(id=40, actor_id=40, creator_id=1, session="s-1", program="claude", role="main")
+HELPER = Agent(id=41, actor_id=41, creator_id=1, session="s-2", program="claude", role="helper", profile=f"{RESEARCHER_PROFILE.name}")
+SUBAGENT = Agent(id=42, actor_id=42, creator_id=1, session="s-3", program="claude", role="helper")
 AGENTS = [MAIN, replace(MAIN, ended_at=ENDED_AT), HELPER, replace(HELPER, ended_at=ENDED_AT), replace(HELPER, ended_at=ENDED_AT, retired_at=ENDED_AT),
           SUBAGENT, replace(SUBAGENT, ended_at=ENDED_AT)]
 

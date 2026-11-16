@@ -26,5 +26,5 @@ def test_a_merger_start_on_another_program_reviews_and_a_worker_merge_retire_no_
         story.run_listeners()
         launches(story, review_job(story, reviewers(story)[0], plan))
     agents = list(story.story_rows(Agent))
-    story.expect_rows(len(reviewers(story)) == 1, all(agent.retired_at is None for agent in agents), detail=str([(agent.number, agent.profile, agent.retired_at) for agent in agents]))
+    story.expect_rows(len(reviewers(story)) == 1, all(agent.retired_at is None for agent in agents), detail=str([(agent.id, agent.profile, agent.retired_at) for agent in agents]))
     story.expect_absent("agent list --environment main --json", '"retired_at": "', actor=story.user)

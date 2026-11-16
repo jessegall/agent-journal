@@ -375,7 +375,7 @@ def expect_day_start(row) -> None:
 
 
 def expect_number_event_id_body(log, expected) -> None:
-    actual = [(row.number, row.body['event_id']) for row in log.read()]
+    actual = [(row.id, row.body['event_id']) for row in log.read()]
     assert actual == expected, actual
 
 

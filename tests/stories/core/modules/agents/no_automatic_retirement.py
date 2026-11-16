@@ -29,4 +29,4 @@ def test_a_cold_replacement_and_a_profile_moved_to_another_program_retire_no_age
     cooling.home.socket("launcher").unlink()
     helpers = [agent for agent in agents(cooling) if agent.profile == "cooling"]
     cooling.expect_rows(len(helpers) == 1, helpers[0].id == replaced.id, helper_agent(cooling).session != replaced.session,
-                        all(agent.retired_at is None for agent in agents(cooling)), detail=str([(agent.number, agent.profile, agent.retired_at) for agent in agents(cooling)]))
+                        all(agent.retired_at is None for agent in agents(cooling)), detail=str([(agent.id, agent.profile, agent.retired_at) for agent in agents(cooling)]))

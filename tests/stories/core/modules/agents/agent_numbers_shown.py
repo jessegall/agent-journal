@@ -46,7 +46,7 @@ def test_agent_show_json_keeps_the_row_id_under_id_and_gives_the_number_beside_i
     story = new_story(fixture=BuilderStarted)
     worker_id = started_worker(story, "s-9", "main", story.agent.id)
     agent = shown(story, worker_id)
-    story.expect_rows(agent["id"] == worker_id, "number" in agent, agent["number"] == 2, agent["number"] != agent["id"])
+    story.expect_rows(agent["id"] == worker_id, "number" in agent, agent["id"] == 2, agent["id"] != agent["id"])
 
 
 def test_a_person_editing_an_agents_number_is_refused_and_nothing_changes(new_story):
@@ -54,7 +54,7 @@ def test_a_person_editing_an_agents_number_is_refused_and_nothing_changes(new_st
     worker_id = started_worker(story, "s-9", "main", story.agent.id)
     story.expect_refusal(f"agent edit {worker_id} --number 9", NUMBER_REFUSAL, actor=story.user)
     story.expect_refusal(f"agent edit {story.agent.id} --number 9", NUMBER_REFUSAL, actor=story.user)
-    story.expect_rows(shown(story, worker_id)["number"] == 2, shown(story, story.agent.id)["number"] == 1)
+    story.expect_rows(shown(story, worker_id)["id"] == 2, shown(story, story.agent.id)["id"] == 1)
 
 
 def test_an_agent_changing_its_own_number_is_refused_and_nothing_is_written(new_story):
@@ -62,7 +62,7 @@ def test_an_agent_changing_its_own_number_is_refused_and_nothing_is_written(new_
     worker = Actor(started_worker(story, "s-9", "main", story.agent.id), ActorType.AGENT)
     story.expect_refusal(f"agent edit {worker.id} --number 1", "may not run agent edit", actor=worker)
     story.expect_refusal(f"agent edit {story.agent.id} --number 9", NUMBER_REFUSAL, actor=story.agent)
-    story.expect_rows(shown(story, worker.id)["number"] == 2, shown(story, story.agent.id)["number"] == 1)
+    story.expect_rows(shown(story, worker.id)["id"] == 2, shown(story, story.agent.id)["id"] == 1)
 
 
 def test_agent_two_in_a_message_links_to_agent_two_of_the_messages_environment(new_story):

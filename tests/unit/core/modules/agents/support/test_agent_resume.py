@@ -10,7 +10,7 @@ from engine.time.timestamp import Timestamp
 
 NOW = Timestamp.parsed("2026-10-31T09:00:00+00:00")
 COMMAND = LaunchCommand(arguments=("claude", "--resume", "s-1"), folder=Path("/work/journal"), variables={"JOURNAL_ENV": "main"})
-HELPER = Agent(id=41, actor_id=41, environment_id=1, number=2, creator_id=1, session="s-1", program="claude", role="helper", ended_at=NOW)
+HELPER = Agent(id=41, actor_id=41, environment_id=1, creator_id=1, session="s-1", program="claude", role="helper", ended_at=NOW)
 WORKER = replace(HELPER, id=42, number=3, role="worker")
 
 

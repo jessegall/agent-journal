@@ -41,10 +41,12 @@ class ActorTable(RoundState):
         self.kept = KeptRows(database)
         self.agent_answers: dict[int, bool] = {}
         self.row_owners: dict[int, RowOwner | None] = {}
+        self.printed_texts: dict[int, str] = {}
 
     def reset(self) -> None:
         self.agent_answers = {}
         self.row_owners = {}
+        self.printed_texts = {}
 
     def core_actor(self, timestamp: str) -> None:
         self.database.update(Statement(CORE_ACTOR.sql, (CORE_ACTOR_ID, ActorType.CORE.value, timestamp, timestamp)))
@@ -65,6 +67,11 @@ class ActorTable(RoundState):
         return int(self.database.rows(Statement(NEXT_AGENT_ACTOR_ID.sql, [FIRST_OTHER_ACTOR_ID - 1, MAIN_AGENT_ID]))[0]["id"])
 
     def printed(self, actor_id: int) -> str:
+        if actor_id not in self.printed_texts:
+            self.printed_texts[actor_id] = self.actor_text(actor_id)
+        return self.printed_texts[actor_id]
+
+    def actor_text(self, actor_id: int) -> str:
         if actor_id == CORE_ACTOR_ID:
             return CORE_TEXT
         rows = self.database.rows(Statement(PRINTED_ACTOR.sql, [actor_id]))

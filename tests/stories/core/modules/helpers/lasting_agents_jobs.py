@@ -29,7 +29,7 @@ def test_a_job_sent_to_an_idle_helper_runs_on_that_helper_which_still_reads_its_
     story = idle_helper
     helper = helper_agent(story)
     story.expect_success(f'memory make "{MEMORY_TEXT}" --weight 5', actor=Actor(helper.id, ActorType.AGENT))
-    command = launches(story, f'helper send {helper.number} "{JOB}"')[0]["command"]
+    command = launches(story, f'helper send {helper.id} "{JOB}"')[0]["command"]
     story.expect_rows(len(researchers(story)) == 1, helper_agent(story).session == helper.session, "--resume" in command, len(read_jobs(story, helper)) == 2, detail=str(command[:4]))
     story.expect_text("memory list", MEMORY_TEXT, actor=Actor(helper.id, ActorType.AGENT))
 
@@ -38,7 +38,7 @@ def test_a_start_while_a_helper_of_the_profile_is_idle_is_refused_naming_its_num
     story = idle_helper
     helper = helper_agent(story)
     refusal = refusal_text(story, TAX_START)
-    story.expect_rows(f'helper {helper.number} is idle: journal helper send {helper.number} "<job>"' in refusal, '--fresh "<why>"' in refusal, len(researchers(story)) == 1, detail=refusal)
+    story.expect_rows(f'helper {helper.id} is idle: journal helper send {helper.id} "<job>"' in refusal, '--fresh "<why>"' in refusal, len(researchers(story)) == 1, detail=refusal)
 
 
 def test_a_start_with_the_fresh_flag_makes_a_second_helper_and_keeps_the_reason(idle_helper):
@@ -63,7 +63,7 @@ def test_a_job_sent_to_a_retired_helper_is_refused_and_nothing_is_made(idle_help
     story = idle_helper
     helper = helper_agent(story)
     story.expect_success(f'memory make "{MEMORY_TEXT}" --weight 5', actor=Actor(helper.id, ActorType.AGENT))
-    story.expect_success(f'agent retire {helper.number} --reason "Its reading is done" --environment main', actor=story.user)
-    refusal = refusal_text(story, f'helper send {helper.number} "{JOB}"')
+    story.expect_success(f'agent retire {helper.id} --reason "Its reading is done" --environment main', actor=story.user)
+    refusal = refusal_text(story, f'helper send {helper.id} "{JOB}"')
     story.expect_text("memory list", MEMORY_TEXT, actor=Actor(helper.id, ActorType.AGENT))
-    story.expect_rows(f"helper {helper.number} is retired, for good" in refusal, len(researchers(story)) == 1, len(read_jobs(story, helper)) == 1, helper_agent(story).session == helper.session, helper_agent(story).retired_at is not None)
+    story.expect_rows(f"helper {helper.id} is retired, for good" in refusal, len(researchers(story)) == 1, len(read_jobs(story, helper)) == 1, helper_agent(story).session == helper.session, helper_agent(story).retired_at is not None)

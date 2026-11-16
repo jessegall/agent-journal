@@ -37,7 +37,7 @@ class MainControlsActors(StoryFixture):
 
 def agent_actors(story: Story) -> dict[str, Actor]:
     actors = {"main": story.agent}
-    for row_id in range(story.user.id + 1, story.user.id + 1 + len(AGENT_ROLES)):
+    for row_id in range(story.agent.id + 1, story.agent.id + 1 + len(AGENT_ROLES)):
         session = re.search(r"^session: (\w+)-session$", story.run(f"agent show {row_id}", actor=story.user).output_text, re.MULTILINE)
         actors[session[1]] = Actor(row_id, ActorType.AGENT)
     return actors

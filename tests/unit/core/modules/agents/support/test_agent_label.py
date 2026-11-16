@@ -9,7 +9,7 @@ class RowFortyIsNumberFive(AgentIds):
 
 
 def agent(role: str, number: int) -> Agent:
-    return Agent(id=40, actor_id=40, creator_id=1, session="s-1", program="claude", role=role, number=number)
+    return Agent(id=40, actor_id=40, creator_id=1, session="s-1", program="claude", role=role)
 
 
 def test_a_helper_is_named_by_its_role_and_its_number():

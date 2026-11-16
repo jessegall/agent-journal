@@ -20,7 +20,7 @@ TWO_PROGRAM_SAVE = f"profile save {PLAN_REVIEWER_PROFILE.name} --program claude 
 
 
 def session_history(story, reviewer: Agent) -> list[dict]:
-    return json.loads(story.run(f"agent sessions {reviewer.number} --environment main --json", actor=story.user).output_text)["rows"]
+    return json.loads(story.run(f"agent sessions {reviewer.id} --environment main --json", actor=story.user).output_text)["rows"]
 
 
 def diff_readers(story) -> list[Agent]:
@@ -48,7 +48,7 @@ def test_a_steering_line_to_a_running_reviewer_changes_neither_its_session_nor_i
     story = new_story(fixture=StartedReviewer)
     reviewer = reviewers(story)[0]
     history = session_history(story, reviewer)
-    story.expect_success(f'helper send {reviewer.number} "Also read phase 3" --steer', actor=story.agent)
+    story.expect_success(f'helper send {reviewer.id} "Also read phase 3" --steer', actor=story.agent)
     jobs = read_jobs(story, reviewer)
     story.expect_rows(len(history) == 1, session_history(story, reviewer) == history, reviewers(story)[0].session == reviewer.session, len(jobs) == 1, "Also read phase 3" in jobs[0].brief)
 
@@ -77,7 +77,7 @@ def test_a_reviewer_whose_program_is_out_runs_on_another_and_with_no_program_lef
 def test_the_number_of_a_reviewer_a_person_retired_is_never_given_again(idle_reviewer):
     story = idle_reviewer
     retired = reviewers(story)[0]
-    story.expect_success(f'agent retire {retired.number} --reason "Its reviews are done" --environment main', actor=story.user)
+    story.expect_success(f'agent retire {retired.id} --reason "Its reviews are done" --environment main', actor=story.user)
     launches(story, START_REVIEW.format(plan=6), f"{START_REVIEW.format(plan=7)} --fresh '{NEW_AGENT_REASON}'")
-    numbers = [reviewer.number for reviewer in reviewers(story)]
-    story.expect_rows(len(numbers) == 3, len(set(numbers)) == 3, numbers == sorted(numbers), numbers[0] == retired.number, reviewers(story)[0].retired_at is not None, detail=str(numbers))
+    numbers = [reviewer.id for reviewer in reviewers(story)]
+    story.expect_rows(len(numbers) == 3, len(set(numbers)) == 3, numbers == sorted(numbers), numbers[0] == retired.id, reviewers(story)[0].retired_at is not None, detail=str(numbers))

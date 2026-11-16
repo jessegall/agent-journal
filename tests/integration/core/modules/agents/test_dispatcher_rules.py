@@ -106,7 +106,7 @@ def test_557_the_list_of_agents_and_the_row_of_an_agent_carry_the_agent_state_it
     story = played(StartedHelper)
     number = helper_agent(story).id
     launcher(story, answer=PROGRAM_RUNS, request_count=0)
-    listed = {row["number"]: row for row in json.loads(story.run("agent list --json --environment main", actor=story.user).output_text)["rows"]}
+    listed = {row["id"]: row for row in json.loads(story.run("agent list --json --environment main", actor=story.user).output_text)["rows"]}
     story.expect_rows(listed[number].get("agent_state") == "running", detail=str(listed[number]))
     story.expect_text(f"agent show {number} --environment main", "state: running", actor=story.user)
 

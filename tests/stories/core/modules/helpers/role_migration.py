@@ -29,7 +29,7 @@ def agent_row(story, number: int) -> StoredAgent:
 
 def role_numbers(story, role: str) -> list[int]:
     rows = json.loads(story.run(f"agent list --role {role} --json --limit 50 --environment main", actor=story.user).output_text)["rows"]
-    return [row["number"] for row in rows]
+    return [row["id"] for row in rows]
 
 
 def merger_group(story, role: str) -> str:

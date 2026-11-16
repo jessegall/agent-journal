@@ -8,8 +8,7 @@ ENDED = Timestamp(datetime(2026, 11, 1, tzinfo=timezone.utc))
 
 
 def main(row_id: int, environment_id: int = 5, number: int = 0, ended: bool = True, role: str = "main") -> Agent:
-    return Agent(id=row_id, actor_id=row_id, environment_id=environment_id, number=number, creator_id=1, session=f"s-{row_id}", program="claude", role=role,
-                 ended_at=ENDED if ended else None)
+    return Agent(id=row_id, actor_id=row_id, environment_id=environment_id, creator_id=1, session=f"s-{row_id}", program="claude", role=role, ended_at=ENDED if ended else None)
 
 
 def test_the_running_main_row_survives_over_the_one_numbered_1():

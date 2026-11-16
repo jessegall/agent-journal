@@ -119,7 +119,7 @@ def test_a_worker_at_its_usage_limit_keeps_the_limit_while_it_is_idle_and_starts
     story.advance(timedelta(seconds=LIMIT_WINDOW_SECONDS - COLD_IDLE_SECONDS + 10))
     WorkerResumeRetry()(story.container)
     replaced = story.row(Agent, worker.id)
-    story.expect_rows(len(launches) == 1, replaced.session != worker.session, replaced.number == worker.number, replaced.retired_at is None, len(worker_rows(story)) == 1, detail=str(launches))
+    story.expect_rows(len(launches) == 1, replaced.session != worker.session, replaced.number == worker.id, replaced.retired_at is None, len(worker_rows(story)) == 1, detail=str(launches))
     story.expect_rows(launches[0]["session"] == replaced.session, "--resume" not in launches[0]["command"])
 
 
@@ -131,11 +131,11 @@ def test_a_job_sent_to_a_worker_whose_program_is_out_waits_and_says_so_and_the_w
     story.run_listeners()
     story.advance(timedelta(seconds=COLD_IDLE_SECONDS))
     launches.clear()
-    answer = story.run(f'worker send --wait {worker.number} "{JOB}"', actor=story.agent)
+    answer = story.run(f'worker send --wait {worker.id} "{JOB}"', actor=story.agent)
     story.run_listeners()
     WorkerResumeRetry()(story.container)
     waiting = story.row(Agent, worker.id)
-    story.expect_rows(answer.code == 0, f"worker {worker.number} waits on {worker.program}" in answer.output_text, launches == [], waiting.session == worker.session,
+    story.expect_rows(answer.code == 0, f"worker {worker.id} waits on {worker.program}" in answer.output_text, launches == [], waiting.session == worker.session,
                       waiting.retired_at is None, len(worker_rows(story)) == 1, detail=answer.output_text)
     story.expect_success(f"provider-outage end {worker.program}", actor=story.user)
     WorkerResumeRetry()(story.container)
@@ -146,8 +146,8 @@ def test_a_worker_whose_worktree_was_merged_stays_kept_and_idle_with_its_memorie
     story = merged_worker
     worker = story.row(Agent, story.worker.id)
     story.expect_text("memory list", MEMORY_TEXT, actor=story.worker)
-    story.expect_text(f"worker status {worker.number}", f"worker {worker.number} is idle", "no worktree", actor=story.agent)
-    story.expect_text(f"agent show {worker.number} --environment main", f"number: {worker.number}", "role: worker", actor=story.agent)
+    story.expect_text(f"worker status {worker.id}", f"worker {worker.id} is idle", "no worktree", actor=story.agent)
+    story.expect_text(f"agent show {worker.id} --environment main", f"number: {worker.id}", "role: worker", actor=story.agent)
     story.expect_rows(worker.retired_at is None, worker.ended_at is not None, story.first_row(Worktree, session_agent_id=worker.id) is None, len(worker_rows(story)) == 1)
 
 
@@ -156,11 +156,11 @@ def test_a_task_sent_to_a_merged_worker_cuts_a_second_worktree_from_the_current_
     worker = story.row(Agent, story.worker.id)
     story.repository.committed("tax.py", UNCOMMITTED_TEXT, "Add the tax rate")
     task = story.new_row_id(f'task make "{JOB}" --brief "The work after the merge" --environment main', actor=story.agent)
-    lifetime_reviewers.launches(story, f"worker send --wait {worker.number} --task {task}")
+    lifetime_reviewers.launches(story, f"worker send --wait {worker.id} --task {task}")
     first, second = worktree_rows(story, worker.id)
     story.expect_rows(second.base_commit == story.repository.tip(ENVIRONMENT_BRANCH), second.base_branch == ENVIRONMENT_BRANCH, second.branch == f"{first.branch}-2",
                       second.folder == first.folder, len(worker_rows(story)) == 1, detail=f"{first.branch} / {second.branch} / {second.base_commit}")
-    story.expect_text(f"worker status {worker.number}", second.branch, JOB, actor=story.agent)
+    story.expect_text(f"worker status {worker.id}", second.branch, JOB, actor=story.agent)
 
 
 def test_a_cold_worker_with_an_open_worktree_starts_its_new_session_in_the_same_folder_and_branch_and_its_uncommitted_file_stays(stopped_worker):

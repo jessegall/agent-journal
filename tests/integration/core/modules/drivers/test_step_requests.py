@@ -19,8 +19,8 @@ def test_a_message_to_an_agent_leaves_its_step_request_in_the_same_write_and_a_s
     story = played(StartedHelper)
     helper = helper_agent(story)
     waiting_slice_on(story, helper.session)
-    story.expect_success(f'message send "read the brief" --to agent:{helper.number}', actor=story.agent)
-    story.expect_success(f'message send "and then the plan" --to agent:{helper.number}', actor=story.agent)
+    story.expect_success(f'message send "read the brief" --to agent:{helper.id}', actor=story.agent)
+    story.expect_success(f'message send "and then the plan" --to agent:{helper.id}', actor=story.agent)
     opened = [request for request in requests(story, helper.id) if request.served_at is None]
     # one open request for the helper, which the messages joined: the helper's start may have asked for it first
     assert len(opened) == 1 and opened[0].causes[-1] == STEP_CAUSE and opened[0].causes.count(STEP_CAUSE) == 1
@@ -30,6 +30,6 @@ def test_the_round_serves_an_open_request(played):
     story = played(StartedHelper)
     helper = helper_agent(story)
     waiting_slice_on(story, helper.session)
-    story.expect_success(f'message send "read the brief" --to agent:{helper.number}', actor=story.agent)
+    story.expect_success(f'message send "read the brief" --to agent:{helper.id}', actor=story.agent)
     AgentStepRound()(story.container)
     assert [request.served_at is not None for request in requests(story, helper.id)] == [True]

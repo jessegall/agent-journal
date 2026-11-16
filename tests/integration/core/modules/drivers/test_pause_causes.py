@@ -15,8 +15,8 @@ def test_a_helper_paused_with_its_main_agent_holds_one_cause_for_each_in_todays_
     story = played(StartedHelper)
     helper = helper_agent(story)
     main = story.container.get(AgentRows).find(helper.parent_id)
-    story.expect_success(f"agent pause {main.number}", actor=story.user)
-    story.expect_success(f"agent pause {helper.number}", actor=story.user)
+    story.expect_success(f"agent pause {main.id}", actor=story.user)
+    story.expect_success(f"agent pause {helper.id}", actor=story.user)
     pause = pause_fact(story, helper.id)
     assert pause is not None and {cause.paused_agent_id for cause in pause.causes} == {helper.id, main.id}
     assert pause.refusal_text == PausedRefusalMessage.declared().agent_message().text
@@ -26,8 +26,8 @@ def test_resuming_the_helper_leaves_the_cause_of_its_paused_main_agent(played):
     story = played(StartedHelper)
     helper = helper_agent(story)
     main = story.container.get(AgentRows).find(helper.parent_id)
-    story.expect_success(f"agent pause {main.number}", actor=story.user)
-    story.expect_success(f"agent pause {helper.number}", actor=story.user)
-    story.expect_success(f"agent resume {helper.number}", actor=story.user)
+    story.expect_success(f"agent pause {main.id}", actor=story.user)
+    story.expect_success(f"agent pause {helper.id}", actor=story.user)
+    story.expect_success(f"agent resume {helper.id}", actor=story.user)
     pause = pause_fact(story, helper.id)
     assert pause is not None and [cause.paused_agent_id for cause in pause.causes] == [main.id]

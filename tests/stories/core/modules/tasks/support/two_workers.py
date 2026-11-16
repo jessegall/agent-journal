@@ -20,11 +20,11 @@ class TwoWorkersFourTasks(StoryFixture):
 
 
 def worker_w(story: Story) -> Actor:
-    return Actor(story.user.id + 1, ActorType.AGENT)
+    return Actor(story.agent.id + 1, ActorType.AGENT)
 
 
 def worker_v(story: Story) -> Actor:
-    return Actor(story.user.id + 2, ActorType.AGENT)
+    return Actor(story.agent.id + 2, ActorType.AGENT)
 
 
 def assign(story: Story, task_id: int, actor: Actor) -> None:

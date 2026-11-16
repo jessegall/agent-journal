@@ -68,8 +68,8 @@ def test_a_retired_agents_wake_is_cancelled(played):
     story = played(StartedHelper)
     helper = helper_agent(story)
     wake = stored_wake(story, helper.id)
-    story.expect_success(f"helper stop {helper.number}", actor=story.agent)
-    story.expect_success(f'agent retire {helper.number} --reason "done"', actor=story.user)
+    story.expect_success(f"helper stop {helper.id}", actor=story.agent)
+    story.expect_success(f'agent retire {helper.id} --reason "done"', actor=story.user)
     assert story.container.get(AgentRows).find(helper.id).retired_at is not None
     AgentWakeDelivery()(story.container)
     assert wake_row(story, wake.id).state is WakeState.CANCELLED

@@ -41,7 +41,7 @@ def test_the_viewer_names_an_agent_by_its_row_and_reaches_it_in_the_environment_
     story = new_story(fixture=TwoEnvironments)
     shop_worker = worker_of(story, "shop")
     shown = json.loads(story.run(f"agent show row:{shop_worker} --environment shop --json", actor=story.user).output_text)
-    story.expect_rows(shown["id"] == shop_worker, shown["number"] == 2)
+    story.expect_rows(shown["id"] == shop_worker, shown["id"] == 2)
     absent = "no agent with row {row} in environment main"
     story.expect_refusal(f"agent show row:{shop_worker} --environment main", absent.format(row=shop_worker), actor=story.user)
     story.expect_refusal("agent show row:9999 --environment main", absent.format(row=9999), actor=story.user)

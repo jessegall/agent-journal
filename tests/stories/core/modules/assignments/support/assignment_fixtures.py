@@ -11,8 +11,8 @@ PALLET = "pallet 1"
 
 
 def worker(story: Story) -> Actor:
-    """The worker agent CratesAndActors started: the actor made after Ada."""
-    return Actor(story.user.id + 1, ActorType.AGENT)
+    """The worker agent CratesAndActors started: the agent after the main agent."""
+    return Actor(story.agent.id + 1, ActorType.AGENT)
 
 
 def second_person(story: Story) -> Actor:

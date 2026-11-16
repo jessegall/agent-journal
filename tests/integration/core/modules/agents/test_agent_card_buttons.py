@@ -10,7 +10,7 @@ LISTENER_WAIT_SECONDS, LISTENER_PAUSE_SECONDS = 10, 0.05
 
 
 def card_facts(person, helper) -> dict:
-    return person.value(WINDOW, ["usage", "agents", "--closed", "--agent", str(helper.number), "--json"])["rows"][0]
+    return person.value(WINDOW, ["usage", "agents", "--closed", "--agent", str(helper.id), "--json"])["rows"][0]
 
 
 def test_a_person_pauses_stops_ends_the_open_job_and_retires_an_agent_from_its_card_by_its_number(played):
@@ -18,16 +18,16 @@ def test_a_person_pauses_stops_ends_the_open_job_and_retires_an_agent_from_its_c
     helper = helper_agent(story)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"), answer=b"stopped\n", request_count=5)
     with viewer_client(story) as person:
-        person.value(WINDOW, ["agent", "pause", str(helper.number)])
+        person.value(WINDOW, ["agent", "pause", str(helper.id)])
         paused = helper_agent(story)
-        person.value(WINDOW, ["helper", "stop", str(helper.number)])
+        person.value(WINDOW, ["helper", "stop", str(helper.id)])
         story.run_listeners()
         job_ended_in_rows = PolledWait(LISTENER_WAIT_SECONDS, LISTENER_PAUSE_SECONDS).poll(lambda: story.container.get(HelperJobRows).open_job(helper.id) is None)
         job_open = job_ended_in_rows and card_facts(person, helper)["helper_job_open"] is False
-        person.value(WINDOW, ["helper", "stop", str(helper.number)])
+        person.value(WINDOW, ["helper", "stop", str(helper.id)])
         stopped = helper_agent(story)
         job_ended = card_facts(person, helper)["helper_job_open"] is False
-        person.value(WINDOW, ["agent", "retire", str(helper.number), "--reason", RETIREMENT_REASON])
+        person.value(WINDOW, ["agent", "retire", str(helper.id), "--reason", RETIREMENT_REASON])
     launcher.server.close()
     retired = helper_agent(story)
     story.expect_rows(paused.paused_at is not None, job_open, job_ended, stopped.ended_at is not None, retired.retired_at is not None, retired.retirement_reason == RETIREMENT_REASON, retired.id == helper.id,

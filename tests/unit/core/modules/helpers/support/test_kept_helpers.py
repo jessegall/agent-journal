@@ -54,7 +54,7 @@ def kept_helpers(helpers: list[SimpleNamespace], open_job_ids: frozenset[int] = 
 
 
 def numbers(kept: KeptHelpers, occupant: Occupant) -> list[int]:
-    return [agent.number for agent in kept.idle(SELECTION, occupant)]
+    return [agent.id for agent in kept.idle(SELECTION, occupant)]
 
 
 def test_the_lowest_idle_number_comes_first_for_every_occupant():

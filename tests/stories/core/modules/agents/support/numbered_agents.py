@@ -11,12 +11,12 @@ FIRST_STORY_NUMBER = 1
 
 def listed(story: Story, environment: str = "main") -> dict[int, dict]:
     rows = json.loads(story.run(f"agent list --environment {environment} --json", actor=story.user).output_text)["rows"]
-    return {row["id"]: row for row in rows if row["number"] is None or row["number"] >= FIRST_STORY_NUMBER}
+    return {row["id"]: row for row in rows if row["id"] is None or row["id"] >= FIRST_STORY_NUMBER}
 
 
 def agent_numbers(story: Story, environment: str = "main") -> dict[int, int]:
     rows = json.loads(story.run(f"agent list --environment {environment} --json").output_text)["rows"]
-    return {row["id"]: row["number"] for row in rows if row["number"] is None or row["number"] >= FIRST_STORY_NUMBER}
+    return {row["id"]: row["id"] for row in rows if row["id"] is None or row["id"] >= FIRST_STORY_NUMBER}
 
 
 def worker_of(story: Story, environment: str) -> int:
@@ -40,7 +40,7 @@ class MainWithOneWorker(StoryFixture):
         started_worker(story, "s-2", "main", story.agent.id)
 
     def expect(self, story: Story) -> None:
-        story.expect_rows(sorted(row["number"] for row in listed(story, "main").values()) == [1, 2])
+        story.expect_rows(sorted(row["id"] for row in listed(story, "main").values()) == [1, 2])
 
 
 class TwoEnvironments(StoryFixture):
@@ -59,7 +59,7 @@ class TwoEnvironments(StoryFixture):
         story.expect_success("environment show 2", "name: shop")
         for environment in ("main", "shop"):
             rows = listed(story, environment).values()
-            story.expect_rows(sorted(row["number"] for row in rows) == [1, 2], [row["role"] for row in rows if row["number"] == 1] == ["main"])
+            story.expect_rows(sorted(row["id"] for row in rows) == [1, 2], [row["role"] for row in rows if row["id"] == 1] == ["main"])
 
 
 class ShopWithThreeAgents(StoryFixture):

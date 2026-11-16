@@ -29,7 +29,7 @@ def helper_rows(story) -> list[Agent]:
 
 def test_the_main_agent_retires_its_ended_helper_at_once_with_no_approval(ended):
     helper = helper_agent(ended)
-    ended.expect_success(RETIRE.format(number=helper.number), actor=ended.agent)
+    ended.expect_success(RETIRE.format(number=helper.id), actor=ended.agent)
     ended.expect_rows(helper_agent(ended).retired_at is not None, approval_requests(ended) == [])
 
 
@@ -37,29 +37,29 @@ def test_a_person_retires_an_ended_helper_in_the_viewer_and_its_number_and_memor
     helper = helper_agent(ended)
     ended.expect_success(f'memory make "{MEMORY_TEXT}" --weight 5', actor=Actor(helper.id, ActorType.AGENT))
     with viewer_client(ended) as person:
-        person.value("agents.agents", ["agent", "retire", str(helper.number), "--reason", "Its reading is done", "--environment", "main"])
+        person.value("agents.agents", ["agent", "retire", str(helper.id), "--reason", "Its reading is done", "--environment", "main"])
     launches(ended, TAX_START)
     kept = helper_rows(ended)
-    ended.expect_rows(len(kept) == 2, kept[0].retired_at is not None, kept[1].retired_at is None, kept[1].number > helper.number, detail=str(kept))
+    ended.expect_rows(len(kept) == 2, kept[0].retired_at is not None, kept[1].retired_at is None, kept[1].number > helper.id, detail=str(kept))
     ended.expect_text("memory list", MEMORY_TEXT, actor=Actor(helper.id, ActorType.AGENT))
 
 
 def test_a_person_who_retires_a_running_helper_is_told_to_stop_it_first(new_story):
     story = new_story(fixture=StartedHelper)
     helper = helper_agent(story)
-    story.expect_refusal(RETIRE.format(number=helper.number), "is still running", actor=story.user)
+    story.expect_refusal(RETIRE.format(number=helper.id), "is still running", actor=story.user)
     story.expect_rows(helper_agent(story).retired_at is None)
 
 
 def test_a_person_who_deletes_an_agent_is_refused_naming_the_retirement_and_its_record_stays(ended):
     helper = helper_agent(ended)
-    ended.expect_refusal(f"agent delete {helper.number} --environment main", f"its record stays: journal agent retire {helper.number}", actor=ended.user)
+    ended.expect_refusal(f"agent delete {helper.id} --environment main", f"its record stays: journal agent retire {helper.id}", actor=ended.user)
     kept = helper_rows(ended)
     ended.expect_rows(len(kept) == 1, kept[0].id == helper.id, kept[0].retired_at is None, detail=str(kept))
 
 
 def test_a_person_who_deletes_a_retired_agent_is_refused_and_its_record_stays(ended):
     helper = helper_agent(ended)
-    ended.expect_success(RETIRE.format(number=helper.number), actor=ended.user)
-    ended.expect_refusal(f"agent delete {helper.number} --environment main", "is retired, and its record stays", actor=ended.user)
+    ended.expect_success(RETIRE.format(number=helper.id), actor=ended.user)
+    ended.expect_refusal(f"agent delete {helper.id} --environment main", "is retired, and its record stays", actor=ended.user)
     ended.expect_rows(len(helper_rows(ended)) == 1, helper_agent(ended).retired_at is not None)

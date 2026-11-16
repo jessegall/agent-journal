@@ -33,7 +33,7 @@ class LaunchedEnvironment:
 
     def open_main_numbers(self) -> list[int]:
         rows = json.loads(self.server.story.run(f"agent list --environment {ENVIRONMENT} --oldest --limit 1000 --json").output_text)["rows"]
-        return [row["number"] for row in rows if row["role"] == "main" and row["ended_at"] is None]
+        return [row["id"] for row in rows if row["role"] == "main" and row["ended_at"] is None]
 
     def expect_one_main_agent(self) -> None:
         self.server.story.expect_rows(len(self.open_main_numbers()) == 1)

@@ -36,7 +36,7 @@ RUNNING = b"running\n"
 STOPPED = b"stopped\n"
 NOTHING = b"\n"
 COMMAND = LaunchCommand(arguments=("claude", "-p", "Read src/cart.py"), folder=Path("/work/journal"), variables={})
-HELPER = Agent(id=41, actor_id=41, environment_id=1, number=2, creator_id=1, session="s-1", program="claude", role="helper", profile=f"{RESEARCHER_PROFILE.name}")
+HELPER = Agent(id=41, actor_id=41, environment_id=1, creator_id=1, session="s-1", program="claude", role="helper", profile=f"{RESEARCHER_PROFILE.name}")
 ENDED_HELPER = replace(HELPER, ended_at=NOW, launched_at=NOW)
 
 
