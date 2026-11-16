@@ -6,11 +6,16 @@ from engine.command.context import Context
 from engine.database.database import Database
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
+from engine.agent_machine.states.step_requests import StepRequests
 from engine.testing.examples.hook_samples import HookSamples
+from core.modules.agents.commands.record_agent_interrupt.record_agent_interrupt import RecordAgentInterrupt
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.commands.claim_agent_wake.claim_agent_wake import ClaimAgentWake
 from core.modules.drivers.commands.claim_agent_wake.claim_agent_wake_handler import WAKE_SOURCE
+from core.modules.drivers.bindings.stored_step_writer import StoredStepWriter
+from core.modules.drivers.commands.run_agent_step.run_agent_step import RunAgentStep
 from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.models.agent_step_request import AgentStepRequest
 from core.modules.drivers.models.agent_wake import AgentWake
 from core.modules.drivers.models.enums.wake_state import WakeState
 from core.modules.drivers.ticks.agent_wake_delivery import AgentWakeDelivery
@@ -83,3 +88,31 @@ def test_a_claimed_wake_whose_typing_fails_is_put_back_to_open_with_why(played, 
     AgentWakeDelivery()(story.container)
     row = wake_row(story, wake.id)
     assert (row.state, row.failure, row.lease_ends_at) == (WakeState.OPEN, "the terminal took no input", None)
+
+
+def test_an_interrupted_agents_wake_is_held_until_its_next_prompt_clears_the_interrupt(played):
+    story = played(BuilderStarted)
+    story.container.get(Bus).run(RecordAgentInterrupt(story.agent.id), Actor.core(), environment_id=1)
+    wake = stored_wake(story, story.agent.id)
+    AgentWakeDelivery()(story.container)
+    assert wake_row(story, wake.id).state is WakeState.INHIBITED
+    story.advance(timedelta(seconds=1))
+    story.hook("s-1", HookSamples.prompt("go on"))
+    assert (story.container.get(AgentRows).find(story.agent.id).interrupted_at, wake_row(story, wake.id).state) == (None, WakeState.ACKNOWLEDGED)
+
+
+def test_a_step_that_asks_for_its_own_agents_step_is_saved_and_leaves_a_request_for_the_next_round(played, monkeypatch):
+    story = played(BuilderStarted)
+    with story.container.get(Database).transaction():
+        request = story.container.get(Repository).save(AgentStepRequest(session_agent_id=story.agent.id, causes=("tests.first-cause",)),
+                                                       Context(Actor.core(), story.clock.timestamp(), ClaimAgentWake(0)))
+    save = StoredStepWriter.save
+
+    def save_asking_again(self, view, step, hook_call_id, context):
+        story.container.get(StepRequests).requested([story.agent.id], "tests.cause-during-step", context)
+        return save(self, view, step, hook_call_id, context)
+
+    monkeypatch.setattr(StoredStepWriter, "save", save_asking_again)
+    story.container.get(Bus).run(RunAgentStep(request.id), Actor.core(), environment_id=1)
+    requests = story.container.get(Queries).query(AgentStepRequest).filter(session_agent_id=story.agent.id).every_row("one agent of one test")
+    assert [(row.causes, row.served_at is not None) for row in requests] == [(("tests.first-cause",), True), (("tests.cause-during-step",), False)]

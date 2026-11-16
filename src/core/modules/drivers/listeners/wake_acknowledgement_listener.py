@@ -10,7 +10,7 @@ from core.modules.drivers.models.enums.wake_state import WakeState
 from core.modules.drivers.models.hook_call import HookCall
 
 ACTIVE_WAKES_REASON = "the active wake obligations of one agent, one for each work generation"
-ACKNOWLEDGED_STATES = (WakeState.OPEN, WakeState.CLAIMED, WakeState.DELIVERED)
+ACKNOWLEDGED_STATES = (WakeState.OPEN, WakeState.CLAIMED, WakeState.DELIVERED, WakeState.INHIBITED)
 
 
 class WakeAcknowledgementListener(SaveListener[Changed[HookCall]]):

@@ -13,8 +13,9 @@ from core.modules.drivers.support.machine_assembly import MachineAssembly
 
 
 class RunAgentStepHandler(Handler[RunAgentStep, None]):
-    """Steps the request's agent, saves the step in this write and marks the request served. A step outside a
-    hook asks nothing, so it runs no admission effect."""
+    """Marks the request served, then steps the request's agent and saves the step in this write, so a step
+    the step itself asks for opens a request of its own for the next round. A step outside a hook asks
+    nothing, so it runs no admission effect."""
 
     command = RunAgentStep
 
@@ -24,10 +25,10 @@ class RunAgentStepHandler(Handler[RunAgentStep, None]):
 
     def handle(self, command: RunAgentStep, context: Context) -> None:
         request = self.queries.query(AgentStepRequest).find(command.request_id)
+        self.repository.save_change(request, request.changed(served_at=context.timestamp), context)
         agent = self.agents.find(request.session_agent_id)
         question = Question.none()
         view = self.assembly.with_states(self.reader.read(agent.id, question), question)
         step = self.assembly.machine(agent.role).step(view, question)
         if not self.steps.save(view, step, None, context).is_saved:
             raise StepConflictError()
-        self.repository.save_change(request, request.changed(served_at=context.timestamp), context)
