@@ -6,6 +6,9 @@ from engine.ticker.tick_interval import TickInterval
 from engine.types.class_fields import class_fields
 
 
+TIMED_JOB_REASON = "a timed job visits the rows of every environment"
+
+
 @dataclass(frozen=True)
 class TickHandler:
     """Code the ticker runs every interval, on its own thread and on a fresh container of the journal: a

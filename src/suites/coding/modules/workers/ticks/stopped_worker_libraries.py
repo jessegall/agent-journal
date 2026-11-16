@@ -1,3 +1,4 @@
+from engine.ticker.tick_handler import TIMED_JOB_REASON
 import json
 
 from engine.actor.actor import Actor
@@ -10,7 +11,6 @@ from suites.coding.modules.workers.commands.record_worktree_libraries.record_wor
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.library_folders import LibraryFolders
 
-TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 STOPPED_SECONDS = 15 * 60
 
 

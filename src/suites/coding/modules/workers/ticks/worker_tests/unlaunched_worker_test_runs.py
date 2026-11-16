@@ -1,3 +1,4 @@
+from engine.ticker.tick_handler import TIMED_JOB_REASON
 from engine.time.clock import Clock
 from engine.container.container import Container
 from engine.query.conditions.among import Among
@@ -12,7 +13,6 @@ from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 
-TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 UNLAUNCHED_REASON = "every running run may be a worker test that never launched"
 CHECKPOINT_TESTS_REASON = "every test of a checkpoint run still shown as running may be one that never launched"
 

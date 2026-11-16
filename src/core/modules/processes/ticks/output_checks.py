@@ -1,3 +1,4 @@
+from engine.ticker.tick_handler import TIMED_JOB_REASON
 from engine.actor.actor import Actor
 from engine.time.clock import Clock
 from engine.command.bus import Bus
@@ -8,7 +9,6 @@ from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.watch_query import WatchQuery
 from core.modules.processes.support.output_check_schedule import OutputCheckSchedule
 
-TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 RUNNING_REASON = "the tick checks every open watch of every running run"
 
 

@@ -1,3 +1,4 @@
+from engine.ticker.tick_handler import TIMED_JOB_REASON
 from engine.actor.actor import Actor
 from engine.time.clock import Clock
 from engine.command.bus import Bus
@@ -13,7 +14,6 @@ from core.modules.processes.support.output_folder import OutputFolder
 from engine.scope.scopes import Scopes
 from core.modules.processes.support.process_settings import ProcessSettings
 
-TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 RUNNING_REASON = "the tick recovers the end of every run still marked running"
 
 

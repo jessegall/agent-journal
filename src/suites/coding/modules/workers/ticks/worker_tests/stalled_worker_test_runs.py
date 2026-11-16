@@ -1,3 +1,4 @@
+from engine.ticker.tick_handler import TIMED_JOB_REASON
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.container.container import Container
@@ -22,7 +23,6 @@ from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_settings import HUNG_PROOF_RUN_MINUTES
 
-TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 STALLED_RUNS_REASON = "the run of every proof still shown as running is looked at"
 RUNNING_CHECKPOINT_TESTS_REASON = "every test of a checkpoint run still shown as running is looked at"
 STARTED_PLANS_REASON = "every started plan is looked at for a checkpoint run that has no tests"

@@ -1,3 +1,4 @@
+from engine.ticker.tick_handler import TIMED_JOB_REASON
 from itertools import groupby
 
 from engine.actor.actor import Actor
@@ -8,7 +9,6 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.request_agent_step.request_agent_step import RequestAgentStep
 from core.modules.drivers.models.agent_stack import AgentStack
 
-TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 MINUTE_STEP = "drivers.minute-step"
 STACKS_REASON = "the minute step reaches every agent with a stack, one row each"
 

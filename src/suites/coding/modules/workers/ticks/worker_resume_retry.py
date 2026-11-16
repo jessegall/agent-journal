@@ -1,3 +1,4 @@
+from engine.ticker.tick_handler import TIMED_JOB_REASON
 from engine.connection.connection_probe import ConnectionProbe
 from engine.connection.internet_connection import InternetConnection
 from engine.journal.journal_home import JournalHome
@@ -14,7 +15,6 @@ from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
 from suites.coding.modules.workers.support.worker_started_work import WorkerStartedWork
 
-TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 RESUME_REASON = "every worker with a waiting resume line is tried again"
 
 

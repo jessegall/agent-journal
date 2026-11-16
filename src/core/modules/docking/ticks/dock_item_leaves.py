@@ -1,3 +1,4 @@
+from engine.ticker.tick_handler import TIMED_JOB_REASON
 from engine.time.clock import Clock
 from engine.command.bus import Bus
 from engine.container.container import Container
@@ -8,8 +9,6 @@ from core.modules.docking.listeners.environment_dock_listener import MODULE_NAME
 from core.modules.docking.models.dock import Dock
 from core.modules.docking.queries.dock_item_query import DockItemQuery
 
-
-TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 
 
 class DockItemLeaves:

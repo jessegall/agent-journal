@@ -1,3 +1,4 @@
+from engine.ticker.tick_handler import TIMED_JOB_REASON
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.container.container import Container
@@ -9,7 +10,6 @@ from engine.serving.server_files import ServerFiles
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.send_journal_started_line.send_journal_started_line import SendJournalStartedLine
 
-TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 RELEASED_SESSIONS_REASON = "every kept agent of a released session is woken"
 
 

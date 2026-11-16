@@ -1,3 +1,4 @@
+from engine.ticker.tick_handler import TIMED_JOB_REASON
 from engine.actor.actor import Actor
 from engine.time.clock import Clock
 from engine.command.bus import Bus
@@ -16,7 +17,6 @@ from core.modules.processes.support.output_folder import CPU_FILE, OutputFolder
 from core.modules.processes.support.cadence.run_silences import RunSilences
 from core.modules.processes.support.process_settings import ProcessSettings
 
-TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 RUNNING_REASON = "the tick looks at every run that is running"
 STOP_AFTER_CHECKS = 3
 JOURNAL_LINE_START = "journal "

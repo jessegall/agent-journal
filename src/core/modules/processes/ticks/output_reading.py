@@ -1,3 +1,4 @@
+from engine.ticker.tick_handler import TIMED_JOB_REASON
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.container.container import Container
@@ -16,7 +17,6 @@ from core.modules.processes.support.run_slots import RunSlots
 from core.modules.processes.support.prepared_read import PreparedRead
 from core.modules.processes.support.reader_step import ReaderStep
 
-TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 WARNING_REPEAT_TICKS = 5
 GROWN_RUN_POINTS = 5
 

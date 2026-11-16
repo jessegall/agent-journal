@@ -1,3 +1,4 @@
+from engine.ticker.tick_handler import TIMED_JOB_REASON
 from contextlib import closing
 
 from engine.actor.actor import Actor
@@ -11,8 +12,6 @@ from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_queue import PluginQueue
 from core.modules.plugins.support.plugin_folder_times import PluginFolderTimes
 
-
-TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 
 
 class PluginCardReading:

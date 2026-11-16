@@ -1,3 +1,4 @@
+from engine.ticker.tick_handler import TIMED_JOB_REASON
 from suites.coding.modules.workers.types.worker import Worker
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
@@ -10,7 +11,6 @@ from core.modules.processes.queries.process_query import ProcessQuery
 from suites.coding.modules.workers.commands.report_stopped_worker_runs.report_stopped_worker_runs import SOURCE_KEY_PREFIX, ReportStoppedWorkerRuns
 from suites.coding.modules.workers.models.merger_line import MergerLine
 
-TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 STOPPED_RUNS_REASON = "the tick reports in every environment with a run of a stopped worker"
 
 

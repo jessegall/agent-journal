@@ -1,9 +1,9 @@
+from engine.ticker.tick_handler import TIMED_JOB_REASON
 from engine.time.clock import Clock
 from engine.container.container import Container
 from core.modules.aliases.commands.set_alias_silence.support.alias_silence import AliasSilence
 from core.modules.processes.queries.process_query import ProcessQuery
 
-TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 SILENT_RUNS_REASON = "the tick watches every running background run for a silent saved command"
 
 
