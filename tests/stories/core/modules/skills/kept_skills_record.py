@@ -1,4 +1,5 @@
 from core.modules.skills.commands.load_skill.support.kept_skills import KeptSkills
+from core.modules.skills.support.skill_requirement import SkillRequirement
 import json
 from pathlib import Path
 
@@ -13,17 +14,19 @@ class Reads:
 
     def __init__(self, monkeypatch) -> None:
         self.count = 0
-        discarded = KeptSkills.unloaded
+        discarded = KeptSkills.read_digests
 
-        def counted(kept, agent_id, transcript, due):
+        def counted(kept, transcript):
             self.count += 1
-            return discarded(kept, agent_id, transcript, due)
+            return discarded(kept, transcript)
 
-        monkeypatch.setattr(KeptSkills, "unloaded", counted)
+        monkeypatch.setattr(KeptSkills, "read_digests", counted)
 
 
 def compacted_session(story, folder: Path) -> dict[str, str]:
-    """Starts the session again after a compaction; the program writes its record of the kept skills after that hook."""
+    """Starts the session again after a compaction, with the skills an agent reads first held to; the program writes
+    its record of the kept skills after that hook."""
+    story.bind(SkillRequirement, SkillRequirement())
     transcript = folder / "session.jsonl"
     transcript.write_text("")
     raw = {"source": "compact", "transcript_path": str(transcript)}
