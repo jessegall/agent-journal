@@ -21,7 +21,7 @@ def main_rows(story) -> list[dict]:
 
 def expect_single_main_row(story) -> None:
     rows = main_rows(story)
-    story.expect_rows([(row["id"], row["number"]) for row in rows] == [(story.agent.id, 1)], detail=str(rows))
+    story.expect_rows([row["id"] for row in rows] == [1], story.agent.id == 1, "number" not in rows[0], detail=str(rows))
 
 
 @pytest.fixture
@@ -90,3 +90,18 @@ def test_of_two_terminals_started_within_seconds_the_last_is_agent_one_and_neith
     expect_single_main_row(story)
     story.expect_hook_refusal("s-2", HookSamples.edit("a.py"), REPLACED_REPLY)
     story.expect_text("agent sessions 1 --environment main", "s-2", REPLACED_REASON, actor=story.user)
+
+
+def test_agent_one_keeps_its_started_task_when_a_codex_session_takes_it_over(new_story):
+    story = new_story(fixture=UserBuilder)
+    task_id = story.new_row_id('task make "Count the till" --brief "count it"', actor=story.agent)
+    story.expect_success(f"task start {task_id}", actor=story.agent)
+    story.hook("s-2", HookSamples.session_start().with_fields(program="codex"))
+    story.expect_text(f"task show {task_id}", "holder_id: main agent 1", actor=story.user)
+    expect_single_main_row(story)
+
+
+def test_an_agent_id_no_agent_of_the_environment_has_is_refused_without_naming_another_environment(new_story):
+    story = new_story(fixture=UserBuilder)
+    story.expect_refusal("agent show 999 --environment main", "no agent 999 in this environment", actor=story.user)
+    story.expect_refusal("agent show row:1 --environment main", "is no agent id", actor=story.user)

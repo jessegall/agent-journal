@@ -1,0 +1,39 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/"
+            },
+            {
+                "nameIn": ["Actor", "ActorRecord", "Agent"]
+            },
+            {
+                "argument": {
+                    "at": 0,
+                    "all": [
+                        {
+                            "is": "literal"
+                        },
+                        {
+                            "textMatches": "^[0-9]+$"
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "literal-actor-id",
+        "description": "An actor or an agent is made with a number written in the code as its id, so it can land in the agents' range or on an id another row holds.",
+        "rule": "An actor's id comes from the allocator: ActorTable.next_agent_actor_id or main_agent_actor_id for an agent, next_other_actor_id for any other actor, and the constants CORE_ACTOR_ID and MAIN_AGENT_ID for the core and the main agent.",
+        "skill": "module-registration"
+    }
+}
