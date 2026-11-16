@@ -22,6 +22,21 @@
                         "fileMatches": "(^|/)src/(engine/(cli/console|command/request_user_approval)|engine/errors/user_approval_refusal|core/modules/(approvals/(commands/request_user_approval/request_user_approval_handler|models/(approval_request|standing_approval))|aliases/models/command_type))\\.py$"
                     }
                 ]
+            },
+            {
+                "nameIn": [
+                    "f_back",
+                    "exist_ok",
+                    "missing_ok",
+                    "dirs_exist_ok",
+                    "symlink_to",
+                    "target_is_directory",
+                    "is_relative_to",
+                    "add_argument",
+                    "load_module",
+                    "tmp_path",
+                    "cache_info"
+                ]
             }
         ]
     },

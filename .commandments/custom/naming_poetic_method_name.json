@@ -48,6 +48,21 @@
                         "nameMatches": "^(where|where_[a-z_]+|order_by|group_by|count_by|left_join|take|every_row|named|named_as)$"
                     }
                 ]
+            },
+            {
+                "nameIn": [
+                    "f_back",
+                    "exist_ok",
+                    "missing_ok",
+                    "dirs_exist_ok",
+                    "symlink_to",
+                    "target_is_directory",
+                    "is_relative_to",
+                    "add_argument",
+                    "load_module",
+                    "tmp_path",
+                    "cache_info"
+                ]
             }
         ],
         "select": "function",

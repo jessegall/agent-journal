@@ -67,6 +67,21 @@
                         "file": "tests/stories/**"
                     }
                 ]
+            },
+            {
+                "nameIn": [
+                    "f_back",
+                    "exist_ok",
+                    "missing_ok",
+                    "dirs_exist_ok",
+                    "symlink_to",
+                    "target_is_directory",
+                    "is_relative_to",
+                    "add_argument",
+                    "load_module",
+                    "tmp_path",
+                    "cache_info"
+                ]
             }
         ]
     },
