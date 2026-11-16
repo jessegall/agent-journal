@@ -1,6 +1,6 @@
 from core.modules.helpers.declarations.helpers_dependencies import HELPERS_DEPENDENCIES
 from core.modules.helpers.declarations.helpers_tick_handlers import HELPERS_TICK_HANDLERS
-from core.modules.helpers.effects.hand_in_retry_effect import HandInRetryEffect
+from core.modules.helpers.effects.kept_report_retry_effect import KeptReportRetryEffect
 from core.modules.helpers.effects.unstarted_helper_effect import UnstartedHelperEffect
 from core.modules.helpers.states.job_work_states import JobWorkStates
 from core.modules.helpers.effects.job_report_effect import JobReportEffect
@@ -26,7 +26,7 @@ class HelpersModule(Module):
     name = "journal.core.helpers"
     policies = [StartNamesModelPolicy]
     states = [JobWorkStates]
-    effects = [HandInRetryEffect, UnstartedHelperEffect, JobReportEffect]
+    effects = [KeptReportRetryEffect, UnstartedHelperEffect, JobReportEffect]
     seed_reason = "demo programs have no outages"
     move_reason = "version 4 had no helpers"
     requires_engine = ">=5,<6"

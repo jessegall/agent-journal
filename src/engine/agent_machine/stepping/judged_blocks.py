@@ -36,13 +36,11 @@ class JudgedBlocks:
         stop_reason = replace(planned.stop_reason, text=planned.stop_reason.text.replace(BLOCK_FIELD, numbered)) if planned.stop_reason is not None else None
         return replace(block, reason=reason, stop_reason=stop_reason, subject=planned.subject)
 
-    # one hold of a message key at a time: a plan of a key whose hold stays open waits, and of two plans of one key the
-    # first opens, so a hold raised again for another thing opens once the one before it closes
     @staticmethod
     def new_plans(view: AgentView) -> list[BlockPlan]:
-        held_keys = {block.agent_message_key for block in view.blocks if JudgedBlocks.stays_open(block, view)}
-        first_plans = {plan.agent_message.key: plan for plan in reversed(view.plans)}
-        return [plan for plan in view.plans if plan.agent_message.key not in held_keys and first_plans[plan.agent_message.key] is plan]
+        open_keys = {block.agent_message_key for block in view.blocks if JudgedBlocks.stays_open(block, view)}
+        earliest_plans = {plan.agent_message.key: plan for plan in reversed(view.plans)}
+        return [plan for plan in view.plans if plan.agent_message.key not in open_keys and earliest_plans[plan.agent_message.key] is plan]
 
     @staticmethod
     def stays_open(block: OpenBlock, view: AgentView) -> bool:

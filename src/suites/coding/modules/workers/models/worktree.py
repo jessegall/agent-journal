@@ -1,7 +1,9 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
+from pathlib import Path
 
 from engine.actor.actor import Actor
+from engine.checkout.checkout import Checkout
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.removable import Removable
 from engine.model.model import Model
@@ -101,3 +103,6 @@ class Worktree(Removable, EnvironmentScoped, Model):
 
     def has_cut_task(self, task_id: int) -> bool:
         return self.task_id == task_id and self.state is WorktreeState.CUT
+
+    def checkout(self, project_folder: Path, folder_exists: bool) -> Checkout:
+        return Checkout.copy_checkout(Path(self.folder), project_folder, self.branch, self.base_branch, self.base_commit, self.removed_at is None and folder_exists)

@@ -99,7 +99,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         handed_rows = [row for row in handed_lines.rows if row.agent_message.text not in later]
         moves = OneMovePerRow.split(answers.commands)
         tool = command.event.tool
-        metadata = {**answers.metadata(), "foreign": [run.stored() for run in command.event.foreign], "folder": str(command.event.raw.get("cwd", "")), "resumed": command.event.is_resume, "compaction_start": command.event.is_compaction_start, "stop_continuation": command.event.is_stop_continuation, "clear_start": command.event.is_clear_start, "ended_session": command.event.session if command.event.event == HookEventName.SESSION_END else "", "manual_compaction": command.event.is_manual_compaction, "search": SearchCategory.classify(tool, str(command.event.raw.get("cwd", "")), self.home.project_folder), "interrupted": command.event.is_interrupt, "background_work": command.event.has_background_work, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "agent_messages": [agent_message.key for agent_message in (*answers.delivered_agent_messages, *answers.refusal_agent_messages)]}
+        metadata = {**answers.metadata(), "foreign": [run.stored() for run in command.event.foreign], "folder": command.event.folder, "resumed": command.event.is_resume, "compaction_start": command.event.is_compaction_start, "stop_continuation": command.event.is_stop_continuation, "clear_start": command.event.is_clear_start, "ended_session": command.event.session if command.event.event == HookEventName.SESSION_END else "", "manual_compaction": command.event.is_manual_compaction, "search": SearchCategory.classify(command.event, self.home.project_folder), "interrupted": command.event.is_interrupt, "background_work": command.event.has_background_work, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "agent_messages": [agent_message.key for agent_message in (*answers.delivered_agent_messages, *answers.refusal_agent_messages)]}
         if command.event.event == HookEventName.COMPACT or command.event.is_compaction_start:
             percent = self.share.agent_percent(agent)
             if percent is not None:
@@ -203,7 +203,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         if command.event.is_monitor_tool():
             return str(command.event.tool_input().get("command", ""))[:SUMMARY_CHARACTERS]
         if tool is not None and tool.shell is not None:
-            return ProjectPaths.relative_line(tool.shell.display_text, str(command.event.raw.get("cwd", "")))[:SUMMARY_CHARACTERS] if command.event.raw.get("cwd") else tool.shell.display_text[:SUMMARY_CHARACTERS]
+            return ProjectPaths.relative_line(tool.shell.display_text, command.event.folder)[:SUMMARY_CHARACTERS] if command.event.raw.get("cwd") else tool.shell.display_text[:SUMMARY_CHARACTERS]
         if tool is not None and tool.files:
             return tool.files[0][-SUMMARY_CHARACTERS:]
         return HookCall.summarize(command.event.prompt or displayed_text)

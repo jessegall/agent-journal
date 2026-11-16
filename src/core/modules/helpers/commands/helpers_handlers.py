@@ -1,5 +1,5 @@
-from core.modules.helpers.commands.retry_hand_in.retry_hand_in_handler import RetryHandInHandler
-from core.modules.helpers.commands.drop_hand_in.drop_hand_in_handler import DropHandInHandler
+from core.modules.helpers.commands.retry_kept_report.retry_kept_report_handler import RetryKeptReportHandler
+from core.modules.helpers.commands.drop_kept_report.drop_kept_report_handler import DropKeptReportHandler
 from core.modules.helpers.commands.record_unsaved_report.record_unsaved_report_handler import RecordUnsavedReportHandler
 from core.modules.helpers.commands.change_agent_driver.change_agent_driver_handler import ChangeAgentDriverHandler
 from core.modules.helpers.commands.end_agent_lockdown.end_agent_lockdown_handler import EndAgentLockdownHandler
@@ -20,4 +20,4 @@ from core.modules.helpers.commands.start_helper.start_helper_handler import Star
 from core.modules.helpers.commands.start_unstarted_jobs.start_unstarted_jobs_handler import StartUnstartedJobsHandler
 from core.modules.helpers.commands.stop_helper.stop_helper_handler import StopHelperHandler
 
-HELPERS_HANDLERS = [RetryHandInHandler, DropHandInHandler, RecordUnsavedReportHandler, StartUnstartedJobsHandler, ChangeAgentDriverHandler, RecordJobNewSessionHandler, EndAgentLockdownHandler, GrantHelperHandler, RunGrantedCommandHandler, SetUsageLimitHandler, RefreshHourlyLimitsHandler, MakeProviderOutageHandler, SendProgramFaultHandler, StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EndHelpersPastLimitsHandler, SendHelperLimitWarningHandler, EndProviderOutagesHandler]
+HELPERS_HANDLERS = [RetryKeptReportHandler, DropKeptReportHandler, RecordUnsavedReportHandler, StartUnstartedJobsHandler, ChangeAgentDriverHandler, RecordJobNewSessionHandler, EndAgentLockdownHandler, GrantHelperHandler, RunGrantedCommandHandler, SetUsageLimitHandler, RefreshHourlyLimitsHandler, MakeProviderOutageHandler, SendProgramFaultHandler, StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EndHelpersPastLimitsHandler, SendHelperLimitWarningHandler, EndProviderOutagesHandler]

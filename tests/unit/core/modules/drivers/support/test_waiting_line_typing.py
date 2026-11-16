@@ -57,7 +57,7 @@ class AgentTurn:
     def has_ended_turn(self, agent_id: int) -> bool:
         return self.is_idle
 
-    def is_at_prompt(self, agent_id: int) -> bool:
+    def is_prompt_open(self, agent_id: int) -> bool:
         return self.is_idle
 
     def is_compacting(self, agent_id: int, checked_at) -> bool:

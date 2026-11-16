@@ -69,6 +69,7 @@ src/core/modules/drivers/support/message_records.py:every record of the agent me
 src/core/modules/drivers/support/open_block_rows.py:the open blocks of one agent are few: each is closed or skipped before the agent goes on
 src/core/modules/drivers/support/read_versions_writers.py:the environments of one project, a handful
 src/core/modules/drivers/support/read_versions_writers.py:the running agents one level of a tree started, a handful each, a few levels deep
+src/core/modules/drivers/support/read_versions_writers.py:the stacks of the agents one write moves: one agent, or a running tree of a few
 src/core/modules/drivers/support/restricted_read_access.py:a tool use is matched against every permission the agent was given, oldest first
 src/core/modules/drivers/support/waiting_line_typing.py:a release types every line that waited for the agent, oldest first
 src/core/modules/drivers/ticks/agent_minute_steps.py:the minute step reaches every agent with a stack, one row each
@@ -81,7 +82,7 @@ src/core/modules/dumps/commands/move_dump_item/move_dump_item_handler.py:a moved
 src/core/modules/environments/support/environment_rows.py:The environments of a project are a catalogue a user makes by hand, and every request reads them from this one kept load.
 src/core/modules/helpers/commands/end_provider_outages/end_provider_outages_handler.py:every outage of the program whose end has passed is ended
 src/core/modules/helpers/commands/start_unstarted_jobs/start_unstarted_jobs_handler.py:every open job that never started is started again
-src/core/modules/helpers/effects/hand_in_retry_effect.py:the jobs of one agent's helpers whose report could not be saved, a few at a time
+src/core/modules/helpers/effects/kept_report_retry_effect.py:the jobs of one agent's helpers whose report could not be saved, a few at a time
 src/core/modules/helpers/listeners/helper_resume_listener.py:the resume reaches every ended child helper of the agent with an open job
 src/core/modules/helpers/listeners/new_main_helpers_listener.py:a new main agent takes over every helper and report line of an ended one
 src/core/modules/helpers/states/job_work_states.py:the ended jobs whose frames one step takes off one helper's stack, one at most

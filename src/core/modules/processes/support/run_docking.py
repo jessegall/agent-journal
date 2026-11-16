@@ -31,9 +31,10 @@ LONG_RUN_DOCK_KEY = "processes.long-run-dock"
 
 
 class RunDocking:
-    """Docks visible runs after the dock seconds of running, time in the queue left out. It looks at the two oldest
-    runs not yet docked in a hook, so a hook that finds many runs due costs a few rows and docks them over the next
-    hooks. Read once a hook; the name a run lacks is asked by its own request row, never by the dock."""
+    """Docks visible runs after the dock seconds of running, time in the queue left out. It looks at the two
+    oldest runs not yet docked in a hook, so a hook that finds many runs due costs a few rows and docks them
+    over the next hooks. Read once a hook; the name a run lacks is asked by its own request row, never by the
+    dock."""
 
     def __init__(self, processes: ProcessQuery, folder: OutputFolder, visibility: RunVisibility, queries: Queries, room: DockRoom, settings: ProcessSettings,
                  spans: SpanQueries, clock: Clock, request_values: RequestValues, database: Database) -> None:

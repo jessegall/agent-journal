@@ -938,7 +938,10 @@
         "Remind",
         "Repair",
         "Rerun",
-        "Publish"
+        "Publish",
+        "Reopen",
+        "Retry",
+        "Drop"
     ],
     "mark_types": [
         "messages.thought",

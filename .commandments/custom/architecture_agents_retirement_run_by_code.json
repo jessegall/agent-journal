@@ -12,7 +12,8 @@
             {
                 "of": "enclosingType",
                 "nameIn": [
-                    "RetireAgentSubcommand"
+                    "RetireAgentSubcommand",
+                    "UnusedHelperRetirements"
                 ]
             },
             {
@@ -23,7 +24,7 @@
     "sin": {
         "name": "retirement-run-by-code",
         "description": "A handler, listener or tick builds the RetireAgent command, so the journal retires an agent by itself.",
-        "rule": "No code retires an agent by itself. RetireAgentSubcommand alone builds the command, from the line a person or an agent ran; at a kept limit refuse and say to ask the person.",
+        "rule": "No code retires an agent by itself. RetireAgentSubcommand builds the command from the line a person or an agent ran, and UnusedHelperRetirements alone retires a read-only helper unused for the hours a person set (message 127366); at a run limit refuse and say to ask the person.",
         "skill": "drivers-architecture"
     }
 }

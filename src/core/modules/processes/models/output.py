@@ -41,6 +41,9 @@ class Output(Model):
     full_read_output_id: int | None = None
     pruned_at: Timestamp | None = None
 
+    def is_newly_titled(self, previous: "Output | None") -> bool:
+        return bool(self.title.strip()) and (previous is None or previous.title != self.title)
+
     def has_new_full_read(self, previous: "Output | None") -> bool:
         return self.fully_read_at is not None and (previous is None or previous.fully_read_at != self.fully_read_at)
 

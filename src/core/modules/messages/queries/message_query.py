@@ -4,6 +4,7 @@ from engine.query.conditions.maximum import Maximum
 from engine.query.conditions.minimum import Minimum
 from typing import Self
 
+from engine.agent_machine.states.agent_reference import AgentReference
 from engine.database.database import Database
 from engine.database.kept_rows import KeptRows
 from engine.model.tables import Tables
@@ -89,6 +90,9 @@ class MessageQuery(Query[Message]):
 
     def undelivered(self, agent_id: int) -> Self:
         return self.unread(agent_id).matching(IsNull("delivered_at"))
+
+    def agent_undelivered(self, agent: AgentReference) -> Self:
+        return self.undelivered(agent.agent_id)
 
     # The oldest of each user message type is found by its own index walk, so none walks the other types' rows.
     def oldest_undelivered(self, agent_id: int, size: int) -> list[Message]:

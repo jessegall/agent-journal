@@ -1,12 +1,18 @@
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
 from engine.driver.tool import Tool
 from engine.enums.tool_type import ToolType
+from engine.driver.hook_event import HookEvent
 from engine.driver.search_category import CODE, SearchCategory
 
 PROJECT = Path("/work/project")
+
+
+def searched(tool: Tool | None, folder: str) -> HookEvent:
+    return replace(HookEvent.tick("claude", "s-1", "e-1", 0, "", "main"), tool=tool, raw={"cwd": folder})
 
 
 def read_search(*files: str) -> Tool:
@@ -14,21 +20,21 @@ def read_search(*files: str) -> Tool:
 
 
 def test_a_search_naming_no_path_searches_the_code_of_the_folder_it_runs_in():
-    assert SearchCategory.classify(read_search(), "/work/project", PROJECT) == CODE
-    assert SearchCategory.classify(read_search(), "", PROJECT) == CODE
+    assert SearchCategory.classify(searched(read_search(), "/work/project"), PROJECT) == CODE
+    assert SearchCategory.classify(searched(read_search(), ""), PROJECT) == CODE
 
 
 @pytest.mark.parametrize("path", ["src", "/work/project/src/cart.py", "../project/tests", ".journal/worktrees/development/worker-1/src"])
 def test_a_search_inside_the_project_searches_the_code(path):
-    assert SearchCategory.classify(read_search(path), "/work/project", PROJECT) == CODE
+    assert SearchCategory.classify(searched(read_search(path), "/work/project"), PROJECT) == CODE
 
 
 @pytest.mark.parametrize("path", ["/var/log/system.log", "../other/src", ".journal/outputs/12", ".journal/log.txt", "/work/project/.journal"])
 def test_a_search_of_logs_outputs_or_another_folder_is_not_counted(path):
-    assert SearchCategory.classify(read_search(path), "/work/project", PROJECT) == ""
+    assert SearchCategory.classify(searched(read_search(path), "/work/project"), PROJECT) == ""
 
 
 def test_a_tool_that_does_not_search_is_not_counted():
-    assert SearchCategory.classify(Tool("Edit", ToolType.EDIT, ("src/cart.py",), None, None), "/work/project", PROJECT) == ""
-    assert SearchCategory.classify(None, "/work/project", PROJECT) == ""
+    assert SearchCategory.classify(searched(Tool("Edit", ToolType.EDIT, ("src/cart.py",), None, None), "/work/project"), PROJECT) == ""
+    assert SearchCategory.classify(searched(None, "/work/project"), PROJECT) == ""
 

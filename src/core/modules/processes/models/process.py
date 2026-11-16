@@ -130,3 +130,6 @@ class Process(EnvironmentScoped, Model):
 
     def orphan(self, timestamp: Timestamp, actor: Actor) -> "Process":
         return self.moved(ProcessLifecycle.orphan, ended_at=timestamp, queued_at=None, slot_assigned=False)
+
+    def is_background_run_ended(self, previous: "Process | None") -> bool:
+        return self.moved_at is not None and self.state not in OPEN and (previous is None or previous.state in OPEN)

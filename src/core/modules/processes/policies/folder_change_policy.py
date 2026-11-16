@@ -17,7 +17,7 @@ class FolderChangePolicy(EventPolicy):
         shell = event.tool.shell if event.tool is not None else None
         if shell is None or shell.parse_error:
             return None
-        folder = str(event.raw.get("cwd", "")).rstrip("/")
+        folder = event.folder.rstrip("/")
         for part in shell.parts:
             if part.program == CHANGE_WORD and [argument.rstrip("/") for argument in part.arguments] != [folder]:
                 return MoveBanMessage.declared().agent_message(folder=folder or "the project")

@@ -1379,16 +1379,6 @@
   "merger": "allowed",
   "worker": "refused"
  },
- "hand-in drop": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
- },
- "hand-in retry": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
- },
  "helper availability": {
   "helper": "allowed",
   "merger": "allowed",
@@ -4237,6 +4227,16 @@
  "unreadable-mark show": {
   "helper": "allowed",
   "merger": "allowed",
+  "worker": "refused"
+ },
+ "unsaved-report drop": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "unsaved-report retry": {
+  "helper": "refused",
+  "merger": "refused",
   "worker": "refused"
  },
  "update check": {

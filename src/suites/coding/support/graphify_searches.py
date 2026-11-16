@@ -32,7 +32,7 @@ class GraphifySearches:
         tool = event.tool
         if tool is None or tool.uses_graphify or not tool.is_search or not self.settings.flag(GRAPHIFY.settings_key):
             return GraphifyAnswer()
-        if SearchCategory.classify(tool, str(event.raw.get("cwd", "")), self.home.project_folder) != CODE:
+        if SearchCategory.classify(event, self.home.project_folder) != CODE:
             return GraphifyAnswer()
         block_after = self.settings.number(GRAPHIFY_BLOCK_AFTER)
         searches = self.code_searches_after_graphify(agent_id, block_after * SCANNED_BLOCK_TOOL_USES)

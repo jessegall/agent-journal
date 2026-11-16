@@ -44,7 +44,7 @@ class WaitingLineTyping:
             self.entered(line, actor_id)
 
     def entered(self, line: AgentLine, actor_id: int) -> None:
-        if line.source not in (PAUSE_SOURCE, RESUME_SOURCE, COMPACTED_WAKE_SOURCE) and not self.hook_calls.is_at_prompt(line.session_agent_id):
+        if line.source not in (PAUSE_SOURCE, RESUME_SOURCE, COMPACTED_WAKE_SOURCE) and not self.hook_calls.is_prompt_open(line.session_agent_id):
             return
         actor = Actor(actor_id, ActorType.USER)
         if self.has_entered_repeat(line):

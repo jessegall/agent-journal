@@ -31,11 +31,12 @@ RESUME_TRANSPORT = "resume"
 
 
 class ClaimAgentWakeHandler(Handler[ClaimAgentWake, AgentWake | None]):
-    """The wake delivery owner's claim of a due obligation (doc 1310 section 6.4). It reads again first: a retired
-    agent's wake is cancelled, a paused, interrupted or compacting agent's is inhibited until a step finds its cause
-    again, and one tried as often as wake-attempts allows expires and its parent is told once. Otherwise it counts an
-    attempt and claims the row with a lease, so a server that dies with it leaves the row to the boot's reclaim. The
-    owner sends the wake after this write and records the delivery in a write of its own."""
+    """The wake delivery owner's claim of a due obligation (doc 1310 section 6.4). It reads again first: a
+    retired agent's wake is cancelled, a paused, interrupted or compacting agent's is inhibited until a step
+    finds its cause again, and one tried as often as wake-attempts allows expires and its parent is told once.
+    Otherwise it counts an attempt and claims the row with a lease, so a server that dies with it leaves the
+    row to the boot's reclaim. The owner sends the wake after this write and records the delivery in a write
+    of its own."""
 
     command = ClaimAgentWake
 

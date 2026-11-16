@@ -8,7 +8,7 @@ AGENT = AgentReference(4, 1, 1, "main")
 
 
 def plans(process_ids: tuple[int, ...]):
-    requests = SimpleNamespace(open_for_agent=lambda agent_id: tuple(SimpleNamespace(process_id=process_id) for process_id in process_ids))
+    requests = SimpleNamespace(agent_requests=lambda agent_id: tuple(SimpleNamespace(process_id=process_id) for process_id in process_ids))
     return LongRunDockStates(requests).states([AGENT], Question.none()).get(AGENT.agent_id, [])
 
 

@@ -17,7 +17,9 @@ class WorkerHelperGuard(Guard[Created[Agent]]):
     def __init__(self, queries: Queries, start_check: CommandCheck) -> None:
         self.queries, self.start_check = queries, start_check
 
-    # the helper's start asks the hook's policy, workers.worker-helper-allowed, at its entry point (doc 1310 section 10.9)
     def check(self, event: Created[Agent], context: Context) -> None:
-        if event.row.role == Helper.key and self.start_check.answers(context) and self.queries.query(Agent).filter(id=context.actor.id, role=Worker.key).exists():
+        if self.is_worker_helper_start(event.row, context):
             self.start_check.admit(StartHelper, context)
+
+    def is_worker_helper_start(self, agent: Agent, context: Context) -> bool:
+        return agent.role == Helper.key and self.start_check.answers(context) and self.queries.query(Agent).filter(id=context.actor.id, role=Worker.key).exists()

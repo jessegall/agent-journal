@@ -79,5 +79,4 @@ class WorkerCheckouts(AgentProjectCheckouts):
         return tuple(change.checkout_file(checkout) for change in self.git.file_changes(folder, commit))
 
     def worktree_checkout(self, worktree: Worktree, agent: Agent) -> Checkout:
-        folder = Path(worktree.folder)
-        return Checkout.copy_checkout(folder, Path(self.environment(agent).folder), worktree.branch, worktree.base_branch, worktree.base_commit, worktree.removed_at is None and FileAccess.is_dir(folder))
+        return worktree.checkout(Path(self.environment(agent).folder), FileAccess.is_dir(Path(worktree.folder)))

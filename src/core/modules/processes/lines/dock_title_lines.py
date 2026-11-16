@@ -23,4 +23,4 @@ class DockTitleLines(EventLineSource):
 
     def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         # the hold is LongRunDockStates', so the line opens no required-command hold of its own
-        return [replace(RunNameMessage.declared().agent_message(process=request.process_id), required_command="") for request in self.requests.open_for_agent(agent_id)[:1]]
+        return [replace(RunNameMessage.declared().agent_message(process=request.process_id), required_command="") for request in self.requests.agent_requests(agent_id)[:1]]

@@ -9,9 +9,9 @@ LINE_HISTORIES_REASON = "the rows of the source keys one step asks or gives, a f
 
 
 class AgentLineHistories:
-    """The line history rows of an agent for the source keys asked, kept until they change: a line source reads when
-    it last spoke from its own row, and the hook's record and the queued lines of a step save against the rows of
-    the keys they give."""
+    """The line history rows of an agent for the source keys asked, kept until they change: a line source
+    reads when it last spoke from its own row, and the hook's record and the queued lines of a step save
+    against the rows of the keys they give."""
 
     def __init__(self, queries: Queries, kept: KeptRows) -> None:
         self.queries, self.kept = queries, kept

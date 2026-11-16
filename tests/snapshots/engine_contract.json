@@ -192,7 +192,7 @@
         "newest_hook_at: datetime | None",
         "journal_started_at: datetime | None",
         "last_refused_rules: frozenset[str]",
-        "is_at_prompt: bool",
+        "is_prompt_open: bool",
         "subject_ends: Mapping[RowReference, StateEnd]"
       ],
       "methods": []
@@ -3359,6 +3359,7 @@
         "tick(cls, program: str, session: str, event_id: str, hook_timestamp_ms: int, actor: str, environment: str) -> 'HookEvent'",
         "parsed(cls, data: object) -> 'HookEvent'",
         "transcript(self) -> HookTranscript",
+        "folder(self) -> str",
         "is_resume(self) -> bool",
         "is_compaction_start(self) -> bool",
         "is_stop_continuation(self) -> bool",
@@ -3710,7 +3711,7 @@
       "bases": [],
       "fields": [],
       "methods": [
-        "classify(cls, tool: Tool | None, folder: str, project: Path) -> str",
+        "classify(cls, event: HookEvent, project: Path) -> str",
         "searches_code(cls, paths: tuple[str, ...], folder: str, project: Path) -> bool",
         "is_code_folder(path: Path, project: Path) -> bool"
       ]
@@ -6187,7 +6188,8 @@
         "tunnel_lines(self) -> list[str]",
         "described_purpose(self, file: Path) -> str",
         "purpose(self, file: Path, classes: list[ast.ClassDef]) -> str",
-        "needed_modules(self, classes: list[ast.ClassDef]) -> str",
+        "needed_modules(self, file: Path, classes: list[ast.ClassDef]) -> str",
+        "declared_list(self, file: Path, value: ast.expr | None) -> ast.expr | None",
         "folder_names(self, folder: Path) -> list[str]",
         "has_cache_files_alone(folder: Path) -> bool"
       ]

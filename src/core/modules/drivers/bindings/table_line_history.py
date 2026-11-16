@@ -4,7 +4,8 @@ from core.modules.drivers.support.agent_line_histories import AgentLineHistories
 
 
 class TableLineHistory(LineHistory):
-    """Reads when a source last spoke from the agent's line history rows; each source key's row is read once until it changes."""
+    """Reads when a source last spoke from the agent's line history rows; each source key's row is read once
+    until it changes."""
 
     def __init__(self, histories: AgentLineHistories) -> None:
         self.histories = histories

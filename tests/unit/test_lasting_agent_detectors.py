@@ -28,6 +28,7 @@ CLASS_FILES = {
     "TypeLimits": "src/core/modules/agents/support/type_limits.py",
     "RetireAgent": "src/core/modules/agents/commands/retire_agent/retire_agent.py",
     "ChangeAgentDriver": "src/core/modules/helpers/commands/change_agent_driver/change_agent_driver.py",
+    "UnusedHelperRetirements": "src/core/modules/helpers/ticks/unused_helper_retirements.py",
 }
 SAMPLE = CUSTOM / "samples" / "agents" / "idle_worker_cleaner.py"
 

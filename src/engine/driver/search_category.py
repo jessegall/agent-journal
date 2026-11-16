@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from engine.driver.tool import Tool
+from engine.driver.hook_event import HookEvent
 from engine.journal.journal_home import JOURNAL_FOLDER
 
 GRAPHIFY = "graphify"
@@ -14,12 +14,13 @@ class SearchCategory:
     nothing the journal counts, such as no search at all or a search of logs and outputs outside the code."""
 
     @classmethod
-    def classify(cls, tool: Tool | None, folder: str, project: Path) -> str:
+    def classify(cls, event: HookEvent, project: Path) -> str:
+        tool = event.tool
         if tool is None:
             return ""
         if tool.uses_graphify:
             return GRAPHIFY
-        if tool.is_search and cls.searches_code(tool.searched_paths, folder, project):
+        if tool.is_search and cls.searches_code(tool.searched_paths, event.folder, project):
             return CODE
         return ""
 

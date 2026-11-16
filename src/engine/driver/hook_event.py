@@ -82,6 +82,10 @@ class HookEvent:
         return HookTranscript(self.program, self.event_id, path if isinstance(path, str) else "")
 
     @property
+    def folder(self) -> str:
+        return str(self.raw.get("cwd", ""))
+
+    @property
     def is_resume(self) -> bool:
         return self.raw.get("source") == RESUME_SOURCE
 

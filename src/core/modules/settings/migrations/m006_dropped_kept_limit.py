@@ -4,9 +4,9 @@ PROFILE_LIMITS = "journal.core.helpers.read-only-helper-profile-limits"
 RUN_PART = "substr(each.value, instr(each.value, ':') + 1)"
 
 
-class HelperIdleRetirementMigration(Migration):
-    """Read-only helpers have no kept limit any more, since an unused one is retired after its idle hours: the stored
-    kept limit goes, and each entry of a profile's helper limits keeps its profile and run limit."""
+class DroppedKeptLimitMigration(Migration):
+    """Drops the stored kept limit of read-only helpers and keeps each entry of a profile's helper limits to its
+    profile and run limit."""
 
     number = 6
     statements = ["DELETE FROM settings WHERE key = 'journal.core.helpers.read-only-helper-kept-limit'",
