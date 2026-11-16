@@ -328,3 +328,7 @@ def expect_absent_exists_folder_repository(repository, worker_file) -> None:
 def expect_requests_launcher(launcher, expected) -> None:
     actual = len(launcher.requests)
     assert actual == expected, actual
+
+
+def expect_true(condition: bool, detail: object) -> None:
+    assert condition, detail

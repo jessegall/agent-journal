@@ -1,3 +1,4 @@
+from tests.stories.support.story_checks import expect_true
 import pytest
 
 from engine.testing.examples.hook_samples import HookSamples
@@ -17,13 +18,13 @@ def runs(new_story):
 def test_an_async_hooks_output_never_reaches_the_answer(runs):
     runs.managed({"PreToolUse": [{"matcher": "Bash", "hooks": [entry(context_line("from the background"), **{"async": True})]}]})
     answer = runs.tool("Bash", {"command": "ls"})
-    assert answer.returncode == 0 and "from the background" not in answer.stdout, (answer.stdout, answer.stderr)
+    expect_true(answer.returncode == 0 and "from the background" not in answer.stdout, (answer.stdout, answer.stderr))
 
 
 def test_an_async_hooks_refusal_is_ignored(runs):
     runs.managed({"PreToolUse": [{"matcher": "Bash", "hooks": [entry("printf 'no' >&2; exit 2", **{"async": True})]}]})
     answer = runs.tool("Bash", {"command": "ls"})
-    assert answer.returncode == 0 and '"permissionDecision":"deny"' not in answer.stdout, (answer.stdout, answer.stderr)
+    expect_true(answer.returncode == 0 and '"permissionDecision":"deny"' not in answer.stdout, (answer.stdout, answer.stderr))
 
 
 def test_an_asyncrewake_hook_that_exits_two_leaves_its_agent_a_line_and_one_that_exits_zero_leaves_nothing(runs):
