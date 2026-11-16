@@ -12,7 +12,6 @@ class DriverVersion(EnvironmentScoped, Model):
     driving setting moves."""
 
     model_name = "driver_version"
-    table = "driver_versions"
     cli_name = "driver-version"
 
     environment_id: int = 0

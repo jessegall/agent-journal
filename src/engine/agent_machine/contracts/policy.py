@@ -19,7 +19,7 @@ class Policy(ABC):
     key: ClassVar[str]
     rank: ClassVar[str]
     agent_types: ClassVar[Sequence[str]] = ()
-    # the group of agent types it holds for, read from the helper types as the old walk read a rule's
+    # the group of agent types it holds for, read from the helper types
     role_group: ClassVar[RoleGroup] = RoleGroup.ANY
     is_safety: ClassVar[bool] = False
     # a policy that also judges a stop, as a project's own hook refusing its stop does; no other policy judges one

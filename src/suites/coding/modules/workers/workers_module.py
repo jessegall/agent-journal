@@ -149,11 +149,10 @@ class WorkersModule(Module):
     """
 
     name = "journal.suites.coding.workers"
-    line_sources = [InactiveWorkerStopLines, CacheRefreshLines]
     effects = [HandedTaskEffect, FullContextCompactionEffect, WorkerReportEffect, OrphanWorktreeEffect, MissingProcessEffect, InactiveWorkerStopEffect, CacheRefreshEffect, MergeJobReportEffect, RequestCompactionEffect, InactiveHelperEffect, PhaseTestEffect, RecordTodoListEffect, UnmergedWorkerEffect]
     block_conditions = [DeliveredProofsChecked]
     states = [MainStopStates, WorkerUnitStates, MergeJobStates, CompactionStates, DeliveredWorkStopStates, WorkerStatusFirstStates]
-    lines = [WorkerBlockedTaskLines, CompactionRequestLines, ContextStopNowLines, InactiveHelperLines, MergeCheckoutLines, PhaseTestLines, SmallBatchLines, StoppedWorkerLines, UnmergedWorkerLines, UnstartedWorkerLines, WorkerLogDueLines, WorkersOutLines]
+    lines = [InactiveWorkerStopLines, CacheRefreshLines, WorkerBlockedTaskLines, CompactionRequestLines, ContextStopNowLines, InactiveHelperLines, MergeCheckoutLines, PhaseTestLines, SmallBatchLines, StoppedWorkerLines, UnmergedWorkerLines, UnstartedWorkerLines, WorkerLogDueLines, WorkersOutLines]
     policies = [WorkerGitPolicy, WorkerJudgeScopePolicy, DispatchNamesModelPolicy, ProvedDeliveryPolicy, ContextHardLimitPolicy, CheckoutWriteCodePolicy, DispatchAllowancePolicy, PhaseTestPolicy, ProtectedFolderPolicy, ReadonlyHelperAllowancePolicy, WorkerFilePolicy, WorkerOutsideLinkPolicy, WorkerReadPolicy, WorkerReusePolicy, WorkerTestLinePolicy, WorkerTestCountPolicy]
     profiles = WORKER_PROFILES
     helper_types = [Worker, Merger]

@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from collections.abc import Sequence
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from engine.agent_machine.agent_view import AgentView
 from engine.agent_machine.contracts.effect import Effect
@@ -17,7 +17,7 @@ class EventEffect(Effect):
     """An effect that runs commands from the event alone, whatever the decision, or at the agent's minute step
     when it keeps time."""
 
-    key: str
+    key: ClassVar[str]
     timing = EffectTiming.UNCONDITIONAL
 
     def __init_subclass__(cls, **kwargs: object) -> None:

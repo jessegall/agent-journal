@@ -8,7 +8,6 @@ class ProgramVersion(Model):
     """An agent program's part of the answer basis: raised when its usage lockdown begins or ends."""
 
     model_name = "program_version"
-    table = "program_versions"
     cli_name = "program-version"
 
     program: str

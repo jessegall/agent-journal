@@ -19,6 +19,8 @@ class Model:
 
     model_name: ClassVar[str]
     cli_name: ClassVar[str]
+    # the table, when it is not the plural of the model name
+    table: ClassVar[str]
     lifecycle: ClassVar[type[Lifecycle] | None] = None
     hidden_fields: ClassVar[frozenset[str]] = frozenset()
     filter_fields: ClassVar[Sequence[str]] = ()

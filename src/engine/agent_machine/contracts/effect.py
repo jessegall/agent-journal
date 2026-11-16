@@ -21,7 +21,7 @@ class Effect(ABC):
     events: ClassVar[Sequence[HookEventName]]
     includes_steps: ClassVar[bool] = False
     agent_types: ClassVar[Sequence[str]] = ()
-    # the group of agent types it holds for, read from the helper types as the old walk read a rule's
+    # the group of agent types it holds for, read from the helper types
     role_group: ClassVar[RoleGroup] = RoleGroup.ANY
     timing: ClassVar[EffectTiming]
     is_required: ClassVar[bool] = False

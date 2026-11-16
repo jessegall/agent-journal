@@ -187,7 +187,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         return build([command_value for rule, _, command_value in outcomes if rule == rewriter.name])
 
     # the input the machine runs an admitted action with: the one its effects built, such as the runner's line, or
-    # else the transforms' rewrite; nothing when the old walk still rewrote it
+    # else the transforms' rewrite; nothing when the hook ran no step
     @staticmethod
     def machine_input(command: RecordHookCall, commit: StepCommit | None) -> Mapping[str, object]:
         if command.step is None or commit is None:

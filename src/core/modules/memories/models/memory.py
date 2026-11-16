@@ -28,7 +28,6 @@ class Memory(Removable, AgentScoped, EnvironmentScoped, Model):
     cli_name = "memory"
     search_fields = ["text", "reason"]
     lifecycle = MemoryLifecycle
-    table = "memories"
 
     environment_id: int = 0
     agent_id: int | None = None

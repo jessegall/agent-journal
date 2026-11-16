@@ -22,7 +22,7 @@ class UnansweredMessages:
     def __init__(self, messages: MessageQuery, reads: SessionReadMessages, replies: MessageReplies, request_values: RequestValues, database: Database) -> None:
         self.messages, self.reads, self.replies, self.request_values, self.database = messages, reads, replies, request_values, database
 
-    # the walk's rule and the agent machine's need both ask on one hook: read once until a row changes
+    # several needs of one hook ask the same: read once until a row changes
     def unanswered(self, agent_id: int) -> tuple[Message, ...]:
         return self.request_values.read(f"messages.unanswered.{agent_id}", self.database.change_mark, lambda: self.read_unanswered(agent_id))
 
