@@ -6,6 +6,7 @@ from engine.database.schema_columns import SchemaColumns
 from engine.database.statement import Statement
 from core.modules.agents.support.column_rule import ColumnRule
 
+MESSAGE_MODELS = ("message", "messages")
 KEPT_TABLES = ("tasks", "documents", "doc_revisions", "reports", "plans", "phases", "rules", "approvals")
 UNKEYED_MESSAGE_COLUMNS = (("helper_jobs", "source_message_id"), ("helper_jobs", "report_message_id"), ("worker_task_sources", "source_message_id"))
 OTHER_AGENT_MESSAGES = ("SELECT messages.id AS id FROM messages JOIN actors ON actors.id = messages.creator_id"
@@ -28,8 +29,8 @@ class AgentMessagePrune:
         ids = [int(row["id"]) for row in self.database.rows(Statement(OTHER_AGENT_MESSAGES, [main_agent_id], scan_reason=SCHEMA_REASON))]
         if not ids:
             return RemovalCounts()
-        pairs = tuple((table, model, row_id, "messages") for table, model, row_id in ColumnRule.sets(SchemaColumns(self.database).columns()).pairs)
-        counts = RowRemoval(self.database, KEPT_TABLES, pairs).removed("messages", ids)
+        pairs = ColumnRule.sets(SchemaColumns(self.database).columns()).pairs
+        counts = RowRemoval(self.database, KEPT_TABLES, pairs, {"messages": MESSAGE_MODELS}).removed("messages", ids)
         for table, column in UNKEYED_MESSAGE_COLUMNS:
             if self.database.rows(Statement(TABLE_COLUMN, [table, column], scan_reason=SCHEMA_REASON)):
                 counts.add_nulled(table, self.database.update(Statement(

@@ -1,4 +1,4 @@
-from collections.abc import Collection, Sequence
+from collections.abc import Collection, Mapping, Sequence
 
 from engine.database.database import Database
 from engine.database.reference_rewrite import SCHEMA_REASON, ReferenceRewrite
@@ -14,12 +14,13 @@ REFERENCES = Statement("SELECT tables.name AS child, keys.\"from\" AS column_nam
 class RowRemoval:
     """Removes rows of one table and everything that depends on them, in the caller's write with the foreign
     keys off: a row that names a removed row by a required key is removed too, at every depth; a nullable key
-    that names one is set to NULL; a model and id pair that names one loses its row. A row of a kept table that
+    that names one is set to NULL; a model and id pair whose model is one of the removed table's model names loses its row. A row of a kept table that
     the removal would take is refused, naming the table, the column and the row; the counts per table are
-    returned, the deleted apart from the nulled."""
+    returned, the deleted apart from the nulled. A table with no id column loses its rows by the key itself."""
 
-    def __init__(self, database: Database, kept_tables: Collection[str], pairs: Sequence[tuple[str, str, str, str]] = ()) -> None:
-        self.database, self.kept_tables, self.pairs = database, set(kept_tables), pairs
+    def __init__(self, database: Database, kept_tables: Collection[str], pairs: Sequence[tuple[str, str, str]] = (),
+                 pair_models: Mapping[str, tuple[str, ...]] | None = None) -> None:
+        self.database, self.kept_tables, self.pairs, self.pair_models = database, set(kept_tables), pairs, pair_models or {}
         self.rewrite = ReferenceRewrite(database)
 
     def removed(self, table: str, ids: Collection[int]) -> RemovalCounts:
@@ -40,9 +41,13 @@ class RowRemoval:
                         f'UPDATE "{child}" SET "{column}" = NULL WHERE "{column}" IN ({ReferenceRewrite.marks(parent_ids)})', list(parent_ids))))
                     continue
                 self.refuse_kept(child, column, rows[0])
-                pending.append((child, [int(row["id"]) for row in rows if "id" in row]))
-            for pair_table, model_column, id_column, model in (pair for pair in self.pairs if pair[3] == parent):
-                rows = [row for row in self.rewrite.rows(pair_table, id_column, parent_ids) if row[model_column] == model]
+                if "id" not in rows[0]:
+                    counts.add_deleted(child, self.database.update(Statement(
+                        f'DELETE FROM "{child}" WHERE "{column}" IN ({ReferenceRewrite.marks(parent_ids)})', list(parent_ids))))
+                    continue
+                pending.append((child, [int(row["id"]) for row in rows]))
+            for pair_table, model_column, id_column in (self.pairs if parent in self.pair_models else ()):
+                rows = [row for row in self.rewrite.rows(pair_table, id_column, parent_ids) if row[model_column] in self.pair_models[parent]]
                 if rows:
                     self.refuse_kept(pair_table, id_column, rows[0])
                     counts.add_deleted(pair_table, self.rewrite.delete_past_state_rule(pair_table, [int(row["id"]) for row in rows]))

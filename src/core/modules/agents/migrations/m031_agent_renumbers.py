@@ -1,5 +1,6 @@
 from engine.database.database import Database
 from engine.database.migration import Migration
+from engine.database.rebuild_migration import RebuildMigration
 from engine.enums.log_level import LogLevel
 from engine.journal.journal_home import JournalHome
 from engine.log.system_log_writer import SystemLogWriter
@@ -7,10 +8,11 @@ from engine.time.clock import Clock
 from core.modules.agents.support.agent_renumber import AgentRenumber
 
 
-class AgentRenumbersMigration(Migration):
+class AgentRenumbersMigration(RebuildMigration):
     """Renumbers the agents: the main agent becomes 1, every agent that stays follows from 2, the others go
     with the messages they sent, and the map and one summary row are kept for the folder renames and notices
-    the server does next. A renumber that does not add up rolls back and stops the start, naming the copy."""
+    the server does next. It opens its own write, as a rebuild does. A renumber that does not add up rolls
+    back and stops the start, naming the copy."""
 
     number = 31
     statements = (
@@ -20,7 +22,7 @@ class AgentRenumbersMigration(Migration):
     )
 
     def run(self, database: Database) -> None:
-        super().run(database)
+        Migration.run(self, database)
         clock = Clock()
         home = JournalHome(database.file().parent)
         renumber = AgentRenumber(database, home)

@@ -13,6 +13,7 @@ LOW_ACTORS = Statement("SELECT id FROM actors WHERE id BETWEEN 1 AND ? AND id NO
 SAMPLE_TABLES = ("tasks", "messages", "documents", "reports")
 SAMPLE_ROW = "SELECT {table}.id AS id, actors.name AS name, actors.type AS type FROM {table} JOIN actors ON actors.id = {table}.creator_id ORDER BY {table}.id DESC LIMIT 1"
 SAMPLE_AGAIN = "SELECT actors.name AS name, actors.type AS type FROM {table} JOIN actors ON actors.id = {table}.creator_id WHERE {table}.id = ?"
+RENUMBER_TABLES = ("agent_renumbers", "agent_renumber_summary")
 TABLE_EXISTS = "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?"
 
 
@@ -23,14 +24,14 @@ class RenumberCheck:
     type agent with its own id, the agents are 1 to n, no actor but the agents' sits in their range, and the
     last task, message, document and report still name the same writer by name and type. The counts and the
     samples are taken after the fold of the main agents, which checks itself, since a fold gives a folded
-    main's rows to the survivor."""
+    main's rows to the survivor. The renumber's own tables are left out of the counts."""
 
     def __init__(self, database: Database) -> None:
         self.database = database
         self.rewrite = ReferenceRewrite(database)
 
     def tables(self) -> list[str]:
-        return sorted({column.table for column in SchemaColumns(self.database).columns()})
+        return sorted({column.table for column in SchemaColumns(self.database).columns()} - set(RENUMBER_TABLES))
 
     def tables_counted(self) -> dict[str, int]:
         return self.rewrite.table_counts(self.tables())

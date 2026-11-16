@@ -7,13 +7,14 @@ from engine.database.id_column_set import IdColumnSet
 
 AGENT_TABLES = ("agents", "actors")
 AGENT_COLUMN_NAMES = ("actor_id", "holder_id", "creator_id", "parent_id", "session_agent_id", "agent_id", "survivor_id",
-                      "folded_agent_id", "lifter_id", "sender_id", "assignee_id", "owner_id", "test_agent_id")
+                      "folded_agent_id", "lifter_id", "sender_id", "assignee_id", "owner_id", "test_agent_id", "asker_id", "helper_id",
+                      "receiver_id")
 AGENT_COLUMN_SUFFIX = "_agent_id"
 POLYMORPHIC_PAIRS = (("row_model", "row_id"), ("subject_model", "subject_id"), ("target_model", "target_id"), ("source_model", "source_id"),
                      ("row_table", "row_id"))
 AGENT_MODEL_NAMES = ("agent", "agents", "actor", "actors")
 FOLD_TABLES = ("agent_folds", "agent_fold_rows")
-NON_AGENT_COLUMNS = (("agent_lines", "wakes_agent"), ("agents", "launch_agent_id"), ("aliases", "agent_access"), ("context_compaction_notices", "agent_number"),
+NON_AGENT_COLUMNS = (("agent_lines", "wakes_agent"), ("aliases", "agent_access"), ("context_compaction_notices", "agent_number"),
                      ("trigger_action_runs", "notify_agent"))
 
 
