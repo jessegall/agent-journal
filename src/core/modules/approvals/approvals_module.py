@@ -1,3 +1,4 @@
+from core.modules.approvals.declarations.approvals_former_event_keys import APPROVALS_FORMER_EVENT_KEYS
 from core.modules.approvals.declarations.approvals_dependencies import APPROVALS_DEPENDENCIES
 from core.modules.approvals.declarations.approvals_migrations import APPROVALS_MIGRATIONS
 from core.modules.approvals.declarations.approvals_handlers import APPROVALS_HANDLERS
@@ -32,6 +33,7 @@ class ApprovalsModule(Module):
     subcommands = APPROVALS_SUBCOMMANDS
     listeners = APPROVALS_LISTENERS
     guards = [ApprovalDecisionGuard, SavedApprovalGuard]
+    former_event_keys = APPROVALS_FORMER_EVENT_KEYS
     marks = [ApprovalSavedMark]
     agent_messages = APPROVALS_AGENT_MESSAGES
     docks = APPROVALS_DOCKS

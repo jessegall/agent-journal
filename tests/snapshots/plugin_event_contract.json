@@ -325,6 +325,7 @@
     ],
     "fields": [
       "access",
+      "actor_id",
       "announced_at",
       "creator_id",
       "ended_at",
@@ -360,6 +361,7 @@
     ],
     "fields": [
       "access",
+      "actor_id",
       "announced_at",
       "creator_id",
       "ended_at",
@@ -395,6 +397,7 @@
     ],
     "fields": [
       "access",
+      "actor_id",
       "announced_at",
       "creator_id",
       "ended_at",
@@ -430,6 +433,7 @@
     ],
     "fields": [
       "access",
+      "actor_id",
       "announced_at",
       "creator_id",
       "ended_at",
@@ -465,6 +469,7 @@
     ],
     "fields": [
       "access",
+      "actor_id",
       "announced_at",
       "creator_id",
       "ended_at",
@@ -812,8 +817,8 @@
       "responder_id",
       "returns_output",
       "review_answer",
+      "saved_approval_id",
       "source_version",
-      "standing_id",
       "state",
       "text",
       "why"
@@ -840,8 +845,8 @@
       "responder_id",
       "returns_output",
       "review_answer",
+      "saved_approval_id",
       "source_version",
-      "standing_id",
       "state",
       "text",
       "why"
@@ -868,8 +873,8 @@
       "responder_id",
       "returns_output",
       "review_answer",
+      "saved_approval_id",
       "source_version",
-      "standing_id",
       "state",
       "text",
       "why"
@@ -896,8 +901,8 @@
       "responder_id",
       "returns_output",
       "review_answer",
+      "saved_approval_id",
       "source_version",
-      "standing_id",
       "state",
       "text",
       "why"
@@ -924,8 +929,8 @@
       "responder_id",
       "returns_output",
       "review_answer",
+      "saved_approval_id",
       "source_version",
-      "standing_id",
       "state",
       "text",
       "why"
@@ -952,8 +957,8 @@
       "responder_id",
       "returns_output",
       "review_answer",
+      "saved_approval_id",
       "source_version",
-      "standing_id",
       "state",
       "text",
       "why"
@@ -980,8 +985,8 @@
       "responder_id",
       "returns_output",
       "review_answer",
+      "saved_approval_id",
       "source_version",
-      "standing_id",
       "state",
       "text",
       "why"
@@ -1008,8 +1013,8 @@
       "responder_id",
       "returns_output",
       "review_answer",
+      "saved_approval_id",
       "source_version",
-      "standing_id",
       "state",
       "text",
       "why"
@@ -1036,8 +1041,8 @@
       "responder_id",
       "returns_output",
       "review_answer",
+      "saved_approval_id",
       "source_version",
-      "standing_id",
       "state",
       "text",
       "why"
@@ -1064,55 +1069,55 @@
       "responder_id",
       "returns_output",
       "review_answer",
+      "saved_approval_id",
       "source_version",
-      "standing_id",
       "state",
       "text",
       "why"
     ]
   },
-  "core.approvals.standing_approval.created": {
+  "core.approvals.saved_approval.created": {
     "forms": [
       "commit",
       "guard",
       "listen"
     ],
     "fields": [
+      "category",
       "creator_id",
       "environment_id",
-      "kind",
       "match_key",
       "scope",
       "target",
       "text"
     ]
   },
-  "core.approvals.standing_approval.deleted": {
+  "core.approvals.saved_approval.deleted": {
     "forms": [
       "commit",
       "guard",
       "listen"
     ],
     "fields": [
+      "category",
       "creator_id",
       "environment_id",
-      "kind",
       "match_key",
       "scope",
       "target",
       "text"
     ]
   },
-  "core.approvals.standing_approval.updated": {
+  "core.approvals.saved_approval.updated": {
     "forms": [
       "commit",
       "guard",
       "listen"
     ],
     "fields": [
+      "category",
       "creator_id",
       "environment_id",
-      "kind",
       "match_key",
       "scope",
       "target",

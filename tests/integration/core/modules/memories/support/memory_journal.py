@@ -31,8 +31,8 @@ class MemoryJournal:
     @staticmethod
     def agent(database: Database, session: str, role: str) -> int:
         actor_id = database.insert(Statement("INSERT INTO actors (creator_id, type, name, created_at, updated_at) VALUES (1, 'agent', ?, ?, ?)", (session, FIXED_TIME, FIXED_TIME)))
-        database.insert(Statement("INSERT INTO agents (id, environment_id, creator_id, session, program, role, created_at, updated_at)"
-                                  " VALUES (?, 1, 1, ?, 'claude', ?, ?, ?)", (actor_id, session, role, FIXED_TIME, FIXED_TIME)))
+        database.insert(Statement("INSERT INTO agents (id, actor_id, environment_id, creator_id, session, program, role, created_at, updated_at)"
+                                  " VALUES (?, ?, 1, 1, ?, 'claude', ?, ?, ?)", (actor_id, actor_id, session, role, FIXED_TIME, FIXED_TIME)))
         return actor_id
 
     @property

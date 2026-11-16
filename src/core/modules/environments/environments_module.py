@@ -8,6 +8,7 @@ from engine.module.module import Module
 from core.modules.environments.seeders.environments_seeder import EnvironmentsSeeder
 from core.modules.environments.upgrade.environments_move import EnvironmentsMove
 from core.modules.environments.commands.environment_list.environment_list_subcommand import EnvironmentListSubcommand
+from core.modules.environments.migrations.m003_environment_test_agent_reference import EnvironmentTestAgentReferenceMigration
 
 
 class EnvironmentsModule(Module):
@@ -18,7 +19,7 @@ class EnvironmentsModule(Module):
     dependencies = ["journal.core.actors"]
     models = [EnvironmentModelDeclaration]
     subcommands = [EnvironmentListSubcommand]
-    migrations = [EnvironmentsTableMigration, TestEnvironmentsMigration]
+    migrations = [EnvironmentTestAgentReferenceMigration, EnvironmentsTableMigration, TestEnvironmentsMigration]
     guards = [EnvironmentGrantGuard]
     bindings = {EnvironmentNames: EnvironmentTableNames}
     seeders = [EnvironmentsSeeder]
