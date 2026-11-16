@@ -11,7 +11,7 @@ class HookSample:
 
     @property
     def event_id(self) -> object:
-        return self.body["firing"]
+        return self.body["event_id"]
 
     @property
     def action(self) -> str:

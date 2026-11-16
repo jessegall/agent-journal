@@ -143,7 +143,7 @@ class HookCallSeed(Seed):
 
     def columns(self, index: int, facts: SeedFacts) -> dict[str, object]:
         return {"session_agent_id": facts.row_id("agents", index), "environment_id": facts.environment_id, "creator_id": CORE_ACTOR_ID, "hook": HOOKS[index % len(HOOKS)],
-                "firing": f"seeded-firing-{index + 1}", "answer": "allowed"}
+                "event_id": f"seeded-event-{index + 1}", "answer": "allowed"}
 
 
 class EventSeed(Seed):

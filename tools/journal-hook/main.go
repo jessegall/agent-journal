@@ -106,7 +106,7 @@ func main() {
 		actorToken:  os.Getenv("JOURNAL_ACTOR_TOKEN"),
 		launch:      os.Getenv("JOURNAL_LAUNCH"),
 		role:        context.Role,
-		firing:      context.Firing,
+		eventID:     context.EventID,
 		firedAtMs:   context.FiredAtMs,
 		body:        object,
 		limit:       limit,

@@ -121,7 +121,7 @@ type delivery struct {
 	actorToken  string
 	launch      string
 	role        string
-	firing      string
+	eventID     string
 	firedAtMs   int64
 	retries     int
 	body        []byte
@@ -256,7 +256,7 @@ func posted(outgoing delivery, transport http.RoundTripper) (int, []byte) {
 		"X-Journal-Actor":       outgoing.actor,
 		"X-Journal-Actor-Token": outgoing.actorToken,
 		"X-Journal-Request-At":  strconv.FormatInt(outgoing.firedAtMs, 10),
-		"X-Journal-Hook-Id":     outgoing.firing,
+		"X-Journal-Hook-Id":     outgoing.eventID,
 	} {
 		request.Header.Set(name, value)
 	}

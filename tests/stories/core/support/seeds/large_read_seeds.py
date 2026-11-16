@@ -41,7 +41,7 @@ class HookCallRefusalSeed(Seed):
 
     def columns(self, index: int, facts: SeedFacts) -> dict[str, object]:
         rules = {DRIVERS_MODULE: {"rules": [{"rule": "tasks.writes-need-a-task", "outcome": "refused"}]}}
-        return {"environment_id": facts.environment_id, "creator_id": CORE_ACTOR_ID, "hook": "pre_tool_use", "firing": f"seeded-refused-{index}", "answer": "refused",
+        return {"environment_id": facts.environment_id, "creator_id": CORE_ACTOR_ID, "hook": "pre_tool_use", "event_id": f"seeded-refused-{index}", "answer": "refused",
                 "metadata": json.dumps(rules)}
 
 

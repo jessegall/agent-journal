@@ -10,7 +10,7 @@
     "program",
     "event",
     "session",
-    "firing",
+    "event_id",
     "fired_at_ms",
     "actor",
     "environment",
@@ -48,7 +48,7 @@
     "session": {
       "type": "string"
     },
-    "firing": {
+    "event_id": {
       "type": "string"
     },
     "fired_at_ms": {

@@ -9,5 +9,5 @@ class CloseLegacyStepBlocksMigration(Migration):
     number = 4
     statements = [
         f"UPDATE agent_blocks SET closed_at = {TIMESTAMP_SQL}, updated_at = {TIMESTAMP_SQL}, version = version + 1"
-        f" WHERE closed_at IS NULL AND nudge_key = '{StepWaitsMessage.declared().key}' AND condition_name = 'any-of'"
+        f" WHERE closed_at IS NULL AND agent_message_key = '{StepWaitsMessage.declared().key}' AND condition_name = 'any-of'"
     ]

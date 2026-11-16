@@ -14,7 +14,7 @@ import (
 type Context struct {
 	Environment string
 	Actor       string
-	Firing      string
+	EventID     string
 	RunScript   string
 	Classifier  *classify.Classifier
 	FiredAtMs   int64
@@ -111,7 +111,7 @@ func preparedFrom(programName string, program Program, body []byte, read commonB
 		AcceptsLines: program.AcceptsLines(name),
 		Event:        name,
 		Session:      read.SessionID,
-		Firing:       context.Firing,
+		EventID:      context.EventID,
 		FiredAtMs:    context.FiredAtMs,
 		Actor:        context.Actor,
 		Environment:  context.Environment,

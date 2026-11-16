@@ -19,7 +19,7 @@ MANUAL_TRIGGER = "manual"
 CLEAR_SOURCE = "clear"
 CLEAR_REASON = "clear"
 CONTINUING_SOURCES = (COMPACTION_SOURCE, CLEAR_SOURCE)
-REQUIRED_KEYS = ("version", "program", "event", "session", "firing", "fired_at_ms", "actor", "environment", "tool", "prompt", "raw", "accepts_lines", "launch", "foreign")
+REQUIRED_KEYS = ("version", "program", "event", "session", "event_id", "fired_at_ms", "actor", "environment", "tool", "prompt", "raw", "accepts_lines", "launch", "foreign")
 
 
 @dataclass(frozen=True)
@@ -65,7 +65,7 @@ class HookEvent:
             raise HookEventError(f"prompt is a text, not {prompt!r}")
         if any("answer" not in run for run in mappings(fields["foreign"], "a foreign hook run")):
             raise OldHookRunnerError.detected()
-        return cls(HOOK_EVENT_VERSION, text(fields, "program"), HookEventName(event), text(fields, "session"), text(fields, "firing"),
+        return cls(HOOK_EVENT_VERSION, text(fields, "program"), HookEventName(event), text(fields, "session"), text(fields, "event_id"),
                    number(fields, "fired_at_ms"), text(fields, "actor"), text(fields, "environment"),
                    Tool.parsed(tool) if tool is not None else None, prompt, mapping(fields.get("raw", {}), "raw"), accepts_lines,
                    text(fields, "launch"), ProjectHookRun.parsed_many(fields["foreign"]), str(fields.get("child_agent", "")), str(fields.get("role", "")))

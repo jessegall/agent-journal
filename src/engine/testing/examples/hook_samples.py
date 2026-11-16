@@ -15,7 +15,7 @@ class HookSamples:
 
     @staticmethod
     def sample(event: str, tool: dict[str, object] | None = None, prompt: str | None = None) -> HookSample:
-        return HookSample({"version": HOOK_EVENT_VERSION, "program": SAMPLE_PROGRAM, "event": event, "session": "s-1", "firing": SAMPLE_EVENT_ID, "fired_at_ms": 1, "actor": "agent",
+        return HookSample({"version": HOOK_EVENT_VERSION, "program": SAMPLE_PROGRAM, "event": event, "session": "s-1", "event_id": SAMPLE_EVENT_ID, "fired_at_ms": 1, "actor": "agent",
                 "environment": "main", "tool": tool, "prompt": prompt, "raw": {}, "accepts_lines": True, "launch": "", "foreign": [], "child_agent": ""})
 
     @staticmethod

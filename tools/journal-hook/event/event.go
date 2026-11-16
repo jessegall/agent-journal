@@ -19,7 +19,7 @@ type HookEvent struct {
 	Program      string          `json:"program"`
 	Event        string          `json:"event"`
 	Session      string          `json:"session"`
-	Firing       string          `json:"firing"`
+	EventID      string          `json:"event_id"`
 	FiredAtMs    int64           `json:"fired_at_ms"`
 	Actor        string          `json:"actor"`
 	Environment  string          `json:"environment"`

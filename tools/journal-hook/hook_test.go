@@ -63,8 +63,8 @@ func TestTheHookIsSkippedOrPreparedAsHookShDecides(t *testing.T) {
 		if context.Actor != sample.actor || context.Environment != sample.environment {
 			t.Errorf("%s: actor %q environment %q", sample.name, context.Actor, context.Environment)
 		}
-		if context.Firing != "7731-1793395000123" || context.FiredAtMs != 1793395000123 {
-			t.Errorf("%s: firing %q at %d", sample.name, context.Firing, context.FiredAtMs)
+		if context.EventID != "7731-1793395000123" || context.FiredAtMs != 1793395000123 {
+			t.Errorf("%s: event id %q at %d", sample.name, context.EventID, context.FiredAtMs)
 		}
 		if context.RunScript != "/project/.journal/src/journal/hooks/run.sh" {
 			t.Errorf("%s: run script %q", sample.name, context.RunScript)

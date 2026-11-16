@@ -32,7 +32,7 @@ func hookContext(getenv func(string) string, root, folder string, processID int,
 	return programs.Context{
 		Environment: environment,
 		Actor:       actor,
-		Firing:      fmt.Sprintf("%d-%d", processID, firedAtMs),
+		EventID:     fmt.Sprintf("%d-%d", processID, firedAtMs),
 		FiredAtMs:   firedAtMs,
 		RunScript:   filepath.Join(root, ".journal", "src", "journal", "hooks", "run.sh"),
 		Classifier:  classify.ClassifierOf(filepath.Join(root, ".journal", "command_table.json")),

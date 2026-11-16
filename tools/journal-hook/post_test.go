@@ -53,7 +53,7 @@ func project(t *testing.T, port string) string {
 
 func sample(root, eventName string) delivery {
 	return delivery{root: root, program: "claude", event: eventName, environment: "development", actor: "worker:12", actorToken: "token-1",
-		launch: "launch-3", firing: "7731-1793395000123", firedAtMs: 1793395000123, body: []byte(`{"version":1}`), limit: 200 * time.Millisecond,
+		launch: "launch-3", eventID: "7731-1793395000123", firedAtMs: 1793395000123, body: []byte(`{"version":1}`), limit: 200 * time.Millisecond,
 		timing: timing.Started()}
 }
 
@@ -80,7 +80,7 @@ func TestTheObjectIsPostedWithTheHeadersHookShSends(t *testing.T) {
 		}
 	}
 	if read(t, filepath.Join(root, ".journal", "runtime", "hooks", "development.fired")) != "1793395000\n" {
-		t.Error("the firing time was not stamped")
+		t.Error("the event time was not stamped")
 	}
 	if _, err := os.Stat(filepath.Join(root, ".journal", "runtime", "bypass.log")); err == nil {
 		t.Error("an answered hook was noted as gone around")

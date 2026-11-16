@@ -81,7 +81,7 @@ class ServerStory(ServerClient):
                 connection.sendall(f"POST /hook HTTP/1.1\r\nHost: journal\r\nContent-Length: {len(data)}\r\nConnection: close\r\n\r\n".encode() + data)
                 executions = self.context.hook_database.executions
                 assert PolledWait(TIMEOUT_SECONDS, HOOK_POLL_SECONDS).poll(lambda: any(entry.is_running for entry in executions.read())), "the server never took the hook"
-            assert finished.wait(TIMEOUT_SECONDS), f"the server never completed the lost hook {body['firing']}"
+            assert finished.wait(TIMEOUT_SECONDS), f"the server never completed the lost hook {body['event_id']}"
 
     def viewer_line_value(self, cookie: str, body: dict[str, object]) -> dict[str, object]:
         self.story.steps.append(f"viewer line {json.dumps(body, sort_keys=True)}")

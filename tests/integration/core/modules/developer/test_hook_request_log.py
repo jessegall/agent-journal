@@ -32,7 +32,7 @@ def test_only_the_last_hooks_the_setting_names_are_kept_newest_first(played):
     story = logging_story(played, size=2)
     log = story.container.get(HookRequestLog)
     for event_id in ("first", "second", "third"):
-        log.record("claude", HEADERS, {"firing": event_id}, 1, HookAnswer.ALLOWED)
+        log.record("claude", HEADERS, {"event_id": event_id}, 1, HookAnswer.ALLOWED)
     expect_number_event_id_body(log, [(3, "third"), (2, "second")])
 
 
@@ -63,7 +63,7 @@ def expect_day_start(row) -> None:
 
 
 def expect_number_event_id_body(log, expected) -> None:
-    actual = [(row.number, row.body['firing']) for row in log.read()]
+    actual = [(row.number, row.body['event_id']) for row in log.read()]
     assert actual == expected, actual
 
 
@@ -71,7 +71,7 @@ def test_the_window_lists_more_requests_than_the_read_limit_when_the_log_keeps_t
     story = logging_story(played, size=60)
     log = story.container.get(HookRequestLog)
     for event_id in range(60):
-        log.record("claude", HEADERS, {"firing": event_id}, 1, HookAnswer.ALLOWED)
+        log.record("claude", HEADERS, {"event_id": event_id}, 1, HookAnswer.ALLOWED)
     answer = story.run("developer hook-requests --json", actor=story.user)
     story.expect_rows(answer.code == 0, len(json.loads(answer.output_text)["rows"]) == 60, detail=answer.output_text[:300])
 
@@ -82,7 +82,7 @@ def test_stop_and_session_end_requests_stay_beyond_the_size_of_the_log(played):
     log.record("claude", HEADERS, {"hook_event_name": "Stop"}, 15000, HookAnswer.ALLOWED)
     log.record("claude", HEADERS, {"hook_event_name": "SessionEnd"}, 1, HookAnswer.ALLOWED)
     for event_id in ("first", "second", "third"):
-        log.record("claude", HEADERS, {"hook_event_name": "PreToolUse", "firing": event_id}, 1, HookAnswer.ALLOWED)
+        log.record("claude", HEADERS, {"hook_event_name": "PreToolUse", "event_id": event_id}, 1, HookAnswer.ALLOWED)
     kept = [row.event for row in log.read()]
     story.expect_rows(kept == ["PreToolUse", "PreToolUse", "SessionEnd", "Stop"], detail=str(kept))
 
