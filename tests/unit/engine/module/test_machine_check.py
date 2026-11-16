@@ -50,7 +50,7 @@ class SampleModule(Module):
 
 
 def problems(*states: type[StateSource]) -> tuple[str, ...]:
-    module = type("CheckedModule", (SampleModule,), {"needs": [UnreadStates, *states]})
+    module = type("CheckedModule", (SampleModule,), {"states": [UnreadStates, *states]})
     return MachineCheck(ContributionReader()).problems([module])
 
 

@@ -68,7 +68,7 @@ src/core/modules/drivers/commands/driver_attention/driver_attention_subcommand.p
 src/core/modules/drivers/commands/driver_attention/driver_attention_subcommand.py:agents the journal cannot move on by itself are few: each waits for its responder
 src/core/modules/drivers/commands/environment_menu/environment_menu_subcommand.py:The menu names every environment of the project, a catalogue a user makes by hand.
 src/core/modules/drivers/commands/escalation_list/escalation_list_subcommand.py:open escalations are few: each waits for one answer
-src/core/modules/drivers/commands/agent_message_list/message_list_subcommand.py:One total for each nudge the code declares, never for stored journal rows.
+src/core/modules/drivers/commands/agent_message_list/message_list_subcommand.py:One total for each agent message the code declares, never for stored journal rows.
 src/core/modules/drivers/commands/prune_runtime_folders/prune_runtime_folders_handler.py:the agents whose old terminal logs may go
 src/core/modules/drivers/commands/record_driver_tables/record_driver_tables_handler.py:the digests of one sync are a handful, one per driver
 src/core/modules/drivers/commands/record_hook_call/record_hook_call_handler.py:every line waiting for the agent may be handed to it at this hook
@@ -81,13 +81,13 @@ src/core/modules/drivers/listeners/retired_responder_listener.py:the open escala
 src/core/modules/drivers/listeners/retired_responder_listener.py:the open escalations of one retiring agent, one at most
 src/core/modules/drivers/listeners/wake_acknowledgement_listener.py:the active wake obligations of one agent, one for each work generation
 src/core/modules/drivers/queries/hook_call_query.py:every message display call since the agent's last turn is shown
-src/core/modules/drivers/support/agent_activities.py:The open agents of one family, which the agent limits bound; every rule of the hook reads them from this one load.
+src/core/modules/drivers/support/agent_activities.py:The open agents of one family, which the agent limits bound; every source of the step reads them from this one load.
 src/core/modules/drivers/support/agent_line_histories.py:an agent has one row for each line source that told it a line, a few dozen at most
 src/core/modules/drivers/support/read_versions_writers.py:the environments of one project, a handful
 src/core/modules/drivers/support/read_versions_writers.py:the environments of one project, a handful
 src/core/modules/drivers/support/read_versions_writers.py:the running agents one level of a tree started, a handful each, a few levels deep
 src/core/modules/drivers/support/read_versions_writers.py:the stacks of the agents one write moves: one agent, or a running tree of a few
-src/core/modules/drivers/support/message_records.py:every record of the nudges asked about decides whether each is due again
+src/core/modules/drivers/support/message_records.py:every record of the agent messages asked about decides whether each is due again
 src/core/modules/drivers/support/open_block_rows.py:the open blocks of one agent are few: each is closed or skipped before the agent goes on
 src/core/modules/drivers/support/read_only_access.py:a tool use is matched against every permission the agent was given, oldest first
 src/core/modules/drivers/support/waiting_line_typing.py:a release types every line that waited for the agent, oldest first
