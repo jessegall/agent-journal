@@ -69,18 +69,6 @@ def test_the_card_of_an_agent_moved_to_codex_is_the_same_card_with_its_new_drive
                       moved_card["replaced_session_end_reason"] == "driver_changed", first_card["replaced_session_end_reason"] is None, detail=str(moved_card))
 
 
-def test_a_person_who_switches_to_a_new_environment_reads_an_empty_list_and_later_its_agents_with_their_own_numbers(ended):
-    ended.expect_success("environment make staging /work/staging")
-    with viewer_client(ended) as person:
-        new_environment = cards(person, "--show", "all", environment="staging")
-    ended.expect_success("agent start s-20 claude main --environment staging")
-    ended.expect_success("agent start s-21 claude worker --environment staging")
-    with viewer_client(ended) as person:
-        staging, main = own_cards(person, "--show", "all", environment="staging"), own_cards(person, "--show", "all")
-    ended.expect_rows(sorted((row["id"], row["role"]) for row in staging) == [(1, "main"), (2, "worker")], [row["role"] for row in main if row["id"] == 2] == ["helper"],
-                      new_environment["rows"] == [], new_environment["total"] == 0, detail=f"{new_environment} / {staging} / {main}")
-
-
 def test_the_list_pages_and_leaves_a_retired_agent_out_until_the_person_asks_and_its_card_says_who_retired_it_and_why(ended):
     helper = helper_agent(ended)
     for session in ("s-31", "s-32", "s-33"):

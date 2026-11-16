@@ -37,8 +37,8 @@ def test_a_personal_profile_with_the_old_independent_line_runs_as_each_launch_an
     story.run_listeners()
     resumable_session(story, diff_reader)
     refusal = refusal_text(story, DIFF_READER_START)
-    command = launches(story, f'helper send {diff_reader.number} "Read the second diff"')[0]["command"]
-    story.expect_rows(f'journal helper send {diff_reader.number} "<job>"' in refusal, len(diff_readers(story)) == 1, diff_readers(story)[0].session != diff_reader.session, "--resume" not in command, detail=refusal)
+    command = launches(story, f'helper send {diff_reader.id} "Read the second diff"')[0]["command"]
+    story.expect_rows(f'journal helper send {diff_reader.id} "<job>"' in refusal, len(diff_readers(story)) == 1, diff_readers(story)[0].session != diff_reader.session, "--resume" not in command, detail=refusal)
     story.expect_success('profile save diff-reader --description "Reads every change" --reason needed', actor=story.user)
     text = profile_path(story, "diff-reader").read_text()
     story.expect_rows('occupant: "each-launch"' in text, "independent" not in text, detail=text)

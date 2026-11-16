@@ -119,7 +119,7 @@ def test_a_worker_at_its_usage_limit_keeps_the_limit_while_it_is_idle_and_starts
     story.advance(timedelta(seconds=LIMIT_WINDOW_SECONDS - COLD_IDLE_SECONDS + 10))
     WorkerResumeRetry()(story.container)
     replaced = story.row(Agent, worker.id)
-    story.expect_rows(len(launches) == 1, replaced.session != worker.session, replaced.number == worker.id, replaced.retired_at is None, len(worker_rows(story)) == 1, detail=str(launches))
+    story.expect_rows(len(launches) == 1, replaced.session != worker.session, replaced.id == worker.id, replaced.retired_at is None, len(worker_rows(story)) == 1, detail=str(launches))
     story.expect_rows(launches[0]["session"] == replaced.session, "--resume" not in launches[0]["command"])
 
 

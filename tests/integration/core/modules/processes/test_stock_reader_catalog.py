@@ -59,7 +59,7 @@ def test_the_catalog_upgrade_keeps_a_project_reader_with_the_same_name(played):
 def test_the_pytest_listing_upgrade_updates_the_stock_reader(played):
     story = played(BuilderStarted)
     database = story.container.get(Database)
-    database.update(Statement("UPDATE readers SET count_pattern = ? WHERE name = ? AND creator_id = 1", ["old pattern", "pytest"]))
+    database.update(Statement("UPDATE readers SET count_pattern = ? WHERE name = ? AND creator_id = 0", ["old pattern", "pytest"]))
     PytestListingCountsMigration().run(database)
     reader = story.container.get(ReaderQuery).with_name("pytest").first()
     story.expect_rows(story.container.get(ReaderRun).count(reader, "tests/a.py: 3\ntests/b.py: 4\n", 0) == 7)
@@ -106,7 +106,7 @@ def test_go_vet_output(played):
 
 def test_every_stock_reader_is_stored_and_none_is_a_default(played):
     story = played(BuilderStarted)
-    stored = {reader.name: reader for reader in story.container.get(ReaderQuery).filter(creator_id=1).page(1, 500).rows}
+    stored = {reader.name: reader for reader in story.container.get(ReaderQuery).filter(creator_id=0).page(1, 500).rows}
     new_readers = [stock for stock in STOCK_READERS if stock.name in NEW_READERS + FIRST_BATCH_READERS]
     story.expect_rows(sorted(stock.name for stock in STOCK_READERS if stock.name not in stored) == [])
     story.expect_rows(sorted(stock.name for stock in new_readers if (stored[stock.name].step_pattern, stored[stock.name].count_pattern) != (stock.step, stock.count)) == [])

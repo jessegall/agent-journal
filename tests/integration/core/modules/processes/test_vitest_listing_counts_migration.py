@@ -15,7 +15,7 @@ LISTING = "printf '%s\\n' 'tests/a.test.js > one' 'tests/a.test.js > group > two
 def test_the_stock_reader_is_updated_without_changing_a_custom_reader():
     connection = sqlite3.connect(":memory:", autocommit=True)
     connection.execute("CREATE TABLE readers (name TEXT, creator_id INTEGER, count_pattern TEXT, count_command TEXT)")
-    connection.executemany("INSERT INTO readers VALUES (?, ?, 'old', 'old')", [("vitest", 1), ("vitest", 2), ("pytest", 1)])
+    connection.executemany("INSERT INTO readers VALUES (?, ?, 'old', 'old')", [("vitest", 0), ("vitest", 2), ("pytest", 0)])
     VitestListingCountsMigration().run(Database.configured(connection))
     rows = connection.execute("SELECT name, creator_id, count_pattern, count_command FROM readers ORDER BY creator_id, name").fetchall()
     assert rows[0][2:] == ("old", "old")
@@ -32,7 +32,7 @@ def test_the_count_command_lists_without_a_reporter_and_the_count_reads_the_numb
 def test_a_journal_that_ran_the_listing_migration_gets_the_summary_count_too():
     connection = sqlite3.connect(":memory:", autocommit=True)
     connection.execute("CREATE TABLE readers (name TEXT, creator_id INTEGER, count_pattern TEXT, count_command TEXT)")
-    connection.executemany("INSERT INTO readers VALUES (?, ?, '^([0-9]+)$', 'listing')", [("vitest", 1), ("vitest", 2)])
+    connection.executemany("INSERT INTO readers VALUES (?, ?, '^([0-9]+)$', 'listing')", [("vitest", 0), ("vitest", 2)])
     VitestSummaryCountsMigration().run(Database.configured(connection))
     rows = [tuple(row) for row in connection.execute("SELECT count_pattern, count_command FROM readers ORDER BY creator_id").fetchall()]
     assert rows == [(VITEST.count, VITEST.count_command), ("^([0-9]+)$", "listing")]
