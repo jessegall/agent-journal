@@ -37,7 +37,7 @@ export const newTemplateCommand = (values) => shown(["template", "make", values.
 export const editTemplateLine = (template, values) => ["template", "edit", String(template.id), "--title", values.title.trim(), "--brief", values.brief.trim(), "--targets", ...values.applies.split(","), "--purpose", values.purpose.trim(), "--parts", ...filled(values.parts), ...(withCommands(values) ? ["--commands", ...filled(values.commands)] : [])];
 export const editTemplateCommand = (template) => () => shown(["template", "edit", String(template.id), "…"]);
 
-// Send it on a row: the kind of row, its number and a value for each slot
+// Use it for an item: the kind of row, its number and a value for each slot
 export const sendFields = (template) => [
     {key: "kind", label: "On", kind: "select", options: (template.targets.length ? template.targets : Object.keys(KIND_WORDS)).map((kind) => [kind, KIND_WORDS[kind] ?? kind]), required: true},
     {key: "row", label: "Number", required: true, placeholder: "1131"},

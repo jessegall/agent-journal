@@ -6,7 +6,7 @@ import InspectorBack from "./InspectorBack.vue";
 import {copying} from "../domain/contextItems.js";
 import {inspectorWidth} from "../domain/inspectorWidths.js";
 import {INSPECTOR_HOST} from "../windows/windowContext.js";
-import WindowPane from "../windows/WindowPane.vue";
+import HostedWindow from "../../kit/HostedWindow.vue";
 import {ref} from "vue";
 
 // the file inspector: the Files browser in the widest inspector, opened on a path, the page staying under it. Its head names the first file and has the one primary button,
@@ -16,9 +16,9 @@ const emit = defineEmits(["close", "back"]);
 const host = inject(INSPECTOR_HOST, null);
 const said = ref("");
 const name = computed(() => props.path.split("/").pop() || "Files");
-const address = (query) => `${location.pathname}?${new URLSearchParams({environment: props.environment, page: "coding.files", ...query})}`;
+const address = (query) => `?${new URLSearchParams({environment: props.environment, page: "coding.files", ...query})}`;
 const filesPage = computed(() => address(props.path ? {file: props.path} : {}));
-const gitPage = computed(() => `${location.pathname}?${new URLSearchParams({environment: props.environment, page: "coding.git"})}`);
+const gitPage = computed(() => `?${new URLSearchParams({environment: props.environment, page: "coding.git"})}`);
 const copyPath = () => copying(props.path, "the path", (text) => (said.value = text));
 </script>
 
@@ -44,7 +44,7 @@ const copyPath = () => copying(props.path, "the path", (text) => (said.value = t
         </header>
         <div class="file-inspector-body">
             <template v-if="host">
-                <WindowPane name="coding.files" :catalogue="host.catalogue" :subscriptions="host.subscriptions" :environment="environment" :prompts="host.prompts" :shell-read="host.shellRead" :options="{start: path}" />
+                <HostedWindow name="coding.files" :environment="environment" :options="{start: path}" />
             </template>
         </div>
     </aside>

@@ -9,7 +9,7 @@ import {GIT_WORDS} from "./gitWords.js";
 const props = defineProps({row: {type: Object, required: true}, depth: {type: Number, default: 0}, browser: {type: Object, required: true}});
 const view = useWindow();
 // the menu of a right click on the row; Show changes in Git opens the Git page of this environment
-const gitAddress = () => `${location.pathname}?${new URLSearchParams({environment: view.environment, page: "coding.git"})}`;
+const gitAddress = () => `?${new URLSearchParams({environment: view.environment, page: "coding.git"})}`;
 const place = () => ({head: props.row.id, items: rowItems(props.browser, props.row, gitAddress)});
 const flashing = computed(() => props.browser.flash.value === props.row.id);
 const isOpen = computed(() => props.browser.opened.value.has(props.row.id));

@@ -21,10 +21,9 @@ export function driverOf(drivers, role) {
 
 export const mainDriver = (drivers) => driverOf(drivers, "main");
 
-// a page's layout (the home page's by default) for the environment's suite and a driver, the main one by default, read through the shell's own window line and
-// loaded again whenever a setting changes, so switching the suite or the driver brings that layout
-export function useHomeLayout(environment, shellLine, catalogue, {page = HOME, driver = null} = {}) {
-    const store = paneLayout({
+// where a page's layout is read from and saved to, through the shell's own window line, and where the suite's layout for it comes from
+export function layoutSources(environment, shellLine) {
+    return {
         saved: async ({suite, page, driver}) => {
             const answer = await shellLine(["viewer-layout", "current", "--suite", suite, "--page", page, "--driver", driver]);
             return answer.ok ? {layout: JSON.parse(answer.value.layout), version: answer.value.version} : null;
@@ -38,8 +37,13 @@ export function useHomeLayout(environment, shellLine, catalogue, {page = HOME, d
             const answer = await shellLine(["viewer-layout", "save", "--suite", at.suite, "--page", at.page, "--driver", at.driver, "--layout", JSON.stringify(kept), ...base]);
             return answer.ok ? {ok: true, version: answer.value.version} : {ok: false, error: answer.error};
         },
-        entry: (name) => catalogue.window(name),
-    });
+    };
+}
+
+// a page's layout (the home page's by default) for the environment's suite and a driver, the main one by default, read through the shell's own window line and
+// loaded again whenever a setting changes, so switching the suite or the driver brings that layout
+export function useHomeLayout(environment, shellLine, catalogue, {page = HOME, driver = null} = {}) {
+    const store = paneLayout({...layoutSources(environment, shellLine), entry: (name) => catalogue.window(name)});
 
     let shown = page;
     store.drawKept(environment, page);

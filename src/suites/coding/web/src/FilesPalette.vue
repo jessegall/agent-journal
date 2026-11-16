@@ -29,7 +29,7 @@ onMounted(() => field.value?.focus());
     <div class="palette-veil" data-files-palette @mousedown.self="browser.palette.value = null">
         <div class="palette" role="dialog" aria-label="Search" aria-modal="true" @keydown="onKey">
             <div class="palette-head">
-                <input ref="field" v-model="browser.query.value" class="palette-field" placeholder="Search" aria-label="Search" data-palette-field autocomplete="off">
+                <input ref="field" v-model="browser.query.value" class="palette-field" placeholder="File name or words" aria-label="Find a file" data-palette-field autocomplete="off">
                 <Segmented :options="MODES" :value="browser.palette.value" @pick="browser.palette.value = $event" />
             </div>
             <div class="palette-list">

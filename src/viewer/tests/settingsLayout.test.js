@@ -42,7 +42,7 @@ test("test_section_icons: each section has one icon, Reviews an eye, Tests the t
 
 test("test_search_finds_rows: typing in the search shows the matching rows of every section with the section named, and none says so", async () => {
     const element = await drawn();
-    const box = element.querySelector("[data-settings-search-field]");
+    const box = element.querySelector("[data-settings-search] input");
     box.value = "model";
     box.dispatchEvent(new Event("input"));
     await settle();

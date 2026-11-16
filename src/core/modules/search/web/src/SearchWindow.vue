@@ -107,7 +107,7 @@ const place = (item) => ({
         </template>
         <template #empty>
             <template v-if="searching"><Skeleton shape="rows" /></template>
-            <template v-else-if="!answer"><span data-search-empty>Type words to find documents, tasks, memories and every other row. A result holds every word.</span></template>
+            <template v-else-if="!answer"><span data-search-empty>Type words to find documents, tasks, memories and everything else the journal keeps. A result contains every word.</span></template>
         </template>
         <template #reader="{item}">
             <Reader :title="item.title" :number="referenceOf(item.hit)" :facts="answer.closest ? [{name: 'holds', label: 'Holds', value: item.hit.matched_tokens.join(', ')}] : []" data-search-reader>

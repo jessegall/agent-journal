@@ -7,7 +7,7 @@ import TemplateReader from "./TemplateReader.vue";
 import {KIND_WORDS, isOwn} from "./templateForms.js";
 
 // the templates as a list and a reader: a row is the number and the title, its description under it and how long ago it was made, with no word for its kind (the title says it).
-// Use opens Send it on a row, and Edit is offered only for a template a user made, never for one a module published
+// Use opens Use it for an item, and Edit is offered only for a template a user made, never for one a module published
 const LIST_WIDTH = 460;
 const view = useWindow();
 const {rows, failure, loaded} = view.props.templates;

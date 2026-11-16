@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {Icon} from "@journal/window-kit";
+import {Icon, SearchBar} from "@journal/window-kit";
 
 // the Settings page's frame: the section nav at the left headed by the search, a heading for each group and one icon for each section, and the open section at the right.
 // The nav has no help sentences. A / outside a field puts the cursor in the search
@@ -20,8 +20,7 @@ function slash(event) {
     <div class="settings-layout" data-settings-layout @keydown="slash">
         <nav class="settings-nav" aria-label="Settings sections" data-settings-nav>
             <div class="settings-search" data-settings-search>
-                <Icon name="search" :size="13" />
-                <input ref="field" v-model="query" type="search" placeholder="Search settings" aria-label="Search settings" data-settings-search-field>
+                <SearchBar ref="field" v-model="query" placeholder="Search settings" />
             </div>
             <template v-for="group in groups" :key="group.key">
                 <p class="settings-group" data-settings-group>{{ group.title }}</p>

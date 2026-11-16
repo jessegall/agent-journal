@@ -45,7 +45,7 @@ const send = async () => {
 };
 const labels = (element, id) => menuEntries(placeUnder(rowOf(element, id)).items).filter((entry) => !entry.separator).map((entry) => entry.label);
 
-test("test_send_on_row_dialog: Send it on a row asks for the kind of row, its number and a value for each slot, and runs template send", async () => {
+test("test_send_on_row_dialog: Use it for an item asks for the kind of row, its number and a value for each slot, and runs template send", async () => {
     const {element, ran} = await drawn();
     await choose(element, 7);
     expect(rowOf(element, 7).textContent).not.toMatch(/template|module/i);

@@ -3,7 +3,7 @@ import {computed} from "vue";
 import {Btn, Reader, ReaderSection} from "@journal/window-kit";
 import {KIND_WORDS, isOwn, partWords, slotsOf} from "./templateForms.js";
 
-// one template read whole: its facts, what it runs at each phase end and its parts. Send it on a row is the primary button; a template a module published says it is not changed
+// one template read whole: its facts, what it runs at each phase end and its parts. Use it for an item is the primary button; a template a module published says it is not changed
 const props = defineProps({template: {type: Object, required: true}});
 const emit = defineEmits(["send", "edit"]);
 const facts = computed(() => [
@@ -17,7 +17,7 @@ const facts = computed(() => [
 <template>
     <Reader :title="template.title" :number="String(template.id)" :abstract="template.brief" :facts="facts" data-template-reader>
         <template #primary>
-            <Btn small variant="primary" data-template-send @click="emit('send')">Send it on a row</Btn>
+            <Btn small variant="primary" data-template-send @click="emit('send')">Use it for an item</Btn>
         </template>
         <template #actions>
             <template v-if="isOwn(template)">

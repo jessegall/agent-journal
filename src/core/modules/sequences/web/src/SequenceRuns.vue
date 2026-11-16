@@ -20,7 +20,7 @@ const stepWords = (run) => `Step ${run.step_number} of ${progress(run).total}${r
                 <span class="bar" role="progressbar" :aria-valuenow="progress(run).done" aria-valuemin="0" :aria-valuemax="progress(run).total"><i :style="{width: `${(progress(run).done / progress(run).total) * 100}%`}" /></span>
                 <span class="run-words">{{ stepWords(run) }}</span>
                 <template v-if="canAbandon(run, all)">
-                    <button type="button" class="abandon" data-run-abandon @click="emit('abandon', run)">Abandon</button>
+                    <button type="button" class="abandon" data-run-abandon @click="emit('abandon', run)">Stop</button>
                 </template>
             </div>
         </template>

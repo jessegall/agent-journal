@@ -1,4 +1,4 @@
-if (!document.getElementById("window-styles-49f998eb368d")) { const style = document.createElement("style"); style.id = "window-styles-49f998eb368d"; style.textContent = ".fixed[data-v-8eec169f]{margin:12px 0 0;color:var(--text-3);font-size:12.5px}.command[data-v-8eec169f]{margin:0 0 4px;font-family:var(--mono, monospace);font-size:12.5px}.part[data-v-8eec169f]{margin:0 0 6px;color:var(--text-2);font-size:13px}.age[data-v-06d7e930]{color:var(--text-3);font-size:12px;white-space:nowrap}.failure[data-v-06d7e930]{margin:0;padding:6px var(--inset);color:var(--bad, var(--text-2));font-size:12px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-11ebb4f43823")) { const style = document.createElement("style"); style.id = "window-styles-11ebb4f43823"; style.textContent = ".fixed[data-v-2cb0b79a]{margin:12px 0 0;color:var(--text-3);font-size:12.5px}.command[data-v-2cb0b79a]{margin:0 0 4px;font-family:var(--mono, monospace);font-size:12.5px}.part[data-v-2cb0b79a]{margin:0 0 6px;color:var(--text-2);font-size:13px}.age[data-v-9e46fe7f]{color:var(--text-3);font-size:12px;white-space:nowrap}.failure[data-v-9e46fe7f]{margin:0;padding:6px var(--inset);color:var(--bad, var(--text-2));font-size:12px}\n"; document.head.appendChild(style); }
 import { openBlock as m, createBlock as g, unref as a, withCtx as i, createVNode as d, computed as C, createElementBlock as b, createCommentVNode as v, Fragment as I, renderList as W, toDisplayString as N, createElementVNode as K, createTextVNode as O, ref as T } from "vue";
 import { useWindow as D, CreateDialog as U, TextList as B, Reader as z, ReaderSection as F, Btn as q, optionsOf as G, defaultFilter as Q, applyFilter as X, ListReaderLayout as Y, TimeAgo as Z, Skeleton as _, PageHeader as ee, FilterBar as te, SwitchCase as ae } from "@journal/window-kit";
 const x = { plan: "Plan", task: "Task", doc: "Document" }, P = [["plan", "Plans"], ["task", "Tasks"], ["doc", "Documents"], ["plan,task", "Plans and tasks"]], le = (e) => /\s/.test(e) ? JSON.stringify(e) : e, E = (e) => `journal ${e.map(le).join(" ")}`, h = (e) => e.map((t) => t.trim()).filter(Boolean), L = (e) => !e.module, A = (e) => [...new Set(e.parts.flatMap((t) => [...t.matchAll(/\{(\w+)\}/g)].map((l) => l[1])))];
@@ -115,7 +115,7 @@ const se = (e) => h(e.parts).some((t) => t.includes("|")) ? { parts: "A part can
           onClick: s[0] || (s[0] = (o) => u("send"))
         }, {
           default: i(() => [...s[2] || (s[2] = [
-            O("Send it on a row", -1)
+            O("Use it for an item", -1)
           ])]),
           _: 1
         })
@@ -166,7 +166,7 @@ const se = (e) => h(e.parts).some((t) => t.includes("|")) ? { parts: "A part can
       _: 1
     }, 8, ["title", "number", "abstract", "facts"]));
   }
-}, ge = /* @__PURE__ */ M(ye, [["__scopeId", "data-v-8eec169f"]]), ve = {
+}, ge = /* @__PURE__ */ M(ye, [["__scopeId", "data-v-2cb0b79a"]]), ve = {
   key: 0,
   class: "failure",
   role: "alert",
@@ -272,7 +272,7 @@ const se = (e) => h(e.parts).some((t) => t.includes("|")) ? { parts: "A part can
       _: 1
     }, 8, ["chosen", "items"]));
   }
-}, Ce = /* @__PURE__ */ M($e, [["__scopeId", "data-v-06d7e930"]]);
+}, Ce = /* @__PURE__ */ M($e, [["__scopeId", "data-v-9e46fe7f"]]);
 export {
   Ce as default
 };

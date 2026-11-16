@@ -1,5 +1,5 @@
-if (!document.getElementById("window-styles-1fa04fdeb981")) { const style = document.createElement("style"); style.id = "window-styles-1fa04fdeb981"; style.textContent = ".run[data-v-d89d02e5]{display:flex;align-items:center;gap:var(--s3);padding:8px 0;border-bottom:1px solid var(--border-inner);font-size:12.5px}.run-number[data-v-d89d02e5]{flex:none;width:30px;color:var(--text-3);font-variant-numeric:tabular-nums}.bar[data-v-d89d02e5]{flex:1;min-width:40px;height:4px;overflow:hidden;border-radius:2px;background:var(--border-2)}.bar i[data-v-d89d02e5]{display:block;height:100%;background:var(--accent)}.run-words[data-v-d89d02e5]{flex:none;color:var(--text-3);font-size:12px;white-space:nowrap}.abandon[data-v-d89d02e5]{flex:none;border:0;background:none;color:var(--text-2);font:inherit;font-size:12px;cursor:pointer}.none[data-v-d89d02e5]{margin:0;color:var(--text-3);font-size:12.5px}.progress[data-v-f42e011f]{display:flex;align-items:center;gap:var(--s3);margin:4px 0 14px}.bar[data-v-f42e011f]{flex:1;height:4px;overflow:hidden;border-radius:2px;background:var(--border-2)}.bar i[data-v-f42e011f]{display:block;height:100%;background:var(--accent)}.progress-words[data-v-f42e011f]{color:var(--text-3);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}.steps[data-v-f42e011f]{margin:0;padding:0;list-style:none}.step[data-v-f42e011f]{display:flex;align-items:flex-start;gap:var(--s3);padding:8px 0;border-bottom:1px solid var(--border-inner)}.step-number[data-v-f42e011f]{flex:none;width:18px;color:var(--text-3);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}.step-body[data-v-f42e011f]{flex:1;min-width:0}.step-text[data-v-f42e011f]{color:var(--text-2)}.step-guard[data-v-f42e011f]{display:block;color:var(--text-3);font-size:12px}.sequence-triggers[data-v-2da9d503]{margin-bottom:14px}.head[data-v-2da9d503]{display:flex;gap:8px;align-items:center;margin-bottom:6px}.title[data-v-2da9d503],.label[data-v-2da9d503],.note[data-v-2da9d503]{color:var(--text-3);font-size:12px}.line[data-v-2da9d503]{margin:0 0 2px;font-size:13px}.card[data-v-2da9d503]{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:8px;padding:10px;border:1px solid var(--border);border-radius:8px}.card input[data-v-2da9d503]{width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:13px}.foot[data-v-2da9d503]{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.failure[data-v-70b9e7dc]{margin:0;padding:6px var(--inset);color:var(--bad, var(--text-2));font-size:12px}\n"; document.head.appendChild(style); }
-import { openBlock as u, createBlock as C, unref as s, withCtx as m, createVNode as c, createElementBlock as v, createCommentVNode as x, Fragment as A, renderList as L, createElementVNode as h, toDisplayString as f, normalizeStyle as z, computed as S, ref as j, createTextVNode as T, withDirectives as oe, vModelText as ue } from "vue";
+if (!document.getElementById("window-styles-1084b9c16c6f")) { const style = document.createElement("style"); style.id = "window-styles-1084b9c16c6f"; style.textContent = ".run[data-v-a91de3ae]{display:flex;align-items:center;gap:var(--s3);padding:8px 0;border-bottom:1px solid var(--border-inner);font-size:12.5px}.run-number[data-v-a91de3ae]{flex:none;width:30px;color:var(--text-3);font-variant-numeric:tabular-nums}.bar[data-v-a91de3ae]{flex:1;min-width:40px;height:4px;overflow:hidden;border-radius:2px;background:var(--border-2)}.bar i[data-v-a91de3ae]{display:block;height:100%;background:var(--accent)}.run-words[data-v-a91de3ae]{flex:none;color:var(--text-3);font-size:12px;white-space:nowrap}.abandon[data-v-a91de3ae]{flex:none;border:0;background:none;color:var(--text-2);font:inherit;font-size:12px;cursor:pointer}.none[data-v-a91de3ae]{margin:0;color:var(--text-3);font-size:12.5px}.progress[data-v-f42e011f]{display:flex;align-items:center;gap:var(--s3);margin:4px 0 14px}.bar[data-v-f42e011f]{flex:1;height:4px;overflow:hidden;border-radius:2px;background:var(--border-2)}.bar i[data-v-f42e011f]{display:block;height:100%;background:var(--accent)}.progress-words[data-v-f42e011f]{color:var(--text-3);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}.steps[data-v-f42e011f]{margin:0;padding:0;list-style:none}.step[data-v-f42e011f]{display:flex;align-items:flex-start;gap:var(--s3);padding:8px 0;border-bottom:1px solid var(--border-inner)}.step-number[data-v-f42e011f]{flex:none;width:18px;color:var(--text-3);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}.step-body[data-v-f42e011f]{flex:1;min-width:0}.step-text[data-v-f42e011f]{color:var(--text-2)}.step-guard[data-v-f42e011f]{display:block;color:var(--text-3);font-size:12px}.sequence-triggers[data-v-2da9d503]{margin-bottom:14px}.head[data-v-2da9d503]{display:flex;gap:8px;align-items:center;margin-bottom:6px}.title[data-v-2da9d503],.label[data-v-2da9d503],.note[data-v-2da9d503]{color:var(--text-3);font-size:12px}.line[data-v-2da9d503]{margin:0 0 2px;font-size:13px}.card[data-v-2da9d503]{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:8px;padding:10px;border:1px solid var(--border);border-radius:8px}.card input[data-v-2da9d503]{width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:13px}.foot[data-v-2da9d503]{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.failure[data-v-70b9e7dc]{margin:0;padding:6px var(--inset);color:var(--bad, var(--text-2));font-size:12px}\n"; document.head.appendChild(style); }
+import { openBlock as u, createBlock as C, unref as s, withCtx as m, createVNode as c, createElementBlock as v, createCommentVNode as x, Fragment as A, renderList as L, createElementVNode as h, toDisplayString as f, normalizeStyle as z, computed as w, ref as j, createTextVNode as T, withDirectives as oe, vModelText as ue } from "vue";
 import { useWindow as E, CreateDialog as D, TextList as ie, AgentBadge as H, TextDisplay as de, Btn as W, Icon as ce, Segmented as pe, Reader as me, SwitchCase as K, ActionsMenu as ge, deleteItem as ve, removed as be, defaultFilter as _e, applyFilter as ye, ListReaderLayout as qe, Skeleton as he, PageHeader as fe, FilterBar as ke } from "@journal/window-kit";
 const R = [
   { value: "row", label: "A record is made", fields: [{ name: "event", label: "Record and event", placeholder: "plan.create" }] },
@@ -15,14 +15,14 @@ const R = [
   file: (e) => `When a file matching “${e.pattern}” is edited`,
   "file-text": (e) => `When an edit to “${e.pattern}” adds “${e.text}”`,
   tool: (e) => `When ${e.tool} is used${e.pattern ? ` with “${e.pattern}” in its input` : ""}`
-}, we = (e) => $e[e.trigger_type](e), Q = (e) => e.length ? e.map(we) : ["Only when you or the agent start it"], M = () => ({ trigger_type: "phrase", event: "", text: "", pattern: "", tool: "" });
+}, Se = (e) => $e[e.trigger_type](e), Q = (e) => e.length ? e.map(Se) : ["Only when you or the agent start it"], M = () => ({ trigger_type: "phrase", event: "", text: "", pattern: "", tool: "" });
 function X(e) {
   const t = P(e.trigger_type).fields.map((n) => [n.name, (e[n.name] || "").trim()]);
   return { trigger_type: e.trigger_type, ...Object.fromEntries(t.filter(([, n]) => n)) };
 }
-const Se = { tool: ["pattern"] };
+const we = { tool: ["pattern"] };
 function Z(e) {
-  const t = e.find((n) => P(n.trigger_type).fields.some((o) => !(Se[n.trigger_type] ?? []).includes(o.name) && !(n[o.name] || "").trim()));
+  const t = e.find((n) => P(n.trigger_type).fields.some((o) => !(we[n.trigger_type] ?? []).includes(o.name) && !(n[o.name] || "").trim()));
   return t ? `${P(t.trigger_type).label}: complete every field.` : "";
 }
 const Oe = "Add instructions for each step.", ee = (e) => ({ key: "steps", label: "Steps, in order", kind: "slot", required: !0, value: e }), te = (e) => e.steps.some((t) => !t.trim()) ? { steps: Oe } : {}, Ae = (e) => /\s/.test(e) ? JSON.stringify(e) : e, J = (e) => `journal ${e.map(Ae).join(" ")}`, Ce = (e = "", t = [""]) => [{ key: "title", label: "Title", required: !0, placeholder: "Releasing a version", value: e }, ee(t)], xe = (e) => e.title.trim() ? te(e) : { title: "Give the sequence a title." }, Te = (e) => ["sequence", "make", e.title.trim(), "--steps", e.steps.map((t) => t.trim()).join(" | ")], Ne = (e) => J(["sequence", "make", e.title.trim() || "…", "--steps", e.steps.map((t) => t.trim()).join(" | ") || "…"]), Re = (e) => JSON.parse(e.step_guards || "[]"), Ie = { file_edits_allowed: !0, allowed_commands: [] }, We = (e, t) => ["sequence", "edit", String(e.id), "--steps", ...t.steps.map((n) => n.trim()), "--step-guards", JSON.stringify(t.steps.map((n, o) => Re(e)[o] ?? Ie))], je = (e) => () => J(["sequence", "edit", String(e.id), "--steps", "…"]), ne = (e, t) => `${e.value}:${t}`, Ee = { tool: ["pattern"] }, Fe = [
@@ -174,11 +174,11 @@ const B = (e, t) => {
           class: "abandon",
           "data-run-abandon": "",
           onClick: (b) => n("abandon", a)
-        }, "Abandon", 8, et)) : x("", !0)
+        }, "Stop", 8, et)) : x("", !0)
       ]))), 128))
     ]));
   }
-}, nt = /* @__PURE__ */ B(tt, [["__scopeId", "data-v-d89d02e5"]]), st = {
+}, nt = /* @__PURE__ */ B(tt, [["__scopeId", "data-v-a91de3ae"]]), st = {
   class: "sequence-steps",
   "data-sequence-steps": ""
 }, at = {
@@ -196,7 +196,7 @@ const B = (e, t) => {
   __name: "SequenceSteps",
   props: { sequence: { type: Object, required: !0 }, runs: { type: Array, required: !0 } },
   setup(e) {
-    const t = e, n = S(() => JSON.parse(t.sequence.step_guards || "[]")), o = (l) => n.value[l] ?? { file_edits_allowed: !0, allowed_commands: [] }, r = (l) => [o(l).file_edits_allowed ? "File edits allowed" : "File edits wait", ...o(l).allowed_commands].join(", "), i = S(() => t.runs.length ? N(t.runs.reduce((l, q) => q.step_number > l.step_number ? q : l)) : null), a = S(() => t.runs.length ? Math.min(...t.runs.map((l) => l.step_number)) : 0), b = (l) => t.runs.some((q) => q.step_number === l + 1) ? "In progress" : t.runs.length && l + 1 < a.value ? "Done" : "";
+    const t = e, n = w(() => JSON.parse(t.sequence.step_guards || "[]")), o = (l) => n.value[l] ?? { file_edits_allowed: !0, allowed_commands: [] }, r = (l) => [o(l).file_edits_allowed ? "File edits allowed" : "File edits wait", ...o(l).allowed_commands].join(", "), i = w(() => t.runs.length ? N(t.runs.reduce((l, q) => q.step_number > l.step_number ? q : l)) : null), a = w(() => t.runs.length ? Math.min(...t.runs.map((l) => l.step_number)) : 0), b = (l) => t.runs.some((q) => q.step_number === l + 1) ? "In progress" : t.runs.length && l + 1 < a.value ? "Done" : "";
     return (l, q) => (u(), v("section", st, [
       i.value ? (u(), v("div", at, [
         h("span", {
@@ -241,7 +241,7 @@ const B = (e, t) => {
   __name: "SequenceTriggers",
   props: { sequence: { type: Object, required: !0 } },
   setup(e) {
-    const t = e, n = E(), o = R.map((y) => ({ key: y.value, label: y.label })), r = S(() => JSON.parse(t.sequence.triggers || "[]")), i = S(() => Q(r.value)), a = j(null), b = j(""), l = S(() => a.value ? Z(a.value) : ""), q = () => a.value = r.value.map((y) => ({ ...M(), ...y }));
+    const t = e, n = E(), o = R.map((y) => ({ key: y.value, label: y.label })), r = w(() => JSON.parse(t.sequence.triggers || "[]")), i = w(() => Q(r.value)), a = j(null), b = j(""), l = w(() => a.value ? Z(a.value) : ""), q = () => a.value = r.value.map((y) => ({ ...M(), ...y }));
     async function $() {
       const y = await n.run(["sequence", "edit", String(t.sequence.id), "--triggers", JSON.stringify(a.value.map(X))]);
       b.value = y.ok ? "" : y.error, y.ok && (a.value = null);
@@ -349,11 +349,11 @@ const B = (e, t) => {
   props: { sequence: { type: Object, required: !0 }, runs: { type: Array, required: !0 }, items: { type: Array, required: !0 } },
   emits: ["abandon"],
   setup(e, { emit: t }) {
-    const n = e, o = t, r = S(() => V(n.sequence, n.runs)), i = S(() => [
+    const n = e, o = t, r = w(() => V(n.sequence, n.runs)), i = w(() => [
       { key: "steps", label: "Steps", count: n.sequence.steps.length },
       { key: "runs", label: "Runs", count: r.value.length },
       { key: "triggers", label: "Triggers", count: U(n.sequence).length }
-    ]), a = S(() => r.value[0] ?? null);
+    ]), a = w(() => r.value[0] ?? null);
     return (b, l) => (u(), C(s(me), {
       title: e.sequence.title,
       number: String(e.sequence.id),
@@ -399,7 +399,7 @@ const B = (e, t) => {
     }, 8, ["title", "number", "tabs"]));
   }
 };
-function wt(e, t, { act: n, ask: o, open: r = null }) {
+function St(e, t, { act: n, ask: o, open: r = null }) {
   const i = V(e, t), a = i.filter((l) => le(l, t)), b = (l) => async ({ say: q }) => {
     const $ = await l.line();
     q($.ok ? l.done : $.error);
@@ -414,7 +414,7 @@ function wt(e, t, { act: n, ask: o, open: r = null }) {
     ve({ name: `sequence ${e.id}`, remove: () => n(["sequence", "delete", String(e.id)], be(e.id)) })
   ];
 }
-const St = {
+const wt = {
   key: 0,
   class: "failure",
   role: "alert",
@@ -426,16 +426,16 @@ const St = {
 }, At = 460, Ct = {
   __name: "SequenceCards",
   setup(e) {
-    const t = E(), { rows: n, data: o, failure: r, loaded: i, act: a, actionFailure: b } = t.props.board, l = S(() => {
+    const t = E(), { rows: n, data: o, failure: r, loaded: i, act: a, actionFailure: b } = t.props.board, l = w(() => {
       var p;
       return ((p = o.value) == null ? void 0 : p.runs) ?? [];
-    }), q = S(() => n.value.map((p) => ({ id: p.id, title: `${p.id} ${p.title}`, desc: ze(p, l.value), row: p, running: V(p, l.value).length > 0 }))), $ = [
+    }), q = w(() => n.value.map((p) => ({ id: p.id, title: `${p.id} ${p.title}`, desc: ze(p, l.value), row: p, running: V(p, l.value).length > 0 }))), $ = [
       { key: "state", label: "State", options: [["Running", "Running"], ["Idle", "Idle"]], get: (p) => p.running ? "Running" : "Idle" },
       { key: "trigger", label: "Trigger", options: R.map((p) => [p.value, p.label]), get: (p) => U(p.row).map((d) => d.trigger_type) }
-    ], y = j(_e($)), _ = j(""), k = S(() => ye(q.value, $, y.value, _.value, ["title", "desc"])), I = j(null), g = j(null), F = (p, d, w = null) => g.value = { kind: p, sequence: d, run: w }, G = (p, d = null) => wt(p, l.value, { act: a, ask: F, open: d }), re = (p) => ({ head: `Sequence ${p.id}`, items: G(p.row, () => I.value = p.id) });
+    ], y = j(_e($)), _ = j(""), k = w(() => ye(q.value, $, y.value, _.value, ["title", "desc"])), I = j(null), g = j(null), F = (p, d, S = null) => g.value = { kind: p, sequence: d, run: S }, G = (p, d = null) => St(p, l.value, { act: a, ask: F, open: d }), re = (p) => ({ head: `Sequence ${p.id}`, items: G(p.row, () => I.value = p.id) });
     return (p, d) => (u(), C(s(qe), {
       chosen: I.value,
-      "onUpdate:chosen": d[8] || (d[8] = (w) => I.value = w),
+      "onUpdate:chosen": d[8] || (d[8] = (S) => I.value = S),
       items: k.value,
       "list-width": At,
       place: re,
@@ -444,7 +444,7 @@ const St = {
       "data-sequences": ""
     }, {
       top: m(() => {
-        var w;
+        var S;
         return [
           c(s(fe), {
             title: "Sequences",
@@ -475,9 +475,9 @@ const St = {
             shown: k.value.length,
             placeholder: "Search sequences"
           }, null, 8, ["modelValue", "words", "rows", "shown"]),
-          s(r) || s(b) ? (u(), v("p", St, f(s(r) || s(b)), 1)) : x("", !0),
+          s(r) || s(b) ? (u(), v("p", wt, f(s(r) || s(b)), 1)) : x("", !0),
           c(s(K), {
-            value: (w = g.value) == null ? void 0 : w.kind
+            value: (S = g.value) == null ? void 0 : S.kind
           }, {
             new: m(() => [
               c(Y, {
@@ -521,15 +521,15 @@ const St = {
           shape: "rows"
         }))
       ]),
-      meta: m(({ item: w }) => [
-        w.running ? (u(), v("span", Ot, "Running")) : x("", !0)
+      meta: m(({ item: S }) => [
+        S.running ? (u(), v("span", Ot, "Running")) : x("", !0)
       ]),
-      reader: m(({ item: w }) => [
+      reader: m(({ item: S }) => [
         c($t, {
-          sequence: w.row,
+          sequence: S.row,
           runs: l.value,
-          items: G(w.row),
-          onAbandon: (O) => F("abandon", w.row, O)
+          items: G(S.row),
+          onAbandon: (O) => F("abandon", S.row, O)
         }, null, 8, ["sequence", "runs", "items", "onAbandon"])
       ]),
       _: 1
