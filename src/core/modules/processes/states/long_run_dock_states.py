@@ -19,9 +19,10 @@ TITLE_GRACE_USES = 5
 
 
 class LongRunDockStates(StateSource):
-    """Plans the hold on each run its agent moved to the background and has not named, read from the run's open
+    """Plans the hold on the oldest run its agent moved to the background and has not named, read from the run's open
     request row (doc 1310 section 4.6, the required command row): its tools held after five uses until journal
-    output title, never a line that counts. OutputTitleRequestListener writes the request in the background move."""
+    output title, never a line that counts, and the next run's once it is named. OutputTitleRequestListener writes
+    the request in the background move."""
     state_type = Blocked
     rank = OUTPUT_TITLE_RANK
 
@@ -33,7 +34,7 @@ class LongRunDockStates(StateSource):
         for agent in agents:
             requests = self.requests.open_for_agent(agent.agent_id)
             if requests:
-                plans[agent.agent_id] = [self.plan(request.process_id) for request in requests]
+                plans[agent.agent_id] = [self.plan(requests[0].process_id)]
         return plans
 
     # the hold today's required command opens for the title line, in its words: "title output N is due" after the grace

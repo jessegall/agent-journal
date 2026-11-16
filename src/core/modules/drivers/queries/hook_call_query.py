@@ -120,12 +120,21 @@ class HookCallQuery(Query[HookCall]):
         return call.creation_timestamp().elapsed_seconds(checked_at) >= IDLE_LIMIT_SECONDS or self.has_ended_turn(agent_id)
 
     def has_ended_turn(self, agent_id: int) -> bool:
+        return self.is_at_prompt(agent_id) and not self.is_waiting_on_background_work(agent_id)
+
+    # the agent's program sits at its prompt and takes a typed line: its turn ended, with or without background work it
+    # waits on, such as a Monitor the program itself brings it back from
+    def is_at_prompt(self, agent_id: int) -> bool:
         call = self.latest_turn_call(agent_id)
         if call is None:
             return False
         if call.is_compaction_start:
             return call.answer == HookAnswer.ALLOWED and self.is_after_manual_compaction(agent_id)
-        return (call.hook in IDLE_HOOKS and call.answer == HookAnswer.ALLOWED and not call.has_background_work) or call.is_interrupted
+        return (call.hook in IDLE_HOOKS and call.answer == HookAnswer.ALLOWED) or call.is_interrupted
+
+    def is_waiting_on_background_work(self, agent_id: int) -> bool:
+        call = self.latest_turn_call(agent_id)
+        return call is not None and call.has_background_work and not call.is_interrupted
 
     def is_after_manual_compaction(self, agent_id: int) -> bool:
         compaction = self.latest_compaction(agent_id)

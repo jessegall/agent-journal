@@ -12,7 +12,7 @@ from core.modules.processes.agent_messages.run_name_message import RunNameMessag
 
 
 class DockTitleLines(EventLineSource):
-    """Asks for a title for each run whose open request waits for one, as its line's interval allows; the hold
+    """Asks for a title for the oldest run whose open request waits for one, as its line's interval allows; the hold
     LongRunDockStates plans holds the agent's tools after five uses until it gives one."""
 
     key = LONG_RUN_DOCK_KEY
@@ -23,4 +23,4 @@ class DockTitleLines(EventLineSource):
 
     def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         # the hold is LongRunDockStates', so the line opens no required-command hold of its own
-        return [replace(RunNameMessage.declared().agent_message(process=request.process_id), required_command="") for request in self.requests.open_for_agent(agent_id)]
+        return [replace(RunNameMessage.declared().agent_message(process=request.process_id), required_command="") for request in self.requests.open_for_agent(agent_id)[:1]]

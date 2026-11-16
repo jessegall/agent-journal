@@ -1,3 +1,4 @@
+from core.modules.messages.wake_causes.person_message_wake import PersonMessageWake
 from core.modules.messages.listeners.message_step_listener import MessageStepListener
 from core.modules.messages.states.unread_message_states import UnreadMessageStates
 from core.modules.messages.states.unanswered_message_states import UnansweredMessageStates
@@ -134,5 +135,6 @@ class MessagesModule(Module):
     windows = MESSAGES_WINDOWS
     marks = [MessageSummaryMark, MessageFiledMark, MessageEditedMark]
     skills = MESSAGES_SKILLS
+    wake_causes = [PersonMessageWake]
     listeners = [NewSessionWorkSourceListener, ReportPinListener, MessageRowsListener, MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, WaitingMessageTypingListener, ReadMessageLineListener, ReleasedMessageLineListener, DeletedWorkSourceListener, DeletedAgentWorkSourceListener, TaggedImageBlockListener]
     seeders = [MessagesSeeder]

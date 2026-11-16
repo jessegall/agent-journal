@@ -192,6 +192,7 @@
         "newest_hook_at: datetime | None",
         "journal_started_at: datetime | None",
         "last_refused_rules: frozenset[str]",
+        "is_at_prompt: bool",
         "subject_ends: Mapping[RowReference, StateEnd]"
       ],
       "methods": []
@@ -934,6 +935,7 @@
         "constraining(view: AgentView) -> list[OpenBlock]",
         "with_plan(block: OpenBlock, plan: BlockPlan | None) -> OpenBlock",
         "new_plans(view: AgentView) -> list[BlockPlan]",
+        "stays_open(block: OpenBlock, view: AgentView) -> bool",
         "planned(plan: BlockPlan) -> OpenBlock"
       ]
     },
@@ -1027,7 +1029,8 @@
         "stop_grace_passed: bool",
         "is_strict: bool",
         "subject: RowReference | None",
-        "stop_reason: Reason | None"
+        "stop_reason: Reason | None",
+        "condition_text: str"
       ],
       "methods": [
         "refuses_tools(self) -> bool",

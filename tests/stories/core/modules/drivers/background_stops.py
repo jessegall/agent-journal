@@ -17,11 +17,6 @@ def lines_entered_after_stop(new_story, stop):
     return story, typing
 
 
-def test_a_stop_with_background_work_in_flight_is_not_idle_so_a_message_waits(new_story):
+def test_a_message_is_typed_after_a_stop_with_background_work_in_flight_as_the_program_sits_at_its_prompt(new_story):
     story, typing = lines_entered_after_stop(new_story, HookSamples.stop().with_raw({"background_tasks": [SHELL_TASK], "session_crons": []}))
-    story.expect_rows(typing.typed == [], detail=str(typing.typed))
-
-
-def test_a_stop_with_nothing_in_flight_is_idle_so_a_message_is_typed(new_story):
-    story, typing = lines_entered_after_stop(new_story, HookSamples.stop().with_raw({"background_tasks": [], "session_crons": []}))
     story.expect_rows(any("New message 1" in line for _, line in typing.typed), detail=str(typing.typed))

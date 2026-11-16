@@ -21,13 +21,14 @@ TERMINAL_SOURCES = (PAUSE_SOURCE, RESUME_SOURCE, IDLE_MESSAGE_SOURCE, "tasks.wai
 
 
 class WaitingLineTyping:
-    """Types a waiting line into its agent's terminal when the line wakes the agent or is of a kind typed, the
-    agent sits between turns (a silent agent in a turn is never typed to), and its program's plan allowance is
-    not used up; a line that is not typed stays waiting for the agent's next hook, or for the end of its usage
-    limit. The same line is typed once between two hooks of the agent: a repeat is entered without being typed
-    again. A line delivered by the wake hook goes to the agent's live wake waiter instead; with no live waiter
-    (one that expired or crashed, a compaction, an interrupt, or hook settings written before the wake hook)
-    it is typed as before, so no wake is lost."""
+    """Types a waiting line into its agent's terminal when the line wakes the agent or is of a kind typed,
+    the agent's program sits at its prompt, also while it waits on background work of its own (a silent
+    agent in a turn is never typed to), and its program's plan allowance is not used up; a line that is
+    not typed stays waiting for the agent's next hook, or for the end of its usage limit. The same line is
+    typed once between two hooks of the agent: a repeat is entered without being typed again. A line
+    delivered by the wake hook goes to the agent's live wake waiter instead; with no live waiter (one that
+    expired or crashed, a compaction, an interrupt, or hook settings written before the wake hook) it is
+    typed as before, so no wake is lost."""
 
     def __init__(self, queries: Queries, typing: LineTyping, bus: Bus, hook_calls: HookCallQuery, agents: AgentRows) -> None:
         self.queries, self.typing, self.bus, self.hook_calls, self.agents = queries, typing, bus, hook_calls, agents
@@ -43,7 +44,7 @@ class WaitingLineTyping:
             self.entered(line, actor_id)
 
     def entered(self, line: AgentLine, actor_id: int) -> None:
-        if line.source not in (PAUSE_SOURCE, RESUME_SOURCE, COMPACTED_WAKE_SOURCE) and not self.hook_calls.has_ended_turn(line.session_agent_id):
+        if line.source not in (PAUSE_SOURCE, RESUME_SOURCE, COMPACTED_WAKE_SOURCE) and not self.hook_calls.is_at_prompt(line.session_agent_id):
             return
         actor = Actor(actor_id, ActorType.USER)
         if self.has_entered_repeat(line):

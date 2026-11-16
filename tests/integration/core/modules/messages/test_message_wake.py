@@ -28,6 +28,19 @@ def test_a_message_to_a_resting_main_agent_is_typed_by_the_wake_its_step_opens_i
     assert typing.typed == [(agent.id, f"[journal] {NewMessageNotice.declared().agent_message(message=1).text}")]
 
 
+def test_a_message_to_a_main_agent_that_ended_its_turn_waiting_on_a_monitor_is_typed_into_its_terminal(played):
+    story = played(SAMPLES, fixture=MessagingTurn)
+    typing = KeptTyping()
+    story.replace(TerminalTyping, typing)
+    waiting = HookSamples.stop().with_raw({"background_tasks": [{"id": "b1", "command": "journal output monitor 7"}]})
+    agent = hook_agent(story, story.hook("s-1", waiting))
+    story.run('message send "Use sqlite" --environment main', actor=story.user)
+    story.run_listeners()
+    story.run_tick_handler("agent step round")
+    story.run_tick_handler("agent wake delivery")
+    assert (agent.id, f"[journal] {NewMessageNotice.declared().agent_message(message=1).text}") in typing.typed
+
+
 def test_lines_a_stop_cannot_carry_wait_for_the_agents_next_event_instead_of_riding_on_the_stop(played):
     story = played(SAMPLES, fixture=MessagingTurn)
     story.run('message send "Use sqlite" --environment main', actor=story.user)
