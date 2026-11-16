@@ -25,7 +25,7 @@ class SkillRequiredSubcommand(ReadSubcommand[tuple[str, ...]]):
         return None
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[str, ...]:
-        agent_id = caller.read_actor_id
+        agent_id = caller.read_agent_id
         if agent_id is None:
             return ()
         agent = self.queries.query(Agent).find(agent_id)

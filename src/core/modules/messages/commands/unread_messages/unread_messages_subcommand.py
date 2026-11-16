@@ -28,7 +28,7 @@ class UnreadMessagesSubcommand(ReadSubcommand[tuple[MessageText, ...]]):
         self.messages = messages
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[MessageText, ...]:
-        agent_id = caller.read_actor_id
+        agent_id = caller.read_agent_id
         addressed = self.messages.unread(agent_id) if agent_id is not None else self.messages.matching(MainMessageTarget()).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at"))
         unread = addressed.every_row(UNREAD_REASON)
         return tuple(MessageText.built(message, self.links) for message in unread)

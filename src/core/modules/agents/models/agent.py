@@ -23,9 +23,9 @@ MAIN_NUMBER = 1
 
 @dataclass(frozen=True, kw_only=True)
 class Agent(EnvironmentScoped, Model):
-    """One session of an agent program in an environment; its id is its actor's id, so the session has one
-    number in every row and every event. The pid and start time of the agent program's process identify it
-    among a command's ancestor processes while the session is open."""
+    """One session of an agent program in an environment, with an id of its own and the actor it acts as in
+    actor_id. The pid and start time of the agent program's process identify it among a command's ancestor
+    processes while the session is open."""
 
     change_names = (END_CHANGE, LAUNCH_CHANGE)
     model_name = "agent"
@@ -37,6 +37,7 @@ class Agent(EnvironmentScoped, Model):
     listed_properties = ("agent_state",)
 
     environment_id: int = 0
+    actor_id: int
     number: int = 0
     parent_id: int | None = None
     creator_id: int
@@ -71,6 +72,9 @@ class Agent(EnvironmentScoped, Model):
     def is_paused(self) -> bool:
         return self.paused_at is not None
 
+
+    def actor(self) -> Actor:
+        return Actor.agent(self.actor_id, self.id)
     @property
     def is_main(self) -> bool:
         return self.role == MAIN_ROLE

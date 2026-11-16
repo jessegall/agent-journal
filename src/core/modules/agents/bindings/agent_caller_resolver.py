@@ -40,19 +40,19 @@ class AgentCallerResolver(CallerResolver):
         steps = self.chain.steps(request.pid)
         chain_agent = self.ancestor_agent(steps)
         if chain_agent is not None:
-            return Caller(Actor(chain_agent.id, ActorType.AGENT), chain_agent.environment_id, self.plugin_script(request, steps))
+            return Caller(chain_agent.actor(), chain_agent.environment_id, self.plugin_script(request, steps))
         if not request.trusts_variables:
             raise UsageError(CHAIN_REQUIRED_REFUSAL)
         session_agent = self.session_agent(request)
         if session_agent is not None:
-            return Caller(Actor(session_agent.id, ActorType.AGENT), session_agent.environment_id)
+            return Caller(session_agent.actor(), session_agent.environment_id)
         plugin_script = self.plugin_script(request, steps)
         environment = self.environments.folder_environment(request.folder)
         environment_id = environment.id if environment else None
         program_sessions = tuple(request.variables[provider.session_variable] for provider in self.providers.all() if provider.session_variable in request.variables)
         agent = self.program_agent(program_sessions)
         if agent is not None:
-            return Caller(Actor(agent.id, ActorType.AGENT), agent.environment_id, plugin_script)
+            return Caller(agent.actor(), agent.environment_id, plugin_script)
         person = None if program_sessions else self.actors.person(request.variables.get(LOGIN_VARIABLE, ""))
         return Caller(Actor(person.id, ActorType.USER) if person else Actor.core(), environment_id, plugin_script)
 

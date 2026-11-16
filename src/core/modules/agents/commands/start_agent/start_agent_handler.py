@@ -65,7 +65,7 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
         if main is not None:
             return self.on_main_row(main, command, context)
         actor = self.repository.save(ActorRecord(type=ActorType.AGENT, name=command.session, creator_id=context.actor.id), context)
-        agent = Agent(id=actor.id, parent_id=command.parent_id, creator_id=context.actor.id, access=command.access,
+        agent = Agent(id=actor.id, actor_id=actor.id, parent_id=command.parent_id, creator_id=context.actor.id, access=command.access,
                       session=command.session, program=command.program, role=command.role, pid=command.pid,
                       process_started_at=command.process_started_at or self.chain.start_timestamp(command.pid),
                       program_model=command.program_model, profile=command.profile, given_name=command.given_name,

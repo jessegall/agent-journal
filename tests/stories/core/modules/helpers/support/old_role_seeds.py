@@ -15,6 +15,6 @@ class OldRoleAgentSeed(Seed):
 
     def columns(self, index: int, facts: SeedFacts) -> dict[str, object]:
         role, profile, access, ended = OLD_ROWS[index % len(OLD_ROWS)]
-        return {"id": facts.row_id("actors", index), "environment_id": facts.environment_id, "creator_id": JOURNAL_ACTOR,
+        return {"id": facts.row_id("actors", index), "actor_id": facts.row_id("actors", index), "environment_id": facts.environment_id, "creator_id": JOURNAL_ACTOR,
                 "session": f"old-role-{index}", "program": "claude", "role": role, "profile": profile, "access": access,
                 "number": FIRST_NUMBER + index, "ended_at": facts.timestamp if ended else None}

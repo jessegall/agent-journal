@@ -27,7 +27,7 @@ class NoChecks:
 
 
 def worker() -> Agent:
-    return Agent(id=7, creator_id=1, session="s-7", program="claude", role="worker", program_model="sonnet")
+    return Agent(id=7, actor_id=7, creator_id=1, session="s-7", program="claude", role="worker", program_model="sonnet")
 
 
 def facts(tmp_path, worker_files: dict[str, str], base_files: dict[str, str], uncommitted: dict[str, str] | None = None):

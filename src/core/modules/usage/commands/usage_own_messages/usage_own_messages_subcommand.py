@@ -30,9 +30,9 @@ class UsageOwnMessagesSubcommand(ReadSubcommand[tuple[TranscriptRow, ...]]):
         pass
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[TranscriptRow, ...]:
-        if caller.read_actor_id is None:
+        if caller.read_agent_id is None:
             return ()
-        agent = self.queries.query(Agent).find(caller.read_actor_id)
+        agent = self.queries.query(Agent).find(caller.read_agent_id)
         folder = Path(self.queries.query(Environment).find(agent.environment_id).folder)
         provider = self.providers.provider(agent.program)
         session_end = self.hook_calls.latest_session_end(agent.id)

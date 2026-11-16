@@ -21,7 +21,7 @@ HELPER_NUMBER = -5000
 def parent_and_helper(journal) -> tuple[int, Agent]:
     parent_id = journal.new_row_id("agent start s-1 claude main --environment main")
     actor_id = seeded(journal, AgentActorSeed, 1)[0]
-    seeded(journal, EndedChildHelperSeed, 1, id=actor_id, number=HELPER_NUMBER, parent_id=parent_id, profile=SEEDED_PROFILE, session="seeded-helper-session")
+    seeded(journal, EndedChildHelperSeed, 1, id=actor_id, actor_id=actor_id, number=HELPER_NUMBER, parent_id=parent_id, profile=SEEDED_PROFILE, session="seeded-helper-session")
     return parent_id, journal.container.get(Queries).query(Agent).find(actor_id)
 
 

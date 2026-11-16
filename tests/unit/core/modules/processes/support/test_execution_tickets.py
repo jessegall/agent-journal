@@ -16,7 +16,7 @@ from core.modules.processes.support.execution_tickets import ExecutionTickets
 from core.modules.processes.support.process_type_limits import ProcessTypeLimits
 
 ENTERED = Timestamp(datetime(2026, 11, 13, 12, tzinfo=timezone.utc))
-AGENTS = {1: Agent(id=1, creator_id=1, session="s-1", program="claude", role="main"), 2: Agent(id=2, creator_id=1, session="s-2", program="claude", role="worker")}
+AGENTS = {1: Agent(id=1, actor_id=1, creator_id=1, session="s-1", program="claude", role="main"), 2: Agent(id=2, actor_id=2, creator_id=1, session="s-2", program="claude", role="worker")}
 
 
 class SampleRows:

@@ -9,7 +9,7 @@ ENDED = Timestamp(datetime(2026, 11, 1, tzinfo=timezone.utc))
 
 
 def agent(row_id: int, role: str = "main", number: int = 1, ended: bool = False) -> Agent:
-    return Agent(id=row_id, creator_id=1, session="s-old", program="claude", role=role, number=number, ended_at=ENDED if ended else None)
+    return Agent(id=row_id, actor_id=row_id, creator_id=1, session="s-old", program="claude", role=role, number=number, ended_at=ENDED if ended else None)
 
 
 def test_the_running_row_holds_a_session_two_rows_share():

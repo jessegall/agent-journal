@@ -139,6 +139,6 @@ class AgentsMove(VersionFourMove):
 
     def insert(self, rows: RowInsert, session: str, environment_id: int, program: str, role: str, creator_id: int, created: str, updated: str, ended: str | None) -> int:
         actor_id = rows.insert("actors", {"creator_id": creator_id, "type": ActorType.AGENT.value, "name": session, "created_at": created, "updated_at": created})
-        return rows.insert(TABLE, {"id": actor_id, "environment_id": environment_id, "creator_id": creator_id, "session": session, "program": program,
+        return rows.insert(TABLE, {"id": actor_id, "actor_id": actor_id, "environment_id": environment_id, "creator_id": creator_id, "session": session, "program": program,
                                    "role": role, "access": Access.READ.value if role == HELPER_KEY else Access.WRITING.value, "ended_at": ended, "created_at": created, "updated_at": updated,
                                    "number": MAIN_NUMBER if role == AgentRole.MAIN.value else None})

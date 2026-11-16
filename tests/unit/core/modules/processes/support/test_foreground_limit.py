@@ -81,7 +81,7 @@ class MainAgents:
     """Every line of these tests is the main agent's."""
 
     def find(self, agent_id: int) -> Agent:
-        return Agent(id=agent_id, creator_id=1, session="s-1", program="claude", role="main")
+        return Agent(id=agent_id, actor_id=agent_id, creator_id=1, session="s-1", program="claude", role="main")
 
 
 class NoPersonClasses(PersonClasses):
@@ -177,7 +177,7 @@ class WorkerAgents:
     """Every line of these tests is a worker's, whose lines wait in their lane."""
 
     def find(self, agent_id: int) -> Agent:
-        return Agent(id=agent_id, creator_id=1, session="s-1", program="claude", role="worker")
+        return Agent(id=agent_id, actor_id=agent_id, creator_id=1, session="s-1", program="claude", role="worker")
 
 
 def worker_limit() -> ForegroundLimit:

@@ -31,7 +31,7 @@ class FileEditsMove(VersionFourMove):
             if not row["session"]:
                 report.drop("edits made by no agent", 1)
                 continue
-            agent_id = sessions.agent_actor_id(row["session"])
+            agent_id = sessions.session_agent_id(row["session"])
             if agent_id is None:
                 report.skip(TABLE, row["id"], "the agent that made it did not move")
                 continue

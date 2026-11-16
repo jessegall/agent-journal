@@ -17,3 +17,7 @@ class Caller:
     @property
     def read_actor_id(self) -> int | None:
         return self.actor.id if self.actor.type is ActorType.AGENT else None
+
+    @property
+    def read_agent_id(self) -> int | None:
+        return self.actor.agent_id() if self.actor.type is ActorType.AGENT else None

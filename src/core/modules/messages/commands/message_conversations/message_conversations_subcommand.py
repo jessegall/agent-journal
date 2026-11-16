@@ -41,7 +41,7 @@ class MessageConversationsSubcommand(ReadSubcommand[tuple[RecentConversation, ..
         pass
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[RecentConversation, ...]:
-        agent_id = caller.read_actor_id
+        agent_id = caller.read_agent_id
         if agent_id is None:
             return ()
         latest_messages = self.messages.matching(Minimum("created_at", Timestamp(self.clock.timestamp().value - RECENT).text)).matching(Among("type", CONVERSATION_TYPES))

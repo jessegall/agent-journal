@@ -19,5 +19,5 @@ class CreatorResolver:
         if actor_type == USER and identity.isdigit():
             return self.map.new_id("users", int(identity)) or CORE_ACTOR_ID
         if actor_type == AGENT:
-            return self.actors.agent_actor_id(identity) or CORE_ACTOR_ID
+            return self.actors.session_actor_id(identity) or CORE_ACTOR_ID
         return CORE_ACTOR_ID

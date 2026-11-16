@@ -33,7 +33,7 @@ class QuestionsMove(VersionFourMove):
         sessions, documents = ActorTable(target), WholeTextDocuments(rows, TEXT_LIMIT_CHARACTERS, "question")
         for row in source.rows(TABLE):
             actor_type, _, session = (row["creator"] or "").partition(":")
-            agent_id = sessions.agent_actor_id(session) if actor_type == AGENT else sessions.newest_main_agent_id(row["environment_id"])
+            agent_id = sessions.session_agent_id(session) if actor_type == AGENT else sessions.newest_main_agent_id(row["environment_id"])
             if agent_id is None:
                 report.skip(TABLE, row["id"], "the agent that asked it did not move")
                 continue

@@ -9,7 +9,7 @@ from suites.coding.modules.workers.support.worker_policy import WorkerPolicy
 from suites.coding.support.shipped_profiles import WORKER_PROFILE
 
 ENDED_AT = Timestamp.parsed("2026-10-31T09:00:00+00:00")
-WORKER = Agent(id=41, creator_id=1, session="s-1", program="claude", role="worker", number=2, profile=f"{WORKER_PROFILE.name}")
+WORKER = Agent(id=41, actor_id=41, creator_id=1, session="s-1", program="claude", role="worker", number=2, profile=f"{WORKER_PROFILE.name}")
 ENDED_WORKER = replace(WORKER, ended_at=ENDED_AT)
 ENDED_HELPER = replace(ENDED_WORKER, id=42, role="helper", profile="")
 JOB = SimpleNamespace(id=7)

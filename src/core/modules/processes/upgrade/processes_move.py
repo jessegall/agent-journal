@@ -40,7 +40,7 @@ class ProcessesMove(VersionFourMove):
         report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
         sessions = ActorTable(target)
         for row in source.rows(TABLE):
-            agent_id = sessions.agent_actor_id(row["session"]) if row["session"] else None
+            agent_id = sessions.session_agent_id(row["session"]) if row["session"] else None
             if agent_id is None or map.new_id("environments", row["environment_id"]) is None:
                 report.skip(TABLE, row["id"], "the agent that ran it or its environment did not move")
                 continue

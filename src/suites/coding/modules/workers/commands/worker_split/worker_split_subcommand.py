@@ -65,7 +65,7 @@ class WorkerSplitSubcommand(ReadSubcommand[RowList | WorkerSplitPreview | Worker
     def preview(self, task_ids: list[int], caller: Caller) -> WorkerSplitPreview | WorkerSplitProblem:
         tasks = self.queries.query(Task).find_many(task_ids)
         with self.scopes.row_scope(tasks[0]):
-            agent = self.queries.query(Agent).find(caller.read_actor_id) if caller.read_actor_id is not None else MainAgentFinder.newest(self.queries)
+            agent = self.queries.query(Agent).find(caller.read_agent_id) if caller.read_agent_id is not None else MainAgentFinder.newest(self.queries)
             profile = self.profiles.effective(self.types.find(Worker.key).default_profile)
             try:
                 choice = self.routing.choice(DispatchWorker(task_ids[0], delegated_ids=tuple(task_ids[1:])), tasks, agent, profile)

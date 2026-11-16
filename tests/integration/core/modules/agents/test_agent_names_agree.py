@@ -20,7 +20,7 @@ def sql_name(role: str, number: int) -> str:
 
 @pytest.mark.parametrize("name", NAMES, ids=lambda name: f"{name['role']} {name['number']}")
 def test_the_name_of_an_agent_is_the_same_in_the_model_the_label_the_view_and_the_viewer_list(name):
-    agent = Agent(id=1, creator_id=1, session="s-1", program="claude", role=name["role"], number=name["number"])
+    agent = Agent(id=1, actor_id=1, creator_id=1, session="s-1", program="claude", role=name["role"], number=name["number"])
     assert agent.display_name == name["title"]
     assert AgentName(name["role"], name["number"]).title == name["title"]
     assert sql_name(name["role"], name["number"]) == name["title"]

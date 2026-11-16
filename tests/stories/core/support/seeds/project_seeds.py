@@ -42,7 +42,7 @@ class AgentSeed(Seed):
     table = "agents"
 
     def columns(self, index: int, facts: SeedFacts) -> dict[str, object]:
-        return {"id": facts.row_id("actors", index), "environment_id": facts.environment_id, "creator_id": CORE_ACTOR_ID, "session": f"seeded-session-{index + 1}",
+        return {"id": facts.row_id("actors", index), "actor_id": facts.row_id("actors", index), "environment_id": facts.environment_id, "creator_id": CORE_ACTOR_ID, "session": f"seeded-session-{index + 1}",
                 "program": "claude", "role": "worker" if index % 3 else "helper", "number": -index, "given_name": f"Seeded {index + 1}",
                 "ended_at": facts.timestamp, "retired_at": facts.timestamp, "retirement_reason": "its work is done"}
 
