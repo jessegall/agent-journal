@@ -35,9 +35,9 @@ class HelperTypeEntry:
     command_types_setting: str = ""
     refusal_hint: str = ""
 
-    # a type that is a read-only helper, or extends one, also runs the journal lines other modules add for helpers
+    # a read-only type that is the helper, or extends it, also runs the journal lines other modules add for helpers
     def with_helper_lines(self, helper_key: str, lines: tuple[str, ...]) -> "HelperTypeEntry":
-        if helper_key not in (self.key, *self.bases) or not lines:
+        if helper_key not in (self.key, *self.bases) or self.access is not Access.READ or not lines:
             return self
         return replace(self, commands=self.commands.joined(CommandAllowList(lines=lines)))
 

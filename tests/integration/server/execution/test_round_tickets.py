@@ -54,5 +54,5 @@ def test_fourth_background_tick_waits_even_with_room(tmp_path):
 def test_background_tick_raised_to_normal_after_ten_seconds(tmp_path):
     entered = Clock().timestamp()
     waiting = ExecutionPriorities(SessionStarters(JournalHome(tmp_path))).tick_ticket("process pruning", entered)
-    raised = ExecutionOrder(DEFAULT_POOL_LIMITS).raised([waiting], Timestamp(entered.value + timedelta(seconds=RAISE_SECONDS)), False)
+    raised = ExecutionOrder(DEFAULT_POOL_LIMITS).raised([waiting], Timestamp(entered.value + timedelta(seconds=RAISE_SECONDS)))
     assert [ticket.priority for ticket in raised] == [ExecutionPriority.NORMAL]

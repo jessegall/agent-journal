@@ -32,7 +32,7 @@ class RecordParentReportHandler(Handler[RecordParentReport, Message | None]):
         if command.job_id is not None:
             job = self.rows.required(HelperJob, command.job_id)
             self.repository.save(job.changed(ended_at=context.timestamp, returned=text, report_message_id=message.id if message is not None else None,
-                                             job_report_state=JobReportState.COMPLETED), context)
+                                             report_state=JobReportState.COMPLETED), context)
         return message
 
     def sent_report(self, command: RecordParentReport, text: str, context: Context) -> Message | None:

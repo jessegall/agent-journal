@@ -4,7 +4,7 @@ from pathlib import Path
 from engine.journal.journal_home import JournalHome
 from contextlib import nullcontext
 from types import SimpleNamespace
-from unittest.mock import ANY, Mock
+from unittest.mock import Mock
 
 import pytest
 
@@ -22,7 +22,7 @@ def journal_home(folder: Path) -> JournalHome:
 
 @pytest.mark.parametrize("event,refused", [("stop", True), ("pre_tool_use", False)])
 def test_an_old_hook_runner_gets_an_immediate_unchecked_answer(event, refused, tmp_path):
-    context = SimpleNamespace(home=journal_home(tmp_path), hook_database=SimpleNamespace(used=lambda priority, limit, owner, request: nullcontext()), hook_limit_seconds=1, agent_hook_limit_seconds=1, stop_limit_seconds=1, clock=Clock(),
+    context = SimpleNamespace(home=journal_home(tmp_path), hook_database=SimpleNamespace(used=lambda turn: nullcontext()), hook_limit_seconds=1, agent_hook_limit_seconds=1, stop_limit_seconds=1, clock=Clock(),
                               listener_wakes=SimpleNamespace(wake=Mock()))
     endpoint = HookEndpoint(Mock(), context)
     endpoint.routed_answer = Mock(side_effect=OldHookRunnerError.detected())
@@ -42,4 +42,5 @@ def test_a_hook_takes_its_place_in_the_queue_by_its_role(role, priority, limit, 
     endpoint = HookEndpoint(Mock(), context)
     endpoint.routed_answer = Mock(side_effect=OldHookRunnerError.detected())
     endpoint.answer({"event": "pre_tool_use", "session": "s-1"}, "claude", {})
-    used.assert_called_once_with(priority, limit, "s-1", ANY)
+    turn = used.call_args.args[0]
+    assert (turn.priority, turn.wait_seconds, turn.owner) == (priority, limit, "s-1")

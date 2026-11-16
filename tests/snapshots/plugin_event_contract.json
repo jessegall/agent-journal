@@ -1134,8 +1134,8 @@
       "group_key",
       "level_index",
       "outcome",
-      "parent_question_id",
       "parent_id",
+      "parent_question_id",
       "stack_json",
       "task_id",
       "text",
@@ -1158,8 +1158,8 @@
       "group_key",
       "level_index",
       "outcome",
-      "parent_question_id",
       "parent_id",
+      "parent_question_id",
       "stack_json",
       "task_id",
       "text",
@@ -1182,8 +1182,8 @@
       "group_key",
       "level_index",
       "outcome",
-      "parent_question_id",
       "parent_id",
+      "parent_question_id",
       "stack_json",
       "task_id",
       "text",
@@ -1243,14 +1243,14 @@
       "listen"
     ],
     "fields": [
-      "helper_question_id",
       "due_at",
       "environment_id",
       "forward_at",
       "helper_id",
+      "helper_question_id",
       "job_id",
-      "options_json",
       "journal_passed",
+      "options_json",
       "profile",
       "reason",
       "received_at",
@@ -1267,14 +1267,14 @@
       "listen"
     ],
     "fields": [
-      "helper_question_id",
       "due_at",
       "environment_id",
       "forward_at",
       "helper_id",
+      "helper_question_id",
       "job_id",
-      "options_json",
       "journal_passed",
+      "options_json",
       "profile",
       "reason",
       "received_at",
@@ -1291,14 +1291,14 @@
       "listen"
     ],
     "fields": [
-      "helper_question_id",
       "due_at",
       "environment_id",
       "forward_at",
       "helper_id",
+      "helper_question_id",
       "job_id",
-      "options_json",
       "journal_passed",
+      "options_json",
       "profile",
       "reason",
       "received_at",
@@ -2524,7 +2524,7 @@
       "listen"
     ],
     "fields": [
-      "last_said_at",
+      "last_given_at",
       "session_agent_id",
       "source_key"
     ]
@@ -2536,7 +2536,7 @@
       "listen"
     ],
     "fields": [
-      "last_said_at",
+      "last_given_at",
       "session_agent_id",
       "source_key"
     ]
@@ -2548,7 +2548,7 @@
       "listen"
     ],
     "fields": [
-      "last_said_at",
+      "last_given_at",
       "session_agent_id",
       "source_key"
     ]
@@ -2659,13 +2659,13 @@
       "actor_id",
       "hook_call_id",
       "move_type",
+      "previous_version",
       "reason_text",
       "session_agent_id",
       "stacked_state_end",
       "stacked_state_key",
       "step_cause",
-      "version_after",
-      "version_before"
+      "version_after"
     ]
   },
   "core.drivers.agent_stack_move.deleted": {
@@ -2678,13 +2678,13 @@
       "actor_id",
       "hook_call_id",
       "move_type",
+      "previous_version",
       "reason_text",
       "session_agent_id",
       "stacked_state_end",
       "stacked_state_key",
       "step_cause",
-      "version_after",
-      "version_before"
+      "version_after"
     ]
   },
   "core.drivers.agent_stack_move.updated": {
@@ -2697,13 +2697,13 @@
       "actor_id",
       "hook_call_id",
       "move_type",
+      "previous_version",
       "reason_text",
       "session_agent_id",
       "stacked_state_end",
       "stacked_state_key",
       "step_cause",
-      "version_after",
-      "version_before"
+      "version_after"
     ]
   },
   "core.drivers.agent_step_request.created": {
@@ -3070,8 +3070,8 @@
       "listen"
     ],
     "fields": [
+      "change_count",
       "environment_id",
-      "epoch",
       "started_at"
     ]
   },
@@ -3082,8 +3082,8 @@
       "listen"
     ],
     "fields": [
+      "change_count",
       "environment_id",
-      "epoch",
       "started_at"
     ]
   },
@@ -3094,8 +3094,8 @@
       "listen"
     ],
     "fields": [
+      "change_count",
       "environment_id",
-      "epoch",
       "started_at"
     ]
   },
@@ -3114,9 +3114,6 @@
       "environment_id",
       "failed_text",
       "halted_seconds",
-      "handover_failures",
-      "handover_source",
-      "handover_state",
       "helper_id",
       "instruction",
       "new_agent_reason",
@@ -3124,7 +3121,10 @@
       "profile",
       "program",
       "program_model",
+      "report_failures",
       "report_message_id",
+      "report_source",
+      "report_state",
       "returned",
       "review_plan_id",
       "session_agent_id",
@@ -3152,9 +3152,6 @@
       "environment_id",
       "failed_text",
       "halted_seconds",
-      "handover_failures",
-      "handover_source",
-      "handover_state",
       "helper_id",
       "instruction",
       "new_agent_reason",
@@ -3162,7 +3159,10 @@
       "profile",
       "program",
       "program_model",
+      "report_failures",
       "report_message_id",
+      "report_source",
+      "report_state",
       "returned",
       "review_plan_id",
       "session_agent_id",
@@ -3190,9 +3190,6 @@
       "environment_id",
       "failed_text",
       "halted_seconds",
-      "handover_failures",
-      "handover_source",
-      "handover_state",
       "helper_id",
       "instruction",
       "new_agent_reason",
@@ -3200,7 +3197,10 @@
       "profile",
       "program",
       "program_model",
+      "report_failures",
       "report_message_id",
+      "report_source",
+      "report_state",
       "returned",
       "review_plan_id",
       "session_agent_id",
@@ -3532,8 +3532,8 @@
       "action",
       "asker_id",
       "environment_id",
-      "requires_person",
       "reason",
+      "requires_person",
       "responder_id",
       "state"
     ]
@@ -3548,8 +3548,8 @@
       "action",
       "asker_id",
       "environment_id",
-      "requires_person",
       "reason",
+      "requires_person",
       "responder_id",
       "state"
     ]
@@ -3564,8 +3564,8 @@
       "action",
       "asker_id",
       "environment_id",
-      "requires_person",
       "reason",
+      "requires_person",
       "responder_id",
       "state"
     ]
@@ -3580,8 +3580,8 @@
       "action",
       "asker_id",
       "environment_id",
-      "requires_person",
       "reason",
+      "requires_person",
       "responder_id",
       "state"
     ]
@@ -3596,8 +3596,8 @@
       "action",
       "asker_id",
       "environment_id",
-      "requires_person",
       "reason",
+      "requires_person",
       "responder_id",
       "state"
     ]
@@ -3612,8 +3612,8 @@
       "action",
       "asker_id",
       "environment_id",
-      "requires_person",
       "reason",
+      "requires_person",
       "responder_id",
       "state"
     ]
@@ -3625,7 +3625,7 @@
       "listen"
     ],
     "fields": [
-      "epoch",
+      "change_count",
       "program"
     ]
   },
@@ -3636,7 +3636,7 @@
       "listen"
     ],
     "fields": [
-      "epoch",
+      "change_count",
       "program"
     ]
   },
@@ -3647,7 +3647,7 @@
       "listen"
     ],
     "fields": [
-      "epoch",
+      "change_count",
       "program"
     ]
   },
@@ -3663,8 +3663,8 @@
       "confirmed_at",
       "creator_id",
       "name",
-      "requires_approval",
       "reason",
+      "requires_approval",
       "restored_at",
       "session_agent_id",
       "streak",
@@ -3684,8 +3684,8 @@
       "confirmed_at",
       "creator_id",
       "name",
-      "requires_approval",
       "reason",
+      "requires_approval",
       "restored_at",
       "session_agent_id",
       "streak",
@@ -3705,8 +3705,8 @@
       "confirmed_at",
       "creator_id",
       "name",
-      "requires_approval",
       "reason",
+      "requires_approval",
       "restored_at",
       "session_agent_id",
       "streak",
@@ -5647,10 +5647,10 @@
     "fields": [
       "class_limit",
       "is_override",
-      "lane",
       "line_pattern",
       "name",
       "plugin",
+      "pool",
       "priority",
       "slot_cost"
     ]
@@ -5664,10 +5664,10 @@
     "fields": [
       "class_limit",
       "is_override",
-      "lane",
       "line_pattern",
       "name",
       "plugin",
+      "pool",
       "priority",
       "slot_cost"
     ]
@@ -5681,10 +5681,10 @@
     "fields": [
       "class_limit",
       "is_override",
-      "lane",
       "line_pattern",
       "name",
       "plugin",
+      "pool",
       "priority",
       "slot_cost"
     ]
@@ -8576,10 +8576,10 @@
       "interval_minutes",
       "match_mode",
       "name",
-      "needs_enabling",
       "next_at",
       "paused_at",
       "phrases",
+      "requires_enabling",
       "skill",
       "text",
       "watch_places"
@@ -8605,10 +8605,10 @@
       "interval_minutes",
       "match_mode",
       "name",
-      "needs_enabling",
       "next_at",
       "paused_at",
       "phrases",
+      "requires_enabling",
       "skill",
       "text",
       "watch_places"
@@ -8634,10 +8634,10 @@
       "interval_minutes",
       "match_mode",
       "name",
-      "needs_enabling",
       "next_at",
       "paused_at",
       "phrases",
+      "requires_enabling",
       "skill",
       "text",
       "watch_places"

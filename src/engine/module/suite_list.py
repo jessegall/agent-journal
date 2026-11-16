@@ -1,3 +1,5 @@
+from engine.helper_type.helper_type_book import HELPER_KEY
+from engine.helper_type.helper_type_entry import HelperTypeEntry
 from collections.abc import Sequence
 
 from engine.module.suite import Suite
@@ -31,6 +33,12 @@ class SuiteList:
 
     def helper_types(self, module: type[Module]) -> list[type[HelperType]]:
         return [*module.helper_types, *(declaration for suite in self.module_suites(module) for declaration in suite.helper_types)]
+
+    # each helper type of the modules, a read-only helper's own with the journal lines the modules add for helpers
+    def helper_type_entries(self, modules: Sequence[type[Module]]) -> tuple[HelperTypeEntry, ...]:
+        helper_lines = tuple(line for module in modules for line in module.helper_lines)
+        return tuple(HelperTypeEntry.declared(module.name, declaration).with_helper_lines(HELPER_KEY, helper_lines)
+                     for module in modules for declaration in self.helper_types(module))
 
     def problems(self) -> tuple[str, ...]:
         return (*self.modules_listed_twice(), *self.core_modules_listed())

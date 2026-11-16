@@ -34,6 +34,11 @@ class ProjectHookRun:
         return cls(text(fields, "id"), number(fields, "exit_code"), text(fields, "stdout"), text(fields, "stderr"), milliseconds, boolean(fields, "timed_out"),
                    {str(key): value for key, value in answer.items()}, text(fields, "on_failure"))
 
+    # the run as the hook runner writes it, which is how a hook call keeps it
+    def stored(self) -> dict[str, object]:
+        return {"id": self.id, "exit_code": self.exit_code, "stdout": self.stdout, "stderr": self.stderr, "milliseconds": self.milliseconds,
+                "timed_out": self.timed_out, "answer": dict(self.answer), "on_failure": self.failure_mode}
+
     @classmethod
     def parsed_many(cls, data: object) -> tuple["ProjectHookRun", ...]:
         if not is_list(data):

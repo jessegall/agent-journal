@@ -5,7 +5,6 @@ from collections.abc import Sequence
 
 from engine.time.clock import Clock
 from engine.agent.groups.agent_group_entry import AgentGroupEntry
-from engine.helper_type.helper_type_entry import HelperTypeEntry
 from engine.profile.profile_bases import ProfileBases
 from engine.registry.profile_entry import ProfileEntry
 from engine.command.delete_command import DeleteCommand
@@ -71,8 +70,6 @@ from engine.journal.journal_home import JournalHome
 from engine.provider.program_table import ProgramTable
 from engine.registry.setting_tree import SettingTree
 from engine.registry.tunnel_entry import TunnelEntry
-from engine.module.suite_list import SuiteList
-from engine.helper_type.helper_type_book import HELPER_KEY
 
 
 DEFAULT_HANDLERS = {DottedPath.class_path(command).text: DottedPath.class_path(handler)
@@ -170,7 +167,7 @@ class ModuleSync:
             inspectors=self.inspectors(modules),
             inspector_slots=tuple(sorted(InspectorSlots(modules).owners)),
             state_additions=tuple(StateAdditionEntry.declared(module.name, addition, module not in self.finder.default_modules()) for module in modules for addition in module.added_states),
-            helper_types=self.helper_type_entries(modules, suites),
+            helper_types=suites.helper_type_entries(modules),
             agent_groups=tuple(AgentGroupEntry.declared(module.name, group) for module in modules for group in module.group_declarations()),
             profiles=self.profile_entries(modules),
             providers=self.providers.providers(modules),
@@ -228,11 +225,6 @@ class ModuleSync:
                 entries.append(SkillEntry(skill.folder, module.name, skill.description, tuple(skill.keywords), tuple(skill.commands), tuple(skill.events),
                                           SkillContents.read(path).digest, str(path), module in shipped, types=tuple(skill.types), required_setting=skill.required_setting))
         return tuple(entries)
-
-    def helper_type_entries(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[HelperTypeEntry, ...]:
-        helper_lines = tuple(line for module in modules for line in module.helper_lines)
-        return tuple(HelperTypeEntry.declared(module.name, declaration).with_helper_lines(HELPER_KEY, helper_lines)
-                     for module in modules for declaration in suites.helper_types(module))
 
     def buttons(self, modules: tuple[type[Module], ...]) -> tuple[ButtonEntry, ...]:
         shipped = set(self.finder.default_modules())

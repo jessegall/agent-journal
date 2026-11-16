@@ -1,3 +1,4 @@
+from core.modules.asks.migrations.m005_plain_field_names import AsksPlainFieldNamesMigration
 from engine.time.clock import Clock
 from engine.database.core_tables_migration import CORE_MIGRATIONS
 from engine.database.database import Database
@@ -20,7 +21,7 @@ INDEXES = Statement("SELECT name FROM sqlite_master WHERE type = 'index' AND tbl
 def migrated(tmp_path) -> Database:
     database = Database.opened(JournalHome(tmp_path))
     Schema(database, Tables(), Clock()).migrate([CORE_MIGRATIONS])
-    Schema(database, Tables(), Clock()).migrate([ModuleMigrations("journal.core.asks", [AsksTablesMigration(), AskStacksTableMigration()])])
+    Schema(database, Tables(), Clock()).migrate([ModuleMigrations("journal.core.asks", [AsksTablesMigration(), AskStacksTableMigration(), AsksPlainFieldNamesMigration()])])
     return database
 
 

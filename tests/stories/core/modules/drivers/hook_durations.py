@@ -32,14 +32,14 @@ def test_a_hook_duration_reaches_the_terminal_once_the_developer_switch_is_on(ne
 def test_switching_the_hooks_group_off_stops_the_durations_while_the_developer_switch_stays_on(new_story):
     story = new_story(fixture=HookLogging)
     story.run(f"setting switch {HOOKS} off --project", actor=story.user)
-    expect_value(bool(any((story in line for _, line in ''.typed))), True)
+    expect_value(bool(story.typed), True)
 
 
 def test_switching_the_developer_switch_off_turns_off_the_hooks_group_with_it(new_story):
     story = new_story(fixture=HookLogging)
     story.run(f"setting switch {MASTER} off --project", actor=story.user)
     story.expect_success(f"setting show {HOOKS}.terminal-durations", "value: off", actor=story.user)
-    expect_value(bool(any((story in line for _, line in ''.typed))), True)
+    expect_value(bool(story.typed), True)
 
 
 def test_the_agent_is_never_told_what_a_hook_cost_and_the_terminal_says_when_it_went_over(new_story, monkeypatch):

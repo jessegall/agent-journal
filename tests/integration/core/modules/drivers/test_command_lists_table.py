@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 
 from core.modules.agents.support.base_commands import BASE_COMMANDS
-from engine.helper_type.helper_type_entry import HelperTypeEntry
 from engine.helper_type.journal_line import JournalLine
 from engine.journal.journal_home import JournalHome
 from engine.module.journal_lines import JournalLines
@@ -18,7 +17,7 @@ REFUSED = "refused"
 def current_table(tmp_path: Path) -> dict[str, dict[str, str]]:
     finder = ModuleFinder(JournalHome(tmp_path))
     modules, suites = finder.default_modules(), finder.suite_list()
-    types = sorted((HelperTypeEntry.declared(module.name, declaration) for module in modules for declaration in suites.helper_types(module)), key=lambda entry: entry.key)
+    types = sorted(suites.helper_type_entries(modules), key=lambda entry: entry.key)
     return {line: {entry.key: ALLOWED if BASE_COMMANDS.joined(entry.commands).allows(JournalLine(line, classes)) else REFUSED for entry in types}
             for line, classes in sorted(JournalLines().classes(modules).items())}
 

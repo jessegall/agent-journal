@@ -25,7 +25,7 @@ class MainAgentWork:
 
     def waiting_agents(self, agent_ids: Sequence[int], timestamp: Timestamp) -> set[int]:
         waiting = set(self.request_values.read("workers.running-agents", lambda: 0, lambda: frozenset(row.session_agent_id for row in self.processes.running().every_row(WAITING_WORK_REASON))))
-        waiting.update(row.session_agent_id for row in self.open_waits.of(agent_ids))
+        waiting.update(row.session_agent_id for row in self.open_waits.waits(agent_ids))
         waiting.update(row.creator_id for row in self.queries.query(Proof).matching(Among("creator_id", agent_ids)).matching(Among("state", TEST_WAITING_STATES)).every_row(WAITING_WORK_REASON))
         waiting.update(self.request_values.read("workers.reviewed-agents", lambda: 0, lambda: frozenset(row.requester_id for row in self.queries.query(Review).matching(Among("state", [ReviewState.QUEUED, ReviewState.REVIEWING])).every_row(WAITING_WORK_REASON))))
         waiting.update(row.creator_id for row in self.queries.query(ReaderRequest).matching(Among("creator_id", agent_ids)).filter(completed_at=None)

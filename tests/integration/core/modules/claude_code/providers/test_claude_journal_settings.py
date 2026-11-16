@@ -57,15 +57,9 @@ def test_one_journal_entry_per_hook_event_and_no_other_hook(provider, home):
     assert all(len(blocks) == 1 and blocks[0]["hooks"][0]["command"] == f'{RUNNER} claude "{home.project_folder}"' for blocks in hooks.values())
 
 
-def test_the_claude_stop_event_has_a_wake_entry_with_async_and_async_rewake(provider, home):
-    stop = journal_file(provider, home)["hooks"]["Stop"]
-    assert len(stop) == 1 and len(stop[0]["hooks"]) == 2
-    assert stop[0]["hooks"][1] == {"type": "command", "command": f'{RUNNER} claude "{home.project_folder}" --wake', "timeout": 86_400, "async": True, "asyncRewake": True}
-
-
-def test_other_events_have_one_entry(provider, home):
+def test_every_event_has_one_entry(provider, home):
     hooks = journal_file(provider, home)["hooks"]
-    assert all(len(blocks[0]["hooks"]) == 1 for event, blocks in hooks.items() if event != "Stop")
+    assert all(len(blocks[0]["hooks"]) == 1 for blocks in hooks.values())
 
 
 def test_a_hook_in_the_person_settings_is_not_carried(provider, home):

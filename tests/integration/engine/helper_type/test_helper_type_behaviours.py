@@ -19,7 +19,7 @@ SUITE_NAME = "coding"
 AGENT_PAGE = "agent"
 TABLE_ROW_BEHAVIOURS = {"job": "takes_jobs", "active_task_unblocked": "started_task_clears_block", "task": "takes_tasks", "prompt": "takes_prompts",
                         "mark": "takes_marks", "plugin": "runs_plugins", "dispatch": "dispatches", "stop_required": "checked_stops",
-                        "private_output": "has_private_outputs", "reader_request": "needs_readers", "queued_run": "queues_runs",
+                        "private_output": "has_private_outputs", "reader_request": "requires_readers", "queued_run": "queues_runs",
                         "automatic_watch": "watches_runs_automatically", "continuing_run": "continues_runs", "project_skill": "reads_project_skills",
                         "pause_retention": "retains_pause", "restricted_alias": "has_restricted_aliases", "saved_command": "runs_saved_commands"}
 
