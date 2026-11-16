@@ -110,8 +110,6 @@ class HookEvent:
 
     @property
     def has_background_work(self) -> bool:
-        """Whether a stop's body names background tasks or scheduled wakeups still in flight, which wake the session
-        again: its turn is paused, not done."""
         return self.event is HookEventName.STOP and any(isinstance(self.raw.get(key), list) and self.raw.get(key) for key in ("background_tasks", "session_crons"))
 
     @property

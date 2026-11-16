@@ -97,7 +97,6 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         return {int(str(task["plan_id"])) for task in json.loads(card.tasks) if task["plan_id"]}
 
     def plan_counts(self, cards: Sequence[AgentCard]) -> Mapping[int, Mapping[str, int]]:
-        """The tasks of each plan any of the cards' tasks belongs to, by state, read once for each plan: the bar of an agent's card shows its plan, not its own tasks."""
         plan_ids = {plan_id for card in cards for plan_id in self.plan_ids(card)}
         plans = {plan_id: self.queries.query(PlanCard).find(plan_id) for plan_id in plan_ids}
         return {plan_id: {"completed": plan.completed_count, "testing": plan.testing_count, "started": plan.started_count, "total": plan.task_count} for plan_id, plan in plans.items()}
@@ -115,7 +114,6 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         return {card.session: self.with_program_reports(card, self.files.status(card.session)) for card in cards}
 
     def with_program_reports(self, card: AgentCard, status: SessionStatus) -> SessionStatus:
-        """Asks the program for the model and effort the status gave none of, right after the file was read, so the one file is read once."""
         return replace(status, program_model="" if status.model else self.providers.reported_model(card.program, self.home, card.session),
                        program_effort="" if status.effort else self.providers.session_effort(card.program, self.home, card.session))
 

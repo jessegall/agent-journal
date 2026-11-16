@@ -33,7 +33,6 @@ class MoveSequenceRunHandler(Handler[MoveSequenceRun, SequenceLine]):
         self.rows, self.agents = rows, agents
 
     def runner_id(self, context: Context) -> int:
-        """The agent whose run moves: the caller when it is an agent, else the main agent of the environment."""
         if self.rows.find(Agent, context.actor.id) is not None:
             return context.actor.id
         main = self.agents.environment_main_agent(context.required_environment_id())

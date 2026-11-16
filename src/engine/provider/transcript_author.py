@@ -38,6 +38,5 @@ class TranscriptAuthor:
 
     @staticmethod
     def is_wake_notification(text: str) -> bool:
-        """Whether a prompt is the notification an agent program files for the journal's line its wake hook gave."""
         opening = text.lstrip()
         return opening.startswith(WAKE_NOTIFICATION_OPENING) and WAKE_NOTIFICATION_SUMMARY in opening

@@ -47,7 +47,6 @@ class ProjectFiles:
         return ProjectFileRows([{"id": str(entry.relative_to(root)), "name": entry.name, "folder": FileAccess.is_dir(entry), "size": FileAccess.stat(entry).st_size if FileAccess.is_file(entry) else 0, "git": changed.get(str(entry.relative_to(root)), ("", ""))[0]} for entry in ordered])
 
     def changes(self) -> dict[str, tuple[str, str]]:
-        """Each changed path with its git letter (M changed, A new, D deleted, R moved, ? not tracked) and, for a moved file, the path it came from; nothing where git cannot say."""
         status = self.git.output("git", "status", "--porcelain")
         if status is None:
             return {}

@@ -6,7 +6,6 @@ from core.modules.documents.models.report import Report
 
 
 def text_inspector(model: type[Doc] | type[Report], model_name: str, label: str) -> InspectorDeclaration:
-    """Settling, editing, links and details are the actions and tabs of the body component, so the declaration holds none."""
     return InspectorDeclaration(
         model,
         reads=f"{model_name} inspect {{row_id}}",

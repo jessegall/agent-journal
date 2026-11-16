@@ -160,7 +160,6 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
             raise
 
     def resumed_worker(self, command: SendWorker, context: Context) -> Model:
-        """A text job for a worker with no work in a worktree files no task: the text reaches it as a message, which wakes it."""
         self.repository.save(Message(creator_id=context.actor.id, type=MessageType.PEER, text=command.job, read_at=context.timestamp, delivered_at=context.timestamp,
                                      recipient=WorkerRecipient.text(command.worker_id)), context)
         return self.message_sender.send_text(command.worker_id, command.job, WORKER_JOB_SOURCE, context)

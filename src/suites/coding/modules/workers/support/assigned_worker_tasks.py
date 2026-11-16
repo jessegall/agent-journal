@@ -28,7 +28,6 @@ class AssignedWorkerTasks:
         return agent is not None and not agent.is_main and agent.retired_at is None
 
     def unassigned_tasks(self, tasks: Sequence[Task]) -> list[Task]:
-        """The open or blocked tasks assigned to someone, none of whom is a working worker."""
         assigned = self.assignments.row_actor_ids(Task, [task.id for task in tasks])
         return [task for task in tasks if task.state in (TaskState.OPEN, TaskState.BLOCKED) and assigned[task.id]
                 and not any(self.is_working_worker(actor_id) for actor_id in assigned[task.id])]

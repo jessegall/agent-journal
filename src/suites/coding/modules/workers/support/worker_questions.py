@@ -79,7 +79,6 @@ class WorkerQuestions:
         return tuple(self.queries.query(MergerLine).filter(worker_id=worker_id, outcome=AskOutcome.FORWARDED).oldest().get())
 
     def resolve_forwarded(self, worker_id: int, outcome: AskOutcome, text: str, context: Context) -> None:
-        """The questions that went to the main agent end once it answered or what they asked for happened."""
         for line in self.forwarded_lines(worker_id):
             self.record(line, outcome, text, context)
 

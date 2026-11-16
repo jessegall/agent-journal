@@ -25,7 +25,6 @@ class ManagedHook:
     sources: Sequence[HookSource] = ()
 
     def facts(self) -> list[str]:
-        """The facts of how the hook runs that a person reads beside it: the set fields of its entry and its timeout."""
         facts = [f"If: {self.fields['if']}"] if self.fields.get("if") else []
         if self.fields.get("asyncRewake") is True:
             facts.append("In the background, wakes the agent")
