@@ -11,8 +11,9 @@ from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.drivers.commands.allow_permission.allow_permission import AllowPermission
 from core.modules.drivers.commands.ask_permission.ask_permission import AskPermission
 from core.modules.drivers.commands.record_agent_agent_message.record_agent_message import RecordAgentMessage
-from core.modules.drivers.models.enums.permission_state import PermissionState
-from core.modules.drivers.models.permission_request import PermissionRequest
+from engine.enums.grant_state import GrantState
+from engine.enums.grant_type import GrantType
+from core.modules.drivers.models.driver_grant import DriverGrant
 from core.modules.drivers.agent_messages.permission_requested_message import PermissionRequestedMessage
 from core.modules.agents.support.agent_label import AgentLabel
 from core.modules.agents.models.agent import Agent
@@ -21,7 +22,7 @@ from core.modules.agents.support.agent_number_messages import AgentNumberMessage
 SOURCE = "drivers.permission"
 
 
-class AskPermissionHandler(Handler[AskPermission, PermissionRequest]):
+class AskPermissionHandler(Handler[AskPermission, DriverGrant]):
     """Saves an agent's request for leave to do one thing and tells the main agent, or puts a card in the dock
     where the action needs a user; the same action asked again while its request is open gives that
     request."""
@@ -32,12 +33,13 @@ class AskPermissionHandler(Handler[AskPermission, PermissionRequest]):
         self.numbers = numbers
         self.queries, self.repository, self.bus = queries, repository, bus
 
-    def handle(self, command: AskPermission, context: Context) -> PermissionRequest:
-        open_request = self.queries.query(PermissionRequest).filter(asker_id=context.actor.id, action=command.action).matching(
-            Among("state", (PermissionState.REQUESTED, PermissionState.ALLOWED))).first()
+    def handle(self, command: AskPermission, context: Context) -> DriverGrant:
+        open_request = self.queries.query(DriverGrant).filter(grant_type=GrantType.PERMISSION, asker_id=context.actor.id, policy_key=command.action).matching(
+            Among("grant_state", (GrantState.OPEN, GrantState.APPROVED))).first()
         if open_request is not None:
             return open_request
-        request = self.repository.save(PermissionRequest(asker_id=context.actor.id, action=command.action, reason=command.reason, requires_person=command.requires_person), context)
+        request = self.repository.save(DriverGrant(session_agent_id=context.actor.id, grant_type=GrantType.PERMISSION, policy_key=command.action,
+                                                target="", action_fingerprint="", asker_id=context.actor.id, reason=command.reason, requires_approval=command.requires_person), context)
         if command.requires_person:
             question = f"Allow {AgentLabel.labelled(self.queries.query(Agent).find(context.actor.id)).text} to do this once: {command.action}?"
             self.bus.dispatch(RequestUserApproval(UserApprovalRefusal(question, command=AllowPermission(request.id), request_reason=command.reason), (), context.actor.id), context)

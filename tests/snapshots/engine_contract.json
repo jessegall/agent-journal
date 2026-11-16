@@ -3604,7 +3604,6 @@
         "waiting(self, agent_id: int, rule: str) -> Command[object] | None",
         "has_refused(self, agent_id: int, rule: str) -> bool",
         "last_refused_rules(self, agent_id: int) -> frozenset[str]",
-        "is_skipped(self, agent_id: int, rule: str, window: Interval, timestamp: Timestamp) -> bool",
         "check_guards(self, actor: Actor, guards: Sequence[str], reason: str) -> None"
       ]
     },
@@ -6336,6 +6335,7 @@
         "table: ClassVar[str]",
         "lifecycle: ClassVar[type[Lifecycle] | None]",
         "hidden_fields: ClassVar[frozenset[str]]",
+        "plugin_row_fields: ClassVar[tuple[str, ...]]",
         "filter_fields: ClassVar[Sequence[str]]",
         "search_fields: ClassVar[Sequence[str]]",
         "search_rank: ClassVar[int]",

@@ -19,8 +19,9 @@ from engine.query.queries import Queries
 from engine.registry.registry import Registry
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
-from core.modules.drivers.models.enums.permission_state import PermissionState
-from core.modules.drivers.models.permission_request import PermissionRequest
+from core.modules.drivers.models.driver_grant import DriverGrant
+from engine.enums.grant_state import GrantState
+from engine.enums.grant_type import GrantType
 from core.modules.drivers.agent_messages.limited_tool_message import LimitedToolMessage
 from core.modules.drivers.agent_messages.old_hook_line_message import OldHookLineMessage
 from core.modules.drivers.agent_messages.external_journal_line_message import ExternalJournalLineMessage
@@ -65,7 +66,7 @@ class RestrictedReadAccess:
         return READ_TOOLS.refused(event, self.providers.provider(event.program))
 
     # the allowed request for leave this action spends, when the agent's read-only access would refuse it otherwise
-    def spent_permission(self, event: HookEvent, agent_id: int) -> PermissionRequest | None:
+    def spent_permission(self, event: HookEvent, agent_id: int) -> DriverGrant | None:
         agent = self.queries.query(Agent).find(agent_id)
         return self.permission(event, agent) if self.is_limited(event, agent) else None
 
@@ -73,12 +74,12 @@ class RestrictedReadAccess:
         tool = event.tool
         return agent.access == Access.READ and tool is not None and not self.is_listed(event, agent, tool) and not self.is_writable(agent, tool)
 
-    def permission(self, event: HookEvent, agent: Agent) -> PermissionRequest | None:
+    def permission(self, event: HookEvent, agent: Agent) -> DriverGrant | None:
         tool = event.tool
         if tool is None:
             return None
-        allowed = self.queries.query(PermissionRequest).filter(asker_id=agent.id, state=PermissionState.ALLOWED).every_row(ALLOWED_REQUESTS_REASON)
-        return next((request for request in allowed if (tool.shell is not None and tool.shell.is_permitted_line(request.action)) or request.action in tool.files), None)
+        allowed = self.queries.query(DriverGrant).filter(grant_type=GrantType.PERMISSION, asker_id=agent.id, grant_state=GrantState.APPROVED).every_row(ALLOWED_REQUESTS_REASON)
+        return next((request for request in allowed if (tool.shell is not None and tool.shell.is_permitted_line(request.policy_key)) or request.policy_key in tool.files), None)
 
     def reaches_external(self, shell: ShellLine, agent_id: int) -> bool:
         if shell.has_part_naming((SESSION_VARIABLE, RUNNER_VARIABLE, *(provider.session_variable for provider in self.providers.all()))):

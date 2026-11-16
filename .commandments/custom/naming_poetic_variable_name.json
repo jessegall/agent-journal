@@ -21,16 +21,6 @@
                 "name": "named_reader_id"
             },
             {
-                "all": [
-                    {
-                        "name": "streak"
-                    },
-                    {
-                        "fileMatches": "(^|/)src/core/modules/drivers/models/refusal_skip\\.py$"
-                    }
-                ]
-            },
-            {
                 "of": "parent",
                 "all": [
                     {

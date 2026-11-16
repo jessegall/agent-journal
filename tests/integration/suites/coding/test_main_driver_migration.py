@@ -12,7 +12,7 @@ def database() -> sqlite3.Connection:
     connection = sqlite3.connect(":memory:")
     connection.execute("CREATE TABLE settings (id INTEGER PRIMARY KEY, environment_id INTEGER, creator_id INTEGER NOT NULL, key TEXT NOT NULL, value TEXT NOT NULL,"
                        " created_at TEXT NOT NULL, updated_at TEXT NOT NULL, UNIQUE (environment_id, key))")
-    connection.execute("CREATE TABLE refusal_skips (id INTEGER PRIMARY KEY, name TEXT NOT NULL)")
+    connection.execute("CREATE TABLE driver_grants (id INTEGER PRIMARY KEY, grant_type TEXT NOT NULL DEFAULT 'refusal-skip', policy_key TEXT NOT NULL)")
     connection.execute("CREATE TABLE hook_calls (id INTEGER PRIMARY KEY, metadata TEXT NOT NULL)")
     connection.execute("CREATE TABLE viewer_layouts (id INTEGER PRIMARY KEY, environment_id INTEGER NOT NULL, person_id INTEGER NOT NULL, creator_id INTEGER NOT NULL,"
                        " suite TEXT NOT NULL, page TEXT NOT NULL, driver TEXT NOT NULL, layout TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL,"
@@ -45,11 +45,11 @@ def test_builder_and_orchestrator_environments_move_to_the_main_driver_and_the_o
 
 def test_saved_skips_and_stop_check_records_take_the_name_of_the_main_stop_rule():
     connection = database()
-    connection.executemany("INSERT INTO refusal_skips (name) VALUES (?)", [("coding.builder-next-task-at-stop",), ("coding.orchestrator-open-tasks-at-stop",),
+    connection.executemany("INSERT INTO driver_grants (policy_key) VALUES (?)", [("coding.builder-next-task-at-stop",), ("coding.orchestrator-open-tasks-at-stop",),
                                                                          ("coding.orchestrator-starts-no-task",), ("workers.dispatch-allowed",)])
     connection.execute("INSERT INTO hook_calls (metadata) VALUES (?)", (json.dumps({"stop_checks": [{"rule": "coding.builder-next-task-at-stop", "applied": False}]}),))
     run(connection)
-    assert [name for [name] in connection.execute("SELECT name FROM refusal_skips ORDER BY id")] == ["coding.main-stop"] * 3 + ["workers.dispatch-allowed"]
+    assert [name for [name] in connection.execute("SELECT policy_key FROM driver_grants ORDER BY id")] == ["coding.main-stop"] * 3 + ["workers.dispatch-allowed"]
     [metadata] = connection.execute("SELECT metadata FROM hook_calls").fetchone()
     assert json.loads(metadata)["stop_checks"][0]["rule"] == "coding.main-stop"
 
@@ -67,8 +67,8 @@ def test_an_orchestrator_layout_is_copied_for_the_main_driver_and_the_old_row_st
 def test_a_second_run_changes_nothing():
     connection = database()
     register_driver(connection, 2, "coding.orchestrator")
-    connection.execute("INSERT INTO refusal_skips (name) VALUES ('coding.builder-next-task-at-stop')")
+    connection.execute("INSERT INTO driver_grants (policy_key) VALUES ('coding.builder-next-task-at-stop')")
     run(connection)
-    first = [connection.execute(f"SELECT * FROM {table} ORDER BY id").fetchall() for table in ("settings", "refusal_skips", "hook_calls", "viewer_layouts")]
+    first = [connection.execute(f"SELECT * FROM {table} ORDER BY id").fetchall() for table in ("settings", "driver_grants", "hook_calls", "viewer_layouts")]
     run(connection)
-    assert [connection.execute(f"SELECT * FROM {table} ORDER BY id").fetchall() for table in ("settings", "refusal_skips", "hook_calls", "viewer_layouts")] == first
+    assert [connection.execute(f"SELECT * FROM {table} ORDER BY id").fetchall() for table in ("settings", "driver_grants", "hook_calls", "viewer_layouts")] == first

@@ -30,6 +30,11 @@ class PluginPayload:
         context: Context = change.context
         payload: dict[str, object] = {"form": form.value, "final": form is EventForm.COMMIT, "log_name": change.event, "event_id": event_id,
                    "actor": {"type": context.actor.type.value, "id": context.actor.id}, "command": context.command.label(), "cause_id": context.cause_id,
-                   "row": log.row_values(change.row), "old_row": log.row_values(change.old_row) if change.old_row is not None else {}, "changed": log.data(change)}
+                   "row": PluginPayload.row(change.row, log), "old_row": PluginPayload.row(change.old_row, log) if change.old_row is not None else {}, "changed": log.data(change)}
         # a hold's event carries the version 2 projection beside the version 1 row, which keeps every field it had
         return {**payload, "hold": BlockProjection.projected(change.row)} if isinstance(change.row, AgentBlock) else payload
+
+    # the stored values of a row, and the fields a plugin read in an earlier version of the row, which its model still answers
+    @staticmethod
+    def row(row: Model, log: EventLog) -> dict[str, object]:
+        return {**log.row_values(row), **{name: getattr(row, name) for name in row.plugin_row_fields}}

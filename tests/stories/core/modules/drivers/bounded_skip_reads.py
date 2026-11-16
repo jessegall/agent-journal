@@ -20,4 +20,4 @@ def test_refusal_skip_with_207_refused_calls_of_another_rule_reads_one_row_and_r
     story.advance(timedelta(seconds=1))
     limit_reads(story)
     story.expect_text(SKIP, "held", actor=story.agent)
-    story.expect_success("refusal-skip show 2", "streak: 1", actor=story.user)
+    story.expect_success("driver-grant show 2", "skips_in_a_row: 1", actor=story.user)

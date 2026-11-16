@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from core.modules.drivers.models.refusal_skip import RefusalSkip
+from core.modules.drivers.models.driver_grant import DriverGrant
 from tests.stories.core.modules.drivers.support.confirmed_skips import TRIED
 from tests.stories.core.support.fixtures import MessageAnswered
 
@@ -13,7 +13,7 @@ def reply(text: str) -> str:
 
 
 def kept_skips(story) -> int:
-    return len(story.story_rows(RefusalSkip))
+    return len(story.story_rows(DriverGrant))
 
 
 def skipped(story) -> None:
@@ -51,7 +51,7 @@ def test_a_short_flag_from_an_agent_spends_its_confirmed_skip_and_a_person_needs
     refusal_line(story, reply("Third kept"))
     skipped(story)
     story.expect_success(reply("Third kept") + " --confirm" + REASON, actor=story.agent)
-    story.expect_text("refusal-skip show 1", f"name: {GUARD}", "reason: it adds the result", "used_at: ", f"tried: {TRIED}", actor=story.user)
+    story.expect_text("driver-grant show 1", f"policy_key: {GUARD}", "reason: it adds the result", "grant_state: spent", f"tried: {TRIED}", actor=story.user)
     story.expect_success(reply("Thanks from the user") + " --confirm", actor=story.user)
     story.expect_rows(kept_skips(story) == 1)
 
@@ -79,4 +79,4 @@ def test_a_refusal_by_something_else_between_two_skips_starts_the_count_again(ne
     story.advance(timedelta(seconds=1))
     refusal_line(story, reply("Seventh again"))
     skipped(story)
-    story.expect_text("refusal-skip show 2", "streak: 1", actor=story.user)
+    story.expect_text("driver-grant show 2", "skips_in_a_row: 1", actor=story.user)

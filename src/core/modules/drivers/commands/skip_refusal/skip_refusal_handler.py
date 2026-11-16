@@ -8,7 +8,6 @@ from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from engine.guard.guard import Guard
 from engine.module.driver_entries import DRIVERS_MODULE
 from engine.query.conditions.metadata_list_differs import MetadataListDiffers
-from engine.query.conditions.has_value import HasValue
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.log.refusal_log import RefusalLog
@@ -19,7 +18,9 @@ from core.modules.agents.support.agent_label import AgentLabel
 from core.modules.drivers.commands.skip_refusal.skip_refusal import SkipRefusal
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
-from core.modules.drivers.models.refusal_skip import RefusalSkip
+from core.modules.drivers.models.driver_grant import DriverGrant
+from engine.enums.grant_state import GrantState
+from engine.enums.grant_type import GrantType
 from core.modules.drivers.agent_messages.skips_spent_message import SkipsSpentMessage
 from engine.driver.message_sender import MessageSender
 
@@ -27,7 +28,7 @@ MOST_SKIP_COUNT = 5
 SKIP_SOURCE = "drivers.refusal-skip"
 
 
-class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
+class SkipRefusalHandler(Handler[SkipRefusal, DriverGrant]):
     """Keeps an agent's skip of a refusal that just met it, with its reason. A safety refusal has no skip. A
     skip counts as one more in a row unless the agent obeyed a refusal since its last, meaning something
     other than the skipped refusal refused it (a retry is no obeying). At five, the skip is gone; its main
@@ -41,7 +42,7 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
         self.queries, self.repository, self.refusals, self.registry = queries, repository, refusals, registry
         self.message_sender, self.bus = message_sender, bus
 
-    def handle(self, command: SkipRefusal, context: Context) -> RefusalSkip:
+    def handle(self, command: SkipRefusal, context: Context) -> DriverGrant:
         actor = context.actor
         if not actor.is_agent():
             raise Refusal("only an agent skips a refusal this way", "a user passes a guard with --skip-guard")
@@ -52,25 +53,26 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
             raise Refusal("say why this refusal does not apply", "--skip-reason '<why>'" if command.is_used else "--reason '<why>'")
         if command.is_used:
             return self.confirmed_skip_used(actor, command.name, context)
-        last = self.queries.query(RefusalSkip).filter(session_agent_id=actor.id).newest().first()
-        if last is not None and last.streak >= MOST_SKIP_COUNT and last.restored_at is None:
+        last = self.queries.query(DriverGrant).filter(session_agent_id=actor.id, grant_type=GrantType.REFUSAL_SKIP).newest().first()
+        if last is not None and last.skips_in_a_row >= MOST_SKIP_COUNT and last.restored_at is None:
             agent = self.queries.query(Agent).find(actor.id)
             if agent.is_main or agent.parent_id is None:
                 raise self.restoration_approval(agent)
             raise Refusal(f"you skipped {MOST_SKIP_COUNT} refusals in a row and lost the skip", "obey the refusal until the skip is restored")
         skipped_at = last.created_at.text if last is not None and last.created_at is not None else ""
         self.check_refused(actor, command.name, skipped_at)
-        skip = self.repository.save(RefusalSkip(session_agent_id=actor.id, creator_id=actor.id, name=command.name, reason=command.reason.strip(), streak=self.skip_count(actor, last, command.name, skipped_at)), context)
-        if skip.streak == MOST_SKIP_COUNT:
+        skip = self.repository.save(DriverGrant(session_agent_id=actor.id, grant_type=GrantType.REFUSAL_SKIP, policy_key=command.name, target="", action_fingerprint="",
+                                             asker_id=actor.id, reason=command.reason.strip(), skips_in_a_row=self.skip_count(actor, last, command.name, skipped_at)), context)
+        if skip.skips_in_a_row == MOST_SKIP_COUNT:
             self.raised(actor.id, context)
         return skip
 
-    def confirmed_skip_used(self, actor: Actor, name: str, context: Context) -> RefusalSkip:
-        skip = self.queries.query(RefusalSkip).filter(session_agent_id=actor.id, name=name, used_at=None, cancelled_at=None, requires_approval=False).matching(HasValue("confirmed_at")).newest().first()
+    def confirmed_skip_used(self, actor: Actor, name: str, context: Context) -> DriverGrant:
+        skip = self.queries.query(DriverGrant).filter(session_agent_id=actor.id, grant_type=GrantType.REFUSAL_SKIP, policy_key=name, grant_state=GrantState.CONFIRMED, requires_approval=False).newest().first()
         if skip is None:
             raise Refusal(f"{name} has no confirmed skip of yours: a skip is held until you confirm it with what you tried",
                           f"journal refusal skip {name} --reason '<why it is wrong here>', then confirm it")
-        return self.repository.update(skip, context, used_at=context.timestamp)
+        return self.repository.update(skip, context, grant_state=GrantState.SPENT)
 
     def check_refused(self, actor: Actor, name: str, skipped_at: str) -> None:
         if self.refusals.guard_refused_past(actor.id, name.partition(":")[0], skipped_at):
@@ -83,10 +85,10 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
         if refused.get("safety"):
             raise Refusal(f"{name} is a safety refusal and has no skip", "say in your report what you need")
 
-    def skip_count(self, actor: Actor, last: RefusalSkip | None, name: str, skipped_at: str) -> int:
+    def skip_count(self, actor: Actor, last: DriverGrant | None, name: str, skipped_at: str) -> int:
         if last is None or last.restored_at is not None:
             return 1
-        return 1 if self.different_rule_refused(actor, skipped_at, name) else last.streak + 1
+        return 1 if self.different_rule_refused(actor, skipped_at, name) else last.skips_in_a_row + 1
 
     # Whether a rule or guard other than the named one refused the agent after the time; a refused call that names no
     # rule counts as another.

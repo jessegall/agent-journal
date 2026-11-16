@@ -27,6 +27,7 @@ class AgentBlock(ClosedPrunable, Model):
     kept_rows = 5000
 
     model_name = "agent_block"
+    plugin_row_fields = ("blocks_stop",)
     cli_name = "agent-block"
 
     session_agent_id: int
@@ -41,12 +42,11 @@ class AgentBlock(ClosedPrunable, Model):
     countdown_key: str = ""
     countdown_text: str = ""
     skip_reason: str = ""
-    blocks_stop: bool = False
     strict: bool = False
     is_skippable: bool = False
     countdown_limit: int = COUNTDOWN_TOOL_USES
-    scope_tools: bool | None = None
-    scope_stop: bool | None = None
+    scope_tools: bool = True
+    scope_stop: bool = False
     stop_grace_seconds: int = 0
     tool_selector: str = ""
     subject_model: str = ""
@@ -65,14 +65,9 @@ class AgentBlock(ClosedPrunable, Model):
     closer: str = ""
     closing_evidence: str = ""
 
-    # A row old code wrote has no scopes yet: blocks_stop says which one it has (doc 1310 section 4.5).
     @property
-    def has_tool_scope(self) -> bool:
-        return self.scope_tools if self.scope_tools is not None else not self.blocks_stop
-
-    @property
-    def has_stop_scope(self) -> bool:
-        return self.scope_stop if self.scope_stop is not None else self.blocks_stop
+    def blocks_stop(self) -> bool:
+        return self.scope_stop and not self.scope_tools
 
     # The block's condition holds, or the row it waits on is gone, so it could never hold.
     def is_finished(self, conditions: BlockConditions, hook: AgentHook, container: Container) -> bool:
@@ -80,7 +75,7 @@ class AgentBlock(ClosedPrunable, Model):
         return not condition.has_target(container) or condition.is_true(BlockCheck(hook, self.creation_timestamp(), container))
 
     def is_active(self, tool_uses: int, timestamp: Timestamp) -> bool:
-        if self.blocks_stop:
+        if not self.scope_tools:
             return False
         if not self.grace_tool_uses and not self.grace_seconds:
             return True

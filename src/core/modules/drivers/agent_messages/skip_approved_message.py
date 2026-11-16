@@ -7,5 +7,5 @@ class SkipApprovedMessage(MessageTemplate):
 
     key = "drivers.skip_approved"
     type = AgentMessageType.STEERING
-    text = "Skip refusal-skip:{refusal} approved: try again"
+    text = "Skip driver-grant:{refusal} approved: try again"
     turn_limited = False

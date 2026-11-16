@@ -26,7 +26,7 @@ def current_contract(tmp_path) -> dict[str, dict[str, list[str]]]:
     contract: dict[str, dict[str, list[str]]] = {}
     for entry in ModuleCheck.event_keys(modules):
         model = models.get(entry.event.partition(".")[0])
-        names = sorted(field.name for field in fields(model) if field.name not in BOOKKEEPING_FIELDS and field.name not in model.hidden_fields) if model else []
+        names = sorted([*(field.name for field in fields(model) if field.name not in BOOKKEEPING_FIELDS and field.name not in model.hidden_fields), *model.plugin_row_fields]) if model else []
         contract[entry.key] = {"forms": sorted(form.value for form in entry.forms), "fields": names}
     return dict(sorted(contract.items()))
 

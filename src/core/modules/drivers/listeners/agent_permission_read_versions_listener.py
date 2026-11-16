@@ -7,16 +7,15 @@ from core.modules.drivers.models.agent_escalation import AgentEscalation
 from core.modules.drivers.models.hidden_state import HiddenState
 from core.modules.drivers.models.context_compaction import ContextCompaction
 from core.modules.drivers.models.driver_grant import DriverGrant
-from core.modules.drivers.models.refusal_skip import RefusalSkip
 from core.modules.drivers.support.read_versions_writers import ReadVersionsWriters
 
-PermissionRow = RefusalSkip | AgentBlock | AgentEscalation | HiddenState | ContextCompaction | DriverGrant | AgentSession
+PermissionRow = AgentBlock | AgentEscalation | HiddenState | ContextCompaction | DriverGrant | AgentSession
 
 
-class AgentPermissionReadVersionsListener(SaveListener[Changed[RefusalSkip] | Changed[AgentBlock] | Changed[AgentEscalation] | Changed[HiddenState]
+class AgentPermissionReadVersionsListener(SaveListener[Changed[AgentBlock] | Changed[AgentEscalation] | Changed[HiddenState]
                                                 | Changed[ContextCompaction] | Changed[DriverGrant] | Changed[AgentSession]]):
-    """A skip or its use, a block opened, skipped or closed, an escalation answered, a suppression, a
-    compaction attempt, a grant and a session bound, replaced or ended each change what one agent may do:
+    """A block opened, skipped or closed, an escalation answered, a suppression, a compaction attempt, a grant (a
+    skip, a permission) asked, answered or spent and a session bound, replaced or ended each change what one agent may do:
     its answer basis moves in the same write (doc 1310 section 6.5)."""
 
     name = "drivers.permission-basis"

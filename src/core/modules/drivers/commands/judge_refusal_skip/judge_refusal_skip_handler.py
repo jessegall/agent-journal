@@ -6,14 +6,15 @@ from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.judge_refusal_skip.judge_refusal_skip import JudgeRefusalSkip
 from core.modules.drivers.commands.skip_refusal.skip_refusal_handler import SKIP_SOURCE
-from core.modules.drivers.models.refusal_skip import RefusalSkip
+from core.modules.drivers.models.driver_grant import DriverGrant
+from engine.enums.grant_state import GrantState
 from core.modules.drivers.agent_messages.skip_approved_message import SkipApprovedMessage
 from core.modules.drivers.agent_messages.skip_declined_message import SkipDeclinedMessage
 from engine.driver.message_sender import MessageSender
 from core.modules.agents.support.agent_label import AgentLabel
 
 
-class JudgeRefusalSkipHandler(Handler[JudgeRefusalSkip, RefusalSkip]):
+class JudgeRefusalSkipHandler(Handler[JudgeRefusalSkip, DriverGrant]):
     """Answers a helper's confirmed skip that waits for approval: an approved one passes the refusal once, a
     declined one leaves the refusal in force, and the agent that made it is told. Only its parent or a
     person answers."""
@@ -23,17 +24,17 @@ class JudgeRefusalSkipHandler(Handler[JudgeRefusalSkip, RefusalSkip]):
     def __init__(self, queries: Queries, repository: Repository, message_sender: MessageSender) -> None:
         self.queries, self.repository, self.message_sender = queries, repository, message_sender
 
-    def handle(self, command: JudgeRefusalSkip, context: Context) -> RefusalSkip:
-        skip = self.queries.query(RefusalSkip).find(command.skip_id)
+    def handle(self, command: JudgeRefusalSkip, context: Context) -> DriverGrant:
+        skip = self.queries.query(DriverGrant).find(command.skip_id)
         if not skip.requires_approval:
-            raise Refusal(f"skip {skip.id} waits for no approval", "journal refusal show prints its state")
+            raise Refusal(f"skip {skip.id} waits for no approval", f"journal driver-grant show {skip.id} prints its state")
         agent = self.queries.query(Agent).find(skip.session_agent_id)
         if agent.is_foreign_helper(context.actor):
             raise Refusal(f"skip {skip.id} is for {AgentLabel.labelled(self.queries.query(Agent).find(agent.parent_id)).text} to answer", "only the agent's parent or a user answers it")
         if command.is_approved:
-            answered = self.repository.update(skip, context, requires_approval=False, approved_at=context.timestamp)
+            answered = self.repository.update(skip, context, grant_state=GrantState.APPROVED, requires_approval=False, approved_at=context.timestamp)
             self.message_sender.send(agent.id, SkipApprovedMessage.declared(), SKIP_SOURCE, context, refusal=skip.id)
             return answered
-        answered = self.repository.update(skip, context, requires_approval=False, cancelled_at=context.timestamp)
+        answered = self.repository.update(skip, context, grant_state=GrantState.DECLINED, requires_approval=False)
         self.message_sender.send(agent.id, SkipDeclinedMessage.declared(), SKIP_SOURCE, context, refusal=skip.id)
         return answered

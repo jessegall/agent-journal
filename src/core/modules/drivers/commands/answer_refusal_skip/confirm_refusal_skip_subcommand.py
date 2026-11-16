@@ -4,10 +4,10 @@ from engine.caller.caller import Caller
 from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
 from core.modules.drivers.commands.answer_refusal_skip.answer_refusal_skip import AnswerRefusalSkip
-from core.modules.drivers.models.refusal_skip import RefusalSkip
+from core.modules.drivers.models.driver_grant import DriverGrant
 
 
-class ConfirmRefusalSkipSubcommand(Subcommand[AnswerRefusalSkip, RefusalSkip]):
+class ConfirmRefusalSkipSubcommand(Subcommand[AnswerRefusalSkip, DriverGrant]):
     """`journal refusal confirm <skip> --tried <what>`: confirms a held skip, which then passes the refusal
     once."""
 
@@ -22,5 +22,5 @@ class ConfirmRefusalSkipSubcommand(Subcommand[AnswerRefusalSkip, RefusalSkip]):
         return AnswerRefusalSkip(arguments.skip, True, arguments.tried)
 
     def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, RefusalSkip):
-            output.line(f"skip {value.id} of {value.name} confirmed: " + ("it waits for your main agent's approval" if value.requires_approval else "try again"))
+        if isinstance(value, DriverGrant):
+            output.line(f"skip {value.id} of {value.policy_key} confirmed: " + ("it waits for your main agent's approval" if value.requires_approval else "try again"))

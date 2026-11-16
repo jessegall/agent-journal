@@ -4,10 +4,10 @@ from engine.caller.caller import Caller
 from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
 from core.modules.drivers.commands.skip_refusal.skip_refusal import SkipRefusal
-from core.modules.drivers.models.refusal_skip import RefusalSkip
+from core.modules.drivers.models.driver_grant import DriverGrant
 
 
-class SkipRefusalSubcommand(Subcommand[SkipRefusal, RefusalSkip]):
+class SkipRefusalSubcommand(Subcommand[SkipRefusal, DriverGrant]):
     """`journal refusal skip <rule> --reason <why>`: asks to pass the refusal of a rule that just refused you,
     once; the skip is held until you confirm it with what you tried instead, or withdraw it."""
 
@@ -22,7 +22,7 @@ class SkipRefusalSubcommand(Subcommand[SkipRefusal, RefusalSkip]):
         return SkipRefusal(arguments.rule, arguments.reason)
 
     def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, RefusalSkip):
-            output.write(f"skip {value.id} of {value.name} held, {value.streak} in a row. Is there no other way? Do what the refusal asks "
+        if isinstance(value, DriverGrant):
+            output.write(f"skip {value.id} of {value.policy_key} held, {value.skips_in_a_row} in a row. Is there no other way? Do what the refusal asks "
                          f"and withdraw it (journal refusal withdraw {value.id}), or confirm it is wrong here and name what you tried instead "
-                         f"(journal refusal confirm {value.id} --tried '<what you tried>')", {"id": value.id, "name": value.name, "streak": value.streak})
+                         f"(journal refusal confirm {value.id} --tried '<what you tried>')", {"id": value.id, "name": value.policy_key, "skips_in_a_row": value.skips_in_a_row})

@@ -40,7 +40,7 @@ class BlockAgentHandler(Handler[BlockAgent, AgentBlock]):
         return self.repository.save(AgentBlock(session_agent_id=command.agent_id, creator_id=context.actor.id, agent_message_key=command.agent_message.key, agent_message_text=command.agent_message.text,
                                                condition_name=command.condition.name, condition_text=command.condition.text, grace_tool_uses=self.tool_uses(command.after),
                                                grace_seconds=command.after.seconds if command.after is not None else 0, countdown_key=command.countdown.key if command.countdown else "",
-                                               countdown_text=command.countdown.text if command.countdown else "", blocks_stop=command.blocks_stop, strict=command.strict, is_skippable=command.is_skippable, countdown_limit=command.countdown_limit), context)
+                                               countdown_text=command.countdown.text if command.countdown else "", scope_tools=not command.blocks_stop, scope_stop=command.blocks_stop, strict=command.strict, is_skippable=command.is_skippable, countdown_limit=command.countdown_limit), context)
 
     @staticmethod
     def tool_uses(after: Interval | None) -> int:

@@ -129,7 +129,7 @@ class StoredStepWriter(StepWriter):
         for plan in plans:
             self.repository.save(AgentBlock(session_agent_id=view.agent.agent_id, creator_id=view.agent.agent_id, agent_message_key=plan.agent_message.key,
                                             agent_message_text=plan.agent_message.text, condition_name=type(plan.condition).name, condition_text=plan.condition.text,
-                                            grace_tool_uses=plan.tool_grace_uses, blocks_stop=plan.scope_stop and not plan.scope_tools, strict=plan.is_strict,
+                                            grace_tool_uses=plan.tool_grace_uses, strict=plan.is_strict,
                                             scope_tools=plan.scope_tools, scope_stop=plan.scope_stop, stop_grace_seconds=plan.stop_grace_seconds,
                                             subject_model=plan.subject.model if plan.subject is not None else "",
                                             subject_id=plan.subject.row_id if plan.subject is not None else None, members=plan.members,

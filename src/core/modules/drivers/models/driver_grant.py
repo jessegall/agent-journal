@@ -9,9 +9,10 @@ from engine.time.timestamp import Timestamp
 
 @dataclass(frozen=True, kw_only=True)
 class DriverGrant(EnvironmentScoped, Model):
-    """A one-use exception a policy reads, for the grants that have no table of their own today (the alias
-    skip): the policy, the agent, the exact target and action, its state, who asked and answered, and the
-    event id that spent it."""
+    """A one-use exception a policy reads, of every kind (a refusal or guard skip, an alias skip, a permission):
+    the policy, the agent, the exact target and action, its state, who asked and answered, how many refusals in a row a skip passed, the
+    times it was confirmed, approved and restored, whether a person must approve it, and the event id that spent
+    it."""
 
     model_name = "driver_grant"
     cli_name = "driver-grant"
@@ -29,3 +30,13 @@ class DriverGrant(EnvironmentScoped, Model):
     tried: str = ""
     expires_at: Timestamp | None = None
     spending_event_id: str = ""
+    skips_in_a_row: int = 1
+    requires_approval: bool = False
+    confirmed_at: Timestamp | None = None
+    approved_at: Timestamp | None = None
+    restored_at: Timestamp | None = None
+
+    # a skip is answered once its agent confirmed or withdrew it; either answer is final
+    @property
+    def is_answered(self) -> bool:
+        return self.confirmed_at is not None or self.grant_state is GrantState.REVOKED

@@ -7,5 +7,5 @@ class SkipDeclinedMessage(MessageTemplate):
 
     key = "drivers.skip_declined"
     type = AgentMessageType.STEERING
-    text = "Skip refusal-skip:{refusal} declined: do what the refusal asks"
+    text = "Skip driver-grant:{refusal} declined: do what the refusal asks"
     turn_limited = False

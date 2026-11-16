@@ -2966,15 +2966,20 @@
     ],
     "fields": [
       "action_fingerprint",
+      "approved_at",
       "asker_id",
+      "confirmed_at",
       "environment_id",
       "expires_at",
       "grant_state",
       "grant_type",
       "policy_key",
       "reason",
+      "requires_approval",
       "responder_id",
+      "restored_at",
       "session_agent_id",
+      "skips_in_a_row",
       "spending_event_id",
       "target",
       "tried"
@@ -2988,15 +2993,20 @@
     ],
     "fields": [
       "action_fingerprint",
+      "approved_at",
       "asker_id",
+      "confirmed_at",
       "environment_id",
       "expires_at",
       "grant_state",
       "grant_type",
       "policy_key",
       "reason",
+      "requires_approval",
       "responder_id",
+      "restored_at",
       "session_agent_id",
+      "skips_in_a_row",
       "spending_event_id",
       "target",
       "tried"
@@ -3010,15 +3020,20 @@
     ],
     "fields": [
       "action_fingerprint",
+      "approved_at",
       "asker_id",
+      "confirmed_at",
       "environment_id",
       "expires_at",
       "grant_state",
       "grant_type",
       "policy_key",
       "reason",
+      "requires_approval",
       "responder_id",
+      "restored_at",
       "session_agent_id",
+      "skips_in_a_row",
       "spending_event_id",
       "target",
       "tried"
@@ -3522,102 +3537,6 @@
       "target"
     ]
   },
-  "core.drivers.permission_request.allow": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "action",
-      "asker_id",
-      "environment_id",
-      "reason",
-      "requires_person",
-      "responder_id",
-      "state"
-    ]
-  },
-  "core.drivers.permission_request.created": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "action",
-      "asker_id",
-      "environment_id",
-      "reason",
-      "requires_person",
-      "responder_id",
-      "state"
-    ]
-  },
-  "core.drivers.permission_request.decline": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "action",
-      "asker_id",
-      "environment_id",
-      "reason",
-      "requires_person",
-      "responder_id",
-      "state"
-    ]
-  },
-  "core.drivers.permission_request.deleted": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "action",
-      "asker_id",
-      "environment_id",
-      "reason",
-      "requires_person",
-      "responder_id",
-      "state"
-    ]
-  },
-  "core.drivers.permission_request.updated": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "action",
-      "asker_id",
-      "environment_id",
-      "reason",
-      "requires_person",
-      "responder_id",
-      "state"
-    ]
-  },
-  "core.drivers.permission_request.use": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "action",
-      "asker_id",
-      "environment_id",
-      "reason",
-      "requires_person",
-      "responder_id",
-      "state"
-    ]
-  },
   "core.drivers.program_version.created": {
     "forms": [
       "commit",
@@ -3649,69 +3568,6 @@
     "fields": [
       "change_count",
       "program"
-    ]
-  },
-  "core.drivers.refusal_skip.created": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "approved_at",
-      "cancelled_at",
-      "confirmed_at",
-      "creator_id",
-      "name",
-      "reason",
-      "requires_approval",
-      "restored_at",
-      "session_agent_id",
-      "streak",
-      "tried",
-      "used_at"
-    ]
-  },
-  "core.drivers.refusal_skip.deleted": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "approved_at",
-      "cancelled_at",
-      "confirmed_at",
-      "creator_id",
-      "name",
-      "reason",
-      "requires_approval",
-      "restored_at",
-      "session_agent_id",
-      "streak",
-      "tried",
-      "used_at"
-    ]
-  },
-  "core.drivers.refusal_skip.updated": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "approved_at",
-      "cancelled_at",
-      "confirmed_at",
-      "creator_id",
-      "name",
-      "reason",
-      "requires_approval",
-      "restored_at",
-      "session_agent_id",
-      "streak",
-      "tried",
-      "used_at"
     ]
   },
   "core.drivers.reminder_pass.created": {

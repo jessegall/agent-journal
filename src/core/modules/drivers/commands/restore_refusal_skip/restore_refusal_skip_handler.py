@@ -6,11 +6,12 @@ from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.restore_refusal_skip.restore_refusal_skip import RestoreRefusalSkip
-from core.modules.drivers.models.refusal_skip import RefusalSkip
+from core.modules.drivers.models.driver_grant import DriverGrant
+from engine.enums.grant_type import GrantType
 from core.modules.agents.support.agent_label import AgentLabel
 
 
-class RestoreRefusalSkipHandler(Handler[RestoreRefusalSkip, RefusalSkip]):
+class RestoreRefusalSkipHandler(Handler[RestoreRefusalSkip, DriverGrant]):
     """A user gives any agent its skip back; a main agent only the agents it started."""
 
     command = RestoreRefusalSkip
@@ -18,11 +19,11 @@ class RestoreRefusalSkipHandler(Handler[RestoreRefusalSkip, RefusalSkip]):
     def __init__(self, queries: Queries, repository: Repository) -> None:
         self.queries, self.repository = queries, repository
 
-    def handle(self, command: RestoreRefusalSkip, context: Context) -> RefusalSkip:
+    def handle(self, command: RestoreRefusalSkip, context: Context) -> DriverGrant:
         agent = self.queries.query(Agent).find(command.agent_id)
         if agent.is_foreign_helper(context.actor):
             raise UserApprovalRefusal(f"Restore the refusal skip for {AgentLabel.labelled(agent).text}?", command=command)
-        skip = self.queries.query(RefusalSkip).filter(session_agent_id=agent.id).newest().first()
+        skip = self.queries.query(DriverGrant).filter(session_agent_id=agent.id, grant_type=GrantType.REFUSAL_SKIP).newest().first()
         if skip is None:
             raise Refusal(f"{AgentLabel.labelled(agent).text} has skipped no refusal")
         return self.repository.update(skip, context, restored_at=context.timestamp)

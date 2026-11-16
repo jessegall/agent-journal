@@ -1,9 +1,10 @@
+from engine.enums.grant_state import GrantState
 from engine.enums.actor_type import ActorType
 from engine.command.context import Context
 from engine.errors.refusal import Refusal
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from engine.query.queries import Queries
-from core.modules.drivers.models.permission_request import PermissionRequest
+from core.modules.drivers.models.driver_grant import DriverGrant
 
 
 class PermissionAnswerers:
@@ -13,9 +14,11 @@ class PermissionAnswerers:
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
-    def check(self, request: PermissionRequest, context: Context) -> None:
+    def check(self, request: DriverGrant, context: Context) -> None:
+        if request.grant_state is not GrantState.OPEN:
+            raise Refusal(f"request {request.id} was answered already", f"journal driver-grant show {request.id} prints its answer")
         if context.actor.type is ActorType.USER:
             return
         main = MainAgentFinder.newest(self.queries)
-        if request.requires_person or context.actor.id == request.asker_id or main is None or main.id != context.actor.id:
+        if request.requires_approval or context.actor.id == request.asker_id or main is None or main.id != context.actor.id:
             raise Refusal(f"only the main agent, or a user where the action needs one, answers request {request.id}")

@@ -23,6 +23,7 @@ class Model:
     table: ClassVar[str]
     lifecycle: ClassVar[type[Lifecycle] | None] = None
     hidden_fields: ClassVar[frozenset[str]] = frozenset()
+    plugin_row_fields: ClassVar[tuple[str, ...]] = ()
     filter_fields: ClassVar[Sequence[str]] = ()
     search_fields: ClassVar[Sequence[str]] = ()
     search_rank: ClassVar[int] = 0

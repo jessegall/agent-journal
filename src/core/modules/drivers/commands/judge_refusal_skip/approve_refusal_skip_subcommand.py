@@ -4,10 +4,10 @@ from engine.caller.caller import Caller
 from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
 from core.modules.drivers.commands.judge_refusal_skip.judge_refusal_skip import JudgeRefusalSkip
-from core.modules.drivers.models.refusal_skip import RefusalSkip
+from core.modules.drivers.models.driver_grant import DriverGrant
 
 
-class ApproveRefusalSkipSubcommand(Subcommand[JudgeRefusalSkip, RefusalSkip]):
+class ApproveRefusalSkipSubcommand(Subcommand[JudgeRefusalSkip, DriverGrant]):
     """`journal refusal approve <skip>`: approves a helper's confirmed skip, which then passes the refusal
     once."""
 
@@ -21,5 +21,5 @@ class ApproveRefusalSkipSubcommand(Subcommand[JudgeRefusalSkip, RefusalSkip]):
         return JudgeRefusalSkip(arguments.skip, True)
 
     def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, RefusalSkip):
-            output.line(f"skip {value.id} of {value.name} approved: it passes the refusal once")
+        if isinstance(value, DriverGrant):
+            output.line(f"skip {value.id} of {value.policy_key} approved: it passes the refusal once")

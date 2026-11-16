@@ -14,12 +14,7 @@ from engine.enums.decision_class import DecisionClass
 from engine.enums.state_end import StateEnd
 from engine.enums.work_type import WorkType
 from engine.query.queries import Queries
-from engine.driver.interval import Interval
-from engine.driver.refusal_skips import RefusalSkips
-from engine.driver.seconds import Seconds
-from engine.time.clock import Clock
 from engine.driver.watched_runs import WatchedRuns
-from core.modules.drivers.models.support.tool_use_window import ToolUseWindow
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
@@ -29,7 +24,6 @@ from core.modules.tasks.support.current_tasks import CurrentTasks
 from core.modules.tasks.support.suite_task_assigners import SuiteTaskAssigners
 
 TASK_STOP_KEY = "tasks.carry-on-at-stop"
-TASK_STOP_SKIP_WINDOW = Interval(ToolUseWindow(25), Seconds(1500))
 # a Working stacked state is ordered by its push time, never by a rank key
 TASK_RANK = ""
 ENDED_TASKS_REASON = "the ended tasks whose frames one step takes off one agent's stack, a few at most"
@@ -44,9 +38,9 @@ class TaskWorkStates(StateSource):
     rank = TASK_RANK
     agent_types = ["main"]
 
-    def __init__(self, current_tasks: CurrentTasks, assigners: SuiteTaskAssigners, queries: Queries, runs: WatchedRuns, skips: RefusalSkips, clock: Clock, tasks: TaskQuery) -> None:
+    def __init__(self, current_tasks: CurrentTasks, assigners: SuiteTaskAssigners, queries: Queries, runs: WatchedRuns, tasks: TaskQuery) -> None:
         self.current_tasks, self.assigners, self.queries, self.tasks = current_tasks, assigners, queries, tasks
-        self.runs, self.skips, self.clock = runs, skips, clock
+        self.runs = runs
 
     def states(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[RequiredState | BlockPlan]]:
         states = {agent.agent_id: self.working(agent.agent_id) for agent in agents if agent.agent_type == "main"}
@@ -61,10 +55,8 @@ class TaskWorkStates(StateSource):
         return [RequiredState(Working(WorkReference(WorkType.TASK, task.id, f"task {task.id}"), remains, reason), TASK_RANK,
                      StateKey("Working", RowReference(Task.model_name, task.id), f"task:{task.id}")) for task in started]
 
-    # the tasks in hand hold the agent's stop unless a run of its goes, its suite lets it stop with them, or it skipped
-    # the stop refusal within the last 25 tool uses or 25 minutes, as today's tasks.carry-on-at-stop lets it
     def blocks_stop(self, agent_id: int) -> bool:
-        if self.runs.has_run(agent_id) or self.skips.is_skipped(agent_id, TASK_STOP_KEY, TASK_STOP_SKIP_WINDOW, self.clock.timestamp()):
+        if self.runs.has_run(agent_id):
             return False
         assigner = self.assigners.assigner()
         return assigner is None or not assigner.allows_stop_with_tasks(agent_id)

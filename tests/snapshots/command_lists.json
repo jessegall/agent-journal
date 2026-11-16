@@ -2149,16 +2149,6 @@
   "merger": "refused",
   "worker": "refused"
  },
- "permission-request list": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
- "permission-request show": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
  "person-preset list": {
   "helper": "allowed",
   "merger": "allowed",
@@ -3093,16 +3083,6 @@
   "helper": "allowed",
   "merger": "allowed",
   "worker": "allowed"
- },
- "refusal-skip list": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
- "refusal-skip show": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
  },
  "release list": {
   "helper": "allowed",

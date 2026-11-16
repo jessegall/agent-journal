@@ -1,8 +1,8 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.enums.tool_type import ToolType
-from core.modules.drivers.models.enums.permission_state import PermissionState
-from core.modules.drivers.models.permission_request import PermissionRequest
+from core.modules.drivers.models.driver_grant import DriverGrant
+from engine.enums.grant_state import GrantState
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 
@@ -14,8 +14,8 @@ def design_edit(path: str = DESIGN):
     return HookSamples.tool_use("Edit", ToolType.EDIT, [path], None)
 
 
-def requests(story) -> list[PermissionRequest]:
-    return list(story.story_rows(PermissionRequest))
+def requests(story) -> list[DriverGrant]:
+    return list(story.story_rows(DriverGrant))
 
 
 def helper_story(new_story):
@@ -28,18 +28,18 @@ def test_a_helpers_write_is_refused_asked_allowed_once_and_run_and_a_second_run_
     story, session, helper = helper_story(new_story)
     story.expect_hook_refusal(session, design_edit(), REFUSED)
     story.expect_success(f'permission ask {DESIGN} --reason "save the design page"', actor=helper)
-    story.expect_rows(requests(story)[0].state is PermissionState.REQUESTED)
+    story.expect_rows(requests(story)[0].grant_state is GrantState.OPEN)
     story.expect_hook_refusal(session, design_edit(), REFUSED)
     story.expect_success("permission allow 1", actor=story.agent)
     story.expect_hook_allowed(session, design_edit())
-    story.expect_rows(requests(story)[0].state is PermissionState.USED)
+    story.expect_rows(requests(story)[0].grant_state is GrantState.SPENT)
     story.expect_hook_refusal(session, design_edit(), REFUSED)
 
 
 def test_an_allowed_request_lets_through_only_the_thing_it_named(new_story):
     story, session, helper = helper_story(new_story)
     story.expect_success(f'permission ask {DESIGN} --reason "save the design page" --person', actor=helper)
-    story.expect_rows(requests(story)[0].requires_person)
+    story.expect_rows(requests(story)[0].requires_approval)
     story.expect_hook_refusal(session, design_edit("docs/designs/cart/other.html"), REFUSED)
 
 
@@ -47,7 +47,7 @@ def test_a_declined_request_leaves_the_helper_refused(new_story):
     story, session, helper = helper_story(new_story)
     story.expect_success(f'permission ask {DESIGN} --reason "save the design page again"', actor=helper)
     story.expect_success("permission decline 1", actor=story.agent)
-    story.expect_rows(requests(story)[0].state is PermissionState.DECLINED)
+    story.expect_rows(requests(story)[0].grant_state is GrantState.DECLINED)
     story.expect_hook_refusal(session, design_edit(), REFUSED)
     story.expect_refusal("permission allow 1", "", actor=story.agent)
 

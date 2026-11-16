@@ -6,7 +6,7 @@ from engine.agent_machine.decision_record import DecisionRecord
 from engine.command.command import Command
 from engine.enums.effect_timing import EffectTiming
 from engine.enums.hook_event_name import HookEventName
-from core.modules.drivers.commands.use_permission.use_permission import UsePermission
+from core.modules.drivers.commands.spend_grant.spend_grant import SpendGrant
 from core.modules.drivers.agent_messages.permission_use_failed_message import PermissionUseFailedMessage
 from core.modules.drivers.support.restricted_read_access import RestrictedReadAccess
 
@@ -27,4 +27,4 @@ class UsePermissionEffect(Effect):
     def commands(self, view: AgentView, record: DecisionRecord) -> Sequence[Command[object]]:
         event = record.action.event
         spent = self.access.spent_permission(event, view.agent.agent_id) if event is not None else None
-        return [UsePermission(spent.id)] if spent is not None else []
+        return [SpendGrant(spent.id)] if spent is not None else []
