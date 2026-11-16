@@ -73,13 +73,13 @@ class ActorTable(RoundState):
 
     def actor_text(self, actor_id: int) -> str:
         if actor_id == CORE_ACTOR_ID:
-            return f"{actor_id} ({CORE_TEXT})"
+            return f"{actor_id} is {CORE_TEXT}"
         rows = self.database.rows(Statement(PRINTED_ACTOR.sql, [actor_id]))
         if not rows or rows[0]["type"] != ActorType.AGENT.value:
-            return str(actor_id)
+            return ""
         if rows[0]["role"] is None:
-            return f"{actor_id} (removed agent)"
-        return f"{actor_id} (main agent)" if rows[0]["role"] == AgentRole.MAIN.value else f"{actor_id} ({rows[0]['role']})"
+            return f"{actor_id} is a removed agent"
+        return f"{actor_id} is the main agent" if rows[0]["role"] == AgentRole.MAIN.value else f"{actor_id} is a {rows[0]['role']}"
 
     def main_agent_actor_id(self) -> int:
         return self.next_agent_actor_id() if self.database.rows(Statement(MAIN_AGENT_ACTOR.sql, [MAIN_AGENT_ID])) else MAIN_AGENT_ID

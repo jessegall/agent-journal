@@ -13,4 +13,4 @@ def test_the_rows_a_user_made_name_the_new_actor_as_their_creator(upgraded):
 
 def test_what_the_system_did_in_version_4_is_the_cores_in_version_5(upgraded):
     story = upgraded
-    story.expect_success("environment show 1", "creator_id: 0 (the journal)")
+    story.expect_success("environment show 1", "creator_id: 0")

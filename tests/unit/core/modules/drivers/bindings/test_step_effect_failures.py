@@ -1,8 +1,18 @@
 from contextlib import nullcontext
+from collections.abc import Callable
+from dataclasses import dataclass
 from types import SimpleNamespace
 
 from engine.errors.refusal import Refusal
 from core.modules.drivers.bindings.stored_step_writer import StoredStepWriter
+
+
+@dataclass(frozen=True)
+class StepContext:
+    """The parts of a command context the effects of a step read."""
+
+    actor: object
+    nested: Callable[[object], None]
 
 
 class Effect:
@@ -29,5 +39,6 @@ def test_an_effect_whose_command_is_refused_is_logged_and_the_effects_after_it_s
 
     writer = StoredStepWriter(SimpleNamespace(), SimpleNamespace(), SimpleNamespace(dispatch=dispatch), SimpleNamespace(savepoint=lambda name: nullcontext()),
                               SimpleNamespace(), SimpleNamespace(), SimpleNamespace(), SimpleNamespace(commands=lambda effect, view, record: effect.commands(view, record)), SimpleNamespace(), SimpleNamespace(), SimpleNamespace(), SimpleNamespace())
-    failures, _ = writer.run_effects([Effect("refused"), Effect("kept")], SimpleNamespace(), SimpleNamespace(), False, SimpleNamespace(nested=lambda command: None))
+    view = SimpleNamespace(agent=SimpleNamespace(agent_id=2))
+    failures, _ = writer.run_effects([Effect("refused"), Effect("kept")], view, SimpleNamespace(), False, StepContext(actor=None, nested=lambda command: None))
     assert finished == ["kept"] and len(failures) == 1 and "the row is gone" in failures[0]

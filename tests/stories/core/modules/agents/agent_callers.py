@@ -1,5 +1,4 @@
 from core.modules.tasks.models.task import Task
-from engine.actor.actor import CORE_ACTOR_ID
 from engine.enums.actor_type import ActorType
 from core.modules.actors.models.actor_record import ActorRecord
 from engine.caller.caller_request import CallerRequest
@@ -44,7 +43,7 @@ def test_a_run_the_journal_started_keeps_running_as_its_agent_after_the_agent_ha
 
 def test_a_shell_of_an_agent_program_no_agent_holds_is_never_taken_for_the_person(new_story):
     story = new_story(fixture=LoginUser)
-    story.expect_requested_success(TASK_LINE, CallerRequest({"CLAUDE_CODE_SESSION_ID": "s-9", "USER": "ada"}, "/work/journal/src"), f"creator_id: {CORE_ACTOR_ID}", "environment_id: 1")
+    story.expect_requested_success(TASK_LINE, CallerRequest({"CLAUDE_CODE_SESSION_ID": "s-9", "USER": "ada"}, "/work/journal/src"), "creator_id: 0", "environment_id: 1")
 
 
 def test_a_reused_pid_with_another_start_time_names_no_agent(new_story):
