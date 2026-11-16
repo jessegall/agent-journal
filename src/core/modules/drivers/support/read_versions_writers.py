@@ -7,12 +7,12 @@ from engine.repository.repository import Repository
 from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_stack import AgentStack
+from core.modules.drivers.support.read_versions_rows import ReadVersionsRows
 from core.modules.drivers.models.driver_version import DriverVersion
 from core.modules.drivers.models.program_version import ProgramVersion
 from core.modules.environments.models.environment import Environment
 
 CHILD_AGENTS_REASON = "the running agents one level of a tree started, a handful each, a few levels deep"
-MOVED_STACKS_REASON = "the stacks of the agents one write moves: one agent, or a running tree of a few"
 ENVIRONMENTS_REASON = "the environments of one project, a handful"
 
 
@@ -21,8 +21,8 @@ class ReadVersionsWriters:
     what an agent may do, so a step that read rows since changed cannot save: the agent's stack version, the
     driver version of every environment and a program's version."""
 
-    def __init__(self, queries: Queries, repository: Repository, database: Database, scopes: Scopes) -> None:
-        self.queries, self.repository, self.database, self.scopes = queries, repository, database, scopes
+    def __init__(self, queries: Queries, repository: Repository, database: Database, scopes: Scopes, stacks: ReadVersionsRows) -> None:
+        self.queries, self.repository, self.database, self.scopes, self.stacks = queries, repository, database, scopes, stacks
         # the agents moved in the current write: writes take turns, and one move a write is enough, since a step that
         # read before the write sees a new version whatever else the write does
         self.moved_write, self.moved_agents = 0, set[int]()
@@ -37,13 +37,10 @@ class ReadVersionsWriters:
         if not unmoved:
             return
         self.moved_agents.update(unmoved)
-        stacks = {row.session_agent_id: row for row in self.queries.query(AgentStack).matching(Among("session_agent_id", unmoved)).every_row(MOVED_STACKS_REASON)}
         for agent_id in unmoved:
-            row = stacks.get(agent_id)
-            if row is None:
-                self.repository.save(AgentStack(session_agent_id=agent_id, permission_changes=1), context)
-                continue
-            self.repository.save_change(row, row.changed(permission_changes=row.permission_changes + 1), context)
+            row = self.stacks.current_stack(agent_id)
+            moved = row.changed(permission_changes=row.permission_changes + 1) if row is not None else AgentStack(session_agent_id=agent_id, permission_changes=1)
+            self.stacks.remember(self.repository.save_change(row, moved, context))
 
     # a pause or a resume reaches every running agent below the one it names, read a level at a time; an ended
     # agent answers no hook until it starts again, and its start reads its view anew

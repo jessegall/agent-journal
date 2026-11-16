@@ -21,7 +21,7 @@ class LineHistoryWriter:
 
     def record_given(self, agent_id: int, source_keys: Sequence[str], context: Context) -> None:
         given_keys = list(dict.fromkeys(source_keys))
-        stored = self.histories.rows(agent_id) if given_keys else {}
+        stored = self.histories.rows(agent_id, given_keys) if given_keys else {}
         for key in given_keys:
             row = stored.get(key)
             if row is None:

@@ -123,7 +123,9 @@ class StoredStepWriter(StepWriter):
                   "stacked_states": StackCodec.encoded(step.stack.stacked_states), "stop_refusals": step.record.counts.stop_refusals,
                   "tool_refusals": step.record.counts.tool_refusals}
         stack = row.changed(**values) if row is not None else AgentStack(session_agent_id=view.agent.agent_id, **values)
-        return self.repository.save(stack, context)
+        saved = self.repository.save_change(row, stack, context)
+        self.stacks.remember(saved)
+        return saved
 
     def open_blocks(self, plans: Sequence[BlockPlan], view: AgentView, record: DecisionRecord, context: Context) -> None:
         for plan in plans:

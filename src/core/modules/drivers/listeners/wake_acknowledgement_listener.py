@@ -30,4 +30,4 @@ class WakeAcknowledgementListener(SaveListener[Changed[HookCall]]):
             Among("state", [state.value for state in ACKNOWLEDGED_STATES])).every_row(ACTIVE_WAKES_REASON)
         for wake in wakes:
             if wake.update_timestamp().value <= context.timestamp.value:
-                self.repository.save(wake.changed(state=WakeState.ACKNOWLEDGED, acknowledged_at=context.timestamp), context)
+                self.repository.update(wake, context, state=WakeState.ACKNOWLEDGED, acknowledged_at=context.timestamp)
