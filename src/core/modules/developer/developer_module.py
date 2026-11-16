@@ -1,6 +1,7 @@
+from core.modules.developer.support.developer_dependencies import DEVELOPER_DEPENDENCIES
+from core.modules.developer.support.developer_subcommands import DEVELOPER_SUBCOMMANDS
 from core.modules.developer.windows.developer_windows import DEVELOPER_WINDOWS
 from core.modules.developer.models.declarations.private_data_mark_model_declaration import PrivateDataMarkModelDeclaration
-from core.modules.developer.commands.code_map.code_map_subcommand import CodeMapSubcommand
 from core.modules.developer.migrations.m003_private_data_mark_environment_index import PrivateDataMarkEnvironmentIndexMigration
 from core.modules.developer.commands.record_private_data_finding.record_private_data_finding_handler import RecordPrivateDataFindingHandler
 from core.modules.developer.listeners.private_data_mark_listener import PrivateDataMarkListener
@@ -11,14 +12,8 @@ from core.modules.developer.support.reader_time_tool import ReaderTimeTool
 from engine.performance.route_cost_tool import RouteCostTool
 from core.modules.developer.support.developer_route_cost_tool import DeveloperRouteCostTool
 from core.modules.developer.support.slow_tick_tool import SlowTickTool
-from core.modules.developer.commands.hook_numbers.hook_numbers_subcommand import HookNumbersSubcommand
-from core.modules.developer.commands.hook_requests.hook_requests_subcommand import HookRequestsSubcommand
-from core.modules.developer.commands.system_logs.system_logs_subcommand import SystemLogsSubcommand
-from core.modules.developer.commands.mark_motions.mark_motions_subcommand import MarkMotionsSubcommand
 from core.modules.developer.commands.record_mark_motion.record_mark_motion_handler import RecordMarkMotionHandler
-from core.modules.developer.commands.record_mark_motion.record_mark_motion_subcommand import RecordMarkMotionSubcommand
 from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_handler import ResetHookNumbersHandler
-from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_subcommand import ResetHookNumbersSubcommand
 from engine.database.request_watch import RequestWatch
 from engine.module.module import Module
 from core.modules.developer.support.reporting_request_watch import ReportingRequestWatch
@@ -36,7 +31,7 @@ class DeveloperModule(Module):
     name = "journal.core.developer"
     seed_reason = "its settings are the user's own choice"
     requires_engine = ">=5,<6"
-    dependencies = ["journal.core.settings", "journal.core.chat", "journal.core.environments", "journal.core.agents"]
+    dependencies = DEVELOPER_DEPENDENCIES
     settings = DEVELOPER_SETTINGS
     models = [PrivateDataMarkModelDeclaration]
     migrations = [PrivateDataMarkEnvironmentIndexMigration, HookRequestsMigration, PrivateDataFlagsMigration]
@@ -47,5 +42,5 @@ class DeveloperModule(Module):
     agent_messages = DEVELOPER_AGENT_MESSAGES
     bindings = {RouteCostTool: DeveloperRouteCostTool, RequestWatch: ReportingRequestWatch}
     performance_tools = [SlowTickTool, ReaderTimeTool, RouteCostTool]
-    subcommands = [SystemLogsSubcommand, HookNumbersSubcommand, HookRequestsSubcommand, ResetHookNumbersSubcommand, RecordMarkMotionSubcommand, MarkMotionsSubcommand, CodeMapSubcommand]
+    subcommands = DEVELOPER_SUBCOMMANDS
     windows = DEVELOPER_WINDOWS

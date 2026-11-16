@@ -1,0 +1,15 @@
+from core.modules.viewer.commands.allow_window.allow_window_subcommand import AllowWindowSubcommand
+from core.modules.viewer.commands.person_preset_list.person_preset_list_subcommand import PersonPresetListSubcommand
+from core.modules.viewer.commands.remove_person_preset.remove_person_preset_subcommand import RemovePersonPresetSubcommand
+from core.modules.viewer.commands.rename_person_preset.rename_person_preset_subcommand import RenamePersonPresetSubcommand
+from core.modules.viewer.commands.save_person_preset.save_person_preset_subcommand import SavePersonPresetSubcommand
+from core.modules.viewer.commands.save_viewer_layout.save_viewer_layout_subcommand import SaveViewerLayoutSubcommand
+from core.modules.viewer.commands.save_window_setting.save_window_setting_subcommand import SaveWindowSettingSubcommand
+from core.modules.viewer.commands.trust_window.trust_window_subcommand import TrustWindowSubcommand
+from core.modules.viewer.commands.viewer_layout_current.viewer_layout_current_subcommand import ViewerLayoutCurrentSubcommand
+from core.modules.viewer.commands.window_permissions.window_permissions_subcommand import WindowPermissionsSubcommand
+from core.modules.viewer.commands.window_search.window_search_subcommand import WindowSearchSubcommand
+from core.modules.viewer.commands.window_setting.window_setting_subcommand import WindowSettingSubcommand
+
+VIEWER_SUBCOMMANDS = [SaveViewerLayoutSubcommand, SavePersonPresetSubcommand, RenamePersonPresetSubcommand, RemovePersonPresetSubcommand, PersonPresetListSubcommand, ViewerLayoutCurrentSubcommand, AllowWindowSubcommand, TrustWindowSubcommand, WindowPermissionsSubcommand,
+                   SaveWindowSettingSubcommand, WindowSettingSubcommand, WindowSearchSubcommand]

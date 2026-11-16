@@ -1,0 +1,8 @@
+from core.modules.plugins.models.declarations.plugin_delivery_model_declaration import PluginDeliveryModelDeclaration
+from core.modules.plugins.models.declarations.plugin_model_declaration import PluginModelDeclaration
+from core.modules.plugins.models.declarations.plugin_output_model_declaration import PluginOutputModelDeclaration
+from core.modules.plugins.models.declarations.plugin_queue_file_model_declaration import PluginQueueFileModelDeclaration
+from core.modules.plugins.models.declarations.plugin_setting_model_declaration import PluginSettingModelDeclaration
+from core.modules.plugins.models.declarations.queued_run_model_declaration import QueuedRunModelDeclaration
+
+PLUGINS_MODELS = [QueuedRunModelDeclaration, PluginModelDeclaration, PluginSettingModelDeclaration, PluginDeliveryModelDeclaration, PluginOutputModelDeclaration, PluginQueueFileModelDeclaration]

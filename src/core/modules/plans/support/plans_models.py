@@ -1,0 +1,10 @@
+from core.modules.plans.models.declarations.checkpoint_pass_model_declaration import CheckpointPassModelDeclaration
+from core.modules.plans.models.declarations.checkpoint_reach_model_declaration import CheckpointReachModelDeclaration
+from core.modules.plans.models.declarations.phase_task_model_declaration import PhaseTaskModelDeclaration
+from core.modules.plans.models.declarations.plan_context_read_model_declaration import PlanContextReadModelDeclaration
+from core.modules.plans.models.declarations.plan_model_declaration import PlanModelDeclaration
+from core.modules.plans.models.declarations.plan_wait_model_declaration import PlanWaitModelDeclaration
+from core.modules.plans.models.phase import Phase
+from engine.module.model_declaration import ModelDeclaration
+
+PLANS_MODELS = [PlanModelDeclaration, ModelDeclaration(Phase), PhaseTaskModelDeclaration, PlanContextReadModelDeclaration, PlanWaitModelDeclaration, CheckpointReachModelDeclaration, CheckpointPassModelDeclaration]

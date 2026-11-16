@@ -1,0 +1,13 @@
+from core.modules.documents.commands.approve_plan.approve_plan_handler import ApprovePlanHandler
+from core.modules.documents.commands.close_text.close_text_handler import CloseTextHandler
+from core.modules.documents.commands.comment_text.comment_text_handler import CommentTextHandler
+from core.modules.documents.commands.edit_text.edit_text_handler import EditTextHandler
+from core.modules.documents.commands.keep_revision.keep_revision_handler import KeepRevisionHandler
+from core.modules.documents.commands.make_text.make_text_handler import MakeTextHandler
+from core.modules.documents.commands.open_doc.open_doc_handler import OpenDocHandler
+from core.modules.documents.commands.plan_context.read_plan_context_handler import ReadPlanContextHandler
+from core.modules.documents.commands.record_mentions.record_mentions_handler import RecordMentionsHandler
+from core.modules.documents.commands.record_subject_link.record_subject_link_handler import RecordSubjectLinkHandler
+from core.modules.documents.commands.remove_link.remove_link_handler import RemoveLinkHandler
+
+DOCUMENTS_HANDLERS = [ApprovePlanHandler, OpenDocHandler, RecordSubjectLinkHandler, CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler, RemoveLinkHandler, ReadPlanContextHandler]

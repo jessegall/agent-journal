@@ -1,0 +1,10 @@
+from core.modules.viewer.commands.allow_window.allow_window_handler import AllowWindowHandler
+from core.modules.viewer.commands.prune_window_permissions.prune_window_permissions_handler import PruneWindowPermissionsHandler
+from core.modules.viewer.commands.remove_person_preset.remove_person_preset_handler import RemovePersonPresetHandler
+from core.modules.viewer.commands.rename_person_preset.rename_person_preset_handler import RenamePersonPresetHandler
+from core.modules.viewer.commands.save_person_preset.save_person_preset_handler import SavePersonPresetHandler
+from core.modules.viewer.commands.save_viewer_layout.save_viewer_layout_handler import SaveViewerLayoutHandler
+from core.modules.viewer.commands.save_window_setting.save_window_setting_handler import SaveWindowSettingHandler
+from core.modules.viewer.commands.trust_window.trust_window_handler import TrustWindowHandler
+
+VIEWER_HANDLERS = [SaveViewerLayoutHandler, SavePersonPresetHandler, RenamePersonPresetHandler, RemovePersonPresetHandler, AllowWindowHandler, TrustWindowHandler, PruneWindowPermissionsHandler, SaveWindowSettingHandler]

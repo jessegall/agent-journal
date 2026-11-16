@@ -1,0 +1,9 @@
+from core.modules.mcp.commands.add_server.add_server_subcommand import AddServerSubcommand
+from core.modules.mcp.commands.give_server_key.give_server_key_subcommand import GiveServerKeySubcommand
+from core.modules.mcp.commands.install_server.install_server_subcommand import InstallServerSubcommand
+from core.modules.mcp.commands.mcp_check.mcp_check_subcommand import McpCheckSubcommand
+from core.modules.mcp.commands.mcp_list.mcp_list_subcommand import McpListSubcommand
+from core.modules.mcp.commands.mcp_suggested.mcp_suggested_subcommand import McpSuggestedSubcommand
+from core.modules.mcp.commands.remove_server.remove_server_subcommand import RemoveServerSubcommand
+
+MCP_SUBCOMMANDS = [AddServerSubcommand, McpListSubcommand, McpSuggestedSubcommand, InstallServerSubcommand, GiveServerKeySubcommand, RemoveServerSubcommand, McpCheckSubcommand]

@@ -5710,6 +5710,45 @@
       "title"
     ]
   },
+  "core.processes.output_title_request.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "closed_at",
+      "environment_id",
+      "process_id",
+      "session_agent_id"
+    ]
+  },
+  "core.processes.output_title_request.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "closed_at",
+      "environment_id",
+      "process_id",
+      "session_agent_id"
+    ]
+  },
+  "core.processes.output_title_request.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "closed_at",
+      "environment_id",
+      "process_id",
+      "session_agent_id"
+    ]
+  },
   "core.processes.process.background": {
     "forms": [
       "commit",

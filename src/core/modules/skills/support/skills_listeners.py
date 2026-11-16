@@ -1,0 +1,15 @@
+from core.modules.skills.listeners.command_skill_listener import CommandSkillListener
+from core.modules.skills.listeners.compaction_reset_listener import CompactionResetListener
+from core.modules.skills.listeners.kept_skills_listener import KeptSkillsListener
+from core.modules.skills.listeners.kept_skills_record_listener import KeptSkillsRecordListener
+from core.modules.skills.listeners.keyword_skills_listener import KeywordSkillsListener
+from core.modules.skills.listeners.skill_event_listener import SkillEventListener
+from core.modules.skills.listeners.skill_loaded_mark_listener import SkillLoadedMarkListener
+from core.modules.skills.listeners.skill_part_read_listener import SkillPartReadListener
+from core.modules.skills.listeners.skill_publish_listener import SkillPublishListener
+from core.modules.skills.listeners.skill_read_listener import SkillReadListener
+from core.modules.skills.listeners.skill_request_listener import SkillRequestListener
+from core.modules.skills.listeners.skill_request_save_listener import SkillRequestSaveListener
+from core.modules.skills.listeners.start_skills_listener import StartSkillsListener
+
+SKILLS_LISTENERS = [KeptSkillsRecordListener, SkillPublishListener, SkillReadListener, SkillPartReadListener, CommandSkillListener, KeptSkillsListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener, SkillRequestSaveListener]

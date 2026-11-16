@@ -1,0 +1,6 @@
+from core.modules.schedules.commands.end_scheduled_job.end_scheduled_job_handler import EndScheduledJobHandler
+from core.modules.schedules.commands.record_scheduled_job.record_scheduled_job_handler import RecordScheduledJobHandler
+from core.modules.schedules.commands.record_scheduled_job_run.record_scheduled_job_run_handler import RecordScheduledJobRunHandler
+from core.modules.schedules.commands.stop_scheduled_job.stop_scheduled_job_handler import StopScheduledJobHandler
+
+SCHEDULES_HANDLERS = [RecordScheduledJobHandler, RecordScheduledJobRunHandler, EndScheduledJobHandler, StopScheduledJobHandler]

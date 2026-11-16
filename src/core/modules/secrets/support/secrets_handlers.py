@@ -1,0 +1,8 @@
+from core.modules.secrets.commands.allow_program.allow_program_handler import AllowProgramHandler
+from core.modules.secrets.commands.delete_secret.delete_secret_handler import DeleteSecretHandler
+from core.modules.secrets.commands.edit_secret.edit_secret_handler import EditSecretHandler
+from core.modules.secrets.commands.fill_secret.fill_secret_handler import FillSecretHandler
+from core.modules.secrets.commands.make_secret.make_secret_handler import MakeSecretHandler
+from core.modules.secrets.commands.propose_program.propose_program_handler import ProposeProgramHandler
+
+SECRETS_HANDLERS = [MakeSecretHandler, EditSecretHandler, FillSecretHandler, ProposeProgramHandler, AllowProgramHandler, DeleteSecretHandler]

@@ -1,0 +1,11 @@
+from tunnels.tunler.commands.install_tunler.install_tunler_subcommand import InstallTunlerSubcommand
+from tunnels.tunler.commands.login_tunler.login_tunler_subcommand import LoginTunlerSubcommand
+from tunnels.tunler.commands.logout_tunler.logout_tunler_subcommand import LogoutTunlerSubcommand
+from tunnels.tunler.commands.release_tunler_domain.release_tunler_domain_subcommand import ReleaseTunlerDomainSubcommand
+from tunnels.tunler.commands.tunler_domains.tunler_domains_subcommand import TunlerDomainsSubcommand
+from tunnels.tunler.commands.tunler_status.tunler_status_subcommand import TunlerStatusSubcommand
+from tunnels.tunler.commands.tunler_version.tunler_version_subcommand import TunlerVersionSubcommand
+from tunnels.tunler.commands.update_tunler.update_tunler_subcommand import UpdateTunlerSubcommand
+
+TUNLER_SUBCOMMANDS = [TunlerStatusSubcommand, TunlerDomainsSubcommand, TunlerVersionSubcommand, LoginTunlerSubcommand, LogoutTunlerSubcommand,
+                   UpdateTunlerSubcommand, InstallTunlerSubcommand, ReleaseTunlerDomainSubcommand]

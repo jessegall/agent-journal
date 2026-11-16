@@ -1,0 +1,7 @@
+from core.modules.reviews.commands.add_reviewer.add_reviewer_handler import AddReviewerHandler
+from core.modules.reviews.commands.assign_next_review.assign_next_review_handler import AssignNextReviewHandler
+from core.modules.reviews.commands.assign_review.assign_review_handler import AssignReviewHandler
+from core.modules.reviews.commands.record_review.record_review_handler import RecordReviewHandler
+from core.modules.reviews.commands.retire_reviewer.retire_reviewer_handler import RetireReviewerHandler
+
+REVIEWS_HANDLERS = [AssignReviewHandler, RecordReviewHandler, AddReviewerHandler, RetireReviewerHandler, AssignNextReviewHandler]

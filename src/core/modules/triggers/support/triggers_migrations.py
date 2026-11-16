@@ -1,0 +1,10 @@
+from core.modules.triggers.migrations.m001_triggers import TriggersTableMigration
+from core.modules.triggers.migrations.m002_trigger_details import TriggerDetailsMigration
+from core.modules.triggers.migrations.m003_trigger_enabling import TriggerEnablingMigration
+from core.modules.triggers.migrations.m004_trigger_action_runs import TriggerActionRunsMigration
+from core.modules.triggers.migrations.m005_trigger_skill import TriggerSkillMigration
+from core.modules.triggers.migrations.m006_trigger_approval_index import TriggerApprovalIndexMigration
+from core.modules.triggers.migrations.m007_trigger_message_action import TriggerMessageActionMigration
+from core.modules.triggers.migrations.m008_requires_enabling import RequiresEnablingMigration
+
+TRIGGERS_MIGRATIONS = [RequiresEnablingMigration, TriggerMessageActionMigration, TriggersTableMigration, TriggerDetailsMigration, TriggerEnablingMigration, TriggerActionRunsMigration, TriggerSkillMigration, TriggerApprovalIndexMigration]

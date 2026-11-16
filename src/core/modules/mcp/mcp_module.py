@@ -1,17 +1,11 @@
+from core.modules.mcp.support.mcp_subcommands import MCP_SUBCOMMANDS
 from core.modules.mcp.windows.mcp_windows import MCP_WINDOWS
 from core.modules.mcp.models.declarations.mcp_server_model_declaration import McpServerModelDeclaration
 from engine.module.module import Module
 from core.modules.mcp.commands.give_server_key.give_server_key_handler import GiveServerKeyHandler
 from core.modules.mcp.commands.install_server.install_server_handler import InstallServerHandler
-from core.modules.mcp.commands.mcp_check.mcp_check_subcommand import McpCheckSubcommand
-from core.modules.mcp.commands.install_server.install_server_subcommand import InstallServerSubcommand
-from core.modules.mcp.commands.give_server_key.give_server_key_subcommand import GiveServerKeySubcommand
-from core.modules.mcp.commands.mcp_list.mcp_list_subcommand import McpListSubcommand
-from core.modules.mcp.commands.remove_server.remove_server_subcommand import RemoveServerSubcommand
-from core.modules.mcp.commands.mcp_suggested.mcp_suggested_subcommand import McpSuggestedSubcommand
 from core.modules.mcp.commands.remove_server.remove_server_handler import RemoveServerHandler
 from core.modules.mcp.commands.add_server.add_server_handler import AddServerHandler
-from core.modules.mcp.commands.add_server.add_server_subcommand import AddServerSubcommand
 from core.modules.mcp.migrations.m001_mcp_servers import McpServersTableMigration
 from core.modules.mcp.upgrade.mcp_servers_move import McpServersMove
 from core.modules.mcp.seeders.mcp_seeder import McpSeeder
@@ -30,5 +24,5 @@ class McpModule(Module):
     migrations = [McpServersTableMigration]
     moves = [McpServersMove]
     handlers = [AddServerHandler, InstallServerHandler, GiveServerKeyHandler, RemoveServerHandler]
-    subcommands = [AddServerSubcommand, McpListSubcommand, McpSuggestedSubcommand, InstallServerSubcommand, GiveServerKeySubcommand, RemoveServerSubcommand, McpCheckSubcommand]
+    subcommands = MCP_SUBCOMMANDS
     windows = MCP_WINDOWS

@@ -1,0 +1,7 @@
+from core.modules.waits.migrations.m001_waits import WaitsTablesMigration
+from core.modules.waits.migrations.m002_wait_target_wait_index import WaitTargetWaitIndexMigration
+from core.modules.waits.migrations.m003_pending_targets_index import PendingTargetsIndexMigration
+from core.modules.waits.migrations.m004_wait_session import WaitSessionMigration
+from core.modules.waits.migrations.m005_open_wait_index import OpenWaitIndexMigration
+
+WAITS_MIGRATIONS = [WaitSessionMigration, WaitsTablesMigration, WaitTargetWaitIndexMigration, PendingTargetsIndexMigration, OpenWaitIndexMigration]

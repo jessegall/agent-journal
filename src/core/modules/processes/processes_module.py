@@ -1,43 +1,19 @@
-from core.modules.processes.models.declarations.output_title_request_model_declaration import OutputTitleRequestModelDeclaration
-from core.modules.processes.migrations.m087_output_title_requests import OutputTitleRequestsMigration
-from core.modules.processes.listeners.output_title_request_listener import OutputTitleRequestListener
-from core.modules.processes.listeners.output_title_request_close_listener import OutputTitleRequestCloseListener
-from core.modules.processes.support.block_conditions.run_reported_progress import RunReportedProgress
-from core.modules.processes.lines.dock_title_lines import DockTitleLines
-from core.modules.processes.effects.runner_start_effect import RunnerStartEffect
-from core.modules.processes.lines.runner_missing_lines import RunnerMissingLines
-from core.modules.processes.policies.runner_sandbox_policy import RunnerSandboxPolicy
-from core.modules.processes.effects.reader_request_effect import ReaderRequestEffect
-from core.modules.processes.lines.reader_request_lines import ReaderRequestLines
-from core.modules.processes.lines.reading_lines import ReadingLines
-from core.modules.processes.effects.orphan_process_effect import OrphanProcessEffect
+from core.modules.processes.support.processes_effects import PROCESSES_EFFECTS
+from core.modules.processes.support.processes_policies import PROCESSES_POLICIES
+from core.modules.processes.support.processes_lines import PROCESSES_LINES
+from core.modules.processes.support.processes_tick_handlers import PROCESSES_TICK_HANDLERS
+from core.modules.processes.support.processes_block_conditions import PROCESSES_BLOCK_CONDITIONS
+from core.modules.processes.support.processes_dependencies import PROCESSES_DEPENDENCIES
+from core.modules.processes.support.processes_models import PROCESSES_MODELS
+from core.modules.processes.support.processes_migrations import PROCESSES_MIGRATIONS
+from core.modules.processes.support.processes_handlers import PROCESSES_HANDLERS
+from core.modules.processes.support.processes_subcommands import PROCESSES_SUBCOMMANDS
+from core.modules.processes.support.processes_listeners import PROCESSES_LISTENERS
+from core.modules.processes.support.processes_bindings import PROCESSES_BINDINGS
 from core.modules.processes.wake_causes.run_ended_wake import RunEndedWake
 from core.modules.processes.listeners.run_end_step_listener import RunEndStepListener
 from core.modules.processes.listeners.watch_step_listener import WatchStepListener
 from core.modules.processes.states.watched_run_states import WatchedRunStates
-from core.modules.processes.migrations.m085_process_claim import ProcessClaimMigration
-from core.modules.processes.migrations.m086_execution_class_pool import ExecutionClassPoolMigration
-from core.modules.processes.commands.claim_process.claim_process_subcommand import ClaimProcessSubcommand
-from core.modules.processes.commands.claim_process.claim_process_handler import ClaimProcessHandler
-from core.modules.processes.lines.alias_suggestion_lines import AliasSuggestionLines
-from core.modules.processes.lines.ended_output_line_lines import EndedOutputLineLines
-from core.modules.processes.lines.orphan_process_lines import OrphanProcessLines
-from core.modules.processes.lines.output_status_monitor_lines import OutputStatusMonitorLines
-from core.modules.processes.lines.read_advice_lines import ReadAdviceLines
-from core.modules.processes.lines.run_queue_halted_lines import RunQueueHaltedLines
-from core.modules.processes.lines.run_title_lines import RunTitleLines
-from core.modules.processes.lines.watch_lines_lines import WatchLinesLines
-from core.modules.processes.policies.folder_change_policy import FolderChangePolicy
-from core.modules.processes.policies.hand_made_monitor_policy import HandMadeMonitorPolicy
-from core.modules.processes.policies.journal_chain_policy import JournalChainPolicy
-from core.modules.processes.policies.journal_pipe_policy import JournalPipePolicy
-from core.modules.processes.policies.read_command_output_policy import ReadCommandOutputPolicy
-from core.modules.processes.policies.reading_policy import ReadingPolicy
-from core.modules.processes.policies.retry_loop_policy import RetryLoopPolicy
-from core.modules.processes.policies.sleep_poll_policy import SleepPollPolicy
-from core.modules.processes.effects.leftover_run_effect import LeftoverRunEffect
-from core.modules.processes.effects.long_run_dock_effect import LongRunDockEffect
-from core.modules.processes.effects.watch_lines_effect import WatchLinesEffect
 from core.modules.processes.states.long_run_dock_states import LongRunDockStates
 from core.modules.processes.states.reader_request_states import ReaderRequestStates
 from core.modules.processes.states.silent_run_block_states import SilentRunBlockStates
@@ -46,263 +22,24 @@ from core.modules.processes.windows.extensions.agents_processes_extension import
 from core.modules.processes.windows.extensions.helpers_processes_extension import HelpersProcessesExtension
 from core.modules.processes.windows.extensions.agents_lift_block_extension import AgentsLiftBlockExtension
 from core.modules.processes.windows.processes_windows import PROCESSES_WINDOWS
-from core.modules.processes.models.declarations.request_run_model_declaration import RequestRunModelDeclaration
-from core.modules.processes.models.declarations.reader_request_model_declaration import ReaderRequestModelDeclaration
-from core.modules.processes.models.declarations.process_model_declaration import ProcessModelDeclaration
-from core.modules.processes.models.declarations.process_part_model_declaration import ProcessPartModelDeclaration
-from core.modules.processes.models.declarations.output_model_declaration import OutputModelDeclaration
-from core.modules.processes.models.declarations.watch_model_declaration import WatchModelDeclaration
-from core.modules.processes.models.declarations.reader_model_declaration import ReaderModelDeclaration
-from core.modules.processes.models.declarations.reading_decision_row_model_declaration import ReadingDecisionRowModelDeclaration
-from core.modules.processes.models.declarations.command_run_count_model_declaration import CommandRunCountModelDeclaration
-from core.modules.processes.models.declarations.unreadable_mark_model_declaration import UnreadableMarkModelDeclaration
-from core.modules.processes.models.declarations.execution_class_row_model_declaration import ExecutionClassRowModelDeclaration
 from core.modules.processes.docks.processes_docks import PROCESSES_DOCKS
 from core.modules.processes.skills.declarations.processes_skills import PROCESSES_SKILLS
-from core.modules.processes.commands.list_execution_classes.list_lanes_subcommand import ListLanesSubcommand
-from core.modules.processes.commands.choose_execution_preset.choose_execution_preset_handler import ChooseExecutionPresetHandler
-from core.modules.processes.commands.choose_execution_preset.choose_execution_preset_subcommand import ChooseExecutionPresetSubcommand
-from core.modules.processes.commands.choose_execution_preset.list_execution_presets_subcommand import ListExecutionPresetsSubcommand
-from core.modules.processes.commands.save_execution_class.save_execution_class_handler import SaveExecutionClassHandler
-from core.modules.processes.commands.save_execution_class.set_execution_class_subcommand import SetExecutionClassSubcommand
-from core.modules.processes.commands.save_execution_class.add_execution_class_subcommand import AddExecutionClassSubcommand
-from core.modules.processes.commands.remove_execution_class.remove_execution_class_handler import RemoveExecutionClassHandler
-from core.modules.processes.commands.remove_execution_class.remove_execution_class_subcommand import RemoveExecutionClassSubcommand
-from core.modules.processes.commands.remove_execution_class.reset_execution_class_subcommand import ResetExecutionClassSubcommand
-from core.modules.processes.commands.list_execution_classes.list_execution_classes_subcommand import ListExecutionClassesSubcommand
-from core.modules.processes.commands.list_execution_classes.show_execution_class_subcommand import ShowExecutionClassSubcommand
-from core.modules.processes.commands.list_execution_classes.preview_execution_class_subcommand import PreviewExecutionClassSubcommand
-from core.modules.processes.migrations.m076_reading_phase_terms import ReadingPhaseTermsMigration
-from core.modules.processes.migrations.m077_dropped_process_shell import DroppedProcessShellMigration
-from core.modules.processes.migrations.m079_execution_columns import ExecutionColumnsMigration
-from core.modules.processes.migrations.m080_execution_classes import ExecutionClassesMigration
-from core.modules.processes.migrations.m081_long_lane_capacity import LongPoolCapacityMigration
-from core.modules.processes.migrations.m082_removed_run_batch_size import RemovedRunBatchSizeMigration
-from core.modules.processes.support.stored_execution_classes import StoredExecutionClasses
-from engine.execution.classes.person_classes import PersonClasses
-from core.modules.processes.migrations.m078_process_execution_priority import ProcessExecutionPriorityMigration
-from core.modules.processes.migrations.m075_process_run_names import ProcessRunNamesMigration
-from core.modules.processes.migrations.m074_open_reader_request_index import OpenReaderRequestIndexMigration
-from core.modules.processes.migrations.m072_process_hook_call_index import ProcessHookCallIndexMigration
-from core.modules.processes.migrations.m067_request_runs import RequestRunsMigration
-from engine.process.door.run_placement import RunPlacement
-from engine.process.door.run_pauses import RunPauses
-from engine.process.door.request_records import RequestRecords
-from core.modules.processes.support.process_row_wrapper import ProcessRowWrapper
-from core.modules.processes.commands.record_request_run.record_request_run_handler import RecordRequestRunHandler
-from core.modules.processes.commands.record_request_runs.record_request_runs_handler import RecordRequestRunsHandler
-from core.modules.processes.bindings.process_run_placement import ProcessRunPlacement
-from core.modules.processes.support.agent_run_pauses import AgentRunPauses
-from core.modules.processes.migrations.m065_environment_index import ReadersEnvironmentIndexMigration
-from core.modules.processes.migrations.m066_process_kind import ProcessTypeColumnMigration
-from core.modules.processes.migrations.m069_stock_digest import StockDigestMigration
-from core.modules.processes.migrations.m062_watch_agent_index import WatchAgentIndexMigration
-from core.modules.processes.listeners.ended_run_line_listener import EndedRunLineListener
-from engine.driver.run_owners import RunOwners
-from core.modules.processes.support.process_run_owners import ProcessRunOwners
-from core.modules.processes.support.process_wait_targets import ProcessWaitTargets
-from core.modules.waits.support.wait_targets import WaitTargets
-from core.modules.processes.listeners.full_output_read_listener import FullOutputReadListener
-from core.modules.processes.migrations.m057_output_full_read import OutputFullReadMigration
-from core.modules.processes.migrations.m058_process_plugin import ProcessPluginMigration
-from core.modules.processes.migrations.m059_watch_confirm import WatchConfirmMigration
-from core.modules.processes.migrations.m056_output_creator_index import OutputCreatorIndexMigration
-from core.modules.processes.migrations.m050_process_session import ProcessSessionMigration
-from core.modules.processes.migrations.m041_reader_use_indexes import ReaderUseIndexesMigration
-from core.modules.processes.migrations.m043_reader_sample_index import ReaderSampleIndexMigration
-from core.modules.processes.migrations.m047_go_selected_test_counts import GoSelectedTestCountsMigration
-from core.modules.processes.migrations.m049_pytest_listing_counts import PytestListingCountsMigration
-from core.modules.processes.migrations.m039_watch_read_index import WatchReadIndexMigration
-from core.modules.processes.listeners.stock_readers_publish_listener import StockReadersPublishListener
-from core.modules.processes.commands.record_sandbox.record_sandbox_handler import RecordSandboxHandler
-from core.modules.processes.commands.record_sandbox.record_sandbox_subcommand import RecordSandboxSubcommand
-from core.modules.processes.migrations.m048_process_sandbox import ProcessSandboxMigration
-from core.modules.processes.commands.update_stock_readers.update_stock_readers_handler import UpdateStockReadersHandler
-from core.modules.processes.commands.send_readers_notice.send_readers_notice_handler import SendReadersNoticeHandler
-from core.modules.processes.listeners.start_readers_listener import StartReadersListener
-from core.modules.processes.commands.make_reader_draft.make_reader_draft_handler import MakeReaderDraftHandler
-from core.modules.processes.commands.make_reader_draft.make_reader_draft_subcommand import MakeReaderDraftSubcommand
-from core.modules.processes.commands.send_reader_request_notice.send_reader_request_notice_handler import SendReaderRequestNoticeHandler
-from core.modules.processes.commands.skip_reader_request.skip_reader_request_handler import SkipReaderRequestHandler
-from core.modules.processes.commands.skip_reader_request.skip_reader_request_subcommand import SkipReaderRequestSubcommand
-from core.modules.processes.migrations.m027_reader_request_chat_history import ReaderRequestChatHistoryMigration
-from core.modules.processes.migrations.m029_stock_test_titles import StockTestTitlesMigration
-from core.modules.processes.migrations.m031_stock_reader_defaults import StockReaderDefaultsMigration
-from core.modules.processes.listeners.reader_failure_listener import ReaderFailureListener
-from core.modules.processes.listeners.end_decision_listener import EndDecisionListener
-from core.modules.processes.commands.send_reading_notices.send_reading_notices_handler import SendReadingNoticesHandler
-from core.modules.processes.commands.store_end_decisions.store_end_decisions_handler import StoreEndDecisionsHandler
-from core.modules.processes.migrations.m022_reader_requests import ReaderRequestsMigration
-from core.modules.processes.support.block_conditions.reader_request_completed import ReaderRequestCompleted
-from core.modules.processes.listeners.reader_block_listener import ReaderBlockListener
-from core.modules.processes.listeners.reader_run_count_reset_listener import ReaderRunCountResetListener
-from core.modules.processes.listeners.unreadable_mark_run_count_reset_listener import UnreadableMarkRunCountResetListener
-from core.modules.processes.listeners.reader_request_complete_listener import ReaderRequestCompleteListener
-from core.modules.processes.listeners.booted_runs_listener import BootedRunsListener
-from core.modules.processes.commands.grant_run_slots.grant_run_slots_handler import GrantRunSlotsHandler
-from core.modules.processes.commands.halt_run_queue.halt_run_queue_handler import HaltRunQueueHandler
-from core.modules.processes.commands.halt_run_queue.halt_run_queue_subcommand import HaltRunQueueSubcommand
-from core.modules.processes.commands.resume_run_queue.resume_run_queue_handler import ResumeRunQueueHandler
-from core.modules.processes.commands.resume_run_queue.resume_run_queue_subcommand import ResumeRunQueueSubcommand
-from core.modules.processes.listeners.waiting_message_run_listener import WaitingMessageRunListener
 from core.modules.processes.support.process_agent_messages import PROCESS_AGENT_MESSAGES
-from engine.driver.watched_runs import WatchedRuns
-from core.modules.processes.support.monitored_runs import MonitoredRuns
 from engine.module.module import Module
 from core.modules.processes.upgrade.processes_move import ProcessesMove
-from core.modules.processes.commands.end_process.end_process_handler import EndProcessHandler
-from core.modules.processes.commands.end_process_part.end_process_part_handler import EndProcessPartHandler
-from core.modules.processes.commands.end_process_part.end_process_part_subcommand import EndProcessPartSubcommand
-from core.modules.processes.commands.start_process_part.start_process_part_handler import StartProcessPartHandler
-from core.modules.processes.commands.start_process_part.start_process_part_subcommand import StartProcessPartSubcommand
-from core.modules.processes.commands.end_process.end_process_subcommand import EndProcessSubcommand
-from core.modules.processes.commands.page_output.page_output_subcommand import PageOutputSubcommand
-from core.modules.processes.commands.page_output.hook_output_page_subcommand import HookOutputPageSubcommand
-from core.modules.processes.commands.peek_output.peek_output_subcommand import PeekOutputSubcommand
-from core.modules.processes.commands.read_output.read_output_handler import ReadOutputHandler
-from core.modules.processes.commands.read_output.read_output_subcommand import ReadOutputSubcommand
-from core.modules.processes.commands.show_output_status.show_output_status_subcommand import ShowOutputStatusSubcommand
-from core.modules.processes.commands.record_given_percent.record_given_percent_handler import RecordGivenPercentHandler
-from core.modules.processes.commands.request_reader.request_reader_handler import RequestReaderHandler
-from core.modules.processes.commands.request_count_reader.request_count_reader_handler import RequestCountReaderHandler
-from core.modules.processes.commands.request_reader.request_reader_subcommand import RequestReaderSubcommand
-from core.modules.processes.commands.unwatch_output.unwatch_output_handler import UnwatchOutputHandler
-from core.modules.processes.commands.unwatch_output.unwatch_output_subcommand import UnwatchOutputSubcommand
-from core.modules.processes.commands.watch_output.watch_output_handler import WatchOutputHandler
-from core.modules.processes.commands.watch_output.watch_output_subcommand import WatchOutputSubcommand
-from core.modules.processes.listeners.background_run_watch_listener import BackgroundRunWatchListener
-from core.modules.processes.listeners.ended_process_watch_listener import EndedProcessWatchListener
-from core.modules.processes.listeners.reader_proof_listener import ReaderProofListener
-from core.modules.processes.commands.prune_processes.prune_processes_handler import PruneProcessesHandler
-from core.modules.processes.listeners.process_prune_listener import ProcessPruneListener
-from core.modules.processes.listeners.process_removal_listener import ProcessRemovalListener
-from core.modules.processes.listeners.process_folder_removal_listener import ProcessFolderRemovalListener
-from core.modules.processes.listeners.run_slot_listener import RunSlotListener
-from core.modules.processes.listeners.process_end_mark_listener import ProcessEndMarkListener
-from core.modules.processes.listeners.process_part_start_mark_listener import ProcessPartStartMarkListener
-from core.modules.processes.listeners.process_move_mark_listener import ProcessMoveMarkListener
-from core.modules.processes.commands.process_list.process_list_subcommand import ProcessListSubcommand
-from core.modules.processes.listeners.process_output_mark_listener import ProcessOutputMarkListener
 from core.modules.processes.marks.process_command_mark import ProcessCommandMark
-from core.modules.processes.commands.read_new_output.read_new_output_handler import ReadNewOutputHandler
-from core.modules.processes.listeners.ended_agent_runs_listener import EndedAgentRunsListener
-from core.modules.processes.migrations.m010_runs_of_ended_agents import EndedAgentRunsMigration
-from core.modules.processes.migrations.m012_vitest_reader_commands import VitestReaderCommandsMigration
-from core.modules.processes.listeners.orphaned_process_kill_listener import OrphanedProcessKillListener
-from core.modules.processes.listeners.stopped_process_output_listener import StoppedProcessOutputListener
-from core.modules.processes.migrations.m004_output_readers import OutputReadersMigration
-from core.modules.processes.migrations.m005_reader_plugins import ReaderPluginsMigration
-from core.modules.processes.migrations.m008_reader_steps_and_titles import ReaderStepsAndTitlesMigration
-from core.modules.processes.commands.process_card.process_card_subcommand import ProcessCardSubcommand
-from core.modules.processes.commands.process_feed.process_feed_subcommand import ProcessFeedSubcommand
 from core.modules.processes.models.process_row import ProcessRow
-from core.modules.processes.commands.title_output.title_output_handler import TitleOutputHandler
-from core.modules.processes.commands.title_output.title_output_subcommand import TitleOutputSubcommand
-from core.modules.processes.listeners.active_tests_marker_listener import ActiveTestsMarkerListener
-from core.modules.processes.listeners.process_output_listener import ProcessOutputListener
 from core.modules.processes.guards.ended_process_dock_guard import EndedProcessDockGuard
 from core.modules.processes.guards.run_owner_parts_guard import RunOwnerPartsGuard
 from core.modules.processes.guards.run_owner_reports_guard import RunOwnerReportsGuard
-from core.modules.processes.commands.start_process.start_process_handler import StartProcessHandler
-from core.modules.processes.commands.stop_process.stop_process_handler import StopProcessHandler
-from core.modules.processes.commands.stop_process.stop_process_subcommand import StopProcessSubcommand
-from core.modules.processes.commands.add_reader.add_reader_handler import AddReaderHandler
-from core.modules.processes.commands.add_reader.add_reader_subcommand import AddReaderSubcommand
-from core.modules.processes.commands.choose_default_reader.choose_default_reader_handler import ChooseDefaultReaderHandler
-from core.modules.processes.commands.choose_default_reader.choose_default_reader_subcommand import ChooseDefaultReaderSubcommand
-from core.modules.processes.commands.mark_unreadable.mark_unreadable_handler import MarkUnreadableHandler
-from core.modules.processes.commands.release_block.release_block_handler import ReleaseBlockHandler
-from core.modules.processes.commands.release_block.release_block_subcommand import ReleaseBlockSubcommand
-from core.modules.processes.commands.list_blocks.list_blocks_subcommand import ListBlocksSubcommand
-from core.modules.processes.commands.mark_run_unreadable.mark_run_unreadable_handler import MarkRunUnreadableHandler
-from core.modules.processes.commands.mark_run_unreadable.mark_run_unreadable_subcommand import MarkRunUnreadableSubcommand
-from core.modules.processes.commands.lift_run_unreadable.lift_run_unreadable_handler import LiftRunUnreadableHandler
-from core.modules.processes.commands.lift_run_unreadable.lift_run_unreadable_subcommand import LiftRunUnreadableSubcommand
-from core.modules.processes.commands.mark_unreadable.mark_unreadable_subcommand import MarkUnreadableSubcommand
-from core.modules.processes.commands.lift_unreadable.lift_unreadable_handler import LiftUnreadableHandler
-from core.modules.processes.commands.lift_unreadable.lift_unreadable_subcommand import LiftUnreadableSubcommand
-from core.modules.processes.commands.remove_reader.remove_reader_handler import RemoveReaderHandler
-from core.modules.processes.commands.remove_reader.remove_reader_subcommand import RemoveReaderSubcommand
 from core.modules.processes.guards.reader_owner_guard import ReaderOwnerGuard
-from core.modules.processes.migrations.m002_readers import ReadersTableMigration
-from core.modules.processes.migrations.m003_stock_readers import StockReadersMigration
-from core.modules.processes.migrations.m006_watch_percent import WatchPercentMigration
-from core.modules.processes.migrations.m007_process_state_index import ProcessStateIndexMigration
-from core.modules.processes.migrations.m009_process_part_category import ProcessPartCategoryMigration
-from core.modules.processes.migrations.m011_process_full_test_run import ProcessFullTestRunMigration
-from core.modules.processes.migrations.m013_process_queue import ProcessQueueMigration
-from core.modules.processes.migrations.m014_output_reader_position import OutputReaderPositionMigration
-from core.modules.processes.migrations.m015_process_part_text_index import ProcessPartTextIndexMigration
-from core.modules.processes.migrations.m016_hot_query_indexes import ProcessHotQueryIndexesMigration
-from core.modules.processes.migrations.m018_process_part_command import ProcessPartCommandMigration
-from core.modules.processes.migrations.m019_reader_test_counts import ReaderTestCountsMigration
-from core.modules.processes.migrations.m020_output_test_count import OutputTestCountMigration
-from core.modules.processes.migrations.m021_stock_reader_test_counts import StockReaderTestCountsMigration
-from core.modules.processes.migrations.m052_test_reader_progress import TestReaderProgressMigration
-from core.modules.processes.migrations.m053_output_seen_offset import OutputReadPositionMigration
-from core.modules.processes.migrations.m054_vitest_listing_counts import VitestListingCountsMigration
-from core.modules.processes.migrations.m055_vitest_summary_counts import VitestSummaryCountsMigration
-from core.modules.processes.migrations.m046_selected_test_counts import SelectedTestCountsMigration
-from core.modules.processes.migrations.m017_queue_membership import QueueMembershipMigration
-from core.modules.processes.commands.list_run_queue.list_run_queue_subcommand import ListRunQueueSubcommand
-from core.modules.processes.commands.inspect_run_queue.inspect_run_queue_subcommand import InspectRunQueueSubcommand
 from core.modules.processes.models.process_queue_row import ProcessQueueRow
-from core.modules.processes.migrations.m035_process_queued_at import ProcessQueueTimestampMigration
-from core.modules.processes.migrations.m036_process_timeouts import ProcessTimeoutMigration
-from core.modules.processes.commands.set_output_timeout.set_output_timeout_handler import SetOutputTimeoutHandler
-from core.modules.processes.commands.set_output_timeout.set_output_timeout_subcommand import SetOutputTimeoutSubcommand
-from core.modules.processes.commands.stop_timed_process.stop_timed_process_handler import StopTimedProcessHandler
-from core.modules.processes.commands.warn_cadence.warn_cadence_handler import WarnCadenceHandler
-from core.modules.processes.commands.request_output_check.request_output_check_handler import RequestOutputCheckHandler
-from core.modules.processes.commands.stop_hung_process.stop_hung_process_handler import StopHungProcessHandler
-from core.modules.processes.commands.check_output.check_output_handler import CheckOutputHandler
-from core.modules.processes.commands.confirm_output.confirm_output_handler import ConfirmOutputHandler
-from core.modules.processes.commands.confirm_output.confirm_output_subcommand import ConfirmOutputSubcommand
-from core.modules.processes.migrations.m023_process_admission import ProcessStartCheckMigration
-from core.modules.processes.migrations.m024_process_work import ProcessWorkMigration
-from core.modules.processes.migrations.m025_stock_reader_summaries import StockReaderSummariesMigration
-from core.modules.processes.migrations.m030_stock_reader_catalog import StockReaderCatalogMigration
-from core.modules.processes.migrations.m026_process_queue_indexes import ProcessQueueIndexesMigration
-from core.modules.processes.migrations.m028_process_part_visibility import ProcessPartVisibilityMigration
-from core.modules.processes.migrations.m032_process_owner import ProcessOwnerMigration
-from core.modules.processes.migrations.m033_process_end_index import ProcessEndIndexMigration
-from core.modules.processes.migrations.m034_more_stock_readers import MoreStockReadersMigration
-from core.modules.processes.migrations.m040_reader_request_owner import ReaderRequestOwnerMigration
-from core.modules.processes.migrations.m038_output_end_name import OutputEndNameMigration
-from core.modules.processes.migrations.m042_process_queue_visibility import ProcessQueueVisibilityMigration
-from core.modules.processes.migrations.m037_more_tool_stock_readers import MoreToolStockReadersMigration
-from core.modules.processes.migrations.m001_processes import ProcessesTablesMigration
-from core.modules.processes.migrations.m051_reader_request_environment_index import ReaderRequestEnvironmentIndexMigration
-from core.modules.processes.migrations.m060_plain_column_names import PlainColumnNamesMigration
-from core.modules.processes.migrations.m061_process_session_state_index import ProcessSessionStateIndexMigration
-from core.modules.processes.migrations.m063_reading_decisions import ReadingDecisionsMigration
-from core.modules.processes.migrations.m064_unreadable_marks import UnreadableMarkTableMigration
-from core.modules.processes.migrations.m068_request_run_age_index import RequestRunAgeIndexMigration
-from core.modules.processes.migrations.m070_request_run_end_index import RequestRunEndIndexMigration
-from core.modules.processes.migrations.m071_process_priority import ProcessPriorityMigration
-from core.modules.processes.migrations.m073_command_run_counts import CommandRunCountsMigration
 from core.modules.processes.models.enums.process_setting import PROCESS_SETTINGS
 from core.modules.processes.seeders.processes_seeder import ProcessesSeeder
-from core.modules.processes.support.block_conditions.output_ended import OutputEnded
-from core.modules.processes.support.block_conditions.output_monitored import OutputMonitored
-from core.modules.processes.support.block_conditions.output_read import OutputRead
-from core.modules.processes.migrations.m083_stale_output_blocks import StaleOutputBlocksMigration
-from core.modules.processes.migrations.m084_output_last_read import OutputLastReadMigration
-from core.modules.processes.support.block_conditions.output_titled import OutputTitled
-from core.modules.processes.support.block_conditions.output_read_during_block import OutputReadDuringBlock
 
 
 
 from core.modules.processes.inspectors.queue_inspector import QueueInspector
-from core.modules.processes.tick_handlers.output_reading_tick_handler import OutputReadingTickHandler
-from core.modules.processes.tick_handlers.run_slot_grant_tick_handler import RunSlotGrantTickHandler
-from core.modules.processes.tick_handlers.run_timeouts_tick_handler import RunTimeoutsTickHandler
-from core.modules.processes.tick_handlers.hang_watch_tick_handler import HangWatchTickHandler
-from core.modules.processes.tick_handlers.cadence_watch_tick_handler import CadenceWatchTickHandler
-from core.modules.processes.tick_handlers.output_checks_tick_handler import OutputChecksTickHandler
-from core.modules.processes.tick_handlers.run_end_recovery_tick_handler import RunEndRecoveryTickHandler
-from core.modules.processes.tick_handlers.process_pruning_tick_handler import ProcessPruningTickHandler
-from core.modules.processes.tick_handlers.request_log_import_tick_handler import RequestLogImportTickHandler
 
 
 class ProcessesModule(Module):
@@ -312,30 +49,27 @@ class ProcessesModule(Module):
     name = "journal.core.processes"
     agent_listeners = [RunEndStepListener, WatchStepListener]
     states = [WatchedRunStates, LongRunDockStates, ReaderRequestStates, SilentRunBlockStates]
-    effects = [LeftoverRunEffect, LongRunDockEffect, OrphanProcessEffect, ReaderRequestEffect, RunnerStartEffect, WatchLinesEffect]
-    policies = [FolderChangePolicy, HandMadeMonitorPolicy, JournalChainPolicy, JournalPipePolicy, ReadCommandOutputPolicy, ReadingPolicy, RetryLoopPolicy, RunnerSandboxPolicy, SleepPollPolicy]
-    lines = [AliasSuggestionLines, DockTitleLines, EndedOutputLineLines, OrphanProcessLines, OutputStatusMonitorLines, ReadAdviceLines, ReaderRequestLines, ReadingLines, RunnerMissingLines, RunQueueHaltedLines, RunTitleLines, WatchLinesLines]
+    effects = PROCESSES_EFFECTS
+    policies = PROCESSES_POLICIES
+    lines = PROCESSES_LINES
     agent_messages = PROCESS_AGENT_MESSAGES
-    tick_handlers = [OutputReadingTickHandler, RunSlotGrantTickHandler,
-                     RunTimeoutsTickHandler, HangWatchTickHandler, CadenceWatchTickHandler, OutputChecksTickHandler,
-                     RunEndRecoveryTickHandler,
-                     ProcessPruningTickHandler, RequestLogImportTickHandler]
+    tick_handlers = PROCESSES_TICK_HANDLERS
     skills = PROCESSES_SKILLS
     requires_engine = ">=5,<6"
-    block_conditions = [ReaderRequestCompleted, OutputEnded, OutputRead, OutputTitled, OutputReadDuringBlock, OutputMonitored, RunReportedProgress]
+    block_conditions = PROCESSES_BLOCK_CONDITIONS
     settings = PROCESS_SETTINGS
     moves = [ProcessesMove]
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits", "journal.core.messages", "journal.core.chat", "journal.core.docking", "journal.core.tasks", "journal.core.settings", "journal.core.developer", "journal.core.assignments"]
-    models = [OutputTitleRequestModelDeclaration, RequestRunModelDeclaration, ReaderRequestModelDeclaration, ProcessModelDeclaration, ProcessPartModelDeclaration, OutputModelDeclaration, WatchModelDeclaration, ReaderModelDeclaration, ReadingDecisionRowModelDeclaration, CommandRunCountModelDeclaration, UnreadableMarkModelDeclaration, ExecutionClassRowModelDeclaration]
+    dependencies = PROCESSES_DEPENDENCIES
+    models = PROCESSES_MODELS
     views = [ProcessRow, ProcessQueueRow]
-    migrations = [OutputTitleRequestsMigration, ExecutionClassPoolMigration, ProcessClaimMigration, CommandRunCountsMigration, OpenReaderRequestIndexMigration, ProcessHookCallIndexMigration, RequestRunAgeIndexMigration, RequestRunEndIndexMigration, ProcessPriorityMigration, RequestRunsMigration, ReadingDecisionsMigration, WatchAgentIndexMigration, ProcessSessionStateIndexMigration, PlainColumnNamesMigration, WatchConfirmMigration, ProcessPluginMigration, OutputFullReadMigration, OutputCreatorIndexMigration, VitestSummaryCountsMigration, VitestListingCountsMigration, OutputReadPositionMigration, TestReaderProgressMigration, ProcessSessionMigration, PytestListingCountsMigration, GoSelectedTestCountsMigration, SelectedTestCountsMigration, ProcessSandboxMigration, ReaderUseIndexesMigration, ReaderSampleIndexMigration, WatchReadIndexMigration, ReaderRequestOwnerMigration, ProcessQueueVisibilityMigration, OutputEndNameMigration, MoreToolStockReadersMigration, ProcessTimeoutMigration, ProcessQueueTimestampMigration, MoreStockReadersMigration, ProcessEndIndexMigration, ProcessOwnerMigration, StockReaderDefaultsMigration, StockReaderCatalogMigration, StockTestTitlesMigration, ProcessPartVisibilityMigration, ReaderRequestChatHistoryMigration, ProcessQueueIndexesMigration, StockReaderSummariesMigration, ProcessWorkMigration, ProcessStartCheckMigration, ReaderRequestsMigration, ReaderTestCountsMigration, OutputTestCountMigration, StockReaderTestCountsMigration, ProcessPartCommandMigration, QueueMembershipMigration, ProcessHotQueryIndexesMigration, ProcessPartTextIndexMigration, OutputReaderPositionMigration, ProcessQueueMigration, VitestReaderCommandsMigration, ProcessFullTestRunMigration, EndedAgentRunsMigration, ReaderStepsAndTitlesMigration, ProcessesTablesMigration, ReadersTableMigration, StockReadersMigration, OutputReadersMigration, ReaderPluginsMigration, WatchPercentMigration, ProcessStateIndexMigration, ProcessPartCategoryMigration, ReaderRequestEnvironmentIndexMigration, ReadersEnvironmentIndexMigration, ProcessTypeColumnMigration, StockDigestMigration, UnreadableMarkTableMigration, ProcessRunNamesMigration, ReadingPhaseTermsMigration, DroppedProcessShellMigration, ProcessExecutionPriorityMigration, ExecutionColumnsMigration, ExecutionClassesMigration, LongPoolCapacityMigration, RemovedRunBatchSizeMigration, StaleOutputBlocksMigration, OutputLastReadMigration]
-    handlers = [ClaimProcessHandler, ChooseExecutionPresetHandler, SaveExecutionClassHandler, RemoveExecutionClassHandler, WarnCadenceHandler, StoreEndDecisionsHandler, RequestReaderHandler, CheckOutputHandler, ConfirmOutputHandler, RecordSandboxHandler, UpdateStockReadersHandler, SetOutputTimeoutHandler, StopTimedProcessHandler, RequestOutputCheckHandler, StopHungProcessHandler, PruneProcessesHandler, SendReadersNoticeHandler, MakeReaderDraftHandler, SendReaderRequestNoticeHandler, SkipReaderRequestHandler, TitleOutputHandler, StartProcessHandler, StartProcessPartHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, RecordGivenPercentHandler, ReadNewOutputHandler, GrantRunSlotsHandler, HaltRunQueueHandler, ResumeRunQueueHandler, RecordRequestRunHandler, RecordRequestRunsHandler, ReleaseBlockHandler, MarkRunUnreadableHandler, LiftRunUnreadableHandler, MarkUnreadableHandler, LiftUnreadableHandler, SendReadingNoticesHandler, RequestCountReaderHandler]
-    subcommands = [ClaimProcessSubcommand, ListLanesSubcommand, ChooseExecutionPresetSubcommand, ListExecutionPresetsSubcommand, SetExecutionClassSubcommand, AddExecutionClassSubcommand, RemoveExecutionClassSubcommand, ResetExecutionClassSubcommand, ListExecutionClassesSubcommand, ShowExecutionClassSubcommand, PreviewExecutionClassSubcommand, RequestReaderSubcommand, ConfirmOutputSubcommand, RecordSandboxSubcommand, SetOutputTimeoutSubcommand, PageOutputSubcommand, HookOutputPageSubcommand, InspectRunQueueSubcommand, MakeReaderDraftSubcommand, SkipReaderRequestSubcommand, ListRunQueueSubcommand, ProcessFeedSubcommand, ProcessCardSubcommand, TitleOutputSubcommand, StopProcessSubcommand, EndProcessSubcommand, StartProcessPartSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand, HaltRunQueueSubcommand, ResumeRunQueueSubcommand, ProcessListSubcommand, ListBlocksSubcommand, ReleaseBlockSubcommand, MarkRunUnreadableSubcommand, LiftRunUnreadableSubcommand, MarkUnreadableSubcommand, LiftUnreadableSubcommand]
+    migrations = PROCESSES_MIGRATIONS
+    handlers = PROCESSES_HANDLERS
+    subcommands = PROCESSES_SUBCOMMANDS
     guards = [RunOwnerReportsGuard, RunOwnerPartsGuard, ReaderOwnerGuard, EndedProcessDockGuard]
-    listeners = [OutputTitleRequestListener, OutputTitleRequestCloseListener, BootedRunsListener, ReaderRunCountResetListener, UnreadableMarkRunCountResetListener, EndDecisionListener, EndedRunLineListener, FullOutputReadListener, StockReadersPublishListener, StartReadersListener, ReaderFailureListener, ReaderBlockListener, ReaderRequestCompleteListener, ProcessFolderRemovalListener, RunSlotListener, ActiveTestsMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, ReaderProofListener, ProcessPruneListener, ProcessRemovalListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, ProcessPartStartMarkListener, ProcessMoveMarkListener, ProcessOutputMarkListener, ProcessOutputListener]
+    listeners = PROCESSES_LISTENERS
     wake_causes = [RunEndedWake]
     marks = [ProcessCommandMark]
-    bindings = {WatchedRuns: MonitoredRuns, WaitTargets: ProcessWaitTargets, RunOwners: ProcessRunOwners, RunPlacement: ProcessRunPlacement, RunPauses: AgentRunPauses, RequestRecords: ProcessRowWrapper, PersonClasses: StoredExecutionClasses}
+    bindings = PROCESSES_BINDINGS
     docks = PROCESSES_DOCKS
     window_extensions = [AgentsProcessesExtension, HelpersProcessesExtension, AgentsLiftBlockExtension]
     windows = PROCESSES_WINDOWS

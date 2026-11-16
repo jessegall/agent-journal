@@ -1,0 +1,7 @@
+from core.modules.aliases.commands.add_alias.add_alias_subcommand import AddAliasSubcommand
+from core.modules.aliases.commands.edit_alias.edit_alias_subcommand import EditAliasSubcommand
+from core.modules.aliases.commands.remove_alias.remove_alias_subcommand import RemoveAliasSubcommand
+from core.modules.aliases.commands.skip_saved_command.skip_saved_command_subcommand import SkipSavedCommandSubcommand
+from core.modules.aliases.commands.support.alias_saved_subcommand import AliasSavedSubcommand
+
+ALIASES_SUBCOMMANDS = [AliasSavedSubcommand, AddAliasSubcommand, EditAliasSubcommand, RemoveAliasSubcommand, SkipSavedCommandSubcommand]

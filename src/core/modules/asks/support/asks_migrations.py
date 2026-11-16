@@ -1,0 +1,7 @@
+from core.modules.asks.migrations.m001_asks import AsksTablesMigration
+from core.modules.asks.migrations.m002_ask_stacks import AskStacksTableMigration
+from core.modules.asks.migrations.m003_ask_setting_keys import AskSettingKeysMigration
+from core.modules.asks.migrations.m004_environment_indexes import AsksEnvironmentIndexesMigration
+from core.modules.asks.migrations.m005_plain_field_names import AsksPlainFieldNamesMigration
+
+ASKS_MIGRATIONS = [AsksTablesMigration, AskStacksTableMigration, AskSettingKeysMigration, AsksEnvironmentIndexesMigration, AsksPlainFieldNamesMigration]

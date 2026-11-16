@@ -1,40 +1,13 @@
+from core.modules.settings.support.settings_migrations import SETTINGS_MIGRATIONS
+from core.modules.settings.support.settings_handlers import SETTINGS_HANDLERS
+from core.modules.settings.support.settings_subcommands import SETTINGS_SUBCOMMANDS
+from core.modules.settings.support.settings_bindings import SETTINGS_BINDINGS
 from core.modules.settings.windows.settings_windows import SETTINGS_WINDOWS
 from core.modules.settings.models.declarations.setting_model_declaration import SettingModelDeclaration
 from core.modules.settings.models.declarations.secret_setting_model_declaration import SecretSettingModelDeclaration
-from core.modules.settings.migrations.m004_agent_message_keys import AgentMessageKeysMigration
-from core.modules.settings.migrations.m005_timed_job_setting_key import TimedJobSettingKeyMigration
-from core.modules.settings.migrations.m006_helper_idle_retirement import HelperIdleRetirementMigration
-from core.modules.settings.migrations.m003_helper_driver_key import HelperDriverKeyMigration
-from engine.guard.guard_switches import GuardSwitches
-from core.modules.settings.migrations.m001_settings import SettingsTableMigration
-from core.modules.settings.bindings.reader_setting_source import ReaderSettingSource
-from core.modules.settings.bindings.setting_guard_switches import SettingGuardSwitches
-from engine.setting.setting_source import SettingSource
 from engine.module.module import Module
-from engine.module.sync_notes import SyncNotes
 from core.modules.settings.guards.person_set_setting_guard import PersonSetSettingGuard
 from core.modules.settings.listeners.setting_rows_listener import SettingRowsListener
-from core.modules.settings.support.undeclared_setting_notes import UndeclaredSettingNotes
-from core.modules.settings.migrations.m002_secret_settings import SecretSettingsTableMigration
-from core.modules.settings.commands.set_setting.set_setting_handler import SetSettingHandler
-from core.modules.settings.commands.set_setting.set_setting_subcommand import SetSettingSubcommand
-from core.modules.settings.commands.set_managed_hook.set_managed_hook_handler import SetManagedHookHandler
-from core.modules.settings.commands.set_managed_hook.set_managed_hook_subcommand import SetManagedHookSubcommand
-from core.modules.settings.commands.scan_managed_hooks.scan_managed_hooks_handler import ScanManagedHooksHandler
-from core.modules.settings.commands.scan_managed_hooks.scan_managed_hooks_subcommand import ScanManagedHooksSubcommand
-from core.modules.settings.commands.restore_managed_hooks.restore_managed_hooks_handler import RestoreManagedHooksHandler
-from core.modules.settings.commands.restore_managed_hooks.restore_managed_hooks_subcommand import RestoreManagedHooksSubcommand
-from core.modules.settings.commands.remove_managed_hooks.remove_managed_hooks_handler import RemoveManagedHooksHandler
-from core.modules.settings.commands.remove_managed_hooks.remove_managed_hooks_subcommand import RemoveManagedHooksSubcommand
-from core.modules.settings.commands.list_managed_hooks.list_managed_hooks_subcommand import ListManagedHooksSubcommand
-from core.modules.settings.commands.apply_setting_screen.apply_setting_screen_handler import ApplySettingScreenHandler
-from core.modules.settings.commands.apply_setting_screen.apply_setting_screen_subcommand import ApplySettingScreenSubcommand
-from core.modules.settings.commands.switch_setting_group.switch_setting_group_handler import SwitchSettingGroupHandler
-from core.modules.settings.commands.switch_setting_group.switch_setting_group_subcommand import SwitchSettingGroupSubcommand
-from core.modules.settings.commands.setting_screen_index.setting_screen_index_subcommand import SettingScreenIndexSubcommand
-from core.modules.settings.commands.setting_screen_show.setting_screen_show_subcommand import SettingScreenShowSubcommand
-from core.modules.settings.commands.setting_show.setting_show_subcommand import SettingShowSubcommand
-from core.modules.settings.commands.setting_tree.setting_tree_subcommand import SettingTreeSubcommand
 from core.modules.settings.support.settings_tree import SETTINGS_SETTINGS
 from core.modules.settings.upgrade.settings_move import SettingsMove
 
@@ -50,11 +23,11 @@ class SettingsModule(Module):
     settings = SETTINGS_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments"]
     models = [SettingModelDeclaration, SecretSettingModelDeclaration]
-    migrations = [HelperIdleRetirementMigration, TimedJobSettingKeyMigration, AgentMessageKeysMigration, HelperDriverKeyMigration, SettingsTableMigration, SecretSettingsTableMigration]
-    handlers = [SetSettingHandler, ApplySettingScreenHandler, SwitchSettingGroupHandler, SetManagedHookHandler, RemoveManagedHooksHandler, ScanManagedHooksHandler, RestoreManagedHooksHandler]
+    migrations = SETTINGS_MIGRATIONS
+    handlers = SETTINGS_HANDLERS
     windows = SETTINGS_WINDOWS
-    subcommands = [SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingScreenShowSubcommand, SettingScreenIndexSubcommand, ApplySettingScreenSubcommand, SettingTreeSubcommand, ListManagedHooksSubcommand, SetManagedHookSubcommand, RemoveManagedHooksSubcommand, ScanManagedHooksSubcommand, RestoreManagedHooksSubcommand]
-    bindings = {GuardSwitches: SettingGuardSwitches, SyncNotes: UndeclaredSettingNotes, SettingSource: ReaderSettingSource}
+    subcommands = SETTINGS_SUBCOMMANDS
+    bindings = SETTINGS_BINDINGS
     guards = [PersonSetSettingGuard]
     listeners = [SettingRowsListener]
     moves = [SettingsMove]

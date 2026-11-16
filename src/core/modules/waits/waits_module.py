@@ -1,15 +1,11 @@
+from core.modules.waits.support.waits_migrations import WAITS_MIGRATIONS
 from core.modules.waits.listeners.wait_step_listener import WaitStepListener
 from core.modules.waits.states.wait_states import WaitStates
 from core.modules.waits.lines.long_wait_lines import LongWaitLines
 from core.modules.waits.effects.work_ends_wait_effect import WorkEndsWaitEffect
 from core.modules.waits.models.declarations.wait_model_declaration import WaitModelDeclaration
 from core.modules.waits.models.declarations.wait_target_model_declaration import WaitTargetModelDeclaration
-from core.modules.waits.migrations.m004_wait_session import WaitSessionMigration
 from engine.module.module import Module
-from core.modules.waits.migrations.m001_waits import WaitsTablesMigration
-from core.modules.waits.migrations.m002_wait_target_wait_index import WaitTargetWaitIndexMigration
-from core.modules.waits.migrations.m003_pending_targets_index import PendingTargetsIndexMigration
-from core.modules.waits.migrations.m005_open_wait_index import OpenWaitIndexMigration
 from core.modules.waits.models.waiting_row import WaitingRow
 from core.modules.waits.commands.waiting_wait.waiting_wait_subcommand import WaitingWaitSubcommand
 from core.modules.waits.listeners.target_resolution_listener import TargetResolutionListener
@@ -36,7 +32,7 @@ class WaitsModule(Module):
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.chat"]
     models = [WaitModelDeclaration, WaitTargetModelDeclaration]
-    migrations = [WaitSessionMigration, WaitsTablesMigration, WaitTargetWaitIndexMigration, PendingTargetsIndexMigration, OpenWaitIndexMigration]
+    migrations = WAITS_MIGRATIONS
     views = [WaitingRow]
     handlers = [OpenWaitHandler]
     subcommands = [OpenWaitSubcommand, RequestHelpSubcommand, WaitingWaitSubcommand]

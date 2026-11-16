@@ -1,3 +1,5 @@
+from core.modules.helpers.support.helpers_dependencies import HELPERS_DEPENDENCIES
+from core.modules.helpers.support.helpers_tick_handlers import HELPERS_TICK_HANDLERS
 from core.modules.helpers.effects.hand_in_retry_effect import HandInRetryEffect
 from core.modules.helpers.effects.unstarted_helper_effect import UnstartedHelperEffect
 from core.modules.helpers.states.job_work_states import JobWorkStates
@@ -15,10 +17,6 @@ from core.modules.helpers.marks.program_outage_mark import ProgramOutageMark
 from core.modules.helpers.support.helper_agent_messages import HELPER_AGENT_MESSAGES
 from core.modules.helpers.support.helper_settings import HELPER_SETTINGS
 from core.modules.helpers.types.helper import Helper
-from core.modules.helpers.tick_handlers.helper_limits_tick_handler import HelperLimitsTickHandler
-from core.modules.helpers.tick_handlers.unused_helper_retirements_tick_handler import UnusedHelperRetirementsTickHandler
-from core.modules.helpers.tick_handlers.usage_limit_marker_tick_handler import UsageLimitMarkerTickHandler
-from core.modules.helpers.tick_handlers.unstarted_job_starts_tick_handler import UnstartedJobStartsTickHandler
 
 
 class HelpersModule(Module):
@@ -34,13 +32,13 @@ class HelpersModule(Module):
     requires_engine = ">=5,<6"
     migrations = HELPERS_MIGRATIONS
     models = HELPERS_MODELS
-    dependencies = ["journal.core.agents", "journal.core.profiles", "journal.core.messages", "journal.core.drivers", "journal.core.usage", "journal.core.chat", "journal.core.skills", "journal.core.settings", "journal.core.processes", "journal.core.environments", "journal.core.tasks", "journal.core.assignments"]
+    dependencies = HELPERS_DEPENDENCIES
     marks = [ProgramOutageMark]
     helper_types = [Helper]
     settings = HELPER_SETTINGS
     guards = HELPERS_GUARDS
     handlers = HELPERS_HANDLERS
-    tick_handlers = [HelperLimitsTickHandler, UnusedHelperRetirementsTickHandler, UsageLimitMarkerTickHandler, UnstartedJobStartsTickHandler]
+    tick_handlers = HELPERS_TICK_HANDLERS
     agent_messages = HELPER_AGENT_MESSAGES
     skills = HELPERS_SKILLS
     subcommands = HELPERS_SUBCOMMANDS

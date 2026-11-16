@@ -1,0 +1,7 @@
+from core.modules.phone.commands.ensure_push_keys.ensure_push_keys_subcommand import EnsurePushKeysSubcommand
+from core.modules.phone.commands.pair_phone.pair_phone_subcommand import PairPhoneSubcommand
+from core.modules.phone.commands.phone_session.phone_session_subcommand import PhoneSessionSubcommand
+from core.modules.phone.commands.redeem_phone_code.redeem_phone_code_subcommand import RedeemPhoneCodeSubcommand
+from core.modules.phone.commands.subscribe_phone.subscribe_phone_subcommand import SubscribePhoneSubcommand
+
+PHONE_SUBCOMMANDS = [PairPhoneSubcommand, RedeemPhoneCodeSubcommand, PhoneSessionSubcommand, EnsurePushKeysSubcommand, SubscribePhoneSubcommand]

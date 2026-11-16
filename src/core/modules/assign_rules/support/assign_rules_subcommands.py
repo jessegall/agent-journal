@@ -1,0 +1,18 @@
+from core.modules.assign_rules.commands.assign_rule_board.assign_rule_board_subcommand import AssignRuleBoardSubcommand
+from core.modules.assign_rules.commands.count_assign_rule.count_assign_rule_subcommand import CountAssignRuleSubcommand
+from core.modules.assign_rules.commands.delete_assign_rule.delete_assign_rule_subcommand import DeleteAssignRuleSubcommand
+from core.modules.assign_rules.commands.delete_assign_rule.return_rule_tasks_subcommand import ReturnRuleTasksSubcommand
+from core.modules.assign_rules.commands.edit_assign_rule.edit_assign_rule_subcommand import EditAssignRuleSubcommand
+from core.modules.assign_rules.commands.edit_assign_rule.move_rule_tasks_subcommand import MoveRuleTasksSubcommand
+from core.modules.assign_rules.commands.make_assign_rule.make_assign_rule_subcommand import MakeAssignRuleSubcommand
+from core.modules.assign_rules.commands.move_assign_rule.move_assign_rule_subcommand import MoveAssignRuleSubcommand
+from core.modules.assign_rules.commands.record_assign_decision.apply_assign_rule_subcommand import ApplyAssignRuleSubcommand
+from core.modules.assign_rules.commands.record_assign_decision.record_assign_decision_subcommand import RecordAssignDecisionSubcommand
+from core.modules.assign_rules.commands.switch_assign_rule.disable_assign_rule_subcommand import DisableAssignRuleSubcommand
+from core.modules.assign_rules.commands.switch_assign_rule.enable_assign_rule_subcommand import EnableAssignRuleSubcommand
+from core.modules.assign_rules.commands.try_assign_rule.try_assign_rule_subcommand import TryAssignRuleSubcommand
+from core.modules.assign_rules.commands.try_assign_rule.why_assign_rule_subcommand import WhyAssignRuleSubcommand
+
+ASSIGN_RULES_SUBCOMMANDS = [MakeAssignRuleSubcommand, EditAssignRuleSubcommand, MoveAssignRuleSubcommand, EnableAssignRuleSubcommand, DisableAssignRuleSubcommand, DeleteAssignRuleSubcommand,
+                   TryAssignRuleSubcommand, WhyAssignRuleSubcommand, RecordAssignDecisionSubcommand, AssignRuleBoardSubcommand, CountAssignRuleSubcommand,
+                   ApplyAssignRuleSubcommand, MoveRuleTasksSubcommand, ReturnRuleTasksSubcommand]

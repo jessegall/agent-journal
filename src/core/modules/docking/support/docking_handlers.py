@@ -1,0 +1,8 @@
+from core.modules.docking.commands.add_dock_item.add_dock_item_handler import AddDockItemHandler
+from core.modules.docking.commands.keep_dock_item.keep_dock_item_handler import KeepDockItemHandler
+from core.modules.docking.commands.make_dock.make_dock_handler import MakeDockHandler
+from core.modules.docking.commands.release_dock_item.release_dock_item_handler import ReleaseDockItemHandler
+from core.modules.docking.commands.remove_dock_item.remove_dock_item_handler import RemoveDockItemHandler
+from core.modules.docking.commands.schedule_dock_item_leave.schedule_dock_item_leave_handler import ScheduleDockItemLeaveHandler
+
+DOCKING_HANDLERS = [MakeDockHandler, AddDockItemHandler, KeepDockItemHandler, ReleaseDockItemHandler, RemoveDockItemHandler, ScheduleDockItemLeaveHandler]

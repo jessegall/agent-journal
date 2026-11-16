@@ -1,0 +1,20 @@
+from core.modules.plans.listeners.cancel_open_plan_tasks_listener import CancelOpenPlanTasksListener
+from core.modules.plans.listeners.checkpoint_pass_listener import CheckpointPassListener
+from core.modules.plans.listeners.checkpoint_reach_listener import CheckpointReachListener
+from core.modules.plans.listeners.checkpoint_run_listener import CheckpointRunListener
+from core.modules.plans.listeners.finished_plan_line_listener import FinishedPlanLineListener
+from core.modules.plans.listeners.finished_plan_listener import FinishedPlanListener
+from core.modules.plans.listeners.forget_place_listener import ForgetPlaceListener
+from core.modules.plans.listeners.next_plan_task_starter_listener import NextPlanTaskStarterListener
+from core.modules.plans.listeners.passed_plan_listener import PassedPlanListener
+from core.modules.plans.listeners.phase_renumbering_listener import PhaseRenumberingListener
+from core.modules.plans.listeners.plan_move_mark_listener import PlanMoveMarkListener
+from core.modules.plans.listeners.plan_wait_listener import PlanWaitListener
+from core.modules.plans.listeners.ready_plan_sync_listener import ReadyPlanSyncListener
+from core.modules.plans.listeners.started_plan_checkpoints_listener import StartedPlanCheckpointsListener
+from core.modules.plans.listeners.started_plan_dock_listener import StartedPlanDockListener
+from core.modules.plans.listeners.started_task_plan_listener import StartedTaskPlanListener
+from core.modules.plans.listeners.task_plan_rows_listener import TaskPlanRowsListener
+
+PLANS_LISTENERS = [CheckpointReachListener, StartedPlanCheckpointsListener, CheckpointPassListener, PlanWaitListener, TaskPlanRowsListener, ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
+                 FinishedPlanListener, PassedPlanListener, CheckpointRunListener, FinishedPlanLineListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener, NextPlanTaskStarterListener, ReadyPlanSyncListener]

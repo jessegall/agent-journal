@@ -1,0 +1,10 @@
+from core.modules.documents.migrations.m001_documents import DocumentsTablesMigration
+from core.modules.documents.migrations.m002_link_source_index import LinkSourceIndexMigration
+from core.modules.documents.migrations.m003_dock_abstracts import DockAbstractsMigration
+from core.modules.documents.migrations.m004_comment_selections import CommentSelectionsMigration
+from core.modules.documents.migrations.m005_project_documents import ProjectDocumentsMigration
+from core.modules.documents.migrations.m006_revision_authors import RevisionAuthorsMigration
+from core.modules.documents.migrations.m007_link_corrections import LinkCorrectionsMigration
+from core.modules.documents.migrations.m008_message_link_paths import MessageLinkPathsMigration
+
+DOCUMENTS_MIGRATIONS = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration, CommentSelectionsMigration, ProjectDocumentsMigration, RevisionAuthorsMigration, LinkCorrectionsMigration, MessageLinkPathsMigration]

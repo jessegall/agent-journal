@@ -1,0 +1,7 @@
+from tunnels.tunler.commands.install_tunler.install_tunler_handler import InstallTunlerHandler
+from tunnels.tunler.commands.login_tunler.login_tunler_handler import LoginTunlerHandler
+from tunnels.tunler.commands.logout_tunler.logout_tunler_handler import LogoutTunlerHandler
+from tunnels.tunler.commands.release_tunler_domain.release_tunler_domain_handler import ReleaseTunlerDomainHandler
+from tunnels.tunler.commands.update_tunler.update_tunler_handler import UpdateTunlerHandler
+
+TUNLER_HANDLERS = [LoginTunlerHandler, LogoutTunlerHandler, UpdateTunlerHandler, InstallTunlerHandler, ReleaseTunlerDomainHandler]

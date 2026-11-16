@@ -1,132 +1,28 @@
-from core.modules.tasks.listeners.next_task_listener import NextTaskListener
-from core.modules.tasks.commands.assign_next_task.assign_next_task_handler import AssignNextTaskHandler
+from core.modules.tasks.support.tasks_block_conditions import TASKS_BLOCK_CONDITIONS
+from core.modules.tasks.support.tasks_dependencies import TASKS_DEPENDENCIES
+from core.modules.tasks.support.tasks_models import TASKS_MODELS
+from core.modules.tasks.support.tasks_migrations import TASKS_MIGRATIONS
+from core.modules.tasks.support.tasks_subcommands import TASKS_SUBCOMMANDS
+from core.modules.tasks.support.tasks_handlers import TASKS_HANDLERS
+from core.modules.tasks.support.tasks_guards import TASKS_GUARDS
+from core.modules.tasks.support.tasks_views import TASKS_VIEWS
+from core.modules.tasks.support.tasks_listeners import TASKS_LISTENERS
+from core.modules.tasks.support.tasks_lines import TASKS_LINES
 from core.modules.tasks.states.task_work_states import TaskWorkStates
 from core.modules.tasks.states.unlogged_write_states import UnloggedWriteStates
 from core.modules.tasks.states.block_review_states import BlockReviewStates
 from core.modules.tasks.effects.block_review_effect import BlockReviewEffect
-from core.modules.tasks.lines.blocked_work_lines import BlockedWorkLines
-from core.modules.tasks.lines.stalled_task_lines import StalledTaskLines
-from core.modules.tasks.lines.log_request_lines import LogRequestLines
-from core.modules.tasks.lines.task_filed_lines import TaskFiledLines
-from core.modules.tasks.lines.task_name_lines import TaskNameLines
-from core.modules.tasks.lines.pending_block_lines import PendingBlockLines
-from core.modules.tasks.lines.single_started_task_lines import SingleStartedTaskLines
-from core.modules.tasks.lines.session_start_summary_lines import SessionStartSummaryLines
-from core.modules.tasks.lines.wait_text_lines import WaitTextLines
-from core.modules.tasks.lines.block_review_lines import BlockReviewLines
 from core.modules.tasks.windows.tasks_windows import TASKS_WINDOWS
-from core.modules.tasks.models.declarations.task_model_declaration import TaskModelDeclaration
-from core.modules.tasks.models.declarations.task_tag_model_declaration import TaskTagModelDeclaration
-from core.modules.tasks.models.declarations.task_wait_model_declaration import TaskWaitModelDeclaration
-from core.modules.tasks.models.declarations.task_block_renewal_model_declaration import TaskBlockRenewalModelDeclaration
-from core.modules.tasks.models.declarations.task_read_model_declaration import TaskReadModelDeclaration
 from core.modules.tasks.docks.tasks_docks import TASKS_DOCKS
 from core.modules.tasks.skills.declarations.tasks_skills import TASKS_SKILLS
-from core.modules.tasks.commands.repair_task_states.repair_task_states_handler import RepairTaskStatesHandler
 from core.modules.agents.support.agent_task_reads import AgentTaskReads
 from core.modules.tasks.support.row_agent_task_reads import RowAgentTaskReads
-from core.modules.tasks.migrations.m022_assign_held_tasks import TaskHolderDelegationMigration
-from core.modules.tasks.commands.record_task_read.record_task_read_handler import RecordTaskReadHandler
-from core.modules.tasks.commands.edit_task.edit_task_subcommand import EditTaskSubcommand
-from core.modules.tasks.guards.task_edit_access_guard import TaskEditAccessGuard
-from core.modules.tasks.migrations.m017_block_waiting_tasks import BlockWaitingTasksMigration
-from core.modules.tasks.migrations.m018_task_log_important import TaskLogImportantMigration
-from core.modules.tasks.migrations.m019_task_complexity import TaskComplexityMigration
-from core.modules.tasks.migrations.m020_task_tags import TaskTagsMigration
-from core.modules.tasks.migrations.m021_task_environment_id_index import TaskEnvironmentIdIndexMigration
-from core.modules.tasks.models.task_tag_word import TaskTagWord
-from core.modules.tasks.commands.tag_task.tag_task_handler import TagTaskHandler
-from core.modules.tasks.commands.tag_task.tag_task_subcommand import TagTaskSubcommand
-from core.modules.tasks.commands.remove_task_tag.remove_task_tag_handler import RemoveTaskTagHandler
-from core.modules.tasks.commands.remove_task_tag.remove_task_tag_subcommand import RemoveTaskTagSubcommand
-from core.modules.tasks.commands.task_tags.task_tags_subcommand import TaskTagsSubcommand
-from core.modules.tasks.commands.task_list.task_list_subcommand import TaskListSubcommand
-from core.modules.tasks.guards.task_tag_access_guard import TaskTagAccessGuard
-from core.modules.tasks.guards.task_tag_word_guard import TaskTagWordGuard
-from core.modules.tasks.listeners.task_tag_remover_listener import TaskTagRemoverListener
-from core.modules.tasks.migrations.m015_task_read_session import TaskReadSessionMigration
-from core.modules.tasks.models.task_block_review import TaskBlockReview
-from core.modules.tasks.migrations.m011_task_block_renewals import TaskBlockRenewalsMigration
-from core.modules.tasks.listeners.task_block_renewal_listener import TaskBlockRenewalListener
-from core.modules.tasks.support.block_conditions.task_blocks_reviewed import TaskBlocksReviewed
 from core.modules.tasks.support.task_agent_messages import TASK_AGENT_MESSAGES
-from core.modules.tasks.commands.choose_next_task.choose_next_task_handler import ChooseNextTaskHandler
-from core.modules.tasks.commands.choose_task_focus.choose_task_focus_handler import ChooseTaskFocusHandler
-from core.modules.tasks.commands.choose_task_focus.choose_task_focus_subcommand import ChooseTaskFocusSubcommand
-from core.modules.tasks.commands.choose_next_task.choose_next_task_subcommand import ChooseNextTaskSubcommand
-from core.modules.tasks.commands.assign_task.assign_task_handler import AssignTaskHandler
-from core.modules.tasks.commands.assign_task.assign_task_subcommand import AssignTaskSubcommand
-from core.modules.tasks.commands.environment_cards.environment_cards_subcommand import EnvironmentCardsSubcommand
-from core.modules.tasks.commands.task_graph.task_graph_subcommand import TaskGraphSubcommand
-from core.modules.tasks.models.environment_card import EnvironmentCard
-from core.modules.tasks.commands.wait_task.wait_task_handler import WaitTaskHandler
-from core.modules.tasks.models.task_edge import TaskEdge
-from core.modules.tasks.models.task_inspection_row import TaskInspectionRow
-from core.modules.tasks.commands.wait_task.wait_task_subcommand import WaitTaskSubcommand
-from core.modules.tasks.listeners.task_dependency_wait_listener import TaskDependencyWaitListener
-from core.modules.tasks.listeners.task_wait_listener import TaskWaitListener
-from core.modules.tasks.listeners.stopped_agent_tasks_listener import StoppedAgentTasksListener
-from core.modules.tasks.listeners.waiting_task_listener import WaitingTaskListener
-from core.modules.tasks.listeners.task_rows_listener import TaskRowsListener
-from core.modules.tasks.migrations.m004_task_waits import TaskWaitsTableMigration
-from core.modules.tasks.migrations.m005_task_priority_number import TaskPriorityNumberMigration
-from core.modules.tasks.migrations.m006_task_started_at import TaskStartTimeMigration
-from core.modules.tasks.migrations.m007_task_delegated_to import TaskDelegationMigration
-from core.modules.tasks.migrations.m008_delegated_task_index import DelegatedTaskIndexMigration
-from core.modules.tasks.migrations.m009_task_reads import TaskReadsTableMigration
-from core.modules.tasks.migrations.m010_closed_task_index import ClosedTaskIndexMigration
-from core.modules.tasks.migrations.m012_open_task_edge_index import OpenTaskEdgeIndexMigration
-from core.modules.tasks.migrations.m013_task_closed_cursor_index import TaskClosedCursorIndexMigration
-from core.modules.tasks.migrations.m014_pending_waits_index import PendingWaitsIndexMigration
-from core.modules.tasks.commands.read_task_brief.read_task_brief_handler import ReadTaskBriefHandler
-from core.modules.tasks.commands.read_task_brief.read_task_brief_subcommand import ReadTaskBriefSubcommand
-from core.modules.tasks.commands.reset_task_reads.reset_task_reads_handler import ResetTaskReadsHandler
-from core.modules.tasks.listeners.task_brief_assigned_listener import TaskBriefAssignedListener
-from core.modules.tasks.listeners.task_brief_compaction_listener import TaskBriefCompactionListener
-from core.modules.tasks.support.block_conditions.task_brief_read import TaskBriefRead
-from core.modules.tasks.commands.task_board.task_board_subcommand import TaskBoardSubcommand
-from core.modules.tasks.commands.task_counts.task_counts_subcommand import TaskCountsSubcommand
-from core.modules.tasks.commands.task_inspect.task_inspect_subcommand import TaskInspectSubcommand
-from core.modules.tasks.commands.task_info.task_info_subcommand import TaskInfoSubcommand
-from core.modules.tasks.commands.unassign_agent_tasks.unassign_agent_tasks_handler import UnassignAgentTasksHandler
-from core.modules.tasks.commands.make_task_dependency.make_task_dependency_subcommand import MakeTaskDependencySubcommand
-from core.modules.tasks.commands.remove_task_dependency.remove_task_dependency_subcommand import RemoveTaskDependencySubcommand
-from core.modules.tasks.commands.record_task_independence.record_task_independence_subcommand import RecordTaskIndependenceSubcommand
-from core.modules.tasks.guards.dependencies_closed_guard import DependenciesClosedGuard
-from core.modules.tasks.listeners.start_assignment_listener import StartAssignmentListener
-from core.modules.tasks.migrations.m025_task_assignments import TaskAssignmentsMigration
-from core.modules.tasks.guards.visible_dependency_guard import VisibleDependencyGuard
-from core.modules.tasks.guards.user_wait_guard import UserWaitGuard
-from core.modules.tasks.guards.assigned_task_start_guard import AssignedTaskStartGuard
-from core.modules.tasks.listeners.dependency_remover_listener import DependencyRemoverListener
-from core.modules.tasks.migrations.m001_tasks import TasksTablesMigration
-from core.modules.tasks.migrations.m002_paused_tasks_blocked import PausedTasksBlockedMigration
-from core.modules.tasks.migrations.m003_task_state_index import TaskStateIndexMigration
-from core.modules.tasks.migrations.m016_all_environments_task_state_index import AllEnvironmentsTaskStateIndexMigration
-from core.modules.tasks.models.task_card import TaskCard
-from core.modules.tasks.commands.make_task_log.make_task_log_subcommand import MakeTaskLogSubcommand
 from core.modules.tasks.upgrade.tasks_move import TasksMove
-from core.modules.tasks.commands.remove_task_dependency.remove_task_dependency_handler import RemoveTaskDependencyHandler
-from core.modules.tasks.commands.record_task_independence.record_task_independence_handler import RecordTaskIndependenceHandler
-from core.modules.tasks.migrations.m023_task_independence_reason import TaskIndependenceReasonMigration
-from core.modules.tasks.migrations.m024_task_focus_time import TaskFocusTimeMigration
-from core.modules.tasks.migrations.m026_drop_task_delegation import DropTaskDelegationMigration
-from core.modules.tasks.migrations.m027_task_holder_any_actor import TaskHolderAnyActorMigration
 from engine.module.module import Module
 from core.modules.tasks.inspectors.task_inspector import TaskInspector
-from engine.module.model_declaration import ModelDeclaration
-from core.modules.tasks.models.open_dependency import OpenDependency
-from core.modules.tasks.models.task_dependency import TaskDependency
-from core.modules.tasks.models.task_log import TaskLog
-from core.modules.tasks.listeners.task_edited_mark_listener import TaskEditedMarkListener
-from core.modules.tasks.listeners.task_move_mark_listener import TaskMoveMarkListener
 from core.modules.tasks.marks.task_mark import TaskMark
 from core.modules.tasks.seeders.tasks_seeder import TasksSeeder
-from core.modules.tasks.support.block_conditions.task_started import TaskStarted
-from core.modules.tasks.support.block_conditions.task_closed import TaskClosed
-from core.modules.tasks.support.block_conditions.started_task_exists import StartedTaskExists
-from core.modules.tasks.support.block_conditions.task_logged import TaskLogged
-from core.modules.tasks.support.block_conditions.task_stopped import TaskStopped
 from core.modules.tasks.support.task_settings import TASK_SETTINGS
 from core.modules.tasks.tick_handlers.task_state_round_tick_handler import TaskStateRoundTickHandler
 
@@ -140,26 +36,25 @@ class TasksModule(Module):
     agent_messages = TASK_AGENT_MESSAGES
     settings = TASK_SETTINGS
     requires_engine = ">=5,<6"
-    block_conditions = [TaskStopped, TaskStarted, TaskClosed, StartedTaskExists, TaskLogged, TaskBriefRead, TaskBlocksReviewed]
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking", "journal.core.settings", "journal.core.assignments"]
+    block_conditions = TASKS_BLOCK_CONDITIONS
+    dependencies = TASKS_DEPENDENCIES
     bindings = {AgentTaskReads: RowAgentTaskReads}
     skills = TASKS_SKILLS
-    models = [TaskModelDeclaration, TaskTagModelDeclaration, ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency), TaskWaitModelDeclaration, TaskBlockRenewalModelDeclaration, TaskReadModelDeclaration]
-    migrations = [TaskHolderAnyActorMigration, DropTaskDelegationMigration, TaskAssignmentsMigration, TaskFocusTimeMigration, TaskHolderDelegationMigration, BlockWaitingTasksMigration, TaskLogImportantMigration, TaskReadSessionMigration, PendingWaitsIndexMigration, OpenTaskEdgeIndexMigration, ClosedTaskIndexMigration, TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartTimeMigration, TaskDelegationMigration, DelegatedTaskIndexMigration, TaskReadsTableMigration, TaskBlockRenewalsMigration, TaskClosedCursorIndexMigration, AllEnvironmentsTaskStateIndexMigration, TaskComplexityMigration, TaskTagsMigration, TaskEnvironmentIdIndexMigration, TaskIndependenceReasonMigration]
-    subcommands = [ChooseNextTaskSubcommand, ChooseTaskFocusSubcommand, TagTaskSubcommand, RemoveTaskTagSubcommand, TaskTagsSubcommand, TaskListSubcommand, EditTaskSubcommand, AssignTaskSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskCountsSubcommand, TaskInspectSubcommand, TaskInfoSubcommand, MakeTaskLogSubcommand, ReadTaskBriefSubcommand, MakeTaskDependencySubcommand,
-                   RemoveTaskDependencySubcommand, RecordTaskIndependenceSubcommand]
+    models = TASKS_MODELS
+    migrations = TASKS_MIGRATIONS
+    subcommands = TASKS_SUBCOMMANDS
     tick_handlers = [TaskStateRoundTickHandler]
-    handlers = [AssignNextTaskHandler, RepairTaskStatesHandler, ChooseNextTaskHandler, ChooseTaskFocusHandler, RecordTaskIndependenceHandler, TagTaskHandler, RemoveTaskTagHandler, RecordTaskReadHandler, AssignTaskHandler, UnassignAgentTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]
+    handlers = TASKS_HANDLERS
     moves = [TasksMove]
-    guards = [TaskTagAccessGuard, TaskTagWordGuard, TaskEditAccessGuard, VisibleDependencyGuard, DependenciesClosedGuard, UserWaitGuard, AssignedTaskStartGuard]
-    views = [TaskTagWord, OpenDependency, TaskCard, TaskEdge, EnvironmentCard, TaskInspectionRow, TaskBlockReview]
-    listeners = [NextTaskListener, StartAssignmentListener, TaskTagRemoverListener, TaskDependencyWaitListener, WaitingTaskListener, TaskRowsListener, TaskBlockRenewalListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, StoppedAgentTasksListener]
+    guards = TASKS_GUARDS
+    views = TASKS_VIEWS
+    listeners = TASKS_LISTENERS
     marks = [TaskMark]
     former_event_keys = {"core.tasks.task.drop_hold": "core.tasks.task.release_holder"}
     docks = TASKS_DOCKS
     states = [TaskWorkStates, UnloggedWriteStates, BlockReviewStates]
     effects = [BlockReviewEffect]
-    lines = [BlockedWorkLines, StalledTaskLines, LogRequestLines, TaskFiledLines, TaskNameLines, PendingBlockLines, SingleStartedTaskLines, SessionStartSummaryLines, WaitTextLines, BlockReviewLines]
+    lines = TASKS_LINES
     windows = TASKS_WINDOWS
     inspectors = [TaskInspector]
     seeders = [TasksSeeder]

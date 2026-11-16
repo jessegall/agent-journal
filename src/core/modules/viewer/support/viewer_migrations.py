@@ -1,0 +1,6 @@
+from core.modules.viewer.migrations.m001_viewer import ViewerTablesMigration
+from core.modules.viewer.migrations.m002_person_presets import PersonPresetsMigration
+from core.modules.viewer.migrations.m003_helpers_window_key import HelpersWindowKeyMigration
+from core.modules.viewer.migrations.m004_person_row_indexes import PersonRowIndexesMigration
+
+VIEWER_MIGRATIONS = [ViewerTablesMigration, PersonPresetsMigration, HelpersWindowKeyMigration, PersonRowIndexesMigration]

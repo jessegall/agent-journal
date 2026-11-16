@@ -1,0 +1,6 @@
+from core.modules.reviews.guards.one_open_review_per_subject_guard import OneOpenReviewPerSubjectGuard
+from core.modules.reviews.guards.reporter_is_reviewer_guard import ReporterIsReviewerGuard
+from core.modules.reviews.guards.reviewers_enabled_guard import ReviewersEnabledGuard
+from core.modules.reviews.guards.reviewers_most_guard import ReviewersMostGuard
+
+REVIEWS_GUARDS = [OneOpenReviewPerSubjectGuard, ReporterIsReviewerGuard, ReviewersEnabledGuard, ReviewersMostGuard]

@@ -1,0 +1,25 @@
+from core.modules.plugins.commands.add_plugin_output.add_plugin_output_handler import AddPluginOutputHandler
+from core.modules.plugins.commands.cancel_queued_run.cancel_queued_run_handler import CancelQueuedRunHandler
+from core.modules.plugins.commands.change_plugin_service.change_plugin_service_handler import ChangePluginServiceHandler
+from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults_handler import ClearPluginFaultsHandler
+from core.modules.plugins.commands.clear_plugin_queue_file.clear_plugin_queue_file_handler import ClearPluginQueueFileHandler
+from core.modules.plugins.commands.configure_plugin.configure_plugin_handler import ConfigurePluginHandler
+from core.modules.plugins.commands.deliver_file_edit.deliver_file_edit_handler import DeliverFileEditHandler
+from core.modules.plugins.commands.deliver_plugin_event.deliver_plugin_event_handler import DeliverPluginEventHandler
+from core.modules.plugins.commands.install_plugin.install_plugin_handler import InstallPluginHandler
+from core.modules.plugins.commands.log_plugin_line.log_plugin_line_handler import LogPluginLineHandler
+from core.modules.plugins.commands.prune_plugin_deliveries.prune_plugin_deliveries_handler import PrunePluginDeliveriesHandler
+from core.modules.plugins.commands.publish_plugin_readers.publish_plugin_readers_handler import PublishPluginReadersHandler
+from core.modules.plugins.commands.queue_plugin_run.queue_plugin_run_handler import QueuePluginRunHandler
+from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault_handler import RecordPluginFaultHandler
+from core.modules.plugins.commands.refresh_plugin_config.refresh_plugin_config_handler import RefreshPluginConfigHandler
+from core.modules.plugins.commands.remove_plugin.remove_plugin_handler import RemovePluginHandler
+from core.modules.plugins.commands.run_plugin_command.run_plugin_command_handler import RunPluginCommandHandler
+from core.modules.plugins.commands.send_plugin_step_line.send_plugin_step_line_handler import SendPluginStepLineHandler
+from core.modules.plugins.commands.switch_off_changed_plugin.switch_off_changed_plugin_handler import SwitchOffChangedPluginHandler
+from core.modules.plugins.commands.switch_plugin.switch_plugin_handler import SwitchPluginHandler
+from core.modules.plugins.commands.upgrade_plugin.upgrade_plugin_handler import UpgradePluginHandler
+
+PLUGINS_HANDLERS = [QueuePluginRunHandler, CancelQueuedRunHandler, ChangePluginServiceHandler, LogPluginLineHandler, RefreshPluginConfigHandler, PrunePluginDeliveriesHandler, RunPluginCommandHandler, SendPluginStepLineHandler, DeliverFileEditHandler, UpgradePluginHandler, InstallPluginHandler, SwitchPluginHandler, ConfigurePluginHandler, RemovePluginHandler, DeliverPluginEventHandler, SwitchOffChangedPluginHandler, PublishPluginReadersHandler,
+                RecordPluginFaultHandler, ClearPluginFaultsHandler, AddPluginOutputHandler,
+                ClearPluginQueueFileHandler]

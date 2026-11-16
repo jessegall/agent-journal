@@ -1,0 +1,10 @@
+from core.modules.reviews.listeners.review_abandoned_listener import ReviewAbandonedListener
+from core.modules.reviews.listeners.review_queued_listener import ReviewQueuedListener
+from core.modules.reviews.listeners.review_reported_mark_listener import ReviewReportedMarkListener
+from core.modules.reviews.listeners.review_reported_step_listener import ReviewReportedStepListener
+from core.modules.reviews.listeners.review_started_mark_listener import ReviewStartedMarkListener
+from core.modules.reviews.listeners.review_started_step_listener import ReviewStartedStepListener
+from core.modules.reviews.listeners.reviewer_available_listener import ReviewerAvailableListener
+from core.modules.reviews.listeners.reviewer_ended_listener import ReviewerEndedListener
+
+REVIEWS_LISTENERS = [ReviewQueuedListener, ReviewerAvailableListener, ReviewerEndedListener, ReviewStartedStepListener, ReviewReportedStepListener, ReviewStartedMarkListener, ReviewReportedMarkListener, ReviewAbandonedListener]

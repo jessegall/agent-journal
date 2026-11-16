@@ -1,0 +1,18 @@
+from core.modules.documents.listeners.close_ended_document_listener import CloseEndedDocumentListener
+from core.modules.documents.listeners.deleted_row_link_listener import DeletedRowLinkListener
+from core.modules.documents.listeners.doc_mention_listener import DocMentionListener
+from core.modules.documents.listeners.link_correction_reset_listener import LinkCorrectionResetListener
+from core.modules.documents.listeners.message_mention_listener import MessageMentionListener
+from core.modules.documents.listeners.new_doc_dock_listener import NewDocDockListener
+from core.modules.documents.listeners.new_report_dock_listener import NewReportDockListener
+from core.modules.documents.listeners.phase_mention_listener import PhaseMentionListener
+from core.modules.documents.listeners.plan_document_link_listener import PlanDocumentLinkListener
+from core.modules.documents.listeners.plan_mention_listener import PlanMentionListener
+from core.modules.documents.listeners.reply_link_listener import ReplyLinkListener
+from core.modules.documents.listeners.report_mention_listener import ReportMentionListener
+from core.modules.documents.listeners.task_log_mention_listener import TaskLogMentionListener
+from core.modules.documents.listeners.task_mention_listener import TaskMentionListener
+from core.modules.documents.listeners.text_read_mark_listener import TextReadMarkListener
+from core.modules.documents.listeners.work_source_link_listener import WorkSourceLinkListener
+
+DOCUMENTS_LISTENERS = [CloseEndedDocumentListener, PlanDocumentLinkListener, ReplyLinkListener, WorkSourceLinkListener, DocMentionListener, ReportMentionListener, PlanMentionListener, TaskMentionListener, MessageMentionListener, PhaseMentionListener, TaskLogMentionListener, DeletedRowLinkListener, NewDocDockListener, NewReportDockListener, TextReadMarkListener, LinkCorrectionResetListener]

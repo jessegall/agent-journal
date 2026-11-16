@@ -1,0 +1,6 @@
+from core.modules.phone.migrations.m001_phones import PhonesTablesMigration
+from core.modules.phone.migrations.m002_phone_subscription import PhoneSubscriptionMigration
+from core.modules.phone.migrations.m003_phone_notice_waiting import PhoneNoticeWaitingMigration
+from core.modules.phone.migrations.m004_phone_notice_index import PhoneNoticeIndexMigration
+
+PHONE_MIGRATIONS = [PhoneNoticeIndexMigration, PhonesTablesMigration, PhoneSubscriptionMigration, PhoneNoticeWaitingMigration]

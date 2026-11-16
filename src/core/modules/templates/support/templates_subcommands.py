@@ -1,0 +1,6 @@
+from core.modules.templates.commands.make_template.make_template_subcommand import MakeTemplateSubcommand
+from core.modules.templates.commands.send_template.send_template_subcommand import SendTemplateSubcommand
+from core.modules.templates.commands.template_list.template_list_subcommand import TemplateListSubcommand
+from core.modules.templates.commands.template_show.template_show_subcommand import TemplateShowSubcommand
+
+TEMPLATES_SUBCOMMANDS = [MakeTemplateSubcommand, TemplateShowSubcommand, TemplateListSubcommand, SendTemplateSubcommand]

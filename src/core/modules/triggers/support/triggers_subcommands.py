@@ -1,0 +1,9 @@
+from core.modules.triggers.commands.enable_trigger.enable_trigger_subcommand import EnableTriggerSubcommand
+from core.modules.triggers.commands.make_trigger.make_trigger_subcommand import MakeTriggerSubcommand
+from core.modules.triggers.commands.pause_trigger.pause_trigger_subcommand import PauseTriggerSubcommand
+from core.modules.triggers.commands.schedule_trigger.schedule_trigger_subcommand import ScheduleTriggerSubcommand
+from core.modules.triggers.commands.strike_trigger.strike_trigger_subcommand import StrikeTriggerSubcommand
+from core.modules.triggers.commands.trigger_list.trigger_list_subcommand import TriggerListSubcommand
+from core.modules.triggers.commands.try_trigger.try_trigger_subcommand import TryTriggerSubcommand
+
+TRIGGERS_SUBCOMMANDS = [TryTriggerSubcommand, EnableTriggerSubcommand, MakeTriggerSubcommand, ScheduleTriggerSubcommand, StrikeTriggerSubcommand, PauseTriggerSubcommand, TriggerListSubcommand]

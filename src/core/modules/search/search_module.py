@@ -1,3 +1,4 @@
+from core.modules.search.support.search_dependencies import SEARCH_DEPENDENCIES
 from core.modules.search.windows.search_windows import SEARCH_WINDOWS
 from engine.module.module import Module
 from core.modules.search.commands.search_find.search_find_subcommand import SearchFindSubcommand
@@ -13,7 +14,7 @@ class SearchModule(Module):
     move_reason = "version 4 search kept no rows of its own"
     seed_reason = "it reads the rows the other modules seed"
     requires_engine = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.chat", "journal.core.drivers", "journal.core.processes"]
+    dependencies = SEARCH_DEPENDENCIES
     subcommands = [SearchFindSubcommand]
     marks = [SearchMark]
     listeners = [SearchMarkListener]

@@ -1,0 +1,9 @@
+from core.modules.approvals.listeners.approval_dock_listener import ApprovalDockListener
+from core.modules.approvals.listeners.approval_notice_listener import ApprovalNoticeListener
+from core.modules.approvals.listeners.every_approval_accept_listener import EveryApprovalAcceptListener
+from core.modules.approvals.listeners.pending_approval_dock_listener import PendingApprovalDockListener
+from core.modules.approvals.listeners.standing_approval_accept_listener import StandingApprovalAcceptListener
+from core.modules.approvals.listeners.standing_approval_dock_listener import StandingApprovalDockListener
+from core.modules.approvals.listeners.standing_approval_mark_listener import StandingApprovalMarkListener
+
+APPROVALS_LISTENERS = [StandingApprovalDockListener, StandingApprovalAcceptListener, EveryApprovalAcceptListener, StandingApprovalMarkListener, ApprovalDockListener, ApprovalNoticeListener, PendingApprovalDockListener]

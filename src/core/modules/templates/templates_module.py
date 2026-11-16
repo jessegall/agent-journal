@@ -1,3 +1,5 @@
+from core.modules.templates.support.templates_dependencies import TEMPLATES_DEPENDENCIES
+from core.modules.templates.support.templates_subcommands import TEMPLATES_SUBCOMMANDS
 from core.modules.templates.windows.extensions.chat_templates_extension import ChatTemplatesExtension
 from core.modules.templates.windows.templates_windows import TEMPLATES_WINDOWS
 from core.modules.templates.models.declarations.template_model_declaration import TemplateModelDeclaration
@@ -5,16 +7,12 @@ from core.modules.templates.templates.templates_templates import TEMPLATES_TEMPL
 from core.modules.templates.skills.declarations.templates_skills import TEMPLATES_SKILLS
 from engine.module.module import Module
 from core.modules.templates.commands.make_template.make_template_handler import MakeTemplateHandler
-from core.modules.templates.commands.make_template.make_template_subcommand import MakeTemplateSubcommand
-from core.modules.templates.commands.template_list.template_list_subcommand import TemplateListSubcommand
-from core.modules.templates.commands.template_show.template_show_subcommand import TemplateShowSubcommand
 from core.modules.templates.commands.save_standard_templates.save_standard_templates_handler import SaveStandardTemplatesHandler
 from core.modules.templates.guards.standard_template_guard import StandardTemplateGuard
 from core.modules.templates.listeners.standard_templates_listener import StandardTemplatesListener
 from core.modules.templates.migrations.m001_templates import TemplatesTableMigration
 from core.modules.templates.migrations.m002_template_module import TemplateModuleColumnMigration
 from core.modules.templates.commands.send_template.send_template_handler import SendTemplateHandler
-from core.modules.templates.commands.send_template.send_template_subcommand import SendTemplateSubcommand
 from core.modules.templates.seeders.templates_seeder import TemplatesSeeder
 from core.modules.templates.upgrade.templates_move import TemplatesMove
 
@@ -26,13 +24,13 @@ class TemplatesModule(Module):
     name = "journal.core.templates"
     templates = TEMPLATES_TEMPLATES
     requires_engine = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.drivers", "journal.core.messages", "journal.core.documents", "journal.core.plans", "journal.core.agents", "journal.core.skills"]
+    dependencies = TEMPLATES_DEPENDENCIES
     skills = TEMPLATES_SKILLS
     models = [TemplateModelDeclaration]
     migrations = [TemplatesTableMigration, TemplateModuleColumnMigration]
     moves = [TemplatesMove]
     handlers = [MakeTemplateHandler, SaveStandardTemplatesHandler, SendTemplateHandler]
-    subcommands = [MakeTemplateSubcommand, TemplateShowSubcommand, TemplateListSubcommand, SendTemplateSubcommand]
+    subcommands = TEMPLATES_SUBCOMMANDS
     listeners = [StandardTemplatesListener]
     guards = [StandardTemplateGuard]
     seeders = [TemplatesSeeder]

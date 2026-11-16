@@ -1,0 +1,9 @@
+from core.modules.reviews.commands.add_reviewer.add_reviewer_subcommand import AddReviewerSubcommand
+from core.modules.reviews.commands.record_review.record_review_subcommand import RecordReviewSubcommand
+from core.modules.reviews.commands.request_review.request_review_subcommand import RequestReviewSubcommand
+from core.modules.reviews.commands.retire_reviewer.retire_reviewer_subcommand import RetireReviewerSubcommand
+from core.modules.reviews.commands.review_board.review_board_subcommand import ReviewBoardSubcommand
+from core.modules.reviews.commands.review_board.review_step_board_subcommand import ReviewStepBoardSubcommand
+from core.modules.reviews.commands.reviewer_list.reviewer_list_subcommand import ReviewerListSubcommand
+
+REVIEWS_SUBCOMMANDS = [ReviewBoardSubcommand, ReviewStepBoardSubcommand, RequestReviewSubcommand, RecordReviewSubcommand, AddReviewerSubcommand, RetireReviewerSubcommand, ReviewerListSubcommand]

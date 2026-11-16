@@ -1,0 +1,9 @@
+from core.modules.approvals.migrations.m001_approval_requests import ApprovalRequestsMigration
+from core.modules.approvals.migrations.m002_approval_recipients import ApprovalRecipientsMigration
+from core.modules.approvals.migrations.m003_approval_commands import ApprovalCommandsMigration
+from core.modules.approvals.migrations.m004_standing_approvals import StandingApprovalsMigration
+from core.modules.approvals.migrations.m005_approval_why import ApprovalWhyMigration
+from core.modules.approvals.migrations.m006_plain_column_names import PlainColumnNamesMigration
+from core.modules.approvals.migrations.m007_approval_failure import ApprovalFailureMigration
+
+APPROVALS_MIGRATIONS = [ApprovalFailureMigration, PlainColumnNamesMigration, ApprovalRequestsMigration, ApprovalRecipientsMigration, ApprovalCommandsMigration, StandingApprovalsMigration, ApprovalWhyMigration]

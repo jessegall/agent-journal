@@ -1,0 +1,8 @@
+from core.modules.sequences.listeners.sequence_end_listener import SequenceEndListener
+from core.modules.sequences.listeners.sequence_ended_mark_listener import SequenceEndedMarkListener
+from core.modules.sequences.listeners.sequence_event_index_listener import SequenceEventIndexListener
+from core.modules.sequences.listeners.sequence_row_trigger_listener import SequenceRowTriggerListener
+from core.modules.sequences.listeners.sequence_started_mark_listener import SequenceStartedMarkListener
+from core.modules.sequences.listeners.standard_sequences_listener import StandardSequencesListener
+
+SEQUENCES_LISTENERS = [SequenceEventIndexListener, SequenceRowTriggerListener, SequenceEndListener, StandardSequencesListener, SequenceStartedMarkListener, SequenceEndedMarkListener]

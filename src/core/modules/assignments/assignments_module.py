@@ -1,3 +1,4 @@
+from core.modules.assignments.support.assignments_migrations import ASSIGNMENTS_MIGRATIONS
 from core.modules.assignments.models.declarations.assignment_model_declaration import AssignmentModelDeclaration
 from engine.module.module import Module
 from core.modules.assignments.commands.assign_row.assign_row_handler import AssignRowHandler
@@ -9,9 +10,6 @@ from core.modules.assignments.listeners.child_created_listener import ChildCreat
 from core.modules.assignments.listeners.link_created_listener import LinkCreatedListener
 from core.modules.assignments.listeners.link_removed_listener import LinkRemovedListener
 from core.modules.assignments.listeners.row_deleted_listener import RowDeletedListener
-from core.modules.assignments.migrations.m001_assignments import AssignmentsTableMigration
-from core.modules.assignments.migrations.m002_assignments_actor_subject_index import AssignmentsActorSubjectIndexMigration
-from core.modules.assignments.migrations.m003_assignment_ids_never_reused import AssignmentIdsNeverReusedMigration
 
 
 class AssignmentsModule(Module):
@@ -23,7 +21,7 @@ class AssignmentsModule(Module):
     seed_reason = "an assignment shows on the row it is about, which the module of that row seeds"
     dependencies = ["journal.core.actors", "journal.core.agents"]
     models = [AssignmentModelDeclaration]
-    migrations = [AssignmentsTableMigration, AssignmentsActorSubjectIndexMigration, AssignmentIdsNeverReusedMigration]
+    migrations = ASSIGNMENTS_MIGRATIONS
     subcommands = [AssignRowSubcommand, UnassignRowSubcommand]
     handlers = [AssignRowHandler, UnassignRowHandler]
     listeners = [RowDeletedListener, ChildCreatedListener, LinkCreatedListener, LinkRemovedListener]

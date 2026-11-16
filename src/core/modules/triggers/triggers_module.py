@@ -1,3 +1,8 @@
+from core.modules.triggers.support.triggers_dependencies import TRIGGERS_DEPENDENCIES
+from core.modules.triggers.support.triggers_migrations import TRIGGERS_MIGRATIONS
+from core.modules.triggers.support.triggers_handlers import TRIGGERS_HANDLERS
+from core.modules.triggers.support.triggers_listeners import TRIGGERS_LISTENERS
+from core.modules.triggers.support.triggers_subcommands import TRIGGERS_SUBCOMMANDS
 from core.modules.triggers.policies.phrase_trigger_policy import PhraseTriggerPolicy
 from core.modules.triggers.lines.phrase_trigger_lines import PhraseTriggerLines
 from core.modules.triggers.lines.scheduled_trigger_lines import ScheduledTriggerLines
@@ -7,41 +12,13 @@ from core.modules.triggers.states.phrase_trigger_states import PhraseTriggerStat
 from core.modules.triggers.windows.triggers_windows import TRIGGERS_WINDOWS
 from core.modules.triggers.models.declarations.trigger_model_declaration import TriggerModelDeclaration
 from core.modules.triggers.models.declarations.trigger_action_run_model_declaration import TriggerActionRunModelDeclaration
-from core.modules.triggers.commands.try_trigger.try_trigger_subcommand import TryTriggerSubcommand
-from core.modules.triggers.migrations.m005_trigger_skill import TriggerSkillMigration
-from core.modules.triggers.migrations.m007_trigger_message_action import TriggerMessageActionMigration
-from core.modules.triggers.migrations.m008_requires_enabling import RequiresEnablingMigration
-from core.modules.triggers.migrations.m006_trigger_approval_index import TriggerApprovalIndexMigration
-from core.modules.triggers.commands.enable_trigger.enable_trigger_handler import EnableTriggerHandler
-from core.modules.triggers.commands.enable_trigger.enable_trigger_subcommand import EnableTriggerSubcommand
 from core.modules.triggers.guards.agent_trigger_guard import AgentTriggerGuard
-from core.modules.triggers.listeners.trigger_waiting_mark_listener import TriggerWaitingMarkListener
-from core.modules.triggers.listeners.trigger_approval_listener import TriggerApprovalListener
-from core.modules.triggers.migrations.m003_trigger_enabling import TriggerEnablingMigration
 from core.modules.triggers.marks.trigger_waiting_mark import TriggerWaitingMark
 from core.modules.triggers.support.trigger_settings import TRIGGER_SETTINGS
 from core.modules.triggers.support.trigger_agent_messages import TRIGGER_AGENT_MESSAGES
 from engine.module.module import Module
-from core.modules.triggers.commands.fire_trigger.fire_trigger_handler import FireTriggerHandler
-from core.modules.triggers.commands.make_trigger.make_trigger_handler import MakeTriggerHandler
-from core.modules.triggers.commands.make_trigger.make_trigger_subcommand import MakeTriggerSubcommand
-from core.modules.triggers.commands.schedule_trigger.schedule_trigger_handler import ScheduleTriggerHandler
-from core.modules.triggers.commands.schedule_trigger.schedule_trigger_subcommand import ScheduleTriggerSubcommand
-from core.modules.triggers.commands.pause_trigger.pause_trigger_handler import PauseTriggerHandler
-from core.modules.triggers.commands.pause_trigger.pause_trigger_subcommand import PauseTriggerSubcommand
-from core.modules.triggers.commands.strike_trigger.strike_trigger_handler import StrikeTriggerHandler
-from core.modules.triggers.listeners.trigger_actions_listener import TriggerActionsListener
-from core.modules.triggers.migrations.m002_trigger_details import TriggerDetailsMigration
-from core.modules.triggers.commands.strike_trigger.strike_trigger_subcommand import StrikeTriggerSubcommand
-from core.modules.triggers.commands.trigger_list.trigger_list_subcommand import TriggerListSubcommand
-from core.modules.triggers.migrations.m001_triggers import TriggersTableMigration
 from core.modules.triggers.upgrade.triggers_move import TriggersMove
 from core.modules.triggers.seeders.triggers_seeder import TriggersSeeder
-from core.modules.triggers.migrations.m004_trigger_action_runs import TriggerActionRunsMigration
-from core.modules.triggers.commands.start_trigger_action.start_trigger_action_handler import StartTriggerActionHandler
-from core.modules.triggers.commands.deliver_trigger_output.deliver_trigger_output_handler import DeliverTriggerOutputHandler
-from core.modules.triggers.listeners.trigger_output_listener import TriggerOutputListener
-from core.modules.triggers.listeners.trigger_process_removal_listener import TriggerProcessRemovalListener
 
 
 
@@ -59,12 +36,12 @@ class TriggersModule(Module):
     marks = [TriggerWaitingMark]
     guards = [AgentTriggerGuard]
     requires_engine = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.chat", "journal.core.drivers", "journal.core.settings", "journal.core.processes", "journal.core.skills"]
+    dependencies = TRIGGERS_DEPENDENCIES
     models = [TriggerModelDeclaration, TriggerActionRunModelDeclaration]
-    migrations = [RequiresEnablingMigration, TriggerMessageActionMigration, TriggersTableMigration, TriggerDetailsMigration, TriggerEnablingMigration, TriggerActionRunsMigration, TriggerSkillMigration, TriggerApprovalIndexMigration]
-    handlers = [EnableTriggerHandler, MakeTriggerHandler, ScheduleTriggerHandler, StrikeTriggerHandler, FireTriggerHandler, PauseTriggerHandler, StartTriggerActionHandler, DeliverTriggerOutputHandler]
-    listeners = [TriggerActionsListener, TriggerWaitingMarkListener, TriggerOutputListener, TriggerProcessRemovalListener, TriggerApprovalListener]
-    subcommands = [TryTriggerSubcommand, EnableTriggerSubcommand, MakeTriggerSubcommand, ScheduleTriggerSubcommand, StrikeTriggerSubcommand, PauseTriggerSubcommand, TriggerListSubcommand]
+    migrations = TRIGGERS_MIGRATIONS
+    handlers = TRIGGERS_HANDLERS
+    listeners = TRIGGERS_LISTENERS
+    subcommands = TRIGGERS_SUBCOMMANDS
     windows = TRIGGERS_WINDOWS
     seeders = [TriggersSeeder]
     moves = [TriggersMove]

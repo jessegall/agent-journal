@@ -1,0 +1,8 @@
+from core.modules.phone.commands.ensure_push_keys.ensure_push_keys_handler import EnsurePushKeysHandler
+from core.modules.phone.commands.note_phone_notice.note_phone_notice_handler import NotePhoneNoticeHandler
+from core.modules.phone.commands.pair_phone.pair_phone_handler import PairPhoneHandler
+from core.modules.phone.commands.redeem_phone_code.redeem_phone_code_handler import RedeemPhoneCodeHandler
+from core.modules.phone.commands.send_phone_notices.send_phone_notices_handler import SendPhoneNoticesHandler
+from core.modules.phone.commands.subscribe_phone.subscribe_phone_handler import SubscribePhoneHandler
+
+PHONE_HANDLERS = [PairPhoneHandler, RedeemPhoneCodeHandler, EnsurePushKeysHandler, SubscribePhoneHandler, NotePhoneNoticeHandler, SendPhoneNoticesHandler]

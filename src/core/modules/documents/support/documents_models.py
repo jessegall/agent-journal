@@ -1,0 +1,9 @@
+from core.modules.documents.models.declarations.comment_selection_model_declaration import CommentSelectionModelDeclaration
+from core.modules.documents.models.declarations.doc_model_declaration import DocModelDeclaration
+from core.modules.documents.models.declarations.doc_revision_model_declaration import DocRevisionModelDeclaration
+from core.modules.documents.models.declarations.link_correction_model_declaration import LinkCorrectionModelDeclaration
+from core.modules.documents.models.declarations.link_model_declaration import LinkModelDeclaration
+from core.modules.documents.models.declarations.open_document_model_declaration import OpenDocumentModelDeclaration
+from core.modules.documents.models.declarations.report_model_declaration import ReportModelDeclaration
+
+DOCUMENTS_MODELS = [OpenDocumentModelDeclaration, DocModelDeclaration, ReportModelDeclaration, DocRevisionModelDeclaration, LinkModelDeclaration, CommentSelectionModelDeclaration, LinkCorrectionModelDeclaration]

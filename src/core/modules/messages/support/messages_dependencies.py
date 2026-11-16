@@ -1,0 +1,1 @@
+MESSAGES_DEPENDENCIES = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.docking", "journal.core.pins", "journal.core.drivers", "journal.core.dumps", "journal.core.settings", "journal.core.schedules", "journal.core.profiles"]

@@ -1,0 +1,1 @@
+HELPERS_DEPENDENCIES = ["journal.core.agents", "journal.core.profiles", "journal.core.messages", "journal.core.drivers", "journal.core.usage", "journal.core.chat", "journal.core.skills", "journal.core.settings", "journal.core.processes", "journal.core.environments", "journal.core.tasks", "journal.core.assignments"]

@@ -1,3 +1,4 @@
+from core.modules.voices.support.voices_dependencies import VOICES_DEPENDENCIES
 from engine.module.module import Module
 from core.modules.voices.commands.set_voice_address.set_voice_address_handler import SetVoiceAddressHandler
 from core.modules.voices.commands.set_voice_address.set_voice_address_subcommand import SetVoiceAddressSubcommand
@@ -19,7 +20,7 @@ class VoicesModule(Module):
     move_reason = "version 4 kept the voice as settings, which move with the settings"
     seed_reason = "the voice is a setting with a default"
     requires_engine = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.settings"]
+    dependencies = VOICES_DEPENDENCIES
     settings = VOICES_SETTINGS
     subcommands = [VoiceListSubcommand, ChooseVoiceSubcommand, SetVoiceAddressSubcommand, VoiceShowSubcommand]
     handlers = [SetVoiceAddressHandler]

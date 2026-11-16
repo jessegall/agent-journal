@@ -1,3 +1,4 @@
+from core.modules.profiles.support.profiles_move_reason import PROFILES_MOVE_REASON
 from core.modules.profiles.windows.profiles_windows import PROFILES_WINDOWS
 from core.modules.profiles.commands.remove_profile.remove_profile_handler import RemoveProfileHandler
 from core.modules.profiles.commands.remove_profile.remove_profile_subcommand import RemoveProfileSubcommand
@@ -14,7 +15,7 @@ class ProfilesModule(Module):
 
     name = "journal.core.profiles"
     seed_reason = "its rows are files the journal writes at every start"
-    move_reason = "version 4's profiles are files that stay in place; their counts and settings move with the statistics and the settings"
+    move_reason = PROFILES_MOVE_REASON
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.settings"]
     settings = PROFILE_SETTINGS

@@ -1,0 +1,35 @@
+from core.modules.documents.commands.close_doc.close_doc_subcommand import CloseDocSubcommand
+from core.modules.documents.commands.comment_doc.comment_doc_subcommand import CommentDocSubcommand
+from core.modules.documents.commands.comment_message.comment_message_subcommand import CommentMessageSubcommand
+from core.modules.documents.commands.comment_plan.comment_plan_subcommand import CommentPlanSubcommand
+from core.modules.documents.commands.comment_task.comment_task_subcommand import CommentTaskSubcommand
+from core.modules.documents.commands.doc_comments.doc_comments_subcommand import DocCommentsSubcommand
+from core.modules.documents.commands.doc_inspect.doc_inspect_subcommand import DocInspectSubcommand
+from core.modules.documents.commands.doc_list.doc_list_subcommand import DocListSubcommand
+from core.modules.documents.commands.doc_revision.doc_revision_subcommand import DocRevisionSubcommand
+from core.modules.documents.commands.doc_revisions.doc_revisions_subcommand import DocRevisionsSubcommand
+from core.modules.documents.commands.doc_show.doc_show_subcommand import DocShowSubcommand
+from core.modules.documents.commands.document_library.document_library_subcommand import DocumentLibrarySubcommand
+from core.modules.documents.commands.edit_doc.edit_doc_subcommand import EditDocSubcommand
+from core.modules.documents.commands.keep_revision.keep_revision_subcommand import KeepRevisionSubcommand
+from core.modules.documents.commands.link_list.link_list_subcommand import LinkListSubcommand
+from core.modules.documents.commands.link_receipts.link_receipts_subcommand import LinkReceiptsSubcommand
+from core.modules.documents.commands.make_doc.make_doc_subcommand import MakeDocSubcommand
+from core.modules.documents.commands.open_doc.open_doc_subcommand import OpenDocSubcommand
+from core.modules.documents.commands.plan_comments.plan_comments_subcommand import PlanCommentsSubcommand
+from core.modules.documents.commands.plan_context_read.read_plan_context_subcommand import ReadPlanContextSubcommand
+from core.modules.documents.commands.remove_link.remove_link_subcommand import RemoveLinkSubcommand
+from core.modules.documents.commands.report_close.report_close_subcommand import ReportCloseSubcommand
+from core.modules.documents.commands.report_comment.report_comment_subcommand import ReportCommentSubcommand
+from core.modules.documents.commands.report_comments.report_comments_subcommand import ReportCommentsSubcommand
+from core.modules.documents.commands.report_edit.report_edit_subcommand import ReportEditSubcommand
+from core.modules.documents.commands.report_inspect.report_inspect_subcommand import ReportInspectSubcommand
+from core.modules.documents.commands.report_list.report_list_subcommand import ReportListSubcommand
+from core.modules.documents.commands.report_make.report_make_subcommand import ReportMakeSubcommand
+from core.modules.documents.commands.report_show.report_show_subcommand import ReportShowSubcommand
+from core.modules.documents.commands.task_comments.task_comments_subcommand import TaskCommentsSubcommand
+from core.modules.documents.commands.task_context.task_context_subcommand import TaskContextSubcommand
+
+DOCUMENTS_SUBCOMMANDS = [OpenDocSubcommand, CommentMessageSubcommand, CommentDocSubcommand, ReportCommentSubcommand, MakeDocSubcommand, EditDocSubcommand, DocShowSubcommand, DocListSubcommand, CloseDocSubcommand, KeepRevisionSubcommand,
+                   DocRevisionsSubcommand, DocRevisionSubcommand, ReportMakeSubcommand, ReportEditSubcommand, ReportShowSubcommand, ReportListSubcommand,
+                   ReportCloseSubcommand, DocumentLibrarySubcommand, LinkListSubcommand, LinkReceiptsSubcommand, DocCommentsSubcommand, ReportCommentsSubcommand, DocInspectSubcommand, ReportInspectSubcommand, RemoveLinkSubcommand, TaskContextSubcommand, CommentTaskSubcommand, TaskCommentsSubcommand, ReadPlanContextSubcommand, CommentPlanSubcommand, PlanCommentsSubcommand]

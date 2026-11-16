@@ -1,11 +1,10 @@
+from core.modules.questions.support.questions_dependencies import QUESTIONS_DEPENDENCIES
+from core.modules.questions.support.questions_migrations import QUESTIONS_MIGRATIONS
+from core.modules.questions.support.questions_listeners import QUESTIONS_LISTENERS
 from core.modules.questions.policies.own_question_tool_policy import OwnQuestionToolPolicy
 from core.modules.questions.models.declarations.question_model_declaration import QuestionModelDeclaration
 from core.modules.questions.docks.questions_docks import QUESTIONS_DOCKS
 from core.modules.questions.windows.questions_windows import QUESTIONS_WINDOWS
-from core.modules.questions.migrations.m005_question_session import QuestionSessionMigration
-from core.modules.questions.migrations.m007_question_context import QuestionContextMigration
-from core.modules.questions.migrations.m006_question_environment_state_index import QuestionEnvironmentStateIndexMigration
-from core.modules.questions.migrations.m003_question_agent_state_index import QuestionAgentStateIndexMigration
 from core.modules.questions.support.question_agent_messages import QUESTION_AGENT_MESSAGES
 from engine.module.module import Module
 from core.modules.questions.commands.answer_question.answer_question_handler import AnswerQuestionHandler
@@ -17,15 +16,6 @@ from core.modules.questions.marks.question_mark import QuestionMark
 from core.modules.questions.marks.question_answer_mark import QuestionAnswerMark
 from core.modules.questions.guards.question_asker_guard import QuestionAskerGuard
 from core.modules.questions.guards.actor_options_guard import ActorOptionsGuard
-from core.modules.questions.listeners.open_questions_dock_listener import OpenQuestionsDockListener
-from core.modules.questions.listeners.question_answered_mark_listener import QuestionAnsweredMarkListener
-from core.modules.questions.listeners.question_answer_line_listener import QuestionAnswerLineListener
-from core.modules.questions.listeners.question_open_mark_listener import QuestionOpenMarkListener
-from core.modules.questions.listeners.question_closed_mark_listener import QuestionClosedMarkListener
-from core.modules.questions.listeners.question_edited_mark_listener import QuestionEditedMarkListener
-from core.modules.questions.migrations.m001_questions import QuestionsTablesMigration
-from core.modules.questions.migrations.m002_answer_message import AnswerMessageMigration
-from core.modules.questions.migrations.m004_question_place import QuestionPlaceMigration
 from core.modules.questions.seeders.questions_seeder import QuestionsSeeder
 from core.modules.questions.upgrade.questions_move import QuestionsMove
 from core.modules.questions.upgrade.question_links_move import QuestionLinksMove
@@ -42,15 +32,15 @@ class QuestionsModule(Module):
     agent_messages = QUESTION_AGENT_MESSAGES
     requires_engine = ">=5,<6"
     block_conditions = [QuestionAnswered, QuestionsClosed]
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages", "journal.core.waits", "journal.core.chat", "journal.core.documents", "journal.core.tasks", "journal.core.plans", "journal.core.docking"]
+    dependencies = QUESTIONS_DEPENDENCIES
     models = [QuestionModelDeclaration]
-    migrations = [QuestionEnvironmentStateIndexMigration, QuestionSessionMigration, QuestionAgentStateIndexMigration, QuestionsTablesMigration, AnswerMessageMigration, QuestionPlaceMigration, QuestionContextMigration]
+    migrations = QUESTIONS_MIGRATIONS
     moves = [QuestionsMove, QuestionLinksMove]
     subcommands = [AskQuestionSubcommand, QuestionListSubcommand, QuestionShowSubcommand]
     handlers = [AskQuestionHandler, AnswerQuestionHandler]
     guards = [QuestionAskerGuard, ActorOptionsGuard]
     marks = [QuestionMark, QuestionAnswerMark]
-    listeners = [OpenQuestionsDockListener, QuestionOpenMarkListener, QuestionEditedMarkListener, QuestionAnsweredMarkListener, QuestionClosedMarkListener, QuestionAnswerLineListener]
+    listeners = QUESTIONS_LISTENERS
     docks = QUESTIONS_DOCKS
     windows = QUESTIONS_WINDOWS
     inspectors = [QuestionInspector]

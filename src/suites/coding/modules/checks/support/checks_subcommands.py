@@ -1,0 +1,12 @@
+from suites.coding.modules.checks.commands.check_list.check_list_subcommand import CheckListSubcommand
+from suites.coding.modules.checks.commands.check_runs.check_runs_subcommand import CheckRunsSubcommand
+from suites.coding.modules.checks.commands.check_show.check_show_subcommand import CheckShowSubcommand
+from suites.coding.modules.checks.commands.create_check.create_check_subcommand import CreateCheckSubcommand
+from suites.coding.modules.checks.commands.edit_check.edit_check_subcommand import EditCheckSubcommand
+from suites.coding.modules.checks.commands.make_check.make_check_subcommand import MakeCheckSubcommand
+from suites.coding.modules.checks.commands.remove_check.remove_check_subcommand import RemoveCheckSubcommand
+from suites.coding.modules.checks.commands.run_check.run_check_subcommand import RunCheckSubcommand
+from suites.coding.modules.checks.commands.start_check.start_check_subcommand import StartCheckSubcommand
+from suites.coding.modules.checks.commands.stop_check.stop_check_subcommand import StopCheckSubcommand
+
+CHECKS_SUBCOMMANDS = [CheckRunsSubcommand, MakeCheckSubcommand, CreateCheckSubcommand, EditCheckSubcommand, RunCheckSubcommand, StartCheckSubcommand, StopCheckSubcommand, RemoveCheckSubcommand, CheckListSubcommand, CheckShowSubcommand]

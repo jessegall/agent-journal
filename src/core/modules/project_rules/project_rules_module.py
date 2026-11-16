@@ -1,3 +1,4 @@
+from core.modules.project_rules.support.project_rules_dependencies import PROJECT_RULES_DEPENDENCIES
 from core.modules.project_rules.lines.start_rules_lines import StartRulesLines
 from core.modules.project_rules.windows.project_rules_windows import PROJECT_RULES_WINDOWS
 from core.modules.project_rules.models.declarations.project_rule_model_declaration import ProjectRuleModelDeclaration
@@ -21,7 +22,7 @@ class ProjectRulesModule(Module):
     lines = [StartRulesLines]
     seed_reason = "the demo shows no rules yet"
     requires_engine = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.docking", "journal.core.memories", "journal.core.reminders", "journal.core.settings", "journal.core.viewer"]
+    dependencies = PROJECT_RULES_DEPENDENCIES
     models = [ProjectRuleModelDeclaration]
     migrations = [RulesTableMigration, MemoryRulesMigration, PlainMemoriesMigration]
     moves = [RulesMove]

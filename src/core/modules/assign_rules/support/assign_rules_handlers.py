@@ -1,0 +1,15 @@
+from core.modules.assign_rules.commands.delete_assign_rule.delete_assign_rule_handler import DeleteAssignRuleHandler
+from core.modules.assign_rules.commands.delete_assign_rule.return_rule_tasks_handler import ReturnRuleTasksHandler
+from core.modules.assign_rules.commands.edit_assign_rule.edit_assign_rule_handler import EditAssignRuleHandler
+from core.modules.assign_rules.commands.edit_assign_rule.move_rule_tasks_handler import MoveRuleTasksHandler
+from core.modules.assign_rules.commands.judge_task.judge_task_handler import JudgeTaskHandler
+from core.modules.assign_rules.commands.judge_task.record_failed_decision_handler import RecordFailedDecisionHandler
+from core.modules.assign_rules.commands.make_assign_rule.make_assign_rule_handler import MakeAssignRuleHandler
+from core.modules.assign_rules.commands.move_assign_rule.move_assign_rule_handler import MoveAssignRuleHandler
+from core.modules.assign_rules.commands.record_assign_decision.apply_assign_rule_handler import ApplyAssignRuleHandler
+from core.modules.assign_rules.commands.record_assign_decision.judge_skipped_tasks_handler import JudgeSkippedTasksHandler
+from core.modules.assign_rules.commands.record_assign_decision.record_assign_decision_handler import RecordAssignDecisionHandler
+from core.modules.assign_rules.commands.switch_assign_rule.switch_assign_rule_handler import SwitchAssignRuleHandler
+
+ASSIGN_RULES_HANDLERS = [RecordAssignDecisionHandler, JudgeTaskHandler, RecordFailedDecisionHandler, JudgeSkippedTasksHandler, MakeAssignRuleHandler, EditAssignRuleHandler, MoveAssignRuleHandler, SwitchAssignRuleHandler, DeleteAssignRuleHandler,
+                ApplyAssignRuleHandler, MoveRuleTasksHandler, ReturnRuleTasksHandler]

@@ -1,0 +1,16 @@
+from core.modules.tasks.commands.assign_next_task.assign_next_task_handler import AssignNextTaskHandler
+from core.modules.tasks.commands.assign_task.assign_task_handler import AssignTaskHandler
+from core.modules.tasks.commands.choose_next_task.choose_next_task_handler import ChooseNextTaskHandler
+from core.modules.tasks.commands.choose_task_focus.choose_task_focus_handler import ChooseTaskFocusHandler
+from core.modules.tasks.commands.read_task_brief.read_task_brief_handler import ReadTaskBriefHandler
+from core.modules.tasks.commands.record_task_independence.record_task_independence_handler import RecordTaskIndependenceHandler
+from core.modules.tasks.commands.record_task_read.record_task_read_handler import RecordTaskReadHandler
+from core.modules.tasks.commands.remove_task_dependency.remove_task_dependency_handler import RemoveTaskDependencyHandler
+from core.modules.tasks.commands.remove_task_tag.remove_task_tag_handler import RemoveTaskTagHandler
+from core.modules.tasks.commands.repair_task_states.repair_task_states_handler import RepairTaskStatesHandler
+from core.modules.tasks.commands.reset_task_reads.reset_task_reads_handler import ResetTaskReadsHandler
+from core.modules.tasks.commands.tag_task.tag_task_handler import TagTaskHandler
+from core.modules.tasks.commands.unassign_agent_tasks.unassign_agent_tasks_handler import UnassignAgentTasksHandler
+from core.modules.tasks.commands.wait_task.wait_task_handler import WaitTaskHandler
+
+TASKS_HANDLERS = [AssignNextTaskHandler, RepairTaskStatesHandler, ChooseNextTaskHandler, ChooseTaskFocusHandler, RecordTaskIndependenceHandler, TagTaskHandler, RemoveTaskTagHandler, RecordTaskReadHandler, AssignTaskHandler, UnassignAgentTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]

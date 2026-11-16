@@ -1,0 +1,26 @@
+from core.modules.library.commands.add_library_user.add_library_user_subcommand import AddLibraryUserSubcommand
+from core.modules.library.commands.choose_library_version.choose_library_version_subcommand import ChooseLibraryVersionSubcommand
+from core.modules.library.commands.leave_library_copy.leave_library_copy_subcommand import LeaveLibraryCopySubcommand
+from core.modules.library.commands.library_browse.library_browse_subcommand import LibraryBrowseSubcommand
+from core.modules.library.commands.library_copies.library_copies_subcommand import LibraryCopiesSubcommand
+from core.modules.library.commands.library_inspect.library_inspect_subcommand import LibraryInspectSubcommand
+from core.modules.library.commands.library_list.library_list_subcommand import LibraryListSubcommand
+from core.modules.library.commands.library_show.library_show_subcommand import LibraryShowSubcommand
+from core.modules.library.commands.library_status.library_status_subcommand import LibraryStatusSubcommand
+from core.modules.library.commands.library_user_list.library_user_list_subcommand import LibraryUserListSubcommand
+from core.modules.library.commands.library_user_tokens.library_user_tokens_subcommand import LibraryUserTokensSubcommand
+from core.modules.library.commands.library_versions.library_versions_subcommand import LibraryVersionsSubcommand
+from core.modules.library.commands.make_library_copy.make_library_copy_subcommand import MakeLibraryCopySubcommand
+from core.modules.library.commands.pair_library.pair_library_subcommand import PairLibrarySubcommand
+from core.modules.library.commands.remove_library_item.remove_library_item_subcommand import RemoveLibraryItemSubcommand
+from core.modules.library.commands.remove_library_user.remove_library_user_subcommand import RemoveLibraryUserSubcommand
+from core.modules.library.commands.restore_library_item.restore_library_item_subcommand import RestoreLibraryItemSubcommand
+from core.modules.library.commands.revoke_library_token.revoke_library_token_subcommand import RevokeLibraryTokenSubcommand
+from core.modules.library.commands.run_library_sync.run_library_sync_subcommand import RunLibrarySyncSubcommand
+from core.modules.library.commands.send_library_item.send_library_item_subcommand import SendLibraryItemSubcommand
+from core.modules.library.commands.set_library_role.set_library_role_subcommand import SetLibraryRoleSubcommand
+from core.modules.library.commands.unpair_library.unpair_library_subcommand import UnpairLibrarySubcommand
+
+LIBRARY_SUBCOMMANDS = [PairLibrarySubcommand, UnpairLibrarySubcommand, LibraryStatusSubcommand, LibraryListSubcommand, LibraryBrowseSubcommand, LibraryInspectSubcommand, LibraryShowSubcommand, LibraryVersionsSubcommand, LibraryUserListSubcommand, LibraryUserTokensSubcommand, AddLibraryUserSubcommand, SetLibraryRoleSubcommand, RemoveLibraryUserSubcommand,
+                   RevokeLibraryTokenSubcommand,
+                   MakeLibraryCopySubcommand, SendLibraryItemSubcommand, LeaveLibraryCopySubcommand, LibraryCopiesSubcommand, RunLibrarySyncSubcommand, ChooseLibraryVersionSubcommand, RemoveLibraryItemSubcommand, RestoreLibraryItemSubcommand]

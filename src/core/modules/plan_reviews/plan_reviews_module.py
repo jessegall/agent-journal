@@ -1,3 +1,6 @@
+from core.modules.plan_reviews.support.plan_reviews_dependencies import PLAN_REVIEWS_DEPENDENCIES
+from core.modules.plan_reviews.support.plan_reviews_former_event_keys import PLAN_REVIEWS_FORMER_EVENT_KEYS
+from core.modules.plan_reviews.support.plan_reviews_buttons import PLAN_REVIEWS_BUTTONS
 from core.modules.plan_reviews.windows.plan_reviews_windows import PLAN_REVIEWS_WINDOWS
 from core.modules.plan_reviews.models.declarations.checkpoint_review_model_declaration import CheckpointReviewModelDeclaration
 from core.modules.plan_reviews.skills.declarations.plan_reviews_skills import PLAN_REVIEWS_SKILLS
@@ -11,9 +14,6 @@ from core.modules.plan_reviews.listeners.checkpoint_review_report_listener impor
 from core.modules.plan_reviews.listeners.checkpoint_review_start_listener import CheckpointReviewStartListener
 from core.modules.plan_reviews.migrations.m001_review_setting_keys import ReviewSettingKeysMigration
 from core.modules.plan_reviews.support.plan_review_settings import PLAN_REVIEW_SETTINGS
-from core.modules.plan_reviews.buttons.plan_reviews_critique_button import PlanReviewsCritiqueButton
-from core.modules.plan_reviews.buttons.plan_reviews_end_review_button import PlanReviewsEndReviewButton
-from core.modules.plan_reviews.buttons.plan_reviews_cancel_button import PlanReviewsCancelButton
 
 
 class PlanReviewsModule(Module):
@@ -24,7 +24,7 @@ class PlanReviewsModule(Module):
     requires_engine = ">=5,<6"
     seed_reason = "its only state and rounds come from what a plan does"
     move_reason = "version 4 plan reviews were dropped when a journal moved"
-    dependencies = ["journal.core.agents", "journal.core.documents", "journal.core.drivers", "journal.core.plans", "journal.core.skills", "journal.core.templates", "journal.core.viewer", "journal.core.actors"]
+    dependencies = PLAN_REVIEWS_DEPENDENCIES
     skills = PLAN_REVIEWS_SKILLS
     added_states = [REVIEW_STATE]
     listeners = [CritiqueReportListener, CheckpointReviewReportListener, CheckpointReviewStartListener]
@@ -32,9 +32,7 @@ class PlanReviewsModule(Module):
     models = [CheckpointReviewModelDeclaration]
     migrations = [ReviewSettingKeysMigration]
     settings = PLAN_REVIEW_SETTINGS
-    former_event_keys = {f"core.plans.checkpoint_review.{action}": f"core.plan_reviews.checkpoint_review.{action}" for action in ("created", "updated", "deleted")}
+    former_event_keys = PLAN_REVIEWS_FORMER_EVENT_KEYS
     subcommands = [PlanRoundsSubcommand, PlanReviewTipSubcommand]
-    buttons = [PlanReviewsCritiqueButton,
-               PlanReviewsEndReviewButton,
-               PlanReviewsCancelButton]
+    buttons = PLAN_REVIEWS_BUTTONS
     windows = PLAN_REVIEWS_WINDOWS

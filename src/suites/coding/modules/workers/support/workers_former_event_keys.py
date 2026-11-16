@@ -1,0 +1,15 @@
+WORKERS_FORMER_EVENT_KEYS = {
+        "suites.coding.workers.worker_test_request.allow": "core.helpers.helper_grant.created",
+        "suites.coding.workers.worker_test_request.created": "core.helpers.helper_grant.created",
+        "suites.coding.workers.worker_test_request.deleted": "core.helpers.helper_grant.created",
+        "suites.coding.workers.worker_test_request.refuse": "core.helpers.helper_grant.created",
+        "suites.coding.workers.worker_test_request.restore": "core.helpers.helper_grant.created",
+        "suites.coding.workers.worker_test_request.updated": "core.helpers.helper_grant.created",
+        "suites.coding.workers.worker_test_request.use": "core.helpers.helper_grant.created",
+        "suites.coding.workers.worker_merge_ask.send_back": "suites.coding.workers.worker_merge_ask.reject",
+        "suites.coding.workers.worker_worktree.take_over_cut": "suites.coding.workers.worker_worktree.transfer_cut",
+        "suites.coding.workers.worker_worktree.take_over_delivered": "suites.coding.workers.worker_worktree.transfer_delivered",
+        "suites.coding.workers.worktree_behind_check.pass_on": "suites.coding.workers.worktree_behind_check.escalate",
+        "suites.coding.workers.worktree_behind_check.bring_up_to_date": "suites.coding.workers.worktree_behind_check.mark_updated",
+        "suites.coding.workers.worktree_behind_check.hold": "suites.coding.workers.worktree_behind_check.pause",
+    }

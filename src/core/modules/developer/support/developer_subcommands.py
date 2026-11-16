@@ -1,0 +1,9 @@
+from core.modules.developer.commands.code_map.code_map_subcommand import CodeMapSubcommand
+from core.modules.developer.commands.hook_numbers.hook_numbers_subcommand import HookNumbersSubcommand
+from core.modules.developer.commands.hook_requests.hook_requests_subcommand import HookRequestsSubcommand
+from core.modules.developer.commands.mark_motions.mark_motions_subcommand import MarkMotionsSubcommand
+from core.modules.developer.commands.record_mark_motion.record_mark_motion_subcommand import RecordMarkMotionSubcommand
+from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_subcommand import ResetHookNumbersSubcommand
+from core.modules.developer.commands.system_logs.system_logs_subcommand import SystemLogsSubcommand
+
+DEVELOPER_SUBCOMMANDS = [SystemLogsSubcommand, HookNumbersSubcommand, HookRequestsSubcommand, ResetHookNumbersSubcommand, RecordMarkMotionSubcommand, MarkMotionsSubcommand, CodeMapSubcommand]

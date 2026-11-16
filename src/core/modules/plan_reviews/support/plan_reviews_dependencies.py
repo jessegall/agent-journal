@@ -1,0 +1,1 @@
+PLAN_REVIEWS_DEPENDENCIES = ["journal.core.agents", "journal.core.documents", "journal.core.drivers", "journal.core.plans", "journal.core.skills", "journal.core.templates", "journal.core.viewer", "journal.core.actors"]

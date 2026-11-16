@@ -1,3 +1,5 @@
+from core.modules.dumps.support.dumps_dependencies import DUMPS_DEPENDENCIES
+from core.modules.dumps.support.dumps_subcommands import DUMPS_SUBCOMMANDS
 from core.modules.dumps.wake_causes.dump_arrived_wake import DumpArrivedWake
 from core.modules.dumps.lines.open_dump_lines import OpenDumpLines
 from core.modules.dumps.windows.dumps_windows import DUMPS_WINDOWS
@@ -7,18 +9,10 @@ from core.modules.dumps.docks.dumps_docks import DUMPS_DOCKS
 from core.modules.dumps.skills.declarations.dumps_skills import DUMPS_SKILLS
 from core.modules.dumps.migrations.m003_dump_closed_index import DumpClosedIndexMigration
 from engine.module.module import Module
-from core.modules.dumps.commands.dump_board.dump_board_subcommand import DumpBoardSubcommand
-from core.modules.dumps.commands.dump_board.dump_item_board_subcommand import DumpItemBoardSubcommand
-from core.modules.dumps.commands.dump_items.dump_items_subcommand import DumpItemsSubcommand
 from core.modules.dumps.models.dump_row import DumpRow
-from core.modules.dumps.commands.fail_dump_item.fail_dump_item_subcommand import FailDumpItemSubcommand
-from core.modules.dumps.commands.file_dump_item.file_dump_item_subcommand import FileDumpItemSubcommand
 from core.modules.dumps.commands.make_dump.make_dump_handler import MakeDumpHandler
-from core.modules.dumps.commands.make_dump.make_dump_subcommand import MakeDumpSubcommand
 from core.modules.dumps.commands.move_dump_item.move_dump_item_handler import MoveDumpItemHandler
 from core.modules.dumps.commands.name_dump.name_dump_handler import NameDumpHandler
-from core.modules.dumps.commands.name_dump.name_dump_subcommand import NameDumpSubcommand
-from core.modules.dumps.commands.note_item.note_item_subcommand import NoteItemSubcommand
 from core.modules.dumps.listeners.dump_arrival_listener import DumpArrivalListener
 from core.modules.dumps.support.dump_agent_messages import DUMP_AGENT_MESSAGES
 from core.modules.dumps.listeners.dump_dock_listener import DumpDockListener
@@ -34,14 +28,14 @@ class DumpsModule(Module):
     name = "journal.core.dumps"
     lines = [OpenDumpLines]
     requires_engine = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.docking", "journal.core.agents", "journal.core.drivers"]
+    dependencies = DUMPS_DEPENDENCIES
     skills = DUMPS_SKILLS
     models = [DumpModelDeclaration, DumpItemModelDeclaration]
     migrations = [DumpClosedIndexMigration, DumpsTablesMigration, ProjectDumpsMigration]
     moves = [DumpsMove]
     handlers = [MakeDumpHandler, MoveDumpItemHandler, NameDumpHandler]
     views = [DumpRow]
-    subcommands = [DumpBoardSubcommand, DumpItemBoardSubcommand, MakeDumpSubcommand, DumpItemsSubcommand, NoteItemSubcommand, FileDumpItemSubcommand, FailDumpItemSubcommand, NameDumpSubcommand]
+    subcommands = DUMPS_SUBCOMMANDS
     agent_messages = DUMP_AGENT_MESSAGES
     listeners = [DumpArrivalListener, DumpDockListener]
     wake_causes = [DumpArrivedWake]

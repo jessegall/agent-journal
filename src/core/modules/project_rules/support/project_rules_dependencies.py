@@ -1,0 +1,1 @@
+PROJECT_RULES_DEPENDENCIES = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.docking", "journal.core.memories", "journal.core.reminders", "journal.core.settings", "journal.core.viewer"]

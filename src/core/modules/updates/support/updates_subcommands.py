@@ -1,0 +1,6 @@
+from core.modules.updates.commands.install_release.install_release_subcommand import InstallReleaseSubcommand
+from core.modules.updates.commands.show_update_step.show_update_step_subcommand import ShowUpdateStepSubcommand
+from core.modules.updates.commands.update_check.update_check_subcommand import UpdateCheckSubcommand
+from core.modules.updates.commands.update_notes.update_notes_subcommand import UpdateNotesSubcommand
+
+UPDATES_SUBCOMMANDS = [UpdateCheckSubcommand, InstallReleaseSubcommand, UpdateNotesSubcommand, ShowUpdateStepSubcommand]

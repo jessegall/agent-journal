@@ -1,0 +1,9 @@
+from core.modules.settings.commands.apply_setting_screen.apply_setting_screen_handler import ApplySettingScreenHandler
+from core.modules.settings.commands.remove_managed_hooks.remove_managed_hooks_handler import RemoveManagedHooksHandler
+from core.modules.settings.commands.restore_managed_hooks.restore_managed_hooks_handler import RestoreManagedHooksHandler
+from core.modules.settings.commands.scan_managed_hooks.scan_managed_hooks_handler import ScanManagedHooksHandler
+from core.modules.settings.commands.set_managed_hook.set_managed_hook_handler import SetManagedHookHandler
+from core.modules.settings.commands.set_setting.set_setting_handler import SetSettingHandler
+from core.modules.settings.commands.switch_setting_group.switch_setting_group_handler import SwitchSettingGroupHandler
+
+SETTINGS_HANDLERS = [SetSettingHandler, ApplySettingScreenHandler, SwitchSettingGroupHandler, SetManagedHookHandler, RemoveManagedHooksHandler, ScanManagedHooksHandler, RestoreManagedHooksHandler]

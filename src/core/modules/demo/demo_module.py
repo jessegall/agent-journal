@@ -1,8 +1,7 @@
+from core.modules.demo.support.demo_tick_handlers import DEMO_TICK_HANDLERS
 from engine.module.module import Module
 from core.modules.demo.commands.demo_seed.demo_seed_subcommand import DemoSeedSubcommand
 from core.modules.demo.commands.demo_start.demo_start_subcommand import DemoStartSubcommand
-from core.modules.demo.tick_handlers.demo_folder_pruning_tick_handler import DemoFolderPruningTickHandler
-from core.modules.demo.tick_handlers.demo_owner_watch_tick_handler import DemoOwnerWatchTickHandler
 
 
 class DemoModule(Module):
@@ -14,5 +13,4 @@ class DemoModule(Module):
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors"]
     subcommands = [DemoSeedSubcommand, DemoStartSubcommand]
-    tick_handlers = [DemoFolderPruningTickHandler,
-                     DemoOwnerWatchTickHandler]
+    tick_handlers = DEMO_TICK_HANDLERS

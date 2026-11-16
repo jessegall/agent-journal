@@ -1,0 +1,10 @@
+from suites.coding.modules.checks.commands.edit_check.edit_check_handler import EditCheckHandler
+from suites.coding.modules.checks.commands.make_check.make_check_handler import MakeCheckHandler
+from suites.coding.modules.checks.commands.record_check_progress.record_check_progress_handler import RecordCheckProgressHandler
+from suites.coding.modules.checks.commands.record_check_run.record_check_run_handler import RecordCheckRunHandler
+from suites.coding.modules.checks.commands.remove_check.remove_check_handler import RemoveCheckHandler
+from suites.coding.modules.checks.commands.report_check.report_check_handler import ReportCheckHandler
+from suites.coding.modules.checks.commands.start_check.start_check_handler import StartCheckHandler
+from suites.coding.modules.checks.commands.stop_check.stop_check_handler import StopCheckHandler
+
+CHECKS_HANDLERS = [MakeCheckHandler, EditCheckHandler, RecordCheckRunHandler, RecordCheckProgressHandler, StartCheckHandler, StopCheckHandler, RemoveCheckHandler, ReportCheckHandler]

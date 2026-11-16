@@ -1,0 +1,1 @@
+TASKS_DEPENDENCIES = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking", "journal.core.settings", "journal.core.assignments"]

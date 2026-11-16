@@ -1,0 +1,23 @@
+from core.modules.tasks.commands.assign_task.assign_task_subcommand import AssignTaskSubcommand
+from core.modules.tasks.commands.choose_next_task.choose_next_task_subcommand import ChooseNextTaskSubcommand
+from core.modules.tasks.commands.choose_task_focus.choose_task_focus_subcommand import ChooseTaskFocusSubcommand
+from core.modules.tasks.commands.edit_task.edit_task_subcommand import EditTaskSubcommand
+from core.modules.tasks.commands.environment_cards.environment_cards_subcommand import EnvironmentCardsSubcommand
+from core.modules.tasks.commands.make_task_dependency.make_task_dependency_subcommand import MakeTaskDependencySubcommand
+from core.modules.tasks.commands.make_task_log.make_task_log_subcommand import MakeTaskLogSubcommand
+from core.modules.tasks.commands.read_task_brief.read_task_brief_subcommand import ReadTaskBriefSubcommand
+from core.modules.tasks.commands.record_task_independence.record_task_independence_subcommand import RecordTaskIndependenceSubcommand
+from core.modules.tasks.commands.remove_task_dependency.remove_task_dependency_subcommand import RemoveTaskDependencySubcommand
+from core.modules.tasks.commands.remove_task_tag.remove_task_tag_subcommand import RemoveTaskTagSubcommand
+from core.modules.tasks.commands.tag_task.tag_task_subcommand import TagTaskSubcommand
+from core.modules.tasks.commands.task_board.task_board_subcommand import TaskBoardSubcommand
+from core.modules.tasks.commands.task_counts.task_counts_subcommand import TaskCountsSubcommand
+from core.modules.tasks.commands.task_graph.task_graph_subcommand import TaskGraphSubcommand
+from core.modules.tasks.commands.task_info.task_info_subcommand import TaskInfoSubcommand
+from core.modules.tasks.commands.task_inspect.task_inspect_subcommand import TaskInspectSubcommand
+from core.modules.tasks.commands.task_list.task_list_subcommand import TaskListSubcommand
+from core.modules.tasks.commands.task_tags.task_tags_subcommand import TaskTagsSubcommand
+from core.modules.tasks.commands.wait_task.wait_task_subcommand import WaitTaskSubcommand
+
+TASKS_SUBCOMMANDS = [ChooseNextTaskSubcommand, ChooseTaskFocusSubcommand, TagTaskSubcommand, RemoveTaskTagSubcommand, TaskTagsSubcommand, TaskListSubcommand, EditTaskSubcommand, AssignTaskSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskCountsSubcommand, TaskInspectSubcommand, TaskInfoSubcommand, MakeTaskLogSubcommand, ReadTaskBriefSubcommand, MakeTaskDependencySubcommand,
+                   RemoveTaskDependencySubcommand, RecordTaskIndependenceSubcommand]

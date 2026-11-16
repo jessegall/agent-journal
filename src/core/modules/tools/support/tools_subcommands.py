@@ -1,0 +1,8 @@
+from core.modules.tools.commands.install_tool.install_tool_subcommand import InstallToolSubcommand
+from core.modules.tools.commands.refresh_tool.refresh_tool_subcommand import RefreshToolSubcommand
+from core.modules.tools.commands.refresh_tool.refresh_tool_tick_subcommand import RefreshToolTickSubcommand
+from core.modules.tools.commands.set_tool.set_tool_off_subcommand import SetToolOffSubcommand
+from core.modules.tools.commands.set_tool.set_tool_state_subcommand import SetToolStateSubcommand
+from core.modules.tools.commands.tool_list.tool_list_subcommand import ToolListSubcommand
+
+TOOLS_SUBCOMMANDS = [ToolListSubcommand, SetToolStateSubcommand, SetToolOffSubcommand, InstallToolSubcommand, RefreshToolSubcommand, RefreshToolTickSubcommand]

@@ -1,0 +1,11 @@
+from core.modules.docking.migrations.m001_docks import DocksTableMigration
+from core.modules.docking.migrations.m002_docks_of_existing_environments import ExistingEnvironmentDocksMigration
+from core.modules.docking.migrations.m003_dock_item_labels import DockItemLabelsMigration
+from core.modules.docking.migrations.m004_dock_item_indexes import DockItemIndexesMigration
+from core.modules.docking.migrations.m005_dock_item_agents import DockItemAgentsMigration
+from core.modules.docking.migrations.m006_dock_item_due_index import DockItemDueIndexMigration
+from core.modules.docking.migrations.m007_pending_dock_items_index import PendingDockItemsIndexMigration
+from core.modules.docking.migrations.m008_dock_item_session import DockItemSessionMigration
+from core.modules.docking.migrations.m009_dock_item_state_index import DockItemStateIndexMigration
+
+DOCKING_MIGRATIONS = [DockItemSessionMigration, DocksTableMigration, ExistingEnvironmentDocksMigration, DockItemLabelsMigration, DockItemIndexesMigration, DockItemAgentsMigration, DockItemDueIndexMigration, PendingDockItemsIndexMigration, DockItemStateIndexMigration]

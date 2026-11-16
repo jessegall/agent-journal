@@ -1,0 +1,7 @@
+from core.modules.memories.models.declarations.memory_delivery_model_declaration import MemoryDeliveryModelDeclaration
+from core.modules.memories.models.declarations.memory_mark_model_declaration import MemoryMarkModelDeclaration
+from core.modules.memories.models.declarations.memory_model_declaration import MemoryModelDeclaration
+from core.modules.memories.models.memory_keyword import MemoryKeyword
+from engine.module.model_declaration import ModelDeclaration
+
+MEMORIES_MODELS = [MemoryModelDeclaration, ModelDeclaration(MemoryKeyword), MemoryDeliveryModelDeclaration, MemoryMarkModelDeclaration]

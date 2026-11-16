@@ -1,0 +1,23 @@
+from core.modules.library.commands.add_library_user.add_library_user_handler import AddLibraryUserHandler
+from core.modules.library.commands.choose_library_version.choose_library_version_handler import ChooseLibraryVersionHandler
+from core.modules.library.commands.delete_library_copy.delete_library_copy_handler import DeleteLibraryCopyHandler
+from core.modules.library.commands.leave_library_copy.leave_library_copy_handler import LeaveLibraryCopyHandler
+from core.modules.library.commands.make_library_copy.make_library_copy_handler import MakeLibraryCopyHandler
+from core.modules.library.commands.merge_library_item.merge_library_item_handler import MergeLibraryItemHandler
+from core.modules.library.commands.pair_library.pair_library_handler import PairLibraryHandler
+from core.modules.library.commands.remove_library_item.remove_library_item_handler import RemoveLibraryItemHandler
+from core.modules.library.commands.remove_library_user.remove_library_user_handler import RemoveLibraryUserHandler
+from core.modules.library.commands.restore_library_item.restore_library_item_handler import RestoreLibraryItemHandler
+from core.modules.library.commands.revoke_library_token.revoke_library_token_handler import RevokeLibraryTokenHandler
+from core.modules.library.commands.run_library_sync.run_library_sync_handler import RunLibrarySyncHandler
+from core.modules.library.commands.save_library_connection.save_library_connection_handler import SaveLibraryConnectionHandler
+from core.modules.library.commands.save_library_copy.save_library_copy_handler import SaveLibraryCopyHandler
+from core.modules.library.commands.send_library_item.send_library_item_handler import SendLibraryItemHandler
+from core.modules.library.commands.set_library_role.set_library_role_handler import SetLibraryRoleHandler
+from core.modules.library.commands.unpair_library.unpair_library_handler import UnpairLibraryHandler
+from core.modules.library.commands.update_library_connection.update_library_connection_handler import UpdateLibraryConnectionHandler
+from core.modules.library.commands.update_library_copy.update_library_copy_handler import UpdateLibraryCopyHandler
+
+LIBRARY_HANDLERS = [PairLibraryHandler, SaveLibraryConnectionHandler, UnpairLibraryHandler, SaveLibraryCopyHandler, MakeLibraryCopyHandler, LeaveLibraryCopyHandler, AddLibraryUserHandler, SetLibraryRoleHandler, RemoveLibraryUserHandler, RevokeLibraryTokenHandler, SendLibraryItemHandler,
+                RunLibrarySyncHandler, ChooseLibraryVersionHandler, MergeLibraryItemHandler, UpdateLibraryCopyHandler, DeleteLibraryCopyHandler, UpdateLibraryConnectionHandler, RemoveLibraryItemHandler,
+                RestoreLibraryItemHandler]

@@ -1,0 +1,12 @@
+from core.modules.skills.commands.agent_skill_unread.agent_skill_unread_subcommand import AgentSkillUnreadSubcommand
+from core.modules.skills.commands.profile_skills.profile_skills_subcommand import ProfileSkillsSubcommand
+from core.modules.skills.commands.require_skill.require_skill_subcommand import RequireSkillSubcommand
+from core.modules.skills.commands.save_profile.save_profile_subcommand import SaveProfileSubcommand
+from core.modules.skills.commands.set_required_skill.set_required_skill_subcommand import SetRequiredSkillSubcommand
+from core.modules.skills.commands.skill_list.skill_list_subcommand import SkillListSubcommand
+from core.modules.skills.commands.skill_required.skill_required_subcommand import SkillRequiredSubcommand
+from core.modules.skills.commands.skill_requirements.skill_requirements_subcommand import SkillRequirementsSubcommand
+from core.modules.skills.commands.skill_show.skill_show_subcommand import SkillShowSubcommand
+from core.modules.skills.commands.skill_write.skill_write_subcommand import SkillWriteSubcommand
+
+SKILLS_SUBCOMMANDS = [SaveProfileSubcommand, ProfileSkillsSubcommand, SetRequiredSkillSubcommand, SkillRequirementsSubcommand, SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand, SkillShowSubcommand, AgentSkillUnreadSubcommand, SkillRequiredSubcommand]

@@ -1,0 +1,12 @@
+from core.modules.memories.commands.make_memory.make_memory_subcommand import MakeMemorySubcommand
+from core.modules.memories.commands.memory_agents.memory_agents_subcommand import MemoryAgentsSubcommand
+from core.modules.memories.commands.memory_context.memory_context_subcommand import MemoryContextSubcommand
+from core.modules.memories.commands.memory_counts.memory_counts_subcommand import MemoryCountsSubcommand
+from core.modules.memories.commands.memory_faded.memory_faded_subcommand import MemoryFadedSubcommand
+from core.modules.memories.commands.memory_list.memory_list_subcommand import MemoryListSubcommand
+from core.modules.memories.commands.memory_page.memory_page_subcommand import MemoryPageSubcommand
+from core.modules.memories.commands.read_memory.read_memory_subcommand import ReadMemorySubcommand
+from core.modules.memories.commands.skip_memory_mark.skip_memory_mark_subcommand import SkipMemoryMarkSubcommand
+from core.modules.memories.commands.weigh_memories.weigh_memories_subcommand import WeighMemoriesSubcommand
+
+MEMORIES_SUBCOMMANDS = [MemoryListSubcommand, MemoryAgentsSubcommand, MemoryCountsSubcommand, MemoryPageSubcommand, MakeMemorySubcommand, WeighMemoriesSubcommand, ReadMemorySubcommand, MemoryContextSubcommand, MemoryFadedSubcommand, SkipMemoryMarkSubcommand]

@@ -1,0 +1,10 @@
+from core.modules.sharing.commands.accept_share_link.accept_share_link_subcommand import AcceptShareLinkSubcommand
+from core.modules.sharing.commands.count_share_view.count_share_view_subcommand import CountShareViewSubcommand
+from core.modules.sharing.commands.leave_share_comment.leave_share_comment_subcommand import LeaveShareCommentSubcommand
+from core.modules.sharing.commands.make_share_link.make_share_link_subcommand import MakeShareLinkSubcommand
+from core.modules.sharing.commands.share_comments.share_comments_subcommand import ShareCommentsSubcommand
+from core.modules.sharing.commands.share_opens.share_opens_subcommand import ShareOpensSubcommand
+from core.modules.sharing.commands.share_session.share_session_subcommand import ShareSessionSubcommand
+from core.modules.sharing.commands.share_unlock.share_unlock_subcommand import ShareUnlockSubcommand
+
+SHARING_SUBCOMMANDS = [MakeShareLinkSubcommand, ShareSessionSubcommand, AcceptShareLinkSubcommand, CountShareViewSubcommand, ShareUnlockSubcommand, LeaveShareCommentSubcommand, ShareCommentsSubcommand, ShareOpensSubcommand]

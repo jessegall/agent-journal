@@ -1,0 +1,7 @@
+from core.modules.sharing.migrations.m001_share_links import ShareLinksTableMigration
+from core.modules.sharing.migrations.m002_share_options import ShareOptionsMigration
+from core.modules.sharing.migrations.m003_share_comment_index import ShareCommentIndexMigration
+from core.modules.sharing.migrations.m004_share_link_environment_index import ShareLinkEnvironmentIndexMigration
+from core.modules.sharing.migrations.m005_share_approval_index import ShareApprovalIndexMigration
+
+SHARING_MIGRATIONS = [ShareCommentIndexMigration, ShareLinksTableMigration, ShareOptionsMigration, ShareLinkEnvironmentIndexMigration, ShareApprovalIndexMigration]

@@ -1,0 +1,8 @@
+from core.modules.questions.listeners.open_questions_dock_listener import OpenQuestionsDockListener
+from core.modules.questions.listeners.question_answer_line_listener import QuestionAnswerLineListener
+from core.modules.questions.listeners.question_answered_mark_listener import QuestionAnsweredMarkListener
+from core.modules.questions.listeners.question_closed_mark_listener import QuestionClosedMarkListener
+from core.modules.questions.listeners.question_edited_mark_listener import QuestionEditedMarkListener
+from core.modules.questions.listeners.question_open_mark_listener import QuestionOpenMarkListener
+
+QUESTIONS_LISTENERS = [OpenQuestionsDockListener, QuestionOpenMarkListener, QuestionEditedMarkListener, QuestionAnsweredMarkListener, QuestionClosedMarkListener, QuestionAnswerLineListener]

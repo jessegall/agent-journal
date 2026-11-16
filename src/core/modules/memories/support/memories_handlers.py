@@ -1,0 +1,9 @@
+from core.modules.memories.commands.fade_memories.fade_memories_handler import FadeMemoriesHandler
+from core.modules.memories.commands.give_memories.give_memories_handler import GiveMemoriesHandler
+from core.modules.memories.commands.make_memory.make_memory_handler import MakeMemoryHandler
+from core.modules.memories.commands.open_memory_mark.open_memory_mark_handler import OpenMemoryMarkHandler
+from core.modules.memories.commands.read_memory.read_memory_handler import ReadMemoryHandler
+from core.modules.memories.commands.skip_memory_mark.skip_memory_mark_handler import SkipMemoryMarkHandler
+from core.modules.memories.commands.weigh_memories.weigh_memories_handler import WeighMemoriesHandler
+
+MEMORIES_HANDLERS = [MakeMemoryHandler, WeighMemoriesHandler, ReadMemoryHandler, FadeMemoriesHandler, GiveMemoriesHandler, OpenMemoryMarkHandler, SkipMemoryMarkHandler]

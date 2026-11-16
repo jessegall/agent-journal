@@ -1,0 +1,8 @@
+from core.modules.docking.commands.add_dock_item.add_dock_item_subcommand import AddDockItemSubcommand
+from core.modules.docking.commands.dock_item_read.dock_item_read_subcommand import DockItemReadSubcommand
+from core.modules.docking.commands.keep_dock_item.keep_dock_item_subcommand import KeepDockItemSubcommand
+from core.modules.docking.commands.main_dock_items.main_dock_items_subcommand import MainDockItemsSubcommand
+from core.modules.docking.commands.release_dock_item.release_dock_item_subcommand import ReleaseDockItemSubcommand
+from core.modules.docking.commands.remove_dock_item.remove_dock_item_subcommand import RemoveDockItemSubcommand
+
+DOCKING_SUBCOMMANDS = [DockItemReadSubcommand, AddDockItemSubcommand, KeepDockItemSubcommand, ReleaseDockItemSubcommand, RemoveDockItemSubcommand, MainDockItemsSubcommand]

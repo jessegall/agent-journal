@@ -1,101 +1,27 @@
+from core.modules.documents.support.documents_dependencies import DOCUMENTS_DEPENDENCIES
+from core.modules.documents.support.documents_models import DOCUMENTS_MODELS
+from core.modules.documents.support.documents_migrations import DOCUMENTS_MIGRATIONS
+from core.modules.documents.support.documents_handlers import DOCUMENTS_HANDLERS
+from core.modules.documents.support.documents_listeners import DOCUMENTS_LISTENERS
+from core.modules.documents.support.documents_bindings import DOCUMENTS_BINDINGS
+from core.modules.documents.support.documents_subcommands import DOCUMENTS_SUBCOMMANDS
 from core.modules.documents.states.open_document_states import OpenDocumentStates
-from core.modules.documents.models.declarations.open_document_model_declaration import OpenDocumentModelDeclaration
-from core.modules.documents.models.declarations.doc_model_declaration import DocModelDeclaration
-from core.modules.documents.models.declarations.report_model_declaration import ReportModelDeclaration
-from core.modules.documents.models.declarations.doc_revision_model_declaration import DocRevisionModelDeclaration
-from core.modules.documents.models.declarations.link_model_declaration import LinkModelDeclaration
-from core.modules.documents.models.declarations.comment_selection_model_declaration import CommentSelectionModelDeclaration
-from core.modules.documents.models.declarations.link_correction_model_declaration import LinkCorrectionModelDeclaration
 from core.modules.documents.docks.documents_docks import DOCUMENTS_DOCKS
 from core.modules.documents.skills.declarations.documents_skills import DOCUMENTS_SKILLS
 from core.modules.documents.windows.documents_windows import DOCUMENTS_WINDOWS
 from core.modules.documents.step_conditions.report_commented import ReportCommented
-from core.modules.agents.support.agent_report_reads import AgentReportReads
-from core.modules.documents.support.row_agent_report_reads import RowAgentReportReads
-from core.modules.documents.migrations.m008_message_link_paths import MessageLinkPathsMigration
-from core.modules.documents.commands.comment_message.comment_message_subcommand import CommentMessageSubcommand
-from core.modules.documents.commands.plan_context_read.read_plan_context_subcommand import ReadPlanContextSubcommand
-from core.modules.documents.commands.plan_context.read_plan_context_handler import ReadPlanContextHandler
-from core.modules.tasks.support.task_context_reader import TaskContextReader
-from core.modules.tasks.support.task_comment_reads import TaskCommentReads
-from core.modules.documents.support.row_task_comment_reads import RowTaskCommentReads
-from core.modules.documents.support.work_context_reader import WorkContextReader
-from core.modules.documents.commands.open_doc.open_doc_handler import OpenDocHandler
-from core.modules.documents.commands.open_doc.open_doc_subcommand import OpenDocSubcommand
-from core.modules.documents.migrations.m006_revision_authors import RevisionAuthorsMigration
 from core.modules.documents.support.document_closed import DocumentClosed
-from core.modules.documents.listeners.close_ended_document_listener import CloseEndedDocumentListener
-from core.modules.documents.commands.record_subject_link.record_subject_link_handler import RecordSubjectLinkHandler
-from core.modules.documents.listeners.plan_document_link_listener import PlanDocumentLinkListener
-from core.modules.documents.listeners.reply_link_listener import ReplyLinkListener
 from engine.module.module import Module
 from core.modules.documents.support.doc_library_share import DocLibraryShare
 from core.modules.documents.agent_messages.document_open_message import DocumentOpenMessage
 from core.modules.documents.agent_messages.document_stop_refusal_message import DocumentStopRefusalMessage
-from core.modules.documents.commands.comment_text.comment_text_handler import CommentTextHandler
-from core.modules.documents.commands.comment_doc.comment_doc_subcommand import CommentDocSubcommand
-from core.modules.documents.commands.report_comment.report_comment_subcommand import ReportCommentSubcommand
-from core.modules.documents.commands.close_text.close_text_handler import CloseTextHandler
-from core.modules.documents.commands.close_doc.close_doc_subcommand import CloseDocSubcommand
-from core.modules.documents.commands.doc_comments.doc_comments_subcommand import DocCommentsSubcommand
-from core.modules.documents.commands.doc_inspect.doc_inspect_subcommand import DocInspectSubcommand
-from core.modules.documents.commands.report_inspect.report_inspect_subcommand import ReportInspectSubcommand
-from core.modules.documents.commands.edit_doc.edit_doc_subcommand import EditDocSubcommand
-from core.modules.documents.commands.doc_list.doc_list_subcommand import DocListSubcommand
-from core.modules.documents.commands.document_library.document_library_subcommand import DocumentLibrarySubcommand
-from core.modules.documents.commands.make_doc.make_doc_subcommand import MakeDocSubcommand
-from core.modules.documents.commands.doc_revision.doc_revision_subcommand import DocRevisionSubcommand
-from core.modules.documents.commands.doc_revisions.doc_revisions_subcommand import DocRevisionsSubcommand
-from core.modules.documents.commands.doc_show.doc_show_subcommand import DocShowSubcommand
-from core.modules.documents.commands.edit_text.edit_text_handler import EditTextHandler
-from core.modules.documents.commands.keep_revision.keep_revision_handler import KeepRevisionHandler
-from core.modules.documents.commands.keep_revision.keep_revision_subcommand import KeepRevisionSubcommand
-from core.modules.documents.commands.link_list.link_list_subcommand import LinkListSubcommand
-from core.modules.documents.commands.link_receipts.link_receipts_subcommand import LinkReceiptsSubcommand
-from core.modules.documents.commands.make_text.make_text_handler import MakeTextHandler
-from core.modules.documents.commands.record_mentions.record_mentions_handler import RecordMentionsHandler
-from core.modules.documents.commands.report_close.report_close_subcommand import ReportCloseSubcommand
-from core.modules.documents.commands.report_comments.report_comments_subcommand import ReportCommentsSubcommand
-from core.modules.documents.commands.report_edit.report_edit_subcommand import ReportEditSubcommand
-from core.modules.documents.commands.report_list.report_list_subcommand import ReportListSubcommand
-from core.modules.documents.commands.report_make.report_make_subcommand import ReportMakeSubcommand
-from core.modules.documents.commands.report_show.report_show_subcommand import ReportShowSubcommand
-from core.modules.documents.listeners.doc_mention_listener import DocMentionListener
-from core.modules.documents.listeners.message_mention_listener import MessageMentionListener
-from core.modules.documents.listeners.plan_mention_listener import PlanMentionListener
-from core.modules.documents.listeners.task_mention_listener import TaskMentionListener
-from core.modules.documents.listeners.report_mention_listener import ReportMentionListener
-from core.modules.documents.migrations.m001_documents import DocumentsTablesMigration
-from core.modules.documents.migrations.m002_link_source_index import LinkSourceIndexMigration
-from core.modules.documents.migrations.m003_dock_abstracts import DockAbstractsMigration
-from core.modules.documents.migrations.m004_comment_selections import CommentSelectionsMigration
-from core.modules.documents.migrations.m005_project_documents import ProjectDocumentsMigration
 from core.modules.documents.models.document_row import DocumentRow
-from engine.cli.row_links import RowLinks
-from core.modules.documents.listeners.new_doc_dock_listener import NewDocDockListener
-from core.modules.documents.listeners.new_report_dock_listener import NewReportDockListener
-from core.modules.documents.support.stored_row_links import StoredRowLinks
 from core.modules.documents.marks.text_read_mark import TextReadMark
-from core.modules.documents.listeners.text_read_mark_listener import TextReadMarkListener
 from core.modules.documents.seeders.documents_seeder import DocumentsSeeder
 from core.modules.documents.upgrade.documents_move import DocumentsMove
 from core.modules.documents.upgrade.message_links_move import MessageLinksMove
 from core.modules.documents.inspectors.doc_inspector import DocInspector
 from core.modules.documents.inspectors.report_inspector import ReportInspector
-from core.modules.documents.listeners.phase_mention_listener import PhaseMentionListener
-from core.modules.documents.listeners.task_log_mention_listener import TaskLogMentionListener
-from core.modules.documents.listeners.deleted_row_link_listener import DeletedRowLinkListener
-from core.modules.documents.listeners.work_source_link_listener import WorkSourceLinkListener
-from core.modules.documents.migrations.m007_link_corrections import LinkCorrectionsMigration
-from core.modules.documents.commands.remove_link.remove_link_handler import RemoveLinkHandler
-from core.modules.documents.commands.remove_link.remove_link_subcommand import RemoveLinkSubcommand
-from core.modules.documents.listeners.link_correction_reset_listener import LinkCorrectionResetListener
-from core.modules.documents.commands.task_context.task_context_subcommand import TaskContextSubcommand
-from core.modules.documents.commands.approve_plan.approve_plan_handler import ApprovePlanHandler
-from core.modules.documents.commands.comment_plan.comment_plan_subcommand import CommentPlanSubcommand
-from core.modules.documents.commands.plan_comments.plan_comments_subcommand import PlanCommentsSubcommand
-from core.modules.documents.commands.comment_task.comment_task_subcommand import CommentTaskSubcommand
-from core.modules.documents.commands.task_comments.task_comments_subcommand import TaskCommentsSubcommand
 from core.modules.documents.tick_handlers.close_ended_documents_tick_handler import CloseEndedDocumentsTickHandler
 
 
@@ -105,11 +31,11 @@ class DocumentsModule(Module):
 
     name = "journal.core.documents"
     requires_engine = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.messages", "journal.core.tasks", "journal.core.plans", "journal.core.docking", "journal.core.agents", "journal.core.drivers", "journal.core.processes", "journal.core.chat"]
+    dependencies = DOCUMENTS_DEPENDENCIES
     skills = DOCUMENTS_SKILLS
     agent_messages = [DocumentOpenMessage, DocumentStopRefusalMessage]
-    models = [OpenDocumentModelDeclaration, DocModelDeclaration, ReportModelDeclaration, DocRevisionModelDeclaration, LinkModelDeclaration, CommentSelectionModelDeclaration, LinkCorrectionModelDeclaration]
-    migrations = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration, CommentSelectionsMigration, ProjectDocumentsMigration, RevisionAuthorsMigration, LinkCorrectionsMigration, MessageLinkPathsMigration]
+    models = DOCUMENTS_MODELS
+    migrations = DOCUMENTS_MIGRATIONS
     block_conditions = [DocumentClosed]
     states = [OpenDocumentStates]
     tick_handlers = [CloseEndedDocumentsTickHandler]
@@ -120,11 +46,9 @@ class DocumentsModule(Module):
     inspectors = [DocInspector, ReportInspector]
     views = [DocumentRow]
     step_conditions = [ReportCommented]
-    handlers = [ApprovePlanHandler, OpenDocHandler, RecordSubjectLinkHandler, CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler, RemoveLinkHandler, ReadPlanContextHandler]
-    listeners = [CloseEndedDocumentListener, PlanDocumentLinkListener, ReplyLinkListener, WorkSourceLinkListener, DocMentionListener, ReportMentionListener, PlanMentionListener, TaskMentionListener, MessageMentionListener, PhaseMentionListener, TaskLogMentionListener, DeletedRowLinkListener, NewDocDockListener, NewReportDockListener, TextReadMarkListener, LinkCorrectionResetListener]
+    handlers = DOCUMENTS_HANDLERS
+    listeners = DOCUMENTS_LISTENERS
     marks = [TextReadMark]
     docks = DOCUMENTS_DOCKS
-    bindings = {AgentReportReads: RowAgentReportReads, RowLinks: StoredRowLinks, TaskContextReader: WorkContextReader, TaskCommentReads: RowTaskCommentReads}
-    subcommands = [OpenDocSubcommand, CommentMessageSubcommand, CommentDocSubcommand, ReportCommentSubcommand, MakeDocSubcommand, EditDocSubcommand, DocShowSubcommand, DocListSubcommand, CloseDocSubcommand, KeepRevisionSubcommand,
-                   DocRevisionsSubcommand, DocRevisionSubcommand, ReportMakeSubcommand, ReportEditSubcommand, ReportShowSubcommand, ReportListSubcommand,
-                   ReportCloseSubcommand, DocumentLibrarySubcommand, LinkListSubcommand, LinkReceiptsSubcommand, DocCommentsSubcommand, ReportCommentsSubcommand, DocInspectSubcommand, ReportInspectSubcommand, RemoveLinkSubcommand, TaskContextSubcommand, CommentTaskSubcommand, TaskCommentsSubcommand, ReadPlanContextSubcommand, CommentPlanSubcommand, PlanCommentsSubcommand]
+    bindings = DOCUMENTS_BINDINGS
+    subcommands = DOCUMENTS_SUBCOMMANDS

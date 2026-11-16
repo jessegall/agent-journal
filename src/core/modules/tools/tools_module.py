@@ -1,14 +1,9 @@
+from core.modules.tools.support.tools_subcommands import TOOLS_SUBCOMMANDS
 from core.modules.tools.windows.tools_windows import TOOLS_WINDOWS
 from engine.module.module import Module
 from core.modules.tools.commands.install_tool.install_tool_handler import InstallToolHandler
-from core.modules.tools.commands.install_tool.install_tool_subcommand import InstallToolSubcommand
 from core.modules.tools.commands.refresh_tool.refresh_tool_handler import RefreshToolHandler
-from core.modules.tools.commands.refresh_tool.refresh_tool_subcommand import RefreshToolSubcommand
-from core.modules.tools.commands.refresh_tool.refresh_tool_tick_subcommand import RefreshToolTickSubcommand
 from core.modules.tools.commands.set_tool.set_tool_handler import SetToolHandler
-from core.modules.tools.commands.set_tool.set_tool_off_subcommand import SetToolOffSubcommand
-from core.modules.tools.commands.set_tool.set_tool_state_subcommand import SetToolStateSubcommand
-from core.modules.tools.commands.tool_list.tool_list_subcommand import ToolListSubcommand
 
 
 class ToolsModule(Module):
@@ -23,5 +18,5 @@ class ToolsModule(Module):
     file_events = ["tool.changed"]
     dependencies = ["journal.core.actors", "journal.core.settings", "journal.core.drivers"]
     handlers = [SetToolHandler, InstallToolHandler, RefreshToolHandler]
-    subcommands = [ToolListSubcommand, SetToolStateSubcommand, SetToolOffSubcommand, InstallToolSubcommand, RefreshToolSubcommand, RefreshToolTickSubcommand]
+    subcommands = TOOLS_SUBCOMMANDS
     windows = TOOLS_WINDOWS

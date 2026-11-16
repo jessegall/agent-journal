@@ -1,0 +1,6 @@
+from core.modules.assign_rules.migrations.m001_assign_rules import AssignRulesMigration
+from core.modules.assign_rules.migrations.m002_decision_indexes import DecisionIndexesMigration
+from core.modules.assign_rules.migrations.m003_rule_target_agent import RuleTargetAgentMigration
+from core.modules.assign_rules.migrations.m004_enabled_rule_index import EnabledRuleIndexMigration
+
+ASSIGN_RULES_MIGRATIONS = [AssignRulesMigration, DecisionIndexesMigration, RuleTargetAgentMigration, EnabledRuleIndexMigration]

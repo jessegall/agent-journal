@@ -1,0 +1,1 @@
+DRIVERS_DEPENDENCIES = ["journal.core.chat", "journal.core.developer", "journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.assignments", "journal.core.settings", "journal.core.profiles"]

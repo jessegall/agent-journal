@@ -1,0 +1,9 @@
+from core.modules.processes.support.block_conditions.output_ended import OutputEnded
+from core.modules.processes.support.block_conditions.output_monitored import OutputMonitored
+from core.modules.processes.support.block_conditions.output_read import OutputRead
+from core.modules.processes.support.block_conditions.output_read_during_block import OutputReadDuringBlock
+from core.modules.processes.support.block_conditions.output_titled import OutputTitled
+from core.modules.processes.support.block_conditions.reader_request_completed import ReaderRequestCompleted
+from core.modules.processes.support.block_conditions.run_reported_progress import RunReportedProgress
+
+PROCESSES_BLOCK_CONDITIONS = [ReaderRequestCompleted, OutputEnded, OutputRead, OutputTitled, OutputReadDuringBlock, OutputMonitored, RunReportedProgress]

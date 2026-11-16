@@ -1,0 +1,10 @@
+from core.modules.dumps.commands.dump_board.dump_board_subcommand import DumpBoardSubcommand
+from core.modules.dumps.commands.dump_board.dump_item_board_subcommand import DumpItemBoardSubcommand
+from core.modules.dumps.commands.dump_items.dump_items_subcommand import DumpItemsSubcommand
+from core.modules.dumps.commands.fail_dump_item.fail_dump_item_subcommand import FailDumpItemSubcommand
+from core.modules.dumps.commands.file_dump_item.file_dump_item_subcommand import FileDumpItemSubcommand
+from core.modules.dumps.commands.make_dump.make_dump_subcommand import MakeDumpSubcommand
+from core.modules.dumps.commands.name_dump.name_dump_subcommand import NameDumpSubcommand
+from core.modules.dumps.commands.note_item.note_item_subcommand import NoteItemSubcommand
+
+DUMPS_SUBCOMMANDS = [DumpBoardSubcommand, DumpItemBoardSubcommand, MakeDumpSubcommand, DumpItemsSubcommand, NoteItemSubcommand, FileDumpItemSubcommand, FailDumpItemSubcommand, NameDumpSubcommand]

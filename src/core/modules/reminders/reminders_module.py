@@ -1,3 +1,4 @@
+from core.modules.reminders.support.reminders_dependencies import REMINDERS_DEPENDENCIES
 from core.modules.reminders.lines.due_reminder_lines import DueReminderLines
 from core.modules.reminders.effects.due_reminder_effect import DueReminderEffect
 from core.modules.reminders.states.due_reminder_states import DueReminderStates
@@ -25,7 +26,7 @@ class RemindersModule(Module):
     seed_reason = "a reminder speaks at a time the demo does not reach"
     move_reason = "version 4's reminders move with the memories"
     requires_engine = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.memories", "journal.core.chat"]
+    dependencies = REMINDERS_DEPENDENCIES
     models = [ReminderModelDeclaration]
     migrations = [EnvironmentReminderIndexMigration, OpenReminderIndexMigration, RemindersTableMigration]
     handlers = [MakeReminderHandler, RecordReminderFiredHandler]

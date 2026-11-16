@@ -1,0 +1,10 @@
+from core.modules.triggers.commands.deliver_trigger_output.deliver_trigger_output_handler import DeliverTriggerOutputHandler
+from core.modules.triggers.commands.enable_trigger.enable_trigger_handler import EnableTriggerHandler
+from core.modules.triggers.commands.fire_trigger.fire_trigger_handler import FireTriggerHandler
+from core.modules.triggers.commands.make_trigger.make_trigger_handler import MakeTriggerHandler
+from core.modules.triggers.commands.pause_trigger.pause_trigger_handler import PauseTriggerHandler
+from core.modules.triggers.commands.schedule_trigger.schedule_trigger_handler import ScheduleTriggerHandler
+from core.modules.triggers.commands.start_trigger_action.start_trigger_action_handler import StartTriggerActionHandler
+from core.modules.triggers.commands.strike_trigger.strike_trigger_handler import StrikeTriggerHandler
+
+TRIGGERS_HANDLERS = [EnableTriggerHandler, MakeTriggerHandler, ScheduleTriggerHandler, StrikeTriggerHandler, FireTriggerHandler, PauseTriggerHandler, StartTriggerActionHandler, DeliverTriggerOutputHandler]

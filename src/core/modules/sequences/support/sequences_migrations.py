@@ -1,0 +1,11 @@
+from core.modules.sequences.migrations.m001_sequences import SequencesTablesMigration
+from core.modules.sequences.migrations.m002_sequence_triggers import SequenceTriggersMigration
+from core.modules.sequences.migrations.m003_trigger_event import TriggerEventMigration
+from core.modules.sequences.migrations.m004_close_legacy_step_blocks import CloseLegacyStepBlocksMigration
+from core.modules.sequences.migrations.m005_run_subject import RunSubjectMigration
+from core.modules.sequences.migrations.m006_open_run_subject_index import OpenRunSubjectIndexMigration
+from core.modules.sequences.migrations.m007_open_run_order_index import OpenRunOrderIndexMigration
+from core.modules.sequences.migrations.m008_sequence_session import SequenceSessionMigration
+from core.modules.sequences.migrations.m009_environment_index import SequenceRunsEnvironmentIndexMigration
+
+SEQUENCES_MIGRATIONS = [SequenceSessionMigration, OpenRunOrderIndexMigration, SequencesTablesMigration, SequenceTriggersMigration, TriggerEventMigration, CloseLegacyStepBlocksMigration, RunSubjectMigration, OpenRunSubjectIndexMigration, SequenceRunsEnvironmentIndexMigration]

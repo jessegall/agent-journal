@@ -1,0 +1,9 @@
+from core.modules.skills.commands.load_skill.load_skill_handler import LoadSkillHandler
+from core.modules.skills.commands.record_kept_skills.record_kept_skills_handler import RecordKeptSkillsHandler
+from core.modules.skills.commands.request_skill.request_skill_handler import RequestSkillHandler
+from core.modules.skills.commands.require_skill.require_skill_handler import RequireSkillHandler
+from core.modules.skills.commands.reset_skills.reset_skills_handler import ResetSkillsHandler
+from core.modules.skills.commands.save_profile.save_profile_handler import SaveProfileHandler
+from core.modules.skills.commands.set_required_skill.set_required_skill_handler import SetRequiredSkillHandler
+
+SKILLS_HANDLERS = [SaveProfileHandler, SetRequiredSkillHandler, RequireSkillHandler, LoadSkillHandler, RecordKeptSkillsHandler, ResetSkillsHandler, RequestSkillHandler]

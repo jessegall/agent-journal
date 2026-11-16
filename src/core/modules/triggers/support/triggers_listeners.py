@@ -1,0 +1,7 @@
+from core.modules.triggers.listeners.trigger_actions_listener import TriggerActionsListener
+from core.modules.triggers.listeners.trigger_approval_listener import TriggerApprovalListener
+from core.modules.triggers.listeners.trigger_output_listener import TriggerOutputListener
+from core.modules.triggers.listeners.trigger_process_removal_listener import TriggerProcessRemovalListener
+from core.modules.triggers.listeners.trigger_waiting_mark_listener import TriggerWaitingMarkListener
+
+TRIGGERS_LISTENERS = [TriggerActionsListener, TriggerWaitingMarkListener, TriggerOutputListener, TriggerProcessRemovalListener, TriggerApprovalListener]

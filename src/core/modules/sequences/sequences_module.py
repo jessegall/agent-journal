@@ -1,3 +1,7 @@
+from core.modules.sequences.support.sequences_dependencies import SEQUENCES_DEPENDENCIES
+from core.modules.sequences.support.sequences_migrations import SEQUENCES_MIGRATIONS
+from core.modules.sequences.support.sequences_subcommands import SEQUENCES_SUBCOMMANDS
+from core.modules.sequences.support.sequences_listeners import SEQUENCES_LISTENERS
 from core.modules.sequences.policies.step_command_policy import StepCommandPolicy
 from core.modules.sequences.policies.step_guard_policy import StepGuardPolicy
 from core.modules.sequences.states.unstarted_step_states import UnstartedStepStates
@@ -7,36 +11,12 @@ from core.modules.sequences.windows.sequences_windows import SEQUENCES_WINDOWS
 from core.modules.sequences.models.declarations.sequence_model_declaration import SequenceModelDeclaration
 from core.modules.sequences.models.declarations.sequence_run_model_declaration import SequenceRunModelDeclaration
 from core.modules.sequences.skills.declarations.sequences_skills import SEQUENCES_SKILLS
-from core.modules.sequences.migrations.m009_environment_index import SequenceRunsEnvironmentIndexMigration
-from core.modules.sequences.migrations.m008_sequence_session import SequenceSessionMigration
-from core.modules.sequences.migrations.m007_open_run_order_index import OpenRunOrderIndexMigration
 from core.modules.sequences.support.sequence_agent_messages import SEQUENCE_AGENT_MESSAGES
 from engine.module.module import Module
-from core.modules.sequences.listeners.sequence_event_index_listener import SequenceEventIndexListener
-from core.modules.sequences.commands.abandon_sequence.abandon_sequence_subcommand import AbandonSequenceSubcommand
-from core.modules.sequences.commands.follow_step.follow_step_subcommand import FollowStepSubcommand
 from core.modules.sequences.commands.make_sequence.make_sequence_handler import MakeSequenceHandler
-from core.modules.sequences.commands.make_sequence.make_sequence_subcommand import MakeSequenceSubcommand
 from core.modules.sequences.commands.move_sequence_run.move_sequence_run_handler import MoveSequenceRunHandler
-from core.modules.sequences.commands.advance_step.advance_step_subcommand import AdvanceStepSubcommand
-from core.modules.sequences.commands.run_sequence.run_sequence_subcommand import RunSequenceSubcommand
-from core.modules.sequences.commands.sequence_list.sequence_list_subcommand import SequenceListSubcommand
-from core.modules.sequences.commands.sequence_board.sequence_board_subcommand import SequenceBoardSubcommand
-from core.modules.sequences.commands.sequence_run_list.sequence_run_list_subcommand import SequenceRunListSubcommand
-from core.modules.sequences.commands.sequence_show.sequence_show_subcommand import SequenceShowSubcommand
 from core.modules.sequences.commands.save_standard_sequences.save_standard_sequences_handler import SaveStandardSequencesHandler
 from core.modules.sequences.guards.standard_sequence_guard import StandardSequenceGuard
-from core.modules.sequences.listeners.sequence_row_trigger_listener import SequenceRowTriggerListener
-from core.modules.sequences.listeners.sequence_end_listener import SequenceEndListener
-from core.modules.sequences.listeners.sequence_started_mark_listener import SequenceStartedMarkListener
-from core.modules.sequences.listeners.sequence_ended_mark_listener import SequenceEndedMarkListener
-from core.modules.sequences.listeners.standard_sequences_listener import StandardSequencesListener
-from core.modules.sequences.migrations.m001_sequences import SequencesTablesMigration
-from core.modules.sequences.migrations.m002_sequence_triggers import SequenceTriggersMigration
-from core.modules.sequences.migrations.m003_trigger_event import TriggerEventMigration
-from core.modules.sequences.migrations.m004_close_legacy_step_blocks import CloseLegacyStepBlocksMigration
-from core.modules.sequences.migrations.m005_run_subject import RunSubjectMigration
-from core.modules.sequences.migrations.m006_open_run_subject_index import OpenRunSubjectIndexMigration
 from core.modules.sequences.models.sequence_run_row import SequenceRunRow
 from core.modules.sequences.shares.sequence_library_share import SequenceLibraryShare
 from core.modules.sequences.guards.step_condition_name_guard import StepConditionNameGuard
@@ -62,20 +42,19 @@ class SequencesModule(Module):
     policies = [StepCommandPolicy, StepGuardPolicy]
     agent_messages = SEQUENCE_AGENT_MESSAGES
     requires_engine = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.documents", "journal.core.plans", "journal.core.questions"]
+    dependencies = SEQUENCES_DEPENDENCIES
     block_conditions = [SequenceStepStarted]
     bindings = {StopBlockers: SequenceStopBlockers}
     skills = SEQUENCES_SKILLS
     library_shares = [SequenceLibraryShare]
     models = [SequenceModelDeclaration, SequenceRunModelDeclaration]
-    migrations = [SequenceSessionMigration, OpenRunOrderIndexMigration, SequencesTablesMigration, SequenceTriggersMigration, TriggerEventMigration, CloseLegacyStepBlocksMigration, RunSubjectMigration, OpenRunSubjectIndexMigration, SequenceRunsEnvironmentIndexMigration]
+    migrations = SEQUENCES_MIGRATIONS
     moves = [SequencesMove]
     handlers = [MakeSequenceHandler, MoveSequenceRunHandler, SaveStandardSequencesHandler]
     guards = [StandardSequenceGuard, StepConditionNameGuard, PlanBeingBuiltGuard]
-    subcommands = [MakeSequenceSubcommand, SequenceShowSubcommand, SequenceListSubcommand, SequenceBoardSubcommand, SequenceRunListSubcommand, RunSequenceSubcommand, FollowStepSubcommand,
-                   AdvanceStepSubcommand, AbandonSequenceSubcommand]
+    subcommands = SEQUENCES_SUBCOMMANDS
     views = [SequenceRunRow]
-    listeners = [SequenceEventIndexListener, SequenceRowTriggerListener, SequenceEndListener, StandardSequencesListener, SequenceStartedMarkListener, SequenceEndedMarkListener]
+    listeners = SEQUENCES_LISTENERS
     marks = [SequenceMark]
     seeders = [SequencesSeeder]
     windows = SEQUENCES_WINDOWS

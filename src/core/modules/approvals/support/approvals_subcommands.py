@@ -1,0 +1,7 @@
+from core.modules.approvals.commands.accept_approval.accept_approval_subcommand import AcceptApprovalSubcommand
+from core.modules.approvals.commands.answer_agent_approval.answer_agent_approval_subcommand import AnswerAgentApprovalSubcommand
+from core.modules.approvals.commands.deny_approval.deny_approval_subcommand import DenyApprovalSubcommand
+from core.modules.approvals.commands.pending_approvals.pending_approvals_subcommand import PendingApprovalsSubcommand
+from core.modules.approvals.commands.relay_approval.relay_approval_subcommand import RelayApprovalSubcommand
+
+APPROVALS_SUBCOMMANDS = [AcceptApprovalSubcommand, DenyApprovalSubcommand, PendingApprovalsSubcommand, RelayApprovalSubcommand, AnswerAgentApprovalSubcommand]

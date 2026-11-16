@@ -1,3 +1,4 @@
+from core.modules.updates.support.updates_subcommands import UPDATES_SUBCOMMANDS
 from core.modules.updates.windows.updates_windows import UPDATES_WINDOWS
 from core.modules.updates.models.declarations.release_install_model_declaration import ReleaseInstallModelDeclaration
 from core.modules.updates.models.declarations.release_model_declaration import ReleaseModelDeclaration
@@ -7,11 +8,7 @@ from core.modules.updates.listeners.release_install_listener import ReleaseInsta
 from engine.module.module import Module
 from core.modules.updates.commands.install_release.install_release_handler import InstallReleaseHandler
 from core.modules.updates.commands.show_update_step.show_update_step_handler import ShowUpdateStepHandler
-from core.modules.updates.commands.show_update_step.show_update_step_subcommand import ShowUpdateStepSubcommand
 from core.modules.updates.marks.server_update_mark import ServerUpdateMark
-from core.modules.updates.commands.update_check.update_check_subcommand import UpdateCheckSubcommand
-from core.modules.updates.commands.install_release.install_release_subcommand import InstallReleaseSubcommand
-from core.modules.updates.commands.update_notes.update_notes_subcommand import UpdateNotesSubcommand
 from core.modules.updates.migrations.m001_releases import ReleasesTableMigration
 from core.modules.updates.models.enums.update_setting import UPDATE_SETTINGS
 from core.modules.updates.upgrade.updates_move import UpdatesMove
@@ -31,6 +28,6 @@ class UpdatesModule(Module):
     migrations = [ReleasesTableMigration, ReleaseInstallsMigration]
     listeners = [ReleaseInstallListener]
     handlers = [RecordReleaseInstallHandler, InstallReleaseHandler, ShowUpdateStepHandler]
-    subcommands = [UpdateCheckSubcommand, InstallReleaseSubcommand, UpdateNotesSubcommand, ShowUpdateStepSubcommand]
+    subcommands = UPDATES_SUBCOMMANDS
     marks = [ServerUpdateMark]
     windows = UPDATES_WINDOWS

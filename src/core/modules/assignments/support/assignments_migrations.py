@@ -1,0 +1,5 @@
+from core.modules.assignments.migrations.m001_assignments import AssignmentsTableMigration
+from core.modules.assignments.migrations.m002_assignments_actor_subject_index import AssignmentsActorSubjectIndexMigration
+from core.modules.assignments.migrations.m003_assignment_ids_never_reused import AssignmentIdsNeverReusedMigration
+
+ASSIGNMENTS_MIGRATIONS = [AssignmentsTableMigration, AssignmentsActorSubjectIndexMigration, AssignmentIdsNeverReusedMigration]

@@ -1,0 +1,12 @@
+from core.modules.sequences.commands.abandon_sequence.abandon_sequence_subcommand import AbandonSequenceSubcommand
+from core.modules.sequences.commands.advance_step.advance_step_subcommand import AdvanceStepSubcommand
+from core.modules.sequences.commands.follow_step.follow_step_subcommand import FollowStepSubcommand
+from core.modules.sequences.commands.make_sequence.make_sequence_subcommand import MakeSequenceSubcommand
+from core.modules.sequences.commands.run_sequence.run_sequence_subcommand import RunSequenceSubcommand
+from core.modules.sequences.commands.sequence_board.sequence_board_subcommand import SequenceBoardSubcommand
+from core.modules.sequences.commands.sequence_list.sequence_list_subcommand import SequenceListSubcommand
+from core.modules.sequences.commands.sequence_run_list.sequence_run_list_subcommand import SequenceRunListSubcommand
+from core.modules.sequences.commands.sequence_show.sequence_show_subcommand import SequenceShowSubcommand
+
+SEQUENCES_SUBCOMMANDS = [MakeSequenceSubcommand, SequenceShowSubcommand, SequenceListSubcommand, SequenceBoardSubcommand, SequenceRunListSubcommand, RunSequenceSubcommand, FollowStepSubcommand,
+                   AdvanceStepSubcommand, AbandonSequenceSubcommand]

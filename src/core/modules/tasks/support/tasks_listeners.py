@@ -1,0 +1,16 @@
+from core.modules.tasks.listeners.dependency_remover_listener import DependencyRemoverListener
+from core.modules.tasks.listeners.next_task_listener import NextTaskListener
+from core.modules.tasks.listeners.start_assignment_listener import StartAssignmentListener
+from core.modules.tasks.listeners.stopped_agent_tasks_listener import StoppedAgentTasksListener
+from core.modules.tasks.listeners.task_block_renewal_listener import TaskBlockRenewalListener
+from core.modules.tasks.listeners.task_brief_assigned_listener import TaskBriefAssignedListener
+from core.modules.tasks.listeners.task_brief_compaction_listener import TaskBriefCompactionListener
+from core.modules.tasks.listeners.task_dependency_wait_listener import TaskDependencyWaitListener
+from core.modules.tasks.listeners.task_edited_mark_listener import TaskEditedMarkListener
+from core.modules.tasks.listeners.task_move_mark_listener import TaskMoveMarkListener
+from core.modules.tasks.listeners.task_rows_listener import TaskRowsListener
+from core.modules.tasks.listeners.task_tag_remover_listener import TaskTagRemoverListener
+from core.modules.tasks.listeners.task_wait_listener import TaskWaitListener
+from core.modules.tasks.listeners.waiting_task_listener import WaitingTaskListener
+
+TASKS_LISTENERS = [NextTaskListener, StartAssignmentListener, TaskTagRemoverListener, TaskDependencyWaitListener, WaitingTaskListener, TaskRowsListener, TaskBlockRenewalListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, StoppedAgentTasksListener]

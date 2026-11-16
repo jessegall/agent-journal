@@ -1,0 +1,7 @@
+from core.modules.reviews.models.declarations.review_model_declaration import ReviewModelDeclaration
+from core.modules.reviews.models.declarations.review_step_model_declaration import ReviewStepModelDeclaration
+from core.modules.reviews.models.declarations.reviewer_model_declaration import ReviewerModelDeclaration
+from core.modules.reviews.models.review_point import ReviewPoint
+from engine.module.model_declaration import ModelDeclaration
+
+REVIEWS_MODELS = [ReviewModelDeclaration, ModelDeclaration(ReviewPoint), ReviewStepModelDeclaration, ReviewerModelDeclaration]

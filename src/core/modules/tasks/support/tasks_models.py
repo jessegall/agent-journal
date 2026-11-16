@@ -1,0 +1,10 @@
+from core.modules.tasks.models.declarations.task_block_renewal_model_declaration import TaskBlockRenewalModelDeclaration
+from core.modules.tasks.models.declarations.task_model_declaration import TaskModelDeclaration
+from core.modules.tasks.models.declarations.task_read_model_declaration import TaskReadModelDeclaration
+from core.modules.tasks.models.declarations.task_tag_model_declaration import TaskTagModelDeclaration
+from core.modules.tasks.models.declarations.task_wait_model_declaration import TaskWaitModelDeclaration
+from core.modules.tasks.models.task_dependency import TaskDependency
+from core.modules.tasks.models.task_log import TaskLog
+from engine.module.model_declaration import ModelDeclaration
+
+TASKS_MODELS = [TaskModelDeclaration, TaskTagModelDeclaration, ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency), TaskWaitModelDeclaration, TaskBlockRenewalModelDeclaration, TaskReadModelDeclaration]

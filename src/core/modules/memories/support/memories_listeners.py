@@ -1,0 +1,13 @@
+from core.modules.memories.listeners.compaction_fader_listener import CompactionFaderListener
+from core.modules.memories.listeners.compaction_mark_listener import CompactionMarkListener
+from core.modules.memories.listeners.memory_edited_mark_listener import MemoryEditedMarkListener
+from core.modules.memories.listeners.memory_faded_mark_listener import MemoryFadedMarkListener
+from core.modules.memories.listeners.memory_given_mark_listener import MemoryGivenMarkListener
+from core.modules.memories.listeners.memory_made_mark_listener import MemoryMadeMarkListener
+from core.modules.memories.listeners.memory_removed_mark_listener import MemoryRemovedMarkListener
+from core.modules.memories.listeners.memory_weighed_mark_listener import MemoryWeighedMarkListener
+from core.modules.memories.listeners.start_memories_listener import StartMemoriesListener
+from core.modules.memories.listeners.task_memory_remover_listener import TaskMemoryRemoverListener
+
+MEMORIES_LISTENERS = [StartMemoriesListener, CompactionFaderListener, TaskMemoryRemoverListener, MemoryMadeMarkListener, MemoryEditedMarkListener, MemoryWeighedMarkListener,
+                 MemoryRemovedMarkListener, MemoryFadedMarkListener, MemoryGivenMarkListener, CompactionMarkListener]

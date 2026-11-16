@@ -1,0 +1,7 @@
+from core.modules.schedules.migrations.m001_scheduled_jobs import ScheduledJobsTableMigration
+from core.modules.schedules.migrations.m002_stop_requested import StopRequestedMigration
+from core.modules.schedules.migrations.m003_job_run_time import JobRunTimeMigration
+from core.modules.schedules.migrations.m004_schedule_session import ScheduleSessionMigration
+from core.modules.schedules.migrations.m005_environment_index import ScheduledJobsEnvironmentIndexMigration
+
+SCHEDULES_MIGRATIONS = [ScheduleSessionMigration, ScheduledJobsTableMigration, StopRequestedMigration, JobRunTimeMigration, ScheduledJobsEnvironmentIndexMigration]

@@ -1,0 +1,8 @@
+from core.modules.settings.migrations.m001_settings import SettingsTableMigration
+from core.modules.settings.migrations.m002_secret_settings import SecretSettingsTableMigration
+from core.modules.settings.migrations.m003_helper_driver_key import HelperDriverKeyMigration
+from core.modules.settings.migrations.m004_agent_message_keys import AgentMessageKeysMigration
+from core.modules.settings.migrations.m005_timed_job_setting_key import TimedJobSettingKeyMigration
+from core.modules.settings.migrations.m006_helper_idle_retirement import HelperIdleRetirementMigration
+
+SETTINGS_MIGRATIONS = [HelperIdleRetirementMigration, TimedJobSettingKeyMigration, AgentMessageKeysMigration, HelperDriverKeyMigration, SettingsTableMigration, SecretSettingsTableMigration]

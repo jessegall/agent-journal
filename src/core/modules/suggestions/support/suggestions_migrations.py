@@ -1,0 +1,5 @@
+from core.modules.suggestions.migrations.m001_suggestions import SuggestionsTableMigration
+from core.modules.suggestions.migrations.m002_open_suggestion_index import OpenSuggestionIndexMigration
+from core.modules.suggestions.migrations.m003_environment_suggestion_index import EnvironmentSuggestionIndexMigration
+
+SUGGESTIONS_MIGRATIONS = [SuggestionsTableMigration, OpenSuggestionIndexMigration, EnvironmentSuggestionIndexMigration]

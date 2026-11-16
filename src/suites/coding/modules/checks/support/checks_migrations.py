@@ -1,0 +1,11 @@
+from suites.coding.modules.checks.migrations.m001_checks import ChecksTableMigration
+from suites.coding.modules.checks.migrations.m002_check_task_wait import CheckTaskWaitMigration
+from suites.coding.modules.checks.migrations.m003_check_hidden import CheckHiddenMigration
+from suites.coding.modules.checks.migrations.m004_check_run_percent import CheckRunPercentMigration
+from suites.coding.modules.checks.migrations.m005_open_task_wait_index import OpenTaskWaitIndexMigration
+from suites.coding.modules.checks.migrations.m006_open_check_result_index import OpenCheckResultIndexMigration
+from suites.coding.modules.checks.migrations.m007_check_task_wait_index import CheckTaskWaitIndexMigration
+from suites.coding.modules.checks.migrations.m008_open_check_hidden_index import OpenCheckHiddenIndexMigration
+from suites.coding.modules.checks.migrations.m009_live_check_index import ActiveCheckIndexMigration
+
+CHECKS_MIGRATIONS = [ActiveCheckIndexMigration, OpenCheckHiddenIndexMigration, CheckTaskWaitIndexMigration, OpenCheckResultIndexMigration, ChecksTableMigration, CheckTaskWaitMigration, CheckHiddenMigration, CheckRunPercentMigration, OpenTaskWaitIndexMigration]

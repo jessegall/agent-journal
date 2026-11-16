@@ -1,0 +1,15 @@
+from core.modules.plans.commands.assign_plan.assign_plan_handler import AssignPlanHandler
+from core.modules.plans.commands.check_plan.check_plan_handler import CheckPlanHandler
+from core.modules.plans.commands.choose_plan_focus.choose_plan_focus_handler import ChoosePlanFocusHandler
+from core.modules.plans.commands.make_phase.make_phase_handler import MakePhaseHandler
+from core.modules.plans.commands.make_planned_task.make_planned_task_handler import MakePlannedTaskHandler
+from core.modules.plans.commands.move_phase.move_phase_handler import MovePhaseHandler
+from core.modules.plans.commands.place_phase.place_phase_handler import PlacePhaseHandler
+from core.modules.plans.commands.record_checkpoints.record_checkpoints_handler import RecordCheckpointsHandler
+from core.modules.plans.commands.record_plan_agent.record_plan_agent_handler import RecordPlanAgentHandler
+from core.modules.plans.commands.repair_plan_states.repair_plan_states_handler import RepairPlanStatesHandler
+from core.modules.plans.commands.rerun_stale_checkpoints.rerun_stale_checkpoints_handler import RerunStaleCheckpointsHandler
+from core.modules.plans.commands.start_checkpoint_run.start_checkpoint_run_handler import StartCheckpointRunHandler
+from core.modules.plans.commands.wait_plan.wait_plan_handler import WaitPlanHandler
+
+PLANS_HANDLERS = [RepairPlanStatesHandler, CheckPlanHandler, RecordCheckpointsHandler, RerunStaleCheckpointsHandler, StartCheckpointRunHandler, WaitPlanHandler, AssignPlanHandler, RecordPlanAgentHandler, ChoosePlanFocusHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]

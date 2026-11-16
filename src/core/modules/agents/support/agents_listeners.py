@@ -1,0 +1,7 @@
+from core.modules.agents.listeners.boot_instruction_imports_listener import BootInstructionImportsListener
+from core.modules.agents.listeners.ended_agent_program_listener import EndedAgentProgramListener
+from core.modules.agents.listeners.menu_answer_mark_listener import MenuAnswerMarkListener
+from core.modules.agents.listeners.session_end_listener import SessionEndListener
+from core.modules.agents.listeners.session_launch_listener import SessionLaunchListener
+
+AGENTS_LISTENERS = [SessionEndListener, SessionLaunchListener, MenuAnswerMarkListener, EndedAgentProgramListener, BootInstructionImportsListener]

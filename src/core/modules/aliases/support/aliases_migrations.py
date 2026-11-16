@@ -1,0 +1,9 @@
+from core.modules.aliases.migrations.m001_aliases import AliasesTableMigration
+from core.modules.aliases.migrations.m002_alias_category import AliasCategoryMigration
+from core.modules.aliases.migrations.m003_alias_agent_access import AliasAgentAccessMigration
+from core.modules.aliases.migrations.m004_command_kinds import CommandPrefixesMigration
+from core.modules.aliases.migrations.m005_alias_silence import AliasSilenceMigration
+from core.modules.aliases.migrations.m006_command_types import CommandTypesMigration
+from core.modules.aliases.migrations.m007_alias_category_index import AliasCategoryIndexMigration
+
+ALIASES_MIGRATIONS = [AliasCategoryIndexMigration, AliasesTableMigration, AliasCategoryMigration, AliasAgentAccessMigration, CommandPrefixesMigration, AliasSilenceMigration, CommandTypesMigration]

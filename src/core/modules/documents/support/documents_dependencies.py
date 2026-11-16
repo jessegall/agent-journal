@@ -1,0 +1,1 @@
+DOCUMENTS_DEPENDENCIES = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.messages", "journal.core.tasks", "journal.core.plans", "journal.core.docking", "journal.core.agents", "journal.core.drivers", "journal.core.processes", "journal.core.chat"]

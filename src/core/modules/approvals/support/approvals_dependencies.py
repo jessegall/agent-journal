@@ -1,0 +1,1 @@
+APPROVALS_DEPENDENCIES = ["journal.core.agents", "journal.core.actors", "journal.core.environments", "journal.core.docking", "journal.core.viewer", "journal.core.chat", "journal.core.drivers", "journal.core.settings"]

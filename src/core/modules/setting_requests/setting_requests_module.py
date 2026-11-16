@@ -1,3 +1,4 @@
+from core.modules.setting_requests.support.setting_requests_dependencies import SETTING_REQUESTS_DEPENDENCIES
 from core.modules.setting_requests.models.declarations.setting_request_model_declaration import SettingRequestModelDeclaration
 from core.modules.setting_requests.migrations.m003_setting_request_environment_index import SettingRequestEnvironmentIndexMigration
 from engine.module.module import Module
@@ -18,7 +19,7 @@ class SettingRequestsModule(Module):
     requires_engine = ">=5,<6"
     move_reason = "this table is new in version 5, so version 4 holds nothing to carry over"
     seed_reason = "the demo shows no setting requests"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.questions", "journal.core.approvals"]
+    dependencies = SETTING_REQUESTS_DEPENDENCIES
     models = [SettingRequestModelDeclaration]
     migrations = [SettingRequestEnvironmentIndexMigration, SettingRequestsTableMigration, HelperKeysMigration]
     handlers = [RequestSettingHandler]

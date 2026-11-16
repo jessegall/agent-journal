@@ -1,0 +1,6 @@
+from core.modules.approvals.agent_messages.approval_decided_message import ApprovalDecidedMessage
+from core.modules.approvals.agent_messages.approval_failed_message import ApprovalFailedMessage
+from core.modules.approvals.agent_messages.approval_pending_message import ApprovalPendingMessage
+from core.modules.approvals.agent_messages.approval_review_message import ApprovalReviewMessage
+
+APPROVALS_AGENT_MESSAGES = [ApprovalPendingMessage, ApprovalDecidedMessage, ApprovalFailedMessage, ApprovalReviewMessage]

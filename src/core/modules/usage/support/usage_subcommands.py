@@ -1,0 +1,16 @@
+from core.modules.usage.commands.agent_cards.agent_cards_subcommand import AgentCardsSubcommand
+from core.modules.usage.commands.agent_limits.agent_limits_subcommand import AgentLimitsSubcommand
+from core.modules.usage.commands.agent_tip.agent_tip_subcommand import AgentTipSubcommand
+from core.modules.usage.commands.profile_list.profile_list_subcommand import ProfileListSubcommand
+from core.modules.usage.commands.set_profile_limits.set_profile_limits_subcommand import SetProfileLimitsSubcommand
+from core.modules.usage.commands.statistic_list.statistic_list_subcommand import StatisticListSubcommand
+from core.modules.usage.commands.usage_agent.usage_agent_subcommand import UsageAgentSubcommand
+from core.modules.usage.commands.usage_agents.usage_agents_subcommand import UsageAgentsSubcommand
+from core.modules.usage.commands.usage_bars.usage_bars_subcommand import UsageBarsSubcommand
+from core.modules.usage.commands.usage_fitness.usage_fitness_subcommand import UsageFitnessSubcommand
+from core.modules.usage.commands.usage_inspector.usage_inspector_subcommand import UsageInspectorSubcommand
+from core.modules.usage.commands.usage_own_messages.usage_own_messages_subcommand import UsageOwnMessagesSubcommand
+from core.modules.usage.commands.usage_show.usage_show_subcommand import UsageShowSubcommand
+from core.modules.usage.commands.usage_tool.usage_tool_subcommand import UsageToolSubcommand
+
+USAGE_SUBCOMMANDS = [ProfileListSubcommand, AgentLimitsSubcommand, SetProfileLimitsSubcommand, AgentCardsSubcommand, AgentTipSubcommand, UsageAgentsSubcommand, UsageFitnessSubcommand, UsageShowSubcommand, UsageBarsSubcommand, UsageToolSubcommand, UsageOwnMessagesSubcommand, UsageAgentSubcommand, UsageInspectorSubcommand, StatisticListSubcommand]

@@ -1,0 +1,8 @@
+from core.modules.reviews.migrations.m001_reviews import ReviewsTablesMigration
+from core.modules.reviews.migrations.m002_reviewers import ReviewersTableMigration
+from core.modules.reviews.migrations.m003_review_steps import ReviewStepsTableMigration
+from core.modules.reviews.migrations.m004_reviewer_environment_index import ReviewerEnvironmentIndexMigration
+from core.modules.reviews.migrations.m005_review_state_index import ReviewStateIndexMigration
+from core.modules.reviews.migrations.m006_review_assignments import ReviewAssignmentsMigration
+
+REVIEWS_MIGRATIONS = [ReviewAssignmentsMigration, ReviewStateIndexMigration, ReviewerEnvironmentIndexMigration, ReviewsTablesMigration, ReviewersTableMigration, ReviewStepsTableMigration]
