@@ -38,11 +38,11 @@ class FileTally:
     # the first code line above the file door, which is where the call was asked for
     @staticmethod
     def caller() -> str:
-        frame = sys._getframe(2)
+        stack_entry = sys._getframe(2)
         for _ in range(CALLER_DEPTH):
-            if frame is None or not frame.f_code.co_filename.startswith(DOOR_FOLDER):
+            if stack_entry is None or not stack_entry.f_code.co_filename.startswith(DOOR_FOLDER):
                 break
-            frame = frame.f_back
-        if frame is None:
+            stack_entry = stack_entry.f_back
+        if stack_entry is None:
             return "unknown"
-        return f"{frame.f_code.co_filename.removeprefix(SOURCE_ROOT)}:{frame.f_lineno}"
+        return f"{stack_entry.f_code.co_filename.removeprefix(SOURCE_ROOT)}:{stack_entry.f_lineno}"

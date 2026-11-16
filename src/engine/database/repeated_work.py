@@ -176,27 +176,27 @@ class RepeatedWork(PointTally):
 
     @staticmethod
     def caller_stack_entry(levels: int) -> FrameType | None:
-        frame = inspect.currentframe()
+        stack_entry = inspect.currentframe()
         for _ in range(levels + 1):
-            frame = frame.f_back if frame is not None else None
-        return frame
+            stack_entry = stack_entry.f_back if stack_entry is not None else None
+        return stack_entry
 
     @staticmethod
     def is_allowed_read() -> bool:
-        frame = RepeatedWork.caller_stack_entry(2)
-        while frame is not None and frame.f_code.co_filename.endswith(READ_HELPERS):
-            frame = frame.f_back
-        if frame is None:
+        stack_entry = RepeatedWork.caller_stack_entry(2)
+        while stack_entry is not None and stack_entry.f_code.co_filename.endswith(READ_HELPERS):
+            stack_entry = stack_entry.f_back
+        if stack_entry is None:
             return False
-        is_allowed = any(frame.f_code.co_filename.endswith(path) and frame.f_code.co_name == method for path, method in ALLOWED_READ_REPEATS)
-        return is_allowed or RepeatedWork.is_bulk_seed(frame)
+        is_allowed = any(stack_entry.f_code.co_filename.endswith(path) and stack_entry.f_code.co_name == method for path, method in ALLOWED_READ_REPEATS)
+        return is_allowed or RepeatedWork.is_bulk_seed(stack_entry)
 
     @staticmethod
-    def is_bulk_seed(frame: FrameType | None) -> bool:
-        while frame is not None:
-            if frame.f_code.co_filename.endswith(BULK_SEEDS):
+    def is_bulk_seed(stack_entry: FrameType | None) -> bool:
+        while stack_entry is not None:
+            if stack_entry.f_code.co_filename.endswith(BULK_SEEDS):
                 return True
-            frame = frame.f_back
+            stack_entry = stack_entry.f_back
         return False
 
     def check_scan(self, database: Database, statement: Statement) -> None:
@@ -250,40 +250,40 @@ class RepeatedWork(PointTally):
     @staticmethod
     def caller_stack_entries() -> list[traceback.FrameSummary]:
         stack = traceback.StackSummary.extract(traceback.walk_stack(RepeatedWork.caller_stack_entry(1)), limit=CALLER_STACK_DEPTH, lookup_lines=False)
-        return [frame for frame in stack if not frame.filename.endswith(WATCH_FILES)]
+        return [stack_entry for stack_entry in stack if not stack_entry.filename.endswith(WATCH_FILES)]
 
     # the calling code and line of each frame, kept raw: the text of a frame is built only for a finding
     @staticmethod
     def raw_caller_frames() -> list[tuple[CodeType, int]]:
-        frames: list[tuple[CodeType, int]] = []
-        frame = RepeatedWork.caller_stack_entry(1)
-        while frame is not None and len(frames) < CALLER_STACK_DEPTH:
-            if not frame.f_code.co_filename.endswith(WATCH_FILES):
-                frames.append((frame.f_code, frame.f_lineno))
-            frame = frame.f_back
-        return frames
+        stack_entries: list[tuple[CodeType, int]] = []
+        stack_entry = RepeatedWork.caller_stack_entry(1)
+        while stack_entry is not None and len(stack_entries) < CALLER_STACK_DEPTH:
+            if not stack_entry.f_code.co_filename.endswith(WATCH_FILES):
+                stack_entries.append((stack_entry.f_code, stack_entry.f_lineno))
+            stack_entry = stack_entry.f_back
+        return stack_entries
 
     @staticmethod
-    def summaries(frames: list[tuple[CodeType, int]]) -> list[traceback.FrameSummary]:
-        return [traceback.FrameSummary(code.co_filename, line, code.co_name, lookup_line=False) for code, line in frames]
+    def summaries(stack_entries: list[tuple[CodeType, int]]) -> list[traceback.FrameSummary]:
+        return [traceback.FrameSummary(code.co_filename, line, code.co_name, lookup_line=False) for code, line in stack_entries]
 
     @staticmethod
-    def stack_calls(frames: list[traceback.FrameSummary]) -> list[str]:
-        calls = [(os.path.relpath(frame.filename, SOURCE_ROOT), frame.lineno, frame.name) for frame in reversed(frames)]
+    def stack_calls(stack_entries: list[traceback.FrameSummary]) -> list[str]:
+        calls = [(os.path.relpath(stack_entry.filename, SOURCE_ROOT), stack_entry.lineno, stack_entry.name) for stack_entry in reversed(stack_entries)]
         return [f"{path}:{line} {name}" for path, line, name in calls if not path.startswith(ACCESS_LAYERS) and (not path.startswith("..") or path.startswith(TEST_FOLDER))]
 
     @classmethod
-    def shown_calls(cls, frames: list[traceback.FrameSummary]) -> str:
-        return "\n".join(f"  {call}" for call in cls.stack_calls(frames)[-SHOWN_CALLS:])
+    def shown_calls(cls, stack_entries: list[traceback.FrameSummary]) -> str:
+        return "\n".join(f"  {call}" for call in cls.stack_calls(stack_entries)[-SHOWN_CALLS:])
 
     @classmethod
     def build_finding(cls, category: str, subject: str, text: str) -> RepeatedFinding:
-        frames = cls.caller_stack_entries()
-        return RepeatedFinding("|".join([category, subject, *cls.project_calls(frames)[-SHOWN_CALLS:]]), f"{text}\n{cls.shown_calls(frames)}")
+        stack_entries = cls.caller_stack_entries()
+        return RepeatedFinding("|".join([category, subject, *cls.project_calls(stack_entries)[-SHOWN_CALLS:]]), f"{text}\n{cls.shown_calls(stack_entries)}")
 
     @classmethod
-    def project_calls(cls, frames: list[traceback.FrameSummary]) -> list[str]:
-        calls = cls.stack_calls(frames)
+    def project_calls(cls, stack_entries: list[traceback.FrameSummary]) -> list[str]:
+        calls = cls.stack_calls(stack_entries)
         first_project_call = next((index for index, call in enumerate(calls) if not call.startswith(TEST_FOLDER)), len(calls))
         return calls[first_project_call:]
 
@@ -312,13 +312,13 @@ class RepeatedWork(PointTally):
 
     @staticmethod
     def is_allowed_file_read() -> bool:
-        frame = RepeatedWork.caller_stack_entry(1)
+        stack_entry = RepeatedWork.caller_stack_entry(1)
         for _ in range(CALLER_STACK_DEPTH):
-            if frame is None:
+            if stack_entry is None:
                 return False
-            if frame.f_code.co_filename.endswith(ALLOWED_FILE_READERS):
+            if stack_entry.f_code.co_filename.endswith(ALLOWED_FILE_READERS):
                 return True
-            frame = frame.f_back
+            stack_entry = stack_entry.f_back
         return False
 
     def note_file_write(self, path: str) -> None:

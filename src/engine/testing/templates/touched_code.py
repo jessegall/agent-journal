@@ -30,9 +30,9 @@ class TouchedCode:
         finally:
             sys.setprofile(previous)
 
-    def note_call(self, frame: FrameType, event: str, argument: object) -> None:
+    def note_call(self, stack_entry: FrameType, event: str, argument: object) -> None:
         if event == "call":
-            self.names.add(frame.f_code.co_filename)
+            self.names.add(stack_entry.f_code.co_filename)
 
     def hashes(self) -> dict[str, str]:
         hashes: dict[str, str] = {}

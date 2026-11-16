@@ -21,6 +21,6 @@ class ReadCutError(AssertionError):
     # The file and line outside the query builder that asked for the read.
     @staticmethod
     def calling_line() -> str:
-        frames = [frame for frame in traceback.extract_stack() if not frame.filename.startswith(ENGINE_FOLDERS)]
-        frame = frames[-1] if frames else traceback.extract_stack()[0]
-        return f"{frame.filename}:{frame.lineno}"
+        stack_entries = [stack_entry for stack_entry in traceback.extract_stack() if not stack_entry.filename.startswith(ENGINE_FOLDERS)]
+        stack_entry = stack_entries[-1] if stack_entries else traceback.extract_stack()[0]
+        return f"{stack_entry.filename}:{stack_entry.lineno}"

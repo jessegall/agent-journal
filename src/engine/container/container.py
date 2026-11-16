@@ -94,11 +94,11 @@ class Container:
     # the callers that asked for a build, read from the frames alone: formatting a stack reads source lines from
     # disk, which every build of every request would pay for
     @staticmethod
-    def build_place(frame: FrameType | None) -> str:
+    def build_place(stack_entry: FrameType | None) -> str:
         places: list[str] = []
-        while frame is not None and len(places) < BUILD_PLACE_STACK_DEPTH:
-            places.append(f"{frame.f_code.co_filename}:{frame.f_lineno} in {frame.f_code.co_name}")
-            frame = frame.f_back
+        while stack_entry is not None and len(places) < BUILD_PLACE_STACK_DEPTH:
+            places.append(f"{stack_entry.f_code.co_filename}:{stack_entry.f_lineno} in {stack_entry.f_code.co_name}")
+            stack_entry = stack_entry.f_back
         return "\n".join(places)
 
     def record_build(self, class_type: type) -> None:

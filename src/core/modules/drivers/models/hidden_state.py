@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from engine.model.model import Model
 from engine.time.timestamp import Timestamp
 
-OPEN_SUPPRESSIONS_REASON = "the frames a person removed from one agent, a handful at most"
+OPEN_SUPPRESSIONS_REASON = "the stacked states a person removed from one agent, a handful at most"
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -12,7 +12,7 @@ class HiddenState(Model):
     and the task stays assigned and started. It ends by a restore or a new assignment of the work."""
 
     model_name = "hidden_state"
-    cli_name = "agent-frame-suppression"
+    cli_name = "hidden-state"
 
     session_agent_id: int
     state_key: str

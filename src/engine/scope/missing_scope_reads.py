@@ -18,7 +18,7 @@ class MissingScopeReads:
     def record(table_name: str) -> None:
         if not LOG_FILE:
             return
-        frames = [frame for frame in traceback.extract_stack()[:-2] if "/src/" in frame.filename and not any(part in frame.filename for part in ENGINE_STACK_FOLDERS)]
-        origin = " < ".join(f"{frame.filename.split('/src/', 1)[1]}:{frame.lineno}" for frame in reversed(frames[-ORIGIN_STACK_DEPTH:]))
+        stack_entries = [stack_entry for stack_entry in traceback.extract_stack()[:-2] if "/src/" in stack_entry.filename and not any(part in stack_entry.filename for part in ENGINE_STACK_FOLDERS)]
+        origin = " < ".join(f"{stack_entry.filename.split('/src/', 1)[1]}:{stack_entry.lineno}" for stack_entry in reversed(stack_entries[-ORIGIN_STACK_DEPTH:]))
         with FileAccess.writer(LOG_FILE, "a") as log:
             log.write(f"{table_name}\t{origin}\n")

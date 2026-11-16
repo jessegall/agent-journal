@@ -391,12 +391,12 @@ class Story(KitRows):
     # the same thing when they check it from the same line; a check made outside a test function keeps its subject.
     @staticmethod
     def story_line(subject: str) -> str:
-        frame = sys._getframe(2)
-        while frame is not None and not frame.f_code.co_name.startswith("test_"):
-            frame = frame.f_back
-        if frame is None:
+        stack_entry = sys._getframe(2)
+        while stack_entry is not None and not stack_entry.f_code.co_name.startswith("test_"):
+            stack_entry = stack_entry.f_back
+        if stack_entry is None:
             return subject
-        return linecache.getline(frame.f_code.co_filename, frame.f_lineno).strip()
+        return linecache.getline(stack_entry.f_code.co_filename, stack_entry.f_lineno).strip()
 
     # Keeps what a check reads, its numbers left out, so the overlap check can tell stories that check the same thing
     # from stories that check wholly different things.
