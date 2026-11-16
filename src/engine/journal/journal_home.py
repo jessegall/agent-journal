@@ -20,7 +20,9 @@ ENDED_STATUS_FOLDER = "ended"
 class JournalHome:
     """The folder where the journal keeps its files, and the paths inside it; a journal whose parts are stood
     in for, as a story's is, names the step that binds them in every container built from it, and a journal
-    copied from a story template names that template's database."""
+    copied from a story template names that template's database. The project folder is the one that holds the
+    nearest .journal folder, so a copy of the journal made inside .journal, as the takeover proof makes, sees
+    the real project folder."""
 
     folder: Path
     container_setup: Callable[[Container], None] | None = field(default=None, compare=False, repr=False)
@@ -28,7 +30,8 @@ class JournalHome:
 
     @property
     def project_folder(self) -> Path:
-        return self.folder.resolve().parent
+        resolved = self.folder.resolve()
+        return next((folder.parent for folder in (resolved, *resolved.parents) if folder.name == JOURNAL_FOLDER), resolved.parent)
 
     @property
     def database(self) -> Path:

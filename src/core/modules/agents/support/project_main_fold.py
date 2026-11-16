@@ -9,7 +9,7 @@ from core.modules.agents.support.main_row import MainRow
 
 class ProjectMainFold:
     """Folds every main agent of every environment into the main agent of the project environment, with the
-    fold machinery of the main agents of one environment: everything a folded main wrote, its messages and its
+    fold machinery of the main agents of one environment, the survivor being its running main agent, else its newest: everything a folded main wrote, its messages and its
     tasks among them, becomes the survivor's. It refuses while a folded main still runs, so no live session
     loses its row. It folds in the caller's write, with the foreign keys off."""
 
@@ -22,7 +22,7 @@ class ProjectMainFold:
         survivors = [main for main in mains if main.environment_id == project_environment_id]
         if not survivors:
             raise Refusal(f"environment {project_environment_id} has no main agent to keep", "start a main session in the project folder, then start again")
-        survivor = max(survivors, key=lambda main: main.id)
+        survivor = min(survivors, key=lambda main: (main.ended_at is not None, -main.id))
         folded = tuple(main for main in mains if main.id != survivor.id)
         running = [main for main in folded if main.ended_at is None]
         if running:

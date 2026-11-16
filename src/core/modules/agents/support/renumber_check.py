@@ -32,6 +32,9 @@ class RenumberCheck:
     def tables(self) -> list[str]:
         return sorted({column.table for column in SchemaColumns(self.database).columns()})
 
+    def tables_counted(self) -> dict[str, int]:
+        return self.rewrite.table_counts(self.tables())
+
     def samples(self) -> dict[str, tuple[int, str, str]]:
         found = {}
         for table in SAMPLE_TABLES:
