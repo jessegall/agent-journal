@@ -1,5 +1,6 @@
 from engine.database.database import Database
 from engine.database.reference_rewrite import SCHEMA_REASON, ReferenceRewrite
+from engine.database.removal_counts import RemovalCounts
 from engine.database.row_removal import RowRemoval
 from engine.database.schema_columns import SchemaColumns
 from engine.database.statement import Statement
@@ -21,16 +22,16 @@ class AgentMessagePrune:
     def __init__(self, database: Database) -> None:
         self.database = database
 
-    def removed(self, main_agent_id: int) -> dict[str, int]:
+    def removed(self, main_agent_id: int) -> RemovalCounts:
         if not self.database.rows(MESSAGES_TABLE):
-            return {}
+            return RemovalCounts()
         ids = [int(row["id"]) for row in self.database.rows(Statement(OTHER_AGENT_MESSAGES, [main_agent_id], scan_reason=SCHEMA_REASON))]
         if not ids:
-            return {}
+            return RemovalCounts()
         pairs = tuple((table, model, row_id, "messages") for table, model, row_id in ColumnRule.sets(SchemaColumns(self.database).columns()).pairs)
         counts = RowRemoval(self.database, KEPT_TABLES, pairs).removed("messages", ids)
         for table, column in UNKEYED_MESSAGE_COLUMNS:
             if self.database.rows(Statement(TABLE_COLUMN, [table, column], scan_reason=SCHEMA_REASON)):
-                counts[table] = counts.get(table, 0) + self.database.update(Statement(
-                    f'UPDATE "{table}" SET "{column}" = NULL WHERE "{column}" IN ({ReferenceRewrite.marks(ids)})', ids))
-        return {table: count for table, count in counts.items() if count}
+                counts.add_nulled(table, self.database.update(Statement(
+                    f'UPDATE "{table}" SET "{column}" = NULL WHERE "{column}" IN ({ReferenceRewrite.marks(ids)})', ids)))
+        return counts

@@ -29,7 +29,7 @@ class MainFold:
     foreign keys off: settles the rows that would clash, moves the sessions first, points every column and
     model pair that holds a folded agent at the survivor, records each folded agent whole, removes the folded
     rows and gives the survivor number 1, then compares the counts and the keys and rolls everything back on a
-    mismatch."""
+    mismatch. A caller that holds the write and has the foreign keys off folds in it with folded."""
 
     def __init__(self, database: Database) -> None:
         self.database = database
@@ -40,19 +40,22 @@ class MainFold:
         return MainFoldPlan.folds([MainRow.parsed(row) for row in self.rewrite.matching_rows(AGENTS_TABLE, "role", AgentRole.MAIN.value)])
 
     def run(self, folds: tuple[EnvironmentFold, ...], folded_at: str) -> FoldCounts:
-        counts = FoldCounts()
         if not folds:
-            return counts
+            return FoldCounts()
+        with self.rewrite.without_foreign_keys():
+            with self.database.transaction():
+                return self.folded(folds, folded_at)
+
+    def folded(self, folds: tuple[EnvironmentFold, ...], folded_at: str) -> FoldCounts:
+        counts = FoldCounts()
         schema = SchemaColumns(self.database).columns()
         columns = ReferenceColumns.agent_columns(schema)
         tables = sorted({column.table for column in schema})
-        with self.rewrite.without_foreign_keys():
-            with self.database.transaction():
-                counts.tables_prior = self.rewrite.table_counts(tables)
-                for fold in folds:
-                    self.fold(fold, columns, counts, folded_at)
-                counts.tables_after = self.rewrite.table_counts(tables)
-                self.check(counts, sum(len(fold.folded) for fold in folds))
+        counts.tables_prior = self.rewrite.table_counts(tables)
+        for fold in folds:
+            self.fold(fold, columns, counts, folded_at)
+        counts.tables_after = self.rewrite.table_counts(tables)
+        self.check(counts, sum(len(fold.folded) for fold in folds))
         return counts
 
     def check(self, counts: FoldCounts, folded_count: int) -> None:

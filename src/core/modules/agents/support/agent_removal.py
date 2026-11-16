@@ -2,12 +2,12 @@ from collections.abc import Collection
 
 from engine.database.database import Database
 from engine.database.reference_rewrite import ReferenceRewrite
+from engine.database.removal_counts import RemovalCounts
 from engine.database.row_removal import RowRemoval
 from engine.database.schema_columns import SchemaColumns
 from engine.database.statement import Statement
 from core.modules.agents.support.column_rule import ColumnRule
 
-AGENT_MODELS = ("agent", "agents")
 KEPT_TABLES = ("tasks", "documents", "doc_revisions", "reports", "plans", "phases", "rules", "task_logs", "comments")
 
 
@@ -20,19 +20,18 @@ class AgentRemoval:
     def __init__(self, database: Database) -> None:
         self.database = database
 
-    def removed(self, agent_ids: Collection[int]) -> dict[str, int]:
+    def removed(self, agent_ids: Collection[int]) -> RemovalCounts:
         if not agent_ids:
-            return {}
+            return RemovalCounts()
         schema = SchemaColumns(self.database).columns()
         sets = ColumnRule.sets(schema)
         pairs = tuple((table, model, row_id, "agents") for table, model, row_id in sets.pairs)
         counts = RowRemoval(self.database, KEPT_TABLES, pairs).removed("agents", agent_ids)
         keyed = {(column.table, column.column) for column in schema if column.target is not None}
-        rewrite = ReferenceRewrite(self.database)
         ids = sorted(agent_ids)
         for table, column in sets.agent:
             if (table, column) in keyed or table == "agents":
                 continue
-            counts[table] = counts.get(table, 0) + self.database.update(Statement(
-                f'UPDATE "{table}" SET "{column}" = NULL WHERE "{column}" IN ({ReferenceRewrite.marks(ids)})', ids)) if rewrite.rows(table, column, ids) else counts.get(table, 0)
-        return {table: count for table, count in counts.items() if count}
+            counts.add_nulled(table, self.database.update(Statement(
+                f'UPDATE "{table}" SET "{column}" = NULL WHERE "{column}" IN ({ReferenceRewrite.marks(ids)})', ids)))
+        return counts

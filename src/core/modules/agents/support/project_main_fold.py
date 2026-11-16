@@ -11,7 +11,7 @@ class ProjectMainFold:
     """Folds every main agent of every environment into the main agent of the project environment, with the
     fold machinery of the main agents of one environment: everything a folded main wrote, its messages and its
     tasks among them, becomes the survivor's. It refuses while a folded main still runs, so no live session
-    loses its row."""
+    loses its row. It folds in the caller's write, with the foreign keys off."""
 
     def __init__(self, database: Database) -> None:
         self.database = database
@@ -29,6 +29,6 @@ class ProjectMainFold:
             raise Refusal(f"main agent {running[0].id} still runs and would be folded into {survivor.id}", "end that main session, then start again")
         return EnvironmentFold(project_environment_id, survivor, folded) if folded else None
 
-    def run(self, project_environment_id: int, folded_at: str) -> FoldCounts:
+    def folded(self, project_environment_id: int, folded_at: str) -> FoldCounts:
         fold = self.planned(project_environment_id)
-        return self.fold.run((fold,) if fold is not None else (), folded_at)
+        return self.fold.folded((fold,), folded_at) if fold is not None else FoldCounts()
