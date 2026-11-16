@@ -1,3 +1,4 @@
+from core.modules.processes.models.process import Process
 from datetime import timedelta
 
 import pytest
@@ -118,8 +119,8 @@ def test_a_main_message_leaves_the_worker_limit_unchanged(targeted_chat):
     post_target(server, cookie, story.agent, "Main should answer this")
     expect_absent_reply_line(story.hook(story.worker_session, LINT), "new message")
     story.hook("s-1", LINT)
-    story.expect_text("process show 1", "limit_seconds: 60")
-    story.expect_text("process show 2", "limit_seconds: 10")
+    main_run, worker_run = story.row(Process, 1), story.row(Process, 2)
+    story.expect_rows(main_run.limit_seconds == 60, worker_run.limit_seconds == 10, detail=f"a message to the main agent leaves the worker's run limit: {main_run.limit_seconds} {worker_run.limit_seconds}")
 
 
 def test_a_worker_reads_only_its_messages(targeted_chat):
