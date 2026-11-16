@@ -1,0 +1,14 @@
+.git
+.env
+.journal
+.agents
+.claude
+node_modules
+vendor
+frankenphp
+storage/logs/*
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*
+public/build
+public/hot
