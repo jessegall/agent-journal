@@ -3570,6 +3570,7 @@
       ],
       "methods": [
         "parsed(cls, data: object) -> 'ProjectHookRun'",
+        "stored(self) -> dict[str, object]",
         "parsed_many(cls, data: object) -> tuple['ProjectHookRun', ...]"
       ]
     },
@@ -6939,7 +6940,6 @@
         "agent_messages(self, modules: tuple[type[Module], ...]) -> tuple[MessageEntry, ...]",
         "docks(self, modules: tuple[type[Module], ...]) -> tuple[DockEntry, ...]",
         "skills(self, modules: tuple[type[Module], ...]) -> tuple[SkillEntry, ...]",
-        "helper_type_entries(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[HelperTypeEntry, ...]",
         "buttons(self, modules: tuple[type[Module], ...]) -> tuple[ButtonEntry, ...]",
         "inspectors(self, modules: tuple[type[Module], ...]) -> tuple[InspectorEntry, ...]",
         "button_slots(self, modules: tuple[type[Module], ...]) -> tuple[str, ...]",
@@ -7133,6 +7133,7 @@
         "parent_name(self, module: type[Module]) -> str | None",
         "suite_names(self, module: type[Module]) -> tuple[str, ...]",
         "helper_types(self, module: type[Module]) -> list[type[HelperType]]",
+        "helper_type_entries(self, modules: Sequence[type[Module]]) -> tuple[HelperTypeEntry, ...]",
         "problems(self) -> tuple[str, ...]",
         "modules_listed_twice(self) -> list[str]",
         "core_modules_listed(self) -> list[str]"

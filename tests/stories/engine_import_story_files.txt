@@ -393,7 +393,6 @@ tests/stories/core/support/seeds/base_seed.py
 tests/stories/core/support/seeds/large_read_seeds.py
 tests/stories/core/support/seeds/project_seeds.py
 tests/stories/core/support/signoffs_samples.py
-tests/stories/engine/chat/mark_buttons.py
 tests/stories/engine/chat/support/legacy_buttons_module.py
 tests/stories/engine/chat/support/mark_faults.py
 tests/stories/engine/command/support/lock_commands.py
