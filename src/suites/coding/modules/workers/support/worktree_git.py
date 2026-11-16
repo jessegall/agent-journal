@@ -79,6 +79,9 @@ class WorktreeGit:
     def __init__(self, runs: WorkerFolderRuns, executor: ProcessExecutor, builds: MergeBuilds) -> None:
         self.runs, self.executor, self.builds = runs, executor, builds
 
+    def has_branch(self, folder: str, branch: str) -> bool:
+        return self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}").returncode == 0
+
     def tip(self, folder: str, branch: str) -> str:
         revision = self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}")
         if revision.returncode != 0:
@@ -340,7 +343,7 @@ class WorktreeGit:
         if not folders:
             return False
         self.build(worktree.folder, base_folder, folders)
-        self.commit(worktree, REBUILD_MESSAGE, f"Journal: worker worker-{worktree.session_agent_id}")
+        self.commit(worktree, REBUILD_MESSAGE, f"Journal: worker {worktree.branch.rsplit('/', 1)[-1]}")
         return True
 
     # Builds the built files of these folders again from the sources in the folder, with the build command of the
