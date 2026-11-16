@@ -6,6 +6,8 @@ from core.modules.agents.queries.agent_query import AgentQuery
 
 MAIN_IDS_REASON = "every agent asked about is checked for a main agent"
 
+EVERY_MAIN_AGENT_REASON = "the running main agents of every environment, one each, for a timed job that visits each environment"
+
 
 class MainAgentFinder:
     """The running main agent of an environment: its newest, should two ever run. The main agent's own row
@@ -22,7 +24,7 @@ class MainAgentFinder:
 
     @staticmethod
     def all_running(queries: Queries) -> tuple[Agent, ...]:
-        return tuple(MainAgentFinder.running(queries).get())
+        return tuple(MainAgentFinder.running(queries).all_environments(EVERY_MAIN_AGENT_REASON).get())
 
     @staticmethod
     def latest(queries: Queries) -> Agent | None:
