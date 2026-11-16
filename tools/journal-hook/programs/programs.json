@@ -96,9 +96,7 @@
         "Task": "agent",
         "ToolSearch": "search",
         "Write": "write"
-      },
-      "wake_answer": "exit_with_stderr",
-      "wake_seconds": 86400
+      }
     },
     "codex": {
       "decoder": "codex",
@@ -153,9 +151,7 @@
         "request_user_input": "question",
         "view_image": "read",
         "write_file": "write"
-      },
-      "wake_answer": "",
-      "wake_seconds": 0
+      }
     }
   }
 }
