@@ -1,3 +1,4 @@
+from tests.unit.source_tree import source_tree
 import ast
 import tempfile
 from pathlib import Path
@@ -59,7 +60,7 @@ def is_path_argument_call(node: ast.AST) -> bool:
 # shutil.rmtree, is still caught by its name
 def untyped_bypasses() -> list[str]:
     return [f"{file.relative_to(PROJECT)}:{node.lineno}" for file in sorted(SOURCE.rglob("*.py")) if file != FILE_ACCESS
-            for node in ast.walk(ast.parse(file.read_text(), str(file))) if is_path_argument_call(node)]
+            for node in ast.walk(source_tree(file)) if is_path_argument_call(node)]
 
 
 def test_no_code_outside_file_access_reaches_the_file_system(tmp_path: Path):

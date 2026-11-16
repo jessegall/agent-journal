@@ -1,3 +1,4 @@
+from tests.unit.source_tree import source_tree
 import ast
 from pathlib import Path
 
@@ -11,7 +12,7 @@ SERVER_STORIES_RULE = "a story imports only modules, suites and the story kit (u
 
 def forbidden_imports(path: Path) -> list[str]:
     match = []
-    for node in ast.walk(ast.parse(path.read_text())):
+    for node in ast.walk(source_tree(path)):
         if isinstance(node, ast.Import):
             names = [alias.name for alias in node.names]
         elif isinstance(node, ast.ImportFrom) and not node.level:

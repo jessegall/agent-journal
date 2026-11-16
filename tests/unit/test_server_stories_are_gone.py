@@ -1,3 +1,4 @@
+from tests.unit.source_tree import source_tree
 import ast
 from pathlib import Path
 
@@ -14,7 +15,7 @@ def story_count(folder: Path) -> int:
     for path in folder.rglob("*.py"):
         if "support" in path.parts or "__pycache__" in path.parts:
             continue
-        for node in ast.parse(path.read_text()).body:
+        for node in source_tree(path).body:
             members = node.body if isinstance(node, ast.ClassDef) else [node]
             count += sum(1 for member in members if isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)) and member.name.startswith("test_"))
     return count

@@ -1,3 +1,4 @@
+from tests.unit.source_tree import source_tree
 import ast
 from pathlib import Path
 
@@ -9,7 +10,7 @@ STORY_FOLDER = "tests.stories."
 
 def module_level_imports(path: Path) -> list[str]:
     names = []
-    for node in ast.parse(path.read_text()).body:
+    for node in source_tree(path).body:
         if isinstance(node, ast.ImportFrom) and node.module:
             names.append(node.module)
         if isinstance(node, ast.Import):

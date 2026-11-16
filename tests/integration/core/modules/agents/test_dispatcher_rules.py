@@ -1,3 +1,4 @@
+from tests.unit.source_tree import source_tree
 import ast
 import json
 from pathlib import Path
@@ -116,7 +117,7 @@ def test_551_a_suite_starts_an_agent_by_the_public_command_reads_its_standing_by
     suite = SampleSuiteStart(story.container.get(Bus), story.container.get(AgentStanding))
     helper = helper_agent(story)
     started = suite.start(helper.id, str(story.container.get(AgentFolders).folder(helper)))
-    imported = [node.module for node in ast.walk(ast.parse(Path(sample_suite_start.__file__).read_text())) if isinstance(node, ast.ImportFrom) and node.module]
+    imported = [node.module for node in ast.walk(source_tree(Path(sample_suite_start.__file__))) if isinstance(node, ast.ImportFrom) and node.module]
     private = [name for name in imported if any(word in name for word in PRIVATE_PARTS)]
     story.expect_rows(started is Dispatch.STARTED, helper_agent(story).pid == 701, suite.is_running(helper.id), private == [], detail=f"{started} {imported}")
 
