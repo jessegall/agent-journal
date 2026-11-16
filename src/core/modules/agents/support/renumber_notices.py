@@ -18,7 +18,8 @@ MAIN_ROLE = "main"
 
 class RenumberNotices:
     """The lines that tell each agent still running its new id after the renumber of agents, and the main
-    agent what the renumber kept and removed, each said once and then marked as said."""
+    agent what the renumber kept and removed, each said once and then marked as said, and the text that tells
+    the person the same."""
 
     def __init__(self, database: Database) -> None:
         self.database = database
@@ -33,6 +34,16 @@ class RenumberNotices:
             lines.append((MAIN_AGENT_ID, f"Agents renumbered: {counts['stayed']} stay (main agent 1, the others from 2 in the order of their old ids), "
                                          f"{counts['removed']} removed; copy at {row['copy']}."))
         return lines
+
+    def person_text(self) -> str | None:
+        if int(self.database.rows(TABLES_EXIST)[0]["n"]) < 2:
+            return None
+        for row in self.database.rows(SUMMARY):
+            counts = json.loads(str(row["counts"]))
+            return (f"Agents were renumbered: the main agent is 1 and the agents that stay follow from 2; {counts['removed']} agents were removed, "
+                    f"and the messages helpers and workers sent were deleted. Older texts still name the old numbers. "
+                    f"A copy of the journal from before is at {row['copy']}.")
+        return None
 
     @staticmethod
     def label(role: str, agent_id: int) -> str:

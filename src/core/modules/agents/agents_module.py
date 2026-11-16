@@ -19,6 +19,7 @@ from core.modules.agents.marks.subagent_mark import SubagentMark
 from core.modules.agents.marks.agent_menu_mark import AgentMenuMark
 from core.modules.agents.marks.agent_launcher_mark import AgentLauncherMark
 from core.modules.agents.marks.program_settings_mark import ProgramSettingsMark
+from core.modules.agents.marks.agent_renumber_mark import AgentRenumberMark
 from core.modules.agents.inspectors.agent_inspector import AgentInspector
 from engine.module.module import Module
 from core.modules.agents.agent_messages.agent_start_failed_message import AgentStartFailedMessage
@@ -50,5 +51,5 @@ class AgentsModule(Module):
     inspectors = [AgentInspector]
     listeners = AGENTS_LISTENERS
     agent_listeners = [AgentLifecycleStepListener]
-    marks = [SubagentMark, AgentMenuMark, AgentLauncherMark, ProgramSettingsMark]
+    marks = [SubagentMark, AgentMenuMark, AgentLauncherMark, ProgramSettingsMark, AgentRenumberMark]
     seeders = [AgentsSeeder]
