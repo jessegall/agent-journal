@@ -1,15 +1,11 @@
 from engine.testing.expectations.text_match import contains_text
-import json
 from unittest.mock import patch
 
 from engine.database.database import Database
 from engine.enums.command_category import CommandCategory
-from engine.enums.tool_type import ToolType
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
-from tests.stories.core.modules.helpers.helper_reports import reported
 
 
 def shell_call(line: str, output: str = ""):
@@ -17,10 +13,6 @@ def shell_call(line: str, output: str = ""):
     category = CommandCategory.READ if program == "cat" else CommandCategory.PROCESS
     sample = HookSamples.shell(line, ShellPart(program, category, line.split()[1:])).with_fields(event="post_tool_use")
     return sample.with_raw({"tool_response": {"stdout": output}})
-
-
-
-
 
 
 def pin_lines(hook_answer) -> list[str]:
@@ -47,32 +39,8 @@ def as_worktree_with_an_included_alias_remote(story):
     return story
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def expect_pin_lines(hook_answer) -> None:
     assert pin_lines(hook_answer)
-
-
-def expect_absent_pin_lines(hook_answer) -> None:
-    assert not pin_lines(hook_answer)
 
 
 def expect_lines_hook_2(text, text_2, story, text_3, text_4, text_5) -> None:

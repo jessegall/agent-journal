@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.merger import expect_merger_lines
 
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.testing.fake_launcher import FakeLauncher
@@ -28,10 +29,6 @@ class MergerStartError(RuntimeError):
 def merger_agent(story):
     agents = story.container.get(Queries).query(Agent).filter(profile=f"{MERGER_PROFILE.name}").every_row(TEST_ROWS_REASON)
     return next(iter(agents), None)
-
-
-def expect_merger_lines(notices, expected):
-    assert [notice.text for notice in notices] == expected
 
 
 def ended_merger_lines(new_story, monkeypatch, end) -> tuple[object, str]:

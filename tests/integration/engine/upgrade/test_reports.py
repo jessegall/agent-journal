@@ -53,11 +53,6 @@ def test_the_report_is_saved_and_a_rerun_replaces_it_keeping_the_earlier_one(jou
     expect_value((story.home.folder / 'upgrade-report.1.txt').read_text().strip(), first.text.strip())
 
 
-def expect_mark_count_minimum(mark_count, story, expected) -> None:
-    actual = mark_count(story)
-    assert actual >= expected, actual
-
-
 def expect_folder_home_upgrade(story, text, expected) -> None:
     actual = (story.home.folder / text).read_text().strip()
     assert actual == expected, actual

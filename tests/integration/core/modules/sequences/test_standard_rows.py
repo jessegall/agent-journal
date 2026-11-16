@@ -26,10 +26,6 @@ def plan_building(story):
     return next(row for row in story.story_rows(Sequence) if row.title == PLAN_BUILDING)
 
 
-
-
-
-
 def test_an_old_copy_takes_the_newest_words_at_the_next_start_and_no_row_is_added(played):
     story = played(StartedSequences)
     stored = plan_building(story)
@@ -68,7 +64,3 @@ def expect_steps_plan_building(story, expected) -> None:
     actual = plan_building(story).steps
     assert actual == expected, actual
 
-
-def expect_title_standard_templates_limit(item, expected) -> None:
-    actual = {row.title for row in item}
-    assert actual <= expected, actual

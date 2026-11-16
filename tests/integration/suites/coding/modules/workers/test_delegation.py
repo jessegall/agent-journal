@@ -1,11 +1,10 @@
-from core.modules.agents.models.agent import Agent
-import json
+from tests.stories.suites.coding.modules.workers.delegation import expect_next_open_tasks
+from tests.stories.suites.coding.modules.workers.delegation import expect_ready_plan_tasks
 import pytest
 
 from core.modules.plans.support.next_plan_tasks import NextPlanTasks
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
-from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
 from engine.actor.actor import Actor
@@ -35,36 +34,9 @@ def judge_worker(played):
     return delegated_story(played)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 @pytest.fixture
 def delegated(played):
     return delegated_story(played)
-
-
-
-
-
-
-
-
-
 
 
 def dispatch_sample(*arguments: str):
@@ -80,14 +52,6 @@ def ended_worker_story(played):
     story.run('task make "Tax" --brief "Add the tax in cart.py" --environment main', actor=story.agent)
     story.run('task make "Till" --brief "Print the till in till.py" --environment main', actor=story.agent)
     return story, worker
-
-
-
-
-
-
-
-
 
 
 def test_a_chained_queue_goes_on_while_the_workers_earlier_task_is_in_testing(played):
@@ -117,20 +81,6 @@ def test_the_assigner_leaves_a_delegated_task_alone(played):
     expect_next_open_tasks(tasks, 1, "closed_at", None)
 
 
-
-
-
-def expect_card_listed(story, filter_name: str, agent_id: int, listed: bool) -> None:
-    outcome = story.run(f"agent cards --environment main --show {filter_name} --json", actor=story.agent)
-    assert outcome.code == 0, outcome.output_text
-    rows = json.loads(outcome.output_text)["rows"]
-    assert (agent_id in [row["id"] for row in rows]) is listed, rows
-
-
-
-
-
-
 def expect_total_started_groups(groups, expected) -> None:
     actual = groups['started']['total']
     assert actual == expected, actual
@@ -138,17 +88,6 @@ def expect_total_started_groups(groups, expected) -> None:
 
 def expect_id_open_groups(groups, expected) -> None:
     actual = [row['id'] for row in groups['open']['rows']]
-    assert actual == expected, actual
-
-
-def expect_next_open_tasks(tasks, number, text, expected) -> None:
-    actual = tasks.next_open(None, IsNull(text))
-    assert actual is expected, actual
-
-
-def expect_ready_plan_tasks(story, plans, plan_id, expected) -> None:
-    agent = story.row(Agent, story.agent.id)
-    actual = [place.task_id for place in plans.ready([plan_id], agent)[plan_id]]
     assert actual == expected, actual
 
 

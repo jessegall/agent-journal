@@ -1,3 +1,4 @@
+from tests.stories.core.modules.processes.journal_chain import expect_dumps_with
 from tests.stories.support.story_checks import expect_value
 from pathlib import Path
 import json
@@ -15,11 +16,6 @@ REFUSAL = "a journal command may not follow a long command"
 def expect_output_paths_parsed(part, expected) -> None:
     actual = list(Part.parsed(part).output_paths)
     assert actual == expected, actual
-
-
-def expect_dumps_with(schema, expected) -> None:
-    actual = json.dumps(schema)
-    assert expected in actual, actual
 
 
 def test_a_parts_write_paths_are_read_from_the_field_the_hook_client_sends():

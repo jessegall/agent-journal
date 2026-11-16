@@ -51,11 +51,6 @@ def expect_steps_plan_building(story, expected) -> None:
     assert actual == expected, actual
 
 
-def expect_title_standard_templates_limit(item, expected) -> None:
-    actual = {row.title for row in item}
-    assert actual <= expected, actual
-
-
 def test_each_standard_sequence_has_one_guard_for_each_step():
     for sequence in STANDARD_SEQUENCES:
         expect_value(sequence.step_guards.count('file_edits_allowed'), len(sequence.steps))

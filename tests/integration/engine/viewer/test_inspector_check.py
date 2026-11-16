@@ -1,13 +1,6 @@
 from engine.registry.registry import Registry
-from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.engine.viewer.support.inspector_faults import PATH
 from tests.stories.support.story_checks import expect_value
-
-
-def expect_refusal_with_synced_module(new_story, synced_module, refused_module, text):
-    story = new_story(fixture=MainEnvironment)
-    story.expect_sync_success(f"{PATH}:{synced_module}")
-    story.expect_sync_refusal(f"{PATH}:{refused_module}", text)
 
 
 def test_inspector_actions_become_buttons_on_the_row_slot(journal):

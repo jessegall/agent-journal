@@ -1,3 +1,5 @@
+from tests.stories.suites.coding.modules.workers.plan_dispatch import expect_agents
+from tests.stories.suites.coding.modules.workers.plan_dispatch import expect_queued
 from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 import json
 
@@ -8,23 +10,10 @@ from core.modules.chat.models.chat_mark import ChatMark
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
 from tests.stories.core.modules.chat.support.mark_samples import expect_absent_marks_text, expect_marks_text
 from tests.stories.suites.coding.modules.workers.support.phase_steps import planned_story
-from tests.integration.suites.coding.modules.workers.test_test_queue import recording_launch
-
 
 
 def read_outline(story) -> dict:
     return json.loads(story.run("plan outline 1 --json", actor=story.agent).output_text)
-
-
-def expect_queued(outline, task_id, agent_id) -> None:
-    task = [task for phase in outline["phases"] for task in phase["tasks"] if task["id"] == task_id][0]
-    actual = (task["state"], task["helper_id"], bool(task["helper_name"]))
-    assert actual == ("open", agent_id, True), actual
-
-
-def expect_agents(outline, expected) -> None:
-    actual = (outline["delegated"], [(agent["task_id"], bool(agent["name"])) for agent in outline["agents"]])
-    assert actual == expected, actual
 
 
 def test_a_dispatch_for_a_phase_hands_the_worker_that_phases_open_tasks_in_plan_order(played):
@@ -36,7 +25,7 @@ def test_a_dispatch_for_a_phase_hands_the_worker_that_phases_open_tasks_in_plan_
     expect_agents(board, (True, [(1, True), (2, True), (3, True)]))
     expect_queued(read_outline(story), 2, worker.id)
     story.expect_text("task show 4", "state: open", actor=story.agent)
-    story.expect_text(f"task info 2", f"assigned to: agent {worker.id}", actor=story.agent)
+    story.expect_text("task info 2", f"assigned to: agent {worker.id}", actor=story.agent)
 
 
 def test_a_dispatch_for_a_whole_plan_hands_the_worker_every_open_task_phase_by_phase(played):
@@ -44,8 +33,6 @@ def test_a_dispatch_for_a_whole_plan_hands_the_worker_every_open_task_phase_by_p
     recorded_test_launches(story)
     story.run("worker dispatch --test-command python=pytest --model sonnet --plan 1", actor=story.agent)
     expect_agents(read_outline(story), (True, [(1, True), (2, True), (3, True), (4, True)]))
-
-
 
 
 def test_a_dispatch_for_a_phase_shows_a_mark_that_the_plan_was_handed_over(played):

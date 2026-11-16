@@ -1,3 +1,5 @@
+from tests.stories.core.modules.profiles.profiles import expect_agents_folder_journal_with
+from tests.stories.core.modules.profiles.profiles import expect_project_folder_home_with
 from engine.actor.actor import CORE_ACTOR_ID
 import pytest
 
@@ -50,8 +52,6 @@ def test_the_journal_writes_its_own_profiles_at_every_start_and_keeps_a_saved_on
     story.expect_rows((story.home.project_folder / ".agents/profiles/critic.md").is_file())
 
 
-
-
 def test_a_module_sync_writes_the_journals_own_profiles(profiles_missing):
     story = profiles_missing
     with story.container.get(Database).transaction():
@@ -76,10 +76,6 @@ def test_a_shipped_profile_names_its_own_model_for_each_program_whatever_the_set
     expect_value(bool(all((profile.model and profile.codex_model for profile in SHIPPED_PROFILES))), True)
 
 
-
-
-
-
 def test_saving_a_shipped_profile_with_only_a_program_keeps_its_description_and_body(played):
     story = played(UserBuilder)
     previous = story.container.get(ProfileFiles).effective(f"{MERGER_PROFILE.name}")
@@ -97,15 +93,6 @@ def test_native_module_profiles_are_published_for_codex_only_where_it_has_a_fold
     expect_value(bool((story.home.project_folder / '.codex' / 'agents' / 'critic.toml').exists()), False)
 
 
-
-
-
-
-def expect_project_folder_home_with(story, text, text_2, text_3, expected) -> None:
-    actual = (story.home.project_folder / text / text_2 / text_3).read_text()
-    assert expected in actual, actual
-
-
 def expect_absent_exists_project_folder_2(story, text, text_2, text_3) -> None:
     actual = (story.home.project_folder / text / text_2 / text_3).exists()
     assert not actual, actual
@@ -114,11 +101,6 @@ def expect_absent_exists_project_folder_2(story, text, text_2, text_3) -> None:
 def expect_profile_model(item) -> None:
     actual = all((profile.model and profile.codex_model for profile in item))
     assert actual, actual
-
-
-def expect_agents_folder_journal_with(story, text, expected) -> None:
-    actual = (agents_folder(story) / text).read_text()
-    assert expected in actual, actual
 
 
 def expect_file_agents_folder(story, text) -> None:

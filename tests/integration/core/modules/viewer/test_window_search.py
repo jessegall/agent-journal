@@ -1,3 +1,4 @@
+from tests.stories.core.modules.viewer.window_search import expect_reads_windows_with
 from tests.stories.support.story_checks import expect_value
 from engine.registry.registry import Registry
 from engine.testing.expectations.expect_row import expect_row
@@ -18,11 +19,6 @@ class DatabaseQuestions(StoryFixture):
 def expect_fields_search(search, expected) -> None:
     actual = search['fields']
     assert actual == expected, actual
-
-
-def expect_reads_windows_with(windows, name, expected) -> None:
-    actual = windows[name].reads
-    assert expected in actual, actual
 
 
 def test_the_declaration_lists_what_the_viewer_draws_without_the_function(journal):

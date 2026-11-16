@@ -1,33 +1,20 @@
+from tests.stories.suites.coding.modules.workers.worker_no_readers import expect_blocked
 from datetime import timedelta
 
 import pytest
 
 from engine.enums.command_category import CommandCategory
-from engine.enums.tool_type import ToolType
-from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner
+from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
-from tests.stories.support.story_checks import expect_value
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 RAW_TEST = HookSamples.shell("pytest tests/one.py", ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/one.py"]))
 WORKER = "s-reader"
 MAIN = "s-1"
-
-
-def expect_unblocked(story) -> None:
-    worker = reader_worker(story)
-    story.expect_rows(not story.container.get(ReaderRequestQuery).open().filter(creator_id=worker.id).exists(),
-                      not story.row_exists(AgentBlock, session_agent_id=worker.id, closed_at=None))
-
-
-def expect_blocked(story) -> None:
-    worker = reader_worker(story)
-    story.expect_rows(story.container.get(ReaderRequestQuery).open().filter(creator_id=worker.id).exists())
 
 
 def hook_lines(story, session, sample) -> list[str]:
@@ -69,31 +56,11 @@ def busy_worker(readers_disabled):
     return readers_disabled
 
 
-
-
-
-
-
-
 def test_a_worker_test_of_an_unknown_tool_under_a_limit_asks_for_the_count_reader(limited):
     worker_run(limited, "custom-test run", CommandCategory.TEST_RUN)
     expect_blocked(limited)
     request = limited.container.get(ReaderRequestQuery).open().first()
     limited.expect_rows("count" in request.reason, detail=request.reason)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 def test_a_long_worker_run_is_asked_for_a_title_like_a_main_agents_and_asked_for_no_reader(readers_disabled):

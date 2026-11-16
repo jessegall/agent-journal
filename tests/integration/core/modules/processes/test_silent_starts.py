@@ -1,4 +1,5 @@
-from engine.testing.expectations.text_match import contains_line
+from tests.stories.core.modules.processes.silent_starts import expect_line
+from tests.stories.core.modules.processes.silent_starts import expect_line_absent
 from datetime import timedelta
 
 from engine.enums.command_category import CommandCategory
@@ -9,7 +10,6 @@ from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, started_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from tests.stories.support.story_checks import expect_value
 from core.modules.processes.agent_messages.silent_start_fixed_message import SilentStartFixedMessage
 from tests.integration.support.fixture_journal import FixtureJournal
 
@@ -32,16 +32,6 @@ def silent_run(story: FixtureJournal, line: str, text: str = "", seconds: int = 
 
 def read_lines(story: FixtureJournal, sample) -> list[str]:
     return list(story.hook("s-1", sample).lines)
-
-
-def expect_line(story: FixtureJournal, sample, text: str) -> None:
-    lines = read_lines(story, sample)
-    assert contains_line(lines, text), lines
-
-
-def expect_line_absent(story: FixtureJournal, sample, text: str) -> None:
-    lines = read_lines(story, sample)
-    assert not any(text in line for line in lines), lines
 
 
 class RunnerInstalled(StoryFixture):
@@ -84,20 +74,6 @@ def finish_build(story: FixtureJournal, process_id: int, text: str, seconds: int
     story.step("run started", process_id, ALIAS, [ALIAS])
     story.advance(timedelta(seconds=seconds))
     end_run(story, story.row(Process, process_id), text)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 def test_a_run_that_shows_a_percent_is_told_once_that_progress_shows(played):

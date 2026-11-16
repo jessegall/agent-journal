@@ -1,36 +1,8 @@
+from tests.stories.core.modules.search.search import expect_fewer_rows_loaded
 from engine.database.database import Database
-from tests.stories.core.modules.processes.support.process_samples import start_process
-from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.support.story_checks import expect_endswith_authorization, expect_startswith_listed, expect_value_with, expect_value_without, expect_visited_limit
 
 LONG_BRIEF = "Before " + "words " * 20 + "the cents   rounding\n\nbreaks " + "after " * 30
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def expect_fewer_rows_loaded(loaded, limit) -> None:
-    assert loaded < limit, loaded
 
 
 def test_a_search_that_matches_nothing_loads_no_whole_rows(played):
