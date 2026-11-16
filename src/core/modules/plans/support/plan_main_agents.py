@@ -2,6 +2,7 @@ from engine.command.context import Context
 from engine.driver.message_template import MessageTemplate
 from engine.driver.message_sender import MessageSender
 from engine.query.queries import Queries
+from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.plans.models.plan import Plan
@@ -12,15 +13,16 @@ class PlanMainAgents:
     """Sends a line about a plan to the main agent that works it: the agent the plan is assigned to, else
     every main agent."""
 
-    def __init__(self, queries: Queries, message_sender: MessageSender, assignments: Assignments) -> None:
-        self.queries, self.message_sender, self.assignments = queries, message_sender, assignments
+    def __init__(self, queries: Queries, message_sender: MessageSender, assignments: Assignments, scopes: Scopes) -> None:
+        self.queries, self.message_sender, self.assignments, self.scopes = queries, message_sender, assignments, scopes
 
     def newest(self) -> Agent | None:
         return MainAgentFinder.newest(self.queries)
 
     def send(self, plan: Plan, declaration: MessageTemplate, source: str, context: Context, **fields: object) -> None:
         assignee_id = self.assignments.actor(plan)
-        main_agents = tuple(MainAgentFinder.rows(self.queries))
+        with self.scopes.row_scope(plan):
+            main_agents = tuple(MainAgentFinder.rows(self.queries))
         is_main_assignee = any(agent.id == assignee_id for agent in main_agents)
         for agent in main_agents:
             if not is_main_assignee or agent.id == assignee_id:

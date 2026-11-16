@@ -1,3 +1,5 @@
+from core.modules.agents.models.agent import Agent
+from engine.scope.scopes import Scopes
 from collections.abc import Sequence
 
 from core.modules.tasks.agent_messages.task_reopened_message import TaskReopenedMessage
@@ -28,9 +30,9 @@ KEPT_WAITS_REASON = "The open waits are read once and kept on the server, so a l
 class TaskWaits(KeptRowChanges[TaskWait]):
     """Ends a blocked task's waits, and opens the task when the last of them has ended."""
 
-    def __init__(self, queries: Queries, repository: Repository, message_sender: MessageSender, kept: KeptRows, assignments: Assignments) -> None:
+    def __init__(self, queries: Queries, repository: Repository, message_sender: MessageSender, kept: KeptRows, assignments: Assignments, scopes: Scopes) -> None:
         self.queries, self.repository, self.message_sender, self.assignments = queries, repository, message_sender, assignments
-        self.kept = kept
+        self.kept, self.scopes = kept, scopes
 
     def resolved(self, waits: Sequence[TaskWait], context: Context) -> None:
         if not waits:
@@ -51,10 +53,15 @@ class TaskWaits(KeptRowChanges[TaskWait]):
 
     def notify_agents(self, tasks: Sequence[Task], context: Context) -> None:
         actor_ids = self.assignments.row_actor_ids(Task, [task.id for task in tasks])
-        for agent in MainAgentFinder.rows(self.queries):
-            for task in tasks:
+        main_agents = {environment_id: self.main_agents(environment_id) for environment_id in dict.fromkeys(task.environment_id for task in tasks)}
+        for task in tasks:
+            for agent in main_agents[task.environment_id]:
                 if not actor_ids[task.id] or agent.id in actor_ids[task.id]:
                     self.message_sender.send(agent.id, TaskReopenedMessage.declared(), WAIT_ENDED_SOURCE, context, task=task.id)
+
+    def main_agents(self, environment_id: int) -> tuple[Agent, ...]:
+        with self.scopes.opened(self.scopes.actor_id, environment_id):
+            return MainAgentFinder.rows(self.queries)
 
     def open_waits(self, task_id: int):
         return self.queries.query(TaskWait).filter(task_id=task_id).matching(IsNull("ended_at"))
