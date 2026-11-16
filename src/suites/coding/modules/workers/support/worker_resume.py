@@ -92,6 +92,10 @@ class WorkerResume:
         return f"the launcher still holds its program, process {worker.pid}" if worker.pid is not None else "the launcher still holds its program"
 
     def resume(self, worker: Agent, actor: Actor) -> Dispatch:
+        with self.scopes.row_scope(worker):
+            return self.resumed_dispatch(worker, actor)
+
+    def resumed_dispatch(self, worker: Agent, actor: Actor) -> Dispatch:
         if worker.ended_at is None or not self.agent_resume.may_resume(worker):
             return Dispatch.REFUSED
         worktree = self.worktrees.worker_worktree(worker.id)
@@ -109,11 +113,12 @@ class WorkerResume:
         return self.launch_job(worker, worktree, job, actor)
 
     def restart(self, worker: Agent, job: AgentLine, actor: Actor) -> None:
-        worktree = self.worktrees.worker_worktree(worker.id)
-        last_started_at = worker.ended_at if worker.ended_at is not None else worker.creation_timestamp()
-        if worktree is None or not self.agent_resume.may_resume(worker) or self.is_job_delivering(worker, last_started_at):
-            return
-        self.launch_job(worker, worktree, job, actor)
+        with self.scopes.row_scope(worker):
+            worktree = self.worktrees.worker_worktree(worker.id)
+            last_started_at = worker.ended_at if worker.ended_at is not None else worker.creation_timestamp()
+            if worktree is None or not self.agent_resume.may_resume(worker) or self.is_job_delivering(worker, last_started_at):
+                return
+            self.launch_job(worker, worktree, job, actor)
 
     def started(self, worker: Agent, command: LaunchCommand) -> Dispatch:
         return self.agent_resume.resume(worker, command)
