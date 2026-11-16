@@ -69,13 +69,16 @@
             },
             {
                 "file": "src/suites/coding/modules/workers/commands/send_worker/support/worker_queued_start.py"
+            },
+            {
+                "fileMatches": "(^|/)windows/[^/]+/keys/[^/]+\\.py$"
             }
         ]
     },
     "sin": {
         "name": "file-too-deep-below-its-layer",
         "description": "A class sits in a file more than 3 folders below its layer: the engine, a module, a suite or a tunnel.",
-        "rule": "Keep a file at most 3 levels below its layer: move it up beside the classes that use it, or give the subject a folder of its own nearer the top. The files named here are the ones that exist today; the list only shrinks.",
+        "rule": "Keep a file at most 3 levels below its layer: move it up beside the classes that use it, or give the subject a folder of its own nearer the top. The files named here are the ones that exist today; the list only shrinks. A window's keys folder, windows/<window>/keys/, is the one declared exception: the folder budget names it as the home of one window's key declarations.",
         "skill": "plain-code-words"
     }
 }
