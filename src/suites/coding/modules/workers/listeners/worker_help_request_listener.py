@@ -36,6 +36,6 @@ class WorkerHelpRequestListener(SaveListener[Created[Wait]]):
         should_notify = worker.role == Worker.key and worker.parent_id is not None and not self.unfinished.has_running_process(worker.id)
         if should_notify:
             tasks = self.unfinished.rows(worker.id)
-            agent_message = WorkerHelpRequestMessage.declared().agent_message(worker=worker.number, tasks=self.unfinished.names(tasks), wait=wait.id)
+            agent_message = WorkerHelpRequestMessage.declared().agent_message(worker=worker.id, tasks=self.unfinished.names(tasks), wait=wait.id)
             line = MergerLine(text=agent_message.text, fallback_source=SOURCE, agent_message_json=agent_message.stored.json, topic=AskTopic.GENERAL, worker_id=worker.id)
             self.inbox.deliver(self.questions.timed(line, wait.id, tasks[0].id if tasks else None, context.timestamp), context)

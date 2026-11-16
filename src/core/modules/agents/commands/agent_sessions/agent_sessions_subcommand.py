@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.types.type_guards import is_tuple
@@ -26,7 +26,7 @@ class AgentSessionsSubcommand(ReadSubcommand[tuple[AgentSession, ...]]):
         self.sessions = sessions
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("agent_id", type=AgentNumber)
+        parser.add_argument("agent_id", type=AgentId)
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[AgentSession, ...]:
         return tuple(self.sessions.newest_sessions(arguments.agent_id, SESSION_LIMIT_ROWS))

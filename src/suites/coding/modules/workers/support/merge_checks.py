@@ -13,7 +13,6 @@ from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.models.affected_test import AffectedTest
 from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
 from core.modules.agents.support.agent_label import AgentLabel
-from engine.cli.row_numbers import RowNumbers
 
 
 
@@ -22,18 +21,18 @@ class MergeChecks:
     started plan a committed proof passes too, since its test runs at a checkpoint of the plan, and the
     selected tests are not asked for: they run at the checkpoint as well."""
 
-    def __init__(self, queries: Queries, proofs: ProofQuery, kept: KeptRows, environments: EnvironmentRows, numbers: RowNumbers, plans: TaskPlans) -> None:
-        self.numbers, self.plans = numbers, plans
+    def __init__(self, queries: Queries, proofs: ProofQuery, kept: KeptRows, environments: EnvironmentRows, plans: TaskPlans) -> None:
+        self.plans = plans
         self.queries, self.proofs, self.kept, self.environments = queries, proofs, kept, environments
 
     def check_important_lines(self, worktree: Worktree, review: WorkerReview, answer: str) -> None:
         if review.has_important_lines() and not answer.strip():
-            raise Refusal(f"{AgentLabel.labelled_row(worktree.session_agent_id, self.numbers, "worker").text} has important log lines you have not answered",
+            raise Refusal(f"{AgentLabel.labelled_row(worktree.session_agent_id, "worker").text} has important log lines you have not answered",
                           f'read them with journal worker logs {worktree.session_agent_id}, then journal worker merge {worktree.session_agent_id} --read-important "<what you make of them>"')
 
     def check_logs(self, worktree: Worktree) -> None:
         if worktree.logs_read_at is None:
-            raise Refusal(f"the logs of {AgentLabel.labelled_row(worktree.session_agent_id, self.numbers, "worker").text} have not been read", f"journal worker logs {AgentLabel.labelled_row(worktree.session_agent_id, self.numbers).number}")
+            raise Refusal(f"the logs of {AgentLabel.labelled_row(worktree.session_agent_id, "worker").text} have not been read", f"journal worker logs {AgentLabel.labelled_row(worktree.session_agent_id).agent_id}")
 
     def check_proofs(self, worktree: Worktree) -> None:
         if not self.plans.is_started_plan(worktree.task_id):

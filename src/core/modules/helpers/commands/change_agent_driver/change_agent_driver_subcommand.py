@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
 from core.modules.agents.models.agent import Agent
@@ -23,7 +23,7 @@ class ChangeAgentDriverSubcommand(Subcommand[ChangeAgentDriver, Agent]):
         self.states = states
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("agent_id", type=AgentNumber)
+        parser.add_argument("agent_id", type=AgentId)
         parser.add_argument("--program", required=True)
         parser.add_argument("--model", required=True)
 

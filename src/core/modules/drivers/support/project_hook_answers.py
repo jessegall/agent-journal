@@ -1,6 +1,5 @@
 from collections.abc import Sequence
 
-from engine.cli.row_numbers import RowNumbers
 from engine.command.command import Command
 from engine.driver.project_hook_answer import ProjectHookAnswer
 from engine.driver.hook_event import HookEvent
@@ -14,7 +13,6 @@ from core.modules.drivers.agent_messages.managed_hook_line_message import Manage
 from core.modules.drivers.agent_messages.managed_hook_refusal_message import ManagedHookRefusalMessage
 
 from core.modules.drivers.support.project_hooks_answer import ProjectHooksAnswer
-from core.modules.agents.support.agent_number_messages import AgentNumberMessages
 MANAGED_HOOKS_KEY = "drivers.managed-hooks"
 
 
@@ -23,8 +21,8 @@ class ProjectHookAnswers:
     a hook's own words, and gets them again only once they change from what that hook last said to it. Read
     once a hook, so the policy, the lines, the effect and the rewrite share one answer."""
 
-    def __init__(self, providers: Providers, queries: Queries, numbers: RowNumbers, request_values: RequestValues) -> None:
-        self.providers, self.queries, self.numbers, self.request_values = providers, queries, numbers, request_values
+    def __init__(self, providers: Providers, queries: Queries, request_values: RequestValues) -> None:
+        self.providers, self.queries, self.request_values = providers, queries, request_values
 
     def answer(self, event: HookEvent, agent_id: int) -> ProjectHooksAnswer:
         # read once a hook whatever changes meanwhile: the notices it records are what the next read compares with
@@ -45,7 +43,7 @@ class ProjectHookAnswers:
         refusal = None
         if refusal_text:
             commands.append(RecordAgentNotice(agent_id, refusal_text, MANAGED_HOOKS_KEY))
-            refusal = AgentNumberMessages.message(self.numbers, ManagedHookRefusalMessage, "agent", agent_id)
+            refusal = ManagedHookRefusalMessage.declared().agent_message(agent=agent_id)
         return ProjectHooksAnswer(refusal, tuple(agent_messages), tuple(commands), dict(rewritten.updated_input) if rewritten is not None else {}, rewritten.name if rewritten is not None else "",
                                  0 if reads_text else len(lines), "\n".join(answer.terminal for answer in answers if answer.terminal))
 

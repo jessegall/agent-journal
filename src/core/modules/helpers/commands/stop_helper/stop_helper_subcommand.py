@@ -1,4 +1,4 @@
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -14,7 +14,7 @@ class StopHelperSubcommand(Subcommand[StopHelper, None]):
     external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("helper_id", type=AgentNumber)
+        parser.add_argument("helper_id", type=AgentId)
 
     def command(self, arguments: Namespace, caller: Caller) -> StopHelper:
         return StopHelper(arguments.helper_id)

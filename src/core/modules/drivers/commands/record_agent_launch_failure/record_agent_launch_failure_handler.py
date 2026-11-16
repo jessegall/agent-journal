@@ -32,6 +32,6 @@ class RecordAgentLaunchFailureHandler(Handler[RecordAgentLaunchFailure, None]):
         agent = self.repository.update(self.rows.required(Agent, command.agent_id), context, launch_failed_at=context.timestamp)
         if agent.ended_at is None and not self.types.has_separate_folder(agent.role):
             self.bus.dispatch(EndAgent(agent.id), context)
-        notice = AgentStartFailedMessage.declared().agent_message(agent=agent.number)
+        notice = AgentStartFailedMessage.declared().agent_message(agent=agent.id)
         if agent.parent_id is not None and not self.queries.query(AgentLine).filter(source=SOURCE, text=notice.text).exists():
-            self.message_sender.send(agent.parent_id, AgentStartFailedMessage.declared(), SOURCE, context, agent=agent.number)
+            self.message_sender.send(agent.parent_id, AgentStartFailedMessage.declared(), SOURCE, context, agent=agent.id)

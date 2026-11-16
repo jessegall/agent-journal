@@ -3,7 +3,6 @@ from dataclasses import replace
 
 from engine.actor.actor import Actor
 from engine.sandbox.shell_sandbox import ShellSandbox
-from engine.cli.row_numbers import RowNumbers
 from engine.command.bus import Bus
 from core.modules.agents.support.agent_label import AgentLabel
 from engine.command.context import Context
@@ -41,8 +40,7 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
 
     command = StartHelper
 
-    def __init__(self, profiles: ProfileFiles, types: HelperTypeBook, limits: HelperLimits, bus: Bus, repository: Repository, reuse: HelperReuse, sources: WorkSources, sandbox: ShellSandbox, kept: KeptHelpers, choice: HelperProgramChoice, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, profiles: ProfileFiles, types: HelperTypeBook, limits: HelperLimits, bus: Bus, repository: Repository, reuse: HelperReuse, sources: WorkSources, sandbox: ShellSandbox, kept: KeptHelpers, choice: HelperProgramChoice) -> None:
         self.kept, self.choice = kept, choice
         self.sandbox = sandbox
         self.profiles, self.types, self.limits, self.bus, self.repository, self.reuse = profiles, types, limits, bus, repository, reuse
@@ -91,5 +89,5 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
             helper = next((helper for helper in self.kept.kept(profile.name) if helper.id == job.helper_id), None)
             if helper is not None:
                 self.kept.check_program(helper)
-            label = AgentLabel.labelled_row(job.helper_id, self.numbers, HELPER_WORD)
-            raise Refusal(f"{label.text} knows these files", f"journal helper send {label.number} \"<job>\", or start a new one with --fresh")
+            label = AgentLabel.labelled_row(job.helper_id, HELPER_WORD)
+            raise Refusal(f"{label.text} knows these files", f"journal helper send {label.agent_id} \"<job>\", or start a new one with --fresh")

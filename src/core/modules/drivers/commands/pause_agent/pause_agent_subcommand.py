@@ -1,4 +1,4 @@
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -17,7 +17,7 @@ class PauseAgentSubcommand(Subcommand[PauseAgent, Agent]):
     external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("agent_id", type=AgentNumber)
+        parser.add_argument("agent_id", type=AgentId)
 
     def command(self, arguments: Namespace, caller: Caller) -> PauseAgent:
         return PauseAgent(arguments.agent_id)

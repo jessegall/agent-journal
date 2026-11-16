@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from engine.cli.agent_number import AGENT_MODEL_NAME, AgentNumber
-from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_id import AGENT_MODEL_NAME, AgentId
+from engine.cli.agent_ids import AgentIds
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.documents.models.enums.link_type import LinkType
@@ -16,8 +16,8 @@ class LinkListSubcommand(ReadSubcommand[LinkPage]):
     cli_name = "link"
     name = "list"
 
-    def __init__(self, pages: LinkPages, numbers: RowNumbers) -> None:
-        self.pages, self.numbers = pages, numbers
+    def __init__(self, pages: LinkPages, agent_ids: AgentIds) -> None:
+        self.pages, self.agent_ids = pages, agent_ids
 
     def arguments(self, parser: ArgumentParser) -> None:
         ends = parser.add_mutually_exclusive_group(required=True)
@@ -41,7 +41,7 @@ class LinkListSubcommand(ReadSubcommand[LinkPage]):
         model_name, _, number = (reference or "").partition(":")
         if model_name != AGENT_MODEL_NAME or not number.isdigit():
             return reference
-        return f"{model_name}:{self.numbers.row_id(model_name, int(AgentNumber(number)), environment_id)}"
+        return f"{model_name}:{self.agent_ids.checked(AgentId(number), environment_id)}"
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, LinkPage):

@@ -18,7 +18,6 @@ UPGRADE_RETIREMENT_REASON = "Over the kept limit at the upgrade to kept agents"
 PID_FIELD = "pid"
 LAUNCH_CHANGE = "launch"
 MAIN_TITLE = "Main agent"
-MAIN_NUMBER = 1
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -29,7 +28,7 @@ class Agent(EnvironmentScoped, Model):
 
     change_names = (END_CHANGE, LAUNCH_CHANGE)
     model_name = "agent"
-    numbered = True
+    holds_agents = True
     cli_name = "agent"
     search_fields = ["given_name", "program", "program_model", "profile", "session"]
     filter_fields = ["role"]
@@ -38,7 +37,6 @@ class Agent(EnvironmentScoped, Model):
 
     environment_id: int = 0
     actor_id: int
-    number: int = 0
     parent_id: int | None = None
     creator_id: int
     session: str
@@ -150,7 +148,7 @@ class Agent(EnvironmentScoped, Model):
 
     @property
     def display_name(self) -> str:
-        return AgentName(self.role, self.number).title
+        return AgentName(self.role, self.id).title
 
     @property
     def original_launch_name(self) -> str:

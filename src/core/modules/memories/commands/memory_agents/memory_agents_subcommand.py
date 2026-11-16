@@ -1,4 +1,4 @@
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from argparse import ArgumentParser, Namespace
 
@@ -34,7 +34,7 @@ class MemoryAgentsSubcommand(ReadSubcommand[Page[MemoryHolderRow]]):
         parser.add_argument("--role", default="")
         parser.add_argument("--access", type=Access, choices=list(Access), default=None)
         parser.add_argument("--name", default="")
-        parser.add_argument("--agents", type=AgentNumber, nargs="+", default=())
+        parser.add_argument("--agents", type=AgentId, nargs="+", default=())
         parser.add_argument("--working", action="store_true")
         parser.add_argument("--ended", action="store_true")
 

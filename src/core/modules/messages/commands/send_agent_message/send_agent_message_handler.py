@@ -1,4 +1,3 @@
-from engine.cli.row_numbers import RowNumbers
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
@@ -23,8 +22,7 @@ class SendAgentMessageHandler(Handler[SendAgentMessage, Message]):
     command = SendAgentMessage
     disabled_scopes = [ActorScope]
 
-    def __init__(self, repository: Repository, message_sender: MessageSender, receivers: Receivers, agents: AgentRows, routes: AgentMessageRoutes, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, repository: Repository, message_sender: MessageSender, receivers: Receivers, agents: AgentRows, routes: AgentMessageRoutes) -> None:
         self.repository, self.message_sender, self.receivers, self.agents, self.routes = repository, message_sender, receivers, agents, routes
 
     def handle(self, command: SendAgentMessage, context: Context) -> Message:
@@ -42,4 +40,4 @@ class SendAgentMessageHandler(Handler[SendAgentMessage, Message]):
     def sender_number(self, message: Message) -> int:
         if message.session_agent_id is None:
             return message.creator_id
-        return self.numbers.agent_number(message.session_agent_id)
+        return message.session_agent_id

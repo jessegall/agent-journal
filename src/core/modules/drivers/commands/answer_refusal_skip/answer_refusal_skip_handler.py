@@ -40,5 +40,5 @@ class AnswerRefusalSkipHandler(Handler[AnswerRefusalSkip, DriverGrant]):
         approver_id = agent.parent_id if not agent.is_main and self.settings.flag(SKIP_APPROVAL_SETTING) else None
         confirmed = self.repository.update(skip, context, grant_state=GrantState.CONFIRMED, confirmed_at=context.timestamp, tried=tried, requires_approval=approver_id is not None)
         if approver_id is not None:
-            self.message_sender.send(approver_id, SkipApprovalMessage.declared(), SKIP_SOURCE, context, agent=agent.number, refusal=skip.id)
+            self.message_sender.send(approver_id, SkipApprovalMessage.declared(), SKIP_SOURCE, context, agent=agent.id, refusal=skip.id)
         return confirmed

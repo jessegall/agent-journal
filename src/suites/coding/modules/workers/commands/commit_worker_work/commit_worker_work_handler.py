@@ -11,7 +11,6 @@ from dataclasses import replace
 from core.modules.agents.support.agent_label import AgentLabel
 from core.modules.tasks.commands.make_task_log.make_task_log import MakeTaskLog
 from core.modules.tasks.models.enums.task_state import TaskState
-from engine.cli.row_numbers import RowNumbers
 from engine.command.bus import Bus
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from suites.coding.modules.workers.commands.commit_worker_work.commit_worker_work import CommitWorkerWork
@@ -65,9 +64,9 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
     disabled_scopes = [ActorScope]
 
     def __init__(self, rows: EventRows, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue, repository: Repository, task_commit: WorkerTaskCommit, results: RecordWorkerTestHandler,
-                 differences: CommitDifferences, free_task: WorkerFreeTask, guidance: WorkerGuidance, staging: WorkerStaging, wait_text: CheckpointWaitText, bus: Bus, numbers: RowNumbers,
+                 differences: CommitDifferences, free_task: WorkerFreeTask, guidance: WorkerGuidance, staging: WorkerStaging, wait_text: CheckpointWaitText, bus: Bus,
                  compaction: WorkerCompaction, units: WorkUnits) -> None:
-        self.wait_text, self.bus, self.numbers, self.compaction, self.units = wait_text, bus, numbers, compaction, units
+        self.wait_text, self.bus, self.compaction, self.units = wait_text, bus, compaction, units
         self.rows, self.worktrees, self.proof_queue, self.repository, self.task_commit = rows, worktrees, proof_queue, repository, task_commit
         self.results, self.differences, self.free_task, self.guidance, self.staging = results, differences, free_task, guidance, staging
 
@@ -105,7 +104,7 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
         staging = self.staging.read(committed)
         tasks = tuple(task for task in self.commit_tasks(committed, staging) if task.id in committed.commit_tasks())
         open_tasks = staging.started_except(committed.commit_tasks())
-        worker_label = AgentLabel.labelled_row(context.actor.id, self.numbers, "worker").text
+        worker_label = AgentLabel.labelled_row(context.actor.id, "worker").text
         for task in tasks:
             self.differences.record(task.id, command.differences, context)
             self.bus.dispatch(MakeTaskLog(task.id, f"committed in {committed.commit_short_id} by {worker_label}"), replace(context, actor=Actor.core()))

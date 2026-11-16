@@ -1,4 +1,3 @@
-from engine.cli.row_numbers import RowNumbers
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -23,8 +22,8 @@ class EndStalledProofRunHandler(Handler[EndStalledProofRun, None]):
     command = EndStalledProofRun
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, bus: Bus, inbox: MergerInbox, numbers: RowNumbers) -> None:
-        self.rows, self.bus, self.inbox, self.numbers = rows, bus, inbox, numbers
+    def __init__(self, rows: EventRows, bus: Bus, inbox: MergerInbox) -> None:
+        self.rows, self.bus, self.inbox = rows, bus, inbox
 
     def handle(self, command: EndStalledProofRun, context: Context) -> None:
         proof = self.rows.required(Proof, command.proof_id)
@@ -33,5 +32,5 @@ class EndStalledProofRunHandler(Handler[EndStalledProofRun, None]):
             self.bus.dispatch(StopProcess(process.id), context)
         self.bus.dispatch(RecordWorkerTest(proof.id, False, HUNG_RUN_NOTE.format(minutes=command.minutes, process=proof.process_id)), context)
         worktree = self.rows.required(Worktree, proof.worktree_id)
-        worker = self.numbers.agent_number(worktree.session_agent_id)
+        worker = worktree.session_agent_id
         self.inbox.send_agent_message(ProofRunHungMessage.declared().agent_message(worker=worker, proof=proof.id, minutes=command.minutes, output=proof.process_id), LINE_SOURCE, context)

@@ -1,5 +1,4 @@
 from engine.actor.actor import Actor
-from engine.cli.row_numbers import RowNumbers
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.driver.message_sender import MessageSender
@@ -33,9 +32,9 @@ class CheckWorktreeBehindHandler(Handler[CheckWorktreeBehind, BehindRoute]):
     disabled_scopes = [ActorScope]
 
     def __init__(self, rows: EventRows, git: WorktreeGit, checks: BehindChecks, repository: Repository, settings: SettingValues, operations: WorkerOperationQuery,
-                 main_line: MainAgentLine, message_sender: MessageSender, numbers: RowNumbers) -> None:
+                 main_line: MainAgentLine, message_sender: MessageSender) -> None:
         self.rows, self.git, self.checks, self.repository, self.settings, self.operations = rows, git, checks, repository, settings, operations
-        self.main_line, self.message_sender, self.numbers = main_line, message_sender, numbers
+        self.main_line, self.message_sender = main_line, message_sender
         self.behind, self.tip, self.moved = 0, "", False
 
     def prepare(self, command: CheckWorktreeBehind, actor: Actor) -> None:
@@ -55,7 +54,7 @@ class CheckWorktreeBehindHandler(Handler[CheckWorktreeBehind, BehindRoute]):
         if not self.checks.opens(worktree, self.behind):
             return BehindRoute.NONE
         check = self.repository.save(WorktreeBehindCheck.opened(worktree.id, self.tip, self.behind), context)
-        worker = self.numbers.agent_number(worktree.session_agent_id)
+        worker = worktree.session_agent_id
         if self.moved:
             self.repository.save_change(check, check.updated(), context)
             self.repository.save_change(worktree, worktree.updated(self.tip), context)

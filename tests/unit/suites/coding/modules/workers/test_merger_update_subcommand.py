@@ -1,4 +1,4 @@
-from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_ids import AgentIds
 from types import SimpleNamespace
 
 import pytest
@@ -60,7 +60,7 @@ class Checks:
         return SimpleNamespace(program="claude", program_model="sonnet")
 
 
-class Numbers(RowNumbers):
+class Numbers(AgentIds):
     def number(self, model: str, row_id: int) -> int:
         return 999
 

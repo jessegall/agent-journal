@@ -1,4 +1,3 @@
-from engine.cli.row_numbers import RowNumbers
 from engine.event.moved import Moved
 from engine.command.bus import Bus
 from engine.command.context import Context
@@ -20,8 +19,8 @@ class WorkerMergeBlockListener(SaveListener[Moved[Worktree]]):
     moves = (WorktreeLifecycle.merge, WorktreeLifecycle.rework, WorktreeLifecycle.abandon)
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, bus: Bus, numbers: RowNumbers) -> None:
-        self.queries, self.bus, self.numbers = queries, bus, numbers
+    def __init__(self, queries: Queries, bus: Bus) -> None:
+        self.queries, self.bus = queries, bus
 
     def handle(self, event: Moved[Worktree], context: Context) -> None:
         command = self.merge_command(event.row)
@@ -31,4 +30,4 @@ class WorkerMergeBlockListener(SaveListener[Moved[Worktree]]):
             self.bus.dispatch(CloseAgentBlock(block.id), context)
 
     def merge_command(self, worktree: Worktree) -> str:
-        return f"journal worker merge {self.numbers.agent_number(worktree.session_agent_id)}"
+        return f"journal worker merge {worktree.session_agent_id}"

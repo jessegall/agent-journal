@@ -1,4 +1,4 @@
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -20,7 +20,7 @@ class SendHelperSubcommand(Subcommand[SendHelper, int]):
         self.agents = agents
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("helper_id", type=AgentNumber)
+        parser.add_argument("helper_id", type=AgentId)
         parser.add_argument("job")
         parser.add_argument("--plan", type=int, default=None, help="the plan this job reviews")
         parser.add_argument("--title", default="", help="a short title for the job, shown in the agent list")

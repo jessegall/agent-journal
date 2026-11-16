@@ -4,7 +4,7 @@ from suites.coding.modules.workers.support.worktree_runs import WorktreeRuns
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from argparse import ArgumentParser, Namespace
 
 from engine.enums.actor_type import ActorType
@@ -32,7 +32,6 @@ from suites.coding.modules.workers.support.worker_status_page_json import Worker
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_open_tasks import WorkerOpenTasks
 from core.modules.agents.support.agent_label import AgentLabel
-from engine.cli.row_numbers import RowNumbers
 from suites.coding.modules.workers.support.worker_questions import WorkerQuestions
 from suites.coding.modules.workers.support.work_units import UNIT_TASKS_REASON
 
@@ -42,16 +41,15 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
     cli_name = "worker"
     name = "status"
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, unread_skills: UnreadSkills, files: SkillFiles, resume: WorkerResume, guidance: WorkerGuidance, numbers: RowNumbers, questions: WorkerQuestions, tasks: TaskQuery, open_tasks: WorkerOpenTasks, units: WorkUnits, runs: WorktreeRuns, git: WorktreeGit) -> None:
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, unread_skills: UnreadSkills, files: SkillFiles, resume: WorkerResume, guidance: WorkerGuidance, questions: WorkerQuestions, tasks: TaskQuery, open_tasks: WorkerOpenTasks, units: WorkUnits, runs: WorktreeRuns, git: WorktreeGit) -> None:
         self.tasks, self.open_tasks, self.units, self.runs, self.git = tasks, open_tasks, units, runs, git
         self.questions = questions
-        self.numbers = numbers
         self.guidance = guidance
         self.queries, self.worktrees, self.proofs = queries, worktrees, proofs
         self.unread_skills, self.files, self.resume = unread_skills, files, resume
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("worker_id", type=AgentNumber, nargs="?")
+        parser.add_argument("worker_id", type=AgentId, nargs="?")
         parser.add_argument("--page", type=int, default=1)
         parser.add_argument("--limit", type=int, default=25)
 
@@ -71,7 +69,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
         current_task = self.queries.query(Task).find(worktree.task_id)
         point = self.guidance.point(worker_id)
         waiting_tasks = tuple(self.tasks.assignee_tasks(worker_id).filter(state=TaskState.TESTING).every_row(UNIT_TASKS_REASON))
-        return WorkerStatus(worker_id, worker.number, worktree, current_task, self.tasks.started_tasks(worker_id), point.round.required_staging(), waiting_tasks, self.open_tasks.startable(point.round), tests, assignments, skills, worker.program, self.resume.program_state(worker) if worker.ended_at is not None else None, point, worker.paused_at is not None, self.questions.status_lines(worker_id), worker.agent_state,
+        return WorkerStatus(worker_id, worker.id, worktree, current_task, self.tasks.started_tasks(worker_id), point.round.required_staging(), waiting_tasks, self.open_tasks.startable(point.round), tests, assignments, skills, worker.program, self.resume.program_state(worker) if worker.ended_at is not None else None, point, worker.paused_at is not None, self.questions.status_lines(worker_id), worker.agent_state,
                             self.unit_line(worker_id, worktree.id), self.stale_line(worktree), self.foreign_holder_lines(worker_id))
 
     def stale_line(self, worktree: Worktree) -> str:
@@ -98,7 +96,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
 
     def kept_status(self, worker_id: int) -> KeptWorkerStatus | Refusal:
         if self.worktrees.newest_worktree(worker_id) is None:
-            return Refusal(f"{AgentLabel.labelled_row(worker_id, self.numbers).text} has no worker worktree")
+            return Refusal(f"{AgentLabel.labelled_row(worker_id).text} has no worker worktree")
         worker = self.queries.query(Agent).find(worker_id)
         if worker.retired_at is not None:
             return Refusal(f"{AgentLabel.labelled(worker).text} is retired")

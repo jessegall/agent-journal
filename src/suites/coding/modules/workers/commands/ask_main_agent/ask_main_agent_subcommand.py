@@ -1,4 +1,4 @@
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -21,7 +21,7 @@ class AskMainAgentSubcommand(Subcommand[AskMainAgent, None]):
         parser.add_argument("--tried")
         parser.add_argument("--option", action="append", default=[])
         parser.add_argument("--recommend")
-        parser.add_argument("--worker", type=AgentNumber)
+        parser.add_argument("--worker", type=AgentId)
 
     def command(self, arguments: Namespace, caller: Caller) -> AskMainAgent:
         if not (arguments.problem.strip() and arguments.tried and arguments.recommend and len(arguments.option) >= LEAST_OPTION_COUNT):

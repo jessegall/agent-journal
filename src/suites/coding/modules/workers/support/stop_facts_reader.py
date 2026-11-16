@@ -50,4 +50,4 @@ class StopFactsReader:
 
     def is_main_agent_informed(self, worker: Agent, progress: Minimum) -> bool:
         lines = self.queries.query(AgentLine).filter(source=ENDED_WORKER_SOURCE).matching(progress).every_row(ENDED_LINES_REASON)
-        return any(line.agent_message.key == EndedWorkerTasksMessage.declared().key and dict(line.agent_message.fields)["worker"] == str(worker.number) for line in lines)
+        return any(line.agent_message.key == EndedWorkerTasksMessage.declared().key and dict(line.agent_message.fields)["worker"] == str(worker.id) for line in lines)

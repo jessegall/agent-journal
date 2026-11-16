@@ -1,11 +1,11 @@
 from core.modules.documents.commands.record_mentions.record_mentions_handler import RecordMentionsHandler
-from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_ids import AgentIds
 from engine.errors.refusal import Refusal
 
 SHOP = 2
 
 
-class ShopNumbers(RowNumbers):
+class ShopNumbers(AgentIds):
     """In the shop environment agent 4 is row 44 and no agent has the number 9."""
 
     def row_id(self, model_name: str, number: int, environment_id: int | None) -> int:

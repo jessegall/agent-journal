@@ -37,11 +37,11 @@ class InactiveWorkerSend:
         if worker is None or worker.parent_id is None:
             return
         if worker.paused_at is not None:
-            self.message_sender.send(worker.parent_id, WorkerOperationPausedMessage.declared(), WORKER_JOB_SOURCE, context, worker=worker.number)
+            self.message_sender.send(worker.parent_id, WorkerOperationPausedMessage.declared(), WORKER_JOB_SOURCE, context, worker=worker.id)
             return
         if not self.is_idle(worker):
             return
-        operation_line = shlex.join(["worker", "send", str(worker.number), "--task", str(task.id), "--wait"])
+        operation_line = shlex.join(["worker", "send", str(worker.id), "--task", str(task.id), "--wait"])
         worker_job_command = SendWorker(worker.id, task_ids=(task.id,))
         self.bus.dispatch(QueueWorkerOperation(worker.id, operation_line, worker_job_command, WorkerOperationName.JOB), replace(context, actor=Actor(worker.parent_id, ActorType.AGENT)))
 

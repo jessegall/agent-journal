@@ -45,7 +45,7 @@ class AgentRenumber:
     def project_environment_id(self) -> int:
         project = self.home.project_folder.resolve()
         environment_ids = [int(row["id"]) for row in self.database.rows(ENVIRONMENTS) if Path(str(row["folder"])).resolve() == project]
-        chosen = ProjectEnvironment.first(environment_ids, [MainRow.parsed(row) for row in self.database.rows(MAIN_AGENTS)])
+        chosen = ProjectEnvironment.first(environment_ids, [MainRow.parsed(row).place for row in self.database.rows(MAIN_AGENTS)])
         if chosen is None:
             raise Refusal(f"no environment works in the project folder {project}", "start a main session in the project folder, then start again")
         return chosen

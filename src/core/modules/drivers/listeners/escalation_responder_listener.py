@@ -26,7 +26,7 @@ class EscalationResponderListener(SaveListener[Changed[AgentEscalation]]):
             return
         agent = self.agents.find(escalation.session_agent_id)
         if agent.parent_id is not None:
-            self.message_sender.send(agent.parent_id, EscalationHelpMessage.declared(), ESCALATION_SOURCE, context, agent=agent.number, count=escalation.refusal_count,
+            self.message_sender.send(agent.parent_id, EscalationHelpMessage.declared(), ESCALATION_SOURCE, context, agent=agent.id, count=escalation.refusal_count,
                              escalation=escalation.id)
 
     # a hold or a piece of work that joined; the refusal counts reset at each rest, so they cannot tell a join

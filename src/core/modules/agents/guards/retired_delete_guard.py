@@ -19,4 +19,4 @@ class RetiredDeleteGuard(Guard[Deleted[Agent]]):
         if event.row.retired_at is not None:
             raise Refusal(f"{label} is retired, and its record stays")
         if context.actor != Actor.core():
-            raise Refusal(f"{label} is not deleted: its record stays", f'journal agent retire {event.row.number} --reason "<why>" retires it')
+            raise Refusal(f"{label} is not deleted: its record stays", f'journal agent retire {event.row.id} --reason "<why>" retires it')

@@ -1,4 +1,3 @@
-from engine.cli.row_numbers import RowNumbers
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.repository.repository import Repository
@@ -21,13 +20,13 @@ class PassBehindCheckHandler(Handler[PassBehindCheck, None]):
     command = PassBehindCheck
     disabled_scopes = [ActorScope]
 
-    def __init__(self, agents: AgentRows, decisions: BehindDecisions, repository: Repository, visits: MergerVisits, main_line: MainAgentLine, numbers: RowNumbers) -> None:
-        self.agents, self.decisions, self.repository, self.visits, self.main_line, self.numbers = agents, decisions, repository, visits, main_line, numbers
+    def __init__(self, agents: AgentRows, decisions: BehindDecisions, repository: Repository, visits: MergerVisits, main_line: MainAgentLine) -> None:
+        self.agents, self.decisions, self.repository, self.visits, self.main_line = agents, decisions, repository, visits, main_line
 
     def handle(self, command: PassBehindCheck, context: Context) -> None:
         merger = require_merger(self.agents, context)
         _, check = self.decisions.passable(command.worker_id)
         self.repository.save_change(check, check.passed(merger.id, command.reason), context)
         self.visits.close_newest(context)
-        worker = self.numbers.agent_number(command.worker_id)
+        worker = command.worker_id
         self.main_line.send_agent_message(StalePassedMessage.declared().agent_message(worker=worker, check=check.id), STALE_SOURCE, context)

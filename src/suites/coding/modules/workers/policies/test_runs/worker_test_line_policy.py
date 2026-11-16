@@ -1,7 +1,6 @@
 from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_policy import EventPolicy
 from suites.coding.modules.workers.types.worker import Worker
-from engine.cli.row_numbers import RowNumbers
 from engine.enums.command_category import CommandCategory
 from engine.driver.agent_message import AgentMessage
 from core.modules.processes.support.background_commands import BackgroundCommands
@@ -9,7 +8,6 @@ from core.modules.processes.support.reader_demands import ASKING_FLAGS
 from suites.coding.modules.workers.agent_messages.worker_test_commands_missing_message import WorkerTestCommandsMissingMessage
 from suites.coding.modules.workers.agent_messages.worker_test_line_refusal_message import WorkerTestLineRefusalMessage
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
-from core.modules.agents.support.agent_number_messages import AgentNumberMessages
 
 
 class WorkerTestLinePolicy(EventPolicy):
@@ -21,8 +19,7 @@ class WorkerTestLinePolicy(EventPolicy):
     agent_types = [Worker.key]
 
 
-    def __init__(self, commands: BackgroundCommands, names: WorkerTestNames, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, commands: BackgroundCommands, names: WorkerTestNames) -> None:
         self.commands, self.names = commands, names
 
     def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
@@ -36,4 +33,4 @@ class WorkerTestLinePolicy(EventPolicy):
 
     def refused_line(self, worker_id: int) -> AgentMessage:
         names = self.names.names_text(worker_id)
-        return WorkerTestLineRefusalMessage.declared().agent_message(names=names) if names else AgentNumberMessages.message(self.numbers, WorkerTestCommandsMissingMessage, "worker", worker_id)
+        return WorkerTestLineRefusalMessage.declared().agent_message(names=names) if names else WorkerTestCommandsMissingMessage.declared().agent_message(worker=worker_id)

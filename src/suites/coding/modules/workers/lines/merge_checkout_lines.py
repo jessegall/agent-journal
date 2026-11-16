@@ -2,7 +2,6 @@ from collections.abc import Sequence
 
 from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.agent_machine.states.line_history import LineHistory
-from engine.cli.row_numbers import RowNumbers
 from engine.driver.hook_event import HookEvent
 from engine.driver.agent_message import AgentMessage
 from engine.driver.seconds import Seconds
@@ -28,8 +27,8 @@ class MergeCheckoutLines(EventLineSource):
     events = [HookEventName.TICK]
     agent_types = [AgentRole.MAIN.value]
 
-    def __init__(self, rows: EventRows, delivered: WorkerWorktrees, proofs: ProofQuery, git: WorktreeGit, history: LineHistory, numbers: RowNumbers, clock: Clock) -> None:
-        self.rows, self.delivered, self.proofs, self.git, self.history, self.numbers, self.clock = rows, delivered, proofs, git, history, numbers, clock
+    def __init__(self, rows: EventRows, delivered: WorkerWorktrees, proofs: ProofQuery, git: WorktreeGit, history: LineHistory, clock: Clock) -> None:
+        self.rows, self.delivered, self.proofs, self.git, self.history, self.clock = rows, delivered, proofs, git, history, clock
 
     def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         last_given_at = self.history.last_given(self.key, agent_id)
@@ -37,6 +36,6 @@ class MergeCheckoutLines(EventLineSource):
             return []
         delivered = list(self.delivered.delivered())
         environments = self.rows.required_index(Environment, [worktree.environment_id for worktree in delivered])
-        return [MergeWaitsMessage.declared().agent_message(worker=self.numbers.agent_number(worktree.session_agent_id), environment=environments[worktree.environment_id].name,
+        return [MergeWaitsMessage.declared().agent_message(worker=worktree.session_agent_id, environment=environments[worktree.environment_id].name,
                                                  branch=worktree.base_branch)
                 for worktree in delivered if not self.proofs.waiting_proofs(worktree.id).exists() and self.git.head(environments[worktree.environment_id].folder) != worktree.base_branch]

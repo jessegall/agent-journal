@@ -24,7 +24,7 @@ class NewSessionLine:
             return None
         with self.scopes.row_scope(agent):
             task_ids, report_id = self.tasks.open_task_ids(agent.id), self.reports.newest_report_id(agent.id)
-        return NewSession(AgentLabel(AGENT_WORD, agent.number).text, ", ".join(f"task {task_id}" for task_id in task_ids) or NONE_WORD,
+        return NewSession(AgentLabel(AGENT_WORD, agent.id).text, ", ".join(f"task {task_id}" for task_id in task_ids) or NONE_WORD,
                           NONE_WORD if report_id is None else f"report {report_id}", newest[1].end_reason == EndReason.CONVERSATION_MISSING)
 
     def line(self, agent: Agent) -> str | None:

@@ -1,5 +1,4 @@
 from core.modules.assignments.support.assignments import Assignments
-from engine.cli.row_numbers import RowNumbers
 from engine.enums.agent_role import AgentRole
 from engine.listener.save_listener import SaveListener
 from engine.scope.actor_scope import ActorScope
@@ -11,7 +10,6 @@ from suites.coding.modules.workers.agent_messages.worker_task_blocked_message im
 from engine.event.moved import Moved
 from engine.command.context import Context
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
-from core.modules.agents.support.agent_number_messages import AgentNumberMessages
 
 
 class BlockedWorkerTaskListener(SaveListener[Moved[Task]]):
@@ -22,8 +20,8 @@ class BlockedWorkerTaskListener(SaveListener[Moved[Task]]):
     moves = (TaskLifecycle.block,)
     disabled_scopes = [ActorScope]
 
-    def __init__(self, main_agent_line: MainAgentLine, message_sender: MessageSender, numbers: RowNumbers, assignments: Assignments) -> None:
-        self.numbers, self.assignments = numbers, assignments
+    def __init__(self, main_agent_line: MainAgentLine, message_sender: MessageSender, assignments: Assignments) -> None:
+        self.assignments = assignments
         self.main_agent_line, self.message_sender = main_agent_line, message_sender
 
     def handle(self, event: Moved[Task], context: Context) -> None:
@@ -34,5 +32,5 @@ class BlockedWorkerTaskListener(SaveListener[Moved[Task]]):
         if worker.id != context.actor.id:
             self.message_sender.send(worker.id, BlockedWorkerTaskMessage.declared(), self.name, context, task=task.id)
             return
-        notice = AgentNumberMessages.message(self.numbers, WorkerTaskBlockedMessage, "worker", worker.id, task=task.id)
+        notice = WorkerTaskBlockedMessage.declared().agent_message(worker=worker.id, task=task.id)
         self.main_agent_line.send_agent_message(notice, self.name, context)

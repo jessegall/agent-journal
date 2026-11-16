@@ -14,7 +14,6 @@ from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.merger_agent_messages import MERGER_SOURCE
 from suites.coding.modules.workers.support.worker_settings import DELIVERY_FAILURE_LIMIT, WORKER_RUN_FAILURE_LIMIT
 from core.modules.agents.support.agent_label import AgentLabel
-from engine.cli.row_numbers import RowNumbers
 
 FAILURES_REASON = "the flagged lines name every test failure of the tasks asked about"
 
@@ -29,22 +28,21 @@ class WorkerTestFailures:
     every third failed hand-in of a task puts a line before the merger, since only a pass ends a task's run of
     them."""
 
-    def __init__(self, queries: Queries, repository: Repository, settings: SettingValues, system_log: SystemLogWriter, inbox: MergerInbox, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, queries: Queries, repository: Repository, settings: SettingValues, system_log: SystemLogWriter, inbox: MergerInbox) -> None:
         self.queries, self.repository, self.settings, self.system_log, self.inbox = queries, repository, settings, system_log, inbox
 
     def record_delivery(self, worker_id: int, task_id: int, test_name: str, context: Context) -> None:
         self.record(worker_id, task_id, FailedTestSource.DELIVERY, test_name, context)
         failures = self.queries.query(WorkerTestFailure).filter(task_id=task_id, source=FailedTestSource.DELIVERY).count()
         if failures % DELIVERY_REVIEW_INTERVAL_COUNT == 0:
-            self.inbox.send(f"worker:{self.numbers.agent_number(worker_id)} failed {failures} hand-ins in a row on task:{task_id}: work out where it goes wrong and tell it", MERGER_SOURCE, context)
+            self.inbox.send(f"worker:{worker_id} failed {failures} hand-ins in a row on task:{task_id}: work out where it goes wrong and tell it", MERGER_SOURCE, context)
 
     def record_worker_run(self, worker_id: int, task_id: int, line: str, context: Context) -> None:
         for test_name in self.test_names(line):
             self.record(worker_id, task_id, FailedTestSource.WORKER_RUN, test_name, context)
 
     def record(self, worker_id: int, task_id: int, source: FailedTestSource, test_name: str, context: Context) -> None:
-        self.system_log.write(LogLevel.WARNING, f"{AgentLabel.labelled_row(worker_id, self.numbers, "worker").text}, task {task_id}: {source} failed: {test_name}")
+        self.system_log.write(LogLevel.WARNING, f"{AgentLabel.labelled_row(worker_id, "worker").text}, task {task_id}: {source} failed: {test_name}")
         self.repository.save(WorkerTestFailure(worker_id=worker_id, task_id=task_id, source=source, test_name=test_name), context)
 
     def flagged_lines(self, task_ids: Sequence[int]) -> Mapping[int, tuple[str, ...]]:

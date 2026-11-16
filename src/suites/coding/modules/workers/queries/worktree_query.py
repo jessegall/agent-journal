@@ -13,7 +13,6 @@ from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.replaced_rows import replaced_rows
 from core.modules.agents.support.agent_label import AgentLabel
-from engine.cli.row_numbers import RowNumbers
 
 WORKTREE_READ_REASON = "a worktree is read by its worker, its own id or its folder, the same in every environment, and the workers' timed jobs read the worktrees of every environment"
 WORKTREES_REASON = "every worktree asked about is read, the open ones and the removed ones a merge or a folder needs"
@@ -22,8 +21,7 @@ WORKTREES_REASON = "every worktree asked about is read, the open ones and the re
 class WorktreeQuery(Query[Worktree], KeptRowChanges[Worktree]):
     """Reads worktrees, with the one a worker has out and those an environment has out by name."""
 
-    def __init__(self, database: Database, tables: Tables, kept: KeptRows, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, database: Database, tables: Tables, kept: KeptRows) -> None:
         super().__init__(database, tables, Worktree)
         self.kept = kept
 
@@ -34,13 +32,13 @@ class WorktreeQuery(Query[Worktree], KeptRowChanges[Worktree]):
     def required_worker_worktree(self, agent_id: int) -> Worktree:
         worktree = self.worker_worktree(agent_id)
         if worktree is None:
-            raise Refusal(f"{AgentLabel.labelled_row(agent_id, self.numbers, "worker").text} has no worktree", "journal worker-worktree list shows the worktrees")
+            raise Refusal(f"{AgentLabel.labelled_row(agent_id, "worker").text} has no worktree", "journal worker-worktree list shows the worktrees")
         return worktree
 
     def required_newest_worktree(self, agent_id: int) -> Worktree:
         worktree = self.newest_worktree(agent_id)
         if worktree is None:
-            raise Refusal(f"{AgentLabel.labelled_row(agent_id, self.numbers, "worker").text} has had no worktree", "journal worker-worktree list shows the worktrees")
+            raise Refusal(f"{AgentLabel.labelled_row(agent_id, "worker").text} has had no worktree", "journal worker-worktree list shows the worktrees")
         return worktree
 
     def is_first_worktree(self, worktree: Worktree) -> bool:

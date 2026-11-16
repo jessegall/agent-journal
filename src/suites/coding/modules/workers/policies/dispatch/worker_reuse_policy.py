@@ -3,7 +3,6 @@ from engine.driver.hook_event import HookEvent
 from engine.agent_machine.contracts.event_policy import EventPolicy
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from engine.query.conditions.among import Among
-from engine.cli.row_numbers import RowNumbers
 from engine.enums.agent_role import AgentRole
 from engine.driver.path_mentions import PathMentions
 from engine.driver.part import Part
@@ -14,7 +13,6 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.agent_messages.worker_reuse_message import WorkerReuseMessage
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.dispatch_arguments import DISPATCH_ARGUMENTS
-from core.modules.agents.support.agent_number_messages import AgentNumberMessages
 
 KEPT_WORK_STATES = (WorktreeState.CUT, WorktreeState.DELIVERED)
 
@@ -32,8 +30,7 @@ class WorkerReusePolicy(EventPolicy):
     rank = "workers.policies"
     agent_types = [AgentRole.MAIN.value]
 
-    def __init__(self, queries: Queries, git: WorktreeGit, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, queries: Queries, git: WorktreeGit) -> None:
         self.queries, self.git = queries, git
 
     def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
@@ -43,7 +40,7 @@ class WorkerReusePolicy(EventPolicy):
                 continue
             worker_id = self.worker_with_files(part)
             if worker_id is not None:
-                return AgentNumberMessages.message(self.numbers, WorkerReuseMessage, "worker", worker_id)
+                return WorkerReuseMessage.declared().agent_message(worker=worker_id)
         return None
 
     def worker_with_files(self, part: Part) -> int | None:

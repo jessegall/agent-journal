@@ -1,6 +1,6 @@
 from core.modules.drivers.support.agent_state_listing import AgentStateListing
 from core.modules.drivers.support.context_compactions import ContextCompactions
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from argparse import ArgumentParser, Namespace
 from dataclasses import asdict
 
@@ -33,7 +33,7 @@ class UsageInspectorSubcommand(ReadSubcommand[AgentInspectorAnswer]):
         self.queries, self.inspection, self.facts, self.tool, self.programs, self.points = queries, inspection, facts, tool, programs, points
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("agent_id", type=AgentNumber)
+        parser.add_argument("agent_id", type=AgentId)
 
     def read(self, arguments: Namespace, caller: Caller) -> AgentInspectorAnswer:
         agent = self.queries.query(Agent).find(arguments.agent_id)

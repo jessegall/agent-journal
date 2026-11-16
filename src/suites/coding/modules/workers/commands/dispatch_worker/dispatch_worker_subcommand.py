@@ -11,7 +11,7 @@ import stat
 from engine.journal.journal_home import LAUNCHER_SOCKET, JournalHome
 from engine.errors.refusal import Refusal
 from engine.subcommand.output import Output
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
@@ -41,7 +41,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         parser.add_argument("task_ids", type=int, nargs="*")
         parser.add_argument("--plan", type=int, default=None, help="hand the worker the open tasks of this plan, in its order, instead of listed tasks")
         parser.add_argument("--phase", type=int, default=None, help="with --plan, only the tasks of this phase")
-        parser.add_argument("--take-over", type=AgentNumber, default=None, help="a stopped worker whose open worktree, tasks and plan the new worker takes over")
+        parser.add_argument("--take-over", type=AgentId, default=None, help="a stopped worker whose open worktree, tasks and plan the new worker takes over")
         parser.add_argument("--library-link", action="append", default=[], help="a folder of the environment to link into the worktree")
         parser.add_argument("--library-copy", action="append", default=[], help="a folder of the environment to copy into the worktree")
         parser.add_argument("--program", default="", help="the agent program the worker runs; the dispatching agent's own when not commands")

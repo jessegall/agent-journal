@@ -1,5 +1,4 @@
-from engine.cli.agent_number import AGENT_MODEL_NAME
-from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_ids import AgentIds
 from engine.database.database import Database
 from engine.errors.refusal import Refusal
 from engine.query.queries import Queries
@@ -21,11 +20,11 @@ class TaskWaitTargets:
     """Validates the rows a task can wait on and returns their stored references. A helper is named by its
     number in the environment of the line."""
 
-    def __init__(self, database: Database, queries: Queries, numbers: RowNumbers, registry: Registry) -> None:
-        self.database, self.queries, self.numbers, self.registry = database, queries, numbers, registry
+    def __init__(self, database: Database, queries: Queries, agent_ids: AgentIds, registry: Registry) -> None:
+        self.database, self.queries, self.agent_ids, self.registry = database, queries, agent_ids, registry
 
     def agent_row_id(self, number: int) -> int:
-        return self.numbers.row_id(AGENT_MODEL_NAME, number, self.database.scope_environment_id)
+        return self.agent_ids.checked(number, self.database.scope_environment_id)
 
     @property
     def target_types(self) -> tuple[str, ...]:

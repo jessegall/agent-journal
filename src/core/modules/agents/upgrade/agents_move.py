@@ -2,7 +2,7 @@ from engine.database.actor_table import ActorTable
 from engine.helper_type.helper_type_book import HELPER_KEY
 import sqlite3
 
-from core.modules.agents.models.agent import MAIN_NUMBER
+from core.modules.agents.support.main_row import MAIN_NUMBER
 from collections import Counter
 
 from engine.actor.actor import CORE_ACTOR_ID

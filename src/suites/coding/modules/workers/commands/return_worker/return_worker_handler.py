@@ -15,8 +15,6 @@ from suites.coding.modules.workers.commands.return_worker.return_worker import R
 from suites.coding.modules.workers.commands.merger.require_merger import require_merger
 from suites.coding.modules.workers.support.merger_visits import MergerVisits
 from core.modules.agents.support.agent_label import AgentLabel
-from engine.cli.row_numbers import RowNumbers
-from core.modules.agents.support.agent_number_messages import AgentNumberMessages
 
 
 class ReturnWorkerHandler(Handler[ReturnWorker, None]):
@@ -24,8 +22,7 @@ class ReturnWorkerHandler(Handler[ReturnWorker, None]):
 
     command = ReturnWorker
 
-    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, repository: Repository, main_line: MainAgentLine, visits: MergerVisits, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, repository: Repository, main_line: MainAgentLine, visits: MergerVisits) -> None:
         self.agents, self.worktrees, self.repository, self.main_line, self.visits = agents, worktrees, repository, main_line, visits
 
     def handle(self, command: ReturnWorker, context: Context) -> None:
@@ -33,8 +30,8 @@ class ReturnWorkerHandler(Handler[ReturnWorker, None]):
         self.visits.close_newest(context)
         worktree: Worktree | None = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None:
-            raise Refusal(f"{AgentLabel.labelled_row(command.worker_id, self.numbers, "worker").text} has nothing delivered")
+            raise Refusal(f"{AgentLabel.labelled_row(command.worker_id, "worker").text} has nothing delivered")
         self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.return_worker, returned_at=context.timestamp, pass_reason=command.reason), context)
-        line = self.repository.save(MergerLine(text=f"worker:{self.numbers.agent_number(command.worker_id)}: {command.reason}", fallback_source=MERGER_SOURCE, read_at=context.timestamp), context)
-        self.main_line.send_agent_message(AgentNumberMessages.message(self.numbers, MergerPassedMessage, "worker", command.worker_id), MERGER_SOURCE, context)
+        line = self.repository.save(MergerLine(text=f"worker:{command.worker_id}: {command.reason}", fallback_source=MERGER_SOURCE, read_at=context.timestamp), context)
+        self.main_line.send_agent_message(MergerPassedMessage.declared().agent_message(worker=command.worker_id), MERGER_SOURCE, context)
         self.main_line.send_agent_message(MergerLineAvailableMessage.declared().agent_message(line=line.id), MERGER_SOURCE, context)

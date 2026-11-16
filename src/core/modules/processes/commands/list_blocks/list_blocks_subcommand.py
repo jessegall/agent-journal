@@ -1,8 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from engine.cli.agent_number import AGENT_MODEL_NAME
-from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_ids import AgentIds
 from engine.query.queries import Queries
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
@@ -22,14 +21,14 @@ class ListBlocksSubcommand(ReadSubcommand[tuple[str, ...]]):
     name = "holds"
     external = True
 
-    def __init__(self, blocked_runs: BlockedRuns, queries: Queries, numbers: RowNumbers, clock: Clock) -> None:
-        self.held_runs, self.queries, self.numbers, self.clock = blocked_runs, queries, numbers, clock
+    def __init__(self, blocked_runs: BlockedRuns, queries: Queries, agent_ids: AgentIds, clock: Clock) -> None:
+        self.held_runs, self.queries, self.agent_ids, self.clock = blocked_runs, queries, agent_ids, clock
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--agent", type=int, help="the number of the agent; yours when left out")
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[str, ...]:
-        agent_id = self.numbers.row_id(AGENT_MODEL_NAME, arguments.agent, caller.environment_id) if arguments.agent is not None else caller.actor.id
+        agent_id = self.agent_ids.checked(arguments.agent, caller.environment_id) if arguments.agent is not None else caller.actor.id
         blocked = self.held_runs.found(agent_id, self.clock.timestamp())
         lines = [f"hold on output {blocked.process.id}: {ExitTexts.sentences(PressureLevel.FREEZE.exits)}"] if blocked is not None else []
         blocks = self.queries.query(AgentBlock).filter(session_agent_id=agent_id, closed_at=None).get()

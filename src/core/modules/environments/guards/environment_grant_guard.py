@@ -5,7 +5,6 @@ from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.environments.models.environment import Environment
-from engine.cli.row_numbers import RowNumbers
 
 PERSONS = (ActorType.USER, ActorType.CORE)
 
@@ -18,9 +17,6 @@ class EnvironmentGrantGuard(Guard[Changed[Environment]]):
     name = "environments.test-grant-by-person"
     is_safety = True
 
-    def __init__(self, numbers: RowNumbers) -> None:
-        self.numbers = numbers
-
     def check(self, event: Changed[Environment], context: Context) -> None:
         environment, old = event.row, event.old_row
         if environment.test_agent_id is not None and not environment.test:
@@ -30,6 +26,6 @@ class EnvironmentGrantGuard(Guard[Changed[Environment]]):
             return
         if environment.test_agent_id is None:
             raise UserApprovalRefusal(f"Mark {environment.name} as a test environment?", ("environment", "edit", str(environment.id), "--test"))
-        agent_number = self.numbers.agent_number(environment.test_agent_id)
+        agent_number = environment.test_agent_id
         raise UserApprovalRefusal(f"Let agent {agent_number} work in test environment {environment.name}?",
                                   ("environment", "edit", str(environment.id), "--test", "--test-agent-id", str(environment.test_agent_id)))

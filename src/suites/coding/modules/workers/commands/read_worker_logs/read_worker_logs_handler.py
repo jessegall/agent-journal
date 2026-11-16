@@ -12,16 +12,15 @@ from suites.coding.modules.workers.support.worker_log_read import WorkerLogRead
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from core.modules.agents.support.agent_label import AgentLabel
-from engine.cli.row_numbers import RowNumbers
 
 
 class ReadWorkerLogsHandler(Handler[ReadWorkerLogs, str]):
     command = ReadWorkerLogs
     disabled_scopes = [ActorScope]
 
-    def __init__(self, agents: AgentRows, environments: EnvironmentRows, worktrees: WorktreeQuery, log_lines: WorkerLogLines, log_read: WorkerLogRead, numbers: RowNumbers,
+    def __init__(self, agents: AgentRows, environments: EnvironmentRows, worktrees: WorktreeQuery, log_lines: WorkerLogLines, log_read: WorkerLogRead,
                  oversight: Oversight) -> None:
-        self.numbers, self.oversight = numbers, oversight
+        self.oversight = oversight
         self.agents, self.environments, self.worktrees, self.log_lines, self.log_read = agents, environments, worktrees, log_lines, log_read
 
     def handle(self, command: ReadWorkerLogs, context: Context) -> str:
@@ -33,7 +32,7 @@ class ReadWorkerLogsHandler(Handler[ReadWorkerLogs, str]):
         worktree = self.worktrees.worker_worktree(command.worker_id)
         is_delivered = worktree is not None and worktree.state is WorktreeState.DELIVERED
         if worktree is None or not (is_delivered or is_merger or is_overseer):
-            raise Refusal(f"{AgentLabel.labelled_row(command.worker_id, self.numbers, "worker").text} has delivered nothing to review", "journal worker-worktree list shows the worktrees")
+            raise Refusal(f"{AgentLabel.labelled_row(command.worker_id, "worker").text} has delivered nothing to review", "journal worker-worktree list shows the worktrees")
         review = self.log_lines.review(worktree)
         sections = [review.summary(task) if command.task_id is None else review.task_review_text(task) for task in review.tasks if command.task_id in (None, task.id)]
         text = "\n\n".join(sections)

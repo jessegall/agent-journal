@@ -39,6 +39,6 @@ class ChangeAgentDriverHandler(Handler[ChangeAgentDriver, Agent]):
         if agent.retired_at is not None:
             raise Refusal(f"{label} is retired, for good")
         if agent.ended_at is None:
-            raise Refusal(f"{label} is running", f"journal agent stop {agent.number}, then change its driver")
+            raise Refusal(f"{label} is running", f"journal agent stop {agent.id}, then change its driver")
         self.limits.checked_model(command.program, command.program_model)
         self.start_check.checked_model(agent.role, agent.profile, command.program, command.program_model)

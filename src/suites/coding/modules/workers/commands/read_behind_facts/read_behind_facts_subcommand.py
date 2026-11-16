@@ -1,8 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from engine.cli.agent_number import AgentNumber
-from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_id import AgentId
 from engine.errors.refusal import Refusal
 from engine.query.queries import Queries
 from engine.subcommand.output import Output
@@ -21,16 +20,16 @@ class ReadBehindFactsSubcommand(ReadSubcommand[BehindFacts | Refusal]):
     cli_name = "merger"
     name = "behind"
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, reader: BehindFactsReader, numbers: RowNumbers) -> None:
-        self.queries, self.worktrees, self.reader, self.numbers = queries, worktrees, reader, numbers
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, reader: BehindFactsReader) -> None:
+        self.queries, self.worktrees, self.reader = queries, worktrees, reader
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("worker_id", type=AgentNumber)
+        parser.add_argument("worker_id", type=AgentId)
 
     def read(self, arguments: Namespace, caller: Caller) -> BehindFacts | Refusal:
         worktree = self.worktrees.worker_worktree(arguments.worker_id)
         if worktree is None:
-            return Refusal(f"no {AgentLabel.labelled_row(arguments.worker_id, self.numbers, 'worker').text} with a worktree in this environment")
+            return Refusal(f"no {AgentLabel.labelled_row(arguments.worker_id, 'worker').text} with a worktree in this environment")
         return self.reader.read(worktree, self.queries.query(Agent).find(arguments.worker_id))
 
     def write_output(self, value: object, output: Output) -> None:

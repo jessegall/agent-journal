@@ -51,12 +51,12 @@ class KeptHelpers:
     def idle(self, selection: ProfileModel, occupant: Occupant) -> tuple[Agent, ...]:
         stopped = [helper for helper in self.stopped(selection.profile) if not selection.model or helper.program_model == selection.model]
         idle_helpers = stopped if occupant.may_change_program else [helper for helper in stopped if self.resumes(helper, selection.program, selection.model)]
-        return tuple(sorted(idle_helpers, key=lambda helper: helper.number))
+        return tuple(sorted(idle_helpers, key=lambda helper: helper.id))
 
     def idle_profile_helpers(self, profile: str, occupant: Occupant) -> tuple[Agent, ...]:
         stopped = self.stopped(profile)
         idle_helpers = stopped if occupant.may_change_program else [helper for helper in stopped if self.resumes(helper, helper.program, helper.program_model)]
-        return tuple(sorted(idle_helpers, key=lambda helper: helper.number))
+        return tuple(sorted(idle_helpers, key=lambda helper: helper.id))
 
     def stopped(self, profile: str) -> list[Agent]:
         return [helper for helper in self.kept(profile) if helper.ended_at is not None and not self.has_open_job(helper)]
@@ -70,10 +70,10 @@ class KeptHelpers:
         return (self.share.agent_percent(helper) or 0) < FULL_SESSION_PERCENT
 
     def idle_refusal(self, helpers: tuple[Agent, ...]) -> Refusal:
-        additional_helpers = f" (also {', '.join(str(helper.number) for helper in helpers[1:3])})" if helpers[1:] else ""
+        additional_helpers = f" (also {', '.join(str(helper.id) for helper in helpers[1:3])})" if helpers[1:] else ""
         state = self.program_state(helpers[0])
         waiting = f"; {state.wait_line}" if not state.is_ready else ""
-        return Refusal(f'helper {helpers[0].number} is idle: journal helper send {helpers[0].number} "<job>"{additional_helpers}{waiting}', 'or --fresh "<why>"')
+        return Refusal(f'helper {helpers[0].id} is idle: journal helper send {helpers[0].id} "<job>"{additional_helpers}{waiting}', 'or --fresh "<why>"')
 
     def program_state(self, helper: Agent) -> ProgramState:
         return self.states.outage_state(helper.program)
@@ -84,4 +84,4 @@ class KeptHelpers:
             raise lockdown.start_refusal("helper")
         state = self.program_state(helper)
         if not state.is_ready:
-            raise Refusal(f"{AgentLabel.labelled(helper).text} waits on {helper.program}: {state.wait_line}", f"journal helper send {helper.number} after it is back")
+            raise Refusal(f"{AgentLabel.labelled(helper).text} waits on {helper.program}: {state.wait_line}", f"journal helper send {helper.id} after it is back")

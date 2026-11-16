@@ -46,13 +46,13 @@ class RetireAgentHandler(Handler[RetireAgent, Agent]):
 
     def check_state(self, agent: Agent, reason: str) -> None:
         if not reason.strip():
-            raise Refusal("a retirement needs its reason", f'journal agent retire {agent.number} --reason "<why>"')
+            raise Refusal("a retirement needs its reason", f'journal agent retire {agent.id} --reason "<why>"')
         if agent.is_main:
-            raise Refusal("a main agent is not retired", f"journal agent stop {agent.number} ends its session")
+            raise Refusal("a main agent is not retired", f"journal agent stop {agent.id} ends its session")
         if agent.retired_at is not None:
             raise Refusal(f"{AgentLabel.labelled(agent).text} is retired already")
         if agent.ended_at is None:
-            raise Refusal(f"{AgentLabel.labelled(agent).text} is still running", f"journal agent stop {agent.number}, then retire it")
+            raise Refusal(f"{AgentLabel.labelled(agent).text} is still running", f"journal agent stop {agent.id}, then retire it")
 
     def roster(self, agent: Agent) -> AgentRoster[Agent] | None:
         entry = next((entry for entry in self.registry.helper_types if entry.key == agent.role), None)

@@ -18,7 +18,6 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.release_outcome import ReleaseOutcome
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from core.modules.agents.support.agent_label import AgentLabel
-from engine.cli.row_numbers import RowNumbers
 
 
 class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
@@ -28,19 +27,19 @@ class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
     runs_once = True
     command = ReleaseWorker
 
-    def __init__(self, worktrees: WorktreeQuery, git: WorktreeGit, environments: EnvironmentRows, bus: Bus, numbers: RowNumbers, units: WorkUnits, agents: AgentRows, worker_changes: WorktreeOwnChanges) -> None:
-        self.numbers, self.units, self.agents, self.own_changes = numbers, units, agents, worker_changes
+    def __init__(self, worktrees: WorktreeQuery, git: WorktreeGit, environments: EnvironmentRows, bus: Bus, units: WorkUnits, agents: AgentRows, worker_changes: WorktreeOwnChanges) -> None:
+        self.units, self.agents, self.own_changes = units, agents, worker_changes
         self.worktrees, self.git, self.environments, self.bus = worktrees, git, environments, bus
 
     def handle(self, command: ReleaseWorker, context: Context) -> ReleaseOutcome:
         worktree = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None:
-            raise Refusal(f"{AgentLabel.labelled_row(command.worker_id, self.numbers, "worker").text} has no worktree out", "journal worker-worktree list shows the worktrees")
+            raise Refusal(f"{AgentLabel.labelled_row(command.worker_id, "worker").text} has no worktree out", "journal worker-worktree list shows the worktrees")
         if worktree.commit_count and worktree.state is WorktreeState.CUT and not command.abandons_commits:
-            number = self.numbers.agent_number(command.worker_id)
+            number = command.worker_id
             raise Refusal(f"worker {number} has committed work", f'merge it with journal worker merge {number} --up-to <task>, or release with --abandon "<why>"')
         if worktree.state in (WorktreeState.CUT, WorktreeState.DELIVERED) and not command.abandons_commits and self.own_changes.has_worker_changes(self.agents.find(command.worker_id), worktree):
-            number = self.numbers.agent_number(command.worker_id)
+            number = command.worker_id
             raise Refusal(f"worker {number} has uncommitted files in {worktree.folder}", 'commit or remove them, or release with --abandon "<why>"')
         folder = self.environments.find(worktree.environment_id).folder
         self.unassign_plan(worktree, context)

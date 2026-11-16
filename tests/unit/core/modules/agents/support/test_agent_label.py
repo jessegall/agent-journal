@@ -1,9 +1,9 @@
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_label import AgentLabel
-from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_ids import AgentIds
 
 
-class RowFortyIsNumberFive(RowNumbers):
+class RowFortyIsNumberFive(AgentIds):
     def number(self, model_name: str, row_id: int) -> int:
         return {40: 5}[row_id]
 

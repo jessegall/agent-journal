@@ -1,5 +1,5 @@
-from engine.cli.agent_number import AGENT_MODEL_NAME
-from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_id import AGENT_MODEL_NAME
+from engine.cli.agent_ids import AgentIds
 from engine.command.context import Context
 from engine.errors.refusal import Refusal
 from engine.command.handler import Handler
@@ -21,9 +21,9 @@ class RecordMentionsHandler(Handler[RecordMentions, int]):
 
     command = RecordMentions
 
-    def __init__(self, registry: Registry, row_refs: RowRefs, queries: Queries, links: RowLinkWriter, numbers: RowNumbers) -> None:
+    def __init__(self, registry: Registry, row_refs: RowRefs, queries: Queries, links: RowLinkWriter, agent_ids: AgentIds) -> None:
         self.registry, self.row_refs, self.queries, self.links = registry, row_refs, queries, links
-        self.numbers = numbers
+        self.agent_ids = agent_ids
 
     def handle(self, command: RecordMentions, context: Context) -> int:
         if self.row_refs.existing(command.source.model, command.source.row_id) is None:
@@ -42,6 +42,6 @@ class RecordMentionsHandler(Handler[RecordMentions, int]):
         if name != AGENT_MODEL_NAME:
             return name, number
         try:
-            return name, self.numbers.row_id(name, number, environment_id)
+            return name, self.agent_ids.checked(number, environment_id)
         except Refusal:
             return None

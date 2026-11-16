@@ -1,7 +1,8 @@
 from engine.enums.agent_role import AgentRole
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
-from core.modules.agents.models.agent import MAIN_NUMBER, Agent
+from engine.actor.actor import MAIN_AGENT_ID
+from core.modules.agents.models.agent import Agent
 from core.modules.agents.queries.agent_query import AgentQuery
 
 MAIN_IDS_REASON = "every agent asked about is checked for a main agent"
@@ -36,7 +37,7 @@ class MainAgentFinder:
 
     @staticmethod
     def numbered_one(queries: Queries) -> Agent | None:
-        return queries.query(Agent).filter(role=AgentRole.MAIN, number=MAIN_NUMBER).first()
+        return queries.query(Agent).filter(role=AgentRole.MAIN, id=MAIN_AGENT_ID).first()
 
     @staticmethod
     def newest(queries: Queries) -> Agent | None:

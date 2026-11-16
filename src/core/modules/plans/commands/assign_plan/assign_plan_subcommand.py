@@ -1,4 +1,4 @@
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -19,7 +19,7 @@ class AssignPlanSubcommand(CascadeOutput, Subcommand[AssignPlan, Cascade]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("plan_id", type=int)
-        parser.add_argument("--to", dest="agent_id", type=AgentNumber, default=None, help="the agent the plan and its unassigned tasks go to; the main agent when not named")
+        parser.add_argument("--to", dest="agent_id", type=AgentId, default=None, help="the agent the plan and its unassigned tasks go to; the main agent when not named")
         parser.add_argument("--phase", dest="phase_id", type=int, default=None, help="only this phase and its tasks, leaving the plan's agent as it is")
         parser.add_argument("--override", action="store_true", help="also move the tasks assigned to someone else")
 

@@ -1,4 +1,4 @@
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from engine.command.command import Command
 from suites.coding.modules.workers.commands.support.worker_command_request import WorkerCommandRequest
 from argparse import ArgumentParser, Namespace
@@ -12,7 +12,6 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.merge_outcome import MergeOutcome
 from suites.coding.modules.workers.commands.support.worker_step_check import WorkerStepCheck
 from core.modules.agents.support.agent_label import AgentLabel
-from engine.cli.row_numbers import RowNumbers
 
 MERGE_EVENTS = ["worker_merging"]
 
@@ -26,13 +25,12 @@ class MergeWorkerSubcommand(Subcommand[Command[object], MergeOutcome]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         WorkerCommandRequest.arguments(parser)
-        parser.add_argument("worker_id", type=AgentNumber)
+        parser.add_argument("worker_id", type=AgentId)
         parser.add_argument("--read-important", default="", help="what you make of the worker's important log lines")
         parser.add_argument("--reconcile", default="", help="what you checked of a required command that ended uncertain")
         parser.add_argument("--up-to", default="", help="a task number or a commit: take in the worker's checked work up to it while the worker goes on")
 
-    def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck, requests: WorkerCommandRequest, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck, requests: WorkerCommandRequest) -> None:
         self.requests = requests
         self.worktrees, self.step_check = worktrees, step_check
 
@@ -53,9 +51,9 @@ class MergeWorkerSubcommand(Subcommand[Command[object], MergeOutcome]):
             return
         output.row(value.worktree)
         if value.refusal:
-            output.line(f"the merge of {AgentLabel.labelled_row(value.worktree.session_agent_id, self.numbers, "worker").text} was refused before anything was merged: {value.refusal}; the findings went back to the worker")
+            output.line(f"the merge of {AgentLabel.labelled_row(value.worktree.session_agent_id, "worker").text} was refused before anything was merged: {value.refusal}; the findings went back to the worker")
         if value.open_task_ids:
             output.line(f"left open, with no proof of their own in the worktree: tasks {', '.join(str(task_id) for task_id in value.open_task_ids)}")
         if value.conflicts:
             output.line(f"merging {value.worktree.base_branch} in clashed on {', '.join(value.conflicts)}: task {value.worktree.task_id} went back to"
-                        f" {AgentLabel.labelled_row(value.worktree.session_agent_id, self.numbers, "worker").text}")
+                        f" {AgentLabel.labelled_row(value.worktree.session_agent_id, "worker").text}")

@@ -1,4 +1,3 @@
-from engine.cli.row_numbers import RowNumbers
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.scope.actor_scope import ActorScope
@@ -18,12 +17,12 @@ class AnswerWorkerAskHandler(Handler[AnswerWorkerAsk, str]):
     command = AnswerWorkerAsk
     disabled_scopes = [ActorScope]
 
-    def __init__(self, agents: AgentRows, visits: MergerVisits, questions: WorkerQuestions, numbers: RowNumbers) -> None:
-        self.agents, self.visits, self.questions, self.numbers = agents, visits, questions, numbers
+    def __init__(self, agents: AgentRows, visits: MergerVisits, questions: WorkerQuestions) -> None:
+        self.agents, self.visits, self.questions = agents, visits, questions
 
     def handle(self, command: AnswerWorkerAsk, context: Context) -> str:
         require_merger(self.agents, context)
         self.visits.close_newest(context)
         line = self.questions.find_line(command.line_id)
         self.questions.close(line, AskOutcome.ANSWERED, command.text, context)
-        return f"answer sent to {AgentLabel.labelled_row(line.worker_id, self.numbers, 'worker').text}"
+        return f"answer sent to {AgentLabel.labelled_row(line.worker_id, 'worker').text}"

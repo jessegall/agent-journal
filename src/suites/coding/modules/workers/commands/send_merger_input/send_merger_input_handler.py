@@ -1,4 +1,3 @@
-from engine.cli.row_numbers import RowNumbers
 from engine.command.context import Context
 from engine.command.handler import Handler
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
@@ -11,9 +10,8 @@ class SendMergerInputHandler(Handler[SendMergerInput, None]):
 
     command = SendMergerInput
 
-    def __init__(self, inbox: MergerInbox, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, inbox: MergerInbox) -> None:
         self.inbox = inbox
 
     def handle(self, command: SendMergerInput, context: Context) -> None:
-        self.inbox.send(f"worker:{self.numbers.agent_number(command.worker_id)} reports: {command.text}", MERGER_SOURCE, context)
+        self.inbox.send(f"worker:{command.worker_id} reports: {command.text}", MERGER_SOURCE, context)

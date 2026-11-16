@@ -1,4 +1,4 @@
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -17,7 +17,7 @@ class AssignTaskSubcommand(Subcommand[AssignTask, Task]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("task_id", type=int)
-        parser.add_argument("--to", dest="actor_id", type=AgentNumber, required=True)
+        parser.add_argument("--to", dest="actor_id", type=AgentId, required=True)
 
     def command(self, arguments: Namespace, caller: Caller) -> AssignTask:
         return AssignTask(arguments.task_id, arguments.actor_id)

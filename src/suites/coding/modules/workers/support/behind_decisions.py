@@ -1,6 +1,5 @@
 from collections.abc import Callable
 
-from engine.cli.row_numbers import RowNumbers
 from engine.errors.refusal import Refusal
 from core.modules.agents.support.agent_label import AgentLabel
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -15,8 +14,8 @@ class BehindDecisions:
     """Finds the check of a worker that waits for a decision: its worktree in this environment and its open check,
     or one the merger passed; anything else is refused by name."""
 
-    def __init__(self, worktrees: WorktreeQuery, checks: BehindChecks, numbers: RowNumbers) -> None:
-        self.worktrees, self.checks, self.numbers = worktrees, checks, numbers
+    def __init__(self, worktrees: WorktreeQuery, checks: BehindChecks) -> None:
+        self.worktrees, self.checks = worktrees, checks
 
     def decidable(self, worker_id: int) -> tuple[Worktree, WorktreeBehindCheck]:
         return self.found(worker_id, WorktreeBehindCheck.is_undecided)
@@ -34,7 +33,7 @@ class BehindDecisions:
     def worktree(self, worker_id: int) -> Worktree:
         worktree = self.worktrees.worker_worktree(worker_id)
         if worktree is None:
-            raise Refusal(f"no {AgentLabel.labelled_row(worker_id, self.numbers, 'worker').text} with a worktree in this environment")
+            raise Refusal(f"no {AgentLabel.labelled_row(worker_id, 'worker').text} with a worktree in this environment")
         return worktree
 
     def check(self, worktree: Worktree, wanted: Callable[[WorktreeBehindCheck], bool]) -> WorktreeBehindCheck | None:

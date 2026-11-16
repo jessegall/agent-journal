@@ -1,4 +1,3 @@
-from engine.cli.row_numbers import RowNumbers
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.command.context import Context
@@ -37,8 +36,7 @@ class SkipRefusalHandler(Handler[SkipRefusal, DriverGrant]):
 
     command = SkipRefusal
 
-    def __init__(self, queries: Queries, repository: Repository, refusals: RefusalLog, registry: Registry, message_sender: MessageSender, bus: Bus, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, queries: Queries, repository: Repository, refusals: RefusalLog, registry: Registry, message_sender: MessageSender, bus: Bus) -> None:
         self.queries, self.repository, self.refusals, self.registry = queries, repository, refusals, registry
         self.message_sender, self.bus = message_sender, bus
 
@@ -104,9 +102,9 @@ class SkipRefusalHandler(Handler[SkipRefusal, DriverGrant]):
             approval = self.restoration_approval(agent)
             self.bus.dispatch(RequestUserApproval(approval, approval.arguments, agent_id), context)
             return
-        self.message_sender.send(agent.parent_id, SkipsSpentMessage.declared(), SKIP_SOURCE, context, agent=self.numbers.agent_number(agent_id), count=MOST_SKIP_COUNT)
+        self.message_sender.send(agent.parent_id, SkipsSpentMessage.declared(), SKIP_SOURCE, context, agent=agent_id, count=MOST_SKIP_COUNT)
 
     @staticmethod
     def restoration_approval(agent: Agent) -> UserApprovalRefusal:
         return UserApprovalRefusal(f"{AgentLabel.labelled(agent).text.capitalize()} skipped {MOST_SKIP_COUNT} refusals in a row and lost the skip. Restore its skip?",
-                            ("refusal", "restore", str(agent.number)), request_reason=f"It went on past {MOST_SKIP_COUNT} refusals in a row by skipping them, so the journal took the skip from it.")
+                            ("refusal", "restore", str(agent.id)), request_reason=f"It went on past {MOST_SKIP_COUNT} refusals in a row by skipping them, so the journal took the skip from it.")

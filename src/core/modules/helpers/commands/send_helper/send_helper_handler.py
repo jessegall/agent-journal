@@ -89,11 +89,11 @@ class SendHelperHandler(Handler[SendHelper, int]):
         idle = [reviewer for reviewer in self.kept.idle_profile_helpers(helper.profile, occupant) if not self.reviewed(reviewer, plan_id)]
         if not idle:
             return start
-        return f'journal helper send {idle[0].number} "<job>" --plan {plan_id} gives it to an idle reviewer that has not, or {start}'
+        return f'journal helper send {idle[0].id} "<job>" --plan {plan_id} gives it to an idle reviewer that has not, or {start}'
 
     def running_helper_job(self, helper: Agent, last_job: HelperJob, source: WorkSourceCopy, source_context: Context, command: SendHelper, context: Context) -> int:
         if last_job.ended_at is None and not command.steer and context.actor.is_agent():
-            raise Refusal(f"{AgentLabel.labelled(helper).text} is busy with a job", f'wait for its report, or journal helper send {helper.number} --steer "<text>" adds to that job')
+            raise Refusal(f"{AgentLabel.labelled(helper).text} is busy with a job", f'wait for its report, or journal helper send {helper.id} --steer "<text>" adds to that job')
         with self.scopes.opened(context.actor.id, context.environment_id, [ActorScope]):
             line = self.message_sender.send_text(helper.id, command.job, HELPER_JOB_SOURCE, context, wakes_agent=True)
         if self.continues(last_job, source):

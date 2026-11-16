@@ -23,7 +23,6 @@ from suites.coding.modules.workers.support.worker_ask_facts_query import WorkerA
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_point import WorkerPoint
 from core.modules.agents.support.agent_label import AgentLabel
-from engine.cli.row_numbers import RowNumbers
 
 QUESTION_SOURCE = "workers.ask"
 
@@ -35,8 +34,8 @@ class AskMergerHandler(Handler[AskMerger, str]):
     command = AskMerger
     disabled_scopes = [ActorScope]
 
-    def __init__(self, guidance: WorkerGuidance, facts_query: WorkerAskFactsQuery, inbox: MergerInbox, queries: Queries, bus: Bus, numbers: RowNumbers, questions: WorkerQuestions, settings: SettingValues, escalations: Escalations) -> None:
-        self.numbers, self.questions, self.settings = numbers, questions, settings
+    def __init__(self, guidance: WorkerGuidance, facts_query: WorkerAskFactsQuery, inbox: MergerInbox, queries: Queries, bus: Bus, questions: WorkerQuestions, settings: SettingValues, escalations: Escalations) -> None:
+        self.questions, self.settings = questions, settings
         self.escalations = escalations
         self.guidance, self.facts_query, self.inbox, self.queries, self.bus = guidance, facts_query, inbox, queries, bus
 
@@ -72,8 +71,8 @@ class AskMergerHandler(Handler[AskMerger, str]):
         group = point.counted_window_key()
         exceeds_limit = self.queries.query(MergerLine).filter(worker_id=command.worker_id, group_key=group).matching(HasValue("topic")).count() >= self.settings.number(MERGER_GROUP_MESSAGE_LIMIT)
         facts = self.facts_query.read(point, task)
-        self.bus.dispatch(MakeTaskLog(facts.task, f"{AgentLabel.labelled_row(command.worker_id, self.numbers, "worker").text} asked the merger about {command.topic}: {command.text}"), context)
-        text = f"{AgentLabel.labelled_row(command.worker_id, self.numbers, "worker").text} asks about {command.topic} on task {facts.task}: {command.text}\n{facts.text()}"
+        self.bus.dispatch(MakeTaskLog(facts.task, f"{AgentLabel.labelled_row(command.worker_id, "worker").text} asked the merger about {command.topic}: {command.text}"), context)
+        text = f"{AgentLabel.labelled_row(command.worker_id, "worker").text} asks about {command.topic} on task {facts.task}: {command.text}\n{facts.text()}"
         wait = self.bus.dispatch(OpenWait(WaitType.ANSWER, focus), context)
         line = MergerLine(text=text, fallback_source=QUESTION_SOURCE, topic=command.topic, facts_json=facts.json_text(), worker_id=command.worker_id, group_key=group)
         self.inbox.deliver(self.questions.timed(line, wait.id, facts.task, context.timestamp), context)

@@ -33,4 +33,4 @@ class RecordUnsavedReportHandler(Handler[RecordUnsavedReport, None]):
         helper = self.agents.find(job.helper_id) if job.helper_id is not None else None
         # the parent is told once, as the text is first kept; a later failed retry adds nothing
         if helper is not None and helper.parent_id is not None and failures == KEPT_TEXT_FAILURES:
-            self.message_sender.send(helper.parent_id, KeptReportMessage.declared(), REPORT_SOURCE, context, agent=helper.number, job=job.id)
+            self.message_sender.send(helper.parent_id, KeptReportMessage.declared(), REPORT_SOURCE, context, agent=helper.id, job=job.id)

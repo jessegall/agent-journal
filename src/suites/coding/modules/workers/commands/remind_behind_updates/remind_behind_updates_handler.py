@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 from engine.actor.actor import Actor
-from engine.cli.row_numbers import RowNumbers
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.driver.message_sender import MessageSender
@@ -23,7 +22,6 @@ from suites.coding.modules.workers.agent_messages.update_reminder_message import
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_settings import UPDATE_REMINDERS, UPDATE_WAIT_MINUTES
-from core.modules.agents.support.agent_number_messages import AgentNumberMessages
 
 CHECKS_REASON = "every behind check in that state is reminded of"
 CONFLICT_LINES = (ConflictOpenMessage.declared(), ConflictRepeatedMessage.declared())
@@ -39,8 +37,8 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
     command = RemindBehindUpdates
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, rows: EventRows, repository: Repository, settings: SettingValues, message_sender: MessageSender, inbox: MergerInbox, numbers: RowNumbers, git: WorktreeGit) -> None:
-        self.queries, self.rows, self.repository, self.settings, self.message_sender, self.inbox, self.numbers, self.git = queries, rows, repository, settings, message_sender, inbox, numbers, git
+    def __init__(self, queries: Queries, rows: EventRows, repository: Repository, settings: SettingValues, message_sender: MessageSender, inbox: MergerInbox, git: WorktreeGit) -> None:
+        self.queries, self.rows, self.repository, self.settings, self.message_sender, self.inbox, self.git = queries, rows, repository, settings, message_sender, inbox, git
         self.clashing: set[int] = set()
 
     def prepare(self, command: RemindBehindUpdates, actor: Actor) -> None:
@@ -69,7 +67,7 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
         if check.worktree_id not in self.clashing:
             return
         worktree = self.rows.required(Worktree, check.worktree_id)
-        worker = self.numbers.agent_number(worktree.session_agent_id)
+        worker = worktree.session_agent_id
         self.inbox.send_agent_message(CONFLICT_LINES[check.reminders].agent_message(worker=worker), STALE_SOURCE, context)
         self.repository.save_change(check, check.reminded(), context)
 
@@ -77,5 +75,5 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
         if check.reminders < limit:
             self.message_sender.send(worktree.session_agent_id, UpdateReminderMessage.declared(), STALE_SOURCE, context, count=check.commits_lagging)
         else:
-            self.inbox.send_agent_message(AgentNumberMessages.message(self.numbers, UpdateSkippedMessage, "worker", worktree.session_agent_id), STALE_SOURCE, context)
+            self.inbox.send_agent_message(UpdateSkippedMessage.declared().agent_message(worker=worktree.session_agent_id), STALE_SOURCE, context)
         self.repository.save_change(check, check.reminded(), context)

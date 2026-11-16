@@ -69,12 +69,12 @@ class InactiveHelperLines(EventLineSource):
         if not inactive and not unstarted:
             return []
         notes = self.queue_notes(inactive)
-        return [*(HelperInactiveMessage.declared().agent_message(name=helper.role, agent=helper.number, minutes=grace.minute_count, queue=notes[helper.id], action=self.action(helper)) for helper in inactive),
-                *(UnstartedJobMessage.declared().agent_message(name=helper.role, agent=helper.number, minutes=grace.minute_count, action=self.action(helper)) for helper in unstarted)]
+        return [*(HelperInactiveMessage.declared().agent_message(name=helper.role, agent=helper.id, minutes=grace.minute_count, queue=notes[helper.id], action=self.action(helper)) for helper in inactive),
+                *(UnstartedJobMessage.declared().agent_message(name=helper.role, agent=helper.id, minutes=grace.minute_count, action=self.action(helper)) for helper in unstarted)]
 
     @staticmethod
     def action(helper: Agent) -> str:
-        return f"journal worker status {helper.number}" if helper.role == Worker.key else "check on it"
+        return f"journal worker status {helper.id}" if helper.role == Worker.key else "check on it"
 
     def unstarted(self, agent_id: int, grace: Seconds) -> list[Agent]:
         ended = tuple(self.queries.query(Agent).filter(parent_id=agent_id).matching(Among("role", self.types.helper_keys())).matching(Greater("ended_at", "")).matching(IsNull("retired_at")).matching(IsNull("paused_at")).every_row(INACTIVE_REASON))

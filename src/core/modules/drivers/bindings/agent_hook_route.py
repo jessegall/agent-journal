@@ -143,7 +143,7 @@ class AgentHookRoute(HookRoute):
         if agent.retired_at is not None:
             return EndedAgentMessage.declared().agent_message().text
         if self.sessions.replaced_agent_id(event.session) is not None:
-            return ReplacedSessionMessage.declared().agent_message(agent=agent.number).text
+            return ReplacedSessionMessage.declared().agent_message(agent=agent.id).text
         # a pause since then refuses only a tool Paused refuses, never a read, a search, journal message or a prompt
         if event.tool is None or not Constraints.pause_refuses(event.tool):
             return ""
@@ -170,7 +170,7 @@ class AgentHookRoute(HookRoute):
     def agentless_reply(self, event: HookEvent) -> HookReply:
         replaced_agent_id = self.sessions.replaced_agent_id(event.session)
         if replaced_agent_id is not None and event.event == HookEventName.PRE_TOOL_USE:
-            return HookReply(refusal=ReplacedSessionMessage.declared().agent_message(agent=self.agents.find_unscoped(replaced_agent_id).number).text)
+            return HookReply(refusal=ReplacedSessionMessage.declared().agent_message(agent=self.agents.find_unscoped(replaced_agent_id).id).text)
         if replaced_agent_id is None and event.is_check_required:
             return HookReply(refusal=UnknownAgentMessage.declared().agent_message().text)
         return HookReply.allowed()

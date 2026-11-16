@@ -1,7 +1,6 @@
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.cli.row_numbers import RowNumbers
 from engine.errors.refusal import Refusal
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.agent_label import AgentLabel
@@ -27,10 +26,9 @@ class AskMainAgentHandler(Handler[AskMainAgent, None]):
     command = AskMainAgent
     disabled_scopes = [ActorScope]
 
-    def __init__(self, agents: AgentRows, guidance: WorkerGuidance, facts_query: WorkerAskFactsQuery, bus: Bus, visits: MergerVisits, questions: WorkerQuestions, escalations: Escalations,
-                 numbers: RowNumbers) -> None:
+    def __init__(self, agents: AgentRows, guidance: WorkerGuidance, facts_query: WorkerAskFactsQuery, bus: Bus, visits: MergerVisits, questions: WorkerQuestions, escalations: Escalations) -> None:
         self.agents, self.guidance, self.facts_query, self.bus, self.visits = agents, guidance, facts_query, bus, visits
-        self.questions, self.escalations, self.numbers = questions, escalations, numbers
+        self.questions, self.escalations = questions, escalations
 
     def handle(self, command: AskMainAgent, context: Context) -> None:
         require_merger(self.agents, context)
@@ -46,7 +44,7 @@ class AskMainAgentHandler(Handler[AskMainAgent, None]):
     def refuse_repeated(self, worker_id: int) -> None:
         line = self.escalations.open_line(worker_id)
         if line is not None and line.closed_at is not None:
-            worker = AgentLabel.labelled_row(worker_id, self.numbers, "worker").text
+            worker = AgentLabel.labelled_row(worker_id, "worker").text
             raise Refusal(f"{worker} is with the main agent since {line.closed_at.value.strftime(CLOCK_FORMAT)} (line {line.id}): you need not tell it again")
 
     def worker_lines(self, worker_id: int | None) -> list[str]:

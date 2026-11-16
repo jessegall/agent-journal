@@ -1,5 +1,4 @@
-from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -16,15 +15,12 @@ class RestoreRefusalSkipSubcommand(Subcommand[RestoreRefusalSkip, DriverGrant]):
     name = "restore"
     external = True
 
-    def __init__(self, numbers: RowNumbers) -> None:
-        self.numbers = numbers
-
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("agent_id", type=AgentNumber)
+        parser.add_argument("agent_id", type=AgentId)
 
     def command(self, arguments: Namespace, caller: Caller) -> RestoreRefusalSkip:
         return RestoreRefusalSkip(arguments.agent_id)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, DriverGrant):
-            output.line(f"agent:{self.numbers.agent_number(value.session_agent_id)} has its skip back")
+            output.line(f"agent:{value.session_agent_id} has its skip back")

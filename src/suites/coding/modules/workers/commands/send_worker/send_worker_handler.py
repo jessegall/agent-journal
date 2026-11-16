@@ -76,7 +76,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
         if worker.retired_at is not None:
             raise RetiredWorkerRefusal.create(worker)
         if not command.job.strip() and not command.task_ids:
-            raise Refusal("a send needs a job or a task", f'journal worker send {worker.number} "<job>", or --task <task>')
+            raise Refusal("a send needs a job or a task", f'journal worker send {worker.id} "<job>", or --task <task>')
         running, limit = len(self.places.running()), self.places.run_limit()
         if command.task_ids and running > limit:
             raise Refusal(f"{running} workers run and the running limit is {limit}: no worker takes new tasks until fewer run",

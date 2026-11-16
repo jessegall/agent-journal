@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from engine.errors.refusal import Refusal
 from engine.subcommand.subcommand import Subcommand
 from suites.coding.modules.workers.commands.defer_phase_test.defer_phase_test import DeferPhaseTest
@@ -17,7 +17,7 @@ class DeferPhaseTestSubcommand(Subcommand[DeferPhaseTest, str]):
     name = "defer-test"
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("worker_id", type=AgentNumber)
+        parser.add_argument("worker_id", type=AgentId)
         parser.add_argument("paths", help="the whole test paths to leave out, in one quoted text")
         parser.add_argument("--why", default="", help="why these paths wait for the next checkpoint")
         parser.add_argument("--ask", type=int, default=None, help="the line of the worker's question this settles; its oldest open one otherwise")

@@ -2,7 +2,7 @@ from core.modules.processes.support.execution_status import ExecutionStatus
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from engine.row.page import Page
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
@@ -58,7 +58,7 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         parser.add_argument("--recent", type=int, default=RECENT_RUNS)
         parser.add_argument("--class", dest="class_name", default="", help="only the runs and waits of this class")
         parser.add_argument("--starter", default="", help="only the runs and waits of this starter, such as main agent or helper 3")
-        parser.add_argument("--agent", type=AgentNumber, default=0)
+        parser.add_argument("--agent", type=AgentId, default=0)
 
     def read(self, arguments: Namespace, caller: Caller) -> ProcessQueuePage:
         environment_id = self.queries.database.scope_environment_id

@@ -1,4 +1,3 @@
-from engine.cli.row_numbers import RowNumbers
 from engine.command.context import Context
 from engine.driver.count_down import CountDown
 from engine.driver.time_window import TimeWindow
@@ -10,7 +9,6 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worker_refusal_count import WorkerRefusalCount
 from suites.coding.modules.workers.agent_messages.worker_refusal_message import WORKER_REFUSAL_INTERVAL
 from suites.coding.modules.workers.agent_messages.worker_refusal_message import WorkerRefusalMessage
-from core.modules.agents.support.agent_number_messages import AgentNumberMessages
 
 REFUSAL_LIMIT_COUNT = 5
 REFUSAL_COUNTDOWN = CountDown("workers.worker_refusal", "worker refusal", TimeWindow(REFUSAL_LIMIT_COUNT), is_silent=True)
@@ -19,8 +17,7 @@ REFUSAL_COUNTDOWN = CountDown("workers.worker_refusal", "worker refusal", TimeWi
 class WorkerRefusals:
     """Counts consecutive refused worker steps and tells the main agent when they keep failing."""
 
-    def __init__(self, repository: Repository, main_agent_line: MergerInbox, queries: Queries, countdowns: Countdowns, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, repository: Repository, main_agent_line: MergerInbox, queries: Queries, countdowns: Countdowns) -> None:
         self.repository, self.main_agent_line, self.queries, self.countdowns = repository, main_agent_line, queries, countdowns
 
     def record(self, worktree: Worktree, context: Context, refusal_text: str | None = None) -> None:
@@ -32,7 +29,7 @@ class WorkerRefusals:
         if refusal.notice_at is not None and refusal.notice_at.elapsed_seconds(context.timestamp) < WORKER_REFUSAL_INTERVAL.seconds:
             return
         count = self.countdowns.used_count(REFUSAL_COUNTDOWN, worktree.session_agent_id)
-        notice = AgentNumberMessages.message(self.numbers, WorkerRefusalMessage, "worker", worktree.session_agent_id, count=count, task=worktree.task_id)
+        notice = WorkerRefusalMessage.declared().agent_message(worker=worktree.session_agent_id, count=count, task=worktree.task_id)
         self.main_agent_line.send_agent_message(notice, "workers.repeated-refusal", context)
         self.repository.save(refusal.changed(notice_at=context.timestamp), context)
 

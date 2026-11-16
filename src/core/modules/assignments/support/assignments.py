@@ -230,4 +230,4 @@ class Assignments:
             raise ActorTypeRefusal(actor_id, actor.type)
         agent = self.agent_row(actor_id) if actor.type is ActorType.AGENT else None
         if agent is not None and agent.ended_at is not None:
-            raise EndedAgentRefusal(agent.number)
+            raise EndedAgentRefusal(agent.id)

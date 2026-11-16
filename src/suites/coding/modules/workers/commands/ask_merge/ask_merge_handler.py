@@ -3,7 +3,6 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
-from engine.cli.row_numbers import RowNumbers
 from engine.setting.setting_values import SettingValues
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from suites.coding.modules.workers.agent_messages.unit_merge_waits_message import UnitMergeWaitsMessage
@@ -27,8 +26,8 @@ class AskMergeHandler(Handler[AskMerge, MergeAskOutcome]):
     command = AskMerge
     disabled_scopes = [ActorScope]
 
-    def __init__(self, scope: MergeAskScope, repository: Repository, settings: SettingValues, main_line: MainAgentLine, numbers: RowNumbers, free_task: WorkerFreeTask) -> None:
-        self.scope, self.repository, self.settings, self.main_line, self.numbers = scope, repository, settings, main_line, numbers
+    def __init__(self, scope: MergeAskScope, repository: Repository, settings: SettingValues, main_line: MainAgentLine, free_task: WorkerFreeTask) -> None:
+        self.scope, self.repository, self.settings, self.main_line = scope, repository, settings, main_line
         self.free_task = free_task
 
     def check_rows(self, command: AskMerge, actor: Actor) -> None:
@@ -44,6 +43,6 @@ class AskMergeHandler(Handler[AskMerge, MergeAskOutcome]):
             self.free_task.give_next(command.worker_id, part.task_ids, context)
             worktree = self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.deliver, delivered_at=context.timestamp, merge_ready_at=context.timestamp), context)
         if not self.settings.flag(MERGER_ENABLED):
-            worker = self.numbers.agent_number(command.worker_id)
+            worker = command.worker_id
             self.main_line.send_agent_message(UnitMergeWaitsMessage.declared().agent_message(worker=worker, merge_ask=merge_request.id), UnitMergeWaitsMessage.declared().key, context)
         return MergeAskOutcome(merge_request, worktree, part.unit)

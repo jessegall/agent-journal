@@ -17,7 +17,6 @@ from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_point import WorkerPoint
 from suites.coding.modules.workers.support.merger_visits import MergerVisits
 from core.modules.agents.support.agent_label import AgentLabel
-from engine.cli.row_numbers import RowNumbers
 
 
 class SendMergerAdviceHandler(Handler[SendMergerAdvice, str]):
@@ -27,8 +26,8 @@ class SendMergerAdviceHandler(Handler[SendMergerAdvice, str]):
     command = SendMergerAdvice
     disabled_scopes = [ActorScope]
 
-    def __init__(self, agents: AgentRows, guidance: WorkerGuidance, queries: Queries, repository: Repository, bus: Bus, visits: MergerVisits, numbers: RowNumbers, settings: SettingValues) -> None:
-        self.numbers, self.settings = numbers, settings
+    def __init__(self, agents: AgentRows, guidance: WorkerGuidance, queries: Queries, repository: Repository, bus: Bus, visits: MergerVisits, settings: SettingValues) -> None:
+        self.settings = settings
         self.agents, self.guidance, self.queries, self.repository, self.bus, self.visits = agents, guidance, queries, repository, bus, visits
 
     def handle(self, command: SendMergerAdvice, context: Context) -> str:
@@ -36,7 +35,7 @@ class SendMergerAdviceHandler(Handler[SendMergerAdvice, str]):
         self.visits.close_newest(context)
         point = self.guidance.point(command.worker_id)
         if point.round.worktree is None:
-            raise Refusal(f"{AgentLabel.labelled_row(command.worker_id, self.numbers).text} has no open work", "advise a worker that is at work")
+            raise Refusal(f"{AgentLabel.labelled_row(command.worker_id).text} has no open work", "advise a worker that is at work")
         task_id = self.guidance.current_task(point.round).id
         group_rows = tuple(self.queries.query(MergerAdvice).filter(worker_id=command.worker_id, group_key=point.counted_window_key()).oldest().get())
         visit = self.queries.query(MergerVisit).newest().first()
@@ -47,7 +46,7 @@ class SendMergerAdviceHandler(Handler[SendMergerAdvice, str]):
         self.check_point(group_rows, point, task_id)
         self.repository.save(MergerAdvice(worker_id=command.worker_id, group_key=point.counted_window_key(), step=point.step, task_id=task_id, visit_id=visit_id, text=command.text), context)
         self.bus.dispatch(SendAgentMessage(command.worker_id, command.text, is_counted=True), context)
-        return f"advice {len(group_rows) + 1} of {limit} since the worker's last commit sent to {AgentLabel.labelled_row(command.worker_id, self.numbers, "worker").text}"
+        return f"advice {len(group_rows) + 1} of {limit} since the worker's last commit sent to {AgentLabel.labelled_row(command.worker_id, "worker").text}"
 
     @staticmethod
     def check_limit(group_rows: tuple[MergerAdvice, ...], limit: int) -> None:
@@ -57,7 +56,7 @@ class SendMergerAdviceHandler(Handler[SendMergerAdvice, str]):
     def check_visit(self, worker_id: int, visit_id: int | None) -> None:
         last = self.queries.query(MergerAdvice).filter(worker_id=worker_id).newest().first()
         if last is not None and last.visit_id == visit_id:
-            raise Refusal(f"you already advised {AgentLabel.labelled_row(worker_id, self.numbers, "worker").text} in this visit", "say it all in one advice, after your next journal merger next")
+            raise Refusal(f"you already advised {AgentLabel.labelled_row(worker_id, "worker").text} in this visit", "say it all in one advice, after your next journal merger next")
 
     @staticmethod
     def check_point(group_rows: tuple[MergerAdvice, ...], point: WorkerPoint, task_id: int) -> None:

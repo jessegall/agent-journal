@@ -5,13 +5,13 @@ import pytest
 
 from core.modules.messages.commands.send_agent_message.send_agent_message import SendAgentMessage
 from core.modules.messages.commands.send_message.send_message_subcommand import SendMessageSubcommand
-from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_ids import AgentIds
 from engine.errors.refusal import Refusal
 
 SHOP = SimpleNamespace(environment_id=2)
 
 
-class ShopNumbers(RowNumbers):
+class ShopNumbers(AgentIds):
     """In the shop environment agent 2 is row 40."""
 
     def row_id(self, model_name: str, number: int, environment_id: int | None) -> int:

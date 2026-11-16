@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
 from core.modules.agents.commands.stop_agent_program.stop_agent_program import StopAgentProgram
@@ -18,7 +18,7 @@ class StopAgentProgramSubcommand(Subcommand[StopAgentProgram, Stopped]):
     external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("agent_id", type=AgentNumber)
+        parser.add_argument("agent_id", type=AgentId)
 
     def command(self, arguments: Namespace, caller: Caller) -> StopAgentProgram:
         return StopAgentProgram(arguments.agent_id, StopReason.AGENT if caller.actor.is_agent() else StopReason.PERSON)

@@ -23,7 +23,6 @@ from suites.coding.modules.workers.commands.read_next_merge.read_next_merge impo
 from suites.coding.modules.workers.commands.merger.require_merger import require_merger
 from suites.coding.modules.workers.support.oversight import Oversight
 from core.modules.agents.support.agent_label import AgentLabel
-from engine.cli.row_numbers import RowNumbers
 
 
 class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
@@ -31,10 +30,9 @@ class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
 
     command = ReadNextMerge
 
-    def __init__(self, agents: AgentRows, queries: Queries, worktrees: WorktreeQuery, log_lines: WorkerLogLines, repository: Repository, log_read: WorkerLogRead, numbers: RowNumbers,
+    def __init__(self, agents: AgentRows, queries: Queries, worktrees: WorktreeQuery, log_lines: WorkerLogLines, repository: Repository, log_read: WorkerLogRead,
                  merge_request: MergeAskSection, work: MergerWork, oversight: Oversight) -> None:
         self.merge_ask, self.work, self.oversight = merge_request, work, oversight
-        self.numbers = numbers
         self.agents, self.queries, self.worktrees, self.log_lines, self.repository, self.log_read = agents, queries, worktrees, log_lines, repository, log_read
 
     def handle(self, command: ReadNextMerge, context: Context) -> str:
@@ -58,7 +56,7 @@ class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
         review = self.log_lines.review(worktree)
         sections = [self.task_section(task, review.summary(task), [proof for proof in review.proofs if proof.task_id == task.id]) for task in review.tasks]
         important = "important lines: pass this worker to the main agent\n" if review.has_important_lines() else ""
-        return f"{messages}\n{AgentLabel.labelled_row(worktree.session_agent_id, self.numbers, "worker").text}\n{important}{self.merge_ask.text(worktree)}\n" + "\n\n".join(sections)
+        return f"{messages}\n{AgentLabel.labelled_row(worktree.session_agent_id, "worker").text}\n{important}{self.merge_ask.text(worktree)}\n" + "\n\n".join(sections)
 
     def record_lines(self, lines: tuple[MergerLine, ...], text: str, command: ReadNextMerge, visit: MergerVisit, context: Context) -> int | None:
         output_id = self.log_read.pending_output(text, command.process_id, command.json_output, context)

@@ -1,6 +1,4 @@
-from engine.cli.row_numbers import RowNumbers
-from engine.cli.agent_number import AGENT_MODEL_NAME
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from argparse import ArgumentParser, Namespace
 
 from engine.enums.actor_type import ActorType
@@ -27,14 +25,13 @@ class UnreadReportsSubcommand(ReadSubcommand[UnreadReports]):
     cli_name = "message"
     name = "reports"
 
-    def __init__(self, queries: Queries, agents: AgentRows, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, queries: Queries, agents: AgentRows) -> None:
         self.queries, self.agents = queries, agents
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--page", type=int, default=1)
         parser.add_argument("--search", default="")
-        parser.add_argument("--agent", type=AgentNumber)
+        parser.add_argument("--agent", type=AgentId)
 
     def read(self, arguments: Namespace, caller: Caller) -> UnreadReports:
         reports = self.queries.query(Message).filter(type=MessageType.AGENT, is_chat_visible=False).matching(IsNull("read_at"))
@@ -54,8 +51,7 @@ class UnreadReportsSubcommand(ReadSubcommand[UnreadReports]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, UnreadReports):
-            numbers = self.numbers.numbers(AGENT_MODEL_NAME, {report.session_agent_id for report in value.reports})
-            lines = [f"message:{report.id} from agent:{numbers[report.session_agent_id]}: {report.text.splitlines()[0][:TITLE_CHARACTERS] if report.text else ''}" for report in value.reports]
+            lines = [f"message:{report.id} from agent:{report.session_agent_id}: {report.text.splitlines()[0][:TITLE_CHARACTERS] if report.text else ''}" for report in value.reports]
             older = value.total - value.page * SHOWN_REPORTS
             text = "\n".join([*lines, f"{older} older unread reports: --page {value.page + 1}"] if older > 0 else lines)
             output.write(text or "no unread reports", {"rows": [report.id for report in value.reports], "total": value.total})

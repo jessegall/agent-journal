@@ -1,7 +1,6 @@
 from core.modules.drivers.support.open_block_rows import OpenBlockRows
 from dataclasses import replace
 
-from engine.cli.row_numbers import RowNumbers
 
 from engine.driver.agent_message import AgentMessage
 from engine.query.queries import Queries
@@ -37,14 +36,13 @@ class UnmergedWorkers:
     worker is named once the merger has had the wait setting's minutes to take it in, or at once when the
     merger left it to the main agent."""
 
-    def __init__(self, delivered: WorkerWorktrees, tasks: TaskQuery, proofs: ProofQuery, records: MessageRecords, settings: SettingValues, queries: Queries, spans: SpanQueries,
-                 numbers: RowNumbers, clock: Clock, request_values: RequestValues, open_blocks: OpenBlockRows) -> None:
-        self.numbers, self.clock, self.request_values, self.open_blocks = numbers, clock, request_values, open_blocks
+    def __init__(self, delivered: WorkerWorktrees, tasks: TaskQuery, proofs: ProofQuery, records: MessageRecords, settings: SettingValues, queries: Queries, spans: SpanQueries, clock: Clock, request_values: RequestValues, open_blocks: OpenBlockRows) -> None:
+        self.clock, self.request_values, self.open_blocks = clock, request_values, open_blocks
         self.settings, self.queries, self.spans = settings, queries, spans
         self.delivered, self.tasks, self.proofs, self.records = delivered, tasks, proofs, records
 
     def merge_command(self, worktree: Worktree) -> str:
-        return f"journal worker merge {self.numbers.agent_number(worktree.session_agent_id)}"
+        return f"journal worker merge {worktree.session_agent_id}"
 
     def answer(self, event: HookEvent | None, agent_id: int) -> UnmergedAnswer:
         # read once a step, so the lines and the holds they close agree
@@ -57,12 +55,12 @@ class UnmergedWorkers:
             if self.is_with_merger(worktree, agent_id):
                 continue
             proofs = tuple(self.proofs.waiting_proofs(worktree.id).every_row(UNIT_TASKS_REASON))
-            action = f"{self.merge_command(worktree)}, or journal worker release {self.numbers.agent_number(worktree.session_agent_id)}"
+            action = f"{self.merge_command(worktree)}, or journal worker release {worktree.session_agent_id}"
             if proofs:
                 action = f"journal proof check {', '.join(str(proof.id) for proof in proofs)}"
             key = f"{WorkerUnmergedMessage.declared().key}.{worktree.session_agent_id}"
             declaration = WorkerUnmergedDueMessage.declared() if self.delivered_reminder_count(agent_id, key) >= BLOCKING_REMINDER_COUNT - 1 else WorkerUnmergedMessage.declared()
-            agent_messages.append(replace(declaration.agent_message(worker=self.numbers.agent_number(worktree.session_agent_id), tasks=self.task_names(worktree), action=action), key=key))
+            agent_messages.append(replace(declaration.agent_message(worker=worktree.session_agent_id, tasks=self.task_names(worktree), action=action), key=key))
         commands = {self.merge_command(worktree) for worktree in delivered}
         prefix = f"{RequiredCommandRefusalMessage.declared().key}:journal worker merge "
         blocks = self.open_blocks.rows(agent_id)

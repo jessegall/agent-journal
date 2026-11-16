@@ -26,7 +26,7 @@ from engine.query.select import Select
 from core.modules.drivers.support.current_context_window import COMPACTION_ENDED_AT
 from core.modules.assignments.models.support.views import assigned_actor, assigned_row_ids
 
-AGENT_COLUMNS = ("id", "number", "environment_id", "session", "role", "access", "program", "program_model", "profile", "given_name", "paused_at",
+AGENT_COLUMNS = ("id", "environment_id", "session", "role", "access", "program", "program_model", "profile", "given_name", "paused_at",
                  "usage_limit_ends_at", "ended_at", "retired_at", "retirement_reason")
 LISTED_COLUMNS = ("id", "title", "state")
 COMPACTION_PATH = f'$."{DRIVERS_MODULE}".{COMPACTION_ENDED_AT}'

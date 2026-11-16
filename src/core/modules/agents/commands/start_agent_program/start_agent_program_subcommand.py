@@ -1,7 +1,7 @@
 from argparse import REMAINDER, ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
 from core.modules.agents.commands.start_agent_program.start_agent_program import StartAgentProgram
@@ -17,7 +17,7 @@ class StartAgentProgramSubcommand(Subcommand[StartAgentProgram, Dispatch]):
     external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("agent_id", type=AgentNumber)
+        parser.add_argument("agent_id", type=AgentId)
         parser.add_argument("--folder", required=True)
         parser.add_argument("program_line", nargs=REMAINDER)
 

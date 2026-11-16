@@ -1,6 +1,5 @@
 from collections.abc import Sequence
 
-from engine.cli.row_numbers import RowNumbers
 from engine.model.move import Move
 from engine.command.context import Context
 from engine.query.conditions.among import Among
@@ -37,8 +36,8 @@ class WorkerProofQueue:
     proofs are committed and their tests wait for a checkpoint of the plan. A proof committed in a plan that
     is started no more, as when the plan is blocked, is queued with the others at the next hand-in."""
 
-    def __init__(self, proofs: ProofQuery, repository: Repository, main_agent_line: MergerInbox, settings: SettingValues, git: WorktreeGit, queries: Queries, numbers: RowNumbers, plans: TaskPlans) -> None:
-        self.numbers, self.plans = numbers, plans
+    def __init__(self, proofs: ProofQuery, repository: Repository, main_agent_line: MergerInbox, settings: SettingValues, git: WorktreeGit, queries: Queries, plans: TaskPlans) -> None:
+        self.plans = plans
         self.proofs, self.repository, self.main_agent_line, self.queries = proofs, repository, main_agent_line, queries
         self.settings, self.git = settings, git
 
@@ -80,4 +79,4 @@ class WorkerProofQueue:
 
     def send_waiting_line(self, worktree: Worktree, proofs: Sequence[Proof], context: Context) -> None:
         if proofs:
-            self.main_agent_line.send_agent_message(ProofWaitsMessage.declared().agent_message(worker=self.numbers.agent_number(worktree.session_agent_id), proofs=" ".join(str(proof.id) for proof in proofs)), PROOF_WAITS_SOURCE, context)
+            self.main_agent_line.send_agent_message(ProofWaitsMessage.declared().agent_message(worker=worktree.session_agent_id, proofs=" ".join(str(proof.id) for proof in proofs)), PROOF_WAITS_SOURCE, context)

@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from core.modules.assign_rules.models.enums.rule_target import RuleTarget
 from core.modules.assign_rules.support.condition_line import ConditionLine
 
@@ -16,7 +16,7 @@ class RuleArguments:
     @staticmethod
     def add(parser: ArgumentParser, target_required: bool) -> None:
         parser.add_argument("--target", type=RuleTarget, choices=tuple(RuleTarget), required=target_required)
-        parser.add_argument("--agent", dest="target_agent_id", type=AgentNumber)
+        parser.add_argument("--agent", dest="target_agent_id", type=AgentId)
         parser.add_argument("--program")
         parser.add_argument("--model", dest="program_model")
         parser.add_argument("--queue-limit", type=int, help="the most open tasks the target may have before the rule skips it; 0 means no limit")

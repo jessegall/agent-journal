@@ -16,7 +16,7 @@ from engine.subcommand.overview_reads import OverviewReads
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.subcommand.subcommand import SUCCESS_CODE, Subcommand
 from engine.request.request_values import RequestValues
-from engine.cli.agent_number_arguments import AgentNumberArguments
+from engine.cli.agent_id_arguments import AgentIdArguments
 from engine.cli.line_parser import LineParser
 from engine.cli.subcommand_lookup import AnySubcommand
 from engine.cli.shell_aliases import ShellAliases
@@ -65,10 +65,10 @@ class Console:
 
     def __init__(self, registry: Registry, finder: ModuleFinder, fingerprint: CodeFingerprint, line_parser: LineParser, bus: Bus,
                  flags: WriteFlags, refusals: RefusalLog, errors: ErrorLog, tables: Tables, commit_listeners: CommitListenerRunner,
-                 environment_names: EnvironmentNames, resolver: CallerResolver, aliases: ShellAliases, handoff: ShellHandoff, events: EventLog, scopes: Scopes, refusal_skips: RefusalSkips, overview_reads: OverviewReads, read_limit_bypass: ReadLimitBypass, agent_numbers: AgentNumberArguments, request_records: RequestRecords,
+                 environment_names: EnvironmentNames, resolver: CallerResolver, aliases: ShellAliases, handoff: ShellHandoff, events: EventLog, scopes: Scopes, refusal_skips: RefusalSkips, overview_reads: OverviewReads, read_limit_bypass: ReadLimitBypass, agent_id_arguments: AgentIdArguments, request_records: RequestRecords,
                  line_check: CallerLineCheck, request_values: RequestValues) -> None:
         self.line_check, self.request_values = line_check, request_values
-        self.read_limit_bypass, self.agent_numbers, self.request_records = read_limit_bypass, agent_numbers, request_records
+        self.read_limit_bypass, self.agent_id_arguments, self.request_records = read_limit_bypass, agent_id_arguments, request_records
         self.registry, self.finder, self.fingerprint, self.line_parser, self.bus = registry, finder, fingerprint, line_parser, bus
         self.flags, self.refusals, self.errors, self.tables, self.commit_listeners = flags, refusals, errors, tables, commit_listeners
         self.refusal_skips, self.overview_reads = refusal_skips, overview_reads
@@ -174,7 +174,7 @@ class Console:
         environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         self.scopes.check_environment(caller.actor, environment_id)
         environment_id = self.scopes.line_environment_id(caller.actor, environment_id)
-        self.agent_numbers.replace_numbers(arguments, environment_id)
+        self.agent_id_arguments.check(arguments, environment_id)
         caller = replace(caller, environment_id=environment_id)
         self.request_records.note_caller(caller.actor, environment_id)
         try:
@@ -245,7 +245,7 @@ class Console:
         environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         self.scopes.check_environment(caller.actor, environment_id)
         environment_id = self.scopes.line_environment_id(caller.actor, environment_id)
-        self.agent_numbers.replace_numbers(arguments, environment_id)
+        self.agent_id_arguments.check(arguments, environment_id)
         if not isinstance(subcommand, Subcommand):
             raise Refusal(f"journal {' '.join(argv[:2])} only reads, so it has no place in a transaction")
         return subcommand.command(arguments, replace(caller, environment_id=environment_id)), environment_id

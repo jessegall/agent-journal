@@ -46,7 +46,7 @@ class ReportStoppedWorkerRunsHandler(Handler[ReportStoppedWorkerRuns, None]):
         for source_key, run in reported_runs.items():
             if source_key in lines:
                 continue
-            agent_message = WorkerLateRunMessage.declared().agent_message(worker=workers[run.session_agent_id].number, output=run.id)
+            agent_message = WorkerLateRunMessage.declared().agent_message(worker=workers[run.session_agent_id].id, output=run.id)
             self.inbox.deliver(MergerLine(text=agent_message.text, fallback_source=WorkerLateRunMessage.declared().key, agent_message_json=agent_message.stored.json, worker_id=run.session_agent_id, source_key=source_key), context)
 
     @staticmethod

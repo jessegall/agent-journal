@@ -1,5 +1,4 @@
 from core.modules.assignments.support.assignments import Assignments
-from engine.cli.row_numbers import RowNumbers
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
 from engine.listener.save_listener import SaveListener
@@ -30,8 +29,8 @@ class DelegatedTaskCommentListener(SaveListener[Created[Link]]):
     name = "workers.delegated-task-comment"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, links: RowLinkWriter, queries: Queries, message_sender: MessageSender, numbers: RowNumbers, assignments: Assignments) -> None:
-        self.numbers, self.assignments = numbers, assignments
+    def __init__(self, links: RowLinkWriter, queries: Queries, message_sender: MessageSender, assignments: Assignments) -> None:
+        self.assignments = assignments
         self.links, self.queries, self.message_sender = links, queries, message_sender
 
     def handle(self, event: Created[Link], context: Context) -> None:
@@ -45,4 +44,4 @@ class DelegatedTaskCommentListener(SaveListener[Created[Link]]):
         self.message_sender.send(worker.id, WorkerTaskCommentMessage.declared(), WORKER_JOB_SOURCE, context, task=link.target_id)
         self.links.save(Link(creator_id=context.actor.id, source_model=Message.model_name, source_id=message.id, target_model=Agent.model_name, target_id=worker.id, link_type=LinkType.RECIPIENT), context)
         if worker.parent_id is not None:
-            self.message_sender.send(worker.parent_id, WorkerCommentCopyMessage.declared(), SOURCE, context, worker=self.numbers.agent_number(worker.id), message=message.id)
+            self.message_sender.send(worker.parent_id, WorkerCommentCopyMessage.declared(), SOURCE, context, worker=worker.id, message=message.id)

@@ -1,12 +1,12 @@
-from core.modules.agents.support.main_row import MainRow
+from core.modules.agents.support.main_place import MainPlace
 from core.modules.agents.support.project_environment import ProjectEnvironment
 
 MAIN = 2
 DEVELOPMENT = 5
 
 
-def main_agent(agent_id: int, environment_id: int, is_running: bool) -> MainRow:
-    return MainRow(agent_id, environment_id, 1, "main", None if is_running else "2026-11-16T00:00:00+00:00")
+def main_agent(agent_id: int, environment_id: int, is_running: bool) -> MainPlace:
+    return MainPlace(agent_id, environment_id, is_running)
 
 
 def test_agent_ones_environment_is_the_project_environment_once_agent_one_exists():

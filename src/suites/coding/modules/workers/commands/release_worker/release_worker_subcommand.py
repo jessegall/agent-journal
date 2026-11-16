@@ -1,4 +1,4 @@
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -18,7 +18,7 @@ class ReleaseWorkerSubcommand(Subcommand[ReleaseWorker, ReleaseOutcome]):
     external = True
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("worker_id", type=AgentNumber)
+        parser.add_argument("worker_id", type=AgentId)
         parser.add_argument("reason", nargs="?", default="")
         parser.add_argument("--reason", dest="reason_flag", default="", help="the reason, written as a flag so a button can fill it")
         parser.add_argument("--abandon", default="", help="why the worker's committed and unmerged work may be left behind")

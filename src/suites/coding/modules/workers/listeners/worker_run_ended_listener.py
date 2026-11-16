@@ -1,5 +1,4 @@
 from suites.coding.modules.workers.types.worker import Worker
-from engine.cli.row_numbers import RowNumbers
 from engine.driver.agent_message import AgentMessage
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
@@ -32,7 +31,6 @@ from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.agent_messages.worker_run_ended_message import WorkerRunEndedMessage
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from engine.command.context import Context
-from core.modules.agents.support.agent_number_messages import AgentNumberMessages
 
 
 class WorkerRunEndedListener(SaveListener[ProcessEnded]):
@@ -43,8 +41,7 @@ class WorkerRunEndedListener(SaveListener[ProcessEnded]):
     name = "workers.run-ended"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, message_sender: MessageSender, stop: WorkerStop, queries: Queries, repository: Repository, proof_queue: WorkerProofQueue, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, message_sender: MessageSender, stop: WorkerStop, queries: Queries, repository: Repository, proof_queue: WorkerProofQueue) -> None:
         self.queries, self.repository, self.proof_queue = queries, repository, proof_queue
         self.agents, self.worktrees, self.message_sender, self.stop = agents, worktrees, message_sender, stop
 
@@ -81,13 +78,13 @@ class WorkerRunEndedListener(SaveListener[ProcessEnded]):
             if self.proof_queue.tests_pending(worktree):
                 return WorkerOperationTestsMessage.declared().agent_message(task=task.id, output=process.id)
         if operation.name is WorkerOperationName.MERGE and self.is_unmerged(worktree, process):
-            return AgentNumberMessages.message(self.numbers, WorkerOperationConflictMessage, "worker", operation.worker_id, output=process.id)
+            return WorkerOperationConflictMessage.declared().agent_message(worker=operation.worker_id, output=process.id)
         if operation.name is WorkerOperationName.JOB and self.agents.find(operation.worker_id).paused_at is not None:
-            return AgentNumberMessages.message(self.numbers, WorkerOperationPausedMessage, "worker", operation.worker_id)
-        return operation.name.finished_agent_message(self.numbers.agent_number(operation.worker_id), process.id)
+            return WorkerOperationPausedMessage.declared().agent_message(worker=operation.worker_id)
+        return operation.name.finished_agent_message(operation.worker_id, process.id)
 
     def update_agent_message(self, operation: WorkerOperation, process: Process) -> AgentMessage:
-        worker = self.numbers.agent_number(operation.worker_id)
+        worker = operation.worker_id
         if operation.update_outcome is UpdateResult.CONFLICTS:
             return WorkerOperationUpdateConflictMessage.declared().agent_message(worker=worker, output=process.id)
         if operation.update_outcome is None or process.exit_code != 0:

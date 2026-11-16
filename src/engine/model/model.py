@@ -29,7 +29,7 @@ class Model:
     search_rank: ClassVar[int] = 0
     search_ignored_start: ClassVar[str] = ""
     shared_rows: ClassVar[bool] = False
-    numbered: ClassVar[bool] = False
+    holds_agents: ClassVar[bool] = False
     shown_properties: ClassVar[Sequence[str]] = ()
     listed_properties: ClassVar[Sequence[str]] = ()
     change_names: ClassVar[Sequence[str]] = ()

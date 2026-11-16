@@ -1,4 +1,3 @@
-from engine.cli.row_numbers import RowNumbers
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -15,9 +14,6 @@ class ChooseWorkSourceSubcommand(Subcommand[ChooseWorkSource, MessageWorkSource]
     name = "work-from"
     help = "Select an addressed user request, including an older read request. Routine reads preserve it; reply and work-from switch it."
 
-    def __init__(self, numbers: RowNumbers) -> None:
-        self.numbers = numbers
-
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("message_id", type=int)
 
@@ -26,5 +22,5 @@ class ChooseWorkSourceSubcommand(Subcommand[ChooseWorkSource, MessageWorkSource]
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, MessageWorkSource):
-            output.write(f"request selection: message:{value.message_id}\nselecting actor: agent:{self.numbers.agent_number(value.agent_id)}\n"
+            output.write(f"request selection: message:{value.message_id}\nselecting actor: agent:{value.agent_id}\n"
                          f"environment: {value.environment_id}\norigin: {value.origin}", output.values(value))

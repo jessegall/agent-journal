@@ -1,4 +1,3 @@
-from engine.cli.row_numbers import RowNumbers
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.scope.actor_scope import ActorScope
@@ -18,13 +17,13 @@ class RecordFailedUpdateHandler(Handler[RecordFailedUpdate, None]):
     command = RecordFailedUpdate
     disabled_scopes = [ActorScope]
 
-    def __init__(self, worktrees: WorktreeQuery, closing: BehindCheckClosing, inbox: MergerInbox, numbers: RowNumbers) -> None:
-        self.worktrees, self.closing, self.inbox, self.numbers = worktrees, closing, inbox, numbers
+    def __init__(self, worktrees: WorktreeQuery, closing: BehindCheckClosing, inbox: MergerInbox) -> None:
+        self.worktrees, self.closing, self.inbox = worktrees, closing, inbox
 
     def handle(self, command: RecordFailedUpdate, context: Context) -> None:
         worktree = self.worktrees.required_worker_worktree(command.worker_id)
         failed = self.closing.failed(worktree, command.reason, context)
         if not failed:
             return
-        worker = self.numbers.agent_number(command.worker_id)
+        worker = command.worker_id
         self.inbox.send_agent_message(MergerUpdateFailedMessage.declared().agent_message(worker=worker, check=max(check.id for check in failed)), STALE_SOURCE, context)

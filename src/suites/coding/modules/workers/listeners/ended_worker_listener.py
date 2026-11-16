@@ -72,12 +72,12 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
 
     def send_lines(self, worker: Agent, stop_case: StopReading, facts: StopFacts, context: Context) -> None:
         if stop_case is StopReading.LAUNCH_FAILURE:
-            self.message_sender.send(worker.parent_id, WorkerLaunchFailedMessage.declared(), SOURCE, context, worker=worker.number, line=self.launches.error_text(worker))
+            self.message_sender.send(worker.parent_id, WorkerLaunchFailedMessage.declared(), SOURCE, context, worker=worker.id, line=self.launches.error_text(worker))
             return
         declaration = WorkerRestartedMessage.declared() if stop_case.resumes_worker else EndedWorkerTasksMessage.declared()
-        lines = [declaration.agent_message(worker=worker.number, tasks=facts.task_names)]
+        lines = [declaration.agent_message(worker=worker.id, tasks=facts.task_names)]
         if facts.committed_names:
-            lines.append(WorkerCommittedUnmergedMessage.declared().agent_message(worker=worker.number, tasks=facts.committed_names))
+            lines.append(WorkerCommittedUnmergedMessage.declared().agent_message(worker=worker.id, tasks=facts.committed_names))
         receiver = self.main_line if stop_case.line_target is StopLineTarget.MAIN_AGENT else self.inbox
         for line in lines:
             receiver.send_agent_message(line, SOURCE, context)

@@ -3,7 +3,6 @@ from dataclasses import replace
 from datetime import timedelta
 
 from engine.actor.actor import Actor
-from engine.cli.row_numbers import RowNumbers
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.errors.refusal import Refusal
@@ -38,8 +37,8 @@ class WorkerQuestions:
     worker is gone, sends the worker the outcome as a message of the journal, which wakes it. A forwarded
     question keeps the wait open, since the main agent still answers it."""
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus, settings: SettingValues, numbers: RowNumbers, kept: KeptRows) -> None:
-        self.queries, self.repository, self.bus, self.settings, self.numbers, self.kept = queries, repository, bus, settings, numbers, kept
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus, settings: SettingValues, kept: KeptRows) -> None:
+        self.queries, self.repository, self.bus, self.settings, self.kept = queries, repository, bus, settings, kept
 
     def open_lines(self) -> tuple[MergerLine, ...]:
         return tuple(self.open_line_rows().every_row(OPEN_LINES_REASON))
@@ -109,6 +108,6 @@ class WorkerQuestions:
         if wait is not None and wait.state is WaitState.OPEN and outcome is not AskOutcome.FORWARDED:
             self.bus.dispatch(EndWait(wait.id, outcome=outcome.worker_line(text)), context)
         if line.task_id is not None:
-            worker = AgentLabel.labelled_row(line.worker_id, self.numbers, "worker").text
+            worker = AgentLabel.labelled_row(line.worker_id, "worker").text
             self.bus.dispatch(MakeTaskLog(line.task_id, f"the question of {worker} (line {line.id}) ended as {outcome.description()}: {text}"), context)
         return closed

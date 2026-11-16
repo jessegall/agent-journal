@@ -22,7 +22,7 @@ class PlanWorkerTasks:
             raise Refusal(f"plan {plan.id} is {plan.state.value}", "only an approved or started plan goes to a worker")
         worker = self.units.plan_worker(plan)
         if phase_id is None and worker is not None:
-            raise Refusal(f"plan {plan.id} is worked by worker {worker.number}", "send that worker more, or hand another worker one phase with --phase <phase>")
+            raise Refusal(f"plan {plan.id} is worked by worker {worker.id}", "send that worker more, or hand another worker one phase with --phase <phase>")
         phases = self.outlines.outline(plan.id).chosen(phase_id)
         tasks = tuple(task for phase in phases for task in phase.tasks if task.helper_id is None and task.state in UNSTARTED_STATES)
         first = next((task for task in tasks if task.state == TaskState.OPEN.value), None)

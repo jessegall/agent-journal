@@ -1,6 +1,5 @@
 from engine.request.request_values import RequestValues
 from suites.coding.modules.workers.support.worker_unit_stop_answer import WorkerUnitStopAnswer
-from engine.cli.row_numbers import RowNumbers
 from engine.driver.agent_message import AgentMessage
 from engine.time.clock import Clock
 from core.modules.agents.support.agent_rows import AgentRows
@@ -15,7 +14,6 @@ from suites.coding.modules.workers.support.work_units import UNIT_TASKS_REASON
 from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.agent_messages.worker_task_started_message import WorkerTaskStartedMessage
-from core.modules.agents.support.agent_number_messages import AgentNumberMessages
 
 HELP_COMMAND_TEXT = AskTopic.GENERAL.question_line()
 
@@ -27,9 +25,9 @@ class WorkerUnitStop:
     is blocked."""
 
     def __init__(self, tasks: TaskQuery, processes: ProcessQuery, requests: ReaderRequestQuery, clock: Clock, agents: AgentRows, compaction: WorkerCompaction,
-                 guidance: WorkerGuidance, numbers: RowNumbers, request_values: RequestValues) -> None:
+                 guidance: WorkerGuidance, request_values: RequestValues) -> None:
         self.tasks, self.processes, self.requests, self.clock, self.agents = tasks, processes, requests, clock, agents
-        self.compaction, self.guidance, self.numbers, self.request_values = compaction, guidance, numbers, request_values
+        self.compaction, self.guidance, self.request_values = compaction, guidance, request_values
 
     # the text that holds the worker's stop now, or nothing when it may stop
     def refusal(self, agent_id: int) -> str | None:
@@ -50,7 +48,7 @@ class WorkerUnitStop:
             return WorkerUnitStopAnswer(WorkerTaskStartedMessage.declared().agent_message(line=point.line).text, ())
         if not point.round.started and point.round.following is None:
             blocked = self.tasks.assignee_tasks(agent_id).filter(state=TaskState.BLOCKED).every_row(UNIT_TASKS_REASON)
-            return WorkerUnitStopAnswer(None, tuple(AgentNumberMessages.message(self.numbers, WorkerTaskBlockedMessage, "worker", agent_id, task=row.id) for row in blocked))
+            return WorkerUnitStopAnswer(None, tuple(WorkerTaskBlockedMessage.declared().agent_message(worker=agent_id, task=row.id) for row in blocked))
         if point.step.may_stop() or self.processes.agent(agent_id).running().exists() or self.agents.running_with_read_access(agent_id):
             return WorkerUnitStopAnswer(None, ())
         return WorkerUnitStopAnswer(WorkerTaskStartedMessage.declared().agent_message(line=f"{point.line} {HELP_COMMAND_TEXT}").text, ())

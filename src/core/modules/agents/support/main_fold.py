@@ -6,7 +6,7 @@ from engine.database.row_insert import RowInsert
 from engine.database.schema_columns import SchemaColumns
 from engine.enums.agent_role import AgentRole
 from engine.errors.refusal import Refusal
-from core.modules.agents.models.agent import MAIN_NUMBER
+from core.modules.agents.support.main_row import MAIN_NUMBER
 from core.modules.agents.support.fold_conflict_rules import FoldConflictRules
 from core.modules.agents.support.resolved_conflict import ResolvedConflict
 from core.modules.agents.support.main_fold_plan import MainFoldPlan

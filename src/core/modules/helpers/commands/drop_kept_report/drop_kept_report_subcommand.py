@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from engine.subcommand.subcommand import Subcommand
 from core.modules.helpers.commands.drop_kept_report.drop_kept_report import DropKeptReport
 
@@ -13,7 +13,7 @@ class DropKeptReportSubcommand(Subcommand[DropKeptReport, str]):
     name = "drop"
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("helper_id", type=AgentNumber)
+        parser.add_argument("helper_id", type=AgentId)
 
     def command(self, arguments: Namespace, caller: Caller) -> DropKeptReport:
         return DropKeptReport(arguments.helper_id)

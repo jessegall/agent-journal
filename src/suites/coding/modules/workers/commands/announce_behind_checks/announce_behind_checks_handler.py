@@ -1,4 +1,3 @@
-from engine.cli.row_numbers import RowNumbers
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.listener.rows.event_rows import EventRows
@@ -25,8 +24,8 @@ class AnnounceBehindChecksHandler(Handler[AnnounceBehindChecks, tuple[AgentMessa
     command = AnnounceBehindChecks
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, queries: Queries, inbox: MergerInbox, settings: SettingValues, numbers: RowNumbers) -> None:
-        self.rows, self.queries, self.inbox, self.settings, self.numbers = rows, queries, inbox, settings, numbers
+    def __init__(self, rows: EventRows, queries: Queries, inbox: MergerInbox, settings: SettingValues) -> None:
+        self.rows, self.queries, self.inbox, self.settings = rows, queries, inbox, settings
 
     def handle(self, command: AnnounceBehindChecks, context: Context) -> tuple[AgentMessage, ...]:
         merger_enabled = self.settings.flag(MERGER_ENABLED)
@@ -38,4 +37,4 @@ class AnnounceBehindChecksHandler(Handler[AnnounceBehindChecks, tuple[AgentMessa
 
     def agent_message(self, worktree: Worktree, declaration: MessageTemplate) -> AgentMessage:
         check = self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).newest().first()
-        return declaration.agent_message(worker=self.numbers.agent_number(worktree.session_agent_id), count=check.commits_lagging if check else 0)
+        return declaration.agent_message(worker=worktree.session_agent_id, count=check.commits_lagging if check else 0)

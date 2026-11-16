@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from engine.enums.agent_role import AgentRole
-from core.modules.agents.models.agent import MAIN_NUMBER
+from core.modules.agents.support.main_row import MAIN_NUMBER
 from core.modules.agents.support.main_row import MainRow
 from core.modules.agents.support.environment_fold import EnvironmentFold
 

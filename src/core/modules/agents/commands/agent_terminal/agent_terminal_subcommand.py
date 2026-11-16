@@ -1,4 +1,4 @@
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -25,7 +25,7 @@ class AgentTerminalSubcommand(ReadSubcommand[Page[TerminalLine]]):
         self.home, self.queries = home, queries
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("agent_id", type=AgentNumber)
+        parser.add_argument("agent_id", type=AgentId)
         parser.add_argument("--after", type=int, default=0, help="the number of the last line already read")
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[TerminalLine]:

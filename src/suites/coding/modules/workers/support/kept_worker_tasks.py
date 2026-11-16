@@ -75,7 +75,7 @@ class KeptWorkerTasks:
         if last is None:
             raise Refusal(f"{AgentLabel.labelled(worker).text} has no worktree", "journal worker dispatch <task> starts a new one")
         if self.git.has_unmerged_branch(self.environments.find(worker.environment_id).folder, last):
-            raise Refusal(f"{AgentLabel.labelled(worker).text} has unmerged work on {last.branch}", f"journal worker merge {worker.number}, or merge the branch by hand")
+            raise Refusal(f"{AgentLabel.labelled(worker).text} has unmerged work on {last.branch}", f"journal worker merge {worker.id}, or merge the branch by hand")
 
     def handed(self, worker: Agent, worktree: Worktree, task_ids: tuple[int, ...], job: str, context: Context) -> Model:
         tasks = AssignableTasks.open_first(self.read_tasks(task_ids))

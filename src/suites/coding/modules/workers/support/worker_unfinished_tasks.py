@@ -61,7 +61,7 @@ class WorkerUnfinishedTasks:
     # a template's message about a worker and the tasks it left unfinished
     @staticmethod
     def message(template: type[MessageTemplate], worker: Agent, tasks: tuple[Task, ...]) -> AgentMessage:
-        return template.declared().agent_message(worker=worker.number, tasks=WorkerUnfinishedTasks.names(tasks))
+        return template.declared().agent_message(worker=worker.id, tasks=WorkerUnfinishedTasks.names(tasks))
 
     @staticmethod
     def names(tasks: tuple[Task, ...]) -> str:

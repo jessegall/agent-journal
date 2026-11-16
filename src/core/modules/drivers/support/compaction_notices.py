@@ -21,5 +21,5 @@ class CompactionNotices:
     def report(self, compaction: ContextCompaction, agent: Agent, notice: CompactionNoticeType, context: Context) -> None:
         if self.queries.query(ContextCompactionNotice).filter(compaction_id=compaction.id, notice=notice).exists():
             return
-        reported = self.repository.save(ContextCompactionNotice(compaction_id=compaction.id, session_agent_id=agent.id, agent_number=agent.number, notice=notice, cause=compaction.failure), context)
-        self.main_line.send_agent_message(CompactionNoticeMessage.declared().agent_message(notice=reported.id, agent=agent.number), SOURCE, context)
+        reported = self.repository.save(ContextCompactionNotice(compaction_id=compaction.id, session_agent_id=agent.id, agent_number=agent.id, notice=notice, cause=compaction.failure), context)
+        self.main_line.send_agent_message(CompactionNoticeMessage.declared().agent_message(notice=reported.id, agent=agent.id), SOURCE, context)

@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from engine.errors.refusal import Refusal
 from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.modules.workers.commands.decide_behind_check.order_worker_update import OrderWorkerUpdate
@@ -33,7 +33,7 @@ class UpdateWorkerSubcommand(Subcommand[Command[object], UpdateOutcome]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         WorkerCommandRequest.arguments(parser)
-        parser.add_argument("worker_id", type=AgentNumber, nargs="?", help="the main agent orders this worker to update")
+        parser.add_argument("worker_id", type=AgentId, nargs="?", help="the main agent orders this worker to update")
 
     def command(self, arguments: Namespace, caller: Caller) -> Command[object]:
         matching = arguments.worker_id

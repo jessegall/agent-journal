@@ -27,7 +27,7 @@ class ChooseAgentControlHandler(Handler[ChooseAgentControl, Agent]):
         agent = self.queries.query(Agent).find(command.agent_id)
         choices = [choice for group in self.providers.provider(agent.program).controls if group.key == command.key for choice in group.choices if choice.value == command.value]
         if not choices:
-            raise Refusal(f"{command.key} {command.value} is not a choice the agent bar offers", f"journal agent controls {agent.number} lists them")
+            raise Refusal(f"{command.key} {command.value} is not a choice the agent bar offers", f"journal agent controls {agent.id} lists them")
         if agent.is_unrelated_agent(context.actor):
             raise Refusal(f"{AgentLabel.labelled(agent).text} is neither you nor your helper", "an agent chooses only for itself and its helpers")
         if agent.ended_at is not None:

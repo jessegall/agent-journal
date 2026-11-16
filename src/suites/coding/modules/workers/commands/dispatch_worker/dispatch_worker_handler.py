@@ -128,7 +128,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         stopped = self.queries.query(Agent).find(command.source_worker_id)
         worktree = self.worktrees.required_worker_worktree(stopped.id)
         if stopped.ended_at is None:
-            raise Refusal(f"{AgentLabel.labelled(stopped).text} is still running", f"journal agent stop {stopped.number}, then take its worktree over")
+            raise Refusal(f"{AgentLabel.labelled(stopped).text} is still running", f"journal agent stop {stopped.id}, then take its worktree over")
         self.places.check_new_place()
         worker = self.bus.dispatch(start, context)
         claimed = self.bus.run_with_context(RecordWorktreeTakeover(worktree.id, worker.id), context)
@@ -160,9 +160,9 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         if idle is not None:
             if command.plan_id is not None:
                 phase = f" --phase {command.phase_id}" if command.phase_id is not None else ""
-                raise Refusal(f"{AgentLabel.labelled(idle).text} is idle: journal worker send {idle.number} --plan {command.plan_id}{phase}", 'or --fresh "<why>"')
+                raise Refusal(f"{AgentLabel.labelled(idle).text} is idle: journal worker send {idle.id} --plan {command.plan_id}{phase}", 'or --fresh "<why>"')
             task_ids = " ".join(str(task.id) for task in tasks)
-            raise Refusal(f"{AgentLabel.labelled(idle).text} is idle: journal worker send {idle.number} --task {task_ids}", 'or --fresh "<why>"')
+            raise Refusal(f"{AgentLabel.labelled(idle).text} is idle: journal worker send {idle.id} --task {task_ids}", 'or --fresh "<why>"')
 
     def worker_profile(self, name: str) -> AgentProfile:
         worker_type = self.types.find(Worker.key)

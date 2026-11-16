@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.support.agent_statuses import AgentStatuses
@@ -19,7 +19,7 @@ class AgentStatusSubcommand(ReadSubcommand[AgentStatus]):
         self.statuses = statuses
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("agent_id", type=AgentNumber)
+        parser.add_argument("agent_id", type=AgentId)
 
     def read(self, arguments: Namespace, caller: Caller) -> AgentStatus:
         return self.statuses.status(arguments.agent_id)

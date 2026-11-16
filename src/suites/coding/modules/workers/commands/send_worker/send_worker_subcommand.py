@@ -1,5 +1,5 @@
 from engine.file.file_access import FileAccess
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from engine.command.command import Command
 from suites.coding.modules.workers.commands.support.worker_command_request import WorkerCommandRequest
 from argparse import ArgumentParser, Namespace
@@ -48,7 +48,7 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         WorkerCommandRequest.arguments(parser)
-        parser.add_argument("worker_id", type=AgentNumber)
+        parser.add_argument("worker_id", type=AgentId)
         parser.add_argument("job", nargs="?", default="")
         parser.add_argument("--job", dest="job_flag", default="", help="the job, written as a flag so a button can fill it")
         parser.add_argument("--task", type=int, nargs="+", default=[], help="tasks the worker takes next")
@@ -108,9 +108,9 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
 
     def answer(self, worker: Agent) -> str:
         if worker.paused_at is not None:
-            return f"{AgentLabel.labelled(worker).text} is paused: the job waits until journal agent resume {worker.number}"
+            return f"{AgentLabel.labelled(worker).text} is paused: the job waits until journal agent resume {worker.id}"
         if worker.ended_at is None:
-            return f"{AgentLabel.labelled(worker).text} takes the job" if worker.pid is not None else f"{AgentLabel.labelled(worker).text} takes the job at its next hook; its process is not recorded, so the journal cannot say whether it runs: journal worker status {worker.number}"
+            return f"{AgentLabel.labelled(worker).text} takes the job" if worker.pid is not None else f"{AgentLabel.labelled(worker).text} takes the job at its next hook; its process is not recorded, so the journal cannot say whether it runs: journal worker status {worker.id}"
         program_state = self.resume.program_state(worker)
         if not program_state.is_ready:
             return f"{AgentLabel.labelled(worker).text} waits on {worker.program}: {program_state.wait_line}; the job starts when it is back"

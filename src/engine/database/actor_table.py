@@ -1,4 +1,4 @@
-from engine.actor.actor import CORE_ACTOR_ID, FIRST_OTHER_ACTOR_ID
+from engine.actor.actor import CORE_ACTOR_ID, FIRST_OTHER_ACTOR_ID, MAIN_AGENT_ID
 from collections.abc import Sequence
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
@@ -12,7 +12,8 @@ CORE_ACTOR = Statement("INSERT OR IGNORE INTO actors (id, type, name, created_at
 MODULE_ACTOR = Statement("INSERT OR IGNORE INTO actors (id, creator_id, type, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
 NEXT_OTHER_ACTOR_ID = Statement("SELECT max(?, coalesce(max(id), 0) + 1) AS id FROM actors")
 NEXT_AGENT_ACTOR_ID = Statement("SELECT max(coalesce((SELECT max(id) FROM actors WHERE id BETWEEN 1 AND ?1), 0),"
-                                " coalesce((SELECT max(launch_agent_id) FROM agents WHERE ended_at IS NULL AND launch_agent_id BETWEEN 1 AND ?1), 0)) + 1 AS id")
+                                " coalesce((SELECT max(launch_agent_id) FROM agents WHERE ended_at IS NULL AND launch_agent_id BETWEEN 1 AND ?1), 0), ?2) + 1 AS id")
+MAIN_AGENT_ACTOR = Statement("SELECT 1 FROM actors WHERE id = ?")
 MODULE_ACTOR_ID = Statement("SELECT id FROM actors WHERE type = ? AND name = ?")
 SESSION_AGENT_ID = Statement("SELECT id FROM agents WHERE session = ? UNION ALL SELECT session_agent_id AS id FROM agent_sessions WHERE session = ?")
 MODULE_ACTOR_IDS = Statement("SELECT id, name FROM actors WHERE type = 'module'", full_table_reason="One row for each installed module, never for stored journal rows.")
@@ -29,7 +30,8 @@ class ActorTable(RoundState):
     """The actors the core itself makes: its own, on the first sync, and one for each module. Ids keep two
     ranges: an agent's actor takes the next id below FIRST_OTHER_ACTOR_ID, which is its agent id, and every
     other actor one from FIRST_OTHER_ACTOR_ID up; the modules' actors are made first, so an actor made with no
-    id after them lands in the upper range. A new agent id also passes the launcher keys of running programs, so
+    id after them lands in the upper range. The main agent is 1 while 1 is free, and every other agent starts
+    from 2. A new agent id also passes the launcher keys of running programs, so
     a line typed to a new agent never reaches an older program that kept its key through a renumber."""
 
     def __init__(self, database: Database) -> None:
@@ -58,7 +60,10 @@ class ActorTable(RoundState):
         return int(self.database.rows(Statement(NEXT_OTHER_ACTOR_ID.sql, [FIRST_OTHER_ACTOR_ID]))[0]["id"])
 
     def next_agent_actor_id(self) -> int:
-        return int(self.database.rows(Statement(NEXT_AGENT_ACTOR_ID.sql, [FIRST_OTHER_ACTOR_ID - 1]))[0]["id"])
+        return int(self.database.rows(Statement(NEXT_AGENT_ACTOR_ID.sql, [FIRST_OTHER_ACTOR_ID - 1, MAIN_AGENT_ID]))[0]["id"])
+
+    def main_agent_actor_id(self) -> int:
+        return self.next_agent_actor_id() if self.database.rows(Statement(MAIN_AGENT_ACTOR.sql, [MAIN_AGENT_ID])) else MAIN_AGENT_ID
 
     def module_actor_id(self, module: str) -> int:
         return self.kept.read_signed(MODULE_ACTORS_SIGNATURE, self.module_actor_ids, name="base.module_actors")[module]

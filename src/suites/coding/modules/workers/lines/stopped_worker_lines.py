@@ -64,7 +64,7 @@ class StoppedWorkerLines(EventLineSource):
         if self.stop.was_stopped(worker) or self.unfinished.has_running_process(worker.id) or self.handoff.is_pending(worker):
             return None
         declaration = self.declaration(worker, worker_round)
-        return replace(declaration.agent_message(worker=worker.number, tasks=self.unfinished.names(tasks)), key=f"{declaration.key}.{worker.id}")
+        return replace(declaration.agent_message(worker=worker.id, tasks=self.unfinished.names(tasks)), key=f"{declaration.key}.{worker.id}")
 
     def declaration(self, worker: Agent, worker_round: WorkerRound) -> MessageTemplate:
         if worker_round.is_asking:

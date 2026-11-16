@@ -11,7 +11,6 @@ from core.modules.agents.policies.program_settings_policy import ProgramSettings
 from core.modules.agents.windows.agents_windows import AGENTS_WINDOWS
 from core.modules.agents.guards.agent_chat_guard import AgentChatGuard
 from core.modules.agents.guards.agent_name_guard import AgentNameGuard
-from core.modules.agents.guards.number_guard import NumberGuard
 from core.modules.agents.guards.retired_delete_guard import RetiredDeleteGuard
 from core.modules.agents.guards.retired_row_guard import RetiredRowGuard
 from core.modules.agents.agent_messages.program_settings_ban_message import ProgramSettingsBanMessage
@@ -42,7 +41,7 @@ class AgentsModule(Module):
     moves = [AgentsMove]
     migrations = AGENTS_MIGRATIONS
     agent_messages = [AgentStartFailedMessage, *REPORT_AGENT_MESSAGES, ProgramSettingsBanMessage, AgentRenumberedMessage]
-    guards = [AgentNameGuard, NumberGuard, RetiredRowGuard, RetiredDeleteGuard, AgentChatGuard]
+    guards = [AgentNameGuard, RetiredRowGuard, RetiredDeleteGuard, AgentChatGuard]
     tick_handlers = AGENTS_TICK_HANDLERS
     handlers = AGENTS_HANDLERS
     subcommands = AGENTS_SUBCOMMANDS

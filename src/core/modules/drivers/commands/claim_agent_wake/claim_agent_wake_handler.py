@@ -92,4 +92,4 @@ class ClaimAgentWakeHandler(Handler[ClaimAgentWake, AgentWake | None]):
     def ended(self, wake: AgentWake, agent: Agent, context: Context) -> None:
         self.repository.update(wake, context, state=WakeState.EXPIRED, failure=f"no turn after {wake.attempts} wakes")
         if agent.parent_id is not None:
-            self.message_sender.send(agent.parent_id, IgnoredWakeMessage.declared(), WAKE_SOURCE, context, agent=agent.number, count=wake.attempts)
+            self.message_sender.send(agent.parent_id, IgnoredWakeMessage.declared(), WAKE_SOURCE, context, agent=agent.id, count=wake.attempts)

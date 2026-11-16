@@ -1,4 +1,4 @@
-from engine.cli.agent_number import AgentNumber
+from engine.cli.agent_id import AgentId
 from argparse import ArgumentParser, Namespace
 from datetime import timedelta
 
@@ -28,7 +28,7 @@ class ScheduledJobStateSubcommand(ReadSubcommand[RowList]):
         self.queries, self.clock = queries, clock
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--agent", type=AgentNumber, required=True)
+        parser.add_argument("--agent", type=AgentId, required=True)
 
     def read(self, arguments: Namespace, caller: Caller) -> RowList:
         if self.queries.query(Agent).find(arguments.agent).ended_at is not None:

@@ -1630,7 +1630,7 @@
         "folders(self) -> tuple[Path, ...]"
       ]
     },
-    "cli.agent_number.AgentNumber": {
+    "cli.agent_number.AgentId": {
       "bases": [
         "int"
       ],
@@ -1639,12 +1639,12 @@
       ],
       "methods": []
     },
-    "cli.agent_number_arguments.AgentNumberArguments": {
+    "cli.agent_number_arguments.AgentIdArguments": {
       "bases": [],
       "fields": [],
       "methods": [
         "replace_numbers(self, arguments: Namespace, environment_id: int | None) -> None",
-        "row_id(self, number: AgentNumber, environment_id: int | None) -> NumberedAgentId"
+        "row_id(self, number: AgentId, environment_id: int | None) -> NumberedAgentId"
       ]
     },
     "cli.alias_options.AliasOptions": {
@@ -1865,7 +1865,7 @@
         "lines(self, model_name: str, row_id: int, exceptions: tuple[str, ...], limit: int) -> list[str]"
       ]
     },
-    "cli.row_numbers.RowNumbers": {
+    "cli.row_numbers.AgentIds": {
       "bases": [],
       "fields": [],
       "methods": [

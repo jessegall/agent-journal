@@ -16,7 +16,7 @@ class TypeLimits:
 
     @staticmethod
     def kept_limit_suggestion(agents: Iterable[Agent]) -> str:
-        idle_agents = sorted((agent for agent in agents if agent.ended_at is not None), key=lambda agent: agent.number)
+        idle_agents = sorted((agent for agent in agents if agent.ended_at is not None), key=lambda agent: agent.id)
         if not idle_agents:
             return f"wait for a report, or {PERSON_RETIRES_TEXT}"
         return f"send the job to idle {AgentLabel.labelled(idle_agents[0]).text}, or {PERSON_RETIRES_TEXT}"

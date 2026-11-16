@@ -10,14 +10,12 @@ from suites.coding.modules.workers.models.worker_operation import WorkerOperatio
 from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName
 from suites.coding.modules.workers.queries.worker_operation_query import WorkerOperationQuery
 from core.modules.agents.support.agent_label import AgentLabel
-from engine.cli.row_numbers import RowNumbers
 
 
 class WorkerCommandRequest:
     """Queues public worker commands and preserves explicit waits for scripts."""
 
-    def __init__(self, operations: WorkerOperationQuery, flags: WriteFlags, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, operations: WorkerOperationQuery, flags: WriteFlags) -> None:
         self.operations, self.flags = operations, flags
 
     @staticmethod
@@ -37,5 +35,5 @@ class WorkerCommandRequest:
     def write_output(self, value: object, output: Output) -> bool:
         if not isinstance(value, WorkerOperation):
             return False
-        output.line(f"{AgentLabel.labelled_row(value.worker_id, self.numbers, "worker").text} command accepted: output {value.process_id}; stop or go on working, you hear when it ends")
+        output.line(f"{AgentLabel.labelled_row(value.worker_id, "worker").text} command accepted: output {value.process_id}; stop or go on working, you hear when it ends")
         return True

@@ -131,8 +131,8 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
     def idle_line(self, worker: Agent) -> AgentMessage:
         started = self.task_query.started_tasks(worker.id)
         if not started:
-            return InactiveWorkerMessage.declared().agent_message(worker=worker.number)
-        return InactiveWorkerTasksMessage.declared().agent_message(worker=worker.number, tasks=", ".join(f"task:{task.id}" for task in started))
+            return InactiveWorkerMessage.declared().agent_message(worker=worker.id)
+        return InactiveWorkerTasksMessage.declared().agent_message(worker=worker.id, tasks=", ".join(f"task:{task.id}" for task in started))
 
     @staticmethod
     def has_stale_idle_line(worker: Agent, idle_lines: dict[str | None, MergerLine]) -> bool:
