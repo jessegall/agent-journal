@@ -36,7 +36,7 @@ class SuiteList:
 
     # each helper type of the modules, a read-only helper's own with the journal lines the modules add for helpers
     def helper_type_entries(self, modules: Sequence[type[Module]]) -> tuple[HelperTypeEntry, ...]:
-        helper_lines = tuple(line for module in modules for line in module.helper_lines)
+        helper_lines = tuple(line for module in modules for declaration in module.helper_lines for line in declaration.lines)
         return tuple(HelperTypeEntry.declared(module.name, declaration).with_helper_lines(HELPER_KEY, helper_lines)
                      for module in modules for declaration in self.helper_types(module))
 

@@ -142,6 +142,7 @@ from suites.coding.modules.workers.effects.handed_task_effect import HandedTaskE
 from suites.coding.modules.workers.states.worker_unit_states import WorkerUnitStates
 from suites.coding.modules.workers.effects.worker_report_effect import WorkerReportEffect
 from suites.coding.modules.workers.lines.worker_blocked_task_lines import WorkerBlockedTaskLines
+from suites.coding.modules.workers.types.support.workers_helper_lines import WorkersHelperLines
 
 
 class WorkersModule(Module):
@@ -156,7 +157,7 @@ class WorkersModule(Module):
     policies = [WorkerGitPolicy, WorkerJudgeScopePolicy, DispatchNamesModelPolicy, ProvedDeliveryPolicy, ContextHardLimitPolicy, CheckoutWriteCodePolicy, DispatchAllowancePolicy, PhaseTestPolicy, ProtectedFolderPolicy, ReadonlyHelperAllowancePolicy, WorkerFilePolicy, WorkerOutsideLinkPolicy, WorkerReadPolicy, WorkerReusePolicy, WorkerTestLinePolicy, WorkerTestCountPolicy]
     profiles = WORKER_PROFILES
     helper_types = [Worker, Merger]
-    helper_lines = ["worker logs", "merger next"]
+    helper_lines = [WorkersHelperLines]
     templates = WORKER_TEMPLATES
     window_extensions = WORKERS_WINDOW_EXTENSIONS
     agent_messages = WORKERS_MODULE_AGENT_MESSAGES

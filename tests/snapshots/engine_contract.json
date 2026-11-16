@@ -5544,6 +5544,13 @@
         "retired(cls) -> 'HelperBehaviours'"
       ]
     },
+    "helper_type.helper_lines.HelperLines": {
+      "bases": [],
+      "fields": [
+        "lines: ClassVar[Sequence[str]]"
+      ],
+      "methods": []
+    },
     "helper_type.helper_type.HelperType": {
       "bases": [],
       "fields": [
@@ -6800,7 +6807,7 @@
         "inspectors: ClassVar[list[InspectorDeclaration | type[InspectorDeclaration]]]",
         "added_states: ClassVar[Sequence[StateAddition]]",
         "helper_types: ClassVar[list[type[HelperType]]]",
-        "helper_lines: ClassVar[list[str]]",
+        "helper_lines: ClassVar[list[type[HelperLines]]]",
         "agent_groups: ClassVar[list[AgentGroup | type[AgentGroup]]]",
         "profiles: ClassVar[list[AgentProfile]]",
         "providers: ClassVar[list[type[Provider]]]",
