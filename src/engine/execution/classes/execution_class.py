@@ -14,7 +14,7 @@ class ExecutionClass:
     with and how many of its class may run at once."""
 
     name: str
-    lane: ExecutionLength
+    pool: ExecutionLength
     slot_cost: int
     priority: ExecutionPriority
     class_limit: int = UNLIMITED

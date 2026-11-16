@@ -13,7 +13,7 @@ class ExecutionClassOptions:
 
     @staticmethod
     def add_arguments(parser: ArgumentParser) -> None:
-        parser.add_argument("--lane", default=None, help=f"one of {', '.join(lane.value for lane in ExecutionLength)}")
+        parser.add_argument("--lane", dest="pool", default=None, help=f"one of {', '.join(pool.value for pool in ExecutionLength)}")
         parser.add_argument("--cost", type=int, default=None, help="slot units it takes in its lane")
         parser.add_argument("--priority", default=None, help=f"one of {', '.join(priority.label for priority in ExecutionPriority)}")
         parser.add_argument("--limit", type=int, default=None, help="how many of the class run at once; 0 for no limit")
@@ -21,8 +21,8 @@ class ExecutionClassOptions:
     @staticmethod
     def changed(execution_class: ExecutionClass, arguments: Namespace) -> ExecutionClass:
         values: dict[str, object] = {}
-        if arguments.lane is not None:
-            values["lane"] = ExecutionClassOptions.lane(arguments.lane)
+        if arguments.pool is not None:
+            values["pool"] = ExecutionClassOptions.pool(arguments.pool)
         if arguments.priority is not None:
             values["priority"] = ExecutionClassOptions.priority(arguments.priority)
         if arguments.cost is not None:
@@ -32,9 +32,9 @@ class ExecutionClassOptions:
         return replace(execution_class, **values)
 
     @staticmethod
-    def lane(text: str) -> ExecutionLength:
-        if text not in {lane.value for lane in ExecutionLength}:
-            raise Refusal(f"{text} is no lane", f"name one of {', '.join(lane.value for lane in ExecutionLength)}")
+    def pool(text: str) -> ExecutionLength:
+        if text not in {pool.value for pool in ExecutionLength}:
+            raise Refusal(f"{text} is no lane", f"name one of {', '.join(pool.value for pool in ExecutionLength)}")
         return ExecutionLength(text)
 
     @staticmethod

@@ -16,7 +16,7 @@ from tests.unit.engine.execution.tickets import seconds_after_start
 MAIN_AGENT = ExecutionStarter(StarterType.MAIN_AGENT, agent_id=1)
 ROOMY_LONG_POOL = 32
 ROOMY = ExecutionOrder(replace(DEFAULT_POOL_LIMITS.with_capacities({**DEFAULT_POOL_LIMITS.capacities, ExecutionLength.LONG: ROOMY_LONG_POOL}),
-                               starter_caps={lane: ROOMY_LONG_POOL for lane in ExecutionLength}))
+                               starter_caps={pool: ROOMY_LONG_POOL for pool in ExecutionLength}))
 GRAPHIFY = CLASSES.match(ExecutionSubject(ExecutionSource.GRAPHIFY, MAIN_AGENT, category=CommandCategory.BACKGROUND_JOB))
 BUILD = CLASSES.match(ExecutionSubject(ExecutionSource.SHELL_LINE, WORKER, category=CommandCategory.BUILD))
 
@@ -26,7 +26,7 @@ def update(entered_second: float, run_id: int) -> ExecutionTicket:
 
 
 def test_update_takes_cost_eight():
-    assert (GRAPHIFY.lane, GRAPHIFY.slot_cost, GRAPHIFY.class_limit, GRAPHIFY.priority) == (ExecutionLength.LONG, 8, 1, ExecutionPriority.BACKGROUND)
+    assert (GRAPHIFY.pool, GRAPHIFY.slot_cost, GRAPHIFY.class_limit, GRAPHIFY.priority) == (ExecutionLength.LONG, 8, 1, ExecutionPriority.BACKGROUND)
 
 
 def test_second_update_waits_on_the_class_limit():

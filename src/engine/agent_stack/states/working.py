@@ -13,7 +13,7 @@ from engine.enums.work_stop import WorkStop
 class Working(State):
     """Work in hand, as its module described it: what it is, the text that names it and whether any remains."""
 
-    lane: ClassVar[StackLevel] = StackLevel.WORK
+    level: ClassVar[StackLevel] = StackLevel.WORK
     rank: ClassVar[int] = 10
     work: WorkReference
     work_remains: bool

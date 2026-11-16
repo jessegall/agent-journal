@@ -37,8 +37,8 @@ class StackBuilder:
 
     @staticmethod
     def work_lane(view: AgentView) -> list[StackedState]:
-        states = {required_state.key: required_state for required_state in view.states if required_state.state.lane is StackLevel.WORK and required_state.key not in view.suppressions}
-        kept = [StackedState(states[stacked_state.state_key].state, stacked_state.state_key, stacked_state.entered_at) for stacked_state in view.stack.lane(StackLevel.WORK) if stacked_state.state_key in states]
+        states = {required_state.key: required_state for required_state in view.states if required_state.state.level is StackLevel.WORK and required_state.key not in view.suppressions}
+        kept = [StackedState(states[stacked_state.state_key].state, stacked_state.state_key, stacked_state.entered_at) for stacked_state in view.stack.level(StackLevel.WORK) if stacked_state.state_key in states]
         kept_keys = {stacked_state.state_key for stacked_state in kept}
         return [*kept, *(StackedState(required_state.state, key, view.stepped_at) for key, required_state in states.items() if key not in kept_keys)]
 
@@ -60,7 +60,7 @@ class StackBuilder:
     @staticmethod
     def safety(view: AgentView, old: dict[StateKey, StackedState]) -> list[StackedState]:
         stacked_states = [StackedState(required_state.state, required_state.key, old[required_state.key].entered_at if required_state.key in old else view.stepped_at)
-                  for required_state in view.states if required_state.state.lane is StackLevel.SAFETY and required_state.key not in view.suppressions][:1]
+                  for required_state in view.states if required_state.state.level is StackLevel.SAFETY and required_state.key not in view.suppressions][:1]
         stacked_states += [StackedState(Paused(fact.causes, fact.refusal_text), StateKey("Paused", None, "pause"), view.stepped_at) for fact in view.facts if isinstance(fact, PauseFact) and fact.causes][:1]
         stacked_states += [StackedState(Ended(fact.cause, fact.actor_id), StateKey("Ended", None, "end"), view.stepped_at) for fact in view.facts if isinstance(fact, EndedFact)][:1]
         return stacked_states

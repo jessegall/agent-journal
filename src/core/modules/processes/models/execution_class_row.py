@@ -14,7 +14,7 @@ class ExecutionClassRow(Model):
     cli_name = "execution-class"
 
     name: str
-    lane: ExecutionLength
+    pool: ExecutionLength
     slot_cost: int
     priority: ExecutionPriority
     class_limit: int = UNLIMITED
@@ -24,4 +24,4 @@ class ExecutionClassRow(Model):
 
     @property
     def execution_class(self) -> ExecutionClass:
-        return ExecutionClass(self.name, self.lane, self.slot_cost, self.priority, self.class_limit, self.line_pattern, self.plugin)
+        return ExecutionClass(self.name, self.pool, self.slot_cost, self.priority, self.class_limit, self.line_pattern, self.plugin)

@@ -31,7 +31,7 @@ def test_quick_git_run_is_admitted_in_the_short_lane(tmp_path):
     door = start_check(tmp_path)
     with door.admitted(PlacedRun(GIT_STATUS, None, False)):
         entries = door.queue.read()
-    assert [(entry.ticket.execution_class.lane, entry.ticket.execution_class.name) for entry in entries] == [(ExecutionLength.SHORT, "journal short git")]
+    assert [(entry.ticket.execution_class.pool, entry.ticket.execution_class.name) for entry in entries] == [(ExecutionLength.SHORT, "journal short git")]
 
 
 def test_run_gets_its_class_and_starter(tmp_path):
@@ -71,4 +71,4 @@ def test_a_plugin_script_run_by_a_listener_event_is_an_execution_with_a_class_an
     script = PlacedRun(ExecutionRequest(["/plugins/sample/listen.sh"], Path("/plugins/sample"), ProcessType.PLUGIN, 60), None, False)
     with CurrentExecution(event.priority, "event", event.line, event).applied(), door.admitted(script):
         ticket = door.queue.read()[0].ticket
-    assert (ticket.execution_class.name, ticket.execution_class.lane, ticket.parent) == ("journal short git", ExecutionLength.SHORT, event)
+    assert (ticket.execution_class.name, ticket.execution_class.pool, ticket.parent) == ("journal short git", ExecutionLength.SHORT, event)

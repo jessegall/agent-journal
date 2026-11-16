@@ -33,7 +33,7 @@ class WakeCheck:
         return WakeChange(move, self.work_number(stack), tuple(causes))
 
     def attention(self, view: AgentView, stack: Stack) -> list[str]:
-        work = Stack([stacked_state for stacked_state in stack.stacked_states if stacked_state.state.lane is not StackLevel.SAFETY])
+        work = Stack([stacked_state for stacked_state in stack.stacked_states if stacked_state.state.level is not StackLevel.SAFETY])
         causes = [STOP_CAUSE] if work.stop_answer(view.work_stop, view.escalation).answer_type is StopAnswerType.REFUSED else []
         if self.has_open_job(view, stack):
             causes.append(JOB_CAUSE)

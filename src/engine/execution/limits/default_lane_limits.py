@@ -43,6 +43,6 @@ DEFAULT_PRIORITY_LIMITS = {
 DEFAULT_POOL_LIMITS = PoolLimits(
     capacities=DEFAULT_CAPACITIES,
     priority_limits=DEFAULT_PRIORITY_LIMITS,
-    starter_caps={lane: capacity // 2 for lane, capacity in DEFAULT_CAPACITIES.items()},
+    starter_caps={pool: capacity // 2 for pool, capacity in DEFAULT_CAPACITIES.items()},
     immediate_ceiling=64,
 )

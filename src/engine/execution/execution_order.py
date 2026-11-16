@@ -45,12 +45,12 @@ class ExecutionOrder:
         return ticket
 
     def longest_wait(self, ticket: ExecutionTicket) -> float:
-        return self.limits.priority_limit(ticket.execution_class.lane, ticket.priority).longest_wait_seconds
+        return self.limits.priority_limit(ticket.execution_class.pool, ticket.priority).longest_wait_seconds
 
     def capacity_exceeded(self, running: Sequence[ExecutionTicket]) -> bool:
         if not running:
             return False
-        return OccupiedSlots.counted(running).slot_units > self.limits.capacity(running[0].execution_class.lane)
+        return OccupiedSlots.counted(running).slot_units > self.limits.capacity(running[0].execution_class.pool)
 
     # immediate tickets are never refused; past the ceiling the caller writes one line
     def exceeds_ceiling(self, running: Sequence[ExecutionTicket]) -> bool:
@@ -66,10 +66,10 @@ class ExecutionOrder:
             return True
         if is_halted or ticket.has_open_reader_request or self.is_class_full(ticket, running):
             return False
-        lane, cost = ticket.execution_class.lane, ticket.execution_class.slot_cost
+        pool, cost = ticket.execution_class.pool, ticket.execution_class.slot_cost
         # a run that costs more than its lane holds, such as a full test run in a lane a person narrowed, starts alone
-        has_room = self.fits(occupied_slots.slot_units, cost, self.limits.capacity(lane))
-        running_limit = self.limits.priority_limit(lane, ticket.first_priority).running_limit
+        has_room = self.fits(occupied_slots.slot_units, cost, self.limits.capacity(pool))
+        running_limit = self.limits.priority_limit(pool, ticket.first_priority).running_limit
         fits_priority_limit = self.fits(occupied_slots.first_priority_units(ticket.first_priority), cost, running_limit)
         return has_room and fits_priority_limit and self.fits_starter_cap(ticket, running)
 
@@ -81,7 +81,7 @@ class ExecutionOrder:
         kept: Counter[ExecutionStarter] = Counter()
         for second in running:
             kept[second.starter] += second.execution_class.slot_cost
-        return self.fits(kept[ticket.starter], ticket.execution_class.slot_cost, self.limits.starter_cap(ticket.execution_class.lane))
+        return self.fits(kept[ticket.starter], ticket.execution_class.slot_cost, self.limits.starter_cap(ticket.execution_class.pool))
 
     # a limit caps what a starter or a priority piles up: with nothing running one run may always start, even one
     # costing more than its share, and a run that costs nothing piles nothing up

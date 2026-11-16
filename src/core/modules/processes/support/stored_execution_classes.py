@@ -35,11 +35,11 @@ class StoredExecutionClasses(PersonClasses):
         return tuple(execution_class for execution_class in stored if not execution_class.plugin or self.plugins.is_installed(execution_class.plugin))
 
     def pool_limits(self) -> PoolLimits:
-        capacities = {lane: self.settings.integer(setting) for lane, setting in CAPACITY_SETTINGS.items()}
+        capacities = {pool: self.settings.integer(setting) for pool, setting in CAPACITY_SETTINGS.items()}
         share = self.settings.integer(ProcessSetting.STARTER_CAP_PERCENT)
-        return replace(DEFAULT_POOL_LIMITS.with_capacities(capacities), starter_caps={lane: max(1, capacity * share // PERCENT) for lane, capacity in capacities.items()})
+        return replace(DEFAULT_POOL_LIMITS.with_capacities(capacities), starter_caps={pool: max(1, capacity * share // PERCENT) for pool, capacity in capacities.items()})
 
     # a row is refused before it is kept when its cost could never fit its lane
     def validated(self, execution_class: ExecutionClass) -> ExecutionClass:
-        ExecutionClasses.validate(execution_class, self.pool_limits().capacity(execution_class.lane))
+        ExecutionClasses.validate(execution_class, self.pool_limits().capacity(execution_class.pool))
         return execution_class

@@ -58,12 +58,12 @@ def line(text: str, category: CommandCategory) -> ExecutionSubject:
 
 
 def test_person_row_overrides_a_built_in_class():
-    override = ExecutionClassRow(name="slow tests", lane=ExecutionLength.LONG, slot_cost=8, priority=ExecutionPriority.NORMAL, line_pattern="pytest", is_override=True)
+    override = ExecutionClassRow(name="slow tests", pool=ExecutionLength.LONG, slot_cost=8, priority=ExecutionPriority.NORMAL, line_pattern="pytest", is_override=True)
     assert ExecutionClasses(stored(override)).match(line("pytest tests", CommandCategory.TEST_RUN)).name == "slow tests"
 
 
 def test_person_pattern_row_matches_a_line():
-    personal = ExecutionClassRow(name="docs build", lane=ExecutionLength.LONG, slot_cost=2, priority=ExecutionPriority.BACKGROUND, line_pattern=r"^make docs")
+    personal = ExecutionClassRow(name="docs build", pool=ExecutionLength.LONG, slot_cost=2, priority=ExecutionPriority.BACKGROUND, line_pattern=r"^make docs")
     assert ExecutionClasses(stored(personal)).match(line("make docs", CommandCategory.BUILD)).priority is ExecutionPriority.BACKGROUND
 
 

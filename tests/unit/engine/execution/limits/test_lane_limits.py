@@ -13,19 +13,19 @@ LIMITED_PRIORITIES = [ExecutionPriority.BACKGROUND, ExecutionPriority.NORMAL, Ex
 
 
 def test_defaults_match_the_document_table():
-    assert [DEFAULT_POOL_LIMITS.capacity(lane) for lane in ExecutionLength] == [24, 12, 8]
-    for lane, row in DOCUMENT_TABLE.items():
-        assert [DEFAULT_POOL_LIMITS.priority_limit(lane, priority) for priority in LIMITED_PRIORITIES] == [PriorityLimit(*cell) for cell in row]
+    assert [DEFAULT_POOL_LIMITS.capacity(pool) for pool in ExecutionLength] == [24, 12, 8]
+    for pool, row in DOCUMENT_TABLE.items():
+        assert [DEFAULT_POOL_LIMITS.priority_limit(pool, priority) for priority in LIMITED_PRIORITIES] == [PriorityLimit(*cell) for cell in row]
     assert DEFAULT_POOL_LIMITS.immediate_ceiling == 64
 
 
 def test_per_starter_cap_is_half_a_lane():
-    assert [DEFAULT_POOL_LIMITS.starter_cap(lane) for lane in ExecutionLength] == [12, 6, 4]
+    assert [DEFAULT_POOL_LIMITS.starter_cap(pool) for pool in ExecutionLength] == [12, 6, 4]
 
 
 def test_unlimited_priority_has_no_limit():
-    for lane in ExecutionLength:
-        assert DEFAULT_POOL_LIMITS.priority_limit(lane, ExecutionPriority.IMMEDIATE) == PriorityLimit(UNLIMITED, 0)
+    for pool in ExecutionLength:
+        assert DEFAULT_POOL_LIMITS.priority_limit(pool, ExecutionPriority.IMMEDIATE) == PriorityLimit(UNLIMITED, 0)
 
 
 def test_a_lane_given_twice_its_capacity_gives_each_priority_twice_its_running_limit():

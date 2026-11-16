@@ -26,21 +26,21 @@ class ExecutionStatus:
         return self.snapshot().lines()
 
     def snapshot(self) -> ExecutionSnapshot:
-        return ExecutionSnapshot(tuple(self.lanes()), tuple(self.waits.last_hour(self.clock.timestamp())))
+        return ExecutionSnapshot(tuple(self.pools()), tuple(self.waits.last_hour(self.clock.timestamp())))
 
     # the instant lane as the server holds it, then the short and long lanes from the process rows
-    def lanes(self) -> list[PoolLoad]:
+    def pools(self) -> list[PoolLoad]:
         limits, running = self.classes.pool_limits(), self.slots.running()
-        lanes = self.tickets.row_pools(running)
+        pools = self.tickets.row_pools(running)
         kinds = {process.id: process.plugin or process.category.value for process in running}
         loads = [self.instant_pool()]
-        for lane in (ExecutionLength.SHORT, ExecutionLength.LONG):
-            pool_tickets = lanes[lane]
-            is_halted = self.halt.is_halted and lane is ExecutionLength.LONG
-            loads.append(PoolLoad(lane.value, sum(ticket.execution_class.slot_cost for ticket in pool_tickets.running), limits.capacity(lane),
+        for pool in (ExecutionLength.SHORT, ExecutionLength.LONG):
+            pool_tickets = pools[pool]
+            is_halted = self.halt.is_halted and pool is ExecutionLength.LONG
+            loads.append(PoolLoad(pool.value, sum(ticket.execution_class.slot_cost for ticket in pool_tickets.running), limits.capacity(pool),
                                   ExecutionOrder(limits).capacity_exceeded(pool_tickets.running),
                                   tuple(self.entry(ticket, kinds[ticket.run_id]) for ticket in pool_tickets.running),
-                                  tuple(self.entry(ticket, kinds[ticket.run_id], self.reason(ticket, lane)) for ticket in pool_tickets.waiting),
+                                  tuple(self.entry(ticket, kinds[ticket.run_id], self.reason(ticket, pool)) for ticket in pool_tickets.waiting),
                                   self.halt.halt_type if is_halted else "", self.halt.reason if is_halted else ""))
         return loads
 
@@ -57,9 +57,9 @@ class ExecutionStatus:
         return PoolEntry(ticket.line, ticket.execution_class.name, ticket.priority.label, ticket.starter.label, ticket.entered_at.elapsed_seconds(self.clock.timestamp()),
                          ticket.execution_class.slot_cost, kind, ticket.run_id, reason, raised)
 
-    def reason(self, ticket: ExecutionTicket, lane: ExecutionLength) -> str:
+    def reason(self, ticket: ExecutionTicket, pool: ExecutionLength) -> str:
         if ticket.has_open_reader_request:
             return "waits for a reader"
-        if self.halt.is_halted and lane is ExecutionLength.LONG:
+        if self.halt.is_halted and pool is ExecutionLength.LONG:
             return "the long lane is paused"
         return "waits for room"

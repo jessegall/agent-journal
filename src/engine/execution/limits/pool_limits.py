@@ -17,19 +17,19 @@ class PoolLimits:
     starter_caps: Mapping[ExecutionLength, int]
     immediate_ceiling: int
 
-    def capacity(self, lane: ExecutionLength) -> int:
-        return self.capacities[lane]
+    def capacity(self, pool: ExecutionLength) -> int:
+        return self.capacities[pool]
 
-    def priority_limit(self, lane: ExecutionLength, priority: ExecutionPriority) -> PriorityLimit:
-        return self.priority_limits[lane][priority]
+    def priority_limit(self, pool: ExecutionLength, priority: ExecutionPriority) -> PriorityLimit:
+        return self.priority_limits[pool][priority]
 
-    def starter_cap(self, lane: ExecutionLength) -> int:
-        return self.starter_caps[lane]
+    def starter_cap(self, pool: ExecutionLength) -> int:
+        return self.starter_caps[pool]
 
     # a priority's running limit is its share of its lane, so a lane given another capacity keeps each share
     def with_capacities(self, capacities: Mapping[ExecutionLength, int]) -> "PoolLimits":
-        limits = {lane: {priority: self.scaled(limit, self.capacities[lane], capacities[lane]) for priority, limit in priorities.items()}
-                  for lane, priorities in self.priority_limits.items()}
+        limits = {pool: {priority: self.scaled(limit, self.capacities[pool], capacities[pool]) for priority, limit in priorities.items()}
+                  for pool, priorities in self.priority_limits.items()}
         return replace(self, capacities=dict(capacities), priority_limits=limits)
 
     @staticmethod

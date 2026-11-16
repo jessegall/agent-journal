@@ -11,7 +11,7 @@ class State:
     """One of the seven states an agent's stack is built from, used as an instance with its data; a module
     never defines one."""
 
-    lane: ClassVar[StackLevel]
+    level: ClassVar[StackLevel]
     rank: ClassVar[int]
 
     def stop_answer(self, contract: WorkStop) -> StopAnswer:

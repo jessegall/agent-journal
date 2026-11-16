@@ -18,11 +18,11 @@ class SaveExecutionClassHandler(Handler[SaveExecutionClass, str]):
     def handle(self, command: SaveExecutionClass, context: Context) -> str:
         selected = self.store.validated(command.execution_class)
         stored = self.queries.query(ExecutionClassRow).filter(name=selected.name).first()
-        row = ExecutionClassRow(name=selected.name, lane=selected.lane, slot_cost=selected.slot_cost, priority=selected.priority, class_limit=selected.class_limit,
+        row = ExecutionClassRow(name=selected.name, pool=selected.pool, slot_cost=selected.slot_cost, priority=selected.priority, class_limit=selected.class_limit,
                                 line_pattern=selected.line_pattern, plugin=selected.plugin, is_override=command.is_override)
         if stored is None:
             self.repository.save(row, context)
         else:
-            self.repository.update(stored, context, lane=row.lane, slot_cost=row.slot_cost, priority=row.priority, class_limit=row.class_limit,
+            self.repository.update(stored, context, pool=row.pool, slot_cost=row.slot_cost, priority=row.priority, class_limit=row.class_limit,
                                    line_pattern=row.line_pattern, plugin=row.plugin, is_override=row.is_override)
-        return f"class {selected.name}: {selected.lane} lane, cost {selected.slot_cost}, {selected.priority.name.lower()}"
+        return f"class {selected.name}: {selected.pool} lane, cost {selected.slot_cost}, {selected.priority.name.lower()}"

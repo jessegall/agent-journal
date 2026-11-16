@@ -13,7 +13,7 @@ def category_rule(name: str, limit: int | None) -> PluginRunRule:
 def test_declared_kind_becomes_a_class_with_the_manifest_limit():
     classes = PluginRunStartCheck({("sample", "judge", 1): category_rule("judge", 1)}, 0, {}).category_class_map()
     judge = classes[("sample", "judge")]
-    assert (judge.lane, judge.slot_cost, judge.priority, judge.class_limit, judge.plugin) == (ExecutionLength.LONG, 4, ExecutionPriority.NORMAL, 1, "sample")
+    assert (judge.pool, judge.slot_cost, judge.priority, judge.class_limit, judge.plugin) == (ExecutionLength.LONG, 4, ExecutionPriority.NORMAL, 1, "sample")
 
 
 def test_a_plugin_named_like_a_journal_kind_keeps_its_own_class():

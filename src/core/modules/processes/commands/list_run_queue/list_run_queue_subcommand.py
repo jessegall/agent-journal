@@ -69,9 +69,9 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         active = tuple(query.matching(IsNull("ended_at")).every_row(QUEUE_REASON))
         running = [row.inspector_json() for row in active if row.section is QueueSection.RUNNING]
         waiting = [row.inspector_json() for row in active if row.section is QueueSection.WAITING]
-        recent = [{**row.inspector_json(), "lane": self.lane(row).value} for row in self.recent_rows(query, max(1, arguments.recent))]
+        recent = [{**row.inspector_json(), "lane": self.pool(row).value} for row in self.recent_rows(query, max(1, arguments.recent))]
         copy = self.status.snapshot()
-        long_pool = copy.lane(ExecutionLength.LONG.value)
+        long_pool = copy.pool(ExecutionLength.LONG.value)
         inspector: QueueInspectorJson = {
             "environment_id": environment_id,
             "environment_name": self.queries.query(Environment).find(environment_id).name,
@@ -81,21 +81,21 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
             "running": running, "waiting": waiting, "recent": recent, "recent_total": query.filter(section=QueueSection.RECENT).count()}
         queue_runs = tuple(self.queue_runs.query().every_row(QUEUE_REASON))
         number, size = max(1, arguments.page), min(MAX_PAGE_SIZE, max(1, arguments.limit))
-        return ProcessQueuePage(Page(queue_runs[(number - 1) * size:number * size], number, size, len(queue_runs)), inspector, *self.lanes(copy, arguments.class_name, arguments.starter))
+        return ProcessQueuePage(Page(queue_runs[(number - 1) * size:number * size], number, size, len(queue_runs)), inspector, *self.pools(copy, arguments.class_name, arguments.starter))
 
     # the lanes read once, as lines and as JSON; a filter keeps the lane headings and the lines of runs and waits whose
     # class or starter it names
-    def lanes(self, copy: ExecutionSnapshot, class_name: str, starter: str) -> tuple[tuple[str, ...], dict[str, object]]:
+    def pools(self, copy: ExecutionSnapshot, class_name: str, starter: str) -> tuple[tuple[str, ...], dict[str, object]]:
         wanted = [text for text in (f"({class_name}, " if class_name else "", f", {starter}" if starter else "") if text]
         return tuple(line for line in copy.lines() if not line.startswith("  ") or all(text in line for text in wanted)), copy.json()
 
     # the lane a run ran in: its stored class's, or for a class nobody declares any more, the lane its line matches now
-    def lane(self, row: ProcessQueueRow) -> ExecutionLength:
+    def pool(self, row: ProcessQueueRow) -> ExecutionLength:
         named = self.classes.named(row.execution_class)
         if named is not None:
-            return named.lane
+            return named.pool
         source = ExecutionSource.PLUGIN_PROGRAM if row.plugin else ExecutionSource.SHELL_LINE
-        return self.classes.match(ExecutionSubject(source, ExecutionStarter(StarterType.JOURNAL), category=row.category, plugin_name=row.plugin, line=row.line)).lane
+        return self.classes.match(ExecutionSubject(source, ExecutionStarter(StarterType.JOURNAL), category=row.category, plugin_name=row.plugin, line=row.line)).pool
 
     @staticmethod
     def agent_rows(query: Query[ProcessQueueRow], agent_id: int) -> Query[ProcessQueueRow]:
@@ -109,4 +109,4 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ProcessQueuePage):
             halted = [f"the queue is halted: {value.inspector['halt_reason']}"] if value.inspector["halted"] else []
-            output.write("\n".join([*halted, *value.lanes]), value.json())
+            output.write("\n".join([*halted, *value.pools]), value.json())

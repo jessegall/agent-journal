@@ -13,7 +13,7 @@ class Blocked(State):
     """The stacked state of one open hold; it refuses through the hold's scopes and is transparent for the work
     answer."""
 
-    lane: ClassVar[StackLevel] = StackLevel.HOLD
+    level: ClassVar[StackLevel] = StackLevel.HOLD
     rank: ClassVar[int] = 30
     block: OpenBlock
 

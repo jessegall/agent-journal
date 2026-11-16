@@ -70,7 +70,7 @@ def post_hook(server, sample) -> None:
 
 
 def instant_pool(server, cookie) -> dict[str, object]:
-    return next(lane for lane in server.viewer_line_value(cookie, QUEUE_LIST)["execution"]["lanes"] if lane["lane"] == "instant")
+    return next(pool for pool in server.viewer_line_value(cookie, QUEUE_LIST)["execution"]["lanes"] if pool["lane"] == "instant")
 
 
 def waiting_entries(server, count: int) -> bool:
@@ -223,8 +223,8 @@ def test_recording_drops_requests_instead_of_waiting_for_a_writer(recording_serv
 
 
 def test_the_executions_show_an_empty_instant_lane(recording_server):
-    lane = instant_pool(recording_server, login(recording_server))
-    assert lane["running"] == [] and lane["waiting"] == []
+    pool = instant_pool(recording_server, login(recording_server))
+    assert pool["running"] == [] and pool["waiting"] == []
 
 
 def test_the_executions_show_a_worker_hook_waiting_behind_a_held_lane(recording_server):
@@ -236,8 +236,8 @@ def test_the_executions_show_a_worker_hook_waiting_behind_a_held_lane(recording_
         with server.context.hook_database.used(AGENT_HOOK_PRIORITY, 1):
             first = pool.submit(post_hook, server, worker)
             assert waiting_entries(server, 1)
-            lane = instant_pool(server, cookie)
-            assert [entry["class"] for entry in lane["waiting"]] == ["agent hook"] and all(entry["reason"] for entry in lane["waiting"]), lane
+            pool = instant_pool(server, cookie)
+            assert [entry["class"] for entry in pool["waiting"]] == ["agent hook"] and all(entry["reason"] for entry in pool["waiting"]), pool
         first.result()
 
 
@@ -248,8 +248,8 @@ def test_the_executions_show_a_waiting_viewer_request_while_a_hook_holds_the_lan
         with server.context.hook_database.used(AGENT_HOOK_PRIORITY, 1):
             answer = pool.submit(server.viewer_line_value, cookie, TASK_LIST)
             assert waiting_entries(server, 1)
-            lane = instant_pool(server, cookie)
-            assert [entry["class"] for entry in lane["running"]] == ["agent hook"] and any(entry["line"] == "task list" for entry in lane["waiting"]), lane
+            pool = instant_pool(server, cookie)
+            assert [entry["class"] for entry in pool["running"]] == ["agent hook"] and any(entry["line"] == "task list" for entry in pool["waiting"]), pool
         answer.result()
 
 

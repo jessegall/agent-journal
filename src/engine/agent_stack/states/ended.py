@@ -9,7 +9,7 @@ from engine.enums.stack_level import StackLevel
 class Ended(State):
     """The agent was retired or replaced; its stack answers nothing more and the route refuses its actions."""
 
-    lane: ClassVar[StackLevel] = StackLevel.SAFETY
+    level: ClassVar[StackLevel] = StackLevel.SAFETY
     rank: ClassVar[int] = 60
     cause: str
     actor_id: int

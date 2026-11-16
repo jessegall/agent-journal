@@ -27,18 +27,18 @@ class Stack:
     def subjects_without(self, state_keys: set[StateKey]) -> list[RowReference]:
         return [stacked_state.state_key.subject for stacked_state in self.stacked_states if stacked_state.state_key.subject is not None and stacked_state.state_key not in state_keys]
 
-    def lane(self, lane: StackLevel) -> list[StackedState]:
-        return [stacked_state for stacked_state in self.stacked_states if stacked_state.state.lane is lane]
+    def level(self, level: StackLevel) -> list[StackedState]:
+        return [stacked_state for stacked_state in self.stacked_states if stacked_state.state.level is level]
 
     def work_level_top(self) -> StackedState:
-        return [*self.lane(StackLevel.BOTTOM), *self.lane(StackLevel.WORK)][-1]
+        return [*self.level(StackLevel.BOTTOM), *self.level(StackLevel.WORK)][-1]
 
     def stop_answer(self, contract: WorkStop, escalation: Escalation | None) -> StopAnswer:
         if self.has(Paused):
             return StopAnswer.safety_rest()
         if self.has(Compacting):
             return StopAnswer.compaction_handoff()
-        refusals = [stacked_state.state.stop_refusal() for stacked_state in self.lane(StackLevel.HOLD) if stacked_state.state.refuses_stop(escalation)]
+        refusals = [stacked_state.state.stop_refusal() for stacked_state in self.level(StackLevel.HOLD) if stacked_state.state.refuses_stop(escalation)]
         if refusals:
             return StopAnswer.refusals(refusals)
         top = self.work_level_top()

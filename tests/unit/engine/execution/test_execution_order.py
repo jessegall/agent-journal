@@ -146,7 +146,7 @@ def test_a_run_that_costs_nothing_passes_a_full_starter_cap():
 def test_class_at_limit_does_not_block_a_build_behind():
     merge_class = ExecutionClass("merge", ExecutionLength.LONG, 1, AGENT, class_limit=1)
     merge = ExecutionTicket(merge_class, AGENT, AGENT, starter(1), "merge", seconds_after_start(0), seconds_after_start(0))
-    build = ticket(AGENT, lane=ExecutionLength.LONG, slot_cost=1, starter=starter(2), entered_second=1)
+    build = ticket(AGENT, pool=ExecutionLength.LONG, slot_cost=1, starter=starter(2), entered_second=1)
     assert started_tickets([merge, build], [replace(merge, starter=starter(3))]) == [build]
 
 
@@ -157,7 +157,7 @@ def test_waits_for_reader_is_passed_over_and_still_raised():
 
 
 def test_halted_lane_starts_none_and_counts_no_wait():
-    waiting = ticket(NORMAL, lane=ExecutionLength.LONG)
+    waiting = ticket(NORMAL, pool=ExecutionLength.LONG)
     assert ORDER.starting([waiting], [], seconds_after_start(3600), True) == ()
     assert raised_priority(waiting, 3600, is_halted=True) is NORMAL
 

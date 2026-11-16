@@ -84,8 +84,8 @@ def test_the_lanes_name_each_run_s_slots_kind_and_run_the_halt_of_the_long_lane_
     test = start_process(story, "python check_cart.py", category=CommandCategory.TEST_RUN)
     story.expect_success('queue halt "Machine maintenance"', actor=story.user)
     page = queue_page(story)
-    lanes = {lane["lane"]: lane for lane in page["execution"]["lanes"]}
-    long_pool, short_pool = lanes["long"], lanes["short"]
+    pools = {pool["lane"]: pool for pool in page["execution"]["lanes"]}
+    long_pool, short_pool = pools["long"], pools["short"]
     story.expect_rows([(entry["run_id"], entry["slot_cost"], entry["kind"]) for entry in long_pool["running"]] == [(build.id, 4, "build")],
                       [(entry["run_id"], entry["slot_cost"], entry["kind"], entry["reason"]) for entry in long_pool["waiting"]] == [(test.id, 4, "test run", "the long lane is paused")],
                       (long_pool["halted"], long_pool["halt_type"], long_pool["halt_reason"]) == (True, "command", "Machine maintenance"),
@@ -103,9 +103,9 @@ def test_a_test_line_that_reaches_the_whole_suite_waits_as_a_full_run_and_runs_a
     story.agent = Actor(story.new_row_id("agent start suite-worker claude worker --environment main"), ActorType.AGENT)
     build = start_process(story, "make package", category=CommandCategory.BUILD)
     full = start_process(story, FULL_SUITE_LINE, category=CommandCategory.TEST_RUN)
-    waiting = {entry["run_id"]: entry for entry in {lane["lane"]: lane for lane in queue_page(story)["execution"]["lanes"]}["long"]["waiting"]}
+    waiting = {entry["run_id"]: entry for entry in {pool["lane"]: pool for pool in queue_page(story)["execution"]["lanes"]}["long"]["waiting"]}
     story.expect_rows(waiting[full.id]["class"] == "full test run", waiting[full.id]["slot_cost"] == 8, waiting[full.id]["reason"] == "waits for room", detail=str(waiting))
     end_run(story, build, "built\n")
     later = start_process(story, "pytest tests/unit/cart.py", category=CommandCategory.TEST_RUN)
-    long_pool = {lane["lane"]: lane for lane in queue_page(story)["execution"]["lanes"]}["long"]
+    long_pool = {pool["lane"]: pool for pool in queue_page(story)["execution"]["lanes"]}["long"]
     story.expect_rows([entry["run_id"] for entry in long_pool["running"]] == [full.id], [entry["run_id"] for entry in long_pool["waiting"]] == [later.id], detail=str(long_pool))

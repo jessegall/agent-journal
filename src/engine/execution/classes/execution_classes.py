@@ -33,7 +33,7 @@ class ExecutionClasses:
     # a line of several parts waits in the longest lane of its parts and takes the highest cost of them, not their sum
     def line_class(self, parts: Sequence[ExecutionSubject]) -> ExecutionClass:
         classes = [self.match(part) for part in parts]
-        longest = max(classes, key=lambda execution_class: POOL_LENGTHS[execution_class.lane])
+        longest = max(classes, key=lambda execution_class: POOL_LENGTHS[execution_class.pool])
         return replace(longest, slot_cost=max(execution_class.slot_cost for execution_class in classes))
 
     @staticmethod

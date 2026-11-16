@@ -29,28 +29,28 @@ class ExecutionTickets:
     def __init__(self, classes: ExecutionClasses, category_limits: ProcessTypeLimits, start_check: RunStartCheck, rows: EventRows, clock: Clock) -> None:
         self.classes, self.kind_limits, self.start_check, self.rows, self.clock = classes, category_limits, start_check, rows, clock
 
-    def row_tickets(self, processes: Sequence[Process], lane: ExecutionLength) -> PoolTickets:
-        return self.row_pools(processes)[lane]
+    def row_tickets(self, processes: Sequence[Process], pool: ExecutionLength) -> PoolTickets:
+        return self.row_pools(processes)[pool]
 
     def row_pools(self, processes: Sequence[Process]) -> dict[ExecutionLength, PoolTickets]:
-        return self.lanes(processes, self.kind_limits.admissions([process for process in processes if process.queued_at is not None]))
+        return self.pools(processes, self.kind_limits.admissions([process for process in processes if process.queued_at is not None]))
 
     # every row is read once for all lanes: its agent, its kind's class and its parts
-    def lanes(self, processes: Sequence[Process], categories: ProcessTypeAdmission) -> dict[ExecutionLength, PoolTickets]:
+    def pools(self, processes: Sequence[Process], categories: ProcessTypeAdmission) -> dict[ExecutionLength, PoolTickets]:
         agents = self.rows.required_index(Agent, [process.session_agent_id for process in processes])
         category_classes = categories.category_class_map()
         parts = self.start_check.waiting_parts([process for process in processes if process.queued_at is not None])
         tickets = [(process, self.ticket(process, agents[process.session_agent_id], category_classes, parts)) for process in processes]
-        return {lane: PoolTickets(tuple(ticket for process, ticket in tickets if ticket.execution_class.lane is lane and process.queued_at is not None),
-                                  tuple(ticket for process, ticket in tickets if ticket.execution_class.lane is lane and process.queued_at is None))
-                for lane in ExecutionLength}
+        return {pool: PoolTickets(tuple(ticket for process, ticket in tickets if ticket.execution_class.pool is pool and process.queued_at is not None),
+                                  tuple(ticket for process, ticket in tickets if ticket.execution_class.pool is pool and process.queued_at is None))
+                for pool in ExecutionLength}
 
     def ticket(self, process: Process, agent: Agent, category_classes: dict[tuple[str, str], ExecutionClass], parts: dict) -> ExecutionTicket:
         starter = self.starter(process, agent)
         execution_class = self.execution_class(process, starter, category_classes)
         # a line moved to the background gives its short place back and counts in the long lane at its own cost
-        if process.state is ProcessState.BACKGROUND and execution_class.lane is not ExecutionLength.LONG:
-            execution_class = replace(execution_class, name=f"{execution_class.name} in the background", lane=ExecutionLength.LONG)
+        if process.state is ProcessState.BACKGROUND and execution_class.pool is not ExecutionLength.LONG:
+            execution_class = replace(execution_class, name=f"{execution_class.name} in the background", pool=ExecutionLength.LONG)
         entered_at = process.queued_at or process.started_at or process.creation_timestamp()
         waits_reader = process.queued_at is not None and self.start_check.awaits_reader(process, parts.get(process.id, ()), self.clock.timestamp())
         return ExecutionTicket(execution_class, process.first_priority, process.priority, starter, process.line, entered_at, process.raised_at or entered_at,

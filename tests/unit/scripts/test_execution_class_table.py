@@ -23,4 +23,4 @@ def test_every_built_in_class_is_printed():
 
 def test_capacities_printed():
     text = table_text()
-    assert all(f"| {lane} | {DEFAULT_POOL_LIMITS.capacity(lane)} |" in text for lane in ExecutionLength)
+    assert all(f"| {pool} | {DEFAULT_POOL_LIMITS.capacity(pool)} |" in text for pool in ExecutionLength)

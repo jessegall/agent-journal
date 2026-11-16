@@ -57,28 +57,28 @@ def process(number: int, agent: int, category: CommandCategory, waiting: bool, e
 
 
 def test_waiting_rows_become_waiting_tickets():
-    lane = tickets().row_tickets([process(1, 2, CommandCategory.TEST_RUN, waiting=True)], ExecutionLength.LONG)
-    assert (len(lane.waiting), len(lane.running)) == (1, 0)
+    pool = tickets().row_tickets([process(1, 2, CommandCategory.TEST_RUN, waiting=True)], ExecutionLength.LONG)
+    assert (len(pool.waiting), len(pool.running)) == (1, 0)
 
 
 def test_started_rows_are_running_tickets():
-    lane = tickets().row_tickets([process(1, 2, CommandCategory.TEST_RUN, waiting=False)], ExecutionLength.LONG)
-    assert (len(lane.waiting), len(lane.running)) == (0, 1)
+    pool = tickets().row_tickets([process(1, 2, CommandCategory.TEST_RUN, waiting=False)], ExecutionLength.LONG)
+    assert (len(pool.waiting), len(pool.running)) == (0, 1)
 
 
 def test_starter_comes_from_the_agent_role():
-    lane = tickets().row_tickets([process(1, 1, CommandCategory.TEST_RUN, waiting=True), process(2, 2, CommandCategory.TEST_RUN, waiting=True)], ExecutionLength.LONG)
-    assert [ticket.starter.starter_type for ticket in lane.waiting] == [StarterType.MAIN_AGENT, StarterType.HELPER]
+    pool = tickets().row_tickets([process(1, 1, CommandCategory.TEST_RUN, waiting=True), process(2, 2, CommandCategory.TEST_RUN, waiting=True)], ExecutionLength.LONG)
+    assert [ticket.starter.starter_type for ticket in pool.waiting] == [StarterType.MAIN_AGENT, StarterType.HELPER]
 
 
 def test_reader_request_sets_waits_for_reader():
-    lane = tickets(frozenset({1})).row_tickets([process(1, 2, CommandCategory.TEST_RUN, waiting=True)], ExecutionLength.LONG)
-    assert lane.waiting[0].has_open_reader_request
+    pool = tickets(frozenset({1})).row_tickets([process(1, 2, CommandCategory.TEST_RUN, waiting=True)], ExecutionLength.LONG)
+    assert pool.waiting[0].has_open_reader_request
 
 
 def test_row_without_a_class_is_matched():
-    lane = tickets().row_tickets([process(1, 2, CommandCategory.SEARCH, waiting=True)], ExecutionLength.SHORT)
-    assert lane.waiting[0].execution_class.name == "agent short line"
+    pool = tickets().row_tickets([process(1, 2, CommandCategory.SEARCH, waiting=True)], ExecutionLength.SHORT)
+    assert pool.waiting[0].execution_class.name == "agent short line"
 
 
 def moved(number: int, category: CommandCategory) -> Process:
@@ -91,4 +91,4 @@ def test_move_frees_the_short_slot():
 
 def test_moved_row_counts_in_the_long_lane():
     long_pool = tickets().row_tickets([moved(1, CommandCategory.SEARCH)], ExecutionLength.LONG)
-    assert [(ticket.execution_class.lane, ticket.execution_class.slot_cost) for ticket in long_pool.running] == [(ExecutionLength.LONG, 1)]
+    assert [(ticket.execution_class.pool, ticket.execution_class.slot_cost) for ticket in long_pool.running] == [(ExecutionLength.LONG, 1)]

@@ -51,7 +51,7 @@ def test_worker_short_line_is_agent():
 
 def test_main_agent_test_run_is_agent_cost_four():
     test_class = CLASSES.match(line(MAIN_AGENT, CommandCategory.TEST_RUN))
-    assert (test_class.lane, test_class.priority, test_class.slot_cost) == (ExecutionLength.LONG, ExecutionPriority.AGENT, 4)
+    assert (test_class.pool, test_class.priority, test_class.slot_cost) == (ExecutionLength.LONG, ExecutionPriority.AGENT, 4)
 
 
 def test_helper_test_run_is_agent():
@@ -64,7 +64,7 @@ def test_background_job_costs_zero():
 
 def test_mixed_line_takes_longest_lane_and_highest_cost():
     mixed = CLASSES.line_class([line(WORKER, CommandCategory.READ), line(WORKER, CommandCategory.PACKAGE), line(WORKER, CommandCategory.TEST_RUN)])
-    assert (mixed.lane, mixed.slot_cost) == (ExecutionLength.LONG, 4)
+    assert (mixed.pool, mixed.slot_cost) == (ExecutionLength.LONG, 4)
 
 
 def test_person_pattern_class_wins():
@@ -86,4 +86,4 @@ def test_cost_above_capacity_is_refused_with_the_text():
 
 @pytest.mark.parametrize("row", BUILTIN_CLASSES, ids=lambda row: row.execution_class.name)
 def test_every_lane_cost_fits_default_capacity(row):
-    ExecutionClasses.validate(row.execution_class, DEFAULT_CAPACITIES[row.execution_class.lane])
+    ExecutionClasses.validate(row.execution_class, DEFAULT_CAPACITIES[row.execution_class.pool])

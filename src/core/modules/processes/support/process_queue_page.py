@@ -13,9 +13,9 @@ class ProcessQueuePage:
 
     page: Page[ProcessQueueRow]
     inspector: QueueInspectorJson
-    lanes: tuple[str, ...] = ()
+    pools: tuple[str, ...] = ()
     execution: dict[str, object] | None = None
 
     def json(self) -> ProcessQueueJson:
         return {**self.inspector, "page": self.page.number, "size": self.page.size, "total": self.page.total,
-                "rows": [row.inspector_json() for row in self.page.rows], "lanes": list(self.lanes), "execution": self.execution or {"lanes": [], "waits": []}}
+                "rows": [row.inspector_json() for row in self.page.rows], "lanes": list(self.pools), "execution": self.execution or {"lanes": [], "waits": []}}

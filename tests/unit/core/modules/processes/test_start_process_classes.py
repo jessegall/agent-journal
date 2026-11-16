@@ -30,17 +30,17 @@ def start(line: str, *categories: CommandCategory, plugin: str = "", run_name: s
 
 def test_worker_grep_row_is_short_agent():
     selected = CHOICE.chosen(start("grep x", CommandCategory.SEARCH), WORKER)
-    assert (selected.lane, selected.priority) == (ExecutionLength.SHORT, ExecutionPriority.AGENT)
+    assert (selected.pool, selected.priority) == (ExecutionLength.SHORT, ExecutionPriority.AGENT)
 
 
 def test_worker_pytest_row_is_long_agent():
     selected = CHOICE.chosen(start("pytest tests/cart.py", CommandCategory.TEST_RUN), WORKER)
-    assert (selected.lane, selected.priority, selected.slot_cost) == (ExecutionLength.LONG, ExecutionPriority.AGENT, 4)
+    assert (selected.pool, selected.priority, selected.slot_cost) == (ExecutionLength.LONG, ExecutionPriority.AGENT, 4)
 
 
 def test_a_pytest_row_of_the_whole_suite_takes_the_whole_long_lane_one_at_a_time():
     selected = CHOICE.chosen(start("pytest -n 4 tests", CommandCategory.TEST_RUN), WORKER)
-    assert (selected.name, selected.lane, selected.slot_cost, selected.class_limit) == ("full test run", ExecutionLength.LONG, 8, 1)
+    assert (selected.name, selected.pool, selected.slot_cost, selected.class_limit) == ("full test run", ExecutionLength.LONG, 8, 1)
 
 
 def test_main_agent_read_row_is_immediate_and_not_queued():
@@ -53,7 +53,7 @@ def test_helper_pytest_waits_at_agent():
 
 def test_mixed_line_takes_longest_lane_and_highest_cost():
     selected = CHOICE.chosen(start("ls && npm install && pytest", CommandCategory.READ, CommandCategory.PACKAGE, CommandCategory.TEST_RUN), WORKER)
-    assert (selected.lane, selected.slot_cost) == (ExecutionLength.LONG, 4)
+    assert (selected.pool, selected.slot_cost) == (ExecutionLength.LONG, 4)
 
 
 def test_plugin_row_keeps_the_plugin_class():

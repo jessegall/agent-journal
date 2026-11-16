@@ -52,14 +52,14 @@ class RunSlots:
         waiting = [process for process in running if process.queued_at is not None]
         processes = self.rows.required_index(Process, [process.id for process in waiting])
         categories = self.kind_limits.admissions(waiting)
-        lanes = self.tickets.lanes(running, categories)
-        for lane in (ExecutionLength.SHORT, ExecutionLength.LONG):
-            pool_tickets = lanes[lane]
-            is_halted = self.halt.is_halted and lane is ExecutionLength.LONG
+        pools = self.tickets.pools(running, categories)
+        for pool in (ExecutionLength.SHORT, ExecutionLength.LONG):
+            pool_tickets = pools[pool]
+            is_halted = self.halt.is_halted and pool is ExecutionLength.LONG
             for ticket in order.raised(pool_tickets.waiting, current_time, is_halted):
                 processes[ticket.run_id] = self.kept_raise(processes[ticket.run_id], ticket, context)
             if order.exceeds_ceiling(pool_tickets.running):
-                self.system_log.write(LogLevel.WARNING, f"{len(pool_tickets.running)} immediate runs share the {lane} lane, past its ceiling of {limits.immediate_ceiling}")
+                self.system_log.write(LogLevel.WARNING, f"{len(pool_tickets.running)} immediate runs share the {pool} lane, past its ceiling of {limits.immediate_ceiling}")
             # a run its kind holds back takes no room in the order, so the runs behind it still start
             admissible = tuple(ticket for ticket in pool_tickets.waiting if not categories.is_blocked(processes[ticket.run_id], self.admitted_runs()))
             for ticket in order.starting(admissible, pool_tickets.running, current_time, is_halted):
@@ -67,7 +67,7 @@ class RunSlots:
                 if categories.is_blocked(process, self.admitted_runs()):
                     continue
                 self.folder.write_slot(process.id)
-                admitted = replace(process, queued_at=None, slot_assigned=lane is ExecutionLength.LONG, started_at=context.timestamp)
+                admitted = replace(process, queued_at=None, slot_assigned=pool is ExecutionLength.LONG, started_at=context.timestamp)
                 saved = self.repository.save_change(process, admitted, context)
                 self.remember(saved)
                 categories.admitted(saved)

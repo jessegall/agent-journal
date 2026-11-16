@@ -11,7 +11,7 @@ class Stopped(State):
     """The bottom of every stack: the agent has no work in hand, since when, why, and whether it can be
     resumed."""
 
-    lane: ClassVar[StackLevel] = StackLevel.BOTTOM
+    level: ClassVar[StackLevel] = StackLevel.BOTTOM
     rank: ClassVar[int] = 0
     stopped_at: datetime
     cause: str
