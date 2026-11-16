@@ -20,16 +20,11 @@ class ExecutionClassOptions:
 
     @staticmethod
     def changed(execution_class: ExecutionClass, arguments: Namespace) -> ExecutionClass:
-        values: dict[str, object] = {}
-        if arguments.pool is not None:
-            values["pool"] = ExecutionClassOptions.pool(arguments.pool)
-        if arguments.priority is not None:
-            values["priority"] = ExecutionClassOptions.priority(arguments.priority)
-        if arguments.cost is not None:
-            values["slot_cost"] = arguments.cost
-        if arguments.limit is not None:
-            values["class_limit"] = arguments.limit or UNLIMITED
-        return replace(execution_class, **values)
+        return replace(execution_class,
+                       pool=execution_class.pool if arguments.pool is None else ExecutionClassOptions.pool(arguments.pool),
+                       priority=execution_class.priority if arguments.priority is None else ExecutionClassOptions.priority(arguments.priority),
+                       slot_cost=execution_class.slot_cost if arguments.cost is None else arguments.cost,
+                       class_limit=execution_class.class_limit if arguments.limit is None else arguments.limit or UNLIMITED)
 
     @staticmethod
     def pool(text: str) -> ExecutionLength:

@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from core.modules.asks.models.support.ask_level_values import AskLevelValues
+
 
 @dataclass(frozen=True)
 class AskLevel:
@@ -11,10 +13,9 @@ class AskLevel:
     pass_minutes: int | None = None
 
     @staticmethod
-    def parsed(level: dict[str, object]) -> "AskLevel":
-        return AskLevel(str(level["profile"]), AskLevel.minutes(level, "answer_minutes"), AskLevel.minutes(level, "pass_minutes"))
+    def parsed(level: AskLevelValues) -> "AskLevel":
+        return AskLevel(level["profile"], AskLevel.minutes(level.get("answer_minutes")), AskLevel.minutes(level.get("pass_minutes")))
 
     @staticmethod
-    def minutes(level: dict[str, object], field: str) -> int | None:
-        value = level.get(field)
-        return None if value is None else int(str(value))
+    def minutes(value: int | str | None) -> int | None:
+        return None if value is None else int(value)

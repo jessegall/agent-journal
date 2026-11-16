@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from engine.driver.hook_event import HookEvent
 
 SAFEGUARDS_WORD = "safeguards"
-ERROR_FIELDS = ("error", "error_details", "last_assistant_message")
 REQUEST_ID = re.compile(r"req_\w+")
 
 
@@ -17,7 +16,7 @@ class SafeguardsStop:
 
     @classmethod
     def read(cls, event: HookEvent) -> "SafeguardsStop | None":
-        details = " ".join(value.strip() for value in (event.raw.get(field) for field in ERROR_FIELDS) if isinstance(value, str) and value.strip())
+        details = event.failure_text
         if SAFEGUARDS_WORD not in details.lower():
             return None
         request = REQUEST_ID.search(details)

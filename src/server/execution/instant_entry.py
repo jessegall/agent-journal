@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from engine.execution.execution_ticket import ExecutionTicket
+from server.execution.instant_reading import InstantReading
 
 
 @dataclass(frozen=True)
@@ -14,11 +15,11 @@ class InstantEntry:
     owner: str
     waited_seconds: float
 
-    def reading(self) -> dict[str, object]:
+    def reading(self) -> InstantReading:
         parent = self.ticket.parent
-        return {"line": self.ticket.line, "class": self.ticket.execution_class.name, "priority": self.ticket.priority.label, "starter": self.ticket.starter.label,
+        return InstantReading(**{"line": self.ticket.line, "class": self.ticket.execution_class.name, "priority": self.ticket.priority.label, "starter": self.ticket.starter.label,
                 "slot_cost": self.ticket.execution_class.slot_cost,
-                "seconds": self.waited_seconds, "is_running": self.is_running, "parent_line": parent.line if parent is not None else ""}
+                "seconds": self.waited_seconds, "is_running": self.is_running, "parent_line": parent.line if parent is not None else ""})
 
     @property
     def described(self) -> str:

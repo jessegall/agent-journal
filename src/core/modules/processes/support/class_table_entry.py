@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from engine.execution.classes.execution_class import UNLIMITED, ExecutionClass
+from core.modules.processes.support.class_table_json import ClassTableJson
 
 ROW_LINE = "{name}: {lane} lane, cost {cost}, {priority}, {limit}{holds} ({origin})"
 
@@ -18,8 +19,8 @@ class ClassTableEntry:
         return ROW_LINE.format(name=execution_class.name, pool=execution_class.pool, cost=execution_class.slot_cost, priority=execution_class.priority.label,
                                limit=limit, covers=occupies, origin=self.origin)
 
-    def json(self) -> dict[str, object]:
+    def json(self) -> ClassTableJson:
         execution_class = self.execution_class
-        return {"name": execution_class.name, "lane": execution_class.pool.value, "cost": execution_class.slot_cost, "priority": execution_class.priority.label,
+        return ClassTableJson(**{"name": execution_class.name, "lane": execution_class.pool.value, "cost": execution_class.slot_cost, "priority": execution_class.priority.label,
                 "limit": 0 if execution_class.class_limit == UNLIMITED else execution_class.class_limit, "pattern": execution_class.line_pattern,
-                "plugin": execution_class.plugin, "origin": self.origin}
+                "plugin": execution_class.plugin, "origin": self.origin})

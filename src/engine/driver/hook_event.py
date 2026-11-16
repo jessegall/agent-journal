@@ -14,6 +14,7 @@ from engine.enums.tool_type import ToolType
 
 HOOK_EVENT_VERSION = 3
 RESUME_SOURCE = "resume"
+FAILURE_FIELDS = ("error", "error_details", "last_assistant_message")
 COMPACTION_SOURCE = "compact"
 MANUAL_TRIGGER = "manual"
 CLEAR_SOURCE = "clear"
@@ -111,6 +112,16 @@ class HookEvent:
     @property
     def has_background_work(self) -> bool:
         return self.event is HookEventName.STOP and any(isinstance(self.raw.get(key), list) and self.raw.get(key) for key in ("background_tasks", "session_crons"))
+
+    # the words of a failed turn: its error, the error's details and the last thing the model said
+    @property
+    def failure_text(self) -> str:
+        return " ".join(value.strip() for value in (self.raw.get(field) for field in FAILURE_FIELDS) if isinstance(value, str) and value.strip())
+
+    @property
+    def error_code(self) -> str | None:
+        error = self.raw.get("error")
+        return error if isinstance(error, str) else None
 
     @property
     def is_interrupt(self) -> bool:

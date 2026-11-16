@@ -1,6 +1,8 @@
-from collections.abc import Mapping
+from engine.enums.block_end import BlockEnd
+from engine.model.table import stored
+from core.modules.drivers.models.agent_block import AgentBlock
+from core.modules.plugins.support.block_hold import BlockHold
 
-BLOCK_MODEL = "agent_block"
 BLOCK_PROJECTION_VERSION = 2
 
 
@@ -10,9 +12,9 @@ class BlockProjection:
     escalation defers the stop it holds, so a plugin tells an open hold from one refusing the stop now."""
 
     @staticmethod
-    def projected(row: Mapping[str, object]) -> dict[str, object]:
-        is_open = row.get("closed_at") is None
-        return {"version": BLOCK_PROJECTION_VERSION, "scope_tools": row.get("scope_tools"), "scope_stop": row.get("scope_stop"), "ends": row.get("ends"),
-                "waived_by": row.get("closer") if row.get("closed_reason") == "waived" else "", "closed_reason": row.get("closed_reason"),
-                "judgement": row.get("judgement"), "escalation_id": row.get("escalation_id"),
-                "stop_deferred": bool(is_open and row.get("scope_stop") and row.get("escalation_id") is not None)}
+    def projected(block: AgentBlock) -> BlockHold:
+        is_open = block.closed_at is None
+        return BlockHold(version=BLOCK_PROJECTION_VERSION, scope_tools=stored(block.scope_tools), scope_stop=stored(block.scope_stop), ends=stored(block.ends),
+                         waived_by=block.closer if block.closed_reason == BlockEnd.SKIPPED.value else "", closed_reason=block.closed_reason,
+                         judgement=block.judgement, escalation_id=block.escalation_id,
+                         stop_deferred=bool(is_open and block.scope_stop and block.escalation_id is not None))
