@@ -63,7 +63,7 @@ class MergeAskScope:
     # the base branch changed none of the files the asked work changed, so its checkpoint tests ran on the code the
     # merge makes for those files; a base that moves on elsewhere never holds the ask up
     def check_base(self, worktree: Worktree, part: MergeAskPart) -> None:
-        shared = self.range.base_changes_on_own_files(worktree, part.commit_id)
+        shared = self.range.worktree_file_base_changes(worktree, part.commit_id)
         if not shared:
             return
         raise Refusal(f"{worktree.base_branch} changed {len(shared)} of the files your work changed, such as {shared[0]}", "run journal worker update, commit, let the checkpoint tests run on it, and ask again")

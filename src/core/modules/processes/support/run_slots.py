@@ -19,7 +19,7 @@ from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
-from core.modules.processes.support.run_admission import RunAdmission
+from core.modules.processes.support.run_start_check import RunStartCheck
 from core.modules.processes.support.process_type_limits import ProcessTypeLimits
 from core.modules.processes.support.execution_tickets import ExecutionTickets
 from core.modules.processes.support.stored_execution_classes import StoredExecutionClasses
@@ -36,33 +36,33 @@ class RunSlots:
     """Admits the waiting runs of the short and long lanes in the order the one decision gives, by room, priority,
     limits and waits; a plugin's kind of run also waits for its own count and memory."""
 
-    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, settings: ProcessSettings, halt: RunQueueHalt, admission: RunAdmission, clock: Clock, listings: RunCounts, rows: EventRows, kept: KeptRows, scopes: Scopes, outputs: OutputQuery, category_limits: ProcessTypeLimits,
+    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, settings: ProcessSettings, halt: RunQueueHalt, start_check: RunStartCheck, clock: Clock, listings: RunCounts, rows: EventRows, kept: KeptRows, scopes: Scopes, outputs: OutputQuery, category_limits: ProcessTypeLimits,
                  classes: StoredExecutionClasses, tickets: ExecutionTickets, system_log: SystemLogWriter) -> None:
         self.classes, self.tickets, self.system_log = classes, tickets, system_log
         self.queries, self.repository, self.folder, self.settings, self.halt = queries, repository, folder, settings, halt
-        self.admission, self.clock, self.listings = admission, clock, listings
+        self.start_check, self.clock, self.listings = start_check, clock, listings
         self.rows, self.kept, self.scopes, self.outputs = rows, kept, scopes, outputs
         self.kind_limits = category_limits
 
     # each lane's waiting runs start in the order of the one decision; a raise is kept on its row so a restart and the
     # page see it, and the halt holds only the long lane
     def grant(self, context: Context) -> None:
-        running, limits, current_time = self.running(), self.classes.lane_limits(), self.clock.timestamp()
+        running, limits, current_time = self.running(), self.classes.pool_limits(), self.clock.timestamp()
         order = ExecutionOrder(limits)
         waiting = [process for process in running if process.queued_at is not None]
         processes = self.rows.required_index(Process, [process.id for process in waiting])
         categories = self.kind_limits.admissions(waiting)
         lanes = self.tickets.lanes(running, categories)
         for lane in (ExecutionLength.SHORT, ExecutionLength.LONG):
-            lane_tickets = lanes[lane]
+            pool_tickets = lanes[lane]
             is_halted = self.halt.is_halted and lane is ExecutionLength.LONG
-            for ticket in order.raised(lane_tickets.waiting, current_time, is_halted):
+            for ticket in order.raised(pool_tickets.waiting, current_time, is_halted):
                 processes[ticket.run_id] = self.kept_raise(processes[ticket.run_id], ticket, context)
-            if order.over_ceiling(lane_tickets.running):
-                self.system_log.write(LogLevel.WARNING, f"{len(lane_tickets.running)} immediate runs share the {lane} lane, past its ceiling of {limits.immediate_ceiling}")
+            if order.exceeds_ceiling(pool_tickets.running):
+                self.system_log.write(LogLevel.WARNING, f"{len(pool_tickets.running)} immediate runs share the {lane} lane, past its ceiling of {limits.immediate_ceiling}")
             # a run its kind holds back takes no room in the order, so the runs behind it still start
-            admissible = tuple(ticket for ticket in lane_tickets.waiting if not categories.is_blocked(processes[ticket.run_id], self.admitted_runs()))
-            for ticket in order.starting(admissible, lane_tickets.running, current_time, is_halted):
+            admissible = tuple(ticket for ticket in pool_tickets.waiting if not categories.is_blocked(processes[ticket.run_id], self.admitted_runs()))
+            for ticket in order.starting(admissible, pool_tickets.running, current_time, is_halted):
                 process = processes[ticket.run_id]
                 if categories.is_blocked(process, self.admitted_runs()):
                     continue
@@ -81,7 +81,7 @@ class RunSlots:
         return saved
 
     # a run that waits in no lane, an immediate one or a merge the journal runs itself, has its slot written at once
-    def grant_at_once(self, process: Process) -> None:
+    def grant_directly(self, process: Process) -> None:
         self.folder.write_slot(process.id)
 
     def admitted_runs(self) -> tuple[Process, ...]:

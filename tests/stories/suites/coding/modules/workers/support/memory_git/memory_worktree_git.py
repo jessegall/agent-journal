@@ -47,10 +47,10 @@ class MemoryWorktreeGit(WorktreeGit):
     def is_ancestor(self, folder: str, ancestor: str, commit: str) -> bool:
         return True
 
-    def hold_branch(self, worktree: Worktree) -> None:
+    def keep_branch(self, worktree: Worktree) -> None:
         return None
 
-    def base_changes_on_own_files(self, folder: str, base_branch: str, commit: str) -> tuple[str, ...]:
+    def worktree_file_base_changes(self, folder: str, base_branch: str, commit: str) -> tuple[str, ...]:
         return ()
 
     def base_checkout(self, environment: Environment, name: str) -> str:

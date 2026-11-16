@@ -2,7 +2,7 @@ from tests.stories.core.support.agent_labels import agent_number
 import json
 import shlex
 
-from core.modules.helpers.support.agent_admission import AgentAdmission
+from core.modules.helpers.support.agent_start_check import AgentStartCheck
 from core.modules.helpers.support.agent_options import AgentOptions
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.helpers.start_helper import START
@@ -32,7 +32,7 @@ def set_options(story, *lines: str, scope: str = "--environment main") -> None:
 
 def new_reasons(story, agent_type: str, profile: str = "") -> list[str]:
     with scope_line(story):
-        return story.container.get(AgentAdmission).new_reasons(agent_type, profile)
+        return story.container.get(AgentStartCheck).new_reasons(agent_type, profile)
 
 
 def test_s11_inheritance_without_options_allows_every_type_and_profile(new_story):
@@ -58,8 +58,8 @@ def test_s52_inheritance_provider_and_model_restrictions_intersect_and_never_wid
     story.expect_success(f"setting set {ALLOWED_MODELS} {shlex.quote(json.dumps(['claude opus', 'codex gpt']))} --environment main", actor=story.user)
     set_options(story, "worker allowed_providers=claude", "worker allowed_models=claude:opus")
     with scope_line(story):
-        admission = story.container.get(AgentAdmission)
-        reasons = [admission.model_reasons("worker", f"{WORKER_PROFILE.name}", provider, model) for provider, model in [("claude", "opus"), ("claude", "haiku"), ("codex", "gpt")]]
+        start_check = story.container.get(AgentStartCheck)
+        reasons = [start_check.model_reasons("worker", f"{WORKER_PROFILE.name}", provider, model) for provider, model in [("claude", "opus"), ("claude", "haiku"), ("codex", "gpt")]]
     expect_value(reasons[0], [])
     expect_value(len(reasons[1]), 2)
     expect_value(len(reasons[2]), 2)
@@ -70,7 +70,7 @@ def test_s61_invalid_legacy_policy_is_readable_and_repairable_inheritance(new_st
     set_options(story, "worker allow_new=maybe")
     with scope_line(story):
         resolved = story.container.get(AgentOptions).resolved("worker", f"{WORKER_PROFILE.name}")
-        resume = story.container.get(AgentAdmission).resume_reasons("helper", f"{RESEARCHER_PROFILE.name}")
+        resume = story.container.get(AgentStartCheck).resume_reasons("helper", f"{RESEARCHER_PROFILE.name}")
     expect_value((len(resolved.problems), resolved.options.allow_new, len(resume)), (1, False, 2))
     story.expect_success(f"setting set {WORKER_RUN_LIMIT} 3 --environment main", actor=story.user)
     set_options(story, "worker allow_new=on")

@@ -19,8 +19,8 @@ class ReadonlyHelperStartGuard(Guard[Created[Agent]]):
 
     name = "workers.main-starts-no-helper"
 
-    def __init__(self, caller: MainCaller, options: CodingMainOptions, admission: CommandCheck) -> None:
-        self.caller, self.options, self.admission = caller, options, admission
+    def __init__(self, caller: MainCaller, options: CodingMainOptions, start_check: CommandCheck) -> None:
+        self.caller, self.options, self.start_check = caller, options, start_check
 
     def check(self, event: Created[Agent], context: Context) -> None:
         if event.row.role != Helper.key or not self.caller.is_main(context):
@@ -28,8 +28,8 @@ class ReadonlyHelperStartGuard(Guard[Created[Agent]]):
         options = self.options.options()
         if event.row.profile == DESIGNER_PROFILE and not options.designer:
             raise Refusal("the main agent starts no designer here", "a user turns on journal.suites.coding.designer-enabled")
-        if self.admission.answers(context):
-            self.admission.admit(StartHelper, context)
+        if self.start_check.answers(context):
+            self.start_check.admit(StartHelper, context)
             return
         if event.row.profile != DESIGNER_PROFILE and not options.helpers:
             raise Refusal("the main agent starts no read-only helper here", "a user turns on journal.suites.coding.main-starts-read-only-helpers")

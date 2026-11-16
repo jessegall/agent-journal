@@ -34,7 +34,7 @@ class DecisionRecord:
     rewrite: Rewrite
     lines: Sequence[Line]
     unconditional_effects: Sequence[Effect]
-    admission_effects: Sequence[Effect]
+    allowed_effects: Sequence[Effect]
     after_commit: Sequence[Intent]
     terminal: str
     moves: Sequence[StackMove]
@@ -52,5 +52,5 @@ class DecisionRecord:
 
     def effects(self) -> list[Effect]:
         if self.decision.admits():
-            return [*self.unconditional_effects, *self.admission_effects]
+            return [*self.unconditional_effects, *self.allowed_effects]
         return list(self.unconditional_effects)

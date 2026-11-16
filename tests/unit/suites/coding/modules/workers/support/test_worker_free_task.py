@@ -23,8 +23,8 @@ class Rows:
 
     # the one condition the free task asks: leave out the ids of the commit
     def matching(self, among):
-        left_out = set(among.values)
-        return Rows().found([task for task in self.held if task.id not in left_out])
+        excluded = set(among.values)
+        return Rows().found([task for task in self.held if task.id not in excluded])
 
 
 class Tasks:
@@ -59,12 +59,12 @@ class Bus:
         self.commands.append(command)
 
 
-def given(tasks: Tasks, handed_in_ids: tuple[int, ...] = ()) -> list[int]:
+def given(tasks: Tasks, delivered_ids: tuple[int, ...] = ()) -> list[int]:
     bus = Bus()
     rows = SimpleNamespace(required=lambda model, row_id: SimpleNamespace(id=row_id, ended_at=None))
     places = SimpleNamespace(running=lambda: [], run_limit=lambda: 2)
     plans = SimpleNamespace(plan_exclusion=lambda: None)
-    WorkerFreeTask(tasks, plans, bus, rows, places).give_next(WORKER, handed_in_ids, Asker())
+    WorkerFreeTask(tasks, plans, bus, rows, places).give_next(WORKER, delivered_ids, Asker())
     return [command.task_id for command in bus.commands]
 
 

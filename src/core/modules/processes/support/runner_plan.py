@@ -38,7 +38,7 @@ class RunnerPlan:
             return RunnerDecision()
         return self.request_values.read(f"processes.runner:{agent_id}:{event_id}:{shell.runner_text}", lambda: event_id, lambda: self.decided(shell, agent_id))
 
-    def of_event(self, event: HookEvent, agent_id: int) -> RunnerDecision:
+    def event_decision(self, event: HookEvent, agent_id: int) -> RunnerDecision:
         return self.decision(event.tool.shell if event.tool is not None else None, event.event_id, agent_id)
 
     def decided(self, shell: ShellLine, agent_id: int) -> RunnerDecision:
@@ -48,9 +48,9 @@ class RunnerPlan:
             return RunnerDecision(SandboxParseErrorMessage.declared().agent_message()) if sandbox else RunnerDecision()
         if not self.runner.is_installed():
             return RunnerDecision(SandboxRunnerMissingMessage.declared().agent_message()) if sandbox else RunnerDecision(runner_missing=True)
-        writes_apart = sandbox and agent_type.separate_folder and agent_type.access is Access.WRITING
-        folder = self.folders.folder(agent_id) if writes_apart else None
-        if writes_apart and folder is None:
+        separate_writes = sandbox and agent_type.separate_folder and agent_type.access is Access.WRITING
+        folder = self.folders.folder(agent_id) if separate_writes else None
+        if separate_writes and folder is None:
             return RunnerDecision(SandboxFolderMissingMessage.declared().agent_message())
         read_folders = self.project_reads.folders(self.checkouts.checkout(agent_id).project_root) if folder is not None else ()
         writable_folders = self.project_reads.writable_folders() if folder is not None else ()

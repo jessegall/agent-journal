@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 from engine.driver.conditions.unregistered_condition import UnregisteredCondition
 from engine.enums.condition_outcome import ConditionOutcome
-from core.modules.drivers.support.block_judgement import BlockJudgement
+from core.modules.drivers.support.block_condition_check import BlockConditionCheck
 
 
 class SampleCondition:
@@ -19,7 +19,7 @@ class SampleCondition:
 
 
 def outcome(condition) -> ConditionOutcome:
-    judgement = BlockJudgement(SimpleNamespace(built=lambda name, text: condition), None, None, None, None, SimpleNamespace(reported=lambda *values: None))
+    judgement = BlockConditionCheck(SimpleNamespace(built=lambda name, text: condition), None, None, None, None, SimpleNamespace(reported=lambda *values: None))
     row = SimpleNamespace(condition_name="sample", condition_text="", creation_timestamp=lambda: None)
     return judgement.outcome(row, SimpleNamespace(environment_id=1))
 

@@ -136,7 +136,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         commit = self.steps.save(command.step.view, command.step.step, call.id, context) if command.step is not None else None
         if commit is not None and not commit.is_saved:
             raise StepConflictError()
-        self.leave_for_next_hook(agent.id, split.rest, answers, {row.agent_message.text for row in handed_lines.rows}, context)
+        self.queue_next_hook_lines(agent.id, split.rest, answers, {row.agent_message.text for row in handed_lines.rows}, context)
         outcomes = [(rule, *self.run_command(rule_command, context)) for rule, rule_command in moves.runnable if rule not in answers.refused_rewriters]
         refused = [(rule, line) for rule, line, _ in outcomes if line]
         output_tools = self.providers.provider(command.event.program).refusal_output_tools
@@ -154,7 +154,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
 
     # the lines of a reply past the program's limit wait for the agent's next hook, each with the source it came from;
     # a waiting line that did not fit is not delivered, so it waits as it was
-    def leave_for_next_hook(self, agent_id: int, rest: Sequence[AgentMessage], answers: RuleAnswers, waiting_texts: set[str], context: Context) -> None:
+    def queue_next_hook_lines(self, agent_id: int, rest: Sequence[AgentMessage], answers: RuleAnswers, waiting_texts: set[str], context: Context) -> None:
         sources = {text: rule for rule, text in answers.rule_lines}
         for agent_message in rest:
             if agent_message.text not in waiting_texts:

@@ -149,5 +149,5 @@ class ShellLine:
     def has_part_matching(self, pattern: str) -> bool:
         return any(re.search(pattern, part.text) for part in self.parts)
 
-    def has_only_parts(self, check: Callable[[Part], bool]) -> bool:
+    def has_all_parts(self, check: Callable[[Part], bool]) -> bool:
         return bool(self.parts) and all(check(part) for part in self.parts)

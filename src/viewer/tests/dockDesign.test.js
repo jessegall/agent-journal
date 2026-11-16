@@ -84,7 +84,7 @@ test("each plan state has its pill in the head and Phases in the foot", async ()
     }
 });
 test("a waiting card is described without a badge and its refusal stays outside the fold", async () => {
-    const host = await draw({needs_user: true, folds: "Phases"});
+    const host = await draw({person_required: true, folds: "Phases"});
     expect(host.querySelector("section").getAttribute("aria-label")).toBe("Example, waiting for you");
     expect(host.querySelector("section").classList.contains("waiting")).toBe(true);
     expect(host.textContent).not.toContain("Needs you");

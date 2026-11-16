@@ -1,7 +1,7 @@
 from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_priority import ExecutionPriority
 from engine.execution.classes.execution_class import UNLIMITED
-from engine.execution.limits.lane_limits import LaneLimits
+from engine.execution.limits.pool_limits import PoolLimits
 from engine.execution.limits.priority_limit import PriorityLimit
 from engine.time.timestamp import MINUTE_SECONDS
 
@@ -40,7 +40,7 @@ DEFAULT_PRIORITY_LIMITS = {
     },
 }
 
-DEFAULT_LANE_LIMITS = LaneLimits(
+DEFAULT_POOL_LIMITS = PoolLimits(
     capacities=DEFAULT_CAPACITIES,
     priority_limits=DEFAULT_PRIORITY_LIMITS,
     starter_caps={lane: capacity // 2 for lane, capacity in DEFAULT_CAPACITIES.items()},

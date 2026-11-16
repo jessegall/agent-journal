@@ -32,7 +32,7 @@ def no_kept_plans():
     QueryPlans.plans.clear()
 
 
-def read_once(database: PlannedDatabase, task_id: int) -> None:
+def first_read(database: PlannedDatabase, task_id: int) -> None:
     work = RepeatedWork(database)
     with work.request():
         work.mark_read()
@@ -41,16 +41,16 @@ def read_once(database: PlannedDatabase, task_id: int) -> None:
 
 def test_a_query_shape_is_planned_once_across_two_repeated_works():
     database = PlannedDatabase()
-    read_once(database, 1)
-    read_once(database, 2)
+    first_read(database, 1)
+    first_read(database, 2)
     assert database.plans_asked == 1
 
 
 def test_a_sync_plans_again():
     database = PlannedDatabase()
-    read_once(database, 1)
+    first_read(database, 1)
     QueryPlans.forget()
-    read_once(database, 1)
+    first_read(database, 1)
     assert database.plans_asked == 2
 
 

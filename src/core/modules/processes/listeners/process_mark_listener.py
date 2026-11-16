@@ -49,7 +49,7 @@ class ProcessMarkListener(CommitListener[E]):
         self.marks = marks
         self.outputs = outputs
 
-    def keep_parts_of(self, events: Sequence[LoggedEvent]) -> None:
+    def keep_event_parts(self, events: Sequence[LoggedEvent]) -> None:
         self.visibility.keep_parts(tuple(dict.fromkeys(event.row_id for event in events)))
 
     def show(self, process: Process, logged: LoggedEvent) -> None:

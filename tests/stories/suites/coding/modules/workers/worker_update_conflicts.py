@@ -11,7 +11,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 UPDATE = "worker update --wait"
 
 
-def expect_clash(story, worker: Actor, *texts: str) -> None:
+def expect_conflict(story, worker: Actor, *texts: str) -> None:
     """An update that stops on clashes ends with a code that is not 0 and names what it printed."""
     story.checked(UPDATE)
     outcome = story.run(UPDATE, worker)
@@ -32,7 +32,7 @@ def s36_a_function_changed_on_both_sides_leaves_markers(story, repository: GitRe
 
 def s38_a_failed_rebase_falls_back_to_a_merge_of_the_base(story, repository: GitRepository, worker: Actor) -> None:
     diverge_cart(repository, worker)
-    expect_clash(story, worker, "The update clashes")
+    expect_conflict(story, worker, "The update clashes")
     merging = repository.git("rev-parse", "--verify", "--quiet", "MERGE_HEAD", folder=repository.worktree_folder(worker.id)).returncode == 0
     story.expect_rows(merging)
 
@@ -40,12 +40,12 @@ def s38_a_failed_rebase_falls_back_to_a_merge_of_the_base(story, repository: Git
 def s39_uncommitted_changes_wait_in_a_named_stash_while_markers_are_settled(story, repository: GitRepository, worker: Actor) -> None:
     diverge_cart(repository, worker)
     (repository.worktree_folder(worker.id) / "shop.py").write_text("SHOP = 2\n")
-    expect_clash(story, worker, "The update clashes", "Your uncommitted changes stay in stash", "until your next commit puts them back")
+    expect_conflict(story, worker, "The update clashes", "Your uncommitted changes stay in stash", "until your next commit puts them back")
 
 
 def s40_the_next_commit_commits_the_settled_merge(story, repository: GitRepository, worker: Actor) -> None:
     diverge_cart(repository, worker)
-    expect_clash(story, worker, "The update clashes")
+    expect_conflict(story, worker, "The update clashes")
     (repository.worktree_folder(worker.id) / "cart.py").write_text("def total():\n    return 3\n")
     story.expect_success('proof make 1 --task 1 "cart.py:1, the settled total"', actor=worker)
     story.run('worker commit --wait --differences "settled the update merge"', actor=worker)
@@ -55,7 +55,7 @@ def s40_the_next_commit_commits_the_settled_merge(story, repository: GitReposito
 
 def s41_open_markers_refuse_a_second_update(story, repository: GitRepository, worker: Actor) -> None:
     diverge_cart(repository, worker)
-    expect_clash(story, worker, "The update clashes")
+    expect_conflict(story, worker, "The update clashes")
     story.expect_refusal(UPDATE, "conflict markers remain in cart.py", actor=worker)
 
 
@@ -88,7 +88,7 @@ def s52_the_commit_of_the_settled_merge_puts_the_kept_changes_back(story, reposi
     folder = repository.worktree_folder(worker.id)
     diverge_cart(repository, worker)
     (folder / "shop.py").write_text("SHOP = 2\n")
-    expect_clash(story, worker, "Your uncommitted changes stay in stash")
+    expect_conflict(story, worker, "Your uncommitted changes stay in stash")
     (folder / "cart.py").write_text("def total():\n    return 3\n")
     story.expect_success('proof make 1 --task 1 "cart.py:1, the settled total"', actor=worker)
     story.run('worker commit --wait --differences "settled the update merge"', actor=worker)

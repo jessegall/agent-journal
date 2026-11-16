@@ -187,9 +187,9 @@ def test_an_event_whose_cause_was_pruned_opens_a_scope_with_no_agent(played):
     story.run(TASK_LINE, actor=story.helper)
     log = story.container.get(EventLog)
     pruned_cause = replace(log.event(log.newest_id()), id=log.newest_id() + 1, actor_id=None, cause_id=log.newest_id() + 1000)
-    expect_no_causing_agent(story, pruned_cause)
+    expect_causing_agent_absent(story, pruned_cause)
 
 
-def expect_no_causing_agent(story, event) -> None:
+def expect_causing_agent_absent(story, event) -> None:
     agent_id = story.container.get(Scopes).causing_agent(event)
     assert agent_id is None, agent_id

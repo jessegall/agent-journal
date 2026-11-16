@@ -30,7 +30,7 @@ class Stack:
     def lane(self, lane: StackLevel) -> list[StackedState]:
         return [stacked_state for stacked_state in self.stacked_states if stacked_state.state.lane is lane]
 
-    def work_lane_top(self) -> StackedState:
+    def work_level_top(self) -> StackedState:
         return [*self.lane(StackLevel.BOTTOM), *self.lane(StackLevel.WORK)][-1]
 
     def stop_answer(self, contract: WorkStop, escalation: Escalation | None) -> StopAnswer:
@@ -41,7 +41,7 @@ class Stack:
         refusals = [stacked_state.state.stop_refusal() for stacked_state in self.lane(StackLevel.HOLD) if stacked_state.state.refuses_stop(escalation)]
         if refusals:
             return StopAnswer.refusals(refusals)
-        top = self.work_lane_top()
+        top = self.work_level_top()
         if escalation is not None and escalation.defers_work(top.state_key):
             return StopAnswer.allowed()
         return top.state.stop_answer(contract)

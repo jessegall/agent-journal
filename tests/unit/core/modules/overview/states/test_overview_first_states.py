@@ -16,7 +16,7 @@ MAIN = AgentReference(4, None, 1, "main")
 START = QuestionSamples.question(HookSamples.session_start())
 RESUME = QuestionSamples.question(HookSamples.session_start().with_raw({"source": "resume"}))
 EDIT = QuestionSamples.question(HookSamples.edit("a.py"))
-VIEW = ViewSamples.view("main", WorkStop.REFUSE_WHILE_WORK_REMAINS, has_parent=False)
+VIEW = ViewSamples.view("main", WorkStop.REFUSE_DURING_WORK, has_parent=False)
 
 
 def test_a_session_start_plans_the_strict_overview_block_and_a_resume_does_not() -> None:

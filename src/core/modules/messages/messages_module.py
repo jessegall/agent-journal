@@ -13,8 +13,8 @@ from core.modules.messages.lines.agent_text_lines import AgentTextLines
 from core.modules.messages.effects.message_delivery_effect import MessageDeliveryEffect
 from core.modules.messages.effects.message_read_effect import MessageReadEffect
 from core.modules.messages.effects.agent_text_effect import AgentTextEffect
-from core.modules.messages.effects.text_before_tool_effect import TextBeforeToolEffect
-from core.modules.messages.effects.transcript_catch_up_effect import TranscriptCatchUpEffect
+from core.modules.messages.effects.text_preceding_tool_effect import TextPrecedingToolEffect
+from core.modules.messages.effects.transcript_sync_effect import TranscriptSyncEffect
 from core.modules.messages.effects.typed_prompt_effect import TypedPromptEffect
 from core.modules.messages.effects.peer_message_effect import PeerMessageEffect
 from core.modules.messages.windows.messages_windows import MESSAGES_WINDOWS
@@ -129,7 +129,7 @@ class MessagesModule(Module):
     states = [UnreadMessageStates, UnansweredMessageStates]
     policies = [UnreadMessageShowPolicy]
     lines = [NewMessageLines, UnansweredMessageLines, MessageReadLines, ChatMannersLines, ChatOpeningLines, PlainCodeLines, ReplyNoteLines, AgentTextLines]
-    effects = [MessageDeliveryEffect, MessageReadEffect, AgentTextEffect, TextBeforeToolEffect, TranscriptCatchUpEffect, TypedPromptEffect, PeerMessageEffect]
+    effects = [MessageDeliveryEffect, MessageReadEffect, AgentTextEffect, TextPrecedingToolEffect, TranscriptSyncEffect, TypedPromptEffect, PeerMessageEffect]
     subcommands = [MessageConversationsSubcommand, AgentReportsSubcommand, UnreadReportsSubcommand, AttachmentListSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand, ChooseWorkSourceSubcommand, ClearWorkSourceSubcommand, WorkSourceSubcommand]
     windows = MESSAGES_WINDOWS
     marks = [MessageSummaryMark, MessageFiledMark, MessageEditedMark]

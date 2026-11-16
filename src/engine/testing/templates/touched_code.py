@@ -9,7 +9,7 @@ from engine.file.file_access import FileAccess
 from engine.module.source_hash import SourceHash
 
 TOUCHED_FILE = "touched-code.json"
-OUTSIDE_FOLDERS = frozenset((".venv", "node_modules", "site-packages"))
+LIBRARY_FOLDERS = frozenset((".venv", "node_modules", "site-packages"))
 
 
 class TouchedCode:
@@ -38,7 +38,7 @@ class TouchedCode:
         hashes: dict[str, str] = {}
         for name in self.names:
             path = Path(name)
-            is_source = path.is_absolute() and path.is_relative_to(self.checkout) and not OUTSIDE_FOLDERS.intersection(path.parts)
+            is_source = path.is_absolute() and path.is_relative_to(self.checkout) and not LIBRARY_FOLDERS.intersection(path.parts)
             content = SourceHash.file_hash(path) if is_source else None
             if content is not None:
                 hashes[path.relative_to(self.checkout).as_posix()] = content.hex()

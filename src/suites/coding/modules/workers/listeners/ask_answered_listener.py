@@ -27,4 +27,4 @@ class AskAnsweredListener(SaveListener[Created[Message]]):
             return
         worker_id = WorkerRecipient.worker_id(message.recipient)
         if message.creator_id != worker_id:
-            self.questions.settle_forwarded(worker_id, AskOutcome.ANSWERED, ANSWER_TEXT, context)
+            self.questions.resolve_forwarded(worker_id, AskOutcome.ANSWERED, ANSWER_TEXT, context)

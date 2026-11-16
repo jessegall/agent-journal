@@ -24,9 +24,9 @@ class MessageLog:
         self.spans = spans
 
     def skipped_lines(self, agent_id: int, answers: RuleAnswers, timestamp: Timestamp) -> frozenset[tuple[str, str]]:
-        return self.held_back(agent_id, answers.line_agent_messages, timestamp)
+        return self.delayed(agent_id, answers.line_agent_messages, timestamp)
 
-    def held_back(self, agent_id: int, lines: Sequence[AgentMessage], timestamp: Timestamp) -> frozenset[tuple[str, str]]:
+    def delayed(self, agent_id: int, lines: Sequence[AgentMessage], timestamp: Timestamp) -> frozenset[tuple[str, str]]:
         if not lines:
             return frozenset()
         turn_start = self.turn_start(agent_id)
@@ -50,9 +50,9 @@ class MessageLog:
         return record if record is not None else MessageRecord(session_agent_id=agent_id, creator_id=0, key=agent_message.key, text=agent_message.text)
 
     def write(self, agent_id: int, answers: RuleAnswers, context: Context) -> None:
-        self.write_said(agent_id, (*answers.delivered_agent_messages, *answers.refusal_agent_messages), context)
+        self.store_given(agent_id, (*answers.delivered_agent_messages, *answers.refusal_agent_messages), context)
 
-    def write_said(self, agent_id: int, said: Sequence[AgentMessage], context: Context) -> None:
+    def store_given(self, agent_id: int, said: Sequence[AgentMessage], context: Context) -> None:
         agent_messages = tuple(record for agent_message in said for record in agent_message.records)
         if not agent_messages:
             return

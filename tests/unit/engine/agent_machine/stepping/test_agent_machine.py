@@ -59,7 +59,7 @@ STOP = QuestionSamples.question(HookSamples.stop())
 EDIT = QuestionSamples.question(HookSamples.edit("a.py"))
 READ = QuestionSamples.question(HookSamples.tool_use("Read", ToolType.READ, ["a.py"], None))
 SKILL_READ = QuestionSamples.question(HookSamples.tool_use("Read", ToolType.READ, [".claude/skills/journal/SKILL.md"], None))
-CARRIES_EVERYTHING = Capabilities(*(Capability(part, event, CapabilityProof.IMPLEMENTED_HERE) for part in CapabilityPart for event in HookEventName))
+FULL_CAPABILITIES = Capabilities(*(Capability(part, event, CapabilityProof.IMPLEMENTED_HERE) for part in CapabilityPart for event in HookEventName))
 PAUSE_TEXT = "a sample pause line the pause fact carries"
 
 
@@ -67,12 +67,12 @@ def journal_line(line: str, *parts: Sequence[str]) -> Question:
     return QuestionSamples.question(HookSamples.shell(line, *(ShellPart("journal", CommandCategory.JOURNAL, list(arguments)) for arguments in parts)))
 
 
-WORK_STOPS = {"main": WorkStop.REFUSE_WHILE_WORK_REMAINS, "helper": WorkStop.HANDOVER}
+WORK_STOPS = {"main": WorkStop.REFUSE_DURING_WORK, "helper": WorkStop.HANDOVER}
 
 
 def view(agent_type: str = "main", **changes: object) -> AgentView:
     sample = ViewSamples.view(agent_type, WORK_STOPS[agent_type], has_parent=agent_type != "main")
-    return replace(sample, **{"rank_order": ORDER, "program": CARRIES_EVERYTHING, **changes})
+    return replace(sample, **{"rank_order": ORDER, "program": FULL_CAPABILITIES, **changes})
 
 
 def block(agent_message_key: str, rank: str, *lifting: str, block_id: int = 3, is_strict: bool = False, scope_stop: bool = True) -> OpenBlock:
@@ -197,12 +197,12 @@ def test_a_paused_agent_may_answer_with_a_message_and_rest_but_not_edit_or_hand_
 
 def test_a_paused_agent_may_search_but_not_chain_a_search_with_a_write_or_a_journal_command() -> None:
     search = ShellPart("grep", CommandCategory.SEARCH, ["x", "a.py"])
-    alone = QuestionSamples.question(HookSamples.shell("grep x a.py", search))
-    with_write = QuestionSamples.question(HookSamples.shell("grep x a.py && rm a.py", search, ShellPart("rm", CommandCategory.EDIT, ["a.py"], effects=[CommandEffect.WRITES_FILES])))
+    single = QuestionSamples.question(HookSamples.shell("grep x a.py", search))
+    editing_line = QuestionSamples.question(HookSamples.shell("grep x a.py && rm a.py", search, ShellPart("rm", CommandCategory.EDIT, ["a.py"], effects=[CommandEffect.WRITES_FILES])))
     with_journal = QuestionSamples.question(HookSamples.shell("grep x a.py && journal task make t", search, ShellPart("journal", CommandCategory.JOURNAL, ["task", "make", "t"])))
     machine = AgentStateMachine()
-    assert machine.step(paused(), alone).record.decision.admits()
-    assert [machine.step(paused(), question).record.shown_reason.key for question in (with_write, with_journal)] == [PAUSE_KEY, PAUSE_KEY]
+    assert machine.step(paused(), single).record.decision.admits()
+    assert [machine.step(paused(), question).record.shown_reason.key for question in (editing_line, with_journal)] == [PAUSE_KEY, PAUSE_KEY]
 
 class RunnerWrap(Transform):
     slot = TransformSlot.RUNNER
@@ -279,5 +279,5 @@ def test_a_new_need_enters_its_stacked_state_and_an_ended_one_exits_wherever_it_
 
 
 def test_a_resting_agent_whose_stop_would_be_refused_gets_a_wake_unless_it_is_paused() -> None:
-    assert AgentStateMachine().step(view(states=(working(),), is_resting=True), Question.none()).wake.wake_move is WakeMove.WRITTEN
+    assert AgentStateMachine().step(view(states=(working(),), is_resting=True), Question.none()).wake.wake_move is WakeMove.RECORDED
     assert AgentStateMachine().step(paused(states=(working(),), is_resting=True), Question.none()).wake.wake_move is WakeMove.INHIBITED

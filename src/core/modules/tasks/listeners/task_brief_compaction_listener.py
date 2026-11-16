@@ -22,6 +22,6 @@ class TaskBriefCompactionListener(CommitListener[AgentCompacted]):
         call = event.row
         actor = Actor(call.session_agent_id, ActorType.AGENT)
         self.bus.run(ResetTaskReads(call.session_agent_id), actor, cause_id=logged.id, environment_id=call.environment_id)
-        hold = self.blocks.current_hold(call.session_agent_id)
+        hold = self.blocks.current_block(call.session_agent_id)
         if hold is not None:
             self.bus.run(hold, actor, cause_id=logged.id, environment_id=call.environment_id)

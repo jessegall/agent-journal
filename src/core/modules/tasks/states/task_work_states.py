@@ -56,14 +56,14 @@ class TaskWorkStates(StateSource):
         started = self.current_tasks.started_tasks(agent_id)
         if not started:
             return []
-        remains = self.holds_stop(agent_id)
+        remains = self.blocks_stop(agent_id)
         reason = Reason(TASK_STOP_KEY, DecisionClass.HOLD, TASK_RANK, self.stop_text(started))
         return [RequiredState(Working(WorkReference(WorkType.TASK, task.id, f"task {task.id}"), remains, reason), TASK_RANK,
                      StateKey("Working", RowReference(Task.model_name, task.id), f"task:{task.id}")) for task in started]
 
     # the tasks in hand hold the agent's stop unless a run of its goes, its suite lets it stop with them, or it skipped
     # the stop refusal within the last 25 tool uses or 25 minutes, as today's tasks.carry-on-at-stop lets it
-    def holds_stop(self, agent_id: int) -> bool:
+    def blocks_stop(self, agent_id: int) -> bool:
         if self.runs.has_run(agent_id) or self.skips.is_skipped(agent_id, TASK_STOP_KEY, TASK_STOP_SKIP_WINDOW, self.clock.timestamp()):
             return False
         assigner = self.assigners.assigner()
@@ -72,7 +72,7 @@ class TaskWorkStates(StateSource):
     # a task's stacked state leaves closed when the task completed and cancelled when it was cancelled, which is no progress
     def ends(self, subjects: Sequence[RowReference]) -> Mapping[RowReference, StateEnd]:
         task_ids = [subject.row_id for subject in subjects if subject.model == Task.model_name]
-        tasks = self.tasks.named_tasks(task_ids)
+        tasks = self.tasks.listed_tasks(task_ids)
         return {RowReference(Task.model_name, task.id): TASK_ENDS[task.state] for task in tasks if task.state in TASK_ENDS}
 
     @staticmethod

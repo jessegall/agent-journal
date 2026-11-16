@@ -16,7 +16,7 @@ class HelperReuse:
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
-    def known_job(self, parent_id: int, profile: str, text: str) -> HelperJob | None:
+    def reusable_job(self, parent_id: int, profile: str, text: str) -> HelperJob | None:
         paths = PathMentions.found(text)
         if not paths:
             return None

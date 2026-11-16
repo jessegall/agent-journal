@@ -36,5 +36,5 @@ class CacheKeepalive:
         now = self.clock.timestamp()
         if not self.queries.query(AgentActivity).find(agent_id).is_inactive(now, minutes * MINUTE_SECONDS):
             return False
-        woken_at = self.history.last_spoke(CACHE_KEEPALIVE_KEY, agent_id)
-        return woken_at is None or woken_at.elapsed_seconds(now) >= RETRY_SECONDS.count
+        last_wake_at = self.history.last_given(CACHE_KEEPALIVE_KEY, agent_id)
+        return last_wake_at is None or last_wake_at.elapsed_seconds(now) >= RETRY_SECONDS.count

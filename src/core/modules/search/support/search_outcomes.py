@@ -24,7 +24,7 @@ class SearchOutcomes:
         FileAccess.mkdir(file.parent, parents=True, exist_ok=True)
         FileAccess.write(file, json.dumps({**search_outcome.stored(), "kept_at": self.clock.timestamp().text, "terms": list(terms), "models": list(models)}))
 
-    def read_once(self, agent_id: int, terms: Sequence[str], models: Sequence[str]) -> SearchResult | None:
+    def first_read(self, agent_id: int, terms: Sequence[str], models: Sequence[str]) -> SearchResult | None:
         file = self.file(agent_id)
         if not FileAccess.is_file(file):
             return None

@@ -18,7 +18,7 @@ class HookTimeouts:
         self.timeout_stamps[agent_id] = recent
         return len(recent)
 
-    def needs_notice(self, agent_id: int, count: int, timestamp: Timestamp) -> bool:
+    def requires_notice(self, agent_id: int, count: int, timestamp: Timestamp) -> bool:
         last_notice = self.notice_stamps.get(agent_id)
         return count >= NOTICE_TIMEOUT_COUNT and (last_notice is None or last_notice.elapsed_seconds(timestamp) >= SPAN_SECONDS)
 

@@ -36,7 +36,7 @@ class JournalServer(TrackedRequests, UnixStreamServer):
         self.stopping.set()
         self.wake_sender.send(b"\0")
 
-    def begin_handover(self) -> None:
+    def begin_takeover(self) -> None:
         self.context.files.mark_restart()
         self.is_handing_over = True
         self.request_stop()

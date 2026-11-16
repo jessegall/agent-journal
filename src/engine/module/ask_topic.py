@@ -9,7 +9,7 @@ class AskTopic:
 
     key: str
     waiting_work: str
-    needs_writing: bool = False
+    requires_writing: bool = False
 
     # a topic written as a class in its own file sets the fields as class attributes
     @classmethod

@@ -20,22 +20,22 @@ def escalation(responder: Responder, refusal_count: int, block_ids: tuple[int, .
                            block_ids=block_ids, work_keys=())
 
 
-def woken_parents(row, old_row) -> list[int]:
-    woken: list[int] = []
-    message_sender = SimpleNamespace(send=lambda agent_id, declaration, source, context, **values: woken.append(agent_id))
+def awakened_parents(row, old_row) -> list[int]:
+    resumed_worker: list[int] = []
+    message_sender = SimpleNamespace(send=lambda agent_id, declaration, source, context, **values: resumed_worker.append(agent_id))
     agents = SimpleNamespace(find=lambda agent_id: SimpleNamespace(number=2, parent_id=1))
     EscalationResponderListener(agents, message_sender).handle(SimpleNamespace(row=row, old_row=old_row), SimpleNamespace())
-    return woken
+    return resumed_worker
 
 
 def test_a_parent_responder_is_woken_when_the_escalation_opens_and_when_a_hold_joins_it_whatever_the_counts():
-    assert woken_parents(escalation(Responder.PARENT, 5), None) == [1]
-    assert woken_parents(escalation(Responder.PARENT, 5, (4, 9)), escalation(Responder.PARENT, 5)) == [1]
-    assert woken_parents(escalation(Responder.PARENT, 6), escalation(Responder.PARENT, 5)) == []
+    assert awakened_parents(escalation(Responder.PARENT, 5), None) == [1]
+    assert awakened_parents(escalation(Responder.PARENT, 5, (4, 9)), escalation(Responder.PARENT, 5)) == [1]
+    assert awakened_parents(escalation(Responder.PARENT, 6), escalation(Responder.PARENT, 5)) == []
 
 
 def test_a_person_responder_gets_no_agent_line():
-    assert woken_parents(escalation(Responder.PERSON, 5), None) == []
+    assert awakened_parents(escalation(Responder.PERSON, 5), None) == []
 
 
 def test_a_retirement_cancels_the_agents_own_escalations_and_passes_its_childrens_to_the_person():

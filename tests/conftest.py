@@ -59,8 +59,8 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
             item.add_marker(BROWSER_MARK)
     kept = [item for item in items if (item.get_closest_marker(REAL_PROGRAM_MARK) is not None) == wanted and belongs_job(item, config)]
     config.hook.pytest_deselected(items=[item for item in items if item not in kept])
-    by_id = {item.nodeid: item for item in kept}
-    items[:] = [by_id[test_id] for test_id in RunDurations.read().run_order(list(by_id))]
+    id_items = {item.nodeid: item for item in kept}
+    items[:] = [id_items[test_id] for test_id in RunDurations.read().run_order(list(id_items))]
 
 
 def stories_waiting_for_a_plan() -> dict[str, str]:

@@ -12,7 +12,7 @@ ANSWER_SIZE = 200000
 SESSION = "s-1"
 
 
-def held_get(monkeypatch, arrived: threading.Event, released: threading.Event, answer: dict[str, str], answered: threading.Event | None = None) -> None:
+def blocked_get(monkeypatch, arrived: threading.Event, released: threading.Event, answer: dict[str, str], answered: threading.Event | None = None) -> None:
     answer_get = RequestHandler.answer_get
 
     def slow_get(self: RequestHandler) -> None:
@@ -33,7 +33,7 @@ def held_get(monkeypatch, arrived: threading.Event, released: threading.Event, a
 def test_a_stop_during_a_running_request_lets_it_finish_while_an_idle_connection_closes_at_once(synced_home, monkeypatch):
     statuses: list[int] = []
     arrived, released = threading.Event(), threading.Event()
-    held_get(monkeypatch, arrived, released, {"held": "done"})
+    blocked_get(monkeypatch, arrived, released, {"held": "done"})
     with running_server(synced_home) as (server, socket_path, _):
         idle = UnixConnection(str(socket_path), WAIT_SECONDS, "journal")
         idle.request("GET", "/health")
@@ -57,7 +57,7 @@ def test_a_stop_during_a_running_request_lets_it_finish_while_an_idle_connection
 
 def test_a_client_that_leaves_before_its_answer_writes_no_traceback(synced_home, monkeypatch, capsys):
     arrived, released, answered = threading.Event(), threading.Event(), threading.Event()
-    held_get(monkeypatch, arrived, released, {"held": "x" * ANSWER_SIZE}, answered)
+    blocked_get(monkeypatch, arrived, released, {"held": "x" * ANSWER_SIZE}, answered)
     with running_server(synced_home) as (_, socket_path, _):
         leaving = UnixConnection(str(socket_path), WAIT_SECONDS, "journal")
         leaving.request("GET", "/held")

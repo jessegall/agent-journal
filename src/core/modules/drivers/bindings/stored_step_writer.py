@@ -78,7 +78,7 @@ class StoredStepWriter(StepWriter):
         updated_input = None
         if record.decision.admits():
             self.spend_grants(record, context)
-            admitted, updated_input = self.run_effects(record.admission_effects, view, record, True, context)
+            admitted, updated_input = self.run_effects(record.allowed_effects, view, record, True, context)
             failures += admitted
         self.queue_waiting_lines(view, record, context)
         self.save_wake(view, record.wake, context)
@@ -88,13 +88,13 @@ class StoredStepWriter(StepWriter):
     def queue_waiting_lines(self, view: AgentView, record: DecisionRecord, context: Context) -> None:
         agent_id = view.agent.agent_id
         said = [(line, line.said()) for line in record.waiting_lines]
-        held = self.agent_message_log.held_back(agent_id, [agent_message for _, agent_message in said], context.timestamp)
+        held = self.agent_message_log.delayed(agent_id, [agent_message for _, agent_message in said], context.timestamp)
         queued = [(line, agent_message) for line, agent_message in said if (agent_message.key, agent_message.text) not in held]
         for line, agent_message in queued:
             self.message_sender.send_agent_message(agent_id, agent_message, line.source_key or line.key, context)
-        self.agent_message_log.write_said(agent_id, [agent_message for _, agent_message in queued], context)
+        self.agent_message_log.store_given(agent_id, [agent_message for _, agent_message in queued], context)
         self.required_commands.open(agent_id, [agent_message for _, agent_message in queued], context)
-        self.history.record_said(agent_id, [line.source_key for line, _ in queued if line.source_key], context)
+        self.history.record_given(agent_id, [line.source_key for line, _ in queued if line.source_key], context)
 
     # the grants that passed a refusing policy are spent in this write, and a journal command leaves its receipt
     def spend_grants(self, record: DecisionRecord, context: Context) -> None:
@@ -167,7 +167,7 @@ class StoredStepWriter(StepWriter):
                 self.repository.save(block.changed(escalation_id=escalation_id), context)
 
     # the lines of the effects that failed, and the tool input the first effect that gives one runs the action with
-    def run_effects(self, effects: Sequence[Effect], view: AgentView, record: DecisionRecord, is_admission: bool, context: Context) -> tuple[list[str], Mapping[str, object] | None]:
+    def run_effects(self, effects: Sequence[Effect], view: AgentView, record: DecisionRecord, is_allowed_effect: bool, context: Context) -> tuple[list[str], Mapping[str, object] | None]:
         failures: list[str] = []
         updated_input: Mapping[str, object] | None = None
         for effect in effects:
@@ -177,7 +177,7 @@ class StoredStepWriter(StepWriter):
                     with self.database.savepoint(type(command).__name__):
                         results.append(self.bus.dispatch(command, context.nested(command)))
                 except Refusal as refusal:
-                    if is_admission and effect.is_required:
+                    if is_allowed_effect and effect.is_required:
                         raise RequiredEffectError(f"{type(effect).__name__} failed: {refusal}") from refusal
                     failures.append(f"the journal could not run {type(command).__name__}: {refusal}")
             updated_input = updated_input or effect.input_after(view, record, results)

@@ -4,7 +4,7 @@ from enum import StrEnum
 class ContributionType(StrEnum):
     """The ten lists a module gives the agent machine."""
 
-    NEED = "need"
+    REQUIRED_STATE = "need"
     FACT = "fact"
     POLICY = "policy"
     LINE = "line"

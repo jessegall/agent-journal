@@ -8,5 +8,5 @@ class Door:
     def refusal(self, request: DoorRequest) -> DoorRefusal | None:
         raise NotImplementedError
 
-    def state_needs_login(self, request: DoorRequest) -> bool:
+    def login_required(self, request: DoorRequest) -> bool:
         raise NotImplementedError

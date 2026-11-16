@@ -13,7 +13,7 @@ class ReaderDemands:
     def __init__(self, judge: ReaderJudge, processes: ProcessQuery) -> None:
         self.judge, self.processes = judge, processes
 
-    def needs_reader(self, part: PartSpec) -> bool:
+    def requires_reader(self, part: PartSpec) -> bool:
         if not part.category.is_watched or self.is_help_request(part.command or part.text):
             return False
         return part.category.is_long_running or self.processes.has_moved_run([part.text])

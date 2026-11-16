@@ -96,7 +96,7 @@ def test_a_run_ending_before_its_timeout_is_not_reported_as_timed_out(played):
 
 def test_time_waiting_in_the_queue_does_not_consume_the_timeout(played):
     story = played(QueueAgents)
-    story.expect_success(f"setting set {ProcessSetting.LANE_CAPACITY_LONG.key} {RUN_SLOT_COST} --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.POOL_CAPACITY_LONG.key} {RUN_SLOT_COST} --environment main", actor=story.user)
     active = queued(story, "make active")
     waiting = queued(story, "make waiting")
     story.expect_success(f"output timeout {waiting.id} 10s", actor=story.user)

@@ -8,7 +8,7 @@ from engine.provider.providers import Providers
 from core.modules.drivers.agent_messages.compaction_instructions_message import CompactionInstructionsMessage
 
 # Claude Code cuts a PreCompact hook's plain output at 10,000 characters
-INSTRUCTIONS_LIMIT = 10_000
+INSTRUCTIONS_LIMIT_CHARACTERS = 10_000
 
 
 class CompactionInstructionsLines(EventLineSource):
@@ -24,5 +24,5 @@ class CompactionInstructionsLines(EventLineSource):
         self.providers = providers
 
     def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        instructions = self.providers.provider(event.program).compaction_instructions[:INSTRUCTIONS_LIMIT] if event is not None else ""
+        instructions = self.providers.provider(event.program).compaction_instructions[:INSTRUCTIONS_LIMIT_CHARACTERS] if event is not None else ""
         return [CompactionInstructionsMessage.declared().agent_message(text=instructions)] if instructions else []

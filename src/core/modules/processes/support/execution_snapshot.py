@@ -1,16 +1,16 @@
 from core.modules.processes.support.priority_wait import PriorityWait
 from dataclasses import dataclass
-from core.modules.processes.support.lane_load import LaneLoad
+from core.modules.processes.support.pool_load import PoolLoad
 
 
 @dataclass(frozen=True)
 class ExecutionSnapshot:
     """Every lane and the waits of the last hour, read once, as lines and as JSON."""
 
-    lanes: tuple[LaneLoad, ...]
+    lanes: tuple[PoolLoad, ...]
     waits: tuple[PriorityWait, ...]
 
-    def lane(self, lane: str) -> LaneLoad:
+    def lane(self, lane: str) -> PoolLoad:
         return next(read for read in self.lanes if read.lane == lane)
 
     def lines(self) -> list[str]:

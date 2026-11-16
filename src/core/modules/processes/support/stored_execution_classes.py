@@ -2,10 +2,10 @@ from core.modules.processes.support.installed_plugins import InstalledPlugins
 from dataclasses import replace
 
 from engine.enums.execution_length import ExecutionLength
-from engine.execution.limits.default_lane_limits import DEFAULT_LANE_LIMITS
+from engine.execution.limits.default_lane_limits import DEFAULT_POOL_LIMITS
 from engine.execution.classes.execution_class import ExecutionClass
 from engine.execution.classes.execution_classes import ExecutionClasses
-from engine.execution.limits.lane_limits import LaneLimits
+from engine.execution.limits.pool_limits import PoolLimits
 from engine.execution.classes.person_classes import PersonClasses
 from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
@@ -13,8 +13,8 @@ from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.models.execution_class_row import ExecutionClassRow
 from core.modules.processes.support.process_settings import ProcessSettings
 
-CAPACITY_SETTINGS = {ExecutionLength.INSTANT: ProcessSetting.LANE_CAPACITY_INSTANT, ExecutionLength.SHORT: ProcessSetting.LANE_CAPACITY_SHORT,
-                     ExecutionLength.LONG: ProcessSetting.LANE_CAPACITY_LONG}
+CAPACITY_SETTINGS = {ExecutionLength.INSTANT: ProcessSetting.POOL_CAPACITY_INSTANT, ExecutionLength.SHORT: ProcessSetting.POOL_CAPACITY_SHORT,
+                     ExecutionLength.LONG: ProcessSetting.POOL_CAPACITY_LONG}
 STORED_CLASSES_REASON = "The person's classes are few, and a match reads every one of them."
 PERCENT = 100
 
@@ -34,12 +34,12 @@ class StoredExecutionClasses(PersonClasses):
         stored = self.kept.read(rows, lambda: tuple(row.execution_class for row in rows.every_row(STORED_CLASSES_REASON)), name="processes.execution_classes")
         return tuple(execution_class for execution_class in stored if not execution_class.plugin or self.plugins.is_installed(execution_class.plugin))
 
-    def lane_limits(self) -> LaneLimits:
+    def pool_limits(self) -> PoolLimits:
         capacities = {lane: self.settings.integer(setting) for lane, setting in CAPACITY_SETTINGS.items()}
         share = self.settings.integer(ProcessSetting.STARTER_CAP_PERCENT)
-        return replace(DEFAULT_LANE_LIMITS.with_capacities(capacities), starter_caps={lane: max(1, capacity * share // PERCENT) for lane, capacity in capacities.items()})
+        return replace(DEFAULT_POOL_LIMITS.with_capacities(capacities), starter_caps={lane: max(1, capacity * share // PERCENT) for lane, capacity in capacities.items()})
 
     # a row is refused before it is kept when its cost could never fit its lane
     def validated(self, execution_class: ExecutionClass) -> ExecutionClass:
-        ExecutionClasses.validate(execution_class, self.lane_limits().capacity(execution_class.lane))
+        ExecutionClasses.validate(execution_class, self.pool_limits().capacity(execution_class.lane))
         return execution_class

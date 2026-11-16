@@ -4,7 +4,7 @@ from contextlib import ExitStack, contextmanager
 from engine.enums.window_priority import WindowPriority
 from engine.execution.current_execution import CurrentExecution
 from engine.time.clock import Clock
-from server.errors.lane_busy_error import LaneBusyError
+from server.errors.pool_busy_error import PoolBusyError
 from server.execution.execution_priorities import ExecutionPriorities
 from server.execution.execution_queue import ExecutionQueue
 
@@ -23,7 +23,7 @@ class ViewerTickets:
         with ExitStack() as kept:
             try:
                 ticket = kept.enter_context(self.queue.admitted(ticket, wait_limit_seconds=self.wait_limit_seconds)).ticket
-            except LaneBusyError:
+            except PoolBusyError:
                 pass
             with CurrentExecution(ticket.priority, "viewer", line, ticket).applied():
                 yield

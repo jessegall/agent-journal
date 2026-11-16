@@ -77,7 +77,7 @@ class PluginManifest:
     instruction_blocks: tuple[ManifestInstructionBlock, ...] = ()
     injected_instructions: tuple[str, ...] = ()
     process_categories: tuple[ManifestRunType, ...] = ()
-    heard_events: tuple[HeardEvent, ...] = ()
+    subscribed_events: tuple[HeardEvent, ...] = ()
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -105,7 +105,7 @@ class PluginManifest:
                    tuple(str(entry) for entry in project_reads) if is_list(project_reads) else (), listeners, (), cls.read_protocol(fields["protocol"] if "protocol" in fields else None), cls.read_listed_files(listed),
                    cls.read_config(fields["config"] if "config" in fields else None), str(fields["hook_stamp"]) if "hook_stamp" in fields else "",
                    cls.read_instruction_blocks(fields["instruction_blocks"] if "instruction_blocks" in fields else None), cls.read_listed_files(injected),
-                   cls.read_process_categories(fields["processes"] if "processes" in fields else None)), heard_events=received_events)
+                   cls.read_process_categories(fields["processes"] if "processes" in fields else None)), subscribed_events=received_events)
 
     @classmethod
     def loaded_fields(cls, path: Path, version: FileVersion) -> Mapping[str, object]:
@@ -270,7 +270,7 @@ class PluginManifest:
 
     # the hears entry of an event; an event added by a declared listener is heard with no limits
     def received(self, event: str) -> HeardEvent:
-        return next((received for received in self.heard_events if received.event == event), HeardEvent(event))
+        return next((received for received in self.subscribed_events if received.event == event), HeardEvent(event))
 
     def window_names(self) -> tuple[str, ...]:
         return tuple(window.event for window in self.event_windows)

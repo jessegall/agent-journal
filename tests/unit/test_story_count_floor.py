@@ -8,11 +8,11 @@ from tests.unit.source_tree import source_tree
 
 ROOT = Path(__file__).resolve().parents[2]
 STORIES = ROOT / "tests" / "stories"
-LEDGER = ROOT / "tests" / "unit" / "story_moves"
+STORY_MOVES_FOLDER = ROOT / "tests" / "unit" / "story_moves"
 STORIES_AT_PLAN_START = 5908
-LEDGER_KINDS = ("unit", "integration", "repeat", "folded", "difference")
-DIFFERENCE_KIND = "difference"
-LEDGER_ARROW = " -> "
+MOVE_CATEGORIES = ("unit", "integration", "repeat", "folded", "difference")
+DIFFERENCE_CATEGORY = "difference"
+MOVE_ARROW = " -> "
 
 # The stories of a removed rule are re-homed, never deleted. A commit that adds stories raises
 # STORIES_AT_PLAN_START by as many in the same commit, so the floor keeps up with the count.
@@ -46,16 +46,16 @@ def story_count() -> int:
     return count
 
 
-def ledger_lines(folder: Path = LEDGER) -> list[LedgerLine]:
+def move_lines(folder: Path = STORY_MOVES_FOLDER) -> list[LedgerLine]:
     lines = []
     for file in sorted(folder.glob("*.txt")):
         for number, text in enumerate(file.read_text().splitlines(), 1):
             if not text.strip() or text.lstrip().startswith("#"):
                 continue
-            story, arrow, rest = text.partition(LEDGER_ARROW)
+            story, arrow, rest = text.partition(MOVE_ARROW)
             kind, _, target = rest.strip().partition(" ")
-            key, _, difference_target = target.strip().partition(" ") if kind == DIFFERENCE_KIND else ("", "", target)
-            assert arrow and kind in LEDGER_KINDS and difference_target.strip(), (
+            key, _, difference_target = target.strip().partition(" ") if kind == DIFFERENCE_CATEGORY else ("", "", target)
+            assert arrow and kind in MOVE_CATEGORIES and difference_target.strip(), (
                 f"{file.name}:{number} is no ledger line: write '<story> -> unit|integration|repeat|folded <test>' or '<story> -> difference <key> <test>'")
             lines.append(LedgerLine(file, number, story.strip(), kind, difference_target.strip(), key))
     return lines
@@ -72,12 +72,12 @@ def defines(path: Path, name: str) -> bool:
 
 
 def test_no_story_is_deleted():
-    count = story_count() + len(ledger_lines())
+    count = story_count() + len(move_lines())
     assert count >= STORIES_AT_PLAN_START, f"{STORIES_AT_PLAN_START - count} stories were deleted: re-home the stories of a removed rule instead, or write a ledger line"
 
 
 def test_every_ledger_line_names_a_test_that_exists():
-    for line in ledger_lines():
+    for line in move_lines():
         target_file = ROOT / line.target.split("::", 1)[0]
         story_file, _, story_name = line.story.partition("::")
         assert target_file.exists(), f"{line.file.name}:{line.number} names {line.target}, whose file does not exist"
@@ -87,16 +87,16 @@ def test_every_ledger_line_names_a_test_that_exists():
 def test_a_malformed_ledger_line_is_named(tmp_path):
     (tmp_path / "core.modules.sample.txt").write_text("# a comment\n\ntests/stories/core/modules/sample.py::test_one moved somewhere\n")
     with pytest.raises(AssertionError, match="core.modules.sample.txt:3 is no ledger line"):
-        ledger_lines(tmp_path)
+        move_lines(tmp_path)
 
 
 def test_a_difference_line_names_its_key_and_the_test_of_the_new_behaviour(tmp_path):
     (tmp_path / "core.modules.sample.txt").write_text("tests/stories/a.py::test_one -> difference 3 tests/unit/b.py::test_two\n")
-    line = ledger_lines(tmp_path)[0]
+    line = move_lines(tmp_path)[0]
     assert (line.kind, line.difference_key, line.target) == ("difference", "3", "tests/unit/b.py::test_two")
 
 
 def test_a_difference_line_without_its_test_is_named(tmp_path):
     (tmp_path / "core.modules.sample.txt").write_text("tests/stories/a.py::test_one -> difference 3\n")
     with pytest.raises(AssertionError, match="core.modules.sample.txt:1 is no ledger line"):
-        ledger_lines(tmp_path)
+        move_lines(tmp_path)

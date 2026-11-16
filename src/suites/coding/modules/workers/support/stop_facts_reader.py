@@ -35,7 +35,7 @@ class StopFactsReader:
         tasks = self.unfinished.round_rows(worker_round)
         if not tasks:
             return None
-        is_busy = self.resume.compaction.is_running(worker.id) or self.unfinished.has_running_process(worker.id) or self.handoff.is_pending(worker) or self.waits_on_checkpoint(worker)
+        is_busy = self.resume.compaction.is_running(worker.id) or self.unfinished.has_running_process(worker.id) or self.handoff.is_pending(worker) or self.awaits_checkpoint(worker)
         progress = Minimum("created_at", self.unfinished.last_progress_text(worker.id))
         resume_count = self.queries.query(AgentLine).filter(session_agent_id=worker.id, source=UNFINISHED_TASKS_SOURCE).matching(progress).count()
         return StopFacts(is_busy=is_busy, is_person_stop=self.stop.is_final(worker, actor_id), has_launch_failed=self.launches.has_failed(worker),
@@ -44,7 +44,7 @@ class StopFactsReader:
                          is_main_agent_informed=self.is_main_agent_informed(worker, progress), committed_names=self.unfinished.names(self.unfinished.committed(worker.id)))
 
     # a worker that stopped while the journal tests its checkpoint is woken by their end, not resumed in between
-    def waits_on_checkpoint(self, worker: Agent) -> bool:
+    def awaits_checkpoint(self, worker: Agent) -> bool:
         worktree = self.queries.query(Worktree).filter(session_agent_id=worker.id).matching(IsNull("removed_at")).newest().first()
         return worktree is not None and self.runs.has_running_checkpoint(worktree.id)
 

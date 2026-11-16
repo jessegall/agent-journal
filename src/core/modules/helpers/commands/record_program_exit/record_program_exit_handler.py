@@ -57,7 +57,7 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
                 ends_at = Timestamp(self.clock.timestamp().value + timedelta(minutes=OUTAGE_MINUTES))
                 self.bus.run(MakeProviderOutage(agent.program, problem, ends_at), Actor.core(), environment_id=agent.environment_id)
         job = self.jobs.open_job(agent.id)
-        if job is not None and self.needs_exit_report(agent):
+        if job is not None and self.requires_exit_report(agent):
             self.report_exit(agent, job, command, actor, terminal)
         self.dispatcher.exited(agent, ProgramExit(command.exit_code, command.pid, command.launch_ended), replace(context, actor=actor))
 
@@ -67,7 +67,7 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
         self.system_log.write(LogLevel.INFORMATION, f"{AgentLabel.labelled(agent).text}: the exit of process {command.pid} changed nothing, since process {agent.pid} runs now")
         return True
 
-    def needs_exit_report(self, agent: Agent) -> bool:
+    def requires_exit_report(self, agent: Agent) -> bool:
         has_waiting_job = self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING, source=HELPER_JOB_SOURCE).exists()
         return agent.parent_id is not None and not has_waiting_job
 

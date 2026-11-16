@@ -13,6 +13,6 @@ class CodingMainAgentDriver(Driver):
     suite = "coding"
     gathers = [MainAgentDriver]
     rank_order = MainAgentDriver.rank_order
-    work_stop = WorkStop.REFUSE_WHILE_WORK_REMAINS
+    work_stop = WorkStop.REFUSE_DURING_WORK
     responder = Responder.PERSON
     instructions = ["You are the main agent: what you may do is set by the work controls of this environment; read them with journal setting show"]

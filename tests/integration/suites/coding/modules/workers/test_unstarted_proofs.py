@@ -19,7 +19,7 @@ class CheckoutGone(RuntimeError):
         super().__init__("the checkout is gone")
 
 
-def stuck_queue(story, worker, monkeypatch) -> None:
+def blocked_queue(story, worker, monkeypatch) -> None:
     """A proof is queued, nothing runs in its worktree, and the tick that starts it fails each minute."""
     with monkeypatch.context() as stopped_server:
         stopped_server.setattr(WorkerTestStarts, "start_next", lambda starts, logged: None)
@@ -32,7 +32,7 @@ def stuck_queue(story, worker, monkeypatch) -> None:
 
 def test_a_queued_proof_with_a_free_slot_that_the_tick_cannot_start_reaches_the_main_agent_within_three_minutes_once(two_tasks, monkeypatch):  # noqa: F811
     story, worker, _ = two_tasks
-    stuck_queue(story, worker, monkeypatch)
+    blocked_queue(story, worker, monkeypatch)
     story.advance(timedelta(minutes=2))
     story.run_tick_handler(UNSTARTED_TICK)
     story.expect_absent(f"agent-line list --agent {story.agent.id}", "not started", actor=story.agent)

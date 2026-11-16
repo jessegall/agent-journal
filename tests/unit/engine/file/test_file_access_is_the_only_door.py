@@ -46,7 +46,7 @@ def dotted_name(node: ast.expr) -> str:
     return f"{dotted_name(node.value)}.{node.attr}" if isinstance(node, ast.Attribute) else ""
 
 
-def is_path_only_call(node: ast.AST) -> bool:
+def is_path_argument_call(node: ast.AST) -> bool:
     if not isinstance(node, ast.Call):
         return False
     if dotted_name(node.func) in MODULE_FUNCTIONS:
@@ -59,7 +59,7 @@ def is_path_only_call(node: ast.AST) -> bool:
 # shutil.rmtree, is still caught by its name
 def untyped_bypasses() -> list[str]:
     return [f"{file.relative_to(PROJECT)}:{node.lineno}" for file in sorted(SOURCE.rglob("*.py")) if file != FILE_ACCESS
-            for node in ast.walk(ast.parse(file.read_text(), str(file))) if is_path_only_call(node)]
+            for node in ast.walk(ast.parse(file.read_text(), str(file))) if is_path_argument_call(node)]
 
 
 def test_no_code_outside_file_access_reaches_the_file_system(tmp_path: Path):

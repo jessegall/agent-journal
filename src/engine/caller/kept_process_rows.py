@@ -28,15 +28,15 @@ class KeptProcessRows:
 
     def rows(self, table: ProcessTable, pid: int) -> Mapping[int, ProcessRow]:
         with self.lock:
-            if not self.is_fresh(table, pid):
+            if not self.is_current(table, pid):
                 self.kept = {row.pid: row for row in table.rows()}
                 self.read_at, self.reader = self.clock.epoch_seconds(), self.reader_of(table)
             return dict(self.kept)
 
-    def is_fresh(self, table: ProcessTable, pid: int) -> bool:
+    def is_current(self, table: ProcessTable, pid: int) -> bool:
         if self.reader is not self.reader_of(table) or self.clock.epoch_seconds() - self.read_at >= KEPT_SECONDS:
             return False
-        return self.reaches_the_root(pid)
+        return self.reaches_root_process(pid)
 
     # the machine's table holds nothing of its own, so every instance reads alike unless its rows were replaced; any
     # other table is its own source
@@ -45,7 +45,7 @@ class KeptProcessRows:
         return type(table).rows if type(table) is ProcessTable else table
 
     # a chain that stops at a pid the kept table lacks would end early, so such a chain reads the table again
-    def reaches_the_root(self, pid: int) -> bool:
+    def reaches_root_process(self, pid: int) -> bool:
         viewed: set[int] = set()
         while pid in self.kept and pid not in viewed:
             viewed.add(pid)

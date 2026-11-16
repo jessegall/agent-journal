@@ -13,7 +13,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import resumable_session, EndedHelper, JOB, StartedHelper, read_jobs, helper_agent
 from core.modules.helpers.support.helper_settings import HELPER_MAX_COST
 from core.modules.helpers.ticks.helper_limits_tick import HelperLimitsTick
-from tests.stories.core.modules.helpers.read_only_access import StartedCodexHelper
+from tests.stories.core.modules.helpers.restricted_read_access import StartedCodexHelper
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.modules.documents.support.trail_fixtures import viewer

@@ -55,7 +55,7 @@ def test_a_new_account_asks_for_the_master_password_and_then_logs_in(played):
     client = FakeTunlerClient(authenticated=False, master_needed=True)
     story, _ = account_story(played, client)
     first = answer(story, f"tunler login {TUNLER_HOST} {ACCOUNT} secret-one")
-    expect_needs_master(first)
+    expect_master_required(first)
     expect_absent_connected(first)
     second = answer(story, f"tunler login {TUNLER_HOST} {ACCOUNT} secret-one --master top-secret")
     expect_connected_second(second)
@@ -186,7 +186,7 @@ def expect_logins_client(client, number, expected) -> None:
     assert actual == expected, actual
 
 
-def expect_needs_master(first) -> None:
+def expect_master_required(first) -> None:
     actual = first['needs_master']
     assert actual, actual
 

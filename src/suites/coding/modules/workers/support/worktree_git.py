@@ -20,7 +20,7 @@ from engine.time.polled_wait import PolledWait
 from core.modules.environments.models.environment import Environment
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.support.base_commit import NAME_SEPARATOR, BaseCommit
-from suites.coding.modules.workers.support.contract_clashes import GIT_LIMIT_SECONDS, ContractClashes
+from suites.coding.modules.workers.support.contract_conflicts import GIT_LIMIT_SECONDS, ContractConflicts
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_update import WorktreeUpdate
 from engine.enums.file_status import FileStatus
@@ -120,7 +120,7 @@ class WorktreeGit:
         return self.checked(folder, GIT_LIMIT_SECONDS, "merge-base", base_branch, branch).stdout.strip()
 
     # the files the base branch changed since the commit left it that the commit changed too
-    def base_changes_on_own_files(self, folder: str, base_branch: str, commit: str) -> tuple[str, ...]:
+    def worktree_file_base_changes(self, folder: str, base_branch: str, commit: str) -> tuple[str, ...]:
         base_side = self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", f"{commit}...{base_branch}").stdout.split()
         personal_side = set(self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", f"{base_branch}...{commit}").stdout.split())
         return tuple(name for name in base_side if name in personal_side)
@@ -207,7 +207,7 @@ class WorktreeGit:
         return tuple(name for name in names if PurePosixPath(name).name in DEPENDENCY_FOLDER_NAMES)
 
     def commit(self, worktree: Worktree, message: str, trailer: str) -> bool:
-        self.hold_branch(worktree)
+        self.keep_branch(worktree)
         self.refuse_conflicts(worktree)
         if not self.checked(worktree.folder, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.strip():
             return False
@@ -266,7 +266,7 @@ class WorktreeGit:
 
     # A rebase a killed server or a timeout cut short leaves the head detached, and every later commit would miss the
     # branch: its state is dropped, keeping the head, and the branch is moved up to the head when the head holds it.
-    def hold_branch(self, worktree: Worktree) -> None:
+    def keep_branch(self, worktree: Worktree) -> None:
         folder, git_folder = worktree.folder, self.git_folder(worktree.folder)
         if any(FileAccess.is_dir(git_folder / name) for name in REBASE_FOLDERS):
             self.checked(folder, GIT_LIMIT_SECONDS, "rebase", "--quit")
@@ -296,7 +296,7 @@ class WorktreeGit:
         folders = built.folders(conflicts)
         if folders:
             self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rm", "-r", "-f", "--ignore-unmatch", "--", *folders)
-        resolved = ContractClashes(self).settled(worktree.folder, worktree.base_branch, conflicts)
+        resolved = ContractConflicts(self).resolved_conflicts(worktree.folder, worktree.base_branch, conflicts)
         source_conflicts = built.remainder(self.without_instruction_conflicts(worktree, resolved))
         if not source_conflicts:
             self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "--no-edit")
@@ -421,7 +421,7 @@ class WorktreeGit:
         return len(parents) > 1 and self.is_ancestor(worktree.folder, parents[1], "HEAD")
 
     def update(self, worktree: Worktree) -> WorktreeUpdate:
-        self.hold_branch(worktree)
+        self.keep_branch(worktree)
         self.restore_stashes(worktree)
         self.refuse_conflicts(worktree)
         if self.is_merging(worktree.folder):

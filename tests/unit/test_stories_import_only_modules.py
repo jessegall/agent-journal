@@ -6,7 +6,7 @@ STORIES = ROOT / "tests" / "stories"
 LIST_FILE = STORIES / "engine_import_story_files.txt"
 FORBIDDEN = ("engine", "server", "install", "tunnels")
 STORY_KIT = ("engine.testing",)
-WHAT_TO_DO = "a story imports only modules, suites and the story kit (user 124518): what needs the engine, the server, install or a tunnel is a unit test"
+SERVER_STORIES_RULE = "a story imports only modules, suites and the story kit (user 124518): what needs the engine, the server, install or a tunnel is a unit test"
 
 
 def forbidden_imports(path: Path) -> list[str]:
@@ -33,7 +33,7 @@ def listed() -> list[str]:
 def test_no_unlisted_story_file_imports_the_engine_the_server_install_or_a_tunnel():
     allowed = set(listed())
     reaching = [f"{path.relative_to(ROOT)}: {', '.join(forbidden_imports(path))}" for path in story_files() if path.relative_to(ROOT).as_posix() not in allowed and forbidden_imports(path)]
-    assert reaching == [], WHAT_TO_DO
+    assert reaching == [], SERVER_STORIES_RULE
 
 
 def test_every_listed_story_file_still_imports_one():

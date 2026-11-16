@@ -7,5 +7,5 @@ class StopAnswerType(StrEnum):
     ALLOWED = "allowed"
     REFUSED = "refused"
     HANDOVER = "handover"
-    SAFETY_REST = "safety-rest"
+    SAFETY_PAUSE = "safety-rest"
     COMPACTION_HANDOFF = "compaction-handoff"

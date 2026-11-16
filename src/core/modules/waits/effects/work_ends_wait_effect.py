@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 WAIT_SUBJECT = "waits"
 # the key the wait's end is recorded under
 WORK_ENDS_WAIT_KEY = "waits.work-ends-wait"
-WENT_ON = "the agent went on working"
+CONTINUED_TEXT = "the agent went on working"
 
 
 class WorkEndsWaitEffect(Effect):
@@ -31,4 +31,4 @@ class WorkEndsWaitEffect(Effect):
         if tool is None or (tool.shell is not None and tool.shell.is_journal_line):
             return []
         waits = [required_state.key.subject.row_id for required_state in view.states if isinstance(required_state.state, Waiting) and required_state.key.subject is not None and required_state.key.subject.model == WAIT_SUBJECT]
-        return [EndWait(wait_id, outcome=WENT_ON) for wait_id in sorted(waits)]
+        return [EndWait(wait_id, outcome=CONTINUED_TEXT) for wait_id in sorted(waits)]

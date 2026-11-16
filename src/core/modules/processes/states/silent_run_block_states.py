@@ -10,7 +10,7 @@ from engine.driver.agent_message import AgentMessage
 from engine.time.clock import Clock
 from core.modules.processes.models.enums.pressure_level import PressureLevel
 from core.modules.processes.agent_messages.silent_run_blocked_message import SilentRunBlockedMessage
-from core.modules.processes.support.block_conditions.run_heard_from import RunHeardFrom
+from core.modules.processes.support.block_conditions.run_reported_progress import RunReportedProgress
 from core.modules.processes.support.blocked_run import BlockedRun
 from core.modules.processes.support.blocked_runs import BlockedRuns
 from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
@@ -31,7 +31,7 @@ class SilentRunBlockStates(StateSource):
 
     def states(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[RequiredState | BlockPlan]]:
         held = {agent.agent_id: self.held(agent.agent_id) for agent in agents}
-        return {agent_id: [BlockPlan(SilentRunBlockStates.agent_message(run), RunHeardFrom(run.process.id), SILENT_RUN_KEY, SILENT_RUN_RANK,
+        return {agent_id: [BlockPlan(SilentRunBlockStates.agent_message(run), RunReportedProgress(run.process.id), SILENT_RUN_KEY, SILENT_RUN_RANK,
                                      scope_tools=True, scope_stop=False)]
                 for agent_id, run in held.items() if run is not None}
 

@@ -25,7 +25,7 @@ class WorkerLaunch:
             bus=SimpleNamespace(), clock=SimpleNamespace(), requirement=SimpleNamespace(), places=SimpleNamespace(can_resume=lambda worker: True), program=SimpleNamespace(),
             states=SimpleNamespace(outage_state=lambda program: SimpleNamespace(is_ready=program_ready)), shares=SimpleNamespace(is_configured=False), environments=SimpleNamespace(),
             scopes=SimpleNamespace(row_scope=lambda row: nullcontext()), reports=SimpleNamespace(), routes=SimpleNamespace(listed=lambda: []), rows=SimpleNamespace(),
-            admission=SimpleNamespace(resume_reasons=lambda role, profile: [], model_reasons=lambda role, profile, program, model: []), started_work=SimpleNamespace(),
+            start_check=SimpleNamespace(resume_reasons=lambda role, profile: [], model_reasons=lambda role, profile, program, model: []), started_work=SimpleNamespace(),
             cold=SimpleNamespace(replaced_silent=self.replaced_silent, is_silent=lambda worker: True), instruction_files=SimpleNamespace(refresh=lambda worktree: None),
             compaction=SimpleNamespace(start_record=lambda worker: None), conversations=SimpleNamespace(exists=lambda worker: False), lockdown=SimpleNamespace(lockdown=lambda program: SimpleNamespace(is_active=locked_down)),
             agent_resume=SimpleNamespace(may_resume=lambda worker: True, resume=self.resumed))

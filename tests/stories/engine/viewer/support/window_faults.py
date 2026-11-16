@@ -145,12 +145,12 @@ class ForeignChatPreset(ViewerPreset):
     key, name, text, shape = "chat", "Chat", "The chat", tabs("messages.chat")
 
 
-class BoardAgainPreset(ViewerPreset):
+class RepeatedBoardPreset(ViewerPreset):
     key, name, text, shape = "board", "Board again", "The board again", tabs("presets.board")
 
 
 class ForeignPresets(PresetSet):
-    presets = [BoardPreset, ForeignChatPreset, BoardAgainPreset]
+    presets = [BoardPreset, ForeignChatPreset, RepeatedBoardPreset]
 
 
 class ForeignPresetEntryPoint(EntryPoint):

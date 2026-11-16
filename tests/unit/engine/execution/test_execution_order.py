@@ -3,7 +3,7 @@ from dataclasses import replace
 from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_priority import ExecutionPriority
 from engine.enums.starter_type import StarterType
-from engine.execution.limits.default_lane_limits import DEFAULT_LANE_LIMITS
+from engine.execution.limits.default_lane_limits import DEFAULT_POOL_LIMITS
 from engine.execution.classes.execution_class import ExecutionClass
 from engine.execution.execution_starter import ExecutionStarter
 from engine.execution.execution_ticket import ExecutionTicket
@@ -11,7 +11,7 @@ from engine.execution.execution_order import ExecutionOrder
 from tests.unit.engine.execution.tickets import seconds_after_start, ticket
 
 # one starter holds every sample ticket, so the share per starter is lifted except where a test is about it
-ORDER = ExecutionOrder(replace(DEFAULT_LANE_LIMITS, starter_caps=dict(DEFAULT_LANE_LIMITS.capacities)))
+ORDER = ExecutionOrder(replace(DEFAULT_POOL_LIMITS, starter_caps=dict(DEFAULT_POOL_LIMITS.capacities)))
 CHECK_TIME = seconds_after_start(0)
 IMMEDIATE, RESERVED, AGENT, NORMAL, BACKGROUND = (ExecutionPriority.IMMEDIATE, ExecutionPriority.RESERVED, ExecutionPriority.AGENT,
                                                   ExecutionPriority.NORMAL, ExecutionPriority.BACKGROUND)
@@ -134,13 +134,13 @@ def test_reserved_past_wait_takes_next_room():
 def test_starter_cap_holds_while_other_starter_starts():
     kept = [ticket(AGENT, starter=starter(1)) for _ in range(6)]
     capped, second = ticket(AGENT, starter=starter(1)), ticket(AGENT, starter=starter(2))
-    assert list(ExecutionOrder(DEFAULT_LANE_LIMITS).starting([capped, second], kept, CHECK_TIME, False)) == [second]
+    assert list(ExecutionOrder(DEFAULT_POOL_LIMITS).starting([capped, second], kept, CHECK_TIME, False)) == [second]
 
 
 def test_a_run_that_costs_nothing_passes_a_full_starter_cap():
     kept = [ticket(AGENT, starter=starter(1)) for _ in range(6)]
     free = ticket(AGENT, slot_cost=0, starter=starter(1))
-    assert list(ExecutionOrder(DEFAULT_LANE_LIMITS).starting([free], kept, CHECK_TIME, False)) == [free]
+    assert list(ExecutionOrder(DEFAULT_POOL_LIMITS).starting([free], kept, CHECK_TIME, False)) == [free]
 
 
 def test_class_at_limit_does_not_block_a_build_behind():
@@ -164,7 +164,7 @@ def test_halted_lane_starts_none_and_counts_no_wait():
 
 def test_immediate_ceiling_is_flagged_not_refused():
     several = [ticket(IMMEDIATE, starter=starter(number)) for number in range(65)]
-    assert ORDER.over_ceiling(several) and started_tickets([ticket(IMMEDIATE)], several) != []
+    assert ORDER.exceeds_ceiling(several) and started_tickets([ticket(IMMEDIATE)], several) != []
 
 
 def test_nothing_waits_forever_under_a_steady_stream():
@@ -180,13 +180,13 @@ def test_nothing_waits_forever_under_a_steady_stream():
 
 
 def test_a_starter_with_nothing_running_starts_a_run_costing_more_than_its_cap():
-    small_lane = replace(DEFAULT_LANE_LIMITS, capacities={**DEFAULT_LANE_LIMITS.capacities, ExecutionLength.LONG: 4}, starter_caps={**DEFAULT_LANE_LIMITS.starter_caps, ExecutionLength.LONG: 2})
+    small_pool = replace(DEFAULT_POOL_LIMITS, capacities={**DEFAULT_POOL_LIMITS.capacities, ExecutionLength.LONG: 4}, starter_caps={**DEFAULT_POOL_LIMITS.starter_caps, ExecutionLength.LONG: 2})
     test_run = ticket(ExecutionPriority.AGENT, ExecutionLength.LONG, slot_cost=4)
-    assert ExecutionOrder(small_lane).starting([test_run], [], seconds_after_start(0), False) == (test_run,)
+    assert ExecutionOrder(small_pool).starting([test_run], [], seconds_after_start(0), False) == (test_run,)
 
 
 def test_a_run_that_costs_more_than_its_narrowed_lane_starts_alone_and_waits_beside_another():
-    narrowed = ExecutionOrder(DEFAULT_LANE_LIMITS.with_capacities({**DEFAULT_LANE_LIMITS.capacities, ExecutionLength.LONG: 4}))
+    narrowed = ExecutionOrder(DEFAULT_POOL_LIMITS.with_capacities({**DEFAULT_POOL_LIMITS.capacities, ExecutionLength.LONG: 4}))
     full_run, test_run = ticket(AGENT, ExecutionLength.LONG, slot_cost=8), ticket(AGENT, ExecutionLength.LONG, slot_cost=4)
     assert list(narrowed.starting([full_run], [], CHECK_TIME, False)) == [full_run]
     assert list(narrowed.starting([full_run], [test_run], CHECK_TIME, False)) == []

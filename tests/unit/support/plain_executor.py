@@ -10,7 +10,7 @@ from engine.process.door.run_placement import RunPlacement
 from engine.process.door.runner_program import RunnerProgram
 
 
-class OpenAdmission(ExecutionAdmission):
+class UnlimitedStartCheck(ExecutionAdmission):
     """An admission with no server lanes: every run starts at once."""
 
     def __init__(self) -> None:
@@ -56,4 +56,4 @@ class WaitingPlacement(RunPlacement):
 
 
 def plain_executor() -> ProcessExecutor:
-    return ProcessExecutor(RunPlacement(), RunnerProgram(), OpenGate(), SilentErrors(), OpenAdmission())
+    return ProcessExecutor(RunPlacement(), RunnerProgram(), OpenGate(), SilentErrors(), UnlimitedStartCheck())

@@ -8,7 +8,7 @@ class WorktreeLifecycle(Lifecycle):
     initial = [WorktreeState.NEW]
     editable = ()
     deletable = [WorktreeState.NEW]
-    moves_have_commands = False
+    moves_use_commands = False
 
     cut = Move("cut", [WorktreeState.NEW], WorktreeState.CUT)
     advance = Move("advance", [WorktreeState.CUT], WorktreeState.CUT)

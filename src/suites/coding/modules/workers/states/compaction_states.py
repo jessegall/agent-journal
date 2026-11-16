@@ -41,7 +41,7 @@ class CompactionStates(StateSource):
         if open_compaction is not None and open_compaction.is_open_at(self.clock.timestamp()):
             attempt = RETRY_ATTEMPT if open_compaction.is_retry else FIRST_ATTEMPT
             return self.required_state(open_compaction.id, open_compaction.reason.value, attempt, open_compaction.state is CompactionState.STARTED)
-        if self.compactions.blocks_request(agent_id, self.clock.timestamp()) or not self.limits.needs_compaction(agent_id):
+        if self.compactions.blocks_request(agent_id, self.clock.timestamp()) or not self.limits.compaction_due(agent_id):
             return None
         newest = self.compactions.newest(agent_id)
         attempt = RETRY_ATTEMPT if newest is not None and newest.state is CompactionState.REQUESTED else FIRST_ATTEMPT

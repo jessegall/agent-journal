@@ -33,10 +33,10 @@ class BlockedWorkLines(EventLineSource):
             return []
         assigner = self.assigners.assigner()
         blocked = assigner.blocked_tasks() if assigner is not None else ()
-        if not blocked or self.told_since_last_tool(agent_id):
+        if not blocked or self.given_during_turn(agent_id):
             return []
         return [BlockedTasksMessage.declared().agent_message(tasks=', '.join(str(task_id) for task_id in blocked))]
 
-    def told_since_last_tool(self, agent_id: int) -> bool:
-        spoke_at = self.history.last_spoke(self.key, agent_id)
-        return spoke_at is not None and self.calls.tool_use_counts(agent_id, [spoke_at])[0] == 0
+    def given_during_turn(self, agent_id: int) -> bool:
+        last_given_at = self.history.last_given(self.key, agent_id)
+        return last_given_at is not None and self.calls.tool_use_counts(agent_id, [last_given_at])[0] == 0

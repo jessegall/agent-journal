@@ -40,16 +40,16 @@ def working(work_type: WorkType, work_remains: bool) -> Working:
     return Working(WorkReference(work_type, 6, "task 6"), work_remains, TASK_REFUSAL)
 
 
-def message_hold() -> Blocked:
+def message_block() -> Blocked:
     return Blocked(OpenBlock("messages.unread", 3, MESSAGES_REFUSAL, True, True, False, True, False))
 
 
 def test_an_empty_work_lane_lets_the_stop_through() -> None:
-    assert stack().stop_answer(WorkStop.REFUSE_WHILE_WORK_REMAINS, None).answer_type is StopAnswerType.ALLOWED
+    assert stack().stop_answer(WorkStop.REFUSE_DURING_WORK, None).answer_type is StopAnswerType.ALLOWED
 
 
 def test_a_started_task_refuses_the_stop_of_a_main_agent() -> None:
-    answer = stack(working(WorkType.TASK, True)).stop_answer(WorkStop.REFUSE_WHILE_WORK_REMAINS, None)
+    answer = stack(working(WorkType.TASK, True)).stop_answer(WorkStop.REFUSE_DURING_WORK, None)
     assert (answer.answer_type, answer.refusal_reasons()) == (StopAnswerType.REFUSED, (TASK_REFUSAL,))
 
 
@@ -68,22 +68,22 @@ def test_a_wait_on_top_of_the_work_lets_the_stop_through_and_hands_in_nothing() 
 
 
 def test_every_hold_with_a_stop_scope_refuses_before_the_work_answer() -> None:
-    answer = stack(working(WorkType.TASK, False), message_hold()).stop_answer(WorkStop.REFUSE_WHILE_WORK_REMAINS, None)
+    answer = stack(working(WorkType.TASK, False), message_block()).stop_answer(WorkStop.REFUSE_DURING_WORK, None)
     assert answer.refusal_reasons() == (MESSAGES_REFUSAL,)
 
 
 def test_an_open_escalation_defers_the_stop_scope_of_its_holds() -> None:
     escalation = Escalation(9, EscalationType.STOPS, Responder.PARENT, (3,), (), 5)
-    assert stack(message_hold()).stop_answer(WorkStop.REFUSE_WHILE_WORK_REMAINS, escalation).answer_type is StopAnswerType.ALLOWED
+    assert stack(message_block()).stop_answer(WorkStop.REFUSE_DURING_WORK, escalation).answer_type is StopAnswerType.ALLOWED
 
 
 def test_paused_rests_whatever_else_refuses() -> None:
     paused = Paused((PauseCause(1, 4, STARTED_AT),), "The user paused you")
-    answer = stack(working(WorkType.TASK, True), message_hold(), paused).stop_answer(WorkStop.REFUSE_WHILE_WORK_REMAINS, None)
-    assert answer.answer_type is StopAnswerType.SAFETY_REST
+    answer = stack(working(WorkType.TASK, True), message_block(), paused).stop_answer(WorkStop.REFUSE_DURING_WORK, None)
+    assert answer.answer_type is StopAnswerType.SAFETY_PAUSE
 
 
 def test_compacting_answers_the_stop_itself() -> None:
     compacting = Compacting(2, "context limit", 1, False)
-    answer = stack(working(WorkType.TASK, True), compacting).stop_answer(WorkStop.REFUSE_WHILE_WORK_REMAINS, None)
+    answer = stack(working(WorkType.TASK, True), compacting).stop_answer(WorkStop.REFUSE_DURING_WORK, None)
     assert answer.answer_type is StopAnswerType.COMPACTION_HANDOFF

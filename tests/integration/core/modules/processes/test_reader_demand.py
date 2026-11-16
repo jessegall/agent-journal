@@ -137,22 +137,22 @@ def test_a_read_a_search_and_a_journal_command_never_need_a_reader(played):
     story = played(BuilderStarted)
     demands = story.container.get(ReaderDemands)
     for category in (CommandCategory.READ, CommandCategory.SEARCH, CommandCategory.JOURNAL):
-        story.expect_rows(not demands.needs_reader(PartSpec("read", "read", category=category)))
+        story.expect_rows(not demands.requires_reader(PartSpec("read", "read", category=category)))
 
 
 def test_a_quick_check_needs_no_reader_until_a_run_of_it_moved_to_the_background(played):
     story = played(BuilderStarted)
     demands = story.container.get(ReaderDemands)
     part = PartSpec("custom-check src", "custom-check", category=CommandCategory.CHECK)
-    story.expect_rows(not demands.needs_reader(part))
+    story.expect_rows(not demands.requires_reader(part))
     moved_run(story, part.text, CommandCategory.CHECK)
-    story.expect_rows(demands.needs_reader(part))
+    story.expect_rows(demands.requires_reader(part))
 
 
 def test_a_help_or_version_line_of_a_test_tool_needs_no_reader(played):
     story = played(BuilderStarted)
     for flag in ("--help", "--version", "--collect-only", "--list-tests"):
-        story.expect_rows(not story.container.get(ReaderDemands).needs_reader(PartSpec(f"pytest {flag}", "pytest", category=CommandCategory.TEST_RUN)))
+        story.expect_rows(not story.container.get(ReaderDemands).requires_reader(PartSpec(f"pytest {flag}", "pytest", category=CommandCategory.TEST_RUN)))
 
 
 def test_a_test_reader_with_no_count_is_not_proper_and_a_build_reader_with_none_is(played):

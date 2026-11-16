@@ -25,7 +25,7 @@ class Capabilities:
             target, _, outcome = entry.partition(" ")[0].partition("=")
             name, _, part_event = target.partition(":")
             part, _, event = part_event.partition(":")
-            if name == program and outcome in (CapabilityProof.PROVED_LIVE, CapabilityProof.REFUSED_LIVE):
+            if name == program and outcome in (CapabilityProof.PROVED_RUNNING, CapabilityProof.REFUSED_RUNNING):
                 found[(part, event)] = CapabilityProof(outcome)
         return Capabilities(*(replace(capability, proof=found.get((capability.part.value, capability.event.value), capability.proof)) for capability in self.capabilities))
 

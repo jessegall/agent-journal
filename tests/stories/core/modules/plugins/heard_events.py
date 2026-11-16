@@ -13,7 +13,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 LISTING_SAMPLE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, []))
 
 
-def heard_story(new_story, received: list[object]):
+def received_story(new_story, received: list[object]):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     folder = sample_plugin_folder(story.home.folder.parent)
@@ -28,7 +28,7 @@ def tool_deliveries(story) -> int:
 
 
 def test_a_hears_entry_that_names_its_tools_gets_no_delivery_for_another_tool(new_story):
-    story = heard_story(new_story, [{"event": "tool_starting", "tools": ["Edit"]}])
+    story = received_story(new_story, [{"event": "tool_starting", "tools": ["Edit"]}])
     story.hook("s-1", LISTING_SAMPLE)
     story.expect_rows(tool_deliveries(story) == 0)
     story.hook("s-1", HookSamples.edit("a.py"))
@@ -36,7 +36,7 @@ def test_a_hears_entry_that_names_its_tools_gets_no_delivery_for_another_tool(ne
 
 
 def test_a_hears_entry_with_an_interval_gets_one_delivery_within_it(new_story):
-    story = heard_story(new_story, [{"event": "tool_starting", "every_minutes": 5}])
+    story = received_story(new_story, [{"event": "tool_starting", "every_minutes": 5}])
     story.hook("s-1", LISTING_SAMPLE)
     story.hook("s-1", LISTING_SAMPLE)
     story.expect_rows(tool_deliveries(story) == 1)

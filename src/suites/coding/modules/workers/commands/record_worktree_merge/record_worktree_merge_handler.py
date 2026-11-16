@@ -63,7 +63,7 @@ class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
             self.repository.save_change(waiting_request, waiting_request.moved(MergeAskLifecycle.merge), context)
         merged = replace(worktree.merge(context.timestamp, context.actor), commit_before_merge=command.commit_before_merge, commit_after_merge=command.commit_after_merge,
                          merged_task_ids=worktree.with_merged([delivered.id for delivered in delivered_tasks]))
-        return MergeOutcome(self.repository.save_change(worktree, merged, context), (), left_open=remaining_open)
+        return MergeOutcome(self.repository.save_change(worktree, merged, context), (), open_task_ids=remaining_open)
 
     def delivered_tasks(self, worktree: Worktree, task: Task) -> list[Task]:
         delivered = tuple(self.queries.query(Task).matching(TaskQuery.assignee(worktree.session_agent_id)).filter(state=TaskState.TESTING).every_row(UNIT_TASKS_REASON))

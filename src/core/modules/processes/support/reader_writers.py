@@ -32,7 +32,7 @@ class ReaderWriters:
         if actor.type is not ActorType.AGENT:
             return ()
         agent = self.agents.find(actor.id)
-        if not self.types.behaviours(agent.role).needs_readers:
+        if not self.types.behaviours(agent.role).requires_readers:
             return ()
         return self.requests.agent_open_rows(actor.id)
 
@@ -43,7 +43,7 @@ class ReaderWriters:
             raise Refusal("save a reader only for your own open reader request", "read your request before saving")
 
     def check_attempts(self, request: ReaderRequest) -> None:
-        if self.attempts.needs_help(request):
+        if self.attempts.requires_help(request):
             raise Refusal(f"reader request {request.id} needs the main agent after failed saves", "stop; the main agent is asked to help")
 
     def check(self, actor: Actor) -> None:

@@ -42,7 +42,7 @@ class SampleRows:
         return self.rows
 
 
-class NoKeeping:
+class NeverStoredClasses:
     """Reads the rows each time, as a test with no database needs."""
 
     def read(self, query, loader, name: str):
@@ -50,7 +50,7 @@ class NoKeeping:
 
 
 def stored(*rows: ExecutionClassRow, **settings: int) -> StoredExecutionClasses:
-    return StoredExecutionClasses(SampleRows(*rows), SampleSettings(**settings), NoKeeping(), InstalledPlugins())  # type: ignore[arg-type]
+    return StoredExecutionClasses(SampleRows(*rows), SampleSettings(**settings), NeverStoredClasses(), InstalledPlugins())  # type: ignore[arg-type]
 
 
 def line(text: str, category: CommandCategory) -> ExecutionSubject:
@@ -68,7 +68,7 @@ def test_person_pattern_row_matches_a_line():
 
 
 def test_lane_limits_follow_the_settings():
-    limits = stored(LANE_CAPACITY_LONG=16, STARTER_CAP_PERCENT=25).lane_limits()
+    limits = stored(POOL_CAPACITY_LONG=16, STARTER_CAP_PERCENT=25).pool_limits()
     assert (limits.capacity(ExecutionLength.LONG), limits.starter_cap(ExecutionLength.LONG)) == (16, 4)
 
 

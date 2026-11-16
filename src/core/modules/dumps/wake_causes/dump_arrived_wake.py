@@ -16,7 +16,7 @@ class DumpArrivedWake(WakeCause):
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
-    def needs_wake(self, view: AgentView) -> bool:
+    def requires_wake(self, view: AgentView) -> bool:
         if view.agent.agent_type != MAIN_AGENT_TYPE or view.newest_hook_at is None:
             return False
         return self.queries.query(Dump).filter(closed_at=None).matching(Greater("created_at", Timestamp(view.newest_hook_at).text)).exists()

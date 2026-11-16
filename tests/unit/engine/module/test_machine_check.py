@@ -21,7 +21,7 @@ class SampleDriver(Driver):
     name = "samples.main"
     agent_type = "main"
     rank_order = RankOrder((), ("samples.unread",))
-    work_stop = WorkStop.REFUSE_WHILE_WORK_REMAINS
+    work_stop = WorkStop.REFUSE_DURING_WORK
     responder = Responder.PERSON
 
 

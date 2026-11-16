@@ -28,7 +28,7 @@ FOLLOWED_PLAN_STATES = ("approved", "started")
 
 TASK_PAGE_ROWS = 50
 BLOCKED_TASKS_REASON = "an agent's current tasks are every task it holds started, which its open-task setting bounds"
-NAMED_TASKS_REASON = "the tasks one step names by number, a few at most; a number with no task is no task"
+LISTED_TASKS_REASON = "the tasks one step names by number, a few at most; a number with no task is no task"
 ASSIGNED_TASKS_REASON = "the tasks assigned to an agent are its whole unit of work, which can hold more than fifty tasks"
 
 class TaskQuery(Query[Task], KeptRowChanges[Task]):
@@ -39,11 +39,11 @@ class TaskQuery(Query[Task], KeptRowChanges[Task]):
         super().__init__(database, tables, Task)
         self.kept = kept
 
-    def named_tasks(self, task_ids: Sequence[int]) -> tuple[Task, ...]:
+    def listed_tasks(self, task_ids: Sequence[int]) -> tuple[Task, ...]:
         if not task_ids:
             return ()
         tasks = self.matching(Among("id", tuple(sorted(set(task_ids)))))
-        return self.kept.read(tasks, lambda: tuple(tasks.every_row(NAMED_TASKS_REASON)), name="tasks.named_tasks")
+        return self.kept.read(tasks, lambda: tuple(tasks.every_row(LISTED_TASKS_REASON)), name="tasks.named_tasks")
 
     def started_tasks(self, agent_id: int) -> tuple[Task, ...]:
         tasks = self.holder_started(agent_id)

@@ -3,7 +3,7 @@ import time
 from collections.abc import Callable
 from datetime import datetime, timezone
 
-from engine.execution.held_write_turn import HELD_WRITE_TURN
+from engine.execution.thread_turn_count import THREAD_TURN_COUNT
 from engine.time.timestamp import Timestamp
 
 
@@ -18,11 +18,11 @@ class Clock:
         return self.timestamp().value.timestamp()
 
     def sleep(self, seconds: float) -> None:
-        HELD_WRITE_TURN.refuse_wait(f"a sleep of {seconds} seconds")
+        THREAD_TURN_COUNT.refuse_wait(f"a sleep of {seconds} seconds")
         time.sleep(seconds)
 
     def join(self, thread: threading.Thread, limit_seconds: float | None = None) -> None:
-        HELD_WRITE_TURN.refuse_wait(f"the end of thread {thread.name}")
+        THREAD_TURN_COUNT.refuse_wait(f"the end of thread {thread.name}")
         thread.join(limit_seconds)
 
     def poll(self, has_happened: Callable[[], bool], limit_seconds: float, pause_seconds: float) -> bool:

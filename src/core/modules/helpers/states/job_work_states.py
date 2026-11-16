@@ -53,5 +53,5 @@ class JobWorkStates(StateSource):
     def ends(self, subjects: Sequence[RowReference]) -> Mapping[RowReference, StateEnd]:
         job_ids = [subject.row_id for subject in subjects if subject.model == JOB_SUBJECT]
         jobs = self.queries.query(HelperJob).matching(Among("id", job_ids)).every_row(ENDED_JOBS_REASON) if job_ids else []
-        return {RowReference(JOB_SUBJECT, job.id): StateEnd.HANDED_IN if job.handover_state is HandoverState.COMPLETED else StateEnd.CLOSED
+        return {RowReference(JOB_SUBJECT, job.id): StateEnd.SUBMITTED if job.handover_state is HandoverState.COMPLETED else StateEnd.CLOSED
                 for job in jobs if job.ended_at is not None}

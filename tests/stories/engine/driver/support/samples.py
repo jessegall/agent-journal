@@ -118,7 +118,7 @@ class Lead(Driver):
     agent_type = AgentRole.MAIN
     gathers = [MainAgentDriver]
     rank_order = MainAgentDriver.rank_order
-    work_stop = WorkStop.REFUSE_WHILE_WORK_REMAINS
+    work_stop = WorkStop.REFUSE_DURING_WORK
     responder = Responder.PERSON
     instructions = ["You are the sample lead"]
 
@@ -137,7 +137,7 @@ class ControlLead(Driver):
     agent_type = AgentRole.MAIN
     gathers = [MainAgentDriver]
     rank_order = MainAgentDriver.rank_order
-    work_stop = WorkStop.REFUSE_WHILE_WORK_REMAINS
+    work_stop = WorkStop.REFUSE_DURING_WORK
     responder = Responder.PERSON
     instructions = ["You are the control lead"]
 

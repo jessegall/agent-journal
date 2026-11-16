@@ -1,7 +1,7 @@
 from engine.agent_machine.contracts.event_policy import EventPolicy
 from engine.driver.hook_event import HookEvent
 from engine.driver.agent_message import AgentMessage
-from core.modules.drivers.support.read_only_access import ReadOnlyAccess
+from core.modules.drivers.support.restricted_read_access import RestrictedReadAccess
 
 
 class AccessPolicy(EventPolicy):
@@ -11,7 +11,7 @@ class AccessPolicy(EventPolicy):
     key = "drivers.access"
     rank = "access.all"
 
-    def __init__(self, access: ReadOnlyAccess) -> None:
+    def __init__(self, access: RestrictedReadAccess) -> None:
         self.access = access
 
     def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:

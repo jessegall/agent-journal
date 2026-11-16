@@ -10,7 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ENGINE = ROOT / "src" / "engine"
-SNAPSHOT = ROOT / "tests" / "snapshots" / "engine_contract.json"
+CONTRACT_FILE = ROOT / "tests" / "snapshots" / "engine_contract.json"
 CONTRACT_USE = re.compile(r"use = AreaUse\.CONTRACT\b")
 
 
@@ -62,5 +62,5 @@ def written() -> dict[str, object]:
 
 
 if __name__ == "__main__":
-    SNAPSHOT.write_text(json.dumps(written(), indent=2, sort_keys=True) + "\n")
+    CONTRACT_FILE.write_text(json.dumps(written(), indent=2, sort_keys=True) + "\n")
     sys.stdout.write(f"{len(written()['classes'])} public classes pinned at engine {engine_version()}\n")

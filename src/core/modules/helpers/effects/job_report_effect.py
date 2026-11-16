@@ -33,7 +33,7 @@ class JobReportEffect(Effect):
     agent_types = [HELPER_TYPE]
     # the work stop under which this type's allowed stop hands its job in
     report_contract: ClassVar[WorkStop] = WorkStop.HANDOVER
-    timing = EffectTiming.WHEN_ALLOWED
+    timing = EffectTiming.PERMITTED
     is_required = True
     completes_work = True
     failure = UnsavedReportMessage

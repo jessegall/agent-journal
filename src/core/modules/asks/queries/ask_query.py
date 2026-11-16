@@ -19,13 +19,13 @@ class AskQuery(Query[Ask]):
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, Ask)
 
-    def open_of(self, asker_id: int) -> list[Ask]:
+    def asker_open_asks(self, asker_id: int) -> list[Ask]:
         return self.filter(asker_id=asker_id).matching(IsNull("closed_at")).oldest().get()
 
     def steps(self, question_id: int) -> list[AskStep]:
         return self.step_rows().filter(ask_id=question_id).oldest().get()
 
-    def open_at_level(self, profile: str) -> list[AskStep]:
+    def level_open_steps(self, profile: str) -> list[AskStep]:
         return self.open_steps().filter(profile=profile).oldest().get()
 
     def waiting_for(self, profile: str) -> list[AskStep]:

@@ -8,8 +8,8 @@ from engine.enums.command_category import CommandCategory
 from core.modules.drivers.agent_messages.database_file_message import DatabaseFileMessage
 
 DATABASE_PATH = re.compile(r"\.journal/version-5\.db(?:-wal|-shm)?(?![\w-])")
-READ_ONLY_FLAG = "-readonly"
-READING = (CommandCategory.READ, CommandCategory.SEARCH)
+SQLITE_READONLY_FLAG = "-readonly"
+READ_CATEGORIES = (CommandCategory.READ, CommandCategory.SEARCH)
 
 
 class DatabaseFilePolicy(EventPolicy):
@@ -31,4 +31,4 @@ class DatabaseFilePolicy(EventPolicy):
 
     @staticmethod
     def writes_database(part: Part) -> bool:
-        return DATABASE_PATH.search(part.text) is not None and READ_ONLY_FLAG not in part.arguments and part.classification.category not in READING
+        return DATABASE_PATH.search(part.text) is not None and SQLITE_READONLY_FLAG not in part.arguments and part.classification.category not in READ_CATEGORIES

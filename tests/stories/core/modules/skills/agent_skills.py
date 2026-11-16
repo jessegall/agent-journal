@@ -11,7 +11,7 @@ from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import start_process
 from tests.stories.core.modules.skills.support.skill_samples import PATH
-from tests.stories.core.support.coding_fixtures import BuilderStartedWithoutPlainWords
+from tests.stories.core.support.coding_fixtures import BuilderStartedWordCheckDisabled
 
 GOOD = f"{PATH}:GoodSkillsModule"
 NOTES_FILE = ".claude/skills/journal-notes/SKILL.md"
@@ -26,7 +26,7 @@ def read_row(story, relative: str, session: str = "s-1"):
 
 
 def started(new_story):
-    story = new_story(GOOD, fixture=BuilderStartedWithoutPlainWords)
+    story = new_story(GOOD, fixture=BuilderStartedWordCheckDisabled)
     story.run("skill write")
     return story
 

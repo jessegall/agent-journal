@@ -49,7 +49,7 @@ class NextTask(TaskAssigner[Task]):
         return self.context_limit.tokens(agent_id) is not None
 
     def allows_stop_with_tasks(self, agent_id: int) -> bool:
-        return self.context_limit.needs_compaction(agent_id)
+        return self.context_limit.compaction_due(agent_id)
 
     def urgent(self, excluded_id: int | None = None) -> Task | None:
         most_urgent = self.tasks.next_open(excluded_id, self.plan_tasks.plan_exclusion())
@@ -59,9 +59,9 @@ class NextTask(TaskAssigner[Task]):
         return self.plan_order.first_started_plan_task(self.reserved_ready(agent_id, excluded_id))
 
     def rule_reserved(self, agent_id: int, excluded_id: int | None = None) -> Task | None:
-        return self.rule_reserved_of(self.reserved_ready(agent_id, excluded_id), agent_id)
+        return self.rule_reserved_task(self.reserved_ready(agent_id, excluded_id), agent_id)
 
-    def rule_reserved_of(self, ready: tuple[Task, ...], agent_id: int) -> Task | None:
+    def rule_reserved_task(self, ready: tuple[Task, ...], agent_id: int) -> Task | None:
         return self.plan_order.first_started_plan_task(self.rule_tasks.given(ready, agent_id))
 
     def reserved_ready(self, agent_id: int, excluded_id: int | None) -> tuple[Task, ...]:
@@ -82,7 +82,7 @@ class NextTask(TaskAssigner[Task]):
                 ready.append(self.reserved_ready(agent_id, excluded_id))
             return ready[0]
 
-        planned = self.focused.first_started(self.queries.query(Agent).find(agent_id), excluded_id, lambda: self.rule_reserved_of(ready_tasks(), agent_id))
+        planned = self.focused.first_started(self.queries.query(Agent).find(agent_id), excluded_id, lambda: self.rule_reserved_task(ready_tasks(), agent_id))
         if planned is not None:
             return planned
         return open_task if open_task is not None else self.plan_order.first_started_plan_task(ready_tasks())

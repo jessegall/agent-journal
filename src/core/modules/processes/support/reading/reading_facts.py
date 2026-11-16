@@ -69,7 +69,7 @@ class ReadingFacts:
                            draft_fits=self.draft_fits(process, part, reader, point), output=self.output(process, part, point),
                            runs_without_change=runs_without_change,
                            waiting_request=waiting_request, skipped=self.resets.skipped_after(command_key, process.creation_timestamp()),
-                           has_unreadable_mark=is_flagged, reader_required=behaviours.needs_readers,
+                           has_unreadable_mark=is_flagged, reader_required=behaviours.requires_readers,
                            reader_writing_allowed=self.writers.allows(Actor(agent.id, ActorType.AGENT)), role_uses_saved_commands=behaviours.runs_saved_commands,
                            readers_forced=self.settings.flag(ProcessSetting.READERS_FORCED))
 

@@ -57,8 +57,8 @@ class InactiveHelperLines(EventLineSource):
 
     def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         now = self.clock.timestamp()
-        spoke_at = self.history.last_spoke(self.key, agent_id)
-        if spoke_at is not None and spoke_at.elapsed_seconds(now) < self.settings.minutes(INACTIVE_HELPER_MINUTES).count:
+        last_given_at = self.history.last_given(self.key, agent_id)
+        if last_given_at is not None and last_given_at.elapsed_seconds(now) < self.settings.minutes(INACTIVE_HELPER_MINUTES).count:
             return []
         grace = self.settings.minutes(INACTIVE_HELPER_GRACE_MINUTES)
         activities = self.activities.read(event, agent_id)

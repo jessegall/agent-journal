@@ -32,8 +32,8 @@ class MergeCheckoutLines(EventLineSource):
         self.rows, self.delivered, self.proofs, self.git, self.history, self.numbers, self.clock = rows, delivered, proofs, git, history, numbers, clock
 
     def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        spoke_at = self.history.last_spoke(self.key, agent_id)
-        if spoke_at is not None and spoke_at.elapsed_seconds(self.clock.timestamp()) < REMINDER_SPAN.count:
+        last_given_at = self.history.last_given(self.key, agent_id)
+        if last_given_at is not None and last_given_at.elapsed_seconds(self.clock.timestamp()) < REMINDER_SPAN.count:
             return []
         delivered = list(self.delivered.delivered())
         environments = self.rows.required_index(Environment, [worktree.environment_id for worktree in delivered])

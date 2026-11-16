@@ -48,7 +48,7 @@ const runs = computed(() =>
 );
 const rows = computed(() => docked.value.filter((item) => !runs.value.includes(item) && !isRunItem(item, dockDeclaration)));
 const sizeChoice = rememberedRef(`dock-size:${store.identity?.root || location.host}`, null);
-const waitsOnPerson = (item) => Boolean(dockDeclaration(item.type)?.needs_user);
+const waitsOnPerson = (item) => Boolean(dockDeclaration(item.type)?.person_required);
 // a card that waits on the user, or the only card in the dock, docks open whatever the chat's scroll or the others' size choice says, until the user folds it
 const handFolded = ref(new Set());
 const scrollFolded = ref(new Set());

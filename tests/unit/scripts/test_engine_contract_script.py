@@ -1,12 +1,12 @@
 import json
 
-from scripts.engine_contract import SNAPSHOT, contract, engine_version, needed_move
+from scripts.engine_contract import CONTRACT_FILE, contract, engine_version, needed_move
 
 PINNED = {"model.Model": {"bases": [], "fields": ["id: int"], "methods": ["save(self) -> None"]}}
 
 
 def test_the_snapshot_holds_the_live_contract_or_the_version_moved_by_the_rule():
-    copy = json.loads(SNAPSHOT.read_text())
+    copy = json.loads(CONTRACT_FILE.read_text())
     assert needed_move(copy["classes"], contract(), copy["engine_version"], engine_version()) is None
 
 

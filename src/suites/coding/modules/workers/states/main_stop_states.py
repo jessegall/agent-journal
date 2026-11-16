@@ -60,9 +60,9 @@ class MainStopStates(StateSource):
             reason = Reason(MAIN_STOP_KEY, DecisionClass.HOLD, MAIN_STOP_RANK, TaskAssignmentMessage.declared().agent_message(task=handed.id).text)
             return [RequiredState(Working(WorkReference(WorkType.HANDED_TASK, handed.id, f"task {handed.id}"), True, reason), MAIN_STOP_RANK,
                          StateKey("Working", RowReference(Task.model_name, handed.id), f"handed-task:{handed.id}"))]
-        return self.own_tasks(agent_id) if is_stop else []
+        return self.main_agent_tasks(agent_id) if is_stop else []
 
-    def own_tasks(self, agent_id: int) -> list[RequiredState | BlockPlan]:
+    def main_agent_tasks(self, agent_id: int) -> list[RequiredState | BlockPlan]:
         if self.work.is_stop_compacting(agent_id) or self.tasks.started_tasks(agent_id):
             return []
         task_ids = self.assigner.agent_tasks([agent_id]).get(agent_id, ())
@@ -71,5 +71,5 @@ class MainStopStates(StateSource):
         text = UnfinishedTasksMessage.declared().agent_message(tasks=", ".join(str(task_id) for task_id in task_ids)).text
         remains = not self.notices.has_notice(agent_id, text, UNFINISHED_TASKS_TEXT)
         tasks = ",".join(str(task_id) for task_id in task_ids)
-        return [RequiredState(Working(WorkReference(WorkType.OWN_TASKS, agent_id, f"tasks {tasks}"), remains, Reason(MAIN_STOP_KEY, DecisionClass.HOLD, MAIN_STOP_RANK, text)),
+        return [RequiredState(Working(WorkReference(WorkType.MAIN_AGENT_TASKS, agent_id, f"tasks {tasks}"), remains, Reason(MAIN_STOP_KEY, DecisionClass.HOLD, MAIN_STOP_RANK, text)),
                      MAIN_STOP_RANK, StateKey("Working", RowReference(Agent.model_name, agent_id), f"own-tasks:{tasks}"))]

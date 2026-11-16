@@ -23,7 +23,7 @@ class AgentTriggerGuard(Guard[Changed[Trigger]]):
         if isinstance(event, Deleted):
             return
         old, new = event.old_row, event.row
-        if not self.approval.needs_user(context.actor):
+        if not self.approval.person_required(context.actor):
             return
         if not new.needs_enabling and (old is None or old.needs_enabling):
             raise UserApprovalRefusal(f"Enable trigger {new.id}?", ("trigger", "enable", str(new.id)))

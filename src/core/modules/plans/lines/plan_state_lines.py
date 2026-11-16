@@ -42,7 +42,7 @@ class PlanStateLines(EventLineSource):
         self.plans, self.history, self.queries = plans, history, queries
 
     def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        start = self.history.last_spoke(self.key, agent_id) or self.queries.query(Agent).find(agent_id).creation_timestamp()
+        start = self.history.last_given(self.key, agent_id) or self.queries.query(Agent).find(agent_id).creation_timestamp()
         changed = self.plans.matching(Greater("updated_at", start.text)).matching(Among("state", tuple(STATE_AGENT_MESSAGES))).every_row(CHANGED_PLANS_REASON)
         return [self.plan_agent_message(plan) for plan in changed]
 

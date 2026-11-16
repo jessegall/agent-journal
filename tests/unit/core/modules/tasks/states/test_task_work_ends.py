@@ -7,7 +7,7 @@ from core.modules.tasks.states.task_work_states import TaskWorkStates
 
 
 def ends(*tasks: SimpleNamespace):
-    named = SimpleNamespace(named_tasks=lambda task_ids: tuple(tasks))
+    named = SimpleNamespace(listed_tasks=lambda task_ids: tuple(tasks))
     return TaskWorkStates(None, None, None, None, None, None, named).ends([RowReference("task", task.id) for task in tasks])
 
 

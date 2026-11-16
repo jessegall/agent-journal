@@ -3,7 +3,7 @@ from collections.abc import Generator
 from contextlib import contextmanager
 
 from engine.database.turn_depth import TurnDepth
-from engine.execution.held_write_turn import HELD_WRITE_TURN
+from engine.execution.thread_turn_count import THREAD_TURN_COUNT
 
 
 class WriteTurns(ABC):
@@ -18,7 +18,7 @@ class WriteTurns(ABC):
         depth = self.depth.count
         if depth == 0:
             self.acquire()
-            HELD_WRITE_TURN.count += 1
+            THREAD_TURN_COUNT.count += 1
             self.depth.statements = 0
         self.depth.count = depth + 1
         try:
@@ -26,7 +26,7 @@ class WriteTurns(ABC):
         finally:
             self.depth.count = depth
             if depth == 0:
-                HELD_WRITE_TURN.count -= 1
+                THREAD_TURN_COUNT.count -= 1
                 self.release()
 
     def count_statement(self) -> None:

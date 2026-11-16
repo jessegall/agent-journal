@@ -6,7 +6,7 @@ RUNNER_REPORTS = ("process part-start", "process part-end", "process end", "proc
 LAUNCHER_REPORTS = ("agent exited",)
 # every agent follows a sequence, says it is stuck, asks for a protected file, reacts to a message and waits on its
 # own output through output monitor, which asks output status
-EVERY_AGENT_LINES = ("sequence run", "sequence follow", "sequence next", "sequence abandon", "sequence-run list", "wait stuck", "permission ask",
+COMMON_AGENT_COMMANDS = ("sequence run", "sequence follow", "sequence next", "sequence abandon", "sequence-run list", "wait stuck", "permission ask",
                      "message react", "output status")
 BASE_COMMANDS = CommandAllowList(lines=("message unread", "message read", "message reply", "message send", "skill list", "skill show", "skill required",
-                                        "skill requirements", "output read", *RUNNER_REPORTS, *LAUNCHER_REPORTS, *EVERY_AGENT_LINES))
+                                        "skill requirements", "output read", *RUNNER_REPORTS, *LAUNCHER_REPORTS, *COMMON_AGENT_COMMANDS))

@@ -1,7 +1,7 @@
 from contextlib import AbstractContextManager
 
 from engine.journal.journal_home import JournalHome
-from engine.process.door.lane_door import LaneDoor
+from engine.process.door.pool_door import PoolDoor
 from engine.process.door.placed_run import PlacedRun
 
 
@@ -13,4 +13,4 @@ class ExecutionAdmission:
         self.home = home
 
     def admitted(self, run: PlacedRun) -> AbstractContextManager[None]:
-        return LaneDoor.shared(self.home).admitted(run)
+        return PoolDoor.shared(self.home).admitted(run)

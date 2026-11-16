@@ -46,7 +46,7 @@ class ProgramCommandSubcommand(ReadSubcommand[list[str] | ProgramCommandLine]):
     def read(self, arguments: Namespace, caller: Caller) -> list[str] | ProgramCommandLine:
         provider = self.providers.provider(arguments.program)
         variables = dict(provider.launch_variables(self.home))
-        if provider.needs_launch_variables and arguments.format == FORMATS[0]:
+        if provider.requires_launch_variables and arguments.format == FORMATS[0]:
             raise Refusal(f"{provider.title} starts only with the journal's own settings folder, which this launcher does not pass",
                           "update the journal's launcher with install.sh, then launch again")
         self.sync.prepare(arguments.program)

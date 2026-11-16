@@ -18,7 +18,7 @@ from core.modules.processes.models.enums.process_setting import ProcessSetting
 def test_a_proof_test_waits_in_the_queue_until_the_run_holding_the_spot_ends(played):
     story = played(OpenTaskOrchestrator)
     recorded_test_launches(story)
-    story.expect_success(f"setting set {ProcessSetting.LANE_CAPACITY_LONG.key} {RUN_SLOT_COST} --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.POOL_CAPACITY_LONG.key} {RUN_SLOT_COST} --environment main", actor=story.user)
     story.run("agent start s-reader claude worker --environment main")
     holder = worker_run(story, "make holder")
     repository = repository_environment(story)

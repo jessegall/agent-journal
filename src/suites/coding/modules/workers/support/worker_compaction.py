@@ -21,7 +21,7 @@ class WorkerCompaction:
     def __init__(self, limit_check: ContextLimitCheck, providers: Providers, compactions: ContextCompactions, worktrees: WorktreeQuery, rows: EventRows) -> None:
         self.limit_check, self.providers, self.compactions, self.worktrees, self.rows = limit_check, providers, compactions, worktrees, rows
 
-    def is_over_limit(self, worker_id: int) -> bool:
+    def exceeds_limit(self, worker_id: int) -> bool:
         return self.limit_check.tokens(worker_id) is not None
 
     def is_after_task(self, worker_id: int) -> bool:

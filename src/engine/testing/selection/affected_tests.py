@@ -5,10 +5,10 @@ from engine.testing.selection.function_bodies import FunctionBodies
 from engine.testing.selection.test_map import TestMap
 from engine.testing.selection.test_map_recorder import PROJECT_FOLDER
 
-EVERYTHING = "tests"
+FULL_TEST_FOLDER = "tests"
 STORY_FOLDERS = ("tests/stories", "tests/integration")
 # a change here can reach any test, so every test runs
-WHOLE_RUN_PATHS = ("tests/conftest.py", "pytest.ini", "pyproject.toml", "uv.lock", "src/engine/testing/", "src/engine/container/", "src/engine/registry/",
+FULL_RUN_PATHS = ("tests/conftest.py", "pytest.ini", "pyproject.toml", "uv.lock", "src/engine/testing/", "src/engine/container/", "src/engine/registry/",
                    "src/engine/command/bus.py", "src/engine/database/", "src/engine/listener/", ".venv/")
 # a change to the shape of the stored rows reaches every story
 SCHEMA_PARTS = ("/migrations/", "/models/", "/views/")
@@ -25,8 +25,8 @@ class AffectedTests:
         self.test_map, self.project = test_map, project
 
     def arguments(self, changed: list[str]) -> list[str]:
-        if not self.test_map.functions or any(name.startswith(WHOLE_RUN_PATHS) for name in changed):
-            return [EVERYTHING]
+        if not self.test_map.functions or any(name.startswith(FULL_RUN_PATHS) for name in changed):
+            return [FULL_TEST_FOLDER]
         if any(part in name for name in changed for part in SCHEMA_PARTS):
             return list(STORY_FOLDERS)
         selected: set[str] = set()
@@ -40,20 +40,20 @@ class AffectedTests:
 
     def reached(self, name: str) -> set[str]:
         if self.is_test_file(name):
-            return {name, *self.tests_running_in(name)}
+            return {name, *self.folder_tests(name)}
         if not name.endswith(".py"):
-            return self.tests_running_in(self.module_folder(name))
-        by_template = {test for test, files in self.test_map.template_files.items() if name in files}
+            return self.folder_tests(self.module_folder(name))
+        template_tests = {test for test, files in self.test_map.template_files.items() if name in files}
         recorded = self.test_map.bodies.get(name)
         if recorded is None:
-            return by_template | self.tests_running_in(self.module_folder(name))
+            return template_tests | self.folder_tests(self.module_folder(name))
         now = FunctionBodies.file_hashes(self.project / name)
         changed = {f"{name}::{function}" for function, body in recorded.items() if now.get(function) != body}
         if not changed:
-            return by_template | self.tests_running_in(name)
-        return by_template | {test for test, functions in self.test_map.functions.items() if changed.intersection(functions)}
+            return template_tests | self.folder_tests(name)
+        return template_tests | {test for test, functions in self.test_map.functions.items() if changed.intersection(functions)}
 
-    def tests_running_in(self, prefix: str) -> set[str]:
+    def folder_tests(self, prefix: str) -> set[str]:
         return {test for test, functions in self.test_map.functions.items() if any(function.startswith(prefix) for function in functions)}
 
     @staticmethod

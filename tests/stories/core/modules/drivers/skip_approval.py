@@ -2,7 +2,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.modules.drivers.support.driver_settings import SKIPS_NEED_APPROVAL
+from core.modules.drivers.support.driver_settings import SKIP_APPROVAL_SETTING
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.drivers.support.confirmed_skips import TRIED
@@ -63,6 +63,6 @@ def test_a_worker_cannot_approve_its_own_skip(refused_worker):
 
 def test_with_the_setting_off_a_workers_confirmed_skip_passes_at_once(refused_worker):
     story, worker, skip = refused_worker
-    story.expect_success(f"setting set {SKIPS_NEED_APPROVAL} false --project", actor=story.user)
+    story.expect_success(f"setting set {SKIP_APPROVAL_SETTING} false --project", actor=story.user)
     confirmed(story, worker, skip)
     story.expect_hook_allowed(WORKER_SESSION, REMOVAL)

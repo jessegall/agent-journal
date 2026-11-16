@@ -18,7 +18,7 @@ from core.modules.plugins.support.plugin_queue_read import PluginQueueRead
 RESERVED_SUFFIX = ".reserved"
 UNREADABLE_SUFFIX = ".bad"
 RESERVATION_LIMIT_SECONDS = 60
-FIRING_UNSAFE = r"[^A-Za-z0-9-]"
+EVENT_ID_UNSAFE = r"[^A-Za-z0-9-]"
 CLAIMED_SUFFIX = ".claimed"
 CARD_FIELDS = frozenset(["cards", "judged_ms", "read_ms", "judged_total_ms"])
 ENVELOPE_FIELDS = frozenset(["v", "env", "agent"])
@@ -58,7 +58,7 @@ class PluginQueue:
                 return
             if is_mapping(fields) and (("env" in fields and fields["env"] != environment) or ("agent" in fields and fields["agent"] != agent_id)):
                 return
-            reserved_file = self.folder / f"{path.name}.{re.sub(FIRING_UNSAFE, '-', event_id)}{RESERVED_SUFFIX}"
+            reserved_file = self.folder / f"{path.name}.{re.sub(EVENT_ID_UNSAFE, '-', event_id)}{RESERVED_SUFFIX}"
             try:
                 FileAccess.rename(path, reserved_file)
             except FileNotFoundError:

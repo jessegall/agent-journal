@@ -11,7 +11,7 @@ from suites.coding.modules.workers.support.behind_decisions import BehindDecisio
 from suites.coding.modules.workers.support.merger_visits import MergerVisits
 from suites.coding.modules.workers.support.worker_settings import FORCED_UPDATE_COMMITS
 
-TOO_FAR_BEHIND = "worker {worker} is {count} commits behind, at least {forced}: a folder that far behind is updated, never left"
+LAGGING_WORKER_TEXT = "worker {worker} is {count} commits behind, at least {forced}: a folder that far behind is updated, never left"
 
 
 class LeaveWorkerBehindHandler(Handler[LeaveWorkerBehind, None]):
@@ -30,6 +30,6 @@ class LeaveWorkerBehindHandler(Handler[LeaveWorkerBehind, None]):
         _, check = self.decisions.decidable(command.worker_id)
         forced = self.settings.number(FORCED_UPDATE_COMMITS)
         if forced > 0 and check.commits_lagging >= forced:
-            raise Refusal(TOO_FAR_BEHIND.format(worker=command.worker_id, count=check.commits_lagging, forced=forced), f"journal merger update {command.worker_id} --why \"<what moved>\"")
+            raise Refusal(LAGGING_WORKER_TEXT.format(worker=command.worker_id, count=check.commits_lagging, forced=forced), f"journal merger update {command.worker_id} --why \"<what moved>\"")
         self.repository.save_change(check, check.ignored(deciding.id, command.reason), context)
         self.visits.close_newest(context)

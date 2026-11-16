@@ -13,7 +13,7 @@ class OutputPage:
     total is the output's size, and cut_bytes the bytes the runner has dropped from it, which grows with
     each cut. The lines are kept as the run wrote them, colour codes included, for a terminal to show."""
 
-    written_lines: Sequence[str]
+    stored_lines: Sequence[str]
     first_byte: int
     last_byte: int
     total: int
@@ -21,10 +21,10 @@ class OutputPage:
 
     @property
     def lines(self) -> list[str]:
-        return [ColourCodes.removed(line) for line in self.written_lines]
+        return [ColourCodes.removed(line) for line in self.stored_lines]
 
     def shown_lines(self, output: Output) -> Sequence[str]:
-        return self.written_lines if output.is_terminal else self.lines
+        return self.stored_lines if output.is_terminal else self.lines
 
     def write(self, output: Output) -> None:
         output.write("\n".join(self.lines), {"lines": list(self.lines), "first_byte": self.first_byte, "last_byte": self.last_byte, "total": self.total, "cut_bytes": self.cut_bytes})

@@ -7,7 +7,7 @@ WORKER_LIMIT = f"{WORKER_RUN_LIMIT}"
 
 
 # the main agent is asked to get a user's word; a helper type that may not run setting make at all is refused by its type
-def setting_make_refusal(role: str) -> str:
+def setting_creation_refusal(role: str) -> str:
     return "A user was asked" if role == "main" else "may not run setting make"
 
 
@@ -15,8 +15,8 @@ def test_s45_direct_row_writes_are_refused_to_every_agent_role_and_the_person_va
     story = new_story(fixture=MainControlsActors)
     actors = agent_actors(story)
     for role, actor in actors.items():
-        story.expect_refusal(f"setting make {AUTO} false --environment main --reason 'a story asks'", setting_make_refusal(role), actor=actor)
-        story.expect_refusal(f"setting make {WORKER_LIMIT} 9 --environment main --reason 'a story asks'", setting_make_refusal(role), actor=actor)
+        story.expect_refusal(f"setting make {AUTO} false --environment main --reason 'a story asks'", setting_creation_refusal(role), actor=actor)
+        story.expect_refusal(f"setting make {WORKER_LIMIT} 9 --environment main --reason 'a story asks'", setting_creation_refusal(role), actor=actor)
     story.expect_success(f"setting set {WORKER_LIMIT} 4 --environment main", actor=story.user)
     for role, actor in actors.items():
         if role == "worker":

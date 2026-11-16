@@ -25,8 +25,8 @@ class WorkerMergeRange:
     def branch_tip(self, worktree: Worktree) -> str:
         return self.git.tip(worktree.folder, worktree.branch)[:SHORT_ID_CHARACTERS]
 
-    def base_changes_on_own_files(self, worktree: Worktree, commit: str) -> tuple[str, ...]:
-        return self.git.base_changes_on_own_files(worktree.folder, worktree.base_branch, commit)
+    def worktree_file_base_changes(self, worktree: Worktree, commit: str) -> tuple[str, ...]:
+        return self.git.worktree_file_base_changes(worktree.folder, worktree.base_branch, commit)
 
     def task_commit(self, worktree: Worktree, task_id: int) -> str | None:
         commits = self.git.task_commits(worktree, task_id)

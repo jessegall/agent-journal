@@ -45,7 +45,7 @@ class FailedFullRun(StoryFixture):
         story.advance(timedelta(seconds=1))
 
 
-class SkipHeld(StoryFixture):
+class FailedRunSkip(StoryFixture):
     """A main agent whose last full test run failed, which was refused a full run and holds a skip of that refusal."""
 
     parent = FailedFullRun
@@ -83,7 +83,7 @@ def test_a_named_run_that_passes_lifts_the_refusal(new_story):
 
 
 def test_a_skip_passes_the_refusal_once_keeps_its_reason_and_a_retry_of_the_same_refused_line_is_not_obeying(new_story):
-    story = install_runner(new_story(fixture=SkipHeld))
+    story = install_runner(new_story(fixture=FailedRunSkip))
     story.advance(timedelta(seconds=1))
     story.expect_hook_refusal("s-1", full_line(), REFUSED)
     story.expect_success(f'refusal confirm 1 --tried "{TRIED}" --environment main', actor=story.agent)
@@ -138,7 +138,7 @@ def test_a_worker_at_five_skips_is_raised_to_its_main_agent_not_the_person(new_s
 
 
 def test_a_withdrawn_skip_leaves_the_refusal_in_force_and_an_answer_is_final(new_story):
-    story = install_runner(new_story(fixture=SkipHeld))
+    story = install_runner(new_story(fixture=FailedRunSkip))
     story.expect_text("refusal withdraw 1 --environment main", "withdrawn", actor=story.agent)
     story.advance(timedelta(seconds=1))
     story.expect_hook_refusal("s-1", full_line(), REFUSED)
@@ -146,5 +146,5 @@ def test_a_withdrawn_skip_leaves_the_refusal_in_force_and_an_answer_is_final(new
 
 
 def test_a_confirmation_must_name_what_was_tried(new_story):
-    story = install_runner(new_story(fixture=SkipHeld))
+    story = install_runner(new_story(fixture=FailedRunSkip))
     story.expect_refusal('refusal confirm 1 --tried "the failure is fixed" --environment main', "name what you tried", actor=story.agent)

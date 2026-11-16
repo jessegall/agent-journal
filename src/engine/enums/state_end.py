@@ -5,7 +5,7 @@ class StateEnd(StrEnum):
     """Why a stacked state left an agent's stack."""
 
     CLOSED = "closed"
-    HANDED_IN = "handed-in"
+    SUBMITTED = "handed-in"
     DELIVERED = "delivered"
     ANSWERED = "answered"
     CANCELLED = "cancelled"

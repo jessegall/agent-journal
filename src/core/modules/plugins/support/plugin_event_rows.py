@@ -26,7 +26,7 @@ class PluginEventRows:
         self.registry, self.scripts, self.home, self.setting_values = registry, scripts, home, setting_values
 
     def rows(self, manifest: PluginManifest, folder: Path) -> tuple[PluginEventRow, ...]:
-        rows: list[PluginEventRow] = [self.row(manifest, "", "", "", PluginEventState.NEEDS_NEWER_JOURNAL)] if manifest.needs_newer_journal else []
+        rows: list[PluginEventRow] = [self.row(manifest, "", "", "", PluginEventState.REQUIRES_NEWER_JOURNAL)] if manifest.needs_newer_journal else []
         first_entries: set[tuple[str, str]] = set()
         for listener in manifest.listeners:
             forms = [form for form in EventForm if listener.script(form)]

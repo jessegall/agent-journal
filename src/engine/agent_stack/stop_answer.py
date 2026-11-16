@@ -32,7 +32,7 @@ class StopAnswer:
 
     @classmethod
     def safety_rest(cls) -> "StopAnswer":
-        return cls(StopAnswerType.SAFETY_REST)
+        return cls(StopAnswerType.SAFETY_PAUSE)
 
     @classmethod
     def compaction_handoff(cls) -> "StopAnswer":

@@ -60,5 +60,5 @@ class CheckpointFolders:
     # the worktrees, oldest first, that merged a task of the reach; only the worktrees of the workers that proved its tasks are read
     def merged_worktrees(self, reach: CheckpointReach) -> tuple[Worktree, ...]:
         task_ids = set(reach.tasks())
-        worktrees = self.worktrees.worker_worktrees_of(self.proofs.task_worktree_ids(reach.tasks()))
+        worktrees = self.worktrees.worker_worktree_rows(self.proofs.task_worktree_ids(reach.tasks()))
         return tuple(worktree for worktree in worktrees if task_ids.intersection(worktree.merged_tasks()))

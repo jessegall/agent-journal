@@ -12,7 +12,7 @@ class PluginFolderTimes:
         self.times: dict[str, int] = {}
         self.unclaimed: set[str] = set()
 
-    def has_news(self, plugin: str, folder: Path) -> bool:
+    def has_updates(self, plugin: str, folder: Path) -> bool:
         if not FileAccess.is_dir(folder):
             return False
         changed_at = FileAccess.stat(folder).st_mtime_ns
@@ -21,7 +21,7 @@ class PluginFolderTimes:
             return True
         return False
 
-    def looked(self, plugin: str, remaining_unclaimed: bool) -> None:
+    def mark_checked(self, plugin: str, remaining_unclaimed: bool) -> None:
         if remaining_unclaimed:
             self.unclaimed.add(plugin)
         else:

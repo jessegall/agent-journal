@@ -43,5 +43,5 @@ class NewFocusPlaces(SingleInstance):
         started = self.tasks.started_tasks(agent_id)
         if not started:
             return []
-        spoke_at = self.history.last_spoke(FOCUS_RULE_NAME, agent_id)
-        return [task for task in started if task.started_at is not None and (spoke_at is None or task.started_at > spoke_at)]
+        last_given_at = self.history.last_given(FOCUS_RULE_NAME, agent_id)
+        return [task for task in started if task.started_at is not None and (last_given_at is None or task.started_at > last_given_at)]

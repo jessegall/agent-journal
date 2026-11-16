@@ -10,7 +10,7 @@ from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.support.assignee_label import AssigneeLabel
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 from suites.coding.modules.workers.support.outside_waits import OutsideWaits
-from suites.coding.modules.workers.support.worker_job import OUTSIDE_WAIT_SOURCE
+from suites.coding.modules.workers.support.worker_job import EXTERNAL_WAIT_SOURCE
 
 
 class WorkerQueuedStart:
@@ -27,9 +27,9 @@ class WorkerQueuedStart:
         if queued_ids:
             self.bus.run(SendWorker(worker_id, task_ids=queued_ids), context.actor, environment_id=context.environment_id)
         else:
-            self.report_held(worker_id, context)
+            self.report_queued_start(worker_id, context)
 
-    def report_held(self, worker_id: int, context: Context) -> None:
+    def report_queued_start(self, worker_id: int, context: Context) -> None:
         waiting = self.tasks.assigned_blocked(worker_id)
         blocker = self.outside_waits.blocker(waiting)
         main_agent = MainAgentFinder.latest(self.queries)
@@ -37,4 +37,4 @@ class WorkerQueuedStart:
             return
         kept = ", ".join(f"task:{task.id}" for task in waiting)
         text = f"{self.labels.text(worker_id)} has only {kept}, and all wait on task:{blocker.id}, which no worker works on: {self.labels.task_label(blocker)} must do it"
-        self.message_sender.send_text(main_agent.id, text, OUTSIDE_WAIT_SOURCE, replace(context, actor=Actor.core()))
+        self.message_sender.send_text(main_agent.id, text, EXTERNAL_WAIT_SOURCE, replace(context, actor=Actor.core()))

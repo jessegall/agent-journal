@@ -34,7 +34,7 @@ class UsageLimits:
         return float(int(current_version // HOUR_SECONDS)) if limit.window is UsageLimitWindow.HOUR else window.reset_epoch_seconds
 
     @staticmethod
-    def reset_epoch(limit: UsageLimit, window: PlanWindow, current_version: float) -> float:
+    def reset_time(limit: UsageLimit, window: PlanWindow, current_version: float) -> float:
         return (int(current_version // HOUR_SECONDS) + 1) * HOUR_SECONDS if limit.window is UsageLimitWindow.HOUR else window.reset_epoch_seconds
 
     def used(self, limit: UsageLimit, window: PlanWindow, current_version: float) -> float:
@@ -49,12 +49,12 @@ class UsageLimits:
 
     def last_reached_end(self, program: str, windows: Sequence[PlanWindow], checked_at: Timestamp) -> LimitEnd | None:
         current_version = checked_at.value.timestamp()
-        ends = [(self.reset_epoch(limit, window, current_version), limit.id) for limit in self.program_limits(program)
+        ends = [(self.reset_time(limit, window, current_version), limit.id) for limit in self.program_limits(program)
                 if (window := self.matching_window(limit, windows)) is not None and window.reset_epoch_seconds > current_version and self.used(limit, window, current_version) >= limit.percent]
         if not ends:
             return None
-        reset_epoch, limit_id = max(ends)
-        return LimitEnd(Timestamp(datetime.fromtimestamp(reset_epoch, timezone.utc)), limit_id)
+        reset_time, limit_id = max(ends)
+        return LimitEnd(Timestamp(datetime.fromtimestamp(reset_time, timezone.utc)), limit_id)
 
     def stale_hourly(self, program: str, windows: Sequence[PlanWindow], checked_at: Timestamp) -> tuple[tuple[UsageLimit, PlanWindow], ...]:
         current_version = checked_at.value.timestamp()

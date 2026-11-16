@@ -7,7 +7,7 @@ from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.support.execution_class_lines import ExecutionClassLines
 from core.modules.processes.support.execution_class_table import ExecutionClassTable
 
-LANE_SETTINGS = (ProcessSetting.LANE_CAPACITY_INSTANT, ProcessSetting.LANE_CAPACITY_SHORT, ProcessSetting.LANE_CAPACITY_LONG, ProcessSetting.STARTER_CAP_PERCENT)
+POOL_SETTINGS = (ProcessSetting.POOL_CAPACITY_INSTANT, ProcessSetting.POOL_CAPACITY_SHORT, ProcessSetting.POOL_CAPACITY_LONG, ProcessSetting.STARTER_CAP_PERCENT)
 
 
 class ListExecutionClassesSubcommand(ReadSubcommand[ExecutionClassTable]):
@@ -22,5 +22,5 @@ class ListExecutionClassesSubcommand(ReadSubcommand[ExecutionClassTable]):
 
     def read(self, arguments: Namespace, caller: Caller) -> ExecutionClassTable:
         settings = tuple({"key": setting.key, "title": setting.value.title, "description": setting.value.description, "value": self.values.number(setting.key)}
-                         for setting in LANE_SETTINGS)
+                         for setting in POOL_SETTINGS)
         return ExecutionClassTable(self.class_lines.entries(), settings)

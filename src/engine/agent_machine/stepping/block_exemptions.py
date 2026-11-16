@@ -29,7 +29,7 @@ class BlockExemptions:
     def is_universally_exempt(self, tool: Tool) -> bool:
         if tool.is_skill_read:
             return True
-        return tool.shell is not None and not tool.shell.has_file_redirect and tool.shell.has_only_parts(self.part_passes)
+        return tool.shell is not None and not tool.shell.has_file_redirect and tool.shell.has_all_parts(self.part_passes)
 
     def part_passes(self, part: Part) -> bool:
         if part.program != JOURNAL_PROGRAM:

@@ -36,7 +36,7 @@ class BuilderStarted(StoryFixture):
         story.expect_success("agent show 1", "session: s-1", "role: main", actor=story.agent)
 
 
-class CodingEnvironmentWithoutPlainWords(StoryFixture):
+class CodingEnvironmentWordCheckDisabled(StoryFixture):
     """Environment main runs the coding suite with the plain code words skill not required at a start, so a
     story about other skills sees only the skills it names."""
 
@@ -49,10 +49,10 @@ class CodingEnvironmentWithoutPlainWords(StoryFixture):
         story.expect_text(f"setting show {PLAIN_NAMES_SETTING}", "value: off")
 
 
-class BuilderStartedWithoutPlainWords(StoryFixture):
+class BuilderStartedWordCheckDisabled(StoryFixture):
     """Session s-1 sent its first hook, which started story.agent, with the plain code words skill not required."""
 
-    parent = CodingEnvironmentWithoutPlainWords
+    parent = CodingEnvironmentWordCheckDisabled
 
     def steps(self, story: Story) -> None:
         story.agent = hook_agent(story, story.hook("s-1", HookSamples.session_start()))

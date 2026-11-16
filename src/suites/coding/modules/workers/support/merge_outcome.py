@@ -12,4 +12,4 @@ class MergeOutcome:
     worktree: Worktree
     conflicts: tuple[str, ...]
     refusal: str = ""
-    left_open: tuple[int, ...] = ()
+    open_task_ids: tuple[int, ...] = ()

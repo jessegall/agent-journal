@@ -11,6 +11,6 @@ class ReaderSaveAttempts:
     def __init__(self, refusals: RefusalLog, settings: ProcessSettings) -> None:
         self.refusals, self.settings = refusals, settings
 
-    def needs_help(self, request: ReaderRequest) -> bool:
+    def requires_help(self, request: ReaderRequest) -> bool:
         limit = self.settings.integer(ProcessSetting.READER_SAVE_TRIES)
         return self.refusals.count_with_reason(ReaderSaveRefusal.prefix(request.id)) >= max(0, limit)

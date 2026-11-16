@@ -26,7 +26,7 @@ class MakeReminderSubcommand(Subcommand[MakeReminder, Reminder]):
         parser.add_argument("--block-subject", default="")
 
     def command(self, arguments: Namespace, caller: Caller) -> MakeReminder:
-        return MakeReminder(arguments.text, arguments.every_minutes * MINUTE_SECONDS, arguments.every_tool_uses, arguments.every_tasks, arguments.at, arguments.once, arguments.block, arguments.block_subject)
+        return MakeReminder(arguments.text, arguments.repeat_minutes * MINUTE_SECONDS, arguments.every_tool_uses, arguments.every_tasks, arguments.at, arguments.once, arguments.block, arguments.block_subject)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Reminder):

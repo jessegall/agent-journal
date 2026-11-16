@@ -30,7 +30,7 @@ class MessageTemplate:
     interval: Interval | None = None
     turn_limited: bool = True
     required_command: str | None = None
-    closed_by: type[BlockCondition] | None = None
+    closing_condition: type[BlockCondition] | None = None
     plural_text: str = ""
     wakes_agent: bool = False
     path_fields: Sequence[str] = ()

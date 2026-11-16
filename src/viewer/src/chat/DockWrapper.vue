@@ -76,8 +76,8 @@ const ownsHead = computed(() => Boolean(declaration.value?.draws_head) && !props
 
 <template>
     <ChatDock
-        :label="look.title + (declaration?.needs_user ? ', waiting for you' : '')"
-        :type="declaration?.needs_user ? 'waiting' : ''"
+        :label="look.title + (declaration?.person_required ? ', waiting for you' : '')"
+        :type="declaration?.person_required ? 'waiting' : ''"
         :folded="Boolean(declaration?.folds) && folded"
         :body="Boolean(declaration?.folds)"
         :collapsed="collapsed"

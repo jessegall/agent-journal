@@ -1,4 +1,4 @@
-from engine.event.written_events import WrittenEvents
+from engine.event.saved_events import SavedEvents
 from server.work.listeners.listener_wake_router import ListenerWakeRouter
 
 
@@ -23,7 +23,7 @@ class SampleSet:
 
 
 def routed(saved_names: list[str], *pairs) -> None:
-    saved = WrittenEvents()
+    saved = SavedEvents()
     for name in saved_names:
         saved.add(name)
     ListenerWakeRouter(saved, [(thread, lambda listener_set=listener_set: listener_set) for thread, listener_set in pairs]).wake()  # type: ignore[misc]

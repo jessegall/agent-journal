@@ -21,7 +21,7 @@ class RequestCompactionEffect(Effect):
     compacts by its own window is sent nothing, and a request already open is not asked again."""
 
     events = [HookEventName.STOP]
-    timing = EffectTiming.WHEN_ALLOWED
+    timing = EffectTiming.PERMITTED
     agent_types = [AgentRole.MAIN, Worker.key]
 
     def __init__(self, limits: ContextLimitCheck) -> None:

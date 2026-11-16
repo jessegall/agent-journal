@@ -35,6 +35,6 @@ class WorkerReview:
         shown = [f"! {line}" for line in self.important_lines(task)] + [f"{len(plain_lines)} notes: {' | '.join(plain_lines)}".rstrip()]
         return f"task {task.id}: {task.title}\noutcome: {task.outcome}\n" + "\n".join(shown)
 
-    def whole(self, task: Task) -> str:
+    def task_review_text(self, task: Task) -> str:
         shown = [f"! {line}" for line in self.flagged[task.id]] + [f"! {log.line}" if log.important else log.line for log in self.task_logs(task)]
         return f"task {task.id}: {task.title}\noutcome: {task.outcome}\n" + "\n".join(shown)

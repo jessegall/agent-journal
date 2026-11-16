@@ -45,7 +45,7 @@ class LibraryShare(Generic[M]):
         return False
 
     # Whether a newer version would run here with nobody looking, so a user reads it first.
-    def needs_reading(self, row: M, fields: Fields) -> str:
+    def read_reason(self, row: M, fields: Fields) -> str:
         return ""
 
     # What a user must read before getting it, such as the command of a check.

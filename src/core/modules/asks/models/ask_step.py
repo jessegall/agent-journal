@@ -33,5 +33,5 @@ class AskStep(EnvironmentScoped, Model):
     def ended_as(self, state: AskStepState, reason: str) -> "AskStep":
         return replace(self, state=state, reason=reason)
 
-    def delivered_to(self, helper_id: int, job_id: int | None, timestamp: Timestamp, due_at: Timestamp, forward_at: Timestamp) -> "AskStep":
+    def helper_delivery(self, helper_id: int, job_id: int | None, timestamp: Timestamp, due_at: Timestamp, forward_at: Timestamp) -> "AskStep":
         return replace(self, state=AskStepState.DELIVERED, helper_id=helper_id, job_id=job_id, received_at=timestamp, due_at=due_at, forward_at=forward_at, visit_count=self.visit_count + 1)

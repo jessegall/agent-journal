@@ -15,7 +15,7 @@ class HelperBehaviours:
     dispatches: bool
     checked_stops: bool
     has_private_outputs: bool
-    needs_readers: bool
+    requires_readers: bool
     queues_runs: bool
     watches_runs_automatically: bool
     continues_runs: bool

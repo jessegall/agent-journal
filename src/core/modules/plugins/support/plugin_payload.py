@@ -7,7 +7,7 @@ from engine.command.context import Context
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.enums.event_form import EventForm
 from engine.model.model import Model
-from core.modules.plugins.support.hold_projection import HOLD_MODEL, HoldProjection
+from core.modules.plugins.support.block_projection import BLOCK_MODEL, BlockProjection
 
 
 class PluginPayload:
@@ -36,6 +36,6 @@ class PluginPayload:
     @staticmethod
     def with_hold(payload: dict[str, object], event: str) -> dict[str, object]:
         row = payload["row"]
-        if event.partition(".")[0] != HOLD_MODEL or not isinstance(row, Mapping):
+        if event.partition(".")[0] != BLOCK_MODEL or not isinstance(row, Mapping):
             return payload
-        return {**payload, "hold": HoldProjection.projected(row)}
+        return {**payload, "hold": BlockProjection.projected(row)}

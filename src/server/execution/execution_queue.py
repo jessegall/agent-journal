@@ -1,4 +1,4 @@
-from engine.execution.held_write_turn import HELD_WRITE_TURN
+from engine.execution.thread_turn_count import THREAD_TURN_COUNT
 import itertools
 import threading
 from collections.abc import Callable, Generator
@@ -8,8 +8,8 @@ from dataclasses import replace
 from engine.execution.execution_order import ExecutionOrder
 from engine.execution.execution_ticket import ExecutionTicket
 from engine.time.clock import Clock
-from server.errors.client_left_error import ClientLeftError
-from server.errors.lane_busy_error import LaneBusyError
+from server.errors.client_gone_error import ClientGoneError
+from server.errors.pool_busy_error import PoolBusyError
 from server.execution.instant_entry import InstantEntry
 
 from server.execution.queued_ticket import QueuedTicket
@@ -53,18 +53,18 @@ class ExecutionQueue:
                 self.changed.notify_all()
 
     def wait_start(self, queued: QueuedTicket, wait_limit_seconds: float | None) -> None:
-        while not self.starts_now(queued):
+        while not self.can_start(queued):
             if not queued.is_client_waiting():
-                raise ClientLeftError(queued.ticket.line)
-            HELD_WRITE_TURN.refuse_wait(f"the wait for an instant lane place for {queued.ticket.line}")
+                raise ClientGoneError(queued.ticket.line)
+            THREAD_TURN_COUNT.refuse_wait(f"the wait for an instant lane place for {queued.ticket.line}")
             waited = self.clock.epoch_seconds() - queued.entered_at
             if wait_limit_seconds is not None and waited >= wait_limit_seconds and not queued.ticket.priority.is_unlimited:
-                raise LaneBusyError.waited(waited, self.holders())
+                raise PoolBusyError.waited(waited, self.holders())
             self.changed.wait(RECHECK_SECONDS if wait_limit_seconds is None else max(0.0, min(RECHECK_SECONDS, wait_limit_seconds - waited)))
 
     # a waited child starts at once, since its parent holds its place; a session's tickets go one at a time and in
     # the order they asked; of the rest the one decision picks
-    def starts_now(self, queued: QueuedTicket) -> bool:
+    def can_start(self, queued: QueuedTicket) -> bool:
         if queued.ticket.parent is not None:
             return True
         busy_owners = {running.owner for running in self.running if running.owner}

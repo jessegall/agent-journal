@@ -20,6 +20,6 @@ class RunnerMissingLines(EventLineSource):
         self.plan, self.runner, self.history = plan, runner, history
 
     def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        if event is None or not self.plan.of_event(event, agent_id).runner_missing or self.history.last_spoke(self.key, agent_id) is not None:
+        if event is None or not self.plan.event_decision(event, agent_id).runner_missing or self.history.last_given(self.key, agent_id) is not None:
             return []
         return [RunnerMissingMessage.declared().agent_message(folder=self.runner.path.parent)]

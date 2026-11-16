@@ -94,7 +94,7 @@ class PlanCheckpoints:
             return
         reaches = self.reaches(plan_id)
         newest = {reach.phase_id: reach for reach in reaches if reach.source.opens_phases()}
-        if not self.running_phase_ids(reaches) and any(windows.is_failed_before_end(checkpoint, newest[checkpoint.id])
+        if not self.running_phase_ids(reaches) and any(windows.has_failed_early(checkpoint, newest[checkpoint.id])
                                                        for checkpoint in windows.checkpoint_phases() if checkpoint.id in newest):
             self.record(plan_id, context)
 

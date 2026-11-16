@@ -24,7 +24,7 @@ from engine.agent_machine.record.rewrite import Rewrite
 from engine.agent_machine.record.stop_check import StopCheck
 from engine.agent_machine.step_result import StepResult
 from engine.agent_machine.stepping.constraints import Constraints
-from engine.agent_machine.stepping.judgement import Judgement
+from engine.agent_machine.stepping.reason_total import ReasonTotal
 from engine.agent_machine.stepping.judged_blocks import CLOSING_OUTCOMES, JudgedBlocks
 from engine.agent_machine.stepping.refusal_counting import RefusalCounting
 from engine.agent_machine.stepping.stack_builder import StackBuilder
@@ -76,8 +76,8 @@ class AgentStateMachine:
         if rewrite.changed():
             reasons += self.constraints.reasons(rewrite.final_question(question), view, built.stack)
         rewrite, reasons = self.with_supported_rewrite(rewrite, reasons, view, question)
-        judgement = Judgement.combined(reasons, view.rank_order)
-        decision = self.with_handover(judgement.decision, question, view, built.stack)
+        judgement = ReasonTotal.combined(reasons, view.rank_order)
+        decision = self.with_delivery(judgement.decision, question, view, built.stack)
         counts = self.counting.after(decision, question, view, built, reasons)
         decision = self.escalated(decision, counts, view)
         record = self.record(view, question, decision, judgement, rewrite, counts, built.stack, built.moves, reasons)
@@ -100,10 +100,10 @@ class AgentStateMachine:
         return Rewrite.unchanged(), [*reasons, Reason(FALLBACK_KEY, DecisionClass.REFUSE, FALLBACK_RANK, FALLBACK_TEXT)]
 
     @staticmethod
-    def with_handover(decision: Decision, question: Question, view: AgentView, stack: Stack) -> Decision:
+    def with_delivery(decision: Decision, question: Question, view: AgentView, stack: Stack) -> Decision:
         if not question.is_stop() or not decision.admits() or stack.has(Paused) or stack.has(Compacting):
             return decision
-        answer = stack.work_lane_top().state.stop_answer(view.work_stop)
+        answer = stack.work_level_top().state.stop_answer(view.work_stop)
         if answer.answer_type is not StopAnswerType.HANDOVER:
             return decision
         return Decision(DecisionClass.ALLOW, Reason(HANDOVER_KEY, DecisionClass.ALLOW, HANDOVER_RANK, HANDOVER_TEXT, handover=answer.work))
@@ -115,16 +115,16 @@ class AgentStateMachine:
         text = f"{decision.reason.text} {RESPONDER_NAMES[view.responder]} was asked: you may stop and wait for the answer."
         return Decision(decision.decision_class, replace(decision.reason, text=text.strip()))
 
-    def record(self, view: AgentView, question: Question, decision: Decision, judgement: Judgement, rewrite: Rewrite, counts: RefusalCounts,
+    def record(self, view: AgentView, question: Question, decision: Decision, judgement: ReasonTotal, rewrite: Rewrite, counts: RefusalCounts,
                stack: Stack, moves: tuple, reasons: list[Reason]) -> DecisionRecord:
         lines = self.lines(question, view)
         unconditional = [effect for effect in self.effects(question, view) if effect.timing is EffectTiming.UNCONDITIONAL]
-        admission = [effect for effect in self.effects(question, view) if effect.timing is EffectTiming.WHEN_ALLOWED] if question.is_action() else []
+        start_check = [effect for effect in self.effects(question, view) if effect.timing is EffectTiming.PERMITTED] if question.is_action() else []
         return DecisionRecord(
             identity=self.identity(view, question), action=question, decision=decision, shown_reason=decision.reason,
             outranked_reasons=judgement.outranked_reasons, rewrite=rewrite if decision.admits() else Rewrite.unchanged(),
             lines=[line for line in lines if line.channel is not LineChannel.WAITING], unconditional_effects=unconditional,
-            admission_effects=admission, after_commit=(), terminal=self.terminal(lines), moves=moves, blocks_opened=JudgedBlocks.new_plans(view),
+            allowed_effects=start_check, after_commit=(), terminal=self.terminal(lines), moves=moves, blocks_opened=JudgedBlocks.new_plans(view),
             # a refused action did not run, so what it would have done lifts no hold; the next admitted step closes them
             blocks_closed=self.closings(view) if decision.admits() or not question.is_action() else (), waiting_lines=[line for line in lines if line.channel is LineChannel.WAITING],
             stop_checks=self.stop_checks(question, reasons), counts=counts, wake=self.wakes.change(view, stack), read_versions=view.read_versions,

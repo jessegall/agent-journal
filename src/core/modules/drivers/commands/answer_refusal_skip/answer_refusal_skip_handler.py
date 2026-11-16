@@ -9,7 +9,7 @@ from core.modules.drivers.commands.skip_refusal.skip_refusal_handler import SKIP
 from core.modules.drivers.models.refusal_skip import RefusalSkip
 from core.modules.drivers.agent_messages.skip_approval_message import SkipApprovalMessage
 from engine.driver.message_sender import MessageSender
-from core.modules.drivers.support.driver_settings import SKIPS_NEED_APPROVAL
+from core.modules.drivers.support.driver_settings import SKIP_APPROVAL_SETTING
 from engine.setting.setting_values import SettingValues
 
 
@@ -36,7 +36,7 @@ class AnswerRefusalSkipHandler(Handler[AnswerRefusalSkip, RefusalSkip]):
         if not tried or tried == skip.reason:
             raise Refusal("name what you tried before skipping, not the reason again", "--tried '<what you tried instead>'")
         agent = self.queries.query(Agent).find(skip.session_agent_id)
-        approver_id = agent.parent_id if not agent.is_main and self.settings.flag(SKIPS_NEED_APPROVAL) else None
+        approver_id = agent.parent_id if not agent.is_main and self.settings.flag(SKIP_APPROVAL_SETTING) else None
         confirmed = self.repository.update(skip, context, confirmed_at=context.timestamp, tried=tried, needs_approval=approver_id is not None)
         if approver_id is not None:
             self.message_sender.send(approver_id, SkipApprovalMessage.declared(), SKIP_SOURCE, context, agent=agent.number, refusal=skip.id)

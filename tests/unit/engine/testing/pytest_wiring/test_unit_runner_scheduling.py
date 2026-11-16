@@ -4,7 +4,7 @@ COLLECTION = ["tests/unit/test_a.py::test_one", "tests/stories/plans.py::test_pl
               "tests/stories/tasks.py::test_close", "tests/stories/tasks.py::test_block", "tests/stories/tasks.py::test_start"]
 
 
-class StandInRunner:
+class FakeRunner:
     """A runner that keeps the test numbers it was sent."""
 
     def __init__(self) -> None:
@@ -21,12 +21,12 @@ class StandInRunner:
         self.shutting_down = True
 
 
-def scheduled(collection: list[str], runner_count: int) -> list[StandInRunner]:
+def scheduled(collection: list[str], runner_count: int) -> list[FakeRunner]:
     scheduling = UnitRunnerScheduling.__new__(UnitRunnerScheduling)
     scheduling.numnodes, scheduling.node2collection, scheduling.node2pending = runner_count, {}, {}
     scheduling.pending, scheduling.collection, scheduling.steal_requested_from_node = [], None, None
     scheduling.log, scheduling.config = lambda *words: None, None
-    runners = [StandInRunner() for _ in range(runner_count)]
+    runners = [FakeRunner() for _ in range(runner_count)]
     for runner in runners:
         scheduling.add_node(runner)
         scheduling.add_node_collection(runner, collection)
@@ -34,7 +34,7 @@ def scheduled(collection: list[str], runner_count: int) -> list[StandInRunner]:
     return runners
 
 
-def names(runner: StandInRunner, collection: list[str]) -> list[str]:
+def names(runner: FakeRunner, collection: list[str]) -> list[str]:
     return [collection[index] for index in runner.sent]
 
 
@@ -51,6 +51,6 @@ def test_a_story_node_id_may_go_to_any_runner():
 
 
 def test_a_run_with_no_unit_tests_behaves_as_worksteal():
-    stories_only = [name for name in COLLECTION if name.startswith("tests/stories/")]
-    runners = scheduled(stories_only, 2)
-    assert sorted(index for runner in runners for index in runner.sent) == list(range(len(stories_only))) and all(runner.sent for runner in runners)
+    story_names = [name for name in COLLECTION if name.startswith("tests/stories/")]
+    runners = scheduled(story_names, 2)
+    assert sorted(index for runner in runners for index in runner.sent) == list(range(len(story_names))) and all(runner.sent for runner in runners)

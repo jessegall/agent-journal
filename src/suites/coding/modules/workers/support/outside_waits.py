@@ -35,7 +35,7 @@ class OutsideWaits:
         external_ids = sorted(set().union(*waits.values()) - unit_ids)
         if not external_ids:
             return None
-        unattended = {task.id: task for task in self.assigned_worker_tasks.left_to_nobody(self.queries.query(Task).find_many(external_ids))}
+        unattended = {task.id: task for task in self.assigned_worker_tasks.unassigned_tasks(self.queries.query(Task).find_many(external_ids))}
         blockers = [self.first_unattended(task.id, waits, unit_ids, unattended) for task in tasks]
         return None if None in blockers else blockers[0]
 

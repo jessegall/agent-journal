@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from engine.database.database import Database
-from engine.database.shared_tables import KEPT_HOMES, SharedTables
+from engine.database.shared_tables import SHARED_HOME_LIMIT, SharedTables
 from engine.file.file_access import FileAccess
 from engine.database.statement import Statement
 from engine.journal.journal_home import JournalHome
@@ -70,7 +70,7 @@ def test_each_home_shares_one_store(tmp_path):
     assert SharedTables.shared(JournalHome(tmp_path / "one")) is not SharedTables.shared(JournalHome(tmp_path / "two"))
 
 
-class StandInDatabase:
+class FakeDatabase:
     """A database outside any transaction, for the store's choices that need no rows."""
 
     has_transaction = False
@@ -89,8 +89,8 @@ def test_two_homes_from_one_template_share_a_table(tmp_path):
     first, _ = copied_home(tmp_path, "first", tmp_path / "template.db")
     second, _ = copied_home(tmp_path, "second", tmp_path / "template.db")
     loader = CountingLoader()
-    SharedTables.shared(first).read(StandInDatabase(), "notes", ((1,),), loader)
-    assert (SharedTables.shared(second).read(StandInDatabase(), "notes", ((1,),), loader), loader.loads) == ("load 1", 1)
+    SharedTables.shared(first).read(FakeDatabase(), "notes", ((1,),), loader)
+    assert (SharedTables.shared(second).read(FakeDatabase(), "notes", ((1,),), loader), loader.loads) == ("load 1", 1)
 
 
 def test_a_write_in_one_story_is_not_seen_by_the_next(tmp_path):
@@ -98,8 +98,8 @@ def test_a_write_in_one_story_is_not_seen_by_the_next(tmp_path):
     untouched, _ = copied_home(tmp_path, "untouched", tmp_path / "template-w.db")
     Path(f"{copy}-wal").write_text("a write")
     loader = CountingLoader()
-    SharedTables.shared(written).read(StandInDatabase(), "notes", ((2,),), loader)
-    assert (SharedTables.shared(untouched).read(StandInDatabase(), "notes", ((2,),), loader), loader.loads) == ("load 2", 2)
+    SharedTables.shared(written).read(FakeDatabase(), "notes", ((2,),), loader)
+    assert (SharedTables.shared(untouched).read(FakeDatabase(), "notes", ((2,),), loader), loader.loads) == ("load 2", 2)
 
 
 def test_the_real_journal_still_keys_on_its_home(tmp_path):
@@ -107,4 +107,4 @@ def test_the_real_journal_still_keys_on_its_home(tmp_path):
 
 
 def test_the_cache_is_bounded():
-    assert SharedTables.shared.cache_info().maxsize == KEPT_HOMES
+    assert SharedTables.shared.cache_info().maxsize == SHARED_HOME_LIMIT

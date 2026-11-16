@@ -17,5 +17,5 @@ class OutputTitled(ProcessCondition):
         if tool is not None and tool.shell is not None and tool.shell.has_part_running(f"journal output title {self.text}"):
             return True
         process = check.container.get(ProcessQuery).find(int(self.text))
-        output = check.container.get(RunOutputRows).of_run(process.id)
+        output = check.container.get(RunOutputRows).run_output(process.id)
         return output is None or process.state not in (ProcessState.RUNNING, ProcessState.BACKGROUND) or RunTitle.is_descriptive(output.title, process.line)

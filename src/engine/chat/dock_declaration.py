@@ -22,7 +22,7 @@ class DockDeclaration:
     kit: str = ">=1,<2"
     badge: str = ""
     folds: str = ""
-    needs_user: bool = False
+    person_required: bool = False
     word: str = ""
     draws_head: bool = False
     reads_target: bool = True

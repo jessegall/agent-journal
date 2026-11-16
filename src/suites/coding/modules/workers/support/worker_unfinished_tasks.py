@@ -52,7 +52,7 @@ class WorkerUnfinishedTasks:
     def has_running_process(self, worker_id: int) -> bool:
         return self.processes.agent(worker_id).running().exists()
 
-    def has_own_running_process(self, worker_id: int) -> bool:
+    def has_worker_running_process(self, worker_id: int) -> bool:
         return self.processes.agent_started(worker_id).running().exists()
 
     @staticmethod

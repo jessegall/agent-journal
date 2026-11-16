@@ -16,7 +16,7 @@ class RunEndedWake(WakeCause):
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
-    def needs_wake(self, view: AgentView) -> bool:
+    def requires_wake(self, view: AgentView) -> bool:
         if view.newest_hook_at is None:
             return False
         runs = self.queries.query(Process).filter(session_agent_id=view.agent.agent_id).matching(HasValue("moved_at"))

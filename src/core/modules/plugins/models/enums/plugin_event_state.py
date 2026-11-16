@@ -10,4 +10,4 @@ class PluginEventState(StrEnum):
     UNSUPPORTED_FORM = "form not offered"
     WRONG_SCRIPT = "wrong script"
     WRONG_PROJECT_READ = "wrong project read"
-    NEEDS_NEWER_JOURNAL = "needs a newer journal"
+    REQUIRES_NEWER_JOURNAL = "needs a newer journal"

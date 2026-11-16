@@ -25,7 +25,7 @@ class FixedVersions:
         return "tag-one"
 
 
-def handover_with(tmp_path: Path, steps: RecordedSteps, pids: list[str], status: int = 200) -> CodeDelivery:
+def takeover_with(tmp_path: Path, steps: RecordedSteps, pids: list[str], status: int = 200) -> CodeDelivery:
     handover = CodeDelivery(JournalHome(tmp_path / ".journal"), steps)
     handover.versions = FixedVersions()
     handover.server_pid = lambda: pids.pop(0) if len(pids) > 1 else pids[0]
@@ -35,19 +35,19 @@ def handover_with(tmp_path: Path, steps: RecordedSteps, pids: list[str], status:
 
 def test_an_update_of_a_running_server_records_each_step_and_ends_with_the_version(tmp_path):
     steps = RecordedSteps()
-    handover_with(tmp_path, steps, ["10", "11"]).run(tmp_path)
+    takeover_with(tmp_path, steps, ["10", "11"]).run(tmp_path)
     assert steps.recorded == [("proof", ""), ("handover", ""), ("serving", ""), ("finished", "tag-one")]
 
 
 def test_an_update_the_server_refuses_ends_with_the_refusal(tmp_path):
     steps = RecordedSteps()
     with pytest.raises(Refusal):
-        handover_with(tmp_path, steps, ["10"], status=422).run(tmp_path)
+        takeover_with(tmp_path, steps, ["10"], status=422).run(tmp_path)
     reason = "code version tag-one was not taken over: status 422: the running server keeps serving: read " + str(tmp_path / ".journal" / "runtime" / "server.log")
     assert steps.recorded == [("proof", ""), ("failed", reason)]
 
 
 def test_an_update_with_no_server_running_records_only_its_end(tmp_path):
     steps = RecordedSteps()
-    handover_with(tmp_path, steps, [""]).run(tmp_path)
+    takeover_with(tmp_path, steps, [""]).run(tmp_path)
     assert steps.recorded == [("finished", "tag-one")]

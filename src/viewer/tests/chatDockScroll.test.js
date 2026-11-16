@@ -124,7 +124,7 @@ test("the all-docks header sticks to the top while the cards scroll under it", (
 const approval = (id) => ({...item(id), type: "approvals.request", target_model: "approval"});
 
 async function mixedStack(items, collapsed) {
-    loadDockDeclarations([{type: "documents.doc", icon: "document", title: "Document", buttons: [], reads: []}, {type: "approvals.request", icon: "question", title: "Approval", buttons: [], reads: [], needs_user: true}]);
+    loadDockDeclarations([{type: "documents.doc", icon: "document", title: "Document", buttons: [], reads: []}, {type: "approvals.request", icon: "question", title: "Approval", buttons: [], reads: [], person_required: true}]);
     const host = document.createElement("div");
     document.body.append(host);
     const app = createApp({render: () => h(DockStack, {items: items.value, collapsed: collapsed.value})});

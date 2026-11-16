@@ -78,6 +78,6 @@ class StartProcessHandler(Handler[StartProcess, Process]):
         if waits:
             self.slots.grant(context)
         else:
-            self.slots.grant_at_once(process)
+            self.slots.grant_directly(process)
         return self.rows.required(Process, process.id)
 

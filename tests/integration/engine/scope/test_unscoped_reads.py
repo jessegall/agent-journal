@@ -1,6 +1,6 @@
 import pytest
 
-from engine.errors.unscoped_read_error import UnscopedReadError
+from engine.errors.missing_scope_read_error import MissingScopeReadError
 from engine.model.tables import Tables
 from engine.query.errors.query_limit_error import QueryLimitError
 from engine.query.query import Query
@@ -17,7 +17,7 @@ def shelves(database):
 
 
 def test_a_read_of_scoped_rows_with_no_environment_set_fails_naming_the_model(shelves):
-    with pytest.raises(UnscopedReadError, match="a read of the shelves table has no environment set"):
+    with pytest.raises(MissingScopeReadError, match="a read of the shelves table has no environment set"):
         shelves.first()
 
 

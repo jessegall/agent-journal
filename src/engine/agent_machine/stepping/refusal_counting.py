@@ -21,7 +21,7 @@ from engine.enums.stack_move_type import StackMoveType
 
 STOP_LIMIT_SETTING, TOOL_LIMIT_SETTING = "journal.core.drivers.most-stop-refusals", "journal.core.drivers.most-tool-refusals"
 STOP_LIMIT, TOOL_LIMIT = 5, 25
-PROGRESS_ENDS = (StateEnd.SATISFIED, StateEnd.CLOSED, StateEnd.HANDED_IN, StateEnd.DELIVERED, StateEnd.ANSWERED)
+PROGRESS_ENDS = (StateEnd.SATISFIED, StateEnd.CLOSED, StateEnd.SUBMITTED, StateEnd.DELIVERED, StateEnd.ANSWERED)
 
 
 class RefusalCounting:

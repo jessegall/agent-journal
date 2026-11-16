@@ -15,10 +15,10 @@ from engine.time.clock import Clock
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
-from core.modules.processes.support.lane_tickets import LaneTickets
+from core.modules.processes.support.pool_tickets import PoolTickets
 from core.modules.processes.support.process_type_admission import ProcessTypeAdmission
 from core.modules.processes.support.process_type_limits import ProcessTypeLimits
-from core.modules.processes.support.run_admission import RunAdmission
+from core.modules.processes.support.run_start_check import RunStartCheck
 
 
 class ExecutionTickets:
@@ -26,22 +26,22 @@ class ExecutionTickets:
     row of no class is matched again, a plugin's kind takes its own class, and a run whose reader request
     is open waits for its reader."""
 
-    def __init__(self, classes: ExecutionClasses, category_limits: ProcessTypeLimits, admission: RunAdmission, rows: EventRows, clock: Clock) -> None:
-        self.classes, self.kind_limits, self.admission, self.rows, self.clock = classes, category_limits, admission, rows, clock
+    def __init__(self, classes: ExecutionClasses, category_limits: ProcessTypeLimits, start_check: RunStartCheck, rows: EventRows, clock: Clock) -> None:
+        self.classes, self.kind_limits, self.start_check, self.rows, self.clock = classes, category_limits, start_check, rows, clock
 
-    def of_rows(self, processes: Sequence[Process], lane: ExecutionLength) -> LaneTickets:
-        return self.lanes_of_rows(processes)[lane]
+    def row_tickets(self, processes: Sequence[Process], lane: ExecutionLength) -> PoolTickets:
+        return self.row_pools(processes)[lane]
 
-    def lanes_of_rows(self, processes: Sequence[Process]) -> dict[ExecutionLength, LaneTickets]:
+    def row_pools(self, processes: Sequence[Process]) -> dict[ExecutionLength, PoolTickets]:
         return self.lanes(processes, self.kind_limits.admissions([process for process in processes if process.queued_at is not None]))
 
     # every row is read once for all lanes: its agent, its kind's class and its parts
-    def lanes(self, processes: Sequence[Process], categories: ProcessTypeAdmission) -> dict[ExecutionLength, LaneTickets]:
+    def lanes(self, processes: Sequence[Process], categories: ProcessTypeAdmission) -> dict[ExecutionLength, PoolTickets]:
         agents = self.rows.required_index(Agent, [process.session_agent_id for process in processes])
-        category_classes = categories.kind_classes()
-        parts = self.admission.waiting_parts([process for process in processes if process.queued_at is not None])
+        category_classes = categories.category_class_map()
+        parts = self.start_check.waiting_parts([process for process in processes if process.queued_at is not None])
         tickets = [(process, self.ticket(process, agents[process.session_agent_id], category_classes, parts)) for process in processes]
-        return {lane: LaneTickets(tuple(ticket for process, ticket in tickets if ticket.execution_class.lane is lane and process.queued_at is not None),
+        return {lane: PoolTickets(tuple(ticket for process, ticket in tickets if ticket.execution_class.lane is lane and process.queued_at is not None),
                                   tuple(ticket for process, ticket in tickets if ticket.execution_class.lane is lane and process.queued_at is None))
                 for lane in ExecutionLength}
 
@@ -52,7 +52,7 @@ class ExecutionTickets:
         if process.state is ProcessState.BACKGROUND and execution_class.lane is not ExecutionLength.LONG:
             execution_class = replace(execution_class, name=f"{execution_class.name} in the background", lane=ExecutionLength.LONG)
         entered_at = process.queued_at or process.started_at or process.creation_timestamp()
-        waits_reader = process.queued_at is not None and self.admission.waits_for_reader(process, parts.get(process.id, ()), self.clock.timestamp())
+        waits_reader = process.queued_at is not None and self.start_check.awaits_reader(process, parts.get(process.id, ()), self.clock.timestamp())
         return ExecutionTicket(execution_class, process.first_priority, process.priority, starter, process.line, entered_at, process.raised_at or entered_at,
                                has_open_reader_request=waits_reader, run_id=process.id)
 
@@ -63,7 +63,7 @@ class ExecutionTickets:
         if labelled is not None:
             return labelled
         source = ExecutionSource.PLUGIN_PROGRAM if process.plugin else ExecutionSource.SHELL_LINE
-        return self.classes.match(ExecutionSubject(source, starter, category=process.category, plugin_name=process.plugin, plugin_kind=process.run_name, line=process.line))
+        return self.classes.match(ExecutionSubject(source, starter, category=process.category, plugin_name=process.plugin, plugin_category=process.run_name, line=process.line))
 
     @staticmethod
     def starter(process: Process, agent: Agent) -> ExecutionStarter:

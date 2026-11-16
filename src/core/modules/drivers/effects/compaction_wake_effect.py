@@ -30,9 +30,9 @@ class CompactionWakeEffect(EventEffect):
     def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         if self.agents.find(agent_id).is_paused:
             return []
-        return [WakeCompactedAgent(agent_id)] if self.is_left_at_its_prompt(agent_id) else []
+        return [WakeCompactedAgent(agent_id)] if self.is_waiting_after_compaction(agent_id) else []
 
-    def is_left_at_its_prompt(self, agent_id: int) -> bool:
+    def is_waiting_after_compaction(self, agent_id: int) -> bool:
         now = self.clock.timestamp()
         latest = self.hook_calls.latest_turn_call(agent_id)
         if latest is None or not latest.is_compaction_start or latest.creation_timestamp().elapsed_seconds(now) < WAKE_WAIT_SECONDS:

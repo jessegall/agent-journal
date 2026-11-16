@@ -6,5 +6,5 @@ class HandoverState(StrEnum):
 
     PENDING = "pending"
     COMPLETED = "completed"
-    NO_REPORT = "no-report"
+    REPORT_MISSING = "no-report"
     CAPTURE_FAILED = "capture-failed"

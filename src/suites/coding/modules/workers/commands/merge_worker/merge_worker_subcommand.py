@@ -54,8 +54,8 @@ class MergeWorkerSubcommand(Subcommand[Command[object], MergeOutcome]):
         output.row(value.worktree)
         if value.refusal:
             output.line(f"the merge of {AgentLabel.labelled_row(value.worktree.session_agent_id, self.numbers, "worker").text} was refused before anything was merged: {value.refusal}; the findings went back to the worker")
-        if value.left_open:
-            output.line(f"left open, with no proof of their own in the worktree: tasks {', '.join(str(task_id) for task_id in value.left_open)}")
+        if value.open_task_ids:
+            output.line(f"left open, with no proof of their own in the worktree: tasks {', '.join(str(task_id) for task_id in value.open_task_ids)}")
         if value.conflicts:
             output.line(f"merging {value.worktree.base_branch} in clashed on {', '.join(value.conflicts)}: task {value.worktree.task_id} went back to"
                         f" {AgentLabel.labelled_row(value.worktree.session_agent_id, self.numbers, "worker").text}")

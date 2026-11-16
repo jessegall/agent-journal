@@ -10,7 +10,7 @@ from engine.provider.providers import Providers
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.environments.support.environment_rows import EnvironmentRows
-from core.modules.helpers.support.agent_admission import AgentAdmission
+from core.modules.helpers.support.agent_start_check import AgentStartCheck
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.helpers.support.profile_models import ProfileModels
 from core.modules.helpers.support.program_shares import ProgramShares
@@ -32,12 +32,12 @@ class WorkerRouting:
 
     def __init__(self, shares: ProgramShares, states: ProgramStates, counts: WorkerCounts,
                  environments: EnvironmentRows, providers: Providers, models: ProfileModels,
-                 programs: HelperPrograms, routes: WorkerRoutes, policy: WorkerRoutePolicy, admission: AgentAdmission, lockdown: ProgramLockdown) -> None:
+                 programs: HelperPrograms, routes: WorkerRoutes, policy: WorkerRoutePolicy, start_check: AgentStartCheck, lockdown: ProgramLockdown) -> None:
         self.lockdown = lockdown
         self.shares, self.states, self.counts, self.environments = shares, states, counts, environments
         self.providers, self.models, self.programs, self.routes = providers, models, programs, routes
         self.policy = policy
-        self.admission = admission
+        self.start_check = start_check
 
     def choice(self, command: WorkerProgramRequest, tasks: list[Task], caller: Agent | None, profile: AgentProfile, context: Context | None = None) -> WorkerChoice:
         if caller is None:
@@ -54,7 +54,7 @@ class WorkerRouting:
     def requested(self, command: WorkerProgramRequest, tasks: list[Task], caller: Agent | None, profile: AgentProfile, requested_program: str, context: Context | None) -> WorkerChoice:
         route = self.routes.common_route(tasks)
         self.policy.check(tasks[0], route, WorkerRouteRequest.dispatch(requested_program, command, caller, context))
-        self.admission.checked_provider(WORKER_TYPE, profile.name, requested_program)
+        self.start_check.checked_provider(WORKER_TYPE, profile.name, requested_program)
         self.programs.installed(requested_program)
         reason = "the profile's tools"
         if command.program:
@@ -66,15 +66,15 @@ class WorkerRouting:
     def chosen(self, command: WorkerProgramRequest, tasks: list[Task], caller: Agent, profile: AgentProfile) -> WorkerChoice:
         route = self.routes.common_route(tasks)
         if route is None and not self.shares.is_configured:
-            self.admission.checked_provider(WORKER_TYPE, profile.name, caller.program)
+            self.start_check.checked_provider(WORKER_TYPE, profile.name, caller.program)
             self.programs.installed(caller.program)
             return self.selected(command, profile, caller.program, "the program of the agent that sent it")
         environment = self.environments.find(tasks[0].environment_id)
         readiness = self.states.readiness(Path(environment.folder))
         fallback = None
-        permitted = [name for name in readiness.ready_programs if not self.admission.provider_reasons(WORKER_TYPE, profile.name, name)]
+        permitted = [name for name in readiness.ready_programs if not self.start_check.provider_reasons(WORKER_TYPE, profile.name, name)]
         if route is not None and route.program:
-            forbidden = self.admission.provider_reasons(WORKER_TYPE, profile.name, route.program)
+            forbidden = self.start_check.provider_reasons(WORKER_TYPE, profile.name, route.program)
             if forbidden and route.strict:
                 raise Refusal(f"task {tasks[0].id} must go to {route.program}, but {forbidden[0]}", "change the agent options, or build it yourself")
             state = readiness.states[route.program]

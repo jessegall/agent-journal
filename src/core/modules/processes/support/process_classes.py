@@ -27,7 +27,7 @@ class ProcessClasses:
         # a plugin's kind keeps its plugin's class, even one named like a journal kind such as merge
         if command.plugin:
             plugin_class = self.classes.match(ExecutionSubject(ExecutionSource.PLUGIN_PROGRAM, starter, category=command.category, plugin_name=command.plugin,
-                                                              plugin_kind=command.run_name, line=command.line))
+                                                              plugin_category=command.run_name, line=command.line))
             return replace(plugin_class, name=f"{command.plugin} {command.run_name}") if command.run_name and not plugin_class.plugin else plugin_class
         if command.is_graphify:
             return self.classes.match(ExecutionSubject(ExecutionSource.GRAPHIFY, starter, category=command.category, line=command.line))
@@ -37,12 +37,12 @@ class ProcessClasses:
             return self.classes.match(ExecutionSubject(ExecutionSource.SHELL_LINE, starter, category=command.category, process_type=ProcessType.FULL_TEST_RUN, line=command.line))
         # a part of unknown category says nothing of the line, which then takes the category the start names
         recorded = [part.category for part in command.parts if part.category is not CommandCategory.UNKNOWN]
-        return self.for_categories(recorded or [command.category], command.line, agent)
+        return self.category_class(recorded or [command.category], command.line, agent)
 
     # the class of an agent's shell line by the categories of its parts: its longest lane and highest cost
-    def for_categories(self, categories: Sequence[CommandCategory], line: str, agent: Agent) -> ExecutionClass:
+    def category_class(self, categories: Sequence[CommandCategory], line: str, agent: Agent) -> ExecutionClass:
         starter = self.agent_starter(agent)
-        return self.classes.for_line([ExecutionSubject(ExecutionSource.SHELL_LINE, starter, category=category, line=line) for category in categories])
+        return self.classes.line_class([ExecutionSubject(ExecutionSource.SHELL_LINE, starter, category=category, line=line) for category in categories])
 
     @staticmethod
     def starter(command: StartProcess, agent: Agent) -> ExecutionStarter:

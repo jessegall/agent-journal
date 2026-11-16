@@ -11,4 +11,4 @@ class DocDock(DockDeclaration):
     most = 6
     reads = ["doc show"]
     word = "Document"
-    needs_user = True
+    person_required = True

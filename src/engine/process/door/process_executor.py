@@ -19,15 +19,15 @@ class ProcessExecutor:
     holds it while the server starts or updates and refuses it for a paused agent, the run takes its
     ticket, the runner runs it, and its end is recorded, also when it fails or passes its time limit."""
 
-    def __init__(self, placement: RunPlacement, runner: RunnerProgram, gate: ExecutionGate, errors: ErrorLog, admission: ExecutionAdmission) -> None:
-        self.placement, self.runner, self.gate, self.errors, self.admission = placement, runner, gate, errors, admission
+    def __init__(self, placement: RunPlacement, runner: RunnerProgram, gate: ExecutionGate, errors: ErrorLog, start_check: ExecutionAdmission) -> None:
+        self.placement, self.runner, self.gate, self.errors, self.start_check = placement, runner, gate, errors, start_check
 
     def execute(self, request: ExecutionRequest) -> Execution:
         placed = self.placement.placed(request)
         try:
             placed.refuse_hook_wait()
             self.gate.opened(placed)
-            with self.placement.admitted(placed), self.admission.admitted(placed):
+            with self.placement.admitted(placed), self.start_check.admitted(placed):
                 execution = self.runner.run(placed)
         except RunTimeLimitError as error:
             self.recorded(placed, placed.failed(TIME_LIMIT_EXIT_CODE, str(error)))

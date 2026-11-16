@@ -94,8 +94,8 @@ class TunlerClient:
         if answer.succeeded:
             return TunlerLogin(True)
         lines = answer.text.splitlines() or ["tunler refused the login"]
-        needs_master = "master password" in answer.text.lower() and master is None
-        return TunlerLogin(False, needs_master, lines[0] if needs_master else lines[-1])
+        requires_master = "master password" in answer.text.lower() and master is None
+        return TunlerLogin(False, requires_master, lines[0] if requires_master else lines[-1])
 
     def logout(self) -> None:
         answer = self.answer(COMMAND_LIMIT_SECONDS, {}, "logout")

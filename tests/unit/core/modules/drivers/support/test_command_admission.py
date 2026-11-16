@@ -59,7 +59,7 @@ class Grants:
         self.spent.append(grant)
 
 
-def admission(rows: Rows, grants: Grants) -> CommandCheck:
+def start_check(rows: Rows, grants: Grants) -> CommandCheck:
     finder = SimpleNamespace(modules=lambda: [SimpleNamespace(policies=[SendWorkPolicy])])
     types = SimpleNamespace(behaviours=lambda role: None, read_access_keys=lambda: ())
     return CommandCheck(finder, SimpleNamespace(get=lambda cls: cls()), SimpleNamespace(find=lambda agent_id: AGENT), grants, rows, rows,
@@ -72,16 +72,16 @@ SKIP = Grant(7, GrantType.REFUSAL_SKIP, SendWorkPolicy.key, AGENT.id, 1, "", NEX
 
 def test_an_entry_point_with_no_receipt_or_grant_is_refused_in_the_policys_own_words():
     with pytest.raises(Refusal, match="no work is sent here"):
-        admission(Rows(), Grants()).admit(SendWork, CONTEXT)
+        start_check(Rows(), Grants()).admit(SendWork, CONTEXT)
 
 
 def test_the_hooks_receipt_passes_the_entry_point_once_and_is_taken():
     rows = Rows(receipt=SimpleNamespace(changed=lambda **fields: fields))
-    admission(rows, Grants()).admit(SendWork, CONTEXT)
+    start_check(rows, Grants()).admit(SendWork, CONTEXT)
     assert rows.saved == [{"consumed_at": "now"}]
 
 
 def test_a_usable_grant_passes_the_entry_point_and_is_spent_there():
     grants = Grants([SKIP])
-    admission(Rows(), grants).admit(SendWork, CONTEXT)
+    start_check(Rows(), grants).admit(SendWork, CONTEXT)
     assert grants.spent == [SKIP]

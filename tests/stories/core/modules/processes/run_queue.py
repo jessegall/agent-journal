@@ -53,7 +53,7 @@ def test_a_main_agents_run_does_not_wait_and_holds_a_spot(new_story):
 def test_each_environment_queues_its_runs_by_its_own_long_lane_capacity(new_story):
     story = install_runner(new_story(fixture=QueueAgents))
     story.run("environment make web /work/web", actor=story.user)
-    story.expect_success(f"setting set {ProcessSetting.LANE_CAPACITY_LONG.key} {RUN_SLOT_COST} --environment web", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.POOL_CAPACITY_LONG.key} {RUN_SLOT_COST} --environment web", actor=story.user)
     story.expect_success(f"setting set {ProcessSetting.STARTER_CAP_PERCENT.key} 100 --environment web", actor=story.user)
     story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment web", actor=story.user)
     main_first, main_second, main_third = queued(story, "make one"), queued(story, "make two"), queued(story, "make three")

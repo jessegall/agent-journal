@@ -16,5 +16,5 @@ class ProcessTypeAdmission:
         return None
 
     # the class of each declared kind among the waiting runs, by its plugin and kind; a kind nobody declares has none
-    def kind_classes(self) -> dict[tuple[str, str], ExecutionClass]:
+    def category_class_map(self) -> dict[tuple[str, str], ExecutionClass]:
         return {}

@@ -12,7 +12,7 @@ class TurnFailedWake(WakeCause):
     def __init__(self, hook_calls: HookCallQuery) -> None:
         self.hook_calls = hook_calls
 
-    def needs_wake(self, view: AgentView) -> bool:
+    def requires_wake(self, view: AgentView) -> bool:
         hook = self.hook_calls.newest_agent_hook(view.agent.agent_id)
         return hook is not None and HookEventName(hook.hook) is HookEventName.STOP_FAILURE
 

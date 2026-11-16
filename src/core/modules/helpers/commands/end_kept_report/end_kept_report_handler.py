@@ -16,5 +16,5 @@ class EndKeptReportHandler(Handler[EndKeptReport, str]):
 
     def handle(self, command: EndKeptReport, context: Context) -> str:
         job = self.reports.required_job(command.helper_id)
-        self.repository.save(job.changed(ended_at=context.timestamp, handover_state=HandoverState.NO_REPORT), context)
+        self.repository.save(job.changed(ended_at=context.timestamp, handover_state=HandoverState.REPORT_MISSING), context)
         return f"job {job.id} ended with no report"

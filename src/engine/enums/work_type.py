@@ -6,7 +6,7 @@ class WorkType(StrEnum):
 
     TASK = "task"
     HANDED_TASK = "handed-task"
-    OWN_TASKS = "own-tasks"
+    MAIN_AGENT_TASKS = "own-tasks"
     SEQUENCE = "sequence"
     UNIT = "unit"
     JOB = "job"

@@ -52,7 +52,7 @@ class WorkerStartedWork:
         if worker.role != Worker.key or worker.ended_at is None or worker.paused_at is not None or worker.retired_at is not None:
             return ()
         worker_round = self.unfinished.steps.round(worker.id)
-        if worker_round.is_asking or self.has_waiting_job(worker) or self.unfinished.has_own_running_process(worker.id) or self.stop.was_stopped(worker) or self.reached_restart_limit(worker):
+        if worker_round.is_asking or self.has_waiting_job(worker) or self.unfinished.has_worker_running_process(worker.id) or self.stop.was_stopped(worker) or self.reached_restart_limit(worker):
             return ()
         return self.unfinished.round_rows(worker_round)
 

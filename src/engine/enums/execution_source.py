@@ -15,4 +15,4 @@ class ExecutionSource(StrEnum):
     JOURNAL_RUN = "journal run"
     PLUGIN_PROGRAM = "plugin program"
     GRAPHIFY = "graphify"
-    FOLLOW_UP = "follow-up"
+    SUBSEQUENT = "follow-up"

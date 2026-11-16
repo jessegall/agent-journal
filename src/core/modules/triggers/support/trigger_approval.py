@@ -11,5 +11,5 @@ class TriggerApproval:
     def __init__(self, settings: SettingValues) -> None:
         self.settings = settings
 
-    def needs_user(self, actor: Actor) -> bool:
+    def person_required(self, actor: Actor) -> bool:
         return actor.type is ActorType.AGENT and not self.settings.flag(AGENTS_ENABLE_SETTING)

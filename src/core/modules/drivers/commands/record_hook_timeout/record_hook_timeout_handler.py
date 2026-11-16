@@ -26,7 +26,7 @@ class RecordHookTimeoutHandler(Handler[RecordHookTimeout, None]):
 
     def handle(self, command: RecordHookTimeout, context: Context) -> None:
         count = self.timeouts.record(command.agent_id, context.timestamp)
-        if not self.timeouts.needs_notice(command.agent_id, count, context.timestamp):
+        if not self.timeouts.requires_notice(command.agent_id, count, context.timestamp):
             return None
         self.timeouts.notify(command.agent_id, context.timestamp)
         main = MainAgentFinder.newest(self.queries)

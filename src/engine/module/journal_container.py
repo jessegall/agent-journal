@@ -5,7 +5,7 @@ from engine.hosting.hosted_file import HostedFile
 from engine.hosting.hosting import Hosting
 from engine.database.database import Database
 from engine.database.shared_tables import SharedTables
-from engine.event.written_events import WrittenEvents
+from engine.event.saved_events import SavedEvents
 from engine.journal.journal_home import JournalHome
 from engine.model.state_book import StateBook
 from engine.module.module_sync import ModuleSync
@@ -36,7 +36,7 @@ def database_container(home: JournalHome, database: Database) -> Container:
     container.bind(Hosting, HostedFile.shared_hosting(home))
     container.bind(PluginScriptProcesses, PluginScriptProcesses.shared(home))
     container.bind(SharedTables, SharedTables.shared(home))
-    container.bind(WrittenEvents, WrittenEvents.shared())
+    container.bind(SavedEvents, SavedEvents.shared())
     return container
 
 

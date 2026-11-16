@@ -194,13 +194,13 @@ def test_a_worker_whose_checkpoint_tests_failed_runs_a_test_without_spending_its
     expect_reply_allowed(worker.run_test())
 
 
-OTHER_WORKTREES = 30
+WORKTREE_LIST_LIMIT = 30
 
 
 def test_a_failed_run_reads_only_the_worktrees_of_the_workers_of_its_tasks_and_still_returns_the_task(running_checkpoint):
     worker, story = running_checkpoint, running_checkpoint.story
     database = story.container.get(Database)
-    database.update(Statement(f"WITH RECURSIVE copies(number) AS (SELECT 1 UNION ALL SELECT number + 1 FROM copies WHERE number < {OTHER_WORKTREES}) "
+    database.update(Statement(f"WITH RECURSIVE copies(number) AS (SELECT 1 UNION ALL SELECT number + 1 FROM copies WHERE number < {WORKTREE_LIST_LIMIT}) "
                               "INSERT INTO worker_worktrees (session_agent_id, environment_id, task_id, creator_id, folder, branch, base_branch, state, merged_task_ids, removed_at, created_at, updated_at) "
                               "SELECT ?, environment_id, task_id, creator_id, folder || '-old-' || number, branch || '-old-' || number, base_branch, 'new', '1,3', created_at, created_at, updated_at "
                               "FROM worker_worktrees, copies WHERE session_agent_id = ?", [story.agent.id, worker.worker.id]))
@@ -209,4 +209,4 @@ def test_a_failed_run_reads_only_the_worktrees_of_the_workers_of_its_tasks_and_s
         end_run(worker, TOTALS_COMMAND)
     cost = database.repeated_work.points().minus(start)
     expect_returned(worker, 3)
-    story.expect_rows(cost.tables["worker_worktrees"] < OTHER_WORKTREES, detail=str({sql: rows for sql, rows in cost.statements.items() if "worker_worktrees" in sql and rows}))
+    story.expect_rows(cost.tables["worker_worktrees"] < WORKTREE_LIST_LIMIT, detail=str({sql: rows for sql, rows in cost.statements.items() if "worker_worktrees" in sql and rows}))

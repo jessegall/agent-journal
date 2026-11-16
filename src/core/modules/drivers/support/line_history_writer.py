@@ -7,7 +7,7 @@ from engine.repository.repository import Repository
 from core.modules.drivers.models.agent_line_history import AgentLineHistory
 from core.modules.drivers.support.agent_line_histories import AgentLineHistories
 
-SPOKEN_OUTCOMES = ("lines", "refused")
+LINE_OUTCOMES = ("lines", "refused")
 
 
 class LineHistoryWriter:
@@ -17,12 +17,12 @@ class LineHistoryWriter:
         self.repository, self.histories = repository, histories
 
     def record(self, agent_id: int, answers: RuleAnswers, context: Context) -> None:
-        self.record_said(agent_id, [record.name for record in answers.rules if record.outcome in SPOKEN_OUTCOMES], context)
+        self.record_given(agent_id, [record.name for record in answers.rules if record.outcome in LINE_OUTCOMES], context)
 
-    def record_said(self, agent_id: int, source_keys: Sequence[str], context: Context) -> None:
-        spoken = list(dict.fromkeys(source_keys))
-        stored = self.histories.rows(agent_id) if spoken else {}
-        for key in spoken:
+    def record_given(self, agent_id: int, source_keys: Sequence[str], context: Context) -> None:
+        given_keys = list(dict.fromkeys(source_keys))
+        stored = self.histories.rows(agent_id) if given_keys else {}
+        for key in given_keys:
             row = stored.get(key)
             if row is None:
                 self.repository.save(AgentLineHistory(session_agent_id=agent_id, source_key=key, last_said_at=context.timestamp), context)

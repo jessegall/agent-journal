@@ -275,9 +275,9 @@ class ClaudeCodeProvider(Provider):
         person_settings = self.person_settings(person_data.get(person_file, b""))
         unreadable = tuple(path for path in [person_file] if FileAccess.is_file(path) and (path not in person_data or person_settings is None))
         person_values = {key: value for key, value in (person_settings or {}).items() if key in COPIED_SETTINGS}
-        local_env = self.local_env(root)
-        if local_env:
-            person_values["env"] = {**(person_values.get("env") if isinstance(person_values.get("env"), dict) else {}), **local_env}
+        local_environment = self.local_environment(root)
+        if local_environment:
+            person_values["env"] = {**(person_values.get("env") if isinstance(person_values.get("env"), dict) else {}), **local_environment}
         settings = {**person_values, "permissions": BYPASS_PERMISSIONS, **self.hook_settings(runner, root),
                     "hooks": ProgramHooks.journal(type(self), path).journal_blocks(runner, root, managed)}
         state = self.state_file()
@@ -291,7 +291,7 @@ class ClaudeCodeProvider(Provider):
 
     # Claude Code started with --setting-sources project does not read the project's local settings file, so its env is
     # carried into the journal's own settings; its hooks are taken over as managed hooks
-    def local_env(self, root: Path) -> Mapping[str, object]:
+    def local_environment(self, root: Path) -> Mapping[str, object]:
         path = root / LOCAL_SETTINGS
         local = self.person_settings(KeptBytes.read(path)) if FileAccess.is_file(path) else None
         env = (local or {}).get("env")

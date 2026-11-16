@@ -14,7 +14,7 @@ from core.modules.processes.models.enums.process_setting import ProcessSetting
 def test_the_inspector_reads_live_spots_wait_order_start_times_and_recent_output(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
     story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main", actor=story.user)
-    story.expect_success(f"setting set {ProcessSetting.LANE_CAPACITY_LONG.key} 4 --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.POOL_CAPACITY_LONG.key} 4 --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start inspector-worker claude worker --environment main"), ActorType.AGENT)
     first = start_process(story, "make package", category=CommandCategory.BUILD)
     story.advance(timedelta(seconds=5))
@@ -69,7 +69,7 @@ def test_an_agents_processes_tab_lists_only_that_agents_running_waiting_and_fini
     worker = story.new_row_id("agent start processes-worker claude worker --environment main")
     different = story.new_row_id("agent start other-worker claude worker --environment main")
     story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main", actor=story.user)
-    story.expect_success(f"setting set {ProcessSetting.LANE_CAPACITY_LONG.key} 4 --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.POOL_CAPACITY_LONG.key} 4 --environment main", actor=story.user)
     story.agent = Actor(worker, ActorType.AGENT)
     finished = start_process(story, "make previous", category=CommandCategory.BUILD)
     end_run(story, finished, "done\n")

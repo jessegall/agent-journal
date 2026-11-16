@@ -20,11 +20,11 @@ def outer():
 '''
 
 
-def ran_here() -> int:
+def executed_test_count() -> int:
     return 1
 
 
-def not_run_here() -> int:
+def unrun_test_count() -> int:
     return 2
 
 
@@ -34,7 +34,7 @@ def test_records_a_function_that_ran_and_not_one_that_did_not():
     recorder.start()
     try:
         recorder.begin_test()
-        ran_here()
+        executed_test_count()
         recorder.finish_test("case")
     finally:
         recorder.stop()

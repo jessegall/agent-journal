@@ -63,7 +63,7 @@ class DeliverAgentWakeHandler(Handler[DeliverAgentWake, None]):
         if not self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING).exists():
             self.message_sender.send(agent.id, WakeObligationMessage.declared(), WAKE_SOURCE, context)
         if agent.is_main:
-            self.typing.release_for_wake(agent.id, context.actor.id)
+            self.typing.release_waiting_lines(agent.id, context.actor.id)
 
     # the agent's wake tries, counted silently for the wake it is on, up to wake-attempts
     def attempts(self) -> CountDown:

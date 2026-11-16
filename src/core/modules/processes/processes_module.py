@@ -1,4 +1,4 @@
-from core.modules.processes.support.block_conditions.run_heard_from import RunHeardFrom
+from core.modules.processes.support.block_conditions.run_reported_progress import RunReportedProgress
 from core.modules.processes.lines.dock_title_lines import DockTitleLines
 from core.modules.processes.effects.runner_start_effect import RunnerStartEffect
 from core.modules.processes.lines.runner_missing_lines import RunnerMissingLines
@@ -39,7 +39,7 @@ from core.modules.processes.states.silent_run_block_states import SilentRunBlock
 from core.modules.processes.story_steps.processes_story_steps import PROCESSES_STORY_STEPS
 from core.modules.processes.windows.extensions.agents_processes_extension import AgentsProcessesExtension
 from core.modules.processes.windows.extensions.helpers_processes_extension import HelpersProcessesExtension
-from core.modules.processes.windows.extensions.agents_lift_hold_extension import AgentsLiftHoldExtension
+from core.modules.processes.windows.extensions.agents_lift_block_extension import AgentsLiftBlockExtension
 from core.modules.processes.windows.processes_windows import PROCESSES_WINDOWS
 from core.modules.processes.models.declarations.request_run_model_declaration import RequestRunModelDeclaration
 from core.modules.processes.models.declarations.reader_request_model_declaration import ReaderRequestModelDeclaration
@@ -284,7 +284,7 @@ from core.modules.processes.support.block_conditions.output_read import OutputRe
 from core.modules.processes.migrations.m083_stale_output_blocks import StaleOutputBlocksMigration
 from core.modules.processes.migrations.m084_output_last_read import OutputLastReadMigration
 from core.modules.processes.support.block_conditions.output_titled import OutputTitled
-from core.modules.processes.support.block_conditions.output_read_since_block import OutputReadSinceBlock
+from core.modules.processes.support.block_conditions.output_read_during_block import OutputReadDuringBlock
 
 
 
@@ -317,7 +317,7 @@ class ProcessesModule(Module):
                      ProcessPruningTickHandler, RequestLogImportTickHandler]
     skills = PROCESSES_SKILLS
     requires_engine = ">=5,<6"
-    block_conditions = [ReaderRequestCompleted, OutputEnded, OutputRead, OutputTitled, OutputReadSinceBlock, OutputMonitored, RunHeardFrom]
+    block_conditions = [ReaderRequestCompleted, OutputEnded, OutputRead, OutputTitled, OutputReadDuringBlock, OutputMonitored, RunReportedProgress]
     settings = PROCESS_SETTINGS
     moves = [ProcessesMove]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits", "journal.core.messages", "journal.core.chat", "journal.core.docking", "journal.core.tasks", "journal.core.settings", "journal.core.developer", "journal.core.assignments"]
@@ -332,7 +332,7 @@ class ProcessesModule(Module):
     marks = [ProcessCommandMark]
     bindings = {WatchedRuns: MonitoredRuns, WaitTargets: ProcessWaitTargets, RunOwners: ProcessRunOwners, RunPlacement: ProcessRunPlacement, RunPauses: AgentRunPauses, RequestRecords: ProcessRowWrapper, PersonClasses: StoredExecutionClasses}
     docks = PROCESSES_DOCKS
-    window_extensions = [AgentsProcessesExtension, HelpersProcessesExtension, AgentsLiftHoldExtension]
+    window_extensions = [AgentsProcessesExtension, HelpersProcessesExtension, AgentsLiftBlockExtension]
     windows = PROCESSES_WINDOWS
     inspectors = [QueueInspector]
     seeders = [ProcessesSeeder]

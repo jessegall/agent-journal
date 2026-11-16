@@ -8,6 +8,6 @@ COMPACTION_END_CAPABILITY = Capability(CapabilityPart.COMPACTION_END, HookEventN
 
 
 def test_a_live_proof_of_the_program_makes_its_capability_usable_and_another_programs_changes_nothing():
-    proofs = [f"codex:{CapabilityPart.COMPACTION_END.value}:{HookEventName.COMPACT.value}={CapabilityProof.PROVED_LIVE.value} report 1"]
+    proofs = [f"codex:{CapabilityPart.COMPACTION_END.value}:{HookEventName.COMPACT.value}={CapabilityProof.PROVED_RUNNING.value} report 1"]
     assert Capabilities(COMPACTION_END_CAPABILITY).proved("codex", proofs).supports(CapabilityPart.COMPACTION_END, HookEventName.COMPACT)
     assert not Capabilities(COMPACTION_END_CAPABILITY).proved("claude", proofs).supports(CapabilityPart.COMPACTION_END, HookEventName.COMPACT)

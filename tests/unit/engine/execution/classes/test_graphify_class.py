@@ -9,14 +9,14 @@ from engine.execution.execution_order import ExecutionOrder
 from engine.execution.execution_starter import ExecutionStarter
 from engine.execution.execution_subject import ExecutionSubject
 from engine.execution.execution_ticket import ExecutionTicket
-from engine.execution.limits.default_lane_limits import DEFAULT_LANE_LIMITS
+from engine.execution.limits.default_lane_limits import DEFAULT_POOL_LIMITS
 from tests.unit.engine.execution.classes.test_execution_classes import CLASSES, WORKER
 from tests.unit.engine.execution.tickets import seconds_after_start
 
 MAIN_AGENT = ExecutionStarter(StarterType.MAIN_AGENT, agent_id=1)
-ROOMY_LONG_LANE = 32
-ROOMY = ExecutionOrder(replace(DEFAULT_LANE_LIMITS.with_capacities({**DEFAULT_LANE_LIMITS.capacities, ExecutionLength.LONG: ROOMY_LONG_LANE}),
-                               starter_caps={lane: ROOMY_LONG_LANE for lane in ExecutionLength}))
+ROOMY_LONG_POOL = 32
+ROOMY = ExecutionOrder(replace(DEFAULT_POOL_LIMITS.with_capacities({**DEFAULT_POOL_LIMITS.capacities, ExecutionLength.LONG: ROOMY_LONG_POOL}),
+                               starter_caps={lane: ROOMY_LONG_POOL for lane in ExecutionLength}))
 GRAPHIFY = CLASSES.match(ExecutionSubject(ExecutionSource.GRAPHIFY, MAIN_AGENT, category=CommandCategory.BACKGROUND_JOB))
 BUILD = CLASSES.match(ExecutionSubject(ExecutionSource.SHELL_LINE, WORKER, category=CommandCategory.BUILD))
 
@@ -39,4 +39,4 @@ def test_a_build_behind_a_waiting_update_is_not_blocked_by_the_class_limit_alone
 
 
 def test_an_update_starts_in_the_default_long_lane_though_it_costs_more_than_the_background_share():
-    assert ExecutionOrder(replace(DEFAULT_LANE_LIMITS, starter_caps=dict(DEFAULT_LANE_LIMITS.capacities))).starting([update(0, 1)], [], seconds_after_start(1), False) == (update(0, 1),)
+    assert ExecutionOrder(replace(DEFAULT_POOL_LIMITS, starter_caps=dict(DEFAULT_POOL_LIMITS.capacities))).starting([update(0, 1)], [], seconds_after_start(1), False) == (update(0, 1),)

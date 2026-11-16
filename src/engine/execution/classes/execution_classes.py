@@ -9,7 +9,7 @@ from engine.execution.classes.execution_class import ExecutionClass
 from engine.execution.execution_subject import ExecutionSubject
 from engine.execution.classes.person_classes import PersonClasses
 
-LANE_LENGTHS = {ExecutionLength.INSTANT: 0, ExecutionLength.SHORT: 1, ExecutionLength.LONG: 2}
+POOL_LENGTHS = {ExecutionLength.INSTANT: 0, ExecutionLength.SHORT: 1, ExecutionLength.LONG: 2}
 
 
 class ExecutionClasses:
@@ -27,19 +27,19 @@ class ExecutionClasses:
 
     # the class a stored run names, the person's before the built-in one; none for a name nobody declares any more
     def named(self, name: str) -> ExecutionClass | None:
-        every_class = (*self.person.classes(), *(row.execution_class for row in BUILTIN_CLASSES))
-        return next((execution_class for execution_class in every_class if execution_class.name == name), None)
+        all_classes = (*self.person.classes(), *(row.execution_class for row in BUILTIN_CLASSES))
+        return next((execution_class for execution_class in all_classes if execution_class.name == name), None)
 
     # a line of several parts waits in the longest lane of its parts and takes the highest cost of them, not their sum
-    def for_line(self, parts: Sequence[ExecutionSubject]) -> ExecutionClass:
+    def line_class(self, parts: Sequence[ExecutionSubject]) -> ExecutionClass:
         classes = [self.match(part) for part in parts]
-        longest = max(classes, key=lambda execution_class: LANE_LENGTHS[execution_class.lane])
+        longest = max(classes, key=lambda execution_class: POOL_LENGTHS[execution_class.lane])
         return replace(longest, slot_cost=max(execution_class.slot_cost for execution_class in classes))
 
     @staticmethod
-    def validate(execution_class: ExecutionClass, lane_capacity: int) -> None:
-        if execution_class.slot_cost > lane_capacity:
-            raise ExecutionClassCostError(execution_class, lane_capacity)
+    def validate(execution_class: ExecutionClass, pool_capacity: int) -> None:
+        if execution_class.slot_cost > pool_capacity:
+            raise ExecutionClassCostError(execution_class, pool_capacity)
 
     # a person's class names a plugin, a line pattern or both; a plugin's run never takes a class written for the journal
     @staticmethod

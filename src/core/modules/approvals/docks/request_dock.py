@@ -10,5 +10,5 @@ class RequestDock(DockDeclaration):
     title = "Approval"
     body = "approval-dock.js"
     reads = ["approval pending"]
-    needs_user = True
+    person_required = True
     reads_target = False

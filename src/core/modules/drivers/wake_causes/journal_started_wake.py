@@ -18,7 +18,7 @@ class JournalStartedWake(WakeCause):
     def __init__(self, hook_calls: HookCallQuery) -> None:
         self.hook_calls = hook_calls
 
-    def needs_wake(self, view: AgentView) -> bool:
+    def requires_wake(self, view: AgentView) -> bool:
         hook = self.hook_calls.newest_agent_hook(view.agent.agent_id)
         if hook is None or view.journal_started_at is None or HookEventName(hook.hook) in TURN_ENDS:
             return False

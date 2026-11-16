@@ -7,7 +7,7 @@ from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
 from suites.coding.modules.workers.commands.end_inactive_worker.end_inactive_worker import EndInactiveWorker
 from suites.coding.modules.workers.lines.inactive_worker_stop_lines import IDLE_WORKER_STOP_KEY
-from suites.coding.modules.workers.support.idle_workers import IdleWorkers
+from suites.coding.modules.workers.support.inactive_workers import InactiveWorkers
 
 
 class InactiveWorkerStopEffect(EventEffect):
@@ -19,8 +19,8 @@ class InactiveWorkerStopEffect(EventEffect):
     events = [HookEventName.TICK]
     agent_types = [AgentRole.MAIN.value]
 
-    def __init__(self, idle: IdleWorkers) -> None:
-        self.idle_workers = idle
+    def __init__(self, idle: InactiveWorkers) -> None:
+        self.inactive_workers = idle
 
     def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
-        return [EndInactiveWorker(worktree.session_agent_id) for worktree in self.idle_workers.idle(event, agent_id)]
+        return [EndInactiveWorker(worktree.session_agent_id) for worktree in self.inactive_workers.idle(event, agent_id)]

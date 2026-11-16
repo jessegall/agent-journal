@@ -26,4 +26,4 @@ class McpSuggestedSubcommand(ReadSubcommand[Sequence[ServerSuggestion]]):
 
     def write_output(self, value: object, output: Output) -> None:
         listed = [row for row in value if isinstance(row, ServerSuggestion)] if is_tuple(value) else []
-        output.write("\n".join(f"{row.name}  {row.title}: {row.subject}{row.admission}" for row in listed), {"rows": [output.values(row) for row in listed]})
+        output.write("\n".join(f"{row.name}  {row.title}: {row.subject}{row.start_check}" for row in listed), {"rows": [output.values(row) for row in listed]})

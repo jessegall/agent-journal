@@ -8,8 +8,8 @@ class TunlerLogin:
     words."""
 
     connected: bool
-    needs_master: bool = False
+    requires_master: bool = False
     error: str = ""
 
     def json(self) -> Mapping[str, object]:
-        return {"connected": self.connected, "needs_master": self.needs_master, "error": self.error}
+        return {"connected": self.connected, "needs_master": self.requires_master, "error": self.error}

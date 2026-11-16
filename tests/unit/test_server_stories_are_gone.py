@@ -5,7 +5,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SERVER_STORIES = ROOT / "tests" / "stories" / "server"
 # what is left for task 10187 (viewer_read_counts, viewer_hook_events, library_client); it only goes down, to 0
 SERVER_STORY_LIMIT = 0
-WHAT_TO_DO = ("the server folder holds no stories (user 124510): a check of the server's machinery is an integration test under tests/integration, "
+SERVER_STORIES_RULE = ("the server folder holds no stories (user 124510): a check of the server's machinery is an integration test under tests/integration, "
               "and what an agent or a person sees through the server is a story in its module's folder")
 
 
@@ -21,7 +21,7 @@ def story_count(folder: Path) -> int:
 
 
 def test_the_server_story_folder_only_shrinks():
-    assert story_count(SERVER_STORIES) <= SERVER_STORY_LIMIT, WHAT_TO_DO
+    assert story_count(SERVER_STORIES) <= SERVER_STORY_LIMIT, SERVER_STORIES_RULE
 
 
 def test_the_count_reads_tests_and_skips_support(tmp_path):

@@ -65,7 +65,7 @@ class WorktreeQuery(Query[Worktree], KeptRowChanges[Worktree]):
 
     # every worktree, removed ones too, of the workers these worktrees belong to, oldest first: a task returned to its
     # worker moves its proofs to the worker's new worktree, while the old one keeps what it merged
-    def worker_worktrees_of(self, worktree_ids: Sequence[int]) -> tuple[Worktree, ...]:
+    def worker_worktree_rows(self, worktree_ids: Sequence[int]) -> tuple[Worktree, ...]:
         agent_ids = {worktree.session_agent_id for worktree in self.worktrees_among(worktree_ids)}
         worktrees = self.with_removed().matching(Among("session_agent_id", tuple(sorted(agent_ids)))).oldest()
         return self.kept.read(worktrees, lambda: tuple(worktrees.every_row(WORKTREES_REASON)), name="workers.worker_worktrees_of")

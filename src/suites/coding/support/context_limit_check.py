@@ -47,7 +47,7 @@ class ContextLimitCheck:
         tokens, hard = self.tokens(agent_id), self.settings.number(CONTEXT_LIMIT_HARD_TOKENS)
         return tokens is not None and bool(hard) and tokens >= hard
 
-    def needs_compaction(self, agent_id: int) -> bool:
+    def compaction_due(self, agent_id: int) -> bool:
         tokens = self.tokens(agent_id)
         return tokens is not None and not self.has_pending_task(agent_id, tokens)
 

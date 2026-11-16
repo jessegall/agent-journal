@@ -10,7 +10,7 @@ from server.viewer.open_doors import OpenDoors
 
 PUBLIC_ORIGIN = "https://journal.example.com"
 PROXY_UID = 501
-SAME_ORIGIN = DoorRequest(PROXY_UID, "journal.example.com", PUBLIC_ORIGIN, "same-origin", True, False, 10)
+EQUAL_ORIGIN_REQUEST = DoorRequest(PROXY_UID, "journal.example.com", PUBLIC_ORIGIN, "same-origin", True, False, 10)
 CLOSED_ROUTES = (*CLOSED_PATHS, *CLOSED_PHONE_FILES, f"{CLOSED_PREFIX}token")
 
 
@@ -20,28 +20,28 @@ def status(request: DoorRequest) -> int | None:
 
 
 def test_a_caller_that_is_not_the_proxy_is_refused_403():
-    assert status(replace(SAME_ORIGIN, peer_uid=PROXY_UID + 1)) == 403
+    assert status(replace(EQUAL_ORIGIN_REQUEST, peer_uid=PROXY_UID + 1)) == 403
 
 
 def test_a_request_naming_another_host_is_refused_403():
-    assert status(replace(SAME_ORIGIN, host="evil.example")) == 403
+    assert status(replace(EQUAL_ORIGIN_REQUEST, host="evil.example")) == 403
 
 
 @pytest.mark.parametrize("origin, site", [("https://evil.example", "cross-site"), ("", "")])
 def test_a_change_from_another_origin_or_with_no_origin_header_is_refused_403(origin, site):
-    assert status(replace(SAME_ORIGIN, origin=origin, site_relation=site)) == 403
+    assert status(replace(EQUAL_ORIGIN_REQUEST, origin=origin, site_relation=site)) == 403
 
 
 def test_a_same_origin_change_passes_the_door_for_the_login_check():
-    assert status(SAME_ORIGIN) is None
+    assert status(EQUAL_ORIGIN_REQUEST) is None
 
 
 def test_a_large_body_from_someone_not_logged_in_is_refused_413():
-    assert status(replace(SAME_ORIGIN, body_bytes=ANONYMOUS_BODY_BYTES + 1)) == 413
+    assert status(replace(EQUAL_ORIGIN_REQUEST, body_bytes=ANONYMOUS_BODY_BYTES + 1)) == 413
 
 
 def test_a_read_with_no_origin_headers_passes_the_door():
-    assert status(replace(SAME_ORIGIN, is_change=False, origin="", site_relation="")) is None
+    assert status(replace(EQUAL_ORIGIN_REQUEST, is_change=False, origin="", site_relation="")) is None
 
 
 @pytest.mark.parametrize("path", sorted(CLOSED_ROUTES))

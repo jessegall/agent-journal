@@ -12,7 +12,7 @@ from tests.stories.core.support.seeds.project_seeds import AgentActorSeed
 """Book 3 of doc 1255: the helper reads that grew past the read limit give the same answer on a few rows and read at
 most 51 rows in a statement on many."""
 
-MANY_JOBS = 1200
+JOB_COUNT = 1200
 HELPER_NUMBER = -5000
 
 
@@ -27,22 +27,22 @@ def parent_and_helper(journal) -> tuple[int, Agent]:
 
 def test_helper_start_finds_a_known_job_among_1200_jobs_reading_at_most_51_rows_per_statement(journal, parent_and_helper):
     parent_id, helper = parent_and_helper
-    seeded(journal, FinishedHelperJobSeed, MANY_JOBS, session_agent_id=parent_id, helper_id=helper.id)
+    seeded(journal, FinishedHelperJobSeed, JOB_COUNT, session_agent_id=parent_id, helper_id=helper.id)
     limit_reads(journal)
-    known = journal.container.get(HelperReuse).known_job(parent_id, SEEDED_PROFILE, "Read src/seeded/file_3.py again")
+    known = journal.container.get(HelperReuse).reusable_job(parent_id, SEEDED_PROFILE, "Read src/seeded/file_3.py again")
     assert known is not None and known.instruction == "Read src/seeded/file_3.py"
 
 
 def test_helper_start_still_reuses_a_helper_whose_finished_job_mentions_the_same_path(journal, parent_and_helper):
     parent_id, helper = parent_and_helper
     seeded(journal, FinishedHelperJobSeed, 3, session_agent_id=parent_id, helper_id=helper.id)
-    known = journal.container.get(HelperReuse).known_job(parent_id, SEEDED_PROFILE, "Look at src/seeded/file_1.py")
+    known = journal.container.get(HelperReuse).reusable_job(parent_id, SEEDED_PROFILE, "Look at src/seeded/file_1.py")
     assert known is not None and known.helper_id == helper.id
 
 
 def test_helper_send_asks_for_an_open_job_of_one_helper_and_reads_one_row(journal, parent_and_helper):
     parent_id, helper = parent_and_helper
-    seeded(journal, FinishedHelperJobSeed, MANY_JOBS, session_agent_id=parent_id, helper_id=helper.id)
+    seeded(journal, FinishedHelperJobSeed, JOB_COUNT, session_agent_id=parent_id, helper_id=helper.id)
     limit_reads(journal)
     kept = journal.container.get(KeptHelpers)
     assert not kept.has_open_job(helper)
@@ -55,7 +55,7 @@ def test_job_costs_use_the_newest_fifty_finished_jobs_and_give_the_same_estimate
     seeded(journal, FinishedHelperJobSeed, 3, session_agent_id=parent_id, helper_id=helper.id)
     few = journal.container.get(JobCosts).profile_costs(SEEDED_PROFILE)
     # the costs read jobs by profile alone, so the many jobs may sit under another agent of the same profile
-    seeded(journal, FinishedHelperJobSeed, MANY_JOBS, session_agent_id=helper.id, helper_id=helper.id)
+    seeded(journal, FinishedHelperJobSeed, JOB_COUNT, session_agent_id=helper.id, helper_id=helper.id)
     limit_reads(journal)
     many = journal.container.get(JobCosts).profile_costs(SEEDED_PROFILE)
     # on a few jobs the newest fifty are every job, so the estimate is the one the whole read gave; on many it uses fifty

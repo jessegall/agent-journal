@@ -38,7 +38,7 @@ from server.execution.session_starters import SessionStarters
 from server.hook.hook_sender import HookSender
 from server.hook.raw_hook_body import RawHookBody, is_raw_body
 from server.hook.hook_headers import HookHeaders
-from server.errors.lane_busy_error import LaneBusyError
+from server.errors.pool_busy_error import PoolBusyError
 from engine.enums.execution_priority import ExecutionPriority
 from server.context.server_context import ServerContext
 
@@ -51,7 +51,7 @@ UNCHECKED_TOOL = "the journal could not check this, so it is held: {reason}. A w
 SERVER_UPDATING = "the journal is updating: your line is held; try it again once the journal says it started"
 
 
-HOOK_FILE_CALL_LIMIT = 200
+HOOK_FILE_CALL_LIMIT_COUNT = 200
 
 TOP_ORIGINS = 3
 
@@ -83,7 +83,7 @@ class HookEndpoint:
                 self.timing.stamp("hook_locked")
                 queued_ms = (perf_counter() - started_at) * 1000
                 return self.routed_answer(data, program, headers, database, started_at, sender, queued_ms)
-        except (LaneBusyError, OldHookRunnerError) as error:
+        except (PoolBusyError, OldHookRunnerError) as error:
             return self.unchecked(sender, error)
         finally:
             self.timing.stamp("hook_answered")
@@ -98,7 +98,7 @@ class HookEndpoint:
             with self.context.hook_database.used(ExecutionPriority.IMMEDIATE, self.context.hook_limit_seconds) as database:
                 database.set_busy_timeout(self.context.hook_limit_seconds)
                 retries.retry(synced_database_container(self.context.home, database))
-        except LaneBusyError as error:
+        except PoolBusyError as error:
             self.context.files.log_line(f"delivery reset for hook call {reply.hook_call_id} will retry at the next hook: {error}", LogLevel.WARNING)
         except sqlite3.OperationalError as error:
             if not DatabaseBusy.is_busy(error):
@@ -155,11 +155,11 @@ class HookEndpoint:
 
     # a hook that touches more files than a hook may is logged with its counts, as its database points are
     def log_file_calls(self, event: HookEvent, file_calls: FileCalls) -> None:
-        if file_calls.total <= HOOK_FILE_CALL_LIMIT:
+        if file_calls.total <= HOOK_FILE_CALL_LIMIT_COUNT:
             return
         counts = ", ".join(f"{count} {category}" for category, count in file_calls.kinds.most_common())
         origins = ", ".join(f"{count} at {origin}" for origin, count in file_calls.origins.most_common(TOP_ORIGINS))
-        self.context.files.log_line(f"hook {event.event.value} made {file_calls.total} file system calls ({counts}; most {origins}), over the {HOOK_FILE_CALL_LIMIT} a hook may make", LogLevel.WARNING)
+        self.context.files.log_line(f"hook {event.event.value} made {file_calls.total} file system calls ({counts}; most {origins}), over the {HOOK_FILE_CALL_LIMIT_COUNT} a hook may make", LogLevel.WARNING)
 
     def event(self, data: object, program: str, headers: Mapping[str, str], providers: Providers) -> HookEvent:
         if is_raw_body(data):

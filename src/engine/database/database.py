@@ -11,8 +11,8 @@ from engine.database.never_waiting_write_turns import NeverWaitingWriteTurns
 from engine.database.write_turns import WriteTurns
 from engine.errors.read_cut_error import ReadCutError
 from engine.errors.read_limit_error import ReadLimitError
-from engine.errors.unscoped_read_error import UnscopedReadError
-from engine.scope.unscoped_reads import UnscopedReads
+from engine.errors.missing_scope_read_error import MissingScopeReadError
+from engine.scope.missing_scope_reads import MissingScopeReads
 from engine.journal.journal_home import JournalHome
 from engine.row.row_owner import RowOwner
 
@@ -208,8 +208,8 @@ class Database:
 
     def report_unscoped_read(self, table_name: str) -> None:
         if self.unscoped_reads_raise:
-            raise UnscopedReadError.read(table_name)
-        UnscopedReads.record(table_name)
+            raise MissingScopeReadError.read(table_name)
+        MissingScopeReads.record(table_name)
 
     def query_plan(self, statement: Statement) -> tuple[str, ...]:
         return tuple(row[3] for row in self.connection.execute(f"EXPLAIN QUERY PLAN {statement.sql}", statement.parameters))

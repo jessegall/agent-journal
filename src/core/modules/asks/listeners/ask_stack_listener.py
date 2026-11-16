@@ -28,10 +28,10 @@ class AskStackListener(CommitListener[Changed[AskStack]]):
     def handle(self, event: Changed[AskStack], logged: LoggedEvent) -> None:
         stack = event.row
         if stack.ended_at is None:
-            self.end_others(stack, logged)
+            self.end_remaining(stack, logged)
         self.update_request(stack, logged)
 
-    def end_others(self, stack: AskStack, logged: LoggedEvent) -> None:
+    def end_remaining(self, stack: AskStack, logged: LoggedEvent) -> None:
         self.bus.run(EndReplacedAskStacks(stack.id), self.actors.actor(MODULE_NAME), cause_id=logged.id, environment_id=stack.environment_id)
 
     def update_request(self, stack: AskStack, logged: LoggedEvent) -> None:

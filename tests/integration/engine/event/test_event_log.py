@@ -1,4 +1,4 @@
-from engine.event.written_events import WrittenEvents
+from engine.event.saved_events import SavedEvents
 from engine.time.clock import Clock
 from dataclasses import replace
 from datetime import datetime, timezone
@@ -30,7 +30,7 @@ def log(tmp_path):
     database = Database.opened(JournalHome(tmp_path))
     tables = Tables()
     Schema(database, tables, Clock()).migrate([CORE_MIGRATIONS])
-    yield EventLog(database, tables, WrittenEvents())
+    yield EventLog(database, tables, SavedEvents())
     database.close()
 
 

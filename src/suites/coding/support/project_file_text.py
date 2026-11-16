@@ -11,7 +11,7 @@ class ProjectFileText:
     text: str
     cut: bool
     git: str = ""
-    moved_from: str = ""
+    previous_path: str = ""
 
     def json(self) -> Mapping[str, object]:
-        return {"path": self.path, "text": self.text, "cut": self.cut, "git": self.git, "moved_from": self.moved_from}
+        return {"path": self.path, "text": self.text, "cut": self.cut, "git": self.git, "moved_from": self.previous_path}

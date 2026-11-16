@@ -57,7 +57,7 @@ class Constraints:
             return True
         if tool.is_readonly:
             return False
-        return tool.shell is None or not tool.shell.has_only_parts(lambda part: BlockExemptions.names(part, MESSAGE_COMMAND))
+        return tool.shell is None or not tool.shell.has_all_parts(lambda part: BlockExemptions.names(part, MESSAGE_COMMAND))
 
     def stop_policy_reasons(self, question: Question, view: AgentView) -> list[Reason]:
         return [reason for policy in self.policies if policy.judges_stops for reason in policy.refusals(question, view)]
@@ -115,7 +115,7 @@ class Constraints:
         if stack.has(Paused) or stack.has(Compacting):
             return []
         refusals = [block.stop_refusal() for block in JudgedBlocks.constraining(view) if block.refuses_stop(view.escalation)]
-        top = stack.work_lane_top()
+        top = stack.work_level_top()
         if view.escalation is not None and view.escalation.defers_work(top.state_key):
             return refusals
         return [*refusals, *top.state.stop_answer(view.work_stop).refusal_reasons()]

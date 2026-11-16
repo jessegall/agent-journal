@@ -22,12 +22,12 @@ class LocalDoor(Door):
     def refusal(self, request: DoorRequest) -> DoorRefusal | None:
         if request.host != self.host and not self.is_tunnel_request(request):
             return DoorRefusal(403, WRONG_HOST_REASON)
-        if request.is_change and not self.is_from_viewer_origin(request):
+        if request.is_change and not self.has_viewer_origin(request):
             return DoorRefusal(403, FOREIGN_SITE_REASON)
         return None
 
     # another port of 127.0.0.1 is the same site to a browser and sends the login along: only the viewer's origin may change state
-    def is_from_viewer_origin(self, request: DoorRequest) -> bool:
+    def has_viewer_origin(self, request: DoorRequest) -> bool:
         viewer_origins = ("", f"http://{self.host}", self.tunnel_address() or "")
         return request.origin in viewer_origins and request.site_relation in ACCEPTED_SITE_RELATIONS
 
@@ -35,5 +35,5 @@ class LocalDoor(Door):
         address = self.tunnel_address()
         return address is not None and request.host == urlparse(address).netloc
 
-    def state_needs_login(self, request: DoorRequest) -> bool:
+    def login_required(self, request: DoorRequest) -> bool:
         return request.host != self.host

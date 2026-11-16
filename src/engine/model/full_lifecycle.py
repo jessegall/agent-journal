@@ -58,6 +58,6 @@ class FullLifecycle:
         return outgoing(self.moves(), state)
 
     def suggestion(self, cli_name: str, row_id: int, state: StateValue) -> str:
-        if not self.lifecycle.moves_have_commands:
+        if not self.lifecycle.moves_use_commands:
             return self.lifecycle.suggestion(cli_name, row_id, state)
         return next_moves_text(self.moves(), cli_name, row_id, state)

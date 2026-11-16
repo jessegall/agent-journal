@@ -1,6 +1,6 @@
 from engine.command.bus import Bus
 from engine.command.context import Context
-from engine.driver.open_hold import OpenHold
+from engine.driver.block_agent import BlockAgent
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.current_tasks import CurrentTasks
 from core.modules.tasks.support.block_conditions.task_brief_read import TaskBriefRead
@@ -15,20 +15,20 @@ class TaskBriefBlocks:
         self.bus, self.requirement, self.tasks = bus, requirement, tasks
 
     def block_current(self, agent_id: int, context: Context) -> None:
-        hold = self.current_hold(agent_id)
+        hold = self.current_block(agent_id)
         if hold is not None:
             self.bus.dispatch(hold, context)
 
     def block_unread(self, agent_id: int, task: Task, context: Context) -> None:
-        hold = self.unread_hold(agent_id, task)
+        hold = self.unread_block(agent_id, task)
         if hold is not None:
             self.bus.dispatch(hold, context)
 
-    def current_hold(self, agent_id: int) -> OpenHold | None:
+    def current_block(self, agent_id: int) -> BlockAgent | None:
         started = self.tasks.started_tasks(agent_id)
-        return self.unread_hold(agent_id, started[0]) if started else None
+        return self.unread_block(agent_id, started[0]) if started else None
 
-    def unread_hold(self, agent_id: int, task: Task) -> OpenHold | None:
+    def unread_block(self, agent_id: int, task: Task) -> BlockAgent | None:
         if not self.requirement.is_required or self.tasks.has_brief_read(task.id, agent_id):
             return None
-        return OpenHold(agent_id, TaskBriefFirstMessage.declared().agent_message(task=task.id), TaskBriefRead(task.id))
+        return BlockAgent(agent_id, TaskBriefFirstMessage.declared().agent_message(task=task.id), TaskBriefRead(task.id))

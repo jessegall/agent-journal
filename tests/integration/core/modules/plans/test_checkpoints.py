@@ -11,7 +11,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.plans.commands.start_checkpoint_run.start_checkpoint_run_handler import StartCheckpointRunHandler
-from core.modules.plans.ticks.plan_state_sweep import PlanStateSweep
+from core.modules.plans.ticks.plan_state_round import PlanStateRound
 from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.testing.stories.story_fixture import StoryFixture
@@ -391,9 +391,9 @@ def test_a_plan_whose_tasks_all_ended_while_its_last_run_went_and_failed_gets_on
     story.expect_success("checkpoint-reach failed 1 --failed-task-ids 1", actor=Actor.core())
     story.run_listeners()
     stuck = [row["state"] for row in rows(story, REACHES)]
-    PlanStateSweep()(story.container)
+    PlanStateRound()(story.container)
     story.run_listeners()
-    PlanStateSweep()(story.container)
+    PlanStateRound()(story.container)
     story.run_listeners()
     story.expect_rows(stuck == ["failed"], [row["state"] for row in rows(story, REACHES)] == ["failed", "running"], detail=str(rows(story, REACHES)))
     pass_reach(story, 2)

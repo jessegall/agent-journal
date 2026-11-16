@@ -86,7 +86,7 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
             raise self.kept.idle_refusal(idle_helpers)
 
     def check_reuse(self, parent: Agent, profile: AgentProfile, brief: str) -> None:
-        job = self.reuse.known_job(parent.id, profile.name, brief)
+        job = self.reuse.reusable_job(parent.id, profile.name, brief)
         if job is not None:
             helper = next((helper for helper in self.kept.kept(profile.name) if helper.id == job.helper_id), None)
             if helper is not None:

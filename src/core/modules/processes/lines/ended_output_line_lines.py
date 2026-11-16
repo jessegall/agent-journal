@@ -25,8 +25,8 @@ class EndedOutputLineLines(EventLineSource):
     def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         if event is None or not event.accepts_lines:
             return []
-        spoke_at = self.history.last_spoke(self.key, agent_id)
+        last_given_at = self.history.last_given(self.key, agent_id)
         ended = self.processes.agent(agent_id).moved().ended()
-        if spoke_at is not None:
-            ended = ended.matching(Greater("ended_at", spoke_at.text))
+        if last_given_at is not None:
+            ended = ended.matching(Greater("ended_at", last_given_at.text))
         return [OutputEndedMessage.declared().agent_message(output=process.id) for process in ended.every_row(ENDED_RUNS_REASON)]

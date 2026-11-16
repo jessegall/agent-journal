@@ -15,7 +15,7 @@ class ProcessMoveMarkListener(ProcessMarkListener[Moved[Process]]):
     moves = (ProcessLifecycle.background,)
 
     def prepare(self, events: Sequence[LoggedEvent]) -> None:
-        self.keep_parts_of(events)
+        self.keep_event_parts(events)
 
     def handle(self, event: Moved[Process], logged: LoggedEvent) -> None:
         self.show(event.row, logged)

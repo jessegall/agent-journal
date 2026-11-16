@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from types import SimpleNamespace
 
 
-from core.modules.drivers.lines.compaction_instructions_lines import INSTRUCTIONS_LIMIT, CompactionInstructionsLines
+from core.modules.drivers.lines.compaction_instructions_lines import INSTRUCTIONS_LIMIT_CHARACTERS, CompactionInstructionsLines
 from engine.driver.hook_event import HookEvent
 from engine.enums.hook_event_name import HookEventName
 from engine.provider.errors.unknown_program_error import UnknownProgramError
@@ -50,7 +50,7 @@ def test_an_empty_text_adds_no_line():
 
 
 def test_it_cuts_a_long_text_at_10000_characters():
-    assert [len(line) for line in answered_lines("k" * 12_000, compaction())] == [INSTRUCTIONS_LIMIT] == [10_000]
+    assert [len(line) for line in answered_lines("k" * 12_000, compaction())] == [INSTRUCTIONS_LIMIT_CHARACTERS] == [10_000]
 
 
 def test_the_persons_own_text_is_kept_as_p5_decides():

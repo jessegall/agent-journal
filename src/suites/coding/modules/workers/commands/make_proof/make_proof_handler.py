@@ -48,7 +48,7 @@ class MakeProofHandler(Handler[MakeProof, Proof]):
         if existing.state is ProofState.SHORT:
             return self.repository.save(existing.revise(context.timestamp, context.actor, command.text, test_command), context)
         if existing.state is ProofState.COMMITTED:
-            return self.repository.save(existing.recalled(command.text, test_command), context)
+            return self.repository.save(existing.retracted(command.text, test_command), context)
         if existing.state is ProofState.CHECKED:
             raise Refusal(f"point {command.point} is checked already", "prove the points that are not")
         return self.repository.save(existing.changed(text=command.text, test_command=test_command or existing.test_command), context)

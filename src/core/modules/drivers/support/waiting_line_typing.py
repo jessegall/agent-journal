@@ -38,7 +38,7 @@ class WaitingLineTyping:
         self.entered(line, actor_id)
 
     # a delivered wake gives the lines its agent's steps left waiting (doc 1310 section 6.4), whether or not each wakes
-    def release_for_wake(self, agent_id: int, actor_id: int) -> None:
+    def release_waiting_lines(self, agent_id: int, actor_id: int) -> None:
         for line in self.queries.query(AgentLine).filter(session_agent_id=agent_id, state=AgentLineState.WAITING).every_row(WAITING_LINES_REASON):
             self.entered(line, actor_id)
 

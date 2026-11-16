@@ -24,7 +24,7 @@ def version_text(numbers: str) -> str:
     return f"ENGINE_VERSION = ({numbers})\n"
 
 
-def snapshot_text(numbers: str) -> str:
+def contract_text(numbers: str) -> str:
     return f'{{"version": "{numbers}", "pinned": "by a change of the engine"}}\n'
 
 
@@ -34,13 +34,13 @@ def test_an_update_whose_only_clash_is_the_engine_contract_takes_the_higher_vers
     base = checkout_of(repository, ENVIRONMENT_BRANCH)
     committed_on(repository, base, SCRIPT_FILE, SCRIPT, "The contract script")
     committed_on(repository, base, VERSION_FILE, version_text("5, 3, 0"), "The engine version")
-    committed_on(repository, base, ENGINE_CONTRACT_FILE, snapshot_text("5, 3, 0"), "The contract snapshot")
+    committed_on(repository, base, ENGINE_CONTRACT_FILE, contract_text("5, 3, 0"), "The contract snapshot")
     worker = dispatched_worker(story)
     folder = repository.worktree_folder(worker.id)
     committed_on(repository, folder, VERSION_FILE, version_text("5, 4, 0"), "The worker changes the engine")
-    committed_on(repository, folder, ENGINE_CONTRACT_FILE, snapshot_text("5, 4, 0"), "The worker pins its contract")
+    committed_on(repository, folder, ENGINE_CONTRACT_FILE, contract_text("5, 4, 0"), "The worker pins its contract")
     committed_on(repository, base, VERSION_FILE, version_text("5, 5, 0"), "Another unit changes the engine")
-    committed_on(repository, base, ENGINE_CONTRACT_FILE, snapshot_text("5, 5, 0"), "Another unit pins its contract")
+    committed_on(repository, base, ENGINE_CONTRACT_FILE, contract_text("5, 5, 0"), "Another unit pins its contract")
     story.expect_text("worker update --wait", "Your worktree is on version-5 at", actor=worker)
     merging = repository.git("rev-parse", "--verify", "--quiet", "MERGE_HEAD", folder=folder).returncode == 0
     story.expect_rows(not merging, (folder / VERSION_FILE).read_text() == version_text("5, 5, 0"), '"version": "5, 5, 0"' in (folder / ENGINE_CONTRACT_FILE).read_text(),

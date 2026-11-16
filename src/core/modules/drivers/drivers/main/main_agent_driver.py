@@ -13,5 +13,5 @@ class MainAgentDriver(Driver):
     agent_type = "main"
     suite = "core"
     rank_order = MAIN_RANK_ORDER
-    work_stop = WorkStop.REFUSE_WHILE_WORK_REMAINS
+    work_stop = WorkStop.REFUSE_DURING_WORK
     responder = Responder.PERSON

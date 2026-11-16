@@ -1,10 +1,10 @@
 from server.errors.execution_wait_error import ExecutionWaitError
-from server.errors.lane_busy_error import LaneBusyError
+from server.errors.pool_busy_error import PoolBusyError
 from server.errors.write_turn_busy_error import WriteTurnBusyError
 
 
 def test_text_names_class_and_line_of_the_holder():
-    error = LaneBusyError.waited(3.5, ["agent hook at reserved: PreToolUse"])
+    error = PoolBusyError.waited(3.5, ["agent hook at reserved: PreToolUse"])
     assert str(error) == "the journal was busy for 3.5 seconds: waiting for agent hook at reserved: PreToolUse"
 
 

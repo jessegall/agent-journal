@@ -64,11 +64,11 @@ class MachineRuns:
     # a run file another project's release removes while this one counts holds no place
     def is_blocked(self, run_file: Path) -> bool:
         try:
-            return self.holds_place(run_file)
+            return self.claims_place(run_file)
         except FileNotFoundError:
             return False
 
-    def holds_place(self, run_file: Path) -> bool:
+    def claims_place(self, run_file: Path) -> bool:
         pid_file = Path(FileAccess.read(run_file).strip())
         if FileAccess.is_file(pid_file):
             return ProcessIds.text_exists(FileAccess.read(pid_file).strip())

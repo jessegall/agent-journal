@@ -141,7 +141,7 @@ class LibrarySync:
         if digest != copy.base_digest or item.version < copy.base_version:
             return self.save(UpdateLibraryCopy(copy.id, CopyState.CONFLICT if role.may_write else CopyState.DENIED, unsent_digest=digest, server_version=item.version,
                                                server_fields=item.fields_text))
-        reason = share.needs_reading(row, item.fields)
+        reason = share.read_reason(row, item.fields)
         if reason:
             return self.save(UpdateLibraryCopy(copy.id, CopyState.REVIEW, note=reason, unsent_digest=digest, server_version=item.version, server_fields=item.fields_text))
         return self.save(MergeLibraryItem(copy.id, item, row.version))
@@ -158,8 +158,8 @@ class LibrarySync:
     def note_reached(self, connection: LibraryConnection, state: ServerState, results: list[bool]) -> SyncOutcome:
         last_note_old = connection.reached_at is None or connection.reached_at.elapsed_seconds(self.clock.timestamp()) >= REACHED_NOTE_SECONDS
         role_changed = state.role is not connection.role
-        needs_note = last_note_old or role_changed or bool(connection.failure)
-        if needs_note:
+        requires_note = last_note_old or role_changed or bool(connection.failure)
+        if requires_note:
             self.save(UpdateLibraryConnection(state.role, has_reached=True))
         return SyncOutcome.reached(len(results), sum(results), any(results))
 

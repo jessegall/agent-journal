@@ -10,11 +10,11 @@ from engine.process.door.execution_request import ExecutionRequest
 from engine.process.door.process_executor import ProcessExecutor
 from engine.process.door.runner_program import RunnerProgram
 from server.hook.hook_database import HookDatabase
-from tests.unit.support.plain_executor import OpenAdmission, OpenGate, SilentErrors, WaitingPlacement
+from tests.unit.support.plain_executor import UnlimitedStartCheck, OpenGate, SilentErrors, WaitingPlacement
 
 
 def door(is_waiting: bool) -> ProcessExecutor:
-    return ProcessExecutor(WaitingPlacement(is_waiting), RunnerProgram(), OpenGate(), SilentErrors(), OpenAdmission())
+    return ProcessExecutor(WaitingPlacement(is_waiting), RunnerProgram(), OpenGate(), SilentErrors(), UnlimitedStartCheck())
 
 
 @pytest.fixture

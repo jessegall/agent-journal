@@ -109,10 +109,10 @@ class PluginHookRun:
     def is_wanted(self, plugin: Plugin, received: HeardEvent, event: PluginEvent) -> bool:
         if received.tools and not received.accepts_tool(event.data["tool"] if "tool" in event.data else None):
             return False
-        if not received.every_minutes:
+        if not received.repeat_minutes:
             return True
         last = self.queries.query(PluginDelivery).filter(plugin_id=plugin.id, event=event.name).newest().first()
-        return last is None or last.creation_timestamp().elapsed_minutes(self.clock.timestamp()) >= received.every_minutes
+        return last is None or last.creation_timestamp().elapsed_minutes(self.clock.timestamp()) >= received.repeat_minutes
 
     @staticmethod
     def reaches(role: str, manifest: PluginManifest, event: str) -> bool:

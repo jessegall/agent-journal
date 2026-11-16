@@ -18,7 +18,7 @@ class Helper(HelperType):
     job_command = ("helper", "send")
     line = "Reads the project and reports; it changes no code."
     behaviours = HelperBehaviours(takes_jobs=False, started_task_clears_block=False, takes_tasks=False, takes_prompts=False, takes_marks=True,
-                                  runs_plugins=False, dispatches=False, checked_stops=False, has_private_outputs=False, needs_readers=False,
+                                  runs_plugins=False, dispatches=False, checked_stops=False, has_private_outputs=False, requires_readers=False,
                                   queues_runs=False, watches_runs_automatically=False, continues_runs=False, reads_project_skills=False,
                                   retains_pause=False, has_restricted_aliases=False, runs_saved_commands=True)
     commands = HelperCommands()

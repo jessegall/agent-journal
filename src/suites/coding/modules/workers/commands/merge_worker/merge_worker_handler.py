@@ -115,7 +115,7 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         self.git.remove(environment.folder, merged)
         removal = self.bus.run_with_context(RecordWorktreeRemoval(merged.id), context)
         self.queued_start.start(merged.session_agent_id, context)
-        return MergeOutcome(removal, (), left_open=merge_outcome.left_open)
+        return MergeOutcome(removal, (), open_task_ids=merge_outcome.open_task_ids)
 
     # the windows its commits passed are recorded before the worker's next task starts, which the checkpoint guard refuses while one is unpassed
     def record_checkpoints(self, merged: Worktree, environment: Environment, context: Context) -> None:

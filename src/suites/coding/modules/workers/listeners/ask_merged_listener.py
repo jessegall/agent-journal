@@ -22,4 +22,4 @@ class AskMergedListener(SaveListener[Changed[Worktree]]):
     def handle(self, event: Changed[Worktree], context: Context) -> None:
         old, new = event.old_row, event.row
         if old is not None and old.state is not WorktreeState.MERGED and new.state is WorktreeState.MERGED:
-            self.questions.settle_forwarded(new.session_agent_id, AskOutcome.FIXED, MERGED_TEXT, context)
+            self.questions.resolve_forwarded(new.session_agent_id, AskOutcome.FIXED, MERGED_TEXT, context)

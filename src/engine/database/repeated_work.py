@@ -24,7 +24,7 @@ from engine.database.repeated_finding import RepeatedFinding
 READ_LIMIT_REPEATS = 1
 READ_TEXT_LIMIT_REPEATS = 10
 COMMAND_LIMIT_REPEATS = 3
-CALLER_FRAMES = 40
+CALLER_STACK_DEPTH = 40
 SHOWN_CALLS = 8
 ACCESS_LAYERS = ("engine/database/", "engine/query/", "engine/repository/", "engine/file/file_access.py", "<")
 TEST_FOLDER = "../tests/"
@@ -175,7 +175,7 @@ class RepeatedWork(PointTally):
         raise RepeatedCallsError(finding.text)
 
     @staticmethod
-    def caller_frame(levels: int) -> FrameType | None:
+    def caller_stack_entry(levels: int) -> FrameType | None:
         frame = inspect.currentframe()
         for _ in range(levels + 1):
             frame = frame.f_back if frame is not None else None
@@ -183,7 +183,7 @@ class RepeatedWork(PointTally):
 
     @staticmethod
     def is_allowed_read() -> bool:
-        frame = RepeatedWork.caller_frame(2)
+        frame = RepeatedWork.caller_stack_entry(2)
         while frame is not None and frame.f_code.co_filename.endswith(READ_HELPERS):
             frame = frame.f_back
         if frame is None:
@@ -248,16 +248,16 @@ class RepeatedWork(PointTally):
         return PLACEHOLDER_LIST.sub("?...", " ".join(statement.sql.split()))
 
     @staticmethod
-    def caller_frames() -> list[traceback.FrameSummary]:
-        stack = traceback.StackSummary.extract(traceback.walk_stack(RepeatedWork.caller_frame(1)), limit=CALLER_FRAMES, lookup_lines=False)
+    def caller_stack_entries() -> list[traceback.FrameSummary]:
+        stack = traceback.StackSummary.extract(traceback.walk_stack(RepeatedWork.caller_stack_entry(1)), limit=CALLER_STACK_DEPTH, lookup_lines=False)
         return [frame for frame in stack if not frame.filename.endswith(WATCH_FILES)]
 
     # the calling code and line of each frame, kept raw: the text of a frame is built only for a finding
     @staticmethod
     def raw_caller_frames() -> list[tuple[CodeType, int]]:
         frames: list[tuple[CodeType, int]] = []
-        frame = RepeatedWork.caller_frame(1)
-        while frame is not None and len(frames) < CALLER_FRAMES:
+        frame = RepeatedWork.caller_stack_entry(1)
+        while frame is not None and len(frames) < CALLER_STACK_DEPTH:
             if not frame.f_code.co_filename.endswith(WATCH_FILES):
                 frames.append((frame.f_code, frame.f_lineno))
             frame = frame.f_back
@@ -278,7 +278,7 @@ class RepeatedWork(PointTally):
 
     @classmethod
     def build_finding(cls, category: str, subject: str, text: str) -> RepeatedFinding:
-        frames = cls.caller_frames()
+        frames = cls.caller_stack_entries()
         return RepeatedFinding("|".join([category, subject, *cls.project_calls(frames)[-SHOWN_CALLS:]]), f"{text}\n{cls.shown_calls(frames)}")
 
     @classmethod
@@ -301,7 +301,7 @@ class RepeatedWork(PointTally):
         self.file_versions[path] = version
         self.file_reads[path] += 1
         if self.file_reads[path] == 1:
-            self.file_read_origins[path] = self.caller_frames()
+            self.file_read_origins[path] = self.caller_stack_entries()
         if self.file_reads[path] == 2:
             first_read = self.shown_calls(self.file_read_origins[path])
             self.findings.append(self.build_finding("file", path, f"one request read file twice: {path}\nfirst read: {first_read}\nrepeated read:"))
@@ -312,8 +312,8 @@ class RepeatedWork(PointTally):
 
     @staticmethod
     def is_allowed_file_read() -> bool:
-        frame = RepeatedWork.caller_frame(1)
-        for _ in range(CALLER_FRAMES):
+        frame = RepeatedWork.caller_stack_entry(1)
+        for _ in range(CALLER_STACK_DEPTH):
             if frame is None:
                 return False
             if frame.f_code.co_filename.endswith(ALLOWED_FILE_READERS):

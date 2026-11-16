@@ -21,7 +21,7 @@ class ReviewQueuedListener(SaveListener[Created[Review]]):
     def handle(self, event: Created[Review], context: Context) -> None:
         reviewers = self.reviewers
         slots_available = reviewers.active().count() < self.settings.limit()
-        needs_reviewer = self.settings.enabled() and not reviewers.idle().exists()
-        if needs_reviewer and slots_available:
+        requires_reviewer = self.settings.enabled() and not reviewers.idle().exists()
+        if requires_reviewer and slots_available:
             self.bus.dispatch(AddReviewer(), context)
         self.bus.dispatch(AssignNextReview(), context)

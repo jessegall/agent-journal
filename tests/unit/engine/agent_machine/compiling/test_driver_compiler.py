@@ -8,13 +8,13 @@ from engine.enums.responder import Responder
 from engine.enums.work_stop import WorkStop
 
 ORDER = RankOrder(("safety.all", "messages.show"), ("overview.first", "messages.unread"))
-MAIN = DriverDeclaration("core.main", "main", "core", (), ORDER, WorkStop.REFUSE_WHILE_WORK_REMAINS, Responder.PERSON)
-CODING_MAIN = DriverDeclaration("coding.main", "coding-main", "coding", ("core.main",), ORDER, WorkStop.REFUSE_WHILE_WORK_REMAINS, Responder.PERSON)
-WORKER = DriverDeclaration("coding.worker", "worker", "coding", (), ORDER, WorkStop.REFUSE_WHILE_WORK_REMAINS, Responder.PARENT)
+MAIN = DriverDeclaration("core.main", "main", "core", (), ORDER, WorkStop.REFUSE_DURING_WORK, Responder.PERSON)
+CODING_MAIN = DriverDeclaration("coding.main", "coding-main", "coding", ("core.main",), ORDER, WorkStop.REFUSE_DURING_WORK, Responder.PERSON)
+WORKER = DriverDeclaration("coding.worker", "worker", "coding", (), ORDER, WorkStop.REFUSE_DURING_WORK, Responder.PARENT)
 
 
 def required_state(key: str, rank: str, *agent_types: str) -> ContributionDeclaration:
-    return ContributionDeclaration(key, ContributionType.NEED, rank, agent_types, "Blocked")
+    return ContributionDeclaration(key, ContributionType.REQUIRED_STATE, rank, agent_types, "Blocked")
 
 
 MODULES = [
@@ -37,5 +37,5 @@ def test_a_driver_takes_the_contributions_of_the_type_it_gathers() -> None:
 
 
 def test_a_module_left_out_leaves_its_contributions_out_and_changes_the_digest() -> None:
-    whole, without = DriverCompiler(MODULES).tables([WORKER])[0], DriverCompiler(MODULES[:1]).tables([WORKER])[0]
-    assert (without.keys(), whole.digest() == without.digest()) == (["messages.unread-needs", "messages.show"], False)
+    task_review_text, without = DriverCompiler(MODULES).tables([WORKER])[0], DriverCompiler(MODULES[:1]).tables([WORKER])[0]
+    assert (without.keys(), task_review_text.digest() == without.digest()) == (["messages.unread-needs", "messages.show"], False)

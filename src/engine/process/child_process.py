@@ -3,7 +3,7 @@ import signal
 import subprocess
 from typing import Any
 
-from engine.execution.held_write_turn import HELD_WRITE_TURN
+from engine.execution.thread_turn_count import THREAD_TURN_COUNT
 
 
 class ChildProcess:
@@ -24,7 +24,7 @@ class ChildProcess:
         return self.process.poll()
 
     def wait(self, limit_seconds: float | None = None) -> int:
-        HELD_WRITE_TURN.refuse_wait(f"the wait for process {self.process.pid}")
+        THREAD_TURN_COUNT.refuse_wait(f"the wait for process {self.process.pid}")
         return self.process.wait(limit_seconds)
 
     # writes the input, reads both outputs to their end and waits for the program, within the limit when one is given;
@@ -33,7 +33,7 @@ class ChildProcess:
         return self.process.communicate(text, timeout=limit_seconds)
 
     def stop_group(self, limit_seconds: float) -> None:
-        HELD_WRITE_TURN.refuse_wait(f"the stop of process group {self.process.pid}")
+        THREAD_TURN_COUNT.refuse_wait(f"the stop of process group {self.process.pid}")
         self.signal_group(signal.SIGTERM)
         try:
             self.process.wait(limit_seconds)
@@ -52,7 +52,7 @@ class ChildProcess:
     def stop(self, limit_seconds: float) -> None:
         if not self.running():
             return
-        HELD_WRITE_TURN.refuse_wait(f"the stop of process {self.process.pid}")
+        THREAD_TURN_COUNT.refuse_wait(f"the stop of process {self.process.pid}")
         self.process.terminate()
         try:
             self.process.wait(limit_seconds)

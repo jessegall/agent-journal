@@ -15,4 +15,4 @@ class RunnerSandboxPolicy(EventPolicy):
         self.plan = plan
 
     def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
-        return self.plan.of_event(event, agent_id).refusal
+        return self.plan.event_decision(event, agent_id).refusal

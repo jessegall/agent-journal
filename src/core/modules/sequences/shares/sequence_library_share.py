@@ -34,7 +34,7 @@ class SequenceLibraryShare(LibraryShare[Sequence]):
     def is_paused(self, row: Sequence) -> bool:
         return self.runs.has_open_run(row.id)
 
-    def needs_reading(self, row: Sequence, fields: Fields) -> str:
+    def read_reason(self, row: Sequence, fields: Fields) -> str:
         steps_changed = row.steps_text != fields["steps"] or row.guards_text != fields["step_guards"]
         return "The steps of this sequence changed." if steps_changed and row.triggers != EMPTY_TRIGGERS else ""
 

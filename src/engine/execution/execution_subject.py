@@ -17,6 +17,6 @@ class ExecutionSubject:
     category: CommandCategory | None = None
     process_type: ProcessType | None = None
     plugin_name: str = ""
-    plugin_kind: str = ""
+    plugin_category: str = ""
     line: str = ""
     is_first_window: bool = False

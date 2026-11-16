@@ -22,7 +22,7 @@ HOLD = StackedState(Blocked(OpenBlock("messages.unread", 3, Reason("messages.unr
 
 
 def end(stacked_state: StackedState, **outcomes: ConditionOutcome) -> StateEnd | None:
-    view = replace(ViewSamples.view("main", WorkStop.REFUSE_WHILE_WORK_REMAINS), block_outcomes={3: outcome for outcome in outcomes.values()})
+    view = replace(ViewSamples.view("main", WorkStop.REFUSE_DURING_WORK), block_outcomes={3: outcome for outcome in outcomes.values()})
     return StackBuilder.stacked_state_end(view, stacked_state)
 
 
@@ -38,11 +38,11 @@ def test_a_resume_ends_no_work():
 
 def test_a_stacked_state_whose_source_told_its_end_records_that_end():
     work = StackedState(Paused((), "paused"), StateKey("Working", RowReference("task", 3), "task:3"), ENTERED)
-    view = replace(ViewSamples.view("main", WorkStop.REFUSE_WHILE_WORK_REMAINS), subject_ends={RowReference("task", 3): StateEnd.CANCELLED})
+    view = replace(ViewSamples.view("main", WorkStop.REFUSE_DURING_WORK), subject_ends={RowReference("task", 3): StateEnd.CANCELLED})
     assert StackBuilder.stacked_state_end(view, work) is StateEnd.CANCELLED and StateEnd.CANCELLED not in PROGRESS_ENDS
 
 
 def test_a_stacked_state_a_person_removed_ends_waived_which_is_no_progress():
     work = StackedState(Paused((), "paused"), StateKey("Working", None, "task:4"), ENTERED)
-    view = replace(ViewSamples.view("main", WorkStop.REFUSE_WHILE_WORK_REMAINS), suppressions=(work.state_key,))
+    view = replace(ViewSamples.view("main", WorkStop.REFUSE_DURING_WORK), suppressions=(work.state_key,))
     assert StackBuilder.stacked_state_end(view, work) is StateEnd.WAIVED and StateEnd.WAIVED not in PROGRESS_ENDS

@@ -42,6 +42,6 @@ BUILTIN_CLASSES: tuple[BuiltinClass, ...] = (
     BuiltinClass(ExecutionClass("journal short git", SHORT, 1, NORMAL), ExecutionSource.JOURNAL_RUN),
     BuiltinClass(ExecutionClass("plugin program", LONG, 4, NORMAL), ExecutionSource.PLUGIN_PROGRAM),
     BuiltinClass(ExecutionClass("graphify", LONG, 8, BACKGROUND, class_limit=1), ExecutionSource.GRAPHIFY),
-    BuiltinClass(ExecutionClass("journal follow-up", LONG, 1, BACKGROUND), ExecutionSource.FOLLOW_UP),
+    BuiltinClass(ExecutionClass("journal follow-up", LONG, 1, BACKGROUND), ExecutionSource.SUBSEQUENT),
     BuiltinClass(ExecutionClass("other shell line", SHORT, 1, NORMAL), ExecutionSource.SHELL_LINE),
 )

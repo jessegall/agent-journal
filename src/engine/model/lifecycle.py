@@ -24,7 +24,7 @@ class Lifecycle:
     initial: ClassVar[Sequence[StrEnum]]
     editable: ClassVar[Sequence[StrEnum]]
     deletable: ClassVar[Sequence[StrEnum]]
-    moves_have_commands: ClassVar[bool] = True
+    moves_use_commands: ClassVar[bool] = True
 
     @classmethod
     def moves(cls) -> tuple[Move, ...]:
@@ -40,6 +40,6 @@ class Lifecycle:
 
     @classmethod
     def suggestion(cls, cli_name: str, row_id: int, state: StateValue) -> str:
-        if not cls.moves_have_commands:
+        if not cls.moves_use_commands:
             return f"{cli_name} {row_id} moves only through the journal's own work, no command moves it"
         return next_moves_text(cls.moves(), cli_name, row_id, state)

@@ -4,7 +4,7 @@ import pytest
 
 from engine.enums.execution_priority import ExecutionPriority
 from engine.execution.execution_order import ExecutionOrder
-from engine.execution.limits.default_lane_limits import DEFAULT_LANE_LIMITS
+from engine.execution.limits.default_lane_limits import DEFAULT_POOL_LIMITS
 from engine.journal.journal_home import JournalHome
 from engine.time.clock import Clock
 from engine.time.timestamp import Timestamp
@@ -17,7 +17,7 @@ RAISE_SECONDS = 10
 
 
 def round_tickets(tmp_path) -> RoundTickets:
-    return RoundTickets(ExecutionQueue(ExecutionOrder(DEFAULT_LANE_LIMITS), Clock()), ExecutionPriorities(SessionStarters(JournalHome(tmp_path))), Clock())
+    return RoundTickets(ExecutionQueue(ExecutionOrder(DEFAULT_POOL_LIMITS), Clock()), ExecutionPriorities(SessionStarters(JournalHome(tmp_path))), Clock())
 
 
 def test_tick_handler_run_takes_a_background_ticket(tmp_path):
@@ -48,11 +48,11 @@ def test_fourth_background_tick_waits_even_with_room(tmp_path):
     current_time = Clock().timestamp()
     running = [priorities.tick_ticket(f"handler {number}", current_time) for number in range(3)]
     fourth = priorities.tick_ticket("handler 4", current_time)
-    assert ExecutionOrder(DEFAULT_LANE_LIMITS).starting([fourth], running, current_time, False) == ()
+    assert ExecutionOrder(DEFAULT_POOL_LIMITS).starting([fourth], running, current_time, False) == ()
 
 
 def test_background_tick_raised_to_normal_after_ten_seconds(tmp_path):
     entered = Clock().timestamp()
     waiting = ExecutionPriorities(SessionStarters(JournalHome(tmp_path))).tick_ticket("process pruning", entered)
-    raised = ExecutionOrder(DEFAULT_LANE_LIMITS).raised([waiting], Timestamp(entered.value + timedelta(seconds=RAISE_SECONDS)), False)
+    raised = ExecutionOrder(DEFAULT_POOL_LIMITS).raised([waiting], Timestamp(entered.value + timedelta(seconds=RAISE_SECONDS)), False)
     assert [ticket.priority for ticket in raised] == [ExecutionPriority.NORMAL]

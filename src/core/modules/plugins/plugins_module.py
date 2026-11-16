@@ -21,7 +21,7 @@ from core.modules.plugins.commands.cancel_queued_run.cancel_queued_run_handler i
 from core.modules.plugins.commands.cancel_queued_run.cancel_queued_run_subcommand import CancelQueuedRunSubcommand
 from core.modules.plugins.commands.queued_run_read.queued_run_read_subcommand import QueuedRunReadSubcommand
 from core.modules.plugins.commands.queued_run_show.queued_run_show_subcommand import QueuedRunShowSubcommand
-from core.modules.plugins.listeners.queued_run_admission_listener import QueuedRunAdmissionListener
+from core.modules.plugins.listeners.queued_run_start_check_listener import QueuedRunStartCheckListener
 from core.modules.plugins.listeners.queued_run_end_listener import QueuedRunEndListener
 from core.modules.processes.support.process_type_limits import ProcessTypeLimits
 from core.modules.plugins.support.plugin_run_limits import PluginRunLimits
@@ -142,6 +142,6 @@ class PluginsModule(Module):
                      OrphanServiceStoppingTickHandler,
                      DeliveryPruningTickHandler]
     guards = [PluginEventGuard]
-    listeners = [QueuedRunAdmissionListener, QueuedRunEndListener, PluginServicesRemovalListener, PluginServicesUpgradeListener, PluginWrongKeyMarkListener, PluginEventListener, SystemEventDeliveryListener, LoginPathListener, PluginSkillPublishListener, PluginReadersListener, PluginReadersBootListener, JournalInstructionFileListener, StaleManagedHooksListener, PluginDeliveryListener, PluginHealthMarkListener, PluginOutputListener, PluginQueueFileListener]
+    listeners = [QueuedRunStartCheckListener, QueuedRunEndListener, PluginServicesRemovalListener, PluginServicesUpgradeListener, PluginWrongKeyMarkListener, PluginEventListener, SystemEventDeliveryListener, LoginPathListener, PluginSkillPublishListener, PluginReadersListener, PluginReadersBootListener, JournalInstructionFileListener, StaleManagedHooksListener, PluginDeliveryListener, PluginHealthMarkListener, PluginOutputListener, PluginQueueFileListener]
     subcommands = [QueuePluginRunSubcommand, CancelQueuedRunSubcommand, QueuedRunReadSubcommand, QueuedRunShowSubcommand, ChangePluginServiceSubcommand, LogPluginLineSubcommand, PostPluginCardSubcommand, PluginTrySubcommand, PluginEventsSubcommand, RunPluginCommandSubcommand, PluginCheckoutSubcommand, PluginPathSubcommand, RefreshPluginConfigSubcommand, PluginChangesSubcommand, PluginFileSubcommand, PluginRecordSubcommand, PluginListSubcommand, PluginSettingsSubcommand, PluginServicesSubcommand, PluginServiceLogSubcommand, UpgradePluginSubcommand, PluginPreviewSubcommand, PluginLatestSubcommand, PluginDashboardSubcommand, PluginDashboardsSubcommand, PluginDescriptionsSubcommand, ProposePluginSubcommand, InstallPluginSubcommand, EnablePluginSubcommand,
                    DisablePluginSubcommand, ConfigurePluginSubcommand, RemovePluginSubcommand]

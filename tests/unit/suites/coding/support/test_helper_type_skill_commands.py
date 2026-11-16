@@ -57,12 +57,12 @@ def skill_text(name: str) -> str:
     return "\n".join(path.read_text() for path in SOURCE.rglob(f"skills/{name}/SKILL.md"))
 
 
-def named_commands(skills: Sequence[str], profile_text: str, declared: set[tuple[str, str]]) -> set[str]:
+def listed_commands(skills: Sequence[str], profile_text: str, declared: set[tuple[str, str]]) -> set[str]:
     text = "\n".join([profile_text, *(skill_text(name) for name in skills)])
     return {f"{subject} {verb}" for subject, verb in JOURNAL_LINE.findall(text) if (subject, verb) in declared}
 
 
-def refused_by(commands: CommandAllowList, labelled: set[str], is_loading: bool) -> list[str]:
+def refusing_commands(commands: CommandAllowList, labelled: set[str], is_loading: bool) -> list[str]:
     """The named commands the list neither lists by group or by line nor passes by its class of reading lines."""
     refused = []
     for line in sorted(labelled):
@@ -83,7 +83,7 @@ TYPES = {
 @pytest.mark.parametrize("type_name", sorted(TYPES))
 def test_every_command_the_skills_and_profile_of_a_helper_type_name_passes_its_list_or_is_refused_for_a_reason(type_name):
     commands, skills, profile_text, is_loading = TYPES[type_name]
-    refused = refused_by(commands, named_commands(skills, profile_text, journal_commands()), is_loading)
+    refused = refusing_commands(commands, listed_commands(skills, profile_text, journal_commands()), is_loading)
     unexplained = [line for line in refused if line not in REFUSED[type_name]]
     assert not unexplained, f"{type_name}: add each to its list, or to REFUSED with the reason its skills name it: {unexplained}"
 
@@ -91,6 +91,6 @@ def test_every_command_the_skills_and_profile_of_a_helper_type_name_passes_its_l
 def test_a_command_dropped_from_a_list_is_found_by_the_check():
     commands = WorkerCommands()
     labelled = {"task show", "proof make"}
-    assert refused_by(commands, labelled, False) == []
+    assert refusing_commands(commands, labelled, False) == []
     dropped = CommandAllowList(commands.categories, commands.groups, tuple(line for line in commands.lines if line != "task show"), commands.classes)
-    assert refused_by(dropped, labelled, False) == ["task show"]
+    assert refusing_commands(dropped, labelled, False) == ["task show"]

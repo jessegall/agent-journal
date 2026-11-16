@@ -25,7 +25,7 @@ class RunnerStartEffect(Effect):
     6). The line is the final one, after the transforms; a run that cannot be made withdraws the admission."""
 
     events = [HookEventName.PRE_TOOL_USE]
-    timing = EffectTiming.WHEN_ALLOWED
+    timing = EffectTiming.PERMITTED
     is_required = True
     failure = RunnerStartFailedMessage
 

@@ -16,7 +16,7 @@ T = TypeVar("T")
 
 
 UNBUILT_MODULES = sys.stdlib_module_names | {"builtins"}
-BUILD_PLACE_FRAMES = 8
+BUILD_PLACE_STACK_DEPTH = 8
 
 
 @cache
@@ -30,11 +30,11 @@ def needed_values(class_type: type) -> tuple[tuple[str, type], ...]:
     return tuple((name, hints[name]) for name in needed)
 
 
-def depends_on(class_type: type, checked: dict[type, bool]) -> bool:
+def has_dependency(class_type: type, checked: dict[type, bool]) -> bool:
     if class_type not in checked:
         checked[class_type] = False
         needed = [] if class_type.__module__.partition(".")[0] in UNBUILT_MODULES else [hint for _, hint in needed_values(class_type)]
-        checked[class_type] = any(isinstance(hint, type) and depends_on(hint, checked) for hint in needed)
+        checked[class_type] = any(isinstance(hint, type) and has_dependency(hint, checked) for hint in needed)
     return checked[class_type]
 
 
@@ -61,7 +61,7 @@ class Container:
     def replace(self, class_type: type[T], instance: T) -> None:
         checked: dict[type, bool] = {class_type: True}
         for built_type, built in list(self.instances.items()):
-            if built_type not in (class_type, Container) and depends_on(type(built), checked):
+            if built_type not in (class_type, Container) and has_dependency(type(built), checked):
                 del self.instances[built_type]
                 self.build_places.pop(type(built), None)
         self.instances[class_type] = instance
@@ -96,7 +96,7 @@ class Container:
     @staticmethod
     def build_place(frame: FrameType | None) -> str:
         places: list[str] = []
-        while frame is not None and len(places) < BUILD_PLACE_FRAMES:
+        while frame is not None and len(places) < BUILD_PLACE_STACK_DEPTH:
             places.append(f"{frame.f_code.co_filename}:{frame.f_lineno} in {frame.f_code.co_name}")
             frame = frame.f_back
         return "\n".join(places)

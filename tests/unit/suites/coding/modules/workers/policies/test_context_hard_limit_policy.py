@@ -16,7 +16,7 @@ from suites.coding.modules.workers.policies.context_hard_limit_policy import Con
 
 OVERVIEW_BLOCK = OpenBlock("overview.first", 3, Reason("overview.overview-first", DecisionClass.HOLD, "overview.first", "a sample hold line", ("journal overview",)),
                            True, False, True, False, True, None)
-VIEW = replace(ViewSamples.view("main", WorkStop.REFUSE_WHILE_WORK_REMAINS, has_parent=False), blocks=(OVERVIEW_BLOCK,))
+VIEW = replace(ViewSamples.view("main", WorkStop.REFUSE_DURING_WORK, has_parent=False), blocks=(OVERVIEW_BLOCK,))
 
 
 def policy(past_the_limit: bool = True) -> ContextHardLimitPolicy:

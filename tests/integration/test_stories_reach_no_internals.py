@@ -8,7 +8,7 @@ from tests.unit.source_tree import source_tree
 ROOT = Path(__file__).resolve().parents[2]
 STORIES = ROOT / "tests" / "stories"
 LIST_FILE = ROOT / INTERNAL_STORY_FILES
-WHAT_TO_DO = "a story works through the story kit; what needs story.container, monkeypatch, .database or Statement( is a unit test under tests/unit"
+SERVER_STORIES_RULE = "a story works through the story kit; what needs story.container, monkeypatch, .database or Statement( is a unit test under tests/unit"
 
 
 def is_test(node: ast.stmt) -> bool:
@@ -37,7 +37,7 @@ def listed() -> list[str]:
 def test_no_unlisted_story_reaches_internals():
     allowed = set(listed())
     reaching = [f"{path.relative_to(ROOT)}:{line}" for path in story_files() if path.relative_to(ROOT).as_posix() not in allowed for line in internal_reach(path)]
-    assert reaching == [], WHAT_TO_DO
+    assert reaching == [], SERVER_STORIES_RULE
 
 
 def test_every_listed_file_still_reaches_internals():

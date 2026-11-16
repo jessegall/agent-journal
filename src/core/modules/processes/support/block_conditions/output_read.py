@@ -9,5 +9,5 @@ class OutputRead(ProcessCondition):
     name = "output-read"
 
     def is_true(self, check: BlockCheck) -> bool:
-        output = check.container.get(RunOutputRows).of_run(int(self.text))
+        output = check.container.get(RunOutputRows).run_output(int(self.text))
         return output is None or output.read_at is not None

@@ -28,11 +28,11 @@ class RecordedMessageSender:
 
 
 class AgentTurn:
-    def __init__(self, between_turns: bool) -> None:
-        self.between_turns = between_turns
+    def __init__(self, is_idle: bool) -> None:
+        self.is_idle = is_idle
 
     def has_ended_turn(self, agent_id: int) -> bool:
-        return self.between_turns
+        return self.is_idle
 
 
 class Recipient:
@@ -40,9 +40,9 @@ class Recipient:
         return SimpleNamespace(id=3)
 
 
-def sent_source(between_turns: bool) -> str:
+def sent_source(is_idle: bool) -> str:
     message_sender = RecordedMessageSender()
-    RecordMessageUpdatedLineHandler(OneMessage(), message_sender, AgentTurn(between_turns), Recipient()).handle(RecordMessageUpdatedLine(12), None)  # type: ignore[arg-type]
+    RecordMessageUpdatedLineHandler(OneMessage(), message_sender, AgentTurn(is_idle), Recipient()).handle(RecordMessageUpdatedLine(12), None)  # type: ignore[arg-type]
     return message_sender.sent[0][1]
 
 

@@ -12,12 +12,12 @@ from engine.enums.block_end import BlockEnd
 from engine.enums.hook_event_name import HookEventName
 from engine.enums.line_channel import LineChannel
 
-NEED_STATES = ("Working", "Waiting", "Blocked", "Compacting")
+REQUIRED_STATE_NAMES = ("Working", "Waiting", "Blocked", "Compacting")
 ENGINE_PLACED_STATES = ("Stopped", "Paused", "Ended")
 MACHINE_TABLES = ("agent_stack", "agent_stack_move", "hidden_state", "agent_escalation", "agent_wake", "agent_step_request",
                   "agent_launch", "driver_table", "driver_version", "program_version", "driver_grant", "used_grant_record")
 SOURCE_FORBIDDEN_TYPES = ("Bus", "Launcher", "ChildProcess", "FileAccess")
-FORBIDDEN_TYPES = {ContributionType.AGENT_LISTENER: ("Bus", "State"), ContributionType.NEED: SOURCE_FORBIDDEN_TYPES,
+FORBIDDEN_TYPES = {ContributionType.AGENT_LISTENER: ("Bus", "State"), ContributionType.REQUIRED_STATE: SOURCE_FORBIDDEN_TYPES,
                    ContributionType.FACT: SOURCE_FORBIDDEN_TYPES, ContributionType.POLICY: SOURCE_FORBIDDEN_TYPES}
 REQUIRED_PARTS = ((CapabilityPart.TOOL_DENIAL, HookEventName.PRE_TOOL_USE), (CapabilityPart.STOP_REFUSAL, HookEventName.STOP))
 
@@ -48,10 +48,10 @@ class DeclarationCheck:
 
     def entry_fixes(self, module: ModuleContributions, entry: ContributionDeclaration) -> list[str]:
         fixes = [f"agent type {agent_type} has no driver: name one of {', '.join(self.agent_types)}" for agent_type in entry.agent_types if agent_type not in self.agent_types]
-        if entry.contribution_type is ContributionType.NEED and entry.state_name in ENGINE_PLACED_STATES:
+        if entry.contribution_type is ContributionType.REQUIRED_STATE and entry.state_name in ENGINE_PLACED_STATES:
             fixes.append(f"a state source may not ask for {entry.state_name}: the engine places it from facts")
-        elif entry.contribution_type is ContributionType.NEED and entry.state_name not in NEED_STATES:
-            fixes.append(f"state {entry.state_name or 'none'} is unknown: a need asks for one of {', '.join(NEED_STATES)}")
+        elif entry.contribution_type is ContributionType.REQUIRED_STATE and entry.state_name not in REQUIRED_STATE_NAMES:
+            fixes.append(f"state {entry.state_name or 'none'} is unknown: a need asks for one of {', '.join(REQUIRED_STATE_NAMES)}")
         if entry.is_safety and not module.is_core:
             fixes.append("a safety policy may only come from a core module")
         if entry.contribution_type is ContributionType.SUBJECT and entry.key in MACHINE_TABLES:
@@ -82,10 +82,10 @@ class DeclarationCheck:
                    for module in self.modules for entry in module.contributions if entry.rank and entry.rank not in listed]
         unused = [DeclarationFinding(driver.name, f"rank key {rank}", "no module declares it: remove it from the rank order")
                   for driver in self.drivers for rank in (*driver.rank_order.policies, *driver.rank_order.blocks) if rank not in declared]
-        unreached = [DeclarationFinding(driver.name, f"rank key {entry.rank} of {entry.key}", "add the rank key to the driver's rank order")
+        unranked_findings = [DeclarationFinding(driver.name, f"rank key {entry.rank} of {entry.key}", "add the rank key to the driver's rank order")
                      for driver in self.drivers for module in self.modules for entry in module.contributions
                      if entry.rank and entry.covers(driver.agent_type) and driver.rank_order.place(entry.rank) == len(driver.rank_order.policies) + len(driver.rank_order.blocks)]
-        return [*unknown, *unused, *unreached]
+        return [*unknown, *unused, *unranked_findings]
 
     def key_refusals(self) -> list[DeclarationFinding]:
         owners: dict[tuple[str, str], list[str]] = {}

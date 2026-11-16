@@ -8,7 +8,7 @@ from engine.enums.effect_timing import EffectTiming
 from engine.enums.hook_event_name import HookEventName
 from core.modules.drivers.commands.use_permission.use_permission import UsePermission
 from core.modules.drivers.agent_messages.permission_use_failed_message import PermissionUseFailedMessage
-from core.modules.drivers.support.read_only_access import ReadOnlyAccess
+from core.modules.drivers.support.restricted_read_access import RestrictedReadAccess
 
 
 class UsePermissionEffect(Effect):
@@ -17,11 +17,11 @@ class UsePermissionEffect(Effect):
     admission."""
 
     events = [HookEventName.PRE_TOOL_USE]
-    timing = EffectTiming.WHEN_ALLOWED
+    timing = EffectTiming.PERMITTED
     is_required = True
     failure = PermissionUseFailedMessage
 
-    def __init__(self, access: ReadOnlyAccess) -> None:
+    def __init__(self, access: RestrictedReadAccess) -> None:
         self.access = access
 
     def commands(self, view: AgentView, record: DecisionRecord) -> Sequence[Command[object]]:

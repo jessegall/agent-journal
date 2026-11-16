@@ -15,7 +15,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.usage.support.agent_type_limits import UNLIMITED_AGENT_COUNT, AgentTypeLimits
 from core.modules.agents.support.type_limits import TypeLimits
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
-from core.modules.helpers.support.agent_admission import AgentAdmission
+from core.modules.helpers.support.agent_start_check import AgentStartCheck
 from core.modules.helpers.support.allowed_models import AllowedModels
 from core.modules.helpers.support.kept_helpers import KeptHelpers
 from core.modules.helpers.support.profile_model import ProfileModel
@@ -31,9 +31,9 @@ class HelperLimits:
     """Who may start a helper, on which model, and how many of a profile run or are kept. A helper with an open job
     holds a run place while its resume is on its way, before its session binds."""
 
-    def __init__(self, queries: Queries, settings: SettingValues, models: AllowedModels, providers: Providers, agents: AgentRows, standings: AgentStanding, limits: AgentTypeLimits, kept: KeptHelpers, admission: AgentAdmission, numbers: RowNumbers, types: HelperTypeBook) -> None:
+    def __init__(self, queries: Queries, settings: SettingValues, models: AllowedModels, providers: Providers, agents: AgentRows, standings: AgentStanding, limits: AgentTypeLimits, kept: KeptHelpers, start_check: AgentStartCheck, numbers: RowNumbers, types: HelperTypeBook) -> None:
         self.numbers, self.types = numbers, types
-        self.admission = admission
+        self.start_check = start_check
         self.limits, self.kept = limits, kept
         self.standings = standings
         self.queries, self.settings, self.models, self.providers, self.agents = queries, settings, models, providers, agents
@@ -83,13 +83,13 @@ class HelperLimits:
         return self.queries.query(Agent).filter(profile=profile).matching(Among("role", self.types.read_access_keys()))
 
     def checked_new_session(self, profile: str) -> None:
-        self.admission.checked_new("helper", profile)
+        self.start_check.checked_new("helper", profile)
 
     def checked_resume(self, profile: str) -> None:
-        self.admission.checked_resume("helper", profile)
+        self.start_check.checked_resume("helper", profile)
 
     def checked_helper_model(self, helper: Agent) -> None:
-        self.admission.checked_model("helper", helper.profile, helper.program, helper.program_model)
+        self.start_check.checked_model("helper", helper.profile, helper.program, helper.program_model)
 
     def checked_resume_session(self, helper: Agent) -> None:
         self.checked_resume(helper.profile)
@@ -100,7 +100,7 @@ class HelperLimits:
 
     def checked_profile_model(self, selection: ProfileModel) -> str:
         self.require_model(selection.program, selection.model)
-        self.admission.checked_provider("helper", selection.profile, selection.program)
+        self.start_check.checked_provider("helper", selection.profile, selection.program)
         return self.listed_model(selection.program, selection.model, self.models.models_allowed(self.providers.provider(selection.program), "helper", selection.profile))
 
     def listed_model(self, program: str, model: str, names: list[str]) -> str:

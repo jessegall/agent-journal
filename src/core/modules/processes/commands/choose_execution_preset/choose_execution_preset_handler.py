@@ -18,7 +18,7 @@ class ChooseExecutionPresetHandler(Handler[ChooseExecutionPreset, str]):
     def handle(self, command: ChooseExecutionPreset, context: Context) -> str:
         preset = self.presets.preset(command.name)
         instant, short, long = preset.capacities(self.presets.core_count())
-        for setting, value in ((ProcessSetting.LANE_CAPACITY_INSTANT, instant), (ProcessSetting.LANE_CAPACITY_SHORT, short),
-                               (ProcessSetting.LANE_CAPACITY_LONG, long), (ProcessSetting.STARTER_CAP_PERCENT, preset.starter_cap_percent)):
+        for setting, value in ((ProcessSetting.POOL_CAPACITY_INSTANT, instant), (ProcessSetting.POOL_CAPACITY_SHORT, short),
+                               (ProcessSetting.POOL_CAPACITY_LONG, long), (ProcessSetting.STARTER_CAP_PERCENT, preset.starter_cap_percent)):
             self.bus.dispatch(SetSetting(setting.key, str(value), project=True), context)
         return f"preset {preset.name}: instant {instant}, short {short}, long {long} slot units"

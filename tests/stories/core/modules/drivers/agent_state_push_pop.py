@@ -2,7 +2,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.command.errors.completed_command_error import CompletedCommandError
-from engine.driver.open_hold import OpenHold
+from engine.driver.block_agent import BlockAgent
 from engine.driver.conditions.ran_command import RanCommand
 from engine.driver.agent_message import AgentMessage
 from engine.enums.command_category import CommandCategory
@@ -26,7 +26,7 @@ class PushedBlock(StoryFixture):
     parent = LeadStarted
 
     def steps(self, story):
-        story.run_command(OpenHold(story.agent.id, AgentMessage("samples.wait", AgentMessageType.REFUSAL, LINE), RanCommand("journal overview")), Actor.core())
+        story.run_command(BlockAgent(story.agent.id, AgentMessage("samples.wait", AgentMessageType.REFUSAL, LINE), RanCommand("journal overview")), Actor.core())
 
 
 class SkippableBlock(StoryFixture):
@@ -35,7 +35,7 @@ class SkippableBlock(StoryFixture):
     parent = LeadStarted
 
     def steps(self, story):
-        story.run_command(OpenHold(story.agent.id, AgentMessage("samples.wait", AgentMessageType.REFUSAL, LINE), RanCommand("journal overview"), is_skippable=True), Actor.core())
+        story.run_command(BlockAgent(story.agent.id, AgentMessage("samples.wait", AgentMessageType.REFUSAL, LINE), RanCommand("journal overview"), is_skippable=True), Actor.core())
 
 
 def open_blocks(story) -> list[AgentBlock]:
@@ -50,7 +50,7 @@ def test_a_block_pushed_by_a_command_refuses_the_next_tool_use(new_story):
 
 def test_pushing_the_same_block_twice_keeps_one_open_block(new_story):
     story = new_story(SAMPLES, fixture=PushedBlock)
-    story.run_command(OpenHold(story.agent.id, AgentMessage("samples.wait", AgentMessageType.REFUSAL, LINE), RanCommand("journal overview")), Actor.core())
+    story.run_command(BlockAgent(story.agent.id, AgentMessage("samples.wait", AgentMessageType.REFUSAL, LINE), RanCommand("journal overview")), Actor.core())
     story.expect_rows(len(open_blocks(story)) == 1, detail=str(len(open_blocks(story))))
 
 

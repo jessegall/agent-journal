@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from engine.testing.selection.affected_tests import EVERYTHING, STORY_FOLDERS, AffectedTests
+from engine.testing.selection.affected_tests import FULL_TEST_FOLDER, STORY_FOLDERS, AffectedTests
 from engine.testing.selection.function_bodies import FunctionBodies
 from engine.testing.selection.test_map import TestMap
 
@@ -52,8 +52,8 @@ def test_data_file_selects_the_tests_of_its_module(tmp_path):
 
 
 def test_engine_change_selects_everything(tmp_path):
-    assert selector(tmp_path, SOURCE).arguments(["src/engine/database/database.py"]) == [EVERYTHING]
+    assert selector(tmp_path, SOURCE).arguments(["src/engine/database/database.py"]) == [FULL_TEST_FOLDER]
 
 
 def test_missing_map_selects_everything(tmp_path):
-    assert AffectedTests(TestMap(), project(tmp_path)).arguments([CART]) == [EVERYTHING]
+    assert AffectedTests(TestMap(), project(tmp_path)).arguments([CART]) == [FULL_TEST_FOLDER]

@@ -3,7 +3,7 @@ from core.modules.drivers.support.read_versions_rows import ReadVersionsRows
 from core.modules.drivers.support.open_block_rows import OpenBlockRows
 from datetime import datetime
 from core.modules.drivers.support.driver_settings import CAPABILITY_PROOFS_SETTING
-from core.modules.drivers.support.block_judgement import BlockJudgement
+from core.modules.drivers.support.block_condition_check import BlockConditionCheck
 from core.modules.drivers.models.hidden_state import OPEN_SUPPRESSIONS_REASON, HiddenState
 from engine.driver.refusal_skips import RefusalSkips
 from engine.enums.responder import Responder
@@ -58,7 +58,7 @@ class StoredAgentViewReader(AgentViewReader):
     conditions and the program's capabilities are read by the phases that port them; until then the view
     holds none."""
 
-    def __init__(self, agents: AgentRows, queries: Queries, settings: SettingValues, hook_calls: HookCallQuery, finder: ModuleFinder, clock: Clock, grant_store: GrantLedger, providers: Providers, judgement: BlockJudgement,
+    def __init__(self, agents: AgentRows, queries: Queries, settings: SettingValues, hook_calls: HookCallQuery, finder: ModuleFinder, clock: Clock, grant_store: GrantLedger, providers: Providers, judgement: BlockConditionCheck,
                  skips: RefusalSkips, open_blocks: OpenBlockRows, stacks: ReadVersionsRows, types: HelperTypeBook, choice: SuiteChoice) -> None:
         self.providers, self.skips, self.open_blocks, self.stacks, self.types = providers, skips, open_blocks, stacks, types
         self.agents, self.queries, self.settings, self.hook_calls, self.finder, self.clock = agents, queries, settings, hook_calls, finder, clock

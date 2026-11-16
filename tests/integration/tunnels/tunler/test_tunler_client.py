@@ -78,12 +78,12 @@ def test_a_login_hands_the_passwords_through_the_environment_and_never_on_the_co
 
 def test_a_login_for_an_account_that_does_not_exist_asks_for_the_master_password(home):
     login = TunlerClient(home).login("tunnels.example", "ada", "new", None)
-    assert login.needs_master and not login.connected and "master password" in login.error, login
+    assert login.requires_master and not login.connected and "master password" in login.error, login
 
 
 def test_a_login_refused_with_the_master_password_gives_the_programs_last_line(home):
     login = TunlerClient(home).login("tunnels.example", "ada", "new", "top")
-    assert not login.needs_master and login.error == "no such account", login
+    assert not login.requires_master and login.error == "no such account", login
 
 
 def test_the_domains_are_the_programs_lines_and_a_release_names_the_subdomain(home, tmp_path):

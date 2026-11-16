@@ -12,7 +12,7 @@ class ServerStoppedTurn(WakeCause):
     key = "samples.server-stopped"
     wakes_mid_turn = True
 
-    def needs_wake(self, view: AgentView) -> bool:
+    def requires_wake(self, view: AgentView) -> bool:
         return True
 
     def text(self, view: AgentView) -> str:
@@ -25,6 +25,6 @@ class ArrivedDump(ServerStoppedTurn):
 
 
 def test_a_cause_that_wakes_in_a_turn_wakes_a_busy_agent_and_a_resting_cause_does_not():
-    busy = replace(ViewSamples.view("main", WorkStop.REFUSE_WHILE_WORK_REMAINS), is_resting=False)
+    busy = replace(ViewSamples.view("main", WorkStop.REFUSE_DURING_WORK), is_resting=False)
     change = WakeCheck([ServerStoppedTurn(), ArrivedDump()]).change(busy, busy.stack)
-    assert change.wake_move is WakeMove.WRITTEN and change.causes == ("samples.server-stopped",)
+    assert change.wake_move is WakeMove.RECORDED and change.causes == ("samples.server-stopped",)

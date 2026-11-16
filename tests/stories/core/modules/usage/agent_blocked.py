@@ -2,7 +2,7 @@ import json
 from datetime import timedelta
 
 from engine.actor.actor import Actor
-from engine.driver.open_hold import OpenHold
+from engine.driver.block_agent import BlockAgent
 from engine.driver.conditions.ran_command import RanCommand
 from engine.driver.agent_message import AgentMessage
 from engine.enums.agent_message_type import AgentMessageType
@@ -18,7 +18,7 @@ CARD = "usage agents --environment main --json"
 
 def story_with_refusing_block(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
-    story.run_command(OpenHold(story.agent.id, AgentMessage("samples.wait", AgentMessageType.REFUSAL, REFUSAL_TEXT), RanCommand("journal overview")), Actor.core())
+    story.run_command(BlockAgent(story.agent.id, AgentMessage("samples.wait", AgentMessageType.REFUSAL, REFUSAL_TEXT), RanCommand("journal overview")), Actor.core())
     return story
 
 
@@ -57,7 +57,7 @@ def test_a_worker_with_a_started_task_does_not_show_a_hook_hold_as_a_block(new_s
     story = new_story(fixture=OrchestratorWithPerson)
     repository_environment(story)
     worker = dispatched_worker(story)
-    story.run_command(OpenHold(worker.id, AgentMessage("samples.wait", AgentMessageType.REFUSAL, REFUSAL_TEXT), RanCommand("journal overview")), Actor.core())
+    story.run_command(BlockAgent(worker.id, AgentMessage("samples.wait", AgentMessageType.REFUSAL, REFUSAL_TEXT), RanCommand("journal overview")), Actor.core())
     story.advance(timedelta(seconds=121))
     rows = json.loads(story.run(CARD, actor=story.user).output_text)["rows"]
     card = next(row for row in rows if row["id"] == worker.id)

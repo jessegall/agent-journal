@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 from engine.caller.process_table import ProcessTable
 from engine.database.reported_findings import ReportedFindings
-from engine.execution.instant_lane_reading import InstantLaneReading
+from engine.execution.instant_pool_reading import InstantPoolReading
 from engine.journal.journal_home import JournalHome
 from engine.module.code_fingerprint import CodeFingerprint
 from engine.module.journal_container import synced_database_container
@@ -95,7 +95,7 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
         context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, clock.timestamp(), wakes,
                                 hook_database, viewer_factory(login, ViewerRoutes(home, wakes, login, reported, hook_database.viewer_tickets, clock)), ServerTunnel(home), reported, journal_door, TEST_HOOK_LIMIT_SECONDS, TEST_HOOK_LIMIT_SECONDS, TEST_STOP_LIMIT_SECONDS, idle_connection_seconds=idle_connection_seconds)
         context.request_trace.refresh(synced_database_container(home, hook_database.databases[0]))
-        InstantLaneReading.shared(home).install(lambda: [entry.reading() for entry in hook_database.executions.read()], hook_database.instant_capacity)
+        InstantPoolReading.shared(home).install(lambda: [entry.reading() for entry in hook_database.executions.read()], hook_database.instant_capacity)
         context.viewer.routes.line_route = line_route_factory(home, wakes, reported, context)
         server = JournalServer(str(files.socket), RequestHandler, context)
         if listener_thread_started:
@@ -115,7 +115,7 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
             context.request_trace.close()
             context.hook_database.close()
             SessionStarters.shared(home).close()
-            InstantLaneReading.shared(home).remove()
+            InstantPoolReading.shared(home).remove()
             files.remove_server_files()
             server.server_close()
             files.release_lock()

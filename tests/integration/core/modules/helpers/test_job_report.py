@@ -73,4 +73,4 @@ def test_a_dropped_kept_report_ends_its_job_with_no_report(played):
     stop_twice_with_a_failing_save(story, helper)
     story.expect_success(f"helper report-drop {helper.number}", actor=story.user)
     job = story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).newest().first()
-    assert (job.handover_state, job.ended_at is not None) == (HandoverState.NO_REPORT, True)
+    assert (job.handover_state, job.ended_at is not None) == (HandoverState.REPORT_MISSING, True)

@@ -5,14 +5,14 @@ from core.modules.tasks.states.unlogged_write_states import UnloggedWriteStates
 from core.modules.tasks.states.block_review_states import BlockReviewStates
 from core.modules.tasks.effects.block_review_effect import BlockReviewEffect
 from core.modules.tasks.lines.blocked_work_lines import BlockedWorkLines
-from core.modules.tasks.lines.quiet_task_lines import QuietTaskLines
+from core.modules.tasks.lines.stalled_task_lines import StalledTaskLines
 from core.modules.tasks.lines.log_request_lines import LogRequestLines
 from core.modules.tasks.lines.task_filed_lines import TaskFiledLines
 from core.modules.tasks.lines.task_name_lines import TaskNameLines
-from core.modules.tasks.lines.still_held_lines import StillHeldLines
-from core.modules.tasks.lines.one_in_hand_lines import OneInHandLines
+from core.modules.tasks.lines.pending_block_lines import PendingBlockLines
+from core.modules.tasks.lines.single_started_task_lines import SingleStartedTaskLines
 from core.modules.tasks.lines.session_start_summary_lines import SessionStartSummaryLines
-from core.modules.tasks.lines.wait_in_words_lines import WaitInWordsLines
+from core.modules.tasks.lines.wait_text_lines import WaitTextLines
 from core.modules.tasks.lines.block_review_lines import BlockReviewLines
 from core.modules.tasks.windows.tasks_windows import TASKS_WINDOWS
 from core.modules.tasks.models.declarations.task_model_declaration import TaskModelDeclaration
@@ -128,7 +128,7 @@ from core.modules.tasks.support.block_conditions.started_task_exists import Star
 from core.modules.tasks.support.block_conditions.task_logged import TaskLogged
 from core.modules.tasks.support.block_conditions.task_stopped import TaskStopped
 from core.modules.tasks.support.task_settings import TASK_SETTINGS
-from core.modules.tasks.tick_handlers.task_state_sweep_tick_handler import TaskStateSweepTickHandler
+from core.modules.tasks.tick_handlers.task_state_round_tick_handler import TaskStateRoundTickHandler
 
 
 
@@ -148,7 +148,7 @@ class TasksModule(Module):
     migrations = [TaskHolderAnyActorMigration, DropTaskDelegationMigration, TaskAssignmentsMigration, TaskFocusTimeMigration, TaskHolderDelegationMigration, BlockWaitingTasksMigration, TaskLogImportantMigration, TaskReadSessionMigration, PendingWaitsIndexMigration, OpenTaskEdgeIndexMigration, ClosedTaskIndexMigration, TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartTimeMigration, TaskDelegationMigration, DelegatedTaskIndexMigration, TaskReadsTableMigration, TaskBlockRenewalsMigration, TaskClosedCursorIndexMigration, AllEnvironmentsTaskStateIndexMigration, TaskComplexityMigration, TaskTagsMigration, TaskEnvironmentIdIndexMigration, TaskIndependenceReasonMigration]
     subcommands = [ChooseNextTaskSubcommand, ChooseTaskFocusSubcommand, TagTaskSubcommand, RemoveTaskTagSubcommand, TaskTagsSubcommand, TaskListSubcommand, EditTaskSubcommand, AssignTaskSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskCountsSubcommand, TaskInspectSubcommand, TaskInfoSubcommand, MakeTaskLogSubcommand, ReadTaskBriefSubcommand, MakeTaskDependencySubcommand,
                    RemoveTaskDependencySubcommand, RecordTaskIndependenceSubcommand]
-    tick_handlers = [TaskStateSweepTickHandler]
+    tick_handlers = [TaskStateRoundTickHandler]
     handlers = [AssignNextTaskHandler, RepairTaskStatesHandler, ChooseNextTaskHandler, ChooseTaskFocusHandler, RecordTaskIndependenceHandler, TagTaskHandler, RemoveTaskTagHandler, RecordTaskReadHandler, AssignTaskHandler, UnassignAgentTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]
     moves = [TasksMove]
     guards = [TaskTagAccessGuard, TaskTagWordGuard, TaskEditAccessGuard, VisibleDependencyGuard, DependenciesClosedGuard, UserWaitGuard, AssignedTaskStartGuard]
@@ -159,7 +159,7 @@ class TasksModule(Module):
     docks = TASKS_DOCKS
     states = [TaskWorkStates, UnloggedWriteStates, BlockReviewStates]
     effects = [BlockReviewEffect]
-    lines = [BlockedWorkLines, QuietTaskLines, LogRequestLines, TaskFiledLines, TaskNameLines, StillHeldLines, OneInHandLines, SessionStartSummaryLines, WaitInWordsLines, BlockReviewLines]
+    lines = [BlockedWorkLines, StalledTaskLines, LogRequestLines, TaskFiledLines, TaskNameLines, PendingBlockLines, SingleStartedTaskLines, SessionStartSummaryLines, WaitTextLines, BlockReviewLines]
     windows = TASKS_WINDOWS
     inspectors = [TaskInspector]
     seeders = [TasksSeeder]

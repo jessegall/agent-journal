@@ -5,7 +5,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.engine.scope.environment_rows import TwoWorkingEnvironments, staging_agent
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 
-LONG_CAPACITY = f"{ProcessSetting.LANE_CAPACITY_LONG.key}"
+LONG_CAPACITY = f"{ProcessSetting.POOL_CAPACITY_LONG.key}"
 
 
 class ProjectAndStagingValues(StoryFixture):

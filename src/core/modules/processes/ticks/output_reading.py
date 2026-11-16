@@ -17,7 +17,7 @@ from core.modules.processes.support.prepared_read import PreparedRead
 from core.modules.processes.support.reader_step import ReaderStep
 
 WARNING_REPEAT_TICKS = 5
-POINTS_PER_GROWN_RUN = 5
+GROWN_RUN_POINTS = 5
 
 
 class OutputReading:
@@ -38,7 +38,7 @@ class OutputReading:
         read_count = self.read(container)
         cost = tools.cost(started)
         if cost is not None:
-            self.warn_if_slow(container, cost, TICK_LIMIT_POINTS + POINTS_PER_GROWN_RUN * read_count)
+            self.warn_if_slow(container, cost, TICK_LIMIT_POINTS + GROWN_RUN_POINTS * read_count)
         return read_count > 0
 
     def read(self, container: Container) -> int:

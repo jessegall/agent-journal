@@ -95,7 +95,7 @@ class SampleRange(WorkerMergeRange):
     def branch_tip(self, worktree):
         return worktree.commit_short_id
 
-    def base_changes_on_own_files(self, worktree, commit):
+    def worktree_file_base_changes(self, worktree, commit):
         return ()
 
     def is_branch_commit(self, worktree, commit):

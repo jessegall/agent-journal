@@ -5,7 +5,7 @@ from datetime import timedelta
 from engine.actor.actor import Actor
 from engine.provider.launch_command import LaunchCommand
 from engine.enums.actor_type import ActorType
-from engine.driver.open_hold import OpenHold
+from engine.driver.block_agent import BlockAgent
 from core.modules.tasks.commands.reset_task_reads.reset_task_reads import ResetTaskReads
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
@@ -42,7 +42,7 @@ from core.modules.helpers.support.program_states import ProgramStates
 from core.modules.helpers.support.program_shares import ProgramShares
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from engine.scope.scopes import Scopes
-from core.modules.helpers.support.agent_admission import AgentAdmission
+from core.modules.helpers.support.agent_start_check import AgentStartCheck
 from pathlib import Path
 from suites.coding.modules.workers.commands.report_worker_program_recovery.report_worker_program_recovery import ReportWorkerProgramRecovery
 from suites.coding.modules.workers.support.worker_instruction_files import WorkerInstructionFiles
@@ -57,9 +57,9 @@ class WorkerResume:
     dispatcher's start command."""
 
     def __init__(self, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus, clock: Clock, requirement: TaskBriefRequirement,
-                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates, shares: ProgramShares, environments: EnvironmentRows, scopes: Scopes, reports: WorkerRecoveryReports, routes: WorkerRoutes, rows: EventRows, admission: AgentAdmission, started_work: WorkerStartedWork, cold: ColdSessions, instruction_files: WorkerInstructionFiles, compaction: WorkerCompaction, conversations: AgentConversations, lockdown: ProgramLockdown, agent_resume: AgentResume) -> None:
+                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates, shares: ProgramShares, environments: EnvironmentRows, scopes: Scopes, reports: WorkerRecoveryReports, routes: WorkerRoutes, rows: EventRows, start_check: AgentStartCheck, started_work: WorkerStartedWork, cold: ColdSessions, instruction_files: WorkerInstructionFiles, compaction: WorkerCompaction, conversations: AgentConversations, lockdown: ProgramLockdown, agent_resume: AgentResume) -> None:
         self.lockdown, self.agent_resume = lockdown, agent_resume
-        self.admission, self.started_work, self.instruction_files = admission, started_work, instruction_files
+        self.start_check, self.started_work, self.instruction_files = start_check, started_work, instruction_files
         self.queries, self.worktrees, self.worker_command, self.bus, self.clock = queries, worktrees, worker_command, bus, clock
         self.cold, self.conversations = cold, conversations
         self.compaction = compaction
@@ -76,7 +76,7 @@ class WorkerResume:
 
     def may_resume(self, worker: Agent) -> bool:
         with self.scopes.row_scope(worker):
-            permitted = not self.admission.resume_reasons("worker", worker.profile) and not self.admission.model_reasons("worker", worker.profile, worker.program, worker.program_model)
+            permitted = not self.start_check.resume_reasons("worker", worker.profile) and not self.start_check.model_reasons("worker", worker.profile, worker.program, worker.program_model)
         return permitted and not self.lockdown.lockdown(worker.program).is_active and self.program_state(worker).is_ready
 
     def replace_running_program(self, worker: Agent, actor: Actor) -> None:
@@ -140,7 +140,7 @@ class WorkerResume:
         if self.requirement.is_required:
             worker_actor = Actor(worker.id, ActorType.AGENT)
             self.bus.run(ResetTaskReads(worker.id), worker_actor, environment_id=worktree.environment_id)
-            self.bus.run(OpenHold(worker.id, TaskBriefFirstMessage.declared().agent_message(task=worktree.task_id), TaskBriefRead(worktree.task_id)),
+            self.bus.run(BlockAgent(worker.id, TaskBriefFirstMessage.declared().agent_message(task=worktree.task_id), TaskBriefRead(worktree.task_id)),
                          worker_actor, environment_id=worktree.environment_id)
         job = self.queries.query(AgentLine).find(job.id)
         if job.state is AgentLineState.WAITING and self.rows.required(Agent, worker.id).pid is not None:

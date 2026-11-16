@@ -42,11 +42,11 @@ class ReaderRequests:
         self.judge = judge
 
     def needed(self, process: Process, agent: Agent) -> bool:
-        return (self.types.behaviours(agent.role).needs_readers and process.creator_id == agent.id
+        return (self.types.behaviours(agent.role).requires_readers and process.creator_id == agent.id
                 and self.settings.flag(ProcessSetting.READERS_FORCED))
 
     def request(self, process: Process, spec: PartSpec, reader: Reader | None, context: Context) -> int | None:
-        if not self.demands.needs_reader(spec) or self.marks.excuses(spec.command or spec.text):
+        if not self.demands.requires_reader(spec) or self.marks.excuses(spec.command or spec.text):
             return None
         scope = ReaderSampleScope(process.session_agent_id, spec.command or spec.text)
         reason = self.reason(process, spec, reader, scope)
@@ -74,7 +74,7 @@ class ReaderRequests:
         if reader is None:
             return
         spec = PartSpec(part.text, part.program, category=part.category, command=part.command)
-        if not self.demands.needs_reader(spec):
+        if not self.demands.requires_reader(spec):
             return
         scope = ReaderSampleScope(process.session_agent_id, spec.command or spec.text)
         reason = self.reason(process, spec, reader, scope)

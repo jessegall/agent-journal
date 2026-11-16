@@ -30,7 +30,7 @@ from suites.coding.modules.workers.support.worker_settings import LIBRARY_COPIES
 from suites.coding.modules.workers.support.worker_places import WorkerPlaces
 from suites.coding.modules.workers.support.worker_task_copies import WorkerTaskCopies
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
-from core.modules.helpers.support.agent_admission import AgentAdmission
+from core.modules.helpers.support.agent_start_check import AgentStartCheck
 from core.modules.helpers.support.allowed_models import AllowedModels
 from core.modules.helpers.support.profile_model import ProfileModel
 from suites.coding.modules.workers.support.worker_routing import WorkerRouting
@@ -63,11 +63,11 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     command = DispatchWorker
 
     def __init__(self, queries: Queries, bus: Bus, settings: SettingValues, git: WorktreeGit, worker_command: WorkerCommand, worktrees: WorktreeQuery,
-                 providers: Providers, models: AllowedModels, routing: WorkerRouting, environments: EnvironmentRows, rows: EventRows, types: HelperTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, admission: AgentAdmission, release: StartedTaskRelease, reservations: MainReservedTasks, presets: WorkerTestPresets, complexity: ModelComplexityPolicy, assigned_worker_tasks: AssignedWorkerTasks, external_waits: OutsideWaits) -> None:
+                 providers: Providers, models: AllowedModels, routing: WorkerRouting, environments: EnvironmentRows, rows: EventRows, types: HelperTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, start_check: AgentStartCheck, release: StartedTaskRelease, reservations: MainReservedTasks, presets: WorkerTestPresets, complexity: ModelComplexityPolicy, assigned_worker_tasks: AssignedWorkerTasks, external_waits: OutsideWaits) -> None:
         self.assigned_worker_tasks, self.outside_waits = assigned_worker_tasks, external_waits
         self.complexity = complexity
         self.release, self.reservations, self.presets = release, reservations, presets
-        self.places, self.copies, self.available_workers, self.admission = places, copies, available_workers, admission
+        self.places, self.copies, self.available_workers, self.start_check = places, copies, available_workers, start_check
         self.queries, self.bus, self.settings = queries, bus, settings
         self.git, self.worker_command, self.worktrees, self.providers, self.models = git, worker_command, worktrees, providers, models
         self.environments, self.rows, self.types, self.profiles, self.scopes = environments, rows, types, profiles, scopes
@@ -91,7 +91,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         caller = self.rows.find(Agent, context.actor.id)
         parent_id = caller.id if caller is not None else None
         profile = self.worker_profile(command.profile)
-        self.admission.checked_new("worker", profile.name)
+        self.start_check.checked_new("worker", profile.name)
         self.check_unstarted(command, context, environment)
         self.check_test_commands(command, context, environment)
         choice = self.routing.choice(command, tasks, caller, profile, context)

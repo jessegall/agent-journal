@@ -10,5 +10,5 @@ class OpenDock(DockDeclaration):
     title = "Agent asked questions"
     body = "open-questions-dock.js"
     draws_head = True
-    needs_user = True
+    person_required = True
     reads = ["question list"]

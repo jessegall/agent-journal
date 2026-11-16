@@ -20,11 +20,11 @@ class VersionedImportMap:
         return MAPPED_ADDRESS.sub(lambda match: b'"' + self.address_with_version(match.group(1)) + b'"', page)
 
     def address_with_version(self, address: bytes) -> bytes:
-        module, path = self.module_and_path(address)
+        module, path = self.module_path_pair(address)
         version = hashlib.sha1(self.content_of(module, path)).hexdigest()[:VERSION_CHARACTERS]
         return address + b"?v=" + version.encode()
 
-    def module_and_path(self, address: bytes) -> tuple[str, str]:
+    def module_path_pair(self, address: bytes) -> tuple[str, str]:
         if address.startswith(VIEWER_PREFIX):
             return self.viewer_module, address.removeprefix(VIEWER_PREFIX).decode()
         module, _, path = address.removeprefix(MODULES_PREFIX).partition(b"/")

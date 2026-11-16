@@ -9,8 +9,8 @@ from engine.enums.execution_priority import ExecutionPriority
 from engine.enums.log_level import LogLevel
 from engine.enums.log_source import LogSource
 from engine.execution.execution_order import ExecutionOrder
-from engine.execution.limits.default_lane_limits import DEFAULT_LANE_LIMITS
-from engine.execution.limits.lane_limits import LaneLimits
+from engine.execution.limits.default_lane_limits import DEFAULT_POOL_LIMITS
+from engine.execution.limits.pool_limits import PoolLimits
 from engine.journal.journal_home import JournalHome
 from engine.log.system_log_writer import SystemLogWriter
 from engine.time.clock import Clock
@@ -23,13 +23,13 @@ from server.execution.viewer_tickets import ViewerTickets
 
 CLOSE_WAIT_SECONDS = 60.0
 VIEWER_WAIT_LIMIT_SECONDS = 1.0
-INSTANT_CAPACITY = DEFAULT_LANE_LIMITS.capacity(ExecutionLength.INSTANT)
+INSTANT_CAPACITY = DEFAULT_POOL_LIMITS.capacity(ExecutionLength.INSTANT)
 
 
 # a session runs one hook at a time, so the instant lane needs no share per starter on top of that
-def instant_limits(capacity: int) -> LaneLimits:
-    capacities = {**DEFAULT_LANE_LIMITS.capacities, ExecutionLength.INSTANT: capacity}
-    return replace(DEFAULT_LANE_LIMITS.with_capacities(capacities), starter_caps=dict(capacities))
+def instant_limits(capacity: int) -> PoolLimits:
+    capacities = {**DEFAULT_POOL_LIMITS.capacities, ExecutionLength.INSTANT: capacity}
+    return replace(DEFAULT_POOL_LIMITS.with_capacities(capacities), starter_caps=dict(capacities))
 
 
 class HookDatabase:

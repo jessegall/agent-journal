@@ -37,7 +37,7 @@ SLOW_LISTENER_SECONDS = 0.5
 PROGRAM_STOP_RUN_ORDER = 500
 PLUGIN_RUN_ORDER = 1000
 LISTENER_TIME_LIMIT_SETTING = "journal.core.developer.tools.listener-time-limit"
-LISTENER_TIME_LIMIT_ON_SETTING = "journal.core.developer.tools.listener-time-limit-on"
+LISTENER_TIME_LIMIT_SWITCH = "journal.core.developer.tools.listener-time-limit-on"
 
 
 class CommitListenerRunner(RoundState):
@@ -242,7 +242,7 @@ class CommitListenerRunner(RoundState):
                 if built_event is not None:
                     listener.handle(built_event, event)
             elapsed = perf_counter() - started_at
-            self.hold_when_over_time_limit(entry, event, elapsed)
+            self.pause_slow_listener(entry, event, elapsed)
             if elapsed >= SLOW_LISTENER_SECONDS:
                 self.system_log.write(LogLevel.INFORMATION, f"listener {entry.name} took {elapsed * 1000:.0f} ms on event {event.id} {event.event}")
             cost = tools.cost(start_points)
@@ -261,11 +261,11 @@ class CommitListenerRunner(RoundState):
 
     # a developer setting, off by default: a listener of the ordinary rounds over the limit runs no more events until the server restarts, and its
     # error reaches the main agent at once; its cursor stays, so the held events run after the restart
-    def hold_when_over_time_limit(self, entry: ListenerEntry, event: LoggedEvent, elapsed: float) -> None:
+    def pause_slow_listener(self, entry: ListenerEntry, event: LoggedEvent, elapsed: float) -> None:
         if self.has_slow_round(entry):
             return
         settings = self.container.get(SettingValues)
-        if not settings.flag(LISTENER_TIME_LIMIT_ON_SETTING):
+        if not settings.flag(LISTENER_TIME_LIMIT_SWITCH):
             return
         limit_ms = settings.number(LISTENER_TIME_LIMIT_SETTING)
         if elapsed * 1000 <= limit_ms:

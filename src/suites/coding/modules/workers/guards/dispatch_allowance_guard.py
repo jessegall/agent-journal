@@ -14,13 +14,13 @@ class DispatchAllowanceGuard(Guard[Created[Worktree]]):
 
     name = "workers.main-sends-no-worker"
 
-    def __init__(self, caller: MainCaller, options: CodingMainOptions, admission: CommandCheck) -> None:
-        self.caller, self.options, self.admission = caller, options, admission
+    def __init__(self, caller: MainCaller, options: CodingMainOptions, start_check: CommandCheck) -> None:
+        self.caller, self.options, self.start_check = caller, options, start_check
 
     def check(self, event: Created[Worktree], context: Context) -> None:
         # once the admission slice answers the agent, the entry point asks the hook's policy (doc 1310 section 10.9)
-        if self.admission.answers(context):
-            self.admission.admit(DispatchWorker, context)
+        if self.start_check.answers(context):
+            self.start_check.admit(DispatchWorker, context)
             return
         if self.caller.is_main(context) and not self.options.options().sends_workers:
             raise Refusal("the main agent sends no workers here", "a user turns on journal.suites.coding.workers.main-dispatches-workers")

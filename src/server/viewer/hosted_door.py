@@ -30,5 +30,5 @@ class HostedDoor(Door):
     def has_site_origin(self, request: DoorRequest) -> bool:
         return request.origin == self.origin and request.site_relation == ORIGIN_SITE
 
-    def state_needs_login(self, request: DoorRequest) -> bool:
+    def login_required(self, request: DoorRequest) -> bool:
         return True

@@ -7,5 +7,5 @@ class CapabilityProof(StrEnum):
 
     IMPLEMENTED_HERE = "implemented-here"
     DOCUMENTED_UPSTREAM = "documented-upstream"
-    PROVED_LIVE = "proved-live"
-    REFUSED_LIVE = "refused-live"
+    PROVED_RUNNING = "proved-live"
+    REFUSED_RUNNING = "refused-live"

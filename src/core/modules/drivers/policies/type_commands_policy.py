@@ -14,7 +14,7 @@ from engine.setting.setting_values import SettingValues
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.base_commands import BASE_COMMANDS
 from core.modules.drivers.agent_messages.helper_type_category_message import HelperTypeCategoryMessage
-from core.modules.drivers.support.read_only_access import HELP_FLAG
+from core.modules.drivers.support.restricted_read_access import HELP_FLAG
 from core.modules.drivers.support.type_command_check import TypeCommandCheck
 
 

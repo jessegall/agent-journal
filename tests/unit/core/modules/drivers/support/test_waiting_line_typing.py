@@ -51,11 +51,11 @@ class RecordedBus:
 
 
 class AgentTurn:
-    def __init__(self, between_turns: bool = True) -> None:
-        self.between_turns = between_turns
+    def __init__(self, is_idle: bool = True) -> None:
+        self.is_idle = is_idle
 
     def has_ended_turn(self, agent_id: int) -> bool:
-        return self.between_turns
+        return self.is_idle
 
     def is_compacting(self, agent_id: int, checked_at) -> bool:
         return False
@@ -69,8 +69,8 @@ class FixedClock:
         return NOW
 
 
-def typing_of(entered: bool = False, between_turns: bool = True):
-    bus, typing, turn = RecordedBus(), RecordedTyping(), AgentTurn(between_turns)
+def typing_of(entered: bool = False, is_idle: bool = True):
+    bus, typing, turn = RecordedBus(), RecordedTyping(), AgentTurn(is_idle)
     return WaitingLineTyping(EnteredLines(entered), typing, bus, turn, None), typing, bus  # type: ignore[arg-type]
 
 
@@ -81,7 +81,7 @@ def test_a_line_for_a_stopped_agent_is_typed_into_its_terminal():
 
 
 def test_a_line_waits_while_the_agent_is_in_a_turn():
-    lines, typing, bus = typing_of(between_turns=False)
+    lines, typing, bus = typing_of(is_idle=False)
     lines.type(line(), 1, NOW)  # type: ignore[arg-type]
     assert typing.typed == [] and bus.commands == []
 

@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from engine.enums.execution_length import ExecutionLength  # noqa: E402
 from engine.enums.execution_priority import ExecutionPriority  # noqa: E402
 from engine.execution.classes.builtin_classes import BUILTIN_CLASSES  # noqa: E402
-from engine.execution.limits.default_lane_limits import DEFAULT_LANE_LIMITS  # noqa: E402
+from engine.execution.limits.default_lane_limits import DEFAULT_POOL_LIMITS  # noqa: E402
 from engine.execution.classes.execution_class import UNLIMITED  # noqa: E402
 
 CLASS_TABLE = """## Built-in classes
@@ -40,14 +40,14 @@ def class_rows() -> str:
 
 
 def capacity_rows() -> str:
-    return "\n".join(f"| {lane} | {DEFAULT_LANE_LIMITS.capacity(lane)} | {DEFAULT_LANE_LIMITS.starter_cap(lane)} |" for lane in ExecutionLength)
+    return "\n".join(f"| {lane} | {DEFAULT_POOL_LIMITS.capacity(lane)} | {DEFAULT_POOL_LIMITS.starter_cap(lane)} |" for lane in ExecutionLength)
 
 
 def limit_rows() -> str:
     rows = []
     for lane in ExecutionLength:
         for priority in ExecutionPriority:
-            limit = DEFAULT_LANE_LIMITS.priority_limit(lane, priority)
+            limit = DEFAULT_POOL_LIMITS.priority_limit(lane, priority)
             running = "none" if limit.running_limit == UNLIMITED else str(limit.running_limit)
             wait = "never raised" if priority >= ExecutionPriority.RESERVED else f"{limit.longest_wait_seconds:g} s"
             rows.append(f"| {lane} | {priority.name.lower()} | {running} | {wait} |")
@@ -55,7 +55,7 @@ def limit_rows() -> str:
 
 
 def table_text() -> str:
-    return "\n".join((CLASS_TABLE.format(rows=class_rows()), CAPACITY_TABLE.format(rows=capacity_rows(), ceiling=DEFAULT_LANE_LIMITS.immediate_ceiling),
+    return "\n".join((CLASS_TABLE.format(rows=class_rows()), CAPACITY_TABLE.format(rows=capacity_rows(), ceiling=DEFAULT_POOL_LIMITS.immediate_ceiling),
                       LIMIT_TABLE.format(rows=limit_rows())))
 
 

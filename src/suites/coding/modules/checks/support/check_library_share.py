@@ -30,7 +30,7 @@ class CheckLibraryShare(LibraryShare[Check]):
     def is_removed(self, row: Check) -> bool:
         return row.removed_at is not None
 
-    def needs_reading(self, row: Check, fields: Fields) -> str:
+    def read_reason(self, row: Check, fields: Fields) -> str:
         return "The command of this check changed." if row.is_running and fields["command"] != row.command else ""
 
     def warning(self, fields: Fields) -> str:

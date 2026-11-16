@@ -4,7 +4,7 @@ from dataclasses import dataclass, field, replace
 from engine.command.command import Command
 from engine.driver.agent_hook import AgentHook
 from engine.driver.block_condition import BlockCondition
-from engine.driver.open_hold import OpenHold
+from engine.driver.block_agent import BlockAgent
 from engine.driver.interval import Interval
 from engine.driver.agent_message import AgentMessage
 from engine.enums.agent_message_type import AgentMessageType
@@ -60,7 +60,7 @@ class RuleAnswer:
     def blocked(cls, hook: AgentHook, agent_message: AgentMessage, condition: BlockCondition) -> "RuleAnswer":
         tool = hook.event.tool
         answer = cls.allowed() if tool is None or tool.block_exempt else cls.refused(agent_message)
-        return answer.running(OpenHold(hook.agent_id, agent_message, condition))
+        return answer.running(BlockAgent(hook.agent_id, agent_message, condition))
 
     @classmethod
     def refusals(cls, agent_messages: Sequence[AgentMessage]) -> "RuleAnswer":
@@ -68,10 +68,10 @@ class RuleAnswer:
 
     @classmethod
     def refused_with_block(cls, hook: AgentHook, agent_message: AgentMessage, condition: BlockCondition) -> "RuleAnswer":
-        return cls.refused(agent_message).running(OpenHold(hook.agent_id, agent_message, condition))
+        return cls.refused(agent_message).running(BlockAgent(hook.agent_id, agent_message, condition))
 
     def blocking_after(self, hook: AgentHook, agent_message: AgentMessage, condition: BlockCondition, after: Interval, countdown: AgentMessage, strict: bool = False) -> "RuleAnswer":
-        return self.running(OpenHold(hook.agent_id, agent_message, condition, after, countdown, strict=strict))
+        return self.running(BlockAgent(hook.agent_id, agent_message, condition, after, countdown, strict=strict))
 
     def running(self, *commands: Command[object]) -> "RuleAnswer":
         return replace(self, commands=[*self.commands, *commands])

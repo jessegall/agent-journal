@@ -11,7 +11,7 @@ class HeardEvent:
 
     event: str
     tools: tuple[str, ...] = ()
-    every_minutes: int = 0
+    repeat_minutes: int = 0
 
     @classmethod
     def read(cls, entry: object) -> "HeardEvent":

@@ -12,9 +12,9 @@ class ProvedDeliveryGuard(Guard[Created[MergeAsk]]):
 
     name = "workers.proved-delivery"
 
-    def __init__(self, admission: CommandCheck) -> None:
-        self.admission = admission
+    def __init__(self, start_check: CommandCheck) -> None:
+        self.start_check = start_check
 
     def check(self, event: Created[MergeAsk], context: Context) -> None:
-        if self.admission.answers(context):
-            self.admission.admit(AskMerge, context)
+        if self.start_check.answers(context):
+            self.start_check.admit(AskMerge, context)

@@ -10,7 +10,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.listener.rows.event_rows import EventRows
 from engine.errors.refusal import Refusal
-from core.modules.helpers.support.agent_admission import AgentAdmission
+from core.modules.helpers.support.agent_start_check import AgentStartCheck
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
 from engine.scope.scopes import Scopes
@@ -61,9 +61,9 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
     runs_once = True
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, message_sender: MessageSender, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources, kept_tasks: KeptWorkerTasks, environments: EnvironmentRows, settings: SettingValues, scopes: Scopes, admission: AgentAdmission, libraries: LibraryFolders, release: StartedTaskRelease, timing: Timing, places: WorkerPlaces) -> None:
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, message_sender: MessageSender, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources, kept_tasks: KeptWorkerTasks, environments: EnvironmentRows, settings: SettingValues, scopes: Scopes, start_check: AgentStartCheck, libraries: LibraryFolders, release: StartedTaskRelease, timing: Timing, places: WorkerPlaces) -> None:
         self.timing, self.places = timing, places
-        self.admission, self.libraries, self.release = admission, libraries, release
+        self.start_check, self.libraries, self.release = start_check, libraries, release
         self.rows, self.worktrees, self.repository, self.git, self.message_sender = rows, worktrees, repository, git, message_sender
         self.advance, self.bus, self.missing_agents = advance, bus, missing_agents
         self.sources, self.task_sources, self.kept_tasks, self.environments = sources, task_sources, kept_tasks, environments
@@ -84,8 +84,8 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
 
     def check_session(self, worker: Agent) -> None:
         if worker.ended_at is not None:
-            self.admission.checked_resume("worker", worker.profile)
-            self.admission.checked_model("worker", worker.profile, worker.program, worker.program_model)
+            self.start_check.checked_resume("worker", worker.profile)
+            self.start_check.checked_model("worker", worker.profile, worker.program, worker.program_model)
 
     def check_rows(self, command: SendWorker, actor: Actor) -> None:
         worker = self.rows.required(Agent, command.worker_id)
@@ -159,7 +159,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
             self.bus.run(CancelWorkerOpening(opened.id, retain_agent=True), actor, environment_id=worker.environment_id)
             raise
 
-    def woken(self, command: SendWorker, context: Context) -> Model:
+    def resumed_worker(self, command: SendWorker, context: Context) -> Model:
         """A text job for a worker with no work in a worktree files no task: the text reaches it as a message, which wakes it."""
         self.repository.save(Message(creator_id=context.actor.id, type=MessageType.PEER, text=command.job, read_at=context.timestamp, delivered_at=context.timestamp,
                                      recipient=WorkerRecipient.text(command.worker_id)), context)
@@ -178,7 +178,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
         if worktree is None and self.task_ids:
             return self.kept_tasks.waiting(self.rows.required(Agent, command.worker_id), self.task_ids, context)
         if worktree is None:
-            return self.woken(command, context)
+            return self.resumed_worker(command, context)
         worker = self.rows.required(Agent, command.worker_id)
         if not command.sandboxed:
             worker = self.bus.run_with_context(SwitchWorkerSandbox(worker.id, False), context)

@@ -16,7 +16,7 @@ from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import Model
 from engine.model.tables import Tables
 from engine.database.prune_window import PruneWindow
-from engine.event.written_events import WrittenEvents
+from engine.event.saved_events import SavedEvents
 
 HIDDEN = "hidden"
 
@@ -39,7 +39,7 @@ UPGRADE_FINISHED_EVENT = "upgrade.finished"
 class EventLog:
     """Writes every change to the event log, and the sync that changes the registry, and reads them back."""
 
-    def __init__(self, database: Database, tables: Tables, saved: WrittenEvents) -> None:
+    def __init__(self, database: Database, tables: Tables, saved: SavedEvents) -> None:
         self.written = saved
         self.tables = tables
         self.table = BookkeepingTable(database, "events", "event")

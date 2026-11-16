@@ -28,8 +28,8 @@ class WorkerFreeTask:
     def __init__(self, tasks: TaskQuery, plan_tasks: NextPlanTasks, bus: Bus, rows: EventRows, places: WorkerPlaces) -> None:
         self.tasks, self.plan_tasks, self.bus, self.rows, self.places = tasks, plan_tasks, bus, rows, places
 
-    def give_next(self, worker_id: int, handed_in_ids: tuple[int, ...], context: Context) -> None:
-        if self.rows.required(Agent, worker_id).ended_at is not None or self.has_work(worker_id, set(handed_in_ids)):
+    def give_next(self, worker_id: int, delivered_ids: tuple[int, ...], context: Context) -> None:
+        if self.rows.required(Agent, worker_id).ended_at is not None or self.has_work(worker_id, set(delivered_ids)):
             return
         if len(self.places.running()) > self.places.run_limit():
             return

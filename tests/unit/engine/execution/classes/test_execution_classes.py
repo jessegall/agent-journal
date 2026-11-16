@@ -63,7 +63,7 @@ def test_background_job_costs_zero():
 
 
 def test_mixed_line_takes_longest_lane_and_highest_cost():
-    mixed = CLASSES.for_line([line(WORKER, CommandCategory.READ), line(WORKER, CommandCategory.PACKAGE), line(WORKER, CommandCategory.TEST_RUN)])
+    mixed = CLASSES.line_class([line(WORKER, CommandCategory.READ), line(WORKER, CommandCategory.PACKAGE), line(WORKER, CommandCategory.TEST_RUN)])
     assert (mixed.lane, mixed.slot_cost) == (ExecutionLength.LONG, 4)
 
 
@@ -73,14 +73,14 @@ def test_person_pattern_class_wins():
 
 
 def test_plugin_named_like_a_journal_kind_keeps_its_class():
-    subject = ExecutionSubject(ExecutionSource.PLUGIN_PROGRAM, ExecutionStarter(StarterType.PLUGIN, plugin_name="sample"), plugin_name="sample", plugin_kind="merge")
+    subject = ExecutionSubject(ExecutionSource.PLUGIN_PROGRAM, ExecutionStarter(StarterType.PLUGIN, plugin_name="sample"), plugin_name="sample", plugin_category="merge")
     assert CLASSES.match(subject).name == "plugin program"
 
 
 def test_cost_above_capacity_is_refused_with_the_text():
-    too_dear = ExecutionClass("huge build", ExecutionLength.LONG, 10, ExecutionPriority.AGENT)
+    costly_class = ExecutionClass("huge build", ExecutionLength.LONG, 10, ExecutionPriority.AGENT)
     with pytest.raises(Refusal) as refused:
-        ExecutionClasses.validate(too_dear, 8)
+        ExecutionClasses.validate(costly_class, 8)
     assert "costs 10 but the long lane holds 8: lower the cost or raise the capacity" in refused.value.text
 
 

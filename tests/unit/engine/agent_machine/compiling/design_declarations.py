@@ -138,15 +138,15 @@ AGENT_LISTENERS = {"messages": ["messages.recipient"], "helpers": ["helpers.laun
 SUBJECTS = {"messages": ["message"], "tasks": ["task"], "processes": ["process", "reader_request"], "helpers": ["helper_job"],
             "questions": ["question"], "waits": ["wait"], "documents": ["document"], "sequences": ["sequence_run"], "workers": ["worktree", "proof"]}
 
-MAIN_HOLD_ORDER = ("overview.first", "skills.command", "skills.read-first", "triggers.skill", "messages.unread", "documents.open", "memories.mark",
+MAIN_BLOCK_ORDER = ("overview.first", "skills.command", "skills.read-first", "triggers.skill", "messages.unread", "documents.open", "memories.mark",
                    "plans.context", "tasks.brief", "sequences.untaken-step", "processes.reader-request", "processes.reader-help", "processes.silent-run",
                    "messages.unanswered", "tasks.unlogged-writes", "messages.tag-pictures", "processes.output-title", "plugins.request",
                    "tasks.blocked-review", "reminders.due", "workers.unmerged", "processes.background-watch", "workers.delivered-proofs")
-WORKER_HOLD_ORDER = ("workers.status-first", "workers.no-task", "tasks.brief", "skills.command", "skills.read-first", "triggers.skill", "messages.unread",
+WORKER_BLOCK_ORDER = ("workers.status-first", "workers.no-task", "tasks.brief", "skills.command", "skills.read-first", "triggers.skill", "messages.unread",
                      "documents.open", "memories.mark", "workers.update", "workers.failed-tests", "plans.context", "sequences.untaken-step",
                      "processes.reader-request", "processes.silent-run", "messages.unanswered", "tasks.unlogged-writes", "messages.tag-pictures",
                      "processes.output-title", "plugins.request", "tasks.blocked-review", "reminders.due", "processes.background-watch")
-HELPER_HOLD_ORDER = tuple(rank for rank in WORKER_HOLD_ORDER if not rank.startswith("workers."))
+HELPER_BLOCK_ORDER = tuple(rank for rank in WORKER_BLOCK_ORDER if not rank.startswith("workers."))
 MODULE_POLICY_ORDER = tuple(f"{module}.policies" for module in ("drivers", "messages", "skills", "helpers", "questions", "plugins", "sequences",
                                                                 "triggers", "tools", "workers"))
 POLICY_ORDER = (SAFETY, ACCESS, SHELL, *MODULE_POLICY_ORDER)
@@ -165,10 +165,10 @@ class DesignDeclarations:
     @staticmethod
     def contributions(module: str) -> list[ContributionDeclaration]:
         holds = [declaration for rank, agent_types, ends, lifting in HOLDS.get(module, []) for declaration in (
-            ContributionDeclaration(f"{rank}-needs", ContributionType.NEED, rank, tuple(agent_types), "Blocked"),
+            ContributionDeclaration(f"{rank}-needs", ContributionType.REQUIRED_STATE, rank, tuple(agent_types), "Blocked"),
             ContributionDeclaration(f"{rank}-condition", ContributionType.BLOCK_CONDITION, ends=tuple(ends), lifting_lines=tuple(lifting)))]
-        work = [ContributionDeclaration(key, ContributionType.NEED, "", tuple(agent_types), "Working") for key, agent_types in WORK.get(module, [])]
-        waits = [ContributionDeclaration(key, ContributionType.NEED, "", tuple(agent_types), "Waiting") for key, agent_types in WAITS.get(module, [])]
+        work = [ContributionDeclaration(key, ContributionType.REQUIRED_STATE, "", tuple(agent_types), "Working") for key, agent_types in WORK.get(module, [])]
+        waits = [ContributionDeclaration(key, ContributionType.REQUIRED_STATE, "", tuple(agent_types), "Waiting") for key, agent_types in WAITS.get(module, [])]
         policies = [ContributionDeclaration(key, ContributionType.POLICY, rank, tuple(agent_types), is_safety=rank == SAFETY) for key, rank, agent_types in POLICIES.get(module, [])]
         lines = [ContributionDeclaration(key, ContributionType.LINE, events=(HookEventName.TICK if key in STEP_LINES else HookEventName.PRE_TOOL_USE,),
                                          channel=LineChannel.WAITING if key in WAITING_LINES else LineChannel.NOW)
@@ -178,17 +178,17 @@ class DesignDeclarations:
         wakes = [ContributionDeclaration(key, ContributionType.WAKE_CAUSE) for key in WAKE_CAUSES.get(module, [])]
         listeners = [ContributionDeclaration(key, ContributionType.AGENT_LISTENER) for key in AGENT_LISTENERS.get(module, [])]
         subjects = [ContributionDeclaration(key, ContributionType.SUBJECT) for key in SUBJECTS.get(module, [])]
-        compaction = [ContributionDeclaration("drivers.compaction-due", ContributionType.NEED, "", UNLIMITED_TYPES, "Compacting")] if module == "drivers" else []
+        compaction = [ContributionDeclaration("drivers.compaction-due", ContributionType.REQUIRED_STATE, "", UNLIMITED_TYPES, "Compacting")] if module == "drivers" else []
         return [*holds, *work, *waits, *compaction, *policies, *lines, *effects, *transforms, *wakes, *listeners, *subjects]
 
     @staticmethod
     def drivers() -> list[DriverDeclaration]:
-        main_order = RankOrder(POLICY_ORDER, MAIN_HOLD_ORDER)
-        return [DriverDeclaration("core.main", "main", "core", (), main_order, WorkStop.REFUSE_WHILE_WORK_REMAINS, Responder.PERSON),
-                DriverDeclaration("core.helper", "helper", "core", (), RankOrder(POLICY_ORDER, HELPER_HOLD_ORDER), WorkStop.HANDOVER, Responder.PARENT),
-                DriverDeclaration("coding.main", "main", "coding", ["core.main"], main_order, WorkStop.REFUSE_WHILE_WORK_REMAINS, Responder.PERSON),
-                DriverDeclaration("coding.worker", "worker", "coding", (), RankOrder(POLICY_ORDER, WORKER_HOLD_ORDER), WorkStop.REFUSE_WHILE_WORK_REMAINS, Responder.PARENT),
-                DriverDeclaration("coding.merger", "merger", "coding", (), RankOrder(POLICY_ORDER, HELPER_HOLD_ORDER), WorkStop.MERGE_CONTRACT, Responder.PARENT)]
+        main_order = RankOrder(POLICY_ORDER, MAIN_BLOCK_ORDER)
+        return [DriverDeclaration("core.main", "main", "core", (), main_order, WorkStop.REFUSE_DURING_WORK, Responder.PERSON),
+                DriverDeclaration("core.helper", "helper", "core", (), RankOrder(POLICY_ORDER, HELPER_BLOCK_ORDER), WorkStop.HANDOVER, Responder.PARENT),
+                DriverDeclaration("coding.main", "main", "coding", ["core.main"], main_order, WorkStop.REFUSE_DURING_WORK, Responder.PERSON),
+                DriverDeclaration("coding.worker", "worker", "coding", (), RankOrder(POLICY_ORDER, WORKER_BLOCK_ORDER), WorkStop.REFUSE_DURING_WORK, Responder.PARENT),
+                DriverDeclaration("coding.merger", "merger", "coding", (), RankOrder(POLICY_ORDER, HELPER_BLOCK_ORDER), WorkStop.MERGE_CONTRACT, Responder.PARENT)]
 
     @staticmethod
     def programs() -> list[ProgramDeclaration]:

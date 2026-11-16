@@ -6,7 +6,7 @@ from engine.enums.capability_part import CapabilityPart
 from engine.enums.capability_proof import CapabilityProof
 from engine.enums.hook_event_name import HookEventName
 
-USABLE_PROOFS = (CapabilityProof.IMPLEMENTED_HERE, CapabilityProof.PROVED_LIVE)
+USABLE_PROOFS = (CapabilityProof.IMPLEMENTED_HERE, CapabilityProof.PROVED_RUNNING)
 
 
 @dataclass(frozen=True)

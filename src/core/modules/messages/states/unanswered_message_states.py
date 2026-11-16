@@ -16,7 +16,7 @@ from core.modules.messages.support.unanswered_messages import UnansweredMessages
 UNANSWERED_RANK = "messages.unanswered"
 UNANSWERED_KEY = "messages.unanswered"
 ANSWER_COMMANDS = ("journal message", "journal task make")
-ANSWERING_TYPES = ("main", "helper")
+REPLYING_AGENT_TYPES = ("main", "helper")
 
 
 class UnansweredMessageStates(StateSource):
@@ -24,7 +24,7 @@ class UnansweredMessageStates(StateSource):
     ten uses; a journal message line and a task it is asked for always pass, since they are the answer."""
     state_type = Blocked
     rank = UNANSWERED_RANK
-    agent_types = ANSWERING_TYPES
+    agent_types = REPLYING_AGENT_TYPES
 
     def __init__(self, unanswered: UnansweredMessages) -> None:
         self.unanswered = unanswered

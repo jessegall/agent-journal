@@ -32,10 +32,10 @@ class ContextStopNowLines(EventLineSource):
     def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         if self.compaction.is_after_task(agent_id):
             return [TaskEndContextStopMessage.declared().agent_message()]
-        if self.limit_check.tokens(agent_id) is None or self.tasks.started_tasks(agent_id) or self.spoke_recently(agent_id):
+        if self.limit_check.tokens(agent_id) is None or self.tasks.started_tasks(agent_id) or self.line_given_recently(agent_id):
             return []
         return [ContextStopImmediateMessage.declared().agent_message()]
 
-    def spoke_recently(self, agent_id: int) -> bool:
-        spoke_at = self.history.last_spoke(self.key, agent_id)
-        return spoke_at is not None and spoke_at.elapsed_seconds(self.clock.timestamp()) < RETRY_SECONDS.count
+    def line_given_recently(self, agent_id: int) -> bool:
+        last_given_at = self.history.last_given(self.key, agent_id)
+        return last_given_at is not None and last_given_at.elapsed_seconds(self.clock.timestamp()) < RETRY_SECONDS.count

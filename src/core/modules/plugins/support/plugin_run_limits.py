@@ -8,7 +8,7 @@ from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.support.free_memory import FreeMemory
 from core.modules.plugins.support.machine_runs import MachineRuns
 from core.modules.plugins.support.plugin_folders import PluginFolders
-from core.modules.plugins.support.plugin_run_admission import PluginRunAdmission
+from core.modules.plugins.support.plugin_run_start_check import PluginRunStartCheck
 from core.modules.plugins.support.plugin_run_rule import PluginRunRule
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_settings import PluginSettings
@@ -26,13 +26,13 @@ class PluginRunLimits(ProcessTypeLimits):
     def __init__(self, queries: Queries, folders: PluginFolders, settings: PluginSettings, machine: MachineRuns, memory: FreeMemory) -> None:
         self.queries, self.folders, self.settings, self.machine, self.memory = queries, folders, settings, machine, memory
 
-    def admissions(self, waiting: Sequence[Process]) -> PluginRunAdmission:
+    def admissions(self, waiting: Sequence[Process]) -> PluginRunStartCheck:
         rules = self.rules(waiting)
         if not rules:
-            return PluginRunAdmission({}, 0, {})
-        needs_memory = any(rule.declared.memory_mb for rule in rules.values())
+            return PluginRunStartCheck({}, 0, {})
+        requires_memory = any(rule.declared.memory_mb for rule in rules.values())
         machine = {(plugin, category): self.machine.count(plugin, category) for (plugin, category, _), rule in rules.items() if rule.declared.scope is RunScope.MACHINE}
-        return PluginRunAdmission(rules, self.memory.megabytes() if needs_memory else 0, machine)
+        return PluginRunStartCheck(rules, self.memory.megabytes() if requires_memory else 0, machine)
 
     def rules(self, waiting: Sequence[Process]) -> dict[tuple[str, str, int], PluginRunRule]:
         categories = {(process.plugin, process.run_name, process.environment_id) for process in waiting if process.plugin and process.run_name}

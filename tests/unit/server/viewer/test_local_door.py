@@ -27,8 +27,8 @@ def test_a_request_under_any_other_address_is_refused(host, tunnel_address):
 
 
 def test_only_a_request_from_this_machine_reads_the_server_state_without_a_login():
-    assert not door(TUNNEL_ADDRESS).state_needs_login(request(OWN_HOST))
-    assert door(TUNNEL_ADDRESS).state_needs_login(request("shop.tunnel.example"))
+    assert not door(TUNNEL_ADDRESS).login_required(request(OWN_HOST))
+    assert door(TUNNEL_ADDRESS).login_required(request("shop.tunnel.example"))
 
 
 def change(host: str, origin: str, site_relation: str) -> DoorRequest:

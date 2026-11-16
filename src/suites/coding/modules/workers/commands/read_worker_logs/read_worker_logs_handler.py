@@ -35,7 +35,7 @@ class ReadWorkerLogsHandler(Handler[ReadWorkerLogs, str]):
         if worktree is None or not (is_delivered or is_merger or is_overseer):
             raise Refusal(f"{AgentLabel.labelled_row(command.worker_id, self.numbers, "worker").text} has delivered nothing to review", "journal worker-worktree list shows the worktrees")
         review = self.log_lines.review(worktree)
-        sections = [review.summary(task) if command.task_id is None else review.whole(task) for task in review.tasks if command.task_id in (None, task.id)]
+        sections = [review.summary(task) if command.task_id is None else review.task_review_text(task) for task in review.tasks if command.task_id in (None, task.id)]
         text = "\n\n".join(sections)
         marks_logs_read = is_delivered and not is_overseer and review.covers_all_tasks(command.task_id)
         if marks_logs_read:

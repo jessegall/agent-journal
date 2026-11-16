@@ -4,7 +4,7 @@ from engine.event.moved import Moved
 from dataclasses import replace
 
 from engine.command.bus import Bus
-from engine.driver.open_hold import OpenHold
+from engine.driver.block_agent import BlockAgent
 from engine.enums.tool_type import ToolType
 from engine.listener.save_listener import SaveListener
 from engine.provider.providers import Providers
@@ -36,7 +36,7 @@ class BackgroundRunWatchListener(SaveListener[Moved[Process]]):
         if monitor_tool is not None:
             declaration = RequiredMonitorMessage.declared() if monitor_tool is ToolType.MONITOR else RequiredMonitorCommandMessage.declared()
             agent_message = declaration.agent_message(output=process.id)
-            self.bus.dispatch(OpenHold(process.session_agent_id, replace(agent_message, key=f"{agent_message.key}.{process.id}"), OutputMonitored(process.id), blocks_stop=True), context)
+            self.bus.dispatch(BlockAgent(process.session_agent_id, replace(agent_message, key=f"{agent_message.key}.{process.id}"), OutputMonitored(process.id), blocks_stop=True), context)
 
     def monitor_tool(self, process: Process) -> ToolType | None:
         agent = self.queries.query(Agent).find(process.session_agent_id)

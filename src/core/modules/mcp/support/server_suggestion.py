@@ -20,7 +20,7 @@ class ServerSuggestion:
     has_transcripts: bool = False
 
     @property
-    def admission(self) -> str:
+    def start_check(self) -> str:
         if self.auth is ServerAuth.KEY:
             return f" (key: {self.key_variable})"
         return " (signs in on its own)" if self.auth is ServerAuth.OAUTH else ""

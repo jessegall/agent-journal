@@ -4,7 +4,7 @@ from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.driver.hook_event import HookEvent
 from engine.driver.agent_message import AgentMessage
 from engine.enums.hook_event_name import HookEventName
-from core.modules.messages.states.unanswered_message_states import ANSWERING_TYPES, UNANSWERED_KEY
+from core.modules.messages.states.unanswered_message_states import REPLYING_AGENT_TYPES, UNANSWERED_KEY
 from core.modules.messages.agent_messages.unanswered_message_reminder import UnansweredMessageReminder
 from core.modules.messages.support.unanswered_messages import UnansweredMessages
 
@@ -15,7 +15,7 @@ class UnansweredMessageLines(EventLineSource):
 
     key = UNANSWERED_KEY
     events = [HookEventName.PRE_TOOL_USE]
-    agent_types = list(ANSWERING_TYPES)
+    agent_types = list(REPLYING_AGENT_TYPES)
 
     def __init__(self, unanswered: UnansweredMessages) -> None:
         self.unanswered = unanswered

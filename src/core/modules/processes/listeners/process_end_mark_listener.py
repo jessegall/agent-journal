@@ -15,7 +15,7 @@ class ProcessEndMarkListener(ProcessMarkListener[Changed[Process]]):
     name = "processes.process-mark"
 
     def prepare(self, events: Sequence[LoggedEvent]) -> None:
-        self.keep_parts_of(events)
+        self.keep_event_parts(events)
 
     def handle(self, event: Changed[Process], logged: LoggedEvent) -> None:
         if not isinstance(event, Deleted):

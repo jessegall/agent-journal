@@ -5,7 +5,7 @@ from dataclasses import replace
 from engine.enums.execution_priority import ExecutionPriority
 from engine.execution.execution_starter import ExecutionStarter
 from engine.execution.execution_ticket import ExecutionTicket
-from engine.execution.limits.lane_limits import LaneLimits
+from engine.execution.limits.pool_limits import PoolLimits
 from engine.execution.limits.occupied_slots import OccupiedSlots
 from engine.time.timestamp import Timestamp
 
@@ -14,7 +14,7 @@ class ExecutionOrder:
     """Decides which waiting tickets of one lane start now, by room, priority, limits and longest waits: pure, it
     keeps nothing and reads no clock."""
 
-    def __init__(self, limits: LaneLimits) -> None:
+    def __init__(self, limits: PoolLimits) -> None:
         self.limits = limits
 
     def starting(self, waiting: Sequence[ExecutionTicket], running: Sequence[ExecutionTicket], current_time: Timestamp,
@@ -53,7 +53,7 @@ class ExecutionOrder:
         return OccupiedSlots.counted(running).slot_units > self.limits.capacity(running[0].execution_class.lane)
 
     # immediate tickets are never refused; past the ceiling the caller writes one line
-    def over_ceiling(self, running: Sequence[ExecutionTicket]) -> bool:
+    def exceeds_ceiling(self, running: Sequence[ExecutionTicket]) -> bool:
         return sum(1 for ticket in running if ticket.priority.is_unlimited) > self.limits.immediate_ceiling
 
     # a reserved ticket past its longest wait takes the next room before anything but immediate
@@ -71,13 +71,13 @@ class ExecutionOrder:
         has_room = self.fits(occupied_slots.slot_units, cost, self.limits.capacity(lane))
         running_limit = self.limits.priority_limit(lane, ticket.first_priority).running_limit
         fits_priority_limit = self.fits(occupied_slots.first_priority_units(ticket.first_priority), cost, running_limit)
-        return has_room and fits_priority_limit and self.is_under_starter_cap(ticket, running)
+        return has_room and fits_priority_limit and self.fits_starter_cap(ticket, running)
 
     @staticmethod
     def is_class_full(ticket: ExecutionTicket, running: Sequence[ExecutionTicket]) -> bool:
         return sum(1 for second in running if second.execution_class.name == ticket.execution_class.name) >= ticket.execution_class.class_limit
 
-    def is_under_starter_cap(self, ticket: ExecutionTicket, running: Sequence[ExecutionTicket]) -> bool:
+    def fits_starter_cap(self, ticket: ExecutionTicket, running: Sequence[ExecutionTicket]) -> bool:
         kept: Counter[ExecutionStarter] = Counter()
         for second in running:
             kept[second.starter] += second.execution_class.slot_cost

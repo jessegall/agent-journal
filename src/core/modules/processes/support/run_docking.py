@@ -61,7 +61,7 @@ class RunDocking:
         parts: dict[int, list[ProcessPart]] = defaultdict(list)
         for part in self.queries.query(ProcessPart).matching(Among("process_id", [process.id for process in new])).every_row(DOCK_RUNS_REASON):
             parts[part.process_id].append(part)
-        due = [process for process in new if self.needs_dock(process, agent_id, dock, tuple(parts[process.id]))]
+        due = [process for process in new if self.requires_dock(process, agent_id, dock, tuple(parts[process.id]))]
         placed = due[:self.room.places(ProcessDockType.OUTPUT.value)]
         shown = [*docked, *placed]
         outputs = self.run_outputs(tuple(process.id for process in shown))
@@ -80,7 +80,7 @@ class RunDocking:
         return self.request_values.read(f"processes.dock-outputs:{','.join(map(str, sorted(process_ids)))}", self.database.change_mark,
                                         lambda: {output.process_id: output for output in self.outputs.matching(Among("process_id", list(process_ids))).every_row(DOCK_RUNS_REASON)})
 
-    def needs_dock(self, process: Process, agent_id: int, dock: Interval, parts: tuple[ProcessPart, ...]) -> bool:
+    def requires_dock(self, process: Process, agent_id: int, dock: Interval, parts: tuple[ProcessPart, ...]) -> bool:
         if process.started_at is None or not dock.has_passed(self.spans, agent_id, process.started_at, self.clock.timestamp()) or self.visibility.select_visible_part(process, parts) is None or self.folder.end(process.id) is not None:
             return False
         return True

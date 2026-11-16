@@ -10,4 +10,4 @@ class RunNameMessage(MessageTemplate):
     type = AgentMessageType.STEERING
     text = "Output {process} is titled by its raw command: give it a title"
     required_command = "journal output title {process}"
-    closed_by = OutputTitled
+    closing_condition = OutputTitled

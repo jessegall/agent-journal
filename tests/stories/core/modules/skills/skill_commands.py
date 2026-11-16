@@ -6,11 +6,11 @@ from engine.database.database import Database
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from core.modules.skills.commands.reset_skills.reset_skills import ResetSkills
 from tests.stories.core.modules.skills.agent_skills import GOOD
-from tests.stories.core.support.coding_fixtures import BuilderStartedWithoutPlainWords
+from tests.stories.core.support.coding_fixtures import BuilderStartedWordCheckDisabled
 
 
 def started(new_story):
-    return new_story(GOOD, fixture=BuilderStartedWithoutPlainWords)
+    return new_story(GOOD, fixture=BuilderStartedWordCheckDisabled)
 
 
 def current_digest(story, skill: str) -> str:

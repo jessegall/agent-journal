@@ -71,13 +71,13 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         waiting = [row.inspector_json() for row in active if row.section is QueueSection.WAITING]
         recent = [{**row.inspector_json(), "lane": self.lane(row).value} for row in self.recent_rows(query, max(1, arguments.recent))]
         copy = self.status.snapshot()
-        long_lane = copy.lane(ExecutionLength.LONG.value)
+        long_pool = copy.lane(ExecutionLength.LONG.value)
         inspector: QueueInspectorJson = {
             "environment_id": environment_id,
             "environment_name": self.queries.query(Environment).find(environment_id).name,
-            "parallel_limit": long_lane.capacity, "limit_setting": ProcessSetting.LANE_CAPACITY_LONG.key, "suite_limits": self.suite_limits(),
-            "used_slots": long_lane.used, "waiting_count": len(waiting),
-            "halted": long_lane.is_halted, "halt_state": "halted" if long_lane.is_halted else "running", "halt_reason": long_lane.halt_reason, "halt_cause": long_lane.halt_type,
+            "parallel_limit": long_pool.capacity, "limit_setting": ProcessSetting.POOL_CAPACITY_LONG.key, "suite_limits": self.suite_limits(),
+            "used_slots": long_pool.used, "waiting_count": len(waiting),
+            "halted": long_pool.is_halted, "halt_state": "halted" if long_pool.is_halted else "running", "halt_reason": long_pool.halt_reason, "halt_cause": long_pool.halt_type,
             "running": running, "waiting": waiting, "recent": recent, "recent_total": query.filter(section=QueueSection.RECENT).count()}
         queue_runs = tuple(self.queue_runs.query().every_row(QUEUE_REASON))
         number, size = max(1, arguments.page), min(MAX_PAGE_SIZE, max(1, arguments.limit))

@@ -38,7 +38,7 @@ from contextlib import nullcontext
 
 EXIT_CODE_TRAILER = "Journal-Exit-Code"
 CODE_VERSION_HEADER = "Journal-Code-Version"
-HANDOVER_FAILED_STATUS = 422
+TAKEOVER_FAILED_STATUS = 422
 
 
 class RequestHandler(BaseHTTPRequestHandler):
@@ -149,7 +149,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.answer_wake_line(body)
             return
         if route == "/handover":
-            self.answer_handover(parse_qs(query).get("tag", [""])[0])
+            self.answer_takeover(parse_qs(query).get("tag", [""])[0])
             return
         if self.path != "/cli":
             self.answer_json(404, {"error": f"no route {self.path}"})
@@ -171,12 +171,12 @@ class RequestHandler(BaseHTTPRequestHandler):
             return
         self.answer_json(200 if left else 410, {})
 
-    def answer_handover(self, tag: str) -> None:
+    def answer_takeover(self, tag: str) -> None:
         server = self.journal_server()
         if not SuccessorStart(server.context.home, server.context.files, server.socket, server.context.viewer.socket).run(tag):
-            self.answer_json(HANDOVER_FAILED_STATUS, {"error": f"code version {tag} failed its proof"})
+            self.answer_json(TAKEOVER_FAILED_STATUS, {"error": f"code version {tag} failed its proof"})
             return
-        server.begin_handover()
+        server.begin_takeover()
         self.close_with_json(200, {"status": "handing over"})
 
     def answer_viewer_key(self, body: bytes) -> None:

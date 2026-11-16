@@ -46,7 +46,7 @@ class DecisionAssembler:
         if assembled.step is None:
             return assembled.answers
         view, record = assembled.step.view, assembled.step.step.record
-        failed = [RuleRecord(type(effect).__name__, "refused", effect.failed(view, record)) for effect in record.admission_effects if effect.is_required]
+        failed = [RuleRecord(type(effect).__name__, "refused", effect.failed(view, record)) for effect in record.allowed_effects if effect.is_required]
         return replace(assembled.answers, rules=[*failed, *assembled.answers.rules])
 
     @staticmethod

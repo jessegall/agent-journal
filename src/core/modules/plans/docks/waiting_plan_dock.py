@@ -6,4 +6,4 @@ class WaitingPlanDock(PlanDock):
     """A plan that waits on the user."""
 
     type = PlanDockType.WAITING
-    needs_user = True
+    person_required = True

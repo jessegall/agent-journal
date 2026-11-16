@@ -4,7 +4,7 @@ from core.modules.plans.lines.plan_focus_lines import PlanFocusLines
 from core.modules.plans.lines.plan_order_lines import PlanOrderLines
 from core.modules.plans.lines.plan_state_lines import PlanStateLines
 from core.modules.plans.lines.plan_task_end_lines import PlanTaskEndLines
-from core.modules.plans.windows.extensions.chat_running_agents_extension import ChatRunningAgentsExtension
+from core.modules.plans.windows.extensions.chat_active_agents_extension import ChatActiveAgentsExtension
 from core.modules.plans.windows.plans_windows import PLANS_WINDOWS
 from core.modules.plans.models.declarations.plan_model_declaration import PlanModelDeclaration
 from core.modules.plans.models.declarations.phase_task_model_declaration import PhaseTaskModelDeclaration
@@ -117,7 +117,7 @@ from core.modules.plans.listeners.checkpoint_reach_listener import CheckpointRea
 from core.modules.plans.listeners.started_plan_checkpoints_listener import StartedPlanCheckpointsListener
 from core.modules.plans.migrations.m010_checkpoints import CheckpointsMigration
 from core.modules.plans.migrations.m011_checkpoint_reach_source import CheckpointReachSourceMigration
-from core.modules.plans.tick_handlers.plan_state_sweep_tick_handler import PlanStateSweepTickHandler
+from core.modules.plans.tick_handlers.plan_state_round_tick_handler import PlanStateRoundTickHandler
 from core.modules.plans.buttons.plans_approve_button import PlansApproveButton
 
 
@@ -133,7 +133,7 @@ class PlansModule(Module):
     skills = PLANS_SKILLS
     models = [PlanModelDeclaration, ModelDeclaration(Phase), PhaseTaskModelDeclaration, PlanContextReadModelDeclaration, PlanWaitModelDeclaration, CheckpointReachModelDeclaration, CheckpointPassModelDeclaration]
     migrations = [WaitingCheckpointsPassedMigration, PhasePersonCheckRemovedMigration, PlanAssignmentsMigration, PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration, PlanContextReadsMigration, PlanWaitsMigration, CheckpointsMigration, CheckpointReachSourceMigration, PlanContextReadsEnvironmentIndexMigration, CheckpointReviewsMigration, CheckpointReviewReportMigration, AgentCommitReachesMigration, PlanContextStartEventUnboundMigration, StartedPlansKeepNoWaitReasonMigration, PhasePersonCheckMigration]
-    tick_handlers = [PlanStateSweepTickHandler]
+    tick_handlers = [PlanStateRoundTickHandler]
     handlers = [RepairPlanStatesHandler, CheckPlanHandler, RecordCheckpointsHandler, RerunStaleCheckpointsHandler, StartCheckpointRunHandler, WaitPlanHandler, AssignPlanHandler, RecordPlanAgentHandler, ChoosePlanFocusHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]
     moves = [PlansMove]
     subcommands = [CheckPlanSubcommand, WaitPlanSubcommand, AssignPlanSubcommand, ChoosePlanFocusSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanPlacesSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
@@ -148,7 +148,7 @@ class PlansModule(Module):
     states = [PlanContextStates]
     lines = [PlanContextLines, PlanFocusLines, PlanOrderLines, PlanStateLines, PlanTaskEndLines]
     docks = PLANS_DOCKS
-    window_extensions = [ChatRunningAgentsExtension]
+    window_extensions = [ChatActiveAgentsExtension]
     buttons = [PlansApproveButton]
     windows = PLANS_WINDOWS
     inspectors = [PlanInspector]

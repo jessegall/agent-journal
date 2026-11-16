@@ -24,4 +24,4 @@ class DockLimits:
         return declared.most if declared is not None else None
 
     def requires_user(self, type_name: str) -> bool:
-        return any(entry.type == type_name and entry.needs_user for entry in self.registry.docks)
+        return any(entry.type == type_name and entry.person_required for entry in self.registry.docks)

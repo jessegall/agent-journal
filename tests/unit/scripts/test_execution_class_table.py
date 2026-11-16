@@ -3,7 +3,7 @@ from pathlib import Path
 
 from engine.enums.execution_length import ExecutionLength
 from engine.execution.classes.builtin_classes import BUILTIN_CLASSES
-from engine.execution.limits.default_lane_limits import DEFAULT_LANE_LIMITS
+from engine.execution.limits.default_lane_limits import DEFAULT_POOL_LIMITS
 
 SCRIPT = Path(__file__).resolve().parents[3] / "scripts" / "execution_class_table.py"
 
@@ -23,4 +23,4 @@ def test_every_built_in_class_is_printed():
 
 def test_capacities_printed():
     text = table_text()
-    assert all(f"| {lane} | {DEFAULT_LANE_LIMITS.capacity(lane)} |" in text for lane in ExecutionLength)
+    assert all(f"| {lane} | {DEFAULT_POOL_LIMITS.capacity(lane)} |" in text for lane in ExecutionLength)

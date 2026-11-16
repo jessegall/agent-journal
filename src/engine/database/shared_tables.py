@@ -13,8 +13,8 @@ from engine.journal.journal_home import JournalHome
 T = TypeVar("T")
 
 UNSET_CHANGE_MARK = (-1, -1)
-KEPT_HOMES = 512
-WRITE_LOG_ENDING = "-wal"
+SHARED_HOME_LIMIT = 512
+WAL_SUFFIX = "-wal"
 
 
 class SharedTables:
@@ -24,20 +24,20 @@ class SharedTables:
     nothing in its write log: after its first write two copies may sign different rows alike, so each keeps
     its own. A table read inside a transaction is not kept."""
 
-    def __init__(self, template: "SharedTables | None" = None, write_log: Path | None = None) -> None:
+    def __init__(self, template: "SharedTables | None" = None, wal_file: Path | None = None) -> None:
         self.lock = threading.Lock()
         self.tables: dict[str, KeptValue] = {}
-        self.template, self.write_log = template, write_log
+        self.template, self.wal_file = template, wal_file
 
     @classmethod
-    @lru_cache(maxsize=KEPT_HOMES)
+    @lru_cache(maxsize=SHARED_HOME_LIMIT)
     def shared(cls, home: JournalHome) -> "SharedTables":
         if home.template_database is None:
             return cls()
-        return cls(cls.of_template(home.template_database), Path(f"{FileAccess.readlink(home.database)}{WRITE_LOG_ENDING}"))
+        return cls(cls.of_template(home.template_database), Path(f"{FileAccess.readlink(home.database)}{WAL_SUFFIX}"))
 
     @classmethod
-    @lru_cache(maxsize=KEPT_HOMES)
+    @lru_cache(maxsize=SHARED_HOME_LIMIT)
     def of_template(cls, template_database: Path) -> "SharedTables":
         return cls()
 
@@ -55,4 +55,4 @@ class SharedTables:
         return loaded
 
     def is_as_copied(self) -> bool:
-        return self.write_log is not None and (not FileAccess.exists(self.write_log) or FileAccess.stat(self.write_log).st_size == 0)
+        return self.wal_file is not None and (not FileAccess.exists(self.wal_file) or FileAccess.stat(self.wal_file).st_size == 0)

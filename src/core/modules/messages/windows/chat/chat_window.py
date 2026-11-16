@@ -12,7 +12,7 @@ from core.modules.messages.windows.chat.keys.pins_key import PinsKey
 from core.modules.messages.windows.chat.keys.mark_motion_key import MarkMotionKey
 from core.modules.messages.windows.chat.keys.voice_profile_key import VoiceProfileKey
 from core.modules.messages.windows.chat.keys.voice_avatar_key import VoiceAvatarKey
-from core.modules.messages.windows.chat.keys.voice_avatar_shown_key import VoiceAvatarShownKey
+from core.modules.messages.windows.chat.keys.voice_avatar_visible_key import VoiceAvatarVisibleKey
 from core.modules.messages.windows.chat.keys.tool_key import ToolKey
 from core.modules.messages.windows.chat.keys.main_agent_key import MainAgentKey
 from core.modules.messages.windows.chat.keys.dock_key import DockKey
@@ -36,4 +36,4 @@ class ChatWindow(Window):
     events = ["message.*", "chat_mark.*", "dock_item.*", "pin.*", "hook_call.*", "process_part.*", "setting.*", "question.*"]
     options = [ChoiceOption("figure", "Figure", [("voice", "The voice I chose"), ("none", "None"), ("butler", "Butler"), ("homie", "Homie"), ("coach", "Coach"), ("colleague", "Colleague"), ("squire", "Squire")], "voice"),
                                           ToggleOption("floors", "Show floors")]
-    keys = [MessagesKey, MarksKey, DocksKey, PinsKey, MarkMotionKey, VoiceProfileKey, VoiceAvatarKey, VoiceAvatarShownKey, ToolKey, MainAgentKey, DockKey, OutputKey, RunKey, QuestionKey]
+    keys = [MessagesKey, MarksKey, DocksKey, PinsKey, MarkMotionKey, VoiceProfileKey, VoiceAvatarKey, VoiceAvatarVisibleKey, ToolKey, MainAgentKey, DockKey, OutputKey, RunKey, QuestionKey]

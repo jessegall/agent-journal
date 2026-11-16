@@ -42,5 +42,5 @@ DRIVERS_SETTINGS = [
     SettingValue("capability-proofs", "Program capability proofs", "The proofs that an installed agent program supports a part of the journal's answer.",
                  SettingType.LIST, default=(), scope=SettingScope.PROJECT, person_set=True, is_driving=True),
 ]
-SKIPS_NEED_APPROVAL = "journal.core.helpers.skips-need-approval"
+SKIP_APPROVAL_SETTING = "journal.core.helpers.skips-need-approval"
 AUTOMATIC_APPROVAL = "journal.core.helpers.accept-every-approval"

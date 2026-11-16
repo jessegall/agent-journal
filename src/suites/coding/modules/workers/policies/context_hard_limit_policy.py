@@ -39,7 +39,7 @@ class ContextHardLimitPolicy(Policy):
             return []
         lifting_lines = [line for block in view.blocks for line in block.reason.lifting_lines]
         if tool.shell is not None and (tool.shell.is_journal_command_line(*STOP_REQUIREMENT_COMMANDS)
-                                       or tool.shell.has_only_parts(lambda part: any(BlockExemptions.names(part, line) for line in lifting_lines))):
+                                       or tool.shell.has_all_parts(lambda part: any(BlockExemptions.names(part, line) for line in lifting_lines))):
             return []
         if not self.limits.exceeds_hard_limit(view.agent.agent_id):
             return []

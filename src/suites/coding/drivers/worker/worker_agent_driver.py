@@ -14,7 +14,7 @@ class WorkerAgentDriver(Driver):
     agent_type = "worker"
     suite = "coding"
     rank_order = WORKER_RANK_ORDER
-    work_stop = WorkStop.REFUSE_WHILE_WORK_REMAINS
+    work_stop = WorkStop.REFUSE_DURING_WORK
     responder = Responder.PARENT
     instructions = ["You are a worker: you do your tasks in your worktree, prove each point with journal proof make, start another task with journal task start and commit your work with journal worker commit; journal handles git.",
                     WORKER_TEST_RULE, CONTEXT_LINE]
