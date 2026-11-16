@@ -1,7 +1,5 @@
-from core.modules.agents.models.declarations.agent_fold_model_declaration import AgentFoldModelDeclaration
-from core.modules.agents.models.declarations.agent_fold_row_model_declaration import AgentFoldRowModelDeclaration
 from core.modules.agents.models.declarations.agent_model_declaration import AgentModelDeclaration
 from core.modules.agents.models.declarations.agent_session_model_declaration import AgentSessionModelDeclaration
 from core.modules.agents.models.declarations.menu_answer_model_declaration import MenuAnswerModelDeclaration
 
-AGENTS_MODELS = [AgentModelDeclaration, MenuAnswerModelDeclaration, AgentFoldModelDeclaration, AgentFoldRowModelDeclaration, AgentSessionModelDeclaration]
+AGENTS_MODELS = [AgentModelDeclaration, MenuAnswerModelDeclaration, AgentSessionModelDeclaration]

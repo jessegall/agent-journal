@@ -36,12 +36,6 @@ class FoldCopy:
         return target
 
     @classmethod
-    def check_copy(cls, database: Database, home: JournalHome, timestamp: Timestamp) -> Path:
-        target = cls.folder(home) / f"fold-{timestamp.value.strftime('%Y%m%d-%H%M%S')}.db"
-        database.write_backup(target)
-        return target
-
-    @classmethod
     def renumber_copy(cls, database: Database, home: JournalHome, timestamp: Timestamp) -> Path:
         target = cls.folder(home) / f"{RENUMBER_COPY_PREFIX}{timestamp.value.strftime('%Y%m%d-%H%M%S')}.db"
         unfinished = target.with_name(target.name + UNFINISHED_SUFFIX)

@@ -14,10 +14,9 @@ class ContextCompactionNotice(Model):
 
     compaction_id: int
     session_agent_id: int
-    agent_number: int
     notice: CompactionNoticeType
     cause: str
 
     @property
     def text(self) -> str:
-        return f"Agent {self.agent_number}: {self.notice.text}{': ' + self.cause if self.cause else ''}"
+        return f"Agent {self.session_agent_id}: {self.notice.text}{': ' + self.cause if self.cause else ''}"
