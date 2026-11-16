@@ -6,19 +6,21 @@ from engine.agent_machine.contracts.event_line_source import EventLineSource
 from engine.driver.hook_event import HookEvent
 from engine.driver.agent_message import AgentMessage
 from engine.enums.hook_event_name import HookEventName
-from core.modules.processes.support.run_docking import LONG_RUN_DOCK_KEY, RunDocking
+from core.modules.processes.support.run_docking import LONG_RUN_DOCK_KEY
+from core.modules.processes.support.output_title_requests import OutputTitleRequests
+from core.modules.processes.agent_messages.run_name_message import RunNameMessage
 
 
 class DockTitleLines(EventLineSource):
-    """Asks for a title for each docked run whose output has none, as its line's interval allows; the hold
-    LongRunDockNeeds plans holds the agent's tools after five uses until it gives one."""
+    """Asks for a title for each run whose open request waits for one, as its line's interval allows; the hold
+    LongRunDockStates plans holds the agent's tools after five uses until it gives one."""
 
     key = LONG_RUN_DOCK_KEY
     events = list(HookEventName)
 
-    def __init__(self, docking: RunDocking) -> None:
-        self.docking = docking
+    def __init__(self, requests: OutputTitleRequests) -> None:
+        self.requests = requests
 
     def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        # the hold is LongRunDockNeeds', so the line opens no required-command hold of its own
-        return [replace(agent_message, required_command="") for agent_message in self.docking.docked(event, agent_id).agent_messages]
+        # the hold is LongRunDockStates', so the line opens no required-command hold of its own
+        return [replace(RunNameMessage.declared().agent_message(process=request.process_id), required_command="") for request in self.requests.open_for_agent(agent_id)]

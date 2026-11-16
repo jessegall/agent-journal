@@ -9,7 +9,8 @@ from engine.agent_machine.record.question import Question
 from engine.agent_stack.states.blocked import Blocked
 from engine.agent_stack.row_reference import RowReference
 from core.modules.processes.agent_messages.run_name_message import RunNameMessage
-from core.modules.processes.support.run_docking import LONG_RUN_DOCK_KEY, RunDocking
+from core.modules.processes.support.run_docking import LONG_RUN_DOCK_KEY
+from core.modules.processes.support.output_title_requests import OutputTitleRequests
 from core.modules.processes.support.block_conditions.output_titled import OutputTitled
 
 OUTPUT_TITLE_RANK = "processes.output-title"
@@ -18,21 +19,21 @@ TITLE_GRACE_USES = 5
 
 
 class LongRunDockStates(StateSource):
-    """Plans the hold on each docked run whose output has no descriptive title (doc 1310 section 4.6, the
-    required command row): the docked run is the request, its tools held after five uses until journal output
-    title, never a line that counts. LongRunDockEffect docks the run."""
+    """Plans the hold on each run its agent moved to the background and has not named, read from the run's open
+    request row (doc 1310 section 4.6, the required command row): its tools held after five uses until journal
+    output title, never a line that counts. OutputTitleRequestListener writes the request in the background move."""
     state_type = Blocked
     rank = OUTPUT_TITLE_RANK
 
-    def __init__(self, docking: RunDocking) -> None:
-        self.docking = docking
+    def __init__(self, requests: OutputTitleRequests) -> None:
+        self.requests = requests
 
     def states(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[RequiredState | BlockPlan]]:
         plans: dict[int, list[RequiredState | BlockPlan]] = {}
         for agent in agents:
-            untitled = self.docking.docked(question.event, agent.agent_id).untitled
-            if untitled:
-                plans[agent.agent_id] = [self.plan(process_id) for process_id in untitled]
+            requests = self.requests.open_for_agent(agent.agent_id)
+            if requests:
+                plans[agent.agent_id] = [self.plan(request.process_id) for request in requests]
         return plans
 
     # the hold today's required command opens for the title line, in its words: "title output N is due" after the grace
