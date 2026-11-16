@@ -42,7 +42,7 @@ def answered_lines(instructions: str, event: HookEvent) -> tuple[str, ...]:
 
 
 def test_it_answers_with_the_providers_text():
-    assert answered_lines("Keep the task and the request.", compaction()) == ("Keep the task and the request.",)
+    assert answered_lines("Keep the task and the request.", compaction()) == tuple(["Keep the task and the request."])
 
 
 def test_an_empty_text_adds_no_line():
@@ -55,7 +55,7 @@ def test_it_cuts_a_long_text_at_10000_characters():
 
 def test_the_persons_own_text_is_kept_as_p5_decides():
     # report 1456: Claude Code joins the person's /compact text with the hook's stdout, so the rule adds only its own
-    assert answered_lines("Keep the task.", compaction("keep the word BANANA")) == ("Keep the task.",)
+    assert answered_lines("Keep the task.", compaction("keep the word BANANA")) == tuple(["Keep the task."])
 
 
 def test_the_instructions_never_pass_10000_characters():

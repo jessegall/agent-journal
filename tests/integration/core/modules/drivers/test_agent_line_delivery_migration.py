@@ -17,4 +17,4 @@ def test_an_old_line_gets_terminal_typing_as_its_delivery(tmp_path):
     AgentLineDeliveryMigration().run(database)
     database.close()
     with sqlite3.connect(home.database) as reopened:
-        assert reopened.execute("SELECT delivery FROM agent_lines").fetchall() == [("terminal_typing",)]
+        assert reopened.execute("SELECT delivery FROM agent_lines").fetchall() == [tuple(["terminal_typing"])]

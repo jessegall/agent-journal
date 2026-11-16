@@ -22,13 +22,13 @@ VIEW = ViewSamples.view("main", WorkStop.REFUSE_WHILE_WORK_REMAINS, has_parent=F
 def test_a_session_start_plans_the_strict_overview_block_and_a_resume_does_not() -> None:
     states = OverviewFirstStates(OverviewFirst())
     plan = states.states([MAIN], START)[4][0]
-    assert (plan.tool_check_key, plan.is_strict, plan.lifting_lines) == (OVERVIEW_KEY, True, ("journal overview",))
+    assert (plan.tool_check_key, plan.is_strict, plan.lifting_lines) == (OVERVIEW_KEY, True, tuple(["journal overview"]))
     assert states.states([MAIN], RESUME) == {}
 
 
 def test_the_planned_block_refuses_an_edit_until_the_overview_runs() -> None:
     plan = OverviewFirstStates(OverviewFirst()).states([MAIN], START)[4][0]
-    assert AgentStateMachine().step(replace(VIEW, plans=(plan,)), EDIT).record.decision.decision_class is DecisionClass.HOLD
+    assert AgentStateMachine().step(replace(VIEW, plans=tuple([plan])), EDIT).record.decision.decision_class is DecisionClass.HOLD
 
 
 def test_a_session_start_tells_the_agent_to_run_the_overview_in_todays_words() -> None:

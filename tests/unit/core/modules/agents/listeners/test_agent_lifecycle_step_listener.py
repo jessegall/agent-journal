@@ -15,7 +15,7 @@ def test_an_ended_agent_asks_for_its_own_step_and_its_parents():
 
 
 def test_a_new_process_asks_for_the_agents_step_alone():
-    assert agents(pid=42) == (7,)
+    assert agents(pid=42) == tuple([7])
 
 
 def test_a_change_of_no_lifecycle_fact_asks_for_nothing():

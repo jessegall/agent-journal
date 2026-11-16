@@ -5,7 +5,7 @@ ROOT = Path(__file__).resolve().parents[2]
 STORIES = ROOT / "tests" / "stories"
 LIST_FILE = STORIES / "engine_import_story_files.txt"
 FORBIDDEN = ("engine", "server", "install", "tunnels")
-STORY_KIT = ("engine.testing",)
+STORY_KIT = tuple(["engine.testing"])
 WHAT_TO_DO = "a story imports only modules, suites and the story kit (user 124518): what needs the engine, the server, install or a tunnel is a unit test"
 
 

@@ -9,7 +9,7 @@ from engine.enums.work_stop import WorkStop
 
 ORDER = RankOrder(("safety.all", "messages.show"), ("overview.first", "messages.unread"))
 MAIN = DriverDeclaration("core.main", "main", "core", (), ORDER, WorkStop.REFUSE_WHILE_WORK_REMAINS, Responder.PERSON)
-CODING_MAIN = DriverDeclaration("coding.main", "coding-main", "coding", ("core.main",), ORDER, WorkStop.REFUSE_WHILE_WORK_REMAINS, Responder.PERSON)
+CODING_MAIN = DriverDeclaration("coding.main", "coding-main", "coding", tuple(["core.main"]), ORDER, WorkStop.REFUSE_WHILE_WORK_REMAINS, Responder.PERSON)
 WORKER = DriverDeclaration("coding.worker", "worker", "coding", (), ORDER, WorkStop.REFUSE_WHILE_WORK_REMAINS, Responder.PARENT)
 
 
@@ -18,7 +18,7 @@ def required_state(key: str, rank: str, *agent_types: str) -> ContributionDeclar
 
 
 MODULES = [
-    ModuleContributions("messages", True, ("overview",), (required_state("messages.unread-needs", "messages.unread"),
+    ModuleContributions("messages", True, tuple(["overview"]), (required_state("messages.unread-needs", "messages.unread"),
                                                      ContributionDeclaration("messages.show", ContributionType.POLICY, "messages.show"))),
     ModuleContributions("overview", True, (), (required_state("overview.first-needs", "overview.first", "main"),
                                           ContributionDeclaration("drivers.database-file", ContributionType.POLICY, "safety.all", is_safety=True))),

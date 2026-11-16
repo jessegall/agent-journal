@@ -25,7 +25,7 @@ class ContextLineSplit:
             size = len(agent_message.text) + (LINE_BREAK if kept else 0)
             if used + size > limit:
                 if not kept:
-                    return cls((replace(agent_message, text=agent_message.text[:limit]),), tuple(lines[index + 1:]))
+                    return cls(tuple([replace(agent_message, text=agent_message.text[:limit])]), tuple(lines[index + 1:]))
                 return cls(tuple(kept), tuple(lines[index:]))
             kept.append(agent_message)
             used += size

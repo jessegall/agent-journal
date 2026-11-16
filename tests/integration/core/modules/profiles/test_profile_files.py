@@ -65,7 +65,7 @@ def test_only_changed_fields_are_saved_and_the_rest_follows_the_module(tmp_path)
     files(tmp_path, MODULE_READER).save_changes(MODULE_READER, replace(MODULE_READER, model="opus"))
     upgraded = replace(MODULE_READER, description="Reads a changed question", body="Read the new files.")
     row = files(tmp_path, upgraded).row("module-reader")
-    assert (row.description, row.body, row.model, row.changed) == ("Reads a changed question", "Read the new files.", "opus", ("model",))
+    assert (row.description, row.body, row.model, row.changed) == ("Reads a changed question", "Read the new files.", "opus", tuple(["model"]))
 
 
 def test_a_persons_text_survives_changed_module_text_and_reset_brings_the_module_text_back(tmp_path):

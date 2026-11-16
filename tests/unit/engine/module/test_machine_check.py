@@ -20,7 +20,7 @@ from engine.module.module import Module
 class SampleDriver(Driver):
     name = "samples.main"
     agent_type = "main"
-    rank_order = RankOrder((), ("samples.unread",))
+    rank_order = RankOrder((), tuple(["samples.unread"]))
     work_stop = WorkStop.REFUSE_WHILE_WORK_REMAINS
     responder = Responder.PERSON
 
@@ -50,7 +50,7 @@ class SampleModule(Module):
 
 
 def problems(*states: type[StateSource]) -> tuple[str, ...]:
-    module = type("CheckedModule", (SampleModule,), {"states": [UnreadStates, *states]})
+    module = type("CheckedModule", tuple([SampleModule]), {"states": [UnreadStates, *states]})
     return MachineCheck(ContributionReader()).problems([module])
 
 

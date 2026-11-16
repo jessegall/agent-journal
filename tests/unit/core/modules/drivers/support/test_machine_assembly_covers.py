@@ -4,7 +4,7 @@ from engine.agent.enums.role_group import RoleGroup
 from engine.agent_machine.contracts.line_source import LineSource
 from core.modules.drivers.support.machine_assembly import MachineAssembly
 
-TYPES = SimpleNamespace(behaviours=lambda role: SimpleNamespace(takes_prompts=role == "main"), read_access_keys=lambda: (), type_keys=lambda agent_type: (agent_type,))
+TYPES = SimpleNamespace(behaviours=lambda role: SimpleNamespace(takes_prompts=role == "main"), read_access_keys=lambda: (), type_keys=lambda agent_type: tuple([agent_type]))
 
 
 class PromptLines(LineSource):

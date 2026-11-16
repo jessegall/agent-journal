@@ -21,9 +21,9 @@ def test_the_registry_keeps_joined_and_shipped_suites(journal_with):
     journal = journal_with(f"{PATH}:SuiteModuleJoining", f"{PATH}:AcmeSuiteOfSuiteModule")
     journal.expect_sync_success(f"{PATH}:MemberModuleJoining")
     suites = Registry.read(journal.database).module_suites
-    assert suites["acme.suite"] == ("coding", "acme") and suites["acme.member"] == ("acme",)
-    assert suites["journal.suites.coding"] == ("coding",) and suites["journal.suites.coding.workers"] == ("coding",)
-    assert suites["journal.suites.coding.checks"] == ("coding",) and suites["journal.core.templates"] == ()
+    assert suites["acme.suite"] == ("coding", "acme") and suites["acme.member"] == tuple(["acme"])
+    assert suites["journal.suites.coding"] == tuple(["coding"]) and suites["journal.suites.coding.workers"] == tuple(["coding"])
+    assert suites["journal.suites.coding.checks"] == tuple(["coding"]) and suites["journal.core.templates"] == ()
 
 
 def test_a_suite_module_cannot_be_removed_while_another_module_names_it_as_parent(journal_with):

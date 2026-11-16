@@ -22,7 +22,7 @@ def shown(call: HookCall):
 
 
 def test_a_stop_saves_each_check_and_hook_call_show_prints_each_source_with_its_outcome():
-    checks = (StopCheck("tasks.carry-on-at-stop", DecisionClass.HOLD, "a sample refusal", True),)
+    checks = tuple([StopCheck("tasks.carry-on-at-stop", DecisionClass.HOLD, "a sample refusal", True)])
     metadata = RuleAnswers([RuleRecord("tasks.carry-on-at-stop", REFUSAL.outcome, REFUSAL)], stop_checks=checks).metadata()
     call = HookCall(id=7, session_agent_id=1, environment_id=1, creator_id=1, hook=HookEventName.STOP, event_id="f", answer=HookAnswer.REFUSED,
                     metadata=Metadata({DRIVERS_MODULE: metadata}))

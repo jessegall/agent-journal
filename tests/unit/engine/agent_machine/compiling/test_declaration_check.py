@@ -22,7 +22,7 @@ from engine.enums.responder import Responder
 from engine.enums.transform_slot import TransformSlot
 from engine.enums.work_stop import WorkStop
 
-MAIN = DriverDeclaration("core.main", "main", "core", (), RankOrder(("messages.show",), ("messages.unread",)), WorkStop.REFUSE_WHILE_WORK_REMAINS, Responder.PERSON)
+MAIN = DriverDeclaration("core.main", "main", "core", (), RankOrder(tuple(["messages.show"]), tuple(["messages.unread"])), WorkStop.REFUSE_WHILE_WORK_REMAINS, Responder.PERSON)
 PROGRAM = ProgramDeclaration("claude", Capabilities(
     Capability(CapabilityPart.TOOL_DENIAL, HookEventName.PRE_TOOL_USE, CapabilityProof.IMPLEMENTED_HERE),
     Capability(CapabilityPart.STOP_REFUSAL, HookEventName.STOP, CapabilityProof.IMPLEMENTED_HERE),
@@ -32,7 +32,7 @@ SHOW = ContributionDeclaration("messages.show-policy", ContributionType.POLICY, 
 MESSAGES = ModuleContributions("messages", True, (), (UNREAD, SHOW))
 
 
-def fixes(*contributions: ContributionDeclaration, module: ModuleContributions = MESSAGES, drivers=(MAIN,), programs=(PROGRAM,)) -> list[str]:
+def fixes(*contributions: ContributionDeclaration, module: ModuleContributions = MESSAGES, drivers=tuple([MAIN]), programs=tuple([PROGRAM])) -> list[str]:
     modules = [replace(module, contributions=(*module.contributions, *contributions))]
     return [refusal.text() for refusal in DeclarationCheck(drivers, modules, programs, ["main"]).refusals()]
 
@@ -42,16 +42,16 @@ def test_the_sample_declarations_compile_clean() -> None:
 
 
 @pytest.mark.parametrize("contribution, fix", [
-    (ContributionDeclaration("messages.worker-needs", ContributionType.NEED, "messages.unread", ("robot",), "Working"), "agent type robot has no driver"),
+    (ContributionDeclaration("messages.worker-needs", ContributionType.NEED, "messages.unread", tuple(["robot"]), "Working"), "agent type robot has no driver"),
     (ContributionDeclaration("messages.odd-needs", ContributionType.NEED, state_name="Sleeping"), "state Sleeping is unknown"),
     (ContributionDeclaration("messages.pause-needs", ContributionType.NEED, state_name="Paused"), "a state source may not ask for Paused"),
     (ContributionDeclaration("agent_stack", ContributionType.SUBJECT), "the machine's own tables are no subject"),
-    (ContributionDeclaration("messages.late-line", ContributionType.LINE, events=(HookEventName.STOP,)), "give the line a waiting carrier"),
-    (ContributionDeclaration("messages.bus-listener", ContributionType.AGENT_LISTENER, constructor_types=("Bus",)), "it takes a Bus"),
-    (ContributionDeclaration("messages.file-needs", ContributionType.NEED, "messages.unread", state_name="Blocked", constructor_types=("FileAccess",)), "it takes a FileAccess"),
+    (ContributionDeclaration("messages.late-line", ContributionType.LINE, events=tuple([HookEventName.STOP])), "give the line a waiting carrier"),
+    (ContributionDeclaration("messages.bus-listener", ContributionType.AGENT_LISTENER, constructor_types=tuple(["Bus"])), "it takes a Bus"),
+    (ContributionDeclaration("messages.file-needs", ContributionType.NEED, "messages.unread", state_name="Blocked", constructor_types=tuple(["FileAccess"])), "it takes a FileAccess"),
     (ContributionDeclaration("messages.hand-in", ContributionType.EFFECT, is_required=True), "declares its failure line and text"),
     (ContributionDeclaration("messages.read", ContributionType.BLOCK_CONDITION), "declares the ends it may take"),
-    (ContributionDeclaration("messages.answered", ContributionType.BLOCK_CONDITION, ends=(BlockEnd.SATISFIED,)), "names the command lines that satisfy it"),
+    (ContributionDeclaration("messages.answered", ContributionType.BLOCK_CONDITION, ends=tuple([BlockEnd.SATISFIED])), "names the command lines that satisfy it"),
     (ContributionDeclaration("messages.ranked", ContributionType.POLICY, "messages.nowhere"), "no driver lists the rank key messages.nowhere"),
     (SHOW, "a policy key is declared once"),
 ])
@@ -60,7 +60,7 @@ def test_each_misuse_is_refused_with_its_fix(contribution: ContributionDeclarati
 
 
 def test_a_line_with_a_waiting_channel_may_sit_on_an_event_no_program_carries() -> None:
-    assert fixes(ContributionDeclaration("messages.late-line", ContributionType.LINE, events=(HookEventName.STOP,), channel=LineChannel.WAITING)) == []
+    assert fixes(ContributionDeclaration("messages.late-line", ContributionType.LINE, events=tuple([HookEventName.STOP]), channel=LineChannel.WAITING)) == []
 
 
 def test_a_safety_policy_from_a_suite_module_is_refused() -> None:
@@ -75,20 +75,20 @@ def test_two_transforms_in_one_slot_name_both_owners() -> None:
 
 
 def test_a_rank_key_no_module_declares_is_refused() -> None:
-    driver = replace(MAIN, rank_order=RankOrder(("messages.show", "tasks.gone"), ("messages.unread",)))
-    assert fixes(drivers=(driver,)) == ["core.main: rank key tasks.gone: no module declares it: remove it from the rank order"]
+    driver = replace(MAIN, rank_order=RankOrder(("messages.show", "tasks.gone"), tuple(["messages.unread"])))
+    assert fixes(drivers=tuple([driver])) == ["core.main: rank key tasks.gone: no module declares it: remove it from the rank order"]
 
 
 def test_a_cycle_in_gathering_is_named() -> None:
-    first = replace(MAIN, name="coding.main", suite="coding", gathers=("coding.other",))
-    second = replace(MAIN, name="coding.other", suite="coding", gathers=("coding.main",))
+    first = replace(MAIN, name="coding.main", suite="coding", gathers=tuple(["coding.other"]))
+    second = replace(MAIN, name="coding.other", suite="coding", gathers=tuple(["coding.main"]))
     assert "core.main" not in "".join(text for text in fixes(drivers=(MAIN, first, second)) if "cycle" in text)
     assert any("coding.main > coding.other > coding.main" in text for text in fixes(drivers=(MAIN, first, second)))
 
 
 def test_a_driver_gathering_another_suite_is_refused() -> None:
     other = replace(MAIN, name="research.main", suite="research")
-    coding = replace(MAIN, name="coding.main", suite="coding", gathers=("research.main",))
+    coding = replace(MAIN, name="coding.main", suite="coding", gathers=tuple(["research.main"]))
     assert "coding.main: gathers research.main: a driver gathers a core driver or one of its own suite" in fixes(drivers=(MAIN, other, coding))
 
 
@@ -98,7 +98,7 @@ def test_an_agent_type_with_no_driver_and_a_driver_with_no_work_stop_are_refused
 
 
 def test_a_missing_dependency_and_a_state_a_module_defines_are_refused() -> None:
-    module = replace(MESSAGES, dependencies=("agents",), state_classes=("Reading",))
+    module = replace(MESSAGES, dependencies=tuple(["agents"]), state_classes=tuple(["Reading"]))
     assert fixes(module=module) == ["messages: dependency agents: the module it depends on is not installed",
                                     "messages: state Reading: a module never defines a state: declare a need for an engine state"]
 
@@ -121,6 +121,6 @@ def test_removing_a_module_that_owns_open_blocks_is_refused_unless_a_migration_s
 
 
 def test_a_rank_key_a_driver_of_that_type_leaves_out_of_its_order_is_refused() -> None:
-    worker = DriverDeclaration("coding.worker", "worker", "coding", (), RankOrder(("messages.show",), ()), WorkStop.REFUSE_WHILE_WORK_REMAINS, Responder.PARENT)
+    worker = DriverDeclaration("coding.worker", "worker", "coding", (), RankOrder(tuple(["messages.show"]), ()), WorkStop.REFUSE_WHILE_WORK_REMAINS, Responder.PARENT)
     texts = [refusal.text() for refusal in DeclarationCheck([MAIN, worker], [MESSAGES], [PROGRAM], ["main", "worker"]).refusals()]
     assert texts == ["coding.worker: rank key messages.unread of messages.unread-needs: add the rank key to the driver's rank order"]
