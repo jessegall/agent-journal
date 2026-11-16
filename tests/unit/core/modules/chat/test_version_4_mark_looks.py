@@ -27,7 +27,7 @@ STYLES = (Version4Style("messages.thought", "messages.thoughts", "agent", "group
          Version4Style("agents.subagent", "agents.helpers", "agent", "group", "subagent", "{count} helper updates"))
 
 
-@pytest.mark.parametrize("look", STYLES, ids=[style.type for style in STYLES])
+@pytest.mark.parametrize("style", STYLES, ids=[style.type for style in STYLES])
 def test_version_4_mark_styles(style):
     mark = next(mark for module in DEFAULT_MODULES for mark in module.mark_declarations() if mark.type.value == style.type)
     assert (mark.family.name, mark.family.group.value, mark.family.colouring.value, mark.mark_icon) == (style.family, style.group, style.colouring, style.mark_icon)

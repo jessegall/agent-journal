@@ -348,6 +348,16 @@
         "handle(self, event: E, context: Context) -> None"
       ]
     },
+    "agent_machine.contracts.agent_plan_states.AgentPlanStates": {
+      "bases": [
+        "StateSource"
+      ],
+      "fields": [],
+      "methods": [
+        "states(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[RequiredState | BlockPlan]]",
+        "plan(self, agent_id: int) -> BlockPlan | None"
+      ]
+    },
     "agent_machine.contracts.capability.Capability": {
       "bases": [],
       "fields": [
@@ -674,16 +684,6 @@
       ],
       "methods": [
         "unchanged(cls) -> 'WakeChange'"
-      ]
-    },
-    "agent_machine.states.agent_plan_states.AgentPlanStates": {
-      "bases": [
-        "StateSource"
-      ],
-      "fields": [],
-      "methods": [
-        "states(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[RequiredState | BlockPlan]]",
-        "plan(self, agent_id: int) -> BlockPlan | None"
       ]
     },
     "agent_machine.states.agent_reference.AgentReference": {

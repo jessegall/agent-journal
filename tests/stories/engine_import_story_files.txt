@@ -379,7 +379,6 @@ tests/stories/core/modules/viewer/support/window_samples.py
 tests/stories/core/modules/viewer/support/window_story.py
 tests/stories/core/modules/viewer/v5_home_menus.py
 tests/stories/core/modules/viewer/v5_templates.py
-tests/stories/core/modules/viewer/window_search.py
 tests/stories/core/modules/viewer/window_search_declared.py
 tests/stories/core/modules/waits/marks.py
 tests/stories/core/modules/waits/wait_lines.py
