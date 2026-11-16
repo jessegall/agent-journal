@@ -75,7 +75,7 @@ class EventRows:
         missing = [row_id for row_id in dict.fromkeys(row_ids) if name not in self.known.get((model, row_id), {})]
         if not missing:
             return
-        rows = {self.row_key(row): row for row in self.queries.query(model).with_removed().matching(Among("id", missing)).every_row(EVENT_ROWS_REASON)}
+        rows = {self.row_key(row): row for row in self.queries.query(model).all_environments(EVENT_ROWS_REASON).with_removed().matching(Among("id", missing)).every_row(EVENT_ROWS_REASON)}
         for row_id in missing:
             self.known.setdefault((model, row_id), {})[name] = CachedEventRow(rows.get(row_id), generation)
 

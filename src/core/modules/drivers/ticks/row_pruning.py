@@ -10,6 +10,7 @@ from core.modules.drivers.support.prune_batch import BATCH_ROWS
 
 MOST_BATCHES = 20
 FREED_PAGES = 5000
+PRUNED_ROWS_REASON = "the pruning of old rows reaches the rows of every environment"
 BATCH_REASON = "one batch of rows a model names prunable, deleted together"
 
 
@@ -23,7 +24,7 @@ class RowPruning:
         rows = PrunedRows(database)
         for model in RowPruning.prunable_models(container.get(Registry)):
             for _ in range(MOST_BATCHES):
-                ids = model.prunable(queries.query(model).with_removed(), tables.table(model).name).oldest().limit(BATCH_ROWS, BATCH_REASON).pluck("id", int)
+                ids = model.prunable(queries.query(model).all_environments(PRUNED_ROWS_REASON).with_removed(), tables.table(model).name).oldest().limit(BATCH_ROWS, BATCH_REASON).pluck("id", int)
                 if not ids:
                     break
                 with database.transaction():

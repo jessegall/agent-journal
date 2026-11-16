@@ -4,6 +4,8 @@ from engine.query.conditions.has_value import HasValue
 from engine.query.queries import Queries
 from engine.query.query import Query
 from core.modules.drivers.models.helper_job import HelperJob
+HELPER_JOB_REASON = "a helper's job is read by the helper, the same in every environment"
+
 
 class HelperJobRows:
     """Shares a helper's jobs across one request, until one of them changes."""
@@ -20,7 +22,7 @@ class HelperJobRows:
         return self.kept.read(reviews, reviews.exists, name="drivers.helper_reviewed")
 
     def open_job(self, helper_id: int) -> HelperJob | None:
-        jobs = self.queries.query(HelperJob).filter(helper_id=helper_id)
+        jobs = self.queries.query(HelperJob).all_environments(HELPER_JOB_REASON).filter(helper_id=helper_id)
         return self.kept.read(jobs, lambda: jobs.matching(IsNull("ended_at")).matching(HasValue("started_at")).oldest().first(), name="drivers.open_helper_job")
 
     # The helpers with an open job that has started, as a column to match an agent's id against.

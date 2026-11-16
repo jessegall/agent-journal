@@ -19,6 +19,7 @@ from engine.query.query import Query
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 
+AGENT_CALLS_REASON = "an agent's hook calls are read by the agent, the same in every environment"
 DISPLAY_CALLS_REASON = "every message display call since the agent's last turn is shown"
 
 STOPS_READ = 20
@@ -42,7 +43,7 @@ class HookCallQuery(Query[HookCall]):
         self.kept = kept
 
     def agent(self, agent_id: int) -> Self:
-        return self.filter(session_agent_id=agent_id)
+        return self.all_environments(AGENT_CALLS_REASON).filter(session_agent_id=agent_id)
 
     def stop_refusal_count(self, agent_id: int) -> int:
         stops = self.agent(agent_id).filter(hook=HookEventName.STOP).newest().take(STOPS_READ)

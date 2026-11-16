@@ -24,6 +24,8 @@ LOGIN_VARIABLE = "USER"
 PLUGIN_VARIABLE = "JOURNAL_PLUGIN"
 CHAIN_REQUIRED_REFUSAL = "a hosted journal knows its caller by its chain of processes, and no agent of the journal started this command"
 
+CALLER_REASON = "the caller of a line is found by its session or process before its environment is known"
+
 
 class AgentCallerResolver(CallerResolver):
     """Resolves the agent in the chain of processes first, matching PID and start time, then an explicit session
@@ -63,19 +65,19 @@ class AgentCallerResolver(CallerResolver):
         return self.scripts.token_owner(request.variables.get(PLUGIN_VARIABLE, ""), request.variables.get(PLUGIN_TOKEN_VARIABLE, ""))
 
     def program_agent(self, sessions: tuple[str, ...]) -> Agent | None:
-        return self.agents.running().matching(Among("session", sessions)).first() if sessions else None
+        return self.agents.all_environments(CALLER_REASON).running().matching(Among("session", sessions)).first() if sessions else None
 
     def session_agent(self, request: CallerRequest) -> Agent | None:
         session = request.variables.get(SESSION_VARIABLE)
         if not session:
             return None
-        session_agents = self.agents.filter(session=session)
+        session_agents = self.agents.all_environments(CALLER_REASON).filter(session=session)
         agent = (session_agents if RUNNER_VARIABLE in request.variables else session_agents.running()).first()
         if agent is None:
             raise UsageError(f"{SESSION_VARIABLE} is session {session}, which is no open agent: start it with journal agent start")
         return agent
 
     def ancestor_agent(self, steps: Sequence[ProcessRow]) -> Agent | None:
-        agents = self.agents.running().matching(Among("pid", [step.pid for step in steps])).get()
+        agents = self.agents.all_environments(CALLER_REASON).running().matching(Among("pid", [step.pid for step in steps])).get()
         started = {(agent.pid, agent.process_started_at): agent for agent in agents}
         return next((started[step.pid, step.started_at] for step in steps if (step.pid, step.started_at) in started), None)
