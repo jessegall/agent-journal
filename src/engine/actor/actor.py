@@ -5,6 +5,7 @@ from engine.enums.actor_type import ActorType
 
 
 CORE_ACTOR_ID = 0
+FIRST_OTHER_ACTOR_ID = 1000000
 @dataclass(frozen=True)
 class Actor:
     """Someone or something that makes a change: a user, an agent, a module or the core. An agent's actor

@@ -1,3 +1,4 @@
+from engine.database.actor_table import ActorTable
 from engine.errors.existing_row_refusal import ExistingRowRefusal
 from dataclasses import replace
 
@@ -31,8 +32,10 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
     command = StartAgent
     caller_prepares = True
 
-    def __init__(self, agents: AgentRows, repository: Repository, chain: ProcessChain, types: HelperTypeBook, sandbox: ShellSandbox, single_main: SingleMainAgent, numbers: AgentNumbers, sessions: AgentSessions, dispatcher: AgentDispatcher) -> None:
+    def __init__(self, agents: AgentRows, repository: Repository, chain: ProcessChain, types: HelperTypeBook, sandbox: ShellSandbox, single_main: SingleMainAgent, numbers: AgentNumbers, sessions: AgentSessions, dispatcher: AgentDispatcher,
+                 actors: ActorTable) -> None:
         self.agents, self.repository, self.chain, self.dispatcher = agents, repository, chain, dispatcher
+        self.actors = actors
         self.types = types
         self.sandbox = sandbox
         self.single_main = single_main
@@ -64,7 +67,7 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
             return self.dispatcher.record_process(started, self.process(command), context)
         if main is not None:
             return self.on_main_row(main, command, context)
-        actor = self.repository.save(ActorRecord(type=ActorType.AGENT, name=command.session, creator_id=context.actor.id), context)
+        actor = self.repository.save(ActorRecord(id=self.actors.next_agent_actor_id(), type=ActorType.AGENT, name=command.session, creator_id=context.actor.id), context)
         agent = Agent(id=actor.id, actor_id=actor.id, parent_id=command.parent_id, creator_id=context.actor.id, access=command.access,
                       session=command.session, program=command.program, role=command.role, pid=command.pid,
                       process_started_at=command.process_started_at or self.chain.start_timestamp(command.pid),

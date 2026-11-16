@@ -1,4 +1,4 @@
-from engine.actor.actor import CORE_ACTOR_ID
+from engine.actor.actor import CORE_ACTOR_ID, FIRST_OTHER_ACTOR_ID
 from collections.abc import Sequence
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
@@ -9,7 +9,9 @@ from engine.database.statement import Statement
 from engine.row.row_owner import MAIN_AGENT, RowOwner
 
 CORE_ACTOR = Statement("INSERT OR IGNORE INTO actors (id, type, name, created_at, updated_at) VALUES (?, ?, 'core', ?, ?)")
-MODULE_ACTOR = Statement("INSERT OR IGNORE INTO actors (creator_id, type, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)")
+MODULE_ACTOR = Statement("INSERT OR IGNORE INTO actors (id, creator_id, type, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
+NEXT_OTHER_ACTOR_ID = Statement("SELECT max(?, coalesce(max(id), 0) + 1) AS id FROM actors")
+NEXT_AGENT_ACTOR_ID = Statement("SELECT coalesce(max(id), 0) + 1 AS id FROM actors WHERE id BETWEEN 1 AND ?")
 MODULE_ACTOR_ID = Statement("SELECT id FROM actors WHERE type = ? AND name = ?")
 SESSION_AGENT_ID = Statement("SELECT id FROM agents WHERE session = ? UNION ALL SELECT session_agent_id AS id FROM agent_sessions WHERE session = ?")
 AGENT_ACTOR_ID = Statement("SELECT actor_id AS id FROM agents WHERE id = ?")
@@ -26,7 +28,10 @@ NEWEST_MAIN_AGENT_ID = Statement("SELECT id FROM agents WHERE environment_id = ?
 
 
 class ActorTable(RoundState):
-    """The actors the core itself makes: its own, on the first sync, and one for each module."""
+    """The actors the core itself makes: its own, on the first sync, and one for each module. Ids keep two
+    ranges: an agent's actor takes the next id below FIRST_OTHER_ACTOR_ID, which is its agent id, and every
+    other actor one from FIRST_OTHER_ACTOR_ID up; the modules' actors are made first, so an actor made with no
+    id after them lands in the upper range."""
 
     def __init__(self, database: Database) -> None:
         self.database = database
@@ -48,9 +53,15 @@ class ActorTable(RoundState):
 
     def module_actors(self, modules: Sequence[str], timestamp: str) -> dict[str, int]:
         for module in modules:
-            self.database.update(Statement(MODULE_ACTOR.sql, (CORE_ACTOR_ID, ActorType.MODULE.value, module, timestamp, timestamp)))
+            self.database.update(Statement(MODULE_ACTOR.sql, (self.next_other_actor_id(), CORE_ACTOR_ID, ActorType.MODULE.value, module, timestamp, timestamp)))
         actors = self.kept.read_signed(MODULE_ACTORS_SIGNATURE, self.module_actor_ids, name="base.module_actors")
         return {module: actors[module] for module in modules}
+
+    def next_other_actor_id(self) -> int:
+        return int(self.database.rows(Statement(NEXT_OTHER_ACTOR_ID.sql, [FIRST_OTHER_ACTOR_ID]))[0]["id"])
+
+    def next_agent_actor_id(self) -> int:
+        return int(self.database.rows(Statement(NEXT_AGENT_ACTOR_ID.sql, [FIRST_OTHER_ACTOR_ID - 1]))[0]["id"])
 
     def module_actor_id(self, module: str) -> int:
         return self.kept.read_signed(MODULE_ACTORS_SIGNATURE, self.module_actor_ids, name="base.module_actors")[module]
