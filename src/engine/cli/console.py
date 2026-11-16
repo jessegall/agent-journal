@@ -1,3 +1,4 @@
+from engine.database.actor_table import ActorTable
 from engine.module.model_declaration import ModelDeclaration
 import io
 from argparse import Namespace
@@ -66,8 +67,8 @@ class Console:
     def __init__(self, registry: Registry, finder: ModuleFinder, fingerprint: CodeFingerprint, line_parser: LineParser, bus: Bus,
                  flags: WriteFlags, refusals: RefusalLog, errors: ErrorLog, tables: Tables, commit_listeners: CommitListenerRunner,
                  environment_names: EnvironmentNames, resolver: CallerResolver, aliases: ShellAliases, handoff: ShellHandoff, events: EventLog, scopes: Scopes, refusal_skips: RefusalSkips, overview_reads: OverviewReads, read_limit_bypass: ReadLimitBypass, agent_id_arguments: AgentIdArguments, request_records: RequestRecords,
-                 line_check: CallerLineCheck, request_values: RequestValues) -> None:
-        self.line_check, self.request_values = line_check, request_values
+                 line_check: CallerLineCheck, request_values: RequestValues, actors: ActorTable) -> None:
+        self.line_check, self.request_values, self.actors = line_check, request_values, actors
         self.read_limit_bypass, self.agent_id_arguments, self.request_records = read_limit_bypass, agent_id_arguments, request_records
         self.registry, self.finder, self.fingerprint, self.line_parser, self.bus = registry, finder, fingerprint, line_parser, bus
         self.flags, self.refusals, self.errors, self.tables, self.commit_listeners = flags, refusals, errors, tables, commit_listeners
@@ -80,7 +81,7 @@ class Console:
             return self.line_run(argv, caller, stream, request)
 
     def line_run(self, argv: list[str], caller: Caller, stream: TextIO, request: CallerRequest) -> int:
-        output = Output(self.tables, "--json" in argv, stream, request.is_terminal)
+        output = Output(self.tables, "--json" in argv, stream, request.is_terminal, self.actors.printed)
         try:
             argv = self.read_limit_bypass.applied(argv, caller)
             self.registry.require_current(self.fingerprint.text(self.finder.modules()))

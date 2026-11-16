@@ -12,6 +12,8 @@ from engine.model.tables import Tables
 from engine.row.page import Page
 from engine.errors.refusal import Refusal
 from engine.types.type_guards import is_frozenset, is_list, is_mapping, is_tuple
+from collections.abc import Callable
+from engine.database.id_columns import AGENT_COLUMN_NAMES, AGENT_COLUMN_SUFFIX
 
 LIST_HIDDEN_COLUMNS = ("version", "metadata", "created_at", "updated_at", "creator_id", "environment_id")
 
@@ -19,10 +21,12 @@ LIST_HIDDEN_COLUMNS = ("version", "metadata", "created_at", "updated_at", "creat
 class Output:
     """Prints what a command gives back: plain lines for a user, or one JSON value with --json. A row a
     write gave back prints as the confirmation of what that write touched; a terminal reader may be shown
-    colour codes."""
+    colour codes. A printed row names the actor in an actor or agent column as the console's actor text says:
+    an agent by its role and id, the core as the journal; JSON keeps the id."""
 
-    def __init__(self, tables: Tables, json_output: bool, stream: TextIO, is_terminal: bool = False) -> None:
+    def __init__(self, tables: Tables, json_output: bool, stream: TextIO, is_terminal: bool = False, actor_text: Callable[[int], str] = str) -> None:
         self.tables, self.json_output, self.stream, self.is_terminal = tables, json_output, stream, is_terminal
+        self.actor_text = actor_text
         self.confirmation = ""
 
     # the reader of a streamed answer that hung up, such as a terminal stopped with Ctrl+C
@@ -35,7 +39,11 @@ class Output:
     def row(self, record: object) -> None:
         values = {**self.values(record), **self.properties(record)}
         is_confirmed = isinstance(record, Model) and bool(self.confirmation)
-        self.write(self.confirmation if is_confirmed else "\n".join(f"{column}: {value}" for column, value in values.items() if value not in (None, {}, "")), values)
+        self.write(self.confirmation if is_confirmed else "\n".join(f"{column}: {self.printed(column, value)}" for column, value in values.items() if value not in (None, {}, "")), values)
+
+    def printed(self, column: str, value: object) -> object:
+        is_actor = column in AGENT_COLUMN_NAMES or column.endswith(AGENT_COLUMN_SUFFIX)
+        return self.actor_text(value) if is_actor and isinstance(value, int) and not isinstance(value, bool) else value
 
     def page(self, page: Page[object], columns: Sequence[str] = ()) -> None:
         rows = [{**self.values(record), **self.listed_properties(record)} for record in page.rows]

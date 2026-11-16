@@ -14,6 +14,8 @@ NEXT_OTHER_ACTOR_ID = Statement("SELECT max(?, coalesce(max(id), 0) + 1) AS id F
 NEXT_AGENT_ACTOR_ID = Statement("SELECT max(coalesce((SELECT max(id) FROM actors WHERE id BETWEEN 1 AND ?1), 0),"
                                 " coalesce((SELECT max(launch_agent_id) FROM agents WHERE ended_at IS NULL AND launch_agent_id BETWEEN 1 AND ?1), 0), ?2) + 1 AS id")
 MAIN_AGENT_ACTOR = Statement("SELECT 1 FROM actors WHERE id = ?")
+PRINTED_ACTOR = Statement("SELECT actors.type AS type, agents.role AS role FROM actors LEFT JOIN agents ON agents.id = actors.id WHERE actors.id = ?")
+CORE_TEXT = "the journal"
 MODULE_ACTOR_ID = Statement("SELECT id FROM actors WHERE type = ? AND name = ?")
 SESSION_AGENT_ID = Statement("SELECT id FROM agents WHERE session = ? UNION ALL SELECT session_agent_id AS id FROM agent_sessions WHERE session = ?")
 MODULE_ACTOR_IDS = Statement("SELECT id, name FROM actors WHERE type = 'module'", full_table_reason="One row for each installed module, never for stored journal rows.")
@@ -61,6 +63,16 @@ class ActorTable(RoundState):
 
     def next_agent_actor_id(self) -> int:
         return int(self.database.rows(Statement(NEXT_AGENT_ACTOR_ID.sql, [FIRST_OTHER_ACTOR_ID - 1, MAIN_AGENT_ID]))[0]["id"])
+
+    def printed(self, actor_id: int) -> str:
+        if actor_id == CORE_ACTOR_ID:
+            return CORE_TEXT
+        rows = self.database.rows(Statement(PRINTED_ACTOR.sql, [actor_id]))
+        if not rows or rows[0]["type"] != ActorType.AGENT.value:
+            return str(actor_id)
+        if rows[0]["role"] is None:
+            return f"removed agent {actor_id}"
+        return f"main agent {actor_id}" if rows[0]["role"] == AgentRole.MAIN.value else f"{rows[0]['role']} {actor_id}"
 
     def main_agent_actor_id(self) -> int:
         return self.next_agent_actor_id() if self.database.rows(Statement(MAIN_AGENT_ACTOR.sql, [MAIN_AGENT_ID])) else MAIN_AGENT_ID
