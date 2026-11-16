@@ -5,6 +5,6 @@ class TranscriptKey(WindowKey):
     """The transcript.* data of the agents.agents window."""
 
     name = "transcript.*"
-    read = "agent transcript row:{id}"
+    read = "agent transcript {id}"
     arguments = ["before-id"]
     page_size = 50

@@ -8,7 +8,7 @@ class WorkersMergeButton(ButtonDeclaration):
     name = "workers.merge"
     slots = ("row.agent",)
     label = "Merge the work of the worker"
-    runs = "worker merge row:{row_id}"
+    runs = "worker merge {row_id}"
     icon = "branch"
     primary = True
     condition = ButtonCondition("working_role", ("worker",))
