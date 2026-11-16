@@ -1,9 +1,10 @@
+from tests.stories.support.story_checks import expect_value
 import pytest
 
 from engine.command.bus import Bus
 from engine.errors.refusal import Refusal
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
-from tests.stories.core.modules.chat.support.mark_samples import SAMPLE, SampleMarkType, SampleMarkVariant, StrangeVariant, mark_count, module_actor, expect_mark_count
+from tests.stories.core.modules.chat.support.mark_samples import SAMPLE, SampleMarkType, SampleMarkVariant, module_actor, expect_mark_count
 from tests.stories.core.support.fixtures import UserJoined
 
 
@@ -41,7 +42,7 @@ def test_a_mark_shown_again_under_its_key_takes_the_new_words_and_keeps_its_id(p
     bus, actor = story.container.get(Bus), module_actor(story, "chatsample")
     first = bus.run(show(SampleMarkType.PROCESS, "run:2", "Running"), actor, environment_id=1)
     second = bus.run(show(SampleMarkType.PROCESS, "run:2", "Passed", ended=True), actor, environment_id=1)
-    expect_id_second(second, (first.id, "Passed", "ended"))
+    expect_value((second.id, second.text, second.state.value), (first.id, 'Passed', 'ended'))
 
 
 

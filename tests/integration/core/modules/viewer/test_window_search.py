@@ -1,3 +1,4 @@
+from tests.stories.support.story_checks import expect_value
 from engine.registry.registry import Registry
 from engine.testing.expectations.expect_row import expect_row
 from engine.testing.stories.story_fixture import StoryFixture
@@ -45,7 +46,7 @@ def test_searches_over_read_commands_declare_the_command_placeholder_and_matchin
         search = windows[name].search
         expect_row(search, read=read)
         expect_row(search, placeholder=placeholder)
-        expect_fields_search(search, fields)
+        expect_value(search['fields'], fields)
         expect_reads_windows_with(windows, name, read)
 
 

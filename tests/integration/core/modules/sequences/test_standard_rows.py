@@ -1,3 +1,4 @@
+from tests.stories.support.story_checks import expect_value
 from engine.testing.stories.story_fixture import StoryFixture
 
 from dataclasses import replace
@@ -5,9 +6,6 @@ from dataclasses import replace
 from engine.database.database import Database
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.commands.save_standard_sequences.standard_sequences import STANDARD_SEQUENCES
-from core.modules.templates.models.template import Template
-from suites.coding.templates.coding_templates import CODING_TEMPLATES
-from suites.coding.modules.workers.support.worker_templates import WORKER_TEMPLATES
 from server.work.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
@@ -40,8 +38,8 @@ def test_an_old_copy_takes_the_newest_words_at_the_next_start_and_no_row_is_adde
     with database.transaction():
         database.connection.execute("UPDATE sequences SET steps = ? WHERE id = ?", ('["an old step"]', stored.id))
     started(story)
-    expect_steps_plan_building(story, next(row.steps for row in STANDARD_SEQUENCES if row.title == PLAN_BUILDING))
-    expect_titles(story, count)
+    expect_value(plan_building(story).steps, next((row.steps for row in STANDARD_SEQUENCES if row.title == PLAN_BUILDING)))
+    expect_value(len(titles(story, Sequence)), count)
 
 
 class StartedSequences(StoryFixture):

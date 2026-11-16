@@ -1,20 +1,16 @@
 from engine.actor.actor import CORE_ACTOR_ID
 import pytest
 
-from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.event.event_log import EventLog
 from engine.database.database import Database
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.drivers.support.reviewer_start import REVIEWER_PROFILE
 from suites.coding.support.shipped_profiles import HELPER_PROFILES, WORKER_PROFILES
 
-from engine.testing.examples.hook_samples import HookSamples
 from server.work.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_value
 from engine.registry.registry import Registry
-from core.modules.approvals.models.approval_request import ApprovalRequest
-from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 from core.modules.profiles.support.profile_settings import CLAUDE_MODEL_SETTING
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
@@ -61,14 +57,14 @@ def test_a_module_sync_writes_the_journals_own_profiles(profiles_missing):
     with story.container.get(Database).transaction():
         story.container.get(EventLog).write_registry_sync(CORE_ACTOR_ID, "a new fingerprint", story.clock.timestamp().text)
     story.run_listeners()
-    expect_file_agents_folder(story, f"{WORKER_SENIOR_PROFILE.name}.md")
+    expect_value(bool((agents_folder(story) / f'{WORKER_SENIOR_PROFILE.name}.md').is_file()), True)
 
 
 def test_the_journals_start_writes_its_own_profiles(profiles_missing):
     story = profiles_missing
     BootingWork().run(story.container)
     story.run_listeners()
-    expect_file_agents_folder(story, f"{WORKER_SENIOR_PROFILE.name}.md")
+    expect_value(bool((agents_folder(story) / f'{WORKER_SENIOR_PROFILE.name}.md').is_file()), True)
 
 
 def test_a_shipped_profile_names_its_own_model_for_each_program_whatever_the_setting_says(played):
@@ -77,7 +73,7 @@ def test_a_shipped_profile_names_its_own_model_for_each_program_whatever_the_set
     story.container.get(ProfileFiles).publish()
     expect_agents_folder_journal_with(story, f"{RESEARCHER_PROFILE.name}.md", "model: sonnet")
     expect_agents_folder_journal_with(story, f"{WORKER_SENIOR_PROFILE.name}.md", "model: opus")
-    expect_profile_model(SHIPPED_PROFILES)
+    expect_value(bool(all((profile.model and profile.codex_model for profile in SHIPPED_PROFILES))), True)
 
 
 
@@ -94,11 +90,11 @@ def test_saving_a_shipped_profile_with_only_a_program_keeps_its_description_and_
 
 def test_native_module_profiles_are_published_for_codex_only_where_it_has_a_folder(played):
     story = saved_profile_story(played)
-    expect_absent_exists_project_folder_2(story, ".codex", "agents", f"{RESEARCHER_PROFILE.name}.toml")
+    expect_value(bool((story.home.project_folder / '.codex' / 'agents' / f'{RESEARCHER_PROFILE.name}.toml').exists()), False)
     (story.home.project_folder / ".codex").mkdir()
     story.container.get(ProfileFiles).publish()
     expect_project_folder_home_with(story, ".codex", "agents", f"{RESEARCHER_PROFILE.name}.toml", 'sandbox_mode = "read-only"')
-    expect_absent_exists_project_folder_2(story, ".codex", "agents", "critic.toml")
+    expect_value(bool((story.home.project_folder / '.codex' / 'agents' / 'critic.toml').exists()), False)
 
 
 

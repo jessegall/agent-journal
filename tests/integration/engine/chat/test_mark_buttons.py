@@ -1,3 +1,4 @@
+from tests.stories.support.story_checks import expect_value
 from engine.database.database import Database
 from engine.enums.button_window import ButtonWindow
 from engine.registry.button_line import ButtonLine
@@ -23,5 +24,5 @@ def expect_button_lines_registry_3(registry, text, expected) -> None:
 def test_a_mark_button_is_an_allowed_line_of_the_chat_window_kept_with_its_module(journal):
     journal.expect_sync_success(f"{PATH}:GoodModule")
     registry = Registry.read(journal.database)
-    expect_button_lines_registry_3(registry, "good", [ButtonLine("good", "task edit {row_id}", False, label="Edit the task")])
-    expect_button_lines_registry_2(registry, "good", [])
+    expect_value([line for line in registry.button_lines(ButtonWindow.MARKS) if line.module == 'good'], [ButtonLine('good', 'task edit {row_id}', False, label='Edit the task')])
+    expect_value([line for line in registry.button_lines(ButtonWindow.DOCK) if line.module == 'good'], [])

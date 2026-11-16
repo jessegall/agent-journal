@@ -5,9 +5,6 @@ from core.modules.agents.models.agent import Agent
 import json
 import pytest
 
-from core.modules.plans.support.next_plan_tasks import NextPlanTasks
-from core.modules.tasks.queries.task_query import TaskQuery
-from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
@@ -142,7 +139,6 @@ def delegated(new_story):
     return delegated_story(new_story)
 
 
-
 def test_assigning_a_task_to_who_holds_it_changes_nothing_and_an_ended_task_is_not_assigned(delegated):
     story, _, worker = delegated
     story.expect_success(f"task assign 1 --to {agent_number(story, worker.id)}", actor=story.agent)
@@ -157,8 +153,6 @@ def test_a_comment_on_a_task_with_no_worker_tells_no_worker_and_links_none(new_s
     story.expect_success('task comment 1 "use the new cart" --environment main', actor=user)
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "was also told")
     story.expect_no_text(f"link list --source message:{last_message_id(story)}", "sent_to")
-
-
 
 
 def test_an_interim_commit_hands_nothing_in(new_story):
@@ -232,12 +226,6 @@ def test_releasing_a_worker_leaves_a_delegated_task_that_ended_alone(new_story):
     story.expect_text("task show 2", "state: cancelled", actor=story.agent)
 
 
-
-
-
-
-
-
 def test_the_board_lists_a_task_assigned_to_a_worker_under_its_state_and_has_no_delegated_group(new_story):
     story, _, worker = delegated_story(new_story)
     story.run('task make "My own job" --environment main', actor=story.agent)
@@ -245,9 +233,8 @@ def test_the_board_lists_a_task_assigned_to_a_worker_under_its_state_and_has_no_
     delegated = [row for group in groups.values() for row in group["rows"] if row["assigned_actor_id"] is not None and row["id"] >= 1]
     expect_value((sorted(row["id"] for row in delegated), {row["assigned_actor_id"] for row in delegated}), ([1, 2], {worker.id}))
     expect_value("delegated" in groups, False)
-    expect_total_started_groups(groups, 1)
-    expect_id_open_groups(groups, [3, 2])
-
+    expect_value(groups['started']['total'], 1)
+    expect_value([row['id'] for row in groups['open']['rows']], [3, 2])
 
 
 def expect_card_listed(story, filter_name: str, agent_id: int, listed: bool) -> None:
@@ -290,16 +277,6 @@ def test_a_workers_facts_carry_its_model_profile_and_name_with_no_status_file(ne
     story.expect_text("usage agents --environment main --json", f'"id": {worker}', '"model": "sonnet"', f'"profile": "{WORKER_MEDIOR_PROFILE.name}"', '"given_name": "Lovelace"', actor=story.agent)
 
 
-def expect_total_started_groups(groups, expected) -> None:
-    actual = groups['started']['total']
-    assert actual == expected, actual
-
-
-def expect_id_open_groups(groups, expected) -> None:
-    actual = [row['id'] for row in groups['open']['rows']]
-    assert actual == expected, actual
-
-
 def expect_next_open_tasks(tasks, number, text, expected) -> None:
     actual = tasks.next_open(None, IsNull(text))
     assert actual is expected, actual
@@ -310,7 +287,3 @@ def expect_ready_plan_tasks(story, plans, plan_id, expected) -> None:
     actual = [place.task_id for place in plans.ready([plan_id], agent)[plan_id]]
     assert actual == expected, actual
 
-
-def expect_id_next_delegated(next_task, worker, expected) -> None:
-    actual = next_task.following(worker.id).id
-    assert actual == expected, actual

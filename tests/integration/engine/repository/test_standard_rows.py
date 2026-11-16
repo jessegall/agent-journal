@@ -1,3 +1,4 @@
+from tests.stories.support.story_checks import expect_value
 from dataclasses import replace
 
 from core.modules.sequences.commands.save_standard_sequences.standard_sequences import STANDARD_SEQUENCES
@@ -57,5 +58,5 @@ def expect_title_standard_templates_limit(item, expected) -> None:
 
 def test_each_standard_sequence_has_one_guard_for_each_step():
     for sequence in STANDARD_SEQUENCES:
-        expect_count_step_guards(sequence, "file_edits_allowed", len(sequence.steps))
-    expect_title_replace(STANDARD_SEQUENCES, PLAN_BUILDING)
+        expect_value(sequence.step_guards.count('file_edits_allowed'), len(sequence.steps))
+    expect_value(replace(STANDARD_SEQUENCES[0]).title, PLAN_BUILDING)

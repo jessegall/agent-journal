@@ -1,3 +1,4 @@
+from tests.stories.support.story_checks import expect_value
 import base64
 import json
 
@@ -124,5 +125,5 @@ def test_a_signature_made_with_a_secret_verifies_against_its_public_key():
     token = pair.token(ENDPOINT, "https://example.test", 1000.0)
     head, claims, signature = token.split(".")
     raw = base64.urlsafe_b64decode(signature + "=" * (-len(signature) % 4))
-    expect_signed_p256_2(P256, pair, f"{head}.{claims}", raw)
-    expect_absent_signed_p256(P256, pair, f"{head}.{claims}x", raw)
+    expect_value(bool(P256.is_signed(pair.public, f'{head}.{claims}'.encode(), raw)), True)
+    expect_value(bool(P256.is_signed(pair.public, f'{head}.{claims}x'.encode(), raw)), False)

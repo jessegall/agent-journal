@@ -1,11 +1,8 @@
 from engine.testing.stories.story_fixture import StoryFixture
 
-from engine.database.database import Database
-from engine.registry.registry import Registry
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.core.support.fixtures import UserJoined
-from engine.testing.expectations.expect_row import expect_row
 
 SEARCH = "window search questions.questions"
 
@@ -36,11 +33,6 @@ class DatabaseQuestions(StoryFixture):
     def steps(self, story):
         story.run('question ask "Which database?" --context "A story asks this so its card and answer can be checked." --environment main', actor=story.agent)
         story.run('question ask "Which cache?" --context "A story asks this so its card and answer can be checked." --environment main', actor=story.agent)
-
-
-def expect_fields_search(search, expected) -> None:
-    actual = search['fields']
-    assert actual == expected, actual
 
 
 def expect_reads_windows_with(windows, name, expected) -> None:

@@ -1,3 +1,4 @@
+from tests.stories.support.story_checks import expect_value
 from engine.testing.expectations.text_match import contains_text
 import json
 
@@ -19,7 +20,7 @@ def shell_call(line: str, output: str = ""):
 
 def test_a_link_in_a_commands_output_is_offered_as_a_pin(new_story):
     story = new_story(fixture=UserJoined)
-    expect_lines_hook_2("pin this link if the user will come back to it", "https://docs.example.com/pages/4", story, "s-1", "gh pr create", "https://docs.example.com/pages/4\n")
+    expect_value(bool(any((contains_text(line, 'pin this link if the user will come back to it') and 'https://docs.example.com/pages/4' in line for line in story.hook('s-1', shell_call('gh pr create', 'https://docs.example.com/pages/4\n')).lines))), True)
 
 
 def test_a_local_address_and_a_pinned_link_are_not_offered(new_story):
@@ -132,10 +133,4 @@ def test_words_that_a_link_is_pinned_with_no_pin_made_are_pointed_out(new_story)
 
 def expect_absent_pin_lines(hook_answer) -> None:
     assert not pin_lines(hook_answer)
-
-
-def expect_lines_hook_2(text, text_2, story, text_3, text_4, text_5) -> None:
-    actual = any((contains_text(line, text) and text_2 in line for line in story.hook(text_3, shell_call(text_4, text_5)).lines))
-    assert actual, actual
-
 

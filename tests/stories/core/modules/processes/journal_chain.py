@@ -1,8 +1,6 @@
 import json
-from pathlib import Path
 
 from engine.enums.command_category import CommandCategory
-from engine.driver.part import Part
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner
@@ -19,11 +17,6 @@ def test_asking_for_a_runs_status_is_answered_with_how_to_set_a_monitor(new_stor
     story = install_runner(new_story(fixture=BuilderStarted))
     status = HookSamples.shell("journal output status 7", ShellPart("journal", CommandCategory.JOURNAL, ["output", "status", "7"], subcommand="output"))
     story.expect_hook_allowed("s-1", status, expected_agent_message(MonitorNoteMessage.declared(), output=7))
-
-
-def expect_output_paths_parsed(part, expected) -> None:
-    actual = list(Part.parsed(part).output_paths)
-    assert actual == expected, actual
 
 
 def expect_dumps_with(schema, expected) -> None:

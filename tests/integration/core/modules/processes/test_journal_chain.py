@@ -1,3 +1,4 @@
+from tests.stories.support.story_checks import expect_value
 from pathlib import Path
 import json
 
@@ -25,4 +26,4 @@ def test_a_parts_write_paths_are_read_from_the_field_the_hook_client_sends():
     schema = json.loads((Path(__file__).parents[5] / "tools/journal-hook/event/hook_event.schema.json").read_text())
     expect_dumps_with(schema, '"write_paths"')
     part = {"text": "cat > notes.txt", "program": "cat", "arguments": [], "classification": {"category": CommandCategory.EDIT.value, "effects": []}, "write_paths": ["notes.txt"]}
-    expect_output_paths_parsed(part, ["notes.txt"])
+    expect_value(list(Part.parsed(part).output_paths), ['notes.txt'])

@@ -1,3 +1,4 @@
+from tests.stories.support.story_checks import expect_value
 
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
@@ -37,7 +38,7 @@ def test_the_line_of_a_proof_with_no_test_names_the_check_and_wakes_the_main_age
     line = ProofWaitsMessage.declared().agent_message(worker=7, proofs="3 4").text
     expect_value_with(line, "proofs 3 4")
     expect_value_with(line, "waits on your check")
-    expect_wakes_agent_proof(ProofWaitsMessage.declared())
+    expect_value(bool(ProofWaitsMessage.declared().wakes_agent), True)
 
 
 def test_a_proof_sent_back_starts_an_ended_worker_again():

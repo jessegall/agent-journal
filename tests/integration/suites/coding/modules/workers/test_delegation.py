@@ -1,6 +1,3 @@
-from tests.stories.core.modules.tasks.support.holder_assignee_check import task_assignees
-from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
-from tests.stories.core.support.agent_labels import agent_number
 from core.modules.agents.models.agent import Agent
 import json
 import pytest
@@ -13,23 +10,12 @@ from engine.query.queries import Queries
 from core.modules.messages.models.message import Message
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from tests.stories.core.modules.chat.support.mark_samples import expect_absent_marks_text, expect_marks_text
-from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker
-from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator, BuilderHelper
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment, worker_session
-from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from engine.testing.expectations.expect_reply import expect_absent_reply_refusal
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
 from tests.stories.support.story_checks import expect_value
-from suites.coding.modules.workers.agent_messages.worker_task_reassignment_message import WorkerTaskReassignmentMessage
-from suites.coding.modules.workers.agent_messages.worker_task_reassigned_message import WorkerTaskReassignedMessage
-from engine.testing.expectations.expected_message import expected_agent_message
-from suites.coding.modules.workers.agent_messages.worker_comment_copy_message import WorkerCommentCopyMessage
-from suites.coding.modules.workers.agent_messages.worker_task_comment_message import WorkerTaskCommentMessage
-from suites.coding.support.shipped_profiles import WORKER_MEDIOR_PROFILE
 
 
 def delegated_story(played):
@@ -109,7 +95,7 @@ def test_a_chained_queue_goes_on_while_the_workers_earlier_task_is_in_testing(pl
     story.expect_success("task depend 2 --on 1", actor=story.agent)
     next_task = story.container.get(WorkerNextTask)
     story.expect_success("task test 1", actor=worker)
-    expect_id_next_delegated(next_task, worker, 2)
+    expect_value(next_task.following(worker.id).id, 2)
     story.expect_success("task start 2", actor=worker)
 
 
