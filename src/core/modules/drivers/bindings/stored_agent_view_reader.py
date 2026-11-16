@@ -131,7 +131,7 @@ class StoredAgentViewReader(AgentViewReader):
         return tuple(self.open_block(row, uses.get(row.id, 0)) for row in rows)
 
     def open_block(self, row: AgentBlock, tool_uses: int) -> OpenBlock:
-        reason = Reason(row.agent_message_key, DecisionClass.HOLD, row.agent_message_key, row.refusal_text, row.lifting_lines)
+        reason = Reason(row.agent_message_key, DecisionClass.BLOCK, row.agent_message_key, row.refusal_text, row.lifting_lines)
         timestamp = self.clock.timestamp()
         return OpenBlock(row.agent_message_key, row.id, reason, row.has_tool_scope, row.has_stop_scope, row.is_active(tool_uses, timestamp),
                          row.creation_timestamp().elapsed_seconds(timestamp) >= row.stop_grace_seconds, row.strict)

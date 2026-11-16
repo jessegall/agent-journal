@@ -38,7 +38,7 @@ class Stack:
             return StopAnswer.safety_rest()
         if self.has(Compacting):
             return StopAnswer.compaction_handoff()
-        refusals = [stacked_state.state.stop_refusal() for stacked_state in self.level(StackLevel.HOLD) if stacked_state.state.refuses_stop(escalation)]
+        refusals = [stacked_state.state.stop_refusal() for stacked_state in self.level(StackLevel.BLOCK) if stacked_state.state.refuses_stop(escalation)]
         if refusals:
             return StopAnswer.refusals(refusals)
         top = self.work_level_top()

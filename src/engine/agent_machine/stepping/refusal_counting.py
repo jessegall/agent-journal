@@ -35,7 +35,7 @@ class RefusalCounting:
         counts = view.counts
         if question.is_stop() and not decision.admits():
             counts = replace(counts, stop_refusals=counts.stop_refusals + 1)
-        if question.is_tool_call() and decision.decision_class is DecisionClass.HOLD:
+        if question.is_tool_call() and decision.decision_class is DecisionClass.BLOCK:
             counts = replace(counts, tool_refusals=counts.tool_refusals + 1)
         return replace(counts, escalation=self.escalation(counts, view, built.stack, reasons))
 

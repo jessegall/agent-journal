@@ -54,7 +54,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 
 ORDER = RankOrder(("safety.all", "files.policies"), ("overview.first", "documents.open", "messages.unread"))
-TASK_REFUSAL = Reason("tasks.stop", DecisionClass.HOLD, "", "task 6 is started")
+TASK_REFUSAL = Reason("tasks.stop", DecisionClass.BLOCK, "", "task 6 is started")
 STOP = QuestionSamples.question(HookSamples.stop())
 EDIT = QuestionSamples.question(HookSamples.edit("a.py"))
 READ = QuestionSamples.question(HookSamples.tool_use("Read", ToolType.READ, ["a.py"], None))
@@ -76,7 +76,7 @@ def view(agent_type: str = "main", **changes: object) -> AgentView:
 
 
 def block(agent_message_key: str, rank: str, *lifting: str, block_id: int = 3, is_strict: bool = False, scope_stop: bool = True) -> OpenBlock:
-    reason = Reason(f"{rank}-key", DecisionClass.HOLD, rank, f"{agent_message_key} first", lifting)
+    reason = Reason(f"{rank}-key", DecisionClass.BLOCK, rank, f"{agent_message_key} first", lifting)
     return OpenBlock(agent_message_key, block_id, reason, True, scope_stop, True, True, is_strict)
 
 
@@ -86,7 +86,7 @@ def working(work_type: WorkType = WorkType.TASK, work_remains: bool = True) -> R
 
 def test_a_stop_with_a_started_task_is_refused_counted_and_checked() -> None:
     record = AgentStateMachine().step(view(states=(working(),)), STOP).record
-    assert (record.decision.decision_class, record.shown_reason, record.counts.stop_refusals) == (DecisionClass.HOLD, TASK_REFUSAL, 1)
+    assert (record.decision.decision_class, record.shown_reason, record.counts.stop_refusals) == (DecisionClass.BLOCK, TASK_REFUSAL, 1)
     assert [check.rule for check in record.stop_checks] == ["tasks.stop"]
 
 
@@ -103,7 +103,7 @@ def test_a_helper_stop_on_its_open_job_hands_the_job_in() -> None:
 
 def test_a_block_refuses_an_edit_past_its_grace_and_lets_a_read_through() -> None:
     machine, blocked = AgentStateMachine(), view(blocks=(block("documents.open", "documents.open"),))
-    assert machine.step(blocked, EDIT).record.decision.decision_class is DecisionClass.HOLD
+    assert machine.step(blocked, EDIT).record.decision.decision_class is DecisionClass.BLOCK
     assert machine.step(blocked, READ).record.decision.admits()
 
 

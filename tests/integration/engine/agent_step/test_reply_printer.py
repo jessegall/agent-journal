@@ -25,8 +25,8 @@ def test_an_allowed_call_prints_its_lines_and_the_rewrite_the_step_kept() -> Non
 
 
 def test_a_refused_call_prints_its_reason_and_keeps_its_lines() -> None:
-    refusal = Reason("documents.open", DecisionClass.HOLD, "documents.open", "close document 41 first")
-    reply = ReplyPrinter().encoded(replace(RecordSamples.record(EDIT, Decision(DecisionClass.HOLD, refusal)), lines=[LINE]))
+    refusal = Reason("documents.open", DecisionClass.BLOCK, "documents.open", "close document 41 first")
+    reply = ReplyPrinter().encoded(replace(RecordSamples.record(EDIT, Decision(DecisionClass.BLOCK, refusal)), lines=[LINE]))
     assert (reply.refusal, list(reply.labelled_lines)) == ("close document 41 first", ["journal: message 7 waits"])
 
 

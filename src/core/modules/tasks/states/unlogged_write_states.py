@@ -36,12 +36,12 @@ class UnloggedWriteStates(StateSource):
         event = question.event
         if event is None or event.event is not HookEventName.PRE_TOOL_USE:
             return {}
-        holds = {agent.agent_id: self.hold(event, agent.agent_id) for agent in agents}
-        return {agent_id: [BlockPlan(hold[0], hold[1], UNLOGGED_EDIT_KEY, UNLOGGED_EDIT_RANK, scope_tools=True, scope_stop=False)]
-                for agent_id, hold in holds.items() if hold is not None}
+        block_plans = {agent.agent_id: self.block_plan(event, agent.agent_id) for agent in agents}
+        return {agent_id: [BlockPlan(block_plan[0], block_plan[1], UNLOGGED_EDIT_KEY, UNLOGGED_EDIT_RANK, scope_tools=True, scope_stop=False)]
+                for agent_id, block_plan in block_plans.items() if block_plan is not None}
 
     # the line and the condition of the hold this write opens, if it reaches the ceiling
-    def hold(self, event: HookEvent, agent_id: int) -> tuple[AgentMessage, BlockCondition] | None:
+    def block_plan(self, event: HookEvent, agent_id: int) -> tuple[AgentMessage, BlockCondition] | None:
         counted = self.task_writes.count(event, agent_id)
         if counted is None or counted[1] < UNLOGGED_WRITES_CEILING:
             return None

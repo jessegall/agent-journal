@@ -6,5 +6,5 @@ class StackLevel(StrEnum):
 
     BOTTOM = "bottom"
     WORK = "work"
-    HOLD = "hold"
+    BLOCK = "hold"
     SAFETY = "safety"

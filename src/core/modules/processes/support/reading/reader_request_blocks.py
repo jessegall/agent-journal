@@ -62,10 +62,10 @@ class ReaderRequestBlocks:
         waiting = tuple(request for request in self.requests.open_rows()
                         if (self.attempts.requires_help(request) or request.expires_at <= now)
                         if not self.notices.has_recent_notice(agent_id, request.id, now))
-        holds = tuple(self.reader_help_block(request) for request in waiting)
+        block_plans = tuple(self.reader_help_block(request) for request in waiting)
         if event.event is HookEventName.TICK:
-            return ReaderRequestAnswer((), holds, tuple(SendReaderRequestNotice(agent_id, request.id) for request in waiting))
-        return ReaderRequestAnswer(tuple(self.request_text.line(request) for request in waiting), holds)
+            return ReaderRequestAnswer((), block_plans, tuple(SendReaderRequestNotice(agent_id, request.id) for request in waiting))
+        return ReaderRequestAnswer(tuple(self.request_text.line(request) for request in waiting), block_plans)
 
     # the hold that asks the main agent to help with a request whose saves failed or that expired
     @staticmethod
@@ -74,5 +74,5 @@ class ReaderRequestBlocks:
         return ReaderHelpHold(ReaderBlockKeys.keyed(refusal, request.id), ReaderRequestCompleted(request.id), request.command)
 
     @staticmethod
-    def help_block(agent_id: int, hold: ReaderHelpHold) -> BlockAgent:
-        return BlockAgent(agent_id, hold.agent_message, hold.condition, after=Interval(READER_REQUEST_SPAN), countdown=READER_REQUEST_COUNTDOWN.agent_message("{left}", command=hold.command))
+    def help_block(agent_id: int, block_plan: ReaderHelpHold) -> BlockAgent:
+        return BlockAgent(agent_id, block_plan.agent_message, block_plan.condition, after=Interval(READER_REQUEST_SPAN), countdown=READER_REQUEST_COUNTDOWN.agent_message("{left}", command=block_plan.command))

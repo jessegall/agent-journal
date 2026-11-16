@@ -15,7 +15,7 @@ class InternalStoryFiles:
         lines = FileAccess.read(list_file).splitlines() if FileAccess.is_file(list_file) else []
         self.files = frozenset(line.strip() for line in lines if line.strip() and not line.lstrip().startswith("#"))
 
-    def holds(self, story_file: Path) -> bool:
+    def lists(self, story_file: Path) -> bool:
         if not story_file.is_relative_to(self.root):
             return False
         return story_file.relative_to(self.root).as_posix() in self.files

@@ -15,14 +15,14 @@ class TaskBriefBlocks:
         self.bus, self.requirement, self.tasks = bus, requirement, tasks
 
     def block_current(self, agent_id: int, context: Context) -> None:
-        hold = self.current_block(agent_id)
-        if hold is not None:
-            self.bus.dispatch(hold, context)
+        block_plan = self.current_block(agent_id)
+        if block_plan is not None:
+            self.bus.dispatch(block_plan, context)
 
     def block_unread(self, agent_id: int, task: Task, context: Context) -> None:
-        hold = self.unread_block(agent_id, task)
-        if hold is not None:
-            self.bus.dispatch(hold, context)
+        block_plan = self.unread_block(agent_id, task)
+        if block_plan is not None:
+            self.bus.dispatch(block_plan, context)
 
     def current_block(self, agent_id: int) -> BlockAgent | None:
         started = self.tasks.started_tasks(agent_id)

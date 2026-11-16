@@ -13,5 +13,5 @@ class ReaderRequestAnswer:
     the main agent to help with failed or expired requests, and at the tick the notices that tell it of them."""
 
     agent_messages: tuple[AgentMessage, ...] = ()
-    holds: tuple[ReaderHelpHold, ...] = ()
+    block_plans: tuple[ReaderHelpHold, ...] = ()
     commands: tuple[Command[object], ...] = ()

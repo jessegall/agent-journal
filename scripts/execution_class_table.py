@@ -35,22 +35,22 @@ LIMIT_TABLE = """## Running limits and longest waits
 
 
 def class_rows() -> str:
-    return "\n".join(f"| {row.execution_class.name} | {row.execution_class.lane} | {row.execution_class.slot_cost} | {row.execution_class.priority.name.lower()} | "
+    return "\n".join(f"| {row.execution_class.name} | {row.execution_class.pool} | {row.execution_class.slot_cost} | {row.execution_class.priority.name.lower()} | "
                      f"{'none' if row.execution_class.class_limit == UNLIMITED else row.execution_class.class_limit} |" for row in BUILTIN_CLASSES)
 
 
 def capacity_rows() -> str:
-    return "\n".join(f"| {lane} | {DEFAULT_POOL_LIMITS.capacity(lane)} | {DEFAULT_POOL_LIMITS.starter_cap(lane)} |" for lane in ExecutionLength)
+    return "\n".join(f"| {pool} | {DEFAULT_POOL_LIMITS.capacity(pool)} | {DEFAULT_POOL_LIMITS.starter_cap(pool)} |" for pool in ExecutionLength)
 
 
 def limit_rows() -> str:
     rows = []
-    for lane in ExecutionLength:
+    for pool in ExecutionLength:
         for priority in ExecutionPriority:
-            limit = DEFAULT_POOL_LIMITS.priority_limit(lane, priority)
+            limit = DEFAULT_POOL_LIMITS.priority_limit(pool, priority)
             running = "none" if limit.running_limit == UNLIMITED else str(limit.running_limit)
             wait = "never raised" if priority >= ExecutionPriority.RESERVED else f"{limit.longest_wait_seconds:g} s"
-            rows.append(f"| {lane} | {priority.name.lower()} | {running} | {wait} |")
+            rows.append(f"| {pool} | {priority.name.lower()} | {running} | {wait} |")
     return "\n".join(rows)
 
 

@@ -190,7 +190,7 @@ def new_story(templates: "TemplateDatabases", tmp_path: Path, request: pytest.Fi
         return story
     yield started
     for steps in created if item.stash.get(CALL_PASSED, False) else []:
-        overlap.add(item.nodeid, steps.start, steps.lines(), [] if internal_files.holds(item.path) else steps.path(), steps.fixture, steps.checks())
+        overlap.add(item.nodeid, steps.start, steps.lines(), [] if internal_files.lists(item.path) else steps.path(), steps.fixture, steps.checks())
         steps.story.close()
     created.clear()
     if item.stash.get(CALL_PASSED, False):

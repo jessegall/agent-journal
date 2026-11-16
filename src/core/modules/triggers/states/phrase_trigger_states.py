@@ -30,7 +30,7 @@ class PhraseTriggerStates(StateSource):
         event = question.event
         if event is None or event.event is not HookEventName.PRE_TOOL_USE:
             return {}
-        holds = {agent.agent_id: self.match.answer(event, agent.agent_id).skill_block for agent in agents}
-        return {agent_id: [BlockPlan(hold[0], SkillLoaded(hold[1]), PHRASE_TRIGGER_KEY, PHRASE_SKILL_RANK, tool_grace_uses=SKILL_TOOL_USES, scope_tools=True, scope_stop=False,
-                                     countdown=SKILL_COUNTDOWN.agent_message("{left}", skill=hold[1]))]
-                for agent_id, hold in holds.items() if hold is not None}
+        block_plans = {agent.agent_id: self.match.answer(event, agent.agent_id).skill_block for agent in agents}
+        return {agent_id: [BlockPlan(block_plan[0], SkillLoaded(block_plan[1]), PHRASE_TRIGGER_KEY, PHRASE_SKILL_RANK, tool_grace_uses=SKILL_TOOL_USES, scope_tools=True, scope_stop=False,
+                                     countdown=SKILL_COUNTDOWN.agent_message("{left}", skill=block_plan[1]))]
+                for agent_id, block_plan in block_plans.items() if block_plan is not None}

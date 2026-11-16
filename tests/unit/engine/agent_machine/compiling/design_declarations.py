@@ -25,7 +25,7 @@ WAIVABLE = (BlockEnd.SATISFIED, BlockEnd.WAIVED)
 
 # Doc 1310 revision 2, section 4.6: every hold, by its rank key, the agent types it applies to, the ends it may take
 # and the command lines that satisfy it.
-HOLDS = {
+BLOCK_PLANS = {
     "drivers": [],
     "overview": [("overview.first", MAIN, WAIVABLE, ["journal overview"])],
     "skills": [("skills.command", UNLIMITED_TYPES, (*WAIVABLE, BlockEnd.TARGET_MISSING), ["journal skill read"]),
@@ -159,12 +159,12 @@ class DesignDeclarations:
 
     @staticmethod
     def modules() -> list[ModuleContributions]:
-        names = sorted({*HOLDS, *WORK, *WAITS, *POLICIES, *LINES, *EFFECTS, *TRANSFORMS, *WAKE_CAUSES, *AGENT_LISTENERS, *SUBJECTS})
+        names = sorted({*BLOCK_PLANS, *WORK, *WAITS, *POLICIES, *LINES, *EFFECTS, *TRANSFORMS, *WAKE_CAUSES, *AGENT_LISTENERS, *SUBJECTS})
         return [ModuleContributions(name, name not in SUITE_MODULES, (), tuple(DesignDeclarations.contributions(name))) for name in names]
 
     @staticmethod
     def contributions(module: str) -> list[ContributionDeclaration]:
-        holds = [declaration for rank, agent_types, ends, lifting in HOLDS.get(module, []) for declaration in (
+        block_plans = [declaration for rank, agent_types, ends, lifting in BLOCK_PLANS.get(module, []) for declaration in (
             ContributionDeclaration(f"{rank}-needs", ContributionType.REQUIRED_STATE, rank, tuple(agent_types), "Blocked"),
             ContributionDeclaration(f"{rank}-condition", ContributionType.BLOCK_CONDITION, ends=tuple(ends), lifting_lines=tuple(lifting)))]
         work = [ContributionDeclaration(key, ContributionType.REQUIRED_STATE, "", tuple(agent_types), "Working") for key, agent_types in WORK.get(module, [])]
@@ -179,7 +179,7 @@ class DesignDeclarations:
         listeners = [ContributionDeclaration(key, ContributionType.AGENT_LISTENER) for key in AGENT_LISTENERS.get(module, [])]
         subjects = [ContributionDeclaration(key, ContributionType.SUBJECT) for key in SUBJECTS.get(module, [])]
         compaction = [ContributionDeclaration("drivers.compaction-due", ContributionType.REQUIRED_STATE, "", UNLIMITED_TYPES, "Compacting")] if module == "drivers" else []
-        return [*holds, *work, *waits, *compaction, *policies, *lines, *effects, *transforms, *wakes, *listeners, *subjects]
+        return [*block_plans, *work, *waits, *compaction, *policies, *lines, *effects, *transforms, *wakes, *listeners, *subjects]
 
     @staticmethod
     def drivers() -> list[DriverDeclaration]:

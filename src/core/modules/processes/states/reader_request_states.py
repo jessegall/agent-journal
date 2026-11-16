@@ -26,7 +26,7 @@ class ReaderRequestStates(StateSource):
     def states(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[RequiredState | BlockPlan]]:
         if question.event is None or question.event.event is HookEventName.TICK:
             return {}
-        holds = {agent.agent_id: self.blocks.answer(question.event, agent.agent_id).holds for agent in agents}
-        return {agent_id: [BlockPlan(hold.agent_message, hold.condition, READER_REQUEST_KEY, READER_REQUEST_KEY, tool_grace_uses=READER_REQUEST_SPAN.count, scope_tools=True, scope_stop=False,
-                                     countdown=READER_REQUEST_COUNTDOWN.agent_message("{left}", command=hold.command))
-                           for hold in agent_holds] for agent_id, agent_holds in holds.items() if agent_holds}
+        block_plans = {agent.agent_id: self.blocks.answer(question.event, agent.agent_id).block_plans for agent in agents}
+        return {agent_id: [BlockPlan(block_plan.agent_message, block_plan.condition, READER_REQUEST_KEY, READER_REQUEST_KEY, tool_grace_uses=READER_REQUEST_SPAN.count, scope_tools=True, scope_stop=False,
+                                     countdown=READER_REQUEST_COUNTDOWN.agent_message("{left}", command=block_plan.command))
+                           for block_plan in agent_block_plans] for agent_id, agent_block_plans in block_plans.items() if agent_block_plans}

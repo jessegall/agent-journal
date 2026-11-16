@@ -10,8 +10,8 @@ def written(root, text):
 
 def test_a_listed_story_file_passes_the_overlap_check_by_and_an_unlisted_one_does_not(tmp_path):
     files = written(tmp_path, "tests/stories/core/listed.py\n")
-    assert files.holds(tmp_path / "tests/stories/core/listed.py")
-    assert not files.holds(tmp_path / "tests/stories/core/unlisted.py")
+    assert files.lists(tmp_path / "tests/stories/core/listed.py")
+    assert not files.lists(tmp_path / "tests/stories/core/unlisted.py")
 
 
 def test_the_header_and_blank_lines_name_no_file(tmp_path):
@@ -20,4 +20,4 @@ def test_the_header_and_blank_lines_name_no_file(tmp_path):
 
 
 def test_with_no_list_file_no_story_passes_by(tmp_path):
-    assert not InternalStoryFiles(tmp_path).holds(tmp_path / "tests/stories/core/listed.py")
+    assert not InternalStoryFiles(tmp_path).lists(tmp_path / "tests/stories/core/listed.py")

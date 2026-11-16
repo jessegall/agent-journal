@@ -36,6 +36,6 @@ class WorkerUnitStates(StateSource):
 
     @staticmethod
     def working(agent_id: int, text: str) -> RequiredState:
-        reason = Reason(WORKER_STOP_KEY, DecisionClass.HOLD, WORKER_STOP_RANK, text)
+        reason = Reason(WORKER_STOP_KEY, DecisionClass.BLOCK, WORKER_STOP_RANK, text)
         return RequiredState(Working(WorkReference(WorkType.UNIT, agent_id, f"the unit of worker {agent_id}"), True, reason), WORKER_STOP_RANK,
                     StateKey("Working", RowReference(Agent.model_name, agent_id), f"unit:{agent_id}"))

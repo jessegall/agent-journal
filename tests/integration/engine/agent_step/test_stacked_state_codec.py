@@ -13,7 +13,7 @@ from engine.enums.wait_mode import WaitMode
 from engine.enums.work_type import WorkType
 from engine.testing.agent_machine.stack_samples import StackSamples
 
-REASON = Reason("documents.open", DecisionClass.HOLD, "documents.open", "close document 41", ("journal doc close 41",), RowReference("document", 41))
+REASON = Reason("documents.open", DecisionClass.BLOCK, "documents.open", "close document 41", ("journal doc close 41",), RowReference("document", 41))
 
 
 def test_every_state_and_its_nested_values_come_back_as_they_were_stored() -> None:

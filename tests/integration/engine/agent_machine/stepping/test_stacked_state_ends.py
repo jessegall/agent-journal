@@ -17,7 +17,7 @@ from engine.enums.work_stop import WorkStop
 from engine.testing.agent_machine.view_samples import ViewSamples
 
 ENTERED = datetime(2026, 10, 31, 9, 0, tzinfo=timezone.utc)
-HOLD = StackedState(Blocked(OpenBlock("messages.unread", 3, Reason("messages.unread", DecisionClass.HOLD, "messages.unread", "read your messages"), True, True, True, True, False)),
+HOLD = StackedState(Blocked(OpenBlock("messages.unread", 3, Reason("messages.unread", DecisionClass.BLOCK, "messages.unread", "read your messages"), True, True, True, True, False)),
              StateKey("Blocked", None, "messages.unread"), ENTERED)
 
 

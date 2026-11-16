@@ -40,6 +40,6 @@ class SequenceWorkStates(StateSource):
         run = self.runs.current(agent_id)
         if run is None:
             return []
-        reason = Reason(SEQUENCE_STOP_KEY, DecisionClass.HOLD, SEQUENCE_RANK, SequenceUnfinishedMessage.declared().agent_message(sequence=run.sequence_id, step=run.step_number).text)
+        reason = Reason(SEQUENCE_STOP_KEY, DecisionClass.BLOCK, SEQUENCE_RANK, SequenceUnfinishedMessage.declared().agent_message(sequence=run.sequence_id, step=run.step_number).text)
         return [RequiredState(Working(WorkReference(WorkType.SEQUENCE, run.id, f"sequence {run.sequence_id}"), not self.blockers.is_waiting(agent_id), reason), SEQUENCE_RANK,
                      StateKey("Working", RowReference(SEQUENCE_SUBJECT, run.id), f"sequence_run:{run.id}"))]

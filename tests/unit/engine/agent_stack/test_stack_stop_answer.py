@@ -24,8 +24,8 @@ from engine.enums.work_stop import WorkStop
 from engine.enums.work_type import WorkType
 
 STARTED_AT = datetime(2026, 11, 15, tzinfo=UTC)
-TASK_REFUSAL = Reason("tasks.stop", DecisionClass.HOLD, "tasks.started", "task 6 is started")
-MESSAGES_REFUSAL = Reason("messages.unread-at-stop", DecisionClass.HOLD, "messages.unread", "read message 7")
+TASK_REFUSAL = Reason("tasks.stop", DecisionClass.BLOCK, "tasks.started", "task 6 is started")
+MESSAGES_REFUSAL = Reason("messages.unread-at-stop", DecisionClass.BLOCK, "messages.unread", "read message 7")
 
 
 def stacked_state(state: State, name: str) -> StackedState:

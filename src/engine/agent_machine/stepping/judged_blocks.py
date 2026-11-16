@@ -44,7 +44,7 @@ class JudgedBlocks:
 
     @staticmethod
     def planned(plan: BlockPlan) -> OpenBlock:
-        reason = Reason(plan.tool_check_key, DecisionClass.HOLD, plan.rank, plan.agent_message.text, plan.lifting_lines, plan.subject)
-        stop_reason = Reason(plan.stop_check_key or plan.tool_check_key, DecisionClass.HOLD, plan.rank, plan.stop_agent_message.text, plan.lifting_lines, plan.subject) if plan.stop_agent_message is not None else None
+        reason = Reason(plan.tool_check_key, DecisionClass.BLOCK, plan.rank, plan.agent_message.text, plan.lifting_lines, plan.subject)
+        stop_reason = Reason(plan.stop_check_key or plan.tool_check_key, DecisionClass.BLOCK, plan.rank, plan.stop_agent_message.text, plan.lifting_lines, plan.subject) if plan.stop_agent_message is not None else None
         return OpenBlock(plan.agent_message.key, None, reason, plan.scope_tools, plan.scope_stop, plan.tool_grace_uses == 0, plan.stop_grace_seconds == 0,
                         plan.is_strict, plan.subject, stop_reason)

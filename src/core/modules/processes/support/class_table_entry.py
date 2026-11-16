@@ -16,7 +16,7 @@ class ClassTableEntry:
         occupies = f", holds {execution_class.line_pattern}" if execution_class.line_pattern else f", holds plugin {execution_class.plugin}" if execution_class.plugin else ""
         limit = "no class limit" if execution_class.class_limit == UNLIMITED else f"{execution_class.class_limit} at once"
         return ROW_LINE.format(name=execution_class.name, pool=execution_class.pool, cost=execution_class.slot_cost, priority=execution_class.priority.label,
-                               limit=limit, holds=occupies, origin=self.origin)
+                               limit=limit, applies_to=occupies, origin=self.origin)
 
     def json(self) -> dict[str, object]:
         execution_class = self.execution_class

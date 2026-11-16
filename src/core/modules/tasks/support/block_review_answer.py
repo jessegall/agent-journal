@@ -11,4 +11,4 @@ class BlockReviewAnswer:
 
     notices: tuple[AgentMessage, ...]
     record: Command[object] | None
-    hold: tuple[AgentMessage, TaskBlocksReviewed] | None
+    block_plan: tuple[AgentMessage, TaskBlocksReviewed] | None

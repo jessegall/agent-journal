@@ -57,7 +57,7 @@ class TaskWorkStates(StateSource):
         if not started:
             return []
         remains = self.blocks_stop(agent_id)
-        reason = Reason(TASK_STOP_KEY, DecisionClass.HOLD, TASK_RANK, self.stop_text(started))
+        reason = Reason(TASK_STOP_KEY, DecisionClass.BLOCK, TASK_RANK, self.stop_text(started))
         return [RequiredState(Working(WorkReference(WorkType.TASK, task.id, f"task {task.id}"), remains, reason), TASK_RANK,
                      StateKey("Working", RowReference(Task.model_name, task.id), f"task:{task.id}")) for task in started]
 
