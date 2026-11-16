@@ -1,4 +1,12 @@
 from pathlib import Path
+from collections.abc import Sequence
+from engine.agent_machine.states.agent_reference import AgentReference
+from engine.agent_stack.reason import Reason
+from engine.command.command import Command
+from engine.command.move_command import MoveCommand
+from engine.enums.decision_class import DecisionClass
+from core.modules.tasks.commands.start_task.start_task import StartTask
+
 
 from engine.agent_machine.contracts.event_policy import EventPolicy
 from engine.driver.hook_event import HookEvent
@@ -24,6 +32,7 @@ class CheckoutWriteCodePolicy(EventPolicy):
     key = "coding.main-writes-no-code"
     rank = "access.all"
     agent_types = [AgentRole.MAIN.value]
+    entry_point_commands = [StartTask]
 
     def __init__(self, options: CodingMainOptions, rows: EventRows) -> None:
         self.options, self.rows = options, rows
@@ -41,6 +50,12 @@ class CheckoutWriteCodePolicy(EventPolicy):
             return None
         writes = shell.parse_error or not shell.parts or shell.has_uncertain_part or shell.has_non_journal_file_writes
         return MainCodeEditRefusalMessage.declared().agent_message() if writes or shell.disallowed_part(ALLOWED_COMMANDS) is not None else None
+
+    # a main agent that writes no code starts no task itself, which the task's start asks at its entry point
+    def entry_point_refusals(self, command: Command[object], agent: AgentReference) -> Sequence[Reason]:
+        if self.options.options().writes_code or not isinstance(command, MoveCommand):
+            return []
+        return [Reason(self.key, DecisionClass.REFUSE, self.rank, f"task {command.row_id} goes to a worker: the main agent writes no code here; leave it open for a worker")]
 
     @staticmethod
     def is_project_file(folder: Path, file: str) -> bool:

@@ -23,6 +23,8 @@ from suites.coding.modules.workers.policies.dispatch.dispatch_allowance_policy i
 from suites.coding.modules.workers.policies.test_runs.phase_test_policy import PhaseTestPolicy
 from suites.coding.modules.workers.policies.protected_folder_policy import ProtectedFolderPolicy
 from suites.coding.modules.workers.policies.readonly_helper_allowance_policy import ReadonlyHelperAllowancePolicy
+from suites.coding.modules.workers.policies.merge_allowance_policy import MergeAllowancePolicy
+from suites.coding.modules.workers.policies.worker_helper_allowance_policy import WorkerHelperAllowancePolicy
 from suites.coding.modules.workers.policies.worker_file_policy import WorkerFilePolicy
 from suites.coding.modules.workers.policies.worker_outside_link_policy import WorkerOutsideLinkPolicy
 from suites.coding.modules.workers.policies.worker_read_policy import WorkerReadPolicy
@@ -154,7 +156,7 @@ class WorkersModule(Module):
     block_conditions = [DeliveredProofsChecked]
     states = [MainStopStates, WorkerUnitStates, MergeJobStates, CompactionStates, DeliveredWorkStopStates, WorkerStatusFirstStates]
     lines = [InactiveWorkerStopLines, CacheRefreshLines, WorkerBlockedTaskLines, CompactionRequestLines, ContextStopNowLines, InactiveHelperLines, MergeCheckoutLines, PhaseTestLines, SmallBatchLines, StoppedWorkerLines, UnmergedWorkerLines, UnstartedWorkerLines, WorkerLogDueLines, WorkersOutLines]
-    policies = [WorkerGitPolicy, WorkerJudgeScopePolicy, DispatchNamesModelPolicy, ProvedDeliveryPolicy, ContextHardLimitPolicy, CheckoutWriteCodePolicy, DispatchAllowancePolicy, PhaseTestPolicy, ProtectedFolderPolicy, ReadonlyHelperAllowancePolicy, WorkerFilePolicy, WorkerOutsideLinkPolicy, WorkerReadPolicy, WorkerReusePolicy, WorkerTestLinePolicy, WorkerTestCountPolicy]
+    policies = [MergeAllowancePolicy, WorkerHelperAllowancePolicy, WorkerGitPolicy, WorkerJudgeScopePolicy, DispatchNamesModelPolicy, ProvedDeliveryPolicy, ContextHardLimitPolicy, CheckoutWriteCodePolicy, DispatchAllowancePolicy, PhaseTestPolicy, ProtectedFolderPolicy, ReadonlyHelperAllowancePolicy, WorkerFilePolicy, WorkerOutsideLinkPolicy, WorkerReadPolicy, WorkerReusePolicy, WorkerTestLinePolicy, WorkerTestCountPolicy]
     profiles = WORKER_PROFILES
     helper_types = [Worker, Merger]
     helper_lines = [WorkersHelperLines]

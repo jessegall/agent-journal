@@ -1,3 +1,5 @@
+from suites.coding.modules.workers.agent_messages.main_merge_ban_message import MainMergeBanMessage
+from suites.coding.modules.workers.agent_messages.worker_helper_ban_message import WorkerHelperBanMessage
 from suites.coding.modules.workers.agent_messages.unfinished_merge_message import UnfinishedMergeMessage
 from suites.coding.modules.workers.support.behind_agent_messages import STALE_AGENT_MESSAGES
 from suites.coding.modules.workers.agent_messages.merger_line_available_message import MergerLineAvailableMessage
@@ -13,4 +15,4 @@ from suites.coding.modules.workers.agent_messages.worker_test_count_unknown_mess
 from suites.coding.modules.workers.agent_messages.worker_test_limit_refusal_message import WorkerTestLimitRefusalMessage
 from suites.coding.modules.workers.agent_messages.worker_test_limit_stop_message import WorkerTestLimitStopMessage
 
-WORKERS_MODULE_AGENT_MESSAGES = [UnfinishedMergeMessage, MergeHookFailedMessage, UnitBlockedMessage, UnitMergeWaitsMessage, UnitMergedMessage, TasklessWorkerMessage, MergerLineAvailableMessage, WorkerMergedMessage, MergerPassedMessage, *WORKER_AGENT_MESSAGES, *STALE_AGENT_MESSAGES, WorkerTestCountUnknownMessage, WorkerTestLimitStopMessage, WorkerTestLimitRefusalMessage]
+WORKERS_MODULE_AGENT_MESSAGES = [MainMergeBanMessage, WorkerHelperBanMessage, UnfinishedMergeMessage, MergeHookFailedMessage, UnitBlockedMessage, UnitMergeWaitsMessage, UnitMergedMessage, TasklessWorkerMessage, MergerLineAvailableMessage, WorkerMergedMessage, MergerPassedMessage, *WORKER_AGENT_MESSAGES, *STALE_AGENT_MESSAGES, WorkerTestCountUnknownMessage, WorkerTestLimitStopMessage, WorkerTestLimitRefusalMessage]
