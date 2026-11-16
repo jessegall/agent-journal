@@ -1,7 +1,7 @@
 from engine.database.migration import Migration
 
 
-class ProcessAdmissionMigration(Migration):
+class ProcessStartCheckMigration(Migration):
     """Keeps the admission time and spot ownership on each process."""
 
     number = 23

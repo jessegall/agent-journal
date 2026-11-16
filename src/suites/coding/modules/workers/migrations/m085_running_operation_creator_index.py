@@ -1,7 +1,7 @@
 from engine.database.migration import Migration
 
 
-class RunningOperationCreatorIndexMigration(Migration):
+class ActiveOperationCreatorIndexMigration(Migration):
     """Finds the merges a merger runs, by the merger that made them, without scanning the table."""
 
     number = 85

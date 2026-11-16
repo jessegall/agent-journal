@@ -1,7 +1,7 @@
 from engine.database.migration import Migration
 
 
-class DriverEpochJournalStartMigration(Migration):
+class DriverVersionJournalStartMigration(Migration):
     """Gives each environment's driver epoch the time the journal last started, which only a start writes; a
     driving setting moves the epoch too, so the row's own time is not the start."""
 

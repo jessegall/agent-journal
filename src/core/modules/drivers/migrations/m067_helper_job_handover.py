@@ -1,7 +1,7 @@
 from engine.database.migration import Migration
 
 
-class HelperJobHandoverMigration(Migration):
+class HelperJobReportMigration(Migration):
     """Gives a helper job the four columns of its handover (doc 1310 section 4.9): where it stands, where its
     text came from, how often its save failed, and the text kept when it could not be saved."""
 

@@ -3,7 +3,7 @@ from engine.database.migration import Migration
 RUN_SLOT_COST = 4
 
 
-class LongLaneCapacityMigration(Migration):
+class LongPoolCapacityMigration(Migration):
     """Carries the runs-at-once setting into the long lane's capacity in slot units: a test run costs 4, so 2 runs
     at once become a capacity of 8 and none is lost. The old setting stays until the old queue is removed."""
 
