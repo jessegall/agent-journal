@@ -42,6 +42,21 @@ class Repository:
     def update(self, stored: M, context: Context, **values: object) -> M:
         return self.save_change(stored, stored.changed(**values), context)
 
+    def insert_many(self, models: Sequence[M], context: Context) -> list[M]:
+        if not models:
+            return []
+        if any(type(model) is not type(models[0]) or model.is_saved for model in models):
+            raise ValueError("insert_many needs new rows of one model")
+        changes = [Change(None, self.scopes.applied(model), context) for model in models]
+        skipped = [self.guards.helper_question(change) for change in changes]
+        table = self.tables.table(type(models[0]))
+        statement = TableStatements(table).insert_many([table.row(change.row, table.columns) for change in changes], context.timestamp)
+        last_id = self.guarded(lambda: self.database.insert(statement), table, False)
+        saved_rows = [change.row.saved(last_id - len(changes) + place, 1, context.timestamp) for place, change in enumerate(changes, start=1)]
+        for saved, change, skipped_guards in zip(saved_rows, changes, skipped, strict=True):
+            self.logged(saved, change, skipped_guards)
+        return saved_rows
+
     def update_many(self, stored_rows: Sequence[M], context: Context, **values: object) -> list[M]:
         changes = [change for change in (Change(row, self.scopes.applied(row.changed(**values)), context) for row in stored_rows) if not change.is_empty]
         if len({(type(change.row), tuple(change.stored_fields)) for change in changes}) > 1:
@@ -55,15 +70,16 @@ class Repository:
         updated_count = self.guarded(lambda: self.database.update(TableStatements(table).update_many(versions, changed, context.timestamp)), table, False)
         if updated_count != len(changes):
             raise StaleRowError(changes[0].row.cli_name, changes[0].row.id)
-        saved_rows = []
-        for change, skipped_guards in zip(changes, skipped, strict=True):
-            saved = change.row.saved(change.row.id, change.row.version + 1, context.timestamp)
-            self.event_rows.remember(saved)
-            saved_change = replace(change, new_row=replace(saved, move=change.row.move))
-            self.log.write(saved_change, skipped_guards)
-            self.listeners.run_save_listeners(saved_change)
-            saved_rows.append(saved)
+        saved_rows = [change.row.saved(change.row.id, change.row.version + 1, context.timestamp) for change in changes]
+        for saved, change, skipped_guards in zip(saved_rows, changes, skipped, strict=True):
+            self.logged(saved, change, skipped_guards)
         return saved_rows
+
+    def logged(self, saved: M, change: Change[M], skipped: frozenset[str]) -> None:
+        self.event_rows.remember(saved)
+        saved_change = replace(change, new_row=replace(saved, move=change.row.move))
+        self.log.write(saved_change, skipped)
+        self.listeners.run_save_listeners(saved_change)
 
     def save_metadata(self, stored: M, metadata: Metadata, context: Context) -> M:
         return self.save_change(stored, replace(stored, metadata=metadata), context, stores_metadata=True)
@@ -75,10 +91,7 @@ class Repository:
             return change.old_row
         skipped = self.guards.helper_question(change)
         saved = self.persist(model, change)
-        self.event_rows.remember(saved)
-        saved_change = replace(change, new_row=replace(saved, move=model.move))
-        self.log.write(saved_change, skipped)
-        self.listeners.run_save_listeners(saved_change)
+        self.logged(saved, change, skipped)
         return saved
 
     def merge(self, existing: M | None, model: M, context: Context) -> M:

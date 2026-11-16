@@ -23,6 +23,7 @@ class ContextStopNowLines(EventLineSource):
     task, is told to stop, so that its stop compacts it; the first is told again only ten minutes later."""
 
     key = "workers.context-limit-stop-now"
+    reads_line_history = True
     events = [HookEventName.POST_TOOL_USE]
     agent_types = [AgentRole.MAIN.value, Worker.key]
 

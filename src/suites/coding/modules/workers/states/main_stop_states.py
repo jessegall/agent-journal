@@ -56,7 +56,7 @@ class MainStopStates(StateSource):
     def working(self, agent_id: int, is_stop: bool) -> list[RequiredState | BlockPlan]:
         if agent_id in self.unfinished_work.waiting_agents([agent_id], self.clock.timestamp()):
             return []
-        handed = self.work.answer(agent_id).assigned_task
+        handed = self.work.handed_task(agent_id)
         if handed is not None:
             reason = Reason(MAIN_STOP_KEY, DecisionClass.BLOCK, MAIN_STOP_RANK, TaskAssignmentMessage.declared().agent_message(task=handed.id).text)
             return [RequiredState(Working(WorkReference(WorkType.HANDED_TASK, handed.id, f"task {handed.id}"), True, reason), MAIN_STOP_RANK,

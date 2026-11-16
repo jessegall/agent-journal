@@ -66,7 +66,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         agent_ids = tuple(agent.id for agent in agents)
         activities = {row.id: row for row in self.queries.query(AgentActivity).matching(Among("id", agent_ids)).every_row(CHECKED_AGENTS_REASON)}
         working = set(self.assigner.agent_tasks(agent_ids))
-        tasks_remain = self.task_query.delegation_candidates().exists()
+        tasks_remain = self.task_query.has_delegation_candidates()
         worktrees = tuple(self.worktree_query.open_worktrees())
         workers = {row.session_agent_id for row in worktrees}
         excluded = self.work.waiting_agents(agent_ids, context.timestamp)

@@ -32,6 +32,9 @@ class MachineAssembly:
                             self.covering(agent_type, lambda module: module.lines), self.covering(agent_type, lambda module: module.effects),
                             [self.container.get(cls) for cls, module in self.listed(lambda module: module.wake_causes)])
 
+    def history_keys(self) -> frozenset[str]:
+        return frozenset(cls.key for cls, _ in self.listed(lambda module: module.lines) if cls.reads_line_history)
+
     def with_states(self, view: AgentView, question: Question) -> AgentView:
         sources = self.covering(view.agent.agent_type, lambda module: module.states)
         given = [item for source in sources for item in source.states([view.agent], question).get(view.agent.agent_id, ())]

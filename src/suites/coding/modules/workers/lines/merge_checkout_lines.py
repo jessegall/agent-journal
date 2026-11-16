@@ -24,6 +24,7 @@ class MergeCheckoutLines(EventLineSource):
     merge."""
 
     key = "workers.merge-waits-for-checkout"
+    reads_line_history = True
     events = [HookEventName.TICK]
     agent_types = [AgentRole.MAIN.value]
 

@@ -14,6 +14,7 @@ class RunnerMissingLines(EventLineSource):
     """An agent whose shell lines run as written, because the runner is not installed, is told so once."""
 
     key = RUNNER_REWRITE_KEY
+    reads_line_history = True
     events = [HookEventName.PRE_TOOL_USE]
 
     def __init__(self, plan: RunnerPlan, runner: RunnerBinary, history: LineHistory) -> None:

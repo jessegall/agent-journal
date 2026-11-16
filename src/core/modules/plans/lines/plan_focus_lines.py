@@ -27,6 +27,7 @@ class PlanFocusLines(EventLineSource):
     line goes to the agent that runs the tool, about its focus alone."""
 
     key = FOCUS_RULE_NAME
+    reads_line_history = True
     events = [HookEventName.POST_TOOL_USE]
     agent_types = [AgentRole.MAIN.value, AgentRole.HELPER.value]
 

@@ -47,6 +47,7 @@ class InactiveHelperLines(EventLineSource):
     not started. The merger waits between workers by design, so it is not named for being inactive."""
 
     key = INACTIVE_HELPER_KEY
+    reads_line_history = True
     events = [HookEventName.TICK]
     agent_types = [AgentRole.MAIN.value, Worker.key]
 

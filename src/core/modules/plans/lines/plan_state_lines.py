@@ -35,6 +35,7 @@ class PlanStateLines(EventLineSource):
     the main agent."""
 
     key = "plans.state-lines"
+    reads_line_history = True
     events = [HookEventName.POST_TOOL_USE]
     agent_types = [AgentRole.MAIN.value]
 

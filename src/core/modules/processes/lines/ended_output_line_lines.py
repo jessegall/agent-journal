@@ -17,6 +17,7 @@ class EndedOutputLineLines(EventLineSource):
     to read such a run better is sent by ReadingNotices when the run ends."""
 
     key = "processes.ended-output-line"
+    reads_line_history = True
     events = [event for event in HookEventName if event is not HookEventName.TICK]
 
     def __init__(self, processes: ProcessQuery, history: LineHistory) -> None:

@@ -22,6 +22,7 @@ class StalledTaskLines(EventLineSource):
     it to carry on or log why the task waits, once per quiet stretch."""
 
     key = "tasks.quiet-task"
+    reads_line_history = True
     events = [HookEventName.TICK]
     agent_types = [AgentRole.MAIN.value]
 

@@ -26,16 +26,23 @@ class AvailableWork:
             return AvailableWorkAnswer(None, ())
         controls = self.options.options()
         delegatable = self.delegatable(controls.sends_workers)
-        assigned_task = None if self.tasks.holder(main_agent_id).started().exists() else self.assigned_task(main_agent_id, controls, delegatable)
+        assigned_task = None if self.tasks.holder(main_agent_id).started().exists() else self.assigned_task(main_agent_id, controls, bool(delegatable))
         return AvailableWorkAnswer(assigned_task, delegatable, self.places.free_count() if delegatable else 0)
+
+    def handed_task(self, main_agent_id: int) -> Task | None:
+        if self.next_task.exceeds_context_limit(main_agent_id) or self.tasks.holder(main_agent_id).started().exists():
+            return None
+        controls = self.options.options()
+        can_delegate = controls.sends_workers and self.places.can_start_new() and self.tasks.has_delegation_candidates()
+        return self.assigned_task(main_agent_id, controls, can_delegate)
 
     def is_stop_compacting(self, main_agent_id: int) -> bool:
         return self.next_task.allows_stop_with_tasks(main_agent_id)
 
     # the full hand-out order, whose last step is the reserved task, when the agent takes work by itself; else only
     # a task reserved for it
-    def assigned_task(self, main_agent_id: int, controls: MainOptions, delegatable: tuple[int, ...]) -> Task | None:
-        if controls.auto or (not delegatable and controls.continues_work and controls.writes_code):
+    def assigned_task(self, main_agent_id: int, controls: MainOptions, can_delegate: bool) -> Task | None:
+        if controls.auto or (not can_delegate and controls.continues_work and controls.writes_code):
             return self.next_task.following(main_agent_id)
         return self.next_task.reserved(main_agent_id)
 

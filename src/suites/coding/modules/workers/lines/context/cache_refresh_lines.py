@@ -13,6 +13,7 @@ class CacheRefreshLines(EventLineSource):
     """The short line that wakes an idle main agent to keep its prompt cache; it asks for no work."""
 
     key = CACHE_KEEPALIVE_KEY
+    reads_line_history = True
     events = [HookEventName.TICK]
     agent_types = [AgentRole.MAIN.value]
 

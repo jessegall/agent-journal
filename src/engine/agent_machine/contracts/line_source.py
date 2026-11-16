@@ -27,6 +27,7 @@ class LineSource(ABC):
     channel: ClassVar[LineChannel] = LineChannel.IMMEDIATE
     category: ClassVar[LineCategory] = LineCategory.INFORMATION
     interval_key: ClassVar[str] = ""
+    reads_line_history: ClassVar[bool] = False
 
     @abstractmethod
     def lines(self, question: Question, view: AgentView) -> Sequence[Line]: ...

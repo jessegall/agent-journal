@@ -61,6 +61,7 @@ class MessageLog:
             current = self.record(agent_id, agent_message, records)
             if agent_message.interval and current.text != agent_message.text:
                 current = next((row for row in records if row.key == agent_message.key and row.text == agent_message.text), current)
-            saved = self.repository.save_change(current if current.is_saved else None,
-                                        replace(current, creator_id=context.actor.id, text=agent_message.text, delivery_count=current.delivery_count + 1, last_delivered_at=context.timestamp), context)
-            records = [saved, *(row for row in records if row.id != saved.id)]
+            given = replace(current, creator_id=context.actor.id, text=agent_message.text, delivery_count=current.delivery_count + 1, last_delivered_at=context.timestamp)
+            saved = self.repository.save_change(current, given, context) if current.is_saved else given
+            records = [saved, *(row for row in records if row is not current)]
+        self.repository.insert_many([row for row in records if not row.is_saved], context)

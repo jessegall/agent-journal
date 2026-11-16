@@ -5,7 +5,9 @@ from engine.agent_machine.states.block_plan import BlockPlan
 from engine.enums.closer_role import CloserRole
 from core.modules.messages.agent_messages.unread_message_stop_notice import UnreadMessageStopNotice
 from core.modules.messages.agent_messages.unread_refusal_message import UnreadRefusalMessage
+from core.modules.messages.models.message import Message
 from core.modules.messages.queries.message_query import MessageQuery
+from engine.database.kept_rows import KeptRows
 from core.modules.messages.support.block_conditions.messages_read import MessagesRead
 from core.modules.messages.support.message_agent_messages import UNREAD_TOOL_USES
 from engine.agent_machine.contracts.agent_plan_states import AgentPlanStates
@@ -23,18 +25,22 @@ class UnreadMessageStates(AgentPlanStates):
     state_type = Blocked
     rank = UNREAD_RANK
 
-    def __init__(self, messages: MessageQuery) -> None:
-        self.messages = messages
+    def __init__(self, messages: MessageQuery, kept: KeptRows) -> None:
+        self.messages, self.kept = messages, kept
 
     def plan(self, agent_id: int) -> BlockPlan | None:
         unread = self.messages.unread(agent_id).oldest()
-        shown = unread.take(MESSAGE_COUNT_SHOWN)
+        shown, count = self.kept.read(unread, lambda: self.unread_listing(unread), name="messages.unread-block")
         if not shown:
             return None
-        count = unread.count() if len(shown) == MESSAGE_COUNT_SHOWN else len(shown)
         refusal = UnreadRefusalMessage.declared().agent_message(count=count, messages=", ".join(str(message.id) for message in shown))
         return BlockPlan(refusal, MessagesRead([message.id for message in shown]), TOOL_KEY, UNREAD_RANK, stop_check_key=STOP_KEY,
                          members=tuple(message.id for message in shown), tool_grace_uses=UNREAD_TOOL_USES, scope_stop=True,
                          closer_roles=(CloserRole.AGENT,), lifting_lines=READ_COMMANDS,
                          stop_agent_message=UnreadMessageStopNotice.declared().agent_message(message=shown[0].id),
                          countdown=UNREAD_COUNTDOWN.agent_message("{left}", messages=", ".join(str(message.id) for message in shown)))
+
+    @staticmethod
+    def unread_listing(unread: MessageQuery) -> tuple[list[Message], int]:
+        shown = unread.take(MESSAGE_COUNT_SHOWN)
+        return shown, unread.count() if len(shown) == MESSAGE_COUNT_SHOWN else len(shown)

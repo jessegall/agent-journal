@@ -3,6 +3,7 @@ from core.modules.drivers.support.message_log import MessageLog
 from core.modules.drivers.support.required_commands import RequiredCommands
 from core.modules.drivers.support.line_history_writer import LineHistoryWriter
 from core.modules.drivers.support.read_versions_rows import ReadVersionsRows
+from core.modules.drivers.support.read_versions_writers import ReadVersionsWriters
 from engine.enums.closer_role import CloserRole
 import json
 from collections.abc import Mapping, Sequence
@@ -51,9 +52,9 @@ class StoredStepWriter(StepWriter):
     wake. A step outside a hook that changed nothing runs only its unconditional effects."""
 
     def __init__(self, queries: Queries, repository: Repository, bus: Bus, database: Database, grant_store: GrantLedger, message_sender: MessageSender, stacks: ReadVersionsRows,
-                 effect_commands: EffectCommands, agent_message_log: MessageLog, history: LineHistoryWriter, required_commands: RequiredCommands) -> None:
+                 effect_commands: EffectCommands, agent_message_log: MessageLog, history: LineHistoryWriter, required_commands: RequiredCommands, versions: ReadVersionsWriters) -> None:
         self.message_sender, self.stacks, self.effect_commands, self.agent_message_log, self.history = message_sender, stacks, effect_commands, agent_message_log, history
-        self.required_commands = required_commands
+        self.required_commands, self.versions = required_commands, versions
         self.grant_store = grant_store
         self.queries, self.repository, self.bus, self.database = queries, repository, bus, database
 
@@ -67,10 +68,10 @@ class StoredStepWriter(StepWriter):
             failures, _ = self.run_effects(record.unconditional_effects, view, record, False, context)
             return StepCommit.saved(None, tuple(failures))
         row = self.saved_stack(row, view, step, context)
-        for move in record.moves:
-            self.repository.save(AgentStackMove(session_agent_id=view.agent.agent_id, move_type=move.move_type, stacked_state_key=f"{move.stacked_state_key.state_name}:{move.stacked_state_key.generation}" if move.stacked_state_key is not None else "",
+        self.repository.insert_many([AgentStackMove(session_agent_id=view.agent.agent_id, move_type=move.move_type, stacked_state_key=f"{move.stacked_state_key.state_name}:{move.stacked_state_key.generation}" if move.stacked_state_key is not None else "",
                                                 reason_text=move.reason_text, previous_version=view.read_versions.stack_version, version_after=row.version,
-                                                step_cause=STEP_CAUSE, hook_call_id=hook_call_id, stacked_state_end=move.stacked_state_end, actor_id=move.actor_id), context)
+                                                step_cause=STEP_CAUSE, hook_call_id=hook_call_id, stacked_state_end=move.stacked_state_end, actor_id=move.actor_id)
+                                     for move in record.moves], context)
         self.open_blocks(record.blocks_opened, view, record, context)
         self.close_blocks(record.blocks_closed, context)
         self.save_escalation(view, record, context)
@@ -125,11 +126,11 @@ class StoredStepWriter(StepWriter):
         stack = row.changed(**values) if row is not None else AgentStack(session_agent_id=view.agent.agent_id, **values)
         saved = self.repository.save_change(row, stack, context)
         self.stacks.remember(saved)
+        self.versions.note_saved_stack(saved.session_agent_id)
         return saved
 
     def open_blocks(self, plans: Sequence[BlockPlan], view: AgentView, record: DecisionRecord, context: Context) -> None:
-        for plan in plans:
-            self.repository.save(AgentBlock(session_agent_id=view.agent.agent_id, creator_id=view.agent.agent_id, agent_message_key=plan.agent_message.key,
+        self.repository.insert_many([AgentBlock(session_agent_id=view.agent.agent_id, creator_id=view.agent.agent_id, agent_message_key=plan.agent_message.key,
                                             agent_message_text=plan.agent_message.text, condition_name=type(plan.condition).name, condition_text=plan.condition.text,
                                             grace_tool_uses=plan.tool_grace_uses, strict=plan.is_strict,
                                             scope_tools=plan.scope_tools, scope_stop=plan.scope_stop, stop_grace_seconds=plan.stop_grace_seconds,
@@ -138,7 +139,8 @@ class StoredStepWriter(StepWriter):
                                             context_generation=plan.context_generation, lifting_lines=plan.lifting_lines,
                                             closer_roles=tuple(role.value for role in plan.closer_roles), opener=MACHINE_OPENER,
                                             is_skippable=CloserRole.AGENT in plan.closer_roles, opening_event_id=record.identity.event_id,
-                                            countdown_key=plan.countdown.key if plan.countdown is not None else "", countdown_text=plan.countdown.text if plan.countdown is not None else ""), context)
+                                            countdown_key=plan.countdown.key if plan.countdown is not None else "", countdown_text=plan.countdown.text if plan.countdown is not None else "")
+                                     for plan in plans], context)
 
     def close_blocks(self, closings: Sequence[BlockClosing], context: Context) -> None:
         rows = {row.id: row for row in self.queries.query(AgentBlock).matching(Among("id", [closing.block_id for closing in closings])).every_row(CLOSED_BLOCKS_REASON)}

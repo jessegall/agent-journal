@@ -123,12 +123,6 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
                                              driver=hook.driver, answer=HookAnswer.REFUSED if answers.refusal else HookAnswer.ALLOWED, refusal=answers.refusal,
                                              lines="\n".join(agent_message.text for agent_message in lines), updated_input=json.dumps(dict(answers.updated_input)),
                                              metadata=Metadata({DRIVERS_MODULE: metadata})), context)
-        refusing = [check.refusal_text for check in answers.stop_checks if check.is_refusal]
-        if refusing:
-            self.system_log.write(LogLevel.INFORMATION, f"stop {call.id} {AgentLabel.labelled(agent).text} refused: {'; '.join(refusing)}"[:LOG_LINE_CHARACTERS])
-        self.agent_messages.write(agent.id, answers, context)
-        self.required_commands.open(agent.id, answers.delivered_agent_messages, context)
-        self.timing.stamp("call_saved")
         for row in handed_rows:
             self.event_rows.remember(row)
         for row in handed_rows:
@@ -136,6 +130,12 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         commit = self.steps.save(command.step.view, command.step.step, call.id, context) if command.step is not None else None
         if commit is not None and not commit.is_saved:
             raise StepConflictError()
+        refusing = [check.refusal_text for check in answers.stop_checks if check.is_refusal]
+        if refusing:
+            self.system_log.write(LogLevel.INFORMATION, f"stop {call.id} {AgentLabel.labelled(agent).text} refused: {'; '.join(refusing)}"[:LOG_LINE_CHARACTERS])
+        self.agent_messages.write(agent.id, answers, context)
+        self.required_commands.open(agent.id, answers.delivered_agent_messages, context)
+        self.timing.stamp("call_saved")
         self.queue_next_hook_lines(agent.id, split.remaining_messages, answers, {row.agent_message.text for row in handed_lines.rows}, context)
         outcomes = [(rule, *self.run_command(rule_command, context)) for rule, rule_command in moves.runnable if rule not in answers.refused_rewriters]
         refused = [(rule, line) for rule, line, _ in outcomes if line]

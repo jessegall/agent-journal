@@ -18,6 +18,11 @@ class TableStatements:
         marks = ", ".join("?" for _ in values)
         return Statement(f"INSERT INTO {self.table.name} ({', '.join(values)}) VALUES ({marks})", tuple(values.values()))
 
+    def insert_many(self, rows: Sequence[dict[str, object]], timestamp: Timestamp) -> Statement:
+        value_rows = [{**{column: value for column, value in row.items() if column != "id"}, "version": FIRST_VERSION, "created_at": timestamp.text, "updated_at": timestamp.text} for row in rows]
+        marks = ", ".join("(" + ", ".join("?" for _ in value_rows[0]) + ")" for _ in value_rows)
+        return Statement(f"INSERT INTO {self.table.name} ({', '.join(value_rows[0])}) VALUES {marks}", tuple(value for row in value_rows for value in row.values()))
+
     def update(self, row_id: int, version: int, changed: dict[str, object], timestamp: Timestamp) -> Statement:
         assignments = ", ".join(f"{column} = ?" for column in changed)
         prefix = f"{assignments}, " if changed else ""

@@ -128,6 +128,10 @@ class TaskQuery(Query[Task], KeptRowChanges[Task]):
     def delegation_candidates(self) -> Self:
         return self.free().matching(self.unapproved_plan_exclusion())
 
+    def has_delegation_candidates(self) -> bool:
+        candidates = self.delegation_candidates()
+        return self.kept.read(candidates, candidates.exists, name="tasks.delegation-candidates")
+
     def has_assigned_work(self, actor_id: int) -> bool:
         return self.assignee_tasks(actor_id).matching(Among("state", [TaskState.OPEN, TaskState.STARTED])).exists()
 

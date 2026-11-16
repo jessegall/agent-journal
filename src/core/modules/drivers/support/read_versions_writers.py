@@ -32,9 +32,7 @@ class ReadVersionsWriters:
         self.bump_agents([agent_id], context)
 
     def bump_agents(self, agent_ids: list[int], context: Context) -> None:
-        if self.moved_write != self.database.write_number:
-            self.moved_write, self.moved_agents = self.database.write_number, set[int]()
-        unmoved = [agent_id for agent_id in agent_ids if agent_id not in self.moved_agents]
+        unmoved = [agent_id for agent_id in agent_ids if agent_id not in self.write_moved_agents()]
         if not unmoved:
             return
         self.moved_agents.update(unmoved)
@@ -43,6 +41,14 @@ class ReadVersionsWriters:
             row = stacks.get(agent_id)
             moved = row.changed(permission_changes=row.permission_changes + 1) if row is not None else AgentStack(session_agent_id=agent_id, permission_changes=1)
             self.stacks.remember(self.repository.save_change(row, moved, context))
+
+    def note_saved_stack(self, agent_id: int) -> None:
+        self.write_moved_agents().add(agent_id)
+
+    def write_moved_agents(self) -> set[int]:
+        if self.moved_write != self.database.write_number:
+            self.moved_write, self.moved_agents = self.database.write_number, set[int]()
+        return self.moved_agents
 
     def current_stacks(self, agent_ids: list[int]) -> dict[int, AgentStack]:
         if len(agent_ids) == 1:
