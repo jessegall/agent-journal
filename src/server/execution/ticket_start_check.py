@@ -4,7 +4,7 @@ from contextlib import contextmanager, nullcontext
 from dataclasses import replace
 
 from engine.enums.execution_priority import ExecutionPriority
-from engine.execution.thread_turn_count import THREAD_TURN_COUNT
+from engine.time.thread_turn_count import THREAD_TURN_COUNT
 from engine.process.door.placed_run import PlacedRun
 from engine.time.clock import Clock
 from server.execution.execution_priorities import ExecutionPriorities

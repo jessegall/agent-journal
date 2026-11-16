@@ -1,5 +1,5 @@
 from engine.area.engine_area import EngineArea
-from engine.enums.area_use import AreaUse
+from engine.area.area_use import AreaUse
 
 
 class AgentStepArea(EngineArea):

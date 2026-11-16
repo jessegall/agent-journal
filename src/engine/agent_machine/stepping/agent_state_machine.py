@@ -21,7 +21,7 @@ from engine.agent_machine.record.encoded_part import EncodedPart
 from engine.agent_machine.record.question import Question
 from engine.agent_machine.record.refusal_counts import RefusalCounts
 from engine.agent_machine.record.rewrite import Rewrite
-from engine.agent_machine.record.stop_check import StopCheck
+from engine.driver.stop_check import StopCheck
 from engine.agent_machine.step_result import StepResult
 from engine.agent_machine.stepping.constraints import Constraints
 from engine.agent_machine.stepping.reason_total import ReasonTotal

@@ -1,7 +1,7 @@
 from argparse import Namespace
 from types import SimpleNamespace
 
-from engine.agent_machine.record.stop_check import StopCheck
+from engine.driver.stop_check import StopCheck
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.rule_answers import RuleAnswers
 from engine.driver.rule_record import RuleRecord

@@ -2,7 +2,7 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from engine.execution.thread_turn_count import THREAD_TURN_COUNT
+from engine.time.thread_turn_count import THREAD_TURN_COUNT
 
 
 @dataclass(frozen=True)

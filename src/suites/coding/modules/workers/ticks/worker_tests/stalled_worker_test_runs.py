@@ -27,7 +27,6 @@ RUNNING_CHECKPOINT_TESTS_REASON = "every test of a checkpoint run still shown as
 STARTED_PLANS_REASON = "every started plan is looked at for a checkpoint run that has no tests"
 CHECKPOINT_RUNS_REASON = "the runs and checkpoints of those tests are read in one query each"
 ENDED_GRACE_SECONDS = 60
-STALLED_TESTS_TICK = "stalled worker tests"
 
 
 class StalledWorkerTestRuns:

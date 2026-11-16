@@ -6,7 +6,7 @@ from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import Model
 from engine.time.timestamp import Timestamp
 from core.modules.drivers.models.support.tool_use_window import ToolUseWindow
-from core.modules.tasks.support.closed_tasks import ClosedTasks
+from core.modules.tasks.support.closed.closed_tasks import ClosedTasks
 
 
 @dataclass(frozen=True, kw_only=True)

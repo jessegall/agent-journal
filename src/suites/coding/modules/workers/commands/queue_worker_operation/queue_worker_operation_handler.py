@@ -18,7 +18,7 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
 from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName
 from suites.coding.modules.workers.support.kept_worker_tasks import KeptWorkerTasks
-from suites.coding.modules.workers.support.worker_operation_line import WORKER_OPERATION_RUN
+from suites.coding.modules.workers.types.support.worker_operation_line import WORKER_OPERATION_RUN
 from suites.coding.modules.workers.queries.worker_operation_query import WorkerOperationQuery
 
 

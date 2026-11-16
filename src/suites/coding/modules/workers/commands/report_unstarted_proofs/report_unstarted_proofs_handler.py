@@ -11,7 +11,7 @@ from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.agent_messages.unstarted_proofs_message import UnstartedProofsMessage
-from suites.coding.modules.workers.ticks.worker_tests.stalled_worker_test_runs import STALLED_TESTS_TICK
+from suites.coding.modules.workers.tick_handlers.stalled_worker_test_runs_tick_handler import StalledWorkerTestRunsTickHandler
 
 UNSTARTED_PROOF_SECONDS = 180
 ERROR_FREE = "no error was logged"
@@ -47,4 +47,4 @@ class ReportUnstartedProofsHandler(Handler[ReportUnstartedProofs, None]):
 
     def last_error(self) -> str:
         newest = self.queries.query(JournalException).newest().take(RECENT_EXCEPTIONS)
-        return next((row.message for row in newest if row.source == STALLED_TESTS_TICK), ERROR_FREE)
+        return next((row.message for row in newest if row.source == StalledWorkerTestRunsTickHandler.name), ERROR_FREE)

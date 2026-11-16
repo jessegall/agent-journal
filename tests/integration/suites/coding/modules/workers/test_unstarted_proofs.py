@@ -6,7 +6,7 @@ from engine.log.exception_sink import ExceptionSink
 from suites.coding.modules.workers.commands.queue_worker_tests.start_worker_tests_handler import StartWorkerTestsHandler
 from suites.coding.modules.workers.listeners.support.worker_test_starts import WorkerTestStarts
 from suites.coding.modules.workers.models.merger_line import MergerLine
-from suites.coding.modules.workers.ticks.worker_tests.stalled_worker_test_runs import STALLED_TESTS_TICK
+from suites.coding.modules.workers.tick_handlers.stalled_worker_test_runs_tick_handler import StalledWorkerTestRunsTickHandler
 from tests.integration.suites.coding.modules.workers.test_stalled_tests import two_tasks  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 
@@ -26,8 +26,8 @@ def blocked_queue(story, worker, monkeypatch) -> None:
         story.expect_text(COMMIT, "its tests are queued", actor=worker)
     monkeypatch.setattr(StartWorkerTestsHandler, "handle", lambda handler, command, context: (_ for _ in ()).throw(CheckoutGone()))
     with pytest.raises(CheckoutGone):
-        story.run_tick_handler(STALLED_TESTS_TICK)
-    story.container.get(ExceptionSink).record(STALLED_TESTS_TICK, FAULT, None)
+        story.run_tick_handler(StalledWorkerTestRunsTickHandler.name)
+    story.container.get(ExceptionSink).record(StalledWorkerTestRunsTickHandler.name, FAULT, None)
 
 
 def test_a_queued_proof_with_a_free_slot_that_the_tick_cannot_start_reaches_the_main_agent_within_three_minutes_once(two_tasks, monkeypatch):  # noqa: F811

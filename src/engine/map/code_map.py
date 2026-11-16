@@ -1,7 +1,7 @@
 import ast
 from pathlib import Path
 
-from engine.enums.area_use import AreaUse
+from engine.area.area_use import AreaUse
 from engine.file.file_access import FileAccess
 from engine.map.errors.missing_summary_error import MissingSummaryError
 

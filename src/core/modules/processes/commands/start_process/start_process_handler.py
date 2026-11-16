@@ -15,7 +15,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.run_title import RunTitle
 from core.modules.processes.support.reader_requests import ReaderRequests
-from core.modules.processes.support.process_classes import ProcessClasses
+from core.modules.processes.commands.start_process.start_process_classes import StartProcessClasses
 from core.modules.processes.support.run_slots import RunSlots
 from core.modules.processes.support.part_visibility import PartVisibility
 from core.modules.processes.support.reading.recorded_decisions import RecordedDecisions
@@ -30,7 +30,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
     runs_once = True
 
     def __init__(self, repository: Repository, folder: OutputFolder, readers: ReaderRows, requests: ReaderRequests, slots: RunSlots, visibility: PartVisibility, rows: EventRows, trial: RecordedDecisions,
-                 process_classes: ProcessClasses) -> None:
+                 process_classes: StartProcessClasses) -> None:
         self.process_classes = process_classes
         self.repository, self.folder, self.readers = repository, folder, readers
         self.shadow = trial

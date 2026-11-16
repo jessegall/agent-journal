@@ -4,7 +4,7 @@ from dataclasses import replace
 
 from engine.enums.execution_length import ExecutionLength
 from engine.execution.classes.builtin_classes import BUILTIN_CLASSES
-from engine.execution.errors.execution_class_cost_error import ExecutionClassCostError
+from engine.execution.classes.errors.execution_class_cost_error import ExecutionClassCostError
 from engine.execution.classes.execution_class import ExecutionClass
 from engine.execution.execution_subject import ExecutionSubject
 from engine.execution.classes.person_classes import PersonClasses

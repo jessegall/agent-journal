@@ -8,7 +8,7 @@ from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.support.run_waits import RunWaits
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.processes.support.process_classes import ProcessClasses
+from core.modules.processes.support.classes.process_classes import ProcessClasses
 
 MEGABYTE = 1 << 20
 MAX_FOREGROUND_SECONDS = 15

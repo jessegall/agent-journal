@@ -2,7 +2,7 @@ from dataclasses import replace
 
 from engine.helper_type.enums.journal_line_class import JournalLineClass
 from engine.module.helper_type_check import HelperTypeCheck
-from suites.coding.modules.workers.support.worker_operation_line import WORKER_OPERATION_RUN
+from suites.coding.modules.workers.types.support.worker_operation_line import WORKER_OPERATION_RUN
 from suites.coding.modules.workers.types.worker import Worker
 from suites.coding.modules.workers.types.worker_commands import WorkerCommands
 

@@ -1,4 +1,4 @@
-from suites.coding.support.coding_contributions import CODING_LINES, CODING_STATES, CODING_POLICIES
+from suites.coding.coding_contributions import CODING_LINES, CODING_STATES, CODING_POLICIES
 from suites.coding.support.coding_module_agent_messages import CODING_MODULE_AGENT_MESSAGES
 from suites.coding.seeders.coding_seeders import CODING_SEEDERS
 from suites.coding.settings.coding_setting_lists import CODING_SETTING_LISTS

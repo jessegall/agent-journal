@@ -1,6 +1,6 @@
 from engine.driver.message_template import MessageTemplate
 from core.modules.processes.models.enums.pressure_level import PressureLevel
-from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
+from core.modules.processes.support.exits.exit_texts import ExitTexts
 from engine.enums.agent_message_type import AgentMessageType
 
 

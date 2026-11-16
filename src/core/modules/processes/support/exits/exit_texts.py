@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from core.modules.processes.models.enums.reading_exit import ReadingExit
-from core.modules.processes.support.reading_notices.exit_text import ExitText
+from core.modules.processes.support.exits.exit_text import ExitText
 
 
 EXIT_TEXTS: dict[ReadingExit, ExitText] = {

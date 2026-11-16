@@ -2,7 +2,7 @@ from engine.enums.access import Access
 from core.modules.helpers.types.helper import Helper
 from engine.helper_type.helper_behaviours import HelperBehaviours
 from suites.coding.modules.workers.bindings.worker_roster import WorkerRoster
-from suites.coding.modules.workers.support.worker_operation_line import WORKER_OPERATION_RUN
+from suites.coding.modules.workers.types.support.worker_operation_line import WORKER_OPERATION_RUN
 from suites.coding.modules.workers.types.worker_commands import WorkerCommands
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.support.coding_settings import COMMAND_TYPES, WORKER_KEPT_LIMIT, WORKER_RUN_LIMIT, WORKER_TEST_LIMIT

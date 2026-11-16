@@ -3,7 +3,7 @@ from collections.abc import Generator
 from contextlib import contextmanager
 
 from engine.database.turn_depth import TurnDepth
-from engine.execution.thread_turn_count import THREAD_TURN_COUNT
+from engine.time.thread_turn_count import THREAD_TURN_COUNT
 
 
 class WriteTurns(ABC):

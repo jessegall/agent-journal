@@ -1,4 +1,4 @@
-from engine.enums.area_use import AreaUse
+from engine.area.area_use import AreaUse
 from engine.area.engine_area import EngineArea
 
 

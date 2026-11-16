@@ -6,7 +6,7 @@ from engine.driver.hook_event import HookEvent
 from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
 from core.modules.messages.lines.agent_text_lines import AGENT_TEXT_KEY
-from core.modules.messages.support.agent_text_answer import AgentTextAnswer
+from core.modules.messages.support.agent_text.agent_text_answer import AgentTextAnswer
 
 
 class AgentTextEffect(EventEffect):

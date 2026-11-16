@@ -12,7 +12,7 @@ from engine.database.write_turns import WriteTurns
 from engine.errors.read_cut_error import ReadCutError
 from engine.errors.read_limit_error import ReadLimitError
 from engine.errors.missing_scope_read_error import MissingScopeReadError
-from engine.scope.missing_scope_reads import MissingScopeReads
+from engine.database.missing_scope_reads import MissingScopeReads
 from engine.journal.journal_home import JournalHome
 from engine.row.row_owner import RowOwner
 

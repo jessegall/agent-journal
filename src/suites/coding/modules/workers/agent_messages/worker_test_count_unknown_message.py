@@ -1,6 +1,6 @@
 from engine.driver.message_template import MessageTemplate
 from core.modules.processes.models.enums.reading_exit import ReadingExit
-from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
+from core.modules.processes.support.exits.exit_texts import ExitTexts
 from engine.enums.agent_message_type import AgentMessageType
 from suites.coding.models.enums.ask_topic import AskTopic
 

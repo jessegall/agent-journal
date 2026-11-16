@@ -11,7 +11,7 @@ from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.processes.models.enums.pressure_level import PressureLevel
 from core.modules.processes.support.blocked_runs import BlockedRuns
 from core.modules.processes.support.reader_block_keys import ReaderBlockKeys
-from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
+from core.modules.processes.support.exits.exit_texts import ExitTexts
 
 
 class ListBlocksSubcommand(ReadSubcommand[tuple[str, ...]]):

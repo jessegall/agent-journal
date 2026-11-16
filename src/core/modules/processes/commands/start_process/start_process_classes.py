@@ -1,9 +1,6 @@
-from collections.abc import Sequence
 from dataclasses import replace
 
 from engine.enums.command_category import CommandCategory
-
-from engine.enums.agent_role import AgentRole
 from engine.enums.execution_source import ExecutionSource
 from engine.enums.process_type import ProcessType
 from engine.enums.starter_type import StarterType
@@ -13,14 +10,14 @@ from engine.execution.execution_starter import ExecutionStarter
 from engine.execution.execution_subject import ExecutionSubject
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.commands.start_process.start_process import StartProcess
+from core.modules.processes.support.classes.process_classes import ProcessClasses
 
 
-class ProcessClasses:
-    """The class a run takes when it starts: a plugin's kind its own class, any other line the class of its parts,
-    its longest lane and highest cost."""
+class StartProcessClasses:
+    """The class a run takes when it starts: a plugin's kind its own class, any other line the class of its parts."""
 
-    def __init__(self, classes: ExecutionClasses) -> None:
-        self.classes = classes
+    def __init__(self, classes: ExecutionClasses, process_classes: ProcessClasses) -> None:
+        self.classes, self.process_classes = classes, process_classes
 
     def chosen(self, command: StartProcess, agent: Agent) -> ExecutionClass:
         starter = self.starter(command, agent)
@@ -37,21 +34,10 @@ class ProcessClasses:
             return self.classes.match(ExecutionSubject(ExecutionSource.SHELL_LINE, starter, category=command.category, process_type=ProcessType.FULL_TEST_RUN, line=command.line))
         # a part of unknown category says nothing of the line, which then takes the category the start names
         recorded = [part.category for part in command.parts if part.category is not CommandCategory.UNKNOWN]
-        return self.category_class(recorded or [command.category], command.line, agent)
-
-    # the class of an agent's shell line by the categories of its parts: its longest lane and highest cost
-    def category_class(self, categories: Sequence[CommandCategory], line: str, agent: Agent) -> ExecutionClass:
-        starter = self.agent_starter(agent)
-        return self.classes.line_class([ExecutionSubject(ExecutionSource.SHELL_LINE, starter, category=category, line=line) for category in categories])
+        return self.process_classes.category_class(recorded or [command.category], command.line, agent)
 
     @staticmethod
     def starter(command: StartProcess, agent: Agent) -> ExecutionStarter:
         if command.plugin:
             return ExecutionStarter(StarterType.PLUGIN, plugin_name=command.plugin)
         return ProcessClasses.agent_starter(agent)
-
-    @staticmethod
-    def agent_starter(agent: Agent) -> ExecutionStarter:
-        if agent.role == AgentRole.MAIN:
-            return ExecutionStarter(StarterType.MAIN_AGENT, agent_id=agent.id)
-        return ExecutionStarter(StarterType.HELPER, agent_id=agent.id, agent_role=str(agent.role))

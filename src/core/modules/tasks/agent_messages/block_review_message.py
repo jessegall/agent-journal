@@ -1,7 +1,7 @@
 from engine.driver.reminder_declaration import ReminderDeclaration
 from engine.driver.interval import Interval
 from engine.driver.seconds import Seconds
-from core.modules.tasks.support.closed_tasks import ClosedTasks
+from core.modules.tasks.support.closed.closed_tasks import ClosedTasks
 from engine.driver.message_template import MessageTemplate
 from engine.enums.agent_message_type import AgentMessageType
 

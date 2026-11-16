@@ -22,7 +22,7 @@ from core.modules.processes.agent_messages.redirected_run_message import Redirec
 from core.modules.processes.agent_messages.required_monitor_message import RequiredMonitorMessage
 from core.modules.processes.agent_messages.silent_run_blocked_message import SilentRunBlockedMessage
 from core.modules.processes.agent_messages.silent_start_refusal_message import SilentStartRefusalMessage
-from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
+from core.modules.processes.support.exits.exit_texts import ExitTexts
 from tests.integration.core.modules.processes.test_hang_watch import HANG_SECONDS
 from suites.coding.modules.workers.agent_messages.worker_test_count_unknown_message import WorkerTestCountUnknownMessage
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run

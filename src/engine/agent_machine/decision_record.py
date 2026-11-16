@@ -17,7 +17,7 @@ from engine.agent_machine.record.question import Question
 from engine.agent_machine.record.refusal_counts import RefusalCounts
 from engine.agent_machine.record.rewrite import Rewrite
 from engine.agent_machine.record.stack_move import StackMove
-from engine.agent_machine.record.stop_check import StopCheck
+from engine.driver.stop_check import StopCheck
 from engine.agent_machine.record.wake_change import WakeChange
 
 

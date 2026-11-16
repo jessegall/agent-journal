@@ -13,7 +13,7 @@ from core.modules.messages.support.repeated_messages import RepeatedMessages
 from core.modules.messages.support.turn_reply_targets import TurnReplyTargets
 
 
-from core.modules.messages.support.agent_text_display import AgentTextDisplay
+from core.modules.messages.support.agent_text.agent_text_display import AgentTextDisplay
 class AgentTextAnswer:
     """Each finished text block the main agent writes in a turn becomes a chat message of the agent, unless
     the filter keeps it out; a text held for following a reply is shown once a tool comes. Read once a hook,

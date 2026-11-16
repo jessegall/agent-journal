@@ -6,7 +6,7 @@ from engine.enums.command_category import CommandCategory
 from engine.helper_type.helper_type_book import HelperTypeBook
 from core.modules.aliases.agent_messages.command_type_unknown_message import CommandTypeUnknownMessage
 from core.modules.processes.models.enums.reading_exit import ReadingExit
-from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
+from core.modules.processes.support.exits.exit_texts import ExitTexts
 
 UNCLASSIFIED_HINT = f"{ExitTexts.sentences((ReadingExit.CLASSIFY,))}, process when no type fits"
 

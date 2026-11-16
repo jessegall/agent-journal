@@ -13,7 +13,7 @@ from core.modules.processes.agent_messages.silent_run_blocked_message import Sil
 from core.modules.processes.support.block_conditions.run_reported_progress import RunReportedProgress
 from core.modules.processes.support.blocked_run import BlockedRun
 from core.modules.processes.support.blocked_runs import BlockedRuns
-from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
+from core.modules.processes.support.exits.exit_texts import ExitTexts
 
 SILENT_RUN_KEY = "processes.silent-run-hold"
 SILENT_RUN_RANK = "processes.silent-run"

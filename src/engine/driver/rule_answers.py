@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from engine.command.command import Command
 from engine.driver.agent_message import AgentMessage
 from engine.driver.rule_record import RuleRecord
-from engine.agent_machine.record.stop_check import StopCheck
+from engine.driver.stop_check import StopCheck
 
 
 @dataclass(frozen=True)
