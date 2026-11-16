@@ -20,6 +20,7 @@ from engine.model.tables import Tables
 from engine.subcommand.output import Output
 from core.modules import DEFAULT_MODULES
 
+STORY_READ_REASON = "a story reads the rows of its own journal, whichever environment they are in"
 STORY_ROWS_REASON = "the story kit lists every row of a table for an assertion"
 TOUCHED_LINE = re.compile(r"^(?:created|updated): (.+)$", re.MULTILINE)
 
@@ -41,7 +42,7 @@ class KitRows(ABC, Generic[SyncAnswer]):
         return self.container.get(Bus).run(command, actor, environment_id=environment_id)
 
     def row(self, model: type[M], row_id: int) -> M:
-        return self.container.get(Queries).query(model).find(row_id)
+        return self.container.get(Queries).query(model).all_environments(STORY_READ_REASON).find(row_id)
 
     # runs a module's tick handler by its name, as the server's ticker would
     def run_tick(self, name: str) -> None:
@@ -61,19 +62,19 @@ class KitRows(ABC, Generic[SyncAnswer]):
     def synced(self) -> SyncAnswer: ...
 
     def story_rows(self, model: type[M], **values: object) -> tuple[M, ...]:
-        return tuple(self.container.get(Queries).query(model).filter(**values).matching(Minimum(ID_COLUMN, 1)).every_row(STORY_ROWS_REASON))
+        return tuple(self.container.get(Queries).query(model).all_environments(STORY_READ_REASON).filter(**values).matching(Minimum(ID_COLUMN, 1)).every_row(STORY_ROWS_REASON))
 
     def first_row(self, model: type[M], **values: object) -> M | None:
-        return self.container.get(Queries).query(model).filter(**values).first()
+        return self.container.get(Queries).query(model).all_environments(STORY_READ_REASON).filter(**values).first()
 
     def newest_row(self, model: type[M], **values: object) -> M | None:
-        return self.container.get(Queries).query(model).filter(**values).newest().first()
+        return self.container.get(Queries).query(model).all_environments(STORY_READ_REASON).filter(**values).newest().first()
 
     def row_exists(self, model: type[M], **values: object) -> bool:
-        return self.container.get(Queries).query(model).filter(**values).exists()
+        return self.container.get(Queries).query(model).all_environments(STORY_READ_REASON).filter(**values).exists()
 
     def row_count(self, model: type[M], **values: object) -> int:
-        return self.container.get(Queries).query(model).filter(**values).count()
+        return self.container.get(Queries).query(model).all_environments(STORY_READ_REASON).filter(**values).count()
 
     # the registry the last sync wrote: the modules' windows, marks, models and the rest
     def registry(self) -> Registry:
@@ -87,6 +88,6 @@ class KitRows(ABC, Generic[SyncAnswer]):
         output = Output(self.container.get(Tables), False, stream)
         for match in TOUCHED_LINE.finditer(output_text):
             for model_name, row_id in (name.split(":") for name in match[1].split(", ")):
-                for row in self.container.get(Queries).query(models[model_name]).filter(id=int(row_id)).get() if model_name in models else ():
+                for row in self.container.get(Queries).query(models[model_name]).all_environments(STORY_READ_REASON).filter(id=int(row_id)).get() if model_name in models else ():
                     output.row(row)
         return output_text + stream.getvalue()
