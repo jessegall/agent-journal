@@ -9,4 +9,4 @@ class OpenState:
     state: str
     name: str
     rows: tuple[str, ...]
-    since: str
+    entered_at: str

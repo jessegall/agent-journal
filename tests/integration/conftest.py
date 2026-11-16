@@ -36,12 +36,12 @@ def journal(synced_home: JournalHome) -> Generator[IntegrationJournal]:
 def journal_with(templates: TemplateDatabases, tmp_path: Path) -> Generator[Callable[..., IntegrationJournal]]:
     opened: list[IntegrationJournal] = []
 
-    def make(*modules: str) -> IntegrationJournal:
+    def factory(*modules: str) -> IntegrationJournal:
         journal = IntegrationJournal(templates.synced_home(tmp_path / f"journal-{len(opened)}", tuple(modules)))
         opened.append(journal)
         return journal
 
-    yield make
+    yield factory
     for journal in opened:
         journal.close()
 
@@ -66,7 +66,7 @@ def bound_in(replacements: dict[type, object]) -> Callable[[Container], None]:
 def played(templates: TemplateDatabases, tmp_path: Path) -> Generator[Callable[..., FixtureJournal]]:
     opened: list[IntegrationJournal] = []
 
-    def make(*arguments, fixture: type | None = None, environment: str | None = None) -> FixtureJournal:
+    def factory(*arguments, fixture: type | None = None, environment: str | None = None) -> FixtureJournal:
         # the fixture may come first, last or by name, as the moved stories wrote new_story; every other argument is a module
         modules = tuple(argument for argument in arguments if isinstance(argument, str))
         fixture = fixture if fixture is not None else next((argument for argument in arguments if isinstance(argument, type)), None)
@@ -81,6 +81,6 @@ def played(templates: TemplateDatabases, tmp_path: Path) -> Generator[Callable[.
         journal.with_clock(clock)
         return FixtureJournal(journal, clock, replacements, state.agent, state.user, state.helper, environment)
 
-    yield make
+    yield factory
     for journal in opened:
         journal.close()

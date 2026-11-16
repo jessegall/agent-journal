@@ -27,13 +27,13 @@ class FunctionBodies:
             return {}
 
     @staticmethod
-    def walk(nodes: list[ast.stmt], prefix: str, found: dict[str, str]) -> None:
+    def walk(nodes: list[ast.stmt], prefix: str, bodies: dict[str, str]) -> None:
         for node in nodes:
             if isinstance(node, ast.ClassDef):
-                FunctionBodies.walk(node.body, f"{prefix}{node.name}.", found)
+                FunctionBodies.walk(node.body, f"{prefix}{node.name}.", bodies)
                 continue
             if not isinstance(node, FUNCTION_NODES):
                 continue
             name = f"{prefix}{node.name}"
-            found[name] = hashlib.sha256(ast.dump(node).encode()).hexdigest()[:16]
-            FunctionBodies.walk(node.body, f"{name}.<locals>.", found)
+            bodies[name] = hashlib.sha256(ast.dump(node).encode()).hexdigest()[:16]
+            FunctionBodies.walk(node.body, f"{name}.<locals>.", bodies)

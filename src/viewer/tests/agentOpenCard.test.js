@@ -70,7 +70,7 @@ test("one menu button in the head opens the actions of every kind of agent, and 
 });
 
 test("the opened agent card shows the plan allowance its facts carry in the information bar", async () => {
-    const windows = [{title: "5 hours", used_percent: 30, reset_epoch_seconds: 1793545200}];
+    const windows = [{title: "5 hours", used_percent: 30, reset_unix_seconds: 1793545200}];
     const element = await mounted({render: () => h(AgentCard, {row: AGENTS[2], facts: {tasks: [], windows}, open: true})}, {...context({}), tabs: TABS});
     expect(element.querySelector("[data-information-bar] [data-fact='usage']").textContent).toContain("30%");
 });
@@ -102,7 +102,7 @@ test("the opened agent card names its role and number once, and its program, mod
 });
 
 test("a worker's and a helper's card draws the same bar as the home window draws for its agent, each fact once", async () => {
-    const windows = [{title: "5 hours", used_percent: 30, reset_epoch_seconds: 1793545200}];
+    const windows = [{title: "5 hours", used_percent: 30, reset_unix_seconds: 1793545200}];
     const factsOf = (element) => [...element.querySelectorAll("[data-information-bar] [data-fact]")].map((fact) => fact.dataset.fact);
     for (const role of ["worker", "helper"]) {
         const row = {...AGENTS[2], role, number: 770, program_model: "opus"};

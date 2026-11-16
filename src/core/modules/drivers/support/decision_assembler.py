@@ -64,8 +64,8 @@ class DecisionAssembler:
         sources = list(dict.fromkeys(line.source_key for line in lines))
         records = []
         for source in sources:
-            said = [line for line in lines if line.source_key == source]
-            answer = RuleAnswer(agent_messages=tuple(line.given_message() for line in said if line.channel is not LineChannel.TERMINAL),
-                                terminal="\n".join(line.text for line in said if line.channel is LineChannel.TERMINAL))
+            source_lines = [line for line in lines if line.source_key == source]
+            answer = RuleAnswer(agent_messages=tuple(line.given_message() for line in source_lines if line.channel is not LineChannel.TERMINAL),
+                                terminal="\n".join(line.text for line in source_lines if line.channel is LineChannel.TERMINAL))
             records.append(RuleRecord(source or MACHINE_SOURCE, answer.outcome, answer))
         return records

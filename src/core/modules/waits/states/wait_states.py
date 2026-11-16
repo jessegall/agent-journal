@@ -29,7 +29,7 @@ class WaitStates(StateSource):
         self.queries, self.open_waits = queries, open_waits
 
     def states(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[RequiredState | BlockPlan]]:
-        waits = self.open_waits.of([agent.agent_id for agent in agents])
+        waits = self.open_waits.waits([agent.agent_id for agent in agents])
         targets = list(self.queries.query(WaitTarget).matching(Among("wait_id", [wait.id for wait in waits])).filter(resolved_at=None).every_row(OPEN_WAITS_REASON)) if waits else []
         states: dict[int, list[RequiredState | BlockPlan]] = {}
         for wait in waits:

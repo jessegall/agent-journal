@@ -13,7 +13,7 @@ class ContextLineSplit:
     agent's next hook. A first line longer than the limit on its own is cut at the limit."""
 
     kept: tuple[AgentMessage, ...]
-    rest: tuple[AgentMessage, ...]
+    remaining_messages: tuple[AgentMessage, ...]
 
     @classmethod
     def split(cls, lines: Sequence[AgentMessage], limit: int) -> "ContextLineSplit":

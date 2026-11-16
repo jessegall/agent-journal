@@ -11,7 +11,7 @@ defineProps({states: {type: Array, required: true}});
         <ProcessQueueBand icon="clock">States</ProcessQueueBand>
         <template v-for="state in states" :key="state.name">
             <div class="state" data-agent-open-state :title="`${state.name} (${state.state}): ${state.rows.join(', ')}`">
-                <span class="name">{{ state.name }}</span><span class="state-type">{{ state.state }}</span><TimeAgo class="since" :at="state.since" />
+                <span class="name">{{ state.name }}</span><span class="state-type">{{ state.state }}</span><TimeAgo class="since" :at="state.entered_at" />
             </div>
         </template>
     </template>

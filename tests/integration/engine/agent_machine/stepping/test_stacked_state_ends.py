@@ -17,7 +17,7 @@ from engine.enums.work_stop import WorkStop
 from engine.testing.agent_machine.view_samples import ViewSamples
 
 ENTERED = datetime(2026, 10, 31, 9, 0, tzinfo=timezone.utc)
-HOLD = StackedState(Blocked(OpenBlock("messages.unread", 3, Reason("messages.unread", DecisionClass.BLOCK, "messages.unread", "read your messages"), True, True, True, True, False)),
+BLOCKED_STATE = StackedState(Blocked(OpenBlock("messages.unread", 3, Reason("messages.unread", DecisionClass.BLOCK, "messages.unread", "read your messages"), True, True, True, True, False)),
              StateKey("Blocked", None, "messages.unread"), ENTERED)
 
 
@@ -27,9 +27,9 @@ def end(stacked_state: StackedState, **outcomes: ConditionOutcome) -> StateEnd |
 
 
 def test_a_satisfied_hold_ends_as_progress_and_a_cancelled_or_waived_one_does_not():
-    assert end(HOLD, block=ConditionOutcome.SATISFIED) in PROGRESS_ENDS
-    assert end(HOLD, block=ConditionOutcome.CANCELLED) not in PROGRESS_ENDS
-    assert end(HOLD) not in PROGRESS_ENDS
+    assert end(BLOCKED_STATE, block=ConditionOutcome.SATISFIED) in PROGRESS_ENDS
+    assert end(BLOCKED_STATE, block=ConditionOutcome.CANCELLED) not in PROGRESS_ENDS
+    assert end(BLOCKED_STATE) not in PROGRESS_ENDS
 
 
 def test_a_resume_ends_no_work():
@@ -45,4 +45,4 @@ def test_a_stacked_state_whose_source_told_its_end_records_that_end():
 def test_a_stacked_state_a_person_removed_ends_waived_which_is_no_progress():
     work = StackedState(Paused((), "paused"), StateKey("Working", None, "task:4"), ENTERED)
     view = replace(ViewSamples.view("main", WorkStop.REFUSE_DURING_WORK), suppressions=(work.state_key,))
-    assert StackBuilder.stacked_state_end(view, work) is StateEnd.WAIVED and StateEnd.WAIVED not in PROGRESS_ENDS
+    assert StackBuilder.stacked_state_end(view, work) is StateEnd.SKIPPED and StateEnd.SKIPPED not in PROGRESS_ENDS

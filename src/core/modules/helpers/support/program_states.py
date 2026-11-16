@@ -70,7 +70,7 @@ class ProgramStates:
         window = self.window_reaching(program, self.settings.number(PROGRAM_WINDOW_PERCENT) or LIMIT_PERCENT)
         if window is None:
             return ProgramState.ready()
-        return ProgramState.unavailable(window.line, Timestamp(datetime.fromtimestamp(window.reset_epoch_seconds, timezone.utc)))
+        return ProgramState.unavailable(window.line, Timestamp(datetime.fromtimestamp(window.reset_unix_seconds, timezone.utc)))
 
     def limit_reset_timestamp(self, program: str) -> Timestamp | None:
         end = self.limit_end(program)
@@ -78,7 +78,7 @@ class ProgramStates:
 
     def limit_end(self, program: str) -> LimitEnd | None:
         window = self.window_reaching(program, LIMIT_PERCENT)
-        plan_end = None if window is None else LimitEnd(Timestamp(datetime.fromtimestamp(window.reset_epoch_seconds, timezone.utc)))
+        plan_end = None if window is None else LimitEnd(Timestamp(datetime.fromtimestamp(window.reset_unix_seconds, timezone.utc)))
         ends = [end for end in (plan_end, self.limits.last_reached_end(program, self.windows(program), self.clock.timestamp())) if end is not None]
         return max(ends, key=lambda end: end.ends_at.value) if ends else None
 
@@ -87,8 +87,8 @@ class ProgramStates:
 
     def window_reaching(self, program: str, percent: float) -> PlanWindow | None:
         checked_at = self.clock.timestamp().value.timestamp()
-        blocked = [window for window in self.windows(program) if window.used_percent >= percent and window.reset_epoch_seconds > checked_at]
-        return max(blocked, key=lambda row: row.reset_epoch_seconds) if blocked else None
+        blocked = [window for window in self.windows(program) if window.used_percent >= percent and window.reset_unix_seconds > checked_at]
+        return max(blocked, key=lambda row: row.reset_unix_seconds) if blocked else None
 
     def windows(self, program: str) -> tuple[PlanWindow, ...]:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):

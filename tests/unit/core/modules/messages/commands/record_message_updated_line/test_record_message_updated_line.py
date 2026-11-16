@@ -40,11 +40,11 @@ class Recipient:
         return SimpleNamespace(id=3)
 
 
-def sent_source(is_idle: bool) -> str:
+def message_source(is_idle: bool) -> str:
     message_sender = RecordedMessageSender()
     RecordMessageUpdatedLineHandler(OneMessage(), message_sender, AgentTurn(is_idle), Recipient()).handle(RecordMessageUpdatedLine(12), None)  # type: ignore[arg-type]
     return message_sender.sent[0][1]
 
 
 def test_an_updated_message_for_an_idle_agent_is_a_line_typed_into_its_terminal_and_one_in_a_turn_waits_for_its_hook():
-    assert (sent_source(True), sent_source(False)) == (IDLE_MESSAGE_SOURCE, UPDATED_SOURCE)
+    assert (message_source(True), message_source(False)) == (IDLE_MESSAGE_SOURCE, UPDATED_SOURCE)

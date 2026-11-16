@@ -27,7 +27,7 @@ test.each(["tests running", "judging", "waiting for the merge", "with the main a
 });
 
 test("the allowance gauge names the window its percentage is of", () => {
-    const usage = {agents: [], windows: [{title: "7 days", used_percent: 17, reset_epoch_seconds: 1}]};
+    const usage = {agents: [], windows: [{title: "7 days", used_percent: 17, reset_unix_seconds: 1}]};
     const fact = mounted(InformationBar, {agent: MAIN, usage}).querySelector('[data-fact="usage"]');
     expect(fact.textContent).not.toContain("7 days");
     expect(fact.title).toContain("7 days");
@@ -47,7 +47,7 @@ test("the information bar holds no window counts, and its scheduled jobs open wi
 });
 
 test("allowance and scheduled jobs use different icons", () => {
-    const usage = {agents: [], windows: [{title: "7 days", used_percent: 17, reset_epoch_seconds: 1}]};
+    const usage = {agents: [], windows: [{title: "7 days", used_percent: 17, reset_unix_seconds: 1}]};
     const element = mounted(InformationBar, {agent: MAIN, jobs: 2, usage});
     expect(element.querySelector('[data-fact="usage"] [data-icon]').dataset.icon).toBe("allowance");
     expect(element.querySelector('[data-fact="jobs"] [data-icon]').dataset.icon).toBe("clock");

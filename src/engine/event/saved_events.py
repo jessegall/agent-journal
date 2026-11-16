@@ -23,7 +23,7 @@ class SavedEvents:
             if len(self.names) > MOST_THREAD_KEYS:
                 self.drop_ended_threads()
 
-    def taken(self) -> frozenset[str]:
+    def claimed_names(self) -> frozenset[str]:
         with self.lock:
             return frozenset(self.names.pop(threading.get_ident(), set()))
 

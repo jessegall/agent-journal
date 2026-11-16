@@ -30,7 +30,7 @@ class TurnThreads:
         self.order: list[str] = []
         self.threads: list[threading.Thread] = []
 
-    def ask(self, name: str, priority: ExecutionPriority) -> threading.Event:
+    def request_turn(self, name: str, priority: ExecutionPriority) -> threading.Event:
         question_started = threading.Event()
 
         def run() -> None:
@@ -64,7 +64,7 @@ def turn_threads() -> TurnThreads:
 def turn_order(turn_threads: TurnThreads, asks: list[tuple[str, ExecutionPriority]]) -> list[str]:
     with turn_threads.queue.write_turn():
         for name, priority in asks:
-            turn_threads.ask(name, priority)
+            turn_threads.request_turn(name, priority)
     return turn_threads.finish()
 
 
@@ -82,16 +82,16 @@ def test_equal_priority_by_ask_order(turn_threads):
 
 def test_waiting_ask_is_raised_after_its_step(turn_threads):
     with turn_threads.queue.write_turn():
-        turn_threads.ask("background", ExecutionPriority.BACKGROUND)
+        turn_threads.request_turn("background", ExecutionPriority.BACKGROUND)
         turn_threads.clock.seconds += 10
         turn_threads.queue.wake_waiters()
-        turn_threads.ask("normal", ExecutionPriority.NORMAL)
+        turn_threads.request_turn("normal", ExecutionPriority.NORMAL)
     assert turn_threads.finish() == ["background", "normal"]
 
 
 def test_raising_never_reaches_immediate(turn_threads):
     with turn_threads.queue.write_turn():
-        turn_threads.ask("reserved", ExecutionPriority.RESERVED)
+        turn_threads.request_turn("reserved", ExecutionPriority.RESERVED)
         turn_threads.clock.seconds += 20
         turn_threads.queue.wake_waiters()
         assert turn_threads.queue.waiting[0].priority is ExecutionPriority.RESERVED
@@ -107,7 +107,7 @@ def test_turn_given_back_on_exception(turn_threads):
 def test_wait_past_limit_names_the_holder(turn_threads):
     failures: list[BaseException] = []
 
-    def ask() -> None:
+    def request_turn() -> None:
         try:
             with CurrentExecution(ExecutionPriority.NORMAL, "late", "late").applied(), turn_threads.queue.write_turn():
                 pass
@@ -115,7 +115,7 @@ def test_wait_past_limit_names_the_holder(turn_threads):
             failures.append(error)
 
     with CurrentExecution(ExecutionPriority.AGENT, "hook", "task close 4").applied(), turn_threads.queue.write_turn():
-        busy_writer = threading.Thread(target=ask)
+        busy_writer = threading.Thread(target=request_turn)
         busy_writer.start()
         turn_threads.threads.append(busy_writer)
         turn_threads.wait_until_waiting(1)
@@ -147,7 +147,7 @@ def test_holder_whose_thread_died_gives_the_turn_back(turn_threads):
 
 def test_immediate_ask_past_the_limit_keeps_waiting_for_the_turn(turn_threads):
     with turn_threads.queue.write_turn():
-        turn_threads.ask("immediate", ExecutionPriority.IMMEDIATE)
+        turn_threads.request_turn("immediate", ExecutionPriority.IMMEDIATE)
         turn_threads.clock.seconds += LIMIT_SECONDS * 2
         turn_threads.queue.wake_waiters()
     assert turn_threads.finish() == ["immediate"]

@@ -316,8 +316,8 @@ def test_a_listener_whose_prepare_fails_holds_back_only_itself_and_is_skipped_pa
 def test_a_listener_over_the_time_limit_runs_no_more_events_and_keeps_its_cursor(tmp_path, monkeypatch):
     container = container_with(tmp_path, NewItemPause)
     container.get(SettingSource).values.update({LISTENER_TIME_LIMIT_SWITCH: True, LISTENER_TIME_LIMIT_SETTING: 100})
-    readings = iter(float(second) for second in range(100))
-    monkeypatch.setattr(runner_module, "perf_counter", lambda: next(readings))
+    clock_values = iter(float(second) for second in range(100))
+    monkeypatch.setattr(runner_module, "perf_counter", lambda: next(clock_values))
     container.get(Bus).run(MakeItem(title="Dune"), AGENT)
     container.get(Bus).run(MakeItem(title="Emma"), AGENT)
     runner = container.get(CommitListenerRunner)
@@ -329,8 +329,8 @@ def test_a_listener_over_the_time_limit_runs_no_more_events_and_keeps_its_cursor
 
 def test_with_no_time_limit_a_slow_listener_runs_every_event(tmp_path, monkeypatch):
     container = container_with(tmp_path, NewItemPause)
-    readings = iter(float(second) for second in range(100))
-    monkeypatch.setattr(runner_module, "perf_counter", lambda: next(readings))
+    clock_values = iter(float(second) for second in range(100))
+    monkeypatch.setattr(runner_module, "perf_counter", lambda: next(clock_values))
     container.get(Bus).run(MakeItem(title="Dune"), AGENT)
     container.get(Bus).run(MakeItem(title="Emma"), AGENT)
     container.get(CommitListenerRunner).run()
@@ -347,8 +347,8 @@ class SlowRoundPause(NewItemPause):
 def test_a_listener_of_a_slow_round_is_never_held_by_the_time_limit(tmp_path, monkeypatch):
     container = container_with(tmp_path, SlowRoundPause)
     container.get(SettingSource).values.update({LISTENER_TIME_LIMIT_SWITCH: True, LISTENER_TIME_LIMIT_SETTING: 100})
-    readings = iter(float(second) for second in range(100))
-    monkeypatch.setattr(runner_module, "perf_counter", lambda: next(readings))
+    clock_values = iter(float(second) for second in range(100))
+    monkeypatch.setattr(runner_module, "perf_counter", lambda: next(clock_values))
     container.get(Bus).run(MakeItem(title="Dune"), AGENT)
     container.get(Bus).run(MakeItem(title="Emma"), AGENT)
     runner = container.get(CommitListenerRunner)

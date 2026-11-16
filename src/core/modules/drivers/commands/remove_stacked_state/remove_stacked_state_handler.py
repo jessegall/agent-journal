@@ -43,7 +43,7 @@ class RemoveStackedStateHandler(Handler[RemoveStackedState, str]):
             raise Refusal(f"a {state_name} stacked state cannot be removed", REFUSED_STATES[state_name])
         if isinstance(state, Blocked) and state.block.block_id is not None:
             block = self.queries.query(AgentBlock).find(state.block.block_id)
-            self.repository.save(block.changed(closed_at=context.timestamp, closed_reason=BlockEnd.WAIVED.value, closer=f"person {context.actor.id}",
+            self.repository.save(block.changed(closed_at=context.timestamp, closed_reason=BlockEnd.SKIPPED.value, closer=f"person {context.actor.id}",
                                                skip_reason=command.reason), context)
             return f"block {block.id} waived"
         if state_name not in SUPPRESSED_TEXTS:

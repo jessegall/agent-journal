@@ -14,7 +14,7 @@ from engine.testing.agent_machine.record_samples import RecordSamples
 from engine.testing.examples.hook_samples import HookSamples
 
 EDIT = QuestionSamples.question(HookSamples.edit("a.py"))
-LINE = Line("messages.delivery", "message 7 waits", LineCategory.INFORMATION, "", LineChannel.NOW)
+LINE = Line("messages.delivery", "message 7 waits", LineCategory.INFORMATION, "", LineChannel.IMMEDIATE)
 
 
 def test_an_allowed_call_prints_its_lines_and_the_rewrite_the_step_kept() -> None:

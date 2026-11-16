@@ -19,7 +19,7 @@ class Version4Style:
     group_label: str = ""
 
 
-LOOKS = (Version4Style("messages.thought", "messages.thoughts", "agent", "group", "summary"),
+STYLES = (Version4Style("messages.thought", "messages.thoughts", "agent", "group", "summary"),
          Version4Style("messages.filed", "messages.filed", "work", "group", "filed"),
          Version4Style("tasks.task", "tasks.tasks", "work", "group", "task_start"),
          Version4Style("plans.plan", "plans.plans", "work", "group", "plan"),
@@ -27,8 +27,8 @@ LOOKS = (Version4Style("messages.thought", "messages.thoughts", "agent", "group"
          Version4Style("agents.subagent", "agents.helpers", "agent", "group", "subagent", "{count} helper updates"))
 
 
-@pytest.mark.parametrize("look", LOOKS, ids=[look.type for look in LOOKS])
-def test_version_4_mark_styles(look):
-    mark = next(mark for module in DEFAULT_MODULES for mark in module.mark_declarations() if mark.type.value == look.type)
-    assert (mark.family.name, mark.family.group.value, mark.family.colouring.value, mark.mark_icon) == (look.family, look.group, look.colouring, look.mark_icon)
-    assert not look.group_label or mark.group_label == look.group_label
+@pytest.mark.parametrize("look", STYLES, ids=[style.type for style in STYLES])
+def test_version_4_mark_styles(style):
+    mark = next(mark for module in DEFAULT_MODULES for mark in module.mark_declarations() if mark.type.value == style.type)
+    assert (mark.family.name, mark.family.group.value, mark.family.colouring.value, mark.mark_icon) == (style.family, style.group, style.colouring, style.mark_icon)
+    assert not style.group_label or mark.group_label == style.group_label

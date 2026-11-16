@@ -31,11 +31,11 @@ class UsageLimits:
 
     @staticmethod
     def marker(limit: UsageLimit, window: PlanWindow, current_version: float) -> float:
-        return float(int(current_version // HOUR_SECONDS)) if limit.window is UsageLimitWindow.HOUR else window.reset_epoch_seconds
+        return float(int(current_version // HOUR_SECONDS)) if limit.window is UsageLimitWindow.HOUR else window.reset_unix_seconds
 
     @staticmethod
     def reset_time(limit: UsageLimit, window: PlanWindow, current_version: float) -> float:
-        return (int(current_version // HOUR_SECONDS) + 1) * HOUR_SECONDS if limit.window is UsageLimitWindow.HOUR else window.reset_epoch_seconds
+        return (int(current_version // HOUR_SECONDS) + 1) * HOUR_SECONDS if limit.window is UsageLimitWindow.HOUR else window.reset_unix_seconds
 
     def used(self, limit: UsageLimit, window: PlanWindow, current_version: float) -> float:
         if limit.mode is UsageLimitMode.FIXED:
@@ -50,7 +50,7 @@ class UsageLimits:
     def last_reached_end(self, program: str, windows: Sequence[PlanWindow], checked_at: Timestamp) -> LimitEnd | None:
         current_version = checked_at.value.timestamp()
         ends = [(self.reset_time(limit, window, current_version), limit.id) for limit in self.program_limits(program)
-                if (window := self.matching_window(limit, windows)) is not None and window.reset_epoch_seconds > current_version and self.used(limit, window, current_version) >= limit.percent]
+                if (window := self.matching_window(limit, windows)) is not None and window.reset_unix_seconds > current_version and self.used(limit, window, current_version) >= limit.percent]
         if not ends:
             return None
         reset_time, limit_id = max(ends)

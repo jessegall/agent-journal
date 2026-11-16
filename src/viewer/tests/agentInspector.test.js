@@ -80,7 +80,7 @@ test("a running worker says who it is, how it does, what it does now and what it
     expect(texts(element, "[data-agent-point]")).toEqual(["1Every label is the one in the specChecked: labels match", "2The tests passNo proof yet"]);
 });
 
-const WINDOWS = [{title: "5 hours", used_percent: 30, reset_epoch_seconds: 1793545200}, {title: "7 days", used_percent: 65, reset_epoch_seconds: 1793876400}];
+const WINDOWS = [{title: "5 hours", used_percent: 30, reset_unix_seconds: 1793545200}, {title: "7 days", used_percent: 65, reset_unix_seconds: 1793876400}];
 
 test("a worker's and a helper's inspector show the program's plan allowance beside the provider, as the status bar does", async () => {
     for (const role of ["worker", "helper"]) {

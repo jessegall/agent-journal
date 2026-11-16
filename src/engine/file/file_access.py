@@ -211,8 +211,8 @@ class FileAccess:
         return Path(path).is_symlink()
 
     @classmethod
-    def samefile(cls, path: Path | str, other: Path | str) -> bool:
-        return Path(path).samefile(other)
+    def samefile(cls, path: Path | str, second_path: Path | str) -> bool:
+        return Path(path).samefile(second_path)
 
     @classmethod
     def stat(cls, path: Path | str, follow_symlinks: bool = True) -> os.stat_result:

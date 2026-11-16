@@ -26,9 +26,9 @@ class BlockedRuns:
 
     # read once a request until a write changes it: the hold, its condition and its line ask the same question
     def found(self, agent_id: int, timestamp: Timestamp) -> BlockedRun | None:
-        return self.request_values.read(f"processes.held-run:{agent_id}:{timestamp.text}", self.database.change_mark, lambda: self.held(agent_id, timestamp))
+        return self.request_values.read(f"processes.held-run:{agent_id}:{timestamp.text}", self.database.change_mark, lambda: self.current_run(agent_id, timestamp))
 
-    def held(self, agent_id: int, timestamp: Timestamp) -> BlockedRun | None:
+    def current_run(self, agent_id: int, timestamp: Timestamp) -> BlockedRun | None:
         agent = self.rows.find(Agent, agent_id)
         if agent is None or agent.ended_at is not None:
             return None

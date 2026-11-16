@@ -97,7 +97,7 @@ class ClaudeCodeProvider(Provider):
                    "SessionEnd": HookEventName.SESSION_END, "MessageDisplay": HookEventName.MESSAGE_DISPLAY}
     line_events = [HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE]
     plain_output_events = [HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.COMPACT]
-    matcher_style = MatcherStyle.NAMES_OR_REGEX
+    matcher_style = MatcherStyle.NAME_LIST_OR_PATTERN
     session_end_limit_seconds = 60
     # Claude Code saves an additionalContext text over 10,000 characters to a file and shows a preview (report 1468)
     additional_context_limit = 10_000

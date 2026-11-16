@@ -3,7 +3,7 @@ import UsagePanel from "../../core/modules/usage/web/src/UsagePanel.vue";
 import {mounted, pickButton, typeInto} from "./support/windowContext.js";
 import {usageWindowContext as context} from "./support/usageWindowContext.js";
 
-const WINDOW = {title: "7 days", used_percent: 17, reset_epoch_seconds: 1794085200};
+const WINDOW = {title: "7 days", used_percent: 17, reset_unix_seconds: 1794085200};
 
 test("the allowance names each window beside its percentage", async () => {
     const usage = {windows: [{...WINDOW, title: "5 hours", used_percent: 30}, WINDOW], cost_dollars: 1};

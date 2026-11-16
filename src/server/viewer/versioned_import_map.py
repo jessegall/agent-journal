@@ -13,15 +13,15 @@ class VersionedImportMap:
     """The shell page with every file its import map names given a version from that file's content, so a browser
     fetches a rebuilt bundle at a new address instead of keeping the copy it cached under the old one."""
 
-    def __init__(self, viewer_module: str, content_of: Callable[[str, str], bytes]) -> None:
-        self.viewer_module, self.content_of = viewer_module, content_of
+    def __init__(self, viewer_module: str, content_reader: Callable[[str, str], bytes]) -> None:
+        self.viewer_module, self.content_reader = viewer_module, content_reader
 
     def versioned(self, page: bytes) -> bytes:
         return MAPPED_ADDRESS.sub(lambda match: b'"' + self.address_with_version(match.group(1)) + b'"', page)
 
     def address_with_version(self, address: bytes) -> bytes:
         module, path = self.module_path_pair(address)
-        version = hashlib.sha1(self.content_of(module, path)).hexdigest()[:VERSION_CHARACTERS]
+        version = hashlib.sha1(self.content_reader(module, path)).hexdigest()[:VERSION_CHARACTERS]
         return address + b"?v=" + version.encode()
 
     def module_path_pair(self, address: bytes) -> tuple[str, str]:

@@ -28,11 +28,11 @@ class FileTally:
             ACTIVE_COUNTS.reset(token)
 
     @staticmethod
-    def note(kind: str, amount: int = 1) -> None:
+    def note(operation: str, amount: int = 1) -> None:
         calls = ACTIVE_COUNTS.get()
         if calls is None:
             return
-        calls.kinds[kind] += amount
+        calls.operation_counts[operation] += amount
         calls.origins[FileTally.caller()] += amount
 
     # the first code line above the file door, which is where the call was asked for

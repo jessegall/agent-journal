@@ -22,7 +22,7 @@ from core.modules.usage.support.skeletons import USAGE_USAGE_SKELETON, USAGE_CON
 from core.modules.schedules.support.skeletons import SCHEDULES_JOBS_SKELETON
 print(json.dumps({"usage.usage": [part.listed() for part in USAGE_USAGE_SKELETON], "usage.context": [part.listed() for part in USAGE_CONTEXT_SKELETON], "schedules.jobs": [part.listed() for part in SCHEDULES_JOBS_SKELETON]}))
 `], {cwd: ROOT, env: {...process.env, PYTHONPATH: resolve(ROOT, "src")}, encoding: "utf8"}));
-const WINDOW = {title: "7 days", used_percent: 17, reset_epoch_seconds: 1794085200};
+const WINDOW = {title: "7 days", used_percent: 17, reset_unix_seconds: 1794085200};
 const USAGE = {windows: [{...WINDOW, title: "5 hours", used_percent: 30}, WINDOW], agents: [{id: 1, role: "main", program: "claude", context_percent: 40}]};
 const windowContext = () => usageWindowContext({"usage show": {ok: true, value: USAGE}, "usage-limit list": {ok: true, value: {rows: [], page: 1, size: 50, total: 0}}});
 const PANELS = {"usage.usage": UsagePanel, "usage.context": ContextPanel};

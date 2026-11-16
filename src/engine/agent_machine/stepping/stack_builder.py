@@ -85,7 +85,7 @@ class StackBuilder:
             return BLOCK_ENDS.get(view.block_outcomes.get(block_id, ConditionOutcome.PENDING)) if block_id is not None else None
         # a stacked state a person removed is waived, which is no progress
         if stacked_state.state_key in view.suppressions:
-            return StateEnd.WAIVED
+            return StateEnd.SKIPPED
         subject = stacked_state.state_key.subject
         if subject is not None and subject in view.subject_ends:
             return view.subject_ends[subject]

@@ -8,5 +8,5 @@ class GrantState(StrEnum):
     CONFIRMED = "confirmed"
     APPROVED = "approved"
     SPENT = "spent"
-    WITHDRAWN = "withdrawn"
+    REVOKED = "withdrawn"
     DECLINED = "declined"

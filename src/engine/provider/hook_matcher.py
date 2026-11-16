@@ -19,7 +19,7 @@ class HookMatcher:
     def matches(self, name: str) -> bool:
         if self.text in ("", "*"):
             return True
-        if self.style is MatcherStyle.NAMES_OR_REGEX and NAME_CHARACTERS.fullmatch(self.text):
+        if self.style is MatcherStyle.NAME_LIST_OR_PATTERN and NAME_CHARACTERS.fullmatch(self.text):
             return name in (part.strip() for part in NAME_SEPARATORS.split(self.text))
         try:
             return re.search(self.text, name) is not None

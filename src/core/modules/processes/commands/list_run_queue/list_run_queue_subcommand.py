@@ -70,7 +70,7 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         running = [row.inspector_json() for row in active if row.section is QueueSection.RUNNING]
         waiting = [row.inspector_json() for row in active if row.section is QueueSection.WAITING]
         recent = [{**row.inspector_json(), "lane": self.pool(row).value} for row in self.recent_rows(query, max(1, arguments.recent))]
-        copy = self.status.snapshot()
+        copy = self.status.overview()
         long_pool = copy.pool(ExecutionLength.LONG.value)
         inspector: QueueInspectorJson = {
             "environment_id": environment_id,
@@ -91,9 +91,9 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
 
     # the lane a run ran in: its stored class's, or for a class nobody declares any more, the lane its line matches now
     def pool(self, row: ProcessQueueRow) -> ExecutionLength:
-        named = self.classes.named(row.execution_class)
-        if named is not None:
-            return named.pool
+        declared_class = self.classes.by_name(row.execution_class)
+        if declared_class is not None:
+            return declared_class.pool
         source = ExecutionSource.PLUGIN_PROGRAM if row.plugin else ExecutionSource.SHELL_LINE
         return self.classes.match(ExecutionSubject(source, ExecutionStarter(StarterType.JOURNAL), category=row.category, plugin_name=row.plugin, line=row.line)).pool
 

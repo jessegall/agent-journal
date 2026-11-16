@@ -4605,12 +4605,12 @@ const Ov = { class: "band" }, Tv = { key: 0 }, Iv = {
         h("span", gg, v(a.state), 1),
         A(Ye, {
           class: "since",
-          at: a.since
+          at: a.entered_at
         }, null, 8, ["at"])
       ], 8, pg))), 128))
     ], 64)) : k("", !0);
   }
-}, bg = /* @__PURE__ */ V(yg, [["__scopeId", "data-v-eac1ab07"]]), kg = {
+}, bg = /* @__PURE__ */ V(yg, [["__scopeId", "data-v-4aebfc35"]]), kg = {
   class: "strip",
   "data-agent-strip": ""
 }, wg = ["data-agent-cell"], $g = {
@@ -4713,7 +4713,7 @@ const $t = /* @__PURE__ */ V(Mg, [["render", Cg], ["__scopeId", "data-v-aa955b3e
   setup(e, { emit: t }) {
     const n = e, a = t, s = M(() => n.windows[0] ?? null), o = M(() => s.value && Number.isFinite(s.value.used_percent) ? Math.max(0, Math.min(100, Math.round(s.value.used_percent))) : null), l = M(() => o.value !== null && o.value >= 100), i = M(() => {
       var c;
-      return (c = s.value) != null && c.reset_epoch_seconds ? new Date(s.value.reset_epoch_seconds * 1e3).toLocaleString() : "";
+      return (c = s.value) != null && c.reset_unix_seconds ? new Date(s.value.reset_unix_seconds * 1e3).toLocaleString() : "";
     }), u = M(() => l.value ? `At usage limit: the plan's ${s.value.title} allowance is used up${i.value ? `, starts again ${i.value}` : ""}` : `${o.value}% of the plan's ${s.value.title} allowance used${i.value ? `, starts again ${i.value}` : ""}`);
     return (c, f) => o.value !== null ? (r(), d("button", {
       key: 0,
@@ -4737,7 +4737,7 @@ const $t = /* @__PURE__ */ V(Mg, [["render", Cg], ["__scopeId", "data-v-aa955b3e
       z(" " + v(l.value ? "At usage limit" : `${o.value}%`), 1)
     ], 8, Ig)) : k("", !0);
   }
-}, Lg = /* @__PURE__ */ V(Rg, [["__scopeId", "data-v-a36f09dc"]]), Ng = {
+}, Lg = /* @__PURE__ */ V(Rg, [["__scopeId", "data-v-8ee387a5"]]), Ng = {
   __name: "DashboardBadge",
   props: { text: { type: String, required: !0 }, tone: { type: String, default: "" } },
   setup(e) {
@@ -10108,7 +10108,7 @@ function G5(e, t, n = z5) {
   const s = new Set(e.filter((o) => o.leaves_at && !o.kept && !(To(o) > t)).slice(0, a).map((o) => o.id));
   return e.filter((o) => !s.has(o.id));
 }
-const K5 = (e, t) => e.title || ((t == null ? void 0 : t.title) || "").replace("{row_id}", String(e.target_id)).replace("{row_title}", e.row_title || ""), zs = (e, t, n, a) => ({ action: e, icon: t, label: n, runs: a }), Y5 = (e, t) => !(t != null && t.needs_user) && !!(e.leaves_at || e.kept || (t == null ? void 0 : t.leaves_after_seconds) > 0), Q5 = (e) => ({ ...e.kept ? zs("unkeep", "pins", "Let this card close", `dock unkeep ${e.id}`) : zs("keep", "pins", "Keep this card", `dock keep ${e.id}`), pressed: !!e.kept }), X5 = ["keep", "unkeep", "open", "undock"], J5 = (e) => ({ ...e, iconOnly: X5.includes(e.action) });
+const K5 = (e, t) => e.title || ((t == null ? void 0 : t.title) || "").replace("{row_id}", String(e.target_id)).replace("{row_title}", e.row_title || ""), zs = (e, t, n, a) => ({ action: e, icon: t, label: n, runs: a }), Y5 = (e, t) => !(t != null && t.person_required) && !!(e.leaves_at || e.kept || (t == null ? void 0 : t.leaves_after_seconds) > 0), Q5 = (e) => ({ ...e.kept ? zs("unkeep", "pins", "Let this card close", `dock unkeep ${e.id}`) : zs("keep", "pins", "Keep this card", `dock keep ${e.id}`), pressed: !!e.kept }), X5 = ["keep", "unkeep", "open", "undock"], J5 = (e) => ({ ...e, iconOnly: X5.includes(e.action) });
 function Z5(e, t) {
   var n;
   return [
@@ -10184,8 +10184,8 @@ const e4 = (e, t, n) => (t == null ? void 0 : t.draws_head) && (n == null ? void
     return (g, S) => {
       var T, L, U, J;
       return r(), j(j5, {
-        label: m.value.title + ((T = s.value) != null && T.needs_user ? ", waiting for you" : ""),
-        type: (L = s.value) != null && L.needs_user ? "waiting" : "",
+        label: m.value.title + ((T = s.value) != null && T.person_required ? ", waiting for you" : ""),
+        type: (L = s.value) != null && L.person_required ? "waiting" : "",
         folded: !!((U = s.value) != null && U.folds) && e.folded,
         body: !!((J = s.value) != null && J.folds),
         collapsed: e.collapsed,
@@ -10358,7 +10358,7 @@ const e4 = (e, t, n) => (t == null ? void 0 : t.draws_head) && (n == null ? void
       }, 8, ["label", "type", "folded", "body", "collapsed", "data-figure-closing"]);
     };
   }
-}, Rl = /* @__PURE__ */ V(l4, [["__scopeId", "data-v-4d692a2f"]]), i4 = 24, r4 = 8, FA = 420;
+}, Rl = /* @__PURE__ */ V(l4, [["__scopeId", "data-v-8bfc4ed9"]]), i4 = 24, r4 = 8, FA = 420;
 function WA({ top: e, before: t, height: n, shown: a }) {
   const s = n - e - a;
   return s <= i4 ? !0 : e < t && s > r4 ? !1 : null;
@@ -10446,7 +10446,7 @@ const m4 = {
       )
     ), f = M(() => u.value.filter((S) => !c.value.includes(S) && !is(S, Gt))), m = Ll(`dock-size:${((_ = ka.identity) == null ? void 0 : _.root) || location.host}`, null), p = (S) => {
       var T;
-      return !!((T = Gt(S.type)) != null && T.needs_user);
+      return !!((T = Gt(S.type)) != null && T.person_required);
     }, b = E(/* @__PURE__ */ new Set()), $ = E(/* @__PURE__ */ new Set()), y = M(() => u.value.length === 1), w = (S) => p(S) || y.value, x = (S) => w(S) ? b.value.has(S.id) || $.value.has(S.id) : m.value ? m.value.collapsed && !m.value.opened.includes(S.id) : t.collapsed, C = M(() => u.value.some(x));
     ce(() => t.collapsed, (S) => {
       $.value = new Set(S ? u.value.filter(p).map((T) => T.id) : []);
@@ -10537,7 +10537,7 @@ const m4 = {
       _: 1
     }, 8, ["duration"]));
   }
-}, HA = /* @__PURE__ */ V(h4, [["__scopeId", "data-v-ab76ae18"]]), Nt = { notice: 0.42, gap: 8, shuffles: 3, seconds: 2.4, frames: 48, fps: 20, lift: 0.12 }, ia = (e) => Math.min(Math.max(e, 0), 1), p4 = (e) => {
+}, HA = /* @__PURE__ */ V(h4, [["__scopeId", "data-v-0e24b6bb"]]), Nt = { notice: 0.42, gap: 8, shuffles: 3, seconds: 2.4, frames: 48, fps: 20, lift: 0.12 }, ia = (e) => Math.min(Math.max(e, 0), 1), p4 = (e) => {
   const t = ia(e);
   return t * t * (3 - 2 * t);
 }, Tt = (e, t, n) => p4((e - t) / (n - t));
@@ -16977,7 +16977,7 @@ const xC = /* @__PURE__ */ kC($C), SC = ["width", "height", "viewBox"], MC = ["w
       ])
     ]));
   }
-}, iB = /* @__PURE__ */ V(nA, [["__scopeId", "data-v-b494c444"]]), rB = Xu(() => import("./VoiceFigure-BTK5ZVvO.js").then((e) => e.V)), uB = "1.2.0", cB = "3.5";
+}, iB = /* @__PURE__ */ V(nA, [["__scopeId", "data-v-b494c444"]]), rB = Xu(() => import("./VoiceFigure-DDuHIdZP.js").then((e) => e.V)), uB = "1.2.0", cB = "3.5";
 export {
   Um as $,
   Oe as A,

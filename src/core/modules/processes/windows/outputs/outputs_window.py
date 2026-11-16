@@ -9,7 +9,7 @@ from engine.enums.window_loading import WindowLoading
 from engine.enums.window_place import WindowPlace
 from engine.viewer.window_search import WindowSearch
 from core.modules.processes.windows.outputs.keys.runs_key import RunsKey
-from core.modules.processes.windows.outputs.keys.marks_key import MarksKey
+from core.modules.processes.windows.outputs.keys.mark_list_key import MarkListKey
 
 
 class OutputsWindow(Window):
@@ -27,4 +27,4 @@ class OutputsWindow(Window):
     reads = WINDOW_READS
     runs = WINDOW_RUNS
     events = [*WINDOW_EVENTS, "unreadable_mark.*"]
-    keys = [RunsKey, MarksKey]
+    keys = [RunsKey, MarkListKey]

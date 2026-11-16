@@ -13,24 +13,24 @@ def lines(count: int, size: int):
 
 def test_lines_over_9500_characters_are_split_across_two_replies():
     split = ContextLineSplit.split(lines(30, 500), LIMIT)
-    assert LIMIT == 9500 and split.kept and split.rest
+    assert LIMIT == 9500 and split.kept and split.remaining_messages
     assert sum(len(agent_message.text) for agent_message in split.kept) + len(split.kept) - 1 <= LIMIT
 
 
 def test_no_line_is_cut_in_the_middle():
     split = ContextLineSplit.split(lines(30, 500), LIMIT)
-    assert all(len(agent_message.text) == 500 for agent_message in (*split.kept, *split.rest))
+    assert all(len(agent_message.text) == 500 for agent_message in (*split.kept, *split.remaining_messages))
 
 
 def test_every_line_is_delivered_once_over_the_replies():
     given = lines(30, 500)
     split = ContextLineSplit.split(given, LIMIT)
-    assert [agent_message.text for agent_message in (*split.kept, *split.rest)] == [agent_message.text for agent_message in given]
+    assert [agent_message.text for agent_message in (*split.kept, *split.remaining_messages)] == [agent_message.text for agent_message in given]
 
 
 def test_a_single_line_over_the_limit_is_cut_at_the_limit():
     split = ContextLineSplit.split([*lines(1, 12_000), *lines(1, 10)], LIMIT)
-    assert [len(agent_message.text) for agent_message in split.kept] == [LIMIT] and len(split.rest) == 1
+    assert [len(agent_message.text) for agent_message in split.kept] == [LIMIT] and len(split.remaining_messages) == 1
 
 
 def test_a_program_with_no_limit_is_never_split():

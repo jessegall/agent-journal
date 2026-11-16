@@ -11,7 +11,7 @@ SHIPPED_TABLE = Path(__file__).resolve().parents[4] / "tools" / "journal-hook" /
 def test_the_row_carries_the_matcher_style_and_the_limits(monkeypatch):
     row = ProgramRow.row(SampleProgram)
     assert (row.matcher_style, row.default_hook_seconds, row.session_end_limit_seconds) == ("regex", 600, 3)
-    monkeypatch.setattr(SampleProgram, "matcher_style", MatcherStyle.NAMES_OR_REGEX)
+    monkeypatch.setattr(SampleProgram, "matcher_style", MatcherStyle.NAME_LIST_OR_PATTERN)
     monkeypatch.setattr(SampleProgram, "session_end_limit_seconds", 60)
     row = ProgramRow.row(SampleProgram)
     assert (row.matcher_style, row.session_end_limit_seconds) == ("names_or_regex", 60)

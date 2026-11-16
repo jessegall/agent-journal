@@ -12,10 +12,10 @@ class OneModuleFinder:
 
 
 def test_general_registered():
-    assert AskTopics(OneModuleFinder()).named("general") == AskTopic("general", "go on with anything the task still holds, or stop")
+    assert AskTopics(OneModuleFinder()).by_key("general") == AskTopic("general", "go on with anything the task still holds, or stop")
 
 
 def test_unknown_topic_refused_with_keys():
     with pytest.raises(Refusal) as refused:
-        AskTopics(OneModuleFinder()).named("weather")
+        AskTopics(OneModuleFinder()).by_key("weather")
     assert "topics: general" in refused.value.suggestion

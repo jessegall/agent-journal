@@ -20,11 +20,11 @@ class AfterRow:
         key_after = f"{self.key} {'<' if self.key_descending else '>'} ?"
         if self.value is None:
             return self.after_empty(key_after)
-        past = f"{self.column} {'<' if self.descending else '>'} ?"
+        comparison = f"{self.column} {'<' if self.descending else '>'} ?"
         tie = f"({self.column} = ? AND {key_after})"
         if self.descending:
-            return Statement(f"({past} OR {self.column} IS NULL OR {tie})", [self.value, self.value, self.key_value])
-        return Statement(f"({past} OR {tie})", [self.value, self.value, self.key_value])
+            return Statement(f"({comparison} OR {self.column} IS NULL OR {tie})", [self.value, self.value, self.key_value])
+        return Statement(f"({comparison} OR {tie})", [self.value, self.value, self.key_value])
 
     def after_empty(self, key_after: str) -> Statement:
         tie = f"({self.column} IS NULL AND {key_after})"

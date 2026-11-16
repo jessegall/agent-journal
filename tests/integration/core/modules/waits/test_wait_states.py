@@ -10,11 +10,11 @@ from core.modules.waits.states.wait_states import WaitStates
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
-ASK = 'question ask "Which database?" --context "The store needs one database for its orders." --options "sqlite" "postgres" --recommend "sqlite"'
+QUESTION_COMMAND = 'question ask "Which database?" --context "The store needs one database for its orders." --options "sqlite" "postgres" --recommend "sqlite"'
 
 
-def asked(story) -> int:
-    answer = story.run(ASK, actor=story.agent)
+def open_question(story) -> int:
+    answer = story.run(QUESTION_COMMAND, actor=story.agent)
     assert answer.code == 0, answer.output_text
     return story.container.get(Queries).query(QuestionRow).filter(session_agent_id=story.agent.id).newest().first().id
 
@@ -28,7 +28,7 @@ def waiting(story) -> list[Waiting]:
 def test_a_question_the_agent_asks_is_a_wait_on_that_question_with_its_step_requested_in_the_same_write(played):
     story = played(BuilderStarted)
     story.hook("s-1", HookSamples.session_start())
-    question_id = asked(story)
+    question_id = open_question(story)
     assert [state.subjects for state in waiting(story)] == [(RowReference("questions", question_id),)]
     requests = story.container.get(Queries).query(AgentStepRequest).filter(session_agent_id=story.agent.id, served_at=None).first()
     assert requests is not None and "waits.wait-step" in requests.causes
@@ -36,6 +36,6 @@ def test_a_question_the_agent_asks_is_a_wait_on_that_question_with_its_step_requ
 
 def test_an_answered_question_leaves_no_wait(played):
     story = played(BuilderStarted)
-    question_id = asked(story)
+    question_id = open_question(story)
     story.expect_success(f"question answer {question_id} --answer sqlite", actor=story.user)
     assert waiting(story) == []

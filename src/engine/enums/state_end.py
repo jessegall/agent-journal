@@ -10,6 +10,6 @@ class StateEnd(StrEnum):
     ANSWERED = "answered"
     CANCELLED = "cancelled"
     SATISFIED = "satisfied"
-    WAIVED = "waived"
+    SKIPPED = "waived"
     EXPIRED = "expired"
     TARGET_MISSING = "target-missing"

@@ -16,7 +16,7 @@ class OpenWaits:
     def __init__(self, queries: Queries, request_values: RequestValues) -> None:
         self.queries, self.request_values = queries, request_values
 
-    def of(self, agent_ids: Sequence[int]) -> list[Wait]:
+    def waits(self, agent_ids: Sequence[int]) -> list[Wait]:
         key = ",".join(str(agent_id) for agent_id in sorted(set(agent_ids)))
         return self.request_values.read(f"waits.open:{key}", lambda: 0, lambda: list(
             self.queries.query(Wait).matching(Among("session_agent_id", sorted(set(agent_ids)))).filter(state=WaitState.OPEN).every_row(OPEN_WAITS_REASON)))

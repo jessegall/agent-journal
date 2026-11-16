@@ -30,7 +30,7 @@ class UnstartedHelperEffect(EventEffect):
         limit, current_time = Interval(self.settings.seconds(UNSTARTED_HELPER_SECONDS)), self.clock.timestamp()
         return [RecordAgentLaunchFailure(helper.id) for helper in self.agents.running_with_read_access(agent_id) if self.is_silent(helper, agent_id, limit, current_time)]
 
-    def is_silent(self, helper: Agent, parent_id: int, limit: Interval, now: Timestamp) -> bool:
+    def is_silent(self, helper: Agent, parent_id: int, limit: Interval, current_time: Timestamp) -> bool:
         if helper.launched_at is None:
             return False
-        return limit.has_passed(self.spans, parent_id, helper.launched_at, now) and self.hook_calls.newest_agent_hook(helper.id) is None
+        return limit.has_passed(self.spans, parent_id, helper.launched_at, current_time) and self.hook_calls.newest_agent_hook(helper.id) is None

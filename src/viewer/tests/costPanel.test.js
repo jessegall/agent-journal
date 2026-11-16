@@ -10,7 +10,7 @@ const AGENTS = [
     {id: 90, number: 9, role: "worker", model: "Sonnet 5.5", cost_dollars: 3.5},
     {id: 11, role: "reviewer", model: "", cost_dollars: 0},
 ];
-const USAGE = {agents: AGENTS, windows: [{title: "7 days", used_percent: 17, reset_epoch_seconds: 1794085200}], cost_dollars: 1068.25};
+const USAGE = {agents: AGENTS, windows: [{title: "7 days", used_percent: 17, reset_unix_seconds: 1794085200}], cost_dollars: 1068.25};
 const texts = (element, selector) => [...element.querySelectorAll(selector)].map((row) => [...row.children].map((part) => part.textContent).join(" "));
 
 test("the cost dropdown says it is the predicted API price and not what a plan charges", async () => {

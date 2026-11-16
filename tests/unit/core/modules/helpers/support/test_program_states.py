@@ -68,7 +68,7 @@ def test_expired_outage_is_ready_without_deleting_history(readiness):
 @pytest.mark.parametrize('percent,is_ready', [(94, True), (95, False), (96, False)])
 def test_plan_window_threshold(readiness, percent, is_ready):
     resets_at = readiness.now.value.timestamp() + 3600
-    readiness.statuses.newest_status.return_value = SimpleNamespace(windows=[SimpleNamespace(used_percent=percent, reset_epoch_seconds=resets_at, line='plan window')])
+    readiness.statuses.newest_status.return_value = SimpleNamespace(windows=[SimpleNamespace(used_percent=percent, reset_unix_seconds=resets_at, line='plan window')])
     state = readiness.states.state('sample', Path('/project'))
     assert state.is_ready is is_ready
     if not is_ready:
@@ -77,7 +77,7 @@ def test_plan_window_threshold(readiness, percent, is_ready):
 
 @pytest.mark.parametrize('reset_seconds', [0, -1])
 def test_program_states_copes_with_past_reset(readiness, reset_seconds):
-    readiness.statuses.newest_status.return_value = SimpleNamespace(windows=[SimpleNamespace(used_percent=99, reset_epoch_seconds=readiness.now.value.timestamp() + reset_seconds)])
+    readiness.statuses.newest_status.return_value = SimpleNamespace(windows=[SimpleNamespace(used_percent=99, reset_unix_seconds=readiness.now.value.timestamp() + reset_seconds)])
     assert readiness.states.state('sample', Path('/project')).is_ready
 
 

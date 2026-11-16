@@ -4,7 +4,7 @@ from engine.driver.hook_fields import mapping, text
 
 
 @dataclass(frozen=True)
-class WakeAsk:
+class WakeRequest:
     """One ask of an agent program's wake hook: the program, the session it runs, its launch name, and the token that
     names this waiter."""
 
@@ -14,6 +14,6 @@ class WakeAsk:
     token: str
 
     @classmethod
-    def parsed(cls, data: object) -> "WakeAsk":
+    def parsed(cls, data: object) -> "WakeRequest":
         fields = mapping(data, "a wake ask")
         return cls(text(fields, "program"), text(fields, "session"), text(fields, "launch"), text(fields, "token"))

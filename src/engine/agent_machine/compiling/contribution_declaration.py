@@ -21,7 +21,7 @@ class ContributionDeclaration:
     is_safety: bool = False
     slot: TransformSlot | None = None
     events: tuple[HookEventName, ...] = ()
-    channel: LineChannel = LineChannel.NOW
+    channel: LineChannel = LineChannel.IMMEDIATE
     is_required: bool = False
     has_failure: bool = False
     constructor_types: tuple[str, ...] = ()

@@ -3,7 +3,7 @@ import pytest
 from engine.provider.enums.matcher_style import MatcherStyle
 from engine.provider.hook_matcher import HookMatcher
 
-NAMES = MatcherStyle.NAMES_OR_REGEX
+NAMES = MatcherStyle.NAME_LIST_OR_PATTERN
 REGEX = MatcherStyle.REGEX
 
 # the same table as matcherCases in tools/journal-hook/managed_test.go: matcher, name, names_or_regex, regex

@@ -43,7 +43,7 @@ const reset = (seconds) => `Starts again ${new Date(seconds * 1000).toLocaleStri
                 <span>{{ plan.title }}</span>
                 <strong>{{ Math.round(plan.used_percent) }}%</strong>
                 <span class="track"><span :style="{width: `${plan.used_percent}%`}" /></span>
-                <small>{{ plan.used_percent >= 100 ? `At the usage limit. ${reset(plan.reset_epoch_seconds)}` : reset(plan.reset_epoch_seconds) }}</small>
+                <small>{{ plan.used_percent >= 100 ? `At the usage limit. ${reset(plan.reset_unix_seconds)}` : reset(plan.reset_unix_seconds) }}</small>
             </div>
         </template>
         <div class="limit-form" data-usage-limit-form>

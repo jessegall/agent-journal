@@ -87,9 +87,9 @@ class StoredStepWriter(StepWriter):
     # a line the program cannot carry at this event waits in today's line queue for the agent's next event that can
     def queue_waiting_lines(self, view: AgentView, record: DecisionRecord, context: Context) -> None:
         agent_id = view.agent.agent_id
-        said = [(line, line.given_message()) for line in record.waiting_lines]
-        held = self.agent_message_log.delayed(agent_id, [agent_message for _, agent_message in said], context.timestamp)
-        queued = [(line, agent_message) for line, agent_message in said if (agent_message.key, agent_message.text) not in held]
+        line_messages = [(line, line.given_message()) for line in record.waiting_lines]
+        delayed_texts = self.agent_message_log.delayed(agent_id, [agent_message for _, agent_message in line_messages], context.timestamp)
+        queued = [(line, agent_message) for line, agent_message in line_messages if (agent_message.key, agent_message.text) not in delayed_texts]
         for line, agent_message in queued:
             self.message_sender.send_agent_message(agent_id, agent_message, line.source_key or line.key, context)
         self.agent_message_log.store_given(agent_id, [agent_message for _, agent_message in queued], context)
@@ -172,7 +172,7 @@ class StoredStepWriter(StepWriter):
         updated_input: Mapping[str, object] | None = None
         for effect in effects:
             results: list[object] = []
-            for command in self.effect_commands.of(effect, view, record):
+            for command in self.effect_commands.commands(effect, view, record):
                 try:
                     with self.database.savepoint(type(command).__name__):
                         results.append(self.bus.dispatch(command, context.nested(command)))

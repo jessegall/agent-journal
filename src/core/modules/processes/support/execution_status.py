@@ -23,9 +23,9 @@ class ExecutionStatus:
         self.slots, self.tickets, self.classes, self.halt, self.clock, self.waits, self.home = slots, tickets, classes, halt, clock, waits, home
 
     def lines(self) -> list[str]:
-        return self.snapshot().lines()
+        return self.overview().lines()
 
-    def snapshot(self) -> ExecutionOverview:
+    def overview(self) -> ExecutionOverview:
         return ExecutionOverview(tuple(self.pools()), tuple(self.waits.last_hour(self.clock.timestamp())))
 
     # the instant lane as the server holds it, then the short and long lanes from the process rows
@@ -52,10 +52,10 @@ class ExecutionStatus:
         running = tuple(entry for is_running, entry in entries if is_running)
         return PoolLoad(ExecutionLength.INSTANT.value, sum(entry.slot_cost for entry in running), loading.capacity, running=running, waiting=tuple(entry for is_running, entry in entries if not is_running))
 
-    def entry(self, ticket: ExecutionTicket, kind: str, reason: str = "") -> PoolEntry:
+    def entry(self, ticket: ExecutionTicket, category: str, reason: str = "") -> PoolEntry:
         raised = ticket.first_priority.label if ticket.priority != ticket.first_priority else ""
         return PoolEntry(ticket.line, ticket.execution_class.name, ticket.priority.label, ticket.starter.label, ticket.entered_at.elapsed_seconds(self.clock.timestamp()),
-                         ticket.execution_class.slot_cost, kind, ticket.run_id, reason, raised)
+                         ticket.execution_class.slot_cost, category, ticket.run_id, reason, raised)
 
     def reason(self, ticket: ExecutionTicket, pool: ExecutionLength) -> str:
         if ticket.has_open_reader_request:

@@ -1,7 +1,7 @@
 from engine.viewer.window_key import WindowKey
 
 
-class MarksKey(WindowKey):
+class MarkListKey(WindowKey):
     """The marks data of the processes.outputs window."""
 
     name = "marks"

@@ -6,7 +6,7 @@ from engine.enums.window_priority import WindowPriority
 from engine.viewer.choice_option import ChoiceOption
 from engine.viewer.toggle_option import ToggleOption
 from core.modules.messages.windows.chat.keys.messages_key import MessagesKey
-from core.modules.messages.windows.chat.keys.marks_key import MarksKey
+from core.modules.messages.windows.chat.keys.mark_list_key import MarkListKey
 from core.modules.messages.windows.chat.keys.docks_key import DocksKey
 from core.modules.messages.windows.chat.keys.pins_key import PinsKey
 from core.modules.messages.windows.chat.keys.mark_motion_key import MarkMotionKey
@@ -36,4 +36,4 @@ class ChatWindow(Window):
     events = ["message.*", "chat_mark.*", "dock_item.*", "pin.*", "hook_call.*", "process_part.*", "setting.*", "question.*"]
     options = [ChoiceOption("figure", "Figure", [("voice", "The voice I chose"), ("none", "None"), ("butler", "Butler"), ("homie", "Homie"), ("coach", "Coach"), ("colleague", "Colleague"), ("squire", "Squire")], "voice"),
                                           ToggleOption("floors", "Show floors")]
-    keys = [MessagesKey, MarksKey, DocksKey, PinsKey, MarkMotionKey, VoiceProfileKey, VoiceAvatarKey, VoiceAvatarVisibleKey, ToolKey, MainAgentKey, DockKey, OutputKey, RunKey, QuestionKey]
+    keys = [MessagesKey, MarkListKey, DocksKey, PinsKey, MarkMotionKey, VoiceProfileKey, VoiceAvatarKey, VoiceAvatarVisibleKey, ToolKey, MainAgentKey, DockKey, OutputKey, RunKey, QuestionKey]

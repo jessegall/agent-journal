@@ -29,9 +29,9 @@ class PoolLoad:
                 "running": [entry.json() for entry in self.running], "waiting": [entry.json() for entry in self.waiting]}
 
     def lines(self) -> list[str]:
-        over = " (over capacity)" if self.is_overloaded else ""
+        overload_note = " (over capacity)" if self.is_overloaded else ""
         halted = {"": "", "command": " (paused)"}.get(self.halt_type, " (held)")
-        return [f"{self.pool} lane: {self.used} of {self.capacity} slots in use{over}{halted}, {len(self.waiting)} waiting",
+        return [f"{self.pool} lane: {self.used} of {self.capacity} slots in use{overload_note}{halted}, {len(self.waiting)} waiting",
                 *(f"  runs: {entry.described}" for entry in self.running), *(f"  waits: {entry.described}, {entry.reason}" for entry in self.waiting)]
 
 

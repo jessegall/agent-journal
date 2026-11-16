@@ -40,9 +40,9 @@ def test_buttons_are_offered_only_where_their_module_is_active(buttons_server):
     button = next(item for item in buttons(server, cookie, "main")["buttons"] if item["name"] == "review.edit")
     assert (button["module"], button["from"], button["runs"], button["label"], button["slots"]) == ("acme.review", "acme.review", RUNS, "Review", ["row.task"]), button
     assert button["fields"][0]["name"] == "priority" and button["fields"][0]["choices"] == [{"key": "normal", "label": "Normal"}, {"key": "high", "label": "High"}]
-    elsewhere = buttons(server, cookie, "elsewhere")
-    assert elsewhere["missing"] == {}
-    offered = {item["name"] for item in elsewhere["buttons"]}
+    outside_buttons = buttons(server, cookie, "elsewhere")
+    assert outside_buttons["missing"] == {}
+    offered = {item["name"] for item in outside_buttons["buttons"]}
     assert sorted(name for name in offered if name.startswith(("workers.", "review."))) == []
     assert {"plans.approve", "plans.assign-agent", "plans.assign-main", "plan_reviews.critique", "plan_reviews.end-review", "tasks.block", "agents.pause"} <= offered
 

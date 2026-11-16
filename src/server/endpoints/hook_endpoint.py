@@ -157,7 +157,7 @@ class HookEndpoint:
     def log_file_calls(self, event: HookEvent, file_calls: FileCalls) -> None:
         if file_calls.total <= HOOK_FILE_CALL_LIMIT_COUNT:
             return
-        counts = ", ".join(f"{count} {category}" for category, count in file_calls.kinds.most_common())
+        counts = ", ".join(f"{count} {category}" for category, count in file_calls.operation_counts.most_common())
         origins = ", ".join(f"{count} at {origin}" for origin, count in file_calls.origins.most_common(TOP_ORIGINS))
         self.context.files.log_line(f"hook {event.event.value} made {file_calls.total} file system calls ({counts}; most {origins}), over the {HOOK_FILE_CALL_LIMIT_COUNT} a hook may make", LogLevel.WARNING)
 

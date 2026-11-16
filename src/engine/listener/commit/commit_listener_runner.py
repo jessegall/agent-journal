@@ -127,14 +127,14 @@ class CommitListenerRunner(RoundState):
         newest_ids: dict[str, int] = {}
         for event in events:
             newest_ids[event.event] = event.id
-        due_entries = [entry for entry in entries if any(newest_id > positions[entry.name] and self.hears(entry, name) for name, newest_id in newest_ids.items())]
+        due_entries = [entry for entry in entries if any(newest_id > positions[entry.name] and self.is_subscribed(entry, name) for name, newest_id in newest_ids.items())]
         due_names = {entry.name for entry in due_entries}
         moved_count = self.cursors.advance_all([entry.name for entry in entries if entry.name not in due_names], events[-1].id)
         positions.update({entry.name: events[-1].id for entry in entries if entry.name not in due_names})
         progress = [self.run_entry(entry, urgent_entries, events) for entry in due_entries]
         return bool(moved_count) or any(progress)
 
-    def hears(self, entry: ListenerEntry, event_name: str) -> bool:
+    def is_subscribed(self, entry: ListenerEntry, event_name: str) -> bool:
         key = (entry.name, event_name)
         if key not in self.heard_names:
             self.heard_names[key] = entry.event.matches(event_name)
@@ -167,7 +167,7 @@ class CommitListenerRunner(RoundState):
         position = self.positions[entry.name]
         events = [event for event in round_events if event.id > position]
         progress = False
-        matching = [event for event in events if self.hears(entry, event.event)]
+        matching = [event for event in events if self.is_subscribed(entry, event.event)]
         if not self.is_prepared(entry, matching, position):
             return progress
         for event in matching:

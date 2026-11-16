@@ -26,7 +26,7 @@ class ExecutionClasses:
         return next(row.execution_class for row in BUILTIN_CLASSES if row.covers(subject))
 
     # the class a stored run names, the person's before the built-in one; none for a name nobody declares any more
-    def named(self, name: str) -> ExecutionClass | None:
+    def by_name(self, name: str) -> ExecutionClass | None:
         all_classes = (*self.person.classes(), *(row.execution_class for row in BUILTIN_CLASSES))
         return next((execution_class for execution_class in all_classes if execution_class.name == name), None)
 

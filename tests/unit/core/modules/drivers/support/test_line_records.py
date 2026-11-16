@@ -5,7 +5,7 @@ from core.modules.drivers.support.decision_assembler import MACHINE_SOURCE, Deci
 
 
 def line(text: str, source: str) -> Line:
-    return Line("sample.key", text, LineCategory.STEERING, "sample.key", LineChannel.NOW, source)
+    return Line("sample.key", text, LineCategory.STEERING, "sample.key", LineChannel.IMMEDIATE, source)
 
 
 def test_each_source_gets_one_record_of_its_lines_so_its_history_notes_it_and_a_line_with_no_source_is_the_machines():

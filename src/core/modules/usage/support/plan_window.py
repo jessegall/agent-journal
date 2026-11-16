@@ -11,7 +11,7 @@ class PlanWindow:
 
     title: str
     used_percent: float
-    reset_epoch_seconds: float
+    reset_unix_seconds: float
 
     @classmethod
     def reported(cls, title: str, window: object) -> "PlanWindow":
@@ -21,5 +21,5 @@ class PlanWindow:
 
     @property
     def line(self) -> str:
-        reset = datetime.fromtimestamp(self.reset_epoch_seconds, timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+        reset = datetime.fromtimestamp(self.reset_unix_seconds, timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
         return f"{self.title} {round(self.used_percent)}% used, starts again {reset}"

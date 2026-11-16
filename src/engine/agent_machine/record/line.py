@@ -24,8 +24,8 @@ class Line:
     # a line of an agent message, of the category its type gives unless one is named
     @classmethod
     def of_agent_message(cls, agent_message: AgentMessage, channel: LineChannel, category: LineCategory | None = None) -> "Line":
-        kind = category if category is not None else LineCategory.STEERING if agent_message.type is AgentMessageType.STEERING else LineCategory.INFORMATION
-        return cls(agent_message.key, agent_message.text, kind, agent_message.key, channel, agent_message=agent_message)
+        line_category = category if category is not None else LineCategory.STEERING if agent_message.type is AgentMessageType.STEERING else LineCategory.INFORMATION
+        return cls(agent_message.key, agent_message.text, line_category, agent_message.key, channel, agent_message=agent_message)
 
     # the agent message that says this line: the one it was made from, or one of its words alone
     def given_message(self) -> AgentMessage:

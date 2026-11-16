@@ -19,8 +19,8 @@ OVERVIEW_BLOCK = OpenBlock("overview.first", 3, Reason("overview.overview-first"
 VIEW = replace(ViewSamples.view("main", WorkStop.REFUSE_DURING_WORK, has_parent=False), blocks=(OVERVIEW_BLOCK,))
 
 
-def policy(past_the_limit: bool = True) -> ContextHardLimitPolicy:
-    return ContextHardLimitPolicy(SimpleNamespace(exceeds_hard_limit=lambda agent_id: past_the_limit), SimpleNamespace(is_watch_event=lambda event: False))
+def policy(over_hard_limit: bool = True) -> ContextHardLimitPolicy:
+    return ContextHardLimitPolicy(SimpleNamespace(exceeds_hard_limit=lambda agent_id: over_hard_limit), SimpleNamespace(is_watch_event=lambda event: False))
 
 
 def journal_line(*arguments: str):
@@ -37,4 +37,4 @@ def test_the_lifting_line_of_an_open_block_and_a_read_still_run():
 
 
 def test_under_the_limit_nothing_is_refused():
-    assert policy(past_the_limit=False).refusals(QuestionSamples.question(HookSamples.edit("a.py")), VIEW) == []
+    assert policy(over_hard_limit=False).refusals(QuestionSamples.question(HookSamples.edit("a.py")), VIEW) == []

@@ -19,7 +19,7 @@ class ListenerWakeRouter:
         return cls(SavedEvents.shared(), [(thread, lambda: None)])
 
     def wake(self) -> None:
-        names = self.written.taken()
+        names = self.written.claimed_names()
         if not names:
             return
         for thread, listener_set in self.threads:

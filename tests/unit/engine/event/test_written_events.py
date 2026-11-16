@@ -12,27 +12,27 @@ def second_thread_save(saved: SavedEvents, name: str) -> None:
 def test_taken_returns_the_names_the_calling_thread_wrote():
     saved = SavedEvents()
     saved.add("core.tasks.task.created")
-    assert saved.taken() == {"core.tasks.task.created"}
+    assert saved.claimed_names() == {"core.tasks.task.created"}
 
 
 def test_taken_clears_them():
     saved = SavedEvents()
     saved.add("core.tasks.task.created")
-    saved.taken()
-    assert saved.taken() == frozenset()
+    saved.claimed_names()
+    assert saved.claimed_names() == frozenset()
 
 
 def test_another_threads_names_are_not_taken():
     saved = SavedEvents()
     second_thread_save(saved, "core.tasks.task.created")
-    assert saved.taken() == frozenset()
+    assert saved.claimed_names() == frozenset()
 
 
 def test_names_are_distinct():
     saved = SavedEvents()
     for _ in range(3):
         saved.add("core.tasks.task.created")
-    assert saved.taken() == {"core.tasks.task.created"}
+    assert saved.claimed_names() == {"core.tasks.task.created"}
 
 
 def test_dead_threads_do_not_grow_the_record():

@@ -92,12 +92,12 @@ def test_nested_ask_in_same_thread_passes(turns):
 
 
 def test_another_thread_asks_for_its_own_turn(turns):
-    def ask() -> None:
+    def request_turn() -> None:
         with turns.write_turn():
             pass
 
     with turns.write_turn():
-        second_writer = threading.Thread(target=ask)
+        second_writer = threading.Thread(target=request_turn)
         second_writer.start()
         second_writer.join()
     assert turns.steps.count("take") == 2

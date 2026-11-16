@@ -26,4 +26,4 @@ class OverviewFirstLines(LineSource):
         if not self.first.is_required or event is None or event.is_resume or view.agent.agent_type != "main":
             return []
         agent_message = OverviewLineMessage.declared().agent_message()
-        return [Line.of_agent_message(agent_message, LineChannel.NOW, self.category)]
+        return [Line.of_agent_message(agent_message, LineChannel.IMMEDIATE, self.category)]

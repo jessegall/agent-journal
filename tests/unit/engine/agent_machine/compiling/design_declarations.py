@@ -21,7 +21,7 @@ UNLIMITED_TYPES = ()
 MAIN, WORKER, HELPERS = ["main"], ["worker"], ("helper", "merger")
 CHILD_TYPES = ("helper", "worker", "merger")
 SAFETY, ACCESS, SHELL = "safety.all", "access.all", "shell.all"
-WAIVABLE = (BlockEnd.SATISFIED, BlockEnd.WAIVED)
+WAIVABLE = (BlockEnd.SATISFIED, BlockEnd.SKIPPED)
 
 # Doc 1310 revision 2, section 4.6: every hold, by its rank key, the agent types it applies to, the ends it may take
 # and the command lines that satisfy it.
@@ -171,7 +171,7 @@ class DesignDeclarations:
         waits = [ContributionDeclaration(key, ContributionType.REQUIRED_STATE, "", tuple(agent_types), "Waiting") for key, agent_types in WAITS.get(module, [])]
         policies = [ContributionDeclaration(key, ContributionType.POLICY, rank, tuple(agent_types), is_safety=rank == SAFETY) for key, rank, agent_types in POLICIES.get(module, [])]
         lines = [ContributionDeclaration(key, ContributionType.LINE, events=(HookEventName.TICK if key in STEP_LINES else HookEventName.PRE_TOOL_USE,),
-                                         channel=LineChannel.WAITING if key in WAITING_LINES else LineChannel.NOW)
+                                         channel=LineChannel.WAITING if key in WAITING_LINES else LineChannel.IMMEDIATE)
                  for key in (f"{module}.{name}" for name in LINES.get(module, []))]
         effects = [ContributionDeclaration(key, ContributionType.EFFECT, is_required=required, has_failure=required) for key, required in EFFECTS.get(module, [])]
         transforms = [ContributionDeclaration(key, ContributionType.TRANSFORM, slot=slot) for key, slot in TRANSFORMS.get(module, [])]

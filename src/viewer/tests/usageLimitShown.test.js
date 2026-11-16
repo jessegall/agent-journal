@@ -8,7 +8,7 @@ import {context, mounted} from "./support/agentWindowContext.js";
 const RESET = 1794085200;
 
 test("the status bar says the plan is at its usage limit and when it starts again", async () => {
-    const element = appended(AllowanceBar, {windows: [{title: "5 hours", used_percent: 100, reset_epoch_seconds: RESET}]});
+    const element = appended(AllowanceBar, {windows: [{title: "5 hours", used_percent: 100, reset_unix_seconds: RESET}]});
     await settle();
     const fact = element.querySelector("[data-fact=usage]");
     expect(fact.textContent).toContain("At usage limit");
@@ -16,7 +16,7 @@ test("the status bar says the plan is at its usage limit and when it starts agai
 });
 
 test("the status bar shows the percent and the reset time below the limit", async () => {
-    const element = appended(AllowanceBar, {windows: [{title: "5 hours", used_percent: 98, reset_epoch_seconds: RESET}]});
+    const element = appended(AllowanceBar, {windows: [{title: "5 hours", used_percent: 98, reset_unix_seconds: RESET}]});
     await settle();
     const fact = element.querySelector("[data-fact=usage]");
     expect(fact.textContent).toContain("98%");

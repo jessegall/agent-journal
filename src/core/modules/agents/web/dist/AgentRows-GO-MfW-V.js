@@ -1213,7 +1213,7 @@ const Ae = /* @__PURE__ */ K(un, [["render", gn], ["__scopeId", "data-v-aa955b3e
   setup(e, { emit: l }) {
     const t = e, o = l, d = c(() => t.windows[0] ?? null), n = c(() => d.value && Number.isFinite(d.value.used_percent) ? Math.max(0, Math.min(100, Math.round(d.value.used_percent))) : null), g = c(() => n.value !== null && n.value >= 100), $ = c(() => {
       var R;
-      return (R = d.value) != null && R.reset_epoch_seconds ? new Date(d.value.reset_epoch_seconds * 1e3).toLocaleString() : "";
+      return (R = d.value) != null && R.reset_unix_seconds ? new Date(d.value.reset_unix_seconds * 1e3).toLocaleString() : "";
     }), B = c(() => g.value ? `At usage limit: the plan's ${d.value.title} allowance is used up${$.value ? `, starts again ${$.value}` : ""}` : `${n.value}% of the plan's ${d.value.title} allowance used${$.value ? `, starts again ${$.value}` : ""}`);
     return (R, j) => n.value !== null ? (a(), s("button", {
       key: 0,
@@ -1237,7 +1237,7 @@ const Ae = /* @__PURE__ */ K(un, [["render", gn], ["__scopeId", "data-v-aa955b3e
       f(" " + u(g.value ? "At usage limit" : `${n.value}%`), 1)
     ], 8, fn)) : k("", !0);
   }
-}, yn = /* @__PURE__ */ K(kn, [["__scopeId", "data-v-a36f09dc"]]), wn = ["failed", "blocked", "problem", "update", "paused", "holding", "waiting", "asks"], tt = { danger: "failed", warn: "waiting" }, Mn = (e) => wn.includes(tt[e] ?? e), $n = (e) => Mn(e) ? ["badge", tt[e] ?? e] : ["badge-quiet"], xn = {
+}, yn = /* @__PURE__ */ K(kn, [["__scopeId", "data-v-8ee387a5"]]), wn = ["failed", "blocked", "problem", "update", "paused", "holding", "waiting", "asks"], tt = { danger: "failed", warn: "waiting" }, Mn = (e) => wn.includes(tt[e] ?? e), $n = (e) => Mn(e) ? ["badge", tt[e] ?? e] : ["badge-quiet"], xn = {
   __name: "DashboardBadge",
   props: { text: { type: String, required: !0 }, tone: { type: String, default: "" } },
   setup(e) {

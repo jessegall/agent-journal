@@ -212,15 +212,15 @@ class RunnerWrap(Transform):
 
 
 def test_a_rewrite_the_program_cannot_carry_becomes_its_fallback_refusal() -> None:
-    carried = AgentStateMachine(transforms=[RunnerWrap()]).step(view(), READ).record
+    wrapped_record = AgentStateMachine(transforms=[RunnerWrap()]).step(view(), READ).record
     dropped = AgentStateMachine(transforms=[RunnerWrap()]).step(view(program=Capabilities()), READ).record
-    assert (carried.decision.admits(), carried.rewrite.changed()) == (True, True)
+    assert (wrapped_record.decision.admits(), wrapped_record.rewrite.changed()) == (True, True)
     assert (dropped.shown_reason.key, dropped.rewrite.changed()) == (FALLBACK_KEY, False)
 
 
 def test_the_same_view_gives_the_same_record() -> None:
-    same = view(states=(working(),), blocks=(block("documents.open", "documents.open"),))
-    assert AgentStateMachine().step(same, STOP).record == AgentStateMachine().step(same, STOP).record
+    repeated_view = view(states=(working(),), blocks=(block("documents.open", "documents.open"),))
+    assert AgentStateMachine().step(repeated_view, STOP).record == AgentStateMachine().step(repeated_view, STOP).record
 
 
 def test_the_fifth_refused_stop_opens_an_escalation_and_says_who_was_asked() -> None:

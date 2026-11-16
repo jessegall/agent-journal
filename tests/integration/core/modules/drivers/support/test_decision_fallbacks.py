@@ -10,20 +10,20 @@ WALK = RuleAnswers([RuleRecord("messages.unread-write", "refused", RuleAnswer(re
 TRIGGERED = RuleAnswers([RuleRecord("triggers.phrase", "refused", RuleAnswer(refusal="that phrase is denied"))])
 
 
-def lost(sample, answers: RuleAnswers = WALK) -> RuleAnswers:
+def fallback_answers(sample, answers: RuleAnswers = WALK) -> RuleAnswers:
     return DecisionFallbacks.missed_check(HookEvent.parsed(sample.body), 4, answers)
 
 
 def test_a_tool_call_whose_check_was_lost_is_refused_as_busy_with_nothing_of_the_walk_kept():
-    answers = lost(HookSamples.edit("a.py"))
+    answers = fallback_answers(HookSamples.edit("a.py"))
     assert (answers.refusal, answers.commands) == (BUSY_TEXT, [])
 
 
 def test_a_stop_whose_check_was_lost_passes_and_asks_for_a_step():
-    answers = lost(HookSamples.stop())
+    answers = fallback_answers(HookSamples.stop())
     assert (answers.refusal, answers.commands) == ("", [(MISSED_CHECK, RequestAgentStep((4,), MISSED_CHECK))])
 
 
 def test_a_prompt_whose_check_was_lost_keeps_only_a_trigger_refusal():
-    assert lost(HookSamples.prompt("go"), TRIGGERED).refusal == "that phrase is denied"
-    assert lost(HookSamples.prompt("go")).refusal == ""
+    assert fallback_answers(HookSamples.prompt("go"), TRIGGERED).refusal == "that phrase is denied"
+    assert fallback_answers(HookSamples.prompt("go")).refusal == ""
