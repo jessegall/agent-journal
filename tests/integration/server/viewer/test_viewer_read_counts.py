@@ -589,3 +589,37 @@ def test_canonical_visible_and_hidden_schedule(scheduled_sample, tmp_path):
     with pytest.raises(IncompleteViewerSample):
         validate_workload_sample(sample_data)
 
+
+def test_workload_pins_dataset_pages_docks_settings_and_schedule():
+    workload = viewer_workload()
+    expect_value(workload.identifier, "viewer-post-funnel-v1")
+    expect_value(workload.displayed_rows, 50)
+    expect_value(len(workload.docks), 10)
+    expect_value(len(workload.events), 30)
+    expect_value(sum(event.relevant for event in workload.events), 15)
+    expect_value(workload.visible_seconds, 60)
+    expect_value(workload.hidden_seconds, 30)
+    expect_value(workload.loaded_ranges, ((51, 75), (76, 100)))
+    expect_value(workload.settings[f"{REPEATED_WORK_SETTING}"], True)
+
+
+@pytest.mark.parametrize("missing", ["attribution", "retention", "losses", "funnel"])
+def test_baseline_rejects_missing_attribution_retention_losses_or_funnel(missing):
+    evidence = complete_sample_evidence()
+    del evidence[missing]
+    with pytest.raises(IncompleteViewerSample):
+        validate_sample(evidence)
+
+
+@pytest.mark.parametrize("section,key,value", [
+    ("losses", "dropped", 1), ("losses", "recorded", 1), ("retention", "retained", 1),
+    ("funnel", "logical_commands", 3), ("attribution", "http_requests", None)])
+def test_baseline_rejects_loss_eviction_disagreement_and_unattributed_http(section, key, value):
+    evidence = complete_sample_evidence()
+    evidence[section][key] = value
+    with pytest.raises(IncompleteViewerSample):
+        validate_sample(evidence)
+
+
+def test_complete_attribution_and_funnel_agreement_is_accepted():
+    validate_sample(complete_sample_evidence())
